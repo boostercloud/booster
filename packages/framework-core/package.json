@@ -1,0 +1,43 @@
+{
+  "name": "@boostercloud/framework-core",
+  "version": "0.1.0",
+  "description": "Library for your Booster apps",
+  "author": "Booster Cloud",
+  "homepage": "https://booster.cloud",
+  "license": "Apache-2.0",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boostercloud/booster.git"
+  },
+  "scripts": {
+    "lint": "eslint --ext '.js,.ts' .",
+    "fix-lint": "eslint --quiet --fix --ext '.js,.ts' .",
+    "compile": "tsc -b tsconfig.json",
+    "clean": "rm -rf ./dist && rm -rf tsconfig.tsbuildinfo",
+    "prepack": "tsc -b tsconfig.json",
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+  },
+  "bugs": {
+    "url": "https://github.com/boostercloud/booster/issues"
+  },
+  "dependencies": {
+    "@boostercloud/framework-provider-aws": "^0.1.0",
+    "@boostercloud/framework-types": "^0.1.0",
+    "fp-ts": "^2.0.3",
+    "reflect-metadata": "^0.1",
+    "uuid": "^3.3.3"
+  },
+  "devDependencies": {
+    "@types/sinon-chai": "^3.2.3",
+    "@types/uuid": "^3.4.5",
+    "eslint-plugin-prettier": "^3.1.0",
+    "prettier": "^1.18.2",
+    "sinon-chai": "^3.3.0",
+    "typescript": "^3.7.2"
+  },
+  "gitHead": "121816dbe55d57df5860b54a871c06dcda761101"
+}

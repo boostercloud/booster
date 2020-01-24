@@ -1,0 +1,22 @@
+{
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+  ],
+  "mocha.options": {
+    "compilers": "ts-node/register",
+    "watchExtensions": "ts",
+    "recursive": true,
+    "reporter": "spec",
+    "timeout": 5000
+  },
+  "mocha.requires": [
+    "ts-node/register"
+  ],
+  "mocha.files.glob": "packages/*/test/**/*.ts",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  }
+}

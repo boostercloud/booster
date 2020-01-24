@@ -1,0 +1,40 @@
+{
+  "name": "@boostercloud/framework-types",
+  "version": "0.1.0",
+  "description": "Contains Booster types related to the information extracted from the user project",
+  "keywords": [
+    "framework-types"
+  ],
+  "author": "Booster Cloud",
+  "homepage": "https://booster.cloud",
+  "license": "Apache-2.0",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boostercloud/booster.git"
+  },
+  "scripts": {
+    "lint": "eslint --ext '.js,.ts' .",
+    "fix-lint": "eslint --quiet --fix --ext '.js,.ts' .",
+    "compile": "tsc -b tsconfig.json",
+    "clean": "rm -rf dist && rm -rf tsconfig.tsbuildinfo",
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
+    "prepack": "tsc -b tsconfig.json"
+  },
+  "bugs": {
+    "url": "https://github.com/boostercloud/booster/issues"
+  },
+  "devDependencies": {
+    "eslint-plugin-prettier": "^3.1.0",
+    "fast-check": "^1.18.1",
+    "prettier": "^1.18.2",
+    "typescript": "^3.7.2"
+  },
+  "gitHead": "121816dbe55d57df5860b54a871c06dcda761101",
+  "dependencies": {
+    "rxjs": "^6.5.3"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "root",
+  "version": "0.0.7",
+  "author": "Booster Cloud",
+  "homepage": "https://booster.cloud",
+  "bugs": "https://github.com/boostercloud/booster/issues",
+  "private": true,
+  "devDependencies": {
+    "lerna": "^3.19.0"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "license": "Apache-2.0"
+}

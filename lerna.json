@@ -1,0 +1,11 @@
+{
+    "packages": [
+        "packages/framework-types",
+        "packages/framework-provider-aws",
+        "packages/framework-core",
+        "packages/cli"
+    ],
+    "version": "0.1.0",
+    "npmClient": "yarn",
+    "useWorkspaces": true
+}

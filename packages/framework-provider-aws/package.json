@@ -1,0 +1,54 @@
+{
+  "name": "@boostercloud/framework-provider-aws",
+  "version": "0.1.0",
+  "description": "Handle the Booster deployment process to AWS",
+  "keywords": [
+    "framework-provider-aws"
+  ],
+  "author": "Booster Cloud",
+  "homepage": "https://booster.cloud",
+  "license": "Apache-2.0",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boostercloud/booster.git"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-apigateway": "^1.17.1",
+    "@aws-cdk/aws-cognito": "^1.17.1",
+    "@aws-cdk/aws-dynamodb": "^1.17.1",
+    "@aws-cdk/aws-iam": "^1.17.1",
+    "@aws-cdk/aws-kinesis": "^1.17.1",
+    "@aws-cdk/aws-lambda": "^1.17.1",
+    "@aws-cdk/aws-lambda-event-sources": "^1.17.1",
+    "@boostercloud/framework-types": "^0.1.0",
+    "aws-cdk": "^1.17.1",
+    "aws-sdk": "^2.514.0"
+  },
+  "scripts": {
+    "lint": "eslint --ext '.js,.ts' .",
+    "fix-lint": "eslint --quiet --fix --ext '.js,.ts' .",
+    "compile": "tsc -b tsconfig.json",
+    "clean": "rm -rf ./dist && rm -rf tsconfig.tsbuildinfo",
+    "prepack": "tsc -b tsconfig.json",
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+  },
+  "bugs": {
+    "url": "https://github.com/boostercloud/booster/issues"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.31",
+    "@types/chai-as-promised": "^7.1.2",
+    "@types/sinon-chai": "^3.2.3",
+    "chai-as-promised": "^7.1.1",
+    "eslint-plugin-prettier": "^3.1.0",
+    "prettier": "^1.18.2",
+    "sinon-chai": "^3.3.0",
+    "typescript": "^3.7.2",
+    "velocityjs": "^2.0.0"
+  },
+  "gitHead": "121816dbe55d57df5860b54a871c06dcda761101"
+}
