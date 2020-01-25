@@ -2,7 +2,7 @@
 
 [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fboostercloud%2Fbooster%2Fbadge&style=flat)](https://actions-badge.atrox.dev/boostercloud/booster/goto)
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
-[![License](https://img.shields.io/npm/l/cli.svg)](https://github.com/boostercloud/cli/blob/master/package.json)
+[![License](https://img.shields.io/npm/l/cli.svg)](https://github.com/boostercloud/booster/blob/master/package.json)
 
 ---
 

@@ -9,7 +9,10 @@
     "lerna": "^3.19.0"
   },
   "workspaces": [
-    "packages/*"
+    "packages/framework-types",
+    "packages/framework-provider-aws",
+    "packages/framework-core",
+    "packages/cli"
   ],
   "license": "Apache-2.0"
 }

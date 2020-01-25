@@ -1,9 +1,12 @@
 {
   "name": "@boostercloud/cli",
-  "description": "CLI for Booster, the next level of abstraction for cloud-native applications",
+  "description": "CLI of the Booster Cloud Framework, the next level of abstraction for cloud-native applications",
   "version": "0.1.0",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "boost": "./bin/run"
   },

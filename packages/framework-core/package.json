@@ -5,6 +5,9 @@
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
   "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "dist/index.js",
   "files": [
     "dist"
