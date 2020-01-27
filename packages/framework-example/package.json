@@ -30,7 +30,7 @@
   "main": "dist/index.js",
   "repository": "boostercloud/booster",
   "scripts": {
-    "lint": "eslint --ext '.js,.ts' .",
+    "lint": "eslint --ext '.js,.ts' **/*.ts",
     "fix-lint": "eslint --quiet --fix --ext '.js,.ts' .",
     "compile": "tsc -b tsconfig.json",
     "clean": "rm -rf ./dist && rm -rf tsconfig.tsbuildinfo",
