@@ -17,8 +17,8 @@ import { ReadModelMetadata } from './concepts/read-model'
 export class BoosterConfig {
   public logLevel: Level = Level.debug
   public provider: Provider = Provider.AWS
-  public appName: string = 'new-booster-app'
-  public region: string = 'eu-west-1'
+  public appName = 'new-booster-app'
+  public region = 'eu-west-1'
   public readonly userProjectRootPath: string = process.cwd()
   public readonly commandDispatcherHandler: string = 'dist/index.boosterCommandDispatcher'
   public readonly eventDispatcherHandler: string = 'dist/index.boosterEventDispatcher'
