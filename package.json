@@ -6,7 +6,27 @@
   "bugs": "https://github.com/boostercloud/booster/issues",
   "private": true,
   "devDependencies": {
-    "lerna": "^3.19.0"
+    "lerna": "^3.19.0",
+    "eslint": "^6.0.1",
+    "prettier": "^1.18.2",
+    "eslint-config-prettier": "^6.0.0",
+    "eslint-plugin-prettier": "^3.1.0",
+    "@typescript-eslint/eslint-plugin": "^1.12.0",
+    "@typescript-eslint/parser": "^1.12.0",
+    "typescript": "^3.7.2",
+    "chai": "^4",
+    "@types/chai": "^4",
+    "sinon": "^7.3.2",
+    "@types/sinon": "^7.5.1",
+    "sinon-chai": "^3.3.0",
+    "@types/sinon-chai": "^3.2.3",
+    "chai-as-promised": "^7.1.1",
+    "@types/chai-as-promised": "^7.1.2",
+    "mocha": "^5",
+    "@types/mocha": "^5",
+    "nyc": "^13",
+    "@types/node": "^12.7.7",
+    "ts-node": "^8"
   },
   "workspaces": [
     "packages/framework-types",

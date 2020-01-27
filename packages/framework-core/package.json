@@ -35,12 +35,7 @@
     "uuid": "^3.3.3"
   },
   "devDependencies": {
-    "@types/sinon-chai": "^3.2.3",
-    "@types/uuid": "^3.4.5",
-    "eslint-plugin-prettier": "^3.1.0",
-    "prettier": "^1.18.2",
-    "sinon-chai": "^3.3.0",
-    "typescript": "^3.7.2"
+    "@types/uuid": "^3.4.5"
   },
   "gitHead": "121816dbe55d57df5860b54a871c06dcda761101"
 }
