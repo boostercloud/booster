@@ -1,4 +1,4 @@
-# In theory we could write all of this with Bash,
+# In theory we could write all of this with Bash style &&,
 # but in order to maintain backwards compatibility
 # with Powershell <7.0 (what most Windows user have preinstalled)
 # we write it in the old-school style
