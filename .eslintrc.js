@@ -23,7 +23,6 @@ module.exports = {
     project: './tsconfig.json',
   },
   rules: {
-    '@typescript-eslint/no-use-before-define': ['error', { functions: false, classes: true }],
     indent: ['error', 2, { SwitchCase: 1 }],
     'linebreak-style': ['error', 'unix'],
     quotes: ['error', 'single', { avoidEscape: true, allowTemplateLiterals: false }],
@@ -36,6 +35,9 @@ module.exports = {
     '@typescript-eslint/no-floating-promises': ['error'],
     '@typescript-eslint/array-type': [0, 'generic'],
     '@typescript-eslint/no-use-before-define': 0,
+    '@typescript-eslint/no-var-requires': 0,
+    '@typescript-eslint/ban-ts-ignore': 0,
+    '@typescript-eslint/no-empty-function': 0,
     '@typescript-eslint/explicit-function-return-type': [
       'warn',
       {

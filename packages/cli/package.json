@@ -32,31 +32,12 @@
   "devDependencies": {
     "@oclif/dev-cli": "^1",
     "@oclif/test": "^1",
-    "@types/chai": "^4",
-    "@types/chai-as-promised": "^7.1.2",
     "@types/child-process-promise": "^2.2.1",
     "@types/fs-extra": "^8.0.0",
     "@types/inquirer": "^6.5.0",
-    "@types/mocha": "^5",
     "@types/mustache": "^0.8.32",
-    "@types/node": "^12.7.7",
-    "@types/rewire": "^2.5.28",
-    "@types/sinon-chai": "^3.2.3",
-    "@typescript-eslint/eslint-plugin": "^1.12.0",
-    "@typescript-eslint/parser": "^1.12.0",
-    "chai": "^4",
-    "chai-as-promised": "^7.1.1",
-    "eslint": "^6.0.1",
-    "eslint-config-prettier": "^6.0.0",
-    "eslint-plugin-prettier": "^3.1.0",
-    "mocha": "^5",
-    "nyc": "^13",
-    "prettier": "^1.18.2",
     "rewire": "^4.0.1",
-    "sinon": "^7.3.2",
-    "sinon-chai": "^3.3.0",
-    "ts-node": "^8",
-    "typescript": "^3.7.2"
+    "@types/rewire": "^2.5.28"
   },
   "engines": {
     "node": ">=8.0.0"
