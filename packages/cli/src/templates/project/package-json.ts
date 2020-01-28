@@ -4,21 +4,20 @@ export const template = `{
   "version": "{{{version}}}",
   "author": "{{{author}}}",
   "dependencies": {
-    "@boostercloud/framework-core": "^0.0",
-    "tslib": "^1.10"
+    "@boostercloud/framework-core": "^{{{boosterVersion}}}",
   },
   "devDependencies": {
-    "@boostercloud/cli": "^0.0",
-    "@types/chai": "^4",
-    "@types/mocha": "^5",
-    "@types/node": "^10",
+    "@boostercloud/cli": "^{{{boosterVersion}}}",
+    "rimraf": "^3.0.0",
     "@typescript-eslint/eslint-plugin": "^1.12.0",
     "@typescript-eslint/parser": "^1.12.0",
     "eslint": "^6.0.1",
     "eslint-config-prettier": "^6.0.0",
     "mocha": "^5",
     "nyc": "^13",
-    "typescript": "^3.7"
+    "typescript": "^3.7.5",
+    "ts-node": "^8.6.2"
+    "@types/node": "^13.5.0",
   },
   "engines": {
     "node": ">=8.0.0"

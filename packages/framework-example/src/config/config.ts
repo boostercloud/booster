@@ -3,5 +3,4 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 
 Booster.configure((config: BoosterConfig): void => {
   config.appName = 'my-store'
-  config.region = 'us-east-1'
 })

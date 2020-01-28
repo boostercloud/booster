@@ -61,12 +61,16 @@ export default class Project extends Command {
       ...flags,
     }
     parsedFlags.provider = (undefined as unknown) as Provider
-    await run(parsedFlags as Partial<ProjectInitializerConfig>, flags.provider)
+    await run(parsedFlags as Partial<ProjectInitializerConfig>, this.config.version, flags.provider)
   }
 }
 
-const run = async (flags: Partial<ProjectInitializerConfig>, provider?: string): Promise<void> =>
-  Script.init(`boost ${Brand.energize('new')} 🚧`, parseConfig(new Prompter(), flags, provider))
+const run = async (
+  flags: Partial<ProjectInitializerConfig>,
+  boosterVersion: string,
+  provider?: string
+): Promise<void> =>
+  Script.init(`boost ${Brand.energize('new')} 🚧`, parseConfig(new Prompter(), flags, boosterVersion, provider))
     .step('creating project root', generateRootDirectory)
     .step('generating config files', generateConfigFiles)
     .step('installing dependencies', installDependencies)
@@ -76,6 +80,7 @@ const run = async (flags: Partial<ProjectInitializerConfig>, provider?: string):
 const parseConfig = async (
   prompter: Prompter,
   flags: Partial<ProjectInitializerConfig>,
+  boosterVersion: string,
   providerName?: string
 ): Promise<ProjectInitializerConfig> => {
   const description = await prompter.defaultOrPrompt(flags.description, "What's your project description?")
@@ -99,5 +104,6 @@ const parseConfig = async (
     homepage,
     license,
     repository,
+    boosterVersion,
   })
 }

@@ -44,6 +44,7 @@ export interface ProjectInitializerConfig {
   license: string
   repository: string
   provider: Provider
+  boosterVersion: string
 }
 
 function renderToFile(templateData: ProjectInitializerConfig): (_: [Array<string>, string]) => Promise<void> {
