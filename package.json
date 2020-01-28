@@ -6,7 +6,7 @@
   "bugs": "https://github.com/boostercloud/booster/issues",
   "private": true,
   "devDependencies": {
-    "rimraf": "^3.0.0"
+    "rimraf": "^3.0.0",
     "lerna": "^3.20.2",
     "eslint": "^6.8.0",
     "prettier": "^1.19.1",
