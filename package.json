@@ -6,7 +6,9 @@
   "bugs": "https://github.com/boostercloud/booster/issues",
   "private": true,
   "devDependencies": {
-    "lerna": "^3.19.0"
+    "lerna": "^3.19.0",
+    "rimraf": "^3.0.0",
+    "yargs": "^15.1.0"
   },
   "workspaces": [
     "packages/framework-types",
