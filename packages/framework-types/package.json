@@ -21,9 +21,9 @@
   },
   "scripts": {
     "lint": "eslint --ext '.js,.ts' **/*.ts",
-    "fix-lint": "eslint --quiet --fix --ext '.js,.ts' .",
+    "fix-lint": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
-    "clean": "rm -rf dist && rm -rf tsconfig.tsbuildinfo",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
     "prepack": "tsc -b tsconfig.json"
   },
