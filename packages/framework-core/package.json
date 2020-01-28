@@ -17,10 +17,10 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "scripts": {
-    "lint": "eslint --ext '.js,.ts' .",
-    "fix-lint": "eslint --quiet --fix --ext '.js,.ts' .",
+    "lint": "eslint --ext '.js,.ts' **/*.ts",
+    "fix-lint": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
-    "clean": "rm -rf ./dist && rm -rf tsconfig.tsbuildinfo",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
   },

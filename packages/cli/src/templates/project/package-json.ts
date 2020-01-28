@@ -28,10 +28,10 @@ export const template = `{
   "main": "dist/index.js",
   "repository": "{{{repository}}}",
   "scripts": {
-    "lint": "eslint --ext '.js,.ts' .",
+    "lint": "eslint --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
     "deploy": "boost deploy",
-    "clean": "rm -rf ./dist && rm -rf tsconfig.tsbuildinfo",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "test": "nyc --extension .ts mocha --forbid-only \\"test/**/*.test.ts\\""
   },
   "types": "lib/index.d.ts"
