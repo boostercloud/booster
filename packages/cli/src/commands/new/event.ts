@@ -1,7 +1,14 @@
 import * as Oclif from '@oclif/command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
-import { HasName, HasFields, joinParsers, parseName, parseFields } from '../../services/generator/target'
+import {
+  HasName,
+  HasFields,
+  joinParsers,
+  parseName,
+  parseFields,
+  ImportDeclaration,
+} from '../../services/generator/target'
 import { generate } from '../../services/generator'
 import * as path from 'path'
 import { templates } from '../../templates'
@@ -40,6 +47,19 @@ const run = async (name: string, rawFields: Array<string>): Promise<void> =>
     .info('Event generated!')
     .done()
 
+function generateImports(): Array<ImportDeclaration> {
+  return [
+    {
+      packagePath: '@boostercloud/framework-core',
+      componentNames: ['Event'],
+    },
+    {
+      packagePath: '@boostercloud/framework-types',
+      componentNames: ['UUID'],
+    },
+  ]
+}
+
 const generateEvent = (info: EventInfo): Promise<void> =>
   generate({
     name: info.name,
@@ -47,7 +67,7 @@ const generateEvent = (info: EventInfo): Promise<void> =>
     placementDir: path.join('src', 'events'),
     template: templates.event,
     info: {
-      imports: [],
+      imports: generateImports(),
       ...info,
     },
   })
