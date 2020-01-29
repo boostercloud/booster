@@ -2,7 +2,14 @@ import * as Oclif from '@oclif/command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
 import { generate } from '../../services/generator'
-import { HasName, HasFields, joinParsers, parseName, parseFields } from '../../services/generator/target'
+import {
+  HasName,
+  HasFields,
+  joinParsers,
+  parseName,
+  parseFields,
+  ImportDeclaration,
+} from '../../services/generator/target'
 import * as path from 'path'
 import { templates } from '../../templates'
 
@@ -40,11 +47,35 @@ const run = async (name: string, rawFields: Array<string>): Promise<void> =>
     .info('Command generated!')
     .done()
 
+function generateImports(info: CommandInfo): Array<ImportDeclaration> {
+  const commandFieldTypes = info.fields.map((f) => f.type)
+  const commandUsesUUID = commandFieldTypes.some((type) => type == 'UUID')
+
+  const componentsFromBoosterTypes = ['Register']
+  if (commandUsesUUID) {
+    componentsFromBoosterTypes.push('UUID')
+  }
+
+  return [
+    {
+      packagePath: '@boostercloud/framework-core',
+      componentNames: ['Command'],
+    },
+    {
+      packagePath: '@boostercloud/framework-types',
+      componentNames: componentsFromBoosterTypes,
+    },
+  ]
+}
+
 const generateCommand = (info: CommandInfo): Promise<void> =>
   generate({
     name: info.name,
     extension: '.ts',
     placementDir: path.join('src', 'commands'),
     template: templates.command,
-    info,
+    info: {
+      imports: generateImports(info),
+      ...info,
+    },
   })

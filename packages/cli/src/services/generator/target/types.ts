@@ -18,3 +18,12 @@ export interface HasReaction {
 export interface ReactionEvent {
   eventName: string
 }
+
+export interface HasImports {
+  imports: Array<ImportDeclaration>
+}
+
+export interface ImportDeclaration {
+  packagePath: string
+  componentNames: Array<string>
+}

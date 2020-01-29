@@ -46,5 +46,8 @@ const generateType = (info: TypeInfo): Promise<void> =>
     extension: '.ts',
     placementDir: path.join('src', 'common'),
     template: templates.type,
-    info,
+    info: {
+      imports: [],
+      ...info,
+    },
   })

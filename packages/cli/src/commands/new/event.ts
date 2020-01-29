@@ -46,5 +46,8 @@ const generateEvent = (info: EventInfo): Promise<void> =>
     extension: '.ts',
     placementDir: path.join('src', 'events'),
     template: templates.event,
-    info,
+    info: {
+      imports: [],
+      ...info,
+    },
   })

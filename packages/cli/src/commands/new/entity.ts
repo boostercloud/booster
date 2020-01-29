@@ -63,5 +63,8 @@ const generateEntity = (info: EntityInfo): Promise<void> =>
     extension: '.ts',
     placementDir: path.join('src', 'entities'),
     template: templates.entity,
-    info,
+    info: {
+      imports: [],
+      ...info,
+    },
   })
