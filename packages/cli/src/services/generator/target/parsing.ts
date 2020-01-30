@@ -11,7 +11,7 @@ export const parseFields = (fields: Array<string>): Promise<HasFields> =>
 function parseField(rawField: string): Promise<Field> {
   const splitInput = rawField.split(':')
   if (splitInput.length != 2) {
-    return Promise.reject(fieldParsingError)
+    return Promise.reject(fieldParsingError(rawField))
   } else {
     return Promise.resolve({
       name: splitInput[0],
@@ -28,10 +28,7 @@ export const parseReaction = (rawEvents: Array<string>): Promise<HasReaction> =>
 const parseReactionEvent = (eventName: string): Promise<ReactionEvent> => Promise.resolve({ eventName })
 
 const fieldParsingError = (field: string): Error =>
-  new Error(`Error parsing field ${field}.
-
-Fields must be in the form of
-\t <field name>:<field type>`)
+  new Error(`Error parsing field ${field}. Fields must be in the form of <field name>:<field type>`)
 
 /**
  * Joins parsers together used to generate target information for generators.

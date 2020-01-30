@@ -23,9 +23,9 @@ export default class Entity extends Oclif.Command {
       description: 'fields that this entity will contain',
       multiple: true,
     }),
-    reactsTo: Oclif.flags.string({
-      char: 'r',
-      description: 'events that this entity will react to',
+    projects: Oclif.flags.string({
+      char: 'p',
+      description: 'events that this entity will project to build its state',
       multiple: true,
     }),
   }
@@ -39,7 +39,7 @@ export default class Entity extends Oclif.Command {
   private async runWithErrors(): Promise<void> {
     const { args, flags } = this.parse(Entity)
     const fields = flags.fields || []
-    const events = flags.reactsTo || []
+    const events = flags.projects || []
     if (!args.entityName)
       return Promise.reject("You haven't provided an entity name, but it is required, run with --help for usage")
     return run(args.entityName, fields, events)
