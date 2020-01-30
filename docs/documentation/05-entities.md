@@ -20,7 +20,13 @@ To create an entity... You guessed it! We use the `boost` tool:
 boost new:entity <name of the entity> --fields fieldName:fieldType --reduces EventOne EventTwo EventThree
 ```
 
-Booster will generate a class for you in the `src/entities` folder:
+For instance, running the following command:
+
+```shell script
+boost new:entity Order --fields shippingAddress:Address orderItems:"Array<OrderItem>" --reduces OrderCreated
+```
+
+will generate a class in the `src/entities` folder with the following structure:
 
 ```typescript
 @Entity
