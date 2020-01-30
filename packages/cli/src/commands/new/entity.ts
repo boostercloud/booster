@@ -24,9 +24,9 @@ export default class Entity extends Oclif.Command {
       description: 'fields that this entity will contain',
       multiple: true,
     }),
-    projects: Oclif.flags.string({
+    reduces: Oclif.flags.string({
       char: 'p',
-      description: 'events that this entity will project to build its state',
+      description: 'events that this entity will reduce to build its state',
       multiple: true,
     }),
   }
@@ -40,7 +40,7 @@ export default class Entity extends Oclif.Command {
   private async runWithErrors(): Promise<void> {
     const { args, flags } = this.parse(Entity)
     const fields = flags.fields || []
-    const events = flags.projects || []
+    const events = flags.reduces || []
     if (!args.entityName)
       return Promise.reject("You haven't provided an entity name, but it is required, run with --help for usage")
     return run(args.entityName, fields, events)
@@ -65,10 +65,15 @@ function generateImports(info: EntityInfo): Array<ImportDeclaration> {
     commaSeparatedComponents: eventData.eventName,
   }))
 
+  const coreComponents = ['Entity']
+  if (info.events.length > 0) {
+    coreComponents.push('Reduces')
+  }
+
   return [
     {
       packagePath: '@boostercloud/framework-core',
-      commaSeparatedComponents: 'Entity, Reduces',
+      commaSeparatedComponents: coreComponents.join(', '),
     },
     {
       packagePath: '@boostercloud/framework-types',
