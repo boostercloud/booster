@@ -10,7 +10,7 @@ import {
 } from '../../services/project-initializer'
 import { Provider } from '@boostercloud/framework-types'
 import Prompter from '../../services/user-prompt'
-import { assertNameIsWithinBounds } from '../../services/provider-service'
+import { assertNameIsCorrect } from '../../services/provider-service'
 
 
 export default class Project extends Command {
@@ -58,7 +58,7 @@ export default class Project extends Command {
     const { args, flags } = this.parse(Project)
     if (!args.projectName)
       return Promise.reject("You haven't provided a project name, but it is required, run with --help for usage")
-    assertNameIsWithinBounds(args.projectName)
+    assertNameIsCorrect(args.projectName)
     const parsedFlags = {
       projectName: args.projectName,
       ...flags,
