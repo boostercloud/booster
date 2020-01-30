@@ -3,7 +3,7 @@ import { Script } from '../../common/script'
 import Brand from '../../common/brand'
 import { HasFields, HasName, joinParsers, parseName, parseFields } from '../../services/generator/target'
 import { templates } from '../../templates'
-import { generate } from '../../services/generator'
+import { generate, checkItIsABoosterProject } from '../../services/generator'
 import * as path from 'path'
 
 export default class Type extends Oclif.Command {
@@ -36,7 +36,8 @@ type TypeInfo = HasName & HasFields
 
 const run = async (name: string, rawFields: Array<string>): Promise<void> =>
   Script.init(`boost ${Brand.energize('new:type')} 🚧`, joinParsers(parseName(name), parseFields(rawFields)))
-    .step('creating new type', generateType)
+    .step('Verifying project', checkItIsABoosterProject)
+    .step('Creating new type', generateType)
     .info('Type generated!')
     .done()
 

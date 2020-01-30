@@ -71,9 +71,9 @@ const run = async (
   provider?: string
 ): Promise<void> =>
   Script.init(`boost ${Brand.energize('new')} 🚧`, parseConfig(new Prompter(), flags, boosterVersion, provider))
-    .step('creating project root', generateRootDirectory)
-    .step('generating config files', generateConfigFiles)
-    .step('installing dependencies', installDependencies)
+    .step('Creating project root', generateRootDirectory)
+    .step('Generating config files', generateConfigFiles)
+    .step('Installing dependencies', installDependencies)
     .info('Project generated!')
     .done()
 

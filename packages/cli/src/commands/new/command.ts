@@ -1,7 +1,7 @@
 import * as Oclif from '@oclif/command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
-import { generate } from '../../services/generator'
+import { generate, checkItIsABoosterProject } from '../../services/generator'
 import {
   HasName,
   HasFields,
@@ -43,7 +43,8 @@ type CommandInfo = HasName & HasFields
 
 const run = async (name: string, rawFields: Array<string>): Promise<void> =>
   Script.init(`boost ${Brand.energize('new:command')} 🚧`, joinParsers(parseName(name), parseFields(rawFields)))
-    .step('creating new command', generateCommand)
+    .step('Verifying project', checkItIsABoosterProject)
+    .step('Creating new command', generateCommand)
     .info('Command generated!')
     .done()
 

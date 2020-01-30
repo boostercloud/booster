@@ -12,7 +12,7 @@ import {
   ImportDeclaration,
 } from '../../services/generator/target'
 import * as path from 'path'
-import { generate } from '../../services/generator'
+import { generate, checkItIsABoosterProject } from '../../services/generator'
 import { templates } from '../../templates'
 
 export default class Entity extends Oclif.Command {
@@ -54,7 +54,8 @@ const run = async (name: string, rawFields: Array<string>, rawEvents: Array<stri
     `boost ${Brand.energize('new:entity')} 🚧`,
     joinParsers(parseName(name), parseFields(rawFields), parseReaction(rawEvents))
   )
-    .step('creating new entity', generateEntity)
+    .step('Verifying project', checkItIsABoosterProject)
+    .step('Creating new entity', generateEntity)
     .info('Entity generated!')
     .done()
 
