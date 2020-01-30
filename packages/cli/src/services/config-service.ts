@@ -13,7 +13,7 @@ export async function compileProjectAndLoadConfig(): Promise<BoosterConfig> {
 
 async function compileProject(projectPath: string): Promise<void> {
   try {
-    await exec(`cd ${projectPath} && npm run compile`)
+    await exec(`cd "${projectPath}" && npm run compile`)
   } catch (e) {
     throw wrapExecError(e, 'Project contains compilation errors')
   }

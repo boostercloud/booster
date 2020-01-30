@@ -17,7 +17,7 @@ export async function generateConfigFiles(config: ProjectInitializerConfig): Pro
 
 export async function installDependencies(config: ProjectInitializerConfig): Promise<void> {
   try {
-    await exec(`cd ${projectDir(config)} && yarn install`)
+    await exec(`cd "${projectDir(config)}" && yarn install`)
   } catch (e) {
     throw wrapExecError(e, 'Could not install dependencies')
   }
