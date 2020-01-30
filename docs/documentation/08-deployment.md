@@ -7,7 +7,6 @@ all cloud providers. (**Contributions are welcome!** 😜)
 
 ## Configure your provider credentials
 
-Booster uses your cloud provider's SDK. Make sure it is properly configured.
 
 In the case of AWS, it is required that your `~/.aws/credentials` are properly setup, and a `region` attribute is specified. To do that you could [install the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) and run `aws configure`, but creating a `~/.aws/credentials` file with your AWS credentials should be enough:
 

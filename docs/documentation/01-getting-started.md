@@ -16,7 +16,7 @@ Let's install the Booster CLI and bootstrap your first project:
 
 3. Go to your new project folder (`cd <name of your project>`) to see the project structure. You'll see something like this:
 
-    ```
+    ```text
     $ tree
     .
     |____package.json

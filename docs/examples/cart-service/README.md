@@ -4,7 +4,7 @@ In this example we will be creating a cart service that will be able to handle v
 10 minutes using Booster code generators. You don't need to use the generators and can write the code by yourself, but
 they can save you some time and are specially useful when you are getting familiar with the Booster concepts.
 
-The following steps are a transcript and simplification of demo that was presented in the Serverlessconf New York 2019:
+The following steps are a transcript and simplification of the demo that was presented in the Serverlessconf New York 2019:
 _[What Comes after Serverless? Less "Servers" and More "Less"!](https://acloud.guru/series/serverlessconf-nyc-2019/view/after-serverless)_.
 
 You can follow the steps or watch the following video:

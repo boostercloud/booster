@@ -17,7 +17,7 @@ Examples of entities are:
 To create an entity... You guessed it! We use the `boost` tool:
 
 ```shell script
-boost new:entity <name of the entity> --fields fieldName:fieldType --reactsTo EventOne EventTwo EventThree
+boost new:entity <name of the entity> --fields fieldName:fieldType --reduces EventOne EventTwo EventThree
 ```
 
 Booster will generate a class for you in the `src/entities` folder:
@@ -44,7 +44,7 @@ All projection functions receive:
 - The event
 - A possible previous state (note the `?` meaning that there could be no previous state. i.e. when the app is just starting)
 
-And it **always** must return a new entity. This function **must be pure**, which means that it cannot perform any side effects. Only create a new object based on some conditions on the input data, and then return it.
+And it **always** must return a new entity. This function **must be pure**, which means that it cannot perform any side effects, only create a new object based on some conditions on the input data, and then return it.
 
 ## Reading Entity "state"
 
@@ -60,7 +60,7 @@ export class MoveStock {
   public handle(register: Register): void {
     const productStock = fetchEntitySnapshot('ProductStock', this.productSKU)
 
-    if (stock.locations[this.fromLocationId].count >= this.quantity) {
+    if (productStock.locations[this.fromLocationId].count >= this.quantity) {
       // Enough stock, we confirm the movement
       register.events(new StockMovement(this.productSKU, this.fromLocationId, this.toLocationID, quantity))
     } else {

@@ -2,9 +2,9 @@
 
 ![Booster architecture](../img/booster-arch.png)
 
-Commands and Command Handlers define the **Write** API of your application (highlighted in yellow in the diagram). Commands are objects that are sent to the `/commands` endpoint.
+Commands and Command Handlers define the **write** API of your application (highlighted in yellow in the diagram). Commands are objects that are sent to the `/commands` endpoint.
 
-Instead of a controller, like in a traditional architecture like [MVC](https://www.martinfowler.com/eaaCatalog/modelViewController.html), you define a _Handler_ method, which will be in charge of processing the command, calling any third-party services, performing side-effects, and finally, registering [events](#events).
+Instead of a controller, like in a traditional architecture like [MVC](https://www.martinfowler.com/eaaCatalog/modelViewController.html), you define a _Handler_ method, which will be in charge of processing the command, calling any third-party services, performing side-effects, and finally, registering [events](04-events.md).
 
 > **Note:** Event registration is not mandatory, but we **strongly** recommend registering at least one event for any possible final state, even in the case of a failure, to make your application activity easier to trace and debug.
 
