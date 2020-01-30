@@ -1,7 +1,5 @@
 export const template = `{{#imports}}
-import { {{#componentNames}}
-  {{.}},{{/componentNames}}
-} from '{{{packagePath}}}'
+import { {{commaSeparatedComponents}} } from '{{{packagePath}}}'
 {{/imports}}
 
 @Event

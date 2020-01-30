@@ -25,5 +25,5 @@ export interface HasImports {
 
 export interface ImportDeclaration {
   packagePath: string
-  componentNames: Array<string>
+  commaSeparatedComponents: string
 }

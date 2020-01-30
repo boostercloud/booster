@@ -1,5 +1,6 @@
-export const template = `import { Entity, ReactsTo } from '@boostercloud/framework-core'
-import { UUID } from '@boostercloud/framework-types'
+export const template = `{{#imports}}
+import { {{commaSeparatedComponents}} } from '{{{packagePath}}}'
+{{/imports}}
 
 @Entity
 export class {{{name}}} {
@@ -11,7 +12,7 @@ export class {{{name}}} {
   ) {}
 
   {{#events}}
-  @ReactsTo({{{eventName}}})
+  @Reduces({{{eventName}}})
   public static project{{{eventName}}}(event: {{{eventName}}}, current{{{name}}}?: {{{name}}}): {{{name}}} {
     return /* NEW {{name}} HERE */
   }

@@ -59,11 +59,11 @@ function generateImports(info: CommandInfo): Array<ImportDeclaration> {
   return [
     {
       packagePath: '@boostercloud/framework-core',
-      componentNames: ['Command'],
+      commaSeparatedComponents: 'Command',
     },
     {
       packagePath: '@boostercloud/framework-types',
-      componentNames: componentsFromBoosterTypes,
+      commaSeparatedComponents: componentsFromBoosterTypes.join(', '),
     },
   ]
 }

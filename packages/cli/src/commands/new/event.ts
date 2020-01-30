@@ -51,11 +51,11 @@ function generateImports(): Array<ImportDeclaration> {
   return [
     {
       packagePath: '@boostercloud/framework-core',
-      componentNames: ['Event'],
+      commaSeparatedComponents: 'Event',
     },
     {
       packagePath: '@boostercloud/framework-types',
-      componentNames: ['UUID'],
+      commaSeparatedComponents: 'UUID',
     },
   ]
 }

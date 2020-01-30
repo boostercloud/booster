@@ -9,6 +9,7 @@ import {
   parseName,
   parseFields,
   parseReaction,
+  ImportDeclaration,
 } from '../../services/generator/target'
 import * as path from 'path'
 import { generate } from '../../services/generator'
@@ -57,6 +58,25 @@ const run = async (name: string, rawFields: Array<string>, rawEvents: Array<stri
     .info('Entity generated!')
     .done()
 
+function generateImports(info: EntityInfo): Array<ImportDeclaration> {
+  const eventsImports: Array<ImportDeclaration> = info.events.map((eventData) => ({
+    packagePath: `../events/${eventData.eventName}`,
+    commaSeparatedComponents: eventData.eventName,
+  }))
+
+  return [
+    {
+      packagePath: '@boostercloud/framework-core',
+      commaSeparatedComponents: 'Entity, Reduces',
+    },
+    {
+      packagePath: '@boostercloud/framework-types',
+      commaSeparatedComponents: 'UUID',
+    },
+    ...eventsImports,
+  ]
+}
+
 const generateEntity = (info: EntityInfo): Promise<void> =>
   generate({
     name: info.name,
@@ -64,7 +84,7 @@ const generateEntity = (info: EntityInfo): Promise<void> =>
     placementDir: path.join('src', 'entities'),
     template: templates.entity,
     info: {
-      imports: [],
+      imports: generateImports(info),
       ...info,
     },
   })
