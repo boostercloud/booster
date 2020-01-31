@@ -12,8 +12,9 @@ import {
   ImportDeclaration,
 } from '../../services/generator/target'
 import * as path from 'path'
-import { generate, checkItIsABoosterProject } from '../../services/generator'
+import { generate } from '../../services/generator'
 import { templates } from '../../templates'
+import { checkItIsABoosterProject } from "../../services/project-checker";
 
 export default class Entity extends Oclif.Command {
   public static description = 'create a new entity'

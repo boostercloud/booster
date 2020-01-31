@@ -3,8 +3,9 @@ import { Script } from '../../common/script'
 import Brand from '../../common/brand'
 import { HasFields, HasName, joinParsers, parseName, parseFields } from '../../services/generator/target'
 import { templates } from '../../templates'
-import { generate, checkItIsABoosterProject } from '../../services/generator'
+import { generate } from '../../services/generator'
 import * as path from 'path'
+import { checkItIsABoosterProject } from "../../services/project-checker";
 
 export default class Type extends Oclif.Command {
   public static description = 'create a new type'

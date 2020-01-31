@@ -1,7 +1,7 @@
 import * as Oclif from '@oclif/command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
-import { generate, checkItIsABoosterProject } from '../../services/generator'
+import { generate } from '../../services/generator'
 import {
   HasName,
   HasFields,
@@ -12,6 +12,7 @@ import {
 } from '../../services/generator/target'
 import * as path from 'path'
 import { templates } from '../../templates'
+import { checkItIsABoosterProject } from "../../services/project-checker";
 
 export default class Command extends Oclif.Command {
   public static description = 'create a new command'
