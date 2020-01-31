@@ -67,7 +67,7 @@ The code of the event should be something like this:
 export class CartChanged {
   public constructor(
     readonly cartId: UUID,
-    readonly productId: UUID,
+    readonly sku: string,
     readonly quantity: number
   ) {}
 
@@ -79,7 +79,7 @@ export class CartChanged {
 6. The only piece that is remaining is to create the Cart entity. It will project all the cart-related events to build
 the current state of our cart. To create it, we can use another generator:
 ```shell script
-boost new:entity Cart --fields "items:Array<CartItem>" --projects CartChanged
+boost new:entity Cart --fields "items:Array<CartItem>" --reduces CartChanged
 ```
 As you can see, our cart is just an array of cart item objects. The type `CartItem` is missing, but we will create it
 manually in the Cart entity file. You can also use the type generator `boost new:type` if you prefer. Types generated like that
@@ -93,7 +93,7 @@ the code of the Entity class would be like this:
 // This is the CartItem type. As said, it is an auxiliary type that's only used from within Cart objects, so there's no
 // need to export it
 interface CartItem {
-  productId: UUID
+  sku: string
   quantity: number
 }
 
@@ -111,7 +111,7 @@ export class Cart {
       // In this case, we just add the new item.
       return new Cart(
         currentCart.id,
-        Cart.newItems(currentCart.items, event.sku, event.quantity)
+        Cart.newItems(currentCart.cartItems, event.sku, event.quantity)
       )
     } else {
       // If there wasn't any previous Cart, we return one with the new item in it
