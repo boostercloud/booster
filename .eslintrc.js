@@ -20,7 +20,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2018,
     sourceType: 'module',
-    project: './tsconfig.json',
+    project: 'tsconfig.eslint.json',
   },
   rules: {
     indent: ['error', 2, { SwitchCase: 1 }],
