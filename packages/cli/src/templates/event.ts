@@ -1,5 +1,6 @@
-export const template = `import { Event } from '@boostercloud/framework-core'
-import { UUID } from '@boostercloud/framework-types'
+export const template = `{{#imports}}
+import { {{commaSeparatedComponents}} } from '{{{packagePath}}}'
+{{/imports}}
 
 @Event
 export class {{{ name }}} {

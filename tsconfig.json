@@ -4,8 +4,6 @@
     "declaration": true,
     "importHelpers": true,
     "module": "commonjs",
-    "outDir": "dist",
-    "rootDir": "src",
     "strict": true,
     "target": "es2017",
     "noImplicitReturns": true,
@@ -15,8 +13,5 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true
-  },
-  "include": [
-    "src/**/*"
-  ]
+  }
 }

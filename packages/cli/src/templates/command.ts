@@ -1,5 +1,6 @@
-export const template = `import { Command } from '@boostercloud/framework-core'
-import { Register } from '@boostercloud/framework-types'
+export const template = `{{#imports}}
+import { {{commaSeparatedComponents}} } from '{{{packagePath}}}'
+{{/imports}}
 
 @Command({
   authorize: // Specify authorized roles here. Use 'all' to authorize anyone 

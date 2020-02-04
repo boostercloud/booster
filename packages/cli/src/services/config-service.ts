@@ -2,17 +2,21 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import * as path from 'path'
 import { exec } from 'child-process-promise'
 import { wrapExecError } from '../common/errors'
+import { checkItIsABoosterProject } from "./project-checker";
+import { withinWorkingDirectory } from "./executor-service";
 
 export async function compileProjectAndLoadConfig(): Promise<BoosterConfig> {
   const userProjectPath = process.cwd()
-
+  await checkItIsABoosterProject()
   await compileProject(userProjectPath)
   return readProjectConfig(userProjectPath)
 }
 
 async function compileProject(projectPath: string): Promise<void> {
   try {
-    await exec(`cd ${projectPath} && npm run compile`)
+    await withinWorkingDirectory(projectPath, () => {
+      return exec('npm run compile')
+    })
   } catch (e) {
     throw wrapExecError(e, 'Project contains compilation errors')
   }

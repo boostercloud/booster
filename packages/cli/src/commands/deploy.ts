@@ -24,7 +24,6 @@ const runTasks = async (
         })
     )
     .info('Deployment complete!')
-    .catch('SyntaxError', () => 'Unable to load project configuration. Are you in a booster project?')
     .done()
 
 export default class Deploy extends Command {

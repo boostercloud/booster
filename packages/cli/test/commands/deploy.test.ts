@@ -34,12 +34,12 @@ describe('deploy', () => {
 
     context('when index.ts structure is not correct', () => {
       fancy.stdout().it('fails gracefully', async (ctx) => {
-        const fakeLoader = Promise.reject(new SyntaxError())
+        const fakeLoader = Promise.reject(new Error('An error when loading project'))
         const fakeDeployer = stub()
 
         await runTasks(fakeLoader, fakeDeployer)
 
-        expect(ctx.stdout).to.include('Unable to load project configuration')
+        expect(ctx.stdout).to.include('An error when loading project')
 
         expect(fakeDeployer.called).to.equal(false)
       })

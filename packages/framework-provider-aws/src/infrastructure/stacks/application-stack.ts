@@ -41,21 +41,6 @@ function setupPermissions(
   eventsStore: dynamodb.Table,
   eventsLambda: Function
 ): void {
-  const tableArns = readModelTables.map((table): string => table.tableArn)
-
-  readModelFetcherLambda.addToRolePolicy(
-    new PolicyStatement({
-      actions: ['dynamodb:Get*', 'dynamodb:Scan*'],
-      resources: tableArns,
-    })
-  )
-  eventsLambda.addToRolePolicy(
-    new PolicyStatement({
-      actions: ['dynamodb:Get*', 'dynamodb:Put*'],
-      resources: tableArns,
-    })
-  )
-
   // The command dispatcher can send events to the event stream
   commandsLambda.addToRolePolicy(
     new PolicyStatement({
@@ -72,10 +57,26 @@ function setupPermissions(
       actions: ['dynamodb:Query*', 'dynamodb:Put*'],
     })
   )
-  readModelsLambda.addToRolePolicy(
-    new PolicyStatement({
-      actions: ['dynamodb:Put*'],
-      resources: tableArns,
-    })
-  )
+
+  const tableArns = readModelTables.map((table): string => table.tableArn)
+  if (tableArns.length > 0) {
+    readModelFetcherLambda.addToRolePolicy(
+      new PolicyStatement({
+        actions: ['dynamodb:Get*', 'dynamodb:Scan*'],
+        resources: tableArns,
+      })
+    )
+    eventsLambda.addToRolePolicy(
+      new PolicyStatement({
+        actions: ['dynamodb:Get*', 'dynamodb:Put*'],
+        resources: tableArns,
+      })
+    )
+    readModelsLambda.addToRolePolicy(
+      new PolicyStatement({
+        actions: ['dynamodb:Put*'],
+        resources: tableArns,
+      })
+    )
+  }
 }

@@ -2,9 +2,17 @@ import * as Oclif from '@oclif/command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
 import { generate } from '../../services/generator'
-import { HasName, HasFields, joinParsers, parseName, parseFields } from '../../services/generator/target'
+import {
+  HasName,
+  HasFields,
+  joinParsers,
+  parseName,
+  parseFields,
+  ImportDeclaration,
+} from '../../services/generator/target'
 import * as path from 'path'
 import { templates } from '../../templates'
+import { checkItIsABoosterProject } from "../../services/project-checker";
 
 export default class Command extends Oclif.Command {
   public static description = 'create a new command'
@@ -36,9 +44,31 @@ type CommandInfo = HasName & HasFields
 
 const run = async (name: string, rawFields: Array<string>): Promise<void> =>
   Script.init(`boost ${Brand.energize('new:command')} 🚧`, joinParsers(parseName(name), parseFields(rawFields)))
-    .step('creating new command', generateCommand)
+    .step('Verifying project', checkItIsABoosterProject)
+    .step('Creating new command', generateCommand)
     .info('Command generated!')
     .done()
+
+function generateImports(info: CommandInfo): Array<ImportDeclaration> {
+  const commandFieldTypes = info.fields.map((f) => f.type)
+  const commandUsesUUID = commandFieldTypes.some((type) => type == 'UUID')
+
+  const componentsFromBoosterTypes = ['Register']
+  if (commandUsesUUID) {
+    componentsFromBoosterTypes.push('UUID')
+  }
+
+  return [
+    {
+      packagePath: '@boostercloud/framework-core',
+      commaSeparatedComponents: 'Command',
+    },
+    {
+      packagePath: '@boostercloud/framework-types',
+      commaSeparatedComponents: componentsFromBoosterTypes.join(', '),
+    },
+  ]
+}
 
 const generateCommand = (info: CommandInfo): Promise<void> =>
   generate({
@@ -46,5 +76,8 @@ const generateCommand = (info: CommandInfo): Promise<void> =>
     extension: '.ts',
     placementDir: path.join('src', 'commands'),
     template: templates.command,
-    info,
+    info: {
+      imports: generateImports(info),
+      ...info,
+    },
   })

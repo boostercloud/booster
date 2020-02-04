@@ -1,10 +1,18 @@
 import * as Oclif from '@oclif/command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
-import { HasName, HasFields, joinParsers, parseName, parseFields } from '../../services/generator/target'
+import {
+  HasName,
+  HasFields,
+  joinParsers,
+  parseName,
+  parseFields,
+  ImportDeclaration,
+} from '../../services/generator/target'
 import { generate } from '../../services/generator'
 import * as path from 'path'
 import { templates } from '../../templates'
+import { checkItIsABoosterProject } from "../../services/project-checker";
 
 export default class Event extends Oclif.Command {
   public static description = 'create a new event'
@@ -36,9 +44,23 @@ type EventInfo = HasName & HasFields
 
 const run = async (name: string, rawFields: Array<string>): Promise<void> =>
   Script.init(`boost ${Brand.energize('new:event')} 🚧`, joinParsers(parseName(name), parseFields(rawFields)))
+    .step('Verifying project', checkItIsABoosterProject)
     .step('creating new event', generateEvent)
     .info('Event generated!')
     .done()
+
+function generateImports(): Array<ImportDeclaration> {
+  return [
+    {
+      packagePath: '@boostercloud/framework-core',
+      commaSeparatedComponents: 'Event',
+    },
+    {
+      packagePath: '@boostercloud/framework-types',
+      commaSeparatedComponents: 'UUID',
+    },
+  ]
+}
 
 const generateEvent = (info: EventInfo): Promise<void> =>
   generate({
@@ -46,5 +68,8 @@ const generateEvent = (info: EventInfo): Promise<void> =>
     extension: '.ts',
     placementDir: path.join('src', 'events'),
     template: templates.event,
-    info,
+    info: {
+      imports: generateImports(),
+      ...info,
+    },
   })
