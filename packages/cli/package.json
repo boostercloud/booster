@@ -1,7 +1,7 @@
 {
   "name": "@boostercloud/cli",
   "description": "CLI of the Booster Cloud Framework, the next level of abstraction for cloud-native applications",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
   "publishConfig": {
@@ -12,8 +12,8 @@
   },
   "bugs": "https://github.com/boostercloud/booster/issues",
   "dependencies": {
-    "@boostercloud/framework-core": "^0.1.1",
-    "@boostercloud/framework-types": "^0.1.1",
+    "@boostercloud/framework-core": "^0.1.2",
+    "@boostercloud/framework-types": "^0.1.2",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^2",
@@ -36,8 +36,8 @@
     "@types/fs-extra": "^8.0.0",
     "@types/inquirer": "^6.5.0",
     "@types/mustache": "^0.8.32",
-    "rewire": "^4.0.1",
-    "@types/rewire": "^2.5.28"
+    "@types/rewire": "^2.5.28",
+    "rewire": "^4.0.1"
   },
   "engines": {
     "node": ">=8.0.0"
