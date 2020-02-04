@@ -16,6 +16,11 @@ export function assertNameIsCorrect(name: string): void {
     throw new Error(`Project name cannot contain spaces:
 
     Found: '${name}'`)
+
+  if (name.toLowerCase() != name)
+    throw new Error(`Project name cannot contain uppercase letters:
+
+    Found: '${name}'`)
 }
 
 export const deployToCloudProvider = (configuration: BoosterConfig): Observable<string> => {
