@@ -10,6 +10,7 @@ import * as packageJson from '../templates/project/package-json'
 import * as configTs from '../templates/project/config-ts'
 import * as indexTs from '../templates/project/index-ts'
 import { wrapExecError } from '../common/errors'
+import { withinWorkingDirectory } from "./executor-service";
 
 export async function generateConfigFiles(config: ProjectInitializerConfig): Promise<void> {
   await Promise.all(filesToGenerate.map(renderToFile(config)))
@@ -17,7 +18,9 @@ export async function generateConfigFiles(config: ProjectInitializerConfig): Pro
 
 export async function installDependencies(config: ProjectInitializerConfig): Promise<void> {
   try {
-    await exec(`cd "${projectDir(config)}" && yarn install`)
+    await withinWorkingDirectory(projectDir(config), () => {
+      return exec('npm install')
+    })
   } catch (e) {
     throw wrapExecError(e, 'Could not install dependencies')
   }
