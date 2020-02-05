@@ -61,7 +61,8 @@ This API consists of three endpoints ([see the API documentation](09-rest-api.md
   Only roles with the attribute `allowSelfSignUp: true` can be specified upon sign-up. After calling this endpoint, the
   registration is not yet finished. Users need to confirm their emails by clicking in the link that will be sent to their
   inbox. 
-  ![Confirmation email](../img/sign-up-verificaiton-email.png) ![Email confirmed](../img/sign-up-confirmed.png)
+  
+![Confirmation email](../img/sign-up-verificaiton-email.png) ![Email confirmed](../img/sign-up-confirmed.png)
 - `/auth/sign-in`: This endpoint creates a session for an already registered user, returning an access token that
   can be used to access role-protected resources (like Commands)
 - `/auth/sign-out`: Users can call this endpoint to finish the session.
