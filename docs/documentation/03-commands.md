@@ -2,7 +2,17 @@
 
 ![Booster architecture](../img/booster-arch.png)
 
-Commands and Command Handlers define the **write** API of your application (highlighted in yellow in the diagram). Commands are objects that are sent to the `/commands` endpoint.
+Commands and Command Handlers define the **write** API of your application (highlighted in yellow in the diagram). Commands are objects that are sent to the `/commands` endpoint. The request should look more or less like this:
+
+```json
+{
+  "typeName": "CreateCart"  // name of the command class
+  "value": {
+  "cartId": "aaaa",         // contents of the fields of the class
+    ...
+  }
+}
+```
 
 Instead of a controller, like in a traditional architecture like [MVC](https://www.martinfowler.com/eaaCatalog/modelViewController.html), you define a _Handler_ method, which will be in charge of processing the command, calling any third-party services, performing side-effects, and finally, registering [events](04-events.md).
 
