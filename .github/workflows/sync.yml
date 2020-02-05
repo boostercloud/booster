@@ -1,0 +1,19 @@
+name: Sync
+on:
+  push:
+    branches:
+      - 'master'
+    paths-ignore:
+      - '**.md'
+jobs:
+  repo-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: repo-sync
+        uses: repo-sync/github-sync@v2
+        with:
+          source_repo: 'git@github.com:boostercloud/booster.git'
+          source_branch: 'master'
+          destination_branch: 'master-mirror'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
