@@ -5,15 +5,18 @@ on:
       - 'master'
     paths-ignore:
       - '**.md'
+
 jobs:
   repo-sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
       - name: repo-sync
-        uses: repo-sync/github-sync@v2
+        uses: wei/git-sync@v1
+        env:
+          SOURCE_REPO: 'git@github.com:boostercloud/booster.git'
+          SOURCE_BRANCH: 'master'
+          DESTINATION_REPO: 'git@github.com:theam/booster.git'
+          DESTINATION_BRANCH: 'master-mirror'
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         with:
-          source_repo: 'git@github.com:boostercloud/booster.git'
-          source_branch: 'master'
-          destination_branch: 'master-mirror'
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          args: $SOURCE_REPO $SOURCE_BRANCH $DESTINATION_REPO $DESTINATION_BRANCH
