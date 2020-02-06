@@ -6,21 +6,18 @@ This document is a set of guidelines to help you contribute to Booster, which is
 organization. These aren’t absolute laws, use your judgment and common sense 😀.
 Remember that if something here doesn’t make sense, you can propose a change to this document also.
 
-<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
-
-**Table of Contents**
-
-- [Contributing to Booster](#contributing-to-booster)
-  - [Code of Conduct](#code-of-conduct)
-  - [I don't want to read this whole thing, I just have a question!!!](#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
-  - [What should I know before I get started?](#what-should-i-know-before-i-get-started)
-    - [Packages](#packages)
-  - [How Can I Contribute?](#how-can-i-contribute)
-    - [Reporting Bugs](#reporting-bugs)
-    - [Suggesting Enhancements](#suggesting-enhancements)
-  - [Your First Code Contribution](#your-first-code-contribution)
-
-<!-- markdown-toc end -->
+- [Code of Conduct](#code-of-conduct)
+- [I don't want to read this whole thing, I just have a question!!!](#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
+- [What should I know before I get started?](#what-should-i-know-before-i-get-started)
+  - [Packages](#packages)
+- [How Can I Contribute?](#how-can-i-contribute)
+  - [Reporting Bugs](#reporting-bugs)
+  - [Suggesting Enhancements](#suggesting-enhancements)
+- [Your First Code Contribution](#your-first-code-contribution)
+- [Commit message guidelines](#commit-message-guidelines)
+  - [Commit types](#commit-types)
+  - [Scopes](#scopes)
+  - [Note for maintainers](#note-for-maintainers)
 
 ## Code of Conduct
 
@@ -86,3 +83,52 @@ Unsure where to begin contributing to Booster? You can start by looking through 
 - Help wanted issues - issues which should be a bit more involved than beginner issues.
 
 Both issue lists are sorted by the total number of comments. While not perfect, number of comments is a reasonable proxy for impact a given change will have.
+
+## Commit message guidelines
+
+The commit message should be structured as follows:
+
+```text
+<type>([optional scope]): <description>
+```
+
+As an example:
+
+```text
+fix(cli): Correct minor typos in code
+```
+
+The most important types of commits are the following, as they trigger version bumps in the CI/CD system:
+
+- `fix` - patch version bump (`0.0.x`)
+- `feat` - minor version bump (`0.x.0`)
+- Any commit type followed by `!`, i.e. `feat!` - major version bump (`x.0.0`)
+
+### Commit types
+
+Apart from those previously mentioned, there are more commit types:
+
+- **build**: Changes that affect the build system or external dependencies (example scopes: lerna, tsconfig, yarn)
+- **ci**: Changes to our CI configuration files and scripts
+- **docs**: Documentation only changes
+- **feat**: A new feature
+- **fix**: A bug fix
+- **perf**: A code change that improves performance
+- **refactor**: A code change that neither fixes a bug nor adds a feature
+- **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+- **test**: Adding missing tests or correcting existing tests
+
+### Scopes
+
+There are several scopes in the project:
+
+- **cli**
+- **core**
+- **types**
+- **example**
+- **aws**
+- **local**
+
+### Note for maintainers
+
+If you happen to be a maintainer of the project, all PRs must be _**Squash and merged**_, the merge commit should adhere to the [Conventional Commits standard](https://www.conventionalcommits.org/en/v1.0.0/). TL;DR:
