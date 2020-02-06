@@ -32,16 +32,16 @@ Body:
 
 ### Get a list
 
-`GET https://<baseURL>/read-models/<read model class name>`
+`GET https://<baseURL>/readmodels/<read model class name>`
 
 Example:
 
-`GET https://<baseURL>/read-models/CartReadModel`
+`GET https://<baseURL>/readmodels/CartReadModel`
 
 ### Get a specific read model
 
-`GET https://<baseURL>/read-models/<read model class name>/<read model ID>`
+`GET https://<baseURL>/readmodels/<read model class name>/<read model ID>`
 
 Example:
 
-`GET https://<baseURL>/read-models/CartReadModel/42`
+`GET https://<baseURL>/readmodels/CartReadModel/42`
