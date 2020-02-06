@@ -15,7 +15,7 @@ jobs:
         env:
           SOURCE_REPO: 'git@github.com:boostercloud/booster.git'
           SOURCE_BRANCH: 'master'
-          DESTINATION_REPO: 'git@github.com:theam/booster.git'
+          DESTINATION_REPO: ${{ secrets.SYNC_REPO }}
           DESTINATION_BRANCH: 'master-mirror'
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         with:
