@@ -20,15 +20,15 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@aws-cdk/aws-apigateway": "^1.17.1",
-    "@aws-cdk/aws-cognito": "^1.17.1",
-    "@aws-cdk/aws-dynamodb": "^1.17.1",
-    "@aws-cdk/aws-iam": "^1.17.1",
-    "@aws-cdk/aws-kinesis": "^1.17.1",
-    "@aws-cdk/aws-lambda": "^1.17.1",
-    "@aws-cdk/aws-lambda-event-sources": "^1.17.1",
+    "@aws-cdk/aws-apigateway": "^1.22.0",
+    "@aws-cdk/aws-cognito": "^1.22.0",
+    "@aws-cdk/aws-dynamodb": "^1.22.0",
+    "@aws-cdk/aws-iam": "^1.22.0",
+    "@aws-cdk/aws-kinesis": "^1.22.0",
+    "@aws-cdk/aws-lambda": "^1.22.0",
+    "@aws-cdk/aws-lambda-event-sources": "^1.22.0",
     "@boostercloud/framework-types": "^0.1.3",
-    "aws-cdk": "^1.17.1",
+    "aws-cdk": "^1.22.0",
     "aws-sdk": "^2.514.0"
   },
   "scripts": {
