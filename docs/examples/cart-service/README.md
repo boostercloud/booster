@@ -106,7 +106,7 @@ interface CartItem {
 export class Cart {
   public constructor(
     readonly id: UUID, // This field is added automatically. Every entity decorated with "@Entity" must have this field
-    readonly cartItems: Array<CartItem>
+    readonly items: Array<CartItem>
   ) {}
 
   @Projects(CartChanged)
