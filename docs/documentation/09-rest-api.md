@@ -9,7 +9,7 @@ when doing requests to the API. Those values are:
 - `baseURL`: This is the base URL for all your endpoints
 - `clientID`: Needed for authentication/authorization endpoints. This is only shown if there are roles defined in your app.
 
-The only remaining thing you need to know is that the `Content-Type` for all requests is `application/json`.
+Note that the `Content-Type` for all requests is `application/json`.
 
 ## Authentication and Authorization API
 
