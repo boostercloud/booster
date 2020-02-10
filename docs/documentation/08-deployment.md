@@ -8,7 +8,7 @@ all cloud providers. (**Contributions are welcome!** 😜)
 ## Configure your provider credentials
 
 
-In the case of AWS, it is required that your `~/.aws/credentials` are properly setup, and a `region` attribute is specified. To do that you could [install the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) and run `aws configure`, but creating a `~/.aws/credentials` file with your AWS credentials should be enough:
+In the case of AWS, it is required that your `~/.aws/credentials` are properly setup, and a `region` attribute is specified. If you have the [AWS CLI installed](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html), you can create the config file by running the command `aws configure`, but that is completely optional, **AWS CLI is not required to run booster**. Creating a plain text file manually named `~/.aws/credentials` with the following content will be enough:
 
 ```shell script
 [default]
