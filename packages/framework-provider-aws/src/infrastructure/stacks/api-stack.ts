@@ -1,5 +1,5 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { Stack } from '@aws-cdk/core'
+import { CfnOutput, Stack } from '@aws-cdk/core'
 import { AwsIntegration, LambdaIntegration, PassthroughBehavior, RestApi } from '@aws-cdk/aws-apigateway'
 import { Code, Function } from '@aws-cdk/aws-lambda'
 import * as params from '../params'
@@ -16,7 +16,8 @@ export class ApiStack {
   public constructor(private readonly config: BoosterConfig, private readonly stack: Stack) {}
 
   public build(): ApiStackMembers {
-    const rootApi = new RestApi(this.stack, this.config.resourceNames.applicationStack + '-api')
+    const rootApi = this.buildRootApi()
+
     if (this.config.thereAreRoles) {
       this.buildAuthApi(rootApi)
     }
@@ -28,6 +29,17 @@ export class ApiStack {
       commandsLambda,
       readModelFetcherLambda,
     }
+  }
+
+  private buildRootApi(): RestApi {
+    const rootApi = new RestApi(this.stack, this.config.resourceNames.applicationStack + '-api')
+
+    new CfnOutput(this.stack, 'baseURL', {
+      value: rootApi.url,
+      description: 'The base URL for all the endpoints of your application',
+    })
+
+    return rootApi
   }
 
   private buildAuthApi(rootApi: RestApi): void {

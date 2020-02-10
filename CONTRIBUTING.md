@@ -19,6 +19,7 @@ Remember that if something here doesn’t make sense, you can propose a change t
   - [Scopes](#scopes)
   - [Note for maintainers](#note-for-maintainers)
 
+
 ## Code of Conduct
 
 This project and everyone participating in it are expected to uphold the Berlin Code of Conduct.
