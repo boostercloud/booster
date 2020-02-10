@@ -21,6 +21,7 @@ boost new:project cart-demo
 ```
 It will ask you some questions to fill some basic information about your project. If you don't want to answer them now,
 you can just hit enter.
+
 2. Go inside the project folder and create a new command called "ChangeCart". It will allow us to modify the cart and add items to it:
 ```shell script
 cd cart-demo
@@ -30,10 +31,12 @@ As you can see we have created it with three fields:
 * **cartID**: This holds the ID of the cart we want to modify. Its type is `UUID`, which is a special type provided by Booster. All IDs should be of this type
 * **sku**: This is the SKU of the item we want add to the cart. It is a common kind of identifier used in commerces to refer to a specific item.
 * **quantity**: The amount of units of the item to add
+
 3. Create an event that will register the modifications we will do to a cart:
 ```shell script
 boost new:event CartChanged --fields cartId:UUID sku:string quantity:number
 ```
+
 4. Now we need to create the business logic for our command. In this case, it is really simple, as the only thing we need
 to do is to register an event (the one we created in the previous step) that represent the addition of an item to a cart.
 This could be seen as an equivalent action to a database commit.
@@ -56,6 +59,7 @@ export class ChangeCart {
   }
 }
 ```
+
 5. Open your CartChanged event file and fill the body of the method `entityId()`. In Booster all the events are related to
 a specific entity instance which, in our case, is the Cart. Therefore, the only thing we need to do is to return the `cartId`
 field that our event already has.
@@ -76,7 +80,8 @@ export class CartChanged {
   }
 }
 ```
-6. The only piece that is remaining is to create the Cart entity. It will project all the cart-related events to build
+
+6. Next, we will create the Cart entity. It will project all the cart-related events to build
 the current state of our cart. To create it, we can use another generator:
 ```shell script
 boost new:entity Cart --fields "items:Array<CartItem>" --reduces CartChanged
@@ -85,7 +90,7 @@ As you can see, our cart is just an array of cart item objects. The type `CartIt
 manually in the Cart entity file. You can also use the type generator `boost new:type` if you prefer. Types generated like that
 will be placed in the `common/` folder.
 
-7. Finally we need to write the logic that projects the events into a Cart. This is business-dependent. In our case,
+7. Then we need to write the logic that projects the events into a Cart. This is business-dependent. In our case,
 the code of the Entity class would be like this:
 ```typescript
 // ... imports here ...
@@ -101,7 +106,7 @@ interface CartItem {
 export class Cart {
   public constructor(
     readonly id: UUID, // This field is added automatically. Every entity decorated with "@Entity" must have this field
-    readonly cartItems: Array<CartItem>
+    readonly items: Array<CartItem>
   ) {}
 
   @Projects(CartChanged)
@@ -111,7 +116,7 @@ export class Cart {
       // In this case, we just add the new item.
       return new Cart(
         currentCart.id,
-        Cart.newItems(currentCart.cartItems, event.sku, event.quantity)
+        Cart.newItems(currentCart.items, event.sku, event.quantity)
       )
     } else {
       // If there wasn't any previous Cart, we return one with the new item in it
@@ -134,6 +139,26 @@ export class Cart {
       }
       return {...item}
     })
+  }
+}
+```
+
+8. Finally, we need to define the read model.
+We will create a directory named `read-models` and create a new file under the new directory called `CartReadModel.ts` with the following content
+
+``` typescript
+// ... imports here ...
+
+@ReadModel
+export class CartReadModel {
+  public constructor(
+    readonly id: UUID,
+    readonly items: Array<CartItem>,
+  ) {}
+
+  @Projection(Cart, 'id')
+  public static updateWithCart(cart: Cart, oldCartReadModel?: CartReadModel): CartReadModel {
+    return new CartReadModel(cart.id, cart.items)
   }
 }
 ```
@@ -167,4 +192,39 @@ The meaning of the fields are as follows:
 - **version:** The current version of the command. Don't worry about this now
 - **value:** And here we specify the all the fields we defined in the command when we created it.
 
-TODO: use the read models to define the read API
+Additionally, if you want to retrieve information about the cart, you need to do a **GET request** to the above URL followed by the `readmodels/CartReadModel` segment. A response similar to the one below should be returned:
+```json
+[
+    {
+        "id": "demo-id",
+        "items": [
+            {
+                "sku": "DEMO_123",
+                "quantity": 1
+            }
+        ]
+    },
+    {
+        "id": "demo-id2",
+        "items": [
+            {
+                "sku": "DEMO_123",
+                "quantity": 1
+            }
+        ]
+    }
+]
+```
+
+It is also possible to retrieve a specific cart by providing the cart id as follow, `readmodels/CartReadModel/demo-id`.
+```json
+{
+    "id": "demo-id",
+    "items": [
+        {
+            "sku": "DEMO_123",
+            "quantity": 1
+        }
+    ]
+}
+```
