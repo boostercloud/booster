@@ -10,5 +10,5 @@
 8. [Deployment](08-deployment.md): Deploy your application!
 9. [REST API reference](09-rest-api.md): REST API reference.
 
-You can also visit the [Frequently asked questions (FAQ)](faq.md), where you'll find questions and common issues people 
+You can also visit the [Frequently Asked Questions (FAQ)](faq.md), where you'll find questions and common issues people 
 usually come up with when using Booster
