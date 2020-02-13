@@ -14,6 +14,7 @@
 - [Overview](#overview)
 - [Documentation](#documentation)
 - [Examples](#examples)
+- [Ask the community](#ask-the-community)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -52,6 +53,11 @@ Browse the [Booster Cloud Documentation](docs/documentation) to set up your envi
 ## Examples
 
 Find step-by-step guides and example apps in the [Examples](docs/examples) section.
+
+## Ask the community
+If you have any question that's not covered by the documentation and examples, go ahead and ask the community in 
+the [Booster Cloud Spectrum](https://spectrum.chat/boostercloud).  
+
 
 ## Contributing
 
