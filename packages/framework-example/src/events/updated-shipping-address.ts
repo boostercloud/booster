@@ -6,7 +6,7 @@ import { Address } from '../common/address'
 export class UpdatedShippingAddress {
   public constructor(readonly cartId: UUID, readonly address: Address) {}
 
-  public entityID(): string {
+  public entityID(): UUID {
     return this.cartId
   }
 }
