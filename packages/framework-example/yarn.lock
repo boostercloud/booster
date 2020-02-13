@@ -11,7 +11,7 @@
     "@aws-cdk/cx-api" "1.23.0"
     minimatch "^3.0.4"
 
-"@aws-cdk/aws-apigateway@1.23.0", "@aws-cdk/aws-apigateway@^1.17.1":
+"@aws-cdk/aws-apigateway@1.23.0", "@aws-cdk/aws-apigateway@^1.22.0":
   version "1.23.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/aws-apigateway/-/aws-apigateway-1.23.0.tgz#d248dff556d4c88f6db0d14a51c0c8b7560c43a7"
   integrity sha512-s0WxB4JIlLRGZbE6Wqbxf2hd7y/sckxMz9fmFmP9Fi1DM5O6iTF9mS7P7ek+R5PWN4Kr3jztihVCbwkaL7L22g==
@@ -71,7 +71,7 @@
     "@aws-cdk/aws-iam" "1.23.0"
     "@aws-cdk/core" "1.23.0"
 
-"@aws-cdk/aws-cognito@^1.17.1":
+"@aws-cdk/aws-cognito@^1.22.0":
   version "1.23.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/aws-cognito/-/aws-cognito-1.23.0.tgz#509be3361b276b353b8a6304b943f8e356acfe27"
   integrity sha512-4/jR3d0vNXIeZvaiJS+i5e1WA74UsK6Ow+tYpHvTox4ub6ePkBr7HS3pvjPZNPf5xI2u9r3RqGOflFInkzjxWg==
@@ -80,7 +80,7 @@
     "@aws-cdk/aws-lambda" "1.23.0"
     "@aws-cdk/core" "1.23.0"
 
-"@aws-cdk/aws-dynamodb@1.23.0", "@aws-cdk/aws-dynamodb@^1.17.1":
+"@aws-cdk/aws-dynamodb@1.23.0", "@aws-cdk/aws-dynamodb@^1.22.0":
   version "1.23.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/aws-dynamodb/-/aws-dynamodb-1.23.0.tgz#294e4726e2013cebf9c5da142127a227c0cfa620"
   integrity sha512-GBYqsxzkykdq0lZL64bBeiSAv87fLifIVeBivVaL8yD3GSK8gOmljuuFyCMCTLLLjIam/R2g6I5hExvsWhkxZQ==
@@ -121,7 +121,7 @@
     "@aws-cdk/aws-iam" "1.23.0"
     "@aws-cdk/core" "1.23.0"
 
-"@aws-cdk/aws-iam@1.23.0", "@aws-cdk/aws-iam@^1.17.1":
+"@aws-cdk/aws-iam@1.23.0", "@aws-cdk/aws-iam@^1.22.0":
   version "1.23.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/aws-iam/-/aws-iam-1.23.0.tgz#a9cdc822e1028e5dc6b8bdc0187b862877362c01"
   integrity sha512-BRaPLnZGcd8nxuIiBynLLbuqN+2KfEnQIdsC0uqjDVpTDygQB9ic1ocmf0jugsZ1W4hS1oY8EaZY9v/TX3rQgQ==
@@ -129,7 +129,7 @@
     "@aws-cdk/core" "1.23.0"
     "@aws-cdk/region-info" "1.23.0"
 
-"@aws-cdk/aws-kinesis@1.23.0", "@aws-cdk/aws-kinesis@^1.17.1":
+"@aws-cdk/aws-kinesis@1.23.0", "@aws-cdk/aws-kinesis@^1.22.0":
   version "1.23.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/aws-kinesis/-/aws-kinesis-1.23.0.tgz#2ec2fbee3f80ef575aa3b16c820080f73a119988"
   integrity sha512-aAugha0caGZhLVhtgKRchOX2Be1iWOj838pQUeTFNsp8a2BOc8y+bkv83/Fu/b4v7yDUKH/rWnlV5alGgdLVPg==
@@ -147,7 +147,7 @@
     "@aws-cdk/aws-iam" "1.23.0"
     "@aws-cdk/core" "1.23.0"
 
-"@aws-cdk/aws-lambda-event-sources@^1.17.1":
+"@aws-cdk/aws-lambda-event-sources@^1.22.0":
   version "1.23.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/aws-lambda-event-sources/-/aws-lambda-event-sources-1.23.0.tgz#99a373e93c7c7c3274e554196a40d96f7ac547f7"
   integrity sha512-Axn0cZ+oTmHKXNKjY3Nskd3suwxth1oYSEjIx49SywFx9b6TsB1WW6jOzL/kmnotngeX8e/rcufI+Xr+nLskyA==
@@ -165,7 +165,7 @@
     "@aws-cdk/aws-sqs" "1.23.0"
     "@aws-cdk/core" "1.23.0"
 
-"@aws-cdk/aws-lambda@1.23.0", "@aws-cdk/aws-lambda@^1.17.1":
+"@aws-cdk/aws-lambda@1.23.0", "@aws-cdk/aws-lambda@^1.22.0":
   version "1.23.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/aws-lambda/-/aws-lambda-1.23.0.tgz#82c4f97ed4e52f5e1507320e9c4fc388da7fe728"
   integrity sha512-AM8rSnESD0FYKT3oUPe05b4uCJKATh0l+gdvyi6MT6bPs6ezu6hxdjMqI7ld2Alr7FCBNhE4+xYkyXVw3MF2dA==
@@ -321,37 +321,37 @@
   dependencies:
     regenerator-runtime "^0.13.2"
 
-"@boostercloud/framework-core@^0.1.3":
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@boostercloud/framework-core/-/framework-core-0.1.3.tgz#6db77e06b09a4560295a80c65198467c3d1c357b"
-  integrity sha512-BTBoIu/6A5vjTkCHZJ+5maGimujcidlQ0blv06wMx/P6SutnbgFimnHdpzx419j11In1cj9xDG1EFqGxzNfe9A==
+"@boostercloud/framework-core@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@boostercloud/framework-core/-/framework-core-0.1.4.tgz#341fe6c2afffb863e321d633657d31b0db65f04c"
+  integrity sha512-KZfvsK1X2P9skHl7ayg1Hcguod0yZO+SG339HnUd9tSB0B6cyi2beHnFXTEi1FGp7P9G/q8tPz09zGNhF+kJ0g==
   dependencies:
-    "@boostercloud/framework-provider-aws" "^0.1.3"
-    "@boostercloud/framework-types" "^0.1.3"
+    "@boostercloud/framework-provider-aws" "^0.1.4"
+    "@boostercloud/framework-types" "^0.1.4"
     fp-ts "^2.0.3"
     reflect-metadata "^0.1"
     uuid "^3.3.3"
 
-"@boostercloud/framework-provider-aws@^0.1.3":
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@boostercloud/framework-provider-aws/-/framework-provider-aws-0.1.3.tgz#c5762d501963e8005c005340777b31552039ba8b"
-  integrity sha512-1DtFk3+jCM9qXhcWHdp0ak/utzZjm8tZ2PD8Zqxc9B3VLbSRR7R17WCakNuodqXxCEbUSK/zsPxIbRXumrQUZQ==
+"@boostercloud/framework-provider-aws@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@boostercloud/framework-provider-aws/-/framework-provider-aws-0.1.4.tgz#c901ed1c426aaf228397aa7a8fb60bfeedeb95ca"
+  integrity sha512-xFU+EiSQ6tlvPZcOmf3yNrj+MQve7f2O4Rgi8FjeYQO5oFvXx9F7Vi7T+wIhH5XtNdSluBEFCytCKYtRdynaNg==
   dependencies:
-    "@aws-cdk/aws-apigateway" "^1.17.1"
-    "@aws-cdk/aws-cognito" "^1.17.1"
-    "@aws-cdk/aws-dynamodb" "^1.17.1"
-    "@aws-cdk/aws-iam" "^1.17.1"
-    "@aws-cdk/aws-kinesis" "^1.17.1"
-    "@aws-cdk/aws-lambda" "^1.17.1"
-    "@aws-cdk/aws-lambda-event-sources" "^1.17.1"
-    "@boostercloud/framework-types" "^0.1.3"
-    aws-cdk "^1.17.1"
+    "@aws-cdk/aws-apigateway" "^1.22.0"
+    "@aws-cdk/aws-cognito" "^1.22.0"
+    "@aws-cdk/aws-dynamodb" "^1.22.0"
+    "@aws-cdk/aws-iam" "^1.22.0"
+    "@aws-cdk/aws-kinesis" "^1.22.0"
+    "@aws-cdk/aws-lambda" "^1.22.0"
+    "@aws-cdk/aws-lambda-event-sources" "^1.22.0"
+    "@boostercloud/framework-types" "^0.1.4"
+    aws-cdk "^1.22.0"
     aws-sdk "^2.514.0"
 
-"@boostercloud/framework-types@^0.1.3":
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@boostercloud/framework-types/-/framework-types-0.1.3.tgz#481e0a70bba5c1e7b3ca70e03c7a769b1c81695b"
-  integrity sha512-dJZGmvWyZTPGDkfQUeM5wB4sa+SBMFpVFVSw+eYY5YV1EngA3zjI2UIbim7SjbSsN5Ud3P8tlxI2L7mG+XNCtQ==
+"@boostercloud/framework-types@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@boostercloud/framework-types/-/framework-types-0.1.4.tgz#17e6f65de654beb8ef39f3e731278463b9eddab4"
+  integrity sha512-FNf29TWNgEhXCY1CrnOE+a/C/tCe33WK5fqTT9bv0iuw1fN+FROGWXgh2lfcEL2e2Mdn17w0/OD39+/gKnrv5w==
   dependencies:
     rxjs "^6.5.3"
 
@@ -472,7 +472,7 @@ asynckit@^0.4.0:
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
   integrity sha1-x57Zf380y48robyXkLzDZkdLS3k=
 
-aws-cdk@^1.17.1:
+aws-cdk@^1.22.0:
   version "1.23.0"
   resolved "https://registry.yarnpkg.com/aws-cdk/-/aws-cdk-1.23.0.tgz#27b7dbd12f5e777103ae6e0e23e9a25c2124f1fe"
   integrity sha512-nxA4c3XSnkUO1DFxdCOx1IdmsvlXhJIkB7NuIBoFE5Z7eRXupESkm8IVWX1RkIVLDzbEjJzpjrFnExFvoKVwcw==
