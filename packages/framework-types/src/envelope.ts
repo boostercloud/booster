@@ -1,4 +1,4 @@
-import { CommandInterface, EntityInterface, EventInterface } from './concepts'
+import { CommandInterface, EntityInterface, EventInterface, UUID } from './concepts'
 
 /**
  * An `Envelope` carries a command/event body together with the name
@@ -18,7 +18,7 @@ export interface CommandEnvelope extends Envelope {
 
 export interface EventEnvelope extends Envelope {
   kind: 'event' | 'snapshot'
-  entityID: string
+  entityID: UUID
   entityTypeName: string
   value: EventInterface | EntityInterface
   createdAt: string

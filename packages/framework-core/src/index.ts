@@ -2,7 +2,6 @@ import * as boosterModule from './booster'
 import { BoosterConfig, EntityInterface, UUID } from '@boostercloud/framework-types'
 export * from './decorators'
 export { Providers } from './providers'
-export { generateUUID } from './idGenerator'
 export { Register } from '@boostercloud/framework-types'
 export {
   boosterCommandDispatcher,

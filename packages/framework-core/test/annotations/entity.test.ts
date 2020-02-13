@@ -46,7 +46,7 @@ describe('the `Entity` decorator', () => {
       properties: [
         {
           name: 'id',
-          type: String,
+          type: UUID,
         },
         {
           name: 'content',

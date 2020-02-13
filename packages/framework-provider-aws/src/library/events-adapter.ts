@@ -1,5 +1,5 @@
 import { KinesisStreamEvent, KinesisStreamRecord } from 'aws-lambda'
-import { BoosterConfig, EventEnvelope, Logger } from '@boostercloud/framework-types'
+import { BoosterConfig, EventEnvelope, Logger, UUID } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { eventStorePartitionKeyAttributeName, eventStoreSortKeyAttributeName } from '../constants'
 import { partitionKeyForEvent } from './partition-keys'
@@ -46,7 +46,7 @@ export async function readEntityEventsSince(
   config: BoosterConfig,
   logger: Logger,
   entityTypeName: string,
-  entityID: string,
+  entityID: UUID,
   since?: string
 ): Promise<Array<EventEnvelope>> {
   const fromTime = since ? since : originOfTime
@@ -74,7 +74,7 @@ export async function readEntityLatestSnapshot(
   config: BoosterConfig,
   logger: Logger,
   entityTypeName: string,
-  entityID: string
+  entityID: UUID
 ): Promise<EventEnvelope | null> {
   const result = await dynamoDB
     .query({

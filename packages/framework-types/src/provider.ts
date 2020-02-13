@@ -27,14 +27,14 @@ export interface ProviderEventsLibrary {
     config: BoosterConfig,
     logger: Logger,
     entityTypeName: string,
-    entityID: string,
+    entityID: UUID,
     since?: string
   ): Promise<Array<EventEnvelope>>
   readEntityLatestSnapshot(
     config: BoosterConfig,
     logger: Logger,
     entityTypeName: string,
-    entityID: string
+    entityID: UUID
   ): Promise<EventEnvelope | null>
 }
 export interface ProviderReadModelsLibrary {
