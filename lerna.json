@@ -4,8 +4,8 @@
         "packages/framework-provider-aws",
         "packages/framework-core",
         "packages/cli"
-    ], 
-    "version": "0.1.3",
+    ],
+    "version": "0.1.4",
     "npmClient": "yarn",
     "useWorkspaces": true
 }
