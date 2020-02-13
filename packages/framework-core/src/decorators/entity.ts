@@ -16,11 +16,11 @@ export function Entity<TEntity extends EntityInterface>(entityClass: Class<TEnti
   Booster.configure((config): void => {
     if (config.entities[entityClass.name]) {
       throw new Error(`An entity called ${entityClass.name} is already registered.`)
-    } else {
-      config.entities[entityClass.name] = {
-        class: entityClass,
-        properties: getPropertiesMetadata(entityClass),
-      }
+    }
+
+    config.entities[entityClass.name] = {
+      class: entityClass,
+      properties: getPropertiesMetadata(entityClass),
     }
   })
 }
@@ -70,9 +70,9 @@ function registerReducer(eventName: string, reducerMethod: ReducerMetadata): voi
       throw new Error(
         `Error registering reducer: The event ${eventName} was already registered to be reduced by method ${reducerPath.methodName} in the entity ${reducerPath.class.name}.`
       )
-    } else {
-      config.reducers[eventName] = reducerMethod
     }
+
+    config.reducers[eventName] = reducerMethod
   })
 }
 
