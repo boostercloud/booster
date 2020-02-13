@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { expect } from 'chai'
 import { describe } from 'mocha'
-import { ReadModel, Booster, Entity, Projection } from '../../src/index'
+import { ReadModel, Booster, Entity, Projects } from '../../src/index'
 import { UUID } from '@boostercloud/framework-types'
 
 describe('the `ReadModel` decorator', () => {
@@ -30,7 +30,7 @@ describe('the `Projection` decorator', () => {
     class OtherReadModel {
       public constructor(readonly id: UUID) {}
 
-      @Projection(SomeEntity, 'id')
+      @Projects(SomeEntity, 'id')
       public static observeSomeEntity(entity: SomeEntity): OtherReadModel {
         throw new Error(`not implemented for ${entity}`)
       }

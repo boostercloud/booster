@@ -7,7 +7,7 @@ import { Class, EntityInterface, ProjectionMetadata } from '@boostercloud/framew
  *
  * @param originEntity The entity that this method will react to
  */
-export function Projection<TEntity extends EntityInterface>(
+export function Projects<TEntity extends EntityInterface>(
   originEntity: Class<TEntity>,
   joinKey: string
 ): <TReadModel>(
@@ -24,12 +24,12 @@ export function Projection<TEntity extends EntityInterface>(
   }
 }
 
-function registerProjection(originName: string, reducerMetadata: ProjectionMetadata): void {
+function registerProjection(originName: string, projectionMetadata: ProjectionMetadata): void {
   Booster.configure((config): void => {
     const entityProjections = config.projections[originName] || []
-    if (entityProjections.indexOf(reducerMetadata) < 0) {
+    if (entityProjections.indexOf(projectionMetadata) < 0) {
       // Skip duplicate registrations
-      entityProjections.push(reducerMetadata)
+      entityProjections.push(projectionMetadata)
       config.projections[originName] = entityProjections
     }
   })
