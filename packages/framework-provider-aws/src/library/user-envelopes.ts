@@ -1,5 +1,7 @@
 import { AttributeListType, AttributeMappingType } from 'aws-sdk/clients/cognitoidentityserviceprovider'
 import { UserEnvelope } from '@boostercloud/framework-types'
+import { APIGatewayProxyEvent } from 'aws-lambda'
+import { CognitoIdentityServiceProvider } from 'aws-sdk'
 
 export class UserEnvelopeBuilder {
   public static fromAttributeMap(attributes: AttributeMappingType): UserEnvelope {
@@ -27,4 +29,16 @@ export class UserEnvelopeBuilder {
     })
     return attributeMap
   }
+}
+
+export async function fetchUserFromRequest(
+  request: APIGatewayProxyEvent,
+  userPool: CognitoIdentityServiceProvider
+): Promise<UserEnvelope | undefined> {
+  const accessToken = request.headers['Authorization']?.replace('Bearer ', '') // Remove the "Bearer" prefix
+  if (!accessToken) {
+    return undefined
+  }
+  const currentUserData = await userPool.getUser({ AccessToken: accessToken }).promise()
+  return UserEnvelopeBuilder.fromAttributeList(currentUserData.UserAttributes)
 }

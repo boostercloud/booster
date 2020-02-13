@@ -3,7 +3,7 @@ import { expect } from 'chai'
 import * as chai from 'chai'
 import { UserEnvelope } from '@boostercloud/framework-types'
 import { AttributeListType, AttributeMappingType } from 'aws-sdk/clients/cognitoidentityserviceprovider'
-import { UserEnvelopeBuilder } from '../../src/library/user-envelope-builder'
+import { UserEnvelopeBuilder } from '../../src/library/user-envelopes'
 
 chai.use(require('sinon-chai'))
 

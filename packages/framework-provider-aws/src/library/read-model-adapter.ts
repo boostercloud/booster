@@ -1,67 +1,49 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/no-magic-numbers */
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
-import { BoosterConfig, ReadModelInterface, UUID, Logger } from '@boostercloud/framework-types'
-import { DynamoDB } from 'aws-sdk'
-import { fail, succeed } from './api-gateway-io'
+import { APIGatewayProxyEvent } from 'aws-lambda'
+import {
+  BoosterConfig,
+  Logger,
+  ReadModelInterface,
+  ReadModelRequestEnvelope,
+  UUID,
+  InvalidParameterError,
+} from '@boostercloud/framework-types'
+import { CognitoIdentityServiceProvider, DynamoDB } from 'aws-sdk'
+import { fetchUserFromRequest } from './user-envelopes'
 
-export async function processReadModelAPICall(
-  dynamoDB: DynamoDB.DocumentClient,
-  config: BoosterConfig,
-  event: APIGatewayProxyEvent
-): Promise<APIGatewayProxyResult> {
-  if (!event.pathParameters) {
-    return noPathParametersProvided()
+export async function rawReadModelRequestToEnvelope(
+  userPool: CognitoIdentityServiceProvider,
+  request: APIGatewayProxyEvent
+): Promise<ReadModelRequestEnvelope> {
+  if (!request.pathParameters) {
+    throw new InvalidParameterError('Could not find path parameters in URL')
   }
-
-  const readModelName: string | undefined = event.pathParameters['readModelName']
-  const requestedId: string | undefined = event.pathParameters['id']
-
+  const readModelName: string | undefined = request.pathParameters['readModelName']
   if (!readModelName) {
-    return noReadModelProvided()
+    throw new InvalidParameterError('No read model name provided')
   }
-  const readModelResource = config.resourceNames.forReadModel(readModelName)
 
-  if (requestedId) {
-    return requestOne(dynamoDB, readModelResource, requestedId)
-  }
-  return requestAll(dynamoDB, readModelResource)
-}
-
-function noReadModelProvided(): APIGatewayProxyResult {
-  return fail(400, 'Request error', 'No read model name provided')
-}
-
-function noPathParametersProvided(): APIGatewayProxyResult {
-  return fail(400, 'Request error', 'Could not find path parameters in URL')
-}
-
-async function requestAll(db: DynamoDB.DocumentClient, readModelResource: string): Promise<APIGatewayProxyResult> {
-  const params = {
-    TableName: readModelResource,
-  }
-  try {
-    const response = await db.scan(params).promise()
-    return succeed(response.Items)
-  } catch (dbError) {
-    return fail(503, 'Service unavailable', dbError.toString())
+  return {
+    requestID: request.requestContext.requestId,
+    typeName: readModelName,
+    version: 1, // TODO: How to manage versions in read model requests? They are the other way around.
+    readModelID: request.pathParameters['id'],
+    currentUser: await fetchUserFromRequest(request, userPool),
   }
 }
 
-async function requestOne(
+export async function fetchAllReadModels(
   db: DynamoDB.DocumentClient,
-  readModelResource: string,
-  id: string
-): Promise<APIGatewayProxyResult> {
-  try {
-    const params = {
-      TableName: readModelResource,
-      Key: { id },
-    }
-    const response = await db.get(params).promise()
-    return succeed(response.Item)
-  } catch (dbError) {
-    return fail(503, 'Service unavailable', dbError.toString())
+  config: BoosterConfig,
+  logger: Logger,
+  readModelName: string
+): Promise<Array<ReadModelInterface>> {
+  const params = {
+    TableName: config.resourceNames.forReadModel(readModelName),
   }
+  const response = await db.scan(params).promise()
+  logger.debug(`[ReadModelAdapter#fetchAllReadModels] Loaded ${readModelName} read models with result:`, response.Items)
+  return response.Items as Array<ReadModelInterface>
 }
 
 export async function fetchReadModel(

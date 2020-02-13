@@ -1,30 +1,28 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
-import { BoosterConfig, CommandEnvelope, EventEnvelope, Logger } from '@boostercloud/framework-types'
+import {
+  BoosterConfig,
+  CommandEnvelope,
+  EventEnvelope,
+  Logger,
+  InvalidParameterError,
+} from '@boostercloud/framework-types'
 import { Kinesis, CognitoIdentityServiceProvider } from 'aws-sdk'
 import { PutRecordsRequestEntry } from 'aws-sdk/clients/kinesis'
-import { fail, succeed } from './api-gateway-io'
 import { partitionKeyForEvent } from './partition-keys'
-import { UserEnvelopeBuilder } from './user-envelope-builder'
+import { fetchUserFromRequest } from './user-envelopes'
+import { requestSucceeded } from './api-gateway-io'
 
 export async function rawCommandToEnvelope(
   userPool: CognitoIdentityServiceProvider,
-  rawMessage: APIGatewayProxyEvent
+  request: APIGatewayProxyEvent
 ): Promise<CommandEnvelope> {
-  if (rawMessage.body) {
-    const envelope = JSON.parse(rawMessage.body) as CommandEnvelope
-    envelope.requestID = rawMessage.requestContext.requestId
-    const accessToken = rawMessage.headers['Authorization']?.replace('Bearer ', '') // Remove the "Bearer" prefix
-    if (accessToken) {
-      const currentUserData = await userPool
-        .getUser({
-          AccessToken: accessToken,
-        })
-        .promise()
-      envelope.currentUser = UserEnvelopeBuilder.fromAttributeList(currentUserData.UserAttributes)
-    }
+  if (request.body) {
+    const envelope = JSON.parse(request.body) as CommandEnvelope
+    envelope.requestID = request.requestContext.requestId
+    envelope.currentUser = await fetchUserFromRequest(request, userPool)
     return envelope
   } else {
-    throw TypeError('The field "body" from the API Gateway Event arrived empty.')
+    throw new InvalidParameterError('The field "body" from the API Gateway Event arrived empty.')
   }
 }
 
@@ -52,13 +50,7 @@ export async function handleCommandResult(
 ): Promise<APIGatewayProxyResult> {
   await publishEvents(logger, config, eventsStream, eventEnvelopes)
   // We are handling commands directly from the APIGateway, so we must return the response structured as it expects
-  return succeed()
-}
-
-export async function handleCommandError(config: BoosterConfig, error: Error): Promise<APIGatewayProxyResult> {
-  // TODO: differentiate between user errors and server errors
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-  return fail(500, error.name, error.message)
+  return requestSucceeded()
 }
 
 function toPutRecordsEntity(eventEnvelope: EventEnvelope): PutRecordsRequestEntry {

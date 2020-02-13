@@ -7,6 +7,9 @@ import {
   Logger,
   Register,
   ProviderCommandsLibrary,
+  InvalidParameterError,
+  NotAuthorizedError,
+  NotFoundError,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
 
@@ -31,23 +34,23 @@ export class BoosterCommandDispatcher {
       return provider.handleCommandResult(config, resultEventEnvelopes, logger)
     } catch (e) {
       logger.error('When dispatching command: ', e)
-      return await provider.handleCommandError(config, e, logger)
+      return await provider.handleCommandError(e)
     }
   }
 
   private static dispatchCommand(commandEnvelope: CommandEnvelope, config: BoosterConfig, logger: Logger): Register {
     logger.debug('Dispatching the following command envelope: ', commandEnvelope)
     if (!commandEnvelope.version) {
-      throw new Error('The required command "version" was not present')
+      throw new InvalidParameterError('The required command "version" was not present')
     }
 
     const commandMetadata = config.commandHandlers[commandEnvelope.typeName]
     if (!commandMetadata) {
-      throw new Error(`Couldn't find a proper handler for ${commandEnvelope.typeName}`)
+      throw new NotFoundError(`Could not find a proper handler for ${commandEnvelope.typeName}`)
     }
 
     if (!BoosterAuth.isUserAuthorized(commandMetadata.authorizedRoles, commandEnvelope.currentUser)) {
-      throw new Error(`Access denied for command '${commandEnvelope.typeName}'`)
+      throw new NotAuthorizedError(`Access denied for command '${commandEnvelope.typeName}'`)
     }
 
     const commandClass = commandMetadata.class
@@ -74,7 +77,9 @@ export class BoosterCommandDispatcher {
     const eventTypeName = event.constructor.name
     const reducerInfo = config.reducers[eventTypeName]
     if (!reducerInfo) {
-      throw new Error(`Couldn't find information about event ${eventTypeName}. Is the event handled by any entity?`)
+      throw new NotFoundError(
+        `Couldn't find information about event ${eventTypeName}. Is the event handled by any entity?`
+      )
     }
 
     return {
