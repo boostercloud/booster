@@ -7,6 +7,7 @@ import {
   CommandInterface,
   EntityInterface,
   EventInterface,
+  InvalidVersionError,
 } from '@boostercloud/framework-types'
 
 type MigrableEnvelope = CommandEnvelope | EventEnvelope
@@ -26,7 +27,7 @@ export class Migrator {
 
   private checkVersionRange(conceptEnvelope: MigrableEnvelope): void {
     if (conceptEnvelope.version < 1) {
-      throw new Error(
+      throw new InvalidVersionError(
         `Received an invalid version value, ${conceptEnvelope.version}, for ${conceptEnvelope.typeName}. ` +
           'Versions must be greater than 0'
       )
@@ -34,7 +35,7 @@ export class Migrator {
 
     const currentVersion = this.config.currentVersionFor(conceptEnvelope.typeName)
     if (currentVersion < conceptEnvelope.version) {
-      throw new Error(
+      throw new InvalidVersionError(
         `Can not migrate an unknown version: The current version of ${conceptEnvelope.typeName} is ${currentVersion}, which is ` +
           `lower than the received version ${conceptEnvelope.version}`
       )
@@ -74,7 +75,9 @@ export class Migrator {
     migration: MigrationMetadata | undefined
   ): TMigrableValue {
     if (!migration) {
-      throw new Error('Received an undefined migration value. Are there "gaps" between the versions of the migrations?')
+      throw new InvalidVersionError(
+        'Received an undefined migration value. Are there "gaps" between the versions of the migrations?'
+      )
     }
     const oldConcept = Object.assign(new migration.fromSchema(), oldValue)
     const migrationMethod = new migration.migrationClass()[migration.methodName]

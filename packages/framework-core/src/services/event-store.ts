@@ -1,4 +1,11 @@
-import { BoosterConfig, ProviderLibrary, Logger, UUID, EventEnvelope } from '@boostercloud/framework-types'
+import {
+  BoosterConfig,
+  ProviderLibrary,
+  Logger,
+  UUID,
+  EventEnvelope,
+  InvalidParameterError,
+} from '@boostercloud/framework-types'
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const numberOfEventsBetweenSnapshots = 5 // TODO: Move this to Booster configuration
@@ -106,7 +113,7 @@ export class EventStore {
   private reducerForEvent(eventName: string): Function {
     const reducerMetadata = this.config.reducers[eventName]
     if (!reducerMetadata) {
-      throw new Error(`No reducer registered for event ${eventName}`)
+      throw new InvalidParameterError(`No reducer registered for event ${eventName}`)
     } else {
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
