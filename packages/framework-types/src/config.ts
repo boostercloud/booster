@@ -70,7 +70,11 @@ export class BoosterConfig {
   }
 
   public get provider(): ProviderLibrary {
+<<<<<<< variant A
     if (!this._provider) throw new Error('It is required to set a valid provider runtime in `src/config.ts`')
+>>>>>>> variant B
+    if (!this._provider) throw new Error('It is required to set a valid provider library')
+======= end
     return this._provider
   }
 
