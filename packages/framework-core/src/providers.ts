@@ -1,5 +1,7 @@
+// TODO: Remove this builder and replace it with an injection mechanism to invert the dependency of the specific implementation (BOOST-355)
 import { Provider, ProviderLibrary, ProviderInfrastructure, BoosterConfig } from '@boostercloud/framework-types'
-import { Library as AWSLibrary, Infrastructure as AWSInfrastructure } from '@boostercloud/framework-provider-aws'
+import { Library as AWSLibrary } from '@boostercloud/framework-provider-aws'
+import { Infrastructure as AWSInfrastructure } from '@boostercloud/framework-provider-aws-infrastructure'
 
 class UnsupportedProviderError extends Error {}
 

@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { deploy, nuke } from './infrastructure'
 import { rawCommandToEnvelope, handleCommandResult, handleCommandError } from './library/commands-adapter'
 import {
   rawEventsToEnvelopes,
@@ -10,11 +9,6 @@ import {
 import { processReadModelAPICall, fetchReadModel, storeReadModel } from './library/read-model-adapter'
 import { rawSignUpDataToUserEnvelope } from './library/auth-adapter'
 import { Kinesis, DynamoDB, CognitoIdentityServiceProvider } from 'aws-sdk'
-
-export const Infrastructure = {
-  deploy,
-  nuke,
-}
 
 const eventsStream: Kinesis = new Kinesis()
 const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
