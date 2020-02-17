@@ -1,5 +1,4 @@
 import { BoosterConfig, ProviderLibrary, Logger, UUID, EventEnvelope } from '@boostercloud/framework-types'
-import { Providers } from '../providers'
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const numberOfEventsBetweenSnapshots = 5 // TODO: Move this to Booster configuration
@@ -12,7 +11,7 @@ export class EventStore {
 
   public constructor(config: BoosterConfig, logger: Logger) {
     this.config = config
-    this.provider = Providers.getLibrary(config)
+    this.provider = config.provider
     this.logger = logger
   }
 

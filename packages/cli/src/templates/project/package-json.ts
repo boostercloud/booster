@@ -5,7 +5,8 @@ export const template = `{
   "author": "{{{author}}}",
   "dependencies": {
     "@boostercloud/framework-core": "^{{{boosterVersion}}}",
-    "@boostercloud/framework-types": "^{{{boosterVersion}}}"
+    "@boostercloud/framework-types": "^{{{boosterVersion}}}",
+    "{{{providerPackageName}}}": "*"
   },
   "devDependencies": {
     "@boostercloud/cli": "^{{{boosterVersion}}}",
@@ -18,7 +19,8 @@ export const template = `{
     "nyc": "^15.0.0",
     "typescript": "^3.7.5",
     "ts-node": "^8.6.2",
-    "@types/node": "^13.5.1"
+    "@types/node": "^13.5.1",
+    "{{{providerPackageName}}}-infrastructure": "*"
   },
   "engines": {
     "node": ">=8.0.0"

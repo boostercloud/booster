@@ -5,14 +5,12 @@ import { Observable } from 'rxjs'
 import { Logger } from './logger'
 import { ReadModelInterface, UUID } from './concepts'
 
-export enum Provider {
-  AWS = 'AWS',
-}
-
 export type ProviderLibrary = ProviderCommandsLibrary &
   ProviderEventsLibrary &
   ProviderReadModelsLibrary &
-  ProviderAuthLibrary
+  ProviderAuthLibrary & {
+    getInfrastructure(): ProviderInfrastructure
+  }
 
 export interface ProviderCommandsLibrary {
   rawCommandToEnvelope(rawCommand: any): Promise<CommandEnvelope>

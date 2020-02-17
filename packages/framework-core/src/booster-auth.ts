@@ -7,12 +7,11 @@ import {
   RoleInterface,
   RoleAccess,
 } from '@boostercloud/framework-types'
-import { Providers } from './providers'
 
 export class BoosterAuth {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public static checkSignUp(rawMessage: any, config: BoosterConfig, logger: Logger): any {
-    const provider: ProviderAuthLibrary = Providers.getLibrary(config)
+    const provider: ProviderAuthLibrary = config.provider
     const userEnvelope = provider.rawSignUpDataToUserEnvelope(rawMessage)
     logger.info('User envelope: ', userEnvelope)
 

@@ -9,7 +9,6 @@ import {
   UUID,
   EntityInterface,
 } from '@boostercloud/framework-types'
-import { Providers } from '../providers'
 
 export class ReadModelStore {
   private config: BoosterConfig
@@ -18,7 +17,7 @@ export class ReadModelStore {
 
   public constructor(config: BoosterConfig, logger: Logger) {
     this.config = config
-    this.provider = Providers.getLibrary(config)
+    this.provider = config.provider
     this.logger = logger
   }
 

@@ -1,5 +1,4 @@
 import * as fs from 'fs-extra'
-import { Provider } from '@boostercloud/framework-types'
 import { exec } from 'child-process-promise'
 import * as Mustache from 'mustache'
 import * as path from 'path'
@@ -10,7 +9,7 @@ import * as packageJson from '../templates/project/package-json'
 import * as configTs from '../templates/project/config-ts'
 import * as indexTs from '../templates/project/index-ts'
 import { wrapExecError } from '../common/errors'
-import { withinWorkingDirectory } from "./executor-service";
+import { withinWorkingDirectory } from "./executor-service"
 
 export async function generateConfigFiles(config: ProjectInitializerConfig): Promise<void> {
   await Promise.all(filesToGenerate.map(renderToFile(config)))
@@ -46,7 +45,7 @@ export interface ProjectInitializerConfig {
   homepage: string
   license: string
   repository: string
-  provider: Provider
+  providerPackageName: string
   boosterVersion: string
 }
 

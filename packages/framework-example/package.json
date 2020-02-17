@@ -6,7 +6,11 @@
   "homepage": "https://booster.cloud",
   "bugs": "https://github.com/boostercloud/booster/issues",
   "dependencies": {
-    "@boostercloud/framework-core": "^0.1.0"
+    "@boostercloud/framework-core": "^0.1.4",
+    "@boostercloud/framework-provider-aws": "^0.1.4"
+  },
+  "devDependencies": {
+    "@boostercloud/framework-provider-aws-infrastructure": "0.1.4"
   },
   "engines": {
     "node": ">=8.0.0"

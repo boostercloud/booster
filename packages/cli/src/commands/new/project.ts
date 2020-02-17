@@ -1,5 +1,4 @@
 import { Command, flags } from '@oclif/command'
-import { Providers } from '@boostercloud/framework-core'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
 import {
@@ -8,7 +7,6 @@ import {
   generateConfigFiles,
   installDependencies,
 } from '../../services/project-initializer'
-import { Provider } from '@boostercloud/framework-types'
 import Prompter from '../../services/user-prompt'
 import { assertNameIsCorrect } from '../../services/provider-service'
 
@@ -43,8 +41,7 @@ export default class Project extends Command {
     }),
     provider: flags.string({
       char: 'p',
-      description: 'cloud provider where the application will be deployed',
-      options: Providers.list,
+      description: 'package name implementing the cloud provider integration where the application will be deployed (i.e: "@boostercloud/framework-provider-aws"'
     }),
   }
 
@@ -63,7 +60,6 @@ export default class Project extends Command {
       projectName: args.projectName,
       ...flags,
     }
-    parsedFlags.provider = (undefined as unknown) as Provider
     await run(parsedFlags as Partial<ProjectInitializerConfig>, this.config.version, flags.provider)
   }
 }
@@ -92,15 +88,13 @@ const parseConfig = async (
   const homepage = await prompter.defaultOrPrompt(flags.homepage, "What's the website?")
   const license = await prompter.defaultOrPrompt(flags.license, 'What license will you be publishing this under?')
   const repository = await prompter.defaultOrPrompt(flags.repository, "What's the URL of the repository?")
-  const chosenProvider = await prompter.defaultOrChoose(
+  const providerPackageName = await prompter.defaultOrPrompt(
     providerName,
-    'What is the provider you want to use for deploying?',
-    ['AWS']
+    'What is the package name of your provider integration library?'
   )
-  const provider = await Providers.choose(chosenProvider)
   return Promise.resolve({
     projectName: flags.projectName as string,
-    provider,
+    providerPackageName,
     description,
     version,
     author,

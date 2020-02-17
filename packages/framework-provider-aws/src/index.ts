@@ -9,12 +9,13 @@ import {
 import { processReadModelAPICall, fetchReadModel, storeReadModel } from './library/read-model-adapter'
 import { rawSignUpDataToUserEnvelope } from './library/auth-adapter'
 import { Kinesis, DynamoDB, CognitoIdentityServiceProvider } from 'aws-sdk'
+import { ProviderInfrastructure } from '@boostercloud/framework-types'
 
 const eventsStream: Kinesis = new Kinesis()
 const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
 const userPool = new CognitoIdentityServiceProvider()
 
-export const Library = {
+export const Provider = {
   rawCommandToEnvelope: rawCommandToEnvelope.bind(null, userPool),
   handleCommandResult: handleCommandResult.bind(null, eventsStream),
   handleCommandError,
@@ -29,6 +30,9 @@ export const Library = {
   storeReadModel: storeReadModel.bind(null, dynamoDB),
 
   rawSignUpDataToUserEnvelope,
+
+  getInfrastructure: () =>
+    require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
 }
 
 export * from './constants'
