@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from 'chai'
 import { fancy } from 'fancy-test'
-import { Provider } from '@boostercloud/framework-types'
 import { stub, restore } from 'sinon'
 import { Observable, Observer } from 'rxjs'
 import rewire = require('rewire')
+import { ProviderLibrary } from '@boostercloud/framework-types'
 
 // With this trick we can test non exported symbols
 const deploy = rewire('../../src/commands/deploy')
@@ -47,8 +47,10 @@ describe('deploy', () => {
 
     context('when there is a valid index.ts', () => {
       fancy.stdout().it('Starts deployment', async (ctx) => {
+        const fakeProvider = {} as ProviderLibrary
+
         const fakeLoader = Promise.resolve({
-          provider: Provider.AWS,
+          provider: fakeProvider,
           appName: 'fake app',
           region: 'tunte',
           entities: {},

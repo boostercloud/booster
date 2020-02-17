@@ -3,12 +3,13 @@
 import { describe } from 'mocha'
 import { BoosterEventDispatcher } from '../src/booster-event-dispatcher'
 import { fake, replace, restore, createStubInstance, SinonStubbedInstance } from 'sinon'
-import { BoosterConfig, Provider, Logger, EventEnvelope, UUID, EntityInterface } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, EventEnvelope, UUID, EntityInterface } from '@boostercloud/framework-types'
 import * as chai from 'chai'
 import { expect } from 'chai'
 import { RawEventsParser } from '../src/services/raw-events-parser'
 import { EventStore } from '../src/services/event-store'
 import { ReadModelStore } from '../src/services/read-model-store'
+import { ProviderLibrary } from '@boostercloud/framework-types'
 
 chai.use(require('sinon-chai'))
 
@@ -24,9 +25,9 @@ describe('BoosterEventDispatcher', () => {
   }
 
   const config = new BoosterConfig()
-  config.provider = Provider.AWS
+  config.provider = {} as ProviderLibrary
 
-  context('the configured provider is AWS', () => {
+  context('with a configured provider', () => {
     describe('the `dispatch` method', () => {
       it('calls the raw events parser once and processes all messages', async () => {
         replace(RawEventsParser, 'streamEvents', fake())

@@ -1,9 +1,7 @@
 import { describe } from 'mocha'
-import { replace, fake, restore } from 'sinon'
-import { Providers } from '../../src/providers'
+import { fake, restore } from 'sinon'
 import { ProviderLibrary, BoosterConfig } from '@boostercloud/framework-types'
 import { RawEventsParser } from '../../src/services/raw-events-parser'
-import { Library } from '@boostercloud/framework-provider-aws'
 import { expect } from 'chai'
 
 describe('RawEventsParser', () => {
@@ -19,14 +17,13 @@ describe('RawEventsParser', () => {
       const anotherEvent = {
         id: 2,
       }
-      const providerLibrary: ProviderLibrary = {
-        ...Library,
+      const providerLibrary = {
         rawEventsToEnvelopes: fake.returns([anEvent, anotherEvent]),
-      }
-      replace(Providers, 'getLibrary', fake.returns(providerLibrary))
+      } as unknown as ProviderLibrary
       const callbackFn = fake()
 
       const config = new BoosterConfig()
+      config.provider = providerLibrary
 
       await RawEventsParser.streamEvents(config, { some: 'raw message' }, callbackFn)
 
