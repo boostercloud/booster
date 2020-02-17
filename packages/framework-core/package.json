@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@boostercloud/framework-provider-aws": "^0.1.4",
+    "@boostercloud/framework-provider-aws-infrastructure": "^0.1.4",
     "@boostercloud/framework-types": "^0.1.4",
     "fp-ts": "^2.0.3",
     "reflect-metadata": "^0.1"
