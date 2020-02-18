@@ -1,6 +1,6 @@
 import * as express from 'express'
 
-export function deploy(port: number): void {
+export function run(port: number): void {
   const expressServer = express()
   const router = express.Router()
   expressServer.use(express.json())
