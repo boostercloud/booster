@@ -20,8 +20,9 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@boostercloud/framework-provider-aws": "^0.1.4",
+    "@boostercloud/framework-provider-local": "^0.1.4",
     "@boostercloud/framework-types": "^0.1.4",
+    "@boostercloud/framework-core": "^0.1.4",
     "express": "^4.17.1"
   },
   "scripts": {
