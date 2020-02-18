@@ -1,5 +1,7 @@
 import * as express from 'express'
 import { RuntimeStorage } from './runtime-storage'
+import { AuthController } from './controllers/auth'
+import { BoosterConfig } from '@boostercloud/framework-types'
 
 /**
  * `deploy` serves as the entry point for the local provider. Even though
@@ -9,9 +11,10 @@ import { RuntimeStorage } from './runtime-storage'
  * @param storage Instance of a `Storage` object, in order to store the data
  * @param port Port on which the express server will listen
  */
-export function run(storage: RuntimeStorage, port: number): void {
+export function run(storage: RuntimeStorage, config: BoosterConfig, port: number): void {
   const expressServer = express()
   const router = express.Router()
+  router.use('/', new AuthController(storage, config).router)
   expressServer.use(defaultErrorHandler)
   expressServer.use(express.json())
   expressServer.use(router)
