@@ -1,4 +1,5 @@
 import * as express from 'express'
+import { RuntimeStorage } from './runtime-storage'
 
 /**
  * `deploy` serves as the entry point for the local provider. Even though
