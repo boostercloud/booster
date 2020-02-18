@@ -129,7 +129,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
           // We use `bind` to generate a thunk that chai will then call, checking that it throws
           expect(
             boosterCommandDispatcher.dispatchCommand.bind(boosterCommandDispatcher, command, config, logger)
-          ).to.throw("Couldn't find a proper handler for PostComment")
+          ).to.throw('Could not find a proper handler for PostComment')
         })
       })
     })
