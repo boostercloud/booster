@@ -150,6 +150,7 @@ describe('the deployment process', () => {
     config.appName = 'testing-app'
     config.readModels[SomeReadModel.name] = {
       class: SomeReadModel,
+      authorizedRoles: 'all',
     }
     const cloudAssembly = Infrastructure.assemble(config)
 

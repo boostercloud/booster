@@ -18,9 +18,7 @@ export function httpStatusCodeFor(error: Error): number {
   return errorToHTTPCode[error.constructor.name] ?? 500
 }
 
-export async function requestFailed<TError extends Error>(
-  error: InvalidParameterError
-): Promise<APIGatewayProxyResult> {
+export async function requestFailed(error: Error): Promise<APIGatewayProxyResult> {
   const statusCode = httpStatusCodeFor(error)
   return {
     statusCode,

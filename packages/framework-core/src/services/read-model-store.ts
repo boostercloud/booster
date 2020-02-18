@@ -73,7 +73,7 @@ export class ReadModelStore {
     try {
       return (projectionMetadata.class as any)[projectionMetadata.methodName]
     } catch {
-      throw new Error(`Couln't load the ReadModel class ${projectionMetadata.class.name}`)
+      throw new Error(`Couldn't load the ReadModel class ${projectionMetadata.class.name}`)
     }
   }
 }
