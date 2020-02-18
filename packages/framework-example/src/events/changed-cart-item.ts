@@ -5,7 +5,7 @@ import { UUID } from '@boostercloud/framework-types'
 export class ChangedCartItem {
   public constructor(readonly cartId: UUID, readonly productId: UUID, readonly quantity: number) {}
 
-  public entityID(): string {
+  public entityID(): UUID {
     return this.cartId
   }
 }

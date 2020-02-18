@@ -30,11 +30,13 @@
   "bugs": {
     "url": "https://github.com/boostercloud/booster/issues"
   },
-  "devDependencies": {
-    "fast-check": "^1.18.1"
-  },
-  "gitHead": "121816dbe55d57df5860b54a871c06dcda761101",
   "dependencies": {
-    "rxjs": "^6.5.3"
-  }
+    "rxjs": "^6.5.3",
+    "uuid": "^3.3.3"
+  },
+  "devDependencies": {
+    "fast-check": "^1.18.1",
+    "@types/uuid": "^3.4.5"
+  },
+  "gitHead": "121816dbe55d57df5860b54a871c06dcda761101"
 }

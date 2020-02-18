@@ -5,7 +5,7 @@ import { UUID } from '@boostercloud/framework-types'
 export class ProductDeleted {
   public constructor(readonly productId: UUID) {}
 
-  public entityID(): string {
+  public entityID(): UUID {
     return this.productId
   }
 }

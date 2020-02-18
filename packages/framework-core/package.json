@@ -31,11 +31,7 @@
     "@boostercloud/framework-provider-aws": "^0.1.4",
     "@boostercloud/framework-types": "^0.1.4",
     "fp-ts": "^2.0.3",
-    "reflect-metadata": "^0.1",
-    "uuid": "^3.3.3"
-  },
-  "devDependencies": {
-    "@types/uuid": "^3.4.5"
+    "reflect-metadata": "^0.1"
   },
   "gitHead": "121816dbe55d57df5860b54a871c06dcda761101"
 }
