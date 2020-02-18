@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as chai from 'chai'
 import { expect } from 'chai'
-import { replace, fake } from 'sinon'
+import { restore, replace, fake } from 'sinon'
 import {
   rawReadModelRequestToEnvelope,
   fetchReadModel,
@@ -29,6 +29,10 @@ const logger: Logger = {
 }
 
 describe('the "rawReadModelRequestToEnvelope" method', () => {
+  afterEach(() => {
+    restore()
+  })
+
   it('fails with no path parameters', async () => {
     const userPool: CognitoIdentityServiceProvider = new CognitoIdentityServiceProvider()
     const apiEvent: APIGatewayProxyEvent = {} as any
@@ -77,7 +81,7 @@ describe('the "rawReadModelRequestToEnvelope" method', () => {
     const readModelName = 'testReadModel'
     const readModelID = '123'
     const expectedUser: UserEnvelope = {
-      email: 'any@any.com',
+      email: 'test@user.com',
       roles: [],
     }
     const expectedRequestEnvelope: ReadModelRequestEnvelope = {
@@ -98,7 +102,7 @@ describe('the "rawReadModelRequestToEnvelope" method', () => {
     } as any
 
     replace(UserEnvelopes, 'fetchUserFromRequest', () => {
-      return Promise.resolve(expectedRequestEnvelope.currentUser)
+      return Promise.resolve(expectedUser)
     })
     await expect(rawReadModelRequestToEnvelope(userPool, apiEvent)).to.be.become(expectedRequestEnvelope)
   })

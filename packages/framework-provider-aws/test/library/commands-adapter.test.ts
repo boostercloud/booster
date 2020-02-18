@@ -4,11 +4,12 @@
 import { expect } from 'chai'
 import * as chai from 'chai'
 import * as Library from '../../src/library/commands-adapter'
-import { restore, fake, match } from 'sinon'
+import { replace, restore, fake, match } from 'sinon'
 import { Kinesis, CognitoIdentityServiceProvider } from 'aws-sdk'
-import { BoosterConfig, Logger, EventEnvelope } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, EventEnvelope, UserEnvelope } from '@boostercloud/framework-types'
 import { UUID } from '@boostercloud/framework-types'
 import { APIGatewayProxyEvent } from 'aws-lambda'
+import * as UserEnvelopes from "../../src/library/user-envelopes";
 
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
@@ -26,7 +27,12 @@ describe('the commands-adapter', () => {
 
   describe('the `rawCommandToEnvelope` method', () => {
     it('generates an envelope correctly from an AWS event', async () => {
+      const userPool = new CognitoIdentityServiceProvider()
       const requestID = '123'
+      const expectedUser: UserEnvelope = {
+        email: 'test@user.com',
+        roles: [],
+      }
       const commandEnvelope = {
         requestID,
         typeName: 'TestCommand',
@@ -34,6 +40,7 @@ describe('the commands-adapter', () => {
           field1: 'test field',
           field2: 42,
         },
+        currentUser: expectedUser,
       }
       const AWSEvent = {
         headers: {},
@@ -42,8 +49,10 @@ describe('the commands-adapter', () => {
         },
         body: JSON.stringify(commandEnvelope),
       }
-      const userPool = new CognitoIdentityServiceProvider()
 
+      replace(UserEnvelopes, 'fetchUserFromRequest', () => {
+        return Promise.resolve(expectedUser)
+      })
       const envelope = await Library.rawCommandToEnvelope(userPool, AWSEvent as APIGatewayProxyEvent)
 
       expect(envelope).to.be.deep.equal(commandEnvelope)
