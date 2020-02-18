@@ -7,7 +7,7 @@ import {
 } from '@boostercloud/framework-types'
 import { toClassTitle } from '@boostercloud/framework-types/dist'
 
-export function httpStatusCodeFor(error: Error): number {
+function httpStatusCodeFor(error: Error): number {
   const errorToHTTPCode: Record<string, number> = {
     [InvalidParameterError.name]: 400,
     [NotAuthorizedError.name]: 401,
@@ -24,7 +24,7 @@ export async function requestFailed(error: Error): Promise<APIGatewayProxyResult
     statusCode,
     body: JSON.stringify({
       statusCode,
-      title: toClassTitle(error.constructor),
+      title: toClassTitle(error),
       reason: error.message,
     }),
   }
