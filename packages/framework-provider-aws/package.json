@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-aws",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Handle the Booster deployment process to AWS",
   "keywords": [
     "framework-provider-aws"
@@ -27,7 +27,7 @@
     "@aws-cdk/aws-kinesis": "^1.22.0",
     "@aws-cdk/aws-lambda": "^1.22.0",
     "@aws-cdk/aws-lambda-event-sources": "^1.22.0",
-    "@boostercloud/framework-types": "^0.1.3",
+    "@boostercloud/framework-types": "^0.1.4",
     "aws-cdk": "^1.22.0",
     "aws-sdk": "^2.514.0"
   },
