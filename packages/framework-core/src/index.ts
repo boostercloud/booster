@@ -1,5 +1,5 @@
 import * as boosterModule from './booster'
-import { BoosterConfig, EntityInterface, UUID } from '@boostercloud/framework-types'
+import { BoosterApp } from '@boostercloud/framework-types'
 export * from './decorators'
 export { Register } from '@boostercloud/framework-types'
 export {
