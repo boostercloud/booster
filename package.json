@@ -32,8 +32,10 @@
   "workspaces": [
     "packages/framework-types",
     "packages/framework-provider-aws",
+    "packages/framework-provider-aws-infrastructure",
     "packages/framework-core",
-    "packages/cli"
+    "packages/cli",
+    "packages/framework-example"
   ],
   "license": "Apache-2.0"
 }
