@@ -40,7 +40,7 @@ boost new:event CartChanged --fields cartId:UUID sku:string quantity:number
 4. Now we need to create the business logic for our command. In this case, it is really simple, as the only thing we need
 to do is to register an event (the one we created in the previous step) that represent the addition of an item to a cart.
 This could be seen as an equivalent action to a database commit.
-The code of the command should be something like this (after adding any missing import):
+To do this, we open and modify the command file (`commands/ChangeCart.ts`). Its code should be something like this (after adding any missing import):
 ```typescript
 // ... imports here ...
 
@@ -120,7 +120,9 @@ export class Cart {
       )
     } else {
       // If there wasn't any previous Cart, we return one with the new item in it
-      return new Cart(event.cartId, [{
+      return new Cart(
+        event.cartId, 
+        [{
           sku: event.sku,
           quantity: event.quantity
         }]
