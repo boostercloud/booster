@@ -2,6 +2,7 @@ import * as express from 'express'
 import { RuntimeStorage } from './runtime-storage'
 import { AuthController } from './controllers/auth'
 import { BoosterConfig } from '@boostercloud/framework-types'
+import path = require('path')
 
 /**
  * `deploy` serves as the entry point for the local provider. Even though
@@ -14,7 +15,8 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 export function run(storage: RuntimeStorage, config: BoosterConfig, port: number): void {
   const expressServer = express()
   const router = express.Router()
-  router.use('/', new AuthController(storage, config).router)
+  const userProject = require(path.normalize('./src/index'))
+  router.use('/', new AuthController(storage, config, userProject).router)
   expressServer.use(defaultErrorHandler)
   expressServer.use(express.json())
   expressServer.use(router)

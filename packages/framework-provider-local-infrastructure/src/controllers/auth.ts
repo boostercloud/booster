@@ -1,19 +1,20 @@
 import * as express from 'express'
 import { RuntimeStorage } from '../runtime-storage'
 import { UserEnvelope, BoosterConfig } from '@boostercloud/framework-types'
-import { boosterPreSignUpChecker } from '@boostercloud/framework-core'
 
 export class AuthController {
   public router: express.Router = express.Router()
 
-  constructor(readonly storage: RuntimeStorage, readonly config: BoosterConfig) {
-    this.router.post('/sign-up', this.signUp.bind(this))
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  constructor(readonly storage: RuntimeStorage, readonly config: BoosterConfig, readonly userProject: any) {
+    this.router.post('/sign-up', async (req: express.Request, res: express.Response) => {
+      await this.signUp(req.body)
+      res.status(200)
+    })
   }
 
-  private async signUp(req: express.Request, res: express.Response): Promise<void> {
-    const user: UserEnvelope = req.body
-    await boosterPreSignUpChecker(user)
+  public async signUp(user: UserEnvelope): Promise<void> {
+    await this.userProject.boosterPreSignUpChecker(user)
     this.storage.registeredUsers[user.email] = user
-    res.status(200).json()
   }
 }
