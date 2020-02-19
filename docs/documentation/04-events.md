@@ -23,15 +23,15 @@ Booster will generate a class for you in the `src/events` folder:
 export class CartPaid {
   public constructor(readonly cartID: UUID, readonly confirmationToken: string) {}
 
-  public entityID(): UUID {
+  public entityId(): UUID {
     return this.cartId
   }
 }
 ```
 
-Notice the required `entityID` method. All events are grouped by their event type and the value returned by `entityID`. All events are somehow tied to a concept in your domain model, in our bank account example, this could be the account number.
+Notice the required `entityId` method. All events are grouped by their event type and the value returned by `entityId`. All events are somehow tied to a concept in your domain model, in our bank account example, this could be the account number.
 
-In the previous example, the `CartPaid` event has a `cartID` field, which then you will return in the `entityID` method. This allows booster to find this event when the system requests to build the state of a specific Cart.
+In the previous example, the `CartPaid` event has a `cartId` field, which then you will return in the `entityId` method. This allows booster to find this event when the system requests to build the state of a specific Cart.
 
 In most situations your event stream will be reduced to a domain model object, like that Cart (An [Entity](05-entities.md)), but there are some use cases on which the event stream is just related to a specific entity, for example, a register of sensor values in a weather station, which are related to the station, but the station has no specific value that needs to be reduced. You can implement the semantics that best suit your needs.
 
