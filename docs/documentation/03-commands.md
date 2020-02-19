@@ -15,7 +15,7 @@ one or more events to the event store.
 To create a command, you can do so manually, or by running the generator provided by the `boost` CLI tool. Let's create a command to confirm a payment:
 
 ```shell script
-boost new:command ConfirmPayment --fields cartID:UUID confirmationToken:string
+boost new:command ConfirmPayment --fields cartId:UUID confirmationToken:string
 ```
 
 You can specify as many fields as you want, and Booster will generate a class for you in the `src/commands` folder that more or less will look like this:
@@ -25,7 +25,7 @@ You can specify as many fields as you want, and Booster will generate a class fo
   authorize: 'all',
 })
 export class ConfirmPayment {
-  public constructor(readonly cartID: UUID, readonly confirmationToken: string) {}
+  public constructor(readonly cartId: UUID, readonly confirmationToken: string) {}
 
   public handle(register: Register): void {
     // implementation for the handler
