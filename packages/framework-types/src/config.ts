@@ -16,7 +16,7 @@ import { ReadModelMetadata } from './concepts/read-model'
  */
 export class BoosterConfig {
   public logLevel: Level = Level.debug
-  private _provider: ProviderLibrary | undefined
+  private _provider?: ProviderLibrary
   public appName = 'new-booster-app'
   public region = 'eu-west-1'
   public readonly userProjectRootPath: string = process.cwd()
@@ -70,7 +70,7 @@ export class BoosterConfig {
   }
 
   public get provider(): ProviderLibrary {
-    if (!this._provider) throw new Error('It is required to set a valid provider library')
+    if (!this._provider) throw new Error('It is required to set a valid provider runtime in `src/config.ts`')
     return this._provider
   }
 
