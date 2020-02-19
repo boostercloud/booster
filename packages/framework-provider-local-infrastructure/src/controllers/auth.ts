@@ -2,6 +2,11 @@ import * as express from 'express'
 import { RuntimeStorage } from '../runtime-storage'
 import { UserApp, UserEnvelope, BoosterConfig } from '@boostercloud/framework-types'
 
+/**
+ * This controller provides the sign up method, in order for the
+ * user to be able to authenticate themselves, so they can interact
+ * with the read and write API.
+ */
 export class AuthController {
   public router: express.Router = express.Router()
 
