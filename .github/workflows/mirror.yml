@@ -1,6 +1,9 @@
 name: Mirror
 on:
-  pull_request: {types: labeled}
+  issue_comment:
+    types:
+      - created
+  
 
 jobs:
   create-pr:
@@ -10,8 +13,8 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            var labels = context.issue.labels.map(lbl => lbl.name)
-            if(labels.includes('publish')){
+            var comments = context.issue.comments.map(i => i.body)
+            if(comments.includes('#PUBLISH#')){
               github.pulls.create({
                 owner: 'boostercloud',
                 repo: 'booster',
