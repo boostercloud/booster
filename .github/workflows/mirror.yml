@@ -12,10 +12,8 @@ jobs:
       - uses: actions/github-script@0.5.0
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            console.log('CONTEXT: ', context)
-            var comments = context.issue.comments.map(i => i.body)
-            if(comments.includes('#PUBLISH#')){
+          script: |          
+            if(context.payload.comment.body.includes('#PUBLISH#')){
               github.pulls.create({
                 owner: 'boostercloud',
                 repo: 'booster',
