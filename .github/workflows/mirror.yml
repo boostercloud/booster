@@ -18,8 +18,8 @@ jobs:
                 owner: 'boostercloud',
                 repo: 'booster',
                 title: context.issue.title,
-                head: context.pull.head,
-                base: context.pull.base,
-                body: context.pull.body
+                head: context.payload.issue.pull_request.head,
+                base: context.payload.issue.pull_request.base,
+                body: context.payload.issue.pull_request.body
               })
             }
