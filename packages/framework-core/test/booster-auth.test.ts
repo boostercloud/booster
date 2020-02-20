@@ -42,7 +42,7 @@ describe('the "checkSignUp" method', () => {
       config.provider,
       'rawSignUpDataToUserEnvelope',
       fake.returns({
-        roles: ['NonExistingRole'],
+        roles: ['Developer', 'NonExistingRole', 'Admin'],
       })
     )
 
@@ -55,7 +55,7 @@ describe('the "checkSignUp" method', () => {
       config.provider,
       'rawSignUpDataToUserEnvelope',
       fake.returns({
-        roles: ['Admin'],
+        roles: ['Developer', 'Admin'],
       })
     )
 
