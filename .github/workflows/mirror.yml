@@ -13,9 +13,8 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            console.log('OWNER: ', context.payload.repository.owner)
             var pr = github.pulls.get({
-              owner: context.payload.repository.owner.name,
+              owner: 'theam',
               repo: context.payload.repository.name,
               pull_number: context.payload.issue.number
             })
