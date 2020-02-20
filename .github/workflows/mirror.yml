@@ -13,14 +13,20 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            console.log('PULL REQUEST: ', context.payload.pull_request)
+            console.log('OWNER: ', context.payload.repository.owner)
+            var pr = github.pulls.get({
+              owner: context.payload.repository.owner.name,
+              repo: context.payload.repository.name,
+              pull_number: context.payload.issue.number
+            })
+            console.log('PULL REQUEST: ', pr)
             if(context.payload.comment.body.includes('#PUBLISH#')){
               github.pulls.create({
                 owner: 'boostercloud',
                 repo: 'booster',
-                title: context.issue.title,
-                head: context.payload.issue.pull_request.head,
-                base: context.payload.issue.pull_request.base,
-                body: context.payload.issue.pull_request.body
+                title: context.payload.issue.title,
+                head: pr.head,
+                base: pr.base,
+                body: context.payload.issue.body
               })
             }
