@@ -35,10 +35,14 @@ export async function fetchUserFromRequest(
   request: APIGatewayProxyEvent,
   userPool: CognitoIdentityServiceProvider
 ): Promise<UserEnvelope | undefined> {
-  const accessToken = request.headers['Authorization']?.replace('Bearer ', '') // Remove the "Bearer" prefix
+  const accessToken = getTokenFromRequest(request)
   if (!accessToken) {
     return undefined
   }
   const currentUserData = await userPool.getUser({ AccessToken: accessToken }).promise()
   return UserEnvelopeBuilder.fromAttributeList(currentUserData.UserAttributes)
+}
+
+function getTokenFromRequest(request: APIGatewayProxyEvent): string | undefined {
+  return request.headers['Authorization']?.replace('Bearer ', '') // Remove the "Bearer" prefix
 }
