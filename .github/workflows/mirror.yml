@@ -12,7 +12,8 @@ jobs:
       - uses: actions/github-script@0.5.0
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |          
+          script: |
+            console.log('PULL REQUEST: ', context.payload.pull_request)
             if(context.payload.comment.body.includes('#PUBLISH#')){
               github.pulls.create({
                 owner: 'boostercloud',
