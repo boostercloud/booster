@@ -104,7 +104,7 @@ describe('the "rawReadModelRequestToEnvelope" method', () => {
     replace(UserEnvelopes, 'fetchUserFromRequest', () => {
       return Promise.resolve(expectedUser)
     })
-    await expect(rawReadModelRequestToEnvelope(userPool, apiEvent)).to.be.become(expectedRequestEnvelope)
+    await expect(rawReadModelRequestToEnvelope(userPool, apiEvent)).to.become(expectedRequestEnvelope)
   })
 })
 
