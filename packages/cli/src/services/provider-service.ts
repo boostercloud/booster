@@ -1,6 +1,5 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { Observable } from 'rxjs'
-import { Providers } from '@boostercloud/framework-core'
 
 export function assertNameIsCorrect(name: string): void {
   // It is 55 because cloudformations max length is 63.
@@ -23,10 +22,10 @@ export function assertNameIsCorrect(name: string): void {
     Found: '${name}'`)
 }
 
-export const deployToCloudProvider = (configuration: BoosterConfig): Observable<string> => {
-  assertNameIsCorrect(configuration.appName)
-  return Providers.getInfrastructure(configuration).deploy(configuration)
+export const deployToCloudProvider = (config: BoosterConfig): Observable<string> => {
+  assertNameIsCorrect(config.appName)
+  return config.provider.getInfrastructure().deploy(config)
 }
-export const nukeCloudProviderResources = (configuration: BoosterConfig): Observable<string> => {
-  return Providers.getInfrastructure(configuration).nuke(configuration)
+export const nukeCloudProviderResources = (config: BoosterConfig): Observable<string> => {
+  return config.provider.getInfrastructure().nuke(config)
 }

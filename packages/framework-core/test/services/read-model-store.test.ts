@@ -3,8 +3,7 @@ import { describe } from 'mocha'
 import { restore, fake, replace, spy } from 'sinon'
 import { ReadModelStore } from '../../src/services/read-model-store'
 import { buildLogger } from '../../src/booster-logger'
-import { Level, BoosterConfig, EventEnvelope, Provider, UUID } from '@boostercloud/framework-types'
-import { Library } from '@boostercloud/framework-provider-aws'
+import { Level, BoosterConfig, EventEnvelope, UUID, ProviderLibrary } from '@boostercloud/framework-types'
 import { expect } from 'chai'
 import * as chai from 'chai'
 
@@ -37,7 +36,10 @@ describe('ReadModelStore', () => {
   }
 
   const config = new BoosterConfig()
-  config.provider = Provider.AWS
+  config.provider = {
+    storeReadModel: () => {},
+    fetchReadModel: () => {},
+  } as unknown as ProviderLibrary
   config.entities['ImportantConcept'] = { class: ImportantConcept, properties: [] }
   config.projections['ImportantConcept'] = [
     {
@@ -59,6 +61,7 @@ describe('ReadModelStore', () => {
     entityTypeName: 'ImportantConcept',
     value: new ImportantConcept('importantEntityID', 'joinColumnID', 123),
     requestID: 'whatever',
+
     typeName: 'ImportantConcept',
     createdAt: new Date().toISOString(),
   }
@@ -77,20 +80,20 @@ describe('ReadModelStore', () => {
           createdAt: new Date().toISOString(),
         }
 
-        replace(Library, 'storeReadModel', fake())
+        replace(config.provider, 'storeReadModel', fake())
         const readModelStore = new ReadModelStore(config, logger)
         replace(readModelStore, 'fetchReadModel', fake.returns(null))
 
         await expect(readModelStore.project(entitySnapshotWithNoProjections)).to.eventually.be.fulfilled
 
-        expect(Library.storeReadModel).not.to.have.been.called
+        expect(config.provider.storeReadModel).not.to.have.been.called
         expect(readModelStore.fetchReadModel).not.to.have.been.called
       })
     })
 
     context("when the corresponding read models don't exist", () => {
       it('creates new instances of the read models', async () => {
-        replace(Library, 'storeReadModel', fake())
+        replace(config.provider, 'storeReadModel', fake())
         const readModelStore = new ReadModelStore(config, logger)
         replace(readModelStore, 'fetchReadModel', fake.returns(null))
         spy(SomeReadModel, 'someObserver')
@@ -105,13 +108,13 @@ describe('ReadModelStore', () => {
         expect(SomeReadModel.someObserver).to.have.returned({ id: 'joinColumnID', kind: 'some', count: 123 })
         expect(AnotherReadModel.anotherObserver).to.have.been.calledOnceWith(anEntitySnapshot.value, null)
         expect(AnotherReadModel.anotherObserver).to.have.returned({ id: 'joinColumnID', kind: 'another', count: 123 })
-        expect(Library.storeReadModel).to.have.been.calledTwice
-        expect(Library.storeReadModel).to.have.been.calledWith(config, logger, 'SomeReadModel', {
+        expect(config.provider.storeReadModel).to.have.been.calledTwice
+        expect(config.provider.storeReadModel).to.have.been.calledWith(config, logger, 'SomeReadModel', {
           id: 'joinColumnID',
           kind: 'some',
           count: 123,
         })
-        expect(Library.storeReadModel).to.have.been.calledWith(config, logger, 'AnotherReadModel', {
+        expect(config.provider.storeReadModel).to.have.been.calledWith(config, logger, 'AnotherReadModel', {
           id: 'joinColumnID',
           kind: 'another',
           count: 123,
@@ -121,7 +124,7 @@ describe('ReadModelStore', () => {
 
     context('when the corresponding read model did exist', () => {
       it('updates the read model', async () => {
-        replace(Library, 'storeReadModel', fake())
+        replace(config.provider, 'storeReadModel', fake())
         const readModelStore = new ReadModelStore(config, logger)
         replace(
           readModelStore,
@@ -154,13 +157,13 @@ describe('ReadModelStore', () => {
           count: 177,
         })
         expect(AnotherReadModel.anotherObserver).to.have.returned({ id: 'joinColumnID', kind: 'another', count: 300 })
-        expect(Library.storeReadModel).to.have.been.calledTwice
-        expect(Library.storeReadModel).to.have.been.calledWith(config, logger, 'SomeReadModel', {
+        expect(config.provider.storeReadModel).to.have.been.calledTwice
+        expect(config.provider.storeReadModel).to.have.been.calledWith(config, logger, 'SomeReadModel', {
           id: 'joinColumnID',
           kind: 'some',
           count: 200,
         })
-        expect(Library.storeReadModel).to.have.been.calledWith(config, logger, 'AnotherReadModel', {
+        expect(config.provider.storeReadModel).to.have.been.calledWith(config, logger, 'AnotherReadModel', {
           id: 'joinColumnID',
           kind: 'another',
           count: 300,
@@ -171,22 +174,22 @@ describe('ReadModelStore', () => {
 
   describe('the `fetchReadModel` method', () => {
     it("returns null when the read model doesn't exist", async () => {
-      replace(Library, 'fetchReadModel', fake.returns(null))
+      replace(config.provider, 'fetchReadModel', fake.returns(null))
       const readModelStore = new ReadModelStore(config, logger)
 
       const result = await readModelStore.fetchReadModel('SomeReadModel', 'joinColumnID')
 
-      expect(Library.fetchReadModel).to.have.been.calledOnceWithExactly(config, logger, 'SomeReadModel', 'joinColumnID')
+      expect(config.provider.fetchReadModel).to.have.been.calledOnceWithExactly(config, logger, 'SomeReadModel', 'joinColumnID')
       expect(result).to.be.null
     })
 
     it('returns the current read model value when it exists', async () => {
-      replace(Library, 'fetchReadModel', fake.returns({ id: 'joinColumnID', count: 31415 }))
+      replace(config.provider, 'fetchReadModel', fake.returns({ id: 'joinColumnID', count: 31415 }))
       const readModelStore = new ReadModelStore(config, logger)
 
       const result = await readModelStore.fetchReadModel('SomeReadModel', 'joinColumnID')
 
-      expect(Library.fetchReadModel).to.have.been.calledOnceWithExactly(config, logger, 'SomeReadModel', 'joinColumnID')
+      expect(config.provider.fetchReadModel).to.have.been.calledOnceWithExactly(config, logger, 'SomeReadModel', 'joinColumnID')
       expect(result).to.be.deep.equal({ id: 'joinColumnID', count: 31415 })
     })
   })

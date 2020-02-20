@@ -2,14 +2,13 @@
 import { describe } from 'mocha'
 import {
   BoosterConfig,
-  Provider,
   EventEnvelope,
   EventInterface,
   EntityInterface,
   Level,
   UUID,
+  ProviderLibrary,
 } from '@boostercloud/framework-types'
-import { Library } from '@boostercloud/framework-provider-aws'
 import { replace, fake, stub, restore } from 'sinon'
 import { EventStore } from '../../src/services/event-store'
 import { expect } from 'chai'
@@ -34,7 +33,11 @@ describe('EventStore', () => {
   }
 
   const config = new BoosterConfig()
-  config.provider = Provider.AWS
+  config.provider = {
+    storeEvent: () => {},
+    readEntityLatestSnapshot: () => {},
+    readEntityEventsSince: () => {},
+  } as unknown as ProviderLibrary
   config.entities['ImportantConcept'] = { class: ImportantConcept, properties: [] }
   config.reducers['ImportantEvent'] = {
     class: ImportantConcept,
@@ -90,13 +93,13 @@ describe('EventStore', () => {
   describe('public methods', () => {
     describe('append', () => {
       it('appends an event to the event store', async () => {
-        replace(Library, 'storeEvent', fake())
+        replace(config.provider, 'storeEvent', fake())
         const eventStore = new EventStore(config, logger)
         const someEnvelope = eventEnvelopeFor(someEvent)
 
         await eventStore.append(someEnvelope)
 
-        expect(Library.storeEvent).to.have.been.calledOnceWith(config, logger, someEnvelope)
+        expect(config.provider.storeEvent).to.have.been.calledOnceWith(config, logger, someEnvelope)
       })
     })
 
@@ -439,7 +442,7 @@ describe('EventStore', () => {
 
     describe('storeSnapshot', () => {
       it('stores a snapshot in the event store', async () => {
-        replace(Library, 'storeEvent', fake())
+        replace(config.provider, 'storeEvent', fake())
 
         const someSnapshot = snapshotEnvelopeFor({
           id: '42',
@@ -448,31 +451,31 @@ describe('EventStore', () => {
 
         await eventStore.storeSnapshot(someSnapshot)
 
-        expect(Library.storeEvent).to.have.been.calledOnceWith(config, logger, someSnapshot)
+        expect(config.provider.storeEvent).to.have.been.calledOnceWith(config, logger, someSnapshot)
       })
     })
 
     describe('loadLatestSnapshot', () => {
       it('looks for the latest snapshot stored in the event stream', async () => {
-        replace(Library, 'readEntityLatestSnapshot', fake())
+        replace(config.provider, 'readEntityLatestSnapshot', fake())
 
         const entityTypeName = 'ImportantConcept'
         const entityID = '42'
         await eventStore.loadLatestSnapshot(entityTypeName, entityID)
 
-        expect(Library.readEntityLatestSnapshot).to.have.been.calledOnceWith(config, logger, entityTypeName, entityID)
+        expect(config.provider.readEntityLatestSnapshot).to.have.been.calledOnceWith(config, logger, entityTypeName, entityID)
       })
     })
 
     describe('loadEventStreamSince', () => {
       it('loads a event stream starting from a specific timestapm', async () => {
-        replace(Library, 'readEntityEventsSince', fake())
+        replace(config.provider, 'readEntityEventsSince', fake())
 
         const entityTypeName = 'ImportantConcept'
         const entityID = '42'
         await eventStore.loadEventStreamSince(entityTypeName, entityID, originOfTime)
 
-        expect(Library.readEntityEventsSince).to.have.been.calledOnceWith(
+        expect(config.provider.readEntityEventsSince).to.have.been.calledOnceWith(
           config,
           logger,
           entityTypeName,

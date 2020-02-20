@@ -5,10 +5,9 @@ import {
   EventInterface,
   Instance,
   Logger,
-  ProviderCommandsLibrary,
   Register,
+  ProviderCommandsLibrary,
 } from '@boostercloud/framework-types'
-import { Providers } from './providers'
 import { BoosterAuth } from './booster-auth'
 
 export class BoosterCommandDispatcher {
@@ -23,7 +22,7 @@ export class BoosterCommandDispatcher {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any> {
     logger.debug('Arrived raw command: ', rawCommand)
-    const provider: ProviderCommandsLibrary = Providers.getLibrary(config)
+    const provider: ProviderCommandsLibrary = config.provider
     try {
       const envelope = await provider.rawCommandToEnvelope(rawCommand)
       const register = this.dispatchCommand(envelope, config, logger)

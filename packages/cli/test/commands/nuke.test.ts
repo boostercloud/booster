@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from 'chai'
 import { fancy } from 'fancy-test'
-import { Provider } from '@boostercloud/framework-types'
 import { stub, restore, replace, fake } from 'sinon'
 import { Observable, Observer } from 'rxjs'
 import rewire = require('rewire')
 import Prompter from '../../src/services/user-prompt'
+import { ProviderLibrary } from '@boostercloud/framework-types'
 
 const nuke = rewire('../../src/commands/nuke')
 const runTasks = nuke.__get__('runTasks')
@@ -32,8 +32,10 @@ describe('nuke', () => {
 
     context('when a wrong application name is provided', () => {
       fancy.stdout().it('fails gracefully showing the error message', async (ctx) => {
+        const fakeProvider = {} as ProviderLibrary
+
         const fakeConfig = Promise.resolve({
-          provider: Provider.AWS,
+          provider: fakeProvider,
           appName: 'fake app',
           region: 'tunte',
           entities: {},
@@ -54,8 +56,10 @@ describe('nuke', () => {
 
     context('when a valid application name is provided', () => {
       fancy.stdout().it('starts removal', async (ctx) => {
+        const fakeProvider = {} as ProviderLibrary
+
         const fakeConfig = Promise.resolve({
-          provider: Provider.AWS,
+          provider: fakeProvider,
           appName: 'fake app',
           region: 'tunte',
           entities: {},

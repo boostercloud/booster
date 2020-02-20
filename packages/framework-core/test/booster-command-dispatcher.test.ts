@@ -4,10 +4,10 @@ import { Booster } from '../src/booster'
 import { fake, replace, restore } from 'sinon'
 import * as chai from 'chai'
 import { expect } from 'chai'
-import { Library as AWS } from '@boostercloud/framework-provider-aws'
 import { BoosterCommandDispatcher } from '../src/booster-command-dispatcher'
-import { BoosterConfig, Provider, Logger, Register } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, Register } from '@boostercloud/framework-types'
 import { Command } from '../src/decorators'
+import { ProviderLibrary } from '@boostercloud/framework-types'
 
 chai.use(require('sinon-chai'))
 
@@ -29,49 +29,50 @@ describe('the `BoosterCommandsDispatcher`', () => {
   }
 
   describe('the `dispatch` method', () => {
-    it('calls the AWS `rawCommandToEnvelope` if the current set provider is AWS', async () => {
+    it("calls the provider's `rawCommandToEnvelope`", async () => {
       const boosterCommandDispatcher = BoosterCommandDispatcher
-      const fakeAWSRawCommandToEnvelope = fake()
-      replace(AWS, 'rawCommandToEnvelope', fakeAWSRawCommandToEnvelope)
-      replace(AWS, 'handleCommandResult', fake())
       replace(boosterCommandDispatcher as any, 'dispatchCommand', fake())
       replace(boosterCommandDispatcher as any, 'eventEnvelopesFromRegister', fake())
 
       const config = new BoosterConfig()
-      config.provider = Provider.AWS
+      config.provider = ({
+        rawCommandToEnvelope: fake(),
+        handleCommandResult: fake(),
+      } as unknown) as ProviderLibrary
       await boosterCommandDispatcher.dispatch({ body: 'Test body' }, config, logger)
 
-      expect(fakeAWSRawCommandToEnvelope).to.have.been.calledOnce
+      expect(config.provider.rawCommandToEnvelope).to.have.been.calledOnce
     })
 
     it('dispatches the message', async () => {
       const fakeDispatch = fake()
-      const boosterCommandDispatcher = BoosterCommandDispatcher
-      replace(AWS, 'rawCommandToEnvelope', fake())
-      replace(AWS, 'handleCommandResult', fake())
-      replace(boosterCommandDispatcher as any, 'eventEnvelopesFromRegister', fake())
-      replace(boosterCommandDispatcher as any, 'dispatchCommand', fakeDispatch)
+      const boosterCommandDispatcher = BoosterCommandDispatcher as any
+      replace(boosterCommandDispatcher, 'eventEnvelopesFromRegister', fake())
+      replace(boosterCommandDispatcher, 'dispatchCommand', fakeDispatch)
 
       const config = new BoosterConfig()
-      config.provider = Provider.AWS
+      config.provider = ({
+        rawCommandToEnvelope: fake(),
+        handleCommandResult: fake(),
+      } as unknown) as ProviderLibrary
       await boosterCommandDispatcher.dispatch({ body: 'Test body' }, config, logger)
 
       expect(fakeDispatch).to.have.been.calledOnce
     })
 
-    it('calls the AWS `handleCommandResult` if the current provider is AWS and there were no errors', async () => {
+    it("calls the provider's `handleCommandResult` when there were no errors", async () => {
       const boosterCommandDispatcher = BoosterCommandDispatcher
-      const fakeHandle = fake()
-      replace(AWS, 'rawCommandToEnvelope', fake())
-      replace(AWS, 'handleCommandResult', fakeHandle)
       replace(boosterCommandDispatcher as any, 'dispatchCommand', fake())
       replace(boosterCommandDispatcher as any, 'eventEnvelopesFromRegister', fake())
 
       const config = new BoosterConfig()
-      config.provider = Provider.AWS
+      config.provider = ({
+        rawCommandToEnvelope: fake(),
+        handleCommandResult: fake(),
+      } as unknown) as ProviderLibrary
       await boosterCommandDispatcher.dispatch({ body: 'Test body' }, config, logger)
 
-      expect(fakeHandle).to.have.been.calledOnce
+      expect(config.provider.handleCommandResult).to.have.been.calledOnce
     })
   })
 
@@ -86,6 +87,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
             throw new Error('Not implemented')
           }
         }
+
         const boosterCommandDispatcher = BoosterCommandDispatcher as any
         const fakeHandler = fake()
         const command = new PostComment('This test is good!')

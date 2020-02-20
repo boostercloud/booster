@@ -3,6 +3,7 @@ import * as fc from 'fast-check'
 import { BoosterConfig } from '../src/config'
 import { expect } from 'fancy-test'
 import { MigrationMetadata } from '../src/concepts'
+import { ProviderLibrary } from '../src'
 
 describe('the config type', () => {
   describe('resourceNames', () => {
@@ -109,6 +110,7 @@ describe('the config type', () => {
   describe('validate', () => {
     it('throws when there are gaps in the migration versions for a concept', () => {
       const config = new BoosterConfig()
+      config.provider = {} as ProviderLibrary
       const migrations = new Map()
       migrations.set(3, {} as any)
       migrations.set(2, {} as any)
@@ -120,6 +122,7 @@ describe('the config type', () => {
 
     it('does not throw when there are no gaps in the migration versions for a concept', () => {
       const config = new BoosterConfig()
+      config.provider = {} as ProviderLibrary
       const migrations = new Map()
       migrations.set(4, {} as any)
       migrations.set(2, {} as any)
@@ -127,6 +130,21 @@ describe('the config type', () => {
       config.migrations['concept'] = migrations
 
       expect(() => config.validate()).to.not.throw()
+    })
+  })
+
+  describe('provider', () => {
+    it('throws when there is no provider set', () => {
+      const config = new BoosterConfig()
+
+      expect(() => config.provider).to.throw(/set a valid provider runtime/)
+    })
+
+    it('does not throw when there is a provider set', () => {
+      const config = new BoosterConfig()
+      config.provider = {} as ProviderLibrary
+
+      expect(() => config.provider).to.not.throw()
     })
   })
 })

@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-
 import { expect } from 'chai'
 import * as chai from 'chai'
-import { fake, replace, restore } from 'sinon'
+import { restore, fake, replace } from 'sinon'
 import { Logger, BoosterConfig } from '@boostercloud/framework-types'
-import { Providers } from '../src'
-import { ProviderAuthLibrary, RoleAccess, UserEnvelope } from '@boostercloud/framework-types'
+import { RoleAccess, UserEnvelope } from '@boostercloud/framework-types'
 import { BoosterAuth } from '../src/booster-auth'
+import { ProviderLibrary } from '@boostercloud/framework-types'
 
 chai.use(require('sinon-chai'))
 
@@ -25,6 +24,9 @@ describe('the "checkSignUp" method', () => {
 
   function buildBoosterConfig(): BoosterConfig {
     const config = new BoosterConfig()
+    config.provider = ({
+      rawSignUpDataToUserEnvelope: () => {},
+    } as unknown) as ProviderLibrary
     config.roles['Admin'] = {
       allowSelfSignUp: false,
     }
@@ -36,32 +38,26 @@ describe('the "checkSignUp" method', () => {
 
   it('throws when the user has a non-existing role', () => {
     const config = buildBoosterConfig()
-    const userEnvelope: UserEnvelope = {
-      email: 'user@test.com',
-      roles: ['Developer', 'NonExistingRole', 'Admin'],
-    }
-
-    const fakeProvider: ProviderAuthLibrary = {
-      rawSignUpDataToUserEnvelope: () => userEnvelope,
-    }
-    const fakeGetLibrary = fake.returns(fakeProvider)
-    replace(Providers, 'getLibrary', fakeGetLibrary)
+    replace(
+      config.provider,
+      'rawSignUpDataToUserEnvelope',
+      fake.returns({
+        roles: ['Developer', 'NonExistingRole', 'Admin'],
+      })
+    )
 
     expect(() => BoosterAuth.checkSignUp({}, config, logger)).to.throw('Unknown role NonExistingRole')
   })
 
   it('throws when the user has a role not allowed to self sign-up', () => {
     const config = buildBoosterConfig()
-    const userEnvelope: UserEnvelope = {
-      email: 'user@test.com',
-      roles: ['Developer', 'Admin'],
-    }
-
-    const fakeProvider: ProviderAuthLibrary = {
-      rawSignUpDataToUserEnvelope: () => userEnvelope,
-    }
-    const fakeGetLibrary = fake.returns(fakeProvider)
-    replace(Providers, 'getLibrary', fakeGetLibrary)
+    replace(
+      config.provider,
+      'rawSignUpDataToUserEnvelope',
+      fake.returns({
+        roles: ['Developer', 'Admin'],
+      })
+    )
 
     expect(() => BoosterAuth.checkSignUp({}, config, logger)).to.throw(
       /User with role Admin can't sign up by themselves/
@@ -70,16 +66,13 @@ describe('the "checkSignUp" method', () => {
 
   it('succeeds user has a role allowed to self sign-up', () => {
     const config = buildBoosterConfig()
-    const userEnvelope: UserEnvelope = {
-      email: 'user@test.com',
-      roles: ['Developer'],
-    }
-
-    const fakeProvider: ProviderAuthLibrary = {
-      rawSignUpDataToUserEnvelope: () => userEnvelope,
-    }
-    const fakeGetLibrary = fake.returns(fakeProvider)
-    replace(Providers, 'getLibrary', fakeGetLibrary)
+    replace(
+      config.provider,
+      'rawSignUpDataToUserEnvelope',
+      fake.returns({
+        roles: ['Developer'],
+      })
+    )
 
     expect(() => BoosterAuth.checkSignUp({}, config, logger)).not.to.throw()
   })
