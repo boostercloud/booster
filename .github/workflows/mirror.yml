@@ -13,7 +13,7 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            var pr = github.pulls.get({
+            var pr = await github.pulls.get({
               owner: 'theam',
               repo: context.payload.repository.name,
               pull_number: context.payload.issue.number
