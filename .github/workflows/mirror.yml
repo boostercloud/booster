@@ -13,6 +13,7 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
+            console.log('CONTEXT: ', context)
             var comments = context.issue.comments.map(i => i.body)
             if(comments.includes('#PUBLISH#')){
               github.pulls.create({
