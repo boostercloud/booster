@@ -37,13 +37,13 @@ async function main(argv){
         owner: 'theam',
         repo: 'booster',
         issue_number: prNumber,
-        body: `This PR was merged in the public repo: ${newPr.data.url}`
+        body: `This PR was merged in the public repo: ${newPr.data._links.html}`
     })
     await octokit.issues.addLabels({
         owner: 'theam',
         repo: 'booster',
         issue_number: prNumber,
-        labels: 'published-to-public'
+        labels: ['published-to-public']
     })
 }
 
