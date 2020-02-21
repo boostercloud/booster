@@ -14,19 +14,14 @@ jobs:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
             (async () => {
-              const pr = await github.pulls.get({
-                owner: 'theam',
-                repo: context.payload.repository.name,
-                pull_number: context.payload.issue.number
-              })
-              console.log('PULL REQUEST: ', pr)
-              if(context.payload.comment.body.includes('#PUBLISH#')){
-                github.pulls.create({
+              console.log('PULL REQUEST: ', context.payload.issue.pull_request)
+              if(context.payload.comment.body.toLower() === 'please publish'){
+                await github.pulls.create({
                   owner: 'boostercloud',
                   repo: 'booster',
                   title: context.payload.issue.title,
-                  head: pr.head,
-                  base: pr.base,
+                  head: context.payload.issue.pull_request.head,
+                  base: 'master',
                   body: context.payload.issue.body
                 })
               }
