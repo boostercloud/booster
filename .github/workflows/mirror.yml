@@ -13,11 +13,12 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            github.pulls.get({
-              owner: 'theam',
-              repo: context.payload.repository.name,
-              pull_number: context.payload.issue.number
-            }).then(pr => {
+            (async () => {
+              const pr = await github.pulls.get({
+                owner: 'theam',
+                repo: context.payload.repository.name,
+                pull_number: context.payload.issue.number
+              })
               console.log('PULL REQUEST: ', pr)
               if(context.payload.comment.body.includes('#PUBLISH#')){
                 github.pulls.create({
@@ -29,4 +30,4 @@ jobs:
                   body: context.payload.issue.body
                 })
               }
-            })
+            })()
