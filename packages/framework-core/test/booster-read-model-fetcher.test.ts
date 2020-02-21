@@ -10,6 +10,7 @@ import {
   NotAuthorizedError,
   UUID,
   ReadModelRequestEnvelope,
+  ReadModelInterface,
 } from '@boostercloud/framework-types'
 import { replace, fake, restore } from 'sinon'
 import { BoosterReadModelFetcher } from '../src/booster-read-model-fetcher'
@@ -39,6 +40,7 @@ describe('BoosterReadModelFetcher', () => {
     handleReadModelError: () => {},
     fetchAllReadModels: () => {},
     fetchReadModel: () => {},
+    handleReadModelResult: () => {},
   } as unknown) as ProviderLibrary
   config.readModels[TestReadModel.name] = {
     class: TestReadModel,
@@ -108,12 +110,16 @@ describe('BoosterReadModelFetcher', () => {
           roles: ['UserRole'],
         },
       }
+      const returnedReadModels: Array<ReadModelInterface> = [{ id: '123' }, { id: '456' }]
       replace(config.provider, 'rawReadModelRequestToEnvelope', fake.returns(envelope))
-      const providerFetchAll = fake()
+      const providerFetchAll = fake.returns(returnedReadModels)
+      const providerHandleResult = fake()
       replace(config.provider, 'fetchAllReadModels', providerFetchAll)
+      replace(config.provider, 'handleReadModelResult', providerHandleResult)
 
       await BoosterReadModelFetcher.fetch(rawMessage, config, logger)
       expect(providerFetchAll).to.have.been.calledOnce
+      expect(providerHandleResult).to.have.been.calledWith(returnedReadModels)
     })
 
     it('calls the provider method to get one read model when ID is provided', async () => {
@@ -128,12 +134,16 @@ describe('BoosterReadModelFetcher', () => {
           roles: ['UserRole'],
         },
       }
+      const returnedReadModel: ReadModelInterface = { id: '123' }
       replace(config.provider, 'rawReadModelRequestToEnvelope', fake.returns(envelope))
-      const providerFetchOne = fake()
+      const providerFetchOne = fake.returns(returnedReadModel)
+      const providerHandleResult = fake()
       replace(config.provider, 'fetchReadModel', providerFetchOne)
+      replace(config.provider, 'handleReadModelResult', providerHandleResult)
 
       await BoosterReadModelFetcher.fetch(rawMessage, config, logger)
       expect(providerFetchOne).to.have.been.calledOnce
+      expect(providerHandleResult).to.have.been.calledWith(returnedReadModel)
     })
   })
 })

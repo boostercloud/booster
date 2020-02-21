@@ -4,24 +4,21 @@ import {
   InvalidParameterError,
   NotAuthorizedError,
   NotFoundError,
-  ProviderReadModelsLibrary,
   ReadModelRequestEnvelope,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
+import { ReadModelInterface } from "@boostercloud/framework-types/dist";
 
 export class BoosterReadModelFetcher {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public static async fetch(rawMessage: any, config: BoosterConfig, logger: Logger): Promise<any> {
-    const provider: ProviderReadModelsLibrary = config.provider
     try {
-      const readModelRequest = await provider.rawReadModelRequestToEnvelope(rawMessage)
+      const readModelRequest = await config.provider.rawReadModelRequestToEnvelope(rawMessage)
       this.validateFetchRequest(readModelRequest, config, logger)
-      if (readModelRequest.readModelID) {
-        return provider.fetchReadModel(config, logger, readModelRequest.typeName, readModelRequest.readModelID)
-      }
-      return provider.fetchAllReadModels(config, logger, readModelRequest.typeName)
+      const result = await this.processFetch(readModelRequest, config, logger)
+      return config.provider.handleReadModelResult(result)
     } catch (e) {
-      return provider.handleReadModelError(e)
+      return config.provider.handleReadModelError(e)
     }
   }
 
@@ -43,5 +40,16 @@ export class BoosterReadModelFetcher {
     if (!BoosterAuth.isUserAuthorized(readModelMetadata.authorizedRoles, readModelRequest.currentUser)) {
       throw new NotAuthorizedError(`Access denied for read model ${readModelRequest.typeName}`)
     }
+  }
+
+  private static processFetch(
+    readModelRequest: ReadModelRequestEnvelope,
+    config: BoosterConfig,
+    logger: Logger
+  ): Promise<ReadModelInterface | Array<ReadModelInterface>> {
+    if (readModelRequest.readModelID) {
+      return config.provider.fetchReadModel(config, logger, readModelRequest.typeName, readModelRequest.readModelID)
+    }
+    return config.provider.fetchAllReadModels(config, logger, readModelRequest.typeName)
   }
 }

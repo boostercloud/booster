@@ -55,8 +55,6 @@ export async function handleCommandResult(
 
 function toPutRecordsEntity(eventEnvelope: EventEnvelope): PutRecordsRequestEntry {
   return {
-    // TODO: Here we should decide which partition key to use: Whether the ID of the event or the ID of the entity it
-    // is related to. What if the event is related to more than one entity?
     PartitionKey: partitionKeyForEvent(eventEnvelope.entityTypeName, eventEnvelope.entityID),
     Data: Buffer.from(JSON.stringify(eventEnvelope)),
   }
