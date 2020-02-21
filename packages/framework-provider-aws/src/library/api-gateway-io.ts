@@ -4,8 +4,8 @@ import {
   NotAuthorizedError,
   NotFoundError,
   InvalidVersionError,
+  toClassTitle,
 } from '@boostercloud/framework-types'
-import { toClassTitle } from '@boostercloud/framework-types/dist'
 
 function httpStatusCodeFor(error: Error): number {
   const errorToHTTPCode: Record<string, number> = {

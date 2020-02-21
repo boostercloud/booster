@@ -5,9 +5,9 @@ import {
   NotAuthorizedError,
   NotFoundError,
   ReadModelRequestEnvelope,
+  ReadModelInterface,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
-import { ReadModelInterface } from "@boostercloud/framework-types/dist";
 
 export class BoosterReadModelFetcher {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
