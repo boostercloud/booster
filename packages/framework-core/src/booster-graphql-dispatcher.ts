@@ -1,24 +1,17 @@
 import { BoosterConfig, Logger } from '@boostercloud/framework-types'
-import { graphql, buildSchema } from 'graphql'
-
-// Construct a schema, using GraphQL schema language
-const schema = buildSchema(`
-  type Query {
-    hello: String
-  }
-`)
-
-// The root provides a resolver function for each API endpoint
-const root = {
-  hello: () => 'Hello world!',
-}
+import { graphql, GraphQLSchema } from 'graphql'
+import { GraphqlGenerator } from './services/graphql-generator'
 
 export class BoosterGraphqlDispatcher {
-  // @ts-ignore
-  public constructor(private config: BoosterConfig, private logger: Logger) {}
+  private readonly graphQLSchema: GraphQLSchema
+
+  public constructor(private config: BoosterConfig, private logger: Logger) {
+    this.graphQLSchema = new GraphqlGenerator(this.config).generateSchema()
+    // console.log(printSchema(this.graphQLSchema))
+  }
 
   public async dispatchGraphQL(request: any): Promise<any> {
-    await graphql(schema, '{ hello }', root).then((response) => {
+    await graphql(this.graphQLSchema, '{ Cart(id: "demo") { id, paid } }').then((response) => {
       this.logger.info(response)
     })
     return null

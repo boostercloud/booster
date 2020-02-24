@@ -1,7 +1,7 @@
 /**
  * Holds information about a user class annotated with `@Entity`
  */
-import { Class } from '../typelevel'
+import { AnyClass, Class } from '../typelevel'
 import { UUID } from '.'
 
 export interface EntityInterface {
@@ -16,5 +16,5 @@ export interface EntityMetadata {
 export interface PropertyMetadata {
   readonly name: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly type: Class<any>
+  readonly type: AnyClass
 }
