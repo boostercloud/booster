@@ -35,4 +35,19 @@ In the previous example, the `CartPaid` event has a `cartID` field, which then y
 
 In most situations your event stream will be reduced to a domain model object, like that Cart (An [Entity](05-entities.md)), but there are some use cases on which the event stream is just related to a specific entity, for example, a register of sensor values in a weather station, which are related to the station, but the station has no specific value that needs to be reduced. You can implement the semantics that best suit your needs.
 
+## Event Handlers
+
+You can react to new events implementing an **Event Handler**. An Event Handler is a regular class that is subscribed to an event with the decorator `@EventHandler(<name of the event class>`. Any time that a new event is added to the event store, the `handle` method in the event handler will be called with the instance of the event and the `register` object that can be used to emit new kinds of events or new commands:
+
+```typescript
+@EventHandler(CartPaid)
+export class CartPaidHandler {
+  public static handle(event: CartPaid, register: Register) {
+    register.commands(new StartOrderPreparation(event.cartID))
+  }
+}
+```
+
+Typical uses of Event Handlers are chaining operations, like in the example, starting to prepare an order when a payment is confirmed, or to transform events in order for them to be readable by other services.
+
 Let's continue learning about [Entities](05-entities.md)!

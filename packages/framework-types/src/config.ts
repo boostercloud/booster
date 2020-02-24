@@ -5,10 +5,11 @@ import {
   RoleMetadata,
   CommandMetadata,
   ProjectionMetadata,
+  ReadModelMetadata,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
-import { ReadModelMetadata } from './concepts/read-model'
+import { EventHandlerInterface } from './concepts/event-handler'
 
 /**
  * Class used by external packages that needs to get a representation of
@@ -28,6 +29,7 @@ export class BoosterConfig {
   public readonly entities: Record<EntityName, EntityMetadata> = {}
   public readonly reducers: Record<EventName, ReducerMetadata> = {}
   public readonly commandHandlers: Record<CommandName, CommandMetadata> = {}
+  public readonly eventHandlers: Record<EventName, Array<EventHandlerInterface>> = {}
   public readonly readModels: Record<ReadModelName, ReadModelMetadata> = {}
   public readonly projections: Record<EntityName, Array<ProjectionMetadata>> = {}
   public readonly roles: Record<RoleName, RoleMetadata> = {}

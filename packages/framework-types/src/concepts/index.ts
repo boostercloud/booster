@@ -1,6 +1,7 @@
 export * from './command'
 export * from './event'
 export * from './entity'
+export * from './event-handler'
 export * from './reducer-metadata'
 export * from './projection-metadata'
 export * from './read-model'
