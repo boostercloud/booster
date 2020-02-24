@@ -10,6 +10,7 @@ import {
 } from 'graphql'
 import { GraphQLFieldConfigMap } from 'graphql/type/definition'
 import { AnyClass, EntityMetadata, UUID } from '@boostercloud/framework-types'
+import { Booster } from "../booster";
 
 export class GraphqlGenerator {
   public constructor(private config: BoosterConfig) {}
@@ -31,12 +32,7 @@ export class GraphqlGenerator {
           id: { type: GraphQLString },
         },
         resolve: (source, args, context, info) => {
-          console.log('Resolving!')
-          console.log('source: ', source)
-          console.log('args: ', args)
-          console.log('context: ', context)
-          console.log('info: ', info)
-          return {}
+          return Booster.fetchEntitySnapshot(info.fieldName, args.id) // TODO: WIP, This is for testing only
         },
       }
     }

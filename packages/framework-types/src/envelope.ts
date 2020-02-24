@@ -8,15 +8,17 @@ import { CommandInterface, EntityInterface, EventInterface, UUID } from './conce
 export interface Envelope {
   currentUser?: UserEnvelope
   requestID: string
-  typeName: string
-  version: number
 }
 
 export interface CommandEnvelope extends Envelope {
+  typeName: string
+  version: number
   value: CommandInterface
 }
 
 export interface EventEnvelope extends Envelope {
+  typeName: string
+  version: number
   kind: 'event' | 'snapshot'
   entityID: UUID
   entityTypeName: string
@@ -25,7 +27,13 @@ export interface EventEnvelope extends Envelope {
 }
 
 export interface ReadModelRequestEnvelope extends Envelope {
+  typeName: string
+  version: number
   readModelID?: UUID
+}
+
+export interface GraphQLRequestEnvelope extends Envelope {
+  value: string
 }
 
 export interface UserEnvelope {

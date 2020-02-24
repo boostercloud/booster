@@ -25,6 +25,7 @@ export class ApplicationStackBuilder {
       apiStack.commandsLambda,
       eventsStack.eventsLambda,
       apiStack.readModelFetcherLambda,
+      apiStack.graphQLLambda,
       eventsStack.eventsStream,
       eventsStack.eventsStore,
       eventsStack.eventsLambda
@@ -37,6 +38,7 @@ function setupPermissions(
   commandsLambda: Function,
   readModelsLambda: Function,
   readModelFetcherLambda: Function,
+  graphQLLambda: Function,
   eventsStream: Stream,
   eventsStore: dynamodb.Table,
   eventsLambda: Function
@@ -49,12 +51,17 @@ function setupPermissions(
     })
   )
 
-  // The event dispatcher can read from and write to the events store
-  // And also can write to the read models tables
   readModelsLambda.addToRolePolicy(
     new PolicyStatement({
       resources: [eventsStore.tableArn],
       actions: ['dynamodb:Query*', 'dynamodb:Put*'],
+    })
+  )
+
+  graphQLLambda.addToRolePolicy(
+    new PolicyStatement({
+      resources: [eventsStore.tableArn],
+      actions: ['dynamodb:Query*', 'dynamodb:Get*'],
     })
   )
 

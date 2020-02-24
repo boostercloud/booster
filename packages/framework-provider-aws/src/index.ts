@@ -12,6 +12,7 @@ import {
   storeReadModel,
   rawReadModelRequestToEnvelope,
 } from './library/read-model-adapter'
+import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import { rawSignUpDataToUserEnvelope } from './library/auth-adapter'
 import { Kinesis, DynamoDB, CognitoIdentityServiceProvider } from 'aws-sdk'
 import { ProviderInfrastructure, ProviderLibrary } from '@boostercloud/framework-types'
@@ -37,6 +38,10 @@ export const Provider: ProviderLibrary = {
   storeReadModel: storeReadModel.bind(null, dynamoDB),
   handleReadModelResult: requestSucceeded,
   handleReadModelError: requestFailed,
+
+  rawGraphQLRequestToEnvelope: rawGraphQLRequestToEnvelope.bind(null, userPool),
+  handleGraphQLResult: requestSucceeded,
+  handleGraphQLError: requestFailed,
 
   rawSignUpDataToUserEnvelope,
 
