@@ -1,4 +1,4 @@
-import { UUID } from '.'
+import { RoleAccess, UUID } from '.'
 import { Class } from '../typelevel'
 
 export interface ReadModelInterface {
@@ -7,4 +7,5 @@ export interface ReadModelInterface {
 
 export interface ReadModelMetadata {
   readonly class: Class<ReadModelInterface>
+  readonly authorizedRoles: RoleAccess['authorize']
 }

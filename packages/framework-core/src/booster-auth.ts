@@ -6,6 +6,7 @@ import {
   UserEnvelope,
   RoleInterface,
   RoleAccess,
+  InvalidParameterError,
 } from '@boostercloud/framework-types'
 
 export class BoosterAuth {
@@ -18,10 +19,10 @@ export class BoosterAuth {
     userEnvelope.roles.forEach((roleName: string) => {
       const roleMetadata = config.roles[roleName]
       if (!roleMetadata) {
-        throw new Error(`Unknown role ${roleName}`)
+        throw new InvalidParameterError(`Unknown role ${roleName}`)
       }
       if (!roleMetadata.allowSelfSignUp) {
-        throw new Error(
+        throw new InvalidParameterError(
           `User with role ${roleName} can't sign up by themselves. Choose a different role or contact and administrator`
         )
       }

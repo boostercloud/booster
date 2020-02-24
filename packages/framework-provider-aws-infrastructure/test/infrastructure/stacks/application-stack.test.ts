@@ -22,6 +22,7 @@ describe('the application stack builder', () => {
   readModels.forEach((readModel) => {
     config.readModels[readModel.name] = {
       class: readModel,
+      authorizedRoles: 'all',
     }
   })
 

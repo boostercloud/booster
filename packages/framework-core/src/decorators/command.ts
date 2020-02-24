@@ -6,11 +6,15 @@ import { Class, CommandInterface, RoleAccess } from '@boostercloud/framework-typ
  * @param attributes
  * @constructor
  */
-export function Command(attributes: RoleAccess): <TCommand extends CommandInterface>(command: Class<TCommand>) => void {
-  return (command) => {
+export function Command(attributes: RoleAccess): (commandClass: Class<CommandInterface>) => void {
+  return (commandClass) => {
     Booster.configure((config): void => {
-      config.commandHandlers[command.name] = {
-        class: command,
+      if (config.commandHandlers[commandClass.name]) {
+        throw new Error(`A command called ${commandClass.name} is already registered.`)
+      }
+
+      config.commandHandlers[commandClass.name] = {
+        class: commandClass,
         authorizedRoles: attributes.authorize,
       }
     })

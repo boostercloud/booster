@@ -4,7 +4,9 @@ import { CartItem } from '../common/cart-item'
 import { Address } from '../common/address'
 import { Cart } from '../entities/cart'
 
-@ReadModel
+@ReadModel({
+  authorize: 'all',
+})
 export class CartReadModel {
   public constructor(
     readonly id: UUID,

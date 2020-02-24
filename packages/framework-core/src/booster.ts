@@ -54,7 +54,7 @@ export class Booster {
    * Entry point to fetch entities
    */
   public static fetchReadModels(readModelsRequest: any): Promise<any> {
-    return BoosterReadModelFetcher.fetch(readModelsRequest, this.config)
+    return BoosterReadModelFetcher.fetch(readModelsRequest, this.config, this.logger)
   }
 
   /**

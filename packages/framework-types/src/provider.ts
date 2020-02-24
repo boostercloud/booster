@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CommandEnvelope, EventEnvelope, UserEnvelope } from './envelope'
+import { CommandEnvelope, EventEnvelope, ReadModelRequestEnvelope, UserEnvelope } from './envelope'
 import { BoosterConfig } from './config'
 import { Observable } from 'rxjs'
 import { Logger } from './logger'
@@ -15,7 +15,7 @@ export type ProviderLibrary = ProviderCommandsLibrary &
 export interface ProviderCommandsLibrary {
   rawCommandToEnvelope(rawCommand: any): Promise<CommandEnvelope>
   handleCommandResult(config: BoosterConfig, events: Array<EventEnvelope>, logger?: Logger): Promise<any>
-  handleCommandError(config: BoosterConfig, error: Error, logger?: Logger): Promise<any>
+  handleCommandError(error: Error): Promise<any>
 }
 
 export interface ProviderEventsLibrary {
@@ -36,19 +36,22 @@ export interface ProviderEventsLibrary {
   ): Promise<EventEnvelope | null>
 }
 export interface ProviderReadModelsLibrary {
-  processReadModelAPICall(config: BoosterConfig, message: any): Promise<any>
+  rawReadModelRequestToEnvelope(rawReadModelRequest: any): Promise<ReadModelRequestEnvelope>
   fetchReadModel(
     config: BoosterConfig,
     logger: Logger,
     readModelName: string,
     readModelID: UUID
   ): Promise<ReadModelInterface>
+  fetchAllReadModels(config: BoosterConfig, logger: Logger, readModelName: string): Promise<Array<ReadModelInterface>>
   storeReadModel(
     config: BoosterConfig,
     logger: Logger,
     readModelName: string,
     readModel: ReadModelInterface
   ): Promise<any>
+  handleReadModelResult(readModels: ReadModelInterface | Array<ReadModelInterface>): Promise<any>
+  handleReadModelError(error: Error): Promise<any>
 }
 
 export interface ProviderAuthLibrary {

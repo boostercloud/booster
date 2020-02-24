@@ -5,8 +5,18 @@ import { ReadModel, Booster, Entity, Projects } from '../../src/index'
 import { UUID } from '@boostercloud/framework-types'
 
 describe('the `ReadModel` decorator', () => {
+  afterEach(() => {
+    Booster.configure((config) => {
+      for (const propName in config.readModels) {
+        delete config.readModels[propName]
+      }
+    })
+  })
+
   it('registers the read model in Booster configuration', () => {
-    @ReadModel
+    @ReadModel({
+      authorize: 'all',
+    })
     class SomeReadModel {
       public constructor(readonly id: UUID) {}
     }
@@ -15,23 +25,39 @@ describe('the `ReadModel` decorator', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const booster = Booster as any
 
-    expect(booster.config.readModels).to.contain(SomeReadModel)
+    expect(booster.config.readModels['SomeReadModel']).to.be.deep.equal({
+      class: SomeReadModel,
+      authorizedRoles: 'all',
+    })
   })
 })
 
 describe('the `Projection` decorator', () => {
+  afterEach(() => {
+    Booster.configure((config) => {
+      for (const propName in config.readModels) {
+        delete config.readModels[propName]
+      }
+      for (const propName in config.projections) {
+        delete config.projections[propName]
+      }
+    })
+  })
+
   it('registers a read model method as an entity projection in Booster configuration', () => {
     @Entity
     class SomeEntity {
       public constructor(readonly id: UUID) {}
     }
 
-    @ReadModel
-    class OtherReadModel {
+    @ReadModel({
+      authorize: 'all',
+    })
+    class SomeReadModel {
       public constructor(readonly id: UUID) {}
 
       @Projects(SomeEntity, 'id')
-      public static observeSomeEntity(entity: SomeEntity): OtherReadModel {
+      public static observeSomeEntity(entity: SomeEntity): SomeReadModel {
         throw new Error(`not implemented for ${entity}`)
       }
     }
@@ -41,10 +67,10 @@ describe('the `Projection` decorator', () => {
     const booster = Booster as any
     const someEntityObservers = booster.config.projections['SomeEntity']
 
-    expect(booster.config.readModels).to.contain(OtherReadModel)
+    expect(booster.config.readModels).to.contain(SomeReadModel)
     expect(someEntityObservers).to.be.an('Array')
     expect(someEntityObservers).to.deep.include({
-      class: OtherReadModel,
+      class: SomeReadModel,
       methodName: 'observeSomeEntity',
       joinKey: 'id',
     })

@@ -3,9 +3,13 @@ import { expect } from 'chai'
 import * as chai from 'chai'
 import { UserEnvelope } from '@boostercloud/framework-types'
 import { AttributeListType, AttributeMappingType } from 'aws-sdk/clients/cognitoidentityserviceprovider'
-import { UserEnvelopeBuilder } from '../../src/library/user-envelope-builder'
+import { fetchUserFromRequest, UserEnvelopeBuilder } from '../../src/library/user-envelopes'
+import { APIGatewayProxyEvent } from 'aws-lambda'
+import CognitoIdentityServiceProvider = require('aws-sdk/clients/cognitoidentityserviceprovider')
+import { restore, replace, fake } from 'sinon'
 
 chai.use(require('sinon-chai'))
+chai.use(require('chai-as-promised'))
 
 describe('the UserEnvelopeBuilder.fromAttributeMap', () => {
   it('works with a user with no roles', () => {
@@ -85,5 +89,58 @@ describe('the UserEnvelopeBuilder.fromAttributeList', () => {
     const got = UserEnvelopeBuilder.fromAttributeList(input)
 
     expect(got).to.deep.equal(expected)
+  })
+})
+
+describe('the fetchUserFromRequest function', () => {
+  afterEach(() => {
+    restore()
+  })
+
+  it('returns nothing when no token is provided', async () => {
+    const userPool: CognitoIdentityServiceProvider = new CognitoIdentityServiceProvider()
+    const apiEvent: APIGatewayProxyEvent = {
+      headers: {},
+    } as any
+
+    await expect(fetchUserFromRequest(apiEvent, userPool)).to.be.eventually.equal(undefined)
+  })
+
+  it('returns a user when the corresponding token is provided', async () => {
+    const userPool: CognitoIdentityServiceProvider = new CognitoIdentityServiceProvider()
+    const token = '123'
+    const userReturnedFromPool: AttributeListType = [
+      {
+        Name: 'email',
+        Value: 'test@user.com',
+      },
+      {
+        Name: 'custom:roles',
+        Value: 'Admin,User',
+      },
+    ]
+    const expectedUser = {
+      email: 'test@user.com',
+      roles: ['Admin', 'User'],
+    }
+
+    replace(
+      userPool,
+      'getUser',
+      fake.returns({
+        promise: fake.resolves({
+          UserAttributes: userReturnedFromPool,
+        }),
+      })
+    )
+    const apiEvent: APIGatewayProxyEvent = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    } as any
+    await expect(fetchUserFromRequest(apiEvent, userPool)).to.be.eventually.deep.equal(expectedUser)
+    expect(userPool.getUser).to.have.been.calledWith({
+      AccessToken: token,
+    })
   })
 })

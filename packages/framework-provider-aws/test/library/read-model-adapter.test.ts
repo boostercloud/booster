@@ -1,10 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as chai from 'chai'
 import { expect } from 'chai'
-import { replace, stub, fake } from 'sinon'
-import { processReadModelAPICall, fetchReadModel, storeReadModel } from '../../src/library/read-model-adapter'
-import { DynamoDB } from 'aws-sdk'
-import { BoosterConfig, Logger } from '@boostercloud/framework-types'
+import { restore, replace, fake } from 'sinon'
+import {
+  rawReadModelRequestToEnvelope,
+  fetchReadModel,
+  storeReadModel,
+  fetchAllReadModels,
+} from '../../src/library/read-model-adapter'
+import * as UserEnvelopes from '../../src/library/user-envelopes'
+import { CognitoIdentityServiceProvider, DynamoDB } from 'aws-sdk'
+import {
+  BoosterConfig,
+  Logger,
+  InvalidParameterError,
+  ReadModelRequestEnvelope,
+  UserEnvelope,
+} from '@boostercloud/framework-types'
 import { APIGatewayProxyEvent } from 'aws-lambda'
 
 chai.use(require('sinon-chai'))
@@ -16,143 +28,83 @@ const logger: Logger = {
   debug: fake(),
 }
 
-describe('the "processReadModelAPICall" method', () => {
+describe('the "rawReadModelRequestToEnvelope" method', () => {
+  afterEach(() => {
+    restore()
+  })
+
   it('fails with no path parameters', async () => {
-    const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
-    const config = new BoosterConfig()
+    const userPool: CognitoIdentityServiceProvider = new CognitoIdentityServiceProvider()
     const apiEvent: APIGatewayProxyEvent = {} as any
 
-    const expectedStatusCode = 400
-    const expectedReason = 'Could not find path parameters in URL'
-    const got = await processReadModelAPICall(db, config, apiEvent)
-    expect(got.statusCode).to.equal(expectedStatusCode)
-
-    const gotBody = JSON.parse(got.body)
-    expect(gotBody.statusCode).to.equal(expectedStatusCode)
-    expect(gotBody.reason).to.equal(expectedReason)
+    await expect(rawReadModelRequestToEnvelope(userPool, apiEvent)).to.be.eventually.rejectedWith(
+      InvalidParameterError,
+      'Could not find path parameters in URL'
+    )
   })
 
   it('fails with no read model name', async () => {
-    const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
-    const config = new BoosterConfig()
+    const userPool: CognitoIdentityServiceProvider = new CognitoIdentityServiceProvider()
     const apiEvent: APIGatewayProxyEvent = {
       pathParameters: {},
     } as any
 
-    const expectedStatusCode = 400
-    const expectedReason = 'No read model name provided'
-    const got = await processReadModelAPICall(db, config, apiEvent)
-    expect(got.statusCode).to.equal(expectedStatusCode)
-
-    const gotBody = JSON.parse(got.body)
-    expect(gotBody.statusCode).to.equal(expectedStatusCode)
-    expect(gotBody.reason).to.equal(expectedReason)
+    await expect(rawReadModelRequestToEnvelope(userPool, apiEvent)).to.be.eventually.rejectedWith(
+      InvalidParameterError,
+      'No read model name provided'
+    )
   })
 
-  it('fails when requesting all read models and there is a DB error', async () => {
-    const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
-    const config = new BoosterConfig()
+  it('returns the right envelope when requesting all read models', async () => {
+    const userPool: CognitoIdentityServiceProvider = new CognitoIdentityServiceProvider()
+    const readModelName = 'testReadModel'
     const apiEvent: APIGatewayProxyEvent = {
+      headers: {},
+      requestContext: { requestId: '123' },
       pathParameters: {
-        readModelName: 'TestReadModel',
+        readModelName,
       },
     } as any
 
-    const expectedStatusCode = 503
-    const expectedReason = 'An error'
-
-    const fakeScan = stub().throws(expectedReason)
-    replace(db, 'scan', fakeScan)
-
-    const got = await processReadModelAPICall(db, config, apiEvent)
-
-    expect(fakeScan).to.have.been.called
-    expect(got.statusCode).to.equal(expectedStatusCode)
-
-    const gotBody = JSON.parse(got.body)
-    expect(gotBody.statusCode).to.equal(expectedStatusCode)
-    expect(gotBody.reason).to.equal(expectedReason)
+    const expectedRequestEnvelope: ReadModelRequestEnvelope = {
+      requestID: '123',
+      typeName: readModelName,
+      version: 1,
+      readModelID: undefined,
+      currentUser: undefined,
+    }
+    await expect(rawReadModelRequestToEnvelope(userPool, apiEvent)).to.be.become(expectedRequestEnvelope)
   })
 
-  it('fails when requesting one read model and there is a DB error', async () => {
-    const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
-    const config = new BoosterConfig()
+  it('returns the right envelope when requesting all read models with a logged-in user', async () => {
+    const userPool: CognitoIdentityServiceProvider = new CognitoIdentityServiceProvider()
+    const readModelName = 'testReadModel'
+    const readModelID = '123'
+    const expectedUser: UserEnvelope = {
+      email: 'test@user.com',
+      roles: [],
+    }
+    const expectedRequestEnvelope: ReadModelRequestEnvelope = {
+      requestID: '123',
+      typeName: readModelName,
+      version: 1,
+      readModelID,
+      currentUser: expectedUser,
+    }
+
     const apiEvent: APIGatewayProxyEvent = {
+      headers: {},
+      requestContext: { requestId: '123' },
       pathParameters: {
-        readModelName: 'TestReadModel',
-        id: '1',
+        readModelName,
+        id: readModelID,
       },
     } as any
 
-    const expectedStatusCode = 503
-    const expectedReason = 'An error'
-
-    const fakeGet = stub().throws(expectedReason)
-    replace(db, 'get', fakeGet)
-
-    const got = await processReadModelAPICall(db, config, apiEvent)
-
-    expect(fakeGet).to.have.been.called
-    expect(got.statusCode).to.equal(expectedStatusCode)
-
-    const gotBody = JSON.parse(got.body)
-    expect(gotBody.statusCode).to.equal(expectedStatusCode)
-    expect(gotBody.reason).to.equal(expectedReason)
-  })
-
-  it('returns correctly an array of items when requested without ID', async () => {
-    const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
-    const config = new BoosterConfig()
-    const apiEvent: APIGatewayProxyEvent = {
-      pathParameters: {
-        readModelName: 'TestReadModel',
-      },
-    } as any
-
-    const expectedStatusCode = 200
-    // The actual value of each item is irrelevant, as we are telling the DB to return this
-    const expectedBody = ['Item1', 'Item2', 'Item3']
-
-    const fakeScan = stub().returns({
-      promise: () => Promise.resolve({ Items: expectedBody }),
+    replace(UserEnvelopes, 'fetchUserFromRequest', () => {
+      return Promise.resolve(expectedUser)
     })
-    replace(db, 'scan', fakeScan)
-
-    const got = await processReadModelAPICall(db, config, apiEvent)
-
-    expect(fakeScan).to.have.been.called
-    expect(got.statusCode).to.equal(expectedStatusCode)
-
-    const gotBody = JSON.parse(got.body)
-    expect(gotBody).to.be.deep.equal(expectedBody)
-  })
-
-  it('returns a specific item when requested with an ID', async () => {
-    const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
-    const config = new BoosterConfig()
-    const apiEvent: APIGatewayProxyEvent = {
-      pathParameters: {
-        readModelName: 'TestReadModel',
-        id: 1,
-      },
-    } as any
-
-    const expectedStatusCode = 200
-    // The actual value the item is irrelevant, as we are telling the DB to return this
-    const expectedBody = 'Item1'
-
-    const fakeGet = stub().returns({
-      promise: () => Promise.resolve({ Item: expectedBody }),
-    })
-    replace(db, 'get', fakeGet)
-
-    const got = await processReadModelAPICall(db, config, apiEvent)
-
-    expect(fakeGet).to.have.been.called
-    expect(got.statusCode).to.equal(expectedStatusCode)
-
-    const gotBody = JSON.parse(got.body)
-    expect(gotBody).to.be.deep.equal(expectedBody)
+    await expect(rawReadModelRequestToEnvelope(userPool, apiEvent)).to.become(expectedRequestEnvelope)
   })
 })
 
@@ -197,6 +149,47 @@ describe('the "fetchReadModel" method', () => {
       Key: { id: 'someReadModelID' },
     })
     expect(result).to.deep.equal({ some: 'object' })
+  })
+})
+
+describe('the "fetchAllReadModels" method', () => {
+  it("responds with an error when the read model name doesn't exist", async () => {
+    const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
+    const config = new BoosterConfig()
+    replace(
+      db,
+      'scan',
+      fake.returns({
+        promise: fake.rejects('not found'),
+      })
+    )
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    expect(fetchAllReadModels(db, config, logger, 'SomeReadModel')).to.be.eventually.rejectedWith('not found')
+
+    expect(db.scan).to.have.been.calledOnceWith({
+      TableName: 'new-booster-app-application-stack-SomeReadModel',
+    })
+  })
+
+  it('responds with all read models when the read model name exists', async () => {
+    const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
+    const config = new BoosterConfig()
+    const expectedModels = [{ prop: 'first model' }, { prop: 'second model' }]
+    replace(
+      db,
+      'scan',
+      fake.returns({
+        promise: fake.resolves({ Items: expectedModels }),
+      })
+    )
+
+    const result = await fetchAllReadModels(db, config, logger, 'SomeReadModel')
+
+    expect(db.scan).to.have.been.calledOnceWithExactly({
+      TableName: 'new-booster-app-application-stack-SomeReadModel',
+    })
+    expect(result).to.deep.equal(expectedModels)
   })
 })
 

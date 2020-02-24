@@ -8,6 +8,7 @@ import {
   ProjectionMetadata,
   UUID,
   EntityInterface,
+  InvalidParameterError,
 } from '@boostercloud/framework-types'
 
 export class ReadModelStore {
@@ -61,7 +62,7 @@ export class ReadModelStore {
   private joinKeyForProjection(entitySnapshot: EntityInterface, projectionMetadata: ProjectionMetadata): UUID {
     const joinKey = (entitySnapshot as any)[projectionMetadata.joinKey]
     if (!joinKey) {
-      throw new Error(
+      throw new InvalidParameterError(
         `Couldn't find the joinKey named ${projectionMetadata.joinKey} in entity snapshot: ${entitySnapshot}`
       )
     }
@@ -72,7 +73,7 @@ export class ReadModelStore {
     try {
       return (projectionMetadata.class as any)[projectionMetadata.methodName]
     } catch {
-      throw new Error(`Couln't load the ReadModel class ${projectionMetadata.class.name}`)
+      throw new Error(`Couldn't load the ReadModel class ${projectionMetadata.class.name}`)
     }
   }
 }

@@ -24,6 +24,10 @@ export interface EventEnvelope extends Envelope {
   createdAt: string
 }
 
+export interface ReadModelRequestEnvelope extends Envelope {
+  readModelID?: UUID
+}
+
 export interface UserEnvelope {
   email: string
   roles: Array<string>
