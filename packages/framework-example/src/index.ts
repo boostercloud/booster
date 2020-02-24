@@ -5,6 +5,7 @@ export {
   boosterReadModelMapper,
   boosterEventDispatcher,
   boosterPreSignUpChecker,
+  boosterServeGraphQL,
 } from '@boostercloud/framework-core'
 
 Booster.start()

@@ -10,6 +10,7 @@ interface ApiStackMembers {
   rootApi: RestApi
   commandsLambda: Function
   readModelFetcherLambda: Function
+  graphQLLambda: Function
 }
 
 export class ApiStack {
@@ -23,11 +24,13 @@ export class ApiStack {
     }
     const commandsLambda = this.buildCommandsAPI(rootApi)
     const readModelFetcherLambda = this.buildReadModelsAPI(rootApi)
+    const graphQLLambda = this.buildGraphQLAPI(rootApi)
 
     return {
       rootApi,
       commandsLambda,
       readModelFetcherLambda,
+      graphQLLambda,
     }
   }
 
@@ -174,6 +177,19 @@ export class ApiStack {
     readModelResource.addResource('{id}').addMethod('GET', lambdaIntegration)
 
     return readModelFetcherLambda
+  }
+
+  private buildGraphQLAPI(api: RestApi): Function {
+    const localID = 'graphql'
+    const graphQLLambda = new Function(this.stack, localID, {
+      ...params.lambda,
+      functionName: this.config.resourceNames.applicationStack + '-' + localID,
+      handler: this.config.serveGraphQLHandler,
+      code: Code.fromAsset(this.config.userProjectRootPath),
+    })
+
+    api.root.addResource('graphql').addMethod('POST', new LambdaIntegration(graphQLLambda))
+    return graphQLLambda
   }
 }
 
