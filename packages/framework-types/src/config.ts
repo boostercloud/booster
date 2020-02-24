@@ -50,6 +50,7 @@ export class BoosterConfig {
       eventsStream: applicationStackName + '-events-stream',
       eventsStore: applicationStackName + '-events-store',
       subscriptionsStore: applicationStackName + '-subscriptions-store',
+      staticWebsite: applicationStackName + '-static-site',
       forReadModel(readModelName: string): string {
         return applicationStackName + '-' + readModelName
       },
@@ -138,6 +139,7 @@ interface ResourceNames {
   eventsStream: string
   eventsStore: string
   subscriptionsStore: string
+  staticWebsite: string
   forReadModel(entityName: string): string
 }
 

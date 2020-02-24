@@ -469,6 +469,11 @@
   version "1.26.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/region-info/-/region-info-1.26.0.tgz#d4a8333ff2cfd42cd9a245c2ef4e15c5d58af278"
 
+"@aws-cdk/region-info@1.25.0":
+  version "1.25.0"
+  resolved "https://registry.yarnpkg.com/@aws-cdk/region-info/-/region-info-1.25.0.tgz#fdf2696ba3347b7679c60a7993cfc455e16043aa"
+  integrity sha512-A39nDwkqfYCqoBgqyyOs70yrSCLnfgkuiZlKPsj28lTZkwyKyqszBdJCXsICt/7dG/Gz7iIEmkD/pPBfqNjygA==
+
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.8.3":
   version "7.8.3"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.8.3.tgz#33e25903d7481181534e12ec0a25f16b6fcf419e"
