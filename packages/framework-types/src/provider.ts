@@ -1,5 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CommandEnvelope, EventEnvelope, ReadModelRequestEnvelope, UserEnvelope } from './envelope'
+import {
+  CommandEnvelope,
+  EventEnvelope,
+  GraphQLRequestEnvelope,
+  ReadModelRequestEnvelope,
+  UserEnvelope,
+} from './envelope'
 import { BoosterConfig } from './config'
 import { Observable } from 'rxjs'
 import { Logger } from './logger'
@@ -8,7 +14,8 @@ import { ReadModelInterface, UUID } from './concepts'
 export type ProviderLibrary = ProviderCommandsLibrary &
   ProviderEventsLibrary &
   ProviderReadModelsLibrary &
-  ProviderAuthLibrary & {
+  ProviderAuthLibrary &
+  ProviderGraphQLLibrary & {
     getInfrastructure(): ProviderInfrastructure
   }
 
@@ -52,6 +59,12 @@ export interface ProviderReadModelsLibrary {
   ): Promise<any>
   handleReadModelResult(readModels: ReadModelInterface | Array<ReadModelInterface>): Promise<any>
   handleReadModelError(error: Error): Promise<any>
+}
+
+export interface ProviderGraphQLLibrary {
+  rawGraphQLRequestToEnvelope(rawGraphQLRequest: any): Promise<GraphQLRequestEnvelope>
+  handleGraphQLResult(result: any): Promise<any>
+  handleGraphQLError(error: Error): Promise<any>
 }
 
 export interface ProviderAuthLibrary {

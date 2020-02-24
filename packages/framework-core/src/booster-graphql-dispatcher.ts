@@ -11,9 +11,13 @@ export class BoosterGraphqlDispatcher {
   }
 
   public async dispatchGraphQL(request: any): Promise<any> {
-    await graphql(this.graphQLSchema, '{ Cart(id: "demo") { id, paid } }').then((response) => {
-      this.logger.info(response)
-    })
-    return null
+    const envelope = await this.config.provider.rawGraphQLRequestToEnvelope(request)
+    this.logger.debug('Received the following GraphQL envelope: ', envelope)
+    const result = await graphql(this.graphQLSchema, envelope.value)
+    if (result.errors) {
+      const error = new Error(result.errors.map((e) => e.message).join('\n'))
+      return this.config.provider.handleGraphQLError(error)
+    }
+    return this.config.provider.handleGraphQLResult(result.data)
   }
 }
