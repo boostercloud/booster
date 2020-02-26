@@ -1,9 +1,9 @@
 {
-  "name": "@boostercloud/framework-provider-aws-infrastructure",
+  "name": "@boostercloud/framework-provider-local-infrastructure",
   "version": "0.1.4",
-  "description": "Handle the Booster deployment process to AWS",
+  "description": "Handle the Booster running process of the local runtime",
   "keywords": [
-    "framework-provider-aws-infrastructure"
+    "framework-provider-local-infrastructure"
   ],
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
@@ -20,16 +20,8 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@aws-cdk/aws-apigateway": "^1.22.0",
-    "@aws-cdk/aws-cognito": "^1.22.0",
-    "@aws-cdk/aws-dynamodb": "^1.22.0",
-    "@aws-cdk/aws-iam": "^1.22.0",
-    "@aws-cdk/aws-kinesis": "^1.22.0",
-    "@aws-cdk/aws-lambda": "^1.22.0",
-    "@aws-cdk/aws-lambda-event-sources": "^1.22.0",
     "@boostercloud/framework-types": "^0.1.4",
-    "@boostercloud/framework-provider-aws": "^0.1.4",
-    "aws-cdk": "^1.22.0"
+    "@boostercloud/framework-provider-aws": "^0.1.4"
   },
   "scripts": {
     "lint": "eslint --ext '.js,.ts' **/*.ts",
@@ -42,8 +34,5 @@
   "bugs": {
     "url": "https://github.com/boostercloud/booster/issues"
   },
-  "devDependencies": {
-    "@types/aws-lambda": "^8.10.31",
-    "velocityjs": "^2.0.0"
-  }
+  "devDependencies": {}
 }
