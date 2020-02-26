@@ -3,7 +3,10 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import { Stack, RemovalPolicy } from '@aws-cdk/core'
 import { Stream } from '@aws-cdk/aws-kinesis'
 import * as dynamodb from '@aws-cdk/aws-dynamodb'
-import { eventStorePartitionKeyAttributeName, eventStoreSortKeyAttributeName } from '@boostercloud/framework-provider-aws'
+import {
+  eventStorePartitionKeyAttributeName,
+  eventStoreSortKeyAttributeName,
+} from '@boostercloud/framework-provider-aws'
 import * as params from '../params'
 import { KinesisEventSource } from '@aws-cdk/aws-lambda-event-sources'
 
