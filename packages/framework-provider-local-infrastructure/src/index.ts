@@ -9,10 +9,10 @@ import path = require('path')
  * it doesn't deploy anything, it does start the required infrastructure
  * locally, which is running an `express` server.
  *
- * @param storage Instance of a `Storage` object, in order to store the data
  * @param port Port on which the express server will listen
  */
-export function run(storage: RuntimeStorage, config: BoosterConfig, port: number): void {
+export function run(config: BoosterConfig, port: number): void {
+  const storage = new RuntimeStorage()
   const expressServer = express()
   const router = express.Router()
   const userProject = require(path.normalize('./src/index'))
