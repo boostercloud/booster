@@ -19,6 +19,6 @@ export class AuthController {
 
   public async signUp(user: UserEnvelope): Promise<void> {
     await this.userProject.boosterPreSignUpChecker(user)
-    this.storage.registeredUsers[user.email] = user
+    await this.storage.registerUser(user)
   }
 }

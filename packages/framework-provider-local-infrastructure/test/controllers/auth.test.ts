@@ -1,14 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AuthController } from '../../src/controllers/auth'
 import { RuntimeStorage } from '../../src/runtime-storage'
-import { BoosterConfig, ProviderLibrary, UserApp } from '@boostercloud/framework-types'
+import { BoosterConfig, ProviderLibrary, UserApp, UserEnvelope } from '@boostercloud/framework-types'
 import { expect } from 'chai'
 import * as faker from 'faker'
 import { stub } from 'sinon'
 
 describe('the authorization controller', () => {
   it('should sign up users', async () => {
-    const storage = new RuntimeStorage()
+    const registeredUsers: Record<string, UserEnvelope> = {}
+    const storage = {
+      registerUser: (user: UserEnvelope) => {
+        registeredUsers[user.email] = user
+      },
+    } as RuntimeStorage
     const provider = {} as ProviderLibrary
     const userProject = { boosterPreSignUpChecker: stub() as any } as UserApp
     const config = new BoosterConfig()
@@ -20,6 +25,6 @@ describe('the authorization controller', () => {
       roles: [],
     }
     await controller.signUp(user)
-    return expect(storage.registeredUsers[userEmail]).to.eq(user)
+    return expect(registeredUsers[userEmail]).to.eq(user)
   })
 })
