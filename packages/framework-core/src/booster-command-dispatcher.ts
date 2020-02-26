@@ -1,17 +1,15 @@
 import {
   BoosterConfig,
   CommandEnvelope,
-  EventEnvelope,
-  EventInterface,
-  Instance,
   Logger,
   Register,
-  ProviderCommandsLibrary,
+  ProviderLibrary,
   InvalidParameterError,
   NotAuthorizedError,
   NotFoundError,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
+import { RegisterHandler } from './booster-register-handler'
 
 export class BoosterCommandDispatcher {
   /**
@@ -25,16 +23,16 @@ export class BoosterCommandDispatcher {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any> {
     logger.debug('Arrived raw command: ', rawCommand)
-    const provider: ProviderCommandsLibrary = config.provider
+    const provider: ProviderLibrary = config.provider
     try {
       const envelope = await provider.rawCommandToEnvelope(rawCommand)
       const register = this.dispatchCommand(envelope, config, logger)
       logger.debug('Command dispatched with register: ', register)
-      const resultEventEnvelopes = this.eventEnvelopesFromRegister(register, config)
-      return provider.handleCommandResult(config, resultEventEnvelopes, logger)
-    } catch (e) {
-      logger.error('When dispatching command: ', e)
-      return await provider.handleCommandError(e)
+      await RegisterHandler.handle(register, config, logger)
+      return provider.requestSucceeded()
+    } catch (error) {
+      logger.error('When dispatching command: ', error)
+      return await provider.requestFailed(error)
     }
   }
 
@@ -63,35 +61,5 @@ export class BoosterCommandDispatcher {
     logger.debug('Calling "handle" method on command: ', command)
     command.handle(register)
     return register
-  }
-
-  private static eventEnvelopesFromRegister(register: Register, config: BoosterConfig): Array<EventEnvelope> {
-    return register.eventList.map((event): EventEnvelope => this.eventToEnvelope(register, event, config))
-  }
-
-  private static eventToEnvelope(
-    register: Register,
-    event: Instance & EventInterface,
-    config: BoosterConfig
-  ): EventEnvelope {
-    const eventTypeName = event.constructor.name
-    const reducerInfo = config.reducers[eventTypeName]
-    if (!reducerInfo) {
-      throw new NotFoundError(
-        `Couldn't find information about event ${eventTypeName}. Is the event handled by any entity?`
-      )
-    }
-
-    return {
-      version: config.currentVersionFor(eventTypeName),
-      kind: 'event',
-      entityID: event.entityID(),
-      requestID: register.requestID,
-      currentUser: register.currentUser,
-      entityTypeName: reducerInfo.class.name,
-      typeName: eventTypeName,
-      value: event,
-      createdAt: new Date().toISOString(),
-    }
   }
 }

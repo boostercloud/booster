@@ -8,14 +8,15 @@ import { ReadModelInterface, UUID } from './concepts'
 export type ProviderLibrary = ProviderCommandsLibrary &
   ProviderEventsLibrary &
   ProviderReadModelsLibrary &
-  ProviderAuthLibrary & {
-    getInfrastructure(): ProviderInfrastructure
-  }
+  ProviderAuthLibrary & 
+  ProviderAPIHandling & 
+  ProviderInfrastructureGetter
 
 export interface ProviderCommandsLibrary {
   rawCommandToEnvelope(rawCommand: any): Promise<CommandEnvelope>
-  handleCommandResult(config: BoosterConfig, events: Array<EventEnvelope>, logger?: Logger): Promise<any>
-  handleCommandError(error: Error): Promise<any>
+  // handleCommandResult(config: BoosterConfig, events: Array<EventEnvelope>, logger?: Logger): Promise<any>
+  // handleCommandError(error: Error): Promise<any>
+  submitCommand(config: BoosterConfig, commandEnvelope: CommandEnvelope, logger?: Logger): Promise<void>
 }
 
 export interface ProviderEventsLibrary {
@@ -34,6 +35,7 @@ export interface ProviderEventsLibrary {
     entityTypeName: string,
     entityID: UUID
   ): Promise<EventEnvelope | null>
+  publishEvent(config: BoosterConfig, eventEnvelope: EventEnvelope, logger?: Logger): Promise<void>
 }
 export interface ProviderReadModelsLibrary {
   rawReadModelRequestToEnvelope(rawReadModelRequest: any): Promise<ReadModelRequestEnvelope>
@@ -56,6 +58,15 @@ export interface ProviderReadModelsLibrary {
 
 export interface ProviderAuthLibrary {
   rawSignUpDataToUserEnvelope(rawMessage: any): UserEnvelope
+}
+
+export interface ProviderAPIHandling {
+  requestSucceeded(body?: any): Promise<any>
+  requestFailed(error: Error): Promise<any>
+}
+
+export interface ProviderInfrastructureGetter {
+  getInfrastructure(): ProviderInfrastructure
 }
 
 export interface ProviderInfrastructure {

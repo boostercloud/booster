@@ -3,13 +3,12 @@
 import { describe } from 'mocha'
 import { BoosterEventDispatcher } from '../src/booster-event-dispatcher'
 import { fake, replace, restore, createStubInstance, SinonStubbedInstance } from 'sinon'
-import { BoosterConfig, Logger, EventEnvelope, UUID, EntityInterface } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, EventEnvelope, UUID, EntityInterface, ProviderLibrary } from '@boostercloud/framework-types'
 import * as chai from 'chai'
 import { expect } from 'chai'
 import { RawEventsParser } from '../src/services/raw-events-parser'
 import { EventStore } from '../src/services/event-store'
 import { ReadModelStore } from '../src/services/read-model-store'
-import { ProviderLibrary } from '@boostercloud/framework-types'
 
 chai.use(require('sinon-chai'))
 
@@ -109,10 +108,26 @@ describe('BoosterEventDispatcher', () => {
         it('projects the entity state to the corresponding read models', async () => {
           await callbackFunction(someEvent)
 
+          throw new Error('revisit this test!')
+
           expect(stubReadModelStore.project).to.have.been.called
           expect(stubReadModelStore.project).to.have.been.calledWithMatch(someEntitySnapshot)
         })
-      })
+
+        it('launches the event handlers', () => {
+          throw new Error('implement this!')
+        })
+      }) 
+    })
+
+    describe('the `snapshotAndUpdateReadModel` method', () => {
+      it('gets the updated state for the event entity')
+      it('projects the entity state to the corresponding read models')
+    })
+
+    describe('the `handleEvent` method', () => {
+      it('calls the handlers for the current event')
+      it('calls the register handler for all the submitted commands and published events')
     })
   })
 })
