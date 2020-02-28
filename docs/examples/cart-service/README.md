@@ -81,7 +81,7 @@ export class CartChanged {
 }
 ```
 
-6. Next, we will create the Cart entity. It will project all the cart-related events to build
+6. Next, we will create the Cart entity. It will reduce all the cart-related events to build
 the current state of our cart. To create it, we can use another generator:
 ```shell script
 boost new:entity Cart --fields "items:Array<CartItem>" --reduces CartChanged
@@ -90,7 +90,7 @@ As you can see, our cart is just an array of cart item objects. The type `CartIt
 manually in the Cart entity file. You can also use the type generator `boost new:type` if you prefer. Types generated like that
 will be placed in the `common/` folder.
 
-7. Then we need to write the logic that projects the events into a Cart. This is business-dependent. In our case,
+7. Then we need to write the logic that reduces the events into a Cart. This is business-dependent. In our case,
 the code of the Entity class would be like this:
 ```typescript
 // ... imports here ...
@@ -109,7 +109,7 @@ export class Cart {
     readonly items: Array<CartItem>
   ) {}
 
-  @Projects(CartChanged)
+  @Reduces(CartChanged)
   public static projectCartChanged(event: CartChanged, currentCart?: Cart): Cart {
     if (currentCart) {
       // This is the common case: we receive the previous state of the cart and modify it according to the event received.
@@ -143,7 +143,7 @@ export class Cart {
 }
 ```
 
-8. Finally, we need to define the read model.
+8. Finally, we need to define a read model so that we can access cart data throu the public API.
 We will create a directory named `read-models` and create a new file under the new directory called `CartReadModel.ts` with the following content
 
 ``` typescript
@@ -156,7 +156,7 @@ export class CartReadModel {
     readonly items: Array<CartItem>,
   ) {}
 
-  @Projection(Cart, 'id')
+  @Projects(Cart, 'id')
   public static updateWithCart(cart: Cart, oldCartReadModel?: CartReadModel): CartReadModel {
     return new CartReadModel(cart.id, cart.items)
   }
