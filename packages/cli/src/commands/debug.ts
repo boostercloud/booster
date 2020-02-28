@@ -9,7 +9,7 @@ const runTasks = async (
   loader: Promise<BoosterConfig>,
   runner: (config: BoosterConfig) => Promise<void>
 ): Promise<void> =>
-  Script.init(`boost ${Brand.dangerize('debug')} 🐛`, loader)
+  Script.init(`boost ${Brand.canarize('debug')} 🐛`, loader)
     .step('Running debugging server on port 3000', runner)
     .done()
 
