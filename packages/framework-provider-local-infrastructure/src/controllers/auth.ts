@@ -28,6 +28,13 @@ export class AuthController {
         throw e
       }
     })
+
+    this.router.post('/sign-out', async (req: express.Request, res: express.Response) => {
+      const token = req.headers['authorization']?.replace('Bearer ', '')
+      if (!token) throw new NotAuthorizedError('No token provided in the headers of the request')
+      await this.signOut(token)
+      res.status(200)
+    })
   }
 
   public async signUp(user: UserEnvelope): Promise<void> {
@@ -43,5 +50,9 @@ export class AuthController {
       throw new NotAuthorizedError(`User with email ${user.email} has not been registered `)
     await this.storage.authenticateUser(token, user)
     return token
+  }
+
+  public async signOut(token: UUID): Promise<void> {
+    await this.storage.signOutUser(token)
   }
 }

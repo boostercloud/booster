@@ -28,4 +28,8 @@ export class RuntimeStorage {
   public async getRegisteredUsersByEmail(email: string): Promise<Array<UserEnvelope>> {
     return await promisify(this.registeredUsers.find({ email }).exec)()
   }
+
+  public async signOutUser(token: UUID): Promise<void> {
+    this.registeredUsers.remove({ token })
+  }
 }
