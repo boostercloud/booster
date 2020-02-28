@@ -15,7 +15,7 @@ export function run(config: BoosterConfig, port: number): void {
   const storage = new RuntimeStorage()
   const expressServer = express()
   const router = express.Router()
-  const userProject = require(path.normalize('./src/index'))
+  const userProject = require(path.join(process.cwd(), 'dist', 'index.js'))
   router.use('/', new AuthController(storage, config, userProject).router)
   expressServer.use(defaultErrorHandler)
   expressServer.use(express.json())
