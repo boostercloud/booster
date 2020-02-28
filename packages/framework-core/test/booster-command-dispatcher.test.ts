@@ -8,6 +8,7 @@ import { BoosterCommandDispatcher } from '../src/booster-command-dispatcher'
 import { BoosterConfig, Logger, Register } from '@boostercloud/framework-types'
 import { Command } from '../src/decorators'
 import { ProviderLibrary } from '@boostercloud/framework-types'
+import { RegisterHandler } from '../src/booster-register-handler'
 
 chai.use(require('sinon-chai'))
 
@@ -30,50 +31,42 @@ describe('the `BoosterCommandsDispatcher`', () => {
   }
 
   describe('the `dispatch` method', () => {
-    it("calls the provider's `rawCommandToEnvelope`", async () => {
-      const boosterCommandDispatcher = BoosterCommandDispatcher
-      replace(boosterCommandDispatcher as any, 'dispatchCommand', fake())
-      replace(boosterCommandDispatcher as any, 'eventEnvelopesFromRegister', fake())
+    it('dispatches the command when there are no errors', async () => {
+      const boosterCommandDispatcher = BoosterCommandDispatcher as any
+      const register = new Register('1234')
+      replace(boosterCommandDispatcher, 'dispatchCommand', fake.returns(register))
+      replace(RegisterHandler, 'handle', fake())
 
       const config = new BoosterConfig()
       config.provider = ({
-        rawCommandToEnvelope: fake(),
-        handleCommandResult: fake(),
+        rawCommandToEnvelope: fake.resolves({}),
+        requestSucceeded: fake(),
       } as unknown) as ProviderLibrary
       await boosterCommandDispatcher.dispatch({ body: 'Test body' }, config, logger)
 
       expect(config.provider.rawCommandToEnvelope).to.have.been.calledOnce
+      expect(boosterCommandDispatcher.dispatchCommand).to.have.been.calledOnce
+      expect(RegisterHandler.handle).to.have.been.calledOnceWith(register, config, logger)
+      expect(config.provider.requestSucceeded).to.have.been.calledOnce
     })
 
-    it('dispatches the message', async () => {
-      const fakeDispatch = fake()
+    it('builds and returns a failure response when there were errors', async () => {
+      const omgError = new Error('OMG!!!')
       const boosterCommandDispatcher = BoosterCommandDispatcher as any
-      replace(boosterCommandDispatcher, 'eventEnvelopesFromRegister', fake())
-      replace(boosterCommandDispatcher, 'dispatchCommand', fakeDispatch)
+      replace(boosterCommandDispatcher, 'dispatchCommand', fake.throws(omgError))
+      replace(RegisterHandler, 'handle', fake())
 
       const config = new BoosterConfig()
-      config.provider = ({
-        rawCommandToEnvelope: fake(),
-        handleCommandResult: fake(),
-      } as unknown) as ProviderLibrary
+      config.provider = {
+        rawCommandToEnvelope: fake.resolves({}),
+        requestFailed: fake(),
+      } as any
       await boosterCommandDispatcher.dispatch({ body: 'Test body' }, config, logger)
 
-      expect(fakeDispatch).to.have.been.calledOnce
-    })
-
-    it("calls the provider's `handleCommandResult` when there were no errors", async () => {
-      const boosterCommandDispatcher = BoosterCommandDispatcher
-      replace(boosterCommandDispatcher as any, 'dispatchCommand', fake())
-      replace(boosterCommandDispatcher as any, 'eventEnvelopesFromRegister', fake())
-
-      const config = new BoosterConfig()
-      config.provider = ({
-        rawCommandToEnvelope: fake(),
-        handleCommandResult: fake(),
-      } as unknown) as ProviderLibrary
-      await boosterCommandDispatcher.dispatch({ body: 'Test body' }, config, logger)
-
-      expect(config.provider.handleCommandResult).to.have.been.calledOnce
+      expect(config.provider.rawCommandToEnvelope).to.have.been.calledOnce
+      expect(boosterCommandDispatcher.dispatchCommand).to.have.been.calledOnce
+      expect(RegisterHandler.handle).not.to.have.been.called
+      expect(config.provider.requestFailed).to.have.been.calledOnceWithExactly(omgError)
     })
   })
 

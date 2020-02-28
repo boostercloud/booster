@@ -3,7 +3,6 @@ import {
   CommandEnvelope,
   Logger,
   Register,
-  ProviderLibrary,
   InvalidParameterError,
   NotAuthorizedError,
   NotFoundError,
@@ -23,16 +22,15 @@ export class BoosterCommandDispatcher {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any> {
     logger.debug('Arrived raw command: ', rawCommand)
-    const provider: ProviderLibrary = config.provider
     try {
-      const envelope = await provider.rawCommandToEnvelope(rawCommand)
+      const envelope = await config.provider.rawCommandToEnvelope(rawCommand)
       const register = this.dispatchCommand(envelope, config, logger)
       logger.debug('Command dispatched with register: ', register)
       await RegisterHandler.handle(register, config, logger)
-      return provider.requestSucceeded()
+      return config.provider.requestSucceeded()
     } catch (error) {
       logger.error('When dispatching command: ', error)
-      return await provider.requestFailed(error)
+      return await config.provider.requestFailed(error)
     }
   }
 

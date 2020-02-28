@@ -14,13 +14,12 @@ export type ProviderLibrary = ProviderCommandsLibrary &
 
 export interface ProviderCommandsLibrary {
   rawCommandToEnvelope(rawCommand: any): Promise<CommandEnvelope>
-  // handleCommandResult(config: BoosterConfig, events: Array<EventEnvelope>, logger?: Logger): Promise<any>
-  // handleCommandError(error: Error): Promise<any>
-  submitCommand(config: BoosterConfig, commandEnvelope: CommandEnvelope, logger?: Logger): Promise<void>
+  submitCommands(commandEnvelopes: Array<CommandEnvelope>, config: BoosterConfig, logger: Logger): Promise<void>
 }
 
 export interface ProviderEventsLibrary {
   rawEventsToEnvelopes(rawEvents: any): Array<EventEnvelope>
+  /** Stores an event in the event store */
   storeEvent(config: BoosterConfig, logger: Logger, envelope: EventEnvelope): Promise<any>
   readEntityEventsSince(
     config: BoosterConfig,
@@ -35,7 +34,8 @@ export interface ProviderEventsLibrary {
     entityTypeName: string,
     entityID: UUID
   ): Promise<EventEnvelope | null>
-  publishEvent(config: BoosterConfig, eventEnvelope: EventEnvelope, logger?: Logger): Promise<void>
+  /** Streams an event to the corresponding event handler */
+  publishEvents(eventEnvelope: Array<EventEnvelope>, config: BoosterConfig, logger: Logger): Promise<void>
 }
 export interface ProviderReadModelsLibrary {
   rawReadModelRequestToEnvelope(rawReadModelRequest: any): Promise<ReadModelRequestEnvelope>

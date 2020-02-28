@@ -18,7 +18,11 @@ export class BoosterEventDispatcher {
     const readModelStore = new ReadModelStore(config, logger)
     logger.debug('Event workflow started for RAW events:', rawEvents)
     try {
-      await RawEventsParser.streamEvents(config, rawEvents, BoosterEventDispatcher.eventProcessor(eventStore, readModelStore, logger))
+      await RawEventsParser.streamEvents(
+        config,
+        rawEvents,
+        BoosterEventDispatcher.eventProcessor(eventStore, readModelStore, logger)
+      )
     } catch (e) {
       logger.error('[BoosterEventDispatcher#dispatch] Unhandled error while dispatching event: ', e)
     }
@@ -29,26 +33,35 @@ export class BoosterEventDispatcher {
     readModelStore: ReadModelStore,
     logger: Logger
   ): (event: EventEnvelope, config: BoosterConfig) => Promise<void> {
-    return async (event, config) => {
-      logger.debug('[BoosterEventDispatcher#eventProcessor]: Started processing workflow for event:', event)
-      await eventStore.append(event)
+    return async (eventEnvelope, config) => {
+      logger.debug('[BoosterEventDispatcher#eventProcessor]: Started processing workflow for event:', eventEnvelope)
+      await eventStore.append(eventEnvelope)
 
-      // TODO: We should probably separate the snapshotting and read-model generation process from event handling in the future
+      // TODO: Separate into two independent processes the snapshotting/read-model generation process from the event handling process
       await Promise.all([
-        BoosterEventDispatcher.snapshotAndUpdateReadModels(event, eventStore, readModelStore, logger),
-        BoosterEventDispatcher.handleEvent(event, config, logger)
+        BoosterEventDispatcher.snapshotAndUpdateReadModels(eventEnvelope, eventStore, readModelStore, logger),
+        BoosterEventDispatcher.handleEvent(eventEnvelope, config, logger),
       ])
     }
   }
 
-  private static async snapshotAndUpdateReadModels(event: EventEnvelope, eventStore: EventStore, readModelStore: ReadModelStore, logger: Logger): Promise<void> {
+  private static async snapshotAndUpdateReadModels(
+    event: EventEnvelope,
+    eventStore: EventStore,
+    readModelStore: ReadModelStore,
+    logger: Logger
+  ): Promise<void> {
     const entitySnapshot = await eventStore.fetchEntitySnapshot(event.entityTypeName, event.entityID)
     if (entitySnapshot) {
-      logger.debug('[BoosterEventDispatcher#eventProcessor]: Snapshot loaded and started read models projection:', entitySnapshot)
+      logger.debug(
+        '[BoosterEventDispatcher#eventProcessor]: Snapshot loaded and started read models projection:',
+        entitySnapshot
+      )
       await readModelStore.project(entitySnapshot)
-    }
-    else {
-      logger.debug('[BoosterEventDispatcher#eventProcessor]: No new snapshot generated, skipping read models projection')
+    } else {
+      logger.debug(
+        '[BoosterEventDispatcher#eventProcessor]: No new snapshot generated, skipping read models projection'
+      )
     }
   }
 
