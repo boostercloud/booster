@@ -71,4 +71,17 @@ describe('the authorization controller', () => {
     }
     return expect(controller.signIn(user)).to.be.rejectedWith(NotAuthorizedError)
   })
+
+  it('should sign out users', async () => {
+    const controller = new AuthController(storage, config, userProject)
+    const userEmail = faker.internet.email()
+    const user = {
+      email: userEmail,
+      roles: [],
+    }
+    await storage.registerUser(user)
+    const token = await controller.signIn(user)
+    await controller.signOut(token)
+    return expect(Object.values(authenticatedUsers)).to.not.contain(user)
+  })
 })
