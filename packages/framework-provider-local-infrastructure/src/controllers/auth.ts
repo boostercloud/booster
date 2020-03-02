@@ -30,7 +30,7 @@ export class AuthController {
     })
 
     this.router.post('/sign-out', async (req: express.Request, res: express.Response) => {
-      const token = req.headers['authorization']?.replace('Bearer ', '')
+      const token = req.body
       if (!token) throw new NotAuthorizedError('No token provided in the headers of the request')
       await this.signOut(token)
       res.status(200)
