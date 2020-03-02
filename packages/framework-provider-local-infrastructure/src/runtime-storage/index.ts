@@ -1,5 +1,6 @@
-import { UserEnvelope, UUID, NotAuthorizedError } from '@boostercloud/framework-types'
+import { UserEnvelope, UUID } from '@boostercloud/framework-types'
 import * as DataStore from 'nedb'
+import { promisify } from 'util'
 
 type AuthenticatedUser = UserEnvelope & {
   token: UUID
@@ -21,9 +22,10 @@ export class RuntimeStorage {
   }
 
   public async authenticateUser(token: UUID, user: UserEnvelope): Promise<void> {
-    this.registeredUsers.find({ email: user.email }, (err, docs) => {
-      if (docs.length < 1) throw new NotAuthorizedError(`User with email ${user.email} has not been registered `)
-      this.authenticatedUsers.insert({ ...user, token })
-    })
+    this.authenticatedUsers.insert({ ...user, token })
+  }
+
+  public async getRegisteredUsersByEmail(email: string): Promise<Array<UserEnvelope>> {
+    return await promisify(this.registeredUsers.find({ email }).exec)()
   }
 }

@@ -38,6 +38,9 @@ export class AuthController {
   public async signIn(user: UserEnvelope): Promise<UUID> {
     await this.userProject.boosterPreSignUpChecker(user)
     const token = UUID.generate()
+    const registeredMatches = await this.storage.getRegisteredUsersByEmail(user.email)
+    if (registeredMatches.length === 0)
+      throw new NotAuthorizedError(`User with email ${user.email} has not been registered `)
     await this.storage.authenticateUser(token, user)
     return token
   }
