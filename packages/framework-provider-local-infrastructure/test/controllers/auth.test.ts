@@ -81,7 +81,12 @@ describe('the authorization controller', () => {
     }
     await storage.registerUser(user)
     const token = await controller.signIn(user)
-    await controller.signOut(token)
+    await controller.signOut({ accessToken: token })
     return expect(Object.values(authenticatedUsers)).to.not.contain(user)
+  })
+
+  it('should fail if the token is not provided', async () => {
+    const controller = new AuthController(storage, config, userProject)
+    return expect(controller.signOut({})).to.be.rejectedWith(NotAuthorizedError)
   })
 })

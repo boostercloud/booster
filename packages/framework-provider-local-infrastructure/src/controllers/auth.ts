@@ -30,9 +30,7 @@ export class AuthController {
     })
 
     this.router.post('/sign-out', async (req: express.Request, res: express.Response) => {
-      const token = req.body?.accessToken
-      if (!token) throw new NotAuthorizedError('No access token provided in the body of the request')
-      await this.signOut(token)
+      await this.signOut(req.body)
       res.status(200)
     })
   }
@@ -52,7 +50,13 @@ export class AuthController {
     return token
   }
 
-  public async signOut(token: UUID): Promise<void> {
+  public async signOut(request: SignOutBody): Promise<void> {
+    const token = request.accessToken
+    if (!token) throw new NotAuthorizedError('No access token provided in the body of the request')
     await this.storage.signOutUser(token)
   }
+}
+
+interface SignOutBody {
+  accessToken?: UUID
 }
