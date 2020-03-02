@@ -1,5 +1,5 @@
 import * as express from 'express'
-import { RuntimeStorage } from './runtime-storage'
+import { UserRegistry } from './services/user-registry'
 import { AuthController } from './controllers/auth'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import path = require('path')
@@ -12,7 +12,7 @@ import path = require('path')
  * @param port Port on which the express server will listen
  */
 export function run(config: BoosterConfig, port: number): void {
-  const storage = new RuntimeStorage()
+  const storage = new UserRegistry()
   const expressServer = express()
   const router = express.Router()
   const userProject = require(path.join(process.cwd(), 'dist', 'index.js'))
