@@ -13,11 +13,13 @@ import * as faker from 'faker'
 import { stub } from 'sinon'
 import * as chai from 'chai'
 import * as chaiAsPromised from 'chai-as-promised'
+import * as sinonChai from 'sinon-chai'
 chai.use(chaiAsPromised)
+chai.use(sinonChai)
 
 describe('the authorization controller', () => {
-  let registeredUsers: Record<string, UserEnvelope> = {}
-  let authenticatedUsers: Record<string, UserEnvelope> = {}
+  const registeredUsers: Record<string, UserEnvelope> = {}
+  const authenticatedUsers: Record<string, UserEnvelope> = {}
   const storage = {
     registerUser: (user: UserEnvelope) => {
       registeredUsers[user.email] = user
@@ -34,59 +36,84 @@ describe('the authorization controller', () => {
   const userProject = { boosterPreSignUpChecker: stub() as any } as UserApp
   const config = new BoosterConfig()
   config.provider = provider
-
-  beforeEach(() => {
-    registeredUsers = {}
-    authenticatedUsers = {}
-  })
-  it('should sign up users', async () => {
-    const controller = new AuthController(storage, config, userProject)
-    const userEmail = faker.internet.email()
-    const user = {
-      email: userEmail,
-      roles: [],
+  const makeRegistry = (): UserRegistry => {
+    const userRegistry = new UserRegistry(config, userProject) as any
+    userRegistry.registeredUsers = {
+      insert: stub(),
+      remove: stub(),
     }
-    await controller.signUp(user)
-    return expect(registeredUsers[userEmail]).to.eq(user)
-  })
-
-  it('should sign in users', async () => {
-    const controller = new AuthController(storage, config, userProject)
-    const userEmail = faker.internet.email()
-    const user = {
-      email: userEmail,
-      roles: [],
+    userRegistry.authenticatedUsers = {
+      insert: stub(),
+      remove: stub(),
     }
-    await storage.registerUser(user)
-    await controller.signIn(user)
-    return expect(Object.values(authenticatedUsers)).to.contain(user)
+    // Stubbing `getRegisteredUsersByEmail` instead of `find` because the
+    // latter is promisified and doesn't play well with sinon
+    userRegistry.getRegisteredUsersByEmail = stub().returns(["I'm fake"])
+    return userRegistry
+  }
+
+  describe('the signUp method', () => {
+    it('should insert users into the registeredUsers database', async () => {
+      const userRegistry = makeRegistry()
+      const userEmail = faker.internet.email()
+      const user = {
+        email: userEmail,
+        roles: [],
+      }
+      await userRegistry.signUp(user)
+      return expect(userRegistry.registeredUsers.insert).to.have.been.calledWith(user)
+    })
   })
 
-  it('should not sign in users that are not registered', async () => {
-    const controller = new AuthController(storage, config, userProject)
-    const userEmail = faker.internet.email()
-    const user = {
-      email: userEmail,
-      roles: [],
-    }
-    return expect(controller.signIn(user)).to.be.rejectedWith(NotAuthorizedError)
+  describe('the signIn method', () => {
+    it('should check if the user has been registered', async () => {
+      const userRegistry = makeRegistry() as any
+      const userEmail = faker.internet.email()
+      const user = {
+        email: userEmail,
+        roles: [],
+      }
+      await userRegistry.signUp(user)
+      await userRegistry.signIn(user)
+      return expect(userRegistry.getRegisteredUsersByEmail).to.have.been.calledWith(userEmail)
+    })
+
+    it('should insert users into the authenticated users database', async () => {
+      const userRegistry = makeRegistry()
+      const userEmail = faker.internet.email()
+      const user = {
+        email: userEmail,
+        roles: [],
+      }
+      await userRegistry.signUp(user)
+      const token = await userRegistry.signIn(user)
+      return expect(userRegistry.authenticatedUsers.insert).to.have.been.calledWith({ ...user, token })
+    })
+
+    it('should fail for users that are not registered', async () => {
+      const userRegistry = makeRegistry() as any
+      userRegistry.getRegisteredUsersByEmail = stub().returns([])
+      const userEmail = faker.internet.email()
+      const user = {
+        email: userEmail,
+        roles: [],
+      }
+      return expect(userRegistry.signIn(user)).to.be.rejectedWith(NotAuthorizedError)
+    })
   })
 
-  it('should sign out users', async () => {
-    const controller = new AuthController(storage, config, userProject)
-    const userEmail = faker.internet.email()
-    const user = {
-      email: userEmail,
-      roles: [],
-    }
-    await storage.registerUser(user)
-    const token = await controller.signIn(user)
-    await controller.signOut({ accessToken: token })
-    return expect(Object.values(authenticatedUsers)).to.not.contain(user)
-  })
-
-  it('should fail if the token is not provided', async () => {
-    const controller = new AuthController(storage, config, userProject)
-    return expect(controller.signOut({})).to.be.rejectedWith(NotAuthorizedError)
+  describe('the signOut method', () => {
+    it('should sign out users', async () => {
+      const userRegistry = makeRegistry()
+      const userEmail = faker.internet.email()
+      const user = {
+        email: userEmail,
+        roles: [],
+      }
+      await userRegistry.signUp(user)
+      const token = await userRegistry.signIn(user)
+      await userRegistry.signOut(token)
+      return expect(userRegistry.authenticatedUsers.remove).to.have.been.calledWith({ token })
+    })
   })
 })

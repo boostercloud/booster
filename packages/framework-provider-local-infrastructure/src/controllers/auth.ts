@@ -1,7 +1,6 @@
 import * as express from 'express'
 import { UserRegistry } from '../services/user-registry'
-import { UserApp, UserEnvelope, BoosterConfig, NotAuthorizedError } from '@boostercloud/framework-types'
-import { UUID } from '@boostercloud/framework-types'
+import { UserApp, BoosterConfig, NotAuthorizedError } from '@boostercloud/framework-types'
 
 /**
  * This controller provides the sign up method, in order for the

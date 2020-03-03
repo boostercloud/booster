@@ -12,10 +12,10 @@ import path = require('path')
  * @param port Port on which the express server will listen
  */
 export function run(config: BoosterConfig, port: number): void {
-  const storage = new UserRegistry()
   const expressServer = express()
   const router = express.Router()
   const userProject = require(path.join(process.cwd(), 'dist', 'index.js'))
+  const storage = new UserRegistry(config, userProject)
   router.use('/', new AuthController(storage, config, userProject).router)
   expressServer.use(defaultErrorHandler)
   expressServer.use(express.json())

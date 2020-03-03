@@ -31,10 +31,10 @@ export class UserRegistry {
   }
 
   public async signOut(token: UUID): Promise<void> {
-    this.registeredUsers.remove({ token })
+    this.authenticatedUsers.remove({ token })
   }
 
   private async getRegisteredUsersByEmail(email: string): Promise<Array<UserEnvelope>> {
-    return await promisify(this.registeredUsers.find({ email }).exec)()
+    return promisify(this.registeredUsers.find({ email }).exec)()
   }
 }
