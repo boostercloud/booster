@@ -1,6 +1,6 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { Stack } from '@aws-cdk/core'
-import { CfnApi, CfnIntegration, CfnIntegrationResponse, CfnRoute, CfnStage } from '@aws-cdk/aws-apigatewayv2'
+import { CfnApi, CfnIntegration, CfnRouteResponse, CfnRoute, CfnStage } from '@aws-cdk/aws-apigatewayv2'
 import { Code, Function } from '@aws-cdk/aws-lambda'
 import { Fn } from '@aws-cdk/core'
 import * as params from '../params'
@@ -25,7 +25,8 @@ export class GraphQLAPIStack {
 
     this.buildRoute('$connect', rootAPI, integration)
     this.buildRoute('$disconnect', rootAPI, integration)
-    this.buildRoute('$default', rootAPI, integration)
+    const defaultRoute = this.buildRoute('$default', rootAPI, integration)
+    this.buildRouteResponse(defaultRoute, rootAPI)
 
     return { graphQLLambda }
   }
@@ -63,8 +64,8 @@ export class GraphQLAPIStack {
   }
 
   private buildIntegration(rootAPI: CfnApi, lambda: Function): CfnIntegration {
-    const requestIntegrationLocalId = this.config.resourceNames.applicationStack + '-graphql-integration'
-    const requestIntegration = new CfnIntegration(this.stack, requestIntegrationLocalId, {
+    const localId = this.config.resourceNames.applicationStack + '-graphql-integration'
+    const integration = new CfnIntegration(this.stack, localId, {
       apiId: rootAPI.ref,
       integrationType: 'AWS_PROXY',
       integrationUri: Fn.join('', [
@@ -77,25 +78,28 @@ export class GraphQLAPIStack {
         '/invocations',
       ]),
     })
-    requestIntegration.addDependsOn(rootAPI)
-
-    const responseIntegrationLocalID = this.config.resourceNames.applicationStack + '-graphql-integration-response'
-    const responseIntegration = new CfnIntegrationResponse(this.stack, responseIntegrationLocalID, {
-      apiId: rootAPI.ref,
-      integrationId: requestIntegration.ref,
-      integrationResponseKey: '$default',
-    })
-    responseIntegration.addDependsOn(requestIntegration)
-    return requestIntegration
+    integration.addDependsOn(rootAPI)
+    return integration
   }
 
-  private buildRoute(route: string, rootAPI: CfnApi, integration: CfnIntegration): void {
-    const localID = `${this.config.resourceNames.applicationStack}-route-${route}`
-    const connectRoute = new CfnRoute(this.stack, localID, {
+  private buildRoute(routeKey: string, rootAPI: CfnApi, integration: CfnIntegration): CfnRoute {
+    const localID = `${this.config.resourceNames.applicationStack}-route-${routeKey}`
+    const route = new CfnRoute(this.stack, localID, {
       apiId: rootAPI.ref,
-      routeKey: route,
+      routeKey: routeKey,
       target: Fn.join('/', ['integrations', integration.ref]),
     })
-    connectRoute.addDependsOn(integration)
+    route.addDependsOn(integration)
+    return route
+  }
+
+  private buildRouteResponse(route: CfnRoute, rootAPI: CfnApi): void {
+    const localID = `${this.config.resourceNames.applicationStack}-route-${route}-response`
+    const routeResponse = new CfnRouteResponse(this.stack, localID, {
+      apiId: rootAPI.ref,
+      routeId: route.ref,
+      routeResponseKey: '$default',
+    })
+    routeResponse.addDependsOn(route)
   }
 }
