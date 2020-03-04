@@ -17,11 +17,11 @@ export class AuthController {
   }
 
   public async signUp(req: express.Request, res: express.Response): Promise<void> {
-    if (req.body?.email && req.body?.roles) {
+    if (req.body?.email && req.body?.roles && req.body?.password) {
       await this.userRegistry.signUp(req.body)
       res.status(200)
     } else {
-      res.status(400).json('The request body should have the `email` and `roles` fields set')
+      res.status(400).json('The request body should have the `email`, `password` and `roles` fields set')
     }
   }
 
