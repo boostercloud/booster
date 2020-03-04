@@ -27,11 +27,11 @@ export class AuthController {
 
   public async signIn(req: express.Request, res: express.Response): Promise<void> {
     try {
-      if (req.body?.email && req.body?.roles) {
+      if (req.body?.email && req.body?.password) {
         const token = await this.userRegistry.signIn(req.body)
         res.status(200).json(token)
       } else {
-        res.status(400).json('The request body should have the `email` and `roles` fields set')
+        res.status(400).json('The request body should have the `email` and `password` fields set')
       }
     } catch (e) {
       if (e.name == NotAuthorizedError.name) {
@@ -48,6 +48,23 @@ export class AuthController {
       res.status(200)
     } else {
       res.status(400).json('accessToken field not set')
+    }
+  }
+
+  public async confirmUser(req: express.Request, res: express.Response): Promise<void> {
+    try {
+      const email = req.body?.email
+      if (email) {
+        await this.userRegistry.confirmUser(email)
+        res.status(200)
+      } else {
+        res.status(400).json('')
+      }
+    } catch (e) {
+      if (e.name == NotAuthorizedError.name) {
+        res.status(403).json(e.message)
+      }
+      throw e
     }
   }
 }

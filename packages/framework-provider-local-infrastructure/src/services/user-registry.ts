@@ -2,23 +2,19 @@ import { UserEnvelope, UUID, BoosterConfig, UserApp, NotAuthorizedError } from '
 import * as DataStore from 'nedb'
 import { promisify } from 'util'
 
-interface LoginCredentials {
-  email: string
-  password: string
-}
-
-type SignUpUser = UserEnvelope & {
+type User = UserEnvelope & {
   password: string
   confirmed: boolean
-}
-
-interface SignInUser {
-  email: string
   token: UUID
 }
 
+type LoginCredentials = Pick<User, 'email' | 'password'>
+type SignUpUser = Pick<User, 'email' | 'password' | 'roles'>
+type RegisteredUser = Pick<User, 'email' | 'password' | 'roles' | 'confirmed'>
+type SignInUser = Pick<User, 'email' | 'token'>
+
 export class UserRegistry {
-  public readonly registeredUsers: DataStore<SignUpUser> = new DataStore()
+  public readonly registeredUsers: DataStore<RegisteredUser> = new DataStore()
   public readonly authenticatedUsers: DataStore<SignInUser> = new DataStore()
   constructor(readonly config: BoosterConfig, readonly userProject: UserApp) {
     this.registeredUsers.loadDatabase()
@@ -27,7 +23,7 @@ export class UserRegistry {
 
   public async signUp(user: SignUpUser): Promise<void> {
     await this.userProject.boosterPreSignUpChecker(user)
-    this.registeredUsers.insert(user)
+    this.registeredUsers.insert({ ...user, confirmed: false })
   }
 
   public async signIn(user: LoginCredentials): Promise<UUID> {
@@ -48,6 +44,10 @@ export class UserRegistry {
 
   public async signOut(token: UUID): Promise<void> {
     this.authenticatedUsers.remove({ token })
+  }
+
+  public async confirmUser(email: string): Promise<void> {
+    this.registeredUsers.update({ email }, { $set: { confirmed: true } })
   }
 
   private async getRegisteredUsersByEmail(email: string): Promise<Array<SignUpUser>> {

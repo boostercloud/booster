@@ -48,7 +48,7 @@ describe('the authorization controller', () => {
     }
     // Stubbing `getRegisteredUsersByEmail` instead of `find` because the
     // latter is promisified and doesn't play well with sinon
-    userRegistry.getRegisteredUsersByEmail = stub().returns(["I'm fake"])
+    userRegistry.getRegisteredUsersByEmail = stub().returns([{ confirmed: true }])
     return userRegistry
   }
 
@@ -59,6 +59,7 @@ describe('the authorization controller', () => {
       const user = {
         email: userEmail,
         roles: [],
+        password: faker.internet.password(),
       }
       await userRegistry.signUp(user)
       return expect(userRegistry.registeredUsers.insert).to.have.been.calledWith(user)
