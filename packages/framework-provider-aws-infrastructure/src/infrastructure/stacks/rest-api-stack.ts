@@ -6,31 +6,26 @@ import * as params from '../params'
 import { Effect, IRole, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam'
 import { CognitoTemplates } from './api-stack-velocity-templates'
 
-interface ApiStackMembers {
-  rootApi: RestApi
+interface RESTAPIStackMembers {
   commandsLambda: Function
   readModelFetcherLambda: Function
-  graphQLLambda: Function
 }
 
-export class ApiStack {
+export class RestAPIStack {
   public constructor(private readonly config: BoosterConfig, private readonly stack: Stack) {}
 
-  public build(): ApiStackMembers {
+  public build(): RESTAPIStackMembers {
     const rootApi = this.buildRootApi()
 
     if (this.config.thereAreRoles) {
-      this.buildAuthApi(rootApi)
+      this.buildAuthAPI(rootApi)
     }
     const commandsLambda = this.buildCommandsAPI(rootApi)
     const readModelFetcherLambda = this.buildReadModelsAPI(rootApi)
-    const graphQLLambda = this.buildGraphQLAPI(rootApi)
 
     return {
-      rootApi,
       commandsLambda,
       readModelFetcherLambda,
-      graphQLLambda,
     }
   }
 
@@ -45,7 +40,7 @@ export class ApiStack {
     return rootApi
   }
 
-  private buildAuthApi(rootApi: RestApi): void {
+  private buildAuthAPI(rootApi: RestApi): void {
     const cognitoIntegrationRole = this.buildCognitoIntegrationRole()
 
     const authResource = rootApi.root.addResource('auth')
@@ -64,13 +59,13 @@ export class ApiStack {
     }
     authResource
       .addResource('sign-up')
-      .addMethod('POST', ApiStack.buildSignUpIntegration(cognitoIntegrationRole), methodOptions)
+      .addMethod('POST', RestAPIStack.buildSignUpIntegration(cognitoIntegrationRole), methodOptions)
     authResource
       .addResource('sign-in')
-      .addMethod('POST', ApiStack.buildSignInIntegration(cognitoIntegrationRole), methodOptions)
+      .addMethod('POST', RestAPIStack.buildSignInIntegration(cognitoIntegrationRole), methodOptions)
     authResource
       .addResource('sign-out')
-      .addMethod('POST', ApiStack.buildSignOutIntegration(cognitoIntegrationRole), methodOptions)
+      .addMethod('POST', RestAPIStack.buildSignOutIntegration(cognitoIntegrationRole), methodOptions)
   }
 
   private static buildSignOutIntegration(withRole: IRole): AwsIntegration {
@@ -177,19 +172,6 @@ export class ApiStack {
     readModelResource.addResource('{id}').addMethod('GET', lambdaIntegration)
 
     return readModelFetcherLambda
-  }
-
-  private buildGraphQLAPI(api: RestApi): Function {
-    const localID = 'graphql'
-    const graphQLLambda = new Function(this.stack, localID, {
-      ...params.lambda,
-      functionName: this.config.resourceNames.applicationStack + '-' + localID,
-      handler: this.config.serveGraphQLHandler,
-      code: Code.fromAsset(this.config.userProjectRootPath),
-    })
-
-    api.root.addResource('graphql').addMethod('POST', new LambdaIntegration(graphQLLambda))
-    return graphQLLambda
   }
 }
 
