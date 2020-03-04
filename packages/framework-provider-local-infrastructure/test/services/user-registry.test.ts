@@ -49,46 +49,55 @@ describe('the authorization controller', () => {
     // Stubbing `getRegisteredUsersByEmail` instead of `find` because the
     // latter is promisified and doesn't play well with sinon
     userRegistry.getRegisteredUsersByEmail = stub().returns([{ confirmed: true }])
+    userRegistry.passwordsMatch = stub().returns(true)
     return userRegistry
   }
 
   describe('the signUp method', () => {
     it('should insert users into the registeredUsers database', async () => {
       const userRegistry = makeRegistry()
-      const userEmail = faker.internet.email()
       const user = {
-        email: userEmail,
-        roles: [],
+        clientId: faker.random.uuid(),
+        username: faker.internet.email(),
+        userAttributes: {
+          roles: [],
+        },
         password: faker.internet.password(),
       }
       await userRegistry.signUp(user)
-      return expect(userRegistry.registeredUsers.insert).to.have.been.calledWith(user)
+      return expect(userRegistry.registeredUsers.insert).to.have.been.calledWith({ ...user, confirmed: false })
     })
   })
 
   describe('the signIn method', () => {
     it('should check if the user has been registered', async () => {
       const userRegistry = makeRegistry() as any
-      const userEmail = faker.internet.email()
       const user = {
-        email: userEmail,
-        roles: [],
+        clientId: faker.random.uuid(),
+        username: faker.internet.email(),
+        userAttributes: {
+          roles: [],
+        },
+        password: faker.internet.password(),
       }
       await userRegistry.signUp(user)
       await userRegistry.signIn(user)
-      return expect(userRegistry.getRegisteredUsersByEmail).to.have.been.calledWith(userEmail)
+      return expect(userRegistry.getRegisteredUsersByEmail).to.have.been.calledWith(user.username)
     })
 
     it('should insert users into the authenticated users database', async () => {
       const userRegistry = makeRegistry()
-      const userEmail = faker.internet.email()
       const user = {
-        email: userEmail,
-        roles: [],
+        clientId: faker.random.uuid(),
+        username: faker.internet.email(),
+        userAttributes: {
+          roles: [],
+        },
+        password: faker.internet.password(),
       }
       await userRegistry.signUp(user)
       const token = await userRegistry.signIn(user)
-      return expect(userRegistry.authenticatedUsers.insert).to.have.been.calledWith({ ...user, token })
+      return expect(userRegistry.authenticatedUsers.insert).to.have.been.calledWith({ username: user.username, token })
     })
 
     it('should fail for users that are not registered', async () => {
@@ -106,10 +115,13 @@ describe('the authorization controller', () => {
   describe('the signOut method', () => {
     it('should sign out users', async () => {
       const userRegistry = makeRegistry()
-      const userEmail = faker.internet.email()
       const user = {
-        email: userEmail,
-        roles: [],
+        clientId: faker.random.uuid(),
+        username: faker.internet.email(),
+        userAttributes: {
+          roles: [],
+        },
+        password: faker.internet.password(),
       }
       await userRegistry.signUp(user)
       const token = await userRegistry.signIn(user)

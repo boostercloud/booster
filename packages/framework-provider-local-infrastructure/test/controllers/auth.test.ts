@@ -21,10 +21,13 @@ describe('the auth controller', () => {
 
   describe('/sign-up', () => {
     it('should return status 200 if the request is correct', async () => {
-      const userEmail = faker.internet.email()
       const user = {
-        email: userEmail,
-        roles: [],
+        clientId: faker.random.uuid(),
+        username: faker.internet.email(),
+        userAttributes: {
+          roles: [],
+        },
+        password: faker.internet.password(),
       }
       const req = mockReq({ body: user })
       const res = mockRes()
@@ -33,10 +36,13 @@ describe('the auth controller', () => {
     })
 
     it('should call userRegistry.signUp if the request is correct', async () => {
-      const userEmail = faker.internet.email()
       const user = {
-        email: userEmail,
-        roles: [],
+        clientId: faker.random.uuid(),
+        username: faker.internet.email(),
+        userAttributes: {
+          roles: [],
+        },
+        password: faker.internet.password(),
       }
       const req = mockReq({ body: user })
       const res = mockRes()
@@ -54,10 +60,10 @@ describe('the auth controller', () => {
 
   describe('/sign-in', () => {
     it('should return status 200 for well formed requests', async () => {
-      const userEmail = faker.internet.email()
       const user = {
-        email: userEmail,
-        roles: [],
+        clientId: faker.random.uuid(),
+        username: faker.internet.email(),
+        password: faker.internet.password(),
       }
       const req = mockReq({ body: user })
       const res = mockRes()
@@ -66,10 +72,10 @@ describe('the auth controller', () => {
     })
 
     it('should call userRegistry.signIn well formed requests', async () => {
-      const userEmail = faker.internet.email()
       const user = {
-        email: userEmail,
-        roles: [],
+        clientId: faker.random.uuid(),
+        username: faker.internet.email(),
+        password: faker.internet.password(),
       }
       const req = mockReq({ body: user })
       const res = mockRes()

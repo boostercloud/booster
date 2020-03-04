@@ -1,21 +1,26 @@
-import { UserEnvelope, UUID, BoosterConfig, UserApp, NotAuthorizedError } from '@boostercloud/framework-types'
+import { UUID, BoosterConfig, UserApp, NotAuthorizedError } from '@boostercloud/framework-types'
 import * as DataStore from 'nedb'
 import { promisify } from 'util'
 
-type User = UserEnvelope & {
+interface User {
+  clientId: string
+  username: string
   password: string
-  confirmed: boolean
+  userAttributes: {
+    roles: Array<string>
+  }
   token: UUID
+  confirmed: boolean
 }
 
-type LoginCredentials = Pick<User, 'email' | 'password'>
-type SignUpUser = Pick<User, 'email' | 'password' | 'roles'>
-type RegisteredUser = Pick<User, 'email' | 'password' | 'roles' | 'confirmed'>
-type SignInUser = Pick<User, 'email' | 'token'>
+type LoginCredentials = Pick<User, 'username' | 'password'>
+type SignUpUser = Pick<User, 'clientId' | 'username' | 'password' | 'userAttributes'>
+type RegisteredUser = Pick<User, 'username' | 'password' | 'userAttributes' | 'confirmed'>
+type AuthenticatedUser = Pick<User, 'username' | 'token'>
 
 export class UserRegistry {
   public readonly registeredUsers: DataStore<RegisteredUser> = new DataStore()
-  public readonly authenticatedUsers: DataStore<SignInUser> = new DataStore()
+  public readonly authenticatedUsers: DataStore<AuthenticatedUser> = new DataStore()
   constructor(readonly config: BoosterConfig, readonly userProject: UserApp) {
     this.registeredUsers.loadDatabase()
     this.authenticatedUsers.loadDatabase()
@@ -28,17 +33,18 @@ export class UserRegistry {
 
   public async signIn(user: LoginCredentials): Promise<UUID> {
     const token = UUID.generate()
-    const registeredMatches = await this.getRegisteredUsersByEmail(user.email)
+    const registeredMatches = await this.getRegisteredUsersByEmail(user.username)
     if (registeredMatches.length === 0) {
-      throw new NotAuthorizedError(`User with email ${user.email} has not been registered `)
+      throw new NotAuthorizedError(`User with email ${user.username} has not been registered `)
     }
-    if (!registeredMatches[0].confirmed) {
-      throw new NotAuthorizedError(`User with email ${user.email} has not been confirmed`)
+    const match = registeredMatches[0]
+    if (!match.confirmed) {
+      throw new NotAuthorizedError(`User with email ${user.username} has not been confirmed`)
     }
-    if (registeredMatches[0].password !== user.password) {
-      throw new NotAuthorizedError(`Wrong password for user with email ${user.email}`)
+    if (!this.passwordsMatch(user, match)) {
+      throw new NotAuthorizedError(`Wrong password for user with email ${user.username}`)
     }
-    this.authenticatedUsers.insert({ email: user.email, token })
+    this.authenticatedUsers.insert({ username: user.username, token })
     return token
   }
 
@@ -50,7 +56,11 @@ export class UserRegistry {
     this.registeredUsers.update({ email }, { $set: { confirmed: true } })
   }
 
-  private async getRegisteredUsersByEmail(email: string): Promise<Array<SignUpUser>> {
+  private async getRegisteredUsersByEmail(email: string): Promise<Array<RegisteredUser>> {
     return promisify(this.registeredUsers.find({ email }).exec)()
+  }
+
+  private passwordsMatch(credentials: LoginCredentials, registered: RegisteredUser): boolean {
+    return registered.password !== credentials.password
   }
 }

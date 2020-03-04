@@ -17,7 +17,7 @@ export class AuthController {
   }
 
   public async signUp(req: express.Request, res: express.Response): Promise<void> {
-    if (req.body?.email && req.body?.roles && req.body?.password) {
+    if (req.body?.clientId && req.body?.username && req.body?.userAttributes && req.body?.password) {
       await this.userRegistry.signUp(req.body)
       res.status(200)
     } else {
@@ -27,7 +27,7 @@ export class AuthController {
 
   public async signIn(req: express.Request, res: express.Response): Promise<void> {
     try {
-      if (req.body?.email && req.body?.password) {
+      if (req.body?.clientId && req.body?.username && req.body?.password) {
         const token = await this.userRegistry.signIn(req.body)
         res.status(200).json(token)
       } else {
