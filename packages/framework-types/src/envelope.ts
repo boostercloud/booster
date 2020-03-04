@@ -33,7 +33,9 @@ export interface ReadModelRequestEnvelope extends Envelope {
 }
 
 export interface GraphQLRequestEnvelope extends Envelope {
-  value: string
+  value?: string
+  connectionID: string
+  eventType: 'CONNECT' | 'MESSAGE' | 'DISCONNECT'
 }
 
 export interface UserEnvelope {

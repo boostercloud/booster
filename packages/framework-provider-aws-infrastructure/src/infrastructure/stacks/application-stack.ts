@@ -4,10 +4,11 @@ import { Function } from '@aws-cdk/aws-lambda'
 import { Stream } from '@aws-cdk/aws-kinesis'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { PolicyStatement } from '@aws-cdk/aws-iam'
-import { ApiStack } from './api-stack'
+import { RestAPIStack } from './rest-api-stack'
 import { AuthStack } from './auth-stack'
 import { EventsStack } from './events-stack'
 import { ReadModelsStack } from './read-models-stack'
+import { GraphQLAPIStack } from "./graphql-api-stack";
 
 export class ApplicationStackBuilder {
   public constructor(readonly config: BoosterConfig, readonly props?: StackProps) {}
@@ -17,15 +18,16 @@ export class ApplicationStackBuilder {
 
     new AuthStack(this.config, stack).build()
     const readModelTables = new ReadModelsStack(this.config, stack).build()
-    const apiStack = new ApiStack(this.config, stack).build()
+    const restAPIStack = new RestAPIStack(this.config, stack).build()
+    const graphQLAPIStack = new GraphQLAPIStack(this.config, stack).build()
     const eventsStack = new EventsStack(this.config, stack).build()
 
     setupPermissions(
       readModelTables,
-      apiStack.commandsLambda,
+      restAPIStack.commandsLambda,
       eventsStack.eventsLambda,
-      apiStack.readModelFetcherLambda,
-      apiStack.graphQLLambda,
+      restAPIStack.readModelFetcherLambda,
+      graphQLAPIStack.graphQLLambda,
       eventsStack.eventsStream,
       eventsStack.eventsStore,
       eventsStack.eventsLambda

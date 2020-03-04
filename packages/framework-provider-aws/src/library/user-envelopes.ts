@@ -44,5 +44,5 @@ export async function fetchUserFromRequest(
 }
 
 function getTokenFromRequest(request: APIGatewayProxyEvent): string | undefined {
-  return request.headers['Authorization']?.replace('Bearer ', '') // Remove the "Bearer" prefix
+  return request.headers?.['Authorization']?.replace('Bearer ', '') // Remove the "Bearer" prefix
 }
