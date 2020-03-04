@@ -15,8 +15,8 @@ export function run(config: BoosterConfig, port: number): void {
   const expressServer = express()
   const router = express.Router()
   const userProject = require(path.join(process.cwd(), 'dist', 'index.js'))
-  const storage = new UserRegistry(config, userProject)
-  router.use('/', new AuthController(storage, config, userProject).router)
+  const userRegistry = new UserRegistry(config, userProject)
+  router.use('/', new AuthController(userRegistry).router)
   expressServer.use(defaultErrorHandler)
   expressServer.use(express.json())
   expressServer.use(router)
@@ -28,7 +28,7 @@ export function run(config: BoosterConfig, port: number): void {
  * express will check if contents were sent, and if it failed, it will send a 500 with the
  * error attached.
  */
-function defaultErrorHandler(
+export function defaultErrorHandler(
   err: Error,
   _req: express.Request,
   res: express.Response,
