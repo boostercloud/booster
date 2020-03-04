@@ -20,49 +20,73 @@ describe('the auth controller', () => {
   const controller = new AuthController(userRegistry)
 
   describe('/sign-up', () => {
-    it('should accept well formed requests', async () => {
+    it('should return status 200 if the request is correct', async () => {
       const userEmail = faker.internet.email()
       const user = {
         email: userEmail,
         roles: [],
       }
-      const req = mockReq(user)
+      const req = mockReq({ body: user })
       const res = mockRes()
       await controller.signUp(req, res)
       expect(res.status).to.be.calledWith(200)
     })
 
-    it('should fail on malformed requests', async () => {
-      const req = mockReq({ blahblah: faker.hacker.phrase() })
-      const res = mockRes()
-      await controller.signUp(req, res)
-      expect(res.status).to.be.calledWith(500)
-    })
-  })
-
-  describe('the sign-in endpoint', () => {
-    it('should accept well formed requests', async () => {
+    it('should call userRegistry.signUp if the request is correct', async () => {
       const userEmail = faker.internet.email()
       const user = {
         email: userEmail,
         roles: [],
       }
-      const req = mockReq(user)
+      const req = mockReq({ body: user })
+      const res = mockRes()
+      await controller.signUp(req, res)
+      expect(userRegistry.signUp).to.be.calledWith(user)
+    })
+
+    it('should return a status 400 on malformed requests', async () => {
+      const req = mockReq({ body: faker.hacker.phrase() })
+      const res = mockRes()
+      await controller.signUp(req, res)
+      expect(res.status).to.be.calledWith(400)
+    })
+  })
+
+  describe('/sign-in', () => {
+    it('should return status 200 for well formed requests', async () => {
+      const userEmail = faker.internet.email()
+      const user = {
+        email: userEmail,
+        roles: [],
+      }
+      const req = mockReq({ body: user })
       const res = mockRes()
       await controller.signIn(req, res)
       expect(res.status).to.be.calledWith(200)
     })
 
-    it('should fail on malformed requests', async () => {
-      const req = mockReq({ blahblah: faker.hacker.phrase() })
+    it('should call userRegistry.signIn well formed requests', async () => {
+      const userEmail = faker.internet.email()
+      const user = {
+        email: userEmail,
+        roles: [],
+      }
+      const req = mockReq({ body: user })
       const res = mockRes()
       await controller.signIn(req, res)
-      expect(res.status).to.be.calledWith(500)
+      expect(userRegistry.signIn).to.be.calledWith(user)
+    })
+
+    it('should return status 400 on malformed requests', async () => {
+      const req = mockReq({ body: faker.hacker.phrase() })
+      const res = mockRes()
+      await controller.signIn(req, res)
+      expect(res.status).to.be.calledWith(400)
     })
   })
 
-  describe('the sign-out endpoint', () => {
-    it('should accept well formed requests', async () => {
+  describe('/sign-out', () => {
+    it('should return status 200 on well formed requests', async () => {
       const token = faker.random.uuid()
       const request = {
         body: {
@@ -75,8 +99,21 @@ describe('the auth controller', () => {
       expect(res.status).to.be.calledWith(200)
     })
 
-    it('should fail on malformed requests', async () => {
-      const req = mockReq({ blahblah: faker.hacker.phrase() })
+    it('should call userRegistry.signOut on well formed requests', async () => {
+      const token = faker.random.uuid()
+      const request = {
+        body: {
+          accessToken: token,
+        },
+      }
+      const req = mockReq(request)
+      const res = mockRes()
+      await controller.signOut(req, res)
+      expect(userRegistry.signOut).to.be.calledWith(token)
+    })
+
+    it('should return status 400 on malformed requests', async () => {
+      const req = mockReq({ body: faker.hacker.phrase() })
       const res = mockRes()
       await controller.signOut(req, res)
       expect(res.status).to.be.calledWith(400)

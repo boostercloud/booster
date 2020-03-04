@@ -17,14 +17,22 @@ export class AuthController {
   }
 
   public async signUp(req: express.Request, res: express.Response): Promise<void> {
-    await this.userRegistry.signUp(req.body)
-    res.status(200)
+    if (req.body?.email && req.body?.roles) {
+      await this.userRegistry.signUp(req.body)
+      res.status(200)
+    } else {
+      res.status(400).json('The request body should have the `email` and `roles` fields set')
+    }
   }
 
   public async signIn(req: express.Request, res: express.Response): Promise<void> {
     try {
-      const token = await this.userRegistry.signIn(req.body)
-      res.status(200).json(token)
+      if (req.body?.email && req.body?.roles) {
+        const token = await this.userRegistry.signIn(req.body)
+        res.status(200).json(token)
+      } else {
+        res.status(400).json('The request body should have the `email` and `roles` fields set')
+      }
     } catch (e) {
       if (e.name == NotAuthorizedError.name) {
         res.status(403).json(e.message)
