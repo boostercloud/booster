@@ -64,7 +64,7 @@ export class MoveStock {
   public constructor(readonly productSKU: UUID, readonly fromLocationId: UUID, readonly toLocationId: UUID, readonly quantity: number) {}
 
   public handle(register: Register): void {
-    const productStock = fetchEntitySnapshot('ProductStock', this.productSKU)
+    const productStock = Booster.fetchEntitySnapshot('ProductStock', this.productSKU)
 
     if (productStock.locations[this.fromLocationId].count >= this.quantity) {
       // Enough stock, we confirm the movement
