@@ -14,24 +14,25 @@ export class AuthController {
     this.router.post('/sign-up', this.signUp.bind(this))
     this.router.post('/sign-in', this.signIn.bind(this))
     this.router.post('/sign-out', this.signOut.bind(this))
+    this.router.get('/confirm/:email', this.confirmUser.bind(this))
   }
 
   public async signUp(req: express.Request, res: express.Response): Promise<void> {
-    if (req.body?.clientId && req.body?.username && req.body?.userAttributes && req.body?.password) {
+    if (req.body?.username && req.body?.userAttributes && req.body?.password) {
       await this.userRegistry.signUp(req.body)
       res.status(200)
     } else {
-      res.status(400).json('The request body should have the `email`, `password` and `roles` fields set')
+      res.status(400).json('The request body should have the `username`, `password` and `userAttributes` fields set')
     }
   }
 
   public async signIn(req: express.Request, res: express.Response): Promise<void> {
     try {
-      if (req.body?.clientId && req.body?.username && req.body?.password) {
+      if (req.body?.username && req.body?.password) {
         const token = await this.userRegistry.signIn(req.body)
         res.status(200).json(token)
       } else {
-        res.status(400).json('The request body should have the `email` and `password` fields set')
+        res.status(400).json('The request body should have the `username` and `password` fields set')
       }
     } catch (e) {
       if (e.name == NotAuthorizedError.name) {
@@ -53,7 +54,7 @@ export class AuthController {
 
   public async confirmUser(req: express.Request, res: express.Response): Promise<void> {
     try {
-      const email = req.body?.email
+      const email = req.params?.email
       if (email) {
         await this.userRegistry.confirmUser(email)
         res.status(200)
