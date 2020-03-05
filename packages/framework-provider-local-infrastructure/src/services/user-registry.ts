@@ -33,15 +33,12 @@ export class UserRegistry {
 
   public async signIn(user: LoginCredentials): Promise<UUID> {
     const registeredMatches = await this.getRegisteredUsersByEmail(user.username)
-    if (registeredMatches.length === 0) {
-      throw new NotAuthorizedError(`User with email ${user.username} has not been registered `)
+    const match = registeredMatches?.[0]
+    if (!match || !this.passwordsMatch(user, match)) {
+      throw new NotAuthorizedError('Incorrect email or password')
     }
-    const match = registeredMatches[0]
     if (!match.confirmed) {
       throw new NotAuthorizedError(`User with email ${user.username} has not been confirmed`)
-    }
-    if (!this.passwordsMatch(user, match)) {
-      throw new NotAuthorizedError('Incorrect email or password')
     }
     const token = UUID.generate()
     this.authenticatedUsers.insert({ username: user.username, token })
