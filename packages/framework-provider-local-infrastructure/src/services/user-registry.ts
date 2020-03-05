@@ -27,6 +27,8 @@ export class UserRegistry {
 
   public async signUp(user: SignUpUser): Promise<void> {
     await this.userProject.boosterPreSignUpChecker(user)
+    const matches = await this.getRegisteredUsersByEmail(user.username)
+    if (matches.length !== 0) throw new NotAuthorizedError(`User with email ${user.username} is already registered`)
     this.registeredUsers.insert({ ...user, confirmed: false })
     console.info(`To confirm the user, use the following link: localhost:3000/confirm/${user.username}`)
   }

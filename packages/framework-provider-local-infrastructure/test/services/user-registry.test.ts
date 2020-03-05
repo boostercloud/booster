@@ -36,7 +36,7 @@ describe('the authorization controller', () => {
   const userProject = { boosterPreSignUpChecker: stub() as any } as UserApp
   const config = new BoosterConfig()
   config.provider = provider
-  const makeRegistry = (): UserRegistry => {
+  const makeRegistry = (): any => {
     const userRegistry = new UserRegistry(config, userProject) as any
     userRegistry.registeredUsers = {
       insert: stub(),
@@ -56,6 +56,7 @@ describe('the authorization controller', () => {
   describe('the signUp method', () => {
     it('should insert users into the registeredUsers database', async () => {
       const userRegistry = makeRegistry()
+      userRegistry.getRegisteredUsersByEmail = stub().returns([])
       const user = {
         clientId: faker.random.uuid(),
         username: faker.internet.email(),
@@ -80,7 +81,7 @@ describe('the authorization controller', () => {
         },
         password: faker.internet.password(),
       }
-      await userRegistry.signUp(user)
+      userRegistry.getRegisteredUsersByEmail = stub().returns([{ ...user, confirmed: true }])
       await userRegistry.signIn(user)
       return expect(userRegistry.getRegisteredUsersByEmail).to.have.been.calledWith(user.username)
     })
@@ -95,7 +96,7 @@ describe('the authorization controller', () => {
         },
         password: faker.internet.password(),
       }
-      await userRegistry.signUp(user)
+      userRegistry.getRegisteredUsersByEmail = stub().returns([{ ...user, confirmed: true }])
       const token = await userRegistry.signIn(user)
       return expect(userRegistry.authenticatedUsers.insert).to.have.been.calledWith({ username: user.username, token })
     })
@@ -108,6 +109,17 @@ describe('the authorization controller', () => {
         email: userEmail,
         roles: [],
       }
+      return expect(userRegistry.signIn(user)).to.be.rejectedWith(NotAuthorizedError)
+    })
+
+    it('should fail for users that are not confirmed', async () => {
+      const userRegistry = makeRegistry() as any
+      const userEmail = faker.internet.email()
+      const user = {
+        email: userEmail,
+        roles: [],
+      }
+      userRegistry.getRegisteredUsersByEmail = stub().returns([{ ...user, confirmed: false }])
       return expect(userRegistry.signIn(user)).to.be.rejectedWith(NotAuthorizedError)
     })
   })
@@ -123,7 +135,7 @@ describe('the authorization controller', () => {
         },
         password: faker.internet.password(),
       }
-      await userRegistry.signUp(user)
+      userRegistry.getRegisteredUsersByEmail = stub().returns([{ ...user, confirmed: true }])
       const token = await userRegistry.signIn(user)
       await userRegistry.signOut(token)
       return expect(userRegistry.authenticatedUsers.remove).to.have.been.calledWith({ token })
