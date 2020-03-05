@@ -3,7 +3,6 @@ import * as DataStore from 'nedb'
 import { promisify } from 'util'
 
 interface User {
-  clientId: string
   username: string
   password: string
   userAttributes: {
@@ -14,7 +13,7 @@ interface User {
 }
 
 type LoginCredentials = Pick<User, 'username' | 'password'>
-type SignUpUser = Pick<User, 'clientId' | 'username' | 'password' | 'userAttributes'>
+type SignUpUser = Pick<User, 'username' | 'password' | 'userAttributes'>
 type RegisteredUser = Pick<User, 'username' | 'password' | 'userAttributes' | 'confirmed'>
 type AuthenticatedUser = Pick<User, 'username' | 'token'>
 
@@ -29,10 +28,10 @@ export class UserRegistry {
   public async signUp(user: SignUpUser): Promise<void> {
     await this.userProject.boosterPreSignUpChecker(user)
     this.registeredUsers.insert({ ...user, confirmed: false })
+    console.info(`To confirm the user, use the following link: localhost:3000/confirm/${user.username}`)
   }
 
   public async signIn(user: LoginCredentials): Promise<UUID> {
-    const token = UUID.generate()
     const registeredMatches = await this.getRegisteredUsersByEmail(user.username)
     if (registeredMatches.length === 0) {
       throw new NotAuthorizedError(`User with email ${user.username} has not been registered `)
@@ -42,8 +41,9 @@ export class UserRegistry {
       throw new NotAuthorizedError(`User with email ${user.username} has not been confirmed`)
     }
     if (!this.passwordsMatch(user, match)) {
-      throw new NotAuthorizedError(`Wrong password for user with email ${user.username}`)
+      throw new NotAuthorizedError('Incorrect email or password')
     }
+    const token = UUID.generate()
     this.authenticatedUsers.insert({ username: user.username, token })
     return token
   }
