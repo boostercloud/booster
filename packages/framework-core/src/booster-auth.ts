@@ -11,6 +11,11 @@ import {
 
 export class BoosterAuth {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public static async authorizeRequest(rawMessage: any, config: BoosterConfig, logger: Logger): Promise<any> {
+    return config.provider.authorizeRequest(rawMessage, logger)
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public static checkSignUp(rawMessage: any, config: BoosterConfig, logger: Logger): any {
     const provider: ProviderAuthLibrary = config.provider
     const userEnvelope = provider.rawSignUpDataToUserEnvelope(rawMessage)

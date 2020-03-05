@@ -62,6 +62,7 @@ export interface ProviderReadModelsLibrary {
 }
 
 export interface ProviderGraphQLLibrary {
+  authorizeRequest(rawRequest: any, logger: Logger): Promise<any>
   rawGraphQLRequestToEnvelope(rawGraphQLRequest: any, logger: Logger): Promise<GraphQLRequestEnvelope>
   handleGraphQLResult(result?: any): Promise<any>
   handleGraphQLError(error: Error): Promise<any>

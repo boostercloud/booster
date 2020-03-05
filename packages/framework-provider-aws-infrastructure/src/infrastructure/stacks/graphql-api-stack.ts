@@ -1,6 +1,13 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { Stack } from '@aws-cdk/core'
-import { CfnApi, CfnIntegration, CfnRouteResponse, CfnRoute, CfnStage } from '@aws-cdk/aws-apigatewayv2'
+import {
+  CfnApi,
+  CfnIntegration,
+  CfnRouteResponse,
+  CfnRoute,
+  CfnStage,
+  CfnAuthorizer,
+} from '@aws-cdk/aws-apigatewayv2'
 import { Code, Function } from '@aws-cdk/aws-lambda'
 import { Fn } from '@aws-cdk/core'
 import * as params from '../params'
@@ -22,8 +29,9 @@ export class GraphQLAPIStack {
     const rootAPI = this.buildRootAPI()
 
     const [graphQLLambda, integration] = this.buildLambdaIntegration(rootAPI)
+    const authorizer = this.buildAuthorizer(rootAPI)
 
-    this.buildRoute('$connect', rootAPI, integration)
+    this.buildRoute('$connect', rootAPI, integration, authorizer)
     this.buildRoute('$disconnect', rootAPI, integration)
     const defaultRoute = this.buildRoute('$default', rootAPI, integration)
     this.buildRouteResponse(defaultRoute, rootAPI)
@@ -82,13 +90,17 @@ export class GraphQLAPIStack {
     return integration
   }
 
-  private buildRoute(routeKey: string, rootAPI: CfnApi, integration: CfnIntegration): CfnRoute {
+  private buildRoute(routeKey: string, rootAPI: CfnApi, integration: CfnIntegration, authorizer?: CfnAuthorizer): CfnRoute {
     const localID = `${this.config.resourceNames.applicationStack}-route-${routeKey}`
-    const route = new CfnRoute(this.stack, localID, {
+    const route = new CfnRoute(this.stack, localID,{
       apiId: rootAPI.ref,
       routeKey: routeKey,
       target: Fn.join('/', ['integrations', integration.ref]),
     })
+    if (authorizer) {
+      route.authorizationType = 'CUSTOM'
+      route.authorizerId = authorizer.ref
+    }
     route.addDependsOn(integration)
     return route
   }
@@ -101,5 +113,37 @@ export class GraphQLAPIStack {
       routeResponseKey: '$default',
     })
     routeResponse.addDependsOn(route)
+  }
+
+  private buildAuthorizer(rootAPI: CfnApi): CfnAuthorizer {
+    const lambdaLocalID = this.config.resourceNames.applicationStack + '-lambda-authorizer'
+    const lambda = new Function(this.stack, lambdaLocalID, {
+      ...params.lambda,
+      functionName: lambdaLocalID,
+      handler: this.config.authorizerHandler,
+      code: Code.fromAsset(this.config.userProjectRootPath),
+    })
+    lambda.addPermission(lambdaLocalID + '-invocation-permission', {
+      principal: new ServicePrincipal('apigateway.amazonaws.com'),
+    })
+
+    const authorizerLocalID = this.config.resourceNames.applicationStack + '-authorizer'
+    const authorizer = new CfnAuthorizer(this.stack, authorizerLocalID, {
+      apiId: rootAPI.ref,
+      authorizerType: 'REQUEST',
+      name: authorizerLocalID,
+      identitySource: ['route.request.header.Authorization'],
+      authorizerUri: Fn.join('', [
+        'arn:',
+        Fn.ref('AWS::Partition'),
+        ':apigateway:',
+        Fn.ref('AWS::Region'),
+        ':lambda:path/2015-03-31/functions/',
+        lambda.functionArn,
+        '/invocations',
+      ]),
+    })
+
+    return authorizer
   }
 }
