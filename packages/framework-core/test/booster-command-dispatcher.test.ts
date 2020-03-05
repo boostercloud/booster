@@ -46,7 +46,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
 
       expect(config.provider.rawCommandToEnvelope).to.have.been.calledOnce
       expect(boosterCommandDispatcher.dispatchCommand).to.have.been.calledOnce
-      expect(RegisterHandler.handle).to.have.been.calledOnceWith(register, config, logger)
+      expect(RegisterHandler.handle).to.have.been.calledOnceWith(config, logger, register)
       expect(config.provider.requestSucceeded).to.have.been.calledOnce
     })
 

@@ -8,12 +8,13 @@ import {
   CommandInterface,
   CommandEnvelope,
   Logger,
+  UUID,
 } from '@boostercloud/framework-types'
 
 export class RegisterHandler {
   protected constructor(readonly register: Register, readonly config: BoosterConfig, readonly logger: Logger) {}
 
-  public static async handle(register: Register, config: BoosterConfig, logger: Logger): Promise<void> {
+  public static async handle(config: BoosterConfig, logger: Logger, register: Register): Promise<void> {
     const registerHandler = new RegisterHandler(register, config, logger)
     await Promise.all([
       // Run event publications and command submissions in parallel
@@ -31,10 +32,22 @@ export class RegisterHandler {
   }
 
   private async submitCommands(): Promise<void> {
-    return this.config.provider.submitCommands(
-      this.register.commandList.map(this.wrapCommand.bind(this)),
-      this.config,
-      this.logger
+    /* TODO: As the current AWS implementation for commands is synchronous, we need to handle
+     * the commands here and then their responses recursively.
+     * Fixing this requires a significant change in the architecture to make Commands asynchronous.
+     */
+    await Promise.all(
+      this.register.commandList.map(
+        (command): Promise<void> => {
+          // TODO: Building a wrapper here just to make compiler stop complaining until we can refactor this code.
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const commandEnvelope = this.wrapCommand(command)
+          // TODO: We assign a new UUID here as the request ID, as it's a brand new command. We might want to keep a trace connecting this command with the one that generated it though.
+          const register = new Register(UUID.generate(), this.register.currentUser)
+          commandEnvelope.value.handle(register)
+          return RegisterHandler.handle(this.config, this.logger, register)
+        }
+      )
     )
   }
 

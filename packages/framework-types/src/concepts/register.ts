@@ -1,6 +1,7 @@
 import { EventInterface } from './event'
 import { CommandInterface } from './command'
 import { UserEnvelope } from '../envelope'
+import { UUID } from './uuid'
 
 /**
  * Object passed by booster to handlers to accumulate the events emmited or the commands submitted by the handler.
@@ -26,7 +27,7 @@ export class Register {
   public readonly eventList: Array<EventInterface> = []
   public readonly commandList: Array<CommandInterface> = []
 
-  public constructor(readonly requestID: string, readonly currentUser?: UserEnvelope) {}
+  public constructor(readonly requestID: UUID, readonly currentUser?: UserEnvelope) {}
 
   /**
    * Register a list of events to be added to the event-store on handler completion

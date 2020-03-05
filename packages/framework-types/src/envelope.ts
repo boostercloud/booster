@@ -7,7 +7,7 @@ import { CommandInterface, EntityInterface, EventInterface, UUID } from './conce
  */
 export interface Envelope {
   currentUser?: UserEnvelope
-  requestID: string
+  requestID: UUID
   typeName: string
   version: number
 }

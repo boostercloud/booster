@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { rawCommandToEnvelope, handleCommandResult } from './library/commands-adapter'
+import { rawCommandToEnvelope, submitCommands } from './library/commands-adapter'
 import {
   rawEventsToEnvelopes,
   storeEvent,
   readEntityLatestSnapshot,
   readEntityEventsSince,
+  publishEvents,
 } from './library/events-adapter'
 import {
   fetchReadModel,
@@ -22,15 +23,18 @@ const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
 const userPool = new CognitoIdentityServiceProvider()
 
 export const Provider: ProviderLibrary = {
+  // ProviderCommandsLibrary
   rawCommandToEnvelope: rawCommandToEnvelope.bind(null, userPool),
-  handleCommandResult: handleCommandResult.bind(null, eventsStream),
-  handleCommandError: requestFailed,
+  submitCommands,
 
+  // ProviderEventsLibrary
   rawEventsToEnvelopes,
   storeEvent: storeEvent.bind(null, dynamoDB),
   readEntityEventsSince: readEntityEventsSince.bind(null, dynamoDB),
   readEntityLatestSnapshot: readEntityLatestSnapshot.bind(null, dynamoDB),
+  publishEvents: publishEvents.bind(null, eventsStream),
 
+  // ProviderReadModelsLibrary
   rawReadModelRequestToEnvelope: rawReadModelRequestToEnvelope.bind(null, userPool),
   fetchReadModel: fetchReadModel.bind(null, dynamoDB),
   fetchAllReadModels: fetchAllReadModels.bind(null, dynamoDB),
@@ -38,8 +42,14 @@ export const Provider: ProviderLibrary = {
   handleReadModelResult: requestSucceeded,
   handleReadModelError: requestFailed,
 
+  // ProviderAuthLibrary
   rawSignUpDataToUserEnvelope,
 
+  // ProviderAPIHandling
+  requestSucceeded,
+  requestFailed,
+
+  // ProviderInfrastructureGetter
   getInfrastructure: () =>
     require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
 }

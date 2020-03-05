@@ -71,7 +71,7 @@ export class BoosterEventDispatcher {
         const register = new Register(eventEnvelope.requestID, eventEnvelope.currentUser)
         logger.debug('Calling "handle" method on event handler: ', eventHandler)
         eventHandler.handle(eventEnvelope.value as EventInterface, register)
-        return RegisterHandler.handle(register, config, logger)
+        return RegisterHandler.handle(config, logger, register)
       })
     )
   }

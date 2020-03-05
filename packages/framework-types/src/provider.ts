@@ -8,8 +8,8 @@ import { ReadModelInterface, UUID } from './concepts'
 export type ProviderLibrary = ProviderCommandsLibrary &
   ProviderEventsLibrary &
   ProviderReadModelsLibrary &
-  ProviderAuthLibrary & 
-  ProviderAPIHandling & 
+  ProviderAuthLibrary &
+  ProviderAPIHandling &
   ProviderInfrastructureGetter
 
 export interface ProviderCommandsLibrary {
@@ -35,7 +35,7 @@ export interface ProviderEventsLibrary {
     entityID: UUID
   ): Promise<EventEnvelope | null>
   /** Streams an event to the corresponding event handler */
-  publishEvents(eventEnvelope: Array<EventEnvelope>, config: BoosterConfig, logger: Logger): Promise<void>
+  publishEvents(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig, logger: Logger): Promise<void>
 }
 export interface ProviderReadModelsLibrary {
   rawReadModelRequestToEnvelope(rawReadModelRequest: any): Promise<ReadModelRequestEnvelope>

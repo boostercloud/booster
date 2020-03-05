@@ -26,7 +26,7 @@ export class BoosterCommandDispatcher {
       const envelope = await config.provider.rawCommandToEnvelope(rawCommand)
       const register = this.dispatchCommand(envelope, config, logger)
       logger.debug('Command dispatched with register: ', register)
-      await RegisterHandler.handle(register, config, logger)
+      await RegisterHandler.handle(config, logger, register)
       return config.provider.requestSucceeded()
     } catch (error) {
       logger.error('When dispatching command: ', error)

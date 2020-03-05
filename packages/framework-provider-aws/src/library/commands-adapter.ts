@@ -1,16 +1,7 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
-import {
-  BoosterConfig,
-  CommandEnvelope,
-  EventEnvelope,
-  Logger,
-  InvalidParameterError,
-} from '@boostercloud/framework-types'
-import { Kinesis, CognitoIdentityServiceProvider } from 'aws-sdk'
-import { PutRecordsRequestEntry } from 'aws-sdk/clients/kinesis'
-import { partitionKeyForEvent } from './partition-keys'
+import { APIGatewayProxyEvent } from 'aws-lambda'
+import { BoosterConfig, CommandEnvelope, Logger, InvalidParameterError } from '@boostercloud/framework-types'
+import { CognitoIdentityServiceProvider } from 'aws-sdk'
 import { fetchUserFromRequest } from './user-envelopes'
-import { requestSucceeded } from './api-gateway-io'
 
 export async function rawCommandToEnvelope(
   userPool: CognitoIdentityServiceProvider,
@@ -26,36 +17,16 @@ export async function rawCommandToEnvelope(
   }
 }
 
-async function publishEvents(
-  logger: Logger,
-  config: BoosterConfig,
-  eventsStream: Kinesis,
-  eventEnvelopes: Array<EventEnvelope>
+export async function submitCommands(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _commandEnvelopes: Array<CommandEnvelope>,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _config: BoosterConfig,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _logger: Logger
 ): Promise<void> {
-  logger.info('Publishing the following events:', eventEnvelopes)
-  const publishResult = await eventsStream
-    .putRecords({
-      StreamName: config.resourceNames.eventsStream,
-      Records: eventEnvelopes.map(toPutRecordsEntity),
-    })
-    .promise()
-  logger.debug('Events published with result', publishResult.$response)
-}
-
-export async function handleCommandResult(
-  eventsStream: Kinesis,
-  config: BoosterConfig,
-  eventEnvelopes: Array<EventEnvelope>,
-  logger: Logger
-): Promise<APIGatewayProxyResult> {
-  await publishEvents(logger, config, eventsStream, eventEnvelopes)
-  // We are handling commands directly from the APIGateway, so we must return the response structured as it expects
-  return requestSucceeded()
-}
-
-function toPutRecordsEntity(eventEnvelope: EventEnvelope): PutRecordsRequestEntry {
-  return {
-    PartitionKey: partitionKeyForEvent(eventEnvelope.entityTypeName, eventEnvelope.entityID),
-    Data: Buffer.from(JSON.stringify(eventEnvelope)),
-  }
+  /* TODO: This method should be implemented once we refactor AWS module to be able to
+   * process commands asynchronously. Right now all commands emmited from event handlers or
+   * commands are executed synchronously by the `core` module.
+   */
 }

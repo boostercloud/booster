@@ -198,8 +198,8 @@ describe('BoosterEventDispatcher', () => {
         await boosterEventDispatcher.handleEvent(someEvent, config, logger)
 
         expect(RegisterHandler.handle).to.have.been.calledTwice
-        expect(RegisterHandler.handle).to.have.been.calledWith(capturedRegister1, config, logger)
-        expect(RegisterHandler.handle).to.have.been.calledWith(capturedRegister2, config, logger)
+        expect(RegisterHandler.handle).to.have.been.calledWith(config, logger, capturedRegister1)
+        expect(RegisterHandler.handle).to.have.been.calledWith(config, logger, capturedRegister2)
       })
     })
   })
