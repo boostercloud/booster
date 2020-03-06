@@ -14,7 +14,6 @@ export type ProviderLibrary = ProviderCommandsLibrary &
 
 export interface ProviderCommandsLibrary {
   rawCommandToEnvelope(rawCommand: any): Promise<CommandEnvelope>
-  submitCommands(commandEnvelopes: Array<CommandEnvelope>, config: BoosterConfig, logger: Logger): Promise<void>
 }
 
 export interface ProviderEventsLibrary {

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { rawCommandToEnvelope, submitCommands } from './library/commands-adapter'
+import { rawCommandToEnvelope } from './library/commands-adapter'
 import {
   rawEventsToEnvelopes,
   storeEvent,
@@ -25,7 +25,6 @@ const userPool = new CognitoIdentityServiceProvider()
 export const Provider: ProviderLibrary = {
   // ProviderCommandsLibrary
   rawCommandToEnvelope: rawCommandToEnvelope.bind(null, userPool),
-  submitCommands,
 
   // ProviderEventsLibrary
   rawEventsToEnvelopes,

@@ -1,5 +1,4 @@
 import { EventInterface } from './event'
-import { CommandInterface } from './command'
 import { UserEnvelope } from '../envelope'
 import { UUID } from './uuid'
 
@@ -25,7 +24,6 @@ import { UUID } from './uuid'
  */
 export class Register {
   public readonly eventList: Array<EventInterface> = []
-  public readonly commandList: Array<CommandInterface> = []
 
   public constructor(readonly requestID: UUID, readonly currentUser?: UserEnvelope) {}
 
@@ -35,15 +33,6 @@ export class Register {
    */
   public events(...events: Array<EventInterface>): Register {
     this.eventList.push(...events)
-    return this
-  }
-
-  /**
-   * Register a list of commands to be submitted on handler completion
-   * @param commands
-   */
-  public commands(...commands: Array<CommandInterface>): Register {
-    this.commandList.push(...commands)
     return this
   }
 }
