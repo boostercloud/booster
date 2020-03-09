@@ -36,10 +36,10 @@ describe('ReadModelStore', () => {
   }
 
   const config = new BoosterConfig()
-  config.provider = {
+  config.provider = ({
     storeReadModel: () => {},
     fetchReadModel: () => {},
-  } as unknown as ProviderLibrary
+  } as unknown) as ProviderLibrary
   config.entities['ImportantConcept'] = { class: ImportantConcept, properties: [] }
   config.projections['ImportantConcept'] = [
     {
@@ -179,7 +179,12 @@ describe('ReadModelStore', () => {
 
       const result = await readModelStore.fetchReadModel('SomeReadModel', 'joinColumnID')
 
-      expect(config.provider.fetchReadModel).to.have.been.calledOnceWithExactly(config, logger, 'SomeReadModel', 'joinColumnID')
+      expect(config.provider.fetchReadModel).to.have.been.calledOnceWithExactly(
+        config,
+        logger,
+        'SomeReadModel',
+        'joinColumnID'
+      )
       expect(result).to.be.null
     })
 
@@ -189,7 +194,12 @@ describe('ReadModelStore', () => {
 
       const result = await readModelStore.fetchReadModel('SomeReadModel', 'joinColumnID')
 
-      expect(config.provider.fetchReadModel).to.have.been.calledOnceWithExactly(config, logger, 'SomeReadModel', 'joinColumnID')
+      expect(config.provider.fetchReadModel).to.have.been.calledOnceWithExactly(
+        config,
+        logger,
+        'SomeReadModel',
+        'joinColumnID'
+      )
       expect(result).to.be.deep.equal({ id: 'joinColumnID', count: 31415 })
     })
   })

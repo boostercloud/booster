@@ -2,8 +2,8 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import * as path from 'path'
 import { exec } from 'child-process-promise'
 import { wrapExecError } from '../common/errors'
-import { checkItIsABoosterProject } from "./project-checker";
-import { withinWorkingDirectory } from "./executor-service";
+import { checkItIsABoosterProject } from './project-checker'
+import { withinWorkingDirectory } from './executor-service'
 
 export async function compileProjectAndLoadConfig(): Promise<BoosterConfig> {
   const userProjectPath = process.cwd()
