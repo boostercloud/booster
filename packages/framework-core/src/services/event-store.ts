@@ -18,7 +18,7 @@ export class EventStore {
 
   public constructor(config: BoosterConfig, logger: Logger) {
     this.config = config
-    this.provider = config.provider
+    this.provider = config.environments[config.selectedEnvironment].provider
     this.logger = logger
   }
 

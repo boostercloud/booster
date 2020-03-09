@@ -25,6 +25,7 @@ const logger: Logger = {
 }
 
 describe('BoosterReadModelFetcher', () => {
+  const fakeEnvironment = () => ({ provider: {} as any })
   afterEach(() => {
     restore()
   })
@@ -35,13 +36,19 @@ describe('BoosterReadModelFetcher', () => {
   class UserRole {}
 
   const config = new BoosterConfig()
-  config.provider = ({
-    rawReadModelRequestToEnvelope: () => {},
-    handleReadModelError: () => {},
-    fetchAllReadModels: () => {},
-    fetchReadModel: () => {},
-    handleReadModelResult: () => {},
-  } as unknown) as ProviderLibrary
+  config.selectedEnvironment = 'production'
+  config.environments = {
+    production: {
+      provider: ({
+        rawReadModelRequestToEnvelope: () => {},
+        handleReadModelError: () => {},
+        fetchAllReadModels: () => {},
+        fetchReadModel: () => {},
+        handleReadModelResult: () => {},
+      } as unknown) as ProviderLibrary,
+    },
+    development: fakeEnvironment(),
+  }
   config.readModels[TestReadModel.name] = {
     class: TestReadModel,
     authorizedRoles: [UserRole],
@@ -54,9 +61,13 @@ describe('BoosterReadModelFetcher', () => {
         typeName: 'anyReadModel',
         requestID: '123',
       }
-      replace(config.provider, 'rawReadModelRequestToEnvelope', fake.returns(envelope))
+      replace(
+        config.environments[config.selectedEnvironment].provider,
+        'rawReadModelRequestToEnvelope',
+        fake.returns(envelope)
+      )
       const providerHandleError = fake()
-      replace(config.provider, 'handleReadModelError', providerHandleError)
+      replace(config.environments[config.selectedEnvironment].provider, 'handleReadModelError', providerHandleError)
 
       await BoosterReadModelFetcher.fetch(rawMessage, config, logger)
       expect(providerHandleError).to.have.been.calledOnce
@@ -70,9 +81,13 @@ describe('BoosterReadModelFetcher', () => {
         requestID: '123',
         version: 1,
       }
-      replace(config.provider, 'rawReadModelRequestToEnvelope', fake.returns(envelope))
+      replace(
+        config.environments[config.selectedEnvironment].provider,
+        'rawReadModelRequestToEnvelope',
+        fake.returns(envelope)
+      )
       const providerHandleError = fake()
-      replace(config.provider, 'handleReadModelError', providerHandleError)
+      replace(config.environments[config.selectedEnvironment].provider, 'handleReadModelError', providerHandleError)
 
       await BoosterReadModelFetcher.fetch(rawMessage, config, logger)
       expect(providerHandleError).to.have.been.calledOnce
@@ -90,9 +105,13 @@ describe('BoosterReadModelFetcher', () => {
           roles: [],
         },
       }
-      replace(config.provider, 'rawReadModelRequestToEnvelope', fake.returns(envelope))
+      replace(
+        config.environments[config.selectedEnvironment].provider,
+        'rawReadModelRequestToEnvelope',
+        fake.returns(envelope)
+      )
       const providerHandleError = fake()
-      replace(config.provider, 'handleReadModelError', providerHandleError)
+      replace(config.environments[config.selectedEnvironment].provider, 'handleReadModelError', providerHandleError)
 
       await BoosterReadModelFetcher.fetch(rawMessage, config, logger)
       expect(providerHandleError).to.have.been.calledOnce
@@ -111,11 +130,15 @@ describe('BoosterReadModelFetcher', () => {
         },
       }
       const returnedReadModels: Array<ReadModelInterface> = [{ id: '123' }, { id: '456' }]
-      replace(config.provider, 'rawReadModelRequestToEnvelope', fake.returns(envelope))
+      replace(
+        config.environments[config.selectedEnvironment].provider,
+        'rawReadModelRequestToEnvelope',
+        fake.returns(envelope)
+      )
       const providerFetchAll = fake.returns(returnedReadModels)
       const providerHandleResult = fake()
-      replace(config.provider, 'fetchAllReadModels', providerFetchAll)
-      replace(config.provider, 'handleReadModelResult', providerHandleResult)
+      replace(config.environments[config.selectedEnvironment].provider, 'fetchAllReadModels', providerFetchAll)
+      replace(config.environments[config.selectedEnvironment].provider, 'handleReadModelResult', providerHandleResult)
 
       await BoosterReadModelFetcher.fetch(rawMessage, config, logger)
       expect(providerFetchAll).to.have.been.calledOnce
@@ -135,11 +158,15 @@ describe('BoosterReadModelFetcher', () => {
         },
       }
       const returnedReadModel: ReadModelInterface = { id: '123' }
-      replace(config.provider, 'rawReadModelRequestToEnvelope', fake.returns(envelope))
+      replace(
+        config.environments[config.selectedEnvironment].provider,
+        'rawReadModelRequestToEnvelope',
+        fake.returns(envelope)
+      )
       const providerFetchOne = fake.returns(returnedReadModel)
       const providerHandleResult = fake()
-      replace(config.provider, 'fetchReadModel', providerFetchOne)
-      replace(config.provider, 'handleReadModelResult', providerHandleResult)
+      replace(config.environments[config.selectedEnvironment].provider, 'fetchReadModel', providerFetchOne)
+      replace(config.environments[config.selectedEnvironment].provider, 'handleReadModelResult', providerHandleResult)
 
       await BoosterReadModelFetcher.fetch(rawMessage, config, logger)
       expect(providerFetchOne).to.have.been.calledOnce

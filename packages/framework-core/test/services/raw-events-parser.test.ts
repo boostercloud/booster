@@ -10,6 +10,7 @@ describe('RawEventsParser', () => {
   })
 
   describe('streamEvents', () => {
+    const fakeEnvironment = () => ({ provider: {} as any })
     it('parses in order a list of events encoded in a provider-specific raw message', async () => {
       const anEvent = {
         id: 1,
@@ -23,7 +24,12 @@ describe('RawEventsParser', () => {
       const callbackFn = fake()
 
       const config = new BoosterConfig()
-      config.provider = providerLibrary
+      config.selectedEnvironment = 'production'
+      config.environments = {
+        production: fakeEnvironment(),
+        development: fakeEnvironment(),
+      }
+      config.environments[config.selectedEnvironment].provider = providerLibrary
 
       await RawEventsParser.streamEvents(config, { some: 'raw message' }, callbackFn)
 

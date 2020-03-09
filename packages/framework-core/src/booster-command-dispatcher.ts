@@ -25,7 +25,7 @@ export class BoosterCommandDispatcher {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any> {
     logger.debug('Arrived raw command: ', rawCommand)
-    const provider: ProviderCommandsLibrary = config.provider
+    const provider: ProviderCommandsLibrary = config.environments[config.selectedEnvironment].provider
     try {
       const envelope = await provider.rawCommandToEnvelope(rawCommand)
       const register = this.dispatchCommand(envelope, config, logger)

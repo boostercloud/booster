@@ -7,7 +7,7 @@ export class RawEventsParser {
     rawEvents: any,
     callbackFn: (eventEnvelope: EventEnvelope) => Promise<void>
   ): Promise<void> {
-    const provider = config.provider
+    const provider = config.environments[config.selectedEnvironment].provider
     for (const event of provider.rawEventsToEnvelopes(rawEvents)) {
       await callbackFn(event)
     }

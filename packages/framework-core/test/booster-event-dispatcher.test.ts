@@ -9,11 +9,11 @@ import { expect } from 'chai'
 import { RawEventsParser } from '../src/services/raw-events-parser'
 import { EventStore } from '../src/services/event-store'
 import { ReadModelStore } from '../src/services/read-model-store'
-import { ProviderLibrary } from '@boostercloud/framework-types'
 
 chai.use(require('sinon-chai'))
 
 describe('BoosterEventDispatcher', () => {
+  const fakeEnvironment = () => ({ provider: {} as any })
   afterEach(() => {
     restore()
   })
@@ -25,7 +25,11 @@ describe('BoosterEventDispatcher', () => {
   }
 
   const config = new BoosterConfig()
-  config.provider = {} as ProviderLibrary
+  config.selectedEnvironment = 'production'
+  config.environments = {
+    production: fakeEnvironment(),
+    development: fakeEnvironment(),
+  }
 
   context('with a configured provider', () => {
     describe('the `dispatch` method', () => {

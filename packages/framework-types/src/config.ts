@@ -6,9 +6,9 @@ import {
   CommandMetadata,
   ProjectionMetadata,
 } from './concepts'
-import { ProviderLibrary } from './provider'
 import { Level } from './logger'
 import { ReadModelMetadata } from './concepts/read-model'
+import { Environments } from './environment'
 
 /**
  * Class used by external packages that needs to get a representation of
@@ -16,7 +16,8 @@ import { ReadModelMetadata } from './concepts/read-model'
  */
 export class BoosterConfig {
   public logLevel: Level = Level.debug
-  private _provider?: ProviderLibrary
+  private _environments?: Environments
+  public _selectedEnvironment?: keyof Environments
   public appName = 'new-booster-app'
   public region = 'eu-west-1'
   public readonly userProjectRootPath: string = process.cwd()
@@ -69,13 +70,24 @@ export class BoosterConfig {
     this.validateAllMigrations()
   }
 
-  public get provider(): ProviderLibrary {
-    if (!this._provider) throw new Error('It is required to set a valid provider runtime in `src/config.ts`')
-    return this._provider
+  public get environments(): Environments {
+    if (!this._environments)
+      throw new Error('It is required to specify the deployment environments in `src/config/config.ts`')
+    return this._environments
   }
 
-  public set provider(provider: ProviderLibrary) {
-    this._provider = provider
+  public set environments(environments: Environments) {
+    this._environments = environments
+  }
+
+  public get selectedEnvironment(): keyof Environments {
+    if (!this._selectedEnvironment)
+      throw new Error('The current provider attempted to run without selecting an environment first')
+    return this._selectedEnvironment
+  }
+
+  public set selectedEnvironment(environment: keyof Environments) {
+    this._selectedEnvironment = environment
   }
 
   private validateAllMigrations(): void {

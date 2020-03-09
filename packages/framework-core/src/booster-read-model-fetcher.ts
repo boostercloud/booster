@@ -13,12 +13,14 @@ export class BoosterReadModelFetcher {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public static async fetch(rawMessage: any, config: BoosterConfig, logger: Logger): Promise<any> {
     try {
-      const readModelRequest = await config.provider.rawReadModelRequestToEnvelope(rawMessage)
+      const readModelRequest = await config.environments[
+        config.selectedEnvironment
+      ].provider.rawReadModelRequestToEnvelope(rawMessage)
       this.validateFetchRequest(readModelRequest, config, logger)
       const result = await this.processFetch(readModelRequest, config, logger)
-      return config.provider.handleReadModelResult(result)
+      return config.environments[config.selectedEnvironment].provider.handleReadModelResult(result)
     } catch (e) {
-      return config.provider.handleReadModelError(e)
+      return config.environments[config.selectedEnvironment].provider.handleReadModelError(e)
     }
   }
 
@@ -48,8 +50,17 @@ export class BoosterReadModelFetcher {
     logger: Logger
   ): Promise<ReadModelInterface | Array<ReadModelInterface>> {
     if (readModelRequest.readModelID) {
-      return config.provider.fetchReadModel(config, logger, readModelRequest.typeName, readModelRequest.readModelID)
+      return config.environments[config.selectedEnvironment].provider.fetchReadModel(
+        config,
+        logger,
+        readModelRequest.typeName,
+        readModelRequest.readModelID
+      )
     }
-    return config.provider.fetchAllReadModels(config, logger, readModelRequest.typeName)
+    return config.environments[config.selectedEnvironment].provider.fetchAllReadModels(
+      config,
+      logger,
+      readModelRequest.typeName
+    )
   }
 }

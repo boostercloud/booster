@@ -23,10 +23,17 @@ describe('the "checkSignUp" method', () => {
   }
 
   function buildBoosterConfig(): BoosterConfig {
+    const fakeEnvironment = () => ({ provider: {} as any })
     const config = new BoosterConfig()
-    config.provider = ({
-      rawSignUpDataToUserEnvelope: () => {},
-    } as unknown) as ProviderLibrary
+    config.selectedEnvironment = 'production'
+    config.environments = {
+      production: {
+        provider: ({
+          rawSignUpDataToUserEnvelope: () => {},
+        } as unknown) as ProviderLibrary,
+      },
+      development: fakeEnvironment(),
+    }
     config.roles['Admin'] = {
       allowSelfSignUp: false,
     }
@@ -39,7 +46,7 @@ describe('the "checkSignUp" method', () => {
   it('throws when the user has a non-existing role', () => {
     const config = buildBoosterConfig()
     replace(
-      config.provider,
+      config.environments[config.selectedEnvironment].provider,
       'rawSignUpDataToUserEnvelope',
       fake.returns({
         roles: ['Developer', 'NonExistingRole', 'Admin'],
@@ -52,7 +59,7 @@ describe('the "checkSignUp" method', () => {
   it('throws when the user has a role not allowed to self sign-up', () => {
     const config = buildBoosterConfig()
     replace(
-      config.provider,
+      config.environments[config.selectedEnvironment].provider,
       'rawSignUpDataToUserEnvelope',
       fake.returns({
         roles: ['Developer', 'Admin'],
@@ -67,7 +74,7 @@ describe('the "checkSignUp" method', () => {
   it('succeeds user has a role allowed to self sign-up', () => {
     const config = buildBoosterConfig()
     replace(
-      config.provider,
+      config.environments[config.selectedEnvironment].provider,
       'rawSignUpDataToUserEnvelope',
       fake.returns({
         roles: ['Developer'],

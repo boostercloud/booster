@@ -19,6 +19,7 @@ chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
 
 describe('EventStore', () => {
+  const fakeEnvironment = () => ({ provider: {} as any })
   afterEach(() => {
     restore()
   })
@@ -33,11 +34,17 @@ describe('EventStore', () => {
   }
 
   const config = new BoosterConfig()
-  config.provider = ({
-    storeEvent: () => {},
-    readEntityLatestSnapshot: () => {},
-    readEntityEventsSince: () => {},
-  } as unknown) as ProviderLibrary
+  config.selectedEnvironment = 'production'
+  config.environments = {
+    production: {
+      provider: ({
+        storeEvent: () => {},
+        readEntityLatestSnapshot: () => {},
+        readEntityEventsSince: () => {},
+      } as unknown) as ProviderLibrary,
+    },
+    development: fakeEnvironment(),
+  }
   config.entities['ImportantConcept'] = { class: ImportantConcept, properties: [] }
   config.reducers['ImportantEvent'] = {
     class: ImportantConcept,
@@ -93,13 +100,17 @@ describe('EventStore', () => {
   describe('public methods', () => {
     describe('append', () => {
       it('appends an event to the event store', async () => {
-        replace(config.provider, 'storeEvent', fake())
+        replace(config.environments[config.selectedEnvironment].provider, 'storeEvent', fake())
         const eventStore = new EventStore(config, logger)
         const someEnvelope = eventEnvelopeFor(someEvent)
 
         await eventStore.append(someEnvelope)
 
-        expect(config.provider.storeEvent).to.have.been.calledOnceWith(config, logger, someEnvelope)
+        expect(config.environments[config.selectedEnvironment].provider.storeEvent).to.have.been.calledOnceWith(
+          config,
+          logger,
+          someEnvelope
+        )
       })
     })
 
@@ -442,7 +453,7 @@ describe('EventStore', () => {
 
     describe('storeSnapshot', () => {
       it('stores a snapshot in the event store', async () => {
-        replace(config.provider, 'storeEvent', fake())
+        replace(config.environments[config.selectedEnvironment].provider, 'storeEvent', fake())
 
         const someSnapshot = snapshotEnvelopeFor({
           id: '42',
@@ -451,42 +462,39 @@ describe('EventStore', () => {
 
         await eventStore.storeSnapshot(someSnapshot)
 
-        expect(config.provider.storeEvent).to.have.been.calledOnceWith(config, logger, someSnapshot)
+        expect(config.environments[config.selectedEnvironment].provider.storeEvent).to.have.been.calledOnceWith(
+          config,
+          logger,
+          someSnapshot
+        )
       })
     })
 
     describe('loadLatestSnapshot', () => {
       it('looks for the latest snapshot stored in the event stream', async () => {
-        replace(config.provider, 'readEntityLatestSnapshot', fake())
+        replace(config.environments[config.selectedEnvironment].provider, 'readEntityLatestSnapshot', fake())
 
         const entityTypeName = 'ImportantConcept'
         const entityID = '42'
         await eventStore.loadLatestSnapshot(entityTypeName, entityID)
 
-        expect(config.provider.readEntityLatestSnapshot).to.have.been.calledOnceWith(
-          config,
-          logger,
-          entityTypeName,
-          entityID
-        )
+        expect(
+          config.environments[config.selectedEnvironment].provider.readEntityLatestSnapshot
+        ).to.have.been.calledOnceWith(config, logger, entityTypeName, entityID)
       })
     })
 
     describe('loadEventStreamSince', () => {
       it('loads a event stream starting from a specific timestapm', async () => {
-        replace(config.provider, 'readEntityEventsSince', fake())
+        replace(config.environments[config.selectedEnvironment].provider, 'readEntityEventsSince', fake())
 
         const entityTypeName = 'ImportantConcept'
         const entityID = '42'
         await eventStore.loadEventStreamSince(entityTypeName, entityID, originOfTime)
 
-        expect(config.provider.readEntityEventsSince).to.have.been.calledOnceWith(
-          config,
-          logger,
-          entityTypeName,
-          entityID,
-          originOfTime
-        )
+        expect(
+          config.environments[config.selectedEnvironment].provider.readEntityEventsSince
+        ).to.have.been.calledOnceWith(config, logger, entityTypeName, entityID, originOfTime)
       })
     })
 
