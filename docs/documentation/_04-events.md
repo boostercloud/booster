@@ -7,10 +7,10 @@ An event is a data structure that represents a **fact** and is the source of tru
 - `WithdrawMoney`
 - `DepositMoney`
 
-> _TODO: (Event handlers are not implemented yet) Events can have handlers attached that allow the system to react to them. Imagine that a specific event represents that your account has reached zero. You can make the handler fire a [command](03-commands.md) to notify the user by email._
+You can define as many event handler classes as you want to react to them. For example, imagine that a specific event represents that your account has reached zero. You can write a handler to notify the user by email. In a Booster application, it is recommended to write most your domain logic in event handlers.
 
 To create an event class, you can do the same thing that you did with a command, either manually,
-or with the `boost` command line tool:
+or with the generator, using the `boost` command line tool:
 
 ```shell script
 boost new:event <name of the event> --fields fieldName:fieldType
@@ -37,17 +37,15 @@ In most situations your event stream will be reduced to a domain model object, l
 
 ## Event Handlers
 
-You can react to new events implementing an **Event Handler**. An Event Handler is a regular class that is subscribed to an event with the decorator `@EventHandler(<name of the event class>`. Any time that a new event is added to the event store, the `handle` method in the event handler will be called with the instance of the event and the `register` object that can be used to emit new kinds of events or new commands:
+You can react to events implementing an **Event Handler** class. An Event Handler is a regular class that is subscribed to an event with the decorator `@EventHandler(<name of the event class>`. Any time that a new event is added to the event store, the `handle` method in the event handler will be called with the instance of the event and the `register` object that can be used to emit new events. Event handlers can run arbitrary code and is where it is recommended to write most of the business logic in a reactive way:
 
 ```typescript
 @EventHandler(CartPaid)
 export class CartPaidHandler {
   public static handle(event: CartPaid, register: Register) {
-    register.commands(new StartOrderPreparation(event.cartID))
+    register.events(new OrderPreparationStarted(event.cartID))
   }
 }
 ```
-
-Typical uses of Event Handlers are chaining operations, like in the example, starting to prepare an order when a payment is confirmed, or to transform events in order for them to be readable by other services.
 
 Let's continue learning about [Entities](05-entities.md)!

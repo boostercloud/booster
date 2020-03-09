@@ -4,15 +4,15 @@
 
 Commands and Command Handlers define the **write** API of your application (highlighted in yellow in the diagram). Commands are objects that are sent to the `/commands` endpoint. The usage of this endpoint is explained [in the REST API section](09-rest-api.md).
 
-Instead of a controller, like in a traditional architecture like [MVC](https://www.martinfowler.com/eaaCatalog/modelViewController.html), you define a _Handler_ method, which will be in charge of processing the command, calling any third-party services, performing side-effects, and finally, registering [events](04-events.md).
+Similarly to controllers in a traditional [MVC](https://www.martinfowler.com/eaaCatalog/modelViewController.html) architecture, commands are synchronously dispatched by a _handler_ method, which will be in charge of validating the input and registering one or more [events](04-events.md) in the system. While command handlers can run arbitrary code, it is recommended to keep them small, focusing on data acceptance and delegating as much logic to [event handlers](04-events.md).
 
 > **Note:** Event registration is not mandatory, but we **strongly** recommend registering at least one event for any possible final state, even in the case of a failure, to make your application activity easier to trace and debug.
 
 A command is a class, decorated with the `@Command` decorator, that defines a data structure
-and a handler method. The method will process the commands and optionally generate and persist
+and a `handle` method. The method will process the commands and optionally generate and persist
 one or more events to the event store.
 
-To create a command, you can do so manually, or by running the generator provided by the `boost` CLI tool. Let's create a command to confirm a payment:
+You can create a command manually or using the generator provided in the `boost` CLI tool. Let's create a command to confirm a payment:
 
 ```shell script
 boost new:command ConfirmPayment --fields cartID:UUID confirmationToken:string
@@ -28,25 +28,13 @@ export class ConfirmPayment {
   public constructor(readonly cartID: UUID, readonly confirmationToken: string) {}
 
   public handle(register: Register): void {
-    // implementation for the handler
+    // The `register` parameter injected can be used to register any number of events.
+    register.events(new CartPaid(this.cartId, this.confirmationToken))
   }
 }
 ```
 
-The `handle` method is the Handler we were talking about some paragraphs ago. Here you can write arbitrary code like integration with 3rd party services, data validation, and any other side effect that your application requires.
-
-Again, we strongly advise that after a command has been executed, even if it didn’t succeed, you `register` an event
-specifying what happened. This also goes in the `handle` method, and that’s what the `register` parameter is used for:
-
-```typescript
-public handle(register: Register): void {
-  // i.e. code that performs a payment
-  register.events(new CartPaid(this.cartId, this.confirmationToken))
-}
-```
-
-Note how no magic happened here yet. The only thing that is needed for Booster to know that this class is a
-command, is the `@Command` decorator. Apart from that, the generator only writes code, nothing else!
-You could achieve the same result by writing the class yourself 😉
+Note how no magic happened in the generator. The only thing that required for Booster to know that this class is a
+command, is the `@Command` decorator. You could get the same result by writing the class yourself 😉
 
 Continue reading about [Events](04-events.md)!
