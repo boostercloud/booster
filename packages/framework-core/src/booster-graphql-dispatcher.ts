@@ -15,16 +15,16 @@ export class BoosterGraphqlDispatcher {
     this.logger.debug('Received the following GraphQL envelope: ', envelope)
 
     switch (envelope.eventType) {
-      case 'CONNECT':
+      case 'CONNECT': // TODO: This message is never coming now. Check this later to see if it is finally needed
         return this.config.provider.handleGraphQLResult()
-        break
       case 'MESSAGE':
+        // Handle queries, mutations and subscriptions here
+        // Do the queries and commands we have right now and finish. Then keep working
         return this.config.provider.handleGraphQLResult({
           connectionID: envelope.connectionID,
         })
-        break
       case 'DISCONNECT':
-        break
+        return this.config.provider.handleGraphQLResult()
     }
 
     const result = await graphql(this.graphQLSchema, '')
