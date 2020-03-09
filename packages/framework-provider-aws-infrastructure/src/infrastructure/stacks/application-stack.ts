@@ -1,4 +1,4 @@
-import { App, Stack, StackProps } from '@aws-cdk/core'
+import { App, CfnOutput, Stack, StackProps } from '@aws-cdk/core'
 import * as dynamodb from '@aws-cdk/aws-dynamodb'
 import { Function } from '@aws-cdk/aws-lambda'
 import { Stream } from '@aws-cdk/aws-kinesis'
@@ -9,29 +9,68 @@ import { AuthStack } from './auth-stack'
 import { EventsStack } from './events-stack'
 import { ReadModelsStack } from './read-models-stack'
 import { GraphQLAPIStack } from "./graphql-api-stack";
+import { RestApi } from "@aws-cdk/aws-apigateway";
+import { CfnApi, CfnStage } from '@aws-cdk/aws-apigatewayv2'
 
 export class ApplicationStackBuilder {
   public constructor(readonly config: BoosterConfig, readonly props?: StackProps) {}
 
   public buildOn(app: App): void {
     const stack = new Stack(app, this.config.resourceNames.applicationStack, this.props)
+    const restAPI = this.buildRootRESTAPI(stack)
+    const websocketAPI = this.buildRootWebSocketAPI(stack)
 
-    new AuthStack(this.config, stack).build()
+    new AuthStack(this.config, stack, restAPI).build()
     const readModelTables = new ReadModelsStack(this.config, stack).build()
-    const restAPIStack = new RestAPIStack(this.config, stack).build()
-    const graphQLAPIStack = new GraphQLAPIStack(this.config, stack).build()
+    const graphQLStack = new GraphQLAPIStack(this.config, stack, restAPI, websocketAPI).build()
     const eventsStack = new EventsStack(this.config, stack).build()
+
+    // Deprecated
+    const restAPIStack = new RestAPIStack(this.config, stack, restAPI).build()
 
     setupPermissions(
       readModelTables,
       restAPIStack.commandsLambda,
       eventsStack.eventsLambda,
       restAPIStack.readModelFetcherLambda,
-      graphQLAPIStack.graphQLLambda,
+      graphQLStack.graphQLLambda,
       eventsStack.eventsStream,
       eventsStack.eventsStore,
       eventsStack.eventsLambda
     )
+  }
+
+  private buildRootRESTAPI(stack: Stack): RestApi {
+    const rootAPI = new RestApi(stack, this.config.resourceNames.applicationStack + '-rest-api')
+
+    new CfnOutput(stack, 'base-REST-URL', {
+      value: rootAPI.url,
+      description: 'The base URL for all the REST the endpoints of your application',
+    })
+
+    return rootAPI
+  }
+
+  private buildRootWebSocketAPI(stack: Stack): CfnApi {
+    const localID = this.config.resourceNames.applicationStack + '-graphql-api'
+    const rootAPI = new CfnApi(stack, localID, {
+      name: localID,
+      protocolType: 'WEBSOCKET',
+      routeSelectionExpression: '$request.body.action',
+    })
+    const stage = new CfnStage(stack, localID + '-stage', {
+      apiId: rootAPI.ref,
+      autoDeploy: true,
+      stageName: 'dev',
+    })
+    stage.addDependsOn(rootAPI)
+
+    new CfnOutput(stack, 'base-websocket-URL', {
+      value: baseURLForWebsocketStage(stage),
+      description: 'The URL for the websocket communication. Used for subscriptions',
+    })
+
+    return rootAPI
   }
 }
 
@@ -88,4 +127,8 @@ function setupPermissions(
       })
     )
   }
+}
+
+function baseURLForWebsocketStage(stage: CfnStage): string {
+  return `wss://${stage.apiId}.execute-api.${stage.stack.region}.${stage.stack.urlSuffix}/${stage.stageName}/`
 }
