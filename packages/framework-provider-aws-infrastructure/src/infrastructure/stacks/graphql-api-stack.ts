@@ -1,17 +1,17 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { Stack } from '@aws-cdk/core'
+import { Fn, Stack, Duration } from '@aws-cdk/core'
 import {
   CfnApi,
-  CfnIntegration,
-  CfnRoute,
   CfnAuthorizer,
-  CfnRouteResponse, CfnIntegrationResponse
+  CfnIntegration,
+  CfnIntegrationResponse,
+  CfnRoute,
+  CfnRouteResponse,
 } from '@aws-cdk/aws-apigatewayv2'
 import { Code, Function } from '@aws-cdk/aws-lambda'
-import { Fn } from '@aws-cdk/core'
 import * as params from '../params'
 import { ServicePrincipal } from '@aws-cdk/aws-iam'
-import { RestApi } from '@aws-cdk/aws-apigateway'
+import { AuthorizationType, LambdaIntegration, RequestAuthorizer, RestApi } from '@aws-cdk/aws-apigateway'
 
 // - On subscribe -> Store connecitonID, user data?, GraphQL subscription(name) and parameters
 // - When disconnect, remove this
@@ -50,35 +50,39 @@ export class GraphQLAPIStack {
    */
 
   public build(): GraphQLAPIStackMembers {
-    const graphQLLambda = this.buildLambda()
-    const lambdaIntegration = this.buildLambdaIntegration(graphQLLambda)
-    const mockIntegration = this.buildMockIntegration()
-    const authorizer = this.buildAuthorizer()
+    const graphQLLambda = this.buildLambda('graphql-handler', this.config.serveGraphQLHandler)
+    const authorizerLambda = this.buildLambda('graphql-authorizer', this.config.authorizerHandler)
 
-    const connectRoute = this.buildRoute('$connect', mockIntegration, authorizer)
-    this.buildRouteResponse(connectRoute, mockIntegration)
-    this.buildRoute('$disconnect', mockIntegration)
-    this.buildRoute('$default', lambdaIntegration)
-    // Build a GraphQL endpoint /graphql with the same lambda.
-
-
-    console.log(this.restAPI)
+    this.buildWebsocketRoutes(graphQLLambda, authorizerLambda)
+    this.buildRESTRoutes(graphQLLambda, authorizerLambda)
 
     return { graphQLLambda }
   }
 
-  private buildLambda(): Function {
-    const lambdaLocalID = this.config.resourceNames.applicationStack + '-graphql-handler'
-    const graphQLLambda = new Function(this.stack, lambdaLocalID, {
+  private buildLambda(name: string, handler: string): Function {
+    const localID = `${this.config.resourceNames.applicationStack}-${name}`
+    const lambda = new Function(this.stack, localID, {
       ...params.lambda,
-      functionName: lambdaLocalID,
-      handler: this.config.serveGraphQLHandler,
+      functionName: localID,
+      handler: handler,
       code: Code.fromAsset(this.config.userProjectRootPath),
     })
-    graphQLLambda.addPermission(lambdaLocalID + '-invocation-permission', {
+    lambda.addPermission(localID + '-invocation-permission', {
       principal: new ServicePrincipal('apigateway.amazonaws.com'),
     })
-    return graphQLLambda
+
+    return lambda
+  }
+
+  private buildWebsocketRoutes(graphQLLambda: Function, authorizerLambda: Function): void {
+    const lambdaIntegration = this.buildLambdaIntegration(graphQLLambda)
+    const mockIntegration = this.buildMockIntegration()
+    const websocketAuthorizer = this.buildWebsocketAuthorizer(authorizerLambda)
+
+    const connectRoute = this.buildRoute('$connect', mockIntegration, websocketAuthorizer)
+    this.buildRouteResponse(connectRoute, mockIntegration)
+    this.buildRoute('$disconnect', mockIntegration)
+    this.buildRoute('$default', lambdaIntegration)
   }
 
   private buildLambdaIntegration(lambda: Function): CfnIntegration {
@@ -147,24 +151,13 @@ export class GraphQLAPIStack {
     integrationResponse.addDependsOn(integration)
   }
 
-  private buildAuthorizer(): CfnAuthorizer {
-    const lambdaLocalID = this.config.resourceNames.applicationStack + '-lambda-authorizer'
-    const lambda = new Function(this.stack, lambdaLocalID, {
-      ...params.lambda,
-      functionName: lambdaLocalID,
-      handler: this.config.authorizerHandler,
-      code: Code.fromAsset(this.config.userProjectRootPath),
-    })
-    lambda.addPermission(lambdaLocalID + '-invocation-permission', {
-      principal: new ServicePrincipal('apigateway.amazonaws.com'),
-    })
-
-    const authorizerLocalID = this.config.resourceNames.applicationStack + '-authorizer'
-    const authorizer = new CfnAuthorizer(this.stack, authorizerLocalID, {
+  private buildWebsocketAuthorizer(lambda: Function): CfnAuthorizer {
+    const localID = this.config.resourceNames.applicationStack + '-websocket-authorizer'
+    return new CfnAuthorizer(this.stack, localID, {
       apiId: this.websocketAPI.ref,
       authorizerType: 'REQUEST',
-      name: authorizerLocalID,
-      identitySource: ['route.request.header.Authorization'],
+      name: localID,
+      identitySource: [],
       authorizerUri: Fn.join('', [
         'arn:',
         Fn.ref('AWS::Partition'),
@@ -175,7 +168,22 @@ export class GraphQLAPIStack {
         '/invocations',
       ]),
     })
+  }
 
-    return authorizer
+  private buildRESTRoutes(graphQLLambda: Function, authorizerLambda: Function): void {
+    const restAuthorizer = this.buildRESTAuthorizer(authorizerLambda)
+    this.restAPI.root.addResource('graphql').addMethod('POST', new LambdaIntegration(graphQLLambda), {
+      authorizationType: AuthorizationType.CUSTOM,
+      authorizer: restAuthorizer,
+    })
+  }
+
+  private buildRESTAuthorizer(lambda: Function): RequestAuthorizer {
+    const localID = this.config.resourceNames.applicationStack + '-rest-authorizer'
+    return new RequestAuthorizer(this.stack, localID, {
+      handler: lambda,
+      resultsCacheTtl: Duration.seconds(0),
+      identitySources: [],
+    })
   }
 }
