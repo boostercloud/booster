@@ -1,7 +1,7 @@
 import { CognitoIdentityServiceProvider } from 'aws-sdk'
 import { APIGatewayAuthorizerWithContextResult, APIGatewayProxyWithLambdaAuthorizerEvent } from 'aws-lambda'
 import { fetchUserFromRequest } from './user-envelopes'
-import { GraphQLRequestEnvelope, Logger, UserEnvelope } from '@boostercloud/framework-types'
+import { GraphQLRequestEnvelope, Logger } from '@boostercloud/framework-types'
 import { APIGatewayRequestAuthorizerEvent } from 'aws-lambda/trigger/api-gateway-authorizer'
 
 type AuthorizerWithUserData = {
@@ -14,12 +14,7 @@ export async function authorizeRequest(
   logger: Logger
 ): Promise<APIGatewayAuthorizerWithContextResult<AuthorizerWithUserData>> {
   logger.debug('Received an authorization request: ', request)
-  let user: UserEnvelope | undefined
-  try {
-    user = await fetchUserFromRequest(request, userPool)
-  } catch (e) {
-    /* We simple leave the user empty */
-  }
+  const user = await fetchUserFromRequest(request, userPool)
   return {
     principalId: user?.email ?? 'anonymous',
     policyDocument: {
@@ -42,11 +37,16 @@ export async function rawGraphQLRequestToEnvelope(
   logger: Logger
 ): Promise<GraphQLRequestEnvelope> {
   logger.debug('Received GraphQL request: ', request)
+  let graphQLBody = undefined
+  if (request.body) {
+    graphQLBody = JSON.parse(request.body)['query']
+  }
+
   return {
     requestID: request.requestContext.requestId,
-    eventType: request.requestContext.eventType as GraphQLRequestEnvelope['eventType'],
-    connectionID: request.requestContext.connectionId as string,
+    eventType: (request.requestContext.eventType as GraphQLRequestEnvelope['eventType']) ?? 'MESSAGE',
+    connectionID: request.requestContext.connectionId,
     currentUser: JSON.parse(request.requestContext.authorizer.userJSON),
-    value: request.body ?? undefined,
+    value: graphQLBody,
   }
 }

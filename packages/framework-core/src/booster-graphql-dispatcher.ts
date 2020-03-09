@@ -1,4 +1,4 @@
-import { BoosterConfig, Logger } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, InvalidParameterError, GraphQLRequestEnvelope } from '@boostercloud/framework-types'
 import { graphql, GraphQLSchema } from 'graphql'
 import { GraphqlGenerator } from './services/graphql-generator'
 
@@ -7,7 +7,6 @@ export class BoosterGraphqlDispatcher {
 
   public constructor(private config: BoosterConfig, private logger: Logger) {
     this.graphQLSchema = new GraphqlGenerator(this.config).generateSchema()
-    // console.log(printSchema(this.graphQLSchema))
   }
 
   public async dispatchGraphQL(request: any): Promise<any> {
@@ -18,20 +17,25 @@ export class BoosterGraphqlDispatcher {
       case 'CONNECT': // TODO: This message is never coming now. Check this later to see if it is finally needed
         return this.config.provider.handleGraphQLResult()
       case 'MESSAGE':
-        // Handle queries, mutations and subscriptions here
-        // Do the queries and commands we have right now and finish. Then keep working
-        return this.config.provider.handleGraphQLResult({
-          connectionID: envelope.connectionID,
-        })
+        return this.handleMessage(envelope)
       case 'DISCONNECT':
         return this.config.provider.handleGraphQLResult()
     }
+  }
 
-    const result = await graphql(this.graphQLSchema, '')
+  private async handleMessage(envelope: GraphQLRequestEnvelope): Promise<any> {
+    if (!envelope.value) {
+      throw new InvalidParameterError('Received an empty GraphQL body')
+    }
+
+    const result = await graphql(this.graphQLSchema, envelope.value)
     if (result.errors) {
       const error = new Error(result.errors.map((e) => e.message).join('\n'))
+      this.logger.error(error)
       return this.config.provider.handleGraphQLError(error)
     }
     return this.config.provider.handleGraphQLResult(result.data)
+
+    // TODO: We need to send the result to all related subscriptions
   }
 }
