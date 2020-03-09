@@ -1,5 +1,5 @@
 import * as boosterModule from './booster'
-import { BoosterConfig, EntityInterface, UUID } from '@boostercloud/framework-types'
+import { BoosterConfig, EntityInterface, UUID, Class } from '@boostercloud/framework-types'
 export * from './decorators'
 export { Register } from '@boostercloud/framework-types'
 export {
@@ -14,9 +14,10 @@ export interface BoosterApp {
 
   configure(environment: string, configurator: (config: BoosterConfig) => void): void
 
-  configureCurrentEnv(configurator: (config: BoosterConfig) => void): void
-
-  fetchEntitySnapshot(entityName: string, entityID: UUID): Promise<EntityInterface | null>
+  fetchEntitySnapshot<TEntity extends EntityInterface>(
+    entityClass: Class<TEntity>,
+    entityID: UUID
+  ): Promise<TEntity | undefined>
 }
 
 export const Booster: BoosterApp = boosterModule.Booster
