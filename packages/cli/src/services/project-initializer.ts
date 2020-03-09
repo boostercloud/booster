@@ -9,7 +9,7 @@ import * as packageJson from '../templates/project/package-json'
 import * as configTs from '../templates/project/config-ts'
 import * as indexTs from '../templates/project/index-ts'
 import { wrapExecError } from '../common/errors'
-import { withinWorkingDirectory } from "./executor-service"
+import { withinWorkingDirectory } from './executor-service'
 
 export async function generateConfigFiles(config: ProjectInitializerConfig): Promise<void> {
   await Promise.all(filesToGenerate.map(renderToFile(config)))

@@ -10,7 +10,6 @@ import {
 import Prompter from '../../services/user-prompt'
 import { assertNameIsCorrect } from '../../services/provider-service'
 
-
 export default class Project extends Command {
   public static description = 'create a new project from scratch'
   public static flags = {
@@ -41,7 +40,8 @@ export default class Project extends Command {
     }),
     provider: flags.string({
       char: 'p',
-      description: 'package name implementing the cloud provider integration where the application will be deployed (i.e: "@boostercloud/framework-provider-aws"'
+      description:
+        'package name implementing the cloud provider integration where the application will be deployed (i.e: "@boostercloud/framework-provider-aws"',
     }),
   }
 

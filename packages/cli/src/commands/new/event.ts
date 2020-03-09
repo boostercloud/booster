@@ -12,7 +12,7 @@ import {
 import { generate } from '../../services/generator'
 import * as path from 'path'
 import { templates } from '../../templates'
-import { checkItIsABoosterProject } from "../../services/project-checker";
+import { checkItIsABoosterProject } from '../../services/project-checker'
 
 export default class Event extends Oclif.Command {
   public static description = 'create a new event'
