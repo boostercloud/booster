@@ -1,4 +1,4 @@
-import { Command, flags } from '@oclif/command'
+import { Command } from '@oclif/command'
 import { Observable } from 'rxjs'
 import { deployToCloudProvider } from '../services/provider-service'
 import { compileProjectAndLoadConfig } from '../services/config-service'
@@ -28,16 +28,8 @@ const runTasks = async (
 
 export default class Deploy extends Command {
   public static description = 'Deploy the current application as configured in your `index.ts` file.'
-  public static flags = {
-    environment: flags.string({
-      char: 'e',
-      description: 'environment to deploy the project to',
-      default: 'production',
-    }),
-  }
 
   public async run(): Promise<void> {
-    const { flags } = this.parse(Deploy)
-    await runTasks(compileProjectAndLoadConfig(flags.environment), deployToCloudProvider)
+    await runTasks(compileProjectAndLoadConfig(), deployToCloudProvider)
   }
 }

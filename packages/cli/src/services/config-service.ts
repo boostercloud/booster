@@ -4,15 +4,12 @@ import { exec } from 'child-process-promise'
 import { wrapExecError } from '../common/errors'
 import { checkItIsABoosterProject } from './project-checker'
 import { withinWorkingDirectory } from './executor-service'
-import { Environments } from '@boostercloud/framework-types/dist/environment'
 
-export async function compileProjectAndLoadConfig(selectedEnvironment: keyof Environments): Promise<BoosterConfig> {
+export async function compileProjectAndLoadConfig(): Promise<BoosterConfig> {
   const userProjectPath = process.cwd()
   await checkItIsABoosterProject()
   await compileProject(userProjectPath)
-  const userConfig = await readProjectConfig(userProjectPath)
-  userConfig.selectedEnvironment = selectedEnvironment
-  return userConfig
+  return readProjectConfig(userProjectPath)
 }
 
 async function compileProject(projectPath: string): Promise<void> {

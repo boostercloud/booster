@@ -3,9 +3,9 @@ import * as fc from 'fast-check'
 import { BoosterConfig } from '../src/config'
 import { expect } from 'fancy-test'
 import { MigrationMetadata } from '../src/concepts'
+import { ProviderLibrary } from '../src'
 
 describe('the config type', () => {
-  const fakeEnvironment = () => ({ provider: {} as any })
   describe('resourceNames', () => {
     it('fails to get if the app name is empty', () => {
       const cfg = new BoosterConfig()
@@ -110,11 +110,7 @@ describe('the config type', () => {
   describe('validate', () => {
     it('throws when there are gaps in the migration versions for a concept', () => {
       const config = new BoosterConfig()
-      config.selectedEnvironment = 'production'
-      config.environments = {
-        production: fakeEnvironment(),
-        development: fakeEnvironment(),
-      }
+      config.provider = {} as ProviderLibrary
       const migrations = new Map()
       migrations.set(3, {} as any)
       migrations.set(2, {} as any)
@@ -126,11 +122,7 @@ describe('the config type', () => {
 
     it('does not throw when there are no gaps in the migration versions for a concept', () => {
       const config = new BoosterConfig()
-      config.selectedEnvironment = 'production'
-      config.environments = {
-        production: fakeEnvironment(),
-        development: fakeEnvironment(),
-      }
+      config.provider = {} as ProviderLibrary
       const migrations = new Map()
       migrations.set(4, {} as any)
       migrations.set(2, {} as any)
@@ -141,24 +133,18 @@ describe('the config type', () => {
     })
   })
 
-  describe('environment', () => {
-    it('throws when there is no environment set', () => {
+  describe('provider', () => {
+    it('throws when there is no provider set', () => {
       const config = new BoosterConfig()
 
-      expect(() => config.environments[config.selectedEnvironment].provider).to.throw(
-        /specify the deployment environments/
-      )
+      expect(() => config.provider).to.throw(/set a valid provider runtime/)
     })
 
-    it('does not throw when the production and development providers are set', () => {
+    it('does not throw when there is a provider set', () => {
       const config = new BoosterConfig()
-      config.selectedEnvironment = 'production'
-      config.environments = {
-        production: fakeEnvironment(),
-        development: fakeEnvironment(),
-      }
+      config.provider = {} as ProviderLibrary
 
-      expect(() => config.environments[config.selectedEnvironment].provider).to.not.throw()
+      expect(() => config.provider).to.not.throw()
     })
   })
 })

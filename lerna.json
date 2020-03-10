@@ -1,15 +1,13 @@
 {
-  "packages": [
-    "packages/framework-types",
-    "packages/framework-provider-aws",
-    "packages/framework-provider-aws-infrastructure",
-    "packages/framework-provider-local",
-    "packages/framework-provider-local-infrastructure",
-    "packages/framework-core",
-    "packages/cli",
-    "packages/framework-example"
-  ],
-  "version": "0.1.4",
-  "npmClient": "yarn",
-  "useWorkspaces": true
+    "packages": [
+        "packages/framework-types",
+        "packages/framework-provider-aws",
+        "packages/framework-provider-aws-infrastructure",
+        "packages/framework-core",
+        "packages/cli",
+        "packages/framework-example"
+    ],
+    "version": "0.1.4",
+    "npmClient": "yarn",
+    "useWorkspaces": true
 }

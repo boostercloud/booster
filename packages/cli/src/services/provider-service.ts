@@ -24,8 +24,8 @@ export function assertNameIsCorrect(name: string): void {
 
 export const deployToCloudProvider = (config: BoosterConfig): Observable<string> => {
   assertNameIsCorrect(config.appName)
-  return config.environments[config.selectedEnvironment].provider.getInfrastructure().deploy(config)
+  return config.provider.getInfrastructure().deploy(config)
 }
 export const nukeCloudProviderResources = (config: BoosterConfig): Observable<string> => {
-  return config.environments[config.selectedEnvironment].provider.getInfrastructure().nuke(config)
+  return config.provider.getInfrastructure().nuke(config)
 }

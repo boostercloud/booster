@@ -27,7 +27,6 @@ describe('the `BoosterCommandsDispatcher`', () => {
     info() {},
     error() {},
   }
-  const fakeEnvironment = () => ({ provider: {} as any })
 
   describe('the `dispatch` method', () => {
     it("calls the provider's `rawCommandToEnvelope`", async () => {
@@ -36,19 +35,13 @@ describe('the `BoosterCommandsDispatcher`', () => {
       replace(boosterCommandDispatcher as any, 'eventEnvelopesFromRegister', fake())
 
       const config = new BoosterConfig()
-      config.selectedEnvironment = 'production'
-      config.environments = {
-        production: {
-          provider: ({
-            rawCommandToEnvelope: fake(),
-            handleCommandResult: fake(),
-          } as unknown) as ProviderLibrary,
-        },
-        development: fakeEnvironment(),
-      }
+      config.provider = ({
+        rawCommandToEnvelope: fake(),
+        handleCommandResult: fake(),
+      } as unknown) as ProviderLibrary
       await boosterCommandDispatcher.dispatch({ body: 'Test body' }, config, logger)
 
-      expect(config.environments[config.selectedEnvironment].provider.rawCommandToEnvelope).to.have.been.calledOnce
+      expect(config.provider.rawCommandToEnvelope).to.have.been.calledOnce
     })
 
     it('dispatches the message', async () => {
@@ -58,16 +51,10 @@ describe('the `BoosterCommandsDispatcher`', () => {
       replace(boosterCommandDispatcher, 'dispatchCommand', fakeDispatch)
 
       const config = new BoosterConfig()
-      config.selectedEnvironment = 'production'
-      config.environments = {
-        production: {
-          provider: ({
-            rawCommandToEnvelope: fake(),
-            handleCommandResult: fake(),
-          } as unknown) as ProviderLibrary,
-        },
-        development: fakeEnvironment(),
-      }
+      config.provider = ({
+        rawCommandToEnvelope: fake(),
+        handleCommandResult: fake(),
+      } as unknown) as ProviderLibrary
       await boosterCommandDispatcher.dispatch({ body: 'Test body' }, config, logger)
 
       expect(fakeDispatch).to.have.been.calledOnce
@@ -79,19 +66,13 @@ describe('the `BoosterCommandsDispatcher`', () => {
       replace(boosterCommandDispatcher as any, 'eventEnvelopesFromRegister', fake())
 
       const config = new BoosterConfig()
-      config.selectedEnvironment = 'production'
-      config.environments = {
-        production: {
-          provider: ({
-            rawCommandToEnvelope: fake(),
-            handleCommandResult: fake(),
-          } as unknown) as ProviderLibrary,
-        },
-        development: fakeEnvironment(),
-      }
+      config.provider = ({
+        rawCommandToEnvelope: fake(),
+        handleCommandResult: fake(),
+      } as unknown) as ProviderLibrary
       await boosterCommandDispatcher.dispatch({ body: 'Test body' }, config, logger)
 
-      expect(config.environments[config.selectedEnvironment].provider.handleCommandResult).to.have.been.calledOnce
+      expect(config.provider.handleCommandResult).to.have.been.calledOnce
     })
   })
 
