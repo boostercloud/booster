@@ -13,27 +13,11 @@ import * as params from '../params'
 import { ServicePrincipal } from '@aws-cdk/aws-iam'
 import { AuthorizationType, LambdaIntegration, RequestAuthorizer, RestApi } from '@aws-cdk/aws-apigateway'
 
-// - On subscribe -> Store connecitonID, user data?, GraphQL subscription(name) and parameters
-// - When disconnect, remove this
-// - What happens when the token expires? How to handle authentication with websockets?
-
-// Dynamo schema:
-// {
-// Key: {
-//   SubscriptionName,
-//   ...SubscriptionParameters,
-// }
-// ConnectionIDs
-// }
-//
-// Validation should occur, like in commands, so that you can't subscribe to non-allowed Readmodel by role, and non-allowed IDs.
-//   This validation is business dependant
-
-interface GraphQLAPIStackMembers {
+interface GraphQLStackMembers {
   graphQLLambda: Function
 }
 
-export class GraphQLAPIStack {
+export class GraphQLStack {
   public constructor(
     private readonly config: BoosterConfig,
     private readonly stack: Stack,
@@ -41,15 +25,7 @@ export class GraphQLAPIStack {
     private readonly websocketAPI: CfnApi
   ) {}
 
-  /*
-   - The rest endpoint GraphQL will have the same authorizer as the websocket
-   - The authorizer will insert the user in the context as it is doing right now.
-   - The routes connect and disconnect will be mock integrations
-   - The route $default will be handled by the lambda.
-   - The same lambda will be used for the /graphql endpoint
-   */
-
-  public build(): GraphQLAPIStackMembers {
+  public build(): GraphQLStackMembers {
     const graphQLLambda = this.buildLambda('graphql-handler', this.config.serveGraphQLHandler)
     const authorizerLambda = this.buildLambda('graphql-authorizer', this.config.authorizerHandler)
 
