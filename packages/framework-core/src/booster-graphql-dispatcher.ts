@@ -16,8 +16,6 @@ export class BoosterGraphqlDispatcher {
 
       // TODO: We should rejects requests for query and mutation that come through sockets and subscriptions that comes through REST
 
-      // Keep working with the schema generation to allow mutations and queries with basic filtering.
-
       switch (envelope.eventType) {
         case 'CONNECT': // TODO: This message is never coming now. Check this later to see if it is finally needed
           return this.config.provider.handleGraphQLResult()

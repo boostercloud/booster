@@ -8,7 +8,7 @@ import { RestAPIStack } from './rest-api-stack'
 import { AuthStack } from './auth-stack'
 import { EventsStack } from './events-stack'
 import { ReadModelsStack } from './read-models-stack'
-import { GraphQLAPIStack } from "./graphql-api-stack";
+import { GraphQLStack } from "./graphql-stack";
 import { RestApi } from "@aws-cdk/aws-apigateway";
 import { CfnApi, CfnStage } from '@aws-cdk/aws-apigatewayv2'
 
@@ -22,7 +22,7 @@ export class ApplicationStackBuilder {
 
     new AuthStack(this.config, stack, restAPI).build()
     const readModelTables = new ReadModelsStack(this.config, stack).build()
-    const graphQLStack = new GraphQLAPIStack(this.config, stack, restAPI, websocketAPI).build()
+    const graphQLStack = new GraphQLStack(this.config, stack, restAPI, websocketAPI).build()
     const eventsStack = new EventsStack(this.config, stack).build()
 
     // Deprecated

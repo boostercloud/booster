@@ -61,7 +61,7 @@ export class GraphqlGenerator {
           id: { type: GraphQLID },
         },
         resolve: (parent, args, context, info) => {
-          return Booster.fetchEntitySnapshot(info.fieldName, args.id) // TODO: WIP, This is for testing only
+          return Booster.fetchEntitySnapshot(info.fieldName, args.id)
         },
       }
     }
@@ -80,7 +80,7 @@ export class GraphqlGenerator {
         type: new GraphQLList(entityGraphQLType),
         args: this.generateEntityFilterArguments(entity),
         resolve: (parent, args, context, info) => {
-          return [] // TODO: WIP
+          return [] // TODO: Future PRs will be able to filter by arguments
         },
       }
     }
