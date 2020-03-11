@@ -13,6 +13,7 @@ interface BoosterApp {
   start(): void
 
   configure(configurator: (config: BoosterConfig) => void): void
+  environment(environment: string, configurator: (config: BoosterConfig) => void): void
 
   fetchEntitySnapshot(entityName: string, entityID: UUID): Promise<EntityInterface | null>
 }

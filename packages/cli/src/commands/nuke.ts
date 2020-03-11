@@ -1,4 +1,4 @@
-import { Command } from '@oclif/command'
+import { Command, flags } from '@oclif/command'
 import { Observable } from 'rxjs'
 import { nukeCloudProviderResources } from '../services/provider-service'
 import { compileProjectAndLoadConfig } from '../services/config-service'
@@ -38,7 +38,18 @@ export default class Nuke extends Command {
   public static description =
     'Remove all resources used by the current application as configured in your `index.ts` file.'
 
+  public static flags = {
+    help: flags.help({ char: 'h' }),
+    environment: flags.string({
+      char: 'e',
+      description: 'environment to nuke',
+      required: true,
+    }),
+  }
+
   public async run(): Promise<void> {
+    const { flags } = this.parse(Nuke)
+    process.env.BOOSTER_ENV = flags.environment
     await runTasks(askToConfirmRemoval(new Prompter(), compileProjectAndLoadConfig()), nukeCloudProviderResources)
   }
 }

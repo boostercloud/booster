@@ -34,6 +34,12 @@ export class Booster {
     configurator(this.config)
   }
 
+  public static environment(environment: string, configurator: (config: BoosterConfig) => void): void {
+    if (process.env.BOOSTER_ENV === environment) {
+      configurator(this.config)
+    }
+  }
+
   /**
    * Initializes the Booster project
    */
