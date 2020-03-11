@@ -8,7 +8,7 @@ import { BoosterEventDispatcher } from './booster-event-dispatcher'
 import { BoosterAuth } from './booster-auth'
 import { EntityInterface, UUID } from '@boostercloud/framework-types'
 import { fetchEntitySnapshot } from './entity-snapshot-fetcher'
-import { BoosterGraphqlDispatcher } from './booster-graphql-dispatcher'
+import { BoosterGraphQLDispatcher } from './booster-graphql-dispatcher'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -82,7 +82,7 @@ export class Booster {
   }
 
   public static serveGraphQL(request: any): Promise<any> {
-    return new BoosterGraphqlDispatcher(this.config, this.logger).dispatchGraphQL(request)
+    return new BoosterGraphQLDispatcher(this.config, this.logger).dispatchGraphQL(request)
   }
 
   public static authorizeRequest(request: any): Promise<any> {
