@@ -3,18 +3,16 @@
 import { expect } from 'chai'
 import { Register } from '@boostercloud/framework-types'
 import { Command } from '../../src/decorators/command'
-import { Booster } from '../../src/booster'
+import { Booster } from '../../src/index'
 
 describe('the `Command` decorator', () => {
-  beforeEach(() => {
-    Booster.environment('test', (config) => {
+  afterEach(() => {
+    Booster.configure((config) => {
       config.appName = ''
       for (const propName in config.commandHandlers) {
         delete config.commandHandlers[propName]
       }
     })
-    process.env.BOOSTER_ENV = 'test'
-    Booster.selectEnvironment()
   })
 
   it('adds the command class as a command handler for some command in the Booster configuration', () => {

@@ -70,6 +70,6 @@ const filesToGenerate: Array<[Array<string>, string]> = [
   [['.gitignore'], gitIgnore.template],
   [['package.json'], packageJson.template],
   [['tsconfig.json'], tsConfig.template],
-  [['src', 'config', 'production.ts'], configTs.template],
+  [['src', 'config', 'config.ts'], configTs.template],
   [['src', 'index.ts'], indexTs.template],
 ]

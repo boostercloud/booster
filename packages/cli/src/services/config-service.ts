@@ -5,11 +5,11 @@ import { wrapExecError } from '../common/errors'
 import { checkItIsABoosterProject } from './project-checker'
 import { withinWorkingDirectory } from './executor-service'
 
-export async function compileProjectAndLoadConfig(selectedEnvironment: string): Promise<BoosterConfig> {
+export async function compileProjectAndLoadConfig(): Promise<BoosterConfig> {
   const userProjectPath = process.cwd()
   await checkItIsABoosterProject()
   await compileProject(userProjectPath)
-  return readProjectConfig(selectedEnvironment, userProjectPath)
+  return readProjectConfig(userProjectPath)
 }
 
 async function compileProject(projectPath: string): Promise<void> {
@@ -22,9 +22,7 @@ async function compileProject(projectPath: string): Promise<void> {
   }
 }
 
-function readProjectConfig(selectedEnvironment: string, userProjectPath: string): Promise<BoosterConfig> {
-  require(path.join(userProjectPath, 'dist', 'config', selectedEnvironment + '.js'))
-  process.env.BOOSTER_ENV = selectedEnvironment
+function readProjectConfig(userProjectPath: string): Promise<BoosterConfig> {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const userProject = require(path.join(userProjectPath, 'dist', 'index.js'))
   return new Promise((resolve): void => {
