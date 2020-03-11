@@ -1,12 +1,12 @@
 import { BoosterConfig, Logger, InvalidParameterError, GraphQLRequestEnvelope } from '@boostercloud/framework-types'
 import { graphql, GraphQLSchema } from 'graphql'
-import { GraphqlGenerator } from './services/graphql-generator'
+import { GraphQLGenerator } from './services/graphql-generator'
 
-export class BoosterGraphqlDispatcher {
+export class BoosterGraphQLDispatcher {
   private readonly graphQLSchema: GraphQLSchema
 
   public constructor(private config: BoosterConfig, private logger: Logger) {
-    this.graphQLSchema = new GraphqlGenerator(this.config).generateSchema()
+    this.graphQLSchema = new GraphQLGenerator(this.config).generateSchema()
   }
 
   public async dispatchGraphQL(request: any): Promise<any> {

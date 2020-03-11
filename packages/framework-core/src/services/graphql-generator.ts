@@ -16,7 +16,7 @@ import { Booster } from '../booster'
 import { PropertyMetadata } from '@boostercloud/framework-types/dist'
 import * as inflection from 'inflection'
 
-export class GraphqlGenerator {
+export class GraphQLGenerator {
   public constructor(private config: BoosterConfig) {}
 
   public generateSchema(): GraphQLSchema {
