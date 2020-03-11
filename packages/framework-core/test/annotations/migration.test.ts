@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from 'chai'
 import { Migrates, ToVersion } from '../../src/decorators/migration'
-import { Booster } from '../../src/index'
+import { Booster } from '../../src/booster'
 import { MigrationMetadata } from '@boostercloud/framework-types'
 
 // Entities to test the annotations
@@ -21,6 +21,9 @@ class ProductV4 {
 class ProductV5 extends Product {} // This would be the current version
 
 describe('the `ToVersion` decorator', () => {
+  Booster.environment('test', () => {})
+  process.env.BOOSTER_ENV = 'test'
+  Booster.selectEnvironment()
   it('throws when a version smaller than 1 is specified', () => {
     expect(() => {
       // @ts-ignore: Unused class

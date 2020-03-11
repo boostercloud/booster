@@ -1,16 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { expect } from 'chai'
 import { describe } from 'mocha'
-import { ReadModel, Booster, Entity, Projects } from '../../src/index'
+import { ReadModel, Entity, Projects } from '../../src/index'
+import { Booster } from '../../src/booster'
 import { UUID } from '@boostercloud/framework-types'
 
 describe('the `ReadModel` decorator', () => {
-  afterEach(() => {
-    Booster.configure((config) => {
+  beforeEach(() => {
+    Booster.environment('test', (config) => {
       for (const propName in config.readModels) {
         delete config.readModels[propName]
       }
     })
+    process.env.BOOSTER_ENV = 'test'
+    Booster.selectEnvironment()
   })
 
   it('registers the read model in Booster configuration', () => {
@@ -33,8 +36,8 @@ describe('the `ReadModel` decorator', () => {
 })
 
 describe('the `Projection` decorator', () => {
-  afterEach(() => {
-    Booster.configure((config) => {
+  beforeEach(() => {
+    Booster.environment('test', (config) => {
       for (const propName in config.readModels) {
         delete config.readModels[propName]
       }
@@ -42,6 +45,8 @@ describe('the `Projection` decorator', () => {
         delete config.projections[propName]
       }
     })
+    process.env.BOOSTER_ENV = 'test'
+    Booster.selectEnvironment()
   })
 
   it('registers a read model method as an entity projection in Booster configuration', () => {

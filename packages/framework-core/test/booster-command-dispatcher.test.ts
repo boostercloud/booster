@@ -12,14 +12,16 @@ import { ProviderLibrary } from '@boostercloud/framework-types'
 chai.use(require('sinon-chai'))
 
 describe('the `BoosterCommandsDispatcher`', () => {
-  afterEach(() => {
+  beforeEach(() => {
     restore()
-    Booster.configure((config) => {
+    Booster.environment('test', (config) => {
       config.appName = ''
       for (const propName in config.commandHandlers) {
         delete config.commandHandlers[propName]
       }
     })
+    process.env.BOOSTER_ENV = 'test'
+    Booster.selectEnvironment()
   })
 
   const logger: Logger = {

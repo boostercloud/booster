@@ -3,12 +3,12 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from 'chai'
 import { Event, Entity, Reduces } from '../../src/decorators/'
-import { Booster } from '../../src/index'
+import { Booster } from '../../src/booster'
 import { UUID } from '@boostercloud/framework-types'
 
 describe('the `Entity` decorator', () => {
-  afterEach(() => {
-    Booster.configure((config) => {
+  beforeEach(() => {
+    Booster.environment('test', (config) => {
       config.appName = ''
       for (const propName in config.reducers) {
         delete config.reducers[propName]
@@ -17,6 +17,8 @@ describe('the `Entity` decorator', () => {
         delete config.entities[propName]
       }
     })
+    process.env.BOOSTER_ENV = 'test'
+    Booster.selectEnvironment()
   })
 
   it('adds the entity class as an entity that reduces some commands', () => {

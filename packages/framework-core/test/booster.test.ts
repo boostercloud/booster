@@ -19,7 +19,7 @@ chai.use(require('sinon-chai'))
 describe('the `Booster` class', () => {
   afterEach(() => {
     restore()
-    Booster.configure((config) => {
+    Booster.environment('test', (config) => {
       config.appName = ''
       for (const propName in config.commandHandlers) {
         delete config.commandHandlers[propName]
@@ -28,7 +28,7 @@ describe('the `Booster` class', () => {
   })
 
   describe('the `configure` method', () => {
-    it('can be used to configure the app, using the `configure` method', () => {
+    it('can be used to configure the app', () => {
       Booster.configure((config) => {
         config.appName = 'test-app-name'
       })
@@ -43,6 +43,7 @@ describe('the `Booster` class', () => {
     it('imports all the user files', () => {
       const fakeImporter = fake()
       replace(Importer, 'importUserProjectFiles', fakeImporter)
+      process.env.BOOSTER_ENV = 'test'
       Booster.start()
       expect(fakeImporter).to.have.been.calledOnce
     })
