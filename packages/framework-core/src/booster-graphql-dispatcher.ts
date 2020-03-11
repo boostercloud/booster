@@ -23,6 +23,8 @@ export class BoosterGraphqlDispatcher {
           return this.handleMessage(envelope)
         case 'DISCONNECT':
           return this.config.provider.handleGraphQLResult()
+        default:
+          throw new Error(`Unknown message type ${envelope.eventType}`)
       }
     } catch (e) {
       return this.config.provider.handleGraphQLError(e)
