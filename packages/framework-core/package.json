@@ -32,10 +32,12 @@
     "fp-ts": "^2.0.3",
     "reflect-metadata": "^0.1",
     "graphql": "^15.0.0-rc.2",
-    "graphql-type-json": "^0.3.1"
+    "graphql-type-json": "^0.3.1",
+    "inflection": "^1.12.0"
   },
   "devDependencies": {
-    "@types/graphql-type-json": "^0.3.2"
+    "@types/graphql-type-json": "^0.3.2",
+    "@types/inflection": "^1.5.28"
   },
   "gitHead": "121816dbe55d57df5860b54a871c06dcda761101"
 }

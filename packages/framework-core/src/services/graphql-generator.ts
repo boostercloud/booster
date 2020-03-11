@@ -14,6 +14,7 @@ import { GraphQLFieldConfigMap, GraphQLList } from 'graphql/type/definition'
 import { AnyClass, EntityMetadata, UUID } from '@boostercloud/framework-types'
 import { Booster } from '../booster'
 import { PropertyMetadata } from '@boostercloud/framework-types/dist'
+import * as inflection from 'inflection'
 
 export class GraphqlGenerator {
   public constructor(private config: BoosterConfig) {}
@@ -23,20 +24,20 @@ export class GraphqlGenerator {
     const query = this.generateQuery(typesByName)
     return new GraphQLSchema({
       query,
-      types: [...typesByName.values()],
+      types: Object.values(typesByName),
     })
   }
 
-  private generateTypesByName(): Map<string, GraphQLObjectType> {
-    const typesByName = new Map<string, GraphQLObjectType>()
+  private generateTypesByName(): Record<string, GraphQLObjectType> {
+    const typesByName: Record<string, GraphQLObjectType> = {}
     for (const name in this.config.entities) {
       const entity = this.config.entities[name]
-      typesByName.set(name, this.generateType(entity))
+      typesByName[name] = this.generateType(entity)
     }
     return typesByName
   }
 
-  private generateQuery(typesByName: Map<string, GraphQLObjectType>): GraphQLObjectType {
+  private generateQuery(typesByName: Record<string, GraphQLObjectType>): GraphQLObjectType {
     const entityByIDQueries = this.generateEntityByIDQueries(typesByName)
     const entityFilterQueries = this.generateEntityFilterQueries(typesByName)
     return new GraphQLObjectType({
@@ -48,10 +49,10 @@ export class GraphqlGenerator {
     })
   }
 
-  private generateEntityByIDQueries(typesByName: Map<string, GraphQLObjectType>): GraphQLFieldConfigMap<any, any> {
+  private generateEntityByIDQueries(typesByName: Record<string, GraphQLObjectType>): GraphQLFieldConfigMap<any, any> {
     const queries: GraphQLFieldConfigMap<any, any> = {}
     for (const name in this.config.entities) {
-      const entityGraphQLType = typesByName.get(name)
+      const entityGraphQLType = typesByName[name]
       if (!entityGraphQLType) {
         continue
       }
@@ -68,15 +69,15 @@ export class GraphqlGenerator {
     return queries
   }
 
-  private generateEntityFilterQueries(typesByName: Map<string, GraphQLObjectType>): GraphQLFieldConfigMap<any, any> {
+  private generateEntityFilterQueries(typesByName: Record<string, GraphQLObjectType>): GraphQLFieldConfigMap<any, any> {
     const queries: GraphQLFieldConfigMap<any, any> = {}
     for (const name in this.config.entities) {
-      const entityGraphQLType = typesByName.get(name)
+      const entityGraphQLType = typesByName[name]
       if (!entityGraphQLType) {
         continue
       }
       const entity = this.config.entities[name]
-      queries[`${name}s`] = {
+      queries[inflection.pluralize(name)] = {
         type: new GraphQLList(entityGraphQLType),
         args: this.generateEntityFilterArguments(entity),
         resolve: (parent, args, context, info) => {
