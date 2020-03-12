@@ -17,16 +17,20 @@ export class AuthController {
     this.router.get('/confirm/:email', this.confirmUser.bind(this))
   }
 
-  public async signUp(req: express.Request, res: express.Response): Promise<void> {
-    if (req.body?.username && req.body?.userAttributes && req.body?.password) {
-      await this.userRegistry.signUp(req.body)
-      res.status(200)
-    } else {
-      res.status(400).json('The request body should have the `username`, `password` and `userAttributes` fields set')
+  public async signUp(req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> {
+    try {
+      if (req.body?.username && req.body?.userAttributes && req.body?.password) {
+        await this.userRegistry.signUp(req.body)
+        res.status(200)
+      } else {
+        res.status(400).json('The request body should have the `username`, `password` and `userAttributes` fields set')
+      }
+    } catch (e) {
+      next(e)
     }
   }
 
-  public async signIn(req: express.Request, res: express.Response): Promise<void> {
+  public async signIn(req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> {
     try {
       if (req.body?.username && req.body?.password) {
         const token = await this.userRegistry.signIn(req.body)
@@ -38,21 +42,25 @@ export class AuthController {
       if (e.name == NotAuthorizedError.name) {
         res.status(403).json(e.message)
       }
-      throw e
+      next(e)
     }
   }
 
-  public async signOut(req: express.Request, res: express.Response): Promise<void> {
-    const token = req.body?.accessToken
-    if (token) {
-      await this.userRegistry.signOut(token)
-      res.status(200)
-    } else {
-      res.status(400).json('accessToken field not set')
+  public async signOut(req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> {
+    try {
+      const token = req.body?.accessToken
+      if (token) {
+        await this.userRegistry.signOut(token)
+        res.status(200)
+      } else {
+        res.status(400).json('accessToken field not set')
+      }
+    } catch (e) {
+      next(e)
     }
   }
 
-  public async confirmUser(req: express.Request, res: express.Response): Promise<void> {
+  public async confirmUser(req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> {
     try {
       const email = req.params?.email
       if (email) {
@@ -65,7 +73,7 @@ export class AuthController {
       if (e.name == NotAuthorizedError.name) {
         res.status(403).json(e.message)
       }
-      throw e
+      next(e)
     }
   }
 }

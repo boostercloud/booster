@@ -17,9 +17,9 @@ export function run(config: BoosterConfig, port: number): void {
   const userProject = require(path.join(process.cwd(), 'dist', 'index.js'))
   const userRegistry = new UserRegistry(config, userProject)
   router.use('/auth', new AuthController(userRegistry).router)
-  expressServer.use(defaultErrorHandler)
   expressServer.use(express.json())
   expressServer.use(router)
+  expressServer.use(defaultErrorHandler)
   expressServer.listen(port)
 }
 
@@ -37,6 +37,6 @@ export function defaultErrorHandler(
   if (res.headersSent) {
     return next(err)
   }
-  console.error(err.message)
+  console.error(err)
   res.status(500).json(err)
 }

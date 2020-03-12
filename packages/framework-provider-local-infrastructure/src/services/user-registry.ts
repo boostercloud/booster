@@ -1,21 +1,7 @@
 import { UUID, BoosterConfig, UserApp, NotAuthorizedError } from '@boostercloud/framework-types'
 import * as DataStore from 'nedb'
 import { promisify } from 'util'
-
-interface User {
-  username: string
-  password: string
-  userAttributes: {
-    roles: Array<string>
-  }
-  token: UUID
-  confirmed: boolean
-}
-
-type LoginCredentials = Pick<User, 'username' | 'password'>
-type SignUpUser = Pick<User, 'username' | 'password' | 'userAttributes'>
-type RegisteredUser = Pick<User, 'username' | 'password' | 'userAttributes' | 'confirmed'>
-type AuthenticatedUser = Pick<User, 'username' | 'token'>
+import { RegisteredUser, AuthenticatedUser, SignUpUser, LoginCredentials } from '@boostercloud/framework-provider-local'
 
 export class UserRegistry {
   public readonly registeredUsers: DataStore<RegisteredUser> = new DataStore()
