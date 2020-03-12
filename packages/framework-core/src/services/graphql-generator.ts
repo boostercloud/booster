@@ -1,22 +1,22 @@
-import { BoosterConfig } from '@boostercloud/framework-types'
+import { BoosterConfig, PropertyMetadata } from '@boostercloud/framework-types'
 import {
   GraphQLBoolean,
-  GraphQLFieldConfigArgumentMap,
   GraphQLFloat,
   GraphQLID,
+  GraphQLInputObjectType,
   GraphQLObjectType,
   GraphQLScalarType,
   GraphQLSchema,
   GraphQLString,
 } from 'graphql'
 import { GraphQLJSONObject } from 'graphql-type-json'
-import { GraphQLFieldConfigMap, GraphQLList } from 'graphql/type/definition'
+import { GraphQLFieldConfigMap, GraphQLList, GraphQLFieldConfigArgumentMap } from 'graphql/type/definition'
 import { AnyClass, EntityMetadata, UUID } from '@boostercloud/framework-types'
 import { Booster } from '../booster'
-import { PropertyMetadata } from '@boostercloud/framework-types/dist'
 import * as inflection from 'inflection'
 
 export class GraphQLGenerator {
+  private generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
   public constructor(private config: BoosterConfig) {}
 
   public generateSchema(): GraphQLSchema {
@@ -88,6 +88,35 @@ export class GraphQLGenerator {
     return queries
   }
 
+  private generateEntityFilterArguments(entityMetadata: EntityMetadata): GraphQLFieldConfigArgumentMap {
+    const args: GraphQLFieldConfigArgumentMap = {}
+    entityMetadata.properties.forEach((prop: PropertyMetadata) => {
+      const graphQLPropType = graphQLTypeFor(prop.type)
+      if (graphQLPropType == GraphQLJSONObject || graphQLPropType instanceof GraphQLList) {
+        // TODO: We still don't handle filtering by complex properties
+        return
+      }
+      args[prop.name] = {
+        type: this.generateFilterFor(prop.type),
+      }
+    })
+    return args
+  }
+
+  private generateFilterFor(type: AnyClass): GraphQLInputObjectType {
+    const filterName = `${type.name}PropertyFilter`
+    if (!this.generatedFiltersByTypeName[filterName]) {
+      this.generatedFiltersByTypeName[filterName] = new GraphQLInputObjectType({
+        name: filterName,
+        fields: {
+          operation: { type: GraphQLString },
+          values: { type: new GraphQLList(graphQLTypeFor(type)) },
+        },
+      })
+    }
+    return this.generatedFiltersByTypeName[filterName]
+  }
+
   private generateType(entity: EntityMetadata): GraphQLObjectType {
     const fields: GraphQLFieldConfigMap<any, any> = {}
     for (const prop of entity.properties) {
@@ -97,16 +126,6 @@ export class GraphQLGenerator {
       name: entity.class.name,
       fields,
     })
-  }
-
-  private generateEntityFilterArguments(entityMetadata: EntityMetadata): GraphQLFieldConfigArgumentMap {
-    const args: GraphQLFieldConfigArgumentMap = {}
-    entityMetadata.properties.forEach((prop: PropertyMetadata) => {
-      args[prop.name] = {
-        type: graphQLTypeFor(prop.type),
-      }
-    })
-    return args
   }
 }
 
