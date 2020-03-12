@@ -26,7 +26,7 @@ function readProjectConfig(userProjectPath: string): Promise<BoosterConfig> {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const userProject = require(path.join(userProjectPath, 'dist', 'index.js'))
   return new Promise((resolve): void => {
-    userProject.Booster.configure((config: BoosterConfig): void => {
+    userProject.Booster.configureCurrentEnv((config: BoosterConfig): void => {
       resolve(config)
     })
   })
