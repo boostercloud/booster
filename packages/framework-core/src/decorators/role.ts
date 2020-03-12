@@ -7,7 +7,7 @@ import { Class, RoleMetadata, RoleInterface } from '@boostercloud/framework-type
  */
 export function Role(roleMetadata: RoleMetadata): (role: Class<RoleInterface>) => void {
   return (role): void => {
-    Booster.configure((config): void => {
+    Booster.configureCurrentEnv((config): void => {
       config.roles[role.name] = roleMetadata
     })
   }

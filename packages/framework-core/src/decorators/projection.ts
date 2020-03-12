@@ -25,7 +25,7 @@ export function Projects<TEntity extends EntityInterface>(
 }
 
 function registerProjection(originName: string, projectionMetadata: ProjectionMetadata): void {
-  Booster.configure((config): void => {
+  Booster.configureCurrentEnv((config): void => {
     const entityProjections = config.projections[originName] || []
     if (entityProjections.indexOf(projectionMetadata) < 0) {
       // Skip duplicate registrations

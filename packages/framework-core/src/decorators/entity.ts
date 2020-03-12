@@ -13,7 +13,7 @@ import 'reflect-metadata'
  * @constructor
  */
 export function Entity<TEntity extends EntityInterface>(entityClass: Class<TEntity>): void {
-  Booster.configure((config): void => {
+  Booster.configureCurrentEnv((config): void => {
     if (config.entities[entityClass.name]) {
       throw new Error(`An entity called ${entityClass.name} is already registered.`)
     }
@@ -64,7 +64,7 @@ export function Reduces<TEvent extends EventInterface>(
 }
 
 function registerReducer(eventName: string, reducerMethod: ReducerMetadata): void {
-  Booster.configure((config): void => {
+  Booster.configureCurrentEnv((config): void => {
     const reducerPath = config.reducers[eventName]
     if (reducerPath) {
       throw new Error(
