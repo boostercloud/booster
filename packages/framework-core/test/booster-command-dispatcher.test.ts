@@ -12,9 +12,10 @@ import { ProviderLibrary } from '@boostercloud/framework-types'
 chai.use(require('sinon-chai'))
 
 describe('the `BoosterCommandsDispatcher`', () => {
+  process.env.BOOSTER_ENV = 'test'
   afterEach(() => {
     restore()
-    Booster.configure((config) => {
+    Booster.configure('test', (config) => {
       config.appName = ''
       for (const propName in config.commandHandlers) {
         delete config.commandHandlers[propName]
@@ -93,7 +94,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
         const command = new PostComment('This test is good!')
         replace(command, 'handle', fakeHandler)
 
-        Booster.configure((config): void => {
+        Booster.configure('test', (config): void => {
           boosterCommandDispatcher.dispatchCommand(
             { version: 1, typeName: 'PostComment', value: command },
             config,
@@ -110,7 +111,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
           value: { comment: 'This comment is pointless' },
         }
         const boosterCommandDispatcher = BoosterCommandDispatcher as any
-        Booster.configure((config) => {
+        Booster.configure('test', (config) => {
           // We use `bind` to generate a thunk that chai will then call, checking that it throws
           expect(
             boosterCommandDispatcher.dispatchCommand.bind(boosterCommandDispatcher, command, config, logger)
@@ -125,7 +126,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
           value: { comment: 'This comment is pointless' },
         }
         const boosterCommandDispatcher = BoosterCommandDispatcher as any
-        Booster.configure((config) => {
+        Booster.configure('test', (config) => {
           // We use `bind` to generate a thunk that chai will then call, checking that it throws
           expect(
             boosterCommandDispatcher.dispatchCommand.bind(boosterCommandDispatcher, command, config, logger)

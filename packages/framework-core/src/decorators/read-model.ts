@@ -7,7 +7,7 @@ import { Booster } from '../booster'
  */
 export function ReadModel(attributes: RoleAccess): (readModelClass: Class<ReadModelInterface>) => void {
   return (readModelClass) => {
-    Booster.configure((config): void => {
+    Booster.configureCurrentEnv((config): void => {
       if (config.readModels[readModelClass.name]) {
         throw new Error(`A read model called ${readModelClass.name} is already registered.`)
       }

@@ -71,8 +71,9 @@ describe('the `ToVersion` decorator', () => {
 })
 
 describe('the `Migrates` annotation', () => {
+  process.env.BOOSTER_ENV = 'test'
   afterEach(() => {
-    Booster.configure((config) => {
+    Booster.configure('test', (config) => {
       config.appName = ''
       for (const propName in config.migrations) {
         delete config.migrations[propName]
@@ -107,7 +108,7 @@ describe('the `Migrates` annotation', () => {
       }
     }
 
-    Booster.configure((config) => {
+    Booster.configure('test', (config) => {
       expect(Object.keys(config.migrations).length).to.be.equal(1)
       const productMigrations = config.migrations[Product.name]
       expect(productMigrations.size).to.be.equal(4)

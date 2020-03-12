@@ -6,8 +6,9 @@ import { Command } from '../../src/decorators/command'
 import { Booster } from '../../src/index'
 
 describe('the `Command` decorator', () => {
+  process.env.BOOSTER_ENV = 'test'
   afterEach(() => {
-    Booster.configure((config) => {
+    Booster.configure('test', (config) => {
       config.appName = ''
       for (const propName in config.commandHandlers) {
         delete config.commandHandlers[propName]

@@ -6,7 +6,7 @@ const migrationMethodsMetadataKey = 'booster:migrationsMethods'
 
 export function Migrates(conceptClass: AnyClass): (migrationClass: AnyClass) => void {
   return (migrationClass) => {
-    Booster.configure((config) => {
+    Booster.configureCurrentEnv((config) => {
       const conceptMigrations = getConceptMigrations(config, conceptClass)
       const migrationMethodsMetadata = getMigrationMethods(migrationClass)
 
