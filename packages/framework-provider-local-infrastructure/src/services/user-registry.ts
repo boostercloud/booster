@@ -1,6 +1,5 @@
 import { UUID, BoosterConfig, UserApp, NotAuthorizedError } from '@boostercloud/framework-types'
 import * as DataStore from 'nedb'
-import { promisify } from 'util'
 import { RegisteredUser, AuthenticatedUser, SignUpUser, LoginCredentials } from '@boostercloud/framework-provider-local'
 
 export class UserRegistry {
@@ -42,7 +41,15 @@ export class UserRegistry {
   }
 
   private async getRegisteredUsersByEmail(email: string): Promise<Array<RegisteredUser>> {
-    return promisify(this.registeredUsers.find({ email }).exec)()
+    return new Promise((resolve, reject) => {
+      this.registeredUsers.find({ email }, (err, docs) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(docs)
+        }
+      })
+    })
   }
 
   private passwordsMatch(credentials: LoginCredentials, registered: RegisteredUser): boolean {
