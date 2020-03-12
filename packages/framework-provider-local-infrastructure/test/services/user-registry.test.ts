@@ -1,37 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { AuthController } from '../../src/controllers/auth'
-import { RuntimeStorage } from '../../src/runtime-storage'
-import {
-  BoosterConfig,
-  ProviderLibrary,
-  UserApp,
-  UserEnvelope,
-  NotAuthorizedError,
-} from '@boostercloud/framework-types'
+import { BoosterConfig, ProviderLibrary, UserApp, NotAuthorizedError } from '@boostercloud/framework-types'
 import { expect } from 'chai'
 import * as faker from 'faker'
 import { stub } from 'sinon'
 import * as chai from 'chai'
 import * as chaiAsPromised from 'chai-as-promised'
 import * as sinonChai from 'sinon-chai'
+import { UserRegistry } from '../../src/services/user-registry'
 chai.use(chaiAsPromised)
 chai.use(sinonChai)
 
 describe('the authorization controller', () => {
-  const registeredUsers: Record<string, UserEnvelope> = {}
-  const authenticatedUsers: Record<string, UserEnvelope> = {}
-  const storage = {
-    registerUser: (user: UserEnvelope) => {
-      registeredUsers[user.email] = user
-    },
-    authenticateUser: (token: string, user: UserEnvelope) => {
-      authenticatedUsers[token] = user
-    },
-    getRegisteredUsersByEmail: (email: string) => {
-      const registered = registeredUsers[email]
-      return Promise.resolve(registered ? [registered] : [])
-    },
-  } as RuntimeStorage
   const provider = {} as ProviderLibrary
   const userProject = { boosterPreSignUpChecker: stub() as any } as UserApp
   const config = new BoosterConfig()

@@ -9,12 +9,4 @@ export {
   boosterPreSignUpChecker,
 } from './booster'
 
-interface BoosterApp {
-  start(): void
-
-  configure(environment: string, configurator: (config: BoosterConfig) => void): void
-
-  fetchEntitySnapshot(entityName: string, entityID: UUID): Promise<EntityInterface | null>
-}
-
 export const Booster: BoosterApp = boosterModule.Booster

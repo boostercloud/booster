@@ -31,7 +31,7 @@ describe('the auth controller', () => {
       }
       const req = mockReq({ body: user })
       const res = mockRes()
-      await controller.signUp(req, res)
+      await controller.signUp(req, res, stub())
       expect(res.status).to.be.calledWith(200)
     })
 
@@ -46,14 +46,14 @@ describe('the auth controller', () => {
       }
       const req = mockReq({ body: user })
       const res = mockRes()
-      await controller.signUp(req, res)
+      await controller.signUp(req, res, stub())
       expect(userRegistry.signUp).to.be.calledWith(user)
     })
 
     it('should return a status 400 on malformed requests', async () => {
       const req = mockReq({ body: faker.hacker.phrase() })
       const res = mockRes()
-      await controller.signUp(req, res)
+      await controller.signUp(req, res, stub())
       expect(res.status).to.be.calledWith(400)
     })
   })
@@ -67,7 +67,7 @@ describe('the auth controller', () => {
       }
       const req = mockReq({ body: user })
       const res = mockRes()
-      await controller.signIn(req, res)
+      await controller.signIn(req, res, stub())
       expect(res.status).to.be.calledWith(200)
     })
 
@@ -79,14 +79,14 @@ describe('the auth controller', () => {
       }
       const req = mockReq({ body: user })
       const res = mockRes()
-      await controller.signIn(req, res)
+      await controller.signIn(req, res, stub())
       expect(userRegistry.signIn).to.be.calledWith(user)
     })
 
     it('should return status 400 on malformed requests', async () => {
       const req = mockReq({ body: faker.hacker.phrase() })
       const res = mockRes()
-      await controller.signIn(req, res)
+      await controller.signIn(req, res, stub())
       expect(res.status).to.be.calledWith(400)
     })
   })
@@ -101,7 +101,7 @@ describe('the auth controller', () => {
       }
       const req = mockReq(request)
       const res = mockRes()
-      await controller.signOut(req, res)
+      await controller.signOut(req, res, stub())
       expect(res.status).to.be.calledWith(200)
     })
 
@@ -114,14 +114,14 @@ describe('the auth controller', () => {
       }
       const req = mockReq(request)
       const res = mockRes()
-      await controller.signOut(req, res)
+      await controller.signOut(req, res, stub())
       expect(userRegistry.signOut).to.be.calledWith(token)
     })
 
     it('should return status 400 on malformed requests', async () => {
       const req = mockReq({ body: faker.hacker.phrase() })
       const res = mockRes()
-      await controller.signOut(req, res)
+      await controller.signOut(req, res, stub())
       expect(res.status).to.be.calledWith(400)
     })
   })
