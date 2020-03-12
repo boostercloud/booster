@@ -17,9 +17,10 @@ import * as EntitySnapshotFetcher from '../src/entity-snapshot-fetcher'
 chai.use(require('sinon-chai'))
 
 describe('the `Booster` class', () => {
+  process.env.BOOSTER_ENV = 'test'
   afterEach(() => {
     restore()
-    Booster.configure((config) => {
+    Booster.configure('test', (config) => {
       config.appName = ''
       for (const propName in config.commandHandlers) {
         delete config.commandHandlers[propName]
@@ -29,11 +30,11 @@ describe('the `Booster` class', () => {
 
   describe('the `configure` method', () => {
     it('can be used to configure the app, using the `configure` method', () => {
-      Booster.configure((config) => {
+      Booster.configure('test', (config) => {
         config.appName = 'test-app-name'
       })
 
-      Booster.configure((config) => {
+      Booster.configure('test', (config) => {
         expect(config.appName).to.equal('test-app-name')
       })
     })
