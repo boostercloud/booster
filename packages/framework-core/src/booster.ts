@@ -6,9 +6,10 @@ import { BoosterCommandDispatcher } from './booster-command-dispatcher'
 import { BoosterReadModelFetcher } from './booster-read-model-fetcher'
 import { BoosterEventDispatcher } from './booster-event-dispatcher'
 import { BoosterAuth } from './booster-auth'
-import { EntityInterface, UUID } from '@boostercloud/framework-types'
+import { EntityInterface, UUID, Class } from '@boostercloud/framework-types'
 import { fetchEntitySnapshot } from './entity-snapshot-fetcher'
 import { BoosterGraphQLDispatcher } from './booster-graphql-dispatcher'
+import { Searcher } from "./services/searcher";
 
 /**
  * Main class to interact with Booster and configure it.
@@ -51,6 +52,10 @@ export class Booster {
     this.logger = buildLogger(this.config.logLevel)
     Importer.importUserProjectFiles()
     this.config.validate()
+  }
+
+  public static entity<TEntity>(entityClass: Class<TEntity>): Searcher<TEntity> {
+    return new Searcher(this.config, this.logger, entityClass)
   }
 
   /**
