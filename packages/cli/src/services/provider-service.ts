@@ -28,9 +28,9 @@ export const deployToCloudProvider = (config: BoosterConfig): Observable<string>
   return config.provider.getInfrastructure().deploy(config)
 }
 
-export async function runLocally(config: BoosterConfig): Promise<void> {
+export async function runLocally(port: number, config: BoosterConfig): Promise<void> {
   assertNameIsCorrect(config.appName)
-  return Promise.resolve(LocalRuntimeInfrastructure.run(config, 3000))
+  return Promise.resolve(LocalRuntimeInfrastructure.run(config, port))
 }
 
 export const nukeCloudProviderResources = (config: BoosterConfig): Observable<string> => {
