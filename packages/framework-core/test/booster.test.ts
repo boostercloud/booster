@@ -30,13 +30,17 @@ describe('the `Booster` class', () => {
 
   describe('the `configure` method', () => {
     it('can be used to configure the app, using the `configure` method', () => {
+      const booster = Booster as any
+
       Booster.configure('test', (config) => {
         config.appName = 'test-app-name'
       })
 
-      Booster.configure('test', (config) => {
-        expect(config.appName).to.equal('test-app-name')
+      Booster.configure('another-environment', (config) => {
+        config.appName = 'this-shouldnt-be-set'
       })
+
+      expect(booster.config.appName).to.equal('test-app-name')
     })
   })
 
