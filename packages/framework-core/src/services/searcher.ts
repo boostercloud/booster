@@ -13,9 +13,13 @@ export class Searcher<TObject> {
 
   public filter<TPropName extends keyof TObject, TPropType extends TObject[TPropName]>(
     property: TPropName,
-    filter: Filter<TPropType>
+    operation: Operation<TPropType>,
+    ...values: Array<TPropType>
   ): this {
-    this.filters[property as string] = filter
+    this.filters[property as string] = {
+      operation,
+      values,
+    }
     return this
   }
 
@@ -30,12 +34,43 @@ export class Searcher<TObject> {
   }
 }
 
-export class Filter<TPropType> {
-  private constructor(readonly operation: Operation, readonly values: Array<TPropType>) {}
-
-  public static Equal<TPropType>(value: TPropType): Filter<TPropType> {
-    return new Filter('=', [value])
-  }
+interface Filter<TType> {
+  operation: Operation<TType>
+  values: Array<TType>
 }
 
-type Operation = '=' | '!=' | '<' | '>' | '>=' | '<=' | 'between'
+export enum NumberOperations {
+  '=' = '=',
+  '!=' = '!=',
+  '<' = '<',
+  '>' = '>',
+  '>=' = '>=',
+  '<=' = '<=',
+  'between' = 'between',
+}
+
+export enum StringOperations {
+  '=' = '=',
+  '!=' = '!=',
+  '<' = '<',
+  '>' = '>',
+  '>=' = '>=',
+  '<=' = '<=',
+  'between' = 'between',
+  'contains' = 'contains',
+  'not-contains' = 'not-contains',
+  'begins-with' = 'begins-with',
+}
+
+export enum BooleanOperations {
+  '=' = '=',
+  '!=' = '!=',
+}
+
+// eslint-disable-next-line prettier/prettier
+type Operation<TType> =
+  TType extends number ? EnumToUnion<typeof NumberOperations> :
+  TType extends string ? EnumToUnion<typeof StringOperations> :
+  TType extends boolean ? EnumToUnion<typeof BooleanOperations> : never
+
+type EnumToUnion<TEnum> = keyof TEnum
