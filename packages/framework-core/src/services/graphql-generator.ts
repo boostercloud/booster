@@ -1,6 +1,7 @@
-import { BoosterConfig, PropertyMetadata } from '@boostercloud/framework-types'
+import { AnyClass, BoosterConfig, EntityMetadata, PropertyMetadata, UUID } from '@boostercloud/framework-types'
 import {
   GraphQLBoolean,
+  GraphQLEnumType,
   GraphQLFloat,
   GraphQLID,
   GraphQLInputObjectType,
@@ -10,13 +11,19 @@ import {
   GraphQLString,
 } from 'graphql'
 import { GraphQLJSONObject } from 'graphql-type-json'
-import { GraphQLFieldConfigMap, GraphQLList, GraphQLFieldConfigArgumentMap } from 'graphql/type/definition'
-import { AnyClass, EntityMetadata, UUID } from '@boostercloud/framework-types'
+import {
+  GraphQLEnumValueConfigMap,
+  GraphQLFieldConfigArgumentMap,
+  GraphQLFieldConfigMap,
+  GraphQLList,
+} from 'graphql/type/definition'
 import { Booster } from '../booster'
 import * as inflection from 'inflection'
+import { BooleanOperations, NumberOperations, StringOperations } from './searcher'
 
 export class GraphQLGenerator {
   private generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
+  private generatedOperationEnumsByTypeName: Record<string, GraphQLEnumType> = {}
   public constructor(private config: BoosterConfig) {}
 
   public generateSchema(): GraphQLSchema {
@@ -109,12 +116,23 @@ export class GraphQLGenerator {
       this.generatedFiltersByTypeName[filterName] = new GraphQLInputObjectType({
         name: filterName,
         fields: {
-          operation: { type: GraphQLString },
+          operation: { type: this.operationEnumFor(type) },
           values: { type: new GraphQLList(graphQLTypeFor(type)) },
         },
       })
     }
     return this.generatedFiltersByTypeName[filterName]
+  }
+
+  private operationEnumFor(type: AnyClass): GraphQLEnumType {
+    const operationEnumName = `${type.name}Operations`
+    if (!this.generatedOperationEnumsByTypeName[operationEnumName]) {
+      this.generatedOperationEnumsByTypeName[operationEnumName] = new GraphQLEnumType({
+        name: operationEnumName,
+        values: this.generateOperationEnumValuesFor(type),
+      })
+    }
+    return this.generatedOperationEnumsByTypeName[operationEnumName]
   }
 
   private generateType(entity: EntityMetadata): GraphQLObjectType {
@@ -126,6 +144,30 @@ export class GraphQLGenerator {
       name: entity.class.name,
       fields,
     })
+  }
+
+  private generateOperationEnumValuesFor(type: AnyClass): GraphQLEnumValueConfigMap {
+    let operationsEnum: typeof StringOperations | typeof NumberOperations | typeof BooleanOperations
+    switch (type) {
+      case UUID:
+      case String:
+        operationsEnum = StringOperations
+        break
+      case Number:
+        operationsEnum = NumberOperations
+        break
+      case Boolean:
+        operationsEnum = BooleanOperations
+        break
+      default:
+        throw new Error(`Type ${type.name} is not supported in search filters`)
+    }
+
+    const enumValuesConfig: GraphQLEnumValueConfigMap = {}
+    for (const op in operationsEnum) {
+      enumValuesConfig[op] = {}
+    }
+    return enumValuesConfig
   }
 }
 
