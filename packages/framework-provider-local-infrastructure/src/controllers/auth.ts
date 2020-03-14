@@ -1,5 +1,5 @@
 import * as express from 'express'
-import { UserRegistry } from '../services/user-registry'
+import { UserRegistry } from '@boostercloud/framework-provider-local'
 import { NotAuthorizedError } from '@boostercloud/framework-types'
 
 /**
@@ -10,7 +10,7 @@ import { NotAuthorizedError } from '@boostercloud/framework-types'
 export class AuthController {
   public router: express.Router = express.Router()
 
-  constructor(readonly userRegistry: UserRegistry) {
+  constructor(readonly port: number, readonly userRegistry: UserRegistry) {
     this.router.post('/sign-up', this.signUp.bind(this))
     this.router.post('/sign-in', this.signIn.bind(this))
     this.router.post('/sign-out', this.signOut.bind(this))
@@ -20,7 +20,10 @@ export class AuthController {
   public async signUp(req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> {
     try {
       if (req.body?.username && req.body?.userAttributes && req.body?.password) {
-        await this.userRegistry.signUp(req.body)
+        const user = await this.userRegistry.signUp(req.body)
+        console.info(
+          `To confirm the user, use the following link: http://localhost:${this.port}/auth/confirm/${user.username}`
+        )
         res.status(200).json()
       } else {
         res.status(400).json('The request body should have the `username`, `password` and `userAttributes` fields set')

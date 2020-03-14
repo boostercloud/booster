@@ -16,7 +16,7 @@ describe('the authorization controller', () => {
   const config = new BoosterConfig()
   config.provider = provider
   const makeRegistry = (): any => {
-    const userRegistry = new UserRegistry(config, userProject) as any
+    const userRegistry = new UserRegistry(userProject) as any
     userRegistry.registeredUsers = {
       insert: stub(),
       remove: stub(),

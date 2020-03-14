@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AuthController } from '../../src/controllers/auth'
-import { UserRegistry } from '../../src/services/user-registry'
+import { UserRegistry } from '@boostercloud/framework-provider-local'
 import * as chai from 'chai'
 import * as sinonChai from 'sinon-chai'
 import { mockRes, mockReq } from 'sinon-express-mock'
@@ -17,7 +17,7 @@ describe('the auth controller', () => {
     signOut: stub().resolves(),
   } as any) as UserRegistry
 
-  const controller = new AuthController(userRegistry)
+  const controller = new AuthController(3000, userRegistry)
 
   describe('/sign-up', () => {
     it('should return status 200 if the request is correct', async () => {

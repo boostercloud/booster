@@ -1,24 +1,26 @@
-import { UUID, BoosterConfig, UserApp, NotAuthorizedError } from '@boostercloud/framework-types'
+import { UUID, UserApp, NotAuthorizedError } from '@boostercloud/framework-types'
 import * as DataStore from 'nedb'
-import { RegisteredUser, AuthenticatedUser, SignUpUser, LoginCredentials } from '@boostercloud/framework-provider-local'
-import { registeredUsersDatabase, authenticatedUsersDatabase } from '@boostercloud/framework-provider-local'
+import { registeredUsersDatabase, authenticatedUsersDatabase } from '../constants'
+import { RegisteredUser, AuthenticatedUser, SignUpUser, LoginCredentials } from '../library/auth-adapter'
+import { UserEnvelope } from '@boostercloud/framework-types'
 
 export class UserRegistry {
   public readonly registeredUsers: DataStore<RegisteredUser> = new DataStore(registeredUsersDatabase)
   public readonly authenticatedUsers: DataStore<AuthenticatedUser> = new DataStore(authenticatedUsersDatabase)
-  constructor(readonly port: number, readonly config: BoosterConfig, readonly userProject: UserApp) {
+  constructor(readonly userProject: UserApp) {
     this.registeredUsers.loadDatabase()
     this.authenticatedUsers.loadDatabase()
   }
 
-  public async signUp(user: SignUpUser): Promise<void> {
+  public async signUp(user: SignUpUser): Promise<SignUpUser> {
     await this.userProject.boosterPreSignUpChecker(user)
     const matches = await this.getRegisteredUsersByEmail(user.username)
     if (matches.length !== 0) throw new NotAuthorizedError(`User with username ${user.username} is already registered`)
-    this.registeredUsers.insert({ ...user, confirmed: false })
-    console.info(
-      `To confirm the user, use the following link: http://localhost:${this.port}/auth/confirm/${user.username}`
-    )
+    return new Promise((resolve, reject) => {
+      this.registeredUsers.insert({ ...user, confirmed: false }, (err, doc) => {
+        err ? reject(err) : resolve(doc)
+      })
+    })
   }
 
   public async signIn(user: LoginCredentials): Promise<UUID> {
@@ -55,6 +57,27 @@ export class UserRegistry {
     return new Promise((resolve, reject) => {
       this.registeredUsers.find({ username }, (err, docs) => {
         err ? reject(err) : resolve(docs)
+      })
+    })
+  }
+
+  public async getAuthenticatedUser(token: string): Promise<UserEnvelope> {
+    return new Promise((resolve: (value: UserEnvelope) => void, reject) => {
+      this.authenticatedUsers.findOne({ token }, (err, doc) => {
+        if (err) {
+          reject(err)
+        } else {
+          this.registeredUsers.findOne({ username: doc.username }, (err, doc) => {
+            if (err) {
+              reject(err)
+            } else {
+              resolve({
+                email: doc.username,
+                roles: doc.userAttributes.roles,
+              })
+            }
+          })
+        }
       })
     })
   }
