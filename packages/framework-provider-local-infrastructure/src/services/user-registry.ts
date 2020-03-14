@@ -1,10 +1,11 @@
 import { UUID, BoosterConfig, UserApp, NotAuthorizedError } from '@boostercloud/framework-types'
 import * as DataStore from 'nedb'
 import { RegisteredUser, AuthenticatedUser, SignUpUser, LoginCredentials } from '@boostercloud/framework-provider-local'
+import { registeredUsersDatabase, authenticatedUsersDatabase } from '@boostercloud/framework-provider-local'
 
 export class UserRegistry {
-  public readonly registeredUsers: DataStore<RegisteredUser> = new DataStore()
-  public readonly authenticatedUsers: DataStore<AuthenticatedUser> = new DataStore()
+  public readonly registeredUsers: DataStore<RegisteredUser> = new DataStore(registeredUsersDatabase)
+  public readonly authenticatedUsers: DataStore<AuthenticatedUser> = new DataStore(authenticatedUsersDatabase)
   constructor(readonly port: number, readonly config: BoosterConfig, readonly userProject: UserApp) {
     this.registeredUsers.loadDatabase()
     this.authenticatedUsers.loadDatabase()

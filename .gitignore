@@ -12,3 +12,4 @@ coverage
 .DS_Store
 scripts/mirroring.js
 .docs
+.booster

@@ -2,6 +2,7 @@ import { ProviderLibrary, ProviderInfrastructure } from '@boostercloud/framework
 import { rawSignUpDataToUserEnvelope } from './library/auth-adapter'
 
 export { User, LoginCredentials, SignUpUser, RegisteredUser, AuthenticatedUser } from './library/auth-adapter'
+export * from './constants'
 
 export const Provider: ProviderLibrary = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
