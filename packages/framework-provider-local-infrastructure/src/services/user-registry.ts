@@ -36,7 +36,7 @@ export class UserRegistry {
 
   public async signOut(token: UUID): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.authenticatedUsers.remove({ token }, {}, (err) => {
+      this.authenticatedUsers.remove({ token }, { multi: true }, (err) => {
         err ? reject(err) : resolve()
       })
     })
