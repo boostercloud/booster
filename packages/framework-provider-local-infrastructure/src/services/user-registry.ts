@@ -37,11 +37,7 @@ export class UserRegistry {
   public async signOut(token: UUID): Promise<void> {
     return new Promise((resolve, reject) => {
       this.authenticatedUsers.remove({ token }, {}, (err) => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve()
-        }
+        err ? reject(err) : resolve()
       })
     })
   }
@@ -49,11 +45,7 @@ export class UserRegistry {
   public async confirmUser(username: string): Promise<void> {
     return new Promise((resolve, reject) => {
       this.registeredUsers.update({ username }, { $set: { confirmed: true } }, {}, (err) => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve()
-        }
+        err ? reject(err) : resolve()
       })
     })
   }
@@ -61,11 +53,7 @@ export class UserRegistry {
   private async getRegisteredUsersByEmail(username: string): Promise<Array<RegisteredUser>> {
     return new Promise((resolve, reject) => {
       this.registeredUsers.find({ username }, (err, docs) => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve(docs)
-        }
+        err ? reject(err) : resolve(docs)
       })
     })
   }
