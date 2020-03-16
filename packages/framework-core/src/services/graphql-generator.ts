@@ -1,4 +1,13 @@
-import { AnyClass, BoosterConfig, EntityMetadata, PropertyMetadata, UUID } from '@boostercloud/framework-types'
+import {
+  AnyClass,
+  BoosterConfig,
+  EntityMetadata,
+  PropertyMetadata,
+  UUID,
+  BooleanOperations,
+  NumberOperations,
+  StringOperations,
+} from '@boostercloud/framework-types'
 import {
   GraphQLBoolean,
   GraphQLEnumType,
@@ -15,11 +24,11 @@ import {
   GraphQLEnumValueConfigMap,
   GraphQLFieldConfigArgumentMap,
   GraphQLFieldConfigMap,
+  GraphQLFieldResolver,
   GraphQLList,
 } from 'graphql/type/definition'
 import { Booster } from '../booster'
 import * as inflection from 'inflection'
-import { BooleanOperations, NumberOperations, StringOperations } from './searcher'
 
 export class GraphQLGenerator {
   private generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
@@ -87,9 +96,7 @@ export class GraphQLGenerator {
       queries[inflection.pluralize(name)] = {
         type: new GraphQLList(entityGraphQLType),
         args: this.generateEntityFilterArguments(entity),
-        resolve: (parent, args, context, info) => {
-          return [] // TODO: Future PRs will be able to filter by arguments
-        },
+        resolve: entityFilterResolver(entity.class),
       }
     }
     return queries
@@ -186,5 +193,17 @@ function graphQLTypeFor(type: AnyClass): GraphQLScalarType | GraphQLList<any> {
     case Object:
     default:
       return GraphQLJSONObject
+  }
+}
+
+// TODO: These functions should come from other place
+function entityFilterResolver(entity: AnyClass): GraphQLFieldResolver<any, any, any> {
+  return (parent, args, context, info) => {
+    const searcher = Booster.entity(entity)
+    for (const propName in args) {
+      const filter = args[propName]
+      searcher.filter(propName, filter.operation, filter.value)
+    }
+    return searcher.search()
   }
 }
