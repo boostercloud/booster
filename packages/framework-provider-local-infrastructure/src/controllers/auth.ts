@@ -1,6 +1,6 @@
 import * as express from 'express'
 import { UserRegistry } from '@boostercloud/framework-provider-local'
-import { NotAuthorizedError } from '@boostercloud/framework-types'
+import { NotAuthorizedError, UserApp } from '@boostercloud/framework-types'
 
 /**
  * This controller provides the sign up method, in order for the
@@ -10,7 +10,7 @@ import { NotAuthorizedError } from '@boostercloud/framework-types'
 export class AuthController {
   public router: express.Router = express.Router()
 
-  constructor(readonly port: number, readonly userRegistry: UserRegistry) {
+  constructor(readonly port: number, readonly userRegistry: UserRegistry, readonly userProject: UserApp) {
     this.router.post('/sign-up', this.signUp.bind(this))
     this.router.post('/sign-in', this.signIn.bind(this))
     this.router.post('/sign-out', this.signOut.bind(this))
@@ -20,6 +20,7 @@ export class AuthController {
   public async signUp(req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> {
     try {
       if (req.body?.username && req.body?.userAttributes && req.body?.password) {
+        await this.userProject.boosterPreSignUpChecker(req.body)
         const user = await this.userRegistry.signUp(req.body)
         console.info(
           `To confirm the user, use the following link: http://localhost:${this.port}/auth/confirm/${user.username}`

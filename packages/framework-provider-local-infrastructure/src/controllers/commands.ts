@@ -11,6 +11,7 @@ export class CommandController {
   public async handle(req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> {
     try {
       await this.userApp.boosterCommandDispatcher(req)
+      res.status(200).json()
     } catch (e) {
       next(e)
     }

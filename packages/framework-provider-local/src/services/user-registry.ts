@@ -1,4 +1,4 @@
-import { UUID, UserApp, NotAuthorizedError } from '@boostercloud/framework-types'
+import { UUID, NotAuthorizedError } from '@boostercloud/framework-types'
 import * as DataStore from 'nedb'
 import { registeredUsersDatabase, authenticatedUsersDatabase } from '../constants'
 import { RegisteredUser, AuthenticatedUser, SignUpUser, LoginCredentials } from '../library/auth-adapter'
@@ -7,13 +7,12 @@ import { UserEnvelope } from '@boostercloud/framework-types'
 export class UserRegistry {
   public readonly registeredUsers: DataStore<RegisteredUser> = new DataStore(registeredUsersDatabase)
   public readonly authenticatedUsers: DataStore<AuthenticatedUser> = new DataStore(authenticatedUsersDatabase)
-  constructor(readonly userProject: UserApp) {
+  constructor() {
     this.registeredUsers.loadDatabase()
     this.authenticatedUsers.loadDatabase()
   }
 
   public async signUp(user: SignUpUser): Promise<SignUpUser> {
-    await this.userProject.boosterPreSignUpChecker(user)
     const matches = await this.getRegisteredUsersByEmail(user.username)
     if (matches.length !== 0) throw new NotAuthorizedError(`User with username ${user.username} is already registered`)
     return new Promise((resolve, reject) => {

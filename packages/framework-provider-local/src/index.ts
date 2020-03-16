@@ -2,14 +2,12 @@ import { ProviderLibrary, ProviderInfrastructure } from '@boostercloud/framework
 import { rawSignUpDataToUserEnvelope } from './library/auth-adapter'
 import { rawCommandToEnvelope, handleCommandResult } from './library/commands-adapter'
 import { UserRegistry, EventRegistry } from './services'
-import path = require('path')
 
 export { User, LoginCredentials, SignUpUser, RegisteredUser, AuthenticatedUser } from './library/auth-adapter'
 export * from './constants'
 export * from './services'
 
-const userApp = require(path.join('dist', 'index.js'))
-const userRegistry = new UserRegistry(userApp.Booster.config)
+const userRegistry = new UserRegistry()
 const eventRegistry = new EventRegistry()
 
 export const Provider: ProviderLibrary = {
