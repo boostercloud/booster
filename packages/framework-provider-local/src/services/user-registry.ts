@@ -33,8 +33,16 @@ export class UserRegistry {
       throw new NotAuthorizedError(`User with username ${user.username} has not been confirmed`)
     }
     const token = UUID.generate()
-    this.authenticatedUsers.insert({ username: user.username, token })
+    await this.authenticateUser(user, token)
     return token
+  }
+
+  private async authenticateUser(user: LoginCredentials, token: UUID): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.authenticatedUsers.insert({ username: user.username, token }, (err) => {
+        err ? reject(err) : resolve()
+      })
+    })
   }
 
   public async signOut(token: UUID): Promise<void> {
