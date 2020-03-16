@@ -9,7 +9,8 @@ import {
 import { BoosterConfig } from './config'
 import { Observable } from 'rxjs'
 import { Logger } from './logger'
-import { ReadModelInterface, UUID } from './concepts'
+import { EntityInterface, ReadModelInterface, UUID } from './concepts'
+import { Filter } from './searcher'
 
 export type ProviderLibrary = ProviderCommandsLibrary &
   ProviderEventsLibrary &
@@ -17,7 +18,7 @@ export type ProviderLibrary = ProviderCommandsLibrary &
   ProviderAuthLibrary &
   ProviderGraphQLLibrary & {
     getInfrastructure(): ProviderInfrastructure
-  }
+  } & ProviderSearcher
 
 export interface ProviderCommandsLibrary {
   rawCommandToEnvelope(rawCommand: any): Promise<CommandEnvelope>
@@ -76,4 +77,13 @@ export interface ProviderInfrastructure {
   deploy?: (configuration: BoosterConfig) => Observable<string>
   run?: (configuration: BoosterConfig, port: number) => Promise<void>
   nuke(configuration: BoosterConfig): Observable<string>
+}
+
+export interface ProviderSearcher {
+  searchEntity(
+    config: BoosterConfig,
+    logger: Logger,
+    entityTypeName: string,
+    filters: Record<string, Filter<any>>
+  ): Promise<Array<EntityInterface>>
 }

@@ -1,6 +1,9 @@
-import { BoosterConfig, Class, Logger } from '@boostercloud/framework-types'
+import { EntityInterface } from './concepts'
+import { BoosterConfig } from './config'
+import { Logger } from './logger'
+import { Class } from "./typelevel";
 
-export class Searcher<TObject> {
+export class Searcher<TObject extends EntityInterface> {
   // private offset?: number
   // private limit?: number
   readonly filters: Record<string, Filter<any>> = {}
@@ -8,7 +11,7 @@ export class Searcher<TObject> {
   public constructor(
     private readonly config: BoosterConfig,
     private readonly logger: Logger,
-    private readonly entityClass: Class<TObject>
+    private readonly objectClass: Class<TObject>
   ) {}
 
   public filter<TPropName extends keyof TObject, TPropType extends TObject[TPropName]>(
@@ -23,18 +26,25 @@ export class Searcher<TObject> {
     return this
   }
 
-  public searchOne(): TObject {
-    this.logger.info(this.config)
-    console.log(this.entityClass)
-    throw new Error('Not implemented')
+  public async searchOne(): Promise<TObject> {
+    // Optimize if there is only an ID filter with one value
+    // this.provider.fetchEntitySnapshot(this.entityClass.name, id)
+    return (await this.search())[0]
   }
 
-  public search(): Array<TObject> {
-    throw new Error('Not implemented')
+  public async search(): Promise<Array<TObject>> {
+    this.logger.debug('Sending a search operation to provider with filters: ', this.filters)
+    const searchResult = await this.config.provider.searchEntity(
+      this.config,
+      this.logger,
+      this.objectClass.name,
+      this.filters
+    )
+    return searchResult as Array<TObject>
   }
 }
 
-interface Filter<TType> {
+export interface Filter<TType> {
   operation: Operation<TType>
   values: Array<TType>
 }
@@ -46,6 +56,7 @@ export enum NumberOperations {
   '>' = '>',
   '>=' = '>=',
   '<=' = '<=',
+  'in' = 'in',
   'between' = 'between',
 }
 
@@ -56,6 +67,7 @@ export enum StringOperations {
   '>' = '>',
   '>=' = '>=',
   '<=' = '<=',
+  'in' = 'in',
   'between' = 'between',
   'contains' = 'contains',
   'not-contains' = 'not-contains',
