@@ -52,6 +52,7 @@ describe('the user registry', () => {
         password: faker.internet.password(),
       }
       userRegistry.registeredUsers.find = stub().yields(null, [{ ...user, confirmed: true }])
+      userRegistry.authenticatedUsers.insert = stub().yields(null, { ...user, confirmed: true })
       await userRegistry.signIn(user)
       return expect(userRegistry.registeredUsers.find).to.have.been.called
     })
