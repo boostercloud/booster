@@ -38,6 +38,46 @@ describe('the user registry', () => {
       await userRegistry.signUp(user)
       return expect(userRegistry.registeredUsers.insert).to.have.been.called
     })
+
+    it('should fail if the database `find` fails', async () => {
+      const userProject = { boosterPreSignUpChecker: stub() as any } as UserApp
+      const userRegistry = new UserRegistry(userProject)
+      const user = {
+        clientId: faker.random.uuid(),
+        username: faker.internet.email(),
+        userAttributes: {
+          roles: [],
+        },
+        password: faker.internet.password(),
+      }
+
+      const error = new Error(faker.random.words())
+
+      userRegistry.registeredUsers.find = stub().yields(null, [])
+      userRegistry.registeredUsers.insert = stub().yields(error, user)
+
+      return expect(userRegistry.signUp(user)).to.have.been.rejectedWith(error)
+    })
+
+    it('should fail if the database `insert` fails', async () => {
+      const userProject = { boosterPreSignUpChecker: stub() as any } as UserApp
+      const userRegistry = new UserRegistry(userProject)
+      const user = {
+        clientId: faker.random.uuid(),
+        username: faker.internet.email(),
+        userAttributes: {
+          roles: [],
+        },
+        password: faker.internet.password(),
+      }
+
+      const error = new Error(faker.random.words())
+
+      userRegistry.registeredUsers.find = stub().yields(error, [])
+      userRegistry.registeredUsers.insert = stub().yields(null, user)
+
+      return expect(userRegistry.signUp(user)).to.have.been.rejectedWith(error)
+    })
   })
 
   describe('the signIn method', () => {
@@ -94,6 +134,19 @@ describe('the user registry', () => {
       userRegistry.registeredUsers.find = stub().yields(null, [{ ...user, confirmed: false }])
       return expect(userRegistry.signIn(user)).to.be.rejectedWith(NotAuthorizedError)
     })
+
+    it('should fail if the database `find` fails', async () => {
+      const userRegistry = new UserRegistry({} as UserApp)
+      const user = {
+        username: faker.internet.email(),
+        password: faker.internet.password(),
+        roles: [],
+      }
+
+      const error = new Error(faker.random.words())
+      userRegistry.registeredUsers.find = stub().yields(error, null)
+      return expect(userRegistry.signIn(user)).to.be.rejectedWith(error)
+    })
   })
 
   describe('the signOut method', () => {
@@ -103,6 +156,14 @@ describe('the user registry', () => {
       const mockToken = faker.random.uuid()
       await userRegistry.signOut(mockToken)
       return expect(userRegistry.authenticatedUsers.remove).to.have.been.called
+    })
+
+    it('should fail if database `remove` fails', async () => {
+      const userRegistry = new UserRegistry({} as UserApp)
+      const error = new Error(faker.random.words())
+      userRegistry.authenticatedUsers.remove = stub().yields(error, null)
+      const mockToken = faker.random.uuid()
+      return expect(userRegistry.signOut(mockToken)).to.have.be.rejectedWith(error)
     })
   })
 })
