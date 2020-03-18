@@ -3,7 +3,7 @@ import { UserRegistry } from '@boostercloud/framework-provider-local'
 import { AuthController } from './controllers/auth'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import path = require('path')
-import { CommandController } from './controllers/commands'
+import { CommandsController } from './controllers/commands'
 
 /**
  * `deploy` serves as the entry point for the local provider. Even though
@@ -18,7 +18,7 @@ export function run(config: BoosterConfig, port: number): void {
   const userProject = require(path.join(process.cwd(), 'dist', 'index.js'))
   const userRegistry = new UserRegistry()
   router.use('/auth', new AuthController(port, userRegistry, userProject).router)
-  router.use('/commands', new CommandController(userProject).router)
+  router.use('/commands', new CommandsController(userProject).router)
   expressServer.use(express.json())
   expressServer.use(router)
   expressServer.use(defaultErrorHandler)

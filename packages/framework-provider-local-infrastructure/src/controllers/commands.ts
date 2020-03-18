@@ -2,7 +2,7 @@ import * as express from 'express'
 import { UserApp } from '@boostercloud/framework-types'
 import { CommandResult } from '@boostercloud/framework-provider-local'
 
-export class CommandController {
+export class CommandsController {
   public router: express.Router = express.Router()
 
   constructor(readonly userApp: UserApp) {
