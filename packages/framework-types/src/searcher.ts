@@ -1,17 +1,15 @@
-import { EntityInterface } from './concepts'
-import { BoosterConfig } from './config'
-import { Logger } from './logger'
-import { Class } from "./typelevel";
+import { Class } from './typelevel'
 
-export class Searcher<TObject extends EntityInterface> {
+export type SearcherFunction<TObject> = (className: string, filters: Record<string, Filter<any>>) => Promise<Array<any>>
+
+export class Searcher<TObject> {
   // private offset?: number
   // private limit?: number
   readonly filters: Record<string, Filter<any>> = {}
 
   public constructor(
-    private readonly config: BoosterConfig,
-    private readonly logger: Logger,
-    private readonly objectClass: Class<TObject>
+    private readonly objectClass: Class<TObject>,
+    private readonly searcherFunction: SearcherFunction<TObject>
   ) {}
 
   public filter<TPropName extends keyof TObject, TPropType extends TObject[TPropName]>(
@@ -33,13 +31,7 @@ export class Searcher<TObject extends EntityInterface> {
   }
 
   public async search(): Promise<Array<TObject>> {
-    this.logger.debug('Sending a search operation to provider with filters: ', this.filters)
-    const searchResult = await this.config.provider.searchEntity(
-      this.config,
-      this.logger,
-      this.objectClass.name,
-      this.filters
-    )
+    const searchResult = await this.searcherFunction(this.objectClass.name, this.filters)
     return searchResult as Array<TObject>
   }
 }
@@ -50,33 +42,33 @@ export interface Filter<TType> {
 }
 
 export enum NumberOperations {
-  '=' = '=',
-  '!=' = '!=',
-  '<' = '<',
-  '>' = '>',
-  '>=' = '>=',
-  '<=' = '<=',
+  '=' = 'eq',
+  '!=' = 'not_eq',
+  '<' = 'less',
+  '>' = 'greater',
+  '<=' = 'less_eq',
+  '>=' = 'greater_eq',
   'in' = 'in',
   'between' = 'between',
 }
 
 export enum StringOperations {
-  '=' = '=',
-  '!=' = '!=',
-  '<' = '<',
-  '>' = '>',
-  '>=' = '>=',
-  '<=' = '<=',
+  '=' = 'eq',
+  '!=' = 'notEq',
+  '<' = 'less',
+  '>' = 'greater',
+  '<=' = 'less_eq',
+  '>=' = 'greater_eq',
   'in' = 'in',
   'between' = 'between',
   'contains' = 'contains',
-  'not-contains' = 'not-contains',
-  'begins-with' = 'begins-with',
+  'not-contains' = 'not_contains',
+  'begins-with' = 'begins_with',
 }
 
 export enum BooleanOperations {
-  '=' = '=',
-  '!=' = '!=',
+  '=' = 'equal',
+  '!=' = 'not_equal',
 }
 
 // eslint-disable-next-line prettier/prettier

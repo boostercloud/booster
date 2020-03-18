@@ -102,7 +102,7 @@ function setupPermissions(
   graphQLLambda.addToRolePolicy(
     new PolicyStatement({
       resources: [eventsStore.tableArn],
-      actions: ['dynamodb:Query*', 'dynamodb:Get*'],
+      actions: ['dynamodb:Query*', 'dynamodb:Get*', 'dynamodb:Scan*'],
     })
   )
 

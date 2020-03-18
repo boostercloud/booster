@@ -17,7 +17,7 @@ import { rawSignUpDataToUserEnvelope } from './library/auth-adapter'
 import { Kinesis, DynamoDB, CognitoIdentityServiceProvider } from 'aws-sdk'
 import { ProviderInfrastructure, ProviderLibrary } from '@boostercloud/framework-types'
 import { requestFailed, requestSucceeded } from './library/api-gateway-io'
-import { searchEntity } from "./library/searcher-adapter";
+import { searchReadModel } from './library/searcher-adapter'
 
 const eventsStream: Kinesis = new Kinesis()
 const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
@@ -50,7 +50,7 @@ export const Provider: ProviderLibrary = {
   getInfrastructure: () =>
     require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
 
-  searchEntity: searchEntity.bind(null, dynamoDB)
+  searchReadModel: searchReadModel.bind(null, dynamoDB),
 }
 
 export * from './constants'

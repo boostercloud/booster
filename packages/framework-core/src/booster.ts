@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BoosterConfig, Logger } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, ReadModelInterface } from '@boostercloud/framework-types'
 import { Importer } from './importer'
 import { buildLogger } from './booster-logger'
 import { BoosterCommandDispatcher } from './booster-command-dispatcher'
@@ -44,8 +44,11 @@ export class Booster {
     this.config.validate()
   }
 
-  public static entity<TEntity extends EntityInterface>(entityClass: Class<TEntity>): Searcher<TEntity> {
-    return new Searcher(this.config, this.logger, entityClass)
+  public static readModel<TReadModel extends ReadModelInterface>(
+    readModelClass: Class<TReadModel>
+  ): Searcher<TReadModel> {
+    const searchFunction = this.config.provider.searchReadModel.bind(null, this.config, this.logger)
+    return new Searcher(readModelClass, searchFunction)
   }
 
   /**

@@ -1,12 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Booster } from '../booster'
-import {
-  Class,
-  EntityInterface,
-  ReducerMetadata,
-  PropertyMetadata,
-  EventInterface,
-} from '@boostercloud/framework-types'
+import { Class, EntityInterface, ReducerMetadata, EventInterface } from '@boostercloud/framework-types'
 import 'reflect-metadata'
 /**
  * Decorator to register a class as an Entity
@@ -20,26 +14,8 @@ export function Entity<TEntity extends EntityInterface>(entityClass: Class<TEnti
 
     config.entities[entityClass.name] = {
       class: entityClass,
-      properties: getPropertiesMetadata(entityClass),
     }
   })
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getPropertiesMetadata(classType: Class<any>): Array<PropertyMetadata> {
-  const propertyNames = Object.getOwnPropertyNames(new classType())
-  const propertyTypes = Reflect.getMetadata('design:paramtypes', classType)
-  if (propertyNames.length != propertyTypes.length) {
-    throw new Error(
-      `Could not get metadata of entity ${classType.name}: the number of property names ` +
-        'does not match the number of inferred property types'
-    )
-  }
-
-  return propertyNames.map((propertyName, index) => ({
-    name: propertyName,
-    type: propertyTypes[index],
-  }))
 }
 
 /**
