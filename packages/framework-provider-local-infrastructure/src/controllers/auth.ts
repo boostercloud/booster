@@ -71,7 +71,7 @@ export class AuthController {
         await this.userRegistry.confirmUser(email)
         res.status(200).json('User confirmed!')
       } else {
-        res.status(400).json('')
+        res.status(400).json('GET params must include the email of the user')
       }
     } catch (e) {
       if (e.name == NotAuthorizedError.name) {
