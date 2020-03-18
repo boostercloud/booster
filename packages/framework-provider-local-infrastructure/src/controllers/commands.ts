@@ -11,7 +11,11 @@ export class CommandController {
 
   public async handle(req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> {
     try {
-      const result: CommandResult = await this.userApp.boosterCommandDispatcher(req)
+      // We pass only headers and body to avoid flooding the user's terminal
+      const result: CommandResult = await this.userApp.boosterCommandDispatcher({
+        headers: req.headers,
+        body: req.body,
+      })
       switch (result.status) {
         case 'success':
           res.status(200).json(result.result)
