@@ -1,11 +1,12 @@
 import { ProviderLibrary, ProviderInfrastructure } from '@boostercloud/framework-types'
 import { rawSignUpDataToUserEnvelope } from './library/auth-adapter'
-import { rawCommandToEnvelope, handleCommandResult } from './library/commands-adapter'
+import { rawCommandToEnvelope, handleCommandResult, handleCommandError } from './library/commands-adapter'
 import { UserRegistry, EventRegistry } from './services'
 
 export { User, LoginCredentials, SignUpUser, RegisteredUser, AuthenticatedUser } from './library/auth-adapter'
 export * from './constants'
 export * from './services'
+export { CommandResult } from './library/commands-adapter'
 
 const userRegistry = new UserRegistry()
 const eventRegistry = new EventRegistry()
@@ -13,8 +14,7 @@ const eventRegistry = new EventRegistry()
 export const Provider: ProviderLibrary = {
   rawCommandToEnvelope: rawCommandToEnvelope.bind(null, userRegistry),
   handleCommandResult: handleCommandResult.bind(null, eventRegistry),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleCommandError: undefined as any,
+  handleCommandError: handleCommandError,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rawEventsToEnvelopes: undefined as any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
