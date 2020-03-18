@@ -31,7 +31,6 @@ export class ApplicationStackBuilder {
     setupPermissions(
       readModelTables,
       restAPIStack.commandsLambda,
-      eventsStack.eventsLambda,
       restAPIStack.readModelFetcherLambda,
       graphQLStack.graphQLLambda,
       eventsStack.eventsStream,
@@ -77,7 +76,6 @@ export class ApplicationStackBuilder {
 function setupPermissions(
   readModelTables: Array<dynamodb.Table>,
   commandsLambda: Function,
-  readModelsLambda: Function,
   readModelFetcherLambda: Function,
   graphQLLambda: Function,
   eventsStream: Stream,
@@ -92,17 +90,10 @@ function setupPermissions(
     })
   )
 
-  readModelsLambda.addToRolePolicy(
+  eventsLambda.addToRolePolicy(
     new PolicyStatement({
       resources: [eventsStore.tableArn],
       actions: ['dynamodb:Query*', 'dynamodb:Put*'],
-    })
-  )
-
-  graphQLLambda.addToRolePolicy(
-    new PolicyStatement({
-      resources: [eventsStore.tableArn],
-      actions: ['dynamodb:Query*', 'dynamodb:Get*', 'dynamodb:Scan*'],
     })
   )
 
@@ -120,9 +111,9 @@ function setupPermissions(
         resources: tableArns,
       })
     )
-    readModelsLambda.addToRolePolicy(
+    graphQLLambda.addToRolePolicy(
       new PolicyStatement({
-        actions: ['dynamodb:Put*'],
+        actions: ['dynamodb:Query*', 'dynamodb:Scan*'],
         resources: tableArns,
       })
     )

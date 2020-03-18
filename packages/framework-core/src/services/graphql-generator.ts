@@ -78,18 +78,17 @@ export class GraphQLGenerator {
   private generateByIDQueries(typesByName: Record<string, GraphQLObjectType>): GraphQLFieldConfigMap<any, any> {
     const queries: GraphQLFieldConfigMap<any, any> = {}
     for (const name in this.targetTypes) {
-      const entityGraphQLType = typesByName[name]
-      if (!entityGraphQLType) {
+      const graphQLType = typesByName[name]
+      if (!graphQLType) {
         continue
       }
+      const type = this.targetTypes[name]
       queries[name] = {
-        type: entityGraphQLType,
+        type: graphQLType,
         args: {
           id: { type: GraphQLID },
         },
-        resolve: (parent, args, context, info) => {
-          return Booster.fetchEntitySnapshot(info.fieldName, args.id)
-        },
+        resolve: readModelIDResolver(type.class),
       }
     }
     return queries
@@ -98,21 +97,21 @@ export class GraphQLGenerator {
   private generateFilterQueries(typesByName: Record<string, GraphQLObjectType>): GraphQLFieldConfigMap<any, any> {
     const queries: GraphQLFieldConfigMap<any, any> = {}
     for (const name in this.targetTypes) {
-      const entityGraphQLType = typesByName[name]
-      if (!entityGraphQLType) {
+      const graphQLType = typesByName[name]
+      if (!graphQLType) {
         continue
       }
-      const entity = this.targetTypes[name]
+      const type = this.targetTypes[name]
       queries[inflection.pluralize(name)] = {
-        type: new GraphQLList(entityGraphQLType),
-        args: this.generateEntityFilterArguments(entity),
-        resolve: entityFilterResolver(entity.class),
+        type: new GraphQLList(graphQLType),
+        args: this.generateFilterArguments(type),
+        resolve: readModelFilterResolver(type.class),
       }
     }
     return queries
   }
 
-  private generateEntityFilterArguments(typesMetadata: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
+  private generateFilterArguments(typesMetadata: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
     const args: GraphQLFieldConfigArgumentMap = {}
     typesMetadata.properties.forEach((prop: PropertyMetadata) => {
       const graphQLPropType = graphQLTypeFor(prop.type)
@@ -208,13 +207,22 @@ function graphQLTypeFor(type: AnyClass): GraphQLScalarType | GraphQLList<any> {
 }
 
 // TODO: These functions should come from other place
-function entityFilterResolver(entity: AnyClass): GraphQLFieldResolver<any, any, any> {
+
+function readModelFilterResolver(readModelClass: AnyClass): GraphQLFieldResolver<any, any, any> {
   return (parent, args, context, info) => {
-    const searcher = Booster.readModel(entity)
+    const searcher = Booster.readModel(readModelClass)
     for (const propName in args) {
       const filter = args[propName]
       searcher.filter(propName, filter.operation, ...filter.values)
     }
     return searcher.search()
+  }
+}
+
+function readModelIDResolver(readModelClass: AnyClass): GraphQLFieldResolver<any, any, any> {
+  return (parent, args, context, info) => {
+    const searcher = Booster.readModel(readModelClass)
+    searcher.filter('id', '=', args.id)
+    return searcher.searchOne()
   }
 }

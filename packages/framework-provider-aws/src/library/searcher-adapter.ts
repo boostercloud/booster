@@ -69,7 +69,7 @@ function buildOperation(propName: string, filter: Filter<any>): string {
     case 'not-contains':
       return `NOT contains(#${propName}, ${holder(0)})`
     case 'begins-with':
-      return `begin_with(#${propName}, ${holder(0)})`
+      return `begins_with(#${propName}, ${holder(0)})`
     default:
       throw new InvalidParameterError(`Operator "${filter.operation}" is not supported`)
   }
