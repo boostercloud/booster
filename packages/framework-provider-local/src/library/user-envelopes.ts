@@ -13,5 +13,5 @@ export async function fetchUserFromRequest(
 }
 
 function getTokenFromRequest(request: { headers: Record<string, string> }): string | undefined {
-  return request.headers['Authorization']?.replace('Bearer ', '')
+  return request.headers['authorization']?.replace('Bearer ', '')
 }
