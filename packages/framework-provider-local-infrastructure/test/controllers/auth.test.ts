@@ -7,17 +7,19 @@ import { mockRes, mockReq } from 'sinon-express-mock'
 import * as faker from 'faker'
 import { stub } from 'sinon'
 import { expect } from 'chai'
+import { UserApp } from '@boostercloud/framework-types'
 
 chai.use(sinonChai)
 
 describe('the auth controller', () => {
   const userRegistry = ({
     signIn: stub().resolves('fake-token'),
-    signUp: stub().resolves(),
+    signUp: stub().resolvesArg(0),
     signOut: stub().resolves(),
   } as any) as UserRegistry
 
-  const controller = new AuthController(3000, userRegistry)
+  const userApp = ({ boosterPreSignUpChecker: stub().resolves() } as unknown) as UserApp
+  const controller = new AuthController(3000, userRegistry, userApp)
 
   describe('/sign-up', () => {
     it('should return status 200 if the request is correct', async () => {

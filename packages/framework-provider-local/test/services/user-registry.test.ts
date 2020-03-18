@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BoosterConfig, ProviderLibrary, UserApp, NotAuthorizedError } from '@boostercloud/framework-types'
+import { BoosterConfig, ProviderLibrary, NotAuthorizedError } from '@boostercloud/framework-types'
 import { expect } from 'chai'
 import * as faker from 'faker'
 import { stub } from 'sinon'
@@ -21,8 +21,7 @@ describe('the user registry', () => {
 
   describe('the signUp method', () => {
     it('should insert users into the registeredUsers database', async () => {
-      const userProject = { boosterPreSignUpChecker: stub() as any } as UserApp
-      const userRegistry = new UserRegistry(userProject)
+      const userRegistry = new UserRegistry()
       const user = {
         clientId: faker.random.uuid(),
         username: faker.internet.email(),
@@ -40,8 +39,7 @@ describe('the user registry', () => {
     })
 
     it('should fail if the database `find` fails', async () => {
-      const userProject = { boosterPreSignUpChecker: stub() as any } as UserApp
-      const userRegistry = new UserRegistry(userProject)
+      const userRegistry = new UserRegistry()
       const user = {
         clientId: faker.random.uuid(),
         username: faker.internet.email(),
@@ -60,8 +58,7 @@ describe('the user registry', () => {
     })
 
     it('should fail if the database `insert` fails', async () => {
-      const userProject = { boosterPreSignUpChecker: stub() as any } as UserApp
-      const userRegistry = new UserRegistry(userProject)
+      const userRegistry = new UserRegistry()
       const user = {
         clientId: faker.random.uuid(),
         username: faker.internet.email(),
@@ -82,7 +79,7 @@ describe('the user registry', () => {
 
   describe('the signIn method', () => {
     it('should check if the user has been registered', async () => {
-      const userRegistry = new UserRegistry({} as UserApp)
+      const userRegistry = new UserRegistry()
       const user = {
         clientId: faker.random.uuid(),
         username: faker.internet.email(),
@@ -98,7 +95,7 @@ describe('the user registry', () => {
     })
 
     it('should insert users into the authenticated users database', async () => {
-      const userRegistry = new UserRegistry({} as UserApp)
+      const userRegistry = new UserRegistry()
       const user = {
         clientId: faker.random.uuid(),
         username: faker.internet.email(),
@@ -114,7 +111,7 @@ describe('the user registry', () => {
     })
 
     it('should fail for users that are not registered', async () => {
-      const userRegistry = new UserRegistry({} as UserApp)
+      const userRegistry = new UserRegistry()
       const user = {
         username: faker.internet.email(),
         password: faker.internet.password(),
@@ -125,7 +122,7 @@ describe('the user registry', () => {
     })
 
     it('should fail for users that are not confirmed', async () => {
-      const userRegistry = new UserRegistry({} as UserApp)
+      const userRegistry = new UserRegistry()
       const user = {
         username: faker.internet.email(),
         password: faker.internet.password(),
@@ -136,7 +133,7 @@ describe('the user registry', () => {
     })
 
     it('should fail if the database `find` fails', async () => {
-      const userRegistry = new UserRegistry({} as UserApp)
+      const userRegistry = new UserRegistry()
       const user = {
         username: faker.internet.email(),
         password: faker.internet.password(),
@@ -151,7 +148,8 @@ describe('the user registry', () => {
 
   describe('the signOut method', () => {
     it('should sign out users', async () => {
-      const userRegistry = new UserRegistry({} as UserApp)
+      const userRegistry = new UserRegistry()
+      userRegistry.authenticatedUsers.remove = stub().yields(null, null)
       userRegistry.authenticatedUsers.remove = stub().yields(null, null)
       const mockToken = faker.random.uuid()
       await userRegistry.signOut(mockToken)
@@ -159,7 +157,7 @@ describe('the user registry', () => {
     })
 
     it('should fail if database `remove` fails', async () => {
-      const userRegistry = new UserRegistry({} as UserApp)
+      const userRegistry = new UserRegistry()
       const error = new Error(faker.random.words())
       userRegistry.authenticatedUsers.remove = stub().yields(error, null)
       const mockToken = faker.random.uuid()
