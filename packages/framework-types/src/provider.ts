@@ -9,7 +9,7 @@ import {
 import { BoosterConfig } from './config'
 import { Observable } from 'rxjs'
 import { Logger } from './logger'
-import { EntityInterface, ReadModelInterface, UUID } from './concepts'
+import { ReadModelInterface, UUID } from './concepts'
 import { Filter } from './searcher'
 
 export type ProviderLibrary = ProviderCommandsLibrary &
@@ -80,10 +80,10 @@ export interface ProviderInfrastructure {
 }
 
 export interface ProviderSearcher {
-  searchEntity(
+  searchReadModel<TReadModel extends ReadModelInterface>(
     config: BoosterConfig,
     logger: Logger,
     entityTypeName: string,
     filters: Record<string, Filter<any>>
-  ): Promise<Array<EntityInterface>>
+  ): Promise<Array<TReadModel>>
 }

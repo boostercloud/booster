@@ -1,7 +1,7 @@
 /**
  * Holds information about a user class annotated with `@Entity`
  */
-import { AnyClass, Class } from '../typelevel'
+import { Class } from '../typelevel'
 import { UUID } from '.'
 
 export interface EntityInterface {
@@ -10,10 +10,4 @@ export interface EntityInterface {
 
 export interface EntityMetadata {
   readonly class: Class<EntityInterface>
-  readonly properties: Array<PropertyMetadata>
-}
-
-export interface PropertyMetadata {
-  readonly name: string
-  readonly type: AnyClass
 }

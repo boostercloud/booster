@@ -1,7 +1,6 @@
 import {
   AnyClass,
   BoosterConfig,
-  EntityMetadata,
   PropertyMetadata,
   UUID,
   BooleanOperations,
@@ -26,17 +25,28 @@ import {
   GraphQLFieldConfigMap,
   GraphQLFieldResolver,
   GraphQLList,
+  GraphQLNonNull,
 } from 'graphql/type/definition'
 import { Booster } from '../booster'
 import * as inflection from 'inflection'
 
+type TargetTypesMap = Record<string, TargetTypeMetadata>
+interface TargetTypeMetadata {
+  class: AnyClass
+  properties: Array<PropertyMetadata>
+}
+
 export class GraphQLGenerator {
   private generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
   private generatedOperationEnumsByTypeName: Record<string, GraphQLEnumType> = {}
-  public constructor(private config: BoosterConfig) {}
+  private targetTypes: TargetTypesMap
+
+  public constructor(config: BoosterConfig) {
+    this.targetTypes = config.readModels
+  }
 
   public generateSchema(): GraphQLSchema {
-    const typesByName = this.generateTypesByName()
+    const typesByName = this.generateGraphQLTypesByName()
     const query = this.generateQuery(typesByName)
     return new GraphQLSchema({
       query,
@@ -44,30 +54,30 @@ export class GraphQLGenerator {
     })
   }
 
-  private generateTypesByName(): Record<string, GraphQLObjectType> {
+  private generateGraphQLTypesByName(): Record<string, GraphQLObjectType> {
     const typesByName: Record<string, GraphQLObjectType> = {}
-    for (const name in this.config.entities) {
-      const entity = this.config.entities[name]
-      typesByName[name] = this.generateType(entity)
+    for (const name in this.targetTypes) {
+      const typeMetadata = this.targetTypes[name]
+      typesByName[name] = this.generateType(typeMetadata)
     }
     return typesByName
   }
 
   private generateQuery(typesByName: Record<string, GraphQLObjectType>): GraphQLObjectType {
-    const entityByIDQueries = this.generateEntityByIDQueries(typesByName)
-    const entityFilterQueries = this.generateEntityFilterQueries(typesByName)
+    const byIDQueries = this.generateByIDQueries(typesByName)
+    const filterQueries = this.generateFilterQueries(typesByName)
     return new GraphQLObjectType({
       name: 'Query',
       fields: {
-        ...entityByIDQueries,
-        ...entityFilterQueries,
+        ...byIDQueries,
+        ...filterQueries,
       },
     })
   }
 
-  private generateEntityByIDQueries(typesByName: Record<string, GraphQLObjectType>): GraphQLFieldConfigMap<any, any> {
+  private generateByIDQueries(typesByName: Record<string, GraphQLObjectType>): GraphQLFieldConfigMap<any, any> {
     const queries: GraphQLFieldConfigMap<any, any> = {}
-    for (const name in this.config.entities) {
+    for (const name in this.targetTypes) {
       const entityGraphQLType = typesByName[name]
       if (!entityGraphQLType) {
         continue
@@ -85,14 +95,14 @@ export class GraphQLGenerator {
     return queries
   }
 
-  private generateEntityFilterQueries(typesByName: Record<string, GraphQLObjectType>): GraphQLFieldConfigMap<any, any> {
+  private generateFilterQueries(typesByName: Record<string, GraphQLObjectType>): GraphQLFieldConfigMap<any, any> {
     const queries: GraphQLFieldConfigMap<any, any> = {}
-    for (const name in this.config.entities) {
+    for (const name in this.targetTypes) {
       const entityGraphQLType = typesByName[name]
       if (!entityGraphQLType) {
         continue
       }
-      const entity = this.config.entities[name]
+      const entity = this.targetTypes[name]
       queries[inflection.pluralize(name)] = {
         type: new GraphQLList(entityGraphQLType),
         args: this.generateEntityFilterArguments(entity),
@@ -102,9 +112,9 @@ export class GraphQLGenerator {
     return queries
   }
 
-  private generateEntityFilterArguments(entityMetadata: EntityMetadata): GraphQLFieldConfigArgumentMap {
+  private generateEntityFilterArguments(typesMetadata: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
     const args: GraphQLFieldConfigArgumentMap = {}
-    entityMetadata.properties.forEach((prop: PropertyMetadata) => {
+    typesMetadata.properties.forEach((prop: PropertyMetadata) => {
       const graphQLPropType = graphQLTypeFor(prop.type)
       if (graphQLPropType == GraphQLJSONObject || graphQLPropType instanceof GraphQLList) {
         // TODO: We still don't handle filtering by complex properties
@@ -123,8 +133,8 @@ export class GraphQLGenerator {
       this.generatedFiltersByTypeName[filterName] = new GraphQLInputObjectType({
         name: filterName,
         fields: {
-          operation: { type: this.operationEnumFor(type) },
-          values: { type: new GraphQLList(graphQLTypeFor(type)) },
+          operation: { type: new GraphQLNonNull(this.operationEnumFor(type)) },
+          values: { type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(graphQLTypeFor(type)))) },
         },
       })
     }
@@ -142,13 +152,13 @@ export class GraphQLGenerator {
     return this.generatedOperationEnumsByTypeName[operationEnumName]
   }
 
-  private generateType(entity: EntityMetadata): GraphQLObjectType {
+  private generateType(typeMetadata: TargetTypeMetadata): GraphQLObjectType {
     const fields: GraphQLFieldConfigMap<any, any> = {}
-    for (const prop of entity.properties) {
+    for (const prop of typeMetadata.properties) {
       fields[prop.name] = { type: graphQLTypeFor(prop.type) }
     }
     return new GraphQLObjectType({
-      name: entity.class.name,
+      name: typeMetadata.class.name,
       fields,
     })
   }
@@ -171,8 +181,9 @@ export class GraphQLGenerator {
     }
 
     const enumValuesConfig: GraphQLEnumValueConfigMap = {}
-    for (const op in operationsEnum) {
-      enumValuesConfig[op] = {}
+    for (const opSymbol in operationsEnum) {
+      const opName = (operationsEnum as any)[opSymbol]
+      enumValuesConfig[opName] = { value: opSymbol }
     }
     return enumValuesConfig
   }
@@ -199,10 +210,10 @@ function graphQLTypeFor(type: AnyClass): GraphQLScalarType | GraphQLList<any> {
 // TODO: These functions should come from other place
 function entityFilterResolver(entity: AnyClass): GraphQLFieldResolver<any, any, any> {
   return (parent, args, context, info) => {
-    const searcher = Booster.entity(entity)
+    const searcher = Booster.readModel(entity)
     for (const propName in args) {
       const filter = args[propName]
-      searcher.filter(propName, filter.operation, filter.value)
+      searcher.filter(propName, filter.operation, ...filter.values)
     }
     return searcher.search()
   }
