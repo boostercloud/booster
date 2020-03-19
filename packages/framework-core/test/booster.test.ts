@@ -13,6 +13,7 @@ import { replace, fake, restore } from 'sinon'
 import { Importer } from '../src/importer'
 import { BoosterReadModelFetcher } from '../src/booster-read-model-fetcher'
 import * as EntitySnapshotFetcher from '../src/entity-snapshot-fetcher'
+import { UUID } from '@boostercloud/framework-types'
 
 chai.use(require('sinon-chai'))
 
@@ -70,12 +71,16 @@ describe('the `Booster` class', () => {
       replace(EntitySnapshotFetcher, 'fetchEntitySnapshot', fake())
       const booster = Booster as any
 
-      await Booster.fetchEntitySnapshot('SomeEntity', '42')
+      class SomeEntity {
+        public constructor(readonly id: UUID) {}
+      }
+
+      await Booster.fetchEntitySnapshot(SomeEntity, '42')
 
       expect(EntitySnapshotFetcher.fetchEntitySnapshot).to.have.been.calledOnceWith(
         booster.config,
         booster.logger,
-        'SomeEntity',
+        SomeEntity,
         '42'
       )
     })
