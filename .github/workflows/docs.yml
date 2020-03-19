@@ -1,4 +1,7 @@
-on: push
+on:
+  push:
+    branches:
+      - master
 name: Create Slate Documentation on Push
 jobs:
   action-filter:
