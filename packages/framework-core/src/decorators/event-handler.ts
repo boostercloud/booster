@@ -1,4 +1,4 @@
-import { EventInterface, EventHandlerInterface, Class } from '@boostercloud/framework-types'
+import { EventInterface, EventHandlerInterface, Class, BoosterConfig } from '@boostercloud/framework-types'
 import { Booster } from '../booster'
 
 export function EventHandler<TEvent extends EventInterface>(
@@ -11,7 +11,7 @@ function registerEventHandler<TEventHandler extends EventHandlerInterface>(
   eventName: string,
   eventHandlerClass: TEventHandler
 ): void {
-  Booster.configure((config): void => {
+  Booster.configureCurrentEnv((config: BoosterConfig): void => {
     const registeredEventHandlers = config.eventHandlers[eventName] || []
     if (registeredEventHandlers.some((klass: EventHandlerInterface) => klass == eventHandlerClass)) {
       return

@@ -14,6 +14,8 @@ export interface BoosterApp {
 
   configure(environment: string, configurator: (config: BoosterConfig) => void): void
 
+  configureCurrentEnv(configurator: (config: BoosterConfig) => void): void
+
   fetchEntitySnapshot<TEntity extends EntityInterface>(
     entityClass: Class<TEntity>,
     entityID: UUID

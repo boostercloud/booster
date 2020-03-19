@@ -4,11 +4,11 @@ import { expect } from 'chai'
 import { EventHandler } from '../../src/decorators/event-handler'
 import { Booster } from '../../src'
 import { Event } from '../../src/decorators/event'
-import { UUID, Register } from '@boostercloud/framework-types'
+import { UUID, Register, BoosterConfig } from '@boostercloud/framework-types'
 
 describe('the `EventHandler` decorator', () => {
   afterEach(() => {
-    Booster.configure((config) => {
+    Booster.configureCurrentEnv((config: BoosterConfig) => {
       for (const propName in config.eventHandlers) {
         delete config.eventHandlers[propName]
       }
