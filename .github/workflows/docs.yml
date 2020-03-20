@@ -2,20 +2,14 @@ on:
   push:
     branches:
       - master
+    paths:
+      - **.md
 name: Create Slate Documentation on Push
 jobs:
   action-filter:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@master
-      - name: action-filter
-        uses: actions/bin/filter@master
-        with:
-          args: branch master
-      - name: files-filter
-        uses: wcchristian/gh-pattern-filter-action@master
-        with:
-          args: .*\\.md$
       - name: Build documentation
         uses: docker://decathlon/slate-builder-action:2.0.0
         env:
