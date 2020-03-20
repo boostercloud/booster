@@ -12,13 +12,14 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Build documentation
-        uses: docker://decathlon/slate-builder-action:2.0.0
+        uses: docker://decathlon/slate-builder-action:latest
         env:
           DOC_BASE_FOLDER: ./docs/documentation
           ZIP_BUILD: false
           TEMPLATE_REPO: 'boostercloud/docs-site'
       - name: Deploy to GitHub Pages
-        uses: docker://maxheld83/ghpages@v0.2.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BUILD_DIR: ./docs/documentation/build
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          BRANCH: gh-pages
+          FOLDER: ./docs/documentation/build
