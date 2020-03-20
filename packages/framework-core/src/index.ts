@@ -9,10 +9,12 @@ export {
   boosterPreSignUpChecker,
 } from './booster'
 
-interface BoosterApp {
+export interface BoosterApp {
   start(): void
 
   configure(environment: string, configurator: (config: BoosterConfig) => void): void
+
+  configureCurrentEnv(configurator: (config: BoosterConfig) => void): void
 
   fetchEntitySnapshot(entityName: string, entityID: UUID): Promise<EntityInterface | null>
 }

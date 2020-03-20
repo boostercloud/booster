@@ -9,6 +9,7 @@ import { checkItIsABoosterProject } from '../../services/project-checker'
 
 export default class Type extends Oclif.Command {
   public static description = 'create a new type'
+
   public static flags = {
     help: Oclif.flags.help({ char: 'h' }),
     fields: Oclif.flags.string({
