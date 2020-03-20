@@ -4,6 +4,7 @@ on:
       - master
     paths:
       - '**.md'
+
 name: Create Slate Documentation on Push
 jobs:
   action-filter:
