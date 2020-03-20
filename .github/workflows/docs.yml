@@ -11,15 +11,14 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@master
-      - name: Build documentation
-        uses: docker://passfort/slate-builder-action:latest
-        env:
-          DOC_BASE_FOLDER: ./docs/documentation
-          ZIP_BUILD: false
-          TEMPLATE_REPO: 'boostercloud/docs-site'
+      - uses: actions/setup-ruby@v1
+        with:
+          ruby-version: '2.7'
+      - run: bundle install
+      - run: ./scripts/generate-docs.sh
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@releases/v3
         with:
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           BRANCH: gh-pages
-          FOLDER: ./docs/documentation/build
+          FOLDER: ./.docs/documentation/build
