@@ -58,7 +58,6 @@ Find step-by-step guides and example apps in the [Examples](docs/examples) secti
 If you have any question that's not covered by the documentation and examples, go ahead and ask the community in
 the [Booster Cloud Spectrum](https://spectrum.chat/boostercloud).
 
-
 ## Contributing
 
 Please refer to [`CONTRIBUTING.md`](CONTRIBUTING.md). Pull requests are welcome. For major changes, please

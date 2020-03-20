@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Build documentation
-        uses: docker://decathlon/slate-builder-action:latest
+        uses: docker://passfort/slate-builder-action:latest
         env:
           DOC_BASE_FOLDER: ./docs/documentation
           ZIP_BUILD: false
