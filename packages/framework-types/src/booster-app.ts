@@ -7,5 +7,6 @@ import { BoosterConfig, UUID, EntityInterface } from '.'
 export interface BoosterApp {
   start(): void
   configure(environment: string, configurator: (config: BoosterConfig) => void): void
+  configureCurrentEnv(configurator: (config: BoosterConfig) => void): void
   fetchEntitySnapshot(entityName: string, entityID: UUID): Promise<EntityInterface | null>
 }

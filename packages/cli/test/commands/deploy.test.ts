@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from 'chai'
 import { fancy } from 'fancy-test'
-import { stub, restore } from 'sinon'
+import { restore, fake } from 'sinon'
 import { Observable, Observer } from 'rxjs'
 import rewire = require('rewire')
 import { ProviderLibrary } from '@boostercloud/framework-types'
@@ -22,26 +22,25 @@ describe('deploy', () => {
     context('when an unexpected problem happens', () => {
       fancy.stdout().it('fails gracefully showing the error message', async (ctx) => {
         const fakeLoader = Promise.reject(new Error('weird exception'))
-        const fakeDeployer = stub()
+        const fakeDeployer = fake()
 
-        await runTasks(fakeLoader, fakeDeployer)
+        await runTasks('test-env', fakeLoader, fakeDeployer)
 
         expect(ctx.stdout).to.include('weird exception')
-
-        expect(fakeDeployer.called).to.equal(false)
+        expect(fakeDeployer).not.to.have.been.called
       })
     })
 
     context('when index.ts structure is not correct', () => {
       fancy.stdout().it('fails gracefully', async (ctx) => {
         const fakeLoader = Promise.reject(new Error('An error when loading project'))
-        const fakeDeployer = stub()
+        const fakeDeployer = fake()
 
-        await runTasks(fakeLoader, fakeDeployer)
+        await runTasks('test-env', fakeLoader, fakeDeployer)
 
         expect(ctx.stdout).to.include('An error when loading project')
 
-        expect(fakeDeployer.called).to.equal(false)
+        expect(fakeDeployer).not.to.have.been.called
       })
     })
 
@@ -56,18 +55,18 @@ describe('deploy', () => {
           entities: {},
         })
 
-        const fakeDeployer = stub().returns(
+        const fakeDeployer = fake.returns(
           Observable.create((obs: Observer<string>) => {
             obs.next('this is a progress update')
             obs.complete()
           })
         )
 
-        await runTasks(fakeLoader, fakeDeployer)
+        await runTasks('test-env', fakeLoader, fakeDeployer)
 
         expect(ctx.stdout).to.include('Deployment complete')
 
-        expect(fakeDeployer.called).to.equal(true)
+        expect(fakeDeployer).to.have.been.calledOnce
       })
     })
   })
