@@ -1,0 +1,29 @@
+on:
+  push:
+    branches:
+      - master
+name: Create Slate Documentation on Push
+jobs:
+  action-filter:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@master
+      - name: action-filter
+        uses: actions/bin/filter@master
+        with:
+          args: branch master
+      - name: files-filter
+        uses: wcchristian/gh-pattern-filter-action@master
+        with:
+          args: .*\\.md$
+      - name: Build documentation
+        uses: docker://decathlon/slate-builder-action:2.0.0
+        env:
+          DOC_BASE_FOLDER: ./docs/documentation
+          ZIP_BUILD: false
+          TEMPLATE_REPO: 'boostercloud/docs-site'
+      - name: Deploy to GitHub Pages
+        uses: docker://maxheld83/ghpages@v0.2.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILD_DIR: ./docs/documentation/build
