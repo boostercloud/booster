@@ -20,4 +20,4 @@ jobs:
         with:
           ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN_ACTION }}
           BRANCH: gh-pages
-          FOLDER: ./.docs/documentation/build
+          FOLDER: .docs/build
