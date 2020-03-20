@@ -10,7 +10,9 @@ jobs:
   action-filter:
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
       - uses: actions/setup-ruby@v1
         with:
           ruby-version: '2.7'
