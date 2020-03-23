@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from 'chai'
 import { Event, Entity, Reduces } from '../../src/decorators/'
-import { Booster } from '../../src/index'
+import { Booster } from '../../src'
 import { UUID } from '@boostercloud/framework-types'
 
 describe('the `Entity` decorator', () => {
@@ -19,7 +19,7 @@ describe('the `Entity` decorator', () => {
     })
   })
 
-  it('adds the entity class as an entity that reduces some commands', () => {
+  it('adds the entity class as an entity that reduces some comments', () => {
     @Event
     class CommentPosted {
       public constructor(readonly foo: string) {}
@@ -43,16 +43,6 @@ describe('the `Entity` decorator', () => {
 
     expect(booster.config.entities['Comment']).to.deep.equal({
       class: Comment,
-      properties: [
-        {
-          name: 'id',
-          type: UUID,
-        },
-        {
-          name: 'content',
-          type: String,
-        },
-      ],
     })
     expect(booster.config.reducers['CommentPosted']).to.deep.include({
       class: Comment,

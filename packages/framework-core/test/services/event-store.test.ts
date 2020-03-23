@@ -33,12 +33,12 @@ describe('EventStore', () => {
   }
 
   const config = new BoosterConfig()
-  config.provider = {
+  config.provider = ({
     storeEvent: () => {},
     readEntityLatestSnapshot: () => {},
     readEntityEventsSince: () => {},
-  } as unknown as ProviderLibrary
-  config.entities['ImportantConcept'] = { class: ImportantConcept, properties: [] }
+  } as any) as ProviderLibrary
+  config.entities['ImportantConcept'] = { class: ImportantConcept }
   config.reducers['ImportantEvent'] = {
     class: ImportantConcept,
     methodName: 'someHandler',
@@ -463,7 +463,12 @@ describe('EventStore', () => {
         const entityID = '42'
         await eventStore.loadLatestSnapshot(entityTypeName, entityID)
 
-        expect(config.provider.readEntityLatestSnapshot).to.have.been.calledOnceWith(config, logger, entityTypeName, entityID)
+        expect(config.provider.readEntityLatestSnapshot).to.have.been.calledOnceWith(
+          config,
+          logger,
+          entityTypeName,
+          entityID
+        )
       })
     })
 
