@@ -12,8 +12,8 @@ import {
   storeReadModel,
   rawReadModelRequestToEnvelope,
 } from './library/read-model-adapter'
-import { authorizeRequest, rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
-import { rawSignUpDataToUserEnvelope } from './library/auth-adapter'
+import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
+import { rawSignUpDataToUserEnvelope, authorizeRequest } from './library/auth-adapter'
 import { Kinesis, DynamoDB, CognitoIdentityServiceProvider } from 'aws-sdk'
 import { ProviderInfrastructure, ProviderLibrary } from '@boostercloud/framework-types'
 import { requestFailed, requestSucceeded } from './library/api-gateway-io'
