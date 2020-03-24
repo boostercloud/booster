@@ -87,10 +87,10 @@ describe('the user registry', () => {
         },
         password: faker.internet.password(),
       }
-      userRegistry.registeredUsers.find = stub().yields(null, [{ ...user, confirmed: true }])
+      userRegistry.registeredUsers.findOne = stub().yields(null, { ...user, confirmed: true })
       userRegistry.authenticatedUsers.insert = stub().yields(null, { ...user, confirmed: true })
       await userRegistry.signIn(user)
-      return expect(userRegistry.registeredUsers.find).to.have.been.called
+      return expect(userRegistry.registeredUsers.findOne).to.have.been.called
     })
 
     it('should insert users into the authenticated users database', async () => {
@@ -103,7 +103,7 @@ describe('the user registry', () => {
         },
         password: faker.internet.password(),
       }
-      userRegistry.registeredUsers.find = stub().yields(null, [{ ...user, confirmed: true }])
+      userRegistry.registeredUsers.findOne = stub().yields(null, { ...user, confirmed: true })
       userRegistry.authenticatedUsers.insert = stub().yields(null, { ...user, confirmed: true })
       await userRegistry.signIn(user)
       return expect(userRegistry.authenticatedUsers.insert).to.have.been.called
@@ -116,7 +116,7 @@ describe('the user registry', () => {
         password: faker.internet.password(),
         roles: [],
       }
-      userRegistry.registeredUsers.find = stub().yields(null, [])
+      userRegistry.registeredUsers.findOne = stub().yields(null, undefined)
       return expect(userRegistry.signIn(user)).to.be.rejectedWith(NotAuthorizedError)
     })
 
@@ -127,7 +127,7 @@ describe('the user registry', () => {
         password: faker.internet.password(),
         roles: [],
       }
-      userRegistry.registeredUsers.find = stub().yields(null, [{ ...user, confirmed: false }])
+      userRegistry.registeredUsers.findOne = stub().yields(null, { ...user, confirmed: false })
       return expect(userRegistry.signIn(user)).to.be.rejectedWith(NotAuthorizedError)
     })
 
@@ -140,7 +140,7 @@ describe('the user registry', () => {
       }
 
       const error = new Error(faker.random.words())
-      userRegistry.registeredUsers.find = stub().yields(error, null)
+      userRegistry.registeredUsers.findOne = stub().yields(error, null)
       return expect(userRegistry.signIn(user)).to.be.rejectedWith(error)
     })
   })

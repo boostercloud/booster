@@ -1,6 +1,6 @@
 import * as express from 'express'
 import { UserRegistry } from '@boostercloud/framework-provider-local'
-import { NotAuthorizedError, UserApp } from '@boostercloud/framework-types'
+import { UserApp } from '@boostercloud/framework-types'
 import { HttpCodes, requestFailed } from '../http'
 
 /**
@@ -59,7 +59,7 @@ export class AuthController {
         await this.userRegistry.signOut(token)
         res.status(HttpCodes.Ok).json()
       } else {
-        res.status(HttpCodes.NotAuthorized).json('accessToken field not set')
+        res.status(HttpCodes.BadRequest).json('accessToken field not set')
       }
     } catch (e) {
       await requestFailed(e, res)
