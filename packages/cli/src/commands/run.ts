@@ -1,5 +1,5 @@
 import { Command, flags } from '@oclif/command'
-import { runLocally } from '../services/provider-service'
+import { runProvider } from '../services/provider-service'
 import { compileProjectAndLoadConfig } from '../services/config-service'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { Script } from '../common/script'
@@ -14,8 +14,8 @@ const runTasks = async (
     .step(`Running debugging server on port ${port}`, runner)
     .done()
 
-export default class Debug extends Command {
-  public static description = 'Debug the current application locally, as configured in your `index.ts` file.'
+export default class Run extends Command {
+  public static description = 'Run the current application locally, as configured in your configuration files.'
 
   public static flags = {
     help: flags.help({ char: 'h' }),
@@ -24,11 +24,16 @@ export default class Debug extends Command {
       description: 'port to run the local runtime on',
       default: 3000,
     }),
+    environment: flags.string({
+      char: 'e',
+      description: 'environment configuration to run',
+      default: 'development',
+    }),
   }
 
   public async run(): Promise<void> {
-    const { flags } = this.parse(Debug)
-    process.env.BOOSTER_ENV = 'development'
-    await runTasks(flags.port, compileProjectAndLoadConfig(), (cfg) => runLocally(flags.port, cfg))
+    const { flags } = this.parse(Run)
+    process.env.BOOSTER_ENV = flags.environment
+    await runTasks(flags.port, compileProjectAndLoadConfig(), runProvider.bind(null, flags.port))
   }
 }
