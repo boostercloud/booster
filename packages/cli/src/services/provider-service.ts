@@ -1,6 +1,5 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { Observable } from 'rxjs'
-import * as LocalRuntimeInfrastructure from '@boostercloud/framework-provider-local-infrastructure'
 
 export function assertNameIsCorrect(name: string): void {
   // It is 55 because cloudformations max length is 63.
@@ -25,12 +24,24 @@ export function assertNameIsCorrect(name: string): void {
 
 export const deployToCloudProvider = (config: BoosterConfig): Observable<string> => {
   assertNameIsCorrect(config.appName)
-  return config.provider.getInfrastructure().deploy(config)
+  const deployMethod = config.provider.getInfrastructure().deploy
+  if (!deployMethod) {
+    throw new Error(
+      'Attempted to deploy with a provider that does not support deploying the project, perhaps you meant `boost run`?'
+    )
+  }
+  return deployMethod(config)
 }
 
-export async function runLocally(port: number, config: BoosterConfig): Promise<void> {
+export async function runProvider(port: number, config: BoosterConfig): Promise<void> {
   assertNameIsCorrect(config.appName)
-  return Promise.resolve(LocalRuntimeInfrastructure.run(config, port))
+  const runMethod = config.provider.getInfrastructure().run
+  if (!runMethod) {
+    throw new Error(
+      'Attempted to run with a provider that is does not support running the project, perhaps you meant `boost deploy`?'
+    )
+  }
+  return Promise.resolve(runMethod(config, port))
 }
 
 export const nukeCloudProviderResources = (config: BoosterConfig): Observable<string> => {
