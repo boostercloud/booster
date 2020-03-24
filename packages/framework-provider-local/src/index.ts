@@ -4,7 +4,7 @@ import { rawCommandToEnvelope, handleCommandResult, handleCommandError } from '.
 import { UserRegistry, EventRegistry } from './services'
 
 export { User, LoginCredentials, SignUpUser, RegisteredUser, AuthenticatedUser } from './library/auth-adapter'
-export * from './constants'
+export * from './paths'
 export * from './services'
 export { CommandResult } from './library/commands-adapter'
 
