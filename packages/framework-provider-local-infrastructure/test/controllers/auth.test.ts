@@ -5,25 +5,27 @@ import * as chai from 'chai'
 import * as sinonChai from 'sinon-chai'
 import { mockRes, mockReq } from 'sinon-express-mock'
 import * as faker from 'faker'
-import { stub } from 'sinon'
+import { stub, restore } from 'sinon'
 import { expect } from 'chai'
 import { UserApp } from '@boostercloud/framework-types'
 
 chai.use(sinonChai)
 
 describe('the auth controller', () => {
-  const userRegistry = ({
-    signIn: stub().resolves('fake-token'),
-    signUp: stub().resolvesArg(0),
-    signOut: stub().resolves(),
-    confirmUser: stub().resolves(),
-  } as any) as UserRegistry
-
+  beforeEach(() => {
+    restore()
+  })
   const userApp = ({ boosterPreSignUpChecker: stub().resolves() } as unknown) as UserApp
-  const controller = new AuthController(3000, userRegistry, userApp)
 
   describe('/sign-up', () => {
     it('should return status 200 if the request is correct', async () => {
+      const userRegistry = ({
+        signIn: stub().resolves('fake-token'),
+        signUp: stub().resolvesArg(0),
+        signOut: stub().resolves(),
+        confirmUser: stub().resolves(),
+      } as any) as UserRegistry
+      const controller = new AuthController(3000, userRegistry, userApp)
       const user = {
         clientId: faker.random.uuid(),
         username: faker.internet.email(),
@@ -35,10 +37,17 @@ describe('the auth controller', () => {
       const req = mockReq({ body: user })
       const res = mockRes()
       await controller.signUp(req, res, stub())
-      expect(res.status).to.be.calledWith(200)
+      expect(res.status).to.be.calledOnceWith(200)
     })
 
     it('should call userRegistry.signUp if the request is correct', async () => {
+      const userRegistry = ({
+        signIn: stub().resolves('fake-token'),
+        signUp: stub().resolvesArg(0),
+        signOut: stub().resolves(),
+        confirmUser: stub().resolves(),
+      } as any) as UserRegistry
+      const controller = new AuthController(3000, userRegistry, userApp)
       const user = {
         clientId: faker.random.uuid(),
         username: faker.internet.email(),
@@ -50,19 +59,33 @@ describe('the auth controller', () => {
       const req = mockReq({ body: user })
       const res = mockRes()
       await controller.signUp(req, res, stub())
-      expect(userRegistry.signUp).to.be.calledWith(user)
+      expect(userRegistry.signUp).to.be.calledOnceWith(user)
     })
 
     it('should return a status 400 on malformed requests', async () => {
+      const userRegistry = ({
+        signIn: stub().resolves('fake-token'),
+        signUp: stub().resolvesArg(0),
+        signOut: stub().resolves(),
+        confirmUser: stub().resolves(),
+      } as any) as UserRegistry
+      const controller = new AuthController(3000, userRegistry, userApp)
       const req = mockReq({ body: faker.hacker.phrase() })
       const res = mockRes()
       await controller.signUp(req, res, stub())
-      expect(res.status).to.be.calledWith(400)
+      expect(res.status).to.be.calledOnceWith(400)
     })
   })
 
   describe('/sign-in', () => {
     it('should return status 200 for well formed requests', async () => {
+      const userRegistry = ({
+        signIn: stub().resolves('fake-token'),
+        signUp: stub().resolvesArg(0),
+        signOut: stub().resolves(),
+        confirmUser: stub().resolves(),
+      } as any) as UserRegistry
+      const controller = new AuthController(3000, userRegistry, userApp)
       const user = {
         clientId: faker.random.uuid(),
         username: faker.internet.email(),
@@ -71,10 +94,17 @@ describe('the auth controller', () => {
       const req = mockReq({ body: user })
       const res = mockRes()
       await controller.signIn(req, res, stub())
-      expect(res.status).to.be.calledWith(200)
+      expect(res.status).to.be.calledOnceWith(200)
     })
 
     it('should call userRegistry.signIn well formed requests', async () => {
+      const userRegistry = ({
+        signIn: stub().resolves('fake-token'),
+        signUp: stub().resolvesArg(0),
+        signOut: stub().resolves(),
+        confirmUser: stub().resolves(),
+      } as any) as UserRegistry
+      const controller = new AuthController(3000, userRegistry, userApp)
       const user = {
         clientId: faker.random.uuid(),
         username: faker.internet.email(),
@@ -83,19 +113,33 @@ describe('the auth controller', () => {
       const req = mockReq({ body: user })
       const res = mockRes()
       await controller.signIn(req, res, stub())
-      expect(userRegistry.signIn).to.be.calledWith(user)
+      expect(userRegistry.signIn).to.be.calledOnceWith(user)
     })
 
     it('should return status 400 on malformed requests', async () => {
+      const userRegistry = ({
+        signIn: stub().resolves('fake-token'),
+        signUp: stub().resolvesArg(0),
+        signOut: stub().resolves(),
+        confirmUser: stub().resolves(),
+      } as any) as UserRegistry
+      const controller = new AuthController(3000, userRegistry, userApp)
       const req = mockReq({ body: faker.hacker.phrase() })
       const res = mockRes()
       await controller.signIn(req, res, stub())
-      expect(res.status).to.be.calledWith(400)
+      expect(res.status).to.be.calledOnceWith(400)
     })
   })
 
   describe('/sign-out', () => {
     it('should return status 200 on well formed requests', async () => {
+      const userRegistry = ({
+        signIn: stub().resolves('fake-token'),
+        signUp: stub().resolvesArg(0),
+        signOut: stub().resolves(),
+        confirmUser: stub().resolves(),
+      } as any) as UserRegistry
+      const controller = new AuthController(3000, userRegistry, userApp)
       const token = faker.random.uuid()
       const request = {
         body: {
@@ -105,10 +149,17 @@ describe('the auth controller', () => {
       const req = mockReq(request)
       const res = mockRes()
       await controller.signOut(req, res, stub())
-      expect(res.status).to.be.calledWith(200)
+      expect(res.status).to.be.calledOnceWith(200)
     })
 
     it('should call userRegistry.signOut on well formed requests', async () => {
+      const userRegistry = ({
+        signIn: stub().resolves('fake-token'),
+        signUp: stub().resolvesArg(0),
+        signOut: stub().resolves(),
+        confirmUser: stub().resolves(),
+      } as any) as UserRegistry
+      const controller = new AuthController(3000, userRegistry, userApp)
       const token = faker.random.uuid()
       const request = {
         body: {
@@ -118,19 +169,33 @@ describe('the auth controller', () => {
       const req = mockReq(request)
       const res = mockRes()
       await controller.signOut(req, res, stub())
-      expect(userRegistry.signOut).to.be.calledWith(token)
+      expect(userRegistry.signOut).to.be.calledOnceWith(token)
     })
 
     it('should return status 400 on malformed requests', async () => {
+      const userRegistry = ({
+        signIn: stub().resolves('fake-token'),
+        signUp: stub().resolvesArg(0),
+        signOut: stub().resolves(),
+        confirmUser: stub().resolves(),
+      } as any) as UserRegistry
+      const controller = new AuthController(3000, userRegistry, userApp)
       const req = mockReq({ body: faker.hacker.phrase() })
       const res = mockRes()
       await controller.signOut(req, res, stub())
-      expect(res.status).to.be.calledWith(400)
+      expect(res.status).to.be.calledOnceWith(400)
     })
   })
 
   describe('/confirm', () => {
     it('should return status 200 on well formed requests', async () => {
+      const userRegistry = ({
+        signIn: stub().resolves('fake-token'),
+        signUp: stub().resolvesArg(0),
+        signOut: stub().resolves(),
+        confirmUser: stub().resolves(),
+      } as any) as UserRegistry
+      const controller = new AuthController(3000, userRegistry, userApp)
       const request = {
         params: {
           email: faker.internet.email(),
@@ -139,10 +204,17 @@ describe('the auth controller', () => {
       const req = mockReq(request)
       const res = mockRes()
       await controller.confirmUser(req, res, stub())
-      expect(res.status).to.be.calledWith(200)
+      expect(res.status).to.be.calledOnceWith(200)
     })
 
     it('should call userRegistry.confirmUser on well formed requests', async () => {
+      const userRegistry = ({
+        signIn: stub().resolves('fake-token'),
+        signUp: stub().resolvesArg(0),
+        signOut: stub().resolves(),
+        confirmUser: stub().resolves(),
+      } as any) as UserRegistry
+      const controller = new AuthController(3000, userRegistry, userApp)
       const email = faker.internet.email()
       const request = {
         params: {
@@ -152,14 +224,21 @@ describe('the auth controller', () => {
       const req = mockReq(request)
       const res = mockRes()
       await controller.confirmUser(req, res, stub())
-      expect(userRegistry.confirmUser).to.be.calledWith(email)
+      expect(userRegistry.confirmUser).to.be.calledOnceWith(email)
     })
 
     it('should return status 400 on malformed requests', async () => {
+      const userRegistry = ({
+        signIn: stub().resolves('fake-token'),
+        signUp: stub().resolvesArg(0),
+        signOut: stub().resolves(),
+        confirmUser: stub().resolves(),
+      } as any) as UserRegistry
+      const controller = new AuthController(3000, userRegistry, userApp)
       const req = mockReq({ body: faker.hacker.phrase() })
       const res = mockRes()
       await controller.confirmUser(req, res, stub())
-      expect(res.status).to.be.calledWith(400)
+      expect(res.status).to.be.calledOnceWith(400)
     })
   })
 })
