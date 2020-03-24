@@ -1,7 +1,7 @@
 import * as express from 'express'
 import { UserRegistry } from '@boostercloud/framework-provider-local'
 import { NotAuthorizedError, UserApp } from '@boostercloud/framework-types'
-import { HttpCodes } from '../http'
+import { HttpCodes, requestFailed } from '../http'
 
 /**
  * This controller provides the sign up method, in order for the
@@ -33,6 +33,7 @@ export class AuthController {
           .json('The request body should have the `username`, `password` and `userAttributes` fields set')
       }
     } catch (e) {
+      await requestFailed(e, res)
       next(e)
     }
   }
@@ -46,9 +47,7 @@ export class AuthController {
         res.status(HttpCodes.BadRequest).json('The request body should have the `username` and `password` fields set')
       }
     } catch (e) {
-      if (e.name == NotAuthorizedError.name) {
-        res.status(HttpCodes.NotAuthorized).json(e.message)
-      }
+      await requestFailed(e, res)
       next(e)
     }
   }
@@ -63,6 +62,7 @@ export class AuthController {
         res.status(HttpCodes.NotAuthorized).json('accessToken field not set')
       }
     } catch (e) {
+      await requestFailed(e, res)
       next(e)
     }
   }
@@ -77,9 +77,7 @@ export class AuthController {
         res.status(HttpCodes.BadRequest).json('GET params must include the email of the user')
       }
     } catch (e) {
-      if (e.name == NotAuthorizedError.name) {
-        res.status(HttpCodes.NotAuthorized).json(e.message)
-      }
+      await requestFailed(e, res)
       next(e)
     }
   }

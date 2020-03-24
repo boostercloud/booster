@@ -1,7 +1,7 @@
 import * as express from 'express'
 import { UserApp } from '@boostercloud/framework-types'
 import { CommandResult } from '@boostercloud/framework-provider-local'
-import { HttpCodes } from '../http'
+import { HttpCodes, requestFailed } from '../http'
 
 export class CommandsController {
   public router: express.Router = express.Router()
@@ -28,6 +28,7 @@ export class CommandsController {
           })
       }
     } catch (e) {
+      await requestFailed(e, res)
       next(e)
     }
   }
