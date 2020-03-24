@@ -1,13 +1,13 @@
 import { UUID, NotAuthorizedError } from '@boostercloud/framework-types'
 import * as DataStore from 'nedb'
-import { registeredUsersDatabase, authenticatedUsersDatabase } from '../constants'
+import { registeredUsersDatabase, authenticatedUsersDatabase } from '../paths'
 import { RegisteredUser, AuthenticatedUser, SignUpUser, LoginCredentials } from '../library/auth-adapter'
 import { UserEnvelope } from '@boostercloud/framework-types'
 
 export class UserRegistry {
   public readonly registeredUsers: DataStore<RegisteredUser> = new DataStore(registeredUsersDatabase)
   public readonly authenticatedUsers: DataStore<AuthenticatedUser> = new DataStore(authenticatedUsersDatabase)
-  constructor() {
+  public constructor() {
     this.registeredUsers.loadDatabase()
     this.authenticatedUsers.loadDatabase()
   }
@@ -23,9 +23,8 @@ export class UserRegistry {
   }
 
   public async signIn(user: LoginCredentials): Promise<UUID> {
-    const registeredMatches = await this.getRegisteredUsersByEmail(user.username)
-    const match = registeredMatches?.[0]
-    if (!match || !this.passwordsMatch(user, match)) {
+    const match = await this.getUserByCredentials(user)
+    if (!match) {
       throw new NotAuthorizedError('Incorrect username or password')
     }
     if (!match.confirmed) {
@@ -68,6 +67,14 @@ export class UserRegistry {
     })
   }
 
+  private async getUserByCredentials(user: LoginCredentials): Promise<RegisteredUser | undefined> {
+    return new Promise((resolve, reject) => {
+      this.registeredUsers.findOne({ ...user }, (err, doc) => {
+        err ? reject(err) : resolve(doc)
+      })
+    })
+  }
+
   public async getAuthenticatedUser(token: string): Promise<UserEnvelope> {
     return new Promise((resolve: (value: UserEnvelope) => void, reject) => {
       this.authenticatedUsers.findOne({ token }, (err, doc) => {
@@ -87,9 +94,5 @@ export class UserRegistry {
         }
       })
     })
-  }
-
-  private passwordsMatch(credentials: LoginCredentials, registered: RegisteredUser): boolean {
-    return registered.password === credentials.password
   }
 }
