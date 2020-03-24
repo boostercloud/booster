@@ -4,6 +4,7 @@ import { AuthController } from './controllers/auth'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import path = require('path')
 import { CommandsController } from './controllers/commands'
+import { HttpCodes } from './http'
 
 /**
  * `deploy` serves as the entry point for the local provider. Even though
@@ -40,5 +41,5 @@ export function defaultErrorHandler(
     return next(err)
   }
   console.error(err)
-  res.status(500).json(err)
+  res.status(HttpCodes.InternalError).json(err)
 }

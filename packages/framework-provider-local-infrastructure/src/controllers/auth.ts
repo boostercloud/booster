@@ -1,6 +1,7 @@
 import * as express from 'express'
 import { UserRegistry } from '@boostercloud/framework-provider-local'
 import { NotAuthorizedError, UserApp } from '@boostercloud/framework-types'
+import { HttpCodes } from '../http'
 
 /**
  * This controller provides the sign up method, in order for the
@@ -25,9 +26,11 @@ export class AuthController {
         console.info(
           `To confirm the user, use the following link: http://localhost:${this.port}/auth/confirm/${user.username}`
         )
-        res.status(200).json()
+        res.status(HttpCodes.Ok).json()
       } else {
-        res.status(400).json('The request body should have the `username`, `password` and `userAttributes` fields set')
+        res
+          .status(HttpCodes.BadRequest)
+          .json('The request body should have the `username`, `password` and `userAttributes` fields set')
       }
     } catch (e) {
       next(e)
@@ -38,13 +41,13 @@ export class AuthController {
     try {
       if (req.body?.username && req.body?.password) {
         const token = await this.userRegistry.signIn(req.body)
-        res.status(200).json(token)
+        res.status(HttpCodes.Ok).json(token)
       } else {
-        res.status(400).json('The request body should have the `username` and `password` fields set')
+        res.status(HttpCodes.BadRequest).json('The request body should have the `username` and `password` fields set')
       }
     } catch (e) {
       if (e.name == NotAuthorizedError.name) {
-        res.status(403).json(e.message)
+        res.status(HttpCodes.NotAuthorized).json(e.message)
       }
       next(e)
     }
@@ -55,9 +58,9 @@ export class AuthController {
       const token = req.body?.accessToken
       if (token) {
         await this.userRegistry.signOut(token)
-        res.status(200).json()
+        res.status(HttpCodes.Ok).json()
       } else {
-        res.status(400).json('accessToken field not set')
+        res.status(HttpCodes.NotAuthorized).json('accessToken field not set')
       }
     } catch (e) {
       next(e)
@@ -69,13 +72,13 @@ export class AuthController {
       const email = req.params?.email
       if (email) {
         await this.userRegistry.confirmUser(email)
-        res.status(200).json('User confirmed!')
+        res.status(HttpCodes.Ok).json('User confirmed!')
       } else {
-        res.status(400).json('GET params must include the email of the user')
+        res.status(HttpCodes.BadRequest).json('GET params must include the email of the user')
       }
     } catch (e) {
       if (e.name == NotAuthorizedError.name) {
-        res.status(403).json(e.message)
+        res.status(HttpCodes.NotAuthorized).json(e.message)
       }
       next(e)
     }

@@ -1,6 +1,7 @@
 import * as express from 'express'
 import { UserApp } from '@boostercloud/framework-types'
 import { CommandResult } from '@boostercloud/framework-provider-local'
+import { HttpCodes } from '../http'
 
 export class CommandsController {
   public router: express.Router = express.Router()
@@ -18,7 +19,7 @@ export class CommandsController {
       })
       switch (result.status) {
         case 'success':
-          res.status(200).json(result.result)
+          res.status(HttpCodes.Ok).json(result.result)
           break
         case 'failure':
           res.status(result.code).json({
