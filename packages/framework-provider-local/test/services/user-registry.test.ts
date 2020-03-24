@@ -163,4 +163,57 @@ describe('the user registry', () => {
       return expect(userRegistry.signOut(mockToken)).to.have.be.rejectedWith(error)
     })
   })
+
+  describe('the getAuthenticatedUser method', () => {
+    it('should fail if the authenticatedUsers database fails', () => {
+      const userRegistry = new UserRegistry()
+      const error = new Error(faker.random.words())
+      userRegistry.authenticatedUsers.findOne = stub().yields(error, null)
+      const mockToken = faker.random.uuid()
+      return expect(userRegistry.getAuthenticatedUser(mockToken)).to.have.be.rejectedWith(error)
+    })
+
+    it('should fail if the registeredUsers database fails', () => {
+      const userRegistry = new UserRegistry()
+      const error = new Error(faker.random.words())
+      userRegistry.authenticatedUsers.findOne = stub().yields(error, null)
+      const mockToken = faker.random.uuid()
+      return expect(userRegistry.getAuthenticatedUser(mockToken)).to.have.be.rejectedWith(error)
+    })
+
+    it('should retrieve the user data properly', async () => {
+      const user = {
+        clientId: faker.random.uuid(),
+        username: faker.internet.email(),
+        userAttributes: {
+          roles: [],
+        },
+        password: faker.internet.password(),
+      }
+      const userRegistry = new UserRegistry()
+      userRegistry.authenticatedUsers.findOne = stub().yields(null, user)
+      userRegistry.registeredUsers.findOne = stub().yields(null, user)
+      const mockToken = faker.random.uuid()
+      const retrievedUser = await userRegistry.getAuthenticatedUser(mockToken)
+      expect(userRegistry.authenticatedUsers.findOne).to.have.been.called
+      expect(userRegistry.registeredUsers.findOne).to.have.been.called
+      expect(retrievedUser).to.deep.equal({ email: user.username, roles: user.userAttributes.roles })
+    })
+  })
+
+  describe('the confirmUser method', () => {
+    it('should fail if the database fails', () => {
+      const userRegistry = new UserRegistry()
+      const error = new Error(faker.random.words())
+      userRegistry.registeredUsers.update = stub().yields(error, null)
+      const username = faker.random.word()
+      return expect(userRegistry.confirmUser(username)).to.have.be.rejectedWith(error)
+    })
+    it('should call the update method of the database', async () => {
+      const userRegistry = new UserRegistry()
+      userRegistry.registeredUsers.update = stub().yields(null, [])
+      await userRegistry.confirmUser(faker.random.word())
+      return expect(userRegistry.registeredUsers.update).to.have.be.called
+    })
+  })
 })
