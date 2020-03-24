@@ -1,6 +1,6 @@
 import { EventEnvelope } from '@boostercloud/framework-types'
 import * as DataStore from 'nedb'
-import { eventsDatabase } from '../constants'
+import { eventsDatabase } from '../paths'
 
 export class EventRegistry {
   public readonly events: DataStore<EventEnvelope> = new DataStore(eventsDatabase)
