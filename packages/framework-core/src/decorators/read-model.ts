@@ -1,4 +1,4 @@
-import { Class, ReadModelInterface, RoleAccess, PropertyMetadata } from '@boostercloud/framework-types'
+import { Class, AnyClass, ReadModelInterface, RoleAccess, PropertyMetadata } from '@boostercloud/framework-types'
 import { Booster } from '../booster'
 
 /**
@@ -26,10 +26,13 @@ function getPropertiesMetadata(classType: Class<any>): Array<PropertyMetadata> {
   const propertyNames = Object.getOwnPropertyNames(new classType())
   const propertyTypes = Reflect.getMetadata('design:paramtypes', classType)
   if (propertyNames.length != propertyTypes.length) {
-    throw new Error(
-      `Could not get metadata of entity ${classType.name}: the number of property names ` +
-      'does not match the number of inferred property types'
-    )
+    // eslint-disable-next-line prettier/prettier
+    throw new Error(`Could not get proper metadata information of ${classType.name}. While inspecting the class, the following properties were found:
+> ${propertyNames.join(', ')}
+But its constructor parameters have the following types:
+> ${propertyTypes.map((type: AnyClass) => type.name).join(', ')}
+They mismatch. Make sure you define all properties as "constructor parameter properties" (see https://www.typescriptlang.org/docs/handbook/classes.html#parameter-properties)
+`)
   }
 
   return propertyNames.map((propertyName, index) => ({
