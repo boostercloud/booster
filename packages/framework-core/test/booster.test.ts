@@ -8,6 +8,8 @@ import {
   boosterEventDispatcher,
   boosterReadModelMapper,
   boosterPreSignUpChecker,
+  boosterServeGraphQL,
+  boosterRequestAuthorizer,
 } from '../src/booster'
 import { replace, fake, restore } from 'sinon'
 import { Importer } from '../src/importer'
@@ -118,5 +120,27 @@ describe('the public static function `boosterPreSignUpChecker`', () => {
     await boosterPreSignUpChecker(message)
 
     expect(Booster.checkSignUp).to.have.been.calledOnceWith(message)
+  })
+})
+
+describe('the public static function `boosterServeGraphQL`', () => {
+  it('calls `Booster.serveGraphQL` passing the rawMessage', async () => {
+    replace(Booster, 'serveGraphQL', fake())
+    const message = { body: 'Test body' }
+
+    await boosterServeGraphQL(message)
+
+    expect(Booster.serveGraphQL).to.have.been.calledOnceWith(message)
+  })
+})
+
+describe('the public static function `boosterRequestAuthorizer`', () => {
+  it('calls `Booster.authorizeRequest` passing the rawMessage', async () => {
+    replace(Booster, 'authorizeRequest', fake())
+    const message = { body: 'Test body' }
+
+    await boosterRequestAuthorizer(message)
+
+    expect(Booster.authorizeRequest).to.have.been.calledOnceWith(message)
   })
 })
