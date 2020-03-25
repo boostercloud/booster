@@ -16,13 +16,6 @@ describe('the `BoosterGraphQLDispatcher`', () => {
   afterEach(() => {
     restore()
   })
-  //   Booster.configure((config) => {
-  //     config.appName = ''
-  //     for (const propName in config.commandHandlers) {
-  //       delete config.commandHandlers[propName]
-  //     }
-  //   })
-  // })
 
   describe('the `dispatchGraphQL` method', () => {
     it('calls the provider "handleGraphQLError" when there is an empty body', async () => {
