@@ -35,6 +35,8 @@
     "packages/framework-types",
     "packages/framework-provider-aws",
     "packages/framework-provider-aws-infrastructure",
+    "packages/framework-provider-local",
+    "packages/framework-provider-local-infrastructure",
     "packages/framework-core",
     "packages/cli",
     "packages/framework-example"

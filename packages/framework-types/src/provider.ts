@@ -59,6 +59,7 @@ export interface ProviderAuthLibrary {
 }
 
 export interface ProviderInfrastructure {
-  deploy(configuration: BoosterConfig): Observable<string>
+  deploy?: (configuration: BoosterConfig) => Observable<string>
+  run?: (configuration: BoosterConfig, port: number) => Promise<void>
   nuke(configuration: BoosterConfig): Observable<string>
 }

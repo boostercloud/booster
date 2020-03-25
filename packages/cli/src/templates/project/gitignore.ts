@@ -9,4 +9,5 @@ node_modules
 *.tsbuildinfo
 .idea
 coverage
+.booster
 `
