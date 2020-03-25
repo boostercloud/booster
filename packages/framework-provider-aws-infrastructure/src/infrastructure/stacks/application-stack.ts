@@ -51,7 +51,7 @@ export class ApplicationStackBuilder {
   }
 
   private buildRootWebSocketAPI(stack: Stack): CfnApi {
-    const localID = this.config.resourceNames.applicationStack + '-graphql-api'
+    const localID = this.config.resourceNames.applicationStack + '-websocket-api'
     const rootAPI = new CfnApi(stack, localID, {
       name: localID,
       protocolType: 'WEBSOCKET',

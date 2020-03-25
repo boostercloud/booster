@@ -36,14 +36,13 @@ export class GraphQLStack {
   }
 
   private buildLambda(name: string, handler: string): Function {
-    const localID = `${this.config.resourceNames.applicationStack}-${name}`
-    const lambda = new Function(this.stack, localID, {
+    const lambda = new Function(this.stack, name, {
       ...params.lambda,
-      functionName: localID,
+      functionName: `${this.config.resourceNames.applicationStack}-${name}`,
       handler: handler,
       code: Code.fromAsset(this.config.userProjectRootPath),
     })
-    lambda.addPermission(localID + '-invocation-permission', {
+    lambda.addPermission(name + '-invocation-permission', {
       principal: new ServicePrincipal('apigateway.amazonaws.com'),
     })
 
@@ -62,7 +61,7 @@ export class GraphQLStack {
   }
 
   private buildLambdaIntegration(lambda: Function): CfnIntegration {
-    const localId = this.config.resourceNames.applicationStack + '-graphql-handler-integration'
+    const localId = 'graphql-handler-integration'
     const integration = new CfnIntegration(this.stack, localId, {
       apiId: this.websocketAPI.ref,
       integrationType: 'AWS_PROXY',
@@ -81,8 +80,8 @@ export class GraphQLStack {
   }
 
   private buildMockIntegration(): CfnIntegration {
-    const integrationLocalId = this.config.resourceNames.applicationStack + '-graphql-mock-integration'
-    const integration = new CfnIntegration(this.stack, integrationLocalId, {
+    const localID = 'graphql-mock-integration'
+    const integration = new CfnIntegration(this.stack, localID, {
       apiId: this.websocketAPI.ref,
       integrationType: 'MOCK',
       templateSelectionExpression: '200',
@@ -95,7 +94,7 @@ export class GraphQLStack {
   }
 
   private buildRoute(routeKey: string, integration: CfnIntegration, authorizer?: CfnAuthorizer): CfnRoute {
-    const localID = `${this.config.resourceNames.applicationStack}-route-${routeKey}`
+    const localID = `route-${routeKey}`
     const route = new CfnRoute(this.stack, localID, {
       apiId: this.websocketAPI.ref,
       routeKey: routeKey,
@@ -110,7 +109,7 @@ export class GraphQLStack {
   }
 
   private buildRouteResponse(route: CfnRoute, integration: CfnIntegration): void {
-    const localID = `${this.config.resourceNames.applicationStack}-route-${route}-response`
+    const localID = `route-${route}-response`
     const routeResponse = new CfnRouteResponse(this.stack, localID, {
       apiId: this.websocketAPI.ref,
       routeId: route.ref,
@@ -118,7 +117,7 @@ export class GraphQLStack {
     })
     routeResponse.addDependsOn(route)
 
-    const integrationResponseLocalId = this.config.resourceNames.applicationStack + '-graphql-mock-integration-response'
+    const integrationResponseLocalId = 'graphql-mock-integration-response'
     const integrationResponse = new CfnIntegrationResponse(this.stack, integrationResponseLocalId, {
       integrationId: integration.ref,
       apiId: this.websocketAPI.ref,
@@ -128,7 +127,7 @@ export class GraphQLStack {
   }
 
   private buildWebsocketAuthorizer(lambda: Function): CfnAuthorizer {
-    const localID = this.config.resourceNames.applicationStack + '-websocket-authorizer'
+    const localID = 'websocket-authorizer'
     return new CfnAuthorizer(this.stack, localID, {
       apiId: this.websocketAPI.ref,
       authorizerType: 'REQUEST',
@@ -155,7 +154,7 @@ export class GraphQLStack {
   }
 
   private buildRESTAuthorizer(lambda: Function): RequestAuthorizer {
-    const localID = this.config.resourceNames.applicationStack + '-rest-authorizer'
+    const localID = 'rest-authorizer'
     return new RequestAuthorizer(this.stack, localID, {
       handler: lambda,
       resultsCacheTtl: Duration.seconds(0),
