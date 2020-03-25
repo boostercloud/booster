@@ -61,7 +61,7 @@ export class GraphQLStack {
   }
 
   private buildLambdaIntegration(lambda: Function): CfnIntegration {
-    const localId = 'graphql-handler-integration'
+    const localID = 'graphql-handler-integration'
     const integration = new CfnIntegration(this.stack, localId, {
       apiId: this.websocketAPI.ref,
       integrationType: 'AWS_PROXY',
