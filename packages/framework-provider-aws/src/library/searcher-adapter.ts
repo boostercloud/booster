@@ -15,13 +15,11 @@ export async function searchReadModel(
   const filterExpressionNames = buildExpressionAttributeNames(filters)
   const filterExpressionValues = buildExpressionAttributeValues(filters)
   logger.debug(
-    'Running search: \n' + '> Filter expression = "',
-    filterExpression,
-    '"\n' + '> Expression names = "',
-    filterExpressionNames,
-    '"\n' + '> Expression values = "',
-    filterExpressionValues,
-    '"'
+    // eslint-disable-next-line prettier/prettier
+    'Running search: \n' +
+    '> Filter expression = "', filterExpression, '"\n' +
+    '> Expression names = "', filterExpressionNames, '"\n' +
+    '> Expression values = "', filterExpressionValues, '"'
   )
 
   const result = await dynamoDB
