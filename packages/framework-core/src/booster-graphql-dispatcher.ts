@@ -20,13 +20,14 @@ export class BoosterGraphQLDispatcher {
         case 'CONNECT': // TODO: This message is never coming now. Check this later to see if it is finally needed
           return this.config.provider.handleGraphQLResult()
         case 'MESSAGE':
-          return this.handleMessage(envelope)
+          return this.config.provider.handleGraphQLResult(await this.handleMessage(envelope))
         case 'DISCONNECT':
           return this.config.provider.handleGraphQLResult()
         default:
           throw new Error(`Unknown message type ${envelope.eventType}`)
       }
     } catch (e) {
+      this.logger.error(e)
       return this.config.provider.handleGraphQLError(e)
     }
   }
@@ -40,11 +41,9 @@ export class BoosterGraphQLDispatcher {
     const result = await graphql(this.graphQLSchema, envelope.value)
     this.logger.debug('GraphQL result: ', result)
     if (result.errors) {
-      const error = new Error(result.errors.map((e) => e.message).join('\n'))
-      this.logger.error(error)
-      return this.config.provider.handleGraphQLError(error)
+      throw new Error(result.errors.map((e) => e.message).join('\n'))
     }
-    return this.config.provider.handleGraphQLResult(result.data)
+    return result.data
 
     // TODO: We need to send the result to all related subscriptions. Find an abstraction that allow us to manage
     // connections here and search for those which are subscribed to a subscription
