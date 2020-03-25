@@ -44,6 +44,11 @@ export class Booster {
     this.config.validate()
   }
 
+  /**
+   * This function returns a "Searcher" configured to search instances of the read model class passed as param.
+   * For more information, check the Searcher class.
+   * @param readModelClass The class of the read model you what to run searches for
+   */
   public static readModel<TReadModel extends ReadModelInterface>(
     readModelClass: Class<TReadModel>
   ): Searcher<TReadModel> {
