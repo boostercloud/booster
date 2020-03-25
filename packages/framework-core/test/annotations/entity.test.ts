@@ -20,7 +20,7 @@ describe('the `Entity` decorator', () => {
     })
   })
 
-  it('adds the entity class as an entity that reduces some comments', () => {
+  it('adds the entity class as an entity that reduces some events', () => {
     @Event
     class CommentPosted {
       public constructor(readonly foo: string) {}
