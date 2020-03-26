@@ -37,35 +37,30 @@ interface TargetTypeMetadata {
 }
 
 export class GraphQLGenerator {
-  private generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
-  private generatedOperationEnumsByTypeName: Record<string, GraphQLEnumType> = {}
-  private targetTypes: TargetTypesMap
+  private queryGenerator: GraphQLQueryGenerator
 
   public constructor(config: BoosterConfig) {
-    this.targetTypes = config.readModels
+    this.queryGenerator = new GraphQLQueryGenerator(config.readModels)
   }
 
   public generateSchema(): GraphQLSchema {
-    const typesByName = this.generateGraphQLTypesByName()
-    const query = this.generateQuery(typesByName)
+    const query = this.queryGenerator.generate()
     return new GraphQLSchema({
       query,
-      types: Object.values(typesByName),
     })
   }
+}
 
-  private generateGraphQLTypesByName(): Record<string, GraphQLObjectType> {
-    const typesByName: Record<string, GraphQLObjectType> = {}
-    for (const name in this.targetTypes) {
-      const typeMetadata = this.targetTypes[name]
-      typesByName[name] = this.generateType(typeMetadata)
-    }
-    return typesByName
-  }
+export class GraphQLQueryGenerator {
+  private generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
+  private generatedOperationEnumsByTypeName: Record<string, GraphQLEnumType> = {}
+  private generatedGraphQLTypes: Record<string, GraphQLObjectType> = {}
 
-  private generateQuery(typesByName: Record<string, GraphQLObjectType>): GraphQLObjectType {
-    const byIDQueries = this.generateByIDQueries(typesByName)
-    const filterQueries = this.generateFilterQueries(typesByName)
+  public constructor(private readonly targetTypes: TargetTypesMap) {}
+
+  public generate(): GraphQLObjectType {
+    const byIDQueries = this.generateByIDQueries()
+    const filterQueries = this.generateFilterQueries()
     return new GraphQLObjectType({
       name: 'Query',
       fields: {
@@ -75,14 +70,11 @@ export class GraphQLGenerator {
     })
   }
 
-  private generateByIDQueries(typesByName: Record<string, GraphQLObjectType>): GraphQLFieldConfigMap<any, any> {
+  private generateByIDQueries(): GraphQLFieldConfigMap<any, any> {
     const queries: GraphQLFieldConfigMap<any, any> = {}
     for (const name in this.targetTypes) {
-      const graphQLType = typesByName[name]
-      if (!graphQLType) {
-        continue
-      }
       const type = this.targetTypes[name]
+      const graphQLType = this.toGraphQLType(type)
       queries[name] = {
         type: graphQLType,
         args: {
@@ -94,14 +86,11 @@ export class GraphQLGenerator {
     return queries
   }
 
-  private generateFilterQueries(typesByName: Record<string, GraphQLObjectType>): GraphQLFieldConfigMap<any, any> {
+  private generateFilterQueries(): GraphQLFieldConfigMap<any, any> {
     const queries: GraphQLFieldConfigMap<any, any> = {}
     for (const name in this.targetTypes) {
-      const graphQLType = typesByName[name]
-      if (!graphQLType) {
-        continue
-      }
       const type = this.targetTypes[name]
+      const graphQLType = this.toGraphQLType(type)
       queries[inflection.pluralize(name)] = {
         type: new GraphQLList(graphQLType),
         args: this.generateFilterArguments(type),
@@ -111,9 +100,9 @@ export class GraphQLGenerator {
     return queries
   }
 
-  private generateFilterArguments(typesMetadata: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
+  private generateFilterArguments(typeMetadata: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
     const args: GraphQLFieldConfigArgumentMap = {}
-    typesMetadata.properties.forEach((prop: PropertyMetadata) => {
+    typeMetadata.properties.forEach((prop: PropertyMetadata) => {
       const graphQLPropType = graphQLTypeFor(prop.type)
       if (graphQLPropType == GraphQLJSONObject || graphQLPropType instanceof GraphQLList) {
         // TODO: We still don't handle filtering by complex properties
@@ -124,6 +113,20 @@ export class GraphQLGenerator {
       }
     })
     return args
+  }
+
+  private toGraphQLType(typeMetadata: TargetTypeMetadata): GraphQLObjectType {
+    if (!this.generatedGraphQLTypes[typeMetadata.class.name]) {
+      const fields: GraphQLFieldConfigMap<any, any> = {}
+      for (const prop of typeMetadata.properties) {
+        fields[prop.name] = { type: graphQLTypeFor(prop.type) }
+      }
+      this.generatedGraphQLTypes[typeMetadata.class.name] = new GraphQLObjectType({
+        name: typeMetadata.class.name,
+        fields,
+      })
+    }
+    return this.generatedGraphQLTypes[typeMetadata.class.name]
   }
 
   private generateFilterFor(type: AnyClass): GraphQLInputObjectType {
@@ -149,17 +152,6 @@ export class GraphQLGenerator {
       })
     }
     return this.generatedOperationEnumsByTypeName[operationEnumName]
-  }
-
-  private generateType(typeMetadata: TargetTypeMetadata): GraphQLObjectType {
-    const fields: GraphQLFieldConfigMap<any, any> = {}
-    for (const prop of typeMetadata.properties) {
-      fields[prop.name] = { type: graphQLTypeFor(prop.type) }
-    }
-    return new GraphQLObjectType({
-      name: typeMetadata.class.name,
-      fields,
-    })
   }
 
   private generateOperationEnumValuesFor(type: AnyClass): GraphQLEnumValueConfigMap {
