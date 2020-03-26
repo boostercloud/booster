@@ -1,5 +1,6 @@
 import { Booster } from '../booster'
 import { Class, CommandInterface, RoleAccess } from '@boostercloud/framework-types'
+import { getPropertiesMetadata } from './metadata'
 
 /**
  * Annotation to tell Booster which classes are your entities
@@ -16,6 +17,7 @@ export function Command(attributes: RoleAccess): (commandClass: Class<CommandInt
       config.commandHandlers[commandClass.name] = {
         class: commandClass,
         authorizedRoles: attributes.authorize,
+        properties: getPropertiesMetadata(commandClass),
       }
     })
   }
