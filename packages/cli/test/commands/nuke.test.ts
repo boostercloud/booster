@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from 'chai'
 import { fancy } from 'fancy-test'
-import { stub, restore, replace, fake } from 'sinon'
+import { restore, replace, fake } from 'sinon'
 import { Observable, Observer } from 'rxjs'
 import rewire = require('rewire')
 import Prompter from '../../src/services/user-prompt'
@@ -20,9 +20,9 @@ describe('nuke', () => {
     context('when an unexpected problem happens', () => {
       fancy.stdout().it('fails gracefully showing the error message', async (ctx) => {
         const fakeLoader = Promise.reject(new Error('weird exception'))
-        const fakeNuke = stub()
+        const fakeNuke = fake()
 
-        await runTasks(fakeLoader, fakeNuke)
+        await runTasks('test-env', fakeLoader, fakeNuke)
 
         expect(ctx.stdout).to.include('weird exception')
 
@@ -42,11 +42,11 @@ describe('nuke', () => {
         })
 
         const prompter = new Prompter()
-        const fakePrompter = fake.returns(Promise.resolve('fake app 2')) // The user entered wrong app name
+        const fakePrompter = fake.resolves('fake app 2') // The user entered wrong app name
         replace(prompter, 'defaultOrPrompt', fakePrompter)
-        const fakeNuke = stub()
+        const fakeNuke = fake()
 
-        await runTasks(loader(prompter, fakeConfig), fakeNuke)
+        await runTasks('test-env', loader(prompter, fakeConfig), fakeNuke)
 
         expect(ctx.stdout).to.include('Wrong app name')
 
@@ -66,16 +66,16 @@ describe('nuke', () => {
         })
 
         const prompter = new Prompter()
-        const fakePrompter = fake.returns(Promise.resolve('fake app'))
+        const fakePrompter = fake.resolves('fake app')
         replace(prompter, 'defaultOrPrompt', fakePrompter)
-        const fakeNuke = stub().returns(
+        const fakeNuke = fake.returns(
           Observable.create((obs: Observer<string>) => {
             obs.next('this is a progress update')
             obs.complete()
           })
         )
 
-        await runTasks(loader(prompter, fakeConfig), fakeNuke)
+        await runTasks('test-env', loader(prompter, fakeConfig), fakeNuke)
 
         expect(ctx.stdout).to.include('Removal complete!')
 
