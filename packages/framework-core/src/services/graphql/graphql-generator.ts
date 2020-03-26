@@ -3,9 +3,11 @@ import { GraphQLFieldResolver, GraphQLSchema } from 'graphql'
 import { Booster } from '../../booster'
 import { GraphQLTypeInformer } from './graphql-type-informer'
 import { GraphQLQueryGenerator } from './graphql-query-generator'
+import { GraphQLMutationGenerator } from './graphql-mutations-generator'
 
 export class GraphQLGenerator {
   private queryGenerator: GraphQLQueryGenerator
+  private mutationGenerator: GraphQLMutationGenerator
   private readonly typeInformer: GraphQLTypeInformer
 
   public constructor(config: BoosterConfig) {
@@ -16,12 +18,13 @@ export class GraphQLGenerator {
       readModelByIDResolverBuilder,
       readModelFilterResolverBuilder
     )
+    this.mutationGenerator = new GraphQLMutationGenerator(config.commandHandlers, this.typeInformer, commandResolver)
   }
 
   public generateSchema(): GraphQLSchema {
-    const query = this.queryGenerator.generate()
     return new GraphQLSchema({
-      query,
+      query: this.queryGenerator.generate(),
+      mutation: this.mutationGenerator.generate(),
     })
   }
 }
@@ -43,4 +46,8 @@ function readModelByIDResolverBuilder(readModelClass: AnyClass): GraphQLFieldRes
     searcher.filter('id', '=', args.id)
     return searcher.searchOne()
   }
+}
+
+function commandResolver(input: any): Promise<void> {
+  return Booster.dispatchCommand(input)
 }

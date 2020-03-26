@@ -24,7 +24,7 @@ import {
   UUID,
 } from '@boostercloud/framework-types'
 
-type ResolverBuilder = (readModelClass: AnyClass) => GraphQLFieldResolver<any, any, any>
+type QueryResolverBuilder = (readModelClass: AnyClass) => GraphQLFieldResolver<any, any, any>
 
 export class GraphQLQueryGenerator {
   private generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
@@ -33,8 +33,8 @@ export class GraphQLQueryGenerator {
   public constructor(
     private readonly targetTypes: TargetTypesMap,
     private readonly typeInformer: GraphQLTypeInformer,
-    private readonly byIDResolverBuilder: ResolverBuilder,
-    private readonly filterResolverBuilder: ResolverBuilder
+    private readonly byIDResolverBuilder: QueryResolverBuilder,
+    private readonly filterResolverBuilder: QueryResolverBuilder
   ) {}
 
   public generate(): GraphQLObjectType {
