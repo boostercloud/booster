@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Booster } from '../booster'
 import { Class, EntityInterface, ReducerMetadata, EventInterface } from '@boostercloud/framework-types'
-import 'reflect-metadata'
+
 /**
  * Decorator to register a class as an Entity
  * @constructor
