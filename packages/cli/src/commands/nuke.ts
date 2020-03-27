@@ -27,7 +27,10 @@ const runTasks = async (
 
 async function askToConfirmRemoval(prompter: Prompter, config: Promise<BoosterConfig>): Promise<BoosterConfig> {
   const configuration = await config
-  const appName = await prompter.defaultOrPrompt(null, 'Please, enter the app name to confirm deletion of all resources:')
+  const appName = await prompter.defaultOrPrompt(
+    null,
+    'Please, enter the app name to confirm deletion of all resources:'
+  )
   if (appName == configuration.appName) {
     return Promise.resolve(configuration)
   } else {
@@ -40,7 +43,7 @@ export default class Nuke extends Command {
     'Remove all resources used by the current application as configured in your `index.ts` file.'
 
   public static flags = {
-    help: flags.help({ char: 'h' })
+    help: flags.help({ char: 'h' }),
   }
 
   public static args = [{ name: 'environment' }]
@@ -52,6 +55,10 @@ export default class Nuke extends Command {
       return
     }
     process.env.BOOSTER_ENV = args.environment
-    await runTasks(args.environment, askToConfirmRemoval(new Prompter(), compileProjectAndLoadConfig()), nukeCloudProviderResources)
+    await runTasks(
+      args.environment,
+      askToConfirmRemoval(new Prompter(), compileProjectAndLoadConfig()),
+      nukeCloudProviderResources
+    )
   }
 }
