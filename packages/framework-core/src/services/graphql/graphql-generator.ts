@@ -11,7 +11,7 @@ export class GraphQLGenerator {
   private readonly typeInformer: GraphQLTypeInformer
 
   public constructor(config: BoosterConfig) {
-    this.typeInformer = new GraphQLTypeInformer(config.readModels)
+    this.typeInformer = new GraphQLTypeInformer({ ...config.readModels, ...config.commandHandlers })
     this.queryGenerator = new GraphQLQueryGenerator(
       config.readModels,
       this.typeInformer,

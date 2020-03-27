@@ -9,7 +9,15 @@ import {
   GraphQLFloat,
   GraphQLID,
   GraphQLString,
+  GraphQLInputType,
+  GraphQLScalarType,
+  GraphQLInputObjectType,
+  GraphQLOutputType,
+  GraphQLNonNull,
+  GraphQLEnumType,
+  GraphQLInterfaceType,
 } from 'graphql'
+import { GraphQLFieldMap, GraphQLInputFieldConfigMap } from 'graphql/type/definition'
 
 export class GraphQLTypeInformer {
   private graphQLTypesByName: Record<string, GraphQLNonInputType> = {}
@@ -62,5 +70,41 @@ export class GraphQLTypeInformer {
         }
         return GraphQLJSONObject
     }
+  }
+
+  public getGraphQLInputTypeFor(type: AnyClass): GraphQLInputType {
+    return this.toInputType(this.getGraphQLTypeFor(type))
+  }
+
+  public toInputType(graphQLType: GraphQLOutputType): GraphQLInputType {
+    if (graphQLType instanceof GraphQLScalarType || graphQLType instanceof GraphQLEnumType) {
+      return graphQLType
+    }
+    if (graphQLType instanceof GraphQLList) {
+      return new GraphQLList(this.toInputType(graphQLType.ofType))
+    }
+    if (graphQLType instanceof GraphQLNonNull) {
+      return new GraphQLNonNull(graphQLType.ofType)
+    }
+    if (graphQLType instanceof GraphQLObjectType) {
+      return new GraphQLInputObjectType({
+        name: `${graphQLType.name}Input`,
+        fields: () => this.toInputFields(graphQLType.getFields()),
+      })
+    }
+    throw new Error(
+      `Types '${GraphQLEnumType.name}' and '${GraphQLInterfaceType}' are not allowed as input type, ` +
+        `and '${graphQLType.name}' was found`
+    )
+  }
+
+  private toInputFields(fields: GraphQLFieldMap<any, any, any>): GraphQLInputFieldConfigMap {
+    const inputFields: GraphQLInputFieldConfigMap = {}
+    for (const fieldName in fields) {
+      inputFields[fieldName] = {
+        type: this.toInputType(fields[fieldName].type),
+      }
+    }
+    return inputFields
   }
 }

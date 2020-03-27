@@ -1,7 +1,6 @@
-import { TargetTypeMetadata, TargetTypesMap } from './common'
+import { TargetTypesMap } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
-import { GraphQLBoolean, GraphQLFieldConfigMap, GraphQLObjectType, GraphQLString } from 'graphql'
-import { GraphQLArgumentConfig } from 'graphql/type/definition'
+import { GraphQLBoolean, GraphQLFieldConfigMap, GraphQLObjectType } from 'graphql'
 
 type MutationResolver = (input: Record<string, any>) => Promise<void>
 
@@ -13,7 +12,6 @@ export class GraphQLMutationGenerator {
   ) {}
 
   public generate(): GraphQLObjectType {
-    console.log(this.typeInformer) // TODO: remove this
     const mutations = this.generateMutations()
     return new GraphQLObjectType({
       name: 'Mutation',
@@ -28,7 +26,9 @@ export class GraphQLMutationGenerator {
       mutations[name] = {
         type: GraphQLBoolean, // TODO: Return the request ID an useful information
         args: {
-          input: this.generateInputArgumentsFor(type),
+          input: {
+            type: this.typeInformer.getGraphQLInputTypeFor(type.class),
+          },
         },
         resolve: (parent, args) => {
           return this.mutationResolver(args.input)
@@ -36,13 +36,5 @@ export class GraphQLMutationGenerator {
       }
     }
     return mutations
-  }
-
-  private generateInputArgumentsFor(type: TargetTypeMetadata): GraphQLArgumentConfig {
-    // TODO: Generate the input with the command data
-    // const inputTypeName = `${type.class.name}Input`
-    return {
-      type: GraphQLString,
-    }
   }
 }
