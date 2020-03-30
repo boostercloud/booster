@@ -45,6 +45,7 @@ describe('BoosterReadModelFetcher', () => {
   config.readModels[TestReadModel.name] = {
     class: TestReadModel,
     authorizedRoles: [UserRole],
+    properties: [],
   }
 
   describe('the method `fetch`', () => {

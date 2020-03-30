@@ -16,9 +16,11 @@ describe('the `buildLogger method`', () => {
   })
 
   it('"debug", "info" and "error" log when in `debug` level ', () => {
-    const fakeConsoleLog = fake()
+    const fakeConsoleDebug = fake()
+    const fakeConsoleInfo = fake()
     const fakeConsoleError = fake()
-    replace(console, 'log', fakeConsoleLog)
+    replace(console, 'debug', fakeConsoleDebug)
+    replace(console, 'info', fakeConsoleInfo)
     replace(console, 'error', fakeConsoleError)
 
     const logger = buildLogger(Level.debug)
@@ -26,14 +28,17 @@ describe('the `buildLogger method`', () => {
     logger.info('b')
     logger.error('c')
 
-    expect(fakeConsoleLog).to.have.been.calledTwice
+    expect(fakeConsoleDebug).to.have.been.calledOnce
+    expect(fakeConsoleInfo).to.have.been.calledOnce
     expect(fakeConsoleError).to.have.been.calledOnce
   })
 
   it('only "info" and "error" log when in `info` level ', () => {
-    const fakeConsoleLog = fake()
+    const fakeConsoleDebug = fake()
+    const fakeConsoleInfo = fake()
     const fakeConsoleError = fake()
-    replace(console, 'log', fakeConsoleLog)
+    replace(console, 'debug', fakeConsoleDebug)
+    replace(console, 'info', fakeConsoleInfo)
     replace(console, 'error', fakeConsoleError)
 
     const logger = buildLogger(Level.info)
@@ -41,14 +46,17 @@ describe('the `buildLogger method`', () => {
     logger.info('b')
     logger.error('c')
 
-    expect(fakeConsoleLog).to.have.been.calledOnce
+    expect(fakeConsoleDebug).to.not.have.been.called
+    expect(fakeConsoleInfo).to.have.been.calledOnce
     expect(fakeConsoleError).to.have.been.calledOnce
   })
 
   it('only "error" logs when in `error` level ', () => {
-    const fakeConsoleLog = fake()
+    const fakeConsoleDebug = fake()
+    const fakeConsoleInfo = fake()
     const fakeConsoleError = fake()
-    replace(console, 'log', fakeConsoleLog)
+    replace(console, 'debug', fakeConsoleDebug)
+    replace(console, 'info', fakeConsoleInfo)
     replace(console, 'error', fakeConsoleError)
 
     const logger = buildLogger(Level.error)
@@ -56,7 +64,8 @@ describe('the `buildLogger method`', () => {
     logger.info('b')
     logger.error('c')
 
-    expect(fakeConsoleLog).not.to.have.been.called
+    expect(fakeConsoleDebug).to.not.have.been.called
+    expect(fakeConsoleInfo).to.not.have.been.calledOnce
     expect(fakeConsoleError).to.have.been.calledOnce
   })
 })

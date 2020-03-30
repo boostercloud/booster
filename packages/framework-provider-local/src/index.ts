@@ -39,4 +39,14 @@ export const Provider: ProviderLibrary = {
   rawSignUpDataToUserEnvelope,
   getInfrastructure: () =>
     require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  authorizeRequest: undefined as any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  rawGraphQLRequestToEnvelope: undefined as any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handleGraphQLResult: undefined as any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handleGraphQLError: undefined as any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  searchReadModel: undefined as any,
 }

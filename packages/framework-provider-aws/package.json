@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@boostercloud/framework-types": "^0.1.4",
-    "aws-sdk": "^2.514.0"
+    "aws-sdk": "^2.633.0"
   },
   "scripts": {
     "lint": "eslint --ext '.js,.ts' **/*.ts",
@@ -35,7 +35,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.31",
+    "@types/aws-lambda": "^8.10.46",
     "velocityjs": "^2.0.0"
   },
   "gitHead": "121816dbe55d57df5860b54a871c06dcda761101"

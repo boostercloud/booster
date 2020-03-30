@@ -19,7 +19,7 @@ describe('the `ReadModel` decorator', () => {
       authorize: 'all',
     })
     class SomeReadModel {
-      public constructor(readonly id: UUID) {}
+      public constructor(readonly id: UUID, readonly aStringProp: string, readonly aNumberProp: number) {}
     }
 
     // Make Booster be of any type to access private members
@@ -29,6 +29,20 @@ describe('the `ReadModel` decorator', () => {
     expect(booster.config.readModels['SomeReadModel']).to.be.deep.equal({
       class: SomeReadModel,
       authorizedRoles: 'all',
+      properties: [
+        {
+          name: 'id',
+          type: UUID,
+        },
+        {
+          name: 'aStringProp',
+          type: String,
+        },
+        {
+          name: 'aNumberProp',
+          type: Number,
+        },
+      ],
     })
   })
 })

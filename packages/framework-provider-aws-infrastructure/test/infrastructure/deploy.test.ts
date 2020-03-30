@@ -117,7 +117,6 @@ describe('the deployment process', () => {
       config.appName = 'testing-app'
       config.entities[EmptyEntity.name] = {
         class: EmptyEntity,
-        properties: [],
       }
 
       // Just checks that the assemble method does not fail, meaning that the stack is build correctly according to the
@@ -151,6 +150,7 @@ describe('the deployment process', () => {
     config.readModels[SomeReadModel.name] = {
       class: SomeReadModel,
       authorizedRoles: 'all',
+      properties: [],
     }
     const cloudAssembly = Infrastructure.assemble(config)
 

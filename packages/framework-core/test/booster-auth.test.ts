@@ -11,16 +11,16 @@ import { ProviderLibrary } from '@boostercloud/framework-types'
 
 chai.use(require('sinon-chai'))
 
+const logger: Logger = {
+  debug() {},
+  info() {},
+  error() {},
+}
+
 describe('the "checkSignUp" method', () => {
   afterEach(() => {
     restore()
   })
-
-  const logger: Logger = {
-    debug() {},
-    info() {},
-    error() {},
-  }
 
   function buildBoosterConfig(): BoosterConfig {
     const config = new BoosterConfig()
@@ -79,10 +79,6 @@ describe('the "checkSignUp" method', () => {
 })
 
 describe('the "isUserAuthorized" method', () => {
-  afterEach(() => {
-    restore()
-  })
-
   // Define some roles to use in tests
   class Admin {}
   class Developer {}
@@ -117,5 +113,20 @@ describe('the "isUserAuthorized" method', () => {
     }
 
     expect(BoosterAuth.isUserAuthorized(authorizedRoles, userEnvelope)).to.eq(true)
+  })
+})
+
+describe('the "authorizeRequest" method', () => {
+  it('calls the provider authorizer', async () => {
+    const request = {}
+    const config = new BoosterConfig()
+    const fakeProviderAuthorizer = fake()
+    config.provider = {
+      authorizeRequest: fakeProviderAuthorizer,
+    } as any
+
+    await BoosterAuth.authorizeRequest(request, config, logger)
+
+    expect(fakeProviderAuthorizer).to.have.been.calledOnce
   })
 })

@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BoosterConfig, Logger } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, ReadModelInterface } from '@boostercloud/framework-types'
 import { Importer } from './importer'
 import { buildLogger } from './booster-logger'
 import { BoosterCommandDispatcher } from './booster-command-dispatcher'
 import { BoosterReadModelFetcher } from './booster-read-model-fetcher'
 import { BoosterEventDispatcher } from './booster-event-dispatcher'
 import { BoosterAuth } from './booster-auth'
-import { EntityInterface, UUID } from '@boostercloud/framework-types'
+import { EntityInterface, UUID, Class, Searcher } from '@boostercloud/framework-types'
 import { fetchEntitySnapshot } from './entity-snapshot-fetcher'
+import { BoosterGraphQLDispatcher } from './booster-graphql-dispatcher'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -53,6 +54,18 @@ export class Booster {
   }
 
   /**
+   * This function returns a "Searcher" configured to search instances of the read model class passed as param.
+   * For more information, check the Searcher class.
+   * @param readModelClass The class of the read model you what to run searches for
+   */
+  public static readModel<TReadModel extends ReadModelInterface>(
+    readModelClass: Class<TReadModel>
+  ): Searcher<TReadModel> {
+    const searchFunction = this.config.provider.searchReadModel.bind(null, this.config, this.logger)
+    return new Searcher(readModelClass, searchFunction)
+  }
+
+  /**
    * Entry point to dispatch a command to the corresponding handler and process its result
    */
   public static dispatchCommand(rawCommand: any): Promise<any> {
@@ -80,6 +93,14 @@ export class Booster {
     return BoosterEventDispatcher.dispatch(rawEvent, this.config, this.logger)
   }
 
+  public static serveGraphQL(request: any): Promise<any> {
+    return new BoosterGraphQLDispatcher(this.config, this.logger).dispatchGraphQL(request)
+  }
+
+  public static authorizeRequest(request: any): Promise<any> {
+    return BoosterAuth.authorizeRequest(request, this.config, this.logger)
+  }
+
   /**
    * Fetches the last known version of an entity
    * @param entityName Name of the entity class
@@ -104,4 +125,12 @@ export async function boosterReadModelMapper(rawMessage: any): Promise<any> {
 
 export async function boosterPreSignUpChecker(rawMessage: any): Promise<void> {
   return Booster.checkSignUp(rawMessage)
+}
+
+export async function boosterServeGraphQL(rawRequest: any): Promise<void> {
+  return Booster.serveGraphQL(rawRequest)
+}
+
+export async function boosterRequestAuthorizer(rawRequest: any): Promise<any> {
+  return Booster.authorizeRequest(rawRequest)
 }
