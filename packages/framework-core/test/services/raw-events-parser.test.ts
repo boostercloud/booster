@@ -17,9 +17,9 @@ describe('RawEventsParser', () => {
       const anotherEvent = {
         id: 2,
       }
-      const providerLibrary = {
+      const providerLibrary = ({
         rawEventsToEnvelopes: fake.returns([anEvent, anotherEvent]),
-      } as unknown as ProviderLibrary
+      } as unknown) as ProviderLibrary
       const callbackFn = fake()
 
       const config = new BoosterConfig()

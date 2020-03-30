@@ -12,7 +12,7 @@ import {
 } from '../../services/generator/target'
 import * as path from 'path'
 import { templates } from '../../templates'
-import { checkItIsABoosterProject } from "../../services/project-checker";
+import { checkItIsABoosterProject } from '../../services/project-checker'
 
 export default class Command extends Oclif.Command {
   public static description = 'create a new command'

@@ -5,10 +5,11 @@ import { HasFields, HasName, joinParsers, parseName, parseFields } from '../../s
 import { templates } from '../../templates'
 import { generate } from '../../services/generator'
 import * as path from 'path'
-import { checkItIsABoosterProject } from "../../services/project-checker";
+import { checkItIsABoosterProject } from '../../services/project-checker'
 
 export default class Type extends Oclif.Command {
   public static description = 'create a new type'
+
   public static flags = {
     help: Oclif.flags.help({ char: 'h' }),
     fields: Oclif.flags.string({

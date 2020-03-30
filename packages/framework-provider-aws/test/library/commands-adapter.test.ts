@@ -9,7 +9,7 @@ import { Kinesis, CognitoIdentityServiceProvider } from 'aws-sdk'
 import { BoosterConfig, Logger, EventEnvelope, UserEnvelope } from '@boostercloud/framework-types'
 import { UUID } from '@boostercloud/framework-types'
 import { APIGatewayProxyEvent } from 'aws-lambda'
-import * as UserEnvelopes from "../../src/library/user-envelopes";
+import * as UserEnvelopes from '../../src/library/user-envelopes'
 
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))

@@ -1,0 +1,25 @@
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '**.md'
+
+name: Create Slate Documentation on Push
+jobs:
+  action-filter:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-ruby@v1
+        with:
+          ruby-version: '2.7'
+      - run: bash scripts/generate-docs.sh
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN_ACTION }}
+          BRANCH: gh-pages
+          FOLDER: .docs/build

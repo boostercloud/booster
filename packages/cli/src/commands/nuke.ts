@@ -1,4 +1,4 @@
-import { Command } from '@oclif/command'
+import { Command, flags } from '@oclif/command'
 import { Observable } from 'rxjs'
 import { nukeCloudProviderResources } from '../services/provider-service'
 import { compileProjectAndLoadConfig } from '../services/config-service'
@@ -9,10 +9,11 @@ import Prompter from '../services/user-prompt'
 import { logger } from '../services/logger'
 
 const runTasks = async (
+  environment: string,
   loader: Promise<BoosterConfig>,
   nuke: (config: BoosterConfig) => Observable<string>
 ): Promise<void> =>
-  Script.init(`boost ${Brand.dangerize('nuke')} 🧨`, loader)
+  Script.init(`boost ${Brand.dangerize('nuke')} [${environment}] 🧨`, loader)
     .step(
       'Removing',
       (config): Promise<void> =>
@@ -26,7 +27,7 @@ const runTasks = async (
 
 async function askToConfirmRemoval(prompter: Prompter, config: Promise<BoosterConfig>): Promise<BoosterConfig> {
   const configuration = await config
-  const appName = await prompter.defaultOrPrompt(null, 'Please, enter the app name to delete the resources:')
+  const appName = await prompter.defaultOrPrompt(null, 'Please, enter the app name to confirm deletion of all resources:')
   if (appName == configuration.appName) {
     return Promise.resolve(configuration)
   } else {
@@ -38,7 +39,19 @@ export default class Nuke extends Command {
   public static description =
     'Remove all resources used by the current application as configured in your `index.ts` file.'
 
+  public static flags = {
+    help: flags.help({ char: 'h' })
+  }
+
+  public static args = [{ name: 'environment' }]
+
   public async run(): Promise<void> {
-    await runTasks(askToConfirmRemoval(new Prompter(), compileProjectAndLoadConfig()), nukeCloudProviderResources)
+    const { args } = this.parse(Nuke)
+    if (!args.environment) {
+      console.log('Error: no environment name provided. Usage: `boost nuke <environment>`.')
+      return
+    }
+    process.env.BOOSTER_ENV = args.environment
+    await runTasks(args.environment, askToConfirmRemoval(new Prompter(), compileProjectAndLoadConfig()), nukeCloudProviderResources)
   }
 }

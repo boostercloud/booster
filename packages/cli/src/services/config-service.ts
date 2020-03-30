@@ -1,9 +1,9 @@
-import { BoosterConfig } from '@boostercloud/framework-types'
+import { BoosterApp, BoosterConfig } from '@boostercloud/framework-types'
 import * as path from 'path'
 import { exec } from 'child-process-promise'
 import { wrapExecError } from '../common/errors'
-import { checkItIsABoosterProject } from "./project-checker";
-import { withinWorkingDirectory } from "./executor-service";
+import { checkItIsABoosterProject } from './project-checker'
+import { withinWorkingDirectory } from './executor-service'
 
 export async function compileProjectAndLoadConfig(): Promise<BoosterConfig> {
   const userProjectPath = process.cwd()
@@ -26,7 +26,8 @@ function readProjectConfig(userProjectPath: string): Promise<BoosterConfig> {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const userProject = require(path.join(userProjectPath, 'dist', 'index.js'))
   return new Promise((resolve): void => {
-    userProject.Booster.configure((config: BoosterConfig): void => {
+    const projectBooster: BoosterApp = userProject.Booster
+    projectBooster.configureCurrentEnv((config: BoosterConfig): void => {
       resolve(config)
     })
   })

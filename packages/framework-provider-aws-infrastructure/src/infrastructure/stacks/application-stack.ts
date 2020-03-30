@@ -86,7 +86,7 @@ function setupPermissions(
   commandsLambda.addToRolePolicy(
     new PolicyStatement({
       resources: [eventsStream.streamArn],
-      actions: ['kinesis:Put*'],
+      actions: ['kinesis:Put*', 'dynamodb:Query*', 'dynamodb:Put*'],
     })
   )
 

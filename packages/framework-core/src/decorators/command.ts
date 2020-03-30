@@ -9,7 +9,7 @@ import { getPropertiesMetadata } from './metadata'
  */
 export function Command(attributes: RoleAccess): (commandClass: Class<CommandInterface>) => void {
   return (commandClass) => {
-    Booster.configure((config): void => {
+    Booster.configureCurrentEnv((config): void => {
       if (config.commandHandlers[commandClass.name]) {
         throw new Error(`A command called ${commandClass.name} is already registered.`)
       }

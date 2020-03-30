@@ -26,13 +26,22 @@ export class Booster {
    */
   private constructor() {}
 
+  public static configureCurrentEnv(configurator: (config: BoosterConfig) => void): void {
+    if (!process.env.BOOSTER_ENV) {
+      throw new Error('Attempted to configure the current environment, but none was set.')
+    }
+    this.configure(process.env.BOOSTER_ENV, configurator)
+  }
+
   /**
    * Allows to configure the Booster project.
    *
    * @param configurator A function that receives the configuration object to set the values
    */
-  public static configure(configurator: (config: BoosterConfig) => void): void {
-    configurator(this.config)
+  public static configure(environment: string, configurator: (config: BoosterConfig) => void): void {
+    if (process.env.BOOSTER_ENV === environment) {
+      configurator(this.config)
+    }
   }
 
   /**
