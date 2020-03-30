@@ -100,7 +100,7 @@ describe('BoosterEventDispatcher', () => {
         expect(stubEventStore.append).to.have.been.calledOnceWith(someEvent)
       })
 
-      it('waits for snapshooting and read model update process to complete', async () => {
+      it('waits for snapshotting and read model update process to complete', async () => {
         const stubEventStore = createStubInstance(EventStore)
         const stubReadModelStore = createStubInstance(ReadModelStore)
 

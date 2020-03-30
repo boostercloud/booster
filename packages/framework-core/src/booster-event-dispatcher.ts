@@ -16,7 +16,7 @@ export class BoosterEventDispatcher {
   public static async dispatch(rawEvents: any, config: BoosterConfig, logger: Logger): Promise<void> {
     const eventStore = new EventStore(config, logger)
     const readModelStore = new ReadModelStore(config, logger)
-    logger.debug('Event workflow started for RAW events:', rawEvents)
+    logger.debug('Event workflow started for raw events:', rawEvents)
     try {
       await RawEventsParser.streamEvents(
         config,
