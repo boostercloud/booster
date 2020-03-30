@@ -5,12 +5,16 @@ import { authorizeRequest, AuthorizerWithUserData, rawSignUpDataToUserEnvelope }
 import { UserEnvelope } from '@boostercloud/framework-types'
 import { APIGatewayAuthorizerWithContextResult } from 'aws-lambda'
 import { CognitoIdentityServiceProvider } from 'aws-sdk'
-import { replace } from 'sinon'
+import { replace, restore } from 'sinon'
 import * as UserEnvelopes from '../../src/library/user-envelopes'
 
 chai.use(require('sinon-chai'))
 
 describe('the auth-adapter', () => {
+  afterEach(() => {
+    restore()
+  })
+
   describe('the `rawSignUpDataToUserEnvelope`', () => {
     it('generates an envelope correctly from an AWS event', async () => {
       const cognitoUserEvent = {
