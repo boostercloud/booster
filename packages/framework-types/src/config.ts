@@ -6,10 +6,10 @@ import {
   CommandMetadata,
   ProjectionMetadata,
   ReadModelMetadata,
+  EventHandlerInterface,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
-import { EventHandlerInterface } from './concepts/event-handler'
 
 /**
  * Class used by external packages that needs to get a representation of
