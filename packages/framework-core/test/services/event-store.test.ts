@@ -32,7 +32,7 @@ describe('EventStore', () => {
     }
   }
 
-  const config = new BoosterConfig()
+  const config = new BoosterConfig('test')
   config.provider = ({
     storeEvent: () => {},
     readEntityLatestSnapshot: () => {},

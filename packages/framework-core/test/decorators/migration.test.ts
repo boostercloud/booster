@@ -71,7 +71,6 @@ describe('the `ToVersion` decorator', () => {
 })
 
 describe('the `Migrates` annotation', () => {
-  process.env.BOOSTER_ENV = 'test'
   afterEach(() => {
     Booster.configure('test', (config) => {
       config.appName = ''

@@ -17,7 +17,7 @@ describe('the application stack builder', () => {
   }
   const readModels = [TestReadModel1, TestReadModel2]
 
-  const config = new BoosterConfig()
+  const config = new BoosterConfig('test')
   config.appName = 'testing-app'
   // eslint-disable-next-line prettier/prettier
   readModels.forEach((readModel) => {

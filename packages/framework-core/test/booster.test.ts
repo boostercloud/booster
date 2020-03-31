@@ -20,7 +20,6 @@ import { UUID } from '@boostercloud/framework-types'
 chai.use(require('sinon-chai'))
 
 describe('the `Booster` class', () => {
-  process.env.BOOSTER_ENV = 'test'
   afterEach(() => {
     restore()
     Booster.configure('test', (config) => {

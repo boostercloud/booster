@@ -32,17 +32,19 @@ export default class Deploy extends Command {
 
   public static flags = {
     help: flags.help({ char: 'h' }),
+    environment: flags.string({
+      char: 'e',
+      description: 'environment configuration to run',
+    }),
   }
 
-  public static args = [{ name: 'environment' }]
-
   public async run(): Promise<void> {
-    const { args } = this.parse(Deploy)
-    if (!args.environment) {
-      console.log('Error: no environment name provided. Usage: `boost deploy <environment>`.')
+    const { flags } = this.parse(Deploy)
+    if (!flags.environment) {
+      console.log('Error: no environment name provided. Usage: `boost deploy -e <environment>`.')
       return
     }
-    process.env.BOOSTER_ENV = args.environment
-    await runTasks(args.environment, compileProjectAndLoadConfig(), deployToCloudProvider)
+    process.env.BOOSTER_ENV = flags.environment
+    await runTasks(flags.environment, compileProjectAndLoadConfig(), deployToCloudProvider)
   }
 }

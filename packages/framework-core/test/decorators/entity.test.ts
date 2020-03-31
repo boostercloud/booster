@@ -7,7 +7,6 @@ import { Booster } from '../../src'
 import { UUID } from '@boostercloud/framework-types'
 
 describe('the `Entity` decorator', () => {
-  process.env.BOOSTER_ENV = 'test'
   afterEach(() => {
     Booster.configure('test', (config) => {
       config.appName = ''

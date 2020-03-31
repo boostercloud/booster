@@ -26,27 +26,24 @@ import { BoosterGraphQLDispatcher } from './booster-graphql-dispatcher'
  */
 export class Booster {
   private static logger: Logger
-  private static readonly config = new BoosterConfig()
-
+  private static readonly config = new BoosterConfig(checkAndGetCurrentEnv())
   /**
    * Avoid creating instances of this class
    */
   private constructor() {}
 
   public static configureCurrentEnv(configurator: (config: BoosterConfig) => void): void {
-    if (!process.env.BOOSTER_ENV) {
-      throw new Error('Attempted to configure the current environment, but none was set.')
-    }
-    this.configure(process.env.BOOSTER_ENV, configurator)
+    this.configure(this.config.env, configurator)
   }
 
   /**
    * Allows to configure the Booster project.
    *
+   * @param environment The name of the environment you want to configure
    * @param configurator A function that receives the configuration object to set the values
    */
   public static configure(environment: string, configurator: (config: BoosterConfig) => void): void {
-    if (process.env.BOOSTER_ENV === environment) {
+    if (this.config.env === environment) {
       configurator(this.config)
     }
   }
@@ -119,6 +116,16 @@ export class Booster {
   ): Promise<TEntity | undefined> {
     return fetchEntitySnapshot(this.config, this.logger, entityClass, entityID)
   }
+}
+
+function checkAndGetCurrentEnv(): string {
+  const env = process.env.BOOSTER_ENV
+  if (!env || env.trim().length == 0) {
+    throw new Error(
+      'Booster environment is missing. You need to provide an environment to configure your Booster project'
+    )
+  }
+  return env
 }
 
 export async function boosterCommandDispatcher(rawCommand: any): Promise<any> {

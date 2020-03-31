@@ -63,7 +63,7 @@ describe('BoosterEventDispatcher', () => {
     error() {},
   }
 
-  const config = new BoosterConfig()
+  const config = new BoosterConfig('test')
   config.provider = {} as ProviderLibrary
 
   context('with a configured provider', () => {

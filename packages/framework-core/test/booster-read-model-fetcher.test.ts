@@ -34,7 +34,7 @@ describe('BoosterReadModelFetcher', () => {
   }
   class UserRole {}
 
-  const config = new BoosterConfig()
+  const config = new BoosterConfig('test')
   config.provider = ({
     rawReadModelRequestToEnvelope: () => {},
     handleReadModelError: () => {},

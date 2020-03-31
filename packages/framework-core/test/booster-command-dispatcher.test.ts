@@ -13,7 +13,6 @@ import { RegisterHandler } from '../src/booster-register-handler'
 chai.use(require('sinon-chai'))
 
 describe('the `BoosterCommandsDispatcher`', () => {
-  process.env.BOOSTER_ENV = 'test'
   afterEach(() => {
     restore()
     Booster.configure('test', (config) => {
@@ -37,7 +36,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
       replace(boosterCommandDispatcher, 'dispatchCommand', fake.returns(register))
       replace(RegisterHandler, 'handle', fake())
 
-      const config = new BoosterConfig()
+      const config = new BoosterConfig('test')
       config.provider = ({
         rawCommandToEnvelope: fake.resolves({}),
         requestSucceeded: fake(),
@@ -56,7 +55,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
       replace(boosterCommandDispatcher, 'dispatchCommand', fake.throws(omgError))
       replace(RegisterHandler, 'handle', fake())
 
-      const config = new BoosterConfig()
+      const config = new BoosterConfig('test')
       config.provider = {
         rawCommandToEnvelope: fake.resolves({}),
         requestFailed: fake(),

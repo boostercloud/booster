@@ -52,7 +52,7 @@ describe('Migrator', () => {
     migrationClass: TestConceptMigration,
     toVersion: 3,
   })
-  const config = new BoosterConfig()
+  const config = new BoosterConfig('test')
   config.migrations['TestConcept'] = migrations
   const migrator = new Migrator(config, logger)
 

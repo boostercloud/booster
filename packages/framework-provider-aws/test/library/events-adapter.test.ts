@@ -40,7 +40,7 @@ describe('the events-adapter', () => {
     it('stores an eventEnvelope in the corresponding DynamoDB database', async () => {
       const dynamoDB = createStubInstance(DynamoDB.DocumentClient)
       dynamoDB.put = fake.returns({ promise: fake.resolves('') }) as any
-      const config = new BoosterConfig()
+      const config = new BoosterConfig('test')
       config.appName = 'nuke-button'
 
       const eventEnvelope: EventEnvelope = {
@@ -80,7 +80,7 @@ describe('the events-adapter', () => {
     it('queries the events table to find all events related to a specific entity', async () => {
       const dynamoDB = createStubInstance(DynamoDB.DocumentClient)
       dynamoDB.query = fake.returns({ promise: fake.resolves('') }) as any
-      const config = new BoosterConfig()
+      const config = new BoosterConfig('test')
       config.appName = 'nuke-button'
 
       await Library.readEntityEventsSince(dynamoDB, config, fakeLogger, 'SomeEntity', 'someSpecialID')
@@ -104,7 +104,7 @@ describe('the events-adapter', () => {
     it('finds the latest entity snapshot', async () => {
       const dynamoDB = createStubInstance(DynamoDB.DocumentClient)
       dynamoDB.query = fake.returns({ promise: fake.resolves('') }) as any
-      const config = new BoosterConfig()
+      const config = new BoosterConfig('test')
       config.appName = 'nuke-button'
 
       await Library.readEntityLatestSnapshot(dynamoDB, config, fakeLogger, 'SomeEntity', 'someSpecialID')
@@ -126,7 +126,7 @@ describe('the events-adapter', () => {
 
   describe('the `publishEvents` method', () => {
     it('publishes the eventEnvelopes passed via parameter', async () => {
-      const config = new BoosterConfig()
+      const config = new BoosterConfig('test')
       config.appName = 'test-app'
       const requestID = 'request-id'
       const streamName = config.resourceNames.eventsStream

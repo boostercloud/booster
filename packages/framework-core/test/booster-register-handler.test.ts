@@ -24,7 +24,7 @@ describe('the `RegisterHandler` class', () => {
   })
 
   it('handles a register', async () => {
-    const config = new BoosterConfig()
+    const config = new BoosterConfig('test')
     config.provider = {
       publishEvents: fake(),
       submitCommands: fake(),
@@ -48,7 +48,7 @@ describe('the `RegisterHandler` class', () => {
   })
 
   it('publishes wrapped events', async () => {
-    const config = new BoosterConfig()
+    const config = new BoosterConfig('test')
     config.provider = {
       publishEvents: fake(),
       submitCommands: fake(),
@@ -99,7 +99,7 @@ describe('the `RegisterHandler` class', () => {
   })
 
   it('can wrap events to produce eventEnvelopes', () => {
-    const config = new BoosterConfig()
+    const config = new BoosterConfig('test')
     config.reducers['SomeEvent'] = {
       class: SomeEntity,
       methodName: 'someReducer',

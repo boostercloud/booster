@@ -37,6 +37,8 @@ export class BoosterConfig {
   public readonly roles: Record<RoleName, RoleMetadata> = {}
   public readonly migrations: Record<ConceptName, Map<Version, MigrationMetadata>> = {}
 
+  public constructor(public readonly env: string) {}
+
   public get resourceNames(): ResourceNames {
     if (this.appName.length === 0) throw new Error('Application name cannot be empty')
     const applicationStackName = this.appName + '-application-stack'
