@@ -26,7 +26,9 @@
     "fix-lint": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
-    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+    "integration": "yarn integration/aws && yarn integration/local",
+    "integration/aws": "nyc --extension .ts mocha --forbid-only --opts \"./integration/aws/mocha.opts\" \"integration/aws/**/*.integration.ts\"",
+    "integration/local": "nyc --extension .ts mocha --forbid-only --opts \"./integration/local/mocha.opts\" \"integration/local/**/*.integration.ts\""
   },
   "types": "dist/index.d.ts",
   "gitHead": "121816dbe55d57df5860b54a871c06dcda761101"
