@@ -16,18 +16,18 @@ export type ProviderLibrary = ProviderCommandsLibrary &
   ProviderEventsLibrary &
   ProviderReadModelsLibrary &
   ProviderAuthLibrary &
-  ProviderGraphQLLibrary & {
-    getInfrastructure(): ProviderInfrastructure
-  } & ProviderSearcher
+  ProviderAPIHandling &
+  ProviderInfrastructureGetter &
+  ProviderGraphQLLibrary &
+  ProviderSearcher
 
 export interface ProviderCommandsLibrary {
   rawCommandToEnvelope(rawCommand: any): Promise<CommandEnvelope>
-  handleCommandResult(config: BoosterConfig, events: Array<EventEnvelope>, logger?: Logger): Promise<any>
-  handleCommandError(error: Error): Promise<any>
 }
 
 export interface ProviderEventsLibrary {
   rawEventsToEnvelopes(rawEvents: any): Array<EventEnvelope>
+  /** Stores an event in the event store */
   storeEvent(config: BoosterConfig, logger: Logger, envelope: EventEnvelope): Promise<any>
   readEntityEventsSince(
     config: BoosterConfig,
@@ -42,6 +42,8 @@ export interface ProviderEventsLibrary {
     entityTypeName: string,
     entityID: UUID
   ): Promise<EventEnvelope | null>
+  /** Streams an event to the corresponding event handler */
+  publishEvents(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig, logger: Logger): Promise<void>
 }
 export interface ProviderReadModelsLibrary {
   rawReadModelRequestToEnvelope(rawReadModelRequest: any): Promise<ReadModelRequestEnvelope>
@@ -71,6 +73,15 @@ export interface ProviderGraphQLLibrary {
 
 export interface ProviderAuthLibrary {
   rawSignUpDataToUserEnvelope(rawMessage: any): UserEnvelope
+}
+
+export interface ProviderAPIHandling {
+  requestSucceeded(body?: any): Promise<any>
+  requestFailed(error: Error): Promise<any>
+}
+
+export interface ProviderInfrastructureGetter {
+  getInfrastructure(): ProviderInfrastructure
 }
 
 export interface ProviderInfrastructure {

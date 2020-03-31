@@ -1,12 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BoosterConfig, Logger, ReadModelInterface } from '@boostercloud/framework-types'
+import {
+  BoosterConfig,
+  Logger,
+  EntityInterface,
+  ReadModelInterface,
+  UUID,
+  Class,
+  Searcher,
+} from '@boostercloud/framework-types'
 import { Importer } from './importer'
 import { buildLogger } from './booster-logger'
 import { BoosterCommandDispatcher } from './booster-command-dispatcher'
 import { BoosterReadModelFetcher } from './booster-read-model-fetcher'
 import { BoosterEventDispatcher } from './booster-event-dispatcher'
 import { BoosterAuth } from './booster-auth'
-import { EntityInterface, UUID, Class, Searcher } from '@boostercloud/framework-types'
 import { fetchEntitySnapshot } from './entity-snapshot-fetcher'
 import { BoosterGraphQLDispatcher } from './booster-graphql-dispatcher'
 
@@ -106,8 +113,11 @@ export class Booster {
    * @param entityName Name of the entity class
    * @param entityID
    */
-  public static fetchEntitySnapshot(entityName: string, entityID: UUID): Promise<EntityInterface | null> {
-    return fetchEntitySnapshot(this.config, this.logger, entityName, entityID)
+  public static fetchEntitySnapshot<TEntity extends EntityInterface>(
+    entityClass: Class<TEntity>,
+    entityID: UUID
+  ): Promise<TEntity | undefined> {
+    return fetchEntitySnapshot(this.config, this.logger, entityClass, entityID)
   }
 }
 

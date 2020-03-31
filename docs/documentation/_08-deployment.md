@@ -41,4 +41,4 @@ boost nuke
 
 > **Note**: This will delete everything in your stack, including databases. This action is **not** reversible!
 
-After deploying your application, check out [the API documentation to start using it](09-rest-api.md)!
+After deploying your application, check out [the API documentation to start using it](_09rest-api.md)!

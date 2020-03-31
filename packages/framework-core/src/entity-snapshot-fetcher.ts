@@ -1,13 +1,13 @@
-import { UUID, BoosterConfig, EntityInterface, Logger } from '@boostercloud/framework-types'
+import { UUID, BoosterConfig, EntityInterface, Logger, Class } from '@boostercloud/framework-types'
 import { EventStore } from './services/event-store'
 
-export async function fetchEntitySnapshot(
+export async function fetchEntitySnapshot<TEntity extends EntityInterface>(
   config: BoosterConfig,
   logger: Logger,
-  entityName: string,
+  entityClass: Class<TEntity>,
   entityID: UUID
-): Promise<EntityInterface | null> {
+): Promise<TEntity | undefined> {
   const eventStore = new EventStore(config, logger)
-  const entitySnapshotEnvelope = await eventStore.fetchEntitySnapshot(entityName, entityID)
-  return entitySnapshotEnvelope?.value as EntityInterface
+  const entitySnapshotEnvelope = await eventStore.fetchEntitySnapshot(entityClass.name, entityID)
+  return entitySnapshotEnvelope?.value as TEntity
 }

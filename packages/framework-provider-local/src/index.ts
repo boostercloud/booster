@@ -1,6 +1,8 @@
 import { ProviderLibrary, ProviderInfrastructure } from '@boostercloud/framework-types'
 import { rawSignUpDataToUserEnvelope } from './library/auth-adapter'
-import { rawCommandToEnvelope, handleCommandResult, handleCommandError } from './library/commands-adapter'
+import { rawCommandToEnvelope } from './library/commands-adapter'
+import { publishEvents } from './library/events-adapter'
+import { requestSucceeded, requestFailed } from './library/api-adapter'
 import { UserRegistry, EventRegistry } from './services'
 
 export { User, LoginCredentials, SignUpUser, RegisteredUser, AuthenticatedUser } from './library/auth-adapter'
@@ -12,9 +14,10 @@ const userRegistry = new UserRegistry()
 const eventRegistry = new EventRegistry()
 
 export const Provider: ProviderLibrary = {
+  // ProviderCommandsLibrary
   rawCommandToEnvelope: rawCommandToEnvelope.bind(null, userRegistry),
-  handleCommandResult: handleCommandResult.bind(null, eventRegistry),
-  handleCommandError: handleCommandError,
+
+  // ProviderEventsLibrary
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rawEventsToEnvelopes: undefined as any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -23,6 +26,10 @@ export const Provider: ProviderLibrary = {
   readEntityEventsSince: undefined as any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readEntityLatestSnapshot: undefined as any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  publishEvents: publishEvents.bind(null, eventRegistry),
+
+  // ProviderReadModelsLibrary
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rawReadModelRequestToEnvelope: undefined as any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,10 +42,8 @@ export const Provider: ProviderLibrary = {
   handleReadModelResult: undefined as any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleReadModelError: undefined as any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rawSignUpDataToUserEnvelope,
-  getInfrastructure: () =>
-    require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
+
+  // ProviderGraphQLLibrary
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   authorizeRequest: undefined as any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,6 +52,21 @@ export const Provider: ProviderLibrary = {
   handleGraphQLResult: undefined as any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleGraphQLError: undefined as any,
+
+  // ProviderAuthLibrary
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  rawSignUpDataToUserEnvelope,
+
+  // ProviderAPIHandling
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  requestSucceeded,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  requestFailed,
+
+  // ProviderInfrastructureGetter
+  getInfrastructure: () =>
+    require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   searchReadModel: undefined as any,
 }

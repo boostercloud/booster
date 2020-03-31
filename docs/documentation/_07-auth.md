@@ -55,13 +55,13 @@ The latter has this attribute set to `true`, which means that any user can self-
 If your Booster application has roles defined, an authentication API will be provisioned. It will allow your users to gain
 access to your resources.
 
-This API consists of three endpoints ([see the API documentation](09-rest-api.md)):
+This API consists of three endpoints ([see the API documentation](_09rest-api.md)):
 
 - `/auth/sign-up`: Users can use this endpoint to register in your application and get some roles assigned to them.
   Only roles with the attribute `allowSelfSignUp: true` can be specified upon sign-up. After calling this endpoint, the
   registration is not yet finished. Users need to confirm their emails by clicking in the link that will be sent to their
-  inbox. 
-  
+  inbox.
+
 ![Confirmation email](../img/sign-up-verificaiton-email.png) ![Email confirmed](../img/sign-up-confirmed.png)
 - `/auth/sign-in`: This endpoint creates a session for an already registered user, returning an access token that
   can be used to access role-protected resources (like Commands)
@@ -72,4 +72,4 @@ Once a user has an access token, it can be included in any request made to your 
 Bearer Authorization header (`Authorization: Bearer`). It will be used to get the user information and
 authorize it to access protected resources.
 
-Continue reading about [how to deploy your application](08-deployment.md)
+Continue reading about [how to deploy your application](_08deployment.md)

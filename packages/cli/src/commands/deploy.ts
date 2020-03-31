@@ -25,14 +25,13 @@ const runTasks = async (
         })
     )
     .info('Deployment complete!')
-    .catch('SyntaxError', () => 'Unable to deploy project. Are you in a booster project?')
     .done()
 
 export default class Deploy extends Command {
   public static description = 'Deploy the current application as configured in your `index.ts` file.'
 
   public static flags = {
-    help: flags.help({ char: 'h' })
+    help: flags.help({ char: 'h' }),
   }
 
   public static args = [{ name: 'environment' }]

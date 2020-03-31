@@ -1,7 +1,6 @@
 import * as boosterModule from './booster'
 import { BoosterApp } from '@boostercloud/framework-types'
 export * from './decorators'
-export { Register } from '@boostercloud/framework-types'
 export {
   boosterCommandDispatcher,
   boosterReadModelMapper,

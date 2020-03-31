@@ -7,18 +7,6 @@
 
 ---
 
-<!-- TOC -->
-
-- [Disclaimer](#disclaimer)
-- [Overview](#overview)
-- [Documentation](#documentation)
-- [Examples](#examples)
-- [Ask the community](#ask-the-community)
-- [Contributing](#contributing)
-- [License](#license)
-
-<!-- /TOC -->
-
 ## Disclaimer
 
 Current published versions of Booster are pre-release versions under heavy development. This means that a good chunk of the most

@@ -7,10 +7,10 @@ An event is a data structure that represents a **fact** and is the source of tru
 - `WithdrawMoney`
 - `DepositMoney`
 
-> _TODO: (Event handlers are not implemented yet) Events can have handlers attached that allow the system to react to them. Imagine that a specific event represents that your account has reached zero. You can make the handler fire a [command](03-commands.md) to notify the user by email._
+You can define as many event handler classes as you want to react to them. For example, imagine that a specific event represents that your account has reached zero. You can write a handler to notify the user by email. In a Booster application, it is recommended to write most your domain logic in event handlers.
 
 To create an event class, you can do the same thing that you did with a command, either manually,
-or with the `boost` command line tool:
+or with the generator, using the `boost` command line tool:
 
 ```shell script
 boost new:event <name of the event> --fields fieldName:fieldType
@@ -33,6 +33,19 @@ Notice the required `entityID` method. All events are grouped by their event typ
 
 In the previous example, the `CartPaid` event has a `cartID` field, which then you will return in the `entityID` method. This allows booster to find this event when the system requests to build the state of a specific Cart.
 
-In most situations your event stream will be reduced to a domain model object, like that Cart (An [Entity](05-entities.md)), but there are some use cases on which the event stream is just related to a specific entity, for example, a register of sensor values in a weather station, which are related to the station, but the station has no specific value that needs to be reduced. You can implement the semantics that best suit your needs.
+In most situations your event stream will be reduced to a domain model object, like that Cart (An [Entity](_05entities.md)), but there are some use cases on which the event stream is just related to a specific entity, for example, a register of sensor values in a weather station, which are related to the station, but the station has no specific value that needs to be reduced. You can implement the semantics that best suit your needs.
 
-Let's continue learning about [Entities](05-entities.md)!
+## Event Handlers
+
+You can react to events implementing an **Event Handler** class. An Event Handler is a regular class that is subscribed to an event with the decorator `@EventHandler(<name of the event class>`. Any time that a new event is added to the event store, the `handle` method in the event handler will be called with the instance of the event and the `register` object that can be used to emit new events. Event handlers can run arbitrary code and is where it is recommended to write most of the business logic in a reactive way:
+
+```typescript
+@EventHandler(CartPaid)
+export class CartPaidHandler {
+  public static handle(event: CartPaid, register: Register) {
+    register.events(new OrderPreparationStarted(event.cartID))
+  }
+}
+```
+
+Let's continue learning about [Entities](_05entities.md)!

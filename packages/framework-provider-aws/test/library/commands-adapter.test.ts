@@ -4,21 +4,14 @@
 import { expect } from 'chai'
 import * as chai from 'chai'
 import * as Library from '../../src/library/commands-adapter'
-import { replace, restore, fake, match } from 'sinon'
-import { Kinesis, CognitoIdentityServiceProvider } from 'aws-sdk'
-import { BoosterConfig, Logger, EventEnvelope, UserEnvelope } from '@boostercloud/framework-types'
-import { UUID } from '@boostercloud/framework-types'
+import { replace, restore } from 'sinon'
+import { CognitoIdentityServiceProvider } from 'aws-sdk'
+import { UserEnvelope } from '@boostercloud/framework-types'
 import { APIGatewayProxyEvent } from 'aws-lambda'
 import * as UserEnvelopes from '../../src/library/user-envelopes'
 
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
-
-const fakeLogger: Logger = {
-  info: fake(),
-  error: fake(),
-  debug: fake(),
-}
 
 describe('the commands-adapter', () => {
   afterEach(() => {
@@ -69,54 +62,7 @@ describe('the commands-adapter', () => {
     })
   })
 
-  describe('the `handleCommandResult` method', () => {
-    it('publishes the emitted events', async () => {
-      const config = new BoosterConfig()
-      config.appName = 'test-app'
-      const requestID = 'request-id'
-      const streamName = config.resourceNames.eventsStream
-      const events = [
-        {
-          entityID(): UUID {
-            return '123'
-          },
-        },
-        {
-          entityID(): UUID {
-            return '456'
-          },
-        },
-      ]
-
-      const fakePutRecords = fake.returns({
-        promise: fake.resolves(''),
-      })
-      const fakeKinesis: Kinesis = { putRecords: fakePutRecords } as any
-
-      const eventEnvelopes = events.map(
-        (e): EventEnvelope => {
-          return {
-            version: 1,
-            kind: 'event',
-            requestID,
-            entityID: e.entityID(),
-            entityTypeName: 'fake-entity-name',
-            typeName: 'fake-type-name',
-            value: {
-              entityID: e.entityID,
-            },
-            createdAt: new Date().toISOString(),
-          }
-        }
-      )
-
-      await Library.handleCommandResult(fakeKinesis, config, eventEnvelopes, fakeLogger)
-      expect(fakePutRecords).to.be.calledWith(
-        match({
-          StreamName: streamName,
-          Records: match.has('length', 2),
-        })
-      )
-    })
+  describe('the `submitCommands` method', () => {
+    it('adds the passed command envelopes to the command queue') // TODO: First we have to do a refactor to make Command handling asynchronous
   })
 })
