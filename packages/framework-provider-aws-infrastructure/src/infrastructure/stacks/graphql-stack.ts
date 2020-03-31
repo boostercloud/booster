@@ -37,7 +37,7 @@ export class GraphQLStack {
 
   private buildLambda(name: string, handler: string): Function {
     const lambda = new Function(this.stack, name, {
-      ...params.lambda,
+      ...params.lambda(this.config),
       functionName: `${this.config.resourceNames.applicationStack}-${name}`,
       handler: handler,
       code: Code.fromAsset(this.config.userProjectRootPath),

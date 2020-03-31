@@ -25,7 +25,7 @@ export class AuthStack {
   private buildUserPool(): CfnUserPool {
     const localPreSignUpID = 'pre-sign-up-validator'
     const preSignUpLambda = new Function(this.stack, localPreSignUpID, {
-      ...params.lambda,
+      ...params.lambda(this.config),
       functionName: this.config.resourceNames.applicationStack + '-' + localPreSignUpID,
       handler: this.config.preSignUpHandler,
       code: Code.fromAsset(this.config.userProjectRootPath),

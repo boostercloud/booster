@@ -38,7 +38,7 @@ export class RestAPIStack {
   private buildCommandsAPI(): Function {
     const localID = 'commands-main'
     const lambdaFunction = new Function(this.stack, localID, {
-      ...params.lambda,
+      ...params.lambda(this.config),
       functionName: this.config.resourceNames.applicationStack + '-' + localID,
       handler: this.config.commandDispatcherHandler,
       code: Code.fromAsset(this.config.userProjectRootPath),
@@ -55,7 +55,7 @@ export class RestAPIStack {
   private buildReadModelsAPI(): Function {
     const localID = 'read-model-fetcher'
     const readModelFetcherLambda = new Function(this.stack, localID, {
-      ...params.lambda,
+      ...params.lambda(this.config),
       functionName: this.config.resourceNames.applicationStack + '-' + localID,
       handler: this.config.readModelMapperHandler,
       code: Code.fromAsset(this.config.userProjectRootPath),
