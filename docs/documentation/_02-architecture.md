@@ -6,9 +6,9 @@ software that is fast and scales very well, especially in distributed scenarios.
 
 With these patterns combined, in a Booster Application:
 
-- The "write operations" are separated from the "read operations" (called [_commands_](03-commands.md) and [_queries_](04-read-models.md), respectively) and dependencies are limited to data.
+- The _write operations_ are separated from the _read operations_ (called [_commands_](_03-commands.md) and [_queries_](_04-read-models.md), respectively) and dependencies are limited to data.
 - Instead of storing and mutating the data in a single stateful database, Booster stores the state as a virtually infinite append-only list of events (think of your bank account, where all the movements are stored as individual movements).
-- The event stream is the system source of truth, and the "current state" can be queried anytime reducing it on the fly as [entities](05-entities.md).
+- The event stream is the system source of truth, and the "current state" can be queried anytime reducing it on the fly as [entities](_05-entities.md).
 
 This architecture has many advantages:
 
@@ -24,7 +24,7 @@ The Booster high-level architecture diagram looks like this:
 ![Booster architecture](../img/booster-arch.png)
 
 Learn more about each topic in the corresponding sections:
-- [Commands](03-commands.md): The entry point of your application (Write API).
-- [Events](04-events.md): The source of truth of your application.
-- [Entities](05-entities.md): The domain model of your application.
-- [Read Models](06-read-models.md): Highly optimized Read API
+- [Commands](_03-commands.md): The entry point of your application (Write API).
+- [Events](_04-events.md): The source of truth of your application.
+- [Entities](_05-entities.md): The domain model of your application.
+- [Read Models](_06-read-models.md): Highly optimized Read API

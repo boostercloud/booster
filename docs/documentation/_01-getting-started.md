@@ -34,6 +34,6 @@ Let's install the Booster CLI and bootstrap your first project:
 Project structure or code generators are not enforced, but they're recommended to build a community-shared set of conventions.
 
 Now that you have an empty project you can:
-- [Learn more about the Booster Cloud Framework high-level Architecture](02-architecture.md)
-- [Start building your write API creating your first Commands](03-commands.md)
+- [Learn more about the Booster Cloud Framework high-level Architecture](_02-architecture.md)
+- [Start building your write API creating your first Commands](_03-commands.md)
 - [See code examples and step-by-step guides](../examples)
