@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from 'chai'
 import * as chai from 'chai'
-import { GraphQLRequestEnvelope } from '@boostercloud/framework-types'
+import { GraphQLRequestEnvelope, UserEnvelope } from '@boostercloud/framework-types'
 import { APIGatewayProxyWithLambdaAuthorizerEvent } from 'aws-lambda'
 import { AuthorizerWithUserData } from '../../src/library/auth-adapter'
-import { UserEnvelope } from '@boostercloud/framework-types/dist'
 import { rawGraphQLRequestToEnvelope } from '../../src/library/graphql-adapter'
 chai.use(require('sinon-chai'))
 

@@ -3,10 +3,9 @@
 import { fake, match, replace, restore } from 'sinon'
 import * as chai from 'chai'
 import { expect } from 'chai'
-import { BoosterConfig, Logger, GraphQLRequestEnvelope } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, GraphQLRequestEnvelope, InvalidParameterError } from '@boostercloud/framework-types'
 import { BoosterGraphQLDispatcher } from '../src/booster-graphql-dispatcher'
 import * as GraphQL from 'graphql/graphql'
-import { InvalidParameterError } from '@boostercloud/framework-types/dist'
 
 chai.use(require('sinon-chai'))
 
