@@ -1,3 +1,3 @@
-export interface Picture {
-  baseUrl: URL
+export class Picture {
+  public constructor(readonly baseUrl: URL) {}
 }

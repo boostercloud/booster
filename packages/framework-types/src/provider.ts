@@ -1,16 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CommandEnvelope, EventEnvelope, ReadModelRequestEnvelope, UserEnvelope } from './envelope'
+import {
+  CommandEnvelope,
+  EventEnvelope,
+  GraphQLRequestEnvelope,
+  ReadModelRequestEnvelope,
+  UserEnvelope,
+} from './envelope'
 import { BoosterConfig } from './config'
 import { Observable } from 'rxjs'
 import { Logger } from './logger'
 import { ReadModelInterface, UUID } from './concepts'
+import { Filter } from './searcher'
 
 export type ProviderLibrary = ProviderCommandsLibrary &
   ProviderEventsLibrary &
   ProviderReadModelsLibrary &
   ProviderAuthLibrary &
   ProviderAPIHandling &
-  ProviderInfrastructureGetter
+  ProviderInfrastructureGetter &
+  ProviderGraphQLLibrary &
+  ProviderSearcher
 
 export interface ProviderCommandsLibrary {
   rawCommandToEnvelope(rawCommand: any): Promise<CommandEnvelope>
@@ -55,6 +64,13 @@ export interface ProviderReadModelsLibrary {
   handleReadModelError(error: Error): Promise<any>
 }
 
+export interface ProviderGraphQLLibrary {
+  authorizeRequest(rawRequest: any, logger: Logger): Promise<any>
+  rawGraphQLRequestToEnvelope(rawGraphQLRequest: any, logger: Logger): Promise<GraphQLRequestEnvelope>
+  handleGraphQLResult(result?: any): Promise<any>
+  handleGraphQLError(error: Error): Promise<any>
+}
+
 export interface ProviderAuthLibrary {
   rawSignUpDataToUserEnvelope(rawMessage: any): UserEnvelope
 }
@@ -69,6 +85,16 @@ export interface ProviderInfrastructureGetter {
 }
 
 export interface ProviderInfrastructure {
-  deploy(configuration: BoosterConfig): Observable<string>
+  deploy?: (configuration: BoosterConfig) => Observable<string>
+  run?: (configuration: BoosterConfig, port: number) => Promise<void>
   nuke(configuration: BoosterConfig): Observable<string>
+}
+
+export interface ProviderSearcher {
+  searchReadModel<TReadModel extends ReadModelInterface>(
+    config: BoosterConfig,
+    logger: Logger,
+    entityTypeName: string,
+    filters: Record<string, Filter<any>>
+  ): Promise<Array<TReadModel>>
 }

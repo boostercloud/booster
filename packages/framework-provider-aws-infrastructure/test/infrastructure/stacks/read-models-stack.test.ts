@@ -15,7 +15,11 @@ describe('ReadModelsStack', () => {
       public constructor(readonly id: UUID) {}
     }
     const config = new BoosterConfig()
-    config.readModels['SomeReadModel'] = { class: SomeReadModel, authorizedRoles: 'all' }
+    config.readModels['SomeReadModel'] = {
+      class: SomeReadModel,
+      authorizedRoles: 'all',
+      properties: [],
+    }
 
     const stack = new Stack(new App(), 'some-app')
 
