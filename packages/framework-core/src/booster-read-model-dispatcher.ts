@@ -8,6 +8,7 @@ import {
   ReadModelInterface,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
+import { Booster } from './booster'
 
 export class BoosterReadModelDispatcher {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
@@ -53,6 +54,7 @@ export class BoosterReadModelDispatcher {
     readModelRequest: ReadModelRequestEnvelope
   ): Promise<ReadModelInterface | Array<ReadModelInterface>> {
     if (readModelRequest.readModelID) {
+      // Deprecated
       return this.config.provider.fetchReadModel(
         this.config,
         this.logger,
@@ -60,6 +62,16 @@ export class BoosterReadModelDispatcher {
         readModelRequest.readModelID
       )
     }
-    return this.config.provider.fetchAllReadModels(this.config, this.logger, readModelRequest.typeName)
+
+    const readModelMetadata = this.config.readModels[readModelRequest.typeName]
+    const searcher = Booster.readModel(readModelMetadata.class)
+    if (readModelRequest.filters) {
+      for (const propName in readModelRequest.filters) {
+        const filter = readModelRequest.filters[propName]
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        searcher.filter(propName as any, filter.operation as any, ...filter.values)
+      }
+    }
+    return searcher.search()
   }
 }

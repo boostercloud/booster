@@ -1,12 +1,17 @@
-import { AnyClass, BoosterConfig, GraphQLRequestEnvelope } from '@boostercloud/framework-types'
+import {
+  AnyClass,
+  BoosterConfig,
+  GraphQLRequestEnvelope,
+  CommandEnvelope,
+  ReadModelPropertyFilter,
+  ReadModelRequestEnvelope,
+} from '@boostercloud/framework-types'
 import { GraphQLFieldResolver, GraphQLSchema } from 'graphql'
-import { Booster } from '../../booster'
 import { GraphQLTypeInformer } from './graphql-type-informer'
 import { GraphQLQueryGenerator } from './graphql-query-generator'
 import { GraphQLMutationGenerator } from './graphql-mutations-generator'
 import { BoosterCommandDispatcher } from '../../booster-command-dispatcher'
 import { BoosterReadModelDispatcher } from '../../booster-read-model-dispatcher'
-import { CommandEnvelope } from '@boostercloud/framework-types/dist'
 
 export class GraphQLGenerator {
   private queryGenerator: GraphQLQueryGenerator
@@ -18,7 +23,6 @@ export class GraphQLGenerator {
     private commandsDispatcher: BoosterCommandDispatcher,
     private readModelsDispatcher: BoosterReadModelDispatcher
   ) {
-    console.log(this.readModelsDispatcher)
     this.typeInformer = new GraphQLTypeInformer({ ...config.readModels, ...config.commandHandlers })
     this.queryGenerator = new GraphQLQueryGenerator(
       config.readModels,
@@ -42,25 +46,37 @@ export class GraphQLGenerator {
 
   public readModelFilterResolverBuilder(
     readModelClass: AnyClass
-  ): GraphQLFieldResolver<any, GraphQLRequestEnvelope, any> {
+  ): GraphQLFieldResolver<any, GraphQLRequestEnvelope, Record<string, ReadModelPropertyFilter>> {
     return (parent, args, context, info) => {
-      //this.readModelsDispatcher.fetch()
-      const searcher = Booster.readModel(readModelClass)
-      for (const propName in args) {
-        const filter = args[propName]
-        searcher.filter(propName, filter.operation, ...filter.values)
+      const readModelEnvelope: ReadModelRequestEnvelope = {
+        requestID: context.requestID,
+        currentUser: context.currentUser,
+        typeName: readModelClass.name,
+        filters: args,
+        version: 1, // TODO: How to pass the version through GraphQL?
       }
-      return searcher.search()
+      return this.readModelsDispatcher.fetch(readModelEnvelope)
     }
   }
 
   public readModelByIDResolverBuilder(
     readModelClass: AnyClass
-  ): GraphQLFieldResolver<any, GraphQLRequestEnvelope, any> {
-    return (parent, args, context, info) => {
-      const searcher = Booster.readModel(readModelClass)
-      searcher.filter('id', '=', args.id)
-      return searcher.searchOne()
+  ): GraphQLFieldResolver<any, GraphQLRequestEnvelope, Record<string, ReadModelPropertyFilter>> {
+    return async (parent, args, context, info) => {
+      const readModelEnvelope: ReadModelRequestEnvelope = {
+        requestID: context.requestID,
+        currentUser: context.currentUser,
+        typeName: readModelClass.name,
+        filters: {
+          id: {
+            operation: '=',
+            values: [args.id],
+          },
+        },
+        version: 1, // TODO: How to pass the version through GraphQL?
+      }
+      const result = await this.readModelsDispatcher.fetch(readModelEnvelope)
+      return result[0]
     }
   }
 

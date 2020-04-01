@@ -26,9 +26,16 @@ export interface EventEnvelope extends Envelope {
   createdAt: string
 }
 
+export interface ReadModelPropertyFilter {
+  operation: string
+  values: Array<any>
+}
+
 export interface ReadModelRequestEnvelope extends Envelope {
   typeName: string
   version: number
+  filters?: Record<string, ReadModelPropertyFilter>
+  /** @deprecated */
   readModelID?: UUID
 }
 

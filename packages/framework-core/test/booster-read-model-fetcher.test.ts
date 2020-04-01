@@ -100,7 +100,8 @@ describe('BoosterReadModelDispatcher', () => {
       expect(providerHandleError.getCall(0).lastArg).to.be.an.instanceOf(NotAuthorizedError)
     })
 
-    it('calls the provider method to get all read models when no ID is provided', async () => {
+    // Skipt this test because soon the method it tests will be removed
+    it.skip('calls the provider method to get all read models when no ID is provided', async () => {
       const rawMessage = {}
       const envelope: ReadModelRequestEnvelope = {
         typeName: TestReadModel.name,
