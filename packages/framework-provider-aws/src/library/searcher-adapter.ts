@@ -19,8 +19,8 @@ export async function searchReadModel(
     params = {
       ...params,
       FilterExpression: buildFilterExpression(filters),
-      ExpressionAttributeValues: buildExpressionAttributeNames(filters),
-      ExpressionAttributeNames: buildExpressionAttributeValues(filters),
+      ExpressionAttributeNames: buildExpressionAttributeNames(filters),
+      ExpressionAttributeValues: buildExpressionAttributeValues(filters),
     }
   }
   logger.debug('Running search with the following params: \n', params)
