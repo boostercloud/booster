@@ -5,7 +5,7 @@ import { GraphQLTypeInformer } from './graphql-type-informer'
 import { GraphQLQueryGenerator } from './graphql-query-generator'
 import { GraphQLMutationGenerator } from './graphql-mutations-generator'
 import { BoosterCommandDispatcher } from '../../booster-command-dispatcher'
-import { BoosterReadModelFetcher } from '../../booster-read-model-fetcher'
+import { BoosterReadModelDispatcher } from '../../booster-read-model-dispatcher'
 import { CommandEnvelope } from '@boostercloud/framework-types/dist'
 
 export class GraphQLGenerator {
@@ -16,7 +16,7 @@ export class GraphQLGenerator {
   public constructor(
     config: BoosterConfig,
     private commandsDispatcher: BoosterCommandDispatcher,
-    private readModelsDispatcher: BoosterReadModelFetcher
+    private readModelsDispatcher: BoosterReadModelDispatcher
   ) {
     console.log(this.readModelsDispatcher)
     this.typeInformer = new GraphQLTypeInformer({ ...config.readModels, ...config.commandHandlers })

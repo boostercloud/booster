@@ -66,11 +66,12 @@ describe('the `BoosterGraphQLDispatcher`', () => {
     it('calls the the GraphQL engine with the passed envelope and handles the result', async () => {
       const graphQLBody = 'a graphql query'
       const graphQLResult = 'the result'
-      const config = mockConfigForGraphQLEnvelope({
+      const graphQLEnvelope: GraphQLRequestEnvelope = {
         requestID: '123',
         eventType: 'MESSAGE',
         value: graphQLBody,
-      })
+      }
+      const config = mockConfigForGraphQLEnvelope(graphQLEnvelope)
       const dispatcher = new BoosterGraphQLDispatcher(config, logger)
       const graphqlFake = fake.returns({ data: graphQLResult })
       replace(GraphQL, 'graphql', graphqlFake)
@@ -78,7 +79,11 @@ describe('the `BoosterGraphQLDispatcher`', () => {
       await dispatcher.dispatchGraphQL({})
 
       expect(config.provider.handleGraphQLError).to.not.have.been.called
-      expect(graphqlFake).to.have.been.calledWithExactly(match.any, graphQLBody)
+      expect(graphqlFake).to.have.been.calledWithExactly({
+        schema: match.any,
+        source: graphQLBody,
+        contextValue: match(graphQLEnvelope),
+      })
       expect(config.provider.handleGraphQLResult).to.have.been.calledWithExactly(graphQLResult)
     })
   })

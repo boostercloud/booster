@@ -2,7 +2,7 @@ import { BoosterConfig, Logger, InvalidParameterError, GraphQLRequestEnvelope } 
 import { graphql, GraphQLSchema } from 'graphql'
 import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { BoosterCommandDispatcher } from './booster-command-dispatcher'
-import { BoosterReadModelFetcher } from './booster-read-model-fetcher'
+import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
 
 export class BoosterGraphQLDispatcher {
   private readonly graphQLSchema: GraphQLSchema
@@ -11,7 +11,7 @@ export class BoosterGraphQLDispatcher {
     this.graphQLSchema = new GraphQLGenerator(
       config,
       new BoosterCommandDispatcher(config, logger),
-      new BoosterReadModelFetcher(config, logger)
+      new BoosterReadModelDispatcher(config, logger)
     ).generateSchema()
   }
 

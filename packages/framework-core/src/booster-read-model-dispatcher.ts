@@ -9,7 +9,7 @@ import {
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
 
-export class BoosterReadModelFetcher {
+export class BoosterReadModelDispatcher {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
   /**
    * @deprecated This the entry point used when requests come directly trough HTTP API, use GraphQl instead

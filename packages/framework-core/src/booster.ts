@@ -11,7 +11,7 @@ import {
 import { Importer } from './importer'
 import { buildLogger } from './booster-logger'
 import { BoosterCommandDispatcher } from './booster-command-dispatcher'
-import { BoosterReadModelFetcher } from './booster-read-model-fetcher'
+import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
 import { BoosterEventDispatcher } from './booster-event-dispatcher'
 import { BoosterAuth } from './booster-auth'
 import { fetchEntitySnapshot } from './entity-snapshot-fetcher'
@@ -82,7 +82,7 @@ export class Booster {
    * @deprecated Use GraphQL
    */
   public static fetchReadModels(readModelsRequest: any): Promise<any> {
-    return new BoosterReadModelFetcher(this.config, this.logger).dispatch(readModelsRequest)
+    return new BoosterReadModelDispatcher(this.config, this.logger).dispatch(readModelsRequest)
   }
 
   /**
