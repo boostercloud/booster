@@ -1,5 +1,5 @@
 before(() => {
-  console.log("this happens at the beginning of aws copy")
+
 })
 
 after(() => {
