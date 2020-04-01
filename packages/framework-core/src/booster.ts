@@ -11,7 +11,7 @@ import {
 import { Importer } from './importer'
 import { buildLogger } from './booster-logger'
 import { BoosterCommandDispatcher } from './booster-command-dispatcher'
-import { BoosterReadModelFetcher } from './booster-read-model-fetcher'
+import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
 import { BoosterEventDispatcher } from './booster-event-dispatcher'
 import { BoosterAuth } from './booster-auth'
 import { fetchEntitySnapshot } from './entity-snapshot-fetcher'
@@ -26,27 +26,24 @@ import { BoosterGraphQLDispatcher } from './booster-graphql-dispatcher'
  */
 export class Booster {
   private static logger: Logger
-  private static readonly config = new BoosterConfig()
-
+  private static readonly config = new BoosterConfig(checkAndGetCurrentEnv())
   /**
    * Avoid creating instances of this class
    */
   private constructor() {}
 
   public static configureCurrentEnv(configurator: (config: BoosterConfig) => void): void {
-    if (!process.env.BOOSTER_ENV) {
-      throw new Error('Attempted to configure the current environment, but none was set.')
-    }
-    this.configure(process.env.BOOSTER_ENV, configurator)
+    this.configure(this.config.env, configurator)
   }
 
   /**
    * Allows to configure the Booster project.
    *
+   * @param environment The name of the environment you want to configure
    * @param configurator A function that receives the configuration object to set the values
    */
   public static configure(environment: string, configurator: (config: BoosterConfig) => void): void {
-    if (process.env.BOOSTER_ENV === environment) {
+    if (this.config.env === environment) {
       configurator(this.config)
     }
   }
@@ -74,16 +71,18 @@ export class Booster {
 
   /**
    * Entry point to dispatch a command to the corresponding handler and process its result
+   * @deprecated Use GraphQL
    */
   public static dispatchCommand(rawCommand: any): Promise<any> {
-    return BoosterCommandDispatcher.dispatch(rawCommand, this.config, this.logger)
+    return new BoosterCommandDispatcher(this.config, this.logger).dispatch(rawCommand)
   }
 
   /**
    * Entry point to fetch entities
+   * @deprecated Use GraphQL
    */
   public static fetchReadModels(readModelsRequest: any): Promise<any> {
-    return BoosterReadModelFetcher.fetch(readModelsRequest, this.config, this.logger)
+    return new BoosterReadModelDispatcher(this.config, this.logger).dispatch(readModelsRequest)
   }
 
   /**
@@ -119,6 +118,16 @@ export class Booster {
   ): Promise<TEntity | undefined> {
     return fetchEntitySnapshot(this.config, this.logger, entityClass, entityID)
   }
+}
+
+function checkAndGetCurrentEnv(): string {
+  const env = process.env.BOOSTER_ENV
+  if (!env || env.trim().length == 0) {
+    throw new Error(
+      'Booster environment is missing. You need to provide an environment to configure your Booster project'
+    )
+  }
+  return env
 }
 
 export async function boosterCommandDispatcher(rawCommand: any): Promise<any> {

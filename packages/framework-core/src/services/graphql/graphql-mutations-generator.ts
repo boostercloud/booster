@@ -1,8 +1,9 @@
 import { TargetTypesMap } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
-import { GraphQLBoolean, GraphQLFieldConfigMap, GraphQLObjectType } from 'graphql'
+import { GraphQLBoolean, GraphQLFieldConfigMap, GraphQLFieldResolver, GraphQLObjectType } from 'graphql'
+import { AnyClass, GraphQLRequestEnvelope } from '@boostercloud/framework-types'
 
-type MutationResolver = (input: Record<string, any>) => Promise<void>
+export type MutationResolver = (commandClass: AnyClass) => GraphQLFieldResolver<any, GraphQLRequestEnvelope, any>
 
 export class GraphQLMutationGenerator {
   public constructor(
@@ -30,9 +31,7 @@ export class GraphQLMutationGenerator {
             type: this.typeInformer.getGraphQLInputTypeFor(type.class),
           },
         },
-        resolve: (parent, args) => {
-          return this.mutationResolver(args.input)
-        },
+        resolve: this.mutationResolver(type.class),
       }
     }
     return mutations

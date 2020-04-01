@@ -11,26 +11,21 @@ export async function searchReadModel(
   readModelName: string,
   filters: Record<string, Filter<any>>
 ): Promise<Array<any>> {
-  const filterExpression = buildFilterExpression(filters)
-  const filterExpressionNames = buildExpressionAttributeNames(filters)
-  const filterExpressionValues = buildExpressionAttributeValues(filters)
-  logger.debug(
-    // eslint-disable-next-line prettier/prettier
-    'Running search: \n' +
-    '> Filter expression = "', filterExpression, '"\n' +
-    '> Expression names = "', filterExpressionNames, '"\n' +
-    '> Expression values = "', filterExpressionValues, '"'
-  )
+  let params: DocumentClient.ScanInput = {
+    TableName: config.resourceNames.forReadModel(readModelName),
+    ConsistentRead: true,
+  }
+  if (filters && Object.keys(filters).length > 0) {
+    params = {
+      ...params,
+      FilterExpression: buildFilterExpression(filters),
+      ExpressionAttributeNames: buildExpressionAttributeNames(filters),
+      ExpressionAttributeValues: buildExpressionAttributeValues(filters),
+    }
+  }
+  logger.debug('Running search with the following params: \n', params)
 
-  const result = await dynamoDB
-    .scan({
-      TableName: config.resourceNames.forReadModel(readModelName),
-      ConsistentRead: true,
-      FilterExpression: filterExpression,
-      ExpressionAttributeValues: filterExpressionValues,
-      ExpressionAttributeNames: filterExpressionNames,
-    })
-    .promise()
+  const result = await dynamoDB.scan(params).promise()
 
   logger.debug('Search result: ', result.Items)
 

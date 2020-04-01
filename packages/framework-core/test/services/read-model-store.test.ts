@@ -35,7 +35,7 @@ describe('ReadModelStore', () => {
     }
   }
 
-  const config = new BoosterConfig()
+  const config = new BoosterConfig('test')
   config.provider = ({
     storeReadModel: () => {},
     fetchReadModel: () => {},

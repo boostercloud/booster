@@ -15,7 +15,7 @@ describe('the event registry', () => {
     restore()
   })
   const provider = {} as ProviderLibrary
-  const config = new BoosterConfig()
+  const config = new BoosterConfig('test')
   config.provider = provider
 
   describe('the publish method', () => {

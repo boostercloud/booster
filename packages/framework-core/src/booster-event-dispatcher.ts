@@ -66,8 +66,15 @@ export class BoosterEventDispatcher {
   }
 
   private static async handleEvent(eventEnvelope: EventEnvelope, config: BoosterConfig, logger: Logger): Promise<void> {
+    const eventHandlers = config.eventHandlers[eventEnvelope.typeName]
+    if (!eventHandlers || eventHandlers.length == 0) {
+      logger.debug(
+        `[BoosterEventDispatcher#handleEvent] No event-handlers found for event ${eventEnvelope.typeName}. Skipping...`
+      )
+      return
+    }
     await Promise.all(
-      config.eventHandlers[eventEnvelope.typeName].map((eventHandler: EventHandlerInterface) => {
+      eventHandlers.map((eventHandler: EventHandlerInterface) => {
         const register = new Register(eventEnvelope.requestID, eventEnvelope.currentUser)
         logger.debug('Calling "handle" method on event handler: ', eventHandler)
         eventHandler.handle(eventEnvelope.value as EventInterface, register)

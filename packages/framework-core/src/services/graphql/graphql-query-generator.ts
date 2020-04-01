@@ -18,13 +18,14 @@ import { GraphQLJSONObject } from 'graphql-type-json'
 import {
   AnyClass,
   BooleanOperations,
+  GraphQLRequestEnvelope,
   NumberOperations,
   PropertyMetadata,
   StringOperations,
   UUID,
 } from '@boostercloud/framework-types'
 
-type QueryResolverBuilder = (readModelClass: AnyClass) => GraphQLFieldResolver<any, any, any>
+export type QueryResolverBuilder = (readModelClass: AnyClass) => GraphQLFieldResolver<any, GraphQLRequestEnvelope, any>
 
 export class GraphQLQueryGenerator {
   private generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}

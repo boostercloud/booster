@@ -5,7 +5,6 @@ import { ReadModel, Booster, Entity, Projects } from '../../src/index'
 import { UUID } from '@boostercloud/framework-types'
 
 describe('the `ReadModel` decorator', () => {
-  process.env.BOOSTER_ENV = 'test'
   afterEach(() => {
     Booster.configure('test', (config) => {
       for (const propName in config.readModels) {

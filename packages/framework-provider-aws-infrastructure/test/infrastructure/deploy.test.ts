@@ -35,7 +35,7 @@ describe('the deployment process', () => {
     it(
       'notifies about progress through the observer'
     ) /*, async () => {
-      const config = new BoosterConfig()
+      const config = new BoosterConfig('test')
       const fakeBootstrapEnvironment = fake.returns({ noOp: true })
       replace(CDK, 'bootstrapEnvironment', fakeBootstrapEnvironment)
       replace(CdkToolkit.prototype, 'deploy', fake())
@@ -54,7 +54,7 @@ describe('the deployment process', () => {
     */
 
     it('notifies about an error through the observer when an error is thrown', async () => {
-      const config = new BoosterConfig()
+      const config = new BoosterConfig('test')
       const fakeBootstrapEnvironment = fake.returns({ noOp: true })
       const fakeCdkDeployThatThrows = fake.throws(new Error('Testing error'))
 
@@ -67,7 +67,7 @@ describe('the deployment process', () => {
     it('builds the AppStack calling to the `getStackServiceConfiguration`') // TODO
 
     it('calls the CDK bootstrap with the default environment parameters', async () => {
-      const config = new BoosterConfig()
+      const config = new BoosterConfig('test')
       const fakeBootstrapEnvironment = fake.returns({ noOp: true })
 
       replace(CDK, 'bootstrapEnvironment', fakeBootstrapEnvironment)
@@ -83,7 +83,7 @@ describe('the deployment process', () => {
     it('calls the CDK bootstrap with the environment parameters overridden by the configuration') //TODO
 
     it('calls the CDK bootstrap with the right config parameters', async () => {
-      const config = new BoosterConfig()
+      const config = new BoosterConfig('test')
       const testAppName = 'testing'
       config.appName = testAppName
 
@@ -113,7 +113,7 @@ describe('the deployment process', () => {
         public id: UUID = ''
       }
 
-      const config = new BoosterConfig()
+      const config = new BoosterConfig('test')
       config.appName = 'testing-app'
       config.entities[EmptyEntity.name] = {
         class: EmptyEntity,
@@ -145,7 +145,7 @@ describe('the deployment process', () => {
       public id: UUID = ''
     }
 
-    const config = new BoosterConfig()
+    const config = new BoosterConfig('test')
     config.appName = 'testing-app'
     config.readModels[SomeReadModel.name] = {
       class: SomeReadModel,

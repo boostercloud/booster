@@ -111,7 +111,7 @@ describe('the "rawReadModelRequestToEnvelope" method', () => {
 describe('the "fetchReadModel" method', () => {
   it("responds with an error when the read model doesn't exist", async () => {
     const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
-    const config = new BoosterConfig()
+    const config = new BoosterConfig('test')
     replace(
       db,
       'get',
@@ -133,7 +133,7 @@ describe('the "fetchReadModel" method', () => {
 
   it('responds with a read model when it exist', async () => {
     const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
-    const config = new BoosterConfig()
+    const config = new BoosterConfig('test')
     replace(
       db,
       'get',
@@ -155,7 +155,7 @@ describe('the "fetchReadModel" method', () => {
 describe('the "fetchAllReadModels" method', () => {
   it("responds with an error when the read model name doesn't exist", async () => {
     const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
-    const config = new BoosterConfig()
+    const config = new BoosterConfig('test')
     replace(
       db,
       'scan',
@@ -174,7 +174,7 @@ describe('the "fetchAllReadModels" method', () => {
 
   it('responds with all read models when the read model name exists', async () => {
     const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
-    const config = new BoosterConfig()
+    const config = new BoosterConfig('test')
     const expectedModels = [{ prop: 'first model' }, { prop: 'second model' }]
     replace(
       db,
@@ -196,7 +196,7 @@ describe('the "fetchAllReadModels" method', () => {
 describe('the "storeReadModel" method', () => {
   it('saves a read model', async () => {
     const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
-    const config = new BoosterConfig()
+    const config = new BoosterConfig('test')
     replace(
       db,
       'put',

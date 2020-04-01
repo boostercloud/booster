@@ -23,7 +23,7 @@ describe('the "checkSignUp" method', () => {
   })
 
   function buildBoosterConfig(): BoosterConfig {
-    const config = new BoosterConfig()
+    const config = new BoosterConfig('test')
     config.provider = ({
       rawSignUpDataToUserEnvelope: () => {},
     } as unknown) as ProviderLibrary
@@ -119,7 +119,7 @@ describe('the "isUserAuthorized" method', () => {
 describe('the "authorizeRequest" method', () => {
   it('calls the provider authorizer', async () => {
     const request = {}
-    const config = new BoosterConfig()
+    const config = new BoosterConfig('test')
     const fakeProviderAuthorizer = fake()
     config.provider = {
       authorizeRequest: fakeProviderAuthorizer,

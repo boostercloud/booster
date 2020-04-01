@@ -63,7 +63,7 @@ describe('BoosterEventDispatcher', () => {
     error() {},
   }
 
-  const config = new BoosterConfig()
+  const config = new BoosterConfig('test')
   config.provider = {} as ProviderLibrary
 
   context('with a configured provider', () => {
@@ -165,6 +165,18 @@ describe('BoosterEventDispatcher', () => {
     describe('the `handleEvent` method', () => {
       afterEach(() => {
         config.eventHandlers['SomeEvent'] = []
+      })
+
+      it('does nothing and does not throw if there are no event handlers', async () => {
+        replace(RegisterHandler, 'handle', fake())
+        const boosterEventDispatcher = BoosterEventDispatcher as any
+        // We try first with null array of event handlers
+        config.eventHandlers['SomeEvent'] = null as any
+        await boosterEventDispatcher.handleEvent(someEvent, config, logger)
+        // And now with an empty array
+        config.eventHandlers['SomeEvent'] = []
+        await boosterEventDispatcher.handleEvent(someEvent, config, logger)
+        // It should not throw any errors
       })
 
       it('calls all the handlers for the current event', async () => {

@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@boostercloud/framework-types": "^0.1.4",
-    "aws-sdk": "^2.633.0"
+    "aws-sdk": "^2.649.0"
   },
   "scripts": {
     "lint": "eslint --ext '.js,.ts' **/*.ts",

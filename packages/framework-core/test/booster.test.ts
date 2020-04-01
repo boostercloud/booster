@@ -13,14 +13,12 @@ import {
 } from '../src/booster'
 import { replace, fake, restore } from 'sinon'
 import { Importer } from '../src/importer'
-import { BoosterReadModelFetcher } from '../src/booster-read-model-fetcher'
 import * as EntitySnapshotFetcher from '../src/entity-snapshot-fetcher'
 import { UUID } from '@boostercloud/framework-types'
 
 chai.use(require('sinon-chai'))
 
 describe('the `Booster` class', () => {
-  process.env.BOOSTER_ENV = 'test'
   afterEach(() => {
     restore()
     Booster.configure('test', (config) => {
@@ -53,18 +51,6 @@ describe('the `Booster` class', () => {
       replace(Importer, 'importUserProjectFiles', fakeImporter)
       Booster.start()
       expect(fakeImporter).to.have.been.calledOnce
-    })
-  })
-
-  describe('the public static `fetchReadModels` method', () => {
-    it('calls `BoosterReadModelFetcher.fetch` passing the request and initializing it with Booster config', async () => {
-      replace(BoosterReadModelFetcher, 'fetch', fake())
-      const request = { some: 'request' }
-      const booster = Booster as any
-
-      await Booster.fetchReadModels(request)
-
-      expect(BoosterReadModelFetcher.fetch).to.have.been.calledOnceWith(request, booster.config)
     })
   })
 

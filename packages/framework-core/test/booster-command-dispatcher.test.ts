@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { Booster } from '../src/booster'
-import { fake, replace, restore } from 'sinon'
+import { fake, replace, restore, match } from 'sinon'
 import * as chai from 'chai'
 import { expect } from 'chai'
 import { BoosterCommandDispatcher } from '../src/booster-command-dispatcher'
@@ -11,9 +11,9 @@ import { ProviderLibrary } from '@boostercloud/framework-types'
 import { RegisterHandler } from '../src/booster-register-handler'
 
 chai.use(require('sinon-chai'))
+chai.use(require('chai-as-promised'))
 
 describe('the `BoosterCommandsDispatcher`', () => {
-  process.env.BOOSTER_ENV = 'test'
   afterEach(() => {
     restore()
     Booster.configure('test', (config) => {
@@ -32,36 +32,34 @@ describe('the `BoosterCommandsDispatcher`', () => {
 
   describe('the `dispatch` method', () => {
     it('dispatches the command when there are no errors', async () => {
-      const boosterCommandDispatcher = BoosterCommandDispatcher as any
-      const register = new Register('1234')
-      replace(boosterCommandDispatcher, 'dispatchCommand', fake.returns(register))
-      replace(RegisterHandler, 'handle', fake())
-
-      const config = new BoosterConfig()
+      const config = new BoosterConfig('test')
       config.provider = ({
         rawCommandToEnvelope: fake.resolves({}),
         requestSucceeded: fake(),
       } as unknown) as ProviderLibrary
-      await boosterCommandDispatcher.dispatch({ body: 'Test body' }, config, logger)
+
+      const boosterCommandDispatcher = new BoosterCommandDispatcher(config, logger)
+      replace(boosterCommandDispatcher, 'dispatchCommand', fake())
+
+      await boosterCommandDispatcher.dispatch({ body: 'Test body' })
 
       expect(config.provider.rawCommandToEnvelope).to.have.been.calledOnce
       expect(boosterCommandDispatcher.dispatchCommand).to.have.been.calledOnce
-      expect(RegisterHandler.handle).to.have.been.calledOnceWith(config, logger, register)
       expect(config.provider.requestSucceeded).to.have.been.calledOnce
     })
 
     it('builds and returns a failure response when there were errors', async () => {
       const omgError = new Error('OMG!!!')
-      const boosterCommandDispatcher = BoosterCommandDispatcher as any
-      replace(boosterCommandDispatcher, 'dispatchCommand', fake.throws(omgError))
-      replace(RegisterHandler, 'handle', fake())
-
-      const config = new BoosterConfig()
+      const config = new BoosterConfig('test')
       config.provider = {
         rawCommandToEnvelope: fake.resolves({}),
         requestFailed: fake(),
       } as any
-      await boosterCommandDispatcher.dispatch({ body: 'Test body' }, config, logger)
+      const boosterCommandDispatcher = new BoosterCommandDispatcher(config, logger)
+      replace(boosterCommandDispatcher, 'dispatchCommand', fake.throws(omgError))
+      replace(RegisterHandler, 'handle', fake())
+
+      await boosterCommandDispatcher.dispatch({ body: 'Test body' })
 
       expect(config.provider.rawCommandToEnvelope).to.have.been.calledOnce
       expect(boosterCommandDispatcher.dispatchCommand).to.have.been.calledOnce
@@ -82,20 +80,24 @@ describe('the `BoosterCommandsDispatcher`', () => {
           }
         }
 
-        const boosterCommandDispatcher = BoosterCommandDispatcher as any
         const fakeHandler = fake()
         const command = new PostComment('This test is good!')
         replace(command, 'handle', fakeHandler)
+        replace(RegisterHandler, 'handle', fake())
 
-        Booster.configure('test', (config): void => {
-          boosterCommandDispatcher.dispatchCommand(
-            { version: 1, typeName: 'PostComment', value: command },
-            config,
-            logger
-          )
-        })
-
-        expect(fakeHandler).to.have.been.calledOnce
+        Booster.configure(
+          'test',
+          async (config): Promise<void> => {
+            await new BoosterCommandDispatcher(config, logger).dispatchCommand({
+              requestID: '1234',
+              version: 1,
+              typeName: 'PostComment',
+              value: command,
+            })
+            expect(fakeHandler).to.have.been.calledOnce
+            expect(RegisterHandler.handle).to.have.been.calledOnceWith(config, logger, match.instanceOf(Register))
+          }
+        )
       })
 
       it('fails if the command "version" is not sent', () => {
@@ -103,12 +105,11 @@ describe('the `BoosterCommandsDispatcher`', () => {
           typeName: 'PostComment',
           value: { comment: 'This comment is pointless' },
         }
-        const boosterCommandDispatcher = BoosterCommandDispatcher as any
-        Booster.configure('test', (config) => {
+        Booster.configure('test', async (config) => {
           // We use `bind` to generate a thunk that chai will then call, checking that it throws
-          expect(
-            boosterCommandDispatcher.dispatchCommand.bind(boosterCommandDispatcher, command, config, logger)
-          ).to.throw('The required command "version" was not present')
+          await expect(
+            new BoosterCommandDispatcher(config, logger).dispatchCommand(command as any)
+          ).to.eventually.throw('The required command "version" was not present')
         })
       })
 
@@ -118,12 +119,11 @@ describe('the `BoosterCommandsDispatcher`', () => {
           typeName: 'PostComment',
           value: { comment: 'This comment is pointless' },
         }
-        const boosterCommandDispatcher = BoosterCommandDispatcher as any
-        Booster.configure('test', (config) => {
+        Booster.configure('test', async (config) => {
           // We use `bind` to generate a thunk that chai will then call, checking that it throws
-          expect(
-            boosterCommandDispatcher.dispatchCommand.bind(boosterCommandDispatcher, command, config, logger)
-          ).to.throw('Could not find a proper handler for PostComment')
+          await expect(
+            new BoosterCommandDispatcher(config, logger).dispatchCommand(command as any)
+          ).to.eventually.throw('Could not find a proper handler for PostComment')
         })
       })
     })
