@@ -11,36 +11,32 @@ import { BoosterAuth } from './booster-auth'
 import { RegisterHandler } from './booster-register-handler'
 
 export class BoosterCommandDispatcher {
+  public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
+
   /**
    * Dispatches command messages to your application.
+   * @deprecated This the entry point used when requests come directly trough HTTP API, use GraphQl instead
    */
-  public static async dispatch(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rawCommand: any, // We type this as `any` because we don't know yet which type the provider we will use or return
-    config: BoosterConfig,
-    logger: Logger
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): Promise<any> {
-    logger.debug('Arrived raw command: ', rawCommand)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public async dispatch(rawCommand: any): Promise<any> {
+    this.logger.debug('Arrived raw command: ', rawCommand)
     try {
-      const envelope = await config.provider.rawCommandToEnvelope(rawCommand)
-      const register = this.dispatchCommand(envelope, config, logger)
-      logger.debug('Command dispatched with register: ', register)
-      await RegisterHandler.handle(config, logger, register)
-      return config.provider.requestSucceeded()
+      const envelope = await this.config.provider.rawCommandToEnvelope(rawCommand)
+      await this.dispatchCommand(envelope)
+      return this.config.provider.requestSucceeded()
     } catch (error) {
-      logger.error('When dispatching command: ', error)
-      return await config.provider.requestFailed(error)
+      this.logger.error('When dispatching command: ', error)
+      return await this.config.provider.requestFailed(error)
     }
   }
 
-  private static dispatchCommand(commandEnvelope: CommandEnvelope, config: BoosterConfig, logger: Logger): Register {
-    logger.debug('Dispatching the following command envelope: ', commandEnvelope)
+  public async dispatchCommand(commandEnvelope: CommandEnvelope): Promise<void> {
+    this.logger.debug('Dispatching the following command envelope: ', commandEnvelope)
     if (!commandEnvelope.version) {
       throw new InvalidParameterError('The required command "version" was not present')
     }
 
-    const commandMetadata = config.commandHandlers[commandEnvelope.typeName]
+    const commandMetadata = this.config.commandHandlers[commandEnvelope.typeName]
     if (!commandMetadata) {
       throw new NotFoundError(`Could not find a proper handler for ${commandEnvelope.typeName}`)
     }
@@ -50,14 +46,15 @@ export class BoosterCommandDispatcher {
     }
 
     const commandClass = commandMetadata.class
-    logger.debug('Found the following command:', commandClass.name)
+    this.logger.debug('Found the following command:', commandClass.name)
     const command = new commandClass()
     Object.assign(command, commandEnvelope.value)
     // TODO: Here we could call "command.validate()" so that the user can prevalidate
     // the command inputted by the user.
     const register = new Register(commandEnvelope.requestID, commandEnvelope.currentUser)
-    logger.debug('Calling "handle" method on command: ', command)
+    this.logger.debug('Calling "handle" method on command: ', command)
     command.handle(register)
-    return register
+    this.logger.debug('Command dispatched with register: ', register)
+    await RegisterHandler.handle(this.config, this.logger, register)
   }
 }

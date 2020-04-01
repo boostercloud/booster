@@ -90,6 +90,14 @@ function setupPermissions(
     })
   )
 
+  // The GraphQL lambda now executes commands too, so it needs the same permissions
+  graphQLLambda.addToRolePolicy(
+    new PolicyStatement({
+      resources: [eventsStream.streamArn],
+      actions: ['kinesis:Put*', 'dynamodb:Query*', 'dynamodb:Put*'],
+    })
+  )
+
   eventsLambda.addToRolePolicy(
     new PolicyStatement({
       resources: [eventsStore.tableArn],

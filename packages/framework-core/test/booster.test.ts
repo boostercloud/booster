@@ -63,7 +63,7 @@ describe('the `Booster` class', () => {
 
       await Booster.fetchReadModels(request)
 
-      expect(BoosterReadModelFetcher.fetch).to.have.been.calledOnceWith(request, booster.config)
+      expect(BoosterReadModelFetcher.dispatch).to.have.been.calledOnceWith(request, booster.config)
     })
   })
 

@@ -59,7 +59,7 @@ describe('BoosterReadModelFetcher', () => {
       const providerHandleError = fake()
       replace(config.provider, 'handleReadModelError', providerHandleError)
 
-      await BoosterReadModelFetcher.fetch(rawMessage, config, logger)
+      await BoosterReadModelFetcher.dispatch(rawMessage, config, logger)
       expect(providerHandleError).to.have.been.calledOnce
       expect(providerHandleError.getCall(0).lastArg).to.be.an.instanceOf(InvalidParameterError)
     })
@@ -75,7 +75,7 @@ describe('BoosterReadModelFetcher', () => {
       const providerHandleError = fake()
       replace(config.provider, 'handleReadModelError', providerHandleError)
 
-      await BoosterReadModelFetcher.fetch(rawMessage, config, logger)
+      await BoosterReadModelFetcher.dispatch(rawMessage, config, logger)
       expect(providerHandleError).to.have.been.calledOnce
       expect(providerHandleError.getCall(0).lastArg).to.be.an.instanceOf(NotFoundError)
     })
@@ -95,7 +95,7 @@ describe('BoosterReadModelFetcher', () => {
       const providerHandleError = fake()
       replace(config.provider, 'handleReadModelError', providerHandleError)
 
-      await BoosterReadModelFetcher.fetch(rawMessage, config, logger)
+      await BoosterReadModelFetcher.dispatch(rawMessage, config, logger)
       expect(providerHandleError).to.have.been.calledOnce
       expect(providerHandleError.getCall(0).lastArg).to.be.an.instanceOf(NotAuthorizedError)
     })
@@ -118,7 +118,7 @@ describe('BoosterReadModelFetcher', () => {
       replace(config.provider, 'fetchAllReadModels', providerFetchAll)
       replace(config.provider, 'handleReadModelResult', providerHandleResult)
 
-      await BoosterReadModelFetcher.fetch(rawMessage, config, logger)
+      await BoosterReadModelFetcher.dispatch(rawMessage, config, logger)
       expect(providerFetchAll).to.have.been.calledOnce
       expect(providerHandleResult).to.have.been.calledWith(returnedReadModels)
     })
@@ -142,7 +142,7 @@ describe('BoosterReadModelFetcher', () => {
       replace(config.provider, 'fetchReadModel', providerFetchOne)
       replace(config.provider, 'handleReadModelResult', providerHandleResult)
 
-      await BoosterReadModelFetcher.fetch(rawMessage, config, logger)
+      await BoosterReadModelFetcher.dispatch(rawMessage, config, logger)
       expect(providerFetchOne).to.have.been.calledOnce
       expect(providerHandleResult).to.have.been.calledWith(returnedReadModel)
     })

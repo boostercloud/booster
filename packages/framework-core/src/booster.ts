@@ -71,16 +71,18 @@ export class Booster {
 
   /**
    * Entry point to dispatch a command to the corresponding handler and process its result
+   * @deprecated Use GraphQL
    */
   public static dispatchCommand(rawCommand: any): Promise<any> {
-    return BoosterCommandDispatcher.dispatch(rawCommand, this.config, this.logger)
+    return new BoosterCommandDispatcher(this.config, this.logger).dispatch(rawCommand)
   }
 
   /**
    * Entry point to fetch entities
+   * @deprecated Use GraphQL
    */
   public static fetchReadModels(readModelsRequest: any): Promise<any> {
-    return BoosterReadModelFetcher.fetch(readModelsRequest, this.config, this.logger)
+    return new BoosterReadModelFetcher(this.config, this.logger).dispatch(readModelsRequest)
   }
 
   /**
