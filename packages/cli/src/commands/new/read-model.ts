@@ -22,12 +22,12 @@ export default class ReadModel extends Oclif.Command {
     help: Oclif.flags.help({ char: 'h' }),
     fields: Oclif.flags.string({
       char: 'f',
-      description: 'fields that this entity will contain',
+      description: 'fields that this read model will contain',
       multiple: true,
     }),
     projects: Oclif.flags.string({
       char: 'p',
-      description: 'entities that this entity will project to build its state',
+      description: 'entities that this read model will project to build its state',
       multiple: true,
     }),
   }
