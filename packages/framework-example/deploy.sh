@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# This script allows to deploy the example application event within the world of lerna packages.
+# This script allows to deploy the example application within the world of lerna packages.
 
 # First, we ensure that the project is bootstrapped, and all the dependencies are installed (node_modules is placed at
 # root of the project)
