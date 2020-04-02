@@ -8,8 +8,8 @@ import { RestAPIStack } from './rest-api-stack'
 import { AuthStack } from './auth-stack'
 import { EventsStack } from './events-stack'
 import { ReadModelsStack } from './read-models-stack'
-import { GraphQLStack } from "./graphql-stack";
-import { RestApi } from "@aws-cdk/aws-apigateway";
+import { GraphQLStack } from './graphql-stack'
+import { RestApi } from '@aws-cdk/aws-apigateway'
 import { CfnApi, CfnStage } from '@aws-cdk/aws-apigatewayv2'
 
 export class ApplicationStackBuilder {
