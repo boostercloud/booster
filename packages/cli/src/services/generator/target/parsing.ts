@@ -1,4 +1,4 @@
-import { HasName, HasFields, Field, HasReaction, ReactionEvent } from './types'
+import { HasName, HasFields, Field, HasReaction, ReactionEvent, Projection, HasProjections } from './types'
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/generic-type-naming */
@@ -20,6 +20,21 @@ function parseField(rawField: string): Promise<Field> {
   }
 }
 
+export const parseProjections = (fields: Array<string>): Promise<HasProjections> =>
+  Promise.all(fields.map(parseProjection)).then((projections) => ({ projections }))
+
+function parseProjection(rawProjection: string): Promise<Projection> {
+  const splitInput = rawProjection.split(':')
+  if (splitInput.length != 2) {
+    return Promise.reject(projectionParsingError(rawProjection))
+  } else {
+    return Promise.resolve({
+      entityName: splitInput[0],
+      entityId: splitInput[1],
+    })
+  }
+}
+
 export const parseReaction = (rawEvents: Array<string>): Promise<HasReaction> =>
   Promise.all(rawEvents.map(parseReactionEvent)).then((events) => ({
     events,
@@ -29,6 +44,9 @@ const parseReactionEvent = (eventName: string): Promise<ReactionEvent> => Promis
 
 const fieldParsingError = (field: string): Error =>
   new Error(`Error parsing field ${field}. Fields must be in the form of <field name>:<field type>`)
+
+const projectionParsingError = (projection: string): Error =>
+  new Error(`Error parsing projection ${projection}. Projections must be in the form of <entity name>:<entity id>`)
 
 /**
  * Joins parsers together used to generate target information for generators.
