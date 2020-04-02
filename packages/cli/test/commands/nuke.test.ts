@@ -26,7 +26,7 @@ describe('nuke', () => {
 
         expect(ctx.stdout).to.include('weird exception')
 
-        expect(fakeNuke.called).to.equal(false)
+        expect(fakeNuke).not.to.have.been.called
       })
     })
 
@@ -46,11 +46,34 @@ describe('nuke', () => {
         replace(prompter, 'defaultOrPrompt', fakePrompter)
         const fakeNuke = fake()
 
-        await runTasks('test-env', loader(prompter, fakeConfig), fakeNuke)
+        await runTasks('test-env', loader(prompter, false, fakeConfig), fakeNuke)
 
-        expect(ctx.stdout).to.include('Wrong app name')
+        expect(ctx.stdout).to.include('Wrong app name, stopping nuke!')
 
-        expect(fakeNuke.called).to.equal(false)
+        expect(fakeNuke).not.to.have.been.called
+      })
+    })
+
+    context('when the --force flag is provided', () => {
+      fancy.stdout().it('continues without asking for the application name', async (ctx) => {
+        const fakeProvider = {} as ProviderLibrary
+
+        const fakeConfig = Promise.resolve({
+          provider: fakeProvider,
+          appName: 'fake app',
+          region: 'tunte',
+          entities: {},
+        })
+
+        const prompter = new Prompter()
+        const fakePrompter = fake.resolves('fake app 2') // The user entered wrong app name
+        replace(prompter, 'defaultOrPrompt', fakePrompter)
+        const fakeNuke = fake()
+
+        await runTasks('test-env', loader(prompter, true, fakeConfig), fakeNuke)
+
+        expect(prompter.defaultOrPrompt).not.to.have.been.called
+        expect(fakeNuke).to.have.been.calledOnce
       })
     })
 
@@ -75,11 +98,11 @@ describe('nuke', () => {
           })
         )
 
-        await runTasks('test-env', loader(prompter, fakeConfig), fakeNuke)
+        await runTasks('test-env', loader(prompter, false, fakeConfig), fakeNuke)
 
         expect(ctx.stdout).to.include('Removal complete!')
 
-        expect(fakeNuke.called).to.equal(true)
+        expect(fakeNuke).to.have.been.calledOnce
       })
     })
   })
