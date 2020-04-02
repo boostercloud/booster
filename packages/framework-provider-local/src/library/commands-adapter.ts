@@ -1,8 +1,4 @@
-import {
-  CommandEnvelope,
-  InvalidParameterError,
-  UUID,
-} from '@boostercloud/framework-types'
+import { CommandEnvelope, InvalidParameterError, UUID } from '@boostercloud/framework-types'
 import { fetchUserFromRequest } from './user-envelopes'
 import { UserRegistry } from '../services'
 
@@ -21,4 +17,3 @@ export async function rawCommandToEnvelope(userRegistry: UserRegistry, request: 
     throw new InvalidParameterError('The field "body" arrived empty.')
   }
 }
-

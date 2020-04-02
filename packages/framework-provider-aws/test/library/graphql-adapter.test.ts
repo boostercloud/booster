@@ -21,7 +21,7 @@ describe('the graphql-adapter', () => {
           eventType: 'CONNECT',
           connectionId: '456',
           authorizer: {
-            userJSON: JSON.stringify(expectedUser)
+            userJSON: JSON.stringify(expectedUser),
           },
         },
         body: JSON.stringify({
