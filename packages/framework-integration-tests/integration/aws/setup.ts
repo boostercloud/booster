@@ -1,7 +1,9 @@
-before(() => {
-  console.log('Here we run the actual deployment using the CLI')
+import { deploy, nuke } from '../../src/deploy'
+
+before(async () => {
+  await deploy()
 })
 
-after(() => {
-  console.log('Here we nuke the project using the CLI')
+after(async () => {
+  await nuke()
 })

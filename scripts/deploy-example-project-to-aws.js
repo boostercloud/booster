@@ -8,6 +8,9 @@
 const deployScript = require('../packages/framework-integration-tests/dist/deploy')
 
 async function main(argv) {
+  if (argv[2] === 'KILLITWITHFIRE') {
+    return deployScript.nuke()
+  }
   return deployScript.deploy()
 }
 

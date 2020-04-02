@@ -24,16 +24,21 @@ const runTasks = async (
     .info('Removal complete!')
     .done()
 
-async function askToConfirmRemoval(prompter: Prompter, config: Promise<BoosterConfig>): Promise<BoosterConfig> {
+async function askToConfirmRemoval(
+  prompter: Prompter,
+  force: boolean,
+  config: Promise<BoosterConfig>
+): Promise<BoosterConfig> {
+  if (force) return config
   const configuration = await config
   const appName = await prompter.defaultOrPrompt(
     null,
     'Please, enter the app name to confirm deletion of all resources:'
   )
   if (appName == configuration.appName) {
-    return Promise.resolve(configuration)
+    return configuration
   } else {
-    return Promise.reject(new Error('Wrong app name'))
+    throw new Error('Wrong app name, stopping nuke!')
   }
 }
 
@@ -47,6 +52,10 @@ export default class Nuke extends Command {
       char: 'e',
       description: 'environment configuration to run',
     }),
+    force: flags.boolean({
+      char: 'f',
+      description: 'run nuke without asking for confirmation',
+    }),
   }
 
   public async run(): Promise<void> {
@@ -58,7 +67,7 @@ export default class Nuke extends Command {
     process.env.BOOSTER_ENV = flags.environment
     await runTasks(
       flags.environment,
-      askToConfirmRemoval(new Prompter(), compileProjectAndLoadConfig()),
+      askToConfirmRemoval(new Prompter(), flags.force, compileProjectAndLoadConfig()),
       nukeCloudProviderResources
     )
   }

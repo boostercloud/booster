@@ -26,7 +26,7 @@ function run(command: string): Promise<void> {
 
 export async function deploy(): Promise<void> {
   // First, we ensure that the project is bootstrapped, and all the dependencies are installed (node_modules is placed at the project root)
-  await run('lerna bootstrap && lerna clean --yes')
+  await run('lerna clean --yes && lerna bootstrap')
 
   // We are about to install the dependencies for production changing the location of the node_modules, so we first
   // rename the `node_modules` from the project root.
@@ -36,8 +36,8 @@ export async function deploy(): Promise<void> {
   await run('yarn install --production --no-bin-links --modules-folder ./node_modules')
 
   // Now we undo the name change of the root node_modules. This is needed to compile the project, as:
-  // - All the other packages don't see the node_modules inside the example app
-  // - We need the dev dependencies that were not installed in the previous command
+  // * All the other packages don't see the node_modules inside the example app
+  // * We need the dev dependencies that were not installed in the previous command
   await run('mv ../../node_modules_dev ../../node_modules')
 
   // Compile the project
@@ -53,5 +53,5 @@ export async function deploy(): Promise<void> {
 
 export async function nuke(): Promise<void> {
   // Nuke works in the cloud exclusively, no need for preparation
-  await run('../cli/bin/run nuke production --force')
+  await run('../cli/bin/run nuke -e production --force')
 }
