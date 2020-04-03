@@ -23,15 +23,15 @@ function parseField(rawField: string): Promise<Field> {
 export const parseProjections = (fields: Array<string>): Promise<HasProjections> =>
   Promise.all(fields.map(parseProjection)).then((projections) => ({ projections }))
 
-function parseProjection(rawProjection: string): Promise<Projection> {
+function async parseProjection(rawProjection: string): Promise<Projection> {
   const splitInput = rawProjection.split(':')
   if (splitInput.length != 2) {
-    return Promise.reject(projectionParsingError(rawProjection))
+    throw projectionParsingError(rawProjection)
   } else {
-    return Promise.resolve({
+    return {
       entityName: splitInput[0],
       entityId: splitInput[1],
-    })
+    }
   }
 }
 
