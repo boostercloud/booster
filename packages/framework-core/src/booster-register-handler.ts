@@ -25,11 +25,15 @@ export class RegisterHandler {
         `Couldn't find information about event ${eventTypeName}. Is the event handled by any entity?`
       )
     }
+    const entityID = event.entityID()
+    if (!entityID) {
+      throw new Error(`Event ${eventTypeName} has an empty 'entityID'. Have you typed it properly?`)
+    }
 
     return {
       version: config.currentVersionFor(eventTypeName),
       kind: 'event',
-      entityID: event.entityID(),
+      entityID,
       requestID: register.requestID,
       currentUser: register.currentUser,
       entityTypeName: reducerInfo.class.name,
