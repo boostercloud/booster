@@ -24,7 +24,19 @@ function run(command: string): Promise<void> {
   return subprocess
 }
 
+async function setEnv(): Promise<void> {
+  if(!process.env.BOOSTER_APP_SUFFIX) {
+    // If the user don't set an app name suffix, use the current git commit hash 
+    // to build a unique suffix for the application name in AWS to avoid collisions 
+    // between tests from different branches.
+    const { stdout } = await exec('git rev-parse HEAD')
+    process.env['BOOSTER_APP_SUFFIX'] = stdout.trim().substring(0,6)
+  }
+}
+
 export async function deploy(): Promise<void> {
+  await setEnv()
+
   // First, we ensure that the project is bootstrapped, and all the dependencies are installed (node_modules is placed at the project root)
   await run('lerna clean --yes && lerna bootstrap')
 
@@ -52,6 +64,8 @@ export async function deploy(): Promise<void> {
 }
 
 export async function nuke(): Promise<void> {
+  await setEnv()
+
   // Nuke works in the cloud exclusively, no need for preparation
   await run('../cli/bin/run nuke -e production --force')
 }
