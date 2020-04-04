@@ -1,6 +1,8 @@
 import util = require('util')
-const exec = util.promisify(require('child_process').exec)
 import path = require('path')
+const exec = util.promisify(require('child_process').exec)
+const fs = require('fs')
+
 /*
  * The example application in the `framework-integration-tests` package is part of the package source.
  * We do this to have this example code compiled every time we run `lerna run compile`, which is useful
@@ -25,12 +27,12 @@ function run(command: string): Promise<void> {
 }
 
 async function setEnv(): Promise<void> {
-  if(!process.env.BOOSTER_APP_SUFFIX) {
-    // If the user don't set an app name suffix, use the current git commit hash 
-    // to build a unique suffix for the application name in AWS to avoid collisions 
+  if (!process.env.BOOSTER_APP_SUFFIX) {
+    // If the user don't set an app name suffix, use the current git commit hash
+    // to build a unique suffix for the application name in AWS to avoid collisions
     // between tests from different branches.
     const { stdout } = await exec('git rev-parse HEAD')
-    process.env['BOOSTER_APP_SUFFIX'] = stdout.trim().substring(0,6)
+    process.env['BOOSTER_APP_SUFFIX'] = stdout.trim().substring(0, 6)
   }
 }
 
@@ -42,7 +44,7 @@ export async function deploy(): Promise<void> {
 
   // We are about to install the dependencies for production changing the location of the node_modules, so we first
   // rename the `node_modules` from the project root.
-  await run('mv ../../node_modules ../../node_modules_dev')
+  fs.renameSync('../../node_modules', '../../node_modules_dev')
 
   // Install the dependencies in production mode (inside the example application directory)
   await run('yarn install --production --no-bin-links --modules-folder ./node_modules')
@@ -50,14 +52,14 @@ export async function deploy(): Promise<void> {
   // Now we undo the name change of the root node_modules. This is needed to compile the project, as:
   // * All the other packages don't see the node_modules inside the example app
   // * We need the dev dependencies that were not installed in the previous command
-  await run('mv ../../node_modules_dev ../../node_modules')
+  fs.renameSync('../../node_modules_dev', '../../node_modules')
 
   // Compile the project
   await run('lerna run clean && lerna run compile')
 
   // Remove non-needed packages (lerna adds them as dependencies)
-  await run('rm node_modules/@boostercloud/framework-integration-tests')
-  await run('rm node_modules/@boostercloud/cli')
+  fs.rmdirSync('node_modules/@boostercloud/framework-integration-tests', { recursive: true })
+  fs.rmdirSync('rm node_modules/@boostercloud/cli', { recursive: true })
 
   // Finally invoke the "boost deploy" command using the compiled cli.
   await run('../cli/bin/run deploy -e production')
