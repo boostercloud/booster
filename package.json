@@ -39,8 +39,7 @@
     "packages/framework-provider-local",
     "packages/framework-provider-local-infrastructure",
     "packages/framework-core",
-    "packages/cli",
-    "packages/framework-example"
+    "packages/cli"
   ],
   "license": "Apache-2.0"
 }
