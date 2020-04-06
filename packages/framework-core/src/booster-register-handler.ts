@@ -22,7 +22,7 @@ export class RegisterHandler {
     const reducerInfo = config.reducers[eventTypeName]
     if (!reducerInfo) {
       throw new NotFoundError(
-        `Couldn't find information about event ${eventTypeName}. Is the event handled by some entity?`
+        `Couldn't find information about event ${eventTypeName}. Is the event handled by an entity?`
       )
     }
 
