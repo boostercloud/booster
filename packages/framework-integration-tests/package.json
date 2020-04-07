@@ -4,6 +4,10 @@
   "version": "0.2.5",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
+  "private": true,
+  "publishConfig": {
+    "access": "restricted"
+  },
   "bugs": "https://github.com/boostercloud/booster/issues",
   "dependencies": {
     "@boostercloud/framework-core": "^0.2.5",
