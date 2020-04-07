@@ -3,7 +3,7 @@ import { {{commaSeparatedComponents}} } from '{{{packagePath}}}'
 {{/imports}}
 
 @ReadModel({
-  authorize: [],
+  authorize: // Specify authorized roles here. Use 'all' to authorize anyone
 })
 export class {{{name}}} {
   public constructor(
