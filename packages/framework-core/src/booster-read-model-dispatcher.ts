@@ -34,7 +34,7 @@ export class BoosterReadModelDispatcher {
     return this.processFetch(readModelRequest)
   }
 
-  private validateFetchRequest(readModelRequest: ReadModelRequestEnvelope): void {
+  public validateFetchRequest(readModelRequest: ReadModelRequestEnvelope): void {
     this.logger.debug('Validating the following read model request: ', readModelRequest)
     if (!readModelRequest.version) {
       throw new InvalidParameterError('The required request "version" was not present')

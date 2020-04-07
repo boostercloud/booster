@@ -5,6 +5,7 @@ import {
   CommandEnvelope,
   ReadModelPropertyFilter,
   ReadModelRequestEnvelope,
+  InvalidTransportError,
 } from '@boostercloud/framework-types'
 import { GraphQLFieldResolver, GraphQLSchema } from 'graphql'
 import { GraphQLTypeInformer } from './graphql-type-informer'
@@ -109,6 +110,14 @@ export class GraphQLGenerator {
     readModelClass: AnyClass
   ): GraphQLFieldResolver<any, GraphQLRequestEnvelope, Record<string, ReadModelPropertyFilter>> {
     return (parent, args, context, info) => {
+      console.log(
+        'Subscription resolver for ', readModelClass.name,
+        ' called with args: ', args,
+        ' and context: ', context
+      )
+      if (!context.connectionID) {
+        throw new InvalidTransportError('This API does not support subscriptions, "connectionID" was not found. ')
+      }
       const readModelEnvelope: ReadModelRequestEnvelope = {
         requestID: context.requestID,
         currentUser: context.currentUser,
@@ -116,7 +125,8 @@ export class GraphQLGenerator {
         filters: args,
         version: 1, // TODO: How to pass the version through GraphQL?
       }
-      return this.readModelsDispatcher.fetch(readModelEnvelope)
+      this.readModelsDispatcher.validateFetchRequest(readModelEnvelope)
+      console.log('Subscription validated. Here we should store it')
     }
   }
 }
