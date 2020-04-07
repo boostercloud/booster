@@ -6,6 +6,15 @@ export interface HasFields {
   fields: Array<Field>
 }
 
+export interface HasProjections {
+  projections: Array<Projection>
+}
+
+export interface Projection {
+  entityName: string
+  entityId: string
+}
+
 export interface Field {
   name: string
   type: string
