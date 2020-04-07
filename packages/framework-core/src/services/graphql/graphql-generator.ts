@@ -9,13 +9,15 @@ import {
 import { GraphQLFieldResolver, GraphQLSchema } from 'graphql'
 import { GraphQLTypeInformer } from './graphql-type-informer'
 import { GraphQLQueryGenerator } from './graphql-query-generator'
-import { GraphQLMutationGenerator } from './graphql-mutations-generator'
+import { GraphQLMutationGenerator } from './graphql-mutation-generator'
+import { GraphQLSubscriptionGenerator } from './graphql-subcriptions-generator'
 import { BoosterCommandDispatcher } from '../../booster-command-dispatcher'
 import { BoosterReadModelDispatcher } from '../../booster-read-model-dispatcher'
 
 export class GraphQLGenerator {
   private queryGenerator: GraphQLQueryGenerator
   private mutationGenerator: GraphQLMutationGenerator
+  private subscriptionGenerator: GraphQLSubscriptionGenerator
   private readonly typeInformer: GraphQLTypeInformer
 
   public constructor(
@@ -35,12 +37,19 @@ export class GraphQLGenerator {
       this.typeInformer,
       this.commandResolverBuilder.bind(this)
     )
+    this.subscriptionGenerator = new GraphQLSubscriptionGenerator(
+      config.readModels,
+      this.typeInformer,
+      this.queryGenerator,
+      this.subscriptionResolverBuilder.bind(this)
+    )
   }
 
   public generateSchema(): GraphQLSchema {
     return new GraphQLSchema({
       query: this.queryGenerator.generate(),
       mutation: this.mutationGenerator.generate(),
+      subscription: this.subscriptionGenerator.generate(),
     })
   }
 
@@ -93,6 +102,21 @@ export class GraphQLGenerator {
       }
       await this.commandsDispatcher.dispatchCommand(commandEnvelope)
       return true
+    }
+  }
+
+  public subscriptionResolverBuilder(
+    readModelClass: AnyClass
+  ): GraphQLFieldResolver<any, GraphQLRequestEnvelope, Record<string, ReadModelPropertyFilter>> {
+    return (parent, args, context, info) => {
+      const readModelEnvelope: ReadModelRequestEnvelope = {
+        requestID: context.requestID,
+        currentUser: context.currentUser,
+        typeName: readModelClass.name,
+        filters: args,
+        version: 1, // TODO: How to pass the version through GraphQL?
+      }
+      return this.readModelsDispatcher.fetch(readModelEnvelope)
     }
   }
 }

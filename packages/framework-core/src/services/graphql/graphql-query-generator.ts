@@ -80,7 +80,7 @@ export class GraphQLQueryGenerator {
     return queries
   }
 
-  private generateFilterArguments(typeMetadata: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
+  public generateFilterArguments(typeMetadata: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
     const args: GraphQLFieldConfigArgumentMap = {}
     typeMetadata.properties.forEach((prop: PropertyMetadata) => {
       const graphQLPropType = this.typeInformer.getGraphQLTypeFor(prop.type)
