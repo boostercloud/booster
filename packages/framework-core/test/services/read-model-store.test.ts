@@ -35,12 +35,12 @@ describe('ReadModelStore', () => {
     }
   }
 
-  const config = new BoosterConfig()
+  const config = new BoosterConfig('test')
   config.provider = ({
     storeReadModel: () => {},
     fetchReadModel: () => {},
   } as unknown) as ProviderLibrary
-  config.entities['ImportantConcept'] = { class: ImportantConcept, properties: [] }
+  config.entities['ImportantConcept'] = { class: ImportantConcept }
   config.projections['ImportantConcept'] = [
     {
       class: SomeReadModel,

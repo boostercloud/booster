@@ -8,16 +8,17 @@ import {
   boosterEventDispatcher,
   boosterReadModelMapper,
   boosterPreSignUpChecker,
+  boosterServeGraphQL,
+  boosterRequestAuthorizer,
 } from '../src/booster'
 import { replace, fake, restore } from 'sinon'
 import { Importer } from '../src/importer'
-import { BoosterReadModelFetcher } from '../src/booster-read-model-fetcher'
 import * as EntitySnapshotFetcher from '../src/entity-snapshot-fetcher'
+import { UUID } from '@boostercloud/framework-types'
 
 chai.use(require('sinon-chai'))
 
 describe('the `Booster` class', () => {
-  process.env.BOOSTER_ENV = 'test'
   afterEach(() => {
     restore()
     Booster.configure('test', (config) => {
@@ -53,29 +54,21 @@ describe('the `Booster` class', () => {
     })
   })
 
-  describe('the public static `fetchReadModels` method', () => {
-    it('calls `BoosterReadModelFetcher.fetch` passing the request and initializing it with Booster config', async () => {
-      replace(BoosterReadModelFetcher, 'fetch', fake())
-      const request = { some: 'request' }
-      const booster = Booster as any
-
-      await Booster.fetchReadModels(request)
-
-      expect(BoosterReadModelFetcher.fetch).to.have.been.calledOnceWith(request, booster.config)
-    })
-  })
-
   describe('the public static `fetchEntitySnapshot` method', () => {
     it('calls the entitySnapshotFetcher passing the config, the logger and the `entityName` and `entityID` parameters', async () => {
       replace(EntitySnapshotFetcher, 'fetchEntitySnapshot', fake())
       const booster = Booster as any
 
-      await Booster.fetchEntitySnapshot('SomeEntity', '42')
+      class SomeEntity {
+        public constructor(readonly id: UUID) {}
+      }
+
+      await Booster.fetchEntitySnapshot(SomeEntity, '42')
 
       expect(EntitySnapshotFetcher.fetchEntitySnapshot).to.have.been.calledOnceWith(
         booster.config,
         booster.logger,
-        'SomeEntity',
+        SomeEntity,
         '42'
       )
     })
@@ -123,5 +116,27 @@ describe('the public static function `boosterPreSignUpChecker`', () => {
     await boosterPreSignUpChecker(message)
 
     expect(Booster.checkSignUp).to.have.been.calledOnceWith(message)
+  })
+})
+
+describe('the public static function `boosterServeGraphQL`', () => {
+  it('calls `Booster.serveGraphQL` passing the rawMessage', async () => {
+    replace(Booster, 'serveGraphQL', fake())
+    const message = { body: 'Test body' }
+
+    await boosterServeGraphQL(message)
+
+    expect(Booster.serveGraphQL).to.have.been.calledOnceWith(message)
+  })
+})
+
+describe('the public static function `boosterRequestAuthorizer`', () => {
+  it('calls `Booster.authorizeRequest` passing the rawMessage', async () => {
+    replace(Booster, 'authorizeRequest', fake())
+    const message = { body: 'Test body' }
+
+    await boosterRequestAuthorizer(message)
+
+    expect(Booster.authorizeRequest).to.have.been.calledOnceWith(message)
   })
 })

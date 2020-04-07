@@ -1,5 +1,7 @@
 export const CognitoTemplates = {
   signUp: {
+    // This template is a bit more complex because we are transforming the attribute 'roles' from an array to a
+    // comma-separated string
     request: `#set($root = $input.path('$'))
              {
                "ClientId": "$root.clientId",

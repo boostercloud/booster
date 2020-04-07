@@ -7,16 +7,18 @@ import { CommandInterface, EntityInterface, EventInterface, UUID } from './conce
  */
 export interface Envelope {
   currentUser?: UserEnvelope
-  requestID: string
-  typeName: string
-  version: number
+  requestID: UUID
 }
 
 export interface CommandEnvelope extends Envelope {
+  typeName: string
+  version: number
   value: CommandInterface
 }
 
 export interface EventEnvelope extends Envelope {
+  typeName: string
+  version: number
   kind: 'event' | 'snapshot'
   entityID: UUID
   entityTypeName: string
@@ -24,8 +26,23 @@ export interface EventEnvelope extends Envelope {
   createdAt: string
 }
 
+export interface ReadModelPropertyFilter {
+  operation: string
+  values: Array<any>
+}
+
 export interface ReadModelRequestEnvelope extends Envelope {
+  typeName: string
+  version: number
+  filters?: Record<string, ReadModelPropertyFilter>
+  /** @deprecated */
   readModelID?: UUID
+}
+
+export interface GraphQLRequestEnvelope extends Envelope {
+  value?: string
+  connectionID?: string
+  eventType: 'CONNECT' | 'MESSAGE' | 'DISCONNECT'
 }
 
 export interface UserEnvelope {

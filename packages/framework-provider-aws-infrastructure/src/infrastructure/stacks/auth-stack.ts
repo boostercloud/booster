@@ -3,22 +3,29 @@ import { CfnOutput, RemovalPolicy, Stack } from '@aws-cdk/core'
 import { AuthFlow, CfnUserPool, CfnUserPoolDomain, UserPoolAttribute, UserPoolClient } from '@aws-cdk/aws-cognito'
 import { Code, Function } from '@aws-cdk/aws-lambda'
 import * as params from '../params'
-import { ServicePrincipal } from '@aws-cdk/aws-iam'
+import { Effect, IRole, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam'
+import { AwsIntegration, PassthroughBehavior, RestApi } from '@aws-cdk/aws-apigateway'
+import { CognitoTemplates } from './api-stack-velocity-templates'
 
 export class AuthStack {
-  public constructor(private readonly config: BoosterConfig, private readonly stack: Stack) {}
+  public constructor(
+    private readonly config: BoosterConfig,
+    private readonly stack: Stack,
+    private readonly restAPI: RestApi
+  ) {}
 
   public build(): void {
     if (this.config.thereAreRoles) {
       const userPool = this.buildUserPool()
       this.buildUserPoolClient(userPool)
+      this.buildAuthAPI()
     }
   }
 
   private buildUserPool(): CfnUserPool {
     const localPreSignUpID = 'pre-sign-up-validator'
     const preSignUpLambda = new Function(this.stack, localPreSignUpID, {
-      ...params.lambda,
+      ...params.lambda(this.config),
       functionName: this.config.resourceNames.applicationStack + '-' + localPreSignUpID,
       handler: this.config.preSignUpHandler,
       code: Code.fromAsset(this.config.userProjectRootPath),
@@ -80,4 +87,108 @@ export class AuthStack {
       description: 'Needed for the auth API. This ID must be included in that API under the name "clientID"',
     })
   }
+
+  private buildAuthAPI(): void {
+    const cognitoIntegrationRole = this.buildCognitoIntegrationRole()
+
+    const authResource = this.restAPI.root.addResource('auth')
+    const methodOptions = {
+      methodResponses: [
+        {
+          statusCode: '200',
+        },
+        {
+          statusCode: '400',
+        },
+        {
+          statusCode: '500',
+        },
+      ],
+    }
+    authResource
+      .addResource('sign-up')
+      .addMethod('POST', this.buildSignUpIntegration(cognitoIntegrationRole), methodOptions)
+    authResource
+      .addResource('sign-in')
+      .addMethod('POST', this.buildSignInIntegration(cognitoIntegrationRole), methodOptions)
+    authResource
+      .addResource('sign-out')
+      .addMethod('POST', this.buildSignOutIntegration(cognitoIntegrationRole), methodOptions)
+  }
+
+  private buildCognitoIntegrationRole(): Role {
+    return new Role(this.stack, 'cognito-integration-role', {
+      assumedBy: new ServicePrincipal('apigateway.amazonaws.com'),
+      inlinePolicies: {
+        'cognito-sign': new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              effect: Effect.ALLOW,
+              actions: ['cognito-idp:SignUp', 'cognito-idp:InitiateAuth', 'cognito-idp:GlobalSignOut'],
+              resources: ['*'],
+            }),
+          ],
+        }),
+      },
+    })
+  }
+
+  private buildSignOutIntegration(withRole: IRole): AwsIntegration {
+    return this.buildCognitoIntegration('GlobalSignOut', withRole, {
+      requestTemplate: CognitoTemplates.signOut.request,
+      responseTemplate: CognitoTemplates.signOut.response,
+    })
+  }
+
+  private buildSignUpIntegration(withRole: IRole): AwsIntegration {
+    return this.buildCognitoIntegration('SignUp', withRole, {
+      requestTemplate: CognitoTemplates.signUp.request,
+      responseTemplate: CognitoTemplates.signUp.response,
+    })
+  }
+
+  private buildSignInIntegration(withRole: IRole): AwsIntegration {
+    return this.buildCognitoIntegration('InitiateAuth', withRole, {
+      requestTemplate: CognitoTemplates.signIn.request,
+      responseTemplate: CognitoTemplates.signIn.response,
+    })
+  }
+
+  private buildCognitoIntegration(
+    forAction: CognitoAuthActions,
+    withRole: IRole,
+    templates: { requestTemplate: string; responseTemplate: string }
+  ): AwsIntegration {
+    return new AwsIntegration({
+      service: 'cognito-idp',
+      action: forAction,
+      integrationHttpMethod: 'POST',
+      options: {
+        credentialsRole: withRole,
+        passthroughBehavior: PassthroughBehavior.NEVER,
+        integrationResponses: [
+          {
+            selectionPattern: '5\\d\\d',
+            statusCode: '500',
+          },
+          {
+            selectionPattern: '4\\d\\d',
+            statusCode: '400',
+          },
+          {
+            selectionPattern: '2\\d\\d',
+            statusCode: '200',
+            responseTemplates: {
+              'application/json': templates.responseTemplate,
+            },
+          },
+        ],
+        requestTemplates: {
+          'application/json': templates.requestTemplate,
+        },
+      },
+    })
+  }
 }
+
+type CognitoAuthActions = 'InitiateAuth' | 'SignUp' | 'GlobalSignOut'

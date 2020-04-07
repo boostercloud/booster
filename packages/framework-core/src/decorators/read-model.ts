@@ -1,5 +1,6 @@
 import { Class, ReadModelInterface, RoleAccess } from '@boostercloud/framework-types'
 import { Booster } from '../booster'
+import { getPropertiesMetadata } from './metadata'
 
 /**
  * Decorator to register a class as a ReadModel
@@ -14,6 +15,7 @@ export function ReadModel(attributes: RoleAccess): (readModelClass: Class<ReadMo
 
       config.readModels[readModelClass.name] = {
         class: readModelClass,
+        properties: getPropertiesMetadata(readModelClass),
         authorizedRoles: attributes.authorize,
       }
     })

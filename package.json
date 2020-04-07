@@ -17,6 +17,7 @@
     "@typescript-eslint/parser": "^2.18.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
+    "cross-env": "^7.0.2",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-prettier": "^3.1.2",
@@ -39,8 +40,7 @@
     "packages/framework-provider-local",
     "packages/framework-provider-local-infrastructure",
     "packages/framework-core",
-    "packages/cli",
-    "packages/framework-example"
+    "packages/cli"
   ],
   "license": "Apache-2.0"
 }

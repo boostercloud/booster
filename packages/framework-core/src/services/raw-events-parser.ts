@@ -5,11 +5,10 @@ export class RawEventsParser {
   public static async streamEvents(
     config: BoosterConfig,
     rawEvents: any,
-    callbackFn: (eventEnvelope: EventEnvelope) => Promise<void>
+    callbackFn: (eventEnvelope: EventEnvelope, config: BoosterConfig) => Promise<void>
   ): Promise<void> {
-    const provider = config.provider
-    for (const event of provider.rawEventsToEnvelopes(rawEvents)) {
-      await callbackFn(event)
+    for (const event of config.provider.rawEventsToEnvelopes(rawEvents)) {
+      await callbackFn(event, config)
     }
   }
 }

@@ -26,6 +26,11 @@ export interface Instance {
   }
 }
 
+export interface PropertyMetadata {
+  readonly name: string
+  readonly type: AnyClass
+}
+
 export function toClassTitle(instance: Instance): string {
   return instance.constructor.name
     .replace(/([A-Z])([a-z])/g, ' $1$2')

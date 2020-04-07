@@ -1,5 +1,5 @@
 import { Register } from './register'
-import { Class } from '../typelevel'
+import { Class, PropertyMetadata } from '../typelevel'
 import { RoleAccess } from './role'
 
 /**
@@ -12,5 +12,6 @@ export interface CommandInterface {
 
 export interface CommandMetadata {
   readonly class: Class<CommandInterface>
+  readonly properties: Array<PropertyMetadata>
   readonly authorizedRoles: RoleAccess['authorize']
 }

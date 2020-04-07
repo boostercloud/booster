@@ -5,10 +5,11 @@ import {
   RoleMetadata,
   CommandMetadata,
   ProjectionMetadata,
+  ReadModelMetadata,
+  EventHandlerInterface,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
-import { ReadModelMetadata } from './concepts/read-model'
 
 /**
  * Class used by external packages that needs to get a representation of
@@ -24,14 +25,19 @@ export class BoosterConfig {
   public readonly eventDispatcherHandler: string = 'dist/index.boosterEventDispatcher'
   public readonly readModelMapperHandler: string = 'dist/index.boosterReadModelMapper'
   public readonly preSignUpHandler: string = 'dist/index.boosterPreSignUpChecker'
+  public readonly serveGraphQLHandler: string = 'dist/index.boosterServeGraphQL'
+  public readonly authorizerHandler: string = 'dist/index.boosterRequestAuthorizer'
 
   public readonly entities: Record<EntityName, EntityMetadata> = {}
   public readonly reducers: Record<EventName, ReducerMetadata> = {}
   public readonly commandHandlers: Record<CommandName, CommandMetadata> = {}
+  public readonly eventHandlers: Record<EventName, Array<EventHandlerInterface>> = {}
   public readonly readModels: Record<ReadModelName, ReadModelMetadata> = {}
   public readonly projections: Record<EntityName, Array<ProjectionMetadata>> = {}
   public readonly roles: Record<RoleName, RoleMetadata> = {}
   public readonly migrations: Record<ConceptName, Map<Version, MigrationMetadata>> = {}
+
+  public constructor(public readonly env: string) {}
 
   public get resourceNames(): ResourceNames {
     if (this.appName.length === 0) throw new Error('Application name cannot be empty')

@@ -5,7 +5,6 @@ import { ReadModel, Booster, Entity, Projects } from '../../src/index'
 import { UUID } from '@boostercloud/framework-types'
 
 describe('the `ReadModel` decorator', () => {
-  process.env.BOOSTER_ENV = 'test'
   afterEach(() => {
     Booster.configure('test', (config) => {
       for (const propName in config.readModels) {
@@ -19,7 +18,7 @@ describe('the `ReadModel` decorator', () => {
       authorize: 'all',
     })
     class SomeReadModel {
-      public constructor(readonly id: UUID) {}
+      public constructor(readonly id: UUID, readonly aStringProp: string, readonly aNumberProp: number) {}
     }
 
     // Make Booster be of any type to access private members
@@ -29,6 +28,20 @@ describe('the `ReadModel` decorator', () => {
     expect(booster.config.readModels['SomeReadModel']).to.be.deep.equal({
       class: SomeReadModel,
       authorizedRoles: 'all',
+      properties: [
+        {
+          name: 'id',
+          type: UUID,
+        },
+        {
+          name: 'aStringProp',
+          type: String,
+        },
+        {
+          name: 'aNumberProp',
+          type: Number,
+        },
+      ],
     })
   })
 })

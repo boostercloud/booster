@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { rawCommandToEnvelope, handleCommandResult } from './library/commands-adapter'
+import { rawCommandToEnvelope } from './library/commands-adapter'
 import {
   rawEventsToEnvelopes,
   storeEvent,
   readEntityLatestSnapshot,
   readEntityEventsSince,
+  publishEvents,
 } from './library/events-adapter'
 import {
   fetchReadModel,
@@ -12,25 +13,29 @@ import {
   storeReadModel,
   rawReadModelRequestToEnvelope,
 } from './library/read-model-adapter'
-import { rawSignUpDataToUserEnvelope } from './library/auth-adapter'
+import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
+import { rawSignUpDataToUserEnvelope, authorizeRequest } from './library/auth-adapter'
 import { Kinesis, DynamoDB, CognitoIdentityServiceProvider } from 'aws-sdk'
 import { ProviderInfrastructure, ProviderLibrary } from '@boostercloud/framework-types'
 import { requestFailed, requestSucceeded } from './library/api-gateway-io'
+import { searchReadModel } from './library/searcher-adapter'
 
 const eventsStream: Kinesis = new Kinesis()
 const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
 const userPool = new CognitoIdentityServiceProvider()
 
 export const Provider: ProviderLibrary = {
+  // ProviderCommandsLibrary
   rawCommandToEnvelope: rawCommandToEnvelope.bind(null, userPool),
-  handleCommandResult: handleCommandResult.bind(null, eventsStream),
-  handleCommandError: requestFailed,
 
+  // ProviderEventsLibrary
   rawEventsToEnvelopes,
   storeEvent: storeEvent.bind(null, dynamoDB),
   readEntityEventsSince: readEntityEventsSince.bind(null, dynamoDB),
   readEntityLatestSnapshot: readEntityLatestSnapshot.bind(null, dynamoDB),
+  publishEvents: publishEvents.bind(null, eventsStream),
 
+  // ProviderReadModelsLibrary
   rawReadModelRequestToEnvelope: rawReadModelRequestToEnvelope.bind(null, userPool),
   fetchReadModel: fetchReadModel.bind(null, dynamoDB),
   fetchAllReadModels: fetchAllReadModels.bind(null, dynamoDB),
@@ -38,10 +43,25 @@ export const Provider: ProviderLibrary = {
   handleReadModelResult: requestSucceeded,
   handleReadModelError: requestFailed,
 
+  // ProviderGraphQLLibrary
+  authorizeRequest: authorizeRequest.bind(null, userPool),
+  rawGraphQLRequestToEnvelope: rawGraphQLRequestToEnvelope,
+  handleGraphQLResult: requestSucceeded,
+  handleGraphQLError: requestFailed,
+
+  // ProviderAuthLibrary
   rawSignUpDataToUserEnvelope,
 
+  // ProviderAPIHandling
+  requestSucceeded,
+  requestFailed,
+
+  // ProviderInfrastructureGetter
   getInfrastructure: () =>
     require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
+
+  // ProviderSearcher
+  searchReadModel: searchReadModel.bind(null, dynamoDB),
 }
 
 export * from './constants'

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# This script allows to deploy the example application event within the world of lerna packages.
+# This script allows to deploy the example application within the world of lerna packages.
 
 # First, we ensure that the project is bootstrapped, and all the dependencies are installed (node_modules is placed at
 # root of the project)
@@ -28,4 +28,4 @@ rm node_modules/@boostercloud/cli
 
 # Finally invoke the "deploy" command. Thanks to the previous steps, the full example application with its dependencies
 # (node_modules) in production mode (which takes less space) will get zipped and deployed to AWS
-../cli/bin/run deploy
+../cli/bin/run deploy -e production

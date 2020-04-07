@@ -6,6 +6,7 @@ import { App } from '@aws-cdk/core'
 import { Function } from '@aws-cdk/aws-lambda'
 import { CfnUserPool, CfnUserPoolDomain, UserPoolClient } from '@aws-cdk/aws-cognito'
 import { RestApi } from '@aws-cdk/aws-apigateway'
+import { CfnApi } from '@aws-cdk/aws-apigatewayv2'
 
 describe('the application stack builder', () => {
   class TestReadModel1 {
@@ -16,13 +17,14 @@ describe('the application stack builder', () => {
   }
   const readModels = [TestReadModel1, TestReadModel2]
 
-  const config = new BoosterConfig()
+  const config = new BoosterConfig('test')
   config.appName = 'testing-app'
   // eslint-disable-next-line prettier/prettier
   readModels.forEach((readModel) => {
     config.readModels[readModel.name] = {
       class: readModel,
       authorizedRoles: 'all',
+      properties: [],
     }
   })
 
@@ -33,25 +35,38 @@ describe('the application stack builder', () => {
     const appStackName = config.resourceNames.applicationStack
     const appStack = boosterApp.node.findChild(appStackName).node
 
-    const apiName = appStackName + '-api'
+    const restAPIName = appStackName + '-rest-api'
+    const websocketAPIName = appStackName + '-websocket-api'
     const commandsLambdaName = 'commands-main'
     const eventsStreamName = 'events-stream'
     const eventsStore = 'events-store'
     const eventsLambda = 'events-main'
     const readModelFetcherLambda = 'read-model-fetcher'
-    const api = appStack.tryFindChild(apiName) as RestApi
+    const authorizerLambda = 'graphql-authorizer'
+    const graphQLLambda = 'graphql-handler'
+    const websocketRoutes = ['route-$connect', 'route-$disconnect', 'route-$default']
+
+    const restAPI = appStack.tryFindChild(restAPIName) as RestApi
+    const websocketAPI = appStack.tryFindChild(websocketAPIName) as CfnApi
     const numberOfLambdas = appStack.children.filter((child) => child instanceof Function).length
 
     // First check for all the constructs that must be created
-    // API-related
-    expect(api).not.to.be.undefined
-    expect(api.root.getResource('commands')).not.to.be.undefined
-    expect(api.root.getResource('readmodels')).not.to.be.undefined
+    // REST API-related
+    expect(restAPI).not.to.be.undefined
+    expect(restAPI.root.getResource('commands')).not.to.be.undefined
+    expect(restAPI.root.getResource('readmodels')).not.to.be.undefined
+    expect(restAPI.root.getResource('graphql')).not.to.be.undefined
+    // Websocket API-related
+    expect(websocketAPI).not.to.be.undefined
+    expect(websocketAPI.protocolType).to.be.eq('WEBSOCKET')
+    websocketRoutes.forEach((route) => expect(appStack.tryFindChild(route)).not.to.be.undefined)
     // Lambdas
-    expect(numberOfLambdas).to.equal(3)
+    expect(numberOfLambdas).to.equal(5)
     expect(appStack.tryFindChild(commandsLambdaName)).not.to.be.undefined
     expect(appStack.tryFindChild(eventsLambda)).not.to.be.undefined
     expect(appStack.tryFindChild(readModelFetcherLambda)).not.to.be.undefined
+    expect(appStack.tryFindChild(authorizerLambda)).not.to.be.undefined
+    expect(appStack.tryFindChild(graphQLLambda)).not.to.be.undefined
     // Events-related
     expect(appStack.tryFindChild(eventsStreamName)).not.to.be.undefined
     expect(appStack.tryFindChild(eventsStore)).not.to.be.undefined
@@ -59,7 +74,7 @@ describe('the application stack builder', () => {
     readModels.forEach(({ name }) => expect(appStack.tryFindChild(name)).not.to.be.undefined)
 
     // Now, check all the construct that must NOT be created (related to roles)
-    expect(api.root.getResource('auth')).to.be.undefined
+    expect(restAPI.root.getResource('auth')).to.be.undefined
     // None of the Cognito constructs should be created
     appStack.children.forEach((child) => {
       expect(child.constructor.name).not.to.be.oneOf([CfnUserPool.name, CfnUserPoolDomain.name, UserPoolClient.name])
@@ -76,7 +91,7 @@ describe('the application stack builder', () => {
     const appStackName = config.resourceNames.applicationStack
     const appStack = boosterApp.node.findChild(appStackName).node
 
-    const apiName = appStackName + '-api'
+    const apiName = appStackName + '-rest-api'
     const preSignUpValidator = 'pre-sign-up-validator'
     const userPool = 'user-pool'
     const userPoolDomain = 'user-pool-domain'
@@ -90,7 +105,7 @@ describe('the application stack builder', () => {
     expect(api).not.to.be.undefined
     expect(api.root.getResource('auth')).not.to.be.undefined
     // Lambdas
-    expect(numberOfLambdas).to.equal(4)
+    expect(numberOfLambdas).to.equal(6)
     expect(appStack.tryFindChild(preSignUpValidator)).not.to.be.undefined
     // UserPool-related
     expect(appStack.tryFindChild(userPool)).not.to.be.undefined

@@ -8,7 +8,7 @@ import { ProviderLibrary } from '../src'
 describe('the config type', () => {
   describe('resourceNames', () => {
     it('fails to get if the app name is empty', () => {
-      const cfg = new BoosterConfig()
+      const cfg = new BoosterConfig('test')
       cfg.appName = ''
       expect(() => cfg.resourceNames).to.throw()
     })
@@ -16,7 +16,7 @@ describe('the config type', () => {
     it('gets the application stack name from the app name', () => {
       fc.assert(
         fc.property(fc.string(1, 10), (appName) => {
-          const cfg = new BoosterConfig()
+          const cfg = new BoosterConfig('test')
           cfg.appName = appName
           expect(cfg.resourceNames.applicationStack).to.equal(`${appName}-application-stack`)
         })
@@ -26,7 +26,7 @@ describe('the config type', () => {
     it('gets the events stream name from the app name', () => {
       fc.assert(
         fc.property(fc.string(1, 10), (appName) => {
-          const cfg = new BoosterConfig()
+          const cfg = new BoosterConfig('test')
           cfg.appName = appName
           expect(cfg.resourceNames.eventsStream).to.equal(`${appName}-application-stack-events-stream`)
         })
@@ -36,7 +36,7 @@ describe('the config type', () => {
     it('gets the events store name from the app name', () => {
       fc.assert(
         fc.property(fc.string(1, 10), (appName) => {
-          const cfg = new BoosterConfig()
+          const cfg = new BoosterConfig('test')
           cfg.appName = appName
           expect(cfg.resourceNames.eventsStore).to.equal(`${appName}-application-stack-events-store`)
         })
@@ -46,7 +46,7 @@ describe('the config type', () => {
     it('gets well-formatted readmodel names, based on the application name', () => {
       fc.assert(
         fc.property(fc.string(1, 10), fc.string(1, 10), (appName, readModelName) => {
-          const cfg = new BoosterConfig()
+          const cfg = new BoosterConfig('test')
           cfg.appName = appName
           expect(cfg.resourceNames.forReadModel(readModelName)).to.equal(
             `${appName}-application-stack-${readModelName}`
@@ -58,7 +58,7 @@ describe('the config type', () => {
 
   describe('thereAreRoles', () => {
     it('returns true when there are roles defined', () => {
-      const config = new BoosterConfig()
+      const config = new BoosterConfig('test')
       config.roles['test-role'] = {
         allowSelfSignUp: false,
       }
@@ -67,14 +67,14 @@ describe('the config type', () => {
     })
 
     it('returns false when there are no roles defined', () => {
-      const config = new BoosterConfig()
+      const config = new BoosterConfig('test')
       expect(config.thereAreRoles).to.be.equal(false)
     })
   })
 
   describe('currentVersionFor', () => {
     it('returns 1 when the concept does not have any migration defined', () => {
-      const config = new BoosterConfig()
+      const config = new BoosterConfig('test')
       const migrations = new Map()
       migrations.set(2, {} as any)
       config.migrations['concept-with-migrations'] = migrations
@@ -85,7 +85,7 @@ describe('the config type', () => {
     it('returns the version of the latest migration', () => {
       class SchemaTest {}
       class MigrationClassTest {}
-      const config = new BoosterConfig()
+      const config = new BoosterConfig('test')
       const migrations = new Map<number, MigrationMetadata>()
       migrations.set(3, {
         fromSchema: SchemaTest,
@@ -109,7 +109,7 @@ describe('the config type', () => {
 
   describe('validate', () => {
     it('throws when there are gaps in the migration versions for a concept', () => {
-      const config = new BoosterConfig()
+      const config = new BoosterConfig('test')
       config.provider = {} as ProviderLibrary
       const migrations = new Map()
       migrations.set(3, {} as any)
@@ -121,7 +121,7 @@ describe('the config type', () => {
     })
 
     it('does not throw when there are no gaps in the migration versions for a concept', () => {
-      const config = new BoosterConfig()
+      const config = new BoosterConfig('test')
       config.provider = {} as ProviderLibrary
       const migrations = new Map()
       migrations.set(4, {} as any)
@@ -135,13 +135,13 @@ describe('the config type', () => {
 
   describe('provider', () => {
     it('throws when there is no provider set', () => {
-      const config = new BoosterConfig()
+      const config = new BoosterConfig('test')
 
       expect(() => config.provider).to.throw(/set a valid provider runtime/)
     })
 
     it('does not throw when there is a provider set', () => {
-      const config = new BoosterConfig()
+      const config = new BoosterConfig('test')
       config.provider = {} as ProviderLibrary
 
       expect(() => config.provider).to.not.throw()

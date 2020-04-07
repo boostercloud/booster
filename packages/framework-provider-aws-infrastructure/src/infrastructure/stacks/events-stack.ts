@@ -58,13 +58,13 @@ export class EventsStack {
   private buildEventsLambda(eventsStream: Stream): Function {
     const localID = 'events-main'
     return new Function(this.stack, localID, {
-      ...params.lambda,
+      ...params.lambda(this.config),
       functionName: this.config.resourceNames.applicationStack + '-' + localID,
       handler: this.config.eventDispatcherHandler,
       code: Code.fromAsset(this.config.userProjectRootPath),
       events: [
         new KinesisEventSource(eventsStream, {
-          ...params.kinesis,
+          ...params.kinesis(),
         }),
       ],
     })

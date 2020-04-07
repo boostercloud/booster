@@ -25,4 +25,4 @@ Remove-Item -Recurse -Force node_modules/@boostercloud/cli
 
 # Finally invoke the "deploy" command. Thanks to the previous steps, the full example application with its dependencies
 # (node_modules) in production mode (which takes less space) will get zipped and deployed to AWS
-../cli/bin/run deploy
+../cli/bin/run deploy -e production

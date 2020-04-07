@@ -3,11 +3,22 @@
 import { expect } from 'chai'
 import * as chai from 'chai'
 import * as Library from '../../src/library/events-adapter'
-import { restore } from 'sinon'
-import { EventEnvelope } from '@boostercloud/framework-types'
+import { restore, fake, match } from 'sinon'
+import { EventEnvelope, BoosterConfig, UUID, Logger } from '@boostercloud/framework-types'
 import { KinesisStreamEvent } from 'aws-lambda'
+import { Kinesis } from 'aws-sdk'
+import { createStubInstance } from 'sinon'
+import { DynamoDB } from 'aws-sdk'
+import { eventStorePartitionKeyAttributeName, eventStoreSortKeyAttributeName } from '../../src/constants'
+import { partitionKeyForEvent } from '../../src/library/partition-keys'
 
 chai.use(require('sinon-chai'))
+
+const fakeLogger: Logger = {
+  info: fake(),
+  error: fake(),
+  debug: fake(),
+}
 
 describe('the events-adapter', () => {
   afterEach(() => {
@@ -19,9 +30,149 @@ describe('the events-adapter', () => {
       const expectedEnvelopes = buildEventEnvelopes()
       const kinesisMessage = wrapEventEnvelopesForKinesis(expectedEnvelopes)
 
-      const gotEnvelopes = await Library.rawEventsToEnvelopes(kinesisMessage)
+      const gotEnvelopes = Library.rawEventsToEnvelopes(kinesisMessage)
 
       expect(gotEnvelopes).to.be.deep.equal(expectedEnvelopes)
+    })
+  })
+
+  describe('the `storeEvent` method', () => {
+    it('stores an eventEnvelope in the corresponding DynamoDB database', async () => {
+      const dynamoDB = createStubInstance(DynamoDB.DocumentClient)
+      dynamoDB.put = fake.returns({ promise: fake.resolves('') }) as any
+      const config = new BoosterConfig('test')
+      config.appName = 'nuke-button'
+
+      const eventEnvelope: EventEnvelope = {
+        version: 1,
+        entityID: 'id',
+        kind: 'event',
+        value: {
+          id: 'id',
+        },
+        typeName: 'EventName',
+        entityTypeName: 'EntityName',
+        requestID: 'requestID',
+        createdAt: 'once',
+      }
+
+      await Library.storeEvent(dynamoDB, config, fakeLogger, eventEnvelope)
+
+      expect(dynamoDB.put).to.have.been.calledOnce
+      expect(dynamoDB.put).to.have.been.calledWith(
+        match({
+          TableName: 'nuke-button-application-stack-events-store',
+          Item: {
+            ...eventEnvelope,
+            [eventStorePartitionKeyAttributeName]: partitionKeyForEvent(
+              eventEnvelope.entityTypeName,
+              eventEnvelope.entityID,
+              eventEnvelope.kind
+            ),
+            [eventStoreSortKeyAttributeName]: match.defined,
+          },
+        })
+      )
+    })
+  })
+
+  describe('the `readEntityEventsSince` method', () => {
+    it('queries the events table to find all events related to a specific entity', async () => {
+      const dynamoDB = createStubInstance(DynamoDB.DocumentClient)
+      dynamoDB.query = fake.returns({ promise: fake.resolves('') }) as any
+      const config = new BoosterConfig('test')
+      config.appName = 'nuke-button'
+
+      await Library.readEntityEventsSince(dynamoDB, config, fakeLogger, 'SomeEntity', 'someSpecialID')
+
+      expect(dynamoDB.query).to.have.been.calledWith(
+        match({
+          TableName: 'nuke-button-application-stack-events-store',
+          ConsistentRead: true,
+          KeyConditionExpression: `${eventStorePartitionKeyAttributeName} = :partitionKey AND ${eventStoreSortKeyAttributeName} > :fromTime`,
+          ExpressionAttributeValues: {
+            ':partitionKey': partitionKeyForEvent('SomeEntity', 'someSpecialID'),
+            ':fromTime': match.defined,
+          },
+          ScanIndexForward: true,
+        })
+      )
+    })
+  })
+
+  describe('the `readEntityLatestSnapshot` method', () => {
+    it('finds the latest entity snapshot', async () => {
+      const dynamoDB = createStubInstance(DynamoDB.DocumentClient)
+      dynamoDB.query = fake.returns({ promise: fake.resolves('') }) as any
+      const config = new BoosterConfig('test')
+      config.appName = 'nuke-button'
+
+      await Library.readEntityLatestSnapshot(dynamoDB, config, fakeLogger, 'SomeEntity', 'someSpecialID')
+
+      expect(dynamoDB.query).to.have.been.calledWith(
+        match({
+          TableName: 'nuke-button-application-stack-events-store',
+          ConsistentRead: true,
+          KeyConditionExpression: `${eventStorePartitionKeyAttributeName} = :partitionKey`,
+          ExpressionAttributeValues: {
+            ':partitionKey': partitionKeyForEvent('SomeEntity', 'someSpecialID', 'snapshot'),
+          },
+          ScanIndexForward: false,
+          Limit: 1,
+        })
+      )
+    })
+  })
+
+  describe('the `publishEvents` method', () => {
+    it('publishes the eventEnvelopes passed via parameter', async () => {
+      const config = new BoosterConfig('test')
+      config.appName = 'test-app'
+      const requestID = 'request-id'
+      const streamName = config.resourceNames.eventsStream
+      const events = [
+        {
+          entityID(): UUID {
+            return '123'
+          },
+        },
+        {
+          entityID(): UUID {
+            return '456'
+          },
+        },
+      ]
+
+      const fakePutRecords = fake.returns({
+        promise: fake.resolves(''),
+      })
+      const fakeKinesis: Kinesis = { putRecords: fakePutRecords } as any
+
+      const eventEnvelopes = events.map(
+        (e): EventEnvelope => {
+          return {
+            version: 1,
+            kind: 'event',
+            requestID,
+            entityID: e.entityID(),
+            entityTypeName: 'fake-entity-name',
+            typeName: 'fake-type-name',
+            value: {
+              entityID: e.entityID,
+            },
+            createdAt: new Date().toISOString(),
+          }
+        }
+      )
+
+      await Library.publishEvents(fakeKinesis, eventEnvelopes, config, fakeLogger)
+
+      expect(fakePutRecords).to.be.calledWith(
+        match({
+          StreamName: streamName,
+          Records: match.has('length', 2),
+        })
+      )
     })
   })
 })
