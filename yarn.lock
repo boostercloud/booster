@@ -11,7 +11,7 @@
     "@aws-cdk/cx-api" "1.26.0"
     minimatch "^3.0.4"
 
-"@aws-cdk/aws-apigateway@1.26.0", "@aws-cdk/aws-apigateway@^1.26.0":
+"@aws-cdk/aws-apigateway@1.26.0":
   version "1.26.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/aws-apigateway/-/aws-apigateway-1.26.0.tgz#539685524cf757a259333a1b16fd7ede92c254bb"
   integrity sha512-cGV/MCEPP76Zz40pxN4Xuzxt88VoGGTmlAKeBoFNeuVqY6hzg8Iinr7k4qlg6RqNQCDKr/yqKRsyPZ0w1+HqKg==
@@ -23,7 +23,7 @@
     "@aws-cdk/aws-lambda" "1.26.0"
     "@aws-cdk/core" "1.26.0"
 
-"@aws-cdk/aws-apigatewayv2@^1.26.0":
+"@aws-cdk/aws-apigatewayv2@1.26.0":
   version "1.26.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/aws-apigatewayv2/-/aws-apigatewayv2-1.26.0.tgz#cbcacab2496ffc61abfcd40015e4ec5f90e166c4"
   integrity sha512-q0iZrX+C66sqN7NsQYMMdCOYybLZYhV08fsTg3U9aC5dSjM7RMNlXgv9kZ0JcxHLLJIkUuOak8XR5ZQ+pjQFZQ==
@@ -118,7 +118,7 @@
     "@aws-cdk/aws-iam" "1.26.0"
     "@aws-cdk/core" "1.26.0"
 
-"@aws-cdk/aws-cognito@^1.26.0":
+"@aws-cdk/aws-cognito@1.26.0":
   version "1.26.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/aws-cognito/-/aws-cognito-1.26.0.tgz#bc9076be95e4d0c24fcdca8ec8df8d671f408954"
   integrity sha512-IVq1BImxi2r+PPpej9PpcFcX8FEtR8MFXxlPRXzhdPz3UOe5ZELusX8YE8DPxK7zvzE/BkZw/5zDJfnJYYGP0A==
@@ -127,7 +127,7 @@
     "@aws-cdk/aws-lambda" "1.26.0"
     "@aws-cdk/core" "1.26.0"
 
-"@aws-cdk/aws-dynamodb@1.26.0", "@aws-cdk/aws-dynamodb@^1.26.0":
+"@aws-cdk/aws-dynamodb@1.26.0":
   version "1.26.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/aws-dynamodb/-/aws-dynamodb-1.26.0.tgz#12eacc0c3a6ed434619beb16385d86ac9cfee34a"
   integrity sha512-33H5qA8xnyzAZpxDGwl5lo7HI8At4btgoqxygGWUoQ2WRQczdGonW6C+3bu0m/jYFIjqIsqdZ436/oH8w9XSlg==
@@ -235,7 +235,7 @@
     "@aws-cdk/aws-iam" "1.26.0"
     "@aws-cdk/core" "1.26.0"
 
-"@aws-cdk/aws-iam@1.26.0", "@aws-cdk/aws-iam@^1.26.0":
+"@aws-cdk/aws-iam@1.26.0":
   version "1.26.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/aws-iam/-/aws-iam-1.26.0.tgz#8d4877e1b8207a754ff3605181fa421c53f472c8"
   integrity sha512-z1cQ7KzFbBQruPpEn9fGmwyYCnVtDOvwOc58olrdZT73RXN8OVSlD2IX0+f1xmv+KXgM7HOSp+SHFTkV9ALEKg==
@@ -243,7 +243,7 @@
     "@aws-cdk/core" "1.26.0"
     "@aws-cdk/region-info" "1.26.0"
 
-"@aws-cdk/aws-kinesis@1.26.0", "@aws-cdk/aws-kinesis@^1.26.0":
+"@aws-cdk/aws-kinesis@1.26.0":
   version "1.26.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/aws-kinesis/-/aws-kinesis-1.26.0.tgz#0b6f6206b3fa1cd8f15a1f68e8f8e6c1420af436"
   integrity sha512-xNMjW5ydMKgtjAl6yHo9tvPJc/4zH3N2XnbchIc9suxPcdMIWgJWDCi/7l0C7CCE6OTrBafElJ/32DQe07kRFg==
@@ -261,7 +261,7 @@
     "@aws-cdk/aws-iam" "1.26.0"
     "@aws-cdk/core" "1.26.0"
 
-"@aws-cdk/aws-lambda-event-sources@^1.26.0":
+"@aws-cdk/aws-lambda-event-sources@1.26.0":
   version "1.26.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/aws-lambda-event-sources/-/aws-lambda-event-sources-1.26.0.tgz#6493d66138086e635b2ea723490435ae4df59253"
   integrity sha512-j9yK9T0ummTpOR4NqtZ0IyKWsWZXg4Yy+4Pt7FcsEay0MS91GB688N6JyWNy3qy+7qlVrai+b4dUOsEWO2Ca6w==
@@ -279,7 +279,7 @@
     "@aws-cdk/aws-sqs" "1.26.0"
     "@aws-cdk/core" "1.26.0"
 
-"@aws-cdk/aws-lambda@1.26.0", "@aws-cdk/aws-lambda@^1.26.0":
+"@aws-cdk/aws-lambda@1.26.0":
   version "1.26.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/aws-lambda/-/aws-lambda-1.26.0.tgz#fabd19a10aab2fbc5f61d132333c19284b5c8868"
   integrity sha512-VSoCrVuPMbT+WK0ox4IsgtAvbruc+q/MuAb3RXPNqncjYNOSZGULQTVYxGBMEWHXb5uJPUoOq0STnIktOft9JA==
@@ -2374,7 +2374,7 @@ atob@^2.1.1:
   resolved "https://registry.yarnpkg.com/atob/-/atob-2.1.2.tgz#6d9517eb9e030d2436666651e86bd9f6f13533c9"
   integrity sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==
 
-aws-cdk@^1.26.0:
+aws-cdk@1.26.0:
   version "1.26.0"
   resolved "https://registry.yarnpkg.com/aws-cdk/-/aws-cdk-1.26.0.tgz#3036d4089a3cf5ee347246ba31dfb55d4eb5275a"
   integrity sha512-xqNUFqxEBIRhTR+vLkoaHvbxNV7jINaZQSuIC4g25D37ibTCn41B5AC2ViYLLy0pwZR1C92No3HjuvKKbrl3sQ==
@@ -6181,6 +6181,11 @@ minimist@^1.1.3, minimist@^1.2.0:
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
   integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
 
+minimist@^1.2.2:
+  version "1.2.5"
+  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
+  integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
+
 minimist@~0.0.1:
   version "0.0.10"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-0.0.10.tgz#de3f98543dbf96082be48ad1a0c7cda836301dcf"
@@ -8708,11 +8713,6 @@ typescript@^3.7.5:
   version "3.7.5"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.7.5.tgz#0692e21f65fd4108b9330238aac11dd2e177a1ae"
   integrity sha512-/P5lkRXkWHNAbcJIiHPfRoKqyd7bsyCma1hZNUGfn20qm64T6ZBlrzprymeu918H+mB/0rIg2gGK/BXkhhYgBw==
-
-typescript@^3.8.3:
-  version "3.8.3"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.8.3.tgz#409eb8544ea0335711205869ec458ab109ee1061"
-  integrity sha512-MYlEfn5VrLNsgudQTVJeNaQFUAI7DkhnOjdpAp4T+ku1TfQClewlbSuTVHiA+8skNBgaf02TL/kLOvig4y3G8w==
 
 uglify-js@^3.1.4:
   version "3.7.1"

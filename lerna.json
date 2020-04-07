@@ -6,10 +6,9 @@
     "packages/framework-provider-local",
     "packages/framework-provider-local-infrastructure",
     "packages/framework-core",
-    "packages/cli",
-    "packages/framework-example"
+    "packages/cli"
   ],
-  "version": "0.2.0",
+  "version": "0.2.2",
   "npmClient": "yarn",
   "useWorkspaces": true
 }
