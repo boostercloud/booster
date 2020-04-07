@@ -20,8 +20,6 @@ export class BoosterGraphQLDispatcher {
       const envelope = await this.config.provider.rawGraphQLRequestToEnvelope(request, this.logger)
       this.logger.debug('Received the following GraphQL envelope: ', envelope)
 
-      // TODO: We should rejects requests for query and mutation that come through sockets and subscriptions that comes through REST
-
       switch (envelope.eventType) {
         case 'CONNECT': // TODO: This message is never coming now. Check this later to see if it is finally needed
           return this.config.provider.handleGraphQLResult()
