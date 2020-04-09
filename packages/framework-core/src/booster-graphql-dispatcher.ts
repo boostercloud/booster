@@ -1,5 +1,11 @@
-import { BoosterConfig, Logger, InvalidParameterError, GraphQLRequestEnvelope } from '@boostercloud/framework-types'
-import { graphql, GraphQLSchema } from 'graphql'
+import {
+  BoosterConfig,
+  Logger,
+  InvalidParameterError,
+  GraphQLRequestEnvelope,
+  InvalidProtocolError,
+} from '@boostercloud/framework-types'
+import { getOperationAST, GraphQLSchema, printSchema, subscribe, parse, execute, DocumentNode, validate } from 'graphql'
 import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { BoosterCommandDispatcher } from './booster-command-dispatcher'
 import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
@@ -13,6 +19,7 @@ export class BoosterGraphQLDispatcher {
       new BoosterCommandDispatcher(config, logger),
       new BoosterReadModelDispatcher(config, logger)
     ).generateSchema()
+    console.log(printSchema(this.graphQLSchema))
   }
 
   public async dispatchGraphQL(request: any): Promise<any> {
@@ -37,23 +44,73 @@ export class BoosterGraphQLDispatcher {
   }
 
   private async handleMessage(envelope: GraphQLRequestEnvelope): Promise<any> {
+    this.logger.debug('Starting GraphQL query')
     if (!envelope.value) {
       throw new InvalidParameterError('Received an empty GraphQL body')
     }
+    const queryDocument = parse(envelope.value)
+    const errors = validate(this.graphQLSchema, queryDocument)
+    this.throwIfGraphQLErrors(errors)
+    const operationData = getOperationAST(queryDocument, undefined)
+    if (!operationData) {
+      throw new InvalidParameterError(
+        'Could not extract GraphQL root operation. Be sure to send only one of {query, mutation, subscription}'
+      )
+    }
 
-    this.logger.debug('Starting GraphQL query')
-    const result = await graphql({
+    switch (operationData.operation) {
+      case 'query':
+      case 'mutation':
+        return this.handleQueryOrMutation(envelope, queryDocument)
+      case 'subscription':
+        return this.handleSubscription(envelope, queryDocument)
+    }
+  }
+
+  private async handleQueryOrMutation(envelope: GraphQLRequestEnvelope, queryDocument: DocumentNode): Promise<any> {
+    if (cameThroughSocket(envelope)) {
+      throw new InvalidProtocolError(
+        'This API and protocol does not support "query" or "mutation" operations, only "subscription". Use the HTTP API for "query" or "mutation"'
+      )
+    }
+    const result = await execute({
       schema: this.graphQLSchema,
-      source: envelope.value,
+      document: queryDocument,
       contextValue: envelope,
     })
-    this.logger.debug('GraphQL result: ', result)
-    if (result.errors) {
-      throw new Error(result.errors.map((e) => e.message).join('\n'))
-    }
+    this.throwIfGraphQLErrors(result.errors)
+    this.logger.debug('GraphQL result: ', result.data)
     return result.data
-
-    // TODO: We need to send the result to all related subscriptions. Find an abstraction that allow us to manage
-    // connections here and search for those which are subscribed to a subscription
   }
+
+  private async handleSubscription(envelope: GraphQLRequestEnvelope, queryDocument: DocumentNode): Promise<any> {
+    if (!cameThroughSocket(envelope)) {
+      throw new InvalidProtocolError(
+        'This API and protocol does not support "subscription" operations, only "query" and "mutation". Use the socket API for "subscription"'
+      )
+    }
+    const result = await subscribe({
+      schema: this.graphQLSchema,
+      document: queryDocument,
+      contextValue: envelope,
+    })
+    if ('errors' in result) {
+      this.throwIfGraphQLErrors(result.errors)
+    }
+    this.logger.debug('GraphQL subscription finished')
+    return result
+  }
+
+  private throwIfGraphQLErrors(errors?: ReadonlyArray<Error>): void {
+    // We could have multiple errors, but there is not way to merge errors and keep its stack traces, so we
+    // just throw the first error
+    const firstError = errors?.[0]
+    if (firstError) {
+      throw firstError
+    }
+  }
+}
+
+function cameThroughSocket(envelope: GraphQLRequestEnvelope): boolean {
+  return envelope.connectionID != undefined
 }
