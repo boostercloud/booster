@@ -100,17 +100,16 @@
       "name": "AWS Integration Tests",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [
-        "-r",
-        "ts-node/register",
-        "--timeout",
-        "999999",
         "--colors",
         "--forbid-only",
+        "--config",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/aws/.mocharc.yml",
         "${workspaceFolder}/packages/framework-integration-tests/integration/aws/**/*.integration.ts"
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests"
     },
     {
       "type": "node",
@@ -118,17 +117,16 @@
       "name": "Local Integration Tests",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [
-        "-r",
-        "ts-node/register",
-        "--timeout",
-        "999999",
         "--colors",
         "--forbid-only",
+        "--config",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/local/.mocharc.yml",
         "${workspaceFolder}/packages/framework-integration-tests/integration/local/**/*.integration.ts"
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests"
     }
   ]
 }

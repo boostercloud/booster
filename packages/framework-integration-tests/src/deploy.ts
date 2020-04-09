@@ -38,6 +38,7 @@ async function setEnv(): Promise<void> {
 
 export async function deploy(): Promise<void> {
   await setEnv()
+  process.chdir(integrationTestsPackageRoot)
 
   // First, we ensure that the project is bootstrapped, and all the dependencies are installed (node_modules is placed at the project root)
   await run('lerna clean --yes && lerna bootstrap')
@@ -55,11 +56,12 @@ export async function deploy(): Promise<void> {
   fs.renameSync('../../node_modules_dev', '../../node_modules')
 
   // Compile the project
-  await run('lerna run clean && lerna run compile')
+  await run('lerna run clean')
+  await run('lerna run compile')
 
   // Remove non-needed packages (lerna adds them as dependencies)
-  fs.rmdirSync('node_modules/@boostercloud/framework-integration-tests', { recursive: true })
-  fs.rmdirSync('rm node_modules/@boostercloud/cli', { recursive: true })
+  fs.unlinkSync('./node_modules/@boostercloud/framework-integration-tests')
+  fs.unlinkSync('./node_modules/@boostercloud/cli')
 
   // Finally invoke the "boost deploy" command using the compiled cli.
   await run('../cli/bin/run deploy -e production')
