@@ -13,6 +13,7 @@ import { GraphQLMutationGenerator } from './graphql-mutation-generator'
 import { GraphQLSubscriptionGenerator } from './graphql-subcriptions-generator'
 import { BoosterCommandDispatcher } from '../../booster-command-dispatcher'
 import { BoosterReadModelDispatcher } from '../../booster-read-model-dispatcher'
+import { PubSub } from 'graphql-subscriptions'
 
 export class GraphQLGenerator {
   private queryGenerator: GraphQLQueryGenerator
@@ -106,6 +107,8 @@ export class GraphQLGenerator {
       const readModelEnvelope = toReadModelEnvelope(readModelClass.name, args, context)
       this.readModelsDispatcher.validateFetchRequest(readModelEnvelope)
       console.log('Subscription validated. Here we should store it')
+
+      return new PubSub().asyncIterator(readModelClass.name)
     }
   }
 }
