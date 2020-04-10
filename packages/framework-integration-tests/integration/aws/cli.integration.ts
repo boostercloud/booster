@@ -18,11 +18,8 @@ describe('AWS CLI Integration', () => {
         })
         .promise()
 
-      let firstStack = null
-      if (response?.Stacks) {
-        firstStack = response?.Stacks[0]
-      }
-      expect(firstStack).not.to.be.null
+      const firstStack = response?.Stacks?.[0]
+      expect(firstStack).not.to.be.undefined
       expect(firstStack?.StackStatus).to.be.equal('CREATE_COMPLETE')
     })
   })
