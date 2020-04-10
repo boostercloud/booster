@@ -12,6 +12,7 @@ import { Code, Function } from '@aws-cdk/aws-lambda'
 import * as params from '../params'
 import { ServicePrincipal } from '@aws-cdk/aws-iam'
 import { AuthorizationType, LambdaIntegration, RequestAuthorizer, RestApi } from '@aws-cdk/aws-apigateway'
+import { Cors } from '@aws-cdk/aws-apigateway/lib/cors'
 
 interface GraphQLStackMembers {
   graphQLLambda: Function
@@ -147,10 +148,16 @@ export class GraphQLStack {
 
   private buildRESTRoutes(graphQLLambda: Function, authorizerLambda: Function): void {
     const restAuthorizer = this.buildRESTAuthorizer(authorizerLambda)
-    this.restAPI.root.addResource('graphql').addMethod('POST', new LambdaIntegration(graphQLLambda), {
-      authorizationType: AuthorizationType.CUSTOM,
-      authorizer: restAuthorizer,
-    })
+    this.restAPI.root
+      .addResource('graphql', {
+        defaultCorsPreflightOptions: {
+          allowOrigins: Cors.ALL_ORIGINS,
+        },
+      })
+      .addMethod('POST', new LambdaIntegration(graphQLLambda), {
+        authorizationType: AuthorizationType.CUSTOM,
+        authorizer: restAuthorizer,
+      })
   }
 
   private buildRESTAuthorizer(lambda: Function): RequestAuthorizer {

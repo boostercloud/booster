@@ -27,7 +27,7 @@ function run(command: string): Promise<void> {
 }
 
 async function setEnv(): Promise<void> {
-  if (!process.env.BOOSTER_APP_SUFFIX) {
+  if (process.env.BOOSTER_APP_SUFFIX == undefined) {
     // If the user doesn't set an app name suffix, use the current git commit hash
     // to build a unique suffix for the application name in AWS to avoid collisions
     // between tests from different branches.

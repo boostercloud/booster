@@ -80,7 +80,7 @@ export class BoosterGraphQLDispatcher {
     })
     this.throwIfGraphQLErrors(result.errors)
     this.logger.debug('GraphQL result: ', result.data)
-    return result.data
+    return result
   }
 
   private async handleSubscription(envelope: GraphQLRequestEnvelope, queryDocument: DocumentNode): Promise<any> {
