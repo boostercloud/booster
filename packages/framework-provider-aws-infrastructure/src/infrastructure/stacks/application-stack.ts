@@ -1,5 +1,5 @@
 import { App, CfnOutput, Stack, StackProps } from '@aws-cdk/core'
-import * as dynamodb from '@aws-cdk/aws-dynamodb'
+import { Table } from '@aws-cdk/aws-dynamodb'
 import { Function } from '@aws-cdk/aws-lambda'
 import { Stream } from '@aws-cdk/aws-kinesis'
 import { BoosterConfig } from '@boostercloud/framework-types'
@@ -33,6 +33,7 @@ export class ApplicationStackBuilder {
       restAPIStack.commandsLambda,
       restAPIStack.readModelFetcherLambda,
       graphQLStack.graphQLLambda,
+      graphQLStack.subscriptionsTable,
       eventsStack.eventsStream,
       eventsStack.eventsStore,
       eventsStack.eventsLambda
@@ -74,12 +75,13 @@ export class ApplicationStackBuilder {
 }
 
 function setupPermissions(
-  readModelTables: Array<dynamodb.Table>,
+  readModelTables: Array<Table>,
   commandsLambda: Function,
   readModelFetcherLambda: Function,
   graphQLLambda: Function,
+  subscriptionsTable: Table,
   eventsStream: Stream,
-  eventsStore: dynamodb.Table,
+  eventsStore: Table,
   eventsLambda: Function
 ): void {
   // The command dispatcher can send events to the event stream
@@ -95,6 +97,13 @@ function setupPermissions(
     new PolicyStatement({
       resources: [eventsStream.streamArn],
       actions: ['kinesis:Put*', 'dynamodb:Query*', 'dynamodb:Put*'],
+    })
+  )
+
+  graphQLLambda.addToRolePolicy(
+    new PolicyStatement({
+      resources: [subscriptionsTable.tableArn],
+      actions: ['dynamodb:Query*', 'dynamodb:Put*'],
     })
   )
 

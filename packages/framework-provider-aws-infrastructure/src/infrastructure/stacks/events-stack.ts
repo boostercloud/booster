@@ -3,10 +3,7 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import { Stack, RemovalPolicy } from '@aws-cdk/core'
 import { Stream } from '@aws-cdk/aws-kinesis'
 import * as dynamodb from '@aws-cdk/aws-dynamodb'
-import {
-  eventStorePartitionKeyAttributeName,
-  eventStoreSortKeyAttributeName,
-} from '@boostercloud/framework-provider-aws'
+import { eventStorePartitionKeyAttribute, eventStoreSortKeyAttribute } from '@boostercloud/framework-provider-aws'
 import * as params from '../params'
 import { KinesisEventSource } from '@aws-cdk/aws-lambda-event-sources'
 
@@ -43,11 +40,11 @@ export class EventsStack {
     return new dynamodb.Table(this.stack, localID, {
       tableName: this.config.resourceNames.eventsStore,
       partitionKey: {
-        name: eventStorePartitionKeyAttributeName,
+        name: eventStorePartitionKeyAttribute,
         type: dynamodb.AttributeType.STRING,
       },
       sortKey: {
-        name: eventStoreSortKeyAttributeName,
+        name: eventStoreSortKeyAttribute,
         type: dynamodb.AttributeType.STRING,
       },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,

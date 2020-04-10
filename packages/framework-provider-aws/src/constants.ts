@@ -1,2 +1,5 @@
-export const eventStorePartitionKeyAttributeName = 'entityTypeName_entityID_kind'
-export const eventStoreSortKeyAttributeName = 'createdAt'
+export const eventStorePartitionKeyAttribute = 'entityTypeName_entityID_kind'
+export const eventStoreSortKeyAttribute = 'createdAt'
+export const subscriptionsStorePartitionKeyAttribute = 'subscriptionName'
+export const subscriptionsStoreSortKeyAttribute = 'connectionID'
+export const subscriptionsStoreTTLAttribute = 'expiresTime'

@@ -1,5 +1,5 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { Fn, Stack, Duration } from '@aws-cdk/core'
+import { Fn, Stack, Duration, RemovalPolicy } from '@aws-cdk/core'
 import {
   CfnApi,
   CfnAuthorizer,
@@ -13,9 +13,16 @@ import * as params from '../params'
 import { ServicePrincipal } from '@aws-cdk/aws-iam'
 import { AuthorizationType, LambdaIntegration, RequestAuthorizer, RestApi } from '@aws-cdk/aws-apigateway'
 import { Cors } from '@aws-cdk/aws-apigateway/lib/cors'
+import { Table, AttributeType, BillingMode } from '@aws-cdk/aws-dynamodb'
+import {
+  subscriptionsStorePartitionKeyAttribute,
+  subscriptionsStoreSortKeyAttribute,
+  subscriptionsStoreTTLAttribute,
+} from '@boostercloud/framework-provider-aws'
 
 interface GraphQLStackMembers {
   graphQLLambda: Function
+  subscriptionsTable: Table
 }
 
 export class GraphQLStack {
@@ -32,8 +39,9 @@ export class GraphQLStack {
 
     this.buildWebsocketRoutes(graphQLLambda, authorizerLambda)
     this.buildRESTRoutes(graphQLLambda, authorizerLambda)
+    const subscriptionsTable = this.buildSubscriptionsTable()
 
-    return { graphQLLambda }
+    return { graphQLLambda, subscriptionsTable }
   }
 
   private buildLambda(name: string, handler: string): Function {
@@ -57,8 +65,9 @@ export class GraphQLStack {
 
     const connectRoute = this.buildRoute('$connect', mockIntegration, websocketAuthorizer)
     this.buildRouteResponse(connectRoute, mockIntegration)
+    const defaultRoute = this.buildRoute('$default', lambdaIntegration)
+    this.buildRouteResponse(defaultRoute, lambdaIntegration)
     this.buildRoute('$disconnect', mockIntegration)
-    this.buildRoute('$default', lambdaIntegration)
   }
 
   private buildLambdaIntegration(lambda: Function): CfnIntegration {
@@ -110,7 +119,7 @@ export class GraphQLStack {
   }
 
   private buildRouteResponse(route: CfnRoute, integration: CfnIntegration): void {
-    const localID = `route-${route}-response`
+    const localID = `route-${route.routeKey}-response`
     const routeResponse = new CfnRouteResponse(this.stack, localID, {
       apiId: this.websocketAPI.ref,
       routeId: route.ref,
@@ -118,7 +127,7 @@ export class GraphQLStack {
     })
     routeResponse.addDependsOn(route)
 
-    const integrationResponseLocalId = 'graphql-mock-integration-response'
+    const integrationResponseLocalId = `route-${route.routeKey}-integration-response`
     const integrationResponse = new CfnIntegrationResponse(this.stack, integrationResponseLocalId, {
       integrationId: integration.ref,
       apiId: this.websocketAPI.ref,
@@ -166,6 +175,23 @@ export class GraphQLStack {
       handler: lambda,
       resultsCacheTtl: Duration.seconds(0),
       identitySources: [],
+    })
+  }
+
+  private buildSubscriptionsTable(): Table {
+    return new Table(this.stack, this.config.resourceNames.subscriptionsStore, {
+      tableName: this.config.resourceNames.subscriptionsStore,
+      partitionKey: {
+        name: subscriptionsStorePartitionKeyAttribute,
+        type: AttributeType.STRING,
+      },
+      sortKey: {
+        name: subscriptionsStoreSortKeyAttribute,
+        type: AttributeType.STRING,
+      },
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      removalPolicy: RemovalPolicy.DESTROY,
+      timeToLiveAttribute: subscriptionsStoreTTLAttribute,
     })
   }
 }

@@ -49,6 +49,7 @@ export class BoosterConfig {
       applicationStack: applicationStackName,
       eventsStream: applicationStackName + '-events-stream',
       eventsStore: applicationStackName + '-events-store',
+      subscriptionsStore: applicationStackName + '-subscriptions-store',
       forReadModel(readModelName: string): string {
         return applicationStackName + '-' + readModelName
       },
@@ -111,6 +112,7 @@ interface ResourceNames {
   applicationStack: string
   eventsStream: string
   eventsStore: string
+  subscriptionsStore: string
   forReadModel(entityName: string): string
 }
 
