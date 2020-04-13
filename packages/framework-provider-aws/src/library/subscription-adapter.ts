@@ -1,15 +1,19 @@
-import { BoosterConfig, Logger, ReadModelRequestEnvelope } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, SubscriptionEnvelope } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
-import { subscriptionsStorePartitionKeyAttribute, subscriptionsStoreSortKeyAttribute } from '../constants'
+import {
+  subscriptionsStorePartitionKeyAttribute,
+  subscriptionsStoreSortKeyAttribute,
+  subscriptionsStoreTTLAttribute,
+} from '../constants'
 
 export async function subscribeToReadModel(
   db: DynamoDB.DocumentClient,
   config: BoosterConfig,
   logger: Logger,
   connectionID: string,
-  readModelEnvelope: ReadModelRequestEnvelope
+  subscriptionEnvelope: SubscriptionEnvelope
 ): Promise<void> {
-  const { typeName: subscriptionName, ...subscriptionData } = readModelEnvelope
+  const { typeName: subscriptionName, expirationTimeEpoch: expirationTime, ...subscriptionData } = subscriptionEnvelope
   await db
     .put({
       TableName: config.resourceNames.subscriptionsStore,
@@ -17,6 +21,7 @@ export async function subscribeToReadModel(
         ...subscriptionData,
         [subscriptionsStorePartitionKeyAttribute]: subscriptionName,
         [subscriptionsStoreSortKeyAttribute]: connectionID,
+        [subscriptionsStoreTTLAttribute]: expirationTime,
       },
     })
     .promise()

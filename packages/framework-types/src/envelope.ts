@@ -45,6 +45,10 @@ export interface GraphQLRequestEnvelope extends Envelope {
   value?: string
 }
 
+export interface SubscriptionEnvelope extends ReadModelRequestEnvelope {
+  expirationTimeEpoch: number
+}
+
 export interface UserEnvelope {
   email: string
   roles: Array<string>

@@ -4,6 +4,7 @@ import {
   EventEnvelope,
   GraphQLRequestEnvelope,
   ReadModelRequestEnvelope,
+  SubscriptionEnvelope,
   UserEnvelope,
 } from './envelope'
 import { BoosterConfig } from './config'
@@ -65,7 +66,7 @@ export interface ProviderReadModelsLibrary {
     config: BoosterConfig,
     logger: Logger,
     connectionID: string,
-    readModelEnvelope: ReadModelRequestEnvelope
+    subscriptionEnvelope: SubscriptionEnvelope
   ): Promise<void>
   storeReadModel(
     config: BoosterConfig,

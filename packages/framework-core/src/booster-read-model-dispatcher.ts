@@ -6,6 +6,7 @@ import {
   NotFoundError,
   ReadModelRequestEnvelope,
   ReadModelInterface,
+  SubscriptionEnvelope,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
 import { Booster } from './booster'
@@ -85,6 +86,13 @@ export class BoosterReadModelDispatcher {
       `Processing subscription of connection '${connectionID}' to read model '${readModelRequest.typeName}' with the following data: `,
       readModelRequest
     )
-    return this.config.provider.subscribeToReadModel(this.config, this.logger, connectionID, readModelRequest)
+    const subscriptionDurationSeconds = 2 * 60 * 60 // TODO: Think if this should be configurable
+    const nowEpoch = Math.floor(new Date().getTime() / 1000)
+
+    const subscription: SubscriptionEnvelope = {
+      ...readModelRequest,
+      expirationTimeEpoch: nowEpoch + subscriptionDurationSeconds,
+    }
+    return this.config.provider.subscribeToReadModel(this.config, this.logger, connectionID, subscription)
   }
 }
