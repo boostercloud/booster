@@ -41,7 +41,8 @@ export async function deploy(): Promise<void> {
   process.chdir(integrationTestsPackageRoot)
 
   // First, we ensure that the project is bootstrapped, and all the dependencies are installed (node_modules is placed at the project root)
-  await run('lerna clean --yes && lerna bootstrap')
+  await run('lerna bootstrap')
+  await run('lerna clean --yes')
 
   // We are about to install the dependencies for production changing the location of the node_modules, so we first
   // rename the `node_modules` from the project root.

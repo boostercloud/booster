@@ -13,11 +13,13 @@
     "@boostercloud/framework-core": "^0.2.6",
     "@boostercloud/framework-provider-aws": "^0.2.6",
     "@boostercloud/framework-provider-local": "^0.2.6",
+    "aws-sdk": "^2.656.0",
     "typescript": "^3.8.3"
   },
   "devDependencies": {
     "@boostercloud/framework-provider-aws-infrastructure": "^0.2.6",
-    "@boostercloud/framework-provider-local-infrastructure": "^0.2.6"
+    "@boostercloud/framework-provider-local-infrastructure": "^0.2.6",
+    "@types/aws-lambda": "^8.10.48"
   },
   "engines": {
     "node": ">=8.0.0"
