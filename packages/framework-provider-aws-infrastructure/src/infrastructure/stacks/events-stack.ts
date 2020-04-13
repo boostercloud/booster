@@ -61,7 +61,7 @@ export class EventsStack {
       code: Code.fromAsset(this.config.userProjectRootPath),
       events: [
         new KinesisEventSource(eventsStream, {
-          ...params.kinesis(),
+          ...params.stream(),
         }),
       ],
     })

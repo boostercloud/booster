@@ -19,7 +19,7 @@ import { Kinesis, DynamoDB, CognitoIdentityServiceProvider } from 'aws-sdk'
 import { ProviderInfrastructure, ProviderLibrary } from '@boostercloud/framework-types'
 import { requestFailed, requestSucceeded } from './library/api-gateway-io'
 import { searchReadModel } from './library/searcher-adapter'
-import { subscribeToReadModel } from './library/subscription-adapter'
+import { rawReadModelEventsToEnvelope, subscribeToReadModel } from './library/subscription-adapter'
 
 const eventsStream: Kinesis = new Kinesis()
 const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
@@ -42,6 +42,7 @@ export const Provider: ProviderLibrary = {
   fetchAllReadModels: fetchAllReadModels.bind(null, dynamoDB),
   searchReadModel: searchReadModel.bind(null, dynamoDB),
   subscribeToReadModel: subscribeToReadModel.bind(null, dynamoDB),
+  rawReadModelEventsToEnvelope: rawReadModelEventsToEnvelope,
   storeReadModel: storeReadModel.bind(null, dynamoDB),
   handleReadModelResult: requestSucceeded,
   handleReadModelError: requestFailed,

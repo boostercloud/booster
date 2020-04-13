@@ -8,7 +8,7 @@ import {
   CfnRoute,
   CfnRouteResponse,
 } from '@aws-cdk/aws-apigatewayv2'
-import { Code, Function } from '@aws-cdk/aws-lambda'
+import { Code, Function, IEventSource } from '@aws-cdk/aws-lambda'
 import * as params from '../params'
 import { ServicePrincipal } from '@aws-cdk/aws-iam'
 import { AuthorizationType, LambdaIntegration, RequestAuthorizer, RestApi } from '@aws-cdk/aws-apigateway'
@@ -19,6 +19,7 @@ import {
   subscriptionsStoreSortKeyAttribute,
   subscriptionsStoreTTLAttribute,
 } from '@boostercloud/framework-provider-aws'
+import { DynamoEventSource } from '@aws-cdk/aws-lambda-event-sources'
 
 interface GraphQLStackMembers {
   graphQLLambda: Function
@@ -30,12 +31,15 @@ export class GraphQLStack {
     private readonly config: BoosterConfig,
     private readonly stack: Stack,
     private readonly restAPI: RestApi,
-    private readonly websocketAPI: CfnApi
+    private readonly websocketAPI: CfnApi,
+    private readonly readModelTables: Array<Table>
   ) {}
 
   public build(): GraphQLStackMembers {
-    const graphQLLambda = this.buildLambda('graphql-handler', this.config.serveGraphQLHandler)
     const authorizerLambda = this.buildLambda('graphql-authorizer', this.config.authorizerHandler)
+    const graphQLLambda = this.buildLambda('graphql-handler', this.config.serveGraphQLHandler)
+    const readModelsEventSources = this.buildEventSourcesForTables(this.readModelTables)
+    this.buildLambda('subscriptions-dispatcher', this.config.subscriptionDispatcherHandler, readModelsEventSources)
 
     this.buildWebsocketRoutes(graphQLLambda, authorizerLambda)
     this.buildRESTRoutes(graphQLLambda, authorizerLambda)
@@ -44,18 +48,23 @@ export class GraphQLStack {
     return { graphQLLambda, subscriptionsTable }
   }
 
-  private buildLambda(name: string, handler: string): Function {
+  private buildLambda(name: string, handler: string, eventSources?: Array<IEventSource>): Function {
     const lambda = new Function(this.stack, name, {
       ...params.lambda(this.config),
       functionName: `${this.config.resourceNames.applicationStack}-${name}`,
       handler: handler,
       code: Code.fromAsset(this.config.userProjectRootPath),
+      events: eventSources,
     })
     lambda.addPermission(name + '-invocation-permission', {
       principal: new ServicePrincipal('apigateway.amazonaws.com'),
     })
 
     return lambda
+  }
+
+  private buildEventSourcesForTables(readModelTables: Array<Table>): Array<DynamoEventSource> {
+    return readModelTables.map((table) => new DynamoEventSource(table, params.stream()))
   }
 
   private buildWebsocketRoutes(graphQLLambda: Function, authorizerLambda: Function): void {

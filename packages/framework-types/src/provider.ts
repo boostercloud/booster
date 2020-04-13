@@ -12,6 +12,7 @@ import { Observable } from 'rxjs'
 import { Logger } from './logger'
 import { ReadModelInterface, UUID } from './concepts'
 import { Filter } from './searcher'
+import { DynamoDBStreamEvent } from 'aws-lambda'
 
 export type ProviderLibrary = ProviderCommandsLibrary &
   ProviderEventsLibrary &
@@ -68,6 +69,7 @@ export interface ProviderReadModelsLibrary {
     connectionID: string,
     subscriptionEnvelope: SubscriptionEnvelope
   ): Promise<void>
+  rawReadModelEventsToEnvelope(rawEvents: DynamoDBStreamEvent): Promise<Array<ReadModelInterface>>
   storeReadModel(
     config: BoosterConfig,
     logger: Logger,

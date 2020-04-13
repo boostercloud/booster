@@ -25,7 +25,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
       })
       const dispatcher = new BoosterGraphQLDispatcher(config, logger)
 
-      await dispatcher.dispatchGraphQL({})
+      await dispatcher.dispatch({})
 
       expect(config.provider.handleGraphQLResult).to.not.have.been.called
       expect(config.provider.handleGraphQLError).to.have.been.calledOnceWithExactly(
@@ -50,7 +50,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
         })
       )
 
-      await dispatcher.dispatchGraphQL({})
+      await dispatcher.dispatch({})
 
       // Check that the handled error includes all the errors that GraphQL reported
       const errorOneRegExp = new RegExp(errorTextOne)
@@ -76,7 +76,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
       const graphqlFake = fake.returns({ data: graphQLResult })
       replace(GraphQL, 'graphql', graphqlFake)
 
-      await dispatcher.dispatchGraphQL({})
+      await dispatcher.dispatch({})
 
       expect(config.provider.handleGraphQLError).to.not.have.been.called
       expect(graphqlFake).to.have.been.calledWithExactly({

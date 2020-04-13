@@ -41,6 +41,8 @@ export const Provider: ProviderLibrary = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   subscribeToReadModel: undefined as any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  rawReadModelEventsToEnvelope: undefined as any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   storeReadModel: undefined as any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleReadModelResult: undefined as any,

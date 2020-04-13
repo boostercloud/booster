@@ -22,7 +22,7 @@ export class BoosterGraphQLDispatcher {
     console.log(printSchema(this.graphQLSchema))
   }
 
-  public async dispatchGraphQL(request: any): Promise<any> {
+  public async dispatch(request: any): Promise<any> {
     try {
       const envelope = await this.config.provider.rawGraphQLRequestToEnvelope(request, this.logger)
       this.logger.debug('Received the following GraphQL envelope: ', envelope)

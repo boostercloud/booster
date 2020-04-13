@@ -25,8 +25,9 @@ export class BoosterConfig {
   public readonly eventDispatcherHandler: string = 'dist/index.boosterEventDispatcher'
   public readonly readModelMapperHandler: string = 'dist/index.boosterReadModelMapper'
   public readonly preSignUpHandler: string = 'dist/index.boosterPreSignUpChecker'
-  public readonly serveGraphQLHandler: string = 'dist/index.boosterServeGraphQL'
   public readonly authorizerHandler: string = 'dist/index.boosterRequestAuthorizer'
+  public readonly serveGraphQLHandler: string = 'dist/index.boosterServeGraphQL'
+  public readonly subscriptionDispatcherHandler: string = 'dist/index.boosterDispatchSubscription'
 
   public readonly entities: Record<EntityName, EntityMetadata> = {}
   public readonly reducers: Record<EventName, ReducerMetadata> = {}

@@ -18,7 +18,7 @@ export function lambda(
   }
 }
 
-export function kinesis(): Pick<KinesisEventSourceProps, 'startingPosition' | 'batchSize'> {
+export function stream(): Pick<KinesisEventSourceProps, 'startingPosition' | 'batchSize'> {
   return {
     startingPosition: StartingPosition.TRIM_HORIZON,
     batchSize: 100,

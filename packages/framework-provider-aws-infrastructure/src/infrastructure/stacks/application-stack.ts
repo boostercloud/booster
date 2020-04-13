@@ -22,7 +22,7 @@ export class ApplicationStackBuilder {
 
     new AuthStack(this.config, stack, restAPI).build()
     const readModelTables = new ReadModelsStack(this.config, stack).build()
-    const graphQLStack = new GraphQLStack(this.config, stack, restAPI, websocketAPI).build()
+    const graphQLStack = new GraphQLStack(this.config, stack, restAPI, websocketAPI, readModelTables).build()
     const eventsStack = new EventsStack(this.config, stack).build()
 
     // Deprecated

@@ -1,10 +1,12 @@
-import { BoosterConfig, Logger, SubscriptionEnvelope } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, SubscriptionEnvelope, ReadModelInterface } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import {
   subscriptionsStorePartitionKeyAttribute,
   subscriptionsStoreSortKeyAttribute,
   subscriptionsStoreTTLAttribute,
 } from '../constants'
+import { DynamoDBStreamEvent } from 'aws-lambda'
+import { Converter } from 'aws-sdk/clients/dynamodb'
 
 export async function subscribeToReadModel(
   db: DynamoDB.DocumentClient,
@@ -25,4 +27,12 @@ export async function subscribeToReadModel(
       },
     })
     .promise()
+}
+export async function rawReadModelEventsToEnvelope(rawEvents: DynamoDBStreamEvent): Promise<Array<ReadModelInterface>> {
+  return rawEvents.Records.reduce<Array<ReadModelInterface>>((readModels, record): Array<ReadModelInterface> => {
+    if (!record.dynamodb?.NewImage) {
+      return readModels
+    }
+    return [...readModels, Converter.unmarshall(record.dynamodb.NewImage) as ReadModelInterface]
+  }, [])
 }
