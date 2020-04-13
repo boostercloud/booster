@@ -30,11 +30,16 @@ export class BoosterReadModelDispatcher {
   }
 
   public async fetch(readModelRequest: ReadModelRequestEnvelope): Promise<any> {
-    this.validateFetchRequest(readModelRequest)
+    this.validateRequest(readModelRequest)
     return this.processFetch(readModelRequest)
   }
 
-  public validateFetchRequest(readModelRequest: ReadModelRequestEnvelope): void {
+  public async subscribe(connectionID: string, readModelRequest: ReadModelRequestEnvelope): Promise<any> {
+    this.validateRequest(readModelRequest)
+    return this.processSubscription(connectionID, readModelRequest)
+  }
+
+  private validateRequest(readModelRequest: ReadModelRequestEnvelope): void {
     this.logger.debug('Validating the following read model request: ', readModelRequest)
     if (!readModelRequest.version) {
       throw new InvalidParameterError('The required request "version" was not present')
@@ -73,5 +78,13 @@ export class BoosterReadModelDispatcher {
       }
     }
     return searcher.search()
+  }
+
+  private async processSubscription(connectionID: string, readModelRequest: ReadModelRequestEnvelope): Promise<void> {
+    this.logger.info(
+      `Processing subscription of connection '${connectionID}' to read model '${readModelRequest.typeName}' with the following data: `,
+      readModelRequest
+    )
+    return this.config.provider.subscribeToReadModel(this.config, this.logger, connectionID, readModelRequest)
   }
 }

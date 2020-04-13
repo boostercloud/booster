@@ -92,7 +92,7 @@ export class GraphQLGenerator {
   public subscriptionResolverBuilder(
     readModelClass: AnyClass
   ): GraphQLFieldResolver<any, GraphQLRequestEnvelope, Record<string, ReadModelPropertyFilter>> {
-    return (parent, args, context, info) => {
+    return async (parent, args, context, info) => {
       console.log(
         'Subscription resolver for ',
         readModelClass.name,
@@ -105,8 +105,7 @@ export class GraphQLGenerator {
         throw new Error('Missing "connectionID". It is required for subscriptions')
       }
       const readModelEnvelope = toReadModelEnvelope(readModelClass.name, args, context)
-      this.readModelsDispatcher.validateFetchRequest(readModelEnvelope)
-      console.log('Subscription validated. Here we should store it')
+      await this.readModelsDispatcher.subscribe(context.connectionID, readModelEnvelope)
 
       return new PubSub().asyncIterator(readModelClass.name)
     }

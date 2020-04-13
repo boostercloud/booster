@@ -18,8 +18,7 @@ export type ProviderLibrary = ProviderCommandsLibrary &
   ProviderAuthLibrary &
   ProviderAPIHandling &
   ProviderInfrastructureGetter &
-  ProviderGraphQLLibrary &
-  ProviderSearcher
+  ProviderGraphQLLibrary
 
 export interface ProviderCommandsLibrary {
   rawCommandToEnvelope(rawCommand: any): Promise<CommandEnvelope>
@@ -47,13 +46,27 @@ export interface ProviderEventsLibrary {
 }
 export interface ProviderReadModelsLibrary {
   rawReadModelRequestToEnvelope(rawReadModelRequest: any): Promise<ReadModelRequestEnvelope>
+  /** @deprecated */
   fetchReadModel(
     config: BoosterConfig,
     logger: Logger,
     readModelName: string,
     readModelID: UUID
   ): Promise<ReadModelInterface>
+  /** @deprecated */
   fetchAllReadModels(config: BoosterConfig, logger: Logger, readModelName: string): Promise<Array<ReadModelInterface>>
+  searchReadModel<TReadModel extends ReadModelInterface>(
+    config: BoosterConfig,
+    logger: Logger,
+    entityTypeName: string,
+    filters: Record<string, Filter<any>>
+  ): Promise<Array<TReadModel>>
+  subscribeToReadModel(
+    config: BoosterConfig,
+    logger: Logger,
+    connectionID: string,
+    readModelEnvelope: ReadModelRequestEnvelope
+  ): Promise<void>
   storeReadModel(
     config: BoosterConfig,
     logger: Logger,
@@ -88,13 +101,4 @@ export interface ProviderInfrastructure {
   deploy?: (configuration: BoosterConfig) => Observable<string>
   run?: (configuration: BoosterConfig, port: number) => Promise<void>
   nuke(configuration: BoosterConfig): Observable<string>
-}
-
-export interface ProviderSearcher {
-  searchReadModel<TReadModel extends ReadModelInterface>(
-    config: BoosterConfig,
-    logger: Logger,
-    entityTypeName: string,
-    filters: Record<string, Filter<any>>
-  ): Promise<Array<TReadModel>>
 }

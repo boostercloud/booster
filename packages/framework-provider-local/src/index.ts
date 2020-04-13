@@ -37,6 +37,10 @@ export const Provider: ProviderLibrary = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fetchAllReadModels: undefined as any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  searchReadModel: undefined as any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  subscribeToReadModel: undefined as any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   storeReadModel: undefined as any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleReadModelResult: undefined as any,
@@ -66,7 +70,4 @@ export const Provider: ProviderLibrary = {
   // ProviderInfrastructureGetter
   getInfrastructure: () =>
     require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  searchReadModel: undefined as any,
 }
