@@ -91,8 +91,9 @@ export class BoosterReadModelDispatcher {
 
     const subscription: SubscriptionEnvelope = {
       ...readModelRequest,
-      expirationTimeEpoch: nowEpoch + subscriptionDurationSeconds,
+      expirationTime: nowEpoch + subscriptionDurationSeconds,
+      connectionID,
     }
-    return this.config.provider.subscribeToReadModel(this.config, this.logger, connectionID, subscription)
+    return this.config.provider.subscribeToReadModel(this.config, this.logger, subscription)
   }
 }

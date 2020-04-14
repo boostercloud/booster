@@ -6,6 +6,7 @@ import {
   ReadModelRequestEnvelope,
   SubscriptionEnvelope,
   UserEnvelope,
+  ReadModelEnvelope,
 } from './envelope'
 import { BoosterConfig } from './config'
 import { Observable } from 'rxjs'
@@ -63,13 +64,17 @@ export interface ProviderReadModelsLibrary {
     entityTypeName: string,
     filters: Record<string, Filter<any>>
   ): Promise<Array<TReadModel>>
-  subscribeToReadModel(
+  subscribeToReadModel(config: BoosterConfig, logger: Logger, subscriptionEnvelope: SubscriptionEnvelope): Promise<void>
+  rawReadModelEventsToEnvelopes(
     config: BoosterConfig,
     logger: Logger,
-    connectionID: string,
-    subscriptionEnvelope: SubscriptionEnvelope
-  ): Promise<void>
-  rawReadModelEventsToEnvelope(rawEvents: DynamoDBStreamEvent): Promise<Array<ReadModelInterface>>
+    rawEvents: DynamoDBStreamEvent
+  ): Promise<Array<ReadModelEnvelope>>
+  fetchSubscriptions(
+    config: BoosterConfig,
+    logger: Logger,
+    subscriptionName: string
+  ): Promise<Array<SubscriptionEnvelope>>
   storeReadModel(
     config: BoosterConfig,
     logger: Logger,

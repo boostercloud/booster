@@ -8,6 +8,7 @@ export {
   boosterPreSignUpChecker,
   boosterServeGraphQL,
   boosterRequestAuthorizer,
+  boosterDispatchSubscription,
 } from './booster'
 
 export const Booster: BoosterApp = boosterModule.Booster

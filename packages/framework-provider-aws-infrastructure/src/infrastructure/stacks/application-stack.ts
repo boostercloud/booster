@@ -33,6 +33,7 @@ export class ApplicationStackBuilder {
       restAPIStack.commandsLambda,
       restAPIStack.readModelFetcherLambda,
       graphQLStack.graphQLLambda,
+      graphQLStack.subscriptionDispatcherLambda,
       graphQLStack.subscriptionsTable,
       eventsStack.eventsStream,
       eventsStack.eventsStore,
@@ -79,6 +80,7 @@ function setupPermissions(
   commandsLambda: Function,
   readModelFetcherLambda: Function,
   graphQLLambda: Function,
+  subscriptionDispatcherLambda: Function,
   subscriptionsTable: Table,
   eventsStream: Stream,
   eventsStore: Table,
@@ -103,7 +105,14 @@ function setupPermissions(
   graphQLLambda.addToRolePolicy(
     new PolicyStatement({
       resources: [subscriptionsTable.tableArn],
-      actions: ['dynamodb:Query*', 'dynamodb:Put*'],
+      actions: ['dynamodb:Put*'],
+    })
+  )
+
+  subscriptionDispatcherLambda.addToRolePolicy(
+    new PolicyStatement({
+      resources: [subscriptionsTable.tableArn],
+      actions: ['dynamodb:Query*'],
     })
   )
 

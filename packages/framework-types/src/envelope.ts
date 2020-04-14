@@ -1,4 +1,4 @@
-import { CommandInterface, EntityInterface, EventInterface, UUID } from './concepts'
+import { CommandInterface, EntityInterface, EventInterface, ReadModelInterface, UUID } from './concepts'
 
 /**
  * An `Envelope` carries a command/event body together with the name
@@ -26,9 +26,9 @@ export interface EventEnvelope extends Envelope {
   createdAt: string
 }
 
-export interface ReadModelPropertyFilter {
-  operation: string
-  values: Array<any>
+export interface ReadModelEnvelope {
+  typeName: string
+  value: ReadModelInterface
 }
 
 export interface ReadModelRequestEnvelope extends Envelope {
@@ -39,6 +39,11 @@ export interface ReadModelRequestEnvelope extends Envelope {
   readModelID?: UUID
 }
 
+export interface ReadModelPropertyFilter {
+  operation: string
+  values: Array<any>
+}
+
 export interface GraphQLRequestEnvelope extends Envelope {
   eventType: 'CONNECT' | 'MESSAGE' | 'DISCONNECT'
   connectionID?: string
@@ -46,7 +51,8 @@ export interface GraphQLRequestEnvelope extends Envelope {
 }
 
 export interface SubscriptionEnvelope extends ReadModelRequestEnvelope {
-  expirationTimeEpoch: number
+  expirationTime: number // In Epoch format
+  connectionID: string
 }
 
 export interface UserEnvelope {

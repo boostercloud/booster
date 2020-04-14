@@ -58,6 +58,15 @@ export class BoosterConfig {
   }
 
   /**
+   * Returns the name of the ReadModel from the name of its resouce (normally, a table)
+   * @param resourceName
+   */
+  public readModelNameFromResourceName(resourceName: string): string {
+    const resourceNamePrefixRegex = new RegExp(`^${this.resourceNames.applicationStack}-`)
+    return resourceName.replace(resourceNamePrefixRegex, '')
+  }
+
+  /**
    * This is a convenient property to easily check if the application has defined some roles.
    * Only in that case we will create a user pool and an authorization API.
    * If there are no roles defined, it means that the app is completely public and users
