@@ -1,5 +1,5 @@
 export const template = `{
-  "name": "{{{name}}}",
+  "name": "{{{projectName}}}",
   "description": "{{{description}}}",
   "version": "{{{version}}}",
   "author": "{{{author}}}",

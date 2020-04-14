@@ -83,15 +83,21 @@ const parseConfig = async (
   providerName?: string
 ): Promise<ProjectInitializerConfig> => {
   const description = await prompter.defaultOrPrompt(flags.description, "What's your project description?")
-  const version = await prompter.defaultOrPrompt(flags.version, "What's the first version?")
+  const versionPrompt = await prompter.defaultOrPrompt(flags.version, "What's the first version? (default: 0.1.0)")
+  const version = versionPrompt || '0.1.0'
   const author = await prompter.defaultOrPrompt(flags.author, "Who's the author?")
   const homepage = await prompter.defaultOrPrompt(flags.homepage, "What's the website?")
-  const license = await prompter.defaultOrPrompt(flags.license, 'What license will you be publishing this under?')
-  const repository = await prompter.defaultOrPrompt(flags.repository, "What's the URL of the repository?")
-  const providerPackageName = await prompter.defaultOrPrompt(
-    providerName,
-    'What is the package name of your provider integration library?'
+  const licensePrompt = await prompter.defaultOrPrompt(
+    flags.license,
+    'What license will you be publishing this under? (default: MIT)'
   )
+  const license = licensePrompt || 'MIT'
+  const repository = await prompter.defaultOrPrompt(flags.repository, "What's the URL of the repository?")
+  const providerPackageNamePrompt = await prompter.defaultOrPrompt(
+    providerName,
+    'What is the package name of your provider integration library? (default: @boostercloud/framework-provider-aws)'
+  )
+  const providerPackageName = providerPackageNamePrompt || '@boostercloud/framework-provider-aws'
   return Promise.resolve({
     projectName: flags.projectName as string,
     providerPackageName,
