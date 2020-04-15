@@ -18,8 +18,10 @@ async function setEnv(): Promise<void> {
     // between tests from different branches.
     const { stdout } = await exec('git rev-parse HEAD')
     process.env['BOOSTER_APP_SUFFIX'] = stdout.trim().substring(0, 6)
+    console.log('setting BOOSTER_APP_SUFFIX=' + process.env.BOOSTER_APP_SUFFIX)
   }
   // The following variable is set to make AWS SDK load the config from `~/.aws/credentials`
   // Notice that this file must be set as described in [the documentation](https://github.com/boostercloud/booster/blob/master/docs/documentation/_08-deployment.md#configure-your-provider-credentials)
   process.env['AWS_SDK_LOAD_CONFIG'] = 'true'
+  console.log('setting AWS_SDK_LOAD_CONFIG=' + process.env.AWS_SDK_LOAD_CONFIG)
 }
