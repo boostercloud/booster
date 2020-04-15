@@ -27,6 +27,7 @@ describe('the application stack builder', () => {
       properties: [],
     }
   })
+  config.env['A_CUSTOM_ENV_VARIABLE'] = 'important-value'
 
   it('builds the application stack of a simple app correctly', () => {
     const boosterApp = new App()
@@ -98,7 +99,8 @@ describe('the application stack builder', () => {
     const userPoolClient = 'user-pool-client'
     const clientID = 'clientID'
     const api = appStack.tryFindChild(apiName) as RestApi
-    const numberOfLambdas = appStack.children.filter((child) => child instanceof Function).length
+    const lambdas = appStack.children.filter((child) => child instanceof Function)
+    const numberOfLambdas = lambdas.length
 
     // Just check for all the EXTRA constructs that must be created to support roles
     // API-related
@@ -107,6 +109,10 @@ describe('the application stack builder', () => {
     // Lambdas
     expect(numberOfLambdas).to.equal(6)
     expect(appStack.tryFindChild(preSignUpValidator)).not.to.be.undefined
+    lambdas.forEach((lambda: any) => {
+      expect(lambda.environment.BOOSTER_ENV).to.equal('test')
+      expect(lambda.environment.A_CUSTOM_ENV_VARIABLE).to.equal('important-value')
+    })
     // UserPool-related
     expect(appStack.tryFindChild(userPool)).not.to.be.undefined
     expect(appStack.tryFindChild(userPoolDomain)).not.to.be.undefined
