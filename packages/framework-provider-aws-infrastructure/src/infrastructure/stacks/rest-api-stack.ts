@@ -1,8 +1,9 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { Stack } from '@aws-cdk/core'
-import { LambdaIntegration, RestApi } from '@aws-cdk/aws-apigateway'
+import { LambdaIntegration } from '@aws-cdk/aws-apigateway'
 import { Code, Function } from '@aws-cdk/aws-lambda'
 import * as params from '../params'
+import { APIS } from '../params'
 
 interface RESTAPIStackMembers {
   /** @deprecated **/
@@ -18,7 +19,7 @@ export class RestAPIStack {
   public constructor(
     private readonly config: BoosterConfig,
     private readonly stack: Stack,
-    private readonly restAPI: RestApi
+    private readonly apis: APIS
   ) {}
 
   public build(): RESTAPIStackMembers {
@@ -38,13 +39,13 @@ export class RestAPIStack {
   private buildCommandsAPI(): Function {
     const localID = 'commands-main'
     const lambdaFunction = new Function(this.stack, localID, {
-      ...params.lambda(this.config),
+      ...params.lambda(this.config, this.stack, this.apis),
       functionName: this.config.resourceNames.applicationStack + '-' + localID,
       handler: this.config.commandDispatcherHandler,
       code: Code.fromAsset(this.config.userProjectRootPath),
     })
 
-    this.restAPI.root.addResource('commands').addMethod('POST', new LambdaIntegration(lambdaFunction))
+    this.apis.restAPI.root.addResource('commands').addMethod('POST', new LambdaIntegration(lambdaFunction))
     return lambdaFunction
   }
 
@@ -55,14 +56,14 @@ export class RestAPIStack {
   private buildReadModelsAPI(): Function {
     const localID = 'read-model-fetcher'
     const readModelFetcherLambda = new Function(this.stack, localID, {
-      ...params.lambda(this.config),
+      ...params.lambda(this.config, this.stack, this.apis),
       functionName: this.config.resourceNames.applicationStack + '-' + localID,
       handler: this.config.readModelMapperHandler,
       code: Code.fromAsset(this.config.userProjectRootPath),
     })
 
     const lambdaIntegration = new LambdaIntegration(readModelFetcherLambda)
-    const readModelResource = this.restAPI.root.resourceForPath('readmodels/{readModelName}')
+    const readModelResource = this.apis.restAPI.root.resourceForPath('readmodels/{readModelName}')
     readModelResource.addMethod('GET', lambdaIntegration)
     readModelResource.addResource('{id}').addMethod('GET', lambdaIntegration)
 

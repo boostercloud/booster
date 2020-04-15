@@ -6,6 +6,7 @@ import * as dynamodb from '@aws-cdk/aws-dynamodb'
 import { eventStorePartitionKeyAttribute, eventStoreSortKeyAttribute } from '@boostercloud/framework-provider-aws'
 import * as params from '../params'
 import { KinesisEventSource } from '@aws-cdk/aws-lambda-event-sources'
+import { APIS } from '../params'
 
 interface EventsStackMembers {
   eventsStream: Stream
@@ -14,7 +15,11 @@ interface EventsStackMembers {
 }
 
 export class EventsStack {
-  public constructor(private readonly config: BoosterConfig, private readonly stack: Stack) {}
+  public constructor(
+    private readonly config: BoosterConfig,
+    private readonly stack: Stack,
+    private readonly apis: APIS
+  ) {}
 
   public build(): EventsStackMembers {
     const eventsStream = this.buildEventsStream()
@@ -55,7 +60,7 @@ export class EventsStack {
   private buildEventsLambda(eventsStream: Stream): Function {
     const localID = 'events-main'
     return new Function(this.stack, localID, {
-      ...params.lambda(this.config),
+      ...params.lambda(this.config, this.stack, this.apis),
       functionName: this.config.resourceNames.applicationStack + '-' + localID,
       handler: this.config.eventDispatcherHandler,
       code: Code.fromAsset(this.config.userProjectRootPath),

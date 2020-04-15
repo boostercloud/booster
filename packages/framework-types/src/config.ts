@@ -90,12 +90,20 @@ export class BoosterConfig {
   }
 
   public get provider(): ProviderLibrary {
-    if (!this._provider) throw new Error('It is required to set a valid provider runtime in `src/config.ts`')
+    if (!this._provider) throw new Error('It is required to set a valid provider runtime in your configuration files')
     return this._provider
   }
 
   public set provider(provider: ProviderLibrary) {
     this._provider = provider
+  }
+
+  public mustGetEnvironmentVar(varName: string): string {
+    const value = process.env[varName]
+    if (value == undefined) {
+      throw new Error(`Missing environment variable '${varName}'`)
+    }
+    return value
   }
 
   private validateAllMigrations(): void {

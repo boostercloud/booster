@@ -1,4 +1,4 @@
-import { App, CfnOutput, Stack, StackProps } from '@aws-cdk/core'
+import { App, CfnOutput, Fn, Stack, StackProps } from '@aws-cdk/core'
 import { Table } from '@aws-cdk/aws-dynamodb'
 import { Function } from '@aws-cdk/aws-lambda'
 import { Stream } from '@aws-cdk/aws-kinesis'
@@ -11,6 +11,7 @@ import { ReadModelsStack } from './read-models-stack'
 import { GraphQLStack } from './graphql-stack'
 import { RestApi } from '@aws-cdk/aws-apigateway'
 import { CfnApi, CfnStage } from '@aws-cdk/aws-apigatewayv2'
+import { baseURLForAPI } from '../params'
 
 export class ApplicationStackBuilder {
   public constructor(readonly config: BoosterConfig, readonly props?: StackProps) {}
@@ -19,14 +20,18 @@ export class ApplicationStackBuilder {
     const stack = new Stack(app, this.config.resourceNames.applicationStack, this.props)
     const restAPI = this.buildRootRESTAPI(stack)
     const websocketAPI = this.buildRootWebSocketAPI(stack)
+    const apis = {
+      restAPI,
+      websocketAPI,
+    }
 
-    new AuthStack(this.config, stack, restAPI).build()
+    new AuthStack(this.config, stack, apis).build()
     const readModelTables = new ReadModelsStack(this.config, stack).build()
-    const graphQLStack = new GraphQLStack(this.config, stack, restAPI, websocketAPI, readModelTables).build()
-    const eventsStack = new EventsStack(this.config, stack).build()
+    const graphQLStack = new GraphQLStack(this.config, stack, apis, readModelTables).build()
+    const eventsStack = new EventsStack(this.config, stack, apis).build()
 
     // Deprecated
-    const restAPIStack = new RestAPIStack(this.config, stack, restAPI).build()
+    const restAPIStack = new RestAPIStack(this.config, stack, apis).build()
 
     setupPermissions(
       readModelTables,
@@ -35,6 +40,7 @@ export class ApplicationStackBuilder {
       graphQLStack.graphQLLambda,
       graphQLStack.subscriptionDispatcherLambda,
       graphQLStack.subscriptionsTable,
+      websocketAPI,
       eventsStack.eventsStream,
       eventsStack.eventsStore,
       eventsStack.eventsLambda
@@ -42,7 +48,9 @@ export class ApplicationStackBuilder {
   }
 
   private buildRootRESTAPI(stack: Stack): RestApi {
-    const rootAPI = new RestApi(stack, this.config.resourceNames.applicationStack + '-rest-api')
+    const rootAPI = new RestApi(stack, this.config.resourceNames.applicationStack + '-rest-api', {
+      deployOptions: { stageName: this.config.env },
+    })
 
     new CfnOutput(stack, 'base-REST-URL', {
       value: rootAPI.url,
@@ -62,12 +70,12 @@ export class ApplicationStackBuilder {
     const stage = new CfnStage(stack, localID + '-stage', {
       apiId: rootAPI.ref,
       autoDeploy: true,
-      stageName: 'dev',
+      stageName: this.config.env,
     })
     stage.addDependsOn(rootAPI)
 
     new CfnOutput(stack, 'base-websocket-URL', {
-      value: baseURLForWebsocketStage(stage),
+      value: baseURLForAPI(this.config, stack, rootAPI.ref, 'wss'),
       description: 'The URL for the websocket communication. Used for subscriptions',
     })
 
@@ -82,6 +90,7 @@ function setupPermissions(
   graphQLLambda: Function,
   subscriptionDispatcherLambda: Function,
   subscriptionsTable: Table,
+  websocketAPI: CfnApi,
   eventsStream: Stream,
   eventsStore: Table,
   eventsLambda: Function
@@ -116,6 +125,22 @@ function setupPermissions(
     })
   )
 
+  subscriptionDispatcherLambda.addToRolePolicy(
+    new PolicyStatement({
+      resources: [
+        Fn.join(':', [
+          'arn',
+          Fn.ref('AWS::Partition'),
+          'execute-api',
+          Fn.ref('AWS::Region'),
+          Fn.ref('AWS::AccountId'),
+          `${websocketAPI.ref}/*`,
+        ]),
+      ],
+      actions: ['execute-api:ManageConnections'],
+    })
+  )
+
   eventsLambda.addToRolePolicy(
     new PolicyStatement({
       resources: [eventsStore.tableArn],
@@ -144,8 +169,4 @@ function setupPermissions(
       })
     )
   }
-}
-
-function baseURLForWebsocketStage(stage: CfnStage): string {
-  return `wss://${stage.apiId}.execute-api.${stage.stack.region}.${stage.stack.urlSuffix}/${stage.stageName}/`
 }

@@ -11,6 +11,9 @@ import {
 import { BoosterAuth } from './booster-auth'
 import { Booster } from './booster'
 
+// TODO: Think if this should be configurable
+const subscriptionDurationSeconds = 24 * 60 * 60 // 24 hours
+
 export class BoosterReadModelDispatcher {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
   /**
@@ -86,9 +89,8 @@ export class BoosterReadModelDispatcher {
       `Processing subscription of connection '${connectionID}' to read model '${readModelRequest.typeName}' with the following data: `,
       readModelRequest
     )
-    const subscriptionDurationSeconds = 2 * 60 * 60 // TODO: Think if this should be configurable
-    const nowEpoch = Math.floor(new Date().getTime() / 1000)
 
+    const nowEpoch = Math.floor(new Date().getTime() / 1000)
     const subscription: SubscriptionEnvelope = {
       ...readModelRequest,
       expirationTime: nowEpoch + subscriptionDurationSeconds,

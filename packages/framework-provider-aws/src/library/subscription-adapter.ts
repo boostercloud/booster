@@ -5,8 +5,9 @@ import {
   ReadModelInterface,
   ReadModelEnvelope,
 } from '@boostercloud/framework-types'
-import { DynamoDB } from 'aws-sdk'
+import { ApiGatewayManagementApi, DynamoDB } from 'aws-sdk'
 import {
+  environmentVarNames,
   subscriptionsStorePartitionKeyAttribute,
   subscriptionsStoreSortKeyAttribute,
   subscriptionsStoreTTLAttribute,
@@ -55,6 +56,7 @@ export async function fetchSubscriptions(
   logger: Logger,
   subscriptionName: string
 ): Promise<Array<SubscriptionEnvelope>> {
+  // TODO: filter expired ones
   const result = await db
     .query({
       TableName: config.resourceNames.subscriptionsStore,
@@ -67,6 +69,21 @@ export async function fetchSubscriptions(
     .promise()
 
   return result.Items as Array<SubscriptionEnvelope>
+}
+
+export async function notifySubscription(
+  config: BoosterConfig,
+  connectionID: string,
+  data: Record<string, any>
+): Promise<void> {
+  await new ApiGatewayManagementApi({
+    endpoint: config.mustGetEnvironmentVar(environmentVarNames.websocketAPIURL),
+  })
+    .postToConnection({
+      ConnectionId: connectionID,
+      Data: JSON.stringify(data),
+    })
+    .promise()
 }
 
 function toReadModelEnvelope(config: BoosterConfig, record: DynamoDBRecord): ReadModelEnvelope {

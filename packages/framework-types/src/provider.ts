@@ -75,6 +75,7 @@ export interface ProviderReadModelsLibrary {
     logger: Logger,
     subscriptionName: string
   ): Promise<Array<SubscriptionEnvelope>>
+  notifySubscription(config: BoosterConfig, connectionID: string, data: Record<string, any>): Promise<void>
   storeReadModel(
     config: BoosterConfig,
     logger: Logger,

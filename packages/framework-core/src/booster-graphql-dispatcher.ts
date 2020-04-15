@@ -33,6 +33,7 @@ export class BoosterGraphQLDispatcher {
         case 'MESSAGE':
           return this.config.provider.handleGraphQLResult(await this.handleMessage(envelope))
         case 'DISCONNECT':
+          // TODO: Remove subscriptions
           return this.config.provider.handleGraphQLResult()
         default:
           throw new Error(`Unknown message type ${envelope.eventType}`)
