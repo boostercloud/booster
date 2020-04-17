@@ -37,7 +37,10 @@ export class BoosterConfig {
   public readonly roles: Record<RoleName, RoleMetadata> = {}
   public readonly migrations: Record<ConceptName, Map<Version, MigrationMetadata>> = {}
 
-  public constructor(public readonly env: string) {}
+  /** Environment variables set at deployment time on the target lambda functions */
+  public readonly env: Record<string, string> = {}
+
+  public constructor(public readonly environment: string) {}
 
   public get resourceNames(): ResourceNames {
     if (this.appName.length === 0) throw new Error('Application name cannot be empty')

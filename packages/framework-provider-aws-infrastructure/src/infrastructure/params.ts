@@ -5,14 +5,15 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import { KinesisEventSourceProps } from '@aws-cdk/aws-lambda-event-sources/lib/kinesis'
 
 export function lambda(
-  forConfig: BoosterConfig
+  config: BoosterConfig
 ): Pick<FunctionProps, 'runtime' | 'timeout' | 'memorySize' | 'environment'> {
   return {
     runtime: Runtime.NODEJS_12_X,
     timeout: Duration.minutes(1),
     memorySize: 1024,
     environment: {
-      BOOSTER_ENV: forConfig.env,
+      BOOSTER_ENV: config.environment,
+      ...config.env // Adds custom environment variables set by the user in the config file
     },
   }
 }
