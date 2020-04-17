@@ -10,7 +10,8 @@ export function ReadModel(attributes: RoleAccess): (readModelClass: Class<ReadMo
   return (readModelClass) => {
     Booster.configureCurrentEnv((config): void => {
       if (config.readModels[readModelClass.name]) {
-        throw new Error(`A read model called ${readModelClass.name} is already registered.`)
+        throw new Error(`A read model called ${readModelClass.name} is already registered.
+        If you think that this is an error, try performing a clean build.`)
       }
 
       config.readModels[readModelClass.name] = {

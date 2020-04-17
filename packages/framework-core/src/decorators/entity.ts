@@ -9,7 +9,8 @@ import 'reflect-metadata'
 export function Entity<TEntity extends EntityInterface>(entityClass: Class<TEntity>): void {
   Booster.configureCurrentEnv((config): void => {
     if (config.entities[entityClass.name]) {
-      throw new Error(`An entity called ${entityClass.name} is already registered.`)
+      throw new Error(`An entity called ${entityClass.name} is already registered
+        If you think that this is an error, try performing a clean build..`)
     }
 
     config.entities[entityClass.name] = {
@@ -44,7 +45,8 @@ function registerReducer(eventName: string, reducerMethod: ReducerMetadata): voi
     const reducerPath = config.reducers[eventName]
     if (reducerPath) {
       throw new Error(
-        `Error registering reducer: The event ${eventName} was already registered to be reduced by method ${reducerPath.methodName} in the entity ${reducerPath.class.name}.`
+        `Error registering reducer: The event ${eventName} was already registered to be reduced by method ${reducerPath.methodName} in the entity ${reducerPath.class.name}.
+        If you think that this is an error, try performing a clean build.`
       )
     }
 

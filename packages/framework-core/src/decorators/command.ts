@@ -11,7 +11,8 @@ export function Command(attributes: RoleAccess): (commandClass: Class<CommandInt
   return (commandClass) => {
     Booster.configureCurrentEnv((config): void => {
       if (config.commandHandlers[commandClass.name]) {
-        throw new Error(`A command called ${commandClass.name} is already registered.`)
+        throw new Error(`A command called ${commandClass.name} is already registered.
+        If you think that this is an error, try performing a clean build.`)
       }
 
       config.commandHandlers[commandClass.name] = {
