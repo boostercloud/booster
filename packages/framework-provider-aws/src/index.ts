@@ -17,7 +17,7 @@ import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import { rawSignUpDataToUserEnvelope, authorizeRequest } from './library/auth-adapter'
 import { Kinesis, DynamoDB, CognitoIdentityServiceProvider } from 'aws-sdk'
 import { ProviderInfrastructure, ProviderLibrary } from '@boostercloud/framework-types'
-import { requestFailed, requestSucceeded } from './library/api-gateway-io'
+import { requestFailed, requestSucceeded, graphQLRequestFailed } from './library/api-gateway-io'
 import { searchReadModel } from './library/searcher-adapter'
 import {
   fetchSubscriptions,
@@ -58,7 +58,7 @@ export const Provider: ProviderLibrary = {
   authorizeRequest: authorizeRequest.bind(null, userPool),
   rawGraphQLRequestToEnvelope: rawGraphQLRequestToEnvelope,
   handleGraphQLResult: requestSucceeded,
-  handleGraphQLError: requestFailed,
+  handleGraphQLError: graphQLRequestFailed,
 
   // ProviderAuthLibrary
   rawSignUpDataToUserEnvelope,
