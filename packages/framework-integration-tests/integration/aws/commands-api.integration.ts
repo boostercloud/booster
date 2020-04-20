@@ -3,7 +3,7 @@ import { expect } from 'chai'
 import gql from 'graphql-tag'
 
 describe('the commands API', () => {
-  it('accepts a command successfully', async () => {
+  xit('accepts a command successfully', async () => {
     const client = await graphQLClient()
 
     const response = await client.mutate({

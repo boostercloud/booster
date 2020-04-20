@@ -33,8 +33,12 @@ export async function baseURL(): Promise<string> {
   if (url) {
     return url
   } else {
-    throw 'Unable to find the Base REST URL'
+    throw 'Unable to get the Base REST URL from the current stack'
   }
+}
+
+export async function signUpURL(): Promise<string> {
+  return new URL('auth/sign-up', await baseURL()).href
 }
 
 export async function graphQLClient(): Promise<ApolloClient<NormalizedCacheObject>> {
@@ -60,4 +64,17 @@ export async function graphQLClient(): Promise<ApolloClient<NormalizedCacheObjec
       },
     },
   })
+}
+
+export async function authClientID(): Promise<string> {
+  const { Outputs } = await appStack()
+  const clientId = Outputs?.find((output) => {
+    return output.OutputKey === 'clientID'
+  })?.OutputValue
+
+  if (clientId) {
+    return clientId
+  } else {
+    throw 'unable to find the clientID from the current stack'
+  }
 }
