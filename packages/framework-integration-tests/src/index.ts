@@ -7,7 +7,7 @@ export {
   boosterPreSignUpChecker,
   boosterServeGraphQL,
   boosterRequestAuthorizer,
-  boosterDispatchSubscription,
+  boosterNotifySubscribers,
 } from '@boostercloud/framework-core'
 
 Booster.start()

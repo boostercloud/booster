@@ -1,4 +1,5 @@
 import { CommandInterface, EntityInterface, EventInterface, ReadModelInterface, UUID } from './concepts'
+import { DocumentNode } from 'graphql'
 
 /**
  * An `Envelope` carries a command/event body together with the name
@@ -48,11 +49,18 @@ export interface GraphQLRequestEnvelope extends Envelope {
   eventType: 'CONNECT' | 'MESSAGE' | 'DISCONNECT'
   connectionID?: string
   value?: string
+  variables?: Record<string, any>
 }
 
 export interface SubscriptionEnvelope extends ReadModelRequestEnvelope {
   expirationTime: number // In Epoch format
   connectionID: string
+  operation: GraphQLOperation
+}
+
+export interface GraphQLOperation {
+  query: DocumentNode
+  variables?: Record<string, any>
 }
 
 export interface UserEnvelope {

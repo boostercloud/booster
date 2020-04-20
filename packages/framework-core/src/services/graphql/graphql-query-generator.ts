@@ -3,7 +3,6 @@ import {
   GraphQLEnumValueConfigMap,
   GraphQLFieldConfigArgumentMap,
   GraphQLFieldConfigMap,
-  GraphQLFieldResolver,
   GraphQLID,
   GraphQLInputObjectType,
   GraphQLList,
@@ -11,21 +10,18 @@ import {
   GraphQLObjectType,
   GraphQLScalarType,
 } from 'graphql'
-import { GraphQLNonInputType, TargetTypeMetadata, TargetTypesMap } from './common'
+import { GraphQLNonInputType, ResolverBuilder, TargetTypeMetadata, TargetTypesMap } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
 import * as inflection from 'inflection'
 import { GraphQLJSONObject } from 'graphql-type-json'
 import {
   AnyClass,
   BooleanOperations,
-  GraphQLRequestEnvelope,
   NumberOperations,
   PropertyMetadata,
   StringOperations,
   UUID,
 } from '@boostercloud/framework-types'
-
-export type QueryResolverBuilder = (readModelClass: AnyClass) => GraphQLFieldResolver<any, GraphQLRequestEnvelope, any>
 
 export class GraphQLQueryGenerator {
   private generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
@@ -34,8 +30,8 @@ export class GraphQLQueryGenerator {
   public constructor(
     private readonly targetTypes: TargetTypesMap,
     private readonly typeInformer: GraphQLTypeInformer,
-    private readonly byIDResolverBuilder: QueryResolverBuilder,
-    private readonly filterResolverBuilder: QueryResolverBuilder
+    private readonly byIDResolverBuilder: ResolverBuilder,
+    private readonly filterResolverBuilder: ResolverBuilder
   ) {}
 
   public generate(): GraphQLObjectType {

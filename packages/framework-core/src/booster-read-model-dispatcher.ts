@@ -7,6 +7,7 @@ import {
   ReadModelRequestEnvelope,
   ReadModelInterface,
   SubscriptionEnvelope,
+  GraphQLOperation,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
 import { Booster } from './booster'
@@ -38,9 +39,13 @@ export class BoosterReadModelDispatcher {
     return this.processFetch(readModelRequest)
   }
 
-  public async subscribe(connectionID: string, readModelRequest: ReadModelRequestEnvelope): Promise<any> {
+  public async subscribe(
+    connectionID: string,
+    readModelRequest: ReadModelRequestEnvelope,
+    operation: GraphQLOperation
+  ): Promise<any> {
     this.validateRequest(readModelRequest)
-    return this.processSubscription(connectionID, readModelRequest)
+    return this.processSubscription(connectionID, readModelRequest, operation)
   }
 
   private validateRequest(readModelRequest: ReadModelRequestEnvelope): void {
@@ -84,7 +89,11 @@ export class BoosterReadModelDispatcher {
     return searcher.search()
   }
 
-  private async processSubscription(connectionID: string, readModelRequest: ReadModelRequestEnvelope): Promise<void> {
+  private async processSubscription(
+    connectionID: string,
+    readModelRequest: ReadModelRequestEnvelope,
+    operation: GraphQLOperation
+  ): Promise<void> {
     this.logger.info(
       `Processing subscription of connection '${connectionID}' to read model '${readModelRequest.typeName}' with the following data: `,
       readModelRequest
@@ -95,6 +104,7 @@ export class BoosterReadModelDispatcher {
       ...readModelRequest,
       expirationTime: nowEpoch + subscriptionDurationSeconds,
       connectionID,
+      operation,
     }
     return this.config.provider.subscribeToReadModel(this.config, this.logger, subscription)
   }

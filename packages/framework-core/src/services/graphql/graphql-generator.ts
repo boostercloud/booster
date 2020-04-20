@@ -1,7 +1,6 @@
 import {
   AnyClass,
   BoosterConfig,
-  GraphQLRequestEnvelope,
   CommandEnvelope,
   ReadModelPropertyFilter,
   ReadModelRequestEnvelope,
@@ -13,7 +12,7 @@ import { GraphQLMutationGenerator } from './graphql-mutation-generator'
 import { GraphQLSubscriptionGenerator } from './graphql-subcriptions-generator'
 import { BoosterCommandDispatcher } from '../../booster-command-dispatcher'
 import { BoosterReadModelDispatcher } from '../../booster-read-model-dispatcher'
-import { PubSub } from 'graphql-subscriptions'
+import { GraphQLResolverContext } from './common'
 
 export class GraphQLGenerator {
   private queryGenerator: GraphQLQueryGenerator
@@ -56,7 +55,7 @@ export class GraphQLGenerator {
 
   public readModelFilterResolverBuilder(
     readModelClass: AnyClass
-  ): GraphQLFieldResolver<any, GraphQLRequestEnvelope, Record<string, ReadModelPropertyFilter>> {
+  ): GraphQLFieldResolver<any, GraphQLResolverContext, Record<string, ReadModelPropertyFilter>> {
     return (parent, args, context, info) => {
       const readModelEnvelope = toReadModelEnvelope(readModelClass.name, args, context)
       return this.readModelsDispatcher.fetch(readModelEnvelope)
@@ -65,7 +64,7 @@ export class GraphQLGenerator {
 
   public readModelByIDResolverBuilder(
     readModelClass: AnyClass
-  ): GraphQLFieldResolver<any, GraphQLRequestEnvelope, Record<string, ReadModelPropertyFilter>> {
+  ): GraphQLFieldResolver<any, GraphQLResolverContext, Record<string, ReadModelPropertyFilter>> {
     return async (parent, args, context, info) => {
       const filters = {
         id: {
@@ -81,7 +80,7 @@ export class GraphQLGenerator {
 
   public commandResolverBuilder(
     commandClass: AnyClass
-  ): GraphQLFieldResolver<any, GraphQLRequestEnvelope, { input: any }> {
+  ): GraphQLFieldResolver<any, GraphQLResolverContext, { input: any }> {
     return async (parent, args, context, info) => {
       const commandEnvelope = toCommandEnvelope(commandClass.name, args.input, context)
       await this.commandsDispatcher.dispatchCommand(commandEnvelope)
@@ -91,7 +90,7 @@ export class GraphQLGenerator {
 
   public subscriptionResolverBuilder(
     readModelClass: AnyClass
-  ): GraphQLFieldResolver<any, GraphQLRequestEnvelope, Record<string, ReadModelPropertyFilter>> {
+  ): GraphQLFieldResolver<any, GraphQLResolverContext, Record<string, ReadModelPropertyFilter>> {
     return async (parent, args, context, info) => {
       console.log(
         'Subscription resolver for ',
@@ -104,10 +103,12 @@ export class GraphQLGenerator {
       if (!context.connectionID) {
         throw new Error('Missing "connectionID". It is required for subscriptions')
       }
-      const readModelEnvelope = toReadModelEnvelope(readModelClass.name, args, context)
-      await this.readModelsDispatcher.subscribe(context.connectionID, readModelEnvelope)
+      if (context.storeSubscriptions) {
+        const readModelEnvelope = toReadModelEnvelope(readModelClass.name, args, context)
+        await this.readModelsDispatcher.subscribe(context.connectionID, readModelEnvelope, context.operation)
+      }
 
-      return new PubSub().asyncIterator(readModelClass.name)
+      return context.pubSub.asyncIterator(readModelClass.name)
     }
   }
 }
@@ -115,11 +116,11 @@ export class GraphQLGenerator {
 function toReadModelEnvelope(
   readModelName: string,
   args: Record<string, ReadModelPropertyFilter>,
-  graphQlEnvelope: GraphQLRequestEnvelope
+  context: GraphQLResolverContext
 ): ReadModelRequestEnvelope {
   return {
-    requestID: graphQlEnvelope.requestID,
-    currentUser: graphQlEnvelope.currentUser,
+    requestID: context.requestID,
+    currentUser: context.user,
     typeName: readModelName,
     filters: args,
     version: 1, // TODO: How to pass the version through GraphQL?
@@ -127,10 +128,10 @@ function toReadModelEnvelope(
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function toCommandEnvelope(commandName: string, value: any, graphQlEnvelope: GraphQLRequestEnvelope): CommandEnvelope {
+function toCommandEnvelope(commandName: string, value: any, context: GraphQLResolverContext): CommandEnvelope {
   return {
-    requestID: graphQlEnvelope.requestID,
-    currentUser: graphQlEnvelope.currentUser,
+    requestID: context.requestID,
+    currentUser: context.user,
     typeName: commandName,
     value,
     version: 1, // TODO: How to pass the version through GraphQL?

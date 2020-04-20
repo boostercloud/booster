@@ -5,10 +5,12 @@ import {
   GraphQLRequestEnvelope,
   InvalidProtocolError,
 } from '@boostercloud/framework-types'
-import { getOperationAST, GraphQLSchema, printSchema, subscribe, parse, execute, DocumentNode, validate } from 'graphql'
+import { getOperationAST, GraphQLSchema, subscribe, parse, execute, validate } from 'graphql'
 import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { BoosterCommandDispatcher } from './booster-command-dispatcher'
 import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
+import { GraphQLResolverContext } from './services/graphql/common'
+import { PubSub } from 'graphql-subscriptions'
 
 export class BoosterGraphQLDispatcher {
   private readonly graphQLSchema: GraphQLSchema
@@ -19,7 +21,6 @@ export class BoosterGraphQLDispatcher {
       new BoosterCommandDispatcher(config, logger),
       new BoosterReadModelDispatcher(config, logger)
     ).generateSchema()
-    console.log(printSchema(this.graphQLSchema))
   }
 
   public async dispatch(request: any): Promise<any> {
@@ -58,42 +59,53 @@ export class BoosterGraphQLDispatcher {
         'Could not extract GraphQL root operation. Be sure to send only one of {query, mutation, subscription}'
       )
     }
+    const resolverContext: GraphQLResolverContext = {
+      connectionID: envelope.connectionID,
+      requestID: envelope.requestID,
+      user: envelope.currentUser,
+      operation: {
+        query: queryDocument,
+        variables: envelope.variables,
+      },
+      pubSub: new PubSub(),
+      storeSubscriptions: true,
+    }
 
     switch (operationData.operation) {
       case 'query':
       case 'mutation':
-        return this.handleQueryOrMutation(envelope, queryDocument)
+        return this.handleQueryOrMutation(resolverContext)
       case 'subscription':
-        return this.handleSubscription(envelope, queryDocument)
+        return this.handleSubscription(resolverContext)
     }
   }
 
-  private async handleQueryOrMutation(envelope: GraphQLRequestEnvelope, queryDocument: DocumentNode): Promise<any> {
-    if (cameThroughSocket(envelope)) {
+  private async handleQueryOrMutation(resolverContext: GraphQLResolverContext): Promise<any> {
+    if (cameThroughSocket(resolverContext)) {
       throw new InvalidProtocolError(
         'This API and protocol does not support "query" or "mutation" operations, only "subscription". Use the HTTP API for "query" or "mutation"'
       )
     }
     const result = await execute({
       schema: this.graphQLSchema,
-      document: queryDocument,
-      contextValue: envelope,
+      document: resolverContext.operation.query,
+      contextValue: resolverContext,
     })
     this.throwIfGraphQLErrors(result.errors)
     this.logger.debug('GraphQL result: ', result.data)
     return result
   }
 
-  private async handleSubscription(envelope: GraphQLRequestEnvelope, queryDocument: DocumentNode): Promise<any> {
-    if (!cameThroughSocket(envelope)) {
+  private async handleSubscription(resolverContext: GraphQLResolverContext): Promise<any> {
+    if (!cameThroughSocket(resolverContext)) {
       throw new InvalidProtocolError(
         'This API and protocol does not support "subscription" operations, only "query" and "mutation". Use the socket API for "subscription"'
       )
     }
     const result = await subscribe({
       schema: this.graphQLSchema,
-      document: queryDocument,
-      contextValue: envelope,
+      document: resolverContext.operation.query,
+      contextValue: resolverContext,
     })
     if ('errors' in result) {
       this.throwIfGraphQLErrors(result.errors)
@@ -112,6 +124,6 @@ export class BoosterGraphQLDispatcher {
   }
 }
 
-function cameThroughSocket(envelope: GraphQLRequestEnvelope): boolean {
-  return envelope.connectionID != undefined
+function cameThroughSocket(withConnectionID: { connectionID?: string }): boolean {
+  return withConnectionID.connectionID != undefined
 }

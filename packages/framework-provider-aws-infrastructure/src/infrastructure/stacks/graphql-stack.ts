@@ -40,8 +40,8 @@ export class GraphQLStack {
     const graphQLLambda = this.buildLambda('graphql-handler', this.config.serveGraphQLHandler)
     const readModelsEventSources = this.buildEventSourcesForTables(this.readModelTables)
     const subscriptionDispatcherLambda = this.buildLambda(
-      'subscriptions-dispatcher',
-      this.config.subscriptionDispatcherHandler,
+      'subscriptions-notifier',
+      this.config.notifySubscribersHandler,
       readModelsEventSources
     )
 

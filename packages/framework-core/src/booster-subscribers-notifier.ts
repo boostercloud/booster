@@ -12,7 +12,7 @@ import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { BoosterCommandDispatcher } from './booster-command-dispatcher'
 import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
 
-export class BoosterSubscriptionDispatcher {
+export class BoosterSubscribersNotifier {
   private readonly graphQLSchema: GraphQLSchema
 
   public constructor(private config: BoosterConfig, private logger: Logger) {
@@ -84,6 +84,10 @@ export class BoosterSubscriptionDispatcher {
     )
     for (const readModel of readModels) {
       const subscriptionsToNotify = this.filterSubscriptionsByReadModel(subscriptions, readModel)
+      if (subscriptionsToNotify.length == 0) {
+        this.logger.debug('No subscriptions matched for read model: ', readModel)
+        continue
+      }
       this.logger.debug('For read model: ', readModel, 'the following subscriptions matched: ', subscriptionsToNotify)
       await this.notifySubscriptionsWithReadModel(subscriptionsToNotify, readModel)
     }

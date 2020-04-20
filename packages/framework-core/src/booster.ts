@@ -16,7 +16,7 @@ import { BoosterEventDispatcher } from './booster-event-dispatcher'
 import { BoosterAuth } from './booster-auth'
 import { fetchEntitySnapshot } from './entity-snapshot-fetcher'
 import { BoosterGraphQLDispatcher } from './booster-graphql-dispatcher'
-import { BoosterSubscriptionDispatcher } from './booster-subscription-dispatcher'
+import { BoosterSubscribersNotifier } from './booster-subscribers-notifier'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -108,8 +108,8 @@ export class Booster {
     return new BoosterGraphQLDispatcher(this.config, this.logger).dispatch(request)
   }
 
-  public static dispatchSubscriptions(request: any): Promise<any> {
-    return new BoosterSubscriptionDispatcher(this.config, this.logger).dispatch(request)
+  public static notifySubscribers(request: any): Promise<any> {
+    return new BoosterSubscribersNotifier(this.config, this.logger).dispatch(request)
   }
 
   /**
@@ -159,6 +159,6 @@ export async function boosterServeGraphQL(rawRequest: any): Promise<void> {
   return Booster.serveGraphQL(rawRequest)
 }
 
-export async function boosterDispatchSubscription(rawRequest: any): Promise<void> {
-  return Booster.dispatchSubscriptions(rawRequest)
+export async function boosterNotifySubscribers(rawRequest: any): Promise<void> {
+  return Booster.notifySubscribers(rawRequest)
 }
