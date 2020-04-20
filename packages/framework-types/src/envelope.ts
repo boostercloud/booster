@@ -1,5 +1,4 @@
 import { CommandInterface, EntityInterface, EventInterface, ReadModelInterface, UUID } from './concepts'
-import { DocumentNode } from 'graphql'
 
 /**
  * An `Envelope` carries a command/event body together with the name
@@ -59,7 +58,7 @@ export interface SubscriptionEnvelope extends ReadModelRequestEnvelope {
 }
 
 export interface GraphQLOperation {
-  query: DocumentNode
+  query: string
   variables?: Record<string, any>
 }
 

@@ -1,7 +1,7 @@
 import { GraphQLList, GraphQLScalarType, GraphQLObjectType } from 'graphql/type/definition'
 import { AnyClass, PropertyMetadata, UserEnvelope, UUID, GraphQLOperation } from '@boostercloud/framework-types'
 import { GraphQLFieldResolver } from 'graphql'
-import { PubSub } from 'graphql-subscriptions'
+import { ReadModelPubSub } from '../pub-sub/read-model-pub-sub'
 
 export type TargetTypesMap = Record<string, TargetTypeMetadata>
 export interface TargetTypeMetadata {
@@ -21,5 +21,5 @@ export interface GraphQLResolverContext {
   requestID: UUID
   user?: UserEnvelope
   storeSubscriptions: boolean
-  pubSub: PubSub
+  pubSub: ReadModelPubSub
 }

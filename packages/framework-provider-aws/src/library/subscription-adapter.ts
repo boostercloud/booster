@@ -28,7 +28,7 @@ export async function subscribeToReadModel(
     !subscriptionEnvelope[subscriptionsStoreTTLAttribute]
   ) {
     throw new Error(
-      'Subscription envelope is missing any of the following required attributers: ' +
+      'Subscription envelope is missing any of the following required attributes: ' +
         `"${subscriptionsStorePartitionKeyAttribute}", ${subscriptionsStoreSortKeyAttribute}", ${subscriptionsStoreTTLAttribute}"`
     )
   }

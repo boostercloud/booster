@@ -32,8 +32,7 @@
   },
   "dependencies": {
     "rxjs": "^6.5.3",
-    "uuid": "^3.3.3",
-    "graphql": "^15.0.0"
+    "uuid": "^3.3.3"
   },
   "devDependencies": {
     "@types/uuid": "^3.4.5",
