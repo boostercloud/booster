@@ -55,7 +55,7 @@ The latter has this attribute set to `true`, which means that any user can self-
 If your Booster application has roles defined, an authentication API will be provisioned. It will allow your users to gain
 access to your resources.
 
-This API consists of three endpoints ([see the API documentation](_09rest-api.md)):
+This API consists of three endpoints ([see the API documentation](_09-rest-api.md)):
 
 - `/auth/sign-up`: Users can use this endpoint to register in your application and get some roles assigned to them.
   Only roles with the attribute `allowSelfSignUp: true` can be specified upon sign-up. After calling this endpoint, the
