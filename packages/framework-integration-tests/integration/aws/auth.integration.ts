@@ -64,13 +64,16 @@ describe('With the auth API', () => {
       expect(response.status).to.equal(200)
     })
 
-    xit("can't sign up for an admin account", async () => {
-      const request = fetch(await signUpURL(), {
+    it("can't sign up for an admin account", async () => {
+      const url = await signUpURL()
+      const clientId = await authClientID()
+
+      const response = await fetch(url, {
         method: 'post',
         body: JSON.stringify({
-          clientId: await authClientID(),
-          username: 'Su_morenito_19', // Why this user name? Reasons: https://youtu.be/h6k5qbt72Os
-          password: '123456',
+          clientId: clientId,
+          username: 'admin@example.com',
+          password: 'Flama_69',
           userAttributes: {
             roles: ['Admin'],
           },
@@ -80,8 +83,11 @@ describe('With the auth API', () => {
         },
       })
 
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      expect(request).to.be.rejected('non authorized')
+      const message = await response.json()
+      expect(message).not.to.be.empty
+      expect(message.message).to.match(/PreSignUp failed with error User with role Admin can't sign up by themselves/)
+
+      expect(response.status).to.equal(400)
     })
   })
 
