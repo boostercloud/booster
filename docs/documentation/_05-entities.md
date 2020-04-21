@@ -4,7 +4,7 @@
 
 Entities are not shown in the diagram because they're just a different view of the data in the events store.
 
-Entities represent domain model objects, that is, something that can be mapped to an object with semantics in your domain. Entities only exist conceptually, they're not explicitly stored in any database, but generated on the fly from a list of related [events](_04events.md).
+Entities represent domain model objects, that is, something that can be mapped to an object with semantics in your domain. Entities only exist conceptually, they're not explicitly stored in any database, but generated on the fly from a list of related [events](_04-events.md).
 
 Booster creates snapshots of the entities automatically under the hoods to reduce access times, but the developer doesn't has to worry about that.
 
@@ -80,4 +80,4 @@ export class MoveStock {
 }
 ```
 
-Continue reading about [Read Models](_06read-models.md)!
+Continue reading about [Read Models](_06-read-models.md)!

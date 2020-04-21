@@ -72,4 +72,4 @@ Once a user has an access token, it can be included in any request made to your 
 Bearer Authorization header (`Authorization: Bearer`). It will be used to get the user information and
 authorize it to access protected resources.
 
-Continue reading about [how to deploy your application](_08deployment.md)
+Continue reading about [how to deploy your application](_08-deployment.md)

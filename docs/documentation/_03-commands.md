@@ -37,4 +37,4 @@ export class ConfirmPayment {
 Note how no magic happened in the generator. The only thing that required for Booster to know that this class is a
 command, is the `@Command` decorator. You could get the same result by writing the class yourself 😉
 
-Continue reading about [Events](_04events.md)!
+Continue reading about [Events](_04-events.md)!
