@@ -1,10 +1,10 @@
-import { graphQLClient, signUpURL, authClientID } from './utils'
+import { graphQLClient, signUpURL, authClientID, signInURL, confirmUser } from './utils'
 import gql from 'graphql-tag'
 import { expect } from 'chai'
 import fetch from 'cross-fetch'
 
 describe('With the auth API', () => {
-  describe('an internet rando', () => {
+  context('an internet rando', () => {
     xit("can't submit a secured command", async () => {
       const client = await graphQLClient()
 
@@ -92,8 +92,38 @@ describe('With the auth API', () => {
   })
 
   // The User role is configured in the test project to allow sign ups
-  describe('someone with a user account', () => {
-    it('can sign in their account and get a valid token')
+  context('someone with a user account', async () => {
+    // We'll confirm here the user account created in the previous test
+    await confirmUser('Su_morenito_19@example.com')
+    let accessToken: string
+
+    it('can sign in their account and get a valid token', async () => {
+      const url = await signInURL()
+      const clientId = await authClientID()
+
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          clientId: clientId,
+          username: 'Su_morenito_19@example.com', // Why this user name? Reasons: https://youtu.be/h6k5qbt72Os
+          password: 'Flama_69',
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      expect(response.status).to.equal(200)
+
+      const message = await response.json()
+      expect(message).not.to.be.empty
+      expect(message.accessToken).not.to.be.empty
+
+      // We save the access token for next tests
+      accessToken = message.accessToken
+      console.log('Yay! Got a User access token! ' + accessToken)
+    })
+
     it('can submit a secured command they have privileges for')
     it('can query a secured command they have privileges for')
     it("can't send a command they don't have privileges for")
@@ -101,7 +131,7 @@ describe('With the auth API', () => {
   })
 
   // The Admin role is configured in the test project to forbid sign ups
-  describe('someone with an admin account', () => {
+  context('someone with an admin account', () => {
     it('can sign in their account and get a valid token')
   })
 })
