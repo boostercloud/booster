@@ -9,7 +9,7 @@ import { getOperationAST, GraphQLSchema, subscribe, parse, execute, validate, Do
 import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { BoosterCommandDispatcher } from './booster-command-dispatcher'
 import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
-import { GraphQLResolverContext } from './services/graphql/common'
+import { GraphQLResolverContext, throwIfGraphQLErrors } from './services/graphql/common'
 import { NoopReadModelPubSub } from './services/pub-sub/noop-read-model-pub-sub'
 
 export class BoosterGraphQLDispatcher {
@@ -52,7 +52,7 @@ export class BoosterGraphQLDispatcher {
     }
     const queryDocument = parse(envelope.value)
     const errors = validate(this.graphQLSchema, queryDocument)
-    this.throwIfGraphQLErrors(errors)
+    throwIfGraphQLErrors(errors)
     const operationData = getOperationAST(queryDocument, undefined)
     if (!operationData) {
       throw new InvalidParameterError(
@@ -94,7 +94,7 @@ export class BoosterGraphQLDispatcher {
       document: queryDocument,
       contextValue: resolverContext,
     })
-    this.throwIfGraphQLErrors(result.errors)
+    throwIfGraphQLErrors(result.errors)
     this.logger.debug('GraphQL result: ', result.data)
     return result
   }
@@ -111,19 +111,10 @@ export class BoosterGraphQLDispatcher {
       contextValue: resolverContext,
     })
     if ('errors' in result) {
-      this.throwIfGraphQLErrors(result.errors)
+      throwIfGraphQLErrors(result.errors)
     }
     this.logger.debug('GraphQL subscription finished')
     return result
-  }
-
-  private throwIfGraphQLErrors(errors?: ReadonlyArray<Error>): void {
-    // We could have multiple errors, but there is not way to merge errors and keep its stack traces, so we
-    // just throw the first error
-    const firstError = errors?.[0]
-    if (firstError) {
-      throw firstError
-    }
   }
 }
 

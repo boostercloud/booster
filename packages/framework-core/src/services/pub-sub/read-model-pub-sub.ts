@@ -10,7 +10,7 @@ export interface ReadModelPubSub {
   asyncIterator(readModelRequestEnvelope: ReadModelRequestEnvelope): AsyncIterator<ReadModelInterface>
 }
 
-export class FiteredReadModelPubSub {
+export class FilteredReadModelPubSub implements ReadModelPubSub {
   constructor(private readModels: Array<ReadModelInterface & Instance>) {}
 
   public asyncIterator(readModelRequestEnvelope: ReadModelRequestEnvelope): AsyncIterator<ReadModelInterface> {
@@ -28,7 +28,7 @@ function filterReadModel(readModel: Record<string, any>, filters?: Record<string
   }
   for (const filteredProp in filters) {
     const readModelPropValue = readModel[filteredProp]
-    const { operation, values } = filters[filteredProp]
+    const { operation, values }: ReadModelPropertyFilter = filters[filteredProp]
 
     switch (operation) {
       case '=':
@@ -65,7 +65,6 @@ function filterReadModel(readModel: Record<string, any>, filters?: Record<string
         if (!beginWith(readModelPropValue, values[0] as string)) return false
         break
     }
-    return values != undefined
   }
   return true
 }

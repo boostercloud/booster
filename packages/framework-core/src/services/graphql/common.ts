@@ -23,3 +23,12 @@ export interface GraphQLResolverContext {
   storeSubscriptions: boolean
   pubSub: ReadModelPubSub
 }
+
+export function throwIfGraphQLErrors(errors?: ReadonlyArray<Error>): void {
+  // We could have multiple errors, but there is not way to merge errors and keep its stack traces, so we
+  // just throw the first error
+  const firstError = errors?.[0]
+  if (firstError) {
+    throw firstError
+  }
+}

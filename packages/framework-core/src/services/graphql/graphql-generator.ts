@@ -57,7 +57,7 @@ export class GraphQLGenerator {
     readModelClass: AnyClass
   ): GraphQLFieldResolver<any, GraphQLResolverContext, Record<string, ReadModelPropertyFilter>> {
     return (parent, args, context, info) => {
-      const readModelEnvelope = toReadModelEnvelope(readModelClass.name, args, context)
+      const readModelEnvelope = toReadModelRequestEnvelope(readModelClass.name, args, context)
       return this.readModelsDispatcher.fetch(readModelEnvelope)
     }
   }
@@ -72,7 +72,7 @@ export class GraphQLGenerator {
           values: [args.id],
         },
       }
-      const readModelEnvelope = toReadModelEnvelope(readModelClass.name, filters, context)
+      const readModelEnvelope = toReadModelRequestEnvelope(readModelClass.name, filters, context)
       const result = await this.readModelsDispatcher.fetch(readModelEnvelope)
       return result[0]
     }
@@ -97,17 +97,17 @@ export class GraphQLGenerator {
         throw new Error('Missing "connectionID". It is required for subscriptions')
       }
 
-      const readModelEnvelope = toReadModelEnvelope(readModelClass.name, args, context)
+      const readModelRequestEnvelope = toReadModelRequestEnvelope(readModelClass.name, args, context)
       if (context.storeSubscriptions) {
-        await this.readModelsDispatcher.subscribe(context.connectionID, readModelEnvelope, context.operation)
+        await this.readModelsDispatcher.subscribe(context.connectionID, readModelRequestEnvelope, context.operation)
       }
 
-      return context.pubSub.asyncIterator(readModelEnvelope)
+      return context.pubSub.asyncIterator(readModelRequestEnvelope)
     }
   }
 }
 
-function toReadModelEnvelope(
+function toReadModelRequestEnvelope(
   readModelName: string,
   args: Record<string, ReadModelPropertyFilter>,
   context: GraphQLResolverContext

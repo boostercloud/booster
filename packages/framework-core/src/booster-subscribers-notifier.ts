@@ -6,10 +6,13 @@ import {
   ReadModelInterface,
   SubscriptionEnvelope,
 } from '@boostercloud/framework-types'
-import { GraphQLSchema } from 'graphql'
+import { GraphQLSchema, subscribe, parse, validate, DocumentNode } from 'graphql'
 import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { BoosterCommandDispatcher } from './booster-command-dispatcher'
 import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
+import { FilteredReadModelPubSub, ReadModelPubSub } from './services/pub-sub/read-model-pub-sub'
+import { GraphQLResolverContext, throwIfGraphQLErrors } from './services/graphql/common'
+import { ExecutionResult } from 'graphql/execution/execute'
 
 export class BoosterSubscribersNotifier {
   private readonly graphQLSchema: GraphQLSchema
@@ -31,30 +34,18 @@ export class BoosterSubscribersNotifier {
         request
       )
       this.logger.debug('[SubsciptionDispatcher] The following ReadModels were updated: ', readModelEnvelopes)
-      const readModelsByName = this.organizeReadModelsByName(readModelEnvelopes)
-      for (const readModelName in readModelsByName) {
-        const subscriptions = await this.getSubscriptions(readModelName)
-        await this.handleReadModelsToSubscriptions(readModelsByName[readModelName], subscriptions)
-      }
-      console.log(this.graphQLSchema)
+      const subscriptions = await this.getSubscriptions(readModelEnvelopes)
+      this.logger.debug(
+        '[SubsciptionDispatcher] Found the following subscriptions for those read models: ',
+        subscriptions
+      )
+
+      const pubSub = this.getPubSub(readModelEnvelopes)
+      await Promise.all(subscriptions.map(this.runSubscriptionAndNotify.bind(this, pubSub)))
     } catch (e) {
       this.logger.error(e)
       // return this.config.provider.handleSubscriptionError(e)
     }
-  }
-
-  private organizeReadModelsByName(
-    readModelEnvelopes: Array<ReadModelEnvelope>
-  ): Record<string, Array<ReadModelInterface & Instance>> {
-    return readModelEnvelopes.reduce<Record<string, Array<ReadModelInterface & Instance>>>(
-      (readModelsByName, envelope) => {
-        const readModelInstance = this.getReadModelInstance(envelope)
-        const currentReadModels = readModelsByName[envelope.typeName] ?? []
-        readModelsByName[envelope.typeName] = [...currentReadModels, readModelInstance]
-        return readModelsByName
-      },
-      {}
-    )
   }
 
   private getReadModelInstance(envelope: ReadModelEnvelope): ReadModelInterface & Instance {
@@ -67,39 +58,73 @@ export class BoosterSubscribersNotifier {
     return readModelInstance
   }
 
-  private async getSubscriptions(readModelName: string): Promise<Array<SubscriptionEnvelope>> {
-    return await this.config.provider.fetchSubscriptions(this.config, this.logger, readModelName)
+  private async getSubscriptions(readModelEnvelopes: Array<ReadModelEnvelope>): Promise<Array<SubscriptionEnvelope>> {
+    const readModelNames = readModelEnvelopes.map((readModelEnvelope) => readModelEnvelope.typeName)
+    // TODO fetch subscriptions for all read models
+    return await this.config.provider.fetchSubscriptions(this.config, this.logger, readModelNames[0])
   }
 
-  private async handleReadModelsToSubscriptions(
-    readModels: Array<ReadModelInterface>,
-    subscriptions: Array<SubscriptionEnvelope>
+  private getPubSub(readModelEnvelopes: Array<ReadModelEnvelope>): ReadModelPubSub {
+    const readModelInstances = readModelEnvelopes.map(this.getReadModelInstance, this)
+    return new FilteredReadModelPubSub(readModelInstances)
+  }
+
+  private async runSubscriptionAndNotify(pubSub: ReadModelPubSub, subscription: SubscriptionEnvelope): Promise<void> {
+    const context: GraphQLResolverContext = {
+      connectionID: subscription.connectionID,
+      requestID: subscription.requestID,
+      user: subscription.currentUser,
+      operation: subscription.operation,
+      pubSub,
+      storeSubscriptions: false, // We don't store the subscription again, just get the result now
+    }
+    const document = this.parseSubscriptionQuery(subscription.operation.query)
+    this.logger.debug('Running subscription with context: ', context)
+    const iterator = await subscribe<ReadModelInterface>({
+      contextValue: context,
+      document: document,
+      schema: this.graphQLSchema,
+      variableValues: subscription.operation.variables,
+    })
+    if ('next' in iterator) {
+      // It is an AsyncIterator
+      return this.processSubscriptionsIterator(iterator, subscription)
+    }
+    throwIfGraphQLErrors(iterator.errors)
+  }
+
+  private parseSubscriptionQuery(query: string): DocumentNode {
+    const document = parse(query)
+    // We probably don't need to validate this again, as it was validated before storing it. BUT! It's always better to fail early
+    const errors = validate(this.graphQLSchema, document)
+    if (errors.length > 0) {
+      throw new Error(errors.join('. '))
+    }
+    return document
+  }
+
+  private async processSubscriptionsIterator(
+    iterator: AsyncIterableIterator<ExecutionResult<ReadModelInterface>>,
+    subscription: SubscriptionEnvelope
+  ): Promise<any> {
+    const notificationPromises: Array<Promise<void>> = []
+    for await (const result of iterator) {
+      notificationPromises.push(this.notifyWithGraphQLResult(subscription, result))
+    }
+    return Promise.all(notificationPromises)
+  }
+
+  private async notifyWithGraphQLResult(
+    subscription: SubscriptionEnvelope,
+    result: ExecutionResult<ReadModelInterface>
   ): Promise<void> {
-    this.logger.debug(
-      'Handling the following read models: ',
-      readModels,
-      ' To the following subscriptions: ',
-      subscriptions
-    )
-    // for (const readModel of readModels) {
-      // - Create FilteredPubSub with this readmodel and filters
-      // - Execute subscription to get the async interator
-      // - call next() and that value is the GOOD one.
-
-      // this.logger.debug('For read model: ', readModel, 'the following subscriptions matched: ', subscriptionsToNotify)
-      // // const resolvedReadModel = this.resolveReadModel(readModel)
-      // await this.notifySubscriptionsWithReadModel(subscriptionsToNotify, readModel)
-    // }
+    if ('errors' in result) {
+      throwIfGraphQLErrors(result.errors)
+      return
+    }
+    const readModel = result.data as ReadModelInterface
+    this.logger.debug(`Notifying connectionID '${subscription.connectionID}' with read model: `, readModel)
+    await this.config.provider.notifySubscription(this.config, subscription.connectionID, readModel)
+    this.logger.debug('Notifications sent')
   }
-
-  // private async notifySubscriptionsWithReadModel(
-  //   subscriptions: Array<SubscriptionEnvelope>,
-  //   readModel: ReadModelInterface
-  // ): Promise<void> {
-  //   this.logger.debug('Notifying matched subscriptions with read model name ' + readModel.constructor.name)
-  //   await Promise.all(
-  //     subscriptions.map((sub) => this.config.provider.notifySubscription(this.config, sub.connectionID, readModel))
-  //   )
-  //   this.logger.debug('Notifications sent')
-  // }
 }
