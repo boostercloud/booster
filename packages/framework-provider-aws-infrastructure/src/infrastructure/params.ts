@@ -22,7 +22,7 @@ export function lambda(
     timeout: Duration.minutes(1),
     memorySize: 1024,
     environment: {
-      BOOSTER_ENV: config.environment,
+      BOOSTER_ENV: config.environmentName,
       ...config.env, // Adds custom environment variables set by the user in the config file
       [environmentVarNames.restAPIURL]: baseURLForAPI(config, stack, apis.restAPI.restApiId),
       [environmentVarNames.websocketAPIURL]: baseURLForAPI(config, stack, apis.websocketAPI.ref),

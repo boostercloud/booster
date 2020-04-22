@@ -49,7 +49,7 @@ export class ApplicationStackBuilder {
 
   private buildRootRESTAPI(stack: Stack): RestApi {
     const rootAPI = new RestApi(stack, this.config.resourceNames.applicationStack + '-rest-api', {
-      deployOptions: { stageName: this.config.env },
+      deployOptions: { stageName: this.config.environmentName },
     })
 
     new CfnOutput(stack, 'base-REST-URL', {
@@ -70,7 +70,7 @@ export class ApplicationStackBuilder {
     const stage = new CfnStage(stack, localID + '-stage', {
       apiId: rootAPI.ref,
       autoDeploy: true,
-      stageName: this.config.env,
+      stageName: this.config.environmentName,
     })
     stage.addDependsOn(rootAPI)
 
