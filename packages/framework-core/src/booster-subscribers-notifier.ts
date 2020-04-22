@@ -59,10 +59,10 @@ export class BoosterSubscribersNotifier {
   }
 
   private async getSubscriptions(readModelEnvelopes: Array<ReadModelEnvelope>): Promise<Array<SubscriptionEnvelope>> {
+    const readModelNames = readModelEnvelopes.map((readModelEnvelope) => readModelEnvelope.typeName)
+    const readModelUniqueNames = [...new Set(readModelNames)]
     const subscriptionSets = await Promise.all(
-      readModelEnvelopes
-        .map((readModelEnvelope) => readModelEnvelope.typeName)
-        .map((name) => this.config.provider.fetchSubscriptions(this.config, this.logger, name))
+      readModelUniqueNames.map((name) => this.config.provider.fetchSubscriptions(this.config, this.logger, name))
     )
     return subscriptionSets.flat()
   }
