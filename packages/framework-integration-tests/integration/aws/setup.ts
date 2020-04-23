@@ -21,7 +21,7 @@ async function setEnv(): Promise<void> {
     process.env['BOOSTER_APP_SUFFIX'] = stdout.trim().substring(0, 6)
     console.log('setting BOOSTER_APP_SUFFIX=' + process.env.BOOSTER_APP_SUFFIX)
   }
-  // The following variable is set to make AWS SDK try to load the region config from 
+  // The following variable is set to make AWS SDK try to load the region config from
   // `~/.aws/config` if it fails reading it from `/.aws/credentials`. Loading the region doesn't seem
   // to be a very reliable process, so in some cases we'll need to set the environment variable
   // AWS_REGION to our chosen region to make this thing work...
@@ -32,10 +32,14 @@ async function setEnv(): Promise<void> {
 async function checkConfigAnd(action: () => Promise<void>): Promise<void> {
   console.log('Checking AWS configuration...')
   if (!config.credentials?.accessKeyId || !config.credentials?.secretAccessKey) {
-    throw new Error("AWS credentials were not properly loaded by the AWS SDK and are required to run the integration tests. Check that you've set them in your `~/.aws/credentials` file or environment variables. Refer to AWS documentation for more details https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-credentials-node.html")
+    throw new Error(
+      "AWS credentials were not properly loaded by the AWS SDK and are required to run the integration tests. Check that you've set them in your `~/.aws/credentials` file or environment variables. Refer to AWS documentation for more details https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-credentials-node.html"
+    )
   }
   if (!config.region) {
-    throw new Error("AWS region was not properly loaded by the AWS SDK and is required to run the integration tests. Check that you've set it in your `~/.aws/config` file or AWS_REGION environment variable. Refer to AWS documentation for more details https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-region.html#setting-region-order-of-precedence")
+    throw new Error(
+      "AWS region was not properly loaded by the AWS SDK and is required to run the integration tests. Check that you've set it in your `~/.aws/config` file or AWS_REGION environment variable. Refer to AWS documentation for more details https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-region.html#setting-region-order-of-precedence"
+    )
   } else {
     console.log('AWS Region set to ' + config.region)
   }
