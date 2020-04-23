@@ -1,7 +1,7 @@
 # Booster Cloud Framework REST API
 
-The API for a Booster application is very simple and is fully defined by auth endpoints and the [commands](_03commands.md)
-and [read models](_06read-models.md) names and structures.
+The API for a Booster application is very simple and is fully defined by auth endpoints and the [commands](_03-commands.md)
+and [read models](_06-read-models.md) names and structures.
 
 After a successful deployment you'll see an "Outputs:" section in your terminal with several values that you need to use
 when doing requests to the API. Those values are:
@@ -14,7 +14,7 @@ Note that the `Content-Type` for all requests is `application/json`.
 ## Authentication and Authorization API
 
 The following endpoints are provisioned if your application have at least one role defined. For more information about how
-to use roles to restrict the access to your application, see the section [Authentication and Authorization](_07auth.md).
+to use roles to restrict the access to your application, see the section [Authentication and Authorization](_07-auth.md).
 
 ### Sign-up
 Register a user in your application. After a successful invocation, an email will be sent to the user's inbox
