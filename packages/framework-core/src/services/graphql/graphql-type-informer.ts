@@ -98,7 +98,7 @@ export class GraphQLTypeInformer {
     )
   }
 
-  private toInputFields(fields: GraphQLFieldMap<any, any, any>): GraphQLInputFieldConfigMap {
+  private toInputFields(fields: GraphQLFieldMap<any, any>): GraphQLInputFieldConfigMap {
     const inputFields: GraphQLInputFieldConfigMap = {}
     for (const fieldName in fields) {
       inputFields[fieldName] = {
