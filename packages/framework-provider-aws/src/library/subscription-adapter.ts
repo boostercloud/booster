@@ -45,9 +45,7 @@ export async function rawReadModelEventsToEnvelopes(
   logger: Logger,
   rawEvents: DynamoDBStreamEvent
 ): Promise<Array<ReadModelEnvelope>> {
-  return rawEvents.Records.reduce<Array<ReadModelEnvelope>>((readModelEnvelopes, record): Array<ReadModelEnvelope> => {
-    return [...readModelEnvelopes, toReadModelEnvelope(config, record)]
-  }, [])
+  return rawEvents.Records.map(toReadModelEnvelope.bind(null, config))
 }
 
 export async function fetchSubscriptions(
