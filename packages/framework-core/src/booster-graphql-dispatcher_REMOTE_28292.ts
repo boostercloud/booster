@@ -5,8 +5,16 @@ import {
   GraphQLRequestEnvelope,
   InvalidProtocolError,
 } from '@boostercloud/framework-types'
-import { GraphQLSchema, DocumentNode, ExecutionResult } from 'graphql'
-import * as graphql from 'graphql'
+import {
+  getOperationAST,
+  GraphQLSchema,
+  subscribe,
+  parse,
+  execute,
+  validate,
+  DocumentNode,
+  GraphQLError,
+} from 'graphql'
 import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { BoosterCommandDispatcher } from './booster-command-dispatcher'
 import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
@@ -24,8 +32,7 @@ export class BoosterGraphQLDispatcher {
     ).generateSchema()
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public async dispatch(request: any): Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult> {
+  public async dispatch(request: any): Promise<any> {
     try {
       const envelope = await this.config.provider.rawGraphQLRequestToEnvelope(request, this.logger)
       this.logger.debug('Received the following GraphQL envelope: ', envelope)
@@ -43,7 +50,7 @@ export class BoosterGraphQLDispatcher {
       }
     } catch (e) {
       this.logger.error(e)
-      const toErrors = (e: Error): Array<Partial<graphql.GraphQLError>> => [
+      const toErrors = (e: Error): Array<Partial<GraphQLError>> => [
         {
           message: JSON.stringify(e),
           locations: [],
@@ -54,16 +61,17 @@ export class BoosterGraphQLDispatcher {
     }
   }
 
-  private async handleMessage(
-    envelope: GraphQLRequestEnvelope
-  ): Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult> {
+  private async handleMessage(envelope: GraphQLRequestEnvelope): Promise<any> {
     this.logger.debug('Starting GraphQL query')
     if (!envelope.value) {
       throw new InvalidParameterError('Received an empty GraphQL body')
     }
-    const queryDocument = graphql.parse(envelope.value)
-    const errors = graphql.validate(this.graphQLSchema, queryDocument)
-    const operationData = graphql.getOperationAST(queryDocument, undefined)
+    const queryDocument = parse(envelope.value)
+    const errors = validate(this.graphQLSchema, queryDocument)
+    if (errors) {
+      this.logger.error(errors)
+    }
+    const operationData = getOperationAST(queryDocument, undefined)
     if (!operationData) {
       throw new InvalidParameterError(
         'Could not extract GraphQL root operation. Be sure to send only one of {query, mutation, subscription}'
@@ -93,13 +101,13 @@ export class BoosterGraphQLDispatcher {
   private async handleQueryOrMutation(
     queryDocument: DocumentNode,
     resolverContext: GraphQLResolverContext
-  ): Promise<ExecutionResult> {
+  ): Promise<any> {
     if (cameThroughSocket(resolverContext)) {
       throw new InvalidProtocolError(
         'This API and protocol does not support "query" or "mutation" operations, only "subscription". Use the HTTP API for "query" or "mutation"'
       )
     }
-    const result = await graphql.execute({
+    const result = await execute({
       schema: this.graphQLSchema,
       document: queryDocument,
       contextValue: resolverContext,
@@ -111,16 +119,13 @@ export class BoosterGraphQLDispatcher {
     return result
   }
 
-  private async handleSubscription(
-    queryDocument: DocumentNode,
-    resolverContext: GraphQLResolverContext
-  ): Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult> {
+  private async handleSubscription(queryDocument: DocumentNode, resolverContext: GraphQLResolverContext): Promise<any> {
     if (!cameThroughSocket(resolverContext)) {
       throw new InvalidProtocolError(
         'This API and protocol does not support "subscription" operations, only "query" and "mutation". Use the socket API for "subscription"'
       )
     }
-    const result = await graphql.subscribe({
+    const result = await subscribe({
       schema: this.graphQLSchema,
       document: queryDocument,
       contextValue: resolverContext,

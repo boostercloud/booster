@@ -10,7 +10,7 @@ import * as graphql from 'graphql'
 import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { BoosterCommandDispatcher } from './booster-command-dispatcher'
 import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
-import { GraphQLResolverContext } from './services/graphql/common'
+import { GraphQLResolverContext, throwIfGraphQLErrors } from './services/graphql/common'
 import { NoopReadModelPubSub } from './services/pub-sub/noop-read-model-pub-sub'
 
 export class BoosterGraphQLDispatcher {
@@ -43,14 +43,7 @@ export class BoosterGraphQLDispatcher {
       }
     } catch (e) {
       this.logger.error(e)
-      const toErrors = (e: Error): Array<Partial<graphql.GraphQLError>> => [
-        {
-          message: JSON.stringify(e),
-          locations: [],
-        },
-      ]
-      const errors = Array.isArray(e) ? e : toErrors(e)
-      return this.config.provider.handleGraphQLResult({ errors })
+      return this.config.provider.handleGraphQLError(e)
     }
   }
 
@@ -63,6 +56,7 @@ export class BoosterGraphQLDispatcher {
     }
     const queryDocument = graphql.parse(envelope.value)
     const errors = graphql.validate(this.graphQLSchema, queryDocument)
+    throwIfGraphQLErrors(errors)
     const operationData = graphql.getOperationAST(queryDocument, undefined)
     if (!operationData) {
       throw new InvalidParameterError(
@@ -104,9 +98,7 @@ export class BoosterGraphQLDispatcher {
       document: queryDocument,
       contextValue: resolverContext,
     })
-    if (result.errors) {
-      this.logger.error(result.errors)
-    }
+    throwIfGraphQLErrors(result.errors)
     this.logger.debug('GraphQL result: ', result.data)
     return result
   }
@@ -126,7 +118,7 @@ export class BoosterGraphQLDispatcher {
       contextValue: resolverContext,
     })
     if ('errors' in result) {
-      this.logger.error(result.errors)
+      throwIfGraphQLErrors(result.errors)
     }
     this.logger.debug('GraphQL subscription finished')
     return result

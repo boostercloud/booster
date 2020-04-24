@@ -5,8 +5,21 @@ import {
   GraphQLRequestEnvelope,
   InvalidProtocolError,
 } from '@boostercloud/framework-types'
+<<<<<<< HEAD
 import { GraphQLSchema, DocumentNode, ExecutionResult } from 'graphql'
 import * as graphql from 'graphql'
+=======
+import {
+  getOperationAST,
+  GraphQLSchema,
+  subscribe,
+  parse,
+  execute,
+  validate,
+  DocumentNode,
+  GraphQLError,
+} from 'graphql'
+>>>>>>> 5bfa2ce... Send errors properly
 import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { BoosterCommandDispatcher } from './booster-command-dispatcher'
 import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
@@ -43,7 +56,7 @@ export class BoosterGraphQLDispatcher {
       }
     } catch (e) {
       this.logger.error(e)
-      const toErrors = (e: Error): Array<Partial<graphql.GraphQLError>> => [
+      const toErrors = (e: Error): Array<Partial<GraphQLError>> => [
         {
           message: JSON.stringify(e),
           locations: [],
@@ -61,9 +74,19 @@ export class BoosterGraphQLDispatcher {
     if (!envelope.value) {
       throw new InvalidParameterError('Received an empty GraphQL body')
     }
+<<<<<<< HEAD
     const queryDocument = graphql.parse(envelope.value)
     const errors = graphql.validate(this.graphQLSchema, queryDocument)
+    throwIfGraphQLErrors(errors)
     const operationData = graphql.getOperationAST(queryDocument, undefined)
+=======
+    const queryDocument = parse(envelope.value)
+    const errors = validate(this.graphQLSchema, queryDocument)
+    if (errors) {
+      this.logger.error(errors)
+    }
+    const operationData = getOperationAST(queryDocument, undefined)
+>>>>>>> 5bfa2ce... Send errors properly
     if (!operationData) {
       throw new InvalidParameterError(
         'Could not extract GraphQL root operation. Be sure to send only one of {query, mutation, subscription}'

@@ -12,7 +12,7 @@ import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { BoosterCommandDispatcher } from './booster-command-dispatcher'
 import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
 import { FilteredReadModelPubSub, ReadModelPubSub } from './services/pub-sub/read-model-pub-sub'
-import { GraphQLResolverContext, throwIfGraphQLErrors } from './services/graphql/common'
+import { GraphQLResolverContext } from './services/graphql/common'
 import { ExecutionResult } from 'graphql/execution/execute'
 
 export class BoosterSubscribersNotifier {
@@ -94,7 +94,9 @@ export class BoosterSubscribersNotifier {
       // It is an AsyncIterator
       return this.processSubscriptionsIterator(iterator, subscription)
     }
-    throwIfGraphQLErrors(iterator.errors)
+    if (iterator.errors) {
+      throw iterator.errors
+    }
   }
 
   private parseSubscriptionQuery(query: string): DocumentNode {
@@ -102,7 +104,7 @@ export class BoosterSubscribersNotifier {
     // We probably don't need to validate this again, as it was validated before storing it. BUT! It's always better to fail early
     const errors = graphql.validate(this.graphQLSchema, document)
     if (errors.length > 0) {
-      throw new Error(errors.join('. '))
+      throw errors
     }
     return document
   }
@@ -123,7 +125,7 @@ export class BoosterSubscribersNotifier {
     result: ExecutionResult<ReadModelInterface>
   ): Promise<void> {
     if ('errors' in result) {
-      throwIfGraphQLErrors(result.errors)
+      this.logger.error(result.errors)
       return
     }
     const readModel = result.data as ReadModelInterface
