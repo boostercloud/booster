@@ -65,7 +65,8 @@ export async function deploy(): Promise<void> {
   fs.unlinkSync('./node_modules/@boostercloud/cli')
 
   // Finally invoke the "boost deploy" command using the compiled cli.
-  await run('../cli/bin/run deploy -e production')
+  const deployScript = path.join('..', 'cli', 'bin', 'run')
+  await run(`${deployScript} deploy -e production`)
 }
 
 export async function nuke(): Promise<void> {
