@@ -17,7 +17,7 @@ describe('the graphql-adapter', () => {
       const expectedQuery = 'GraphQL query'
       const expectedVariables = {
         varOne: 3,
-        varTwo: "test",
+        varTwo: 'test',
       }
       const request: APIGatewayProxyWithLambdaAuthorizerEvent<AuthorizerWithUserData> = {
         requestContext: {

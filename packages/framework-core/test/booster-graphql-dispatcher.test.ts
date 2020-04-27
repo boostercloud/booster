@@ -3,7 +3,7 @@
 import { fake, match, replace, restore, spy } from 'sinon'
 import * as chai from 'chai'
 import { expect } from 'chai'
-import { BoosterConfig, Logger, GraphQLRequestEnvelope, InvalidParameterError } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, GraphQLRequestEnvelope } from '@boostercloud/framework-types'
 import { BoosterGraphQLDispatcher } from '../src/booster-graphql-dispatcher'
 import * as gqlParser from 'graphql/language/parser'
 import * as gqlValidator from 'graphql/validation/validate'
@@ -21,7 +21,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
   })
 
   describe('the `dispatchGraphQL` method', () => {
-    it('calls the provider "handleGraphQLError" when there is an empty body', async () => {
+    it('calls the provider "handleGraphQLResult" with an error when there is an empty body', async () => {
       const config = mockConfigForGraphQLEnvelope({
         requestID: '123',
         eventType: 'MESSAGE',
@@ -31,13 +31,10 @@ describe('the `BoosterGraphQLDispatcher`', () => {
 
       await dispatcher.dispatch({})
 
-      expect(config.provider.handleGraphQLResult).to.not.have.been.called
-      expect(config.provider.handleGraphQLError).to.have.been.calledOnceWithExactly(
-        match.instanceOf(InvalidParameterError)
-      )
+      expect(config.provider.handleGraphQLResult).to.have.been.calledOnce
     })
 
-    it('calls the provider "handleGraphQLError" when there is an error with the graphql execution', async () => {
+    it('calls the provider "handleGraphQLResult" when there is an error with the graphql execution', async () => {
       const config = mockConfigForGraphQLEnvelope({
         requestID: '123',
         eventType: 'MESSAGE',
@@ -60,8 +57,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
       // Check that the handled error includes all the errors that GraphQL reported
       const errorOneRegExp = new RegExp(errorTextOne)
       const errorTwoRegExp = new RegExp(errorTextOne)
-      expect(config.provider.handleGraphQLResult).to.not.have.been.called
-      expect(config.provider.handleGraphQLError).to.have.been.calledWithExactly(
+      expect(config.provider.handleGraphQLResult).to.have.been.calledWithExactly(
         match((value: Error): boolean => {
           return errorOneRegExp.test(value.message) && errorTwoRegExp.test(value.message)
         }, `an error with a message including the substrings "${errorTextOne}" and "${errorTextTwo}"`)
@@ -95,7 +91,6 @@ describe('the `BoosterGraphQLDispatcher`', () => {
       await dispatcher.dispatch({})
 
       expect(parseSpy).to.have.been.calledWithExactly(graphQLBody)
-      expect(config.provider.handleGraphQLError).to.not.have.been.called
       expect(executeFake).to.have.been.calledWithExactly({
         schema: match.any,
         document: match.any,
