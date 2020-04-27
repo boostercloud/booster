@@ -63,6 +63,9 @@ export class BoosterGraphQLDispatcher {
     }
     const queryDocument = graphql.parse(envelope.value)
     const errors = graphql.validate(this.graphQLSchema, queryDocument)
+    if (errors) {
+      throw errors
+    }
     const operationData = graphql.getOperationAST(queryDocument, undefined)
     if (!operationData) {
       throw new InvalidParameterError(

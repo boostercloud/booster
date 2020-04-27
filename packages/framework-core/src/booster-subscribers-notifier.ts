@@ -124,9 +124,8 @@ export class BoosterSubscribersNotifier {
     subscription: SubscriptionEnvelope,
     result: ExecutionResult<ReadModelInterface>
   ): Promise<void> {
-    if ('errors' in result) {
-      this.logger.error(result.errors)
-      return
+    if (result.errors) {
+      throw result.errors
     }
     const readModel = result.data as ReadModelInterface
     this.logger.debug(`Notifying connectionID '${subscription.connectionID}' with read model: `, readModel)
