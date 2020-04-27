@@ -37,6 +37,16 @@ export const Provider: ProviderLibrary = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fetchAllReadModels: undefined as any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  searchReadModel: undefined as any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  subscribeToReadModel: undefined as any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  rawReadModelEventsToEnvelopes: undefined as any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  fetchSubscriptions: undefined as any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  notifySubscription: undefined as any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   storeReadModel: undefined as any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleReadModelResult: undefined as any,
@@ -50,8 +60,6 @@ export const Provider: ProviderLibrary = {
   rawGraphQLRequestToEnvelope: undefined as any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleGraphQLResult: undefined as any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleGraphQLError: undefined as any,
 
   // ProviderAuthLibrary
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -66,7 +74,4 @@ export const Provider: ProviderLibrary = {
   // ProviderInfrastructureGetter
   getInfrastructure: () =>
     require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  searchReadModel: undefined as any,
 }

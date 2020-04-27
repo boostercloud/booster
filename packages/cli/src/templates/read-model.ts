@@ -14,7 +14,7 @@ export class {{{name}}} {
   ) {}
 
   {{#projections}}
-  @Projects({{{entityName}}}, {{{entityId}}})
+  @Projects({{{entityName}}}, "{{{entityId}}}")
   public static project{{{entityName}}}(entity: {{{entityName}}}, current{{{name}}}?: {{{name}}}): {{{name}}} {
     return /* NEW {{name}} HERE */
   }

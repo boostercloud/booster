@@ -4,14 +4,15 @@ import { AuthFlow, CfnUserPool, CfnUserPoolDomain, UserPoolAttribute, UserPoolCl
 import { Code, Function } from '@aws-cdk/aws-lambda'
 import * as params from '../params'
 import { Effect, IRole, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam'
-import { AwsIntegration, PassthroughBehavior, RestApi } from '@aws-cdk/aws-apigateway'
+import { AwsIntegration, PassthroughBehavior } from '@aws-cdk/aws-apigateway'
 import { CognitoTemplates } from './api-stack-velocity-templates'
+import { APIs } from '../params'
 
 export class AuthStack {
   public constructor(
     private readonly config: BoosterConfig,
     private readonly stack: Stack,
-    private readonly restAPI: RestApi
+    private readonly apis: APIs
   ) {}
 
   public build(): void {
@@ -25,7 +26,7 @@ export class AuthStack {
   private buildUserPool(): CfnUserPool {
     const localPreSignUpID = 'pre-sign-up-validator'
     const preSignUpLambda = new Function(this.stack, localPreSignUpID, {
-      ...params.lambda(this.config),
+      ...params.lambda(this.config, this.stack, this.apis),
       functionName: this.config.resourceNames.applicationStack + '-' + localPreSignUpID,
       handler: this.config.preSignUpHandler,
       code: Code.fromAsset(this.config.userProjectRootPath),
@@ -91,7 +92,7 @@ export class AuthStack {
   private buildAuthAPI(): void {
     const cognitoIntegrationRole = this.buildCognitoIntegrationRole()
 
-    const authResource = this.restAPI.root.addResource('auth')
+    const authResource = this.apis.restAPI.root.addResource('auth')
     const methodOptions = {
       methodResponses: [
         {

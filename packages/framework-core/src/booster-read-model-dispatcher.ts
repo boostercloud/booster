@@ -6,9 +6,14 @@ import {
   NotFoundError,
   ReadModelRequestEnvelope,
   ReadModelInterface,
+  SubscriptionEnvelope,
+  GraphQLOperation,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
 import { Booster } from './booster'
+
+// TODO: Think if this should be configurable
+const subscriptionDurationSeconds = 24 * 60 * 60 // 24 hours
 
 export class BoosterReadModelDispatcher {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
@@ -30,11 +35,20 @@ export class BoosterReadModelDispatcher {
   }
 
   public async fetch(readModelRequest: ReadModelRequestEnvelope): Promise<any> {
-    this.validateFetchRequest(readModelRequest)
+    this.validateRequest(readModelRequest)
     return this.processFetch(readModelRequest)
   }
 
-  private validateFetchRequest(readModelRequest: ReadModelRequestEnvelope): void {
+  public async subscribe(
+    connectionID: string,
+    readModelRequest: ReadModelRequestEnvelope,
+    operation: GraphQLOperation
+  ): Promise<any> {
+    this.validateRequest(readModelRequest)
+    return this.processSubscription(connectionID, readModelRequest, operation)
+  }
+
+  private validateRequest(readModelRequest: ReadModelRequestEnvelope): void {
     this.logger.debug('Validating the following read model request: ', readModelRequest)
     if (!readModelRequest.version) {
       throw new InvalidParameterError('The required request "version" was not present')
@@ -73,5 +87,25 @@ export class BoosterReadModelDispatcher {
       }
     }
     return searcher.search()
+  }
+
+  private async processSubscription(
+    connectionID: string,
+    readModelRequest: ReadModelRequestEnvelope,
+    operation: GraphQLOperation
+  ): Promise<void> {
+    this.logger.info(
+      `Processing subscription of connection '${connectionID}' to read model '${readModelRequest.typeName}' with the following data: `,
+      readModelRequest
+    )
+
+    const nowEpoch = Math.floor(new Date().getTime() / 1000)
+    const subscription: SubscriptionEnvelope = {
+      ...readModelRequest,
+      expirationTime: nowEpoch + subscriptionDurationSeconds,
+      connectionID,
+      operation,
+    }
+    return this.config.provider.subscribeToReadModel(this.config, this.logger, subscription)
   }
 }

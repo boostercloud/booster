@@ -1,6 +1,7 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { Stack, RemovalPolicy } from '@aws-cdk/core'
+import { RemovalPolicy, Stack } from '@aws-cdk/core'
 import * as dynamodb from '@aws-cdk/aws-dynamodb'
+import { StreamViewType } from '@aws-cdk/aws-dynamodb'
 
 export class ReadModelsStack {
   public constructor(private readonly config: BoosterConfig, private readonly stack: Stack) {}
@@ -18,6 +19,7 @@ export class ReadModelsStack {
         },
         billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
         removalPolicy: RemovalPolicy.DESTROY,
+        stream: StreamViewType.NEW_IMAGE,
       })
     })
   }

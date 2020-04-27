@@ -9,7 +9,7 @@ import { KinesisStreamEvent } from 'aws-lambda'
 import { Kinesis } from 'aws-sdk'
 import { createStubInstance } from 'sinon'
 import { DynamoDB } from 'aws-sdk'
-import { eventStorePartitionKeyAttributeName, eventStoreSortKeyAttributeName } from '../../src/constants'
+import { eventStorePartitionKeyAttribute, eventStoreSortKeyAttribute } from '../../src/constants'
 import { partitionKeyForEvent } from '../../src/library/partition-keys'
 
 chai.use(require('sinon-chai'))
@@ -64,12 +64,12 @@ describe('the events-adapter', () => {
           TableName: 'nuke-button-application-stack-events-store',
           Item: {
             ...eventEnvelope,
-            [eventStorePartitionKeyAttributeName]: partitionKeyForEvent(
+            [eventStorePartitionKeyAttribute]: partitionKeyForEvent(
               eventEnvelope.entityTypeName,
               eventEnvelope.entityID,
               eventEnvelope.kind
             ),
-            [eventStoreSortKeyAttributeName]: match.defined,
+            [eventStoreSortKeyAttribute]: match.defined,
           },
         })
       )
@@ -89,7 +89,7 @@ describe('the events-adapter', () => {
         match({
           TableName: 'nuke-button-application-stack-events-store',
           ConsistentRead: true,
-          KeyConditionExpression: `${eventStorePartitionKeyAttributeName} = :partitionKey AND ${eventStoreSortKeyAttributeName} > :fromTime`,
+          KeyConditionExpression: `${eventStorePartitionKeyAttribute} = :partitionKey AND ${eventStoreSortKeyAttribute} > :fromTime`,
           ExpressionAttributeValues: {
             ':partitionKey': partitionKeyForEvent('SomeEntity', 'someSpecialID'),
             ':fromTime': match.defined,
@@ -113,7 +113,7 @@ describe('the events-adapter', () => {
         match({
           TableName: 'nuke-button-application-stack-events-store',
           ConsistentRead: true,
-          KeyConditionExpression: `${eventStorePartitionKeyAttributeName} = :partitionKey`,
+          KeyConditionExpression: `${eventStorePartitionKeyAttribute} = :partitionKey`,
           ExpressionAttributeValues: {
             ':partitionKey': partitionKeyForEvent('SomeEntity', 'someSpecialID', 'snapshot'),
           },

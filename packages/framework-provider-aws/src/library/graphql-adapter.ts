@@ -8,8 +8,10 @@ export async function rawGraphQLRequestToEnvelope(
 ): Promise<GraphQLRequestEnvelope> {
   logger.debug('Received GraphQL request: ', request)
   let graphQLBody = undefined
+  let graphQLVariables = undefined
   if (request.body) {
     graphQLBody = JSON.parse(request.body)['query']
+    graphQLVariables = JSON.parse(request.body)['variables']
   }
 
   return {
@@ -18,5 +20,6 @@ export async function rawGraphQLRequestToEnvelope(
     connectionID: request.requestContext.connectionId,
     currentUser: JSON.parse(request.requestContext.authorizer.userJSON),
     value: graphQLBody,
+    variables: graphQLVariables,
   }
 }

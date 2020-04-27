@@ -25,8 +25,7 @@ export class RegisterHandler {
         `Couldn't find information about event ${eventTypeName}. Is the event handled by an entity?`
       )
     }
-    const entityID = event.entityID
-    if (!entityID || !entityID()) {
+    if (!event.entityID || !event.entityID()) {
       throw new Error(
         `Event ${eventTypeName} has an empty 'entityID' or the required 'entityID' method was not implemented. Make sure to return a string-compatible value identifying the entity this event belongs to.`
       )
@@ -35,7 +34,7 @@ export class RegisterHandler {
     return {
       version: config.currentVersionFor(eventTypeName),
       kind: 'event',
-      entityID: entityID(),
+      entityID: event.entityID(),
       requestID: register.requestID,
       currentUser: register.currentUser,
       entityTypeName: reducerInfo.class.name,
