@@ -44,24 +44,15 @@ describe('the `BoosterGraphQLDispatcher`', () => {
       const errorTextOne = 'graphql error 1'
       const errorTextTwo = 'graphql error 2'
       replace(gqlValidator, 'validate', fake())
-      replace(
-        gqlExecutor,
-        'execute',
-        fake.returns({
-          errors: [new Error(errorTextOne), new Error(errorTextTwo)],
-        })
-      )
+      const graphQLError = {
+        errors: [new Error(errorTextOne), new Error(errorTextTwo)],
+      }
+      replace(gqlExecutor, 'execute', fake.returns(graphQLError))
 
       await dispatcher.dispatch({})
 
       // Check that the handled error includes all the errors that GraphQL reported
-      const errorOneRegExp = new RegExp(errorTextOne)
-      const errorTwoRegExp = new RegExp(errorTextOne)
-      expect(config.provider.handleGraphQLResult).to.have.been.calledWithExactly(
-        match((value: Error): boolean => {
-          return errorOneRegExp.test(value.message) && errorTwoRegExp.test(value.message)
-        }, `an error with a message including the substrings "${errorTextOne}" and "${errorTextTwo}"`)
-      )
+      expect(config.provider.handleGraphQLResult).to.have.been.calledWithExactly(graphQLError)
     })
 
     it('calls the the GraphQL engine with the passed envelope and handles the result', async () => {
