@@ -58,7 +58,6 @@ export const Provider: ProviderLibrary = {
   authorizeRequest: authorizeRequest.bind(null, userPool),
   rawGraphQLRequestToEnvelope: rawGraphQLRequestToEnvelope,
   handleGraphQLResult: requestSucceeded,
-  handleGraphQLError: requestFailed,
 
   // ProviderAuthLibrary
   rawSignUpDataToUserEnvelope,

@@ -60,8 +60,6 @@ export const Provider: ProviderLibrary = {
   rawGraphQLRequestToEnvelope: undefined as any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleGraphQLResult: undefined as any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleGraphQLError: undefined as any,
 
   // ProviderAuthLibrary
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
