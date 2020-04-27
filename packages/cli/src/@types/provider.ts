@@ -1,5 +1,5 @@
 export const enum Provider {
-  AWS = 'AWS',
-  LOCAL = 'Local',
+  AWS = '@boostercloud/framework-provider-aws (AWS)',
+  LOCAL = '@boostercloud/framework-provider-local (Local)',
   OTHER = 'Other',
 }
