@@ -3,8 +3,7 @@ import { expect } from 'chai'
 import { fake } from 'sinon'
 import { DynamoDBStreamEvent } from 'aws-lambda'
 import { rawReadModelEventsToEnvelopes } from '../../src/library/subscription-adapter'
-import { BoosterConfig, Logger } from '@boostercloud/framework-types'
-import { ReadModelEnvelope } from '@boostercloud/framework-types/dist'
+import { BoosterConfig, Logger, ReadModelEnvelope } from '@boostercloud/framework-types'
 
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))

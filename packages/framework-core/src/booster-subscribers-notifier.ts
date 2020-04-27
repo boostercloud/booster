@@ -118,10 +118,7 @@ export class BoosterSubscribersNotifier {
     return Promise.all(notificationPromises)
   }
 
-  private async notifyWithGraphQLResult(
-    subscription: SubscriptionEnvelope,
-    result: ExecutionResult
-  ): Promise<void> {
+  private async notifyWithGraphQLResult(subscription: SubscriptionEnvelope, result: ExecutionResult): Promise<void> {
     if ('errors' in result) {
       throwIfGraphQLErrors(result.errors)
       return
