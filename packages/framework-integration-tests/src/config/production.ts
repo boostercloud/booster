@@ -3,7 +3,7 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import { Provider } from '@boostercloud/framework-provider-aws'
 
 Booster.configure('production', (config: BoosterConfig): void => {
-  /* We use an automatically generated app name suffix to allow 
+  /* We use an automatically generated app name suffix to allow
    * running integration tests for different branches concurrently.
    */
   const appNameSuffix = process.env.BOOSTER_APP_SUFFIX ?? 'default'
