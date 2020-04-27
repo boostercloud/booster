@@ -7,7 +7,7 @@ import {
   SubscriptionEnvelope,
 } from '@boostercloud/framework-types'
 import { GraphQLSchema, DocumentNode } from 'graphql'
-import { subscribe, parse, validate } from 'graphql'
+import * as graphql from 'graphql'
 import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { BoosterCommandDispatcher } from './booster-command-dispatcher'
 import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
@@ -84,7 +84,7 @@ export class BoosterSubscribersNotifier {
     }
     const document = this.parseSubscriptionQuery(subscription.operation.query)
     this.logger.debug('Running subscription with context: ', context)
-    const iterator = await subscribe<ReadModelInterface>({
+    const iterator = await graphql.subscribe<ReadModelInterface>({
       contextValue: context,
       document: document,
       schema: this.graphQLSchema,
@@ -98,9 +98,9 @@ export class BoosterSubscribersNotifier {
   }
 
   private parseSubscriptionQuery(query: string): DocumentNode {
-    const document = parse(query)
+    const document = graphql.parse(query)
     // We probably don't need to validate this again, as it was validated before storing it. BUT! It's always better to fail early
-    const errors = validate(this.graphQLSchema, document)
+    const errors = graphql.validate(this.graphQLSchema, document)
     if (errors.length > 0) {
       throw new Error(errors.join('. '))
     }

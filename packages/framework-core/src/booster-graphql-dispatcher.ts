@@ -5,16 +5,8 @@ import {
   GraphQLRequestEnvelope,
   InvalidProtocolError,
 } from '@boostercloud/framework-types'
-import {
-  getOperationAST,
-  GraphQLSchema,
-  subscribe,
-  parse,
-  execute,
-  validate,
-  DocumentNode,
-  ExecutionResult,
-} from 'graphql'
+import { GraphQLSchema, DocumentNode, ExecutionResult } from 'graphql'
+import * as graphql from 'graphql'
 import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { BoosterCommandDispatcher } from './booster-command-dispatcher'
 import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
@@ -62,10 +54,10 @@ export class BoosterGraphQLDispatcher {
     if (!envelope.value) {
       throw new InvalidParameterError('Received an empty GraphQL body')
     }
-    const queryDocument = parse(envelope.value)
-    const errors = validate(this.graphQLSchema, queryDocument)
+    const queryDocument = graphql.parse(envelope.value)
+    const errors = graphql.validate(this.graphQLSchema, queryDocument)
     throwIfGraphQLErrors(errors)
-    const operationData = getOperationAST(queryDocument, undefined)
+    const operationData = graphql.getOperationAST(queryDocument, undefined)
     if (!operationData) {
       throw new InvalidParameterError(
         'Could not extract GraphQL root operation. Be sure to send only one of {query, mutation, subscription}'
@@ -101,7 +93,7 @@ export class BoosterGraphQLDispatcher {
         'This API and protocol does not support "query" or "mutation" operations, only "subscription". Use the HTTP API for "query" or "mutation"'
       )
     }
-    const result = await execute({
+    const result = await graphql.execute({
       schema: this.graphQLSchema,
       document: queryDocument,
       contextValue: resolverContext,
@@ -120,7 +112,7 @@ export class BoosterGraphQLDispatcher {
         'This API and protocol does not support "subscription" operations, only "query" and "mutation". Use the socket API for "subscription"'
       )
     }
-    const result = await subscribe({
+    const result = await graphql.subscribe({
       schema: this.graphQLSchema,
       document: queryDocument,
       contextValue: resolverContext,
