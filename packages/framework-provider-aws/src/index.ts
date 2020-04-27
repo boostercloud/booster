@@ -19,6 +19,12 @@ import { Kinesis, DynamoDB, CognitoIdentityServiceProvider } from 'aws-sdk'
 import { ProviderInfrastructure, ProviderLibrary } from '@boostercloud/framework-types'
 import { requestFailed, requestSucceeded } from './library/api-gateway-io'
 import { searchReadModel } from './library/searcher-adapter'
+import {
+  fetchSubscriptions,
+  notifySubscription,
+  rawReadModelEventsToEnvelopes,
+  subscribeToReadModel,
+} from './library/subscription-adapter'
 
 const eventsStream: Kinesis = new Kinesis()
 const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
@@ -39,6 +45,11 @@ export const Provider: ProviderLibrary = {
   rawReadModelRequestToEnvelope: rawReadModelRequestToEnvelope.bind(null, userPool),
   fetchReadModel: fetchReadModel.bind(null, dynamoDB),
   fetchAllReadModels: fetchAllReadModels.bind(null, dynamoDB),
+  searchReadModel: searchReadModel.bind(null, dynamoDB),
+  subscribeToReadModel: subscribeToReadModel.bind(null, dynamoDB),
+  rawReadModelEventsToEnvelopes: rawReadModelEventsToEnvelopes,
+  fetchSubscriptions: fetchSubscriptions.bind(null, dynamoDB),
+  notifySubscription,
   storeReadModel: storeReadModel.bind(null, dynamoDB),
   handleReadModelResult: requestSucceeded,
   handleReadModelError: requestFailed,
@@ -47,7 +58,6 @@ export const Provider: ProviderLibrary = {
   authorizeRequest: authorizeRequest.bind(null, userPool),
   rawGraphQLRequestToEnvelope: rawGraphQLRequestToEnvelope,
   handleGraphQLResult: requestSucceeded,
-  handleGraphQLError: requestFailed,
 
   // ProviderAuthLibrary
   rawSignUpDataToUserEnvelope,
@@ -59,9 +69,6 @@ export const Provider: ProviderLibrary = {
   // ProviderInfrastructureGetter
   getInfrastructure: () =>
     require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
-
-  // ProviderSearcher
-  searchReadModel: searchReadModel.bind(null, dynamoDB),
 }
 
 export * from './constants'

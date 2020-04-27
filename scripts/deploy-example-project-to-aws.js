@@ -5,9 +5,14 @@
  *      npx ./scripts/deploy-example-project-to-aws.js
  *
  */
-const deployScript = require('../packages/framework-integration-tests/dist/deploy')
 
 async function main(argv) {
+  const exec = require('child-process-promise').exec
+  console.info('Compiling project...')
+  await exec('lerna run compile')
+  console.info('Project compiled.')
+
+  const deployScript = require('../packages/framework-integration-tests/dist/deploy')
   if (argv[2] === 'KILLITWITHFIRE') {
     return deployScript.nuke()
   }

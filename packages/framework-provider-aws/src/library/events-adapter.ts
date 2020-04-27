@@ -1,7 +1,7 @@
 import { KinesisStreamEvent, KinesisStreamRecord } from 'aws-lambda'
 import { BoosterConfig, EventEnvelope, Logger, UUID } from '@boostercloud/framework-types'
 import { DynamoDB, Kinesis } from 'aws-sdk'
-import { eventStorePartitionKeyAttributeName, eventStoreSortKeyAttributeName } from '../constants'
+import { eventStorePartitionKeyAttribute, eventStoreSortKeyAttribute } from '../constants'
 import { partitionKeyForEvent } from './partition-keys'
 import { PutRecordsRequestEntry } from 'aws-sdk/clients/kinesis'
 
@@ -30,12 +30,12 @@ export async function storeEvent(
       TableName: config.resourceNames.eventsStore,
       Item: {
         ...eventEnvelope,
-        [eventStorePartitionKeyAttributeName]: partitionKeyForEvent(
+        [eventStorePartitionKeyAttribute]: partitionKeyForEvent(
           eventEnvelope.entityTypeName,
           eventEnvelope.entityID,
           eventEnvelope.kind
         ),
-        [eventStoreSortKeyAttributeName]: new Date().toISOString(),
+        [eventStoreSortKeyAttribute]: new Date().toISOString(),
       },
     })
     .promise()
@@ -55,7 +55,7 @@ export async function readEntityEventsSince(
     .query({
       TableName: config.resourceNames.eventsStore,
       ConsistentRead: true,
-      KeyConditionExpression: `${eventStorePartitionKeyAttributeName} = :partitionKey AND ${eventStoreSortKeyAttributeName} > :fromTime`,
+      KeyConditionExpression: `${eventStorePartitionKeyAttribute} = :partitionKey AND ${eventStoreSortKeyAttribute} > :fromTime`,
       ExpressionAttributeValues: {
         ':partitionKey': partitionKeyForEvent(entityTypeName, entityID),
         ':fromTime': fromTime,
@@ -81,7 +81,7 @@ export async function readEntityLatestSnapshot(
     .query({
       TableName: config.resourceNames.eventsStore,
       ConsistentRead: true,
-      KeyConditionExpression: `${eventStorePartitionKeyAttributeName} = :partitionKey`,
+      KeyConditionExpression: `${eventStorePartitionKeyAttribute} = :partitionKey`,
       ExpressionAttributeValues: {
         ':partitionKey': partitionKeyForEvent(entityTypeName, entityID, 'snapshot'),
       },

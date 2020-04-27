@@ -32,6 +32,7 @@ export async function rawReadModelRequestToEnvelope(
   }
 }
 
+/** @deprecated */
 export async function fetchAllReadModels(
   db: DynamoDB.DocumentClient,
   config: BoosterConfig,
@@ -46,6 +47,7 @@ export async function fetchAllReadModels(
   return response.Items as Array<ReadModelInterface>
 }
 
+/** @deprecated */
 export async function fetchReadModel(
   db: DynamoDB.DocumentClient,
   config: BoosterConfig,

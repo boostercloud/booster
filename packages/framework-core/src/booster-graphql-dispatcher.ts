@@ -1,8 +1,17 @@
-import { BoosterConfig, Logger, InvalidParameterError, GraphQLRequestEnvelope } from '@boostercloud/framework-types'
-import { graphql, GraphQLSchema } from 'graphql'
+import {
+  BoosterConfig,
+  Logger,
+  InvalidParameterError,
+  GraphQLRequestEnvelope,
+  InvalidProtocolError,
+} from '@boostercloud/framework-types'
+import { GraphQLSchema, DocumentNode, ExecutionResult } from 'graphql'
+import * as graphql from 'graphql'
 import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { BoosterCommandDispatcher } from './booster-command-dispatcher'
 import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
+import { GraphQLResolverContext } from './services/graphql/common'
+import { NoopReadModelPubSub } from './services/pub-sub/noop-read-model-pub-sub'
 
 export class BoosterGraphQLDispatcher {
   private readonly graphQLSchema: GraphQLSchema
@@ -15,12 +24,11 @@ export class BoosterGraphQLDispatcher {
     ).generateSchema()
   }
 
-  public async dispatchGraphQL(request: any): Promise<any> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public async dispatch(request: any): Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult> {
     try {
       const envelope = await this.config.provider.rawGraphQLRequestToEnvelope(request, this.logger)
       this.logger.debug('Received the following GraphQL envelope: ', envelope)
-
-      // TODO: We should rejects requests for query and mutation that come through sockets and subscriptions that comes through REST
 
       switch (envelope.eventType) {
         case 'CONNECT': // TODO: This message is never coming now. Check this later to see if it is finally needed
@@ -28,34 +36,100 @@ export class BoosterGraphQLDispatcher {
         case 'MESSAGE':
           return this.config.provider.handleGraphQLResult(await this.handleMessage(envelope))
         case 'DISCONNECT':
+          // TODO: Remove subscriptions
           return this.config.provider.handleGraphQLResult()
         default:
           throw new Error(`Unknown message type ${envelope.eventType}`)
       }
     } catch (e) {
       this.logger.error(e)
-      return this.config.provider.handleGraphQLError(e)
+      const toErrors = (e: Error): Array<Partial<graphql.GraphQLError>> => [
+        {
+          message: JSON.stringify(e),
+          locations: [],
+        },
+      ]
+      const errors = Array.isArray(e) ? e : toErrors(e)
+      return this.config.provider.handleGraphQLResult({ errors })
     }
   }
 
-  private async handleMessage(envelope: GraphQLRequestEnvelope): Promise<any> {
+  private async handleMessage(
+    envelope: GraphQLRequestEnvelope
+  ): Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult> {
+    this.logger.debug('Starting GraphQL query')
     if (!envelope.value) {
       throw new InvalidParameterError('Received an empty GraphQL body')
     }
-
-    this.logger.debug('Starting GraphQL query')
-    const result = await graphql({
-      schema: this.graphQLSchema,
-      source: envelope.value,
-      contextValue: envelope,
-    })
-    this.logger.debug('GraphQL result: ', result)
-    if (result.errors) {
-      throw new Error(result.errors.map((e) => e.message).join('\n'))
+    const queryDocument = graphql.parse(envelope.value)
+    const errors = graphql.validate(this.graphQLSchema, queryDocument)
+    if (errors) {
+      throw errors
     }
-    return result.data
+    const operationData = graphql.getOperationAST(queryDocument, undefined)
+    if (!operationData) {
+      throw new InvalidParameterError(
+        'Could not extract GraphQL root operation. Be sure to send only one of {query, mutation, subscription}'
+      )
+    }
+    const resolverContext: GraphQLResolverContext = {
+      connectionID: envelope.connectionID,
+      requestID: envelope.requestID,
+      user: envelope.currentUser,
+      operation: {
+        query: envelope.value,
+        variables: envelope.variables,
+      },
+      pubSub: new NoopReadModelPubSub(),
+      storeSubscriptions: true,
+    }
 
-    // TODO: We need to send the result to all related subscriptions. Find an abstraction that allow us to manage
-    // connections here and search for those which are subscribed to a subscription
+    switch (operationData.operation) {
+      case 'query':
+      case 'mutation':
+        return this.handleQueryOrMutation(queryDocument, resolverContext)
+      case 'subscription':
+        return this.handleSubscription(queryDocument, resolverContext)
+    }
   }
+
+  private async handleQueryOrMutation(
+    queryDocument: DocumentNode,
+    resolverContext: GraphQLResolverContext
+  ): Promise<ExecutionResult> {
+    if (cameThroughSocket(resolverContext)) {
+      throw new InvalidProtocolError(
+        'This API and protocol does not support "query" or "mutation" operations, only "subscription". Use the HTTP API for "query" or "mutation"'
+      )
+    }
+    const result = await graphql.execute({
+      schema: this.graphQLSchema,
+      document: queryDocument,
+      contextValue: resolverContext,
+    })
+    this.logger.debug('GraphQL result: ', result.data)
+    return result
+  }
+
+  private async handleSubscription(
+    queryDocument: DocumentNode,
+    resolverContext: GraphQLResolverContext
+  ): Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult> {
+    if (!cameThroughSocket(resolverContext)) {
+      throw new InvalidProtocolError(
+        'This API and protocol does not support "subscription" operations, only "query" and "mutation". Use the socket API for "subscription"'
+      )
+    }
+    const result = await graphql.subscribe({
+      schema: this.graphQLSchema,
+      document: queryDocument,
+      contextValue: resolverContext,
+    })
+    this.logger.debug('GraphQL subscription finished')
+    return result
+  }
+}
+
+function cameThroughSocket(withConnectionID: { connectionID?: string }): boolean {
+  return withConnectionID.connectionID != undefined
 }

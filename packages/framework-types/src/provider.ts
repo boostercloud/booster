@@ -4,7 +4,9 @@ import {
   EventEnvelope,
   GraphQLRequestEnvelope,
   ReadModelRequestEnvelope,
+  SubscriptionEnvelope,
   UserEnvelope,
+  ReadModelEnvelope,
 } from './envelope'
 import { BoosterConfig } from './config'
 import { Observable } from 'rxjs'
@@ -18,8 +20,7 @@ export type ProviderLibrary = ProviderCommandsLibrary &
   ProviderAuthLibrary &
   ProviderAPIHandling &
   ProviderInfrastructureGetter &
-  ProviderGraphQLLibrary &
-  ProviderSearcher
+  ProviderGraphQLLibrary
 
 export interface ProviderCommandsLibrary {
   rawCommandToEnvelope(rawCommand: any): Promise<CommandEnvelope>
@@ -47,13 +48,33 @@ export interface ProviderEventsLibrary {
 }
 export interface ProviderReadModelsLibrary {
   rawReadModelRequestToEnvelope(rawReadModelRequest: any): Promise<ReadModelRequestEnvelope>
+  /** @deprecated */
   fetchReadModel(
     config: BoosterConfig,
     logger: Logger,
     readModelName: string,
     readModelID: UUID
   ): Promise<ReadModelInterface>
+  /** @deprecated */
   fetchAllReadModels(config: BoosterConfig, logger: Logger, readModelName: string): Promise<Array<ReadModelInterface>>
+  searchReadModel<TReadModel extends ReadModelInterface>(
+    config: BoosterConfig,
+    logger: Logger,
+    entityTypeName: string,
+    filters: Record<string, Filter<any>>
+  ): Promise<Array<TReadModel>>
+  subscribeToReadModel(config: BoosterConfig, logger: Logger, subscriptionEnvelope: SubscriptionEnvelope): Promise<void>
+  rawReadModelEventsToEnvelopes(
+    config: BoosterConfig,
+    logger: Logger,
+    rawEvents: any
+  ): Promise<Array<ReadModelEnvelope>>
+  fetchSubscriptions(
+    config: BoosterConfig,
+    logger: Logger,
+    subscriptionName: string
+  ): Promise<Array<SubscriptionEnvelope>>
+  notifySubscription(config: BoosterConfig, connectionID: string, data: Record<string, any>): Promise<void>
   storeReadModel(
     config: BoosterConfig,
     logger: Logger,
@@ -68,7 +89,6 @@ export interface ProviderGraphQLLibrary {
   authorizeRequest(rawRequest: any, logger: Logger): Promise<any>
   rawGraphQLRequestToEnvelope(rawGraphQLRequest: any, logger: Logger): Promise<GraphQLRequestEnvelope>
   handleGraphQLResult(result?: any): Promise<any>
-  handleGraphQLError(error: Error): Promise<any>
 }
 
 export interface ProviderAuthLibrary {
@@ -88,13 +108,4 @@ export interface ProviderInfrastructure {
   deploy?: (configuration: BoosterConfig) => Observable<string>
   run?: (configuration: BoosterConfig, port: number) => Promise<void>
   nuke(configuration: BoosterConfig): Observable<string>
-}
-
-export interface ProviderSearcher {
-  searchReadModel<TReadModel extends ReadModelInterface>(
-    config: BoosterConfig,
-    logger: Logger,
-    entityTypeName: string,
-    filters: Record<string, Filter<any>>
-  ): Promise<Array<TReadModel>>
 }

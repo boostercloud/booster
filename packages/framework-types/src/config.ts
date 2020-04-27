@@ -25,8 +25,9 @@ export class BoosterConfig {
   public readonly eventDispatcherHandler: string = 'dist/index.boosterEventDispatcher'
   public readonly readModelMapperHandler: string = 'dist/index.boosterReadModelMapper'
   public readonly preSignUpHandler: string = 'dist/index.boosterPreSignUpChecker'
-  public readonly serveGraphQLHandler: string = 'dist/index.boosterServeGraphQL'
   public readonly authorizerHandler: string = 'dist/index.boosterRequestAuthorizer'
+  public readonly serveGraphQLHandler: string = 'dist/index.boosterServeGraphQL'
+  public readonly notifySubscribersHandler: string = 'dist/index.boosterNotifySubscribers'
 
   public readonly entities: Record<EntityName, EntityMetadata> = {}
   public readonly reducers: Record<EventName, ReducerMetadata> = {}
@@ -40,7 +41,7 @@ export class BoosterConfig {
   /** Environment variables set at deployment time on the target lambda functions */
   public readonly env: Record<string, string> = {}
 
-  public constructor(public readonly environment: string) {}
+  public constructor(public readonly environmentName: string) {}
 
   public get resourceNames(): ResourceNames {
     if (this.appName.length === 0) throw new Error('Application name cannot be empty')
@@ -49,10 +50,20 @@ export class BoosterConfig {
       applicationStack: applicationStackName,
       eventsStream: applicationStackName + '-events-stream',
       eventsStore: applicationStackName + '-events-store',
+      subscriptionsStore: applicationStackName + '-subscriptions-store',
       forReadModel(readModelName: string): string {
         return applicationStackName + '-' + readModelName
       },
     }
+  }
+
+  /**
+   * Returns the name of the ReadModel from the name of its resouce (normally, a table)
+   * @param resourceName
+   */
+  public readModelNameFromResourceName(resourceName: string): string {
+    const resourceNamePrefixRegex = new RegExp(`^${this.resourceNames.applicationStack}-`)
+    return resourceName.replace(resourceNamePrefixRegex, '')
   }
 
   /**
@@ -79,12 +90,20 @@ export class BoosterConfig {
   }
 
   public get provider(): ProviderLibrary {
-    if (!this._provider) throw new Error('It is required to set a valid provider runtime in `src/config.ts`')
+    if (!this._provider) throw new Error('It is required to set a valid provider runtime in your configuration files')
     return this._provider
   }
 
   public set provider(provider: ProviderLibrary) {
     this._provider = provider
+  }
+
+  public mustGetEnvironmentVar(varName: string): string {
+    const value = process.env[varName]
+    if (value == undefined) {
+      throw new Error(`Missing environment variable '${varName}'`)
+    }
+    return value
   }
 
   private validateAllMigrations(): void {
@@ -111,6 +130,7 @@ interface ResourceNames {
   applicationStack: string
   eventsStream: string
   eventsStore: string
+  subscriptionsStore: string
   forReadModel(entityName: string): string
 }
 

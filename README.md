@@ -35,7 +35,7 @@ In fact, the configuration is inferred _automatically_ from the code you write.
 
 ## Documentation
 
-Browse the [Booster Cloud Documentation](docs/documentation) to set up your environment and learn the core concepts of the Booster Cloud Framework.
+Browse the [Booster Cloud Documentation](https://boostercloud.github.io/docs) to set up your environment and learn the core concepts of the Booster Cloud Framework.
 
 ## Examples
 

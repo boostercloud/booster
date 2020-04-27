@@ -54,7 +54,8 @@ export default class Nuke extends Command {
     }),
     force: flags.boolean({
       char: 'f',
-      description: 'Run nuke without asking for confirmation. Be EXTRA CAUTIOUS with this option, all your application data will be irreversibly DELETED without confirmation.',
+      description:
+        'Run nuke without asking for confirmation. Be EXTRA CAUTIOUS with this option, all your application data will be irreversibly DELETED without confirmation.',
     }),
   }
 
