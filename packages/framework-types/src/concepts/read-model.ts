@@ -3,6 +3,7 @@ import { Class, PropertyMetadata } from '../typelevel'
 
 export interface ReadModelInterface {
   id: UUID
+  [key: string]: any
 }
 
 export interface ReadModelMetadata {

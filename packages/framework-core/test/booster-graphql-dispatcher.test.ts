@@ -1,11 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { fake, match, replace, restore } from 'sinon'
+import { fake, match, replace, restore, spy } from 'sinon'
 import * as chai from 'chai'
 import { expect } from 'chai'
 import { BoosterConfig, Logger, GraphQLRequestEnvelope, InvalidParameterError } from '@boostercloud/framework-types'
 import { BoosterGraphQLDispatcher } from '../src/booster-graphql-dispatcher'
-import * as GraphQL from 'graphql/graphql'
+import * as gqlParser from 'graphql/language/parser'
+import * as gqlValidator from 'graphql/validation/validate'
+import * as gqlExecutor from 'graphql/execution/execute'
+import { GraphQLResolverContext } from '../src/services/graphql/common'
+import { NoopReadModelPubSub } from '../src/services/pub-sub/noop-read-model-pub-sub'
 
 chai.use(require('sinon-chai'))
 
@@ -37,14 +41,15 @@ describe('the `BoosterGraphQLDispatcher`', () => {
       const config = mockConfigForGraphQLEnvelope({
         requestID: '123',
         eventType: 'MESSAGE',
-        value: 'a graphql query',
+        value: 'query { a { x }}',
       })
       const dispatcher = new BoosterGraphQLDispatcher(config, logger)
       const errorTextOne = 'graphql error 1'
       const errorTextTwo = 'graphql error 2'
+      replace(gqlValidator, 'validate', fake())
       replace(
-        GraphQL,
-        'graphql',
+        gqlExecutor,
+        'execute',
         fake.returns({
           errors: [new Error(errorTextOne), new Error(errorTextTwo)],
         })
@@ -64,25 +69,37 @@ describe('the `BoosterGraphQLDispatcher`', () => {
     })
 
     it('calls the the GraphQL engine with the passed envelope and handles the result', async () => {
-      const graphQLBody = 'a graphql query'
-      const graphQLResult = 'the result'
+      const graphQLBody = 'query { a { x }}'
+      const graphQLResult = { data: 'the result' }
       const graphQLEnvelope: GraphQLRequestEnvelope = {
         requestID: '123',
         eventType: 'MESSAGE',
         value: graphQLBody,
       }
+      const resolverContext: GraphQLResolverContext = {
+        requestID: graphQLEnvelope.requestID,
+        operation: {
+          query: graphQLBody,
+        },
+        pubSub: new NoopReadModelPubSub(),
+        storeSubscriptions: true,
+      }
       const config = mockConfigForGraphQLEnvelope(graphQLEnvelope)
       const dispatcher = new BoosterGraphQLDispatcher(config, logger)
-      const graphqlFake = fake.returns({ data: graphQLResult })
-      replace(GraphQL, 'graphql', graphqlFake)
+      const executeFake = fake.returns(graphQLResult)
+      const parseSpy = spy(gqlParser.parse)
+      replace(gqlParser, 'parse', parseSpy)
+      replace(gqlValidator, 'validate', fake())
+      replace(gqlExecutor, 'execute', executeFake)
 
       await dispatcher.dispatch({})
 
+      expect(parseSpy).to.have.been.calledWithExactly(graphQLBody)
       expect(config.provider.handleGraphQLError).to.not.have.been.called
-      expect(graphqlFake).to.have.been.calledWithExactly({
+      expect(executeFake).to.have.been.calledWithExactly({
         schema: match.any,
-        source: graphQLBody,
-        contextValue: match(graphQLEnvelope),
+        document: match.any,
+        contextValue: match(resolverContext),
       })
       expect(config.provider.handleGraphQLResult).to.have.been.calledWithExactly(graphQLResult)
     })

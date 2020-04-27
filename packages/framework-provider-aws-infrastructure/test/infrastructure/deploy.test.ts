@@ -8,6 +8,7 @@ import { replace, restore, fake, match } from 'sinon'
 import { BoosterConfig, UUID } from '@boostercloud/framework-types'
 import * as CDK from 'aws-cdk'
 import { CdkToolkit } from 'aws-cdk/lib/cdk-toolkit'
+import { StreamViewType } from '@aws-cdk/aws-dynamodb'
 
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
@@ -175,6 +176,9 @@ describe('the deployment process', () => {
               KeyType: 'HASH',
             },
           ],
+          StreamSpecification: {
+            StreamViewType: StreamViewType.NEW_IMAGE,
+          },
           TableName: 'testing-app-application-stack-SomeReadModel',
         },
         Type: 'AWS::DynamoDB::Table',
