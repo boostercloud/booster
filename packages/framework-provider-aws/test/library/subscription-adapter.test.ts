@@ -4,7 +4,7 @@ import { fake } from 'sinon'
 import { DynamoDBStreamEvent } from 'aws-lambda'
 import { rawReadModelEventsToEnvelopes } from '../../src/library/subscription-adapter'
 import { BoosterConfig, Logger } from '@boostercloud/framework-types'
-import { ReadModelEnvelope, ReadModelInterface } from '@boostercloud/framework-types/dist'
+import { ReadModelEnvelope } from '@boostercloud/framework-types/dist'
 
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
@@ -65,14 +65,14 @@ describe('the "rawReadModelEventsToEnvelopes" method', () => {
       value: {
         id: 'one',
         aField: 123,
-      } as ReadModelInterface,
+      },
     }
     const expectedReadModelTwo: ReadModelEnvelope = {
       typeName: 'ReadModelTwo',
       value: {
         id: 'two',
         aField: 456,
-      } as ReadModelInterface,
+      },
     }
 
     const events: DynamoDBStreamEvent = {

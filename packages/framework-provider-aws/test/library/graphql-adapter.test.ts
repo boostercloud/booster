@@ -15,6 +15,10 @@ describe('the graphql-adapter', () => {
         roles: ['Admin'],
       }
       const expectedQuery = 'GraphQL query'
+      const expectedVariables = {
+        varOne: 3,
+        varTwo: "test",
+      }
       const request: APIGatewayProxyWithLambdaAuthorizerEvent<AuthorizerWithUserData> = {
         requestContext: {
           requestId: '123',
@@ -26,6 +30,7 @@ describe('the graphql-adapter', () => {
         },
         body: JSON.stringify({
           query: expectedQuery,
+          variables: expectedVariables,
         }),
       } as any
 
@@ -35,6 +40,7 @@ describe('the graphql-adapter', () => {
         connectionID: '456',
         currentUser: expectedUser,
         value: expectedQuery,
+        variables: expectedVariables,
       }
       const gotOutput = await rawGraphQLRequestToEnvelope(request, console)
 

@@ -45,6 +45,7 @@ describe('the application stack builder', () => {
     const readModelFetcherLambda = 'read-model-fetcher'
     const authorizerLambda = 'graphql-authorizer'
     const graphQLLambda = 'graphql-handler'
+    const subscriptionsNotifierLambda = 'subscriptions-notifier'
     const websocketRoutes = ['route-$connect', 'route-$disconnect', 'route-$default']
 
     const restAPI = appStack.tryFindChild(restAPIName) as RestApi
@@ -62,12 +63,13 @@ describe('the application stack builder', () => {
     expect(websocketAPI.protocolType).to.be.eq('WEBSOCKET')
     websocketRoutes.forEach((route) => expect(appStack.tryFindChild(route)).not.to.be.undefined)
     // Lambdas
-    expect(numberOfLambdas).to.equal(5)
+    expect(numberOfLambdas).to.equal(6)
     expect(appStack.tryFindChild(commandsLambdaName)).not.to.be.undefined
     expect(appStack.tryFindChild(eventsLambda)).not.to.be.undefined
     expect(appStack.tryFindChild(readModelFetcherLambda)).not.to.be.undefined
     expect(appStack.tryFindChild(authorizerLambda)).not.to.be.undefined
     expect(appStack.tryFindChild(graphQLLambda)).not.to.be.undefined
+    expect(appStack.tryFindChild(subscriptionsNotifierLambda)).not.to.be.undefined
     // Events-related
     expect(appStack.tryFindChild(eventsStreamName)).not.to.be.undefined
     expect(appStack.tryFindChild(eventsStore)).not.to.be.undefined
@@ -107,7 +109,7 @@ describe('the application stack builder', () => {
     expect(api).not.to.be.undefined
     expect(api.root.getResource('auth')).not.to.be.undefined
     // Lambdas
-    expect(numberOfLambdas).to.equal(6)
+    expect(numberOfLambdas).to.equal(7)
     expect(appStack.tryFindChild(preSignUpValidator)).not.to.be.undefined
     lambdas.forEach((lambda: any) => {
       expect(lambda.environment.BOOSTER_ENV).to.equal('test')
