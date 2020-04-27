@@ -84,7 +84,7 @@ export class BoosterSubscribersNotifier {
     }
     const document = this.parseSubscriptionQuery(subscription.operation.query)
     this.logger.debug('Running subscription with context: ', context)
-    const iterator = await graphql.subscribe<ReadModelInterface>({
+    const iterator = await graphql.subscribe({
       contextValue: context,
       document: document,
       schema: this.graphQLSchema,
@@ -108,7 +108,7 @@ export class BoosterSubscribersNotifier {
   }
 
   private async processSubscriptionsIterator(
-    iterator: AsyncIterableIterator<ExecutionResult<ReadModelInterface>>,
+    iterator: AsyncIterableIterator<ExecutionResult>,
     subscription: SubscriptionEnvelope
   ): Promise<any> {
     const notificationPromises: Array<Promise<void>> = []
@@ -120,7 +120,7 @@ export class BoosterSubscribersNotifier {
 
   private async notifyWithGraphQLResult(
     subscription: SubscriptionEnvelope,
-    result: ExecutionResult<ReadModelInterface>
+    result: ExecutionResult
   ): Promise<void> {
     if ('errors' in result) {
       throwIfGraphQLErrors(result.errors)
