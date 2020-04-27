@@ -104,9 +104,6 @@ export class BoosterGraphQLDispatcher {
       document: queryDocument,
       contextValue: resolverContext,
     })
-    if (result.errors) {
-      this.logger.error(result.errors)
-    }
     this.logger.debug('GraphQL result: ', result.data)
     return result
   }
@@ -125,9 +122,6 @@ export class BoosterGraphQLDispatcher {
       document: queryDocument,
       contextValue: resolverContext,
     })
-    if ('errors' in result) {
-      this.logger.error(result.errors)
-    }
     this.logger.debug('GraphQL subscription finished')
     return result
   }
