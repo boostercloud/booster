@@ -36,7 +36,7 @@ export function baseURLForAPI(
   apiID: string,
   protocol: 'https' | 'wss' = 'https'
 ): string {
-  return `${protocol}://${apiID}.execute-api.${stack.region}.${stack.urlSuffix}/${config.env}/`
+  return `${protocol}://${apiID}.execute-api.${stack.region}.${stack.urlSuffix}/${config.environmentName}/`
 }
 
 export function stream(): Pick<KinesisEventSourceProps, 'startingPosition' | 'batchSize'> {
