@@ -97,7 +97,7 @@ const getProviderPackageName = async (prompter: Prompter, providerPackageName?: 
 
   if (providerSelection === Provider.OTHER) {
     return await prompter.defaultOrPrompt(
-      null,
+      undefined,
       "What's the other provider integration library? e.g. @boostercloud/framework-provider-aws"
     )
   } else {
