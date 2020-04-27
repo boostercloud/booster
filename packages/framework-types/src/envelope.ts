@@ -41,6 +41,7 @@ export interface ReadModelRequestEnvelope extends Envelope {
 
 export interface ReadModelPropertyFilter {
   operation: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   values: Array<any>
 }
 
@@ -48,6 +49,7 @@ export interface GraphQLRequestEnvelope extends Envelope {
   eventType: 'CONNECT' | 'MESSAGE' | 'DISCONNECT'
   connectionID?: string
   value?: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   variables?: Record<string, any>
 }
 
@@ -59,6 +61,7 @@ export interface SubscriptionEnvelope extends ReadModelRequestEnvelope {
 
 export interface GraphQLOperation {
   query: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   variables?: Record<string, any>
 }
 

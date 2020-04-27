@@ -6,7 +6,8 @@ import {
   ReadModelInterface,
   SubscriptionEnvelope,
 } from '@boostercloud/framework-types'
-import { GraphQLSchema, subscribe, parse, validate, DocumentNode } from 'graphql'
+import { GraphQLSchema, DocumentNode } from 'graphql'
+import { subscribe, parse, validate } from 'graphql'
 import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { BoosterCommandDispatcher } from './booster-command-dispatcher'
 import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
@@ -25,7 +26,8 @@ export class BoosterSubscribersNotifier {
     ).generateSchema()
   }
 
-  public async dispatch(request: any): Promise<any> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public async dispatch(request: any): Promise<void> {
     try {
       this.logger.debug('Received the following event for subscription dispatching: ', request)
       const readModelEnvelopes = await this.config.provider.rawReadModelEventsToEnvelopes(
@@ -44,7 +46,6 @@ export class BoosterSubscribersNotifier {
       await Promise.all(subscriptions.map(this.runSubscriptionAndNotify.bind(this, pubSub)))
     } catch (e) {
       this.logger.error(e)
-      // return this.config.provider.handleSubscriptionError(e)
     }
   }
 

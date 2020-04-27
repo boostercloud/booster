@@ -5,7 +5,16 @@ import {
   GraphQLRequestEnvelope,
   InvalidProtocolError,
 } from '@boostercloud/framework-types'
-import { getOperationAST, GraphQLSchema, subscribe, parse, execute, validate, DocumentNode } from 'graphql'
+import {
+  getOperationAST,
+  GraphQLSchema,
+  subscribe,
+  parse,
+  execute,
+  validate,
+  DocumentNode,
+  ExecutionResult,
+} from 'graphql'
 import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { BoosterCommandDispatcher } from './booster-command-dispatcher'
 import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
@@ -23,7 +32,8 @@ export class BoosterGraphQLDispatcher {
     ).generateSchema()
   }
 
-  public async dispatch(request: any): Promise<any> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public async dispatch(request: any): Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult> {
     try {
       const envelope = await this.config.provider.rawGraphQLRequestToEnvelope(request, this.logger)
       this.logger.debug('Received the following GraphQL envelope: ', envelope)
@@ -45,7 +55,9 @@ export class BoosterGraphQLDispatcher {
     }
   }
 
-  private async handleMessage(envelope: GraphQLRequestEnvelope): Promise<any> {
+  private async handleMessage(
+    envelope: GraphQLRequestEnvelope
+  ): Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult> {
     this.logger.debug('Starting GraphQL query')
     if (!envelope.value) {
       throw new InvalidParameterError('Received an empty GraphQL body')
@@ -83,7 +95,7 @@ export class BoosterGraphQLDispatcher {
   private async handleQueryOrMutation(
     queryDocument: DocumentNode,
     resolverContext: GraphQLResolverContext
-  ): Promise<any> {
+  ): Promise<ExecutionResult> {
     if (cameThroughSocket(resolverContext)) {
       throw new InvalidProtocolError(
         'This API and protocol does not support "query" or "mutation" operations, only "subscription". Use the HTTP API for "query" or "mutation"'
@@ -99,7 +111,10 @@ export class BoosterGraphQLDispatcher {
     return result
   }
 
-  private async handleSubscription(queryDocument: DocumentNode, resolverContext: GraphQLResolverContext): Promise<any> {
+  private async handleSubscription(
+    queryDocument: DocumentNode,
+    resolverContext: GraphQLResolverContext
+  ): Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult> {
     if (!cameThroughSocket(resolverContext)) {
       throw new InvalidProtocolError(
         'This API and protocol does not support "subscription" operations, only "query" and "mutation". Use the socket API for "subscription"'
