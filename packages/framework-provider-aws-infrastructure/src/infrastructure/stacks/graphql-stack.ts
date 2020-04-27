@@ -19,7 +19,7 @@ import {
   subscriptionsStoreTTLAttribute,
 } from '@boostercloud/framework-provider-aws'
 import { DynamoEventSource } from '@aws-cdk/aws-lambda-event-sources'
-import { APIS } from '../params'
+import { APIs } from '../params'
 
 interface GraphQLStackMembers {
   graphQLLambda: Function
@@ -31,7 +31,7 @@ export class GraphQLStack {
   public constructor(
     private readonly config: BoosterConfig,
     private readonly stack: Stack,
-    private readonly apis: APIS,
+    private readonly apis: APIs,
     private readonly readModelTables: Array<Table>
   ) {}
 

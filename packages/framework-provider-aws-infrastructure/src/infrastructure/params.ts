@@ -7,7 +7,7 @@ import { RestApi } from '@aws-cdk/aws-apigateway'
 import { CfnApi } from '@aws-cdk/aws-apigatewayv2'
 import { environmentVarNames } from '@boostercloud/framework-provider-aws'
 
-export interface APIS {
+export interface APIs {
   restAPI: RestApi
   websocketAPI: CfnApi
 }
@@ -15,7 +15,7 @@ export interface APIS {
 export function lambda(
   config: BoosterConfig,
   stack: Stack,
-  apis: APIS
+  apis: APIs
 ): Pick<FunctionProps, 'runtime' | 'timeout' | 'memorySize' | 'environment'> {
   return {
     runtime: Runtime.NODEJS_12_X,

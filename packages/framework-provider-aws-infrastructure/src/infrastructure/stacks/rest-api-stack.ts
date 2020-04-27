@@ -3,7 +3,7 @@ import { Stack } from '@aws-cdk/core'
 import { LambdaIntegration } from '@aws-cdk/aws-apigateway'
 import { Code, Function } from '@aws-cdk/aws-lambda'
 import * as params from '../params'
-import { APIS } from '../params'
+import { APIs } from '../params'
 
 interface RESTAPIStackMembers {
   /** @deprecated **/
@@ -19,7 +19,7 @@ export class RestAPIStack {
   public constructor(
     private readonly config: BoosterConfig,
     private readonly stack: Stack,
-    private readonly apis: APIS
+    private readonly apis: APIs
   ) {}
 
   public build(): RESTAPIStackMembers {

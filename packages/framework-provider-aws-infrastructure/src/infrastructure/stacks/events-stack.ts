@@ -6,7 +6,7 @@ import * as dynamodb from '@aws-cdk/aws-dynamodb'
 import { eventStorePartitionKeyAttribute, eventStoreSortKeyAttribute } from '@boostercloud/framework-provider-aws'
 import * as params from '../params'
 import { KinesisEventSource } from '@aws-cdk/aws-lambda-event-sources'
-import { APIS } from '../params'
+import { APIs } from '../params'
 
 interface EventsStackMembers {
   eventsStream: Stream
@@ -18,7 +18,7 @@ export class EventsStack {
   public constructor(
     private readonly config: BoosterConfig,
     private readonly stack: Stack,
-    private readonly apis: APIS
+    private readonly apis: APIs
   ) {}
 
   public build(): EventsStackMembers {

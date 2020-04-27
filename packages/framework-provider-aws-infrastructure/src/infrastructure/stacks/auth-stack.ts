@@ -6,13 +6,13 @@ import * as params from '../params'
 import { Effect, IRole, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam'
 import { AwsIntegration, PassthroughBehavior } from '@aws-cdk/aws-apigateway'
 import { CognitoTemplates } from './api-stack-velocity-templates'
-import { APIS } from '../params'
+import { APIs } from '../params'
 
 export class AuthStack {
   public constructor(
     private readonly config: BoosterConfig,
     private readonly stack: Stack,
-    private readonly apis: APIS
+    private readonly apis: APIs
   ) {}
 
   public build(): void {
