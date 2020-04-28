@@ -28,7 +28,7 @@ cd cart-demo
 boost new:command ChangeCart --fields cartId:UUID sku:string quantity:number
 ```
 As you can see we have created it with three fields:
-* **cartID**: This holds the ID of the cart we want to modify. Its type is `UUID`, which is a special type provided by Booster. All IDs should be of this type
+* **cartId**: This holds the ID of the cart we want to modify. Its type is `UUID`, which is a special type provided by Booster. All IDs should be of this type
 * **sku**: This is the SKU of the item we want add to the cart. It is a common kind of identifier used in commerces to refer to a specific item.
 * **quantity**: The amount of units of the item to add
 
