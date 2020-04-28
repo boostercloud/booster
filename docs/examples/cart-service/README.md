@@ -40,32 +40,34 @@ boost new:event CartChanged --fields cartId:UUID sku:string quantity:number
 4. Now we need to create the business logic for our command. In this case, it is really simple, as the only thing we need
 to do is to register an event (the one we created in the previous step) that represent the addition of an item to a cart.
 This could be seen as an equivalent action to a database commit.
-To do this, we open and modify the command file (`commands/ChangeCart.ts`). Its code should be something like this (after adding any missing import):
+To do this, we open and modify the command file (`commands/ChangeCart.ts`). Its code should be something like this:
 ```typescript
-// ... imports here ...
+import { Command } from '@boostercloud/framework-core'
+import { Register, UUID } from '@boostercloud/framework-types'
+import { CartChanged } from "../events/CartChanged";
 
 @Command({
-  authorize: 'all',
+  authorize: 'all' // <-- Here we specify the "who" can access to this command. We'll use 'all' now (public access)
 })
 export class ChangeCart {
   public constructor(
     readonly cartId: UUID,
     readonly sku: string,
-    readonly quantity: number
+    readonly quantity: number,
   ) {}
 
   public handle(register: Register): void {
-    register.events(new CartChanged(this.cartId, this.sku, this.quantity)) // <-- This is what we added
+    register.events(new CartChanged(this.cartId, this.sku, this.quantity)) // <-- This is the main change we did
   }
 }
 ```
 
 5. Open your CartChanged event file and fill the body of the method `entityId()`. In Booster all the events are related to
-a specific entity instance which, in our case, is the Cart. Therefore, the only thing we need to do is to return the `cartId`
-field that our event already has.
+a specific entity instance which, in our case, is the Cart (it will be created in the next step). Therefore, the only thing we need to do is to return the `cartId` field that our event already has.
 The code of the event should be something like this:
 ```typescript
-// ... imports here ...
+import { Event } from '@boostercloud/framework-core'
+import { UUID } from '@boostercloud/framework-types'
 
 @Event
 export class CartChanged {
@@ -86,27 +88,24 @@ the current state of our cart. To create it, we can use another generator:
 ```shell script
 boost new:entity Cart --fields "items:Array<CartItem>" --reduces CartChanged
 ```
-As you can see, our cart is just an array of cart item objects. The type `CartItem` is missing, but we will create it
-manually in the Cart entity file. You can also use the type generator `boost new:type` if you prefer. Types generated like that
-will be placed in the `common/` folder.
+As you can see, our cart is just an array of cart item objects. The type `CartItem` is missing. You can create it either manually or with the `new:type` generator. Types generated like that will be placed in the `common/` folder. Let's use the generator:
+```shell script
+boost new:type CartItem --fields sku:string quantity:number
+```
 
 7. Then we need to write the logic that reduces the events into a Cart. This is business-dependent. In our case,
 the code of the Entity class would be like this:
 ```typescript
-// ... imports here ...
-
-// This is the CartItem type. As said, it is an auxiliary type that's only used from within Cart objects, so there's no
-// need to export it
-interface CartItem {
-  sku: string
-  quantity: number
-}
+import { Entity, Reduces } from '@boostercloud/framework-core'
+import { UUID } from '@boostercloud/framework-types'
+import { CartChanged } from '../events/CartChanged'
+import { CartItem } from "../common/CartItem";
 
 @Entity
 export class Cart {
   public constructor(
-    readonly id: UUID, // This field is added automatically. Every entity decorated with "@Entity" must have this field
-    readonly items: Array<CartItem>
+      readonly id: UUID, // This field is added automatically. Every entity decorated with "@Entity" must have this field
+      readonly items: Array<CartItem>
   ) {}
 
   @Reduces(CartChanged)
@@ -115,22 +114,22 @@ export class Cart {
       // This is the common case: we receive the previous state of the cart and modify it according to the event received.
       // In this case, we just add the new item.
       return new Cart(
-        currentCart.id,
-        Cart.newItems(currentCart.items, event.sku, event.quantity)
+          currentCart.id,
+          Cart.newItems(currentCart.items, event.sku, event.quantity)
       )
     } else {
       // If there wasn't any previous Cart, we return one with the new item in it
       return new Cart(
-        event.cartId, 
-        [{
-          sku: event.sku,
-          quantity: event.quantity
-        }]
+          event.cartId,
+          [{
+            sku: event.sku,
+            quantity: event.quantity
+          }]
       )
     }
   }
 
-  // Helper function that creates a copy of the current cart items but adding the new one
+  // Helper function that creates a copy of the current cart items and adds the new one
   public static newItems(items: Array<CartItem>, sku: string, quantity: number): Array<CartItem> {
     return items.map(item => {
       if (item.sku == sku) {
@@ -145,56 +144,70 @@ export class Cart {
 }
 ```
 
-8. Finally, we need to define a read model so that we can access cart data throu the public API.
-We will create a directory named `read-models` and create a new file under the new directory called `CartReadModel.ts` with the following content
+8. Finally, we need to define a read model so that we can access cart data through the public API. This read model will only project the Cart entity but, if we had more entities, we could project them too to and make this read model act like an "agreagate" of those entities. 
+```shell script
+boost new:read-model CartReadModel --fields "items:Array<CartItem>" --projects Cart:id
+```
+Now we can open the file (`read-models/CartReadModel.ts`), add the missing imports, and fill the projection method, which basically returns a new read model with its fields updated (read model projections work similarly to entity reducers: they receive the current state and return the updated state). 
 
 ``` typescript
-// ... imports here ...
+import { ReadModel, Projects } from '@boostercloud/framework-core'
+import { UUID } from '@boostercloud/framework-types'
+import { Cart } from '../entities/Cart'
+import { CartItem } from "../common/CartItem";
 
-@ReadModel
+@ReadModel({
+  authorize: 'all' // <-- We can define "who" can access ReadModels too. This time, everyone can access
+})
 export class CartReadModel {
   public constructor(
-    readonly id: UUID,
+    public id: UUID,
     readonly items: Array<CartItem>,
   ) {}
 
-  @Projects(Cart, 'id')
-  public static updateWithCart(cart: Cart, oldCartReadModel?: CartReadModel): CartReadModel {
-    return new CartReadModel(cart.id, cart.items)
+  @Projects(Cart, "id")
+  public static projectCart(entity: Cart, currentCartReadModel?: CartReadModel): CartReadModel {
+    // In this case, we can just return a new ReadModel ignoring any previous state
+    return new CartReadModel(entity.id, entity.items) 
   }
+
 }
 ```
 
 That that's it! Now you can deploy your cart service to the chosen cloud provider by doing `boost deploy`. You don't need
 to think about how to structure this in lambdas, how to interconnect every part so that the events can be published and
 consumed, which kind of databases you need to use to store state, etc.
-Everything is inferred from he code. What is more, **this service is now capable of handling millions of requests per minute**
+Everything is inferred from the code. What is more, **this service is now capable of handling millions of requests per minute**
 without problems. And thanks to the serverless foundation Booster is based on, you won't be paying anything if it is not used.
 
 ## Test the service
 
-If you have deployed your service successfully, you should see the URL of the API of your application printed in the console.
-Something like this: `https://<API ID>.execute-api.<region>.amazonaws.com/prod`
+If you have deployed your service successfully, you now have a full-fledged GraphQL API that has been autogenerated for you. After the deployment, you should see the URL of the API printed in the console.
+Something like this: `https://<API ID>.execute-api.<region>.amazonaws.com/production`
 
-In order to send a request with the command we created, you need to do a **POST request** to the above URL followed by the `/commands`
-segment. The body should be like this:
-```json
-{
-  "typeName": "ChangeCart",
-  "version": 1,
-  "value": {
-    "cartId": "demo-id",
-    "sku": "DEMO_123",
-    "quantity": 1
-  }
+### Sending commands
+In order to send a request with the command we created, you need to send a GraphQL mutation. We recommend you to use one of the several GraphQL clients to do this like [Postwoman](https://postwoman.io/) (perfect for GraphQL!) or [Postman](https://www.postman.com/). If you use one of them, you can send the following GraphQL request:
+
+**URL:** `<API URL>/graphql`
+```graphql 
+mutation {
+  ChangeCart(input: {
+      cartId: "demo"
+      sku: "ABC_01"
+      quantity: 2
+  })
 }
 ```
-The meaning of the fields are as follows:
-- **typeName:** This indicates the command name
-- **version:** The current version of the command. Don't worry about this now
-- **value:** And here we specify the all the fields we defined in the command when we created it.
+If you don't have access/don't want to use a GraphQL specific client, you can still use any HTTP client. In that case, the request you should send is the following:
+```http
+POST <API URL>/graphql
+{
+	"query":"mutation { ChangeCart(input: {cartId: \"demo\" sku: \"ABC_01\" quantity: 2 }) }"
+}
+```
 
-Additionally, if you want to retrieve information about the cart, you need to do a **GET request** to the above URL followed by the `readmodels/CartReadModel` segment. A response similar to the one below should be returned:
+### Reading read model data
+If you want to retrieve information about the cart, you need to do a **GET request** to the above URL followed by the `readmodels/CartReadModel` segment. A response similar to the one below should be returned:
 ```json
 [
     {
