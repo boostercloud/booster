@@ -30,7 +30,7 @@ boost new:command ChangeCart --fields cartId:UUID sku:string quantity:number
 As you can see we have created it with three fields:
 * **cartId**: This holds the ID of the cart we want to modify. Its type is `UUID`, which is a special type provided by Booster. All IDs should be of this type
 * **sku**: This is the SKU of the item we want add to the cart. It is a common kind of identifier used in commerces to refer to a specific item.
-* **quantity**: The amount of units of the item to add
+* **quantity**: The amount of units of the item to add or remove
 
 3. Create an event that will register the modifications we will do to a cart:
 ```shell script
