@@ -186,7 +186,7 @@ If you have deployed your service successfully, you now have a full-fledged Grap
 Something like this: `https://<API ID>.execute-api.<region>.amazonaws.com/production`
 
 ### Sending commands
-In order to send a request with the command we created, you need to send a GraphQL mutation. We recommend you to use one of the several GraphQL clients to do this like [Postwoman](https://postwoman.io/) (perfect for GraphQL!) or [Postman](https://www.postman.com/). If you use one of them, you can send the following GraphQL request:
+In order to send a request with the command we created, you need to send a GraphQL "mutation". We recommend you to use one of the several GraphQL clients to do this like [Postwoman](https://postwoman.io/) (perfect for GraphQL!) or [Postman](https://www.postman.com/). If you use one of them, you can send the following GraphQL request:
 
 **URL:** `<API URL>/graphql`
 ```graphql 
@@ -198,48 +198,26 @@ mutation {
   })
 }
 ```
-If you don't have access/don't want to use a GraphQL specific client, you can still use any HTTP client. In that case, the request you should send is the following:
+If you don't have access/don't want to use a GraphQL specific client, you can still use any HTTP client. Just be sure to use the POST HTTP method and include a JSON body with a field named "query" with the GraphQL mutation:
 ```http
 POST <API URL>/graphql
 {
-	"query":"mutation { ChangeCart(input: {cartId: \"demo\" sku: \"ABC_01\" quantity: 2 }) }"
+   "query":"mutation { ChangeCart(input: {cartId: \"demo\" sku: \"ABC_01\" quantity: 2 }) }"
 }
 ```
 
 ### Reading read model data
-If you want to retrieve information about the cart, you need to do a **GET request** to the above URL followed by the `readmodels/CartReadModel` segment. A response similar to the one below should be returned:
-```json
-[
-    {
-        "id": "demo-id",
-        "items": [
-            {
-                "sku": "DEMO_123",
-                "quantity": 1
-            }
-        ]
-    },
-    {
-        "id": "demo-id2",
-        "items": [
-            {
-                "sku": "DEMO_123",
-                "quantity": 1
-            }
-        ]
-    }
-]
-```
-
-It is also possible to retrieve a specific cart by providing the cart id as follow, `readmodels/CartReadModel/demo-id`.
-```json
-{
-    "id": "demo-id",
-    "items": [
-        {
-            "sku": "DEMO_123",
-            "quantity": 1
-        }
-    ]
+To read a read model, you send a GraphQL "query" operation. In the case of this example, we can send the following query:
+**URL:** `<API URL>/graphql`
+```graphql 
+query {
+  CartReadModel(id: "demo") {
+      id
+      items
+  }
 }
 ```
+This will return the data corresponding to the Cart with ID "demo". You can also do searches to filter read models by any property. Check the documentation to see all the available filters.
+
+Finally, you can also subscribe to your read models so you can receive them in real time every time they are modified. To do that, you need to use a GraphQL "subscription" operation.
+
