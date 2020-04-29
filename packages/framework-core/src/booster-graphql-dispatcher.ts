@@ -5,7 +5,7 @@ import {
   GraphQLRequestEnvelope,
   InvalidProtocolError,
 } from '@boostercloud/framework-types'
-import { GraphQLSchema, DocumentNode, ExecutionResult } from 'graphql'
+import { GraphQLSchema, DocumentNode, ExecutionResult, GraphQLError } from 'graphql'
 import * as graphql from 'graphql'
 import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { BoosterCommandDispatcher } from './booster-command-dispatcher'
@@ -43,13 +43,7 @@ export class BoosterGraphQLDispatcher {
       }
     } catch (e) {
       this.logger.error(e)
-      const toErrors = (e: Error): Array<Partial<graphql.GraphQLError>> => [
-        {
-          message: JSON.stringify(e),
-          locations: [],
-        },
-      ]
-      const errors = Array.isArray(e) ? e : toErrors(e)
+      const errors = Array.isArray(e) ? e : [new GraphQLError(e.message)]
       return this.config.provider.handleGraphQLResult({ errors })
     }
   }
@@ -63,7 +57,7 @@ export class BoosterGraphQLDispatcher {
     }
     const queryDocument = graphql.parse(envelope.value)
     const errors = graphql.validate(this.graphQLSchema, queryDocument)
-    if (errors) {
+    if (errors.length > 0) {
       throw errors
     }
     const operationData = graphql.getOperationAST(queryDocument, undefined)
@@ -107,6 +101,9 @@ export class BoosterGraphQLDispatcher {
       document: queryDocument,
       contextValue: resolverContext,
     })
+    if ('errors' in result) {
+      throw result.errors
+    }
     this.logger.debug('GraphQL result: ', result.data)
     return result
   }
@@ -125,6 +122,9 @@ export class BoosterGraphQLDispatcher {
       document: queryDocument,
       contextValue: resolverContext,
     })
+    if ('errors' in result) {
+      throw result.errors
+    }
     this.logger.debug('GraphQL subscription finished')
     return result
   }
