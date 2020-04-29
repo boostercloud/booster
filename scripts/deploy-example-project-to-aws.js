@@ -5,7 +5,6 @@
  *      npx ./scripts/deploy-example-project-to-aws.js
  *
  */
-
 async function main(argv) {
   const exec = require('child-process-promise').exec
   console.info('Compiling project...')
