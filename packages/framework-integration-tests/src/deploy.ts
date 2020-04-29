@@ -36,7 +36,7 @@ async function setEnv(): Promise<void> {
   }
 }
 
-export async function deploy(): Promise<void> {
+export async function deploy(environmentName = 'production'): Promise<void> {
   await setEnv()
   process.chdir(integrationTestsPackageRoot)
 
@@ -66,12 +66,12 @@ export async function deploy(): Promise<void> {
 
   // Finally invoke the "boost deploy" command using the compiled cli.
   const deployScript = path.join('..', 'cli', 'bin', 'run')
-  await run(`${deployScript} deploy -e production`)
+  await run(`${deployScript} deploy -e ${environmentName}`)
 }
 
-export async function nuke(): Promise<void> {
+export async function nuke(environmentName = 'production'): Promise<void> {
   await setEnv()
 
   // Nuke works in the cloud exclusively, no need for preparation
-  await run('../cli/bin/run nuke -e production --force')
+  await run(`../cli/bin/run nuke -e ${environmentName} --force`)
 }
