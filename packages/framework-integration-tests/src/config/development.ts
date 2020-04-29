@@ -3,6 +3,6 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import { Provider } from '@boostercloud/framework-provider-aws'
 
 Booster.configure('development', (config: BoosterConfig): void => {
-  config.appName = 'alvaro-store'
+  config.appName = 'my-store'
   config.provider = Provider
 })
