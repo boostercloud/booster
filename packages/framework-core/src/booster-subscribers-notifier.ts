@@ -94,9 +94,8 @@ export class BoosterSubscribersNotifier {
       // It is an AsyncIterator
       return this.processSubscriptionsIterator(iterator, subscription)
     }
-    if (iterator.errors) {
-      throw iterator.errors
-    }
+    // If "subscribe" returns an ExecutionResult (instead of an async iterator) the subscription failed.
+    throw iterator.errors
   }
 
   private parseSubscriptionQuery(query: string): DocumentNode {

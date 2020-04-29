@@ -5,7 +5,6 @@
  *      npx ./scripts/deploy-example-project-to-aws.js
  *
  */
-
 async function main(argv) {
   const exec = require('child-process-promise').exec
   console.info('Compiling project...')
@@ -14,9 +13,9 @@ async function main(argv) {
 
   const deployScript = require('../packages/framework-integration-tests/dist/deploy')
   if (argv[2] === 'KILLITWITHFIRE') {
-    return deployScript.nuke()
+    return deployScript.nuke(process.env.BOOSTER_ENV)
   }
-  return deployScript.deploy()
+  return deployScript.deploy(process.env.BOOSTER_ENV)
 }
 
 main(process.argv)
