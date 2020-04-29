@@ -2,13 +2,14 @@ import { Command, flags } from '@oclif/command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
 import {
-  generateRootDirectory,
-  ProjectInitializerConfig,
   generateConfigFiles,
+  generateRootDirectory,
   installDependencies,
+  ProjectInitializerConfig,
 } from '../../services/project-initializer'
 import Prompter from '../../services/user-prompt'
 import { assertNameIsCorrect } from '../../services/provider-service'
+import { Provider } from '../../common/provider'
 
 export default class Project extends Command {
   public static description = 'create a new project from scratch'
@@ -38,7 +39,7 @@ export default class Project extends Command {
       char: 'r',
       description: 'the URL of the repository',
     }),
-    provider: flags.string({
+    providerPackageName: flags.string({
       char: 'p',
       description:
         'package name implementing the cloud provider integration where the application will be deployed (i.e: "@boostercloud/framework-provider-aws"',
@@ -60,27 +61,54 @@ export default class Project extends Command {
       projectName: args.projectName,
       ...flags,
     }
-    await run(parsedFlags as Partial<ProjectInitializerConfig>, this.config.version, flags.provider)
+    await run(parsedFlags as Partial<ProjectInitializerConfig>, this.config.version)
   }
 }
 
-const run = async (
-  flags: Partial<ProjectInitializerConfig>,
-  boosterVersion: string,
-  provider?: string
-): Promise<void> =>
-  Script.init(`boost ${Brand.energize('new')} 🚧`, parseConfig(new Prompter(), flags, boosterVersion, provider))
+const run = async (flags: Partial<ProjectInitializerConfig>, boosterVersion: string): Promise<void> =>
+  Script.init(`boost ${Brand.energize('new')} 🚧`, parseConfig(new Prompter(), flags, boosterVersion))
     .step('Creating project root', generateRootDirectory)
     .step('Generating config files', generateConfigFiles)
     .step('Installing dependencies', installDependencies)
     .info('Project generated!')
     .done()
 
+const getSelectedProviderPackage = (provider: Provider): string => {
+  switch (provider) {
+    case Provider.AWS:
+      return '@boostercloud/framework-provider-aws'
+    case Provider.LOCAL:
+      return '@boostercloud/framework-provider-local'
+    default:
+      return ''
+  }
+}
+
+const getProviderPackageName = async (prompter: Prompter, providerPackageName?: string): Promise<string> => {
+  if (providerPackageName) {
+    return providerPackageName
+  }
+
+  const providerSelection: Provider = (await prompter.defaultOrChoose(
+    providerPackageName,
+    "What's the package name of your provider integration library?",
+    [Provider.AWS, Provider.LOCAL, Provider.OTHER]
+  )) as Provider
+
+  if (providerSelection === Provider.OTHER) {
+    return await prompter.defaultOrPrompt(
+      undefined,
+      "What's the other provider integration library? e.g. @boostercloud/framework-provider-aws"
+    )
+  } else {
+    return getSelectedProviderPackage(providerSelection)
+  }
+}
+
 const parseConfig = async (
   prompter: Prompter,
   flags: Partial<ProjectInitializerConfig>,
-  boosterVersion: string,
-  providerName?: string
+  boosterVersion: string
 ): Promise<ProjectInitializerConfig> => {
   const description = await prompter.defaultOrPrompt(flags.description, "What's your project description?")
   const versionPrompt = await prompter.defaultOrPrompt(flags.version, "What's the first version? (default: 0.1.0)")
@@ -93,11 +121,8 @@ const parseConfig = async (
   )
   const license = licensePrompt || 'MIT'
   const repository = await prompter.defaultOrPrompt(flags.repository, "What's the URL of the repository?")
-  const providerPackageNamePrompt = await prompter.defaultOrPrompt(
-    providerName,
-    'What is the package name of your provider integration library? (default: @boostercloud/framework-provider-aws)'
-  )
-  const providerPackageName = providerPackageNamePrompt || '@boostercloud/framework-provider-aws'
+  const providerPackageName = await getProviderPackageName(prompter, flags.providerPackageName)
+
   return Promise.resolve({
     projectName: flags.projectName as string,
     providerPackageName,
