@@ -43,7 +43,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
       const dispatcher = new BoosterGraphQLDispatcher(config, logger)
       const errorTextOne = 'graphql error 1'
       const errorTextTwo = 'graphql error 2'
-      replace(gqlValidator, 'validate', fake())
+      replace(gqlValidator, 'validate', fake.returns([]))
       const graphQLError = {
         errors: [new Error(errorTextOne), new Error(errorTextTwo)],
       }
@@ -76,7 +76,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
       const executeFake = fake.returns(graphQLResult)
       const parseSpy = spy(gqlParser.parse)
       replace(gqlParser, 'parse', parseSpy)
-      replace(gqlValidator, 'validate', fake())
+      replace(gqlValidator, 'validate', fake.returns([]))
       replace(gqlExecutor, 'execute', executeFake)
 
       await dispatcher.dispatch({})
