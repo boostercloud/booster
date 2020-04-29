@@ -9,7 +9,7 @@ import {
 } from '../../services/project-initializer'
 import Prompter from '../../services/user-prompt'
 import { assertNameIsCorrect } from '../../services/provider-service'
-import { Provider } from '../../@types/provider'
+import { Provider } from '../../common/provider'
 
 export default class Project extends Command {
   public static description = 'create a new project from scratch'
