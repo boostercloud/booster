@@ -20,8 +20,11 @@ async function getEnvironment(aws: SDK): Promise<Environment> {
   const account = await aws.defaultAccount()
   const region = await aws.defaultRegion()
 
-  if (account == undefined || region == undefined) {
-    throw new Error('Unable to determine default account and/or region')
+  if (!account) {
+    throw new Error('Unable to load default AWS account. Check that you have properly set your AWS credentials in `~/.aws/credentials` file or the corresponding environment variables. Refer to AWS documentation for more details https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-credentials-node.html')
+  }
+  if (!region) {
+    throw new Error('Unable to determine default region. Check that you have set it in your `~/.aws/config` file or AWS_REGION environment variable. Refer to AWS documentation for more details https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-region.html#setting-region-order-of-precedence')
   }
 
   return {
