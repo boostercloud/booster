@@ -38,11 +38,9 @@ describe('the application stack builder', () => {
 
     const restAPIName = appStackName + '-rest-api'
     const websocketAPIName = appStackName + '-websocket-api'
-    const commandsLambdaName = 'commands-main'
     const eventsStreamName = 'events-stream'
     const eventsStore = 'events-store'
     const eventsLambda = 'events-main'
-    const readModelFetcherLambda = 'read-model-fetcher'
     const authorizerLambda = 'graphql-authorizer'
     const graphQLLambda = 'graphql-handler'
     const subscriptionsNotifierLambda = 'subscriptions-notifier'
@@ -55,18 +53,14 @@ describe('the application stack builder', () => {
     // First check for all the constructs that must be created
     // REST API-related
     expect(restAPI).not.to.be.undefined
-    expect(restAPI.root.getResource('commands')).not.to.be.undefined
-    expect(restAPI.root.getResource('readmodels')).not.to.be.undefined
     expect(restAPI.root.getResource('graphql')).not.to.be.undefined
     // Websocket API-related
     expect(websocketAPI).not.to.be.undefined
     expect(websocketAPI.protocolType).to.be.eq('WEBSOCKET')
     websocketRoutes.forEach((route) => expect(appStack.tryFindChild(route)).not.to.be.undefined)
     // Lambdas
-    expect(numberOfLambdas).to.equal(6)
-    expect(appStack.tryFindChild(commandsLambdaName)).not.to.be.undefined
+    expect(numberOfLambdas).to.equal(4)
     expect(appStack.tryFindChild(eventsLambda)).not.to.be.undefined
-    expect(appStack.tryFindChild(readModelFetcherLambda)).not.to.be.undefined
     expect(appStack.tryFindChild(authorizerLambda)).not.to.be.undefined
     expect(appStack.tryFindChild(graphQLLambda)).not.to.be.undefined
     expect(appStack.tryFindChild(subscriptionsNotifierLambda)).not.to.be.undefined
@@ -109,7 +103,7 @@ describe('the application stack builder', () => {
     expect(api).not.to.be.undefined
     expect(api.root.getResource('auth')).not.to.be.undefined
     // Lambdas
-    expect(numberOfLambdas).to.equal(7)
+    expect(numberOfLambdas).to.equal(5)
     expect(appStack.tryFindChild(preSignUpValidator)).not.to.be.undefined
     lambdas.forEach((lambda: any) => {
       expect(lambda.environment.BOOSTER_ENV).to.equal('test')
