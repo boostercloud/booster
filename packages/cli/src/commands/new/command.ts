@@ -15,7 +15,7 @@ import { templates } from '../../templates'
 import { checkItIsABoosterProject } from '../../services/project-checker'
 
 export default class Command extends Oclif.Command {
-  public static description = 'create a new command'
+  public static description = "generate new resource, write 'boost new' to see options"
   public static flags = {
     help: Oclif.flags.help({ char: 'h' }),
     fields: Oclif.flags.string({
