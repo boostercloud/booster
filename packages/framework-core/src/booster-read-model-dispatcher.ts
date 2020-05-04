@@ -17,22 +17,6 @@ const subscriptionDurationSeconds = 24 * 60 * 60 // 24 hours
 
 export class BoosterReadModelDispatcher {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
-  /**
-   * @deprecated This the entry point used when requests come directly trough HTTP API, use GraphQl instead
-   * @param rawMessage
-   * @param config
-   * @param logger
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public async dispatch(rawMessage: any): Promise<any> {
-    try {
-      const readModelRequest = await this.config.provider.rawReadModelRequestToEnvelope(rawMessage)
-      const result = await this.fetch(readModelRequest)
-      return this.config.provider.handleReadModelResult(result)
-    } catch (e) {
-      return this.config.provider.handleReadModelError(e)
-    }
-  }
 
   public async fetch(readModelRequest: ReadModelRequestEnvelope): Promise<any> {
     this.validateRequest(readModelRequest)

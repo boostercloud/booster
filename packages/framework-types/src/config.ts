@@ -21,9 +21,7 @@ export class BoosterConfig {
   public appName = 'new-booster-app'
   public region = 'eu-west-1'
   public readonly userProjectRootPath: string = process.cwd()
-  public readonly commandDispatcherHandler: string = 'dist/index.boosterCommandDispatcher'
   public readonly eventDispatcherHandler: string = 'dist/index.boosterEventDispatcher'
-  public readonly readModelMapperHandler: string = 'dist/index.boosterReadModelMapper'
   public readonly preSignUpHandler: string = 'dist/index.boosterPreSignUpChecker'
   public readonly authorizerHandler: string = 'dist/index.boosterRequestAuthorizer'
   public readonly serveGraphQLHandler: string = 'dist/index.boosterServeGraphQL'
