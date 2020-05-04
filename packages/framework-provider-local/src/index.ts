@@ -39,9 +39,6 @@ export const Provider: ProviderLibrary = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   storeReadModel: undefined as any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleReadModelResult: undefined as any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleReadModelError: undefined as any,
 
   // ProviderGraphQLLibrary
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -40,8 +40,6 @@ export const Provider: ProviderLibrary = {
   fetchSubscriptions: fetchSubscriptions.bind(null, dynamoDB),
   notifySubscription,
   storeReadModel: storeReadModel.bind(null, dynamoDB),
-  handleReadModelResult: requestSucceeded,
-  handleReadModelError: requestFailed,
 
   // ProviderGraphQLLibrary
   authorizeRequest: authorizeRequest.bind(null, userPool),
