@@ -1,22 +1,16 @@
 import { ProviderLibrary, ProviderInfrastructure } from '@boostercloud/framework-types'
 import { rawSignUpDataToUserEnvelope } from './library/auth-adapter'
-import { rawCommandToEnvelope } from './library/commands-adapter'
 import { publishEvents } from './library/events-adapter'
 import { requestSucceeded, requestFailed } from './library/api-adapter'
-import { UserRegistry, EventRegistry } from './services'
+import { EventRegistry } from './services'
 
 export { User, LoginCredentials, SignUpUser, RegisteredUser, AuthenticatedUser } from './library/auth-adapter'
 export * from './paths'
 export * from './services'
-export { CommandResult } from './library/commands-adapter'
 
-const userRegistry = new UserRegistry()
 const eventRegistry = new EventRegistry()
 
 export const Provider: ProviderLibrary = {
-  // ProviderCommandsLibrary
-  rawCommandToEnvelope: rawCommandToEnvelope.bind(null, userRegistry),
-
   // ProviderEventsLibrary
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rawEventsToEnvelopes: undefined as any,
@@ -31,11 +25,7 @@ export const Provider: ProviderLibrary = {
 
   // ProviderReadModelsLibrary
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rawReadModelRequestToEnvelope: undefined as any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fetchReadModel: undefined as any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  fetchAllReadModels: undefined as any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   searchReadModel: undefined as any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

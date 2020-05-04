@@ -1,14 +1,17 @@
-import { CommandResult } from '..'
 import { httpStatusCodeFor, toClassTitle } from '@boostercloud/framework-types'
 
-export async function requestSucceeded(body?: any): Promise<CommandResult> {
+export type APIResult =
+  | { status: 'success'; result: unknown }
+  | { status: 'failure'; code: number; title: string; reason: string }
+
+export async function requestSucceeded(body?: any): Promise<APIResult> {
   return {
     status: 'success',
     result: body,
   }
 }
 
-export async function requestFailed(error: Error): Promise<CommandResult> {
+export async function requestFailed(error: Error): Promise<APIResult> {
   const statusCode = httpStatusCodeFor(error)
   return {
     status: 'failure',

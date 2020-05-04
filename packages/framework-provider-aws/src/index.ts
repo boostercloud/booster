@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { rawCommandToEnvelope } from './library/commands-adapter'
 import {
   rawEventsToEnvelopes,
   storeEvent,
@@ -7,12 +6,7 @@ import {
   readEntityEventsSince,
   publishEvents,
 } from './library/events-adapter'
-import {
-  fetchReadModel,
-  fetchAllReadModels,
-  storeReadModel,
-  rawReadModelRequestToEnvelope,
-} from './library/read-model-adapter'
+import { fetchReadModel, storeReadModel } from './library/read-model-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import { rawSignUpDataToUserEnvelope, authorizeRequest } from './library/auth-adapter'
 import { Kinesis, DynamoDB, CognitoIdentityServiceProvider } from 'aws-sdk'
@@ -31,9 +25,6 @@ const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
 const userPool = new CognitoIdentityServiceProvider()
 
 export const Provider: ProviderLibrary = {
-  // ProviderCommandsLibrary
-  rawCommandToEnvelope: rawCommandToEnvelope.bind(null, userPool),
-
   // ProviderEventsLibrary
   rawEventsToEnvelopes,
   storeEvent: storeEvent.bind(null, dynamoDB),
@@ -42,9 +33,7 @@ export const Provider: ProviderLibrary = {
   publishEvents: publishEvents.bind(null, eventsStream),
 
   // ProviderReadModelsLibrary
-  rawReadModelRequestToEnvelope: rawReadModelRequestToEnvelope.bind(null, userPool),
   fetchReadModel: fetchReadModel.bind(null, dynamoDB),
-  fetchAllReadModels: fetchAllReadModels.bind(null, dynamoDB),
   searchReadModel: searchReadModel.bind(null, dynamoDB),
   subscribeToReadModel: subscribeToReadModel.bind(null, dynamoDB),
   rawReadModelEventsToEnvelopes: rawReadModelEventsToEnvelopes,
