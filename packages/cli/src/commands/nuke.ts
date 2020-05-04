@@ -62,7 +62,7 @@ export default class Nuke extends Command {
   public async run(): Promise<void> {
     const { flags } = this.parse(Nuke)
     if (!flags.environment) {
-      console.log('Error: no environment name provided. Usage: `boost deploy -e <environment>`.')
+      console.log('Error: no environment name provided. Usage: `boost nuke -e <environment>`.')
       return
     }
     process.env.BOOSTER_ENV = flags.environment
