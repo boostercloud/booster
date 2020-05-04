@@ -51,16 +51,6 @@ export class BoosterReadModelDispatcher {
   private processFetch(
     readModelRequest: ReadModelRequestEnvelope
   ): Promise<ReadModelInterface | Array<ReadModelInterface>> {
-    if (readModelRequest.readModelID) {
-      // Deprecated
-      return this.config.provider.fetchReadModel(
-        this.config,
-        this.logger,
-        readModelRequest.typeName,
-        readModelRequest.readModelID
-      )
-    }
-
     const readModelMetadata = this.config.readModels[readModelRequest.typeName]
     const searcher = Booster.readModel(readModelMetadata.class)
     if (readModelRequest.filters) {

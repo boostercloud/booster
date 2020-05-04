@@ -70,8 +70,6 @@ export interface ProviderReadModelsLibrary {
     readModelName: string,
     readModel: ReadModelInterface
   ): Promise<any>
-  handleReadModelResult(readModels: ReadModelInterface | Array<ReadModelInterface>): Promise<any>
-  handleReadModelError(error: Error): Promise<any>
 }
 
 export interface ProviderGraphQLLibrary {
