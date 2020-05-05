@@ -6,6 +6,7 @@ import { Observable, Observer } from 'rxjs'
 import rewire = require('rewire')
 import Prompter from '../../src/services/user-prompt'
 import { ProviderLibrary } from '@boostercloud/framework-types'
+import { test } from '@oclif/test'
 
 const nuke = rewire('../../src/commands/nuke')
 const runTasks = nuke.__get__('runTasks')
@@ -104,6 +105,17 @@ describe('nuke', () => {
 
         expect(fakeNuke).to.have.been.calledOnce
       })
+    })
+  })
+
+  describe('run', () => {
+    context('when no environment provided', async () => {
+      test
+        .stdout()
+        .command(['nuke'])
+        .it('shows no environment provided error', (ctx) => {
+          expect(ctx.stdout).to.equal('Error: no environment name provided. Usage: `boost nuke -e <environment>`.\n')
+        })
     })
   })
 })

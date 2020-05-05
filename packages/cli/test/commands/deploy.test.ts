@@ -5,6 +5,7 @@ import { restore, fake } from 'sinon'
 import { Observable, Observer } from 'rxjs'
 import rewire = require('rewire')
 import { ProviderLibrary } from '@boostercloud/framework-types'
+import { test } from '@oclif/test'
 
 // With this trick we can test non exported symbols
 const deploy = rewire('../../src/commands/deploy')
@@ -68,6 +69,17 @@ describe('deploy', () => {
 
         expect(fakeDeployer).to.have.been.calledOnce
       })
+    })
+  })
+
+  describe('run', () => {
+    context('when no environment provided', async () => {
+      test
+        .stdout()
+        .command(['deploy'])
+        .it('shows no environment provided error', (ctx) => {
+          expect(ctx.stdout).to.equal('Error: no environment name provided. Usage: `boost deploy -e <environment>`.\n')
+        })
     })
   })
 })
