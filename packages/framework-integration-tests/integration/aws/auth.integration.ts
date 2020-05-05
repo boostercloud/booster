@@ -1,4 +1,4 @@
-import { graphQLClient, signUpURL, authClientID, signInURL, confirmUser, createAdmin, deleteUser } from './utils'
+import { graphQLClient, signUpURL, authClientID, signInURL, confirmUser, createAdmin, deleteUser, sleep } from './utils'
 import gql from 'graphql-tag'
 import { expect } from 'chai'
 import fetch from 'cross-fetch'
@@ -62,8 +62,46 @@ describe('With the auth API', () => {
       await expect(queryPromise).to.eventually.be.rejectedWith('Access denied for read model ProductUpdatesReadMode')
     })
 
-    it('can submit a public command')
-    it('can query a public read model')
+    it('can submit a public command', async () => {
+      const client = await graphQLClient()
+
+      const mutationResult = await client.mutate({
+        mutation: gql`
+          mutation {
+            ChangeCartItem(input: { cartId: 42, productId: 314, quantity: 2 })
+          }
+        `,
+      })
+
+      expect(mutationResult).not.to.be.null
+      expect(mutationResult.data.ChangeCartItem).to.be.true
+    })
+
+    it('can query a public read model', async () => {
+      const client = await graphQLClient()
+
+      // Let's wait 5 seconds to allow previous command results to be projected as a read model
+      await sleep(5000)
+
+      const queryResult = await client.query({
+        query: gql`
+          query {
+            CartReadModel(id: "42") {
+              id
+              cartItems
+            }
+          }
+        `,
+      })
+
+      expect(queryResult).not.to.be.null
+      // Result should match the cart created in the previous test case
+      expect(queryResult.data.CartReadModel.id).to.be.equal('42')
+      expect(queryResult.data.CartReadModel.cartItems[0]).to.deep.equal({
+        productId: '314',
+        quantity: 2,
+      })
+    })
 
     it('can sign up for a user account', async () => {
       const url = await signUpURL()

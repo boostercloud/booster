@@ -195,3 +195,9 @@ export async function graphQLClient(): Promise<ApolloClient<NormalizedCacheObjec
     link: link,
   })
 }
+
+// --- Other helpers ---
+
+export async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
