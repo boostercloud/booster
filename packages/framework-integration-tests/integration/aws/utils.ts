@@ -9,6 +9,8 @@ const userPoolId = 'userpool'
 const cloudFormation = new CloudFormation()
 const cognitoIdentityServiceProvider = new CognitoIdentityServiceProvider()
 
+// --- Stack Helpers ---
+
 function appStackName(): string {
   return `my-store-${process.env.BOOSTER_APP_SUFFIX}-application-stack`
 }
@@ -26,6 +28,21 @@ export async function appStack(): Promise<Stack> {
     throw `No stack found with name "${appStackName}"`
   }
 }
+
+export async function authClientID(): Promise<string> {
+  const { Outputs } = await appStack()
+  const clientId = Outputs?.find((output) => {
+    return output.OutputKey === 'clientID'
+  })?.OutputValue
+
+  if (clientId) {
+    return clientId
+  } else {
+    throw 'unable to find the clientID from the current stack'
+  }
+}
+
+// --- Auth helpers ---
 
 export async function userPool(): Promise<StackResourceDetail> {
   const stackName = appStackName()
@@ -130,6 +147,18 @@ export async function confirmUser(username: string): Promise<void> {
     .promise()
 }
 
+export async function deleteUser(username: string): Promise<void> {
+  const phisicalResouceId = await userPoolPhysicalResourceId()
+  await cognitoIdentityServiceProvider
+    .adminDeleteUser({
+      UserPoolId: phisicalResouceId,
+      Username: username,
+    })
+    .promise()
+}
+
+// --- URL helpers ---
+
 export async function baseURL(): Promise<string> {
   const { Outputs } = await appStack()
   const url = Outputs?.find((output) => {
@@ -151,6 +180,8 @@ export async function signInURL(): Promise<string> {
   return new URL('auth/sign-in', await baseURL()).href
 }
 
+// --- GraphQL helpers ---
+
 export async function graphQLClient(): Promise<ApolloClient<NormalizedCacheObject>> {
   const url = await baseURL()
   const cache = new InMemoryCache()
@@ -160,31 +191,7 @@ export async function graphQLClient(): Promise<ApolloClient<NormalizedCacheObjec
   })
 
   return new ApolloClient({
-    // Provide required constructor fields
     cache: cache,
     link: link,
-
-    // Provide some optional constructor fields
-    // name: 'booster-graphql-client',
-    // version: '1.3',
-    // queryDeduplication: false,
-    // defaultOptions: {
-    //   watchQuery: {
-    //     fetchPolicy: 'cache-and-network',
-    //   },
-    // },
   })
-}
-
-export async function authClientID(): Promise<string> {
-  const { Outputs } = await appStack()
-  const clientId = Outputs?.find((output) => {
-    return output.OutputKey === 'clientID'
-  })?.OutputValue
-
-  if (clientId) {
-    return clientId
-  } else {
-    throw 'unable to find the clientID from the current stack'
-  }
 }

@@ -1,41 +1,67 @@
-import { graphQLClient, signUpURL, authClientID, signInURL, confirmUser, createAdmin } from './utils'
+import { graphQLClient, signUpURL, authClientID, signInURL, confirmUser, createAdmin, deleteUser } from './utils'
 import gql from 'graphql-tag'
 import { expect } from 'chai'
 import fetch from 'cross-fetch'
+import * as chai from 'chai'
 
+chai.use(require('chai-as-promised'))
+
+const userEmail = 'Su_morenito_19@example.com' // Why this user name? Reasons: https://youtu.be/h6k5qbt72Os
+const userPassword = 'Flama_69'
+const adminEmail = 'admin@example.com'
+const adminPassword = 'Enable_G0d_Mode3e!'
+
+/*
+ * Note: this test file is designed to be run sequentially from top to bottom, which seems to be the default in mocha.
+ * Running the test cases out of order or in isolation could have unexpected results.
+ */
 describe('With the auth API', () => {
   context('an internet rando', () => {
-    xit("can't submit a secured command", async () => {
+    it("can't submit a secured command", async () => {
       const client = await graphQLClient()
 
-      const response = client.mutate({
+      const mutationPromise = client.mutate({
         mutation: gql`
           mutation {
-            CreateProduct(input: {
-              product: {
-                id: '42f33598-75ba-4e76-b728-20144c8b74e8',
-                sku: 'P-42',
-                displayName: 'Yoga pants',
-                description: 'Pretty standard pair of yoga pants with not much to highlight in particular.',
-                price: {
-                  cents: 2000,
-                  currency: 'EUR'
-                },
-                pictures: [],
-                deleted: false
+            CreateProduct(
+              input: {
+                product: {
+                  id: "42f33598-75ba-4e76-b728-20144c8b74e8"
+                  sku: "P-42"
+                  displayName: "Yoga pants"
+                  description: "Pretty standard pair of yoga pants with not much to highlight in particular."
+                  price: { cents: 2000, currency: "EUR" }
+                  pictures: []
+                  deleted: false
+                }
               }
-            })
+            )
           }
         `,
       })
 
-      // TODO: This is currently being rejected for the wrong causes,
-      // we must revisit this once GraphQL errors are fixed and work on Apollo Client
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      expect(response).to.have.been.rejected
+      await expect(mutationPromise).to.eventually.be.rejectedWith("Access denied for command 'CreateProduct'")
     })
 
-    it("can't query a secured read model")
+    it("can't query a secured read model", async () => {
+      const client = await graphQLClient()
+
+      const queryPromise = client.query({
+        query: gql`
+          query {
+            ProductUpdatesReadModel(id: "42") {
+              id
+              availability
+              lastUpdate
+              previousUpdate
+            }
+          }
+        `,
+      })
+
+      await expect(queryPromise).to.eventually.be.rejectedWith('Access denied for read model ProductUpdatesReadMode')
+    })
+
     it('can submit a public command')
     it('can query a public read model')
 
@@ -47,8 +73,8 @@ describe('With the auth API', () => {
         method: 'POST',
         body: JSON.stringify({
           clientId: clientId,
-          username: 'Su_morenito_19@example.com', // Why this user name? Reasons: https://youtu.be/h6k5qbt72Os
-          password: 'Flama_69',
+          username: userEmail,
+          password: userPassword,
           userAttributes: {
             roles: ['User'],
           },
@@ -72,8 +98,8 @@ describe('With the auth API', () => {
         method: 'post',
         body: JSON.stringify({
           clientId: clientId,
-          username: 'admin@example.com',
-          password: 'Flama_69',
+          username: adminEmail,
+          password: userPassword,
           userAttributes: {
             roles: ['Admin'],
           },
@@ -97,7 +123,11 @@ describe('With the auth API', () => {
 
     before(async () => {
       // We'll confirm here the user account created in the previous test
-      await confirmUser('Su_morenito_19@example.com')
+      await confirmUser(userEmail)
+    })
+
+    after(async () => {
+      await deleteUser(userEmail)
     })
 
     it('can sign in their account and get a valid token', async () => {
@@ -108,8 +138,8 @@ describe('With the auth API', () => {
         method: 'POST',
         body: JSON.stringify({
           clientId: clientId,
-          username: 'Su_morenito_19@example.com', // Why this user name? Reasons: https://youtu.be/h6k5qbt72Os
-          password: 'Flama_69',
+          username: userEmail,
+          password: userPassword,
         }),
         headers: {
           'Content-Type': 'application/json',
@@ -136,12 +166,14 @@ describe('With the auth API', () => {
   // The Admin role is configured in the test project to forbid sign ups
   context('someone with an admin account', () => {
     let adminAccessToken: string
-    const username = 'admin@example.com'
-    const password = 'Enable_G0d_Mode3e!'
 
     before(async () => {
       // We create the admin account manually
-      await createAdmin(username, password)
+      await createAdmin(adminEmail, adminPassword)
+    })
+
+    after(async () => {
+      await deleteUser(adminEmail)
     })
 
     it('can sign in their account and get a valid token', async () => {
@@ -152,8 +184,8 @@ describe('With the auth API', () => {
         method: 'POST',
         body: JSON.stringify({
           clientId: clientId,
-          username: username,
-          password: password,
+          username: adminEmail,
+          password: adminPassword,
         }),
         headers: {
           'Content-Type': 'application/json',
