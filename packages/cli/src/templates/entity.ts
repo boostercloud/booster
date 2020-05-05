@@ -13,7 +13,7 @@ export class {{{name}}} {
 
   {{#events}}
   @Reduces({{{eventName}}})
-  public static project{{{eventName}}}(event: {{{eventName}}}, current{{{name}}}?: {{{name}}}): {{{name}}} {
+  public static reduce{{{eventName}}}(event: {{{eventName}}}, current{{{name}}}?: {{{name}}}): {{{name}}} {
     return /* NEW {{name}} HERE */
   }
 
