@@ -22,39 +22,48 @@ Remember that if something here doesn’t make sense, you can propose a change t
 
 ## Code of Conduct
 
-This project and everyone participating in it are expected to uphold the Berlin Code of Conduct.
+This project and everyone participating in it are expected to uphold the [Berlin Code of Conduct](https://berlincodeofconduct.org).
 If you see unacceptable behavior, please communicate so to `hello@booster.cloud`.
 
 ## I don't want to read this whole thing, I just have a question!!!
 
-**Please don't file an issue to ask a question**. You'll get faster results by using our Spectrum.
-Note that even though it is a chat, some members might take some time to answer.
+**Please don't file an issue to ask questions**. You'll get faster results by using our [Spectrum Community channel](https://spectrum.chat/boostercloud).
+Note that even though it looks like a chat, some members might take some time to answer.
 
 ## What should I know before I get started?
 
 ### Packages
 
-Booster is divided in different packages. The packages are managed using Lerna, if you run `lerna run compile`,
-it will run `npm run compile` in all the package folders.
+Booster is divided in many different packages. The criteria to split the code in packages is that each package meets at least one of the following conditions:
+* They must be run separately, for instance, the cli is run locally, while the support code for the project is run on the cloud.
+* They contain code that is used by at least two of the other pachages.
+* They're a vendor-specific specialization of some abstract part of the framework (for instance, all the code that is required by AWS is in separate packages). 
 
-The packages are all prefixed with `booster-`, and are uploaded to `npm` under the prefix `@boostercloud/`, their purpose is as follows:
+The packages are managed using [Lerna](https://lerna.js.org), if you run `lerna run compile`, it will run `npm run compile` in all the package folders.
 
-- `types` - This package defines types that the rest of the project will use. This is useful for avoiding cyclic dependencies. Note that this package should not contain stuff that are not types, or very simple methods related directly to them, i.e. a getter or setter. This package defines the main booster concepts like:
+The packages are published to `npm` under the prefix `@boostercloud/`, their purpose is as follows:
+
+- `cli` - You guessed it! This package is the `boost` command-line tool, it interacts only with the core package in order to load the project configuration. The specific provider packages to interact with the cloud providers are loaded dinamically from the project config.
+- `framework-core` - This one contains all the framework runtime vendor-independent logic. Stuff like the generation of the config or the commands and events handling happens here. The specific provider packages to interact with the cloud providers are loaded dinamically from the project config.
+- `framework-integration-tests` - Implements integration tests for all supported vendors. Tests are run on real infraestructure using the same mechanisms than a production application. This package `src` folder includes a synthetic Booster application that can be deployed to a real provider for testing purposes.
+- `framework-provider-aws` - Implements all the required adapters to make the booster core run on top of AWS technologies like Lambda and DynamoDB using the AWS SDK under the hoods.
+- `framework-provider-aws-infrastructure` - Implements all the required adapters to allow Booster applications to be deployed to AWS using the AWS CDK under the hoods.
+- `framework-provider-local` - Implements all the required adapters to run the Booster application on a local express server to be able to debug your code before deploying it to a real cloud provider.
+- `framework-provider-local-infrastructure` - Implements all the required code to run the local development server.
+- `framework-types` - This package defines types that the rest of the project will use. This is useful for avoiding cyclic dependencies. Note that this package should not contain stuff that are not types, or very simple methods related directly to them, i.e. a getter or setter. This package defines the main booster concepts like:
   - Entity
   - Command
   - etc…
-- `core` - This one is the one that contains all the logic directly tied to the Booster architecture. Stuff like the generation of the config or the handler wrappers are defined here. This package uses the provider packages dynamically.
-- `aws` - The first provider package, which acts as an adapter between the core and the AWS SDK (more concretely, the CDK library). All stuff that is directly tied to AWS go here.
-- `cli` - You guessed it! This package is the boost command-line tool, it interacts only with the core package in order to load the configuration.
-- `example` - An example project that is updated with the changes added to the project. It is useful to have this package to perform pre-release manual smoke tests.
 
 ## How Can I Contribute?
 
+Contributing to an open source project is never just a matter of code, you can help us significantly by just using Booster and interacting with our community. Here you'll find some tips on how to do it effectively.
+
 ### Reporting Bugs
 
-When you are creating a bug report, please include as many details as possible. Fill out the required template, the information it asks for helps us resolve issues faster.
+When you are creating a bug report, please include as many details as possible. Fill out the required template, the information requested helps us to resolve issues faster.
 
-Note: If you find a Closed issue that seems like it is the same thing that you're experiencing, open a new issue and include a link to the original issue in the body of your new one.
+Note: If you find a Closed issue that seems related to the issues that you're experiencing, make sure to reference it in the body of your new one by writing its number like this => #42 (Github will autolink it for you).
 
 Bugs are tracked as GitHub issues. Explain the problem and include additional details to help maintainers reproduce the problem:
 
@@ -78,19 +87,66 @@ Enhancement suggestions are tracked as GitHub issues. Make sure you provide the 
 
 ## Your First Code Contribution
 
-Unsure where to begin contributing to Booster? You can start by looking through these beginner and help-wanted issues:
+Unsure where to begin contributing to Booster? You can start by looking through issued tagged as `beginner` and `help-wanted`:
 
 - Beginner issues - issues which should only require a few lines of code, and a test or two.
 - Help wanted issues - issues which should be a bit more involved than beginner issues.
 
 Both issue lists are sorted by the total number of comments. While not perfect, number of comments is a reasonable proxy for impact a given change will have.
 
-## Commit message guidelines
+Make sure that you assign the choosen issue to you to communicate your intention to work on it to reduce possibilities of other people taking the same assignment.
 
-The commit message should be structured as follows:
+### Github flow
+
+The prefered way of accepting contributions is following the [Github flow](https://guides.github.com/introduction/flow/), that is, you fork the project and work in your own branch until you're happy with the work, and then submit a PR in Github.
+
+### Test-driven approach
+
+Booster is a library, so we recommend that you take a test-driven approach, writing or changing the corresponding tests along with the code that you want to add, using the tests to debug it as you add more code and check when your work is complete. This approach not only helps you to design and debug your ongoing work, but also makes the code more robust. All packages have a `test` folder containing tests describing these package functionality, so tests are also a good way to understand how the code works.
+
+You can run all packages tests with Lerna:
+
+```bash
+~/booster:$ lerna run test
+```
+
+Or in a specific package with yarn:
+
+```bash
+~/booster/packages/cli:$ yarn test
+```
+
+Once all your unit tests are passing and your code looks great, if your code changes any behavior in the cloud provider, it's important to update the integration test suite and iterate your code until it passes. Notice that in the `framework-integration-tests` there's an `integration` folder with subfolders for each supported provider (including the local provider). Integration tests require real deployments, so they'll last a while and you must have your provider credentials properly set. The test suite will fail with (hopefully) useful error messages with guidance when some parameter is missed. You can run the integration tests using lerna from any package or the project root, or yarn from within the integration tests package:
+
+```bash
+~/booster:$ lerna run integration
+```
+
+You can run only the tests for a specific provider using the more specific scoped commands:
+
+```bash
+~/booster:$ lerna run integration/aws # runs AWS integration tests only
+
+...
+
+~/booster:$ lerna run integration/local # runs local integration tests only
+```
+
+### Publishing your Pull Request
+
+Make sure that you describe your change thoroughly in the PR body, adding references for any related issues and links to any resource that helps clarifying the intent and goals of the change. 
+
+When you submit a PR to the Booster repository:
+* Unit and integration tests will be automatically run. PRs non passing tests will be closed.
+* If tests pass, your code will be reviewed by at least two people from the core team. Clarifications or improvements might be asked, and they reserve the right to close any PR that do not meet the project quality standards, goals or philosophy, so it's always a good idea to discuss your plans in an issue or the Spectrum channel before commiting to significant changes.
+* Code must be mergeable and all conflicts solved before merging it.
+
+### Commit message guidelines
+
+The merge commit message should be structured following the [conventional commits](https://www.conventionalcommits.org/) standard:
 
 ```text
-<type>([optional scope]): <description>
+<commit type>([optional scope]): <description>
 ```
 
 As an example:
@@ -99,13 +155,11 @@ As an example:
 fix(cli): Correct minor typos in code
 ```
 
-The most important types of commits are the following, as they trigger version bumps in the CI/CD system:
+The most important kind of commits are the ones that trigger version bumps and therefore a new release in the CI/CD system:
 
 - `fix` - patch version bump (`0.0.x`)
 - `feat` - minor version bump (`0.x.0`)
 - Any commit type followed by `!`, i.e. `feat!` - major version bump (`x.0.0`)
-
-### Commit types
 
 Apart from those previously mentioned, there are more commit types:
 
@@ -119,17 +173,13 @@ Apart from those previously mentioned, there are more commit types:
 - **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
 - **test**: Adding missing tests or correcting existing tests
 
-### Scopes
-
-There are several scopes in the project:
+We're using the following scopes in the project:
 
 - **cli**
 - **core**
 - **types**
-- **example**
+- **integration**
 - **aws**
 - **local**
 
-### Note for maintainers
-
-If you happen to be a maintainer of the project, all PRs must be _**Squash and merged**_, the merge commit should adhere to the [Conventional Commits standard](https://www.conventionalcommits.org/en/v1.0.0/). TL;DR:
+Apart of using conventional commits for triggering releases, we use them to build the project changelog.
