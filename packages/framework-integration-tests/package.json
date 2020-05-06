@@ -10,6 +10,7 @@
   },
   "bugs": "https://github.com/boostercloud/booster/issues",
   "dependencies": {
+    "@boostercloud/cli": "^0.3.1",
     "@boostercloud/framework-core": "^0.3.1",
     "@boostercloud/framework-provider-aws": "^0.3.1",
     "@boostercloud/framework-provider-local": "^0.3.1",
@@ -39,7 +40,8 @@
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "integration": "yarn integration/aws && yarn integration/local",
     "integration/aws": "mocha --forbid-only --config \"integration/aws/.mocharc.yml\" \"integration/aws/**/*.integration.ts\"",
-    "integration/local": "mocha --forbid-only --config \"integration/local/.mocharc.yml\" \"integration/local/**/*.integration.ts\""
+    "integration/local": "mocha --forbid-only --config \"integration/local/.mocharc.yml\" \"integration/local/**/*.integration.ts\"",
+    "integration/cli": "mocha --forbid-only --config \"integration/cli/.mocharc.yml\" \"integration/cli/**/*.integration.ts\""
   },
   "types": "dist/index.d.ts",
   "gitHead": "121816dbe55d57df5860b54a871c06dcda761101"
