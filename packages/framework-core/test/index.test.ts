@@ -13,4 +13,19 @@ describe('framework-core package', () => {
     expect(BoosterCore.boosterPreSignUpChecker).not.to.be.null
     expect(BoosterCore.boosterPreSignUpChecker).to.equal(Booster.boosterPreSignUpChecker)
   })
+
+  it('exports the `boosterServeGraphQL` function', () => {
+    expect(BoosterCore.boosterServeGraphQL).not.to.be.null
+    expect(BoosterCore.boosterServeGraphQL).to.equal(Booster.boosterServeGraphQL)
+  })
+
+  it('exports the `boosterRequestAuthorizer` function', () => {
+    expect(BoosterCore.boosterRequestAuthorizer).not.to.be.null
+    expect(BoosterCore.boosterRequestAuthorizer).to.equal(Booster.boosterRequestAuthorizer)
+  })
+
+  it('exports the `boosterNotifySubscribers` function', () => {
+    expect(BoosterCore.boosterNotifySubscribers).not.to.be.null
+    expect(BoosterCore.boosterNotifySubscribers).to.equal(Booster.boosterNotifySubscribers)
+  })
 })
