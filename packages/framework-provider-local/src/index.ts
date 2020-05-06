@@ -38,7 +38,6 @@ export const Provider: ProviderLibrary = {
   notifySubscription: undefined as any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   storeReadModel: undefined as any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
   // ProviderGraphQLLibrary
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
