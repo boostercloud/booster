@@ -4,9 +4,7 @@ import { expect } from 'chai'
 import * as chai from 'chai'
 import {
   Booster,
-  boosterCommandDispatcher,
   boosterEventDispatcher,
-  boosterReadModelMapper,
   boosterPreSignUpChecker,
   boosterServeGraphQL,
   boosterRequestAuthorizer,
@@ -75,17 +73,6 @@ describe('the `Booster` class', () => {
   })
 })
 
-describe('the public static function `boosterCommandDispatcher`', () => {
-  it('calls `Booster.dispatchCommand` passing the rawCommand', async () => {
-    replace(Booster, 'dispatchCommand', fake())
-    const message = { body: 'Test body' }
-
-    await boosterCommandDispatcher(message)
-
-    expect(Booster.dispatchCommand).to.have.been.calledOnceWith(message)
-  })
-})
-
 describe('the public static function `boosterEventDispatcher`', () => {
   it('calls `Booster.dispatchEvent` passing the rawEvent', async () => {
     replace(Booster, 'dispatchEvent', fake())
@@ -94,17 +81,6 @@ describe('the public static function `boosterEventDispatcher`', () => {
     await boosterEventDispatcher(message)
 
     expect(Booster.dispatchEvent).to.have.been.calledOnceWith(message)
-  })
-})
-
-describe('the public static function `boosterReadModelMapper`', () => {
-  it('calls `Booster.fetchReadModels` passing the rawMessage', async () => {
-    replace(Booster, 'fetchReadModels', fake())
-    const message = { body: 'Test body' }
-
-    await boosterReadModelMapper(message)
-
-    expect(Booster.fetchReadModels).to.have.been.calledOnceWith(message)
   })
 })
 

@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-  CommandEnvelope,
   EventEnvelope,
   GraphQLRequestEnvelope,
-  ReadModelRequestEnvelope,
   SubscriptionEnvelope,
   UserEnvelope,
   ReadModelEnvelope,
@@ -14,17 +12,12 @@ import { Logger } from './logger'
 import { ReadModelInterface, UUID } from './concepts'
 import { Filter } from './searcher'
 
-export type ProviderLibrary = ProviderCommandsLibrary &
-  ProviderEventsLibrary &
+export type ProviderLibrary = ProviderEventsLibrary &
   ProviderReadModelsLibrary &
   ProviderAuthLibrary &
   ProviderAPIHandling &
   ProviderInfrastructureGetter &
   ProviderGraphQLLibrary
-
-export interface ProviderCommandsLibrary {
-  rawCommandToEnvelope(rawCommand: any): Promise<CommandEnvelope>
-}
 
 export interface ProviderEventsLibrary {
   rawEventsToEnvelopes(rawEvents: any): Array<EventEnvelope>
@@ -47,16 +40,12 @@ export interface ProviderEventsLibrary {
   publishEvents(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig, logger: Logger): Promise<void>
 }
 export interface ProviderReadModelsLibrary {
-  rawReadModelRequestToEnvelope(rawReadModelRequest: any): Promise<ReadModelRequestEnvelope>
-  /** @deprecated */
   fetchReadModel(
     config: BoosterConfig,
     logger: Logger,
     readModelName: string,
     readModelID: UUID
   ): Promise<ReadModelInterface>
-  /** @deprecated */
-  fetchAllReadModels(config: BoosterConfig, logger: Logger, readModelName: string): Promise<Array<ReadModelInterface>>
   searchReadModel<TReadModel extends ReadModelInterface>(
     config: BoosterConfig,
     logger: Logger,
@@ -81,8 +70,6 @@ export interface ProviderReadModelsLibrary {
     readModelName: string,
     readModel: ReadModelInterface
   ): Promise<any>
-  handleReadModelResult(readModels: ReadModelInterface | Array<ReadModelInterface>): Promise<any>
-  handleReadModelError(error: Error): Promise<any>
 }
 
 export interface ProviderGraphQLLibrary {

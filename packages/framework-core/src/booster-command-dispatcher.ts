@@ -13,23 +13,6 @@ import { RegisterHandler } from './booster-register-handler'
 export class BoosterCommandDispatcher {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
 
-  /**
-   * Dispatches command messages to your application.
-   * @deprecated This the entry point used when requests come directly trough HTTP API, use GraphQl instead
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public async dispatch(rawCommand: any): Promise<any> {
-    this.logger.debug('Arrived raw command: ', rawCommand)
-    try {
-      const envelope = await this.config.provider.rawCommandToEnvelope(rawCommand)
-      await this.dispatchCommand(envelope)
-      return this.config.provider.requestSucceeded()
-    } catch (error) {
-      this.logger.error('When dispatching command: ', error)
-      return await this.config.provider.requestFailed(error)
-    }
-  }
-
   public async dispatchCommand(commandEnvelope: CommandEnvelope): Promise<void> {
     this.logger.debug('Dispatching the following command envelope: ', commandEnvelope)
     if (!commandEnvelope.version) {

@@ -5,9 +5,8 @@ import { fake, replace, restore, match } from 'sinon'
 import * as chai from 'chai'
 import { expect } from 'chai'
 import { BoosterCommandDispatcher } from '../src/booster-command-dispatcher'
-import { BoosterConfig, Logger, Register } from '@boostercloud/framework-types'
+import { Logger, Register } from '@boostercloud/framework-types'
 import { Command } from '../src/decorators'
-import { ProviderLibrary } from '@boostercloud/framework-types'
 import { RegisterHandler } from '../src/booster-register-handler'
 
 chai.use(require('sinon-chai'))
@@ -29,44 +28,6 @@ describe('the `BoosterCommandsDispatcher`', () => {
     info() {},
     error() {},
   }
-
-  describe('the `dispatch` method', () => {
-    it('dispatches the command when there are no errors', async () => {
-      const config = new BoosterConfig('test')
-      config.provider = ({
-        rawCommandToEnvelope: fake.resolves({}),
-        requestSucceeded: fake(),
-      } as unknown) as ProviderLibrary
-
-      const boosterCommandDispatcher = new BoosterCommandDispatcher(config, logger)
-      replace(boosterCommandDispatcher, 'dispatchCommand', fake())
-
-      await boosterCommandDispatcher.dispatch({ body: 'Test body' })
-
-      expect(config.provider.rawCommandToEnvelope).to.have.been.calledOnce
-      expect(boosterCommandDispatcher.dispatchCommand).to.have.been.calledOnce
-      expect(config.provider.requestSucceeded).to.have.been.calledOnce
-    })
-
-    it('builds and returns a failure response when there were errors', async () => {
-      const omgError = new Error('OMG!!!')
-      const config = new BoosterConfig('test')
-      config.provider = {
-        rawCommandToEnvelope: fake.resolves({}),
-        requestFailed: fake(),
-      } as any
-      const boosterCommandDispatcher = new BoosterCommandDispatcher(config, logger)
-      replace(boosterCommandDispatcher, 'dispatchCommand', fake.throws(omgError))
-      replace(RegisterHandler, 'handle', fake())
-
-      await boosterCommandDispatcher.dispatch({ body: 'Test body' })
-
-      expect(config.provider.rawCommandToEnvelope).to.have.been.calledOnce
-      expect(boosterCommandDispatcher.dispatchCommand).to.have.been.calledOnce
-      expect(RegisterHandler.handle).not.to.have.been.called
-      expect(config.provider.requestFailed).to.have.been.calledOnceWithExactly(omgError)
-    })
-  })
 
   describe('private methods', () => {
     describe('the `dispatchCommand` method', () => {

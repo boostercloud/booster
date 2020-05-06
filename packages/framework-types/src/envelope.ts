@@ -35,8 +35,6 @@ export interface ReadModelRequestEnvelope extends Envelope {
   typeName: string
   version: number
   filters?: Record<string, ReadModelPropertyFilter>
-  /** @deprecated */
-  readModelID?: UUID
 }
 
 export interface ReadModelPropertyFilter {
