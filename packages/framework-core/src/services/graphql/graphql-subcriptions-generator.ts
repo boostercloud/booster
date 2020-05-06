@@ -35,7 +35,8 @@ export class GraphQLSubscriptionGenerator {
         args: {
           id: { type: new GraphQLNonNull(GraphQLID) },
         },
-        resolve: this.byIDResolverBuilder(type.class),
+        resolve: (source) => source,
+        subscribe: this.byIDResolverBuilder(type.class),
       }
     }
     return subscriptions
