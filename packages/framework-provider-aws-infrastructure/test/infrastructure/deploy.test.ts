@@ -186,12 +186,12 @@ describe('the deployment process', () => {
       })
     })
 
-    it('generates cloudformation for an API endpoint to get read models', () => {
+    it('generates cloudformation for an API endpoint for graphQL', () => {
       const stackResources = cloudAssembly.getStackByName('testing-app-application-stack').template['Resources']
       const fun: any = Object.values(stackResources).find((obj: any) => {
-        return obj.Properties.FunctionName == 'testing-app-application-stack-read-model-fetcher'
+        return obj.Properties.FunctionName == 'testing-app-application-stack-graphql-handler'
       })
-      expect(fun.Properties.Handler).to.equal('dist/index.boosterReadModelMapper')
+      expect(fun.Properties.Handler).to.equal('dist/index.boosterServeGraphQL')
     })
   })
 })

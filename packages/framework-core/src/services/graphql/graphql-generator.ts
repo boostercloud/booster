@@ -15,9 +15,9 @@ import { BoosterReadModelDispatcher } from '../../booster-read-model-dispatcher'
 import { GraphQLResolverContext } from './common'
 
 export class GraphQLGenerator {
-  private queryGenerator: GraphQLQueryGenerator
-  private mutationGenerator: GraphQLMutationGenerator
-  private subscriptionGenerator: GraphQLSubscriptionGenerator
+  private readonly queryGenerator: GraphQLQueryGenerator
+  private readonly mutationGenerator: GraphQLMutationGenerator
+  private readonly subscriptionGenerator: GraphQLSubscriptionGenerator
   private readonly typeInformer: GraphQLTypeInformer
 
   public constructor(
@@ -30,7 +30,7 @@ export class GraphQLGenerator {
       config.readModels,
       this.typeInformer,
       this.readModelByIDResolverBuilder.bind(this),
-      this.readModelFilterResolverBuilder.bind(this)
+      this.readModelResolverBuilder.bind(this)
     )
     this.mutationGenerator = new GraphQLMutationGenerator(
       config.commandHandlers,
@@ -41,6 +41,7 @@ export class GraphQLGenerator {
       config.readModels,
       this.typeInformer,
       this.queryGenerator,
+      this.subscriptionByIDResolverBuilder.bind(this),
       this.subscriptionResolverBuilder.bind(this)
     )
   }
@@ -53,7 +54,7 @@ export class GraphQLGenerator {
     })
   }
 
-  public readModelFilterResolverBuilder(
+  public readModelResolverBuilder(
     readModelClass: AnyClass
   ): GraphQLFieldResolver<any, GraphQLResolverContext, Record<string, ReadModelPropertyFilter>> {
     return (parent, args, context, info) => {
@@ -66,14 +67,8 @@ export class GraphQLGenerator {
     readModelClass: AnyClass
   ): GraphQLFieldResolver<any, GraphQLResolverContext, Record<string, ReadModelPropertyFilter>> {
     return async (parent, args, context, info) => {
-      const filters = {
-        id: {
-          operation: '=',
-          values: [args.id],
-        },
-      }
-      const readModelEnvelope = toReadModelRequestEnvelope(readModelClass.name, filters, context)
-      const result = await this.readModelsDispatcher.fetch(readModelEnvelope)
+      const filterArgs = { id: { operation: '=', values: [args.id] } }
+      const result = await this.readModelResolverBuilder(readModelClass)(parent, filterArgs, context, info)
       return result[0]
     }
   }
@@ -85,6 +80,15 @@ export class GraphQLGenerator {
       const commandEnvelope = toCommandEnvelope(commandClass.name, args.input, context)
       await this.commandsDispatcher.dispatchCommand(commandEnvelope)
       return true
+    }
+  }
+
+  public subscriptionByIDResolverBuilder(
+    readModelClass: AnyClass
+  ): GraphQLFieldResolver<any, GraphQLResolverContext, Record<string, ReadModelPropertyFilter>> {
+    return async (parent, args, context, info) => {
+      const filterArgs = { id: { operation: '=', values: [args.id] } }
+      return this.subscriptionResolverBuilder(readModelClass)(parent, filterArgs, context, info)
     }
   }
 

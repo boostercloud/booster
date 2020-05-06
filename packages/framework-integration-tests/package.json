@@ -1,7 +1,7 @@
 {
   "name": "@boostercloud/framework-integration-tests",
   "description": "Example project for Booster",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
   "private": true,
@@ -10,21 +10,24 @@
   },
   "bugs": "https://github.com/boostercloud/booster/issues",
   "dependencies": {
-    "@boostercloud/cli": "^0.3.1",
-    "@boostercloud/framework-core": "^0.3.1",
-    "@boostercloud/framework-provider-aws": "^0.3.1",
-    "@boostercloud/framework-provider-local": "^0.3.1",
+    "@boostercloud/cli": "^0.3.2",
+    "@boostercloud/framework-core": "^0.3.2",
+    "@boostercloud/framework-provider-aws": "^0.3.2",
+    "@boostercloud/framework-provider-local": "^0.3.2",
+    "@typescript-eslint/eslint-plugin": "^2.18.0",
+    "@typescript-eslint/parser": "^2.18.0",
     "apollo-cache-inmemory": "^1.6.5",
     "apollo-client": "^2.6.8",
     "apollo-link-http": "^1.5.17",
     "aws-sdk": "^2.656.0",
     "cross-fetch": "^3.0.4",
     "graphql-tag": "^2.10.3",
+    "ts-node": "^8.6.2",
     "typescript": "^3.8.3"
   },
   "devDependencies": {
-    "@boostercloud/framework-provider-aws-infrastructure": "^0.3.1",
-    "@boostercloud/framework-provider-local-infrastructure": "^0.3.1",
+    "@boostercloud/framework-provider-aws-infrastructure": "^0.3.2",
+    "@boostercloud/framework-provider-local-infrastructure": "^0.3.2",
     "@types/aws-lambda": "^8.10.48"
   },
   "engines": {

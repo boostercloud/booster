@@ -10,8 +10,6 @@ import {
 } from '@boostercloud/framework-types'
 import { Importer } from './importer'
 import { buildLogger } from './booster-logger'
-import { BoosterCommandDispatcher } from './booster-command-dispatcher'
-import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
 import { BoosterEventDispatcher } from './booster-event-dispatcher'
 import { BoosterAuth } from './booster-auth'
 import { fetchEntitySnapshot } from './entity-snapshot-fetcher'
@@ -71,22 +69,6 @@ export class Booster {
   }
 
   /**
-   * Entry point to dispatch a command to the corresponding handler and process its result
-   * @deprecated Use GraphQL
-   */
-  public static dispatchCommand(rawCommand: any): Promise<any> {
-    return new BoosterCommandDispatcher(this.config, this.logger).dispatch(rawCommand)
-  }
-
-  /**
-   * Entry point to fetch entities
-   * @deprecated Use GraphQL
-   */
-  public static fetchReadModels(readModelsRequest: any): Promise<any> {
-    return new BoosterReadModelDispatcher(this.config, this.logger).dispatch(readModelsRequest)
-  }
-
-  /**
    * Entry point to validate users upon sign up
    */
   public static checkSignUp(signUpRequest: any): Promise<any> {
@@ -135,16 +117,8 @@ function checkAndGetCurrentEnv(): string {
   return env
 }
 
-export async function boosterCommandDispatcher(rawCommand: any): Promise<any> {
-  return Booster.dispatchCommand(rawCommand)
-}
-
 export async function boosterEventDispatcher(rawEvent: any): Promise<any> {
   return Booster.dispatchEvent(rawEvent)
-}
-
-export async function boosterReadModelMapper(rawMessage: any): Promise<any> {
-  return Booster.fetchReadModels(rawMessage)
 }
 
 export async function boosterPreSignUpChecker(rawMessage: any): Promise<void> {

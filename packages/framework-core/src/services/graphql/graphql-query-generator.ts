@@ -54,7 +54,7 @@ export class GraphQLQueryGenerator {
       queries[name] = {
         type: graphQLType,
         args: {
-          id: { type: GraphQLID },
+          id: { type: new GraphQLNonNull(GraphQLID) },
         },
         resolve: this.byIDResolverBuilder(type.class),
       }

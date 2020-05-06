@@ -4,7 +4,6 @@ import { Function } from '@aws-cdk/aws-lambda'
 import { Stream } from '@aws-cdk/aws-kinesis'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { PolicyStatement } from '@aws-cdk/aws-iam'
-import { RestAPIStack } from './rest-api-stack'
 import { AuthStack } from './auth-stack'
 import { EventsStack } from './events-stack'
 import { ReadModelsStack } from './read-models-stack'
@@ -30,13 +29,8 @@ export class ApplicationStackBuilder {
     const graphQLStack = new GraphQLStack(this.config, stack, apis, readModelTables).build()
     const eventsStack = new EventsStack(this.config, stack, apis).build()
 
-    // Deprecated
-    const restAPIStack = new RestAPIStack(this.config, stack, apis).build()
-
     setupPermissions(
       readModelTables,
-      restAPIStack.commandsLambda,
-      restAPIStack.readModelFetcherLambda,
       graphQLStack.graphQLLambda,
       graphQLStack.subscriptionDispatcherLambda,
       graphQLStack.subscriptionsTable,
@@ -85,8 +79,6 @@ export class ApplicationStackBuilder {
 
 function setupPermissions(
   readModelTables: Array<Table>,
-  commandsLambda: Function,
-  readModelFetcherLambda: Function,
   graphQLLambda: Function,
   subscriptionDispatcherLambda: Function,
   subscriptionsTable: Table,
@@ -95,22 +87,12 @@ function setupPermissions(
   eventsStore: Table,
   eventsLambda: Function
 ): void {
-  // The command dispatcher can send events to the event stream
-  commandsLambda.addToRolePolicy(
-    new PolicyStatement({
-      resources: [eventsStream.streamArn],
-      actions: ['kinesis:Put*', 'dynamodb:Query*', 'dynamodb:Put*'],
-    })
-  )
-
-  // The GraphQL lambda now executes commands too, so it needs the same permissions
   graphQLLambda.addToRolePolicy(
     new PolicyStatement({
       resources: [eventsStream.streamArn],
       actions: ['kinesis:Put*', 'dynamodb:Query*', 'dynamodb:Put*'],
     })
   )
-
   graphQLLambda.addToRolePolicy(
     new PolicyStatement({
       resources: [subscriptionsTable.tableArn],
@@ -124,7 +106,6 @@ function setupPermissions(
       actions: ['dynamodb:Query*'],
     })
   )
-
   subscriptionDispatcherLambda.addToRolePolicy(
     new PolicyStatement({
       resources: [
@@ -150,12 +131,6 @@ function setupPermissions(
 
   const tableArns = readModelTables.map((table): string => table.tableArn)
   if (tableArns.length > 0) {
-    readModelFetcherLambda.addToRolePolicy(
-      new PolicyStatement({
-        actions: ['dynamodb:Get*', 'dynamodb:Scan*'],
-        resources: tableArns,
-      })
-    )
     eventsLambda.addToRolePolicy(
       new PolicyStatement({
         actions: ['dynamodb:Get*', 'dynamodb:Put*'],
