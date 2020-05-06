@@ -25,15 +25,11 @@ describe('With the auth API', () => {
           mutation {
             CreateProduct(
               input: {
-                product: {
-                  id: "42f33598-75ba-4e76-b728-20144c8b74e8"
-                  sku: "P-42"
-                  displayName: "Yoga pants"
-                  description: "Pretty standard pair of yoga pants with not much to highlight in particular."
-                  price: { cents: 2000, currency: "EUR" }
-                  pictures: []
-                  deleted: false
-                }
+                sku: "314"
+                displayName: "Something fancy"
+                description: "It's really fancy"
+                priceInCents: 4000
+                currency: "EUR"
               }
             )
           }
@@ -192,13 +188,82 @@ describe('With the auth API', () => {
 
       // We save the access token for next tests
       userAccessToken = message.accessToken
-      console.log('Yay! Got a User access token! ' + userAccessToken)
     })
 
-    it('can submit a secured command they have privileges for')
-    it('can query a secured command they have privileges for')
-    it("can't send a command they don't have privileges for")
-    it("can't query a read model they don't have privileges for")
+    it('can submit a secured command they have privileges for', async () => {
+      const client = await graphQLClient(userAccessToken)
+
+      const mutationResult = await client.mutate({
+        mutation: gql`
+          mutation {
+            CreateProduct(
+              input: {
+                sku: "314"
+                displayName: "Something fancy"
+                description: "It's really fancy"
+                priceInCents: 4000
+                currency: "EUR"
+              }
+            )
+          }
+        `,
+      })
+
+      expect(mutationResult).not.to.be.null
+      expect(mutationResult.data.CreateProduct).to.be.true
+    })
+
+    it('can query a secured read model they have privileges for', async () => {
+      const client = await graphQLClient(userAccessToken)
+
+      const queryResult = await client.query({
+        query: gql`
+          query {
+            ProductReadModel(id: "42") {
+              id
+              sku
+            }
+          }
+        `,
+      })
+
+      expect(queryResult).not.to.be.null
+      // TODO: In the current implementation, commands do not return the Ids of the affected entities.
+      // When we do, we could check here that we can get the product created in the previous test
+    })
+
+    it("can't send a command they don't have privileges for", async () => {
+      const client = await graphQLClient(userAccessToken)
+
+      const mutationPromise = client.mutate({
+        mutation: gql`
+          mutation {
+            DeleteProduct(input: { productId: "42" })
+          }
+        `,
+      })
+
+      await expect(mutationPromise).to.eventually.be.rejectedWith("Access denied for command 'DeleteProduct'")
+    })
+
+    it("can't query a read model they don't have privileges for", async () => {
+      const client = await graphQLClient(userAccessToken)
+
+      const queryPromise = client.query({
+        query: gql`
+          query {
+            ProductUpdatesReadModel(id: "42") {
+              id
+              availability
+              lastUpdate
+              previousUpdate
+            }
+          }
+        `,
+      })
+
+      await expect(queryPromise).to.eventually.be.rejectedWith('Access denied for read model ProductUpdatesReadMode')
+    })
   })
 
   // The Admin role is configured in the test project to forbid sign ups
@@ -238,7 +303,38 @@ describe('With the auth API', () => {
 
       // We save the access token for next tests
       adminAccessToken = message.accessToken
-      console.log('Yay! Got a User access token! ' + adminAccessToken)
+    })
+
+    it('can query a read model they have privileges for', async () => {
+      const client = await graphQLClient(adminAccessToken)
+
+      const queryResult = await client.query({
+        query: gql`
+          query {
+            ProductUpdatesReadModel(id: "42") {
+              id
+              availability
+            }
+          }
+        `,
+      })
+
+      expect(queryResult).not.to.be.null // It's enough that the query wasn't rejected
+    })
+
+    it('can send a command they have privileges for', async () => {
+      const client = await graphQLClient(adminAccessToken)
+
+      const mutationResult = await client.mutate({
+        mutation: gql`
+          mutation {
+            DeleteProduct(input: { productId: "42" })
+          }
+        `,
+      })
+
+      expect(mutationResult).not.to.be.null
+      expect(mutationResult.data.DeleteProduct).to.be.true
     })
   })
 })

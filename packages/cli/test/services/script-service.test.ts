@@ -97,7 +97,7 @@ describe('The Script class', () => {
 
       await Script.init(msg, initializer()).done()
 
-      expect(loggerFail).to.have.been.calledOnceWith(err.message)
+      expect(loggerFail).to.have.been.calledOnceWith(err.stack)
     })
   })
 
@@ -143,7 +143,7 @@ describe('The Script class', () => {
 
       expect(loggerStart).to.have.been.calledOnceWith(msg)
       expect(loggerSucceed).not.to.have.been.called
-      expect(loggerFail).to.have.been.calledOnceWith(err.message)
+      expect(loggerFail).to.have.been.calledOnceWith(err.stack)
       expect(stepFn).to.have.been.calledOnceWith(testContext)
     })
   })
@@ -170,7 +170,7 @@ describe('The Script class', () => {
         .catch('SyntaxError', () => msg)
         .done()
 
-      expect(loggerFail).to.have.been.calledOnceWith(msg)
+      expect(loggerFail).to.have.been.calledOnceWith(err.stack)
     })
   })
 })

@@ -182,11 +182,13 @@ export async function signInURL(): Promise<string> {
 
 // --- GraphQL helpers ---
 
-export async function graphQLClient(): Promise<ApolloClient<NormalizedCacheObject>> {
+export async function graphQLClient(authToken?: string): Promise<ApolloClient<NormalizedCacheObject>> {
   const url = await baseURL()
   const cache = new InMemoryCache()
+  const headers = authToken ? { 'Authorization': `Bearer ${authToken}` } : {}
   const link = new HttpLink({
     uri: new URL('graphql', url).href,
+    headers,
     fetch,
   })
 
