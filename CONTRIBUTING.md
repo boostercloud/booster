@@ -4,7 +4,7 @@ Thanks for taking the time to contribute to Booster. It is an open-source projec
 
 This document is a set of guidelines to help you contribute to Booster, which is hosted on the [`boostercloud`](https://github.com/boostercloud) GitHub
 organization. These aren’t absolute laws, use your judgment and common sense 😀.
-Remember that if something here doesn’t make sense, you can propose a change to this document also.
+Remember that if something here doesn’t make sense, you can also propose a change to this document.
 
 - [Code of Conduct](#code-of-conduct)
 - [I don't want to read this whole thing, I just have a question!!!](#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
@@ -14,10 +14,10 @@ Remember that if something here doesn’t make sense, you can propose a change t
   - [Reporting Bugs](#reporting-bugs)
   - [Suggesting Enhancements](#suggesting-enhancements)
 - [Your First Code Contribution](#your-first-code-contribution)
-- [Commit message guidelines](#commit-message-guidelines)
-  - [Commit types](#commit-types)
-  - [Scopes](#scopes)
-  - [Note for maintainers](#note-for-maintainers)
+  - [Github Flow](#github-flow)
+  - [Test-driven approach](#test-driven-approach)
+  - [Publishing your Pull Request](#publishing-your-pull-request)
+  - [Commit message guidelines](#commit-message-guidelines)
 
 
 ## Code of Conduct
