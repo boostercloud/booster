@@ -1,5 +1,6 @@
 import util = require('util')
 import path = require('path')
+
 const exec = util.promisify(require('child_process').exec)
 const fs = require('fs')
 
@@ -14,14 +15,16 @@ const fs = require('fs')
 
 const integrationTestsPackageRoot = path.dirname(__dirname)
 
-function run(command: string): Promise<void> {
-  const subprocess = exec(command, {
+async function run(command: string): Promise<void> {
+  const subprocess = await exec(command, {
     cwd: integrationTestsPackageRoot, // Commands are run in the integration tests package root
   })
 
-  // Redirect process chatter to make it look like it's doing something
-  subprocess.child.stdout.pipe(process.stdout)
-  subprocess.child.stderr.pipe(process.stderr)
+  if (subprocess.child && process) {
+    // Redirect process chatter to make it look like it's doing something
+    subprocess.child.stdout.pipe(process.stdout)
+    subprocess.child.stderr.pipe(process.stderr)
+  }
 
   return subprocess
 }
@@ -36,8 +39,7 @@ async function setEnv(): Promise<void> {
   }
 }
 
-export async function deploy(environmentName = 'production'): Promise<void> {
-  await setEnv()
+export async function buildDependenciesLocally(): Promise<void> {
   process.chdir(integrationTestsPackageRoot)
 
   // First, we ensure that the project is bootstrapped, and all the dependencies are installed (node_modules is placed at the project root)
@@ -63,6 +65,12 @@ export async function deploy(environmentName = 'production'): Promise<void> {
   // Remove non-needed packages (lerna adds them as dependencies)
   fs.unlinkSync('./node_modules/@boostercloud/framework-integration-tests')
   fs.unlinkSync('./node_modules/@boostercloud/cli')
+}
+
+export async function deploy(environmentName = 'production'): Promise<void> {
+  await setEnv()
+
+  await buildDependenciesLocally()
 
   // Finally invoke the "boost deploy" command using the compiled cli.
   const deployScript = path.join('..', 'cli', 'bin', 'run')

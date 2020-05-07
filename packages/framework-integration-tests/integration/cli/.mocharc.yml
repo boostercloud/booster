@@ -5,6 +5,8 @@ extension:
 package: './package.json'
 recursive: true
 reporter: 'spec'
-timeout: 10000
+timeout: 600000
+file:
+  - './integration/cli/setup.ts'
 full-trace: true
 # bail: true -- This option makes the test suite stop after the first failure. Might make sense to enable once tests are stable
