@@ -15,7 +15,7 @@ const fs = require('fs')
 const integrationTestsPackageRoot = path.dirname(__dirname)
 
 async function run(command: string): Promise<void> {
-  const subprocess = await exec(command, {
+  const subprocess = exec(command, {
     cwd: integrationTestsPackageRoot, // Commands are run in the integration tests package root
   })
 
