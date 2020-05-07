@@ -1,4 +1,5 @@
-import { exec } from 'child_process'
+import util = require('util')
+const exec = util.promisify(require('child_process').exec)
 
 before(async () => {
   await removeFiles()
@@ -9,7 +10,7 @@ after(async () => {
   await removeFiles()
 })
 
-async function removeFiles(): Promise<void> {
+async function removeFiles(): void {
   await exec('rm src/entities/Post.ts')
   return
 }
