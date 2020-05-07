@@ -1,6 +1,5 @@
 import util = require('util')
 import path = require('path')
-
 const exec = util.promisify(require('child_process').exec)
 const fs = require('fs')
 
