@@ -1,25 +1,10 @@
-import { exec } from 'child_process'
+import util = require('util')
+const exec = util.promisify(require('child_process').exec)
 import * as chai from 'chai'
 import { expect } from 'chai'
 import { readFileContent, removeFile } from '../helper/fileHelper'
 
 chai.use(require('chai-as-promised'))
-
-const execAndOutput = (command: string): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    exec(command, (error, stdout, stderr) => {
-      if (error) {
-        reject(error)
-      }
-
-      if (stderr) {
-        reject(stderr)
-      }
-
-      resolve(stdout)
-    })
-  })
-}
 
 describe('cli', () => {
   describe('new entity', () => {
@@ -33,7 +18,7 @@ describe('cli', () => {
     })
 
     after(async () => {
-      await execAndOutput('npm run compile --scripts-prepend-node-path')
+      await exec('npm run compile --scripts-prepend-node-path')
       await removeFile('src/entities/Post.ts')
       await removeFile('src/entities/PostWithFields.ts')
     })
@@ -41,8 +26,8 @@ describe('cli', () => {
     context('valid entity', () => {
       describe('without fields', () => {
         it('should create new entity', async () => {
-          const newEntityResult = await execAndOutput('boost new:entity Post')
-          expect(newEntityResult).to.equal(
+          const { stdout } = await exec('boost new:entity Post')
+          expect(stdout).to.equal(
             'ℹ boost new:entity 🚧\n- Verifying project\n✔ Verifying project\n- Creating new entity\n✔ Creating new entity\nℹ Entity generated!\n',
           )
 
@@ -54,10 +39,8 @@ describe('cli', () => {
 
       describe('with fields', () => {
         it('should create new entity with expected fields', async () => {
-          const newEntityResult = await execAndOutput(
-            'boost new:entity PostWithFields --fields title:string body:string',
-          )
-          expect(newEntityResult).to.equal(
+          const { stdout } = await exec('boost new:entity PostWithFields --fields title:string body:string')
+          expect(stdout).to.equal(
             'ℹ boost new:entity 🚧\n- Verifying project\n✔ Verifying project\n- Creating new entity\n✔ Creating new entity\nℹ Entity generated!\n',
           )
 
@@ -71,7 +54,9 @@ describe('cli', () => {
     context('invalid entity', () => {
       describe('missing entity name', () => {
         it('should fail', async () => {
-          await expect(execAndOutput('boost new:entity')).to.eventually.be.rejectedWith(
+          const { stderr } = await exec('boost new:entity')
+
+          expect(stderr).to.equal(
             "You haven't provided an entity name, but it is required, run with --help for usage\n"
           )
         })
