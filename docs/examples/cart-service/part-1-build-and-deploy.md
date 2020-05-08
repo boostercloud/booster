@@ -179,7 +179,7 @@ export class CartReadModel {
 ## Deploy it
 That's it! Now you can deploy your cart service to the chosen cloud provider by doing 
 ```shell script
-boost deploy
+boost deploy -e production
 ```
 You don't need to think about how to structure this in lambdas, how to interconnect every part so that the events can be published and
 consumed, which kind of databases you need to use to store state, etc.
