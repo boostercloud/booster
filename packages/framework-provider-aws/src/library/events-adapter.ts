@@ -8,11 +8,13 @@ import { PutRecordsRequestEntry } from 'aws-sdk/clients/kinesis'
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const originOfTime = new Date(0).toISOString()
 
-export function rawEventsToEnvelopes(rawEvents: KinesisStreamEvent): Array<EventEnvelope> {
+export function rawEventsToEnvelopes(rawEvents: DynamoDBStreamEvent): Array<EventEnvelope> {
   return rawEvents.Records.map(
-    (record: KinesisStreamRecord): EventEnvelope => {
-      const decodedData = Buffer.from(record.kinesis.data, 'base64').toString()
-      return JSON.parse(decodedData) as EventEnvelope
+    (record: DynamoDBRecord): EventEnvelope => {
+      if (!record.dynamodb?.NewImage) {
+        throw new Error('Received a DynamoDB stream event without "NewImage" field. It is required')
+      }
+      return Converter.unmarshall(record.dynamodb?.NewImage) as EventEnvelope
     }
   )
 }
