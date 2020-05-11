@@ -35,7 +35,7 @@ Note that even though it looks like a chat, some members might take some time to
 ### Packages
 
 Booster is divided in many different packages. The criteria to split the code in packages is that each package meets at least one of the following conditions:
-* They must be run separately, for instance, the cli is run locally, while the support code for the project is run on the cloud.
+* They must be run separately, for instance, the CLI is run locally, while the support code for the project is run on the cloud.
 * They contain code that is used by at least two of the other pachages.
 * They're a vendor-specific specialization of some abstract part of the framework (for instance, all the code that is required by AWS is in separate packages). 
 
@@ -87,7 +87,7 @@ Enhancement suggestions are tracked as GitHub issues. Make sure you provide the 
 
 ## Your First Code Contribution
 
-Unsure where to begin contributing to Booster? You can start by looking through issued tagged as `beginner` and `help-wanted`:
+Unsure where to begin contributing to Booster? You can start by looking through issued tagged as `good-first-issue` and `help-wanted`:
 
 - Beginner issues - issues which should only require a few lines of code, and a test or two.
 - Help wanted issues - issues which should be a bit more involved than beginner issues.
