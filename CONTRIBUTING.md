@@ -4,7 +4,7 @@ Thanks for taking the time to contribute to Booster. It is an open-source projec
 
 This document is a set of guidelines to help you contribute to Booster, which is hosted on the [`boostercloud`](https://github.com/boostercloud) GitHub
 organization. These aren’t absolute laws, use your judgment and common sense 😀.
-Remember that if something here doesn’t make sense, you can also propose a change to this document.
+Remember that if something here doesn't make sense, you can also propose a change to this document.
 
 - [Code of Conduct](#code-of-conduct)
 - [I don't want to read this whole thing, I just have a question!!!](#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
@@ -61,7 +61,7 @@ Contributing to an open source project is never just a matter of code, you can h
 
 ### Reporting Bugs
 
-When you are creating a bug report, please include as many details as possible. Fill out the required template, the information requested helps us to resolve issues faster.
+Before creating a bug report, please search for similar issues to make sure that they're not already reported. If you don't find any, go ahead and create an issue including as many details as possible. Fill out the required template, the information requested helps us to resolve issues faster.
 
 Note: If you find a Closed issue that seems related to the issues that you're experiencing, make sure to reference it in the body of your new one by writing its number like this => #42 (Github will autolink it for you).
 
@@ -94,7 +94,7 @@ Unsure where to begin contributing to Booster? You can start by looking through 
 
 Both issue lists are sorted by the total number of comments. While not perfect, number of comments is a reasonable proxy for impact a given change will have.
 
-Make sure that you assign the choosen issue to you to communicate your intention to work on it to reduce possibilities of other people taking the same assignment.
+Make sure that you assign the chosen issue to yourself to communicate your intention to work on it and reduce the possibilities of other people taking the same assignment.
 
 ### Github flow
 
@@ -137,7 +137,7 @@ You can run only the tests for a specific provider using the more specific scope
 Make sure that you describe your change thoroughly in the PR body, adding references for any related issues and links to any resource that helps clarifying the intent and goals of the change. 
 
 When you submit a PR to the Booster repository:
-* Unit and integration tests will be automatically run. PRs non passing tests will be closed.
+* Unit and integration tests will be automatically run. PRs with non-passing tests will be closed.
 * If tests pass, your code will be reviewed by at least two people from the core team. Clarifications or improvements might be asked, and they reserve the right to close any PR that do not meet the project quality standards, goals or philosophy, so it's always a good idea to discuss your plans in an issue or the Spectrum channel before commiting to significant changes.
 * Code must be mergeable and all conflicts solved before merging it.
 
