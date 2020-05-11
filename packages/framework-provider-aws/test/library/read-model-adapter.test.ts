@@ -27,8 +27,7 @@ describe('the "fetchReadModel" method', () => {
       })
     )
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    expect(fetchReadModel(db, config, logger, 'SomeReadModel', 'someReadModelID')).to.be.eventually.rejectedWith(
+    await expect(fetchReadModel(db, config, logger, 'SomeReadModel', 'someReadModelID')).to.be.eventually.rejectedWith(
       'not found'
     )
 
