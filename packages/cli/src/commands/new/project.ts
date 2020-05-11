@@ -77,8 +77,6 @@ const getSelectedProviderPackage = (provider: Provider): string => {
   switch (provider) {
     case Provider.AWS:
       return '@boostercloud/framework-provider-aws'
-    case Provider.LOCAL:
-      return '@boostercloud/framework-provider-local'
     default:
       return ''
   }
@@ -91,8 +89,8 @@ const getProviderPackageName = async (prompter: Prompter, providerPackageName?: 
 
   const providerSelection: Provider = (await prompter.defaultOrChoose(
     providerPackageName,
-    "What's the package name of your provider integration library?",
-    [Provider.AWS, Provider.LOCAL, Provider.OTHER]
+    "What's the package name of your provider infrastructure library?",
+    [Provider.AWS, Provider.OTHER]
   )) as Provider
 
   if (providerSelection === Provider.OTHER) {
@@ -110,17 +108,23 @@ const parseConfig = async (
   flags: Partial<ProjectInitializerConfig>,
   boosterVersion: string
 ): Promise<ProjectInitializerConfig> => {
-  const description = await prompter.defaultOrPrompt(flags.description, "What's your project description?")
+  const description = await prompter.defaultOrPrompt(
+    flags.description,
+    'What\'s your project description? (default: "")'
+  )
   const versionPrompt = await prompter.defaultOrPrompt(flags.version, "What's the first version? (default: 0.1.0)")
   const version = versionPrompt || '0.1.0'
-  const author = await prompter.defaultOrPrompt(flags.author, "Who's the author?")
-  const homepage = await prompter.defaultOrPrompt(flags.homepage, "What's the website?")
+  const author = await prompter.defaultOrPrompt(flags.author, 'Who\'s the author? (default: "")')
+  const homepage = await prompter.defaultOrPrompt(flags.homepage, 'What\'s the website? (default: "")')
   const licensePrompt = await prompter.defaultOrPrompt(
     flags.license,
     'What license will you be publishing this under? (default: MIT)'
   )
   const license = licensePrompt || 'MIT'
-  const repository = await prompter.defaultOrPrompt(flags.repository, "What's the URL of the repository?")
+  const repository = await prompter.defaultOrPrompt(
+    flags.repository,
+    'What\'s the URL of the repository? (default: "")'
+  )
   const providerPackageName = await getProviderPackageName(prompter, flags.providerPackageName)
 
   return Promise.resolve({
