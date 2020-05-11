@@ -7,6 +7,8 @@ import { Function } from '@aws-cdk/aws-lambda'
 import { CfnUserPool, CfnUserPoolDomain, UserPoolClient } from '@aws-cdk/aws-cognito'
 import { RestApi } from '@aws-cdk/aws-apigateway'
 import { CfnApi } from '@aws-cdk/aws-apigatewayv2'
+import { fake, replace } from 'sinon'
+import * as fs from 'fs'
 
 describe('the application stack builder', () => {
   class TestReadModel1 {
@@ -30,6 +32,8 @@ describe('the application stack builder', () => {
   config.env['A_CUSTOM_ENV_VARIABLE'] = 'important-value'
 
   it('builds the application stack of a simple app correctly', () => {
+    const fakeExistsAsync = fake.returns(true)
+    replace(fs, 'existsSync', fakeExistsAsync)
     const boosterApp = new App()
     new ApplicationStackBuilder(config).buildOn(boosterApp)
 
@@ -45,6 +49,10 @@ describe('the application stack builder', () => {
     const graphQLLambda = 'graphql-handler'
     const subscriptionsNotifierLambda = 'subscriptions-notifier'
     const websocketRoutes = ['route-$connect', 'route-$disconnect', 'route-$default']
+    const staticWebsiteBucket = 'staticWebsiteBucket'
+    const staticWebsiteDeployment = 'staticWebsiteDeployment'
+    const staticWebsiteDistribution = 'staticWebsiteDistribution'
+    const staticWebsiteIndex = './public/dist/index.html'
 
     const restAPI = appStack.tryFindChild(restAPIName) as RestApi
     const websocketAPI = appStack.tryFindChild(websocketAPIName) as CfnApi
@@ -59,7 +67,7 @@ describe('the application stack builder', () => {
     expect(websocketAPI.protocolType).to.be.eq('WEBSOCKET')
     websocketRoutes.forEach((route) => expect(appStack.tryFindChild(route)).not.to.be.undefined)
     // Lambdas
-    expect(numberOfLambdas).to.equal(4)
+    expect(numberOfLambdas).to.equal(5)
     expect(appStack.tryFindChild(eventsLambda)).not.to.be.undefined
     expect(appStack.tryFindChild(authorizerLambda)).not.to.be.undefined
     expect(appStack.tryFindChild(graphQLLambda)).not.to.be.undefined
@@ -69,6 +77,11 @@ describe('the application stack builder', () => {
     expect(appStack.tryFindChild(eventsStore)).not.to.be.undefined
     // ReadModels
     readModels.forEach(({ name }) => expect(appStack.tryFindChild(name)).not.to.be.undefined)
+    // Static website deployer related
+    expect(fs.existsSync(staticWebsiteIndex)).to.be.true
+    expect(appStack.tryFindChild(staticWebsiteBucket)).not.to.be.undefined
+    expect(appStack.tryFindChild(staticWebsiteDeployment)).not.to.be.undefined
+    expect(appStack.tryFindChild(staticWebsiteDistribution)).not.to.be.undefined
 
     // Now, check all the construct that must NOT be created (related to roles)
     expect(restAPI.root.getResource('auth')).to.be.undefined
@@ -103,11 +116,14 @@ describe('the application stack builder', () => {
     expect(api).not.to.be.undefined
     expect(api.root.getResource('auth')).not.to.be.undefined
     // Lambdas
-    expect(numberOfLambdas).to.equal(5)
+    expect(numberOfLambdas).to.equal(6)
     expect(appStack.tryFindChild(preSignUpValidator)).not.to.be.undefined
     lambdas.forEach((lambda: any) => {
-      expect(lambda.environment.BOOSTER_ENV).to.equal('test')
-      expect(lambda.environment.A_CUSTOM_ENV_VARIABLE).to.equal('important-value')
+      // CDKBucketDeployment count as a Function but it does not set these variables
+      if (lambda.environment.BOOSTER_ENV) {
+        expect(lambda.environment.BOOSTER_ENV).to.equal('test')
+        expect(lambda.environment.A_CUSTOM_ENV_VARIABLE).to.equal('important-value')
+      }
     })
     // UserPool-related
     expect(appStack.tryFindChild(userPool)).not.to.be.undefined
