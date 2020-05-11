@@ -26,7 +26,7 @@ export class Product {
 
   @Reduces(ProductCreated)
   public static create(event: ProductCreated): Product {
-    return event.product
+    return new Product(event.productId, event.sku, event.displayName, event.description, event.price, [])
   }
 
   @Reduces(ProductUpdated)

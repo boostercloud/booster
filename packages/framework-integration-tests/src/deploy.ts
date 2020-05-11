@@ -80,5 +80,6 @@ export async function nuke(environmentName = 'production'): Promise<void> {
   await setEnv()
 
   // Nuke works in the cloud exclusively, no need for preparation
-  await run(`../cli/bin/run nuke -e ${environmentName} --force`)
+  const nukeScript = path.join('..', 'cli', 'bin', 'run')
+  await run(`${nukeScript} nuke -e ${environmentName} --force`)
 }
