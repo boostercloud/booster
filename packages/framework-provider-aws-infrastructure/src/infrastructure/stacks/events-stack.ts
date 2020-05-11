@@ -1,15 +1,14 @@
 import { Code, Function } from '@aws-cdk/aws-lambda'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { Stack, RemovalPolicy } from '@aws-cdk/core'
-import { Stream } from '@aws-cdk/aws-kinesis'
 import * as dynamodb from '@aws-cdk/aws-dynamodb'
 import { eventStorePartitionKeyAttribute, eventStoreSortKeyAttribute } from '@boostercloud/framework-provider-aws'
 import * as params from '../params'
-import { KinesisEventSource } from '@aws-cdk/aws-lambda-event-sources'
+import { DynamoEventSource } from '@aws-cdk/aws-lambda-event-sources'
 import { APIs } from '../params'
+import { Table, StreamViewType } from '@aws-cdk/aws-dynamodb'
 
 interface EventsStackMembers {
-  eventsStream: Stream
   eventsStore: dynamodb.Table
   eventsLambda: Function
 }
@@ -23,22 +22,12 @@ export class EventsStack {
   }
 
   public build(): EventsStackMembers {
-    const eventsStream = this.buildEventsStream()
     const eventsStore = this.buildEventsStore()
-    const eventsLambda = this.buildEventsLambda(eventsStream)
+    const eventsLambda = this.buildEventsLambda(eventsStore)
     return {
-      eventsStream,
       eventsStore,
       eventsLambda,
     }
-  }
-
-  private buildEventsStream(): Stream {
-    const localID = 'events-stream'
-    return new Stream(this.stack, localID, {
-      streamName: this.config.resourceNames.eventsStream,
-      shardCount: 1,
-    })
   }
 
   private buildEventsStore(): dynamodb.Table {
@@ -55,21 +44,18 @@ export class EventsStack {
       },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY,
+      stream: StreamViewType.NEW_IMAGE,
     })
   }
 
-  private buildEventsLambda(eventsStream: Stream): Function {
+  private buildEventsLambda(eventsStream: Table): Function {
     const localID = 'events-main'
     return new Function(this.stack, localID, {
       ...params.lambda(this.config, this.stack, this.apis),
       functionName: this.config.resourceNames.applicationStack + '-' + localID,
       handler: this.config.eventDispatcherHandler,
       code: Code.fromAsset(this.config.userProjectRootPath),
-      events: [
-        new KinesisEventSource(eventsStream, {
-          ...params.stream(),
-        }),
-      ],
+      events: [new DynamoEventSource(eventsStream, params.stream())],
     })
   }
 }

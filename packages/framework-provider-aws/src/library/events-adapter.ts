@@ -1,9 +1,9 @@
-import { KinesisStreamEvent, KinesisStreamRecord } from 'aws-lambda'
+import { DynamoDBStreamEvent, DynamoDBRecord } from 'aws-lambda'
 import { BoosterConfig, EventEnvelope, Logger, UUID } from '@boostercloud/framework-types'
-import { DynamoDB, Kinesis } from 'aws-sdk'
+import { DynamoDB } from 'aws-sdk'
 import { eventStorePartitionKeyAttribute, eventStoreSortKeyAttribute } from '../constants'
 import { partitionKeyForEvent } from './partition-keys'
-import { PutRecordsRequestEntry } from 'aws-sdk/clients/kinesis'
+import { Converter } from 'aws-sdk/clients/dynamodb'
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const originOfTime = new Date(0).toISOString()
@@ -107,25 +107,8 @@ export async function readEntityLatestSnapshot(
   }
 }
 
-export async function publishEvents(
-  eventsStream: Kinesis,
-  eventEnvelopes: Array<EventEnvelope>,
-  config: BoosterConfig,
-  logger: Logger
-): Promise<void> {
-  logger.info('Publishing the following events:', eventEnvelopes)
-  const publishResult = await eventsStream
-    .putRecords({
-      StreamName: config.resourceNames.eventsStream,
-      Records: eventEnvelopes.map(toPutRecordsEntity),
-    })
-    .promise()
-  logger.debug('Events published with result', publishResult.$response)
-}
-
-function toPutRecordsEntity(eventEnvelope: EventEnvelope): PutRecordsRequestEntry {
-  return {
-    PartitionKey: partitionKeyForEvent(eventEnvelope.entityTypeName, eventEnvelope.entityID),
-    Data: Buffer.from(JSON.stringify(eventEnvelope)),
-  }
-}
+/**
+ * This function is a no-op on AWS, as DynamoDB emits an event
+ * that triggers the lambdas when the events are stored.
+ */
+export async function publishEvents(): Promise<void> {}
