@@ -25,7 +25,7 @@ describe('the "checkSignUp" method', () => {
   function buildBoosterConfig(): BoosterConfig {
     const config = new BoosterConfig('test')
     config.provider = ({
-      rawSignUpDataToUserEnvelope: () => {},
+      auth: { rawSignUpDataToUserEnvelope: () => {} },
     } as unknown) as ProviderLibrary
     config.roles['Admin'] = {
       allowSelfSignUp: false,
@@ -39,7 +39,7 @@ describe('the "checkSignUp" method', () => {
   it('throws when the user has a non-existing role', () => {
     const config = buildBoosterConfig()
     replace(
-      config.provider,
+      config.provider.auth,
       'rawSignUpDataToUserEnvelope',
       fake.returns({
         roles: ['Developer', 'NonExistingRole', 'Admin'],
@@ -52,7 +52,7 @@ describe('the "checkSignUp" method', () => {
   it('throws when the user has a role not allowed to self sign-up', () => {
     const config = buildBoosterConfig()
     replace(
-      config.provider,
+      config.provider.auth,
       'rawSignUpDataToUserEnvelope',
       fake.returns({
         roles: ['Developer', 'Admin'],
@@ -67,7 +67,7 @@ describe('the "checkSignUp" method', () => {
   it('succeeds user has a role allowed to self sign-up', () => {
     const config = buildBoosterConfig()
     replace(
-      config.provider,
+      config.provider.auth,
       'rawSignUpDataToUserEnvelope',
       fake.returns({
         roles: ['Developer'],
@@ -122,7 +122,9 @@ describe('the "authorizeRequest" method', () => {
     const config = new BoosterConfig('test')
     const fakeProviderAuthorizer = fake()
     config.provider = {
-      authorizeRequest: fakeProviderAuthorizer,
+      graphQL: {
+        authorizeRequest: fakeProviderAuthorizer,
+      },
     } as any
 
     await BoosterAuth.authorizeRequest(request, config, logger)

@@ -26,35 +26,40 @@ const userPool = new CognitoIdentityServiceProvider()
 
 export const Provider: ProviderLibrary = {
   // ProviderEventsLibrary
-  rawEventsToEnvelopes,
-  storeEvent: storeEvent.bind(null, dynamoDB),
-  readEntityEventsSince: readEntityEventsSince.bind(null, dynamoDB),
-  readEntityLatestSnapshot: readEntityLatestSnapshot.bind(null, dynamoDB),
-  publishEvents: publishEvents.bind(null, eventsStream),
-
+  events: {
+    rawEventsToEnvelopes,
+    storeEvent: storeEvent.bind(null, dynamoDB),
+    readEntityEventsSince: readEntityEventsSince.bind(null, dynamoDB),
+    readEntityLatestSnapshot: readEntityLatestSnapshot.bind(null, dynamoDB),
+    publishEvents: publishEvents.bind(null, eventsStream),
+  },
   // ProviderReadModelsLibrary
-  fetchReadModel: fetchReadModel.bind(null, dynamoDB),
-  searchReadModel: searchReadModel.bind(null, dynamoDB),
-  subscribeToReadModel: subscribeToReadModel.bind(null, dynamoDB),
-  rawReadModelEventsToEnvelopes: rawReadModelEventsToEnvelopes,
-  fetchSubscriptions: fetchSubscriptions.bind(null, dynamoDB),
-  notifySubscription,
-  storeReadModel: storeReadModel.bind(null, dynamoDB),
-
+  readModels: {
+    fetchReadModel: fetchReadModel.bind(null, dynamoDB),
+    searchReadModel: searchReadModel.bind(null, dynamoDB),
+    subscribeToReadModel: subscribeToReadModel.bind(null, dynamoDB),
+    rawReadModelEventsToEnvelopes: rawReadModelEventsToEnvelopes,
+    fetchSubscriptions: fetchSubscriptions.bind(null, dynamoDB),
+    notifySubscription,
+    storeReadModel: storeReadModel.bind(null, dynamoDB),
+  },
   // ProviderGraphQLLibrary
-  authorizeRequest: authorizeRequest.bind(null, userPool),
-  rawGraphQLRequestToEnvelope: rawGraphQLRequestToEnvelope,
-  handleGraphQLResult: requestSucceeded,
-
+  graphQL: {
+    authorizeRequest: authorizeRequest.bind(null, userPool),
+    rawGraphQLRequestToEnvelope: rawGraphQLRequestToEnvelope,
+    handleGraphQLResult: requestSucceeded,
+  },
   // ProviderAuthLibrary
-  rawSignUpDataToUserEnvelope,
-
+  auth: {
+    rawSignUpDataToUserEnvelope,
+  },
   // ProviderAPIHandling
-  requestSucceeded,
-  requestFailed,
-
+  api: {
+    requestSucceeded,
+    requestFailed,
+  },
   // ProviderInfrastructureGetter
-  getInfrastructure: () =>
+  infrastructure: () =>
     require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
 }
 

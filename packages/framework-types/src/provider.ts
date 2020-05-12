@@ -12,12 +12,14 @@ import { Logger } from './logger'
 import { ReadModelInterface, UUID } from './concepts'
 import { Filter } from './searcher'
 
-export type ProviderLibrary = ProviderEventsLibrary &
-  ProviderReadModelsLibrary &
-  ProviderAuthLibrary &
-  ProviderAPIHandling &
-  ProviderInfrastructureGetter &
-  ProviderGraphQLLibrary
+export interface ProviderLibrary {
+  events: ProviderEventsLibrary
+  readModels: ProviderReadModelsLibrary
+  auth: ProviderAuthLibrary
+  api: ProviderAPIHandling
+  infrastructure: () => ProviderInfrastructure
+  graphQL: ProviderGraphQLLibrary
+}
 
 export interface ProviderEventsLibrary {
   rawEventsToEnvelopes(rawEvents: any): Array<EventEnvelope>
@@ -85,10 +87,6 @@ export interface ProviderAuthLibrary {
 export interface ProviderAPIHandling {
   requestSucceeded(body?: any): Promise<any>
   requestFailed(error: Error): Promise<any>
-}
-
-export interface ProviderInfrastructureGetter {
-  getInfrastructure(): ProviderInfrastructure
 }
 
 export interface ProviderInfrastructure {
