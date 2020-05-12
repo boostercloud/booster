@@ -7,7 +7,7 @@ export class RawEventsParser {
     rawEvents: any,
     callbackFn: (eventEnvelope: EventEnvelope, config: BoosterConfig) => Promise<void>
   ): Promise<void> {
-    for (const event of config.provider.rawEventsToEnvelopes(rawEvents)) {
+    for (const event of config.provider.events.rawEventsToEnvelopes(rawEvents)) {
       await callbackFn(event, config)
     }
   }

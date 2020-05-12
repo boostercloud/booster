@@ -47,7 +47,7 @@ export class ReadModelStore {
           `[ReadModelStore#project] Storing new version of read model ${readModelName} with ID ${readModelID}:`,
           newReadModel
         )
-        return this.provider.storeReadModel(this.config, this.logger, readModelName, newReadModel)
+        return this.provider.readModels.storeReadModel(this.config, this.logger, readModelName, newReadModel)
       })
     )
   }
@@ -56,7 +56,7 @@ export class ReadModelStore {
     this.logger.debug(
       `[ReadModelStore#fetchReadModel] Looking for existing version of read model ${readModelName} with ID ${readModelID}`
     )
-    return this.provider.fetchReadModel(this.config, this.logger, readModelName, readModelID)
+    return this.provider.readModels.fetchReadModel(this.config, this.logger, readModelName, readModelID)
   }
 
   private joinKeyForProjection(entitySnapshot: EntityInterface, projectionMetadata: ProjectionMetadata): UUID {

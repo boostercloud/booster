@@ -12,52 +12,57 @@ const eventRegistry = new EventRegistry()
 
 export const Provider: ProviderLibrary = {
   // ProviderEventsLibrary
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rawEventsToEnvelopes: undefined as any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  storeEvent: undefined as any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readEntityEventsSince: undefined as any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readEntityLatestSnapshot: undefined as any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  publishEvents: publishEvents.bind(null, eventRegistry),
-
+  events: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rawEventsToEnvelopes: undefined as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    storeEvent: undefined as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    readEntityEventsSince: undefined as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    readEntityLatestSnapshot: undefined as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    publishEvents: publishEvents.bind(null, eventRegistry),
+  },
   // ProviderReadModelsLibrary
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  fetchReadModel: undefined as any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  searchReadModel: undefined as any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  subscribeToReadModel: undefined as any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rawReadModelEventsToEnvelopes: undefined as any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  fetchSubscriptions: undefined as any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  notifySubscription: undefined as any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  storeReadModel: undefined as any,
-
+  readModels: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    fetchReadModel: undefined as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    searchReadModel: undefined as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    subscribeToReadModel: undefined as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rawReadModelEventsToEnvelopes: undefined as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    fetchSubscriptions: undefined as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    notifySubscription: undefined as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    storeReadModel: undefined as any,
+  },
   // ProviderGraphQLLibrary
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  authorizeRequest: undefined as any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rawGraphQLRequestToEnvelope: undefined as any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleGraphQLResult: undefined as any,
-
+  graphQL: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    authorizeRequest: undefined as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rawGraphQLRequestToEnvelope: undefined as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    handleGraphQLResult: undefined as any,
+  },
   // ProviderAuthLibrary
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rawSignUpDataToUserEnvelope,
-
+  auth: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rawSignUpDataToUserEnvelope,
+  },
   // ProviderAPIHandling
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  requestSucceeded,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  requestFailed,
-
+  api: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    requestSucceeded,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    requestFailed,
+  },
   // ProviderInfrastructureGetter
-  getInfrastructure: () =>
+  infrastructure: () =>
     require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
 }

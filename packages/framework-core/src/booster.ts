@@ -64,7 +64,7 @@ export class Booster {
   public static readModel<TReadModel extends ReadModelInterface>(
     readModelClass: Class<TReadModel>
   ): Searcher<TReadModel> {
-    const searchFunction = this.config.provider.searchReadModel.bind(null, this.config, this.logger)
+    const searchFunction = this.config.provider.readModels.searchReadModel.bind(null, this.config, this.logger)
     return new Searcher(readModelClass, searchFunction)
   }
 

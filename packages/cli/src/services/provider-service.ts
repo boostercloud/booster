@@ -24,7 +24,7 @@ export function assertNameIsCorrect(name: string): void {
 
 export const deployToCloudProvider = (config: BoosterConfig): Observable<string> => {
   assertNameIsCorrect(config.appName)
-  const deployMethod = config.provider.getInfrastructure().deploy
+  const deployMethod = config.provider.infrastructure().deploy
   if (!deployMethod) {
     throw new Error(
       'Attempted to deploy with a provider that does not support deploying the project, perhaps you meant `boost run`?'
@@ -35,7 +35,7 @@ export const deployToCloudProvider = (config: BoosterConfig): Observable<string>
 
 export async function runProvider(port: number, config: BoosterConfig): Promise<void> {
   assertNameIsCorrect(config.appName)
-  const runMethod = config.provider.getInfrastructure().run
+  const runMethod = config.provider.infrastructure().run
   if (!runMethod) {
     throw new Error(
       'Attempted to run with a provider that is does not support running the project, perhaps you meant `boost deploy`?'
@@ -45,5 +45,5 @@ export async function runProvider(port: number, config: BoosterConfig): Promise<
 }
 
 export const nukeCloudProviderResources = (config: BoosterConfig): Observable<string> => {
-  return config.provider.getInfrastructure().nuke(config)
+  return config.provider.infrastructure().nuke(config)
 }
