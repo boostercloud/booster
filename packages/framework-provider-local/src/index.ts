@@ -14,46 +14,46 @@ export const Provider: ProviderLibrary = {
   // ProviderEventsLibrary
   events: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rawEventsToEnvelopes: undefined as any,
+    fromRawArray: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    storeEvent: undefined as any,
+    store: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     readEntityEventsSince: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     readEntityLatestSnapshot: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    publishEvents: publishEvents.bind(null, eventRegistry),
+    publish: publishEvents.bind(null, eventRegistry),
   },
   // ProviderReadModelsLibrary
   readModels: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fetchReadModel: undefined as any,
+    fetch: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    searchReadModel: undefined as any,
+    search: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    subscribeToReadModel: undefined as any,
+    subscribe: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rawReadModelEventsToEnvelopes: undefined as any,
+    fromRawArray: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fetchSubscriptions: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     notifySubscription: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    storeReadModel: undefined as any,
+    store: undefined as any,
   },
   // ProviderGraphQLLibrary
   graphQL: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     authorizeRequest: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rawGraphQLRequestToEnvelope: undefined as any,
+    fromRaw: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    handleGraphQLResult: undefined as any,
+    handleResult: undefined as any,
   },
   // ProviderAuthLibrary
   auth: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rawSignUpDataToUserEnvelope,
+    fromRaw: rawSignUpDataToUserEnvelope,
   },
   // ProviderAPIHandling
   api: {

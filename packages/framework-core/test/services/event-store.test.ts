@@ -35,7 +35,7 @@ describe('EventStore', () => {
   const config = new BoosterConfig('test')
   config.provider = ({
     events: {
-      storeEvent: () => {},
+      store: () => {},
       readEntityLatestSnapshot: () => {},
       readEntityEventsSince: () => {},
     },
@@ -95,13 +95,13 @@ describe('EventStore', () => {
   describe('public methods', () => {
     describe('append', () => {
       it('appends an event to the event store', async () => {
-        replace(config.provider.events, 'storeEvent', fake())
+        replace(config.provider.events, 'store', fake())
         const eventStore = new EventStore(config, logger)
         const someEnvelope = eventEnvelopeFor(someEvent)
 
         await eventStore.append(someEnvelope)
 
-        expect(config.provider.events.storeEvent).to.have.been.calledOnceWith(config, logger, someEnvelope)
+        expect(config.provider.events.store).to.have.been.calledOnceWith(config, logger, someEnvelope)
       })
     })
 
@@ -444,7 +444,7 @@ describe('EventStore', () => {
 
     describe('storeSnapshot', () => {
       it('stores a snapshot in the event store', async () => {
-        replace(config.provider.events, 'storeEvent', fake())
+        replace(config.provider.events, 'store', fake())
 
         const someSnapshot = snapshotEnvelopeFor({
           id: '42',
@@ -453,7 +453,7 @@ describe('EventStore', () => {
 
         await eventStore.storeSnapshot(someSnapshot)
 
-        expect(config.provider.events.storeEvent).to.have.been.calledOnceWith(config, logger, someSnapshot)
+        expect(config.provider.events.store).to.have.been.calledOnceWith(config, logger, someSnapshot)
       })
     })
 
