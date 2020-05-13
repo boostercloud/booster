@@ -55,6 +55,9 @@ The packages are published to `npm` under the prefix `@boostercloud/`, their pur
   - Command
   - etc…
 
+This is a dependency graph that shows the dependencies among all packages:
+![Booster packages dependencies](docs/img/packages-dependencies.png)
+
 ## How Can I Contribute?
 
 Contributing to an open source project is never just a matter of code, you can help us significantly by just using Booster and interacting with our community. Here you'll find some tips on how to do it effectively.
