@@ -57,36 +57,28 @@ describe('permissions', () => {
       subscriptionAddToRolePolicyStub = stub()
       eventsAddToRolePolicyStub = stub()
 
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      mockGraphQLLambda = <Function>{}
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      mockSubscriptionDispatcherLambda = <Function>{}
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      mockEventsLambda = <Function>{}
+      mockGraphQLLambda = {} as Function
+      mockSubscriptionDispatcherLambda = {} as Function
+      mockEventsLambda = {} as Function
 
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      mockEventStream = <Stream>{
+      mockEventStream = {
         streamArn: mockEventStreamArn,
-      }
+      } as Stream
 
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      mockSubscriptionsTable = <Table>{
+      mockSubscriptionsTable = {
         tableArn: mockSubscriptionsTableArn,
-      }
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      mockEventsStoreTable = <Table>{
+      } as Table
+      mockEventsStoreTable = {
         tableArn: mockEventsStoreTableArn,
-      }
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      mockReadModelTable = <Table>{
+      } as Table
+      mockReadModelTable = {
         tableArn: mockReadModelTableArn,
-      }
+      } as Table
       mockReadModelTables = [mockReadModelTable]
 
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      mockWebsocketAPI = <CfnApi>{
+      mockWebsocketAPI = {
         ref: mockWebSocketAPIRef,
-      }
+      } as CfnApi
 
       mockGraphQLLambda.addToRolePolicy = graphQLAddToRolePolicyStub
       mockSubscriptionDispatcherLambda.addToRolePolicy = subscriptionAddToRolePolicyStub
