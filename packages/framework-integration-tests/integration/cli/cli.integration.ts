@@ -25,10 +25,11 @@ describe('cli', () => {
     context('valid entity', () => {
       describe('without fields', () => {
         it('should create new entity', async () => {
-          const { stdout } = await exec(`${cliPath} new:entity Post`)
-          expect(stdout).to.equal(
-            'ℹ boost new:entity 🚧\n- Verifying project\n✔ Verifying project\n- Creating new entity\n✔ Creating new entity\nℹ Entity generated!\n',
+          const expectedOutputRegex = new RegExp(
+            /(.+) boost (.+)?new:entity(.+)? (.+)\n- Verifying project\n(.+) Verifying project\n- Creating new entity\n(.+) Creating new entity\n(.+) Entity generated!\n/
           )
+          const { stdout } = await exec(`${cliPath} new:entity Post`)
+          expect(stdout).to.match(expectedOutputRegex)
 
           const expectedEntityContent = await readFileContent('test/fixtures/entities/Post.ts')
           const entityContent = await readFileContent('src/entities/Post.ts')
@@ -38,10 +39,11 @@ describe('cli', () => {
 
       describe('with fields', () => {
         it('should create new entity with expected fields', async () => {
-          const { stdout } = await exec(`${cliPath} new:entity PostWithFields --fields title:string body:string`)
-          expect(stdout).to.equal(
-            'ℹ boost new:entity 🚧\n- Verifying project\n✔ Verifying project\n- Creating new entity\n✔ Creating new entity\nℹ Entity generated!\n',
+          const expectedOutputRegex = new RegExp(
+            /(.+) boost (.+)?new:entity(.+)? (.+)\n- Verifying project\n(.+) Verifying project\n- Creating new entity\n(.+) Creating new entity\n(.+) Entity generated!\n/
           )
+          const { stdout } = await exec(`${cliPath} new:entity PostWithFields --fields title:string body:string`)
+          expect(stdout).to.match(expectedOutputRegex)
 
           const expectedEntityContent = await readFileContent('test/fixtures/entities/Post_with_fields.ts')
           const entityContent = await readFileContent('src/entities/PostWithFields.ts')
