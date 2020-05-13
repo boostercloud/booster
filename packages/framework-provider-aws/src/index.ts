@@ -27,31 +27,31 @@ const userPool = new CognitoIdentityServiceProvider()
 export const Provider: ProviderLibrary = {
   // ProviderEventsLibrary
   events: {
-    rawEventsToEnvelopes,
-    storeEvent: storeEvent.bind(null, dynamoDB),
+    fromRawArray: rawEventsToEnvelopes,
+    store: storeEvent.bind(null, dynamoDB),
     readEntityEventsSince: readEntityEventsSince.bind(null, dynamoDB),
     readEntityLatestSnapshot: readEntityLatestSnapshot.bind(null, dynamoDB),
-    publishEvents: publishEvents.bind(null, eventsStream),
+    publish: publishEvents.bind(null, eventsStream),
   },
   // ProviderReadModelsLibrary
   readModels: {
-    fetchReadModel: fetchReadModel.bind(null, dynamoDB),
-    searchReadModel: searchReadModel.bind(null, dynamoDB),
-    subscribeToReadModel: subscribeToReadModel.bind(null, dynamoDB),
-    rawReadModelEventsToEnvelopes: rawReadModelEventsToEnvelopes,
+    fetch: fetchReadModel.bind(null, dynamoDB),
+    search: searchReadModel.bind(null, dynamoDB),
+    subscribe: subscribeToReadModel.bind(null, dynamoDB),
+    fromRawArray: rawReadModelEventsToEnvelopes,
     fetchSubscriptions: fetchSubscriptions.bind(null, dynamoDB),
     notifySubscription,
-    storeReadModel: storeReadModel.bind(null, dynamoDB),
+    store: storeReadModel.bind(null, dynamoDB),
   },
   // ProviderGraphQLLibrary
   graphQL: {
     authorizeRequest: authorizeRequest.bind(null, userPool),
-    rawGraphQLRequestToEnvelope: rawGraphQLRequestToEnvelope,
-    handleGraphQLResult: requestSucceeded,
+    fromRaw: rawGraphQLRequestToEnvelope,
+    handleResult: requestSucceeded,
   },
   // ProviderAuthLibrary
   auth: {
-    rawSignUpDataToUserEnvelope,
+    fromRaw: rawSignUpDataToUserEnvelope,
   },
   // ProviderAPIHandling
   api: {

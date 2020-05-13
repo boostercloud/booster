@@ -30,11 +30,7 @@ export class BoosterSubscribersNotifier {
   public async dispatch(request: any): Promise<void> {
     try {
       this.logger.debug('Received the following event for subscription dispatching: ', request)
-      const readModelEnvelopes = await this.config.provider.readModels.rawReadModelEventsToEnvelopes(
-        this.config,
-        this.logger,
-        request
-      )
+      const readModelEnvelopes = await this.config.provider.readModels.fromRawArray(this.config, this.logger, request)
       this.logger.debug('[SubsciptionDispatcher] The following ReadModels were updated: ', readModelEnvelopes)
       const subscriptions = await this.getSubscriptions(readModelEnvelopes)
       this.logger.debug(

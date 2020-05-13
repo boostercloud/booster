@@ -22,9 +22,9 @@ export interface ProviderLibrary {
 }
 
 export interface ProviderEventsLibrary {
-  rawEventsToEnvelopes(rawEvents: any): Array<EventEnvelope>
+  fromRawArray(rawEvents: any): Array<EventEnvelope>
   /** Stores an event in the event store */
-  storeEvent(config: BoosterConfig, logger: Logger, envelope: EventEnvelope): Promise<any>
+  store(config: BoosterConfig, logger: Logger, envelope: EventEnvelope): Promise<any>
   readEntityEventsSince(
     config: BoosterConfig,
     logger: Logger,
@@ -39,49 +39,35 @@ export interface ProviderEventsLibrary {
     entityID: UUID
   ): Promise<EventEnvelope | null>
   /** Streams an event to the corresponding event handler */
-  publishEvents(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig, logger: Logger): Promise<void>
+  publish(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig, logger: Logger): Promise<void>
 }
 export interface ProviderReadModelsLibrary {
-  fetchReadModel(
-    config: BoosterConfig,
-    logger: Logger,
-    readModelName: string,
-    readModelID: UUID
-  ): Promise<ReadModelInterface>
-  searchReadModel<TReadModel extends ReadModelInterface>(
+  fetch(config: BoosterConfig, logger: Logger, readModelName: string, readModelID: UUID): Promise<ReadModelInterface>
+  search<TReadModel extends ReadModelInterface>(
     config: BoosterConfig,
     logger: Logger,
     entityTypeName: string,
     filters: Record<string, Filter<any>>
   ): Promise<Array<TReadModel>>
-  subscribeToReadModel(config: BoosterConfig, logger: Logger, subscriptionEnvelope: SubscriptionEnvelope): Promise<void>
-  rawReadModelEventsToEnvelopes(
-    config: BoosterConfig,
-    logger: Logger,
-    rawEvents: any
-  ): Promise<Array<ReadModelEnvelope>>
+  subscribe(config: BoosterConfig, logger: Logger, subscriptionEnvelope: SubscriptionEnvelope): Promise<void>
+  fromRawArray(config: BoosterConfig, logger: Logger, rawEvents: any): Promise<Array<ReadModelEnvelope>>
   fetchSubscriptions(
     config: BoosterConfig,
     logger: Logger,
     subscriptionName: string
   ): Promise<Array<SubscriptionEnvelope>>
   notifySubscription(config: BoosterConfig, connectionID: string, data: Record<string, any>): Promise<void>
-  storeReadModel(
-    config: BoosterConfig,
-    logger: Logger,
-    readModelName: string,
-    readModel: ReadModelInterface
-  ): Promise<any>
+  store(config: BoosterConfig, logger: Logger, readModelName: string, readModel: ReadModelInterface): Promise<any>
 }
 
 export interface ProviderGraphQLLibrary {
   authorizeRequest(rawRequest: any, logger: Logger): Promise<any>
-  rawGraphQLRequestToEnvelope(rawGraphQLRequest: any, logger: Logger): Promise<GraphQLRequestEnvelope>
-  handleGraphQLResult(result?: any): Promise<any>
+  fromRaw(rawGraphQLRequest: any, logger: Logger): Promise<GraphQLRequestEnvelope>
+  handleResult(result?: any): Promise<any>
 }
 
 export interface ProviderAuthLibrary {
-  rawSignUpDataToUserEnvelope(rawMessage: any): UserEnvelope
+  fromRaw(rawMessage: any): UserEnvelope
 }
 
 export interface ProviderAPIHandling {

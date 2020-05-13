@@ -27,24 +27,24 @@ export class BoosterGraphQLDispatcher {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public async dispatch(request: any): Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult> {
     try {
-      const envelope = await this.config.provider.graphQL.rawGraphQLRequestToEnvelope(request, this.logger)
+      const envelope = await this.config.provider.graphQL.fromRaw(request, this.logger)
       this.logger.debug('Received the following GraphQL envelope: ', envelope)
 
       switch (envelope.eventType) {
         case 'CONNECT': // TODO: This message is never coming now. Check this later to see if it is finally needed
-          return this.config.provider.graphQL.handleGraphQLResult()
+          return this.config.provider.graphQL.handleResult()
         case 'MESSAGE':
-          return this.config.provider.graphQL.handleGraphQLResult(await this.handleMessage(envelope))
+          return this.config.provider.graphQL.handleResult(await this.handleMessage(envelope))
         case 'DISCONNECT':
           // TODO: Remove subscriptions
-          return this.config.provider.graphQL.handleGraphQLResult()
+          return this.config.provider.graphQL.handleResult()
         default:
           throw new Error(`Unknown message type ${envelope.eventType}`)
       }
     } catch (e) {
       this.logger.error(e)
       const errors = Array.isArray(e) ? e : [new GraphQLError(e.message)]
-      return this.config.provider.graphQL.handleGraphQLResult({ errors })
+      return this.config.provider.graphQL.handleResult({ errors })
     }
   }
 
