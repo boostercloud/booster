@@ -15,6 +15,6 @@ jobs:
           SOURCE_BRANCH: 'master'
           DESTINATION_REPO: ${{ secrets.SYNC_REPO }}
           DESTINATION_BRANCH: 'master-mirror'
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.BOT_SSH_PRIVATE_KEY }}
         with:
           args: $SOURCE_REPO $SOURCE_BRANCH $DESTINATION_REPO $DESTINATION_BRANCH
