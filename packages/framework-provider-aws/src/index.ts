@@ -9,7 +9,7 @@ import {
 import { fetchReadModel, storeReadModel } from './library/read-model-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import { rawSignUpDataToUserEnvelope, authorizeRequest } from './library/auth-adapter'
-import { Kinesis, DynamoDB, CognitoIdentityServiceProvider } from 'aws-sdk'
+import { DynamoDB, CognitoIdentityServiceProvider } from 'aws-sdk'
 import { ProviderInfrastructure, ProviderLibrary } from '@boostercloud/framework-types'
 import { requestFailed, requestSucceeded } from './library/api-gateway-io'
 import { searchReadModel } from './library/searcher-adapter'
@@ -20,7 +20,6 @@ import {
   subscribeToReadModel,
 } from './library/subscription-adapter'
 
-const eventsStream: Kinesis = new Kinesis()
 const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
 const userPool = new CognitoIdentityServiceProvider()
 

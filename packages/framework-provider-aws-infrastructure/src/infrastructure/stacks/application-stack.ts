@@ -1,4 +1,6 @@
-import { App, CfnOutput, Stack, StackProps } from '@aws-cdk/core'
+import { App, CfnOutput, Fn, Stack, StackProps } from '@aws-cdk/core'
+import { Table } from '@aws-cdk/aws-dynamodb'
+import { Function } from '@aws-cdk/aws-lambda'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { AuthStack } from './auth-stack'
 import { EventsStack } from './events-stack'
@@ -32,7 +34,6 @@ export class ApplicationStackBuilder {
       graphQLStack.subscriptionDispatcherLambda,
       graphQLStack.subscriptionsTable,
       websocketAPI,
-      eventsStack.eventsStream,
       eventsStack.eventsStore,
       eventsStack.eventsLambda
     )
@@ -71,5 +72,73 @@ export class ApplicationStackBuilder {
     })
 
     return rootAPI
+  }
+}
+
+function setupPermissions(
+  readModelTables: Array<Table>,
+  graphQLLambda: Function,
+  subscriptionDispatcherLambda: Function,
+  subscriptionsTable: Table,
+  websocketAPI: CfnApi,
+  eventsStore: Table,
+  eventsLambda: Function
+): void {
+  graphQLLambda.addToRolePolicy(
+    new PolicyStatement({
+      resources: [],
+      actions: ['dynamodb:Query*', 'dynamodb:Put*'],
+    })
+  )
+  graphQLLambda.addToRolePolicy(
+    new PolicyStatement({
+      resources: [subscriptionsTable.tableArn],
+      actions: ['dynamodb:Put*'],
+    })
+  )
+
+  subscriptionDispatcherLambda.addToRolePolicy(
+    new PolicyStatement({
+      resources: [subscriptionsTable.tableArn],
+      actions: ['dynamodb:Query*'],
+    })
+  )
+  subscriptionDispatcherLambda.addToRolePolicy(
+    new PolicyStatement({
+      resources: [
+        Fn.join(':', [
+          'arn',
+          Fn.ref('AWS::Partition'),
+          'execute-api',
+          Fn.ref('AWS::Region'),
+          Fn.ref('AWS::AccountId'),
+          `${websocketAPI.ref}/*`,
+        ]),
+      ],
+      actions: ['execute-api:ManageConnections'],
+    })
+  )
+
+  eventsLambda.addToRolePolicy(
+    new PolicyStatement({
+      resources: [eventsStore.tableArn],
+      actions: ['dynamodb:Query*', 'dynamodb:Put*'],
+    })
+  )
+
+  const tableArns = readModelTables.map((table): string => table.tableArn)
+  if (tableArns.length > 0) {
+    eventsLambda.addToRolePolicy(
+      new PolicyStatement({
+        actions: ['dynamodb:Get*', 'dynamodb:Put*'],
+        resources: tableArns,
+      })
+    )
+    graphQLLambda.addToRolePolicy(
+      new PolicyStatement({
+        actions: ['dynamodb:Query*', 'dynamodb:Scan*'],
+        resources: tableArns,
+      })
+    )
   }
 }
