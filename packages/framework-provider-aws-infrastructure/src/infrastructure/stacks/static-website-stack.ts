@@ -14,12 +14,7 @@ export default class StaticWebsiteStack {
       bucketName: config.resourceNames.staticWebsite,
     })
 
-    new BucketDeployment(stack, 'staticWebsiteDeployment', {
-      sources: [Source.asset(publicDistPath)],
-      destinationBucket: staticSiteBucket,
-    })
-
-    new CloudFrontWebDistribution(stack, 'staticWebsiteDistribution', {
+    const cloudFrontDistribution = new CloudFrontWebDistribution(stack, 'staticWebsiteDistribution', {
       originConfigs: [
         {
           s3OriginSource: {
@@ -28,6 +23,12 @@ export default class StaticWebsiteStack {
           behaviors: [{ isDefaultBehavior: true }],
         },
       ],
+    })
+
+    new BucketDeployment(stack, 'staticWebsiteDeployment', {
+      sources: [Source.asset(publicDistPath)],
+      destinationBucket: staticSiteBucket,
+      distribution: cloudFrontDistribution,
     })
   }
 }
