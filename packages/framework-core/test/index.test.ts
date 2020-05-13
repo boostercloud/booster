@@ -1,7 +1,10 @@
 import { describe } from 'mocha'
 import { expect } from 'chai'
+import * as chai from 'chai'
 import * as BoosterCore from '../src/index'
 import * as Booster from '../src/booster'
+
+chai.use(require('sinon-chai'))
 
 describe('framework-core package', () => {
   it('exports the `boosterEventDispatcher` function', () => {

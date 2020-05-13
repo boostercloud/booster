@@ -7,8 +7,6 @@ import { App } from '@aws-cdk/core'
 import { ReadModelsStack } from '../../../src/infrastructure/stacks/read-models-stack'
 import { Table } from '@aws-cdk/aws-dynamodb'
 
-// chai.use(require('sinon-chai'))
-
 describe('ReadModelsStack', () => {
   describe('the `build` method', () => {
     class SomeReadModel {

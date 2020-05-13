@@ -6,7 +6,7 @@ import { stub, restore } from 'sinon'
 import * as chai from 'chai'
 import * as chaiAsPromised from 'chai-as-promised'
 import * as sinonChai from 'sinon-chai'
-import { UserRegistry } from '../../src/services/user-registry'
+import { UserRegistry } from '../../src/services'
 chai.use(chaiAsPromised)
 chai.use(sinonChai)
 

@@ -1,10 +1,13 @@
 import { describe } from 'mocha'
 import { fake, replace, restore } from 'sinon'
 import { expect } from 'chai'
+import * as chai from 'chai'
 import { BoosterConfig, Level, ProviderLibrary, UUID } from '@boostercloud/framework-types'
 import { buildLogger } from '../src/booster-logger'
 import { fetchEntitySnapshot } from '../src/entity-snapshot-fetcher'
 import { EventStore } from '../src/services/event-store'
+
+chai.use(require('sinon-chai'))
 
 describe('entitySnapshotFetcher', () => {
   afterEach(() => {
