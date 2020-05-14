@@ -32,7 +32,7 @@ export default class StaticWebsiteStack {
     })
 
     new CfnOutput(stack, 'static-website-URL', {
-      value: cloudFrontDistribution.domainName,
+      value: `https://${cloudFrontDistribution.domainName}`,
       description: `The URL for the static website generated from ${publicDistPath} directory`,
     })
   }
