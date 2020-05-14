@@ -86,7 +86,7 @@ describe('the events-adapter', () => {
       const config = new BoosterConfig('test')
       config.appName = 'test-app'
       const requestID = 'request-id'
-      const streamName = config.resourceNames.eventsStream
+      const streamName = config.resourceNames.eventsStore
       const events = [
         {
           entityID(): UUID {
@@ -126,7 +126,7 @@ describe('the events-adapter', () => {
 
       expect(fakeBatchWrite).to.be.calledWith(
         match({
-          RequestItems: { [streamName]: match.has('length', 2) },
+          RequestItems: match.has(streamName, match.has('length', 2)),
         })
       )
     })
