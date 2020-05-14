@@ -1,0 +1,39 @@
+{
+  "name": "@boostercloud/framework-provider-azure",
+  "version": "0.3.3",
+  "description": "Handle Booster's integration with Azure",
+  "keywords": [
+    "framework-provider-azure"
+  ],
+  "author": "Booster Cloud",
+  "homepage": "https://booster.cloud",
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boostercloud/booster.git"
+  },
+  "dependencies": {
+    "@boostercloud/framework-types": "^0.3.3"
+  },
+  "scripts": {
+    "lint": "eslint --ext '.js,.ts' **/*.ts",
+    "fix-lint": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
+    "compile": "tsc -b tsconfig.json",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "prepack": "tsc -b tsconfig.json",
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+  },
+  "bugs": {
+    "url": "https://github.com/boostercloud/booster/issues"
+  },
+  "devDependencies": {
+    "velocityjs": "^2.0.0"
+  }
+}
