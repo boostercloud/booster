@@ -4,12 +4,12 @@ import { expect } from '../expect'
 import * as Library from '../../src/library/events-adapter'
 import { restore, fake, match } from 'sinon'
 import { EventEnvelope, BoosterConfig, UUID, Logger } from '@boostercloud/framework-types'
-import { KinesisStreamEvent } from 'aws-lambda'
-import { Kinesis } from 'aws-sdk'
+import { DynamoDBStreamEvent } from 'aws-lambda'
 import { createStubInstance } from 'sinon'
 import { DynamoDB } from 'aws-sdk'
 import { eventStorePartitionKeyAttribute, eventStoreSortKeyAttribute } from '../../src'
 import { partitionKeyForEvent } from '../../src/library/partition-keys'
+import { DocumentClient, Converter } from 'aws-sdk/clients/dynamodb'
 
 const fakeLogger: Logger = {
   info: fake(),
@@ -25,51 +25,11 @@ describe('the events-adapter', () => {
   describe('the `rawEventsToEnvelopes` method', () => {
     it('generates envelopes correctly from an AWS Kinesis event', async () => {
       const expectedEnvelopes = buildEventEnvelopes()
-      const kinesisMessage = wrapEventEnvelopesForKinesis(expectedEnvelopes)
+      const kinesisMessage = wrapEventEnvelopesForDynamoDB(expectedEnvelopes)
 
       const gotEnvelopes = Library.rawEventsToEnvelopes(kinesisMessage)
 
       expect(gotEnvelopes).to.be.deep.equal(expectedEnvelopes)
-    })
-  })
-
-  describe('the `storeEvent` method', () => {
-    it('stores an eventEnvelope in the corresponding DynamoDB database', async () => {
-      const dynamoDB = createStubInstance(DynamoDB.DocumentClient)
-      dynamoDB.put = fake.returns({ promise: fake.resolves('') }) as any
-      const config = new BoosterConfig('test')
-      config.appName = 'nuke-button'
-
-      const eventEnvelope: EventEnvelope = {
-        version: 1,
-        entityID: 'id',
-        kind: 'event',
-        value: {
-          id: 'id',
-        },
-        typeName: 'EventName',
-        entityTypeName: 'EntityName',
-        requestID: 'requestID',
-        createdAt: 'once',
-      }
-
-      await Library.storeEvent(dynamoDB, config, fakeLogger, eventEnvelope)
-
-      expect(dynamoDB.put).to.have.been.calledOnce
-      expect(dynamoDB.put).to.have.been.calledWith(
-        match({
-          TableName: 'nuke-button-application-stack-events-store',
-          Item: {
-            ...eventEnvelope,
-            [eventStorePartitionKeyAttribute]: partitionKeyForEvent(
-              eventEnvelope.entityTypeName,
-              eventEnvelope.entityID,
-              eventEnvelope.kind
-            ),
-            [eventStoreSortKeyAttribute]: match.defined,
-          },
-        })
-      )
     })
   })
 
@@ -140,10 +100,10 @@ describe('the events-adapter', () => {
         },
       ]
 
-      const fakePutRecords = fake.returns({
+      const fakeBatchWrite = fake.returns({
         promise: fake.resolves(''),
       })
-      const fakeKinesis: Kinesis = { putRecords: fakePutRecords } as any
+      const fakeDynamo: DocumentClient = { batchWrite: fakeBatchWrite } as any
 
       const eventEnvelopes = events.map(
         (e): EventEnvelope => {
@@ -162,12 +122,11 @@ describe('the events-adapter', () => {
         }
       )
 
-      await Library.publishEvents(fakeKinesis, eventEnvelopes, config, fakeLogger)
+      await Library.storeAndPublishEvents(fakeDynamo, eventEnvelopes, config, fakeLogger)
 
-      expect(fakePutRecords).to.be.calledWith(
+      expect(fakeBatchWrite).to.be.calledWith(
         match({
-          StreamName: streamName,
-          Records: match.has('length', 2),
+          RequestItems: { [streamName]: match.has('length', 2) },
         })
       )
     })
@@ -203,15 +162,13 @@ function buildEventEnvelopes(): Array<EventEnvelope> {
   ]
 }
 
-function wrapEventEnvelopesForKinesis(eventEnvelopes: Array<EventEnvelope>): KinesisStreamEvent {
-  const kinesisMessage = {
-    Records: eventEnvelopes.map((envelope) => {
-      return {
-        kinesis: {
-          data: Buffer.from(JSON.stringify(envelope)).toString('base64'),
-        },
-      }
-    }),
+function wrapEventEnvelopesForDynamoDB(eventEnvelopes: Array<EventEnvelope>): DynamoDBStreamEvent {
+  const dynamoMessage = {
+    Records: eventEnvelopes.map((envelope) => ({
+      dynamodb: {
+        NewImage: Converter.marshall(envelope),
+      },
+    })),
   }
-  return kinesisMessage as KinesisStreamEvent
+  return dynamoMessage as DynamoDBStreamEvent
 }
