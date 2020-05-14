@@ -40,9 +40,10 @@
     "fix-lint": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
-    "integration": "yarn integration/aws && yarn integration/local",
+    "integration": "yarn integration/aws && yarn integration/local && yarn integration/cli",
     "integration/aws": "mocha --forbid-only --config \"integration/aws/.mocharc.yml\" \"integration/aws/**/*.integration.ts\"",
-    "integration/local": "mocha --forbid-only --config \"integration/local/.mocharc.yml\" \"integration/local/**/*.integration.ts\""
+    "integration/local": "mocha --forbid-only --config \"integration/local/.mocharc.yml\" \"integration/local/**/*.integration.ts\"",
+    "integration/cli": "mocha --forbid-only --config \"integration/cli/.mocharc.yml\" \"integration/cli/**/*.integration.ts\""
   },
   "types": "dist/index.d.ts",
   "gitHead": "121816dbe55d57df5860b54a871c06dcda761101"
