@@ -1,6 +1,6 @@
 # Contributing to Booster
 
-Thanks for taking the time to contribute to Booster. It is an open-source project and it wouldn’t be possible without people like you 🙏🎉
+Thanks for taking the time to contribute to Booster. It is an open-source project and it wouldn't be possible without people like you 🙏🎉
 
 This document is a set of guidelines to help you contribute to Booster, which is hosted on the [`boostercloud`](https://github.com/boostercloud) GitHub
 organization. These aren’t absolute laws, use your judgment and common sense 😀.
