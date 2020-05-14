@@ -12,6 +12,7 @@ export default class StaticWebsiteStack {
     const staticSiteBucket = new Bucket(stack, 'staticWebsiteBucket', {
       websiteIndexDocument: indexHTML,
       bucketName: config.resourceNames.staticWebsite,
+      publicReadAccess: true
     })
 
     const cloudFrontDistribution = new CloudFrontWebDistribution(stack, 'staticWebsiteDistribution', {
