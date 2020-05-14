@@ -35,9 +35,6 @@ export class BoosterEventDispatcher {
   ): (event: EventEnvelope, config: BoosterConfig) => Promise<void> {
     return async (eventEnvelope, config) => {
       logger.debug('[BoosterEventDispatcher#eventProcessor]: Started processing workflow for event:', eventEnvelope)
-      // FIXME: Remove me
-      // await eventStore.append(eventEnvelope)
-
       // TODO: Separate into two independent processes the snapshotting/read-model generation process from the event handling process
       await Promise.all([
         BoosterEventDispatcher.snapshotAndUpdateReadModels(eventEnvelope, eventStore, readModelStore, logger),
