@@ -23,8 +23,6 @@ export interface ProviderLibrary {
 
 export interface ProviderEventsLibrary {
   rawToEnvelopes(rawEvents: any): Array<EventEnvelope>
-  /** Stores an event in the event store */
-  store(config: BoosterConfig, logger: Logger, envelope: EventEnvelope): Promise<any>
   forEntitySince(
     config: BoosterConfig,
     logger: Logger,
@@ -39,7 +37,7 @@ export interface ProviderEventsLibrary {
     entityID: UUID
   ): Promise<EventEnvelope | null>
   /** Streams an event to the corresponding event handler */
-  publish(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig, logger: Logger): Promise<void>
+  storeAndPublish(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig, logger: Logger): Promise<void>
 }
 export interface ProviderReadModelsLibrary {
   fetch(config: BoosterConfig, logger: Logger, readModelName: string, readModelID: UUID): Promise<ReadModelInterface>

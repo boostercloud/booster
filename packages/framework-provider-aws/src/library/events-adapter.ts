@@ -19,31 +19,6 @@ export function rawEventsToEnvelopes(rawEvents: DynamoDBStreamEvent): Array<Even
   )
 }
 
-export async function storeEvent(
-  dynamoDB: DynamoDB.DocumentClient,
-  config: BoosterConfig,
-  logger: Logger,
-  eventEnvelope: EventEnvelope
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<void> {
-  logger.debug('[EventsAdapter#storeEvent] EventEnvelope stored with eventEnvelope:', eventEnvelope)
-  await dynamoDB
-    .put({
-      TableName: config.resourceNames.eventsStore,
-      Item: {
-        ...eventEnvelope,
-        [eventStorePartitionKeyAttribute]: partitionKeyForEvent(
-          eventEnvelope.entityTypeName,
-          eventEnvelope.entityID,
-          eventEnvelope.kind
-        ),
-        [eventStoreSortKeyAttribute]: new Date().toISOString(),
-      },
-    })
-    .promise()
-  logger.debug('[EventsAdapter#storeEvent] EventEnvelope stored')
-}
-
 export async function readEntityEventsSince(
   dynamoDB: DynamoDB.DocumentClient,
   config: BoosterConfig,
@@ -107,8 +82,30 @@ export async function readEntityLatestSnapshot(
   }
 }
 
-/**
- * This function is a no-op on AWS, as DynamoDB emits an event
- * that triggers the lambdas when the events are stored.
- */
-export async function publishEvents(): Promise<void> {}
+export async function storeAndPublishEvents(
+  dynamoDB: DynamoDB.DocumentClient,
+  eventEnvelopes: Array<EventEnvelope>,
+  config: BoosterConfig,
+  logger: Logger
+): Promise<void> {
+  logger.debug('[EventsAdapter#storeAndPublishEvents] Storing EventEnvelopes with eventEnvelopes:', eventEnvelopes)
+  const params: DynamoDB.DocumentClient.BatchWriteItemInput = {
+    RequestItems: {
+      [config.resourceNames.eventsStore]: eventEnvelopes.map((eventEnvelope) => ({
+        PutRequest: {
+          Item: {
+            ...eventEnvelope,
+            [eventStorePartitionKeyAttribute]: partitionKeyForEvent(
+              eventEnvelope.entityTypeName,
+              eventEnvelope.entityID,
+              eventEnvelope.kind
+            ),
+            [eventStoreSortKeyAttribute]: new Date().toISOString(),
+          },
+        },
+      })),
+    },
+  }
+  await dynamoDB.batchWrite(params).promise()
+  logger.debug('[EventsAdapter#storeAndPublishEvents] EventEnvelope stored')
+}

@@ -22,7 +22,7 @@ export const Provider: ProviderLibrary = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     latestEntitySnapshot: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    publish: publishEvents.bind(null, eventRegistry),
+    storeAndPublish: publishEvents.bind(null, eventRegistry),
   },
   // ProviderReadModelsLibrary
   readModels: {

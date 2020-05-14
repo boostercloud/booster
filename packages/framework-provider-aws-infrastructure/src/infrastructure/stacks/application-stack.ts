@@ -86,14 +86,14 @@ function setupPermissions(
 ): void {
   graphQLLambda.addToRolePolicy(
     new PolicyStatement({
-      resources: [],
-      actions: ['dynamodb:Query*', 'dynamodb:Put*'],
+      resources: [eventsStore.tableArn],
+      actions: ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchWriteItem'],
     })
   )
   graphQLLambda.addToRolePolicy(
     new PolicyStatement({
       resources: [subscriptionsTable.tableArn],
-      actions: ['dynamodb:Put*'],
+      actions: ['dynamodb:Put*', 'dynamodb:BatchWriteItem'],
     })
   )
 
@@ -122,7 +122,7 @@ function setupPermissions(
   eventsLambda.addToRolePolicy(
     new PolicyStatement({
       resources: [eventsStore.tableArn],
-      actions: ['dynamodb:Query*', 'dynamodb:Put*'],
+      actions: ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchWriteItem'],
     })
   )
 
@@ -130,7 +130,7 @@ function setupPermissions(
   if (tableArns.length > 0) {
     eventsLambda.addToRolePolicy(
       new PolicyStatement({
-        actions: ['dynamodb:Get*', 'dynamodb:Put*'],
+        actions: ['dynamodb:Get*', 'dynamodb:Put*', 'dynamodb:BatchWriteItem'],
         resources: tableArns,
       })
     )

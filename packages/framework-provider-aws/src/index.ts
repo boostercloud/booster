@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   rawEventsToEnvelopes,
-  storeEvent,
+  storeAndPublishEvents,
   readEntityLatestSnapshot,
   readEntityEventsSince,
-  publishEvents,
 } from './library/events-adapter'
 import { fetchReadModel, storeReadModel } from './library/read-model-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
@@ -30,7 +29,7 @@ export const Provider: ProviderLibrary = {
     store: storeEvent.bind(null, dynamoDB),
     forEntitySince: readEntityEventsSince.bind(null, dynamoDB),
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, dynamoDB),
-    publish: publishEvents.bind(null, eventsStream),
+    storeAndPublish: publishEvents.bind(null, eventsStream),
   },
   // ProviderReadModelsLibrary
   readModels: {
