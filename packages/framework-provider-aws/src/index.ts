@@ -27,9 +27,9 @@ const userPool = new CognitoIdentityServiceProvider()
 export const Provider: ProviderLibrary = {
   // ProviderEventsLibrary
   events: {
-    fromRawArray: rawEventsToEnvelopes,
+    rawToEnvelopes: rawEventsToEnvelopes,
     store: storeEvent.bind(null, dynamoDB),
-    readEntityEventsSince: readEntityEventsSince.bind(null, dynamoDB),
+    forEntitySince: readEntityEventsSince.bind(null, dynamoDB),
     readEntityLatestSnapshot: readEntityLatestSnapshot.bind(null, dynamoDB),
     publish: publishEvents.bind(null, eventsStream),
   },
@@ -38,7 +38,7 @@ export const Provider: ProviderLibrary = {
     fetch: fetchReadModel.bind(null, dynamoDB),
     search: searchReadModel.bind(null, dynamoDB),
     subscribe: subscribeToReadModel.bind(null, dynamoDB),
-    fromRawArray: rawReadModelEventsToEnvelopes,
+    rawToEnvelopes: rawReadModelEventsToEnvelopes,
     fetchSubscriptions: fetchSubscriptions.bind(null, dynamoDB),
     notifySubscription,
     store: storeReadModel.bind(null, dynamoDB),
@@ -46,12 +46,12 @@ export const Provider: ProviderLibrary = {
   // ProviderGraphQLLibrary
   graphQL: {
     authorizeRequest: authorizeRequest.bind(null, userPool),
-    fromRaw: rawGraphQLRequestToEnvelope,
+    rawToEnvelope: rawGraphQLRequestToEnvelope,
     handleResult: requestSucceeded,
   },
   // ProviderAuthLibrary
   auth: {
-    fromRaw: rawSignUpDataToUserEnvelope,
+    rawToEnvelope: rawSignUpDataToUserEnvelope,
   },
   // ProviderAPIHandling
   api: {

@@ -96,7 +96,7 @@ function mockConfigForGraphQLEnvelope(envelope: GraphQLRequestEnvelope): Booster
   const config = new BoosterConfig('test')
   config.provider = {
     graphQL: {
-      fromRaw: fake.resolves(envelope),
+      rawToEnvelope: fake.resolves(envelope),
       handleResult: fake(),
     },
   } as any

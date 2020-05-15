@@ -22,10 +22,10 @@ export interface ProviderLibrary {
 }
 
 export interface ProviderEventsLibrary {
-  fromRawArray(rawEvents: any): Array<EventEnvelope>
+  rawToEnvelopes(rawEvents: any): Array<EventEnvelope>
   /** Stores an event in the event store */
   store(config: BoosterConfig, logger: Logger, envelope: EventEnvelope): Promise<any>
-  readEntityEventsSince(
+  forEntitySince(
     config: BoosterConfig,
     logger: Logger,
     entityTypeName: string,
@@ -50,7 +50,7 @@ export interface ProviderReadModelsLibrary {
     filters: Record<string, Filter<any>>
   ): Promise<Array<TReadModel>>
   subscribe(config: BoosterConfig, logger: Logger, subscriptionEnvelope: SubscriptionEnvelope): Promise<void>
-  fromRawArray(config: BoosterConfig, logger: Logger, rawEvents: any): Promise<Array<ReadModelEnvelope>>
+  rawToEnvelopes(config: BoosterConfig, logger: Logger, rawEvents: any): Promise<Array<ReadModelEnvelope>>
   fetchSubscriptions(
     config: BoosterConfig,
     logger: Logger,
@@ -62,12 +62,12 @@ export interface ProviderReadModelsLibrary {
 
 export interface ProviderGraphQLLibrary {
   authorizeRequest(rawRequest: any, logger: Logger): Promise<any>
-  fromRaw(rawGraphQLRequest: any, logger: Logger): Promise<GraphQLRequestEnvelope>
+  rawToEnvelope(rawGraphQLRequest: any, logger: Logger): Promise<GraphQLRequestEnvelope>
   handleResult(result?: any): Promise<any>
 }
 
 export interface ProviderAuthLibrary {
-  fromRaw(rawMessage: any): UserEnvelope
+  rawToEnvelope(rawMessage: any): UserEnvelope
 }
 
 export interface ProviderAPIHandling {
