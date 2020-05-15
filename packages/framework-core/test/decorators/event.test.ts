@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { expect } from 'chai'
-import { Event } from '../../src/decorators/event'
+import { expect } from '../expect'
+import { Event } from '../../src/decorators'
 
 describe('the `Event` decorator', () => {
   it('does nothing, but can be used', () => {

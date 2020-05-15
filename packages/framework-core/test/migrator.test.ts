@@ -1,12 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 
-import { expect } from 'chai'
-import * as chai from 'chai'
+import { expect } from './expect'
 import { BoosterConfig, CommandEnvelope, Logger, MigrationMetadata } from '@boostercloud/framework-types'
 import { Migrator } from '../src/migrator'
-
-chai.use(require('sinon-chai'))
 
 const logger: Logger = {
   debug() {},

@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { expect } from 'chai'
-import { Migrates, ToVersion } from '../../src/decorators/migration'
-import { Booster } from '../../src/index'
+import { expect } from '../expect'
+import { Migrates, ToVersion } from '../../src/decorators'
+import { Booster } from '../../src'
 import { MigrationMetadata } from '@boostercloud/framework-types'
 
 // Entities to test the annotations

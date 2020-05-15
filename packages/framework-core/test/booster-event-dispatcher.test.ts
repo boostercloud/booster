@@ -13,14 +13,11 @@ import {
   Register,
   EventInterface,
 } from '@boostercloud/framework-types'
-import * as chai from 'chai'
-import { expect } from 'chai'
+import { expect } from './expect'
 import { RawEventsParser } from '../src/services/raw-events-parser'
 import { ReadModelStore } from '../src/services/read-model-store'
 import { EventStore } from '../src/services/event-store'
 import { RegisterHandler } from '../src/booster-register-handler'
-
-chai.use(require('sinon-chai'))
 
 const someEvent: EventEnvelope = {
   version: 1,

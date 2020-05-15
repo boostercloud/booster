@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as fc from 'fast-check'
 import { BoosterConfig } from '../src'
-import { expect } from 'fancy-test'
+import { expect } from './expect'
 import { MigrationMetadata } from '../src/concepts'
 import { ProviderLibrary } from '../src'
 

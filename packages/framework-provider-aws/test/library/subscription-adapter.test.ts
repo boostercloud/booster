@@ -1,12 +1,8 @@
-import * as chai from 'chai'
-import { expect } from 'chai'
+import { expect } from '../expect'
 import { fake } from 'sinon'
 import { DynamoDBStreamEvent } from 'aws-lambda'
 import { rawReadModelEventsToEnvelopes } from '../../src/library/subscription-adapter'
 import { BoosterConfig, Logger, ReadModelEnvelope } from '@boostercloud/framework-types'
-
-chai.use(require('sinon-chai'))
-chai.use(require('chai-as-promised'))
 
 const logger: Logger = {
   info: fake(),

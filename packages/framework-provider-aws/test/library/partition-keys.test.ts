@@ -1,10 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import * as chai from 'chai'
-import { expect } from 'chai'
+import { expect } from '../expect'
 import { partitionKeyForEvent } from '../../src/library/partition-keys'
 import { EventEnvelope } from '@boostercloud/framework-types'
-
-chai.use(require('sinon-chai'))
 
 describe('"partitionKeyForEvent" function', () => {
   it('returns a correctly formated partition key', () => {

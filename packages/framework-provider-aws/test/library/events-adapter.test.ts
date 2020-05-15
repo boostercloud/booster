@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-import { expect } from 'chai'
-import * as chai from 'chai'
+import { expect } from '../expect'
 import * as Library from '../../src/library/events-adapter'
 import { restore, fake, match } from 'sinon'
 import { EventEnvelope, BoosterConfig, UUID, Logger } from '@boostercloud/framework-types'
@@ -9,10 +8,8 @@ import { KinesisStreamEvent } from 'aws-lambda'
 import { Kinesis } from 'aws-sdk'
 import { createStubInstance } from 'sinon'
 import { DynamoDB } from 'aws-sdk'
-import { eventStorePartitionKeyAttribute, eventStoreSortKeyAttribute } from '../../src/constants'
+import { eventStorePartitionKeyAttribute, eventStoreSortKeyAttribute } from '../../src'
 import { partitionKeyForEvent } from '../../src/library/partition-keys'
-
-chai.use(require('sinon-chai'))
 
 const fakeLogger: Logger = {
   info: fake(),

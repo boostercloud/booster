@@ -1,17 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-import { expect } from 'chai'
-import * as chai from 'chai'
+import { expect } from '../expect'
 import * as Infrastructure from '../../src/infrastructure/index'
 import { replace, restore, fake, match } from 'sinon'
 import { BoosterConfig, UUID } from '@boostercloud/framework-types'
 import * as CDK from 'aws-cdk'
 import { CdkToolkit } from 'aws-cdk/lib/cdk-toolkit'
 import { StreamViewType } from '@aws-cdk/aws-dynamodb'
-
-chai.use(require('sinon-chai'))
-chai.use(require('chai-as-promised'))
 
 const testEnvironment = {
   account: 'testAccount',

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { expect } from 'chai'
+import { expect } from '../../expect'
 import { describe } from 'mocha'
 import { Stack } from '@aws-cdk/core'
 import { BoosterConfig, UUID } from '@boostercloud/framework-types'

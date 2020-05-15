@@ -2,15 +2,11 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { Booster } from '../src/booster'
 import { fake, replace, restore, match } from 'sinon'
-import * as chai from 'chai'
-import { expect } from 'chai'
+import { expect } from './expect'
 import { BoosterCommandDispatcher } from '../src/booster-command-dispatcher'
 import { Logger, Register } from '@boostercloud/framework-types'
 import { Command } from '../src/decorators'
 import { RegisterHandler } from '../src/booster-register-handler'
-
-chai.use(require('sinon-chai'))
-chai.use(require('chai-as-promised'))
 
 describe('the `BoosterCommandsDispatcher`', () => {
   afterEach(() => {

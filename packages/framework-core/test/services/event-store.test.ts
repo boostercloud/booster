@@ -11,12 +11,8 @@ import {
 } from '@boostercloud/framework-types'
 import { replace, fake, stub, restore } from 'sinon'
 import { EventStore } from '../../src/services/event-store'
-import { expect } from 'chai'
+import { expect } from '../expect'
 import { buildLogger } from '../../src/booster-logger'
-import * as chai from 'chai'
-
-chai.use(require('sinon-chai'))
-chai.use(require('chai-as-promised'))
 
 describe('EventStore', () => {
   afterEach(() => {

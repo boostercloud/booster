@@ -1,14 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BoosterConfig, ProviderLibrary, EventEnvelope } from '@boostercloud/framework-types'
-import { expect } from 'chai'
+import { expect } from '../expect'
 import * as faker from 'faker'
 import { stub, restore } from 'sinon'
-import * as chai from 'chai'
-import * as chaiAsPromised from 'chai-as-promised'
-import * as sinonChai from 'sinon-chai'
 import { EventRegistry } from '../../src/services'
-chai.use(chaiAsPromised)
-chai.use(sinonChai)
 
 describe('the event registry', () => {
   beforeEach(() => {

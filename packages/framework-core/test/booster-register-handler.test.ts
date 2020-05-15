@@ -1,14 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { expect } from 'chai'
-import * as chai from 'chai'
+import { expect } from './expect'
 import { Register, BoosterConfig, Level, UserEnvelope } from '@boostercloud/framework-types'
 import { replace, fake, restore } from 'sinon'
 import { RegisterHandler } from '../src/booster-register-handler'
 import { buildLogger } from '../src/booster-logger'
 import { spy } from 'sinon'
-
-chai.use(require('sinon-chai'))
 
 class SomeEntity {}
 

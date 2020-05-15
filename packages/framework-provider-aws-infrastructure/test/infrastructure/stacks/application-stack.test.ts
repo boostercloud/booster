@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { expect } from 'chai'
+import { expect } from '../../expect'
 import { BoosterConfig, UUID } from '@boostercloud/framework-types'
 import { ApplicationStackBuilder } from '../../../src/infrastructure/stacks/application-stack'
 import { App } from '@aws-cdk/core'
