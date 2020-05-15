@@ -20,7 +20,7 @@ export const Provider: ProviderLibrary = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     forEntitySince: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    readEntityLatestSnapshot: undefined as any,
+    latestEntitySnapshot: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     publish: publishEvents.bind(null, eventRegistry),
   },
