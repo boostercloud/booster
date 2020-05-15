@@ -79,7 +79,7 @@ export class EventStore {
     this.logger.debug(
       `[EventStore#loadEventStreamSince] Loading list of pending events for entity ${entityTypeName} with ID ${entityID} since ${timestamp}`
     )
-    return this.provider.events.readEntityEventsSince(this.config, this.logger, entityTypeName, entityID, timestamp)
+    return this.provider.events.forEntitySince(this.config, this.logger, entityTypeName, entityID, timestamp)
   }
 
   private entityReducer(latestSnapshot: EventEnvelope | null, eventEnvelope: EventEnvelope): EventEnvelope {

@@ -25,7 +25,7 @@ describe('the "checkSignUp" method', () => {
   function buildBoosterConfig(): BoosterConfig {
     const config = new BoosterConfig('test')
     config.provider = ({
-      auth: { fromRaw: () => {} },
+      auth: { rawToEnvelope: () => {} },
     } as unknown) as ProviderLibrary
     config.roles['Admin'] = {
       allowSelfSignUp: false,
@@ -40,7 +40,7 @@ describe('the "checkSignUp" method', () => {
     const config = buildBoosterConfig()
     replace(
       config.provider.auth,
-      'fromRaw',
+      'rawToEnvelope',
       fake.returns({
         roles: ['Developer', 'NonExistingRole', 'Admin'],
       })
@@ -53,7 +53,7 @@ describe('the "checkSignUp" method', () => {
     const config = buildBoosterConfig()
     replace(
       config.provider.auth,
-      'fromRaw',
+      'rawToEnvelope',
       fake.returns({
         roles: ['Developer', 'Admin'],
       })
@@ -68,7 +68,7 @@ describe('the "checkSignUp" method', () => {
     const config = buildBoosterConfig()
     replace(
       config.provider.auth,
-      'fromRaw',
+      'rawToEnvelope',
       fake.returns({
         roles: ['Developer'],
       })

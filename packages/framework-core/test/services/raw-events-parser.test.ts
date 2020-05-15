@@ -19,7 +19,7 @@ describe('RawEventsParser', () => {
       }
       const providerLibrary = ({
         events: {
-          fromRawArray: fake.returns([anEvent, anotherEvent]),
+          rawToEnvelopes: fake.returns([anEvent, anotherEvent]),
         },
       } as unknown) as ProviderLibrary
       const callbackFn = fake()

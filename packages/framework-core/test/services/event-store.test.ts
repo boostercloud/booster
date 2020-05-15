@@ -37,7 +37,7 @@ describe('EventStore', () => {
     events: {
       store: () => {},
       readEntityLatestSnapshot: () => {},
-      readEntityEventsSince: () => {},
+      forEntitySince: () => {},
     },
   } as any) as ProviderLibrary
   config.entities['ImportantConcept'] = { class: ImportantConcept }
@@ -476,13 +476,13 @@ describe('EventStore', () => {
 
     describe('loadEventStreamSince', () => {
       it('loads a event stream starting from a specific timestapm', async () => {
-        replace(config.provider.events, 'readEntityEventsSince', fake())
+        replace(config.provider.events, 'forEntitySince', fake())
 
         const entityTypeName = 'ImportantConcept'
         const entityID = '42'
         await eventStore.loadEventStreamSince(entityTypeName, entityID, originOfTime)
 
-        expect(config.provider.events.readEntityEventsSince).to.have.been.calledOnceWith(
+        expect(config.provider.events.forEntitySince).to.have.been.calledOnceWith(
           config,
           logger,
           entityTypeName,

@@ -14,11 +14,11 @@ export const Provider: ProviderLibrary = {
   // ProviderEventsLibrary
   events: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fromRawArray: undefined as any,
+    rawToEnvelopes: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     store: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    readEntityEventsSince: undefined as any,
+    forEntitySince: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     readEntityLatestSnapshot: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -33,7 +33,7 @@ export const Provider: ProviderLibrary = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     subscribe: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fromRawArray: undefined as any,
+    rawToEnvelopes: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fetchSubscriptions: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -46,14 +46,14 @@ export const Provider: ProviderLibrary = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     authorizeRequest: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fromRaw: undefined as any,
+    rawToEnvelope: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     handleResult: undefined as any,
   },
   // ProviderAuthLibrary
   auth: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fromRaw: rawSignUpDataToUserEnvelope,
+    rawToEnvelope: rawSignUpDataToUserEnvelope,
   },
   // ProviderAPIHandling
   api: {
