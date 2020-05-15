@@ -72,7 +72,7 @@ export class EventStore {
     this.logger.debug(
       `[EventStore#loadLatestSnapshot] Loading latest snapshot for entity ${entityName} and ID ${entityID}`
     )
-    return this.provider.events.readEntityLatestSnapshot(this.config, this.logger, entityName, entityID)
+    return this.provider.events.latestEntitySnapshot(this.config, this.logger, entityName, entityID)
   }
 
   private loadEventStreamSince(entityTypeName: string, entityID: UUID, timestamp: string): Promise<EventEnvelope[]> {

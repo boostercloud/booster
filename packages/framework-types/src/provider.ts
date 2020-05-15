@@ -32,7 +32,7 @@ export interface ProviderEventsLibrary {
     entityID: UUID,
     since?: string
   ): Promise<Array<EventEnvelope>>
-  readEntityLatestSnapshot(
+  latestEntitySnapshot(
     config: BoosterConfig,
     logger: Logger,
     entityTypeName: string,
