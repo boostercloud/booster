@@ -4,11 +4,7 @@ import { restore, fake, replace, spy } from 'sinon'
 import { ReadModelStore } from '../../src/services/read-model-store'
 import { buildLogger } from '../../src/booster-logger'
 import { Level, BoosterConfig, EventEnvelope, UUID, ProviderLibrary } from '@boostercloud/framework-types'
-import { expect } from 'chai'
-import * as chai from 'chai'
-
-chai.use(require('sinon-chai'))
-chai.use(require('chai-as-promised'))
+import { expect } from '../expect'
 
 describe('ReadModelStore', () => {
   afterEach(() => {

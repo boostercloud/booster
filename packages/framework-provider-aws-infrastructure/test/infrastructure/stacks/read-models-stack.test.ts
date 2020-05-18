@@ -1,13 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { expect } from 'chai'
+import { expect } from '../../expect'
 import { describe } from 'mocha'
 import { Stack } from '@aws-cdk/core'
 import { BoosterConfig, UUID } from '@boostercloud/framework-types'
 import { App } from '@aws-cdk/core'
 import { ReadModelsStack } from '../../../src/infrastructure/stacks/read-models-stack'
 import { Table } from '@aws-cdk/aws-dynamodb'
-
-// chai.use(require('sinon-chai'))
 
 describe('ReadModelsStack', () => {
   describe('the `build` method', () => {

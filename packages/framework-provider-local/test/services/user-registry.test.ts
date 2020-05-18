@@ -1,14 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BoosterConfig, ProviderLibrary, NotAuthorizedError } from '@boostercloud/framework-types'
-import { expect } from 'chai'
+import { expect } from '../expect'
 import * as faker from 'faker'
 import { stub, restore } from 'sinon'
-import * as chai from 'chai'
-import * as chaiAsPromised from 'chai-as-promised'
-import * as sinonChai from 'sinon-chai'
-import { UserRegistry } from '../../src/services/user-registry'
-chai.use(chaiAsPromised)
-chai.use(sinonChai)
+import { UserRegistry } from '../../src/services'
 
 describe('the user registry', () => {
   beforeEach(() => {

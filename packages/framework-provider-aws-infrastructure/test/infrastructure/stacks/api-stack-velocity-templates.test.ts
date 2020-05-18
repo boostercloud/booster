@@ -1,6 +1,6 @@
 import * as Velocity from 'velocityjs'
 import { CognitoTemplates } from '../../../src/infrastructure/stacks/api-stack-velocity-templates'
-import { expect } from 'chai'
+import { expect } from '../../expect'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function buildAwsTemplateContext(withData: Record<string, any>): Record<string, any> {

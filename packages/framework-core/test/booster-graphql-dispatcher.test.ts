@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { fake, match, replace, restore, spy } from 'sinon'
-import * as chai from 'chai'
-import { expect } from 'chai'
+import { expect } from './expect'
 import { BoosterConfig, Logger, GraphQLRequestEnvelope } from '@boostercloud/framework-types'
 import { BoosterGraphQLDispatcher } from '../src/booster-graphql-dispatcher'
 import * as gqlParser from 'graphql/language/parser'
@@ -10,8 +9,6 @@ import * as gqlValidator from 'graphql/validation/validate'
 import * as gqlExecutor from 'graphql/execution/execute'
 import { GraphQLResolverContext } from '../src/services/graphql/common'
 import { NoopReadModelPubSub } from '../src/services/pub-sub/noop-read-model-pub-sub'
-
-chai.use(require('sinon-chai'))
 
 const logger: Logger = console
 

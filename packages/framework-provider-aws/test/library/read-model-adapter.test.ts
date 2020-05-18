@@ -1,13 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import * as chai from 'chai'
-import { expect } from 'chai'
+import { expect } from '../expect'
 import { replace, fake } from 'sinon'
 import { fetchReadModel, storeReadModel } from '../../src/library/read-model-adapter'
 import { DynamoDB } from 'aws-sdk'
 import { BoosterConfig, Logger } from '@boostercloud/framework-types'
-
-chai.use(require('sinon-chai'))
-chai.use(require('chai-as-promised'))
 
 const logger: Logger = {
   info: fake(),

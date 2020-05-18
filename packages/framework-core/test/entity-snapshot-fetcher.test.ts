@@ -1,6 +1,6 @@
 import { describe } from 'mocha'
 import { fake, replace, restore } from 'sinon'
-import { expect } from 'chai'
+import { expect } from './expect'
 import { BoosterConfig, Level, ProviderLibrary, UUID } from '@boostercloud/framework-types'
 import { buildLogger } from '../src/booster-logger'
 import { fetchEntitySnapshot } from '../src/entity-snapshot-fetcher'

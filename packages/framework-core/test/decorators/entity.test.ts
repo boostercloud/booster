@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { expect } from 'chai'
+import { expect } from '../expect'
 import { Event, Entity, Reduces } from '../../src/decorators/'
 import { Booster } from '../../src'
 import { UUID } from '@boostercloud/framework-types'

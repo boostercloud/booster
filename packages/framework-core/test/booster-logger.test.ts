@@ -2,13 +2,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 
-import { expect } from 'chai'
-import * as chai from 'chai'
+import { expect } from './expect'
 import { fake, replace, restore } from 'sinon'
 import { buildLogger } from '../src/booster-logger'
 import { Level } from '@boostercloud/framework-types'
-
-chai.use(require('sinon-chai'))
 
 describe('the `buildLogger method`', () => {
   afterEach(() => {

@@ -1,15 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import * as chai from 'chai'
 import { restore, replace, stub, spy } from 'sinon'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as process from 'process'
 import { Importer } from '../src/importer'
-import { expect } from 'chai'
-
-chai.use(require('sinon-chai'))
+import { expect } from './expect'
 
 describe('the `importer` service', () => {
   afterEach(() => {

@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { expect } from 'chai'
-import * as chai from 'chai'
+import { expect } from './expect'
 import {
   Booster,
   boosterEventDispatcher,
@@ -13,8 +12,6 @@ import { replace, fake, restore } from 'sinon'
 import { Importer } from '../src/importer'
 import * as EntitySnapshotFetcher from '../src/entity-snapshot-fetcher'
 import { UUID } from '@boostercloud/framework-types'
-
-chai.use(require('sinon-chai'))
 
 describe('the `Booster` class', () => {
   afterEach(() => {

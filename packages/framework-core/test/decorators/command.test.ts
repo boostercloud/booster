@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { expect } from 'chai'
+import { expect } from '../expect'
 import { Register } from '@boostercloud/framework-types'
-import { Command } from '../../src/decorators/command'
-import { Booster } from '../../src/index'
+import { Command } from '../../src/decorators'
+import { Booster } from '../../src'
 
 describe('the `Command` decorator', () => {
   afterEach(() => {

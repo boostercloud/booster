@@ -1,15 +1,12 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-import { expect } from 'chai'
-import * as chai from 'chai'
+import { expect } from './expect'
 import { restore, fake, replace } from 'sinon'
 import { Logger, BoosterConfig } from '@boostercloud/framework-types'
 import { RoleAccess, UserEnvelope } from '@boostercloud/framework-types'
 import { BoosterAuth } from '../src/booster-auth'
 import { ProviderLibrary } from '@boostercloud/framework-types'
-
-chai.use(require('sinon-chai'))
 
 const logger: Logger = {
   debug() {},

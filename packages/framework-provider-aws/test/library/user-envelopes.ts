@@ -1,15 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { expect } from 'chai'
-import * as chai from 'chai'
+import { expect } from '../expect'
 import { UserEnvelope } from '@boostercloud/framework-types'
 import { AttributeListType, AttributeMappingType } from 'aws-sdk/clients/cognitoidentityserviceprovider'
 import { fetchUserFromRequest, UserEnvelopeBuilder } from '../../src/library/user-envelopes'
 import { APIGatewayProxyEvent } from 'aws-lambda'
 import CognitoIdentityServiceProvider = require('aws-sdk/clients/cognitoidentityserviceprovider')
 import { restore, replace, fake } from 'sinon'
-
-chai.use(require('sinon-chai'))
-chai.use(require('chai-as-promised'))
 
 describe('the UserEnvelopeBuilder.fromAttributeMap', () => {
   it('works with a user with no roles', () => {

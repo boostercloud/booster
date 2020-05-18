@@ -2,7 +2,7 @@ import { describe } from 'mocha'
 import { fake, restore } from 'sinon'
 import { ProviderLibrary, BoosterConfig } from '@boostercloud/framework-types'
 import { RawEventsParser } from '../../src/services/raw-events-parser'
-import { expect } from 'chai'
+import { expect } from '../expect'
 
 describe('RawEventsParser', () => {
   afterEach(() => {
