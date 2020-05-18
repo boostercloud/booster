@@ -25,7 +25,7 @@ export class EventStore {
   public async append(eventEnvelope: EventEnvelope): Promise<void> {
     this.logger.debug('[EventStore#append] Appending event envelope in the events store:', eventEnvelope)
     try {
-      await this.provider.storeEvent(this.config, this.logger, eventEnvelope)
+      await this.provider.events.store(this.config, this.logger, eventEnvelope)
     } catch (e) {
       this.logger.error('[EventStore#append] Unhandled error while appending an event to the event store:', e)
       throw e
@@ -65,21 +65,21 @@ export class EventStore {
       `[EventStore#storeSnapshot] Max number of events after latest stored snapshot reached (${numberOfEventsBetweenSnapshots}). Storing snapshot in the event store:`,
       snapshot
     )
-    return await this.provider.storeEvent(this.config, this.logger, snapshot)
+    return await this.provider.events.store(this.config, this.logger, snapshot)
   }
 
   private loadLatestSnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | null> {
     this.logger.debug(
       `[EventStore#loadLatestSnapshot] Loading latest snapshot for entity ${entityName} and ID ${entityID}`
     )
-    return this.provider.readEntityLatestSnapshot(this.config, this.logger, entityName, entityID)
+    return this.provider.events.latestEntitySnapshot(this.config, this.logger, entityName, entityID)
   }
 
   private loadEventStreamSince(entityTypeName: string, entityID: UUID, timestamp: string): Promise<EventEnvelope[]> {
     this.logger.debug(
       `[EventStore#loadEventStreamSince] Loading list of pending events for entity ${entityTypeName} with ID ${entityID} since ${timestamp}`
     )
-    return this.provider.readEntityEventsSince(this.config, this.logger, entityTypeName, entityID, timestamp)
+    return this.provider.events.forEntitySince(this.config, this.logger, entityTypeName, entityID, timestamp)
   }
 
   private entityReducer(latestSnapshot: EventEnvelope | null, eventEnvelope: EventEnvelope): EventEnvelope {
