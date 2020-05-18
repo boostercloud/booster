@@ -80,6 +80,6 @@ export class BoosterReadModelDispatcher {
       connectionID,
       operation,
     }
-    return this.config.provider.subscribeToReadModel(this.config, this.logger, subscription)
+    return this.config.provider.readModels.subscribe(this.config, this.logger, subscription)
   }
 }

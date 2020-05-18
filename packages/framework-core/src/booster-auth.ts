@@ -2,7 +2,6 @@ import {
   BoosterConfig,
   Class,
   Logger,
-  ProviderAuthLibrary,
   UserEnvelope,
   RoleInterface,
   RoleAccess,
@@ -12,13 +11,12 @@ import {
 export class BoosterAuth {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public static async authorizeRequest(rawMessage: any, config: BoosterConfig, logger: Logger): Promise<any> {
-    return config.provider.authorizeRequest(rawMessage, logger)
+    return config.provider.graphQL.authorizeRequest(rawMessage, logger)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public static checkSignUp(rawMessage: any, config: BoosterConfig, logger: Logger): any {
-    const provider: ProviderAuthLibrary = config.provider
-    const userEnvelope = provider.rawSignUpDataToUserEnvelope(rawMessage)
+    const userEnvelope = config.provider.auth.rawToEnvelope(rawMessage)
     logger.info('User envelope: ', userEnvelope)
 
     userEnvelope.roles.forEach((roleName: string) => {
