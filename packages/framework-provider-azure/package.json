@@ -33,7 +33,5 @@
   "bugs": {
     "url": "https://github.com/boostercloud/booster/issues"
   },
-  "devDependencies": {
-    "velocityjs": "^2.0.0"
-  }
+  "devDependencies": {}
 }
