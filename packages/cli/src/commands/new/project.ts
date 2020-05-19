@@ -77,8 +77,6 @@ const getSelectedProviderPackage = (provider: Provider): string => {
   switch (provider) {
     case Provider.AWS:
       return '@boostercloud/framework-provider-aws'
-    case Provider.AZURE:
-      return '@boostercloud/framework-provider-azure'
     default:
       return ''
   }
@@ -92,7 +90,7 @@ const getProviderPackageName = async (prompter: Prompter, providerPackageName?: 
   const providerSelection: Provider = (await prompter.defaultOrChoose(
     providerPackageName,
     "What's the package name of your provider infrastructure library?",
-    [Provider.AWS, Provider.AZURE, Provider.OTHER]
+    [Provider.AWS, Provider.OTHER]
   )) as Provider
 
   if (providerSelection === Provider.OTHER) {
