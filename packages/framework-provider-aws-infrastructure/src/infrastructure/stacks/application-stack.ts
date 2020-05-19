@@ -43,9 +43,9 @@ export class ApplicationStackBuilder {
       deployOptions: { stageName: this.config.environmentName },
     })
 
-    new CfnOutput(stack, 'baseRESTURL', {
+    new CfnOutput(stack, 'httpURL', {
       value: rootAPI.url,
-      description: 'The base URL for all the REST the endpoints of your application',
+      description: 'The base URL for all the auth endpoints and for sending GraphQL mutations and queries',
     })
 
     return rootAPI
@@ -65,7 +65,7 @@ export class ApplicationStackBuilder {
     })
     stage.addDependsOn(rootAPI)
 
-    new CfnOutput(stack, 'baseWebsocketURL', {
+    new CfnOutput(stack, 'websocketURL', {
       value: baseURLForAPI(this.config, stack, rootAPI.ref, 'wss'),
       description: 'The URL for the websocket communication. Used for subscriptions',
     })
