@@ -1,7 +1,7 @@
 import { CfnOutput, Stack } from '@aws-cdk/core'
 import { Bucket } from '@aws-cdk/aws-s3'
 import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment'
-import { CloudFrontWebDistribution } from '@aws-cdk/aws-cloudfront'
+import { CloudFrontWebDistribution, ViewerCertificate, ViewerProtocolPolicy } from '@aws-cdk/aws-cloudfront'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { existsSync } from "fs";
 
@@ -13,11 +13,14 @@ export default class StaticWebsiteStack {
     if (existsSync(publicDistPath)) {
       const staticSiteBucket = new Bucket(stack, 'staticWebsiteBucket', {
         websiteIndexDocument: indexHTML,
-        bucketName: config.resourceNames.staticWebsite,
-        publicReadAccess: true
+        websiteErrorDocument: indexHTML,
+        bucketName: config.resourceNames.staticWebsite
       })
 
       const cloudFrontDistribution = new CloudFrontWebDistribution(stack, 'staticWebsiteDistribution', {
+        defaultRootObject: indexHTML,
+        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        viewerCertificate: ViewerCertificate.fromCloudFrontDefaultCertificate(),
         originConfigs: [
           {
             s3OriginSource: {
@@ -34,7 +37,7 @@ export default class StaticWebsiteStack {
         distribution: cloudFrontDistribution,
       })
 
-      new CfnOutput(stack, 'static-website-URL', {
+      new CfnOutput(stack, 'staticWebsiteURL', {
         value: `https://${cloudFrontDistribution.domainName}`,
         description: `The URL for the static website generated from ${publicDistPath} directory`,
       })
