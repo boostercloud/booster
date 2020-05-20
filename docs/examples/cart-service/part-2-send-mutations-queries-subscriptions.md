@@ -8,11 +8,11 @@ When the `boost deploy` command finishes, it will print useful information to in
 You will see something like this:
 ````shell script
 Outputs:
-<application name>.baseRESTURL = https://<API ID>.execute-api.<region>.amazonaws.com/<environment name>
-<application-name>.baseWebsocketURL = wss://<API ID>.execute-api.<region>.amazonaws.com/<environment name>
+<application name>.httpURL = https://<API ID>.execute-api.<region>.amazonaws.com/<environment name>
+<application-name>.websocketURL = wss://<API ID>.execute-api.<region>.amazonaws.com/<environment name>
 # ... other outputs we are not interested in right now...
 ````
-We will use the `baseRESTURL` to send GraphQL _queries_ and _mutations_ (commands), while the `baseWebsocketURL` will be
+We will use the `httpURL` to send GraphQL _queries_ and _mutations_ (commands), while the `websocketURL` will be
 needed for _subscriptions_ (as we need a two-way communication)
 
 To do the following manual tests, we recommend you to use one of the several clients with full support for GraphQL, like [Postwoman](https://postwoman.io/)
@@ -23,7 +23,7 @@ and any websocket client (like [wscat](https://github.com/websockets/wscat)) for
 The way we send a command to our Booster app is by using a GraphQL "mutation". The following GraphQL request is sending the 
 command `ChangeCart` with all its required payload:  
 
-**URL:** `<baseRESTURL>/graphql`
+**URL:** `<httpURL>/graphql`
 **GraphQL body:**
 ```graphql 
 mutation {
@@ -36,7 +36,7 @@ mutation {
 ```
 In case you are using an HTTP client without support for GraphQL, you can do exactly the same by sending an HTTP request with
 method "POST" and include a JSON body with a field named "query" with the GraphQL mutation:
-**URL:** `<baseRESTURL>/graphql`
+**URL:** `<httpURL>/graphql`
 **Method:** `POST`
 **Body:**
 ```json
@@ -47,7 +47,7 @@ method "POST" and include a JSON body with a field named "query" with the GraphQ
 
 ## Reading read models data
 To read a read model, you send a GraphQL "query" operation. Let's get the read model the previous command modified:
-**URL:** `<baseRESTURL>/graphql`
+**URL:** `<httpURL>/graphql`
 **GraphQL body:**
 ```graphql 
 query {
@@ -68,7 +68,7 @@ subscriptions to get your read models data and, thus, build your client applicat
 Before sending any subscription, you first need to connect to the websocket. 
 
 If you are using "Postwoman" (the process is the pretty similar with the command line tool "wscat"), just go to the "Realtime"
-section, write your `baseWebsocketURL`, and click connect:
+section, write your `websocketURL`, and click connect:
 
 ![Connecting to the websocket using Postwoman](img/subscription-connect-postwoman.png)
 
