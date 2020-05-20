@@ -217,6 +217,19 @@ export async function eventsStoreTableName(): Promise<string> {
   }
 }
 
+export async function queryEvents(tableName: string, primaryKey: string, latestFirst = true): Promise<any> {
+  const output: QueryOutput = await documentClient
+    .query({
+      TableName: tableName,
+      KeyConditionExpression: 'entityTypeName_entityID_kind = :v',
+      ExpressionAttributeValues: { ':v': primaryKey },
+      ScanIndexForward: !latestFirst,
+    })
+    .promise()
+
+  return output.Items
+}
+
 // --- DynamoDB helpers ---
 
 export async function countEventItems(tableName: string): Promise<number> {
@@ -245,19 +258,6 @@ export async function countSnapshotItems(tableName: string): Promise<number> {
     .promise()
 
   return output.Count === undefined ? -1 : output.Count
-}
-
-export async function queryEvents(tableName: string, primaryKey: string, latestFirst = true): Promise<any> {
-  const output: QueryOutput = await documentClient
-    .query({
-      TableName: tableName,
-      KeyConditionExpression: 'entityTypeName_entityID_kind = :v',
-      ExpressionAttributeValues: { ':v': primaryKey },
-      ScanIndexForward: !latestFirst,
-    })
-    .promise()
-
-  return output.Items
 }
 
 // --- Other helpers ---
