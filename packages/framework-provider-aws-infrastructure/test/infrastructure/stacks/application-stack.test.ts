@@ -114,11 +114,8 @@ describe('the application stack builder', () => {
     expect(numberOfLambdas).to.equal(5)
     expect(appStack.tryFindChild(preSignUpValidator)).not.to.be.undefined
     lambdas.forEach((lambda: any) => {
-      // CDKBucketDeployment count as a Function but it does not set these variables
-      if (lambda.environment.BOOSTER_ENV) {
         expect(lambda.environment.BOOSTER_ENV).to.equal('test')
         expect(lambda.environment.A_CUSTOM_ENV_VARIABLE).to.equal('important-value')
-      }
     })
     // UserPool-related
     expect(appStack.tryFindChild(userPool)).not.to.be.undefined

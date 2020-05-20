@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-aws-infrastructure",
-  "version": "0.3.4-alpha.14+286d95e",
+  "version": "0.3.3",
   "description": "Handle the Booster deployment process to AWS",
   "keywords": [
     "framework-provider-aws-infrastructure"
@@ -52,6 +52,5 @@
     "@types/faker": "^4.1.11",
     "faker": "^4.1.0",
     "velocityjs": "^2.0.0"
-  },
-  "gitHead": "286d95ef341603f74d12d9da8db17b9a74ed7695"
+  }
 }
