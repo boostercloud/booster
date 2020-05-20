@@ -218,9 +218,32 @@ export async function eventsStoreTableName(): Promise<string> {
 
 // --- DynamoDB helpers ---
 
-export async function countItems(tableName: string): Promise<number> {
-  const output: ScanOutput = await documentClient.scan({ TableName: tableName, Select: 'COUNT' }).promise()
-  return output.Count || -1
+export async function countEventItems(tableName: string): Promise<number> {
+  const output: ScanOutput = await documentClient
+    .scan({
+      TableName: tableName,
+      Select: 'COUNT',
+      FilterExpression: '#k = :kind',
+      ExpressionAttributeNames: { '#k': 'kind' },
+      ExpressionAttributeValues: { ':kind': 'event' },
+    })
+    .promise()
+
+  return output.Count === undefined ? -1 : output.Count
+}
+
+export async function countSnapshotItems(tableName: string): Promise<number> {
+  const output: ScanOutput = await documentClient
+    .scan({
+      TableName: tableName,
+      Select: 'COUNT',
+      FilterExpression: '#k = :kind',
+      ExpressionAttributeNames: { '#k': 'kind' },
+      ExpressionAttributeValues: { ':kind': 'snapshot' },
+    })
+    .promise()
+
+  return output.Count === undefined ? -1 : output.Count
 }
 
 // --- Other helpers ---

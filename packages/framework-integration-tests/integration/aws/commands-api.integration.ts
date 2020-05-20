@@ -1,17 +1,19 @@
-import { countItems, eventsStoreTableName, graphQLClient, sleep } from './utils'
+import { countEventItems, countSnapshotItems, eventsStoreTableName, graphQLClient, sleep } from './utils'
 import { expect } from 'chai'
 import gql from 'graphql-tag'
+import { ApolloClient } from 'apollo-client'
+import { NormalizedCacheObject } from 'apollo-cache-inmemory'
 
-describe('the commands API', () => {
+describe('the commands API', async () => {
+  let client: ApolloClient<NormalizedCacheObject>
   let eventStoreTableName: string
 
   before(async () => {
+    client = await graphQLClient()
     eventStoreTableName = await eventsStoreTableName()
   })
 
   it('accepts a command successfully', async () => {
-    const client = await graphQLClient()
-
     const response = await client.mutate({
       mutation: gql`
         mutation {
@@ -28,11 +30,8 @@ describe('the commands API', () => {
   })
 
   it('should create an event in the event store', async () => {
-    const client = await graphQLClient()
-
-    const numberOfEvents = await countItems(eventStoreTableName)
-
-    expect(numberOfEvents).to.be.greaterThan(0)
+    const eventsCount = await countEventItems(eventStoreTableName)
+    expect(eventsCount).to.be.greaterThan(0)
 
     const response = await client.mutate({
       mutation: gql`
@@ -47,7 +46,29 @@ describe('the commands API', () => {
 
     await sleep(5000)
 
-    const expectedEventItemsCount = numberOfEvents + (numberOfEvents % 5 == 0 ? 2 : 1)
-    expect(await countItems(eventStoreTableName)).to.be.equal(expectedEventItemsCount)
+    const expectedEventItemsCount = eventsCount + 1
+    expect(await countEventItems(eventStoreTableName)).to.be.equal(expectedEventItemsCount)
+  })
+
+  it('should generate a snapshot after 5 events', async () => {
+    const snapshotsCount = await countSnapshotItems(eventStoreTableName)
+
+    for (let i = 0; i < 5; i++) {
+      const response = await client.mutate({
+        mutation: gql`
+          mutation {
+            ChangeCartItem(input: { cartId: "demo-cart-id", productId: "demo-product-id", quantity: 2 })
+          }
+        `,
+      })
+
+      expect(response).not.to.be.null
+      expect(response?.data?.ChangeCartItem).to.be.true
+    }
+
+    await sleep(5000)
+
+    const expectedSnapshotItemsCount = snapshotsCount + 1
+    expect(await countSnapshotItems(eventStoreTableName)).to.be.equal(expectedSnapshotItemsCount)
   })
 })
