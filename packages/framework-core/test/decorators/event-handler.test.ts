@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { expect } from 'chai'
-import { EventHandler } from '../../src/decorators/event-handler'
+import { expect } from '../expect'
+import { EventHandler } from '../../src/decorators'
 import { Booster } from '../../src'
-import { Event } from '../../src/decorators/event'
+import { Event } from '../../src/decorators'
 import { UUID, Register, BoosterConfig } from '@boostercloud/framework-types'
 
 describe('the `EventHandler` decorator', () => {

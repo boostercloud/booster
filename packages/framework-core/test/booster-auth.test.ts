@@ -1,15 +1,12 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-import { expect } from 'chai'
-import * as chai from 'chai'
+import { expect } from './expect'
 import { restore, fake, replace } from 'sinon'
 import { Logger, BoosterConfig } from '@boostercloud/framework-types'
 import { RoleAccess, UserEnvelope } from '@boostercloud/framework-types'
 import { BoosterAuth } from '../src/booster-auth'
 import { ProviderLibrary } from '@boostercloud/framework-types'
-
-chai.use(require('sinon-chai'))
 
 const logger: Logger = {
   debug() {},
@@ -25,7 +22,7 @@ describe('the "checkSignUp" method', () => {
   function buildBoosterConfig(): BoosterConfig {
     const config = new BoosterConfig('test')
     config.provider = ({
-      rawSignUpDataToUserEnvelope: () => {},
+      auth: { rawToEnvelope: () => {} },
     } as unknown) as ProviderLibrary
     config.roles['Admin'] = {
       allowSelfSignUp: false,
@@ -39,8 +36,8 @@ describe('the "checkSignUp" method', () => {
   it('throws when the user has a non-existing role', () => {
     const config = buildBoosterConfig()
     replace(
-      config.provider,
-      'rawSignUpDataToUserEnvelope',
+      config.provider.auth,
+      'rawToEnvelope',
       fake.returns({
         roles: ['Developer', 'NonExistingRole', 'Admin'],
       })
@@ -52,8 +49,8 @@ describe('the "checkSignUp" method', () => {
   it('throws when the user has a role not allowed to self sign-up', () => {
     const config = buildBoosterConfig()
     replace(
-      config.provider,
-      'rawSignUpDataToUserEnvelope',
+      config.provider.auth,
+      'rawToEnvelope',
       fake.returns({
         roles: ['Developer', 'Admin'],
       })
@@ -67,8 +64,8 @@ describe('the "checkSignUp" method', () => {
   it('succeeds user has a role allowed to self sign-up', () => {
     const config = buildBoosterConfig()
     replace(
-      config.provider,
-      'rawSignUpDataToUserEnvelope',
+      config.provider.auth,
+      'rawToEnvelope',
       fake.returns({
         roles: ['Developer'],
       })
@@ -122,7 +119,9 @@ describe('the "authorizeRequest" method', () => {
     const config = new BoosterConfig('test')
     const fakeProviderAuthorizer = fake()
     config.provider = {
-      authorizeRequest: fakeProviderAuthorizer,
+      graphQL: {
+        authorizeRequest: fakeProviderAuthorizer,
+      },
     } as any
 
     await BoosterAuth.authorizeRequest(request, config, logger)

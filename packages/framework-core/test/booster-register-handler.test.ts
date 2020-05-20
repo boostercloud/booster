@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { expect } from 'chai'
+import { expect } from './expect'
 import { Register, BoosterConfig, Level, UserEnvelope } from '@boostercloud/framework-types'
 import { replace, fake, restore } from 'sinon'
 import { RegisterHandler } from '../src/booster-register-handler'
@@ -26,8 +26,9 @@ describe('the `RegisterHandler` class', () => {
   it('handles a register', async () => {
     const config = new BoosterConfig('test')
     config.provider = {
-      publishEvents: fake(),
-      submitCommands: fake(),
+      events: {
+        publish: fake(),
+      },
     } as any
     config.reducers['SomeEvent'] = { class: SomeEntity, methodName: 'whatever' }
 
@@ -44,14 +45,15 @@ describe('the `RegisterHandler` class', () => {
     expect(registerHandler.wrapEvent).to.have.been.calledTwice
     expect(registerHandler.wrapEvent).to.have.been.calledWith(register, config, event1)
     expect(registerHandler.wrapEvent).to.have.been.calledWith(register, config, event2)
-    expect(config.provider.publishEvents).to.have.been.calledOnce
+    expect(config.provider.events.publish).to.have.been.calledOnce
   })
 
   it('publishes wrapped events', async () => {
     const config = new BoosterConfig('test')
     config.provider = {
-      publishEvents: fake(),
-      submitCommands: fake(),
+      events: {
+        publish: fake(),
+      },
     } as any
     config.reducers['SomeEvent'] = {
       class: SomeEntity,
@@ -67,8 +69,8 @@ describe('the `RegisterHandler` class', () => {
 
     await RegisterHandler.handle(config, logger, register)
 
-    expect(config.provider.publishEvents).to.have.been.calledOnce
-    expect(config.provider.publishEvents).to.have.been.calledWithMatch(
+    expect(config.provider.events.publish).to.have.been.calledOnce
+    expect(config.provider.events.publish).to.have.been.calledWithMatch(
       [
         {
           createdAt: 'just the right time',

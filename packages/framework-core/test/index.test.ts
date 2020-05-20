@@ -1,5 +1,5 @@
 import { describe } from 'mocha'
-import { expect } from 'chai'
+import { expect } from './expect'
 import * as BoosterCore from '../src/index'
 import * as Booster from '../src/booster'
 

@@ -1,5 +1,4 @@
-import { expect } from 'chai'
-import * as chai from 'chai'
+import { expect } from '../expect'
 import {
   InvalidVersionError,
   InvalidParameterError,
@@ -7,8 +6,6 @@ import {
   NotFoundError,
 } from '@boostercloud/framework-types'
 import { requestFailed } from '../../src/library/api-gateway-io'
-
-chai.use(require('sinon-chai'))
 
 describe('the requestFailed method', () => {
   interface TestCase {

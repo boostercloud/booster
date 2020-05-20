@@ -1,15 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AuthController } from '../../src/controllers/auth'
 import { UserRegistry } from '@boostercloud/framework-provider-local'
-import * as chai from 'chai'
-import * as sinonChai from 'sinon-chai'
 import { mockRes, mockReq } from 'sinon-express-mock'
 import * as faker from 'faker'
 import { stub, restore } from 'sinon'
-import { expect } from 'chai'
+import { expect } from '../expect'
 import { UserApp } from '@boostercloud/framework-types'
-
-chai.use(sinonChai)
 
 describe('the auth controller', () => {
   beforeEach(() => {

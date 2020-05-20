@@ -1,14 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { expect } from 'chai'
-import * as chai from 'chai'
+import { expect } from '../expect'
 import { authorizeRequest, AuthorizerWithUserData, rawSignUpDataToUserEnvelope } from '../../src/library/auth-adapter'
 import { UserEnvelope } from '@boostercloud/framework-types'
 import { APIGatewayAuthorizerWithContextResult } from 'aws-lambda'
 import { CognitoIdentityServiceProvider } from 'aws-sdk'
 import { replace, restore } from 'sinon'
 import * as UserEnvelopes from '../../src/library/user-envelopes'
-
-chai.use(require('sinon-chai'))
 
 describe('the auth-adapter', () => {
   afterEach(() => {

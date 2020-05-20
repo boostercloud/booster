@@ -2,7 +2,7 @@ import { describe } from 'mocha'
 import { fake, restore } from 'sinon'
 import { ProviderLibrary, BoosterConfig } from '@boostercloud/framework-types'
 import { RawEventsParser } from '../../src/services/raw-events-parser'
-import { expect } from 'chai'
+import { expect } from '../expect'
 
 describe('RawEventsParser', () => {
   afterEach(() => {
@@ -18,7 +18,9 @@ describe('RawEventsParser', () => {
         id: 2,
       }
       const providerLibrary = ({
-        rawEventsToEnvelopes: fake.returns([anEvent, anotherEvent]),
+        events: {
+          rawToEnvelopes: fake.returns([anEvent, anotherEvent]),
+        },
       } as unknown) as ProviderLibrary
       const callbackFn = fake()
 

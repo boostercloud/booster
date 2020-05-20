@@ -1,6 +1,5 @@
 import { describe } from 'mocha'
-import { expect } from 'chai'
-import * as chai from 'chai'
+import { expect } from './expect'
 import {
   ProviderLibrary,
   BoosterConfig,
@@ -14,9 +13,6 @@ import {
 } from '@boostercloud/framework-types'
 import { restore } from 'sinon'
 import { BoosterReadModelDispatcher } from '../src/booster-read-model-dispatcher'
-
-chai.use(require('sinon-chai'))
-chai.use(require('chai-as-promised'))
 
 const logger: Logger = {
   debug() {},

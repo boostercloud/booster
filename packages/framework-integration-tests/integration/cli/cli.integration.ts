@@ -9,17 +9,18 @@ describe('cli', () => {
   describe('new entity', () => {
     before(async () => {
       try {
-        await removeFile('src/entities/Post.ts')
-        await removeFile('src/entities/PostWithFields.ts')
+        await Promise.all([removeFile('src/entities/Post.ts'), removeFile('src/entities/PostWithFields.ts')])
       } catch (e) {
         // error whilst deleting file
       }
     })
 
     after(async () => {
-      await exec('npm run compile --scripts-prepend-node-path')
-      await removeFile('src/entities/Post.ts')
-      await removeFile('src/entities/PostWithFields.ts')
+      await Promise.all([
+        exec('npm run compile --scripts-prepend-node-path'),
+        removeFile('src/entities/Post.ts'),
+        removeFile('src/entities/PostWithFields.ts'),
+      ])
     })
 
     context('valid entity', () => {

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { expect } from 'chai'
+import { expect } from '../expect'
 import { describe } from 'mocha'
 import { ReadModel, Booster, Entity, Projects } from '../../src/index'
 import { UUID } from '@boostercloud/framework-types'

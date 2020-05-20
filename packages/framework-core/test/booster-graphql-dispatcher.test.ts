@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { fake, match, replace, restore, spy } from 'sinon'
-import * as chai from 'chai'
-import { expect } from 'chai'
+import { expect } from './expect'
 import { BoosterConfig, Logger, GraphQLRequestEnvelope } from '@boostercloud/framework-types'
 import { BoosterGraphQLDispatcher } from '../src/booster-graphql-dispatcher'
 import * as gqlParser from 'graphql/language/parser'
@@ -10,8 +9,6 @@ import * as gqlValidator from 'graphql/validation/validate'
 import * as gqlExecutor from 'graphql/execution/execute'
 import { GraphQLResolverContext } from '../src/services/graphql/common'
 import { NoopReadModelPubSub } from '../src/services/pub-sub/noop-read-model-pub-sub'
-
-chai.use(require('sinon-chai'))
 
 const logger: Logger = console
 
@@ -31,7 +28,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
 
       await dispatcher.dispatch({})
 
-      expect(config.provider.handleGraphQLResult).to.have.been.calledOnce
+      expect(config.provider.graphQL.handleResult).to.have.been.calledOnce
     })
 
     it('calls the provider "handleGraphQLResult" when there is an error with the graphql execution', async () => {
@@ -52,7 +49,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
       await dispatcher.dispatch({})
 
       // Check that the handled error includes all the errors that GraphQL reported
-      expect(config.provider.handleGraphQLResult).to.have.been.calledWithExactly(graphQLError)
+      expect(config.provider.graphQL.handleResult).to.have.been.calledWithExactly(graphQLError)
     })
 
     it('calls the the GraphQL engine with the passed envelope and handles the result', async () => {
@@ -87,7 +84,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
         document: match.any,
         contextValue: match(resolverContext),
       })
-      expect(config.provider.handleGraphQLResult).to.have.been.calledWithExactly(graphQLResult)
+      expect(config.provider.graphQL.handleResult).to.have.been.calledWithExactly(graphQLResult)
     })
   })
 })
@@ -95,9 +92,10 @@ describe('the `BoosterGraphQLDispatcher`', () => {
 function mockConfigForGraphQLEnvelope(envelope: GraphQLRequestEnvelope): BoosterConfig {
   const config = new BoosterConfig('test')
   config.provider = {
-    rawGraphQLRequestToEnvelope: fake.resolves(envelope),
-    handleGraphQLError: fake(),
-    handleGraphQLResult: fake(),
+    graphQL: {
+      rawToEnvelope: fake.resolves(envelope),
+      handleResult: fake(),
+    },
   } as any
   return config
 }

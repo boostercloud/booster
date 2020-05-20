@@ -30,11 +30,7 @@ export class BoosterSubscribersNotifier {
   public async dispatch(request: any): Promise<void> {
     try {
       this.logger.debug('Received the following event for subscription dispatching: ', request)
-      const readModelEnvelopes = await this.config.provider.rawReadModelEventsToEnvelopes(
-        this.config,
-        this.logger,
-        request
-      )
+      const readModelEnvelopes = await this.config.provider.readModels.rawToEnvelopes(this.config, this.logger, request)
       this.logger.debug('[SubsciptionDispatcher] The following ReadModels were updated: ', readModelEnvelopes)
       const subscriptions = await this.getSubscriptions(readModelEnvelopes)
       this.logger.debug(
@@ -63,7 +59,9 @@ export class BoosterSubscribersNotifier {
     const readModelNames = readModelEnvelopes.map((readModelEnvelope) => readModelEnvelope.typeName)
     const readModelUniqueNames = [...new Set(readModelNames)]
     const subscriptionSets = await Promise.all(
-      readModelUniqueNames.map((name) => this.config.provider.fetchSubscriptions(this.config, this.logger, name))
+      readModelUniqueNames.map((name) =>
+        this.config.provider.readModels.fetchSubscriptions(this.config, this.logger, name)
+      )
     )
     return subscriptionSets.flat()
   }
@@ -125,7 +123,7 @@ export class BoosterSubscribersNotifier {
     }
     const readModel = result.data as ReadModelInterface
     this.logger.debug(`Notifying connectionID '${subscription.connectionID}' with read model: `, readModel)
-    await this.config.provider.notifySubscription(this.config, subscription.connectionID, readModel)
+    await this.config.provider.readModels.notifySubscription(this.config, subscription.connectionID, readModel)
     this.logger.debug('Notifications sent')
   }
 }
