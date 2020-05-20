@@ -4,6 +4,7 @@
     "packages/framework-provider-aws",
     "packages/framework-provider-aws-infrastructure",
     "packages/framework-provider-azure",
+    "packages/framework-provider-azure-infrastructure",
     "packages/framework-provider-local",
     "packages/framework-provider-local-infrastructure",
     "packages/framework-core",
