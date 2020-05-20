@@ -6,6 +6,7 @@ import { HttpLink } from 'apollo-link-http'
 import fetch from 'cross-fetch'
 import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
 import ScanOutput = DocumentClient.ScanOutput
+import QueryOutput = DocumentClient.QueryOutput
 
 const userPoolId = 'userpool'
 const cloudFormation = new CloudFormation()
@@ -244,6 +245,19 @@ export async function countSnapshotItems(tableName: string): Promise<number> {
     .promise()
 
   return output.Count === undefined ? -1 : output.Count
+}
+
+export async function queryEvents(tableName: string, primaryKey: string, latestFirst = true): Promise<any> {
+  const output: QueryOutput = await documentClient
+    .query({
+      TableName: tableName,
+      KeyConditionExpression: 'entityTypeName_entityID_kind = :v',
+      ExpressionAttributeValues: { ':v': primaryKey },
+      ScanIndexForward: !latestFirst,
+    })
+    .promise()
+
+  return output.Items
 }
 
 // --- Other helpers ---
