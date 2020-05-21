@@ -257,7 +257,7 @@ export async function countSnapshotItems(tableName: string): Promise<number> {
     })
     .promise()
 
-  return output.Count === undefined ? -1 : output.Count
+  return output.Count ?? -1
 }
 
 // --- Other helpers ---
