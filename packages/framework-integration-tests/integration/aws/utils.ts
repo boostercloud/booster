@@ -205,16 +205,9 @@ export async function graphQLClient(authToken?: string): Promise<ApolloClient<No
 // --- Events store helpers ---
 
 export async function eventsStoreTableName(): Promise<string> {
-  const { Outputs } = await appStack()
-  const eventsStoreTableName = Outputs?.find((output) => {
-    return output.OutputKey === 'eventsStoreTableName'
-  })?.OutputValue
+  const stackName = appStackName()
 
-  if (eventsStoreTableName) {
-    return eventsStoreTableName
-  } else {
-    throw 'Unable to get the Events Store table name from the current stack'
-  }
+  return `${stackName}-events-store`
 }
 
 export async function queryEvents(tableName: string, primaryKey: string, latestFirst = true): Promise<any> {

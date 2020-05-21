@@ -1,6 +1,6 @@
 import { Code, Function } from '@aws-cdk/aws-lambda'
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { Stack, RemovalPolicy, CfnOutput } from '@aws-cdk/core'
+import { Stack, RemovalPolicy } from '@aws-cdk/core'
 import { Stream } from '@aws-cdk/aws-kinesis'
 import * as dynamodb from '@aws-cdk/aws-dynamodb'
 import { eventStorePartitionKeyAttribute, eventStoreSortKeyAttribute } from '@boostercloud/framework-provider-aws'
@@ -18,8 +18,9 @@ export class EventsStack {
   public constructor(
     private readonly config: BoosterConfig,
     private readonly stack: Stack,
-    private readonly apis: APIs
-  ) {}
+    private readonly apis: APIs,
+  ) {
+  }
 
   public build(): EventsStackMembers {
     const eventsStream = this.buildEventsStream()
@@ -42,7 +43,7 @@ export class EventsStack {
 
   private buildEventsStore(): dynamodb.Table {
     const localID = 'events-store'
-    const eventsStoreTable = new dynamodb.Table(this.stack, localID, {
+    return new dynamodb.Table(this.stack, localID, {
       tableName: this.config.resourceNames.eventsStore,
       partitionKey: {
         name: eventStorePartitionKeyAttribute,
@@ -55,13 +56,6 @@ export class EventsStack {
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY,
     })
-
-    new CfnOutput(this.stack, 'eventsStoreTableName', {
-      value: eventsStoreTable.tableName,
-      description: 'Events Store DynamoDB table name',
-    })
-
-    return eventsStoreTable
   }
 
   private buildEventsLambda(eventsStream: Stream): Function {
