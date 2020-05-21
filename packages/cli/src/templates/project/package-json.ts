@@ -15,8 +15,10 @@ export const template = `{
     "@typescript-eslint/parser": "^2.18.0",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-prettier": "^3.1.2",
     "mocha": "^7.0.1",
     "nyc": "^15.0.0",
+    "prettier": "^1.19.1",
     "typescript": "^3.7.5",
     "ts-node": "^8.6.2",
     "@types/node": "^13.5.1",
@@ -31,6 +33,7 @@ export const template = `{
   "repository": "{{{repository}}}",
   "scripts": {
     "lint": "eslint --ext '.js,.ts' **/*.ts",
+    "fix-lint": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
     "deploy": "boost deploy",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
