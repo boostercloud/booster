@@ -1,11 +1,4 @@
-import {
-  countEventItems,
-  countSnapshotItems,
-  eventsStoreTableName,
-  queryEvents,
-  graphQLClient,
-  sleep,
-} from './utils'
+import { countEventItems, countSnapshotItems, eventsStoreTableName, queryEvents, graphQLClient, sleep } from './utils'
 import { expect } from 'chai'
 import gql from 'graphql-tag'
 import { ApolloClient } from 'apollo-client'
@@ -69,22 +62,28 @@ describe('the commands API', async () => {
     expect(latestEvent[0].typeName).to.be.equal('ChangedCartItem')
   })
 
-
   it('should generate a snapshot after 5 events', async () => {
     const snapshotsCount = await countSnapshotItems(eventStoreTableName)
 
+    const eventsPromises: Promise<any>[] = []
     for (let i = 0; i < 5; i++) {
-      const response = await client.mutate({
-        mutation: gql`
-          mutation {
-            ChangeCartItem(input: { cartId: "demo-cart-id", productId: "demo-product-id", quantity: 3 })
-          }
-        `,
-      })
+      eventsPromises.push(
+        client.mutate({
+          mutation: gql`
+            mutation {
+              ChangeCartItem(input: { cartId: "demo-cart-id", productId: "demo-product-id", quantity: 3 })
+            }
+          `,
+        })
+      )
+    }
 
+    const changeCartItemResults = await Promise.all(eventsPromises)
+
+    changeCartItemResults.forEach((response: any) => {
       expect(response).not.to.be.null
       expect(response?.data?.ChangeCartItem).to.be.true
-    }
+    })
 
     await sleep(5000)
 
