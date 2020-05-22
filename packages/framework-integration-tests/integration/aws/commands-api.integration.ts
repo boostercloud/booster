@@ -30,7 +30,7 @@ describe('the commands API', async () => {
   })
 
   it('should create an event in the event store', async () => {
-    const eventsCount = await countEventItems(eventStoreTableName)
+    const eventsCount = await countEventItems()
     expect(eventsCount).to.be.greaterThan(0)
 
     const response = await client.mutate({
@@ -48,10 +48,10 @@ describe('the commands API', async () => {
 
     // Verify number of events
     const expectedEventItemsCount = eventsCount + 1
-    expect(await countEventItems(eventStoreTableName)).to.be.equal(expectedEventItemsCount)
+    expect(await countEventItems()).to.be.equal(expectedEventItemsCount)
 
     // Verify latest event
-    const latestEvent = await queryEvents(eventStoreTableName, 'Cart-demo-cart-id-event')
+    const latestEvent = await queryEvents('Cart-demo-cart-id-event')
     expect(latestEvent).not.to.be.null
     expect(latestEvent[0].entityTypeName_entityID_kind).to.be.equal('Cart-demo-cart-id-event')
     expect(latestEvent[0].value.productId).to.be.equal('demo-product-id')
@@ -63,11 +63,11 @@ describe('the commands API', async () => {
   })
 
   it('should generate a snapshot after 5 events', async () => {
-    const snapshotsCount = await countSnapshotItems(eventStoreTableName)
+    const snapshotsCount = await countSnapshotItems()
 
-    const eventsPromises: Promise<any>[] = []
+    const commandsPromises: Promise<any>[] = []
     for (let i = 0; i < 5; i++) {
-      eventsPromises.push(
+      commandsPromises.push(
         client.mutate({
           mutation: gql`
             mutation {
@@ -78,7 +78,7 @@ describe('the commands API', async () => {
       )
     }
 
-    const changeCartItemResults = await Promise.all(eventsPromises)
+    const changeCartItemResults = await Promise.all(commandsPromises)
 
     changeCartItemResults.forEach((response: any) => {
       expect(response).not.to.be.null
@@ -88,6 +88,6 @@ describe('the commands API', async () => {
     await sleep(5000)
 
     const expectedSnapshotItemsCount = snapshotsCount + 1
-    expect(await countSnapshotItems(eventStoreTableName)).to.be.equal(expectedSnapshotItemsCount)
+    expect(await countSnapshotItems()).to.be.equal(expectedSnapshotItemsCount)
   })
 })

@@ -210,10 +210,10 @@ export async function eventsStoreTableName(): Promise<string> {
   return `${stackName}-events-store`
 }
 
-export async function queryEvents(tableName: string, primaryKey: string, latestFirst = true): Promise<any> {
+export async function queryEvents(primaryKey: string, latestFirst = true): Promise<any> {
   const output: QueryOutput = await documentClient
     .query({
-      TableName: tableName,
+      TableName: await eventsStoreTableName(),
       KeyConditionExpression: 'entityTypeName_entityID_kind = :v',
       ExpressionAttributeValues: { ':v': primaryKey },
       ScanIndexForward: !latestFirst,
@@ -225,10 +225,10 @@ export async function queryEvents(tableName: string, primaryKey: string, latestF
 
 // --- DynamoDB helpers ---
 
-export async function countEventItems(tableName: string): Promise<number> {
+export async function countEventItems(): Promise<number> {
   const output: ScanOutput = await documentClient
     .scan({
-      TableName: tableName,
+      TableName: await eventsStoreTableName(),
       Select: 'COUNT',
       FilterExpression: '#k = :kind',
       ExpressionAttributeNames: { '#k': 'kind' },
@@ -239,10 +239,10 @@ export async function countEventItems(tableName: string): Promise<number> {
   return output.Count ?? -1
 }
 
-export async function countSnapshotItems(tableName: string): Promise<number> {
+export async function countSnapshotItems(): Promise<number> {
   const output: ScanOutput = await documentClient
     .scan({
-      TableName: tableName,
+      TableName: await eventsStoreTableName(),
       Select: 'COUNT',
       FilterExpression: '#k = :kind',
       ExpressionAttributeNames: { '#k': 'kind' },
