@@ -69,13 +69,5 @@ describe('cli', () => {
         })
       })
     })
-
-    describe('with reducer', () => {
-      it('should create new entity with reducer', async () => {
-        await exec(`${cliPath} new:event PostCreated --fields postId:UUID title:string body:string`)
-        const { stdout } = await exec(`${cliPath} new:entity PostWithReducer --reduces PostCreated`)
-        console.log(stdout)
-      })
-    })
   })
 })
