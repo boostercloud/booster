@@ -1,4 +1,5 @@
 import util = require('util')
+
 const exec = util.promisify(require('child_process').exec)
 import { expect } from 'chai'
 import { readFileContent, removeFile } from '../helper/fileHelper'
@@ -16,11 +17,15 @@ describe('cli', () => {
     })
 
     after(async () => {
-      await Promise.all([
-        exec('npm run compile --scripts-prepend-node-path'),
-        removeFile('src/entities/Post.ts'),
-        removeFile('src/entities/PostWithFields.ts'),
-      ])
+      try {
+        await Promise.all([
+          exec('npm run compile --scripts-prepend-node-path'),
+          removeFile('src/entities/Post.ts'),
+          removeFile('src/entities/PostWithFields.ts'),
+        ])
+      } catch (e) {
+        // error whilst deleting file
+      }
     })
 
     context('valid entity', () => {
@@ -62,6 +67,14 @@ describe('cli', () => {
             "You haven't provided an entity name, but it is required, run with --help for usage\n"
           )
         })
+      })
+    })
+
+    describe('with reducer', () => {
+      it('should create new entity with reducer', async () => {
+        await exec(`${cliPath} new:event PostCreated --fields postId:UUID title:string body:string`)
+        const { stdout } = await exec(`${cliPath} new:entity PostWithReducer --reduces PostCreated`)
+        console.log(stdout)
       })
     })
   })

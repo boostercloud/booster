@@ -1,4 +1,4 @@
-import { countEventItems, countSnapshotItems, eventsStoreTableName, queryEvents, graphQLClient, sleep } from './utils'
+import { countEventItems, countSnapshotItems, queryEvents, graphQLClient, sleep } from './utils'
 import { expect } from 'chai'
 import gql from 'graphql-tag'
 import { ApolloClient } from 'apollo-client'
@@ -6,11 +6,9 @@ import { NormalizedCacheObject } from 'apollo-cache-inmemory'
 
 describe('the commands API', async () => {
   let client: ApolloClient<NormalizedCacheObject>
-  let eventStoreTableName: string
 
   before(async () => {
     client = await graphQLClient()
-    eventStoreTableName = await eventsStoreTableName()
   })
 
   it('accepts a command successfully', async () => {
@@ -53,18 +51,14 @@ describe('the commands API', async () => {
     // Verify latest event
     const latestEvent = await queryEvents('Cart-demo-cart-id-event')
     expect(latestEvent).not.to.be.null
-    const expectedEvent: EventEnvelope = {
-       entityTypeName_entityID_kind: 'Cart-demo-cart-id-event'
-       value: {
-         productId: 'demo-product-id'
-         cartId: 'demo-cart-id'
-         quantity: 2
-       }
-       kind: 'event'
-       entityTypeName: 'Cart'
-       typeName: 'ChangedCartItem'
-    })
-    expect(latestEvent[0]).to.be.deep.equal(expectedEvent)
+
+    expect(latestEvent[0].entityTypeName_entityID_kind).to.be.equal('Cart-demo-cart-id-event')
+    expect(latestEvent[0].value.productId).to.be.equal('demo-product-id')
+    expect(latestEvent[0].value.cartId).to.be.equal('demo-cart-id')
+    expect(latestEvent[0].value.quantity).to.be.equal(2)
+    expect(latestEvent[0].kind).to.be.equal('event')
+    expect(latestEvent[0].entityTypeName).to.be.equal('Cart')
+    expect(latestEvent[0].typeName).to.be.equal('ChangedCartItem')
   })
 
   it('should generate a snapshot after 5 events', async () => {
