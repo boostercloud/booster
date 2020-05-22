@@ -55,7 +55,7 @@ export class EventStore {
       `[EventStore#storeSnapshot] Max number of events after latest stored snapshot reached (${numberOfEventsBetweenSnapshots}). Storing snapshot in the event store:`,
       snapshot
     )
-    return await this.provider.evenst.storeAndPublish([snapshot], this.config, this.logger)
+    return await this.provider.events.storeAndPublish([snapshot], this.config, this.logger)
   }
 
   private loadLatestSnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | null> {

@@ -1,7 +1,6 @@
 import { Table } from '@aws-cdk/aws-dynamodb'
 import { Function } from '@aws-cdk/aws-lambda'
 import { CfnApi } from '@aws-cdk/aws-apigatewayv2'
-import { Stream } from '@aws-cdk/aws-kinesis'
 import { Fn } from '@aws-cdk/core'
 import { createPolicyStatement } from './policies'
 
@@ -11,12 +10,11 @@ export const setupPermissions = (
   subscriptionDispatcherLambda: Function,
   subscriptionsTable: Table,
   websocketAPI: CfnApi,
-  eventsStream: Stream,
   eventsStore: Table,
   eventsLambda: Function
 ): void => {
   graphQLLambda.addToRolePolicy(
-    createPolicyStatement([eventsStream.streamArn], ['kinesis:Put*', 'dynamodb:Query*', 'dynamodb:Put*'])
+    createPolicyStatement([eventsStore.tableArn], ['dynamodb:BatchWriteItem', 'dynamodb:Query*', 'dynamodb:Put*'])
   )
   graphQLLambda.addToRolePolicy(createPolicyStatement([subscriptionsTable.tableArn], ['dynamodb:Put*']))
 

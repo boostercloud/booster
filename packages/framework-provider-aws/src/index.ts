@@ -26,10 +26,9 @@ export const Provider: ProviderLibrary = {
   // ProviderEventsLibrary
   events: {
     rawToEnvelopes: rawEventsToEnvelopes,
-    store: storeEvent.bind(null, dynamoDB),
     forEntitySince: readEntityEventsSince.bind(null, dynamoDB),
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, dynamoDB),
-    storeAndPublish: publishEvents.bind(null, eventsStream),
+    storeAndPublish: storeAndPublishEvents.bind(null, dynamoDB),
   },
   // ProviderReadModelsLibrary
   readModels: {
