@@ -111,7 +111,6 @@ async function nukeApp(observer: Subscriber<string>, config: BoosterConfig): Pro
     exclusively: false,
     force: true,
     sdk: aws,
-    fromDeploy: true,
   })
 }
 

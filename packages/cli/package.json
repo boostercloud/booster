@@ -13,7 +13,6 @@
   "bugs": "https://github.com/boostercloud/booster/issues",
   "dependencies": {
     "@boostercloud/framework-core": "^0.3.3",
-    "@boostercloud/framework-provider-local-infrastructure": "^0.3.3",
     "@boostercloud/framework-types": "^0.3.3",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
