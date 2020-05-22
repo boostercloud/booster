@@ -162,7 +162,7 @@ export async function deleteUser(username: string): Promise<void> {
 export async function baseURL(): Promise<string> {
   const { Outputs } = await appStack()
   const url = Outputs?.find((output) => {
-    return output.OutputKey === 'baseRESTURL'
+    return output.OutputKey === 'httpURL'
   })?.OutputValue
 
   if (url) {
