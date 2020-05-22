@@ -2,7 +2,6 @@ import { Function } from '@aws-cdk/aws-lambda'
 import { setupPermissions } from '../../../src/infrastructure/stacks/permissions'
 import { Table } from '@aws-cdk/aws-dynamodb'
 import { CfnApi } from '@aws-cdk/aws-apigatewayv2'
-import { Stream } from '@aws-cdk/aws-kinesis'
 import { SinonStub, assert, stub, restore } from 'sinon'
 import { random } from 'faker'
 import * as policies from '../../../src/infrastructure/stacks/policies'
@@ -32,7 +31,6 @@ describe('permissions', () => {
     let mockReadModelTable: Table
     let mockReadModelTables: Array<Table>
     let mockWebsocketAPI: CfnApi
-    let mockEventStream: Stream
 
     let createPolicyStatementStub: SinonStub
     let graphQLAddToRolePolicyStub: SinonStub
@@ -60,10 +58,6 @@ describe('permissions', () => {
       mockGraphQLLambda = {} as Function
       mockSubscriptionDispatcherLambda = {} as Function
       mockEventsLambda = {} as Function
-
-      mockEventStream = {
-        streamArn: mockEventStreamArn,
-      } as Stream
 
       mockSubscriptionsTable = {
         tableArn: mockSubscriptionsTableArn,
@@ -93,7 +87,6 @@ describe('permissions', () => {
         mockSubscriptionDispatcherLambda,
         mockSubscriptionsTable,
         mockWebsocketAPI,
-        mockEventStream,
         mockEventsStoreTable,
         mockEventsLambda
       )

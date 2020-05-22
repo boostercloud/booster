@@ -437,7 +437,7 @@ describe('EventStore', () => {
 
         await eventStore.storeSnapshot(someSnapshot)
 
-        expect(config.provider.events.storeAndPublish).to.have.been.calledOnceWith(config, logger, someSnapshot)
+        expect(config.provider.events.storeAndPublish).to.have.been.calledOnceWith([someSnapshot], config, logger)
       })
     })
 
