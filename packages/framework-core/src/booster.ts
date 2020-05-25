@@ -42,7 +42,7 @@ export class Booster {
    * @param configurator A function that receives the configuration object to set the values
    */
   public static configure(environment: string, configurator: (config: BoosterConfig) => void): void {
-    this.config.configuredEnvironments.push(environment)
+    this.config.addConfiguredEnvironment(environment)
     if (this.config.environmentName === environment) {
       configurator(this.config)
     }
