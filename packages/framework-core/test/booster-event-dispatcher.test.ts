@@ -61,6 +61,7 @@ describe('BoosterEventDispatcher', () => {
   }
 
   const config = new BoosterConfig('test')
+  config.configuredEnvironments.push('test')
   config.provider = {} as ProviderLibrary
 
   context('with a configured provider', () => {

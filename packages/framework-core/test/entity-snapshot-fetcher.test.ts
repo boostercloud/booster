@@ -13,6 +13,7 @@ describe('entitySnapshotFetcher', () => {
 
   context('given a BoosterConfig and a Logger', () => {
     const config = new BoosterConfig('test')
+    config.configuredEnvironments.push('test')
     config.provider = {} as ProviderLibrary
     const logger = buildLogger(Level.debug)
 

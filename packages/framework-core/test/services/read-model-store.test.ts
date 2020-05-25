@@ -32,6 +32,7 @@ describe('ReadModelStore', () => {
   }
 
   const config = new BoosterConfig('test')
+  config.configuredEnvironments.push('test')
   config.provider = ({
     readModels: {
       store: () => {},

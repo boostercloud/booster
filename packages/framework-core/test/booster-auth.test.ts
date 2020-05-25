@@ -21,6 +21,7 @@ describe('the "checkSignUp" method', () => {
 
   function buildBoosterConfig(): BoosterConfig {
     const config = new BoosterConfig('test')
+    config.configuredEnvironments.push('test')
     config.provider = ({
       auth: { rawToEnvelope: () => {} },
     } as unknown) as ProviderLibrary
@@ -117,6 +118,7 @@ describe('the "authorizeRequest" method', () => {
   it('calls the provider authorizer', async () => {
     const request = {}
     const config = new BoosterConfig('test')
+    config.configuredEnvironments.push('test')
     const fakeProviderAuthorizer = fake()
     config.provider = {
       graphQL: {
