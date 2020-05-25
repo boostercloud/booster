@@ -136,15 +136,32 @@ describe('the config type', () => {
   describe('provider', () => {
     it('throws when there is no provider set', () => {
       const config = new BoosterConfig('test')
+      config.configuredEnvironments.push('test')
 
       expect(() => config.provider).to.throw(/set a valid provider runtime/)
     })
 
     it('does not throw when there is a provider set', () => {
       const config = new BoosterConfig('test')
+      config.configuredEnvironments.push('test')
       config.provider = {} as ProviderLibrary
 
       expect(() => config.provider).to.not.throw()
+    })
+
+    it('throws when any environment was not configured', () => {
+      const config = new BoosterConfig('test')
+
+      expect(() => config.provider).to.throw(/It is required to specify the deployment environments/)
+    })
+
+    it('throws when a specific environment was not configured', () => {
+      const config = new BoosterConfig('test')
+      config.configuredEnvironments.push('stage')
+
+      expect(() => config.provider).to.throw(
+        /does not match with any of the environments you used to configure your Booster project/
+      )
     })
   })
 })
