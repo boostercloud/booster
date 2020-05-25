@@ -1,13 +1,17 @@
-import { CloudFormation, CognitoIdentityServiceProvider } from 'aws-sdk'
+import { CloudFormation, CognitoIdentityServiceProvider, DynamoDB } from 'aws-sdk'
 import { Stack, StackResourceDetail } from 'aws-sdk/clients/cloudformation'
 import { ApolloClient } from 'apollo-client'
 import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { HttpLink } from 'apollo-link-http'
 import fetch from 'cross-fetch'
+import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
+import ScanOutput = DocumentClient.ScanOutput
+import QueryOutput = DocumentClient.QueryOutput
 
 const userPoolId = 'userpool'
 const cloudFormation = new CloudFormation()
 const cognitoIdentityServiceProvider = new CognitoIdentityServiceProvider()
+const documentClient = new DynamoDB.DocumentClient()
 
 // --- Stack Helpers ---
 
@@ -185,7 +189,7 @@ export async function signInURL(): Promise<string> {
 export async function graphQLClient(authToken?: string): Promise<ApolloClient<NormalizedCacheObject>> {
   const url = await baseURL()
   const cache = new InMemoryCache()
-  const headers = authToken ? { 'Authorization': `Bearer ${authToken}` } : {}
+  const headers = authToken ? { Authorization: `Bearer ${authToken}` } : {}
   const link = new HttpLink({
     uri: new URL('graphql', url).href,
     headers,
@@ -196,6 +200,57 @@ export async function graphQLClient(authToken?: string): Promise<ApolloClient<No
     cache: cache,
     link: link,
   })
+}
+
+// --- Events store helpers ---
+
+export async function eventsStoreTableName(): Promise<string> {
+  const stackName = appStackName()
+
+  return `${stackName}-events-store`
+}
+
+export async function queryEvents(primaryKey: string, latestFirst = true): Promise<any> {
+  const output: QueryOutput = await documentClient
+    .query({
+      TableName: await eventsStoreTableName(),
+      KeyConditionExpression: 'entityTypeName_entityID_kind = :v',
+      ExpressionAttributeValues: { ':v': primaryKey },
+      ScanIndexForward: !latestFirst,
+    })
+    .promise()
+
+  return output.Items
+}
+
+// --- DynamoDB helpers ---
+
+export async function countEventItems(): Promise<number> {
+  const output: ScanOutput = await documentClient
+    .scan({
+      TableName: await eventsStoreTableName(),
+      Select: 'COUNT',
+      FilterExpression: '#k = :kind',
+      ExpressionAttributeNames: { '#k': 'kind' },
+      ExpressionAttributeValues: { ':kind': 'event' },
+    })
+    .promise()
+
+  return output.Count ?? -1
+}
+
+export async function countSnapshotItems(): Promise<number> {
+  const output: ScanOutput = await documentClient
+    .scan({
+      TableName: await eventsStoreTableName(),
+      Select: 'COUNT',
+      FilterExpression: '#k = :kind',
+      ExpressionAttributeNames: { '#k': 'kind' },
+      ExpressionAttributeValues: { ':kind': 'snapshot' },
+    })
+    .promise()
+
+  return output.Count ?? -1
 }
 
 // --- Other helpers ---
