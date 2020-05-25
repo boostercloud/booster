@@ -20,7 +20,7 @@ describe('cli', () => {
   describe('new entity', () => {
     before(async () => {
       try {
-        await Promise.all(files.map(removeFile))
+        await Promise.allSettled(files.map(removeFile))
       } catch (e) {
         // error whilst deleting files
       }
