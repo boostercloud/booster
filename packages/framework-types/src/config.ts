@@ -89,7 +89,6 @@ export class BoosterConfig {
   }
 
   public get provider(): ProviderLibrary {
-    this.checkEnvironmentWasConfigured()
     if (!this._provider) throw new Error('It is required to set a valid provider runtime in your configuration files')
     return this._provider
   }
@@ -104,6 +103,12 @@ export class BoosterConfig {
       throw new Error(`Missing environment variable '${varName}'`)
     }
     return value
+  }
+
+  public addConfiguredEnvironment(environmentName: string): void {
+    if (!this.configuredEnvironments.includes(environmentName)) {
+      this.configuredEnvironments.push(environmentName)
+    }
   }
 
   private validateAllMigrations(): void {
@@ -122,16 +127,6 @@ export class BoosterConfig {
             `There must be a migration for '${conceptName}' for every version in the range [2..${currentVersion}]`
         )
       }
-    }
-  }
-
-  private checkEnvironmentWasConfigured(): void {
-    if (!this.configuredEnvironments.includes(this.environmentName)) {
-      const errorMessage = this.configuredEnvironments.length
-        ? `The environment '${this.environmentName}' does not match with any of the environments` +
-          ` you used to configure your Booster project which are: '${this.configuredEnvironments.join(', ')}'`
-        : "You haven't configured any environment. It is required to specify the deployment environments in 'src/config/config.ts'"
-      throw new Error(errorMessage)
     }
   }
 }
