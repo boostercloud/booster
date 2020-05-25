@@ -131,7 +131,7 @@ async function nukeToolkit(observer: Subscriber<string>, config: BoosterConfig, 
     Mode.ForWriting
   )
   await cloudFormation.deleteStack({StackName: stackName}).promise()
-  observer.next('✅  ' + colors.blue(stackName) + colors.yellow(': destroyed'))
+  observer.next('✅  ' + colors.blue(stackName) + colors.red(': DESTROYED'))
 }
 
 export function deploy(configuration: BoosterConfig): Observable<string> {
