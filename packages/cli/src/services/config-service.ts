@@ -28,7 +28,18 @@ function readProjectConfig(userProjectPath: string): Promise<BoosterConfig> {
   return new Promise((resolve): void => {
     const projectBooster: BoosterApp = userProject.Booster
     projectBooster.configureCurrentEnv((config: BoosterConfig): void => {
+      checkEnvironmentWasConfigured(config)
       resolve(config)
     })
   })
+}
+
+function checkEnvironmentWasConfigured(config: BoosterConfig): void {
+  if (!config.configuredEnvironments.includes(config.environmentName)) {
+    const errorMessage = config.configuredEnvironments.length
+      ? `The environment '${config.environmentName}' does not match with any of the environments` +
+        ` you used to configure your Booster project which are: '${config.configuredEnvironments.join(', ')}'`
+      : "You haven't configured any environment. It is required to specify the deployment environments in 'src/config/config.ts'"
+    throw new Error(errorMessage)
+  }
 }
