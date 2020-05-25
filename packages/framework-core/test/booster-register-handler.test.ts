@@ -25,7 +25,6 @@ describe('the `RegisterHandler` class', () => {
 
   it('handles a register', async () => {
     const config = new BoosterConfig('test')
-    config.configuredEnvironments.push('test')
     config.provider = {
       events: {
         publish: fake(),
@@ -51,7 +50,6 @@ describe('the `RegisterHandler` class', () => {
 
   it('publishes wrapped events', async () => {
     const config = new BoosterConfig('test')
-    config.configuredEnvironments.push('test')
     config.provider = {
       events: {
         publish: fake(),

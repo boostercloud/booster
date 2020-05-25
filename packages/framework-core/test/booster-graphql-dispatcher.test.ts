@@ -91,7 +91,6 @@ describe('the `BoosterGraphQLDispatcher`', () => {
 
 function mockConfigForGraphQLEnvelope(envelope: GraphQLRequestEnvelope): BoosterConfig {
   const config = new BoosterConfig('test')
-  config.configuredEnvironments.push('test')
   config.provider = {
     graphQL: {
       rawToEnvelope: fake.resolves(envelope),

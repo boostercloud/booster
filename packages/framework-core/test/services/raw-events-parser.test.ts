@@ -25,7 +25,6 @@ describe('RawEventsParser', () => {
       const callbackFn = fake()
 
       const config = new BoosterConfig('test')
-      config.configuredEnvironments.push('test')
       config.provider = providerLibrary
 
       await RawEventsParser.streamEvents(config, { some: 'raw message' }, callbackFn)
