@@ -18,8 +18,9 @@ export class EventsStack {
   public constructor(
     private readonly config: BoosterConfig,
     private readonly stack: Stack,
-    private readonly apis: APIs
-  ) {}
+    private readonly apis: APIs,
+  ) {
+  }
 
   public build(): EventsStackMembers {
     const eventsStream = this.buildEventsStream()
