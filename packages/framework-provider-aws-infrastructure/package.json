@@ -30,7 +30,8 @@
     "@aws-cdk/aws-lambda-event-sources": "1.26.0",
     "@boostercloud/framework-provider-aws": "^0.3.3",
     "@boostercloud/framework-types": "^0.3.3",
-    "aws-cdk": "1.26.0"
+    "aws-cdk": "1.26.0",
+    "colors": "^1.4.0"
   },
   "scripts": {
     "lint": "eslint --ext '.js,.ts' **/*.ts",
