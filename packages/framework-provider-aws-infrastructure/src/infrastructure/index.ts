@@ -4,11 +4,13 @@ import { App } from '@aws-cdk/core'
 import { CloudAssembly, Environment } from '@aws-cdk/cx-api'
 import { AppStacks } from 'aws-cdk/lib/api/cxapp/stacks'
 import { Configuration } from 'aws-cdk/lib/settings'
-import { bootstrapEnvironment, DeployStackResult, SDK } from 'aws-cdk'
+import { bootstrapEnvironment, DeployStackResult, Mode, SDK } from 'aws-cdk'
 import { CdkToolkit } from 'aws-cdk/lib/cdk-toolkit'
 import { CloudFormationDeploymentTarget } from 'aws-cdk/lib/api/deployment-target'
 import { Observable, Subscriber } from 'rxjs'
 import { RequireApproval } from 'aws-cdk/lib/diff'
+import * as colors from 'colors'
+import { emptyS3Bucket } from './s3utils'
 
 interface StackServiceConfiguration {
   aws: SDK
@@ -74,7 +76,7 @@ async function deployApp(observer: Subscriber<string>, config: BoosterConfig): P
 
   return cdkToolkit.deploy({
     toolkitStackName: toolkitStackName,
-    stackNames: (await appStacks.listStacks()).map((s): string => s.name),
+    stackNames: (await appStacks.listStacks()).map((s): string => s.stackName),
     requireApproval: RequireApproval.Never,
     sdk: aws,
   })
@@ -104,14 +106,32 @@ async function getStackServiceConfiguration(config: BoosterConfig): Promise<Stac
 /**
  * Nuke all the resources used in the "AppStacks"
  */
-async function nukeApp(observer: Subscriber<string>, config: BoosterConfig): Promise<void> {
-  const { aws, appStacks, cdkToolkit } = await getStackServiceConfiguration(config)
-  return cdkToolkit.destroy({
-    stackNames: (await appStacks.listStacks()).map((s): string => s.name),
+async function nukeApp(observer: Subscriber<string>, config: BoosterConfig): Promise<[ void, void ]> {
+  const {aws, appStacks, cdkToolkit} = await getStackServiceConfiguration(config)
+  const toolkit = nukeToolkit(observer, config, aws)
+  const app = cdkToolkit.destroy({
+    stackNames: (await appStacks.listStacks()).map((s): string => s.stackName),
     exclusively: false,
     force: true,
     sdk: aws,
   })
+  return Promise.all([ toolkit, app ])
+}
+
+/**
+ * Nuke all the resources used in the "Toolkit Stack"
+ */
+async function nukeToolkit(observer: Subscriber<string>, config: BoosterConfig, aws: SDK): Promise<void> {
+  const stackName = config.appName + '-toolkit'
+  observer.next(colors.blue(stackName) + colors.yellow(': destroying...'))
+  await emptyS3Bucket(observer, config.appName + '-toolkit-bucket', aws)
+  const cloudFormation = await aws.cloudFormation(
+    await aws.defaultAccount(),
+    await aws.defaultRegion(),
+    Mode.ForWriting
+  )
+  await cloudFormation.deleteStack({StackName: stackName}).promise()
+  observer.next('✅  ' + colors.blue(stackName) + colors.yellow(': destroyed'))
 }
 
 export function deploy(configuration: BoosterConfig): Observable<string> {
