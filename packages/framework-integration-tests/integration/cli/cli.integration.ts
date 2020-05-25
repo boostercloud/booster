@@ -30,7 +30,7 @@ describe('cli', () => {
       try {
         await exec('lerna run compile')
       } finally {
-        await Promise.all([files.map(removeFile)])
+        await Promise.allSettled([files.map(removeFile)])
       }
     })
 
