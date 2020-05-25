@@ -18,6 +18,7 @@ describe('the `Booster` class', () => {
     restore()
     Booster.configure('test', (config) => {
       config.appName = ''
+      config.configuredEnvironments.length = 0
       for (const propName in config.commandHandlers) {
         delete config.commandHandlers[propName]
       }
