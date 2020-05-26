@@ -32,8 +32,8 @@ export const template = `{
   "main": "dist/index.js",
   "repository": "{{{repository}}}",
   "scripts": {
-    "lint": "eslint --ext '.js,.ts' **/*.ts",
-    "fix-lint": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
+    "lint:check": "eslint --ext '.js,.ts' **/*.ts",
+    "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
     "deploy": "boost deploy",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
