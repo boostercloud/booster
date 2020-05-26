@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Class } from './typelevel'
 
 export type SearcherFunction<TObject> = (className: string, filters: Record<string, Filter<any>>) => Promise<Array<any>>

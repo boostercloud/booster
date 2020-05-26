@@ -54,6 +54,7 @@ describe('BoosterReadModelDispatcher', () => {
       const envelope = {
         typeName: 'anyReadModel',
         requestID: '123',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any // To avoid the compilation failure of "missing version field"
 
       await expect(readModelDispatcher.fetch(envelope)).to.eventually.be.rejectedWith(InvalidParameterError)
