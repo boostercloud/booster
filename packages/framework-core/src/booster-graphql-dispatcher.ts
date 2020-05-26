@@ -100,6 +100,7 @@ export class BoosterGraphQLDispatcher {
       schema: this.graphQLSchema,
       document: queryDocument,
       contextValue: resolverContext,
+      variableValues: resolverContext.operation.variables,
     })
     if ('errors' in result) {
       throw result.errors
