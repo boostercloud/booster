@@ -1,6 +1,6 @@
 import { ProviderLibrary, ProviderInfrastructure } from '@boostercloud/framework-types'
 import { rawSignUpDataToUserEnvelope } from './library/auth-adapter'
-import { publishEvents } from './library/events-adapter'
+import { storeEvents } from './library/events-adapter'
 import { requestSucceeded, requestFailed } from './library/api-adapter'
 import { EventRegistry } from './services'
 
@@ -20,7 +20,7 @@ export const Provider: ProviderLibrary = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     latestEntitySnapshot: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    publish: publishEvents.bind(null, eventRegistry),
+    store: storeEvents.bind(null, eventRegistry),
   },
   // ProviderReadModelsLibrary
   readModels: {

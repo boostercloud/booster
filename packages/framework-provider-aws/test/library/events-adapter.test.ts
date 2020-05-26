@@ -81,7 +81,7 @@ describe('the events-adapter', () => {
     })
   })
 
-  describe('the `publishEvents` method', () => {
+  describe('the `storeEvents` method', () => {
     it('publishes the eventEnvelopes passed via parameter', async () => {
       const config = new BoosterConfig('test')
       config.appName = 'test-app'
@@ -122,7 +122,7 @@ describe('the events-adapter', () => {
         }
       )
 
-      await Library.publishEvents(fakeDynamo, eventEnvelopes, config, fakeLogger)
+      await Library.storeEvents(fakeDynamo, eventEnvelopes, config, fakeLogger)
 
       expect(fakeBatchWrite).to.be.calledWith(
         match({

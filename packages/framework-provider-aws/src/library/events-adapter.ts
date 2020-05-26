@@ -82,13 +82,13 @@ export async function readEntityLatestSnapshot(
   }
 }
 
-export async function publishEvents(
+export async function storeEvents(
   dynamoDB: DynamoDB.DocumentClient,
   eventEnvelopes: Array<EventEnvelope>,
   config: BoosterConfig,
   logger: Logger
 ): Promise<void> {
-  logger.debug('[EventsAdapter#publishEvents] Storing EventEnvelopes with eventEnvelopes:', eventEnvelopes)
+  logger.debug('[EventsAdapter#storeEvents] Storing EventEnvelopes with eventEnvelopes:', eventEnvelopes)
   const params: DynamoDB.DocumentClient.BatchWriteItemInput = {
     RequestItems: {
       [config.resourceNames.eventsStore]: eventEnvelopes.map((eventEnvelope) => ({
@@ -107,5 +107,5 @@ export async function publishEvents(
     },
   }
   await dynamoDB.batchWrite(params).promise()
-  logger.debug('[EventsAdapter#publishEvents] EventEnvelope stored')
+  logger.debug('[EventsAdapter#storeEvents] EventEnvelope stored')
 }

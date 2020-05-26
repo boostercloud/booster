@@ -37,7 +37,7 @@ export interface ProviderEventsLibrary {
     entityID: UUID
   ): Promise<EventEnvelope | null>
   /** Streams an event to the corresponding event handler */
-  publish(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig, logger: Logger): Promise<void>
+  store(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig, logger: Logger): Promise<void>
 }
 export interface ProviderReadModelsLibrary {
   fetch(config: BoosterConfig, logger: Logger, readModelName: string, readModelID: UUID): Promise<ReadModelInterface>
