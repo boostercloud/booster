@@ -20,7 +20,7 @@ describe('cli', () => {
   describe('new entity', () => {
     before(async () => {
       try {
-        await Promise.allSettled(files.map(removeFile))
+        await Promise.all(files.map(removeFile))
       } catch (e) {
         // error whilst deleting files
       }
@@ -30,7 +30,7 @@ describe('cli', () => {
       try {
         await exec('lerna run compile')
       } finally {
-        await Promise.allSettled([files.map(removeFile)])
+        await Promise.all([files.map(removeFile)])
       }
     })
 
