@@ -10,7 +10,7 @@ const ENTITY_REDUCER_PLACEHOLDER = '/* NEW PostWithReducer HERE */'
 
 describe('cli', () => {
   const cliPath = path.join('..', 'cli', 'bin', 'run')
-  const files: string[] = [
+  const files: Array<string> = [
     'src/entities/Post.ts',
     'src/entities/PostWithFields.ts',
     'src/entities/PostWithReducer.ts',
