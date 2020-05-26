@@ -135,14 +135,14 @@ export class Cart {
   // Helper function that creates a copy of the current cart items and adds the new one
   public static newItems(items: Array<CartItem>, sku: string, quantity: number): Array<CartItem> {
     let current_item = items.find(i => i.sku === sku)
-    if (!current_item) {
-     return [...items, {
-       sku,
-       quantity
-     }];
-    } else {
+    if (current_item) {
       current_item.quantity += quantity
       return [...items]
+    } else {
+      return [...items, {
+        sku,
+        quantity
+      }]
     }
   }
 }
