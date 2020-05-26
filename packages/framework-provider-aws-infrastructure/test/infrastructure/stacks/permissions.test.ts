@@ -14,7 +14,6 @@ describe('permissions', () => {
   })
 
   describe('setupPermissions', () => {
-    let mockEventStreamArn: string
     let mockSubscriptionsTableArn: string
     let mockReadModelTableArn: string
     let mockEventsStoreTableArn: string
@@ -41,7 +40,6 @@ describe('permissions', () => {
     let fnRefStub: SinonStub
 
     beforeEach(() => {
-      mockEventStreamArn = random.alphaNumeric(10)
       mockSubscriptionsTableArn = random.alphaNumeric(10)
       mockReadModelTableArn = random.alphaNumeric(10)
       mockEventsStoreTableArn = random.alphaNumeric(10)
@@ -100,11 +98,11 @@ describe('permissions', () => {
       })
 
       describe('policy statements', () => {
-        it('should add events stream permissions', () => {
+        it('should add events store permissions', () => {
           assert.calledWithExactly(
             createPolicyStatementStub,
-            [mockEventStreamArn],
-            ['kinesis:Put*', 'dynamodb:Query*', 'dynamodb:Put*']
+            [mockEventsStoreTableArn],
+            ['dynamodb:BatchWriteItem', 'dynamodb:Query*', 'dynamodb:Put*']
           )
         })
 
@@ -166,11 +164,11 @@ describe('permissions', () => {
       })
 
       describe('policy statements', () => {
-        it('should create events store table permissions', () => {
+        it('should add events store permissions', () => {
           assert.calledWithExactly(
             createPolicyStatementStub,
             [mockEventsStoreTableArn],
-            ['dynamodb:Query*', 'dynamodb:Put*']
+            ['dynamodb:BatchWriteItem', 'dynamodb:Query*', 'dynamodb:Put*']
           )
         })
 

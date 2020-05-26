@@ -37,7 +37,9 @@ export const setupPermissions = (
     )
   )
 
-  eventsLambda.addToRolePolicy(createPolicyStatement([eventsStore.tableArn], ['dynamodb:Query*', 'dynamodb:Put*']))
+  eventsLambda.addToRolePolicy(
+    createPolicyStatement([eventsStore.tableArn], ['dynamodb:BatchWriteItem', 'dynamodb:Query*', 'dynamodb:Put*'])
+  )
 
   const tableArns = readModelTables.map((table): string => table.tableArn)
   if (tableArns.length > 0) {

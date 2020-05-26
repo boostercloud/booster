@@ -31,7 +31,7 @@ describe('EventStore', () => {
   const config = new BoosterConfig('test')
   config.provider = ({
     events: {
-      storeAndPublish: () => {},
+      publish: () => {},
       latestEntitySnapshot: () => {},
       forEntitySince: () => {},
     },
@@ -428,7 +428,7 @@ describe('EventStore', () => {
 
     describe('storeSnapshot', () => {
       it('stores a snapshot in the event store', async () => {
-        replace(config.provider.events, 'storeAndPublish', fake())
+        replace(config.provider.events, 'publish', fake())
 
         const someSnapshot = snapshotEnvelopeFor({
           id: '42',
@@ -437,7 +437,7 @@ describe('EventStore', () => {
 
         await eventStore.storeSnapshot(someSnapshot)
 
-        expect(config.provider.events.storeAndPublish).to.have.been.calledOnceWith([someSnapshot], config, logger)
+        expect(config.provider.events.publish).to.have.been.calledOnceWith([someSnapshot], config, logger)
       })
     })
 

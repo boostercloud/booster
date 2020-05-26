@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   rawEventsToEnvelopes,
-  storeAndPublishEvents,
+  publishEvents,
   readEntityLatestSnapshot,
   readEntityEventsSince,
 } from './library/events-adapter'
@@ -28,7 +28,7 @@ export const Provider: ProviderLibrary = {
     rawToEnvelopes: rawEventsToEnvelopes,
     forEntitySince: readEntityEventsSince.bind(null, dynamoDB),
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, dynamoDB),
-    storeAndPublish: storeAndPublishEvents.bind(null, dynamoDB),
+    publish: publishEvents.bind(null, dynamoDB),
   },
   // ProviderReadModelsLibrary
   readModels: {

@@ -122,7 +122,7 @@ describe('the events-adapter', () => {
         }
       )
 
-      await Library.storeAndPublishEvents(fakeDynamo, eventEnvelopes, config, fakeLogger)
+      await Library.publishEvents(fakeDynamo, eventEnvelopes, config, fakeLogger)
 
       expect(fakeBatchWrite).to.be.calledWith(
         match({
