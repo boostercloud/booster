@@ -1,15 +1,11 @@
 name: Integration tests
 on:
-  push:
-    branches:
-      - master
-    paths-ignore:
-      - '**.md'
+  issue_comment:
+    types: [created, edited]
 
 jobs:
-  build:
-    name: Build
-
+  integration-tests:
+    if: "github.event.comment.body == 'bot: integration'"
     strategy:
       matrix:
         runs-on: [ubuntu-latest]
@@ -40,7 +36,7 @@ jobs:
       - name: Bootstrap the project
         run: npx lerna bootstrap
 
-      - name: Running integration tests
+      - name: Running integration tests for master branch
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}

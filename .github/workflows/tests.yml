@@ -13,9 +13,7 @@ on:
       - '**.md'
 
 jobs:
-  build:
-    name: Build
-
+  unit-tests:
     strategy:
       matrix:
         runs-on: [ubuntu-latest]
