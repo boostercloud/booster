@@ -3,6 +3,7 @@ import gql from 'graphql-tag'
 import { expect } from 'chai'
 import fetch from 'cross-fetch'
 import * as chai from 'chai'
+import { random } from 'faker'
 
 chai.use(require('chai-as-promised'))
 
@@ -16,6 +17,14 @@ const adminPassword = 'Enable_G0d_Mode3e!'
  * Running the test cases out of order or in isolation could have unexpected results.
  */
 describe('With the auth API', () => {
+  let mockProductId: string
+  let mockCartId: string
+
+  before(() => {
+    mockProductId = random.uuid()
+    mockCartId = random.uuid()
+  })
+
   context('an internet rando', () => {
     it("can't submit a secured command", async () => {
       const client = await graphQLClient()
@@ -43,9 +52,12 @@ describe('With the auth API', () => {
       const client = await graphQLClient()
 
       const queryPromise = client.query({
+        variables: {
+          productId: mockProductId,
+        },
         query: gql`
-          query {
-            ProductUpdatesReadModel(id: "42") {
+          query ProductUpdatesReadModel($productId: ID!) {
+            ProductUpdatesReadModel(id: $productId) {
               id
               availability
               lastUpdate
@@ -62,9 +74,13 @@ describe('With the auth API', () => {
       const client = await graphQLClient()
 
       const mutationResult = await client.mutate({
+        variables: {
+          cartId: mockCartId,
+          productId: mockProductId,
+        },
         mutation: gql`
-          mutation {
-            ChangeCartItem(input: { cartId: 42, productId: 314, quantity: 2 })
+          mutation ChangeCartItem($cartId: ID!, $productId: ID!) {
+            ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: 2 })
           }
         `,
       })
@@ -76,13 +92,16 @@ describe('With the auth API', () => {
     it('can query a public read model', async () => {
       const client = await graphQLClient()
 
-      // Let's wait 5 seconds to allow previous command results to be projected as a read model
-      await sleep(5000)
+      // Let's wait 10 seconds to allow previous command results to be projected as a read model
+      await sleep(10000)
 
       const queryResult = await client.query({
+        variables: {
+          cartId: mockCartId,
+        },
         query: gql`
-          query {
-            CartReadModel(id: "42") {
+          query CartReadModel($cartId: ID!) {
+            CartReadModel(id: $cartId) {
               id
               cartItems
             }
@@ -92,9 +111,9 @@ describe('With the auth API', () => {
 
       expect(queryResult).not.to.be.null
       // Result should match the cart created in the previous test case
-      expect(queryResult.data.CartReadModel.id).to.be.equal('42')
+      expect(queryResult.data.CartReadModel.id).to.be.equal(mockCartId)
       expect(queryResult.data.CartReadModel.cartItems[0]).to.deep.equal({
-        productId: '314',
+        productId: mockProductId,
         quantity: 2,
       })
     })
@@ -217,9 +236,12 @@ describe('With the auth API', () => {
       const client = await graphQLClient(userAccessToken)
 
       const queryResult = await client.query({
+        variables: {
+          productId: mockProductId,
+        },
         query: gql`
-          query {
-            ProductReadModel(id: "42") {
+          query ProductReadModel($productId: ID!) {
+            ProductReadModel(id: $productId) {
               id
               sku
             }
@@ -236,9 +258,12 @@ describe('With the auth API', () => {
       const client = await graphQLClient(userAccessToken)
 
       const mutationPromise = client.mutate({
+        variables: {
+          productId: mockProductId,
+        },
         mutation: gql`
-          mutation {
-            DeleteProduct(input: { productId: "42" })
+          mutation DeleteProduct($productId: ID!) {
+            DeleteProduct(input: { productId: $productId })
           }
         `,
       })
@@ -250,9 +275,12 @@ describe('With the auth API', () => {
       const client = await graphQLClient(userAccessToken)
 
       const queryPromise = client.query({
+        variables: {
+          productId: mockProductId,
+        },
         query: gql`
-          query {
-            ProductUpdatesReadModel(id: "42") {
+          query ProductUpdatesReadModel($productId: ID!) {
+            ProductUpdatesReadModel(id: $productId) {
               id
               availability
               lastUpdate
@@ -309,9 +337,12 @@ describe('With the auth API', () => {
       const client = await graphQLClient(adminAccessToken)
 
       const queryResult = await client.query({
+        variables: {
+          productId: mockProductId,
+        },
         query: gql`
-          query {
-            ProductUpdatesReadModel(id: "42") {
+          query ProductUpdatesReadModel($productId: ID!) {
+            ProductUpdatesReadModel(id: $productId) {
               id
               availability
             }
@@ -326,9 +357,12 @@ describe('With the auth API', () => {
       const client = await graphQLClient(adminAccessToken)
 
       const mutationResult = await client.mutate({
+        variables: {
+          productId: mockProductId,
+        },
         mutation: gql`
-          mutation {
-            DeleteProduct(input: { productId: "42" })
+          mutation DeleteProduct($productId: ID!) {
+            DeleteProduct(input: { productId: $productId })
           }
         `,
       })
