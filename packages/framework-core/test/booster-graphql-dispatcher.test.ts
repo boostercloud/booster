@@ -55,15 +55,18 @@ describe('the `BoosterGraphQLDispatcher`', () => {
     it('calls the the GraphQL engine with the passed envelope and handles the result', async () => {
       const graphQLBody = 'query { a { x }}'
       const graphQLResult = { data: 'the result' }
+      const graphQLVariables = { productId: 'productId' }
       const graphQLEnvelope: GraphQLRequestEnvelope = {
         requestID: '123',
         eventType: 'MESSAGE',
         value: graphQLBody,
+        variables: graphQLVariables,
       }
       const resolverContext: GraphQLResolverContext = {
         requestID: graphQLEnvelope.requestID,
         operation: {
           query: graphQLBody,
+          variables: graphQLVariables,
         },
         pubSub: new NoopReadModelPubSub(),
         storeSubscriptions: true,
@@ -83,6 +86,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
         schema: match.any,
         document: match.any,
         contextValue: match(resolverContext),
+        variableValues: match(graphQLVariables),
       })
       expect(config.provider.graphQL.handleResult).to.have.been.calledWithExactly(graphQLResult)
     })

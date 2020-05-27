@@ -45,6 +45,13 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Running integration tests before release
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: eu-west-1
+        run: npx lerna run integration --stream
+
       - uses: theam/actions/lerna-semantic-publish@master
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

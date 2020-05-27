@@ -22,12 +22,14 @@
     "cross-fetch": "^3.0.4",
     "graphql-tag": "^2.10.3",
     "ts-node": "^8.6.2",
-    "typescript": "^3.8.3"
+    "typescript": "^3.9.3"
   },
   "devDependencies": {
     "@boostercloud/framework-provider-aws-infrastructure": "^0.3.3",
     "@boostercloud/framework-provider-local-infrastructure": "^0.3.3",
-    "@types/aws-lambda": "^8.10.48"
+    "@types/aws-lambda": "^8.10.48",
+    "@types/faker": "^4.1.12",
+    "faker": "^4.1.0"
   },
   "engines": {
     "node": ">=8.0.0"
