@@ -66,7 +66,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
         requestID: graphQLEnvelope.requestID,
         operation: {
           query: graphQLBody,
-          variables: graphQLVariables
+          variables: graphQLVariables,
         },
         pubSub: new NoopReadModelPubSub(),
         storeSubscriptions: true,
