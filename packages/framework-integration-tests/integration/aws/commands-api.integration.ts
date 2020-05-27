@@ -30,7 +30,7 @@ describe('the commands API', async () => {
     expect(response?.data?.ChangeCartItem).to.be.true
 
     // Let some time to create the event and update the read model
-    await sleep(5000)
+    await sleep(10000)
   })
 
   it('should create an event in the event store', async () => {
