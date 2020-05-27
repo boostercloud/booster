@@ -17,7 +17,7 @@ import { Level } from './logger'
  */
 export class BoosterConfig {
   public logLevel: Level = Level.debug
-  public readonly configuredEnvironments: Array<string> = new Array<string>()
+  private readonly _configuredEnvironments: Set<string> = new Set<string>()
   private _provider?: ProviderLibrary
   public appName = 'new-booster-app'
   public region = 'eu-west-1'
@@ -106,9 +106,11 @@ export class BoosterConfig {
   }
 
   public addConfiguredEnvironment(environmentName: string): void {
-    if (!this.configuredEnvironments.includes(environmentName)) {
-      this.configuredEnvironments.push(environmentName)
-    }
+    this._configuredEnvironments.add(environmentName)
+  }
+
+  public get configuredEnvironments(): Set<string> {
+    return this._configuredEnvironments
   }
 
   private validateAllMigrations(): void {
