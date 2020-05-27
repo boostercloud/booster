@@ -35,11 +35,13 @@ function readProjectConfig(userProjectPath: string): Promise<BoosterConfig> {
 }
 
 function checkEnvironmentWasConfigured(config: BoosterConfig): void {
-  if (!config.configuredEnvironments.includes(config.environmentName)) {
-    const errorMessage = config.configuredEnvironments.length
+  if (!config.configuredEnvironments.has(config.environmentName)) {
+    const errorMessage = config.configuredEnvironments.size
       ? `The environment '${config.environmentName}' does not match any of the environments` +
-        ` you used to configure your Booster project, which are: '${config.configuredEnvironments.join(', ')}'`
-      : "You haven't configured any environment. Please make sure you have at least one environment configured by calling `Booster.configure` method (normally done inside the folder 'src/config')"
+        ` you used to configure your Booster project, which are: '${Array.from(config.configuredEnvironments).join(
+          ', '
+        )}'`
+      : "You haven't configured any environment. Please make sure you have at least one environment configured by calling 'Booster.configure' method (normally done inside the folder 'src/config')"
     throw new Error(errorMessage)
   }
 }
