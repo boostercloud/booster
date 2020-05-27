@@ -37,7 +37,7 @@ describe('the `Booster` class', () => {
       })
 
       expect(booster.config.configuredEnvironments).to.have.lengthOf(2)
-      expect(booster.config.configuredEnvironments).to.include.members(['test', 'another-environment'])
+      expect(booster.config.configuredEnvironments).to.include.keys(['test', 'another-environment'])
       expect(booster.config.appName).to.equal('test-app-name')
     })
   })
