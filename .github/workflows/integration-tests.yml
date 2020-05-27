@@ -21,14 +21,11 @@ jobs:
           route: GET ${{ github.event.issue.pull_request.url }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Dump PR info
-        env:
-          PR_INFO: ${{ fromJson(steps.pull_request_info.outputs.data).head.sha }}
-        run: echo "$PR_INFO"
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
         with:
-          ref: ${{ fromJson(steps.pull_request_info.outputs.data).head.sha }}
+          repository: ${{ fromJson(steps.pull_request_info.outputs.data).head.repo.full_name }}
+          ref: ${{ fromJson(steps.pull_request_info.outputs.data).head.ref }}
 #
 #      - name: Set Node.js 12.x
 #        uses: actions/setup-node@master
