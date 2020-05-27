@@ -3,11 +3,14 @@ import { exec } from 'child-process-promise'
 import * as Mustache from 'mustache'
 import * as path from 'path'
 import * as tsConfig from '../templates/project/tsconfig-json'
+import * as tsConfigEsLint from '../templates/project/tsconfig.eslint-json'
 import * as esLintIgnore from '../templates/project/eslintignore'
+import * as esLintRc from '../templates/project/eslintrc-js'
 import * as gitIgnore from '../templates/project/gitignore'
 import * as packageJson from '../templates/project/package-json'
 import * as configTs from '../templates/project/config-ts'
 import * as indexTs from '../templates/project/index-ts'
+import * as prettierRc from '../templates/project/prettierrc-yaml'
 import { wrapExecError } from '../common/errors'
 import { withinWorkingDirectory } from './executor-service'
 
@@ -67,9 +70,12 @@ async function createDirectory(paths: string[]): Promise<void> {
 
 const filesToGenerate: Array<[Array<string>, string]> = [
   [['.eslintignore'], esLintIgnore.template],
+  [['.eslintrc.js'], esLintRc.template],
   [['.gitignore'], gitIgnore.template],
   [['package.json'], packageJson.template],
   [['tsconfig.json'], tsConfig.template],
+  [['tsconfig.eslint.json'], tsConfigEsLint.template],
+  [['.prettierrc.yaml'], prettierRc.template],
   [['src', 'config', 'config.ts'], configTs.template],
   [['src', 'index.ts'], indexTs.template],
 ]
