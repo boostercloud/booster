@@ -23,12 +23,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Dump PR info
         env:
-          PR_INFO: ${{ fromJson(steps.pull_request_info.outputs.data).head.ref }}
+          PR_INFO: ${{ fromJson(steps.pull_request_info.outputs.data).head }}
         run: echo "$PR_INFO"
       - name: Checkout
         uses: actions/checkout@v1
         with:
-          ref: ${{ fromJson(steps.pull_request_info.outputs.data).head.ref }}
+          ref: ${{ fromJson(steps.pull_request_info.outputs.data).head.sha }}
 #
 #      - name: Set Node.js 12.x
 #        uses: actions/setup-node@master
