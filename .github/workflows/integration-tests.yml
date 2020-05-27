@@ -23,7 +23,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Dump PR info
         env:
-          PR_INFO: ${{ fromJson(steps.pull_request_info.outputs.data).head }}
+          PR_INFO: ${{ fromJson(steps.pull_request_info.outputs.data).head.sha }}
         run: echo "$PR_INFO"
       - name: Checkout
         uses: actions/checkout@v1
