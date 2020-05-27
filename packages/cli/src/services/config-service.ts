@@ -39,7 +39,7 @@ function checkEnvironmentWasConfigured(config: BoosterConfig): void {
     const errorMessage = config.configuredEnvironments.length
       ? `The environment '${config.environmentName}' does not match any of the environments` +
         ` you used to configure your Booster project, which are: '${config.configuredEnvironments.join(', ')}'`
-      : "You haven't configured any environment. It is required to specify the deployment environments in 'src/config/config.ts'"
+      : "You haven't configured any environment. Please make sure you have at least one environment configured by calling `Booster.configure` method (normally done inside the folder 'src/config')"
     throw new Error(errorMessage)
   }
 }
