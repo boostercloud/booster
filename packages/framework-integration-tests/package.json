@@ -27,7 +27,9 @@
   "devDependencies": {
     "@boostercloud/framework-provider-aws-infrastructure": "^0.3.3",
     "@boostercloud/framework-provider-local-infrastructure": "^0.3.3",
-    "@types/aws-lambda": "^8.10.48"
+    "@types/aws-lambda": "^8.10.48",
+    "@types/faker": "^4.1.12",
+    "faker": "^4.1.0"
   },
   "engines": {
     "node": ">=8.0.0"
