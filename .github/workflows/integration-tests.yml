@@ -14,7 +14,9 @@ jobs:
     runs-on: ${{ matrix.runs-on }}
 
     steps:
-      - run: echo "${{ JSON.stringify(github.event) }}"
+      - run: echo "${{ github.sha }}"
+      - run: echo "${{ github.ref }}"
+      - run: echo "${{ github.head_ref }}"
 #      - name: Checkout
 #        uses: actions/checkout@v1
 #
