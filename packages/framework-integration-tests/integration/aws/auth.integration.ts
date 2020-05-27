@@ -92,8 +92,8 @@ describe('With the auth API', () => {
     it('can query a public read model', async () => {
       const client = await graphQLClient()
 
-      // Let's wait 10 seconds to allow previous command results to be projected as a read model
-      await sleep(10000)
+      // Let's wait 15 seconds to allow previous command results to be projected as a read model
+      await sleep(15000)
 
       const queryResult = await client.query({
         variables: {
