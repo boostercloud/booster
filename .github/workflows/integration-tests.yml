@@ -42,5 +42,7 @@ jobs:
 
       - name: Running integration tests
         env:
-          AWS_SDK_LOAD_CONFIG: true
+          AWS_ACCESS_KEY_ID: {{ secrets.BOT_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: {{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: eu-west-1
         run: npx lerna run integration --stream
