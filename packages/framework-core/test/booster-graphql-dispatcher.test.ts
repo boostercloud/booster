@@ -83,6 +83,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
         schema: match.any,
         document: match.any,
         contextValue: match(resolverContext),
+        variableValues: match.any,
       })
       expect(config.provider.graphQL.handleResult).to.have.been.calledWithExactly(graphQLResult)
     })
