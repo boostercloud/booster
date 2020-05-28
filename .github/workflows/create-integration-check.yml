@@ -30,6 +30,6 @@ jobs:
                           "description": "Run integration tests suit and unblocks the check if succeeded"
                         }
                       ]'
-          output: '{"title":"Integration tests","summary": "When you are ready to merge your pull request, hit the button to run integration tests and pass the check"}]}'
+          output: '{"title":"Integration tests","summary": "When you are ready to merge your pull request, hit the button to run integration tests and pass the check"}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
