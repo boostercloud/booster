@@ -27,7 +27,7 @@ describe('Entity', () => {
     describe('without fields', () => {
       it('should create new entity', async () => {
         const expectedOutputRegex = new RegExp(
-          /(.+) boost (.+)?new:entity(.+)? (.+)\n- Verifying project\n(.+) Verifying project\n- Creating new entity\n(.+) Creating new entity\n(.+) Entity generated!\n/,
+          /(.+) boost (.+)?new:entity(.+)? (.+)\n- Verifying project\n(.+) Verifying project\n- Creating new entity\n(.+) Creating new entity\n(.+) Entity generated!\n/
         )
         const { stdout } = await exec(`${cliPath} new:entity Post`)
         expect(stdout).to.match(expectedOutputRegex)
@@ -41,7 +41,7 @@ describe('Entity', () => {
     describe('with fields', () => {
       it('should create new entity with expected fields', async () => {
         const expectedOutputRegex = new RegExp(
-          /(.+) boost (.+)?new:entity(.+)? (.+)\n- Verifying project\n(.+) Verifying project\n- Creating new entity\n(.+) Creating new entity\n(.+) Entity generated!\n/,
+          /(.+) boost (.+)?new:entity(.+)? (.+)\n- Verifying project\n(.+) Verifying project\n- Creating new entity\n(.+) Creating new entity\n(.+) Entity generated!\n/
         )
         const { stdout } = await exec(`${cliPath} new:entity PostWithFields --fields title:string body:string`)
         expect(stdout).to.match(expectedOutputRegex)
@@ -58,7 +58,7 @@ describe('Entity', () => {
       it('should fail', async () => {
         const { stderr } = await exec(`${cliPath} new:entity`)
 
-        expect(stderr).to.equal('You haven\'t provided an entity name, but it is required, run with --help for usage\n')
+        expect(stderr).to.equal("You haven't provided an entity name, but it is required, run with --help for usage\n")
       })
     })
   })
@@ -85,7 +85,7 @@ describe('Entity', () => {
       // Set reducer response
       const updatedEntityContent = entityContent.replace(
         ENTITY_REDUCER_PLACEHOLDER,
-        'new PostWithReducer(event.postId, event.title, event.body)',
+        'new PostWithReducer(event.postId, event.title, event.body)'
       )
 
       await writeFileContent(FILE_POST_WITH_REDUCER_ENTITY, updatedEntityContent)
