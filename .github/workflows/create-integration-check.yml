@@ -1,4 +1,4 @@
-name: Integration tests
+name: Prepare integration tests
 on:
   pull_request:
     branches:
@@ -14,7 +14,7 @@ jobs:
 
     runs-on: ${{ matrix.runs-on }}
     steps:
-      - name: Create button to run integration tests
+      - name: Create a check for integration tests
         uses: octokit/request-action@v2.x
         id: create_check_run
         with:
