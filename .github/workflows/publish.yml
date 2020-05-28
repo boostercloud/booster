@@ -10,9 +10,9 @@ jobs:
   publish-npm:
     if: "!contains(github.event.head_commit.author.name, 'GITHUBACTION')
          && (
-           startWith(github.event.head_commit.message, 'BREAKING CHANGE:')
-           || startWith(github.event.head_commit.message, 'feat')
-           || startWith(github.event.head_commit.message, 'fix')
+           startsWith(github.event.head_commit.message, 'BREAKING CHANGE:')
+           || startsWith(github.event.head_commit.message, 'feat')
+           || startsWith(github.event.head_commit.message, 'fix')
          )"
 
     runs-on: ubuntu-latest
