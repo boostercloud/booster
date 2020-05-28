@@ -32,10 +32,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-#      - name: Print checks
-#        run: echo "$DATA"
-#        env:
-#          DATA: ${{ toJson(fromJson(steps.get_check_run.outputs.data)) }}
+      - name: Print integration check data
+        run: echo "$DATA"
+        env:
+          DATA: ${{ toJson(fromJson(steps.get_check_run.outputs.data)) }}
 
       - uses: octokit/request-action@v2.x
         with:
