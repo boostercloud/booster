@@ -36,7 +36,7 @@ jobs:
       - name: Print checks
         run: echo "$DATA"
         env:
-          DATA: ${{ toJson(fromJson(get_check_run.outputs.data)) }}
+          DATA: ${{ toJson(fromJson(steps.get_check_run.outputs.data)) }}
 #
 #      - name: Checkout PR branch
 #        uses: actions/checkout@v2
