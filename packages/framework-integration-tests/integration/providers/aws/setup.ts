@@ -1,7 +1,7 @@
 import util = require('util')
 const exec = util.promisify(require('child_process').exec)
-import { config } from 'aws-sdk'
 import { deploy, nuke } from '../../../src/deploy'
+import { config } from 'aws-sdk'
 
 before(async () => {
   await setEnv()
