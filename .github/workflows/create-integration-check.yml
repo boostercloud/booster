@@ -1,7 +1,8 @@
 name: Integration tests
 on:
   pull_request:
-    types: [opened, reopened]
+    branches:
+      - master
 
 jobs:
   create-integration-tests-check:
