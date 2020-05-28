@@ -19,7 +19,7 @@ jobs:
           route: POST /repos/${{ github.repository }}/check-runs
           mediaType: '{"previews": ["antiope"]}'
           name: "Ensure integration tests"
-          head_sha: ${{ github.sha }}
+          head_sha: ${{ github.event.pull_request.head.sha }}
           conclusion: action_required
           actions: '[{
             label: "Run integration",
