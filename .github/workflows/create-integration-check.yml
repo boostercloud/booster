@@ -1,7 +1,7 @@
-name: Integration tests
+name: Create integration tests
 on:
-  check_run:
-    types: [created]
+  pull_request:
+    types: [opened]
 
 jobs:
   create-integration-tests-check:
