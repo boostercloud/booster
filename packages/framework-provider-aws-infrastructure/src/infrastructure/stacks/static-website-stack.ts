@@ -1,9 +1,15 @@
 import { CfnOutput, Stack } from '@aws-cdk/core'
 import { Bucket, BlockPublicAccess } from '@aws-cdk/aws-s3'
 import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment'
-import { CloudFrontWebDistribution, ViewerCertificate, ViewerProtocolPolicy, OriginAccessIdentity } from '@aws-cdk/aws-cloudfront'
+import {
+  CloudFrontWebDistribution,
+  ViewerCertificate,
+  ViewerProtocolPolicy,
+  OriginAccessIdentity,
+} from '@aws-cdk/aws-cloudfront'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { existsSync } from "fs";
+import {baseURLForAPI} from "../params";
 
 const publicPath = './public'
 const indexHTML = 'index.html'
@@ -46,11 +52,12 @@ export default class StaticWebsiteStack {
       new BucketDeployment(this.stack, 'staticWebsiteDeployment', {
         sources: [Source.asset(publicPath)],
         destinationBucket: staticSiteBucket,
+        retainOnDelete: false,
         distribution: cloudFrontDistribution,
       })
 
       new CfnOutput(this.stack, 'staticWebsiteURL', {
-        value: `https://${cloudFrontDistribution.domainName}`,
+        value: baseURLForAPI(this.config, this.stack, cloudFrontDistribution.domainName, 'https'),
         description: `The URL for the static website generated from ${publicPath} directory`,
       })
     }
