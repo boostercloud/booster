@@ -14,54 +14,53 @@ jobs:
            || startsWith(github.event.head_commit.message, 'feat')
            || startsWith(github.event.head_commit.message, 'fix')
          )"
-
     runs-on: ubuntu-latest
     steps:
       - run: echo "$DATA"
         env:
           DATA: ${{ toJson(github.event.head_commit) }}
-#      - uses: actions/checkout@v2-beta
-#        with:
-#          token: ${{ secrets.GITHUB_TOKEN_ACTION }}
-#
-#      # Workaround for https://github.com/actions/checkout/issues/6#issuecomment-520636057
-#      - name: Prepare repository
-#        run: git checkout "${GITHUB_REF:11}"
-#
-#      - name: Configure Git
-#        run: |
-#          git remote rm origin
-#          git remote add origin "https://$USER_NAME:$GITHUB_PAT@github.com/boostercloud/booster.git"
-#          git fetch
-#          git config --local user.email "action@github.com"
-#          git config --local user.name "GITHUBACTION"
-#        env:
-#          USER_NAME: ${{ secrets.DEPLOYING_USER_NAME }}
-#          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN_ACTION }} # Token for pushing
-#
-#      - uses: actions/setup-node@master
-#        with:
-#          node-version: 12
-#          registry-url: https://registry.npmjs.org/
-#
-#      - run: npx lerna bootstrap
-#
-#      # Discard all changes that might have occurred after bootstrap
-#      - run: git stash
-#
-#      - name: Authenticate with Registry
-#        run: npm config set "//registry.npmjs.org/:_authToken" "$NPM_TOKEN"
-#        env:
-#          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-#
-#      - name: Running integration tests before release
-#        env:
-#          AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
-#          AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
-#          AWS_REGION: eu-west-1
-#        run: npx lerna run integration --stream
-#
-#      - uses: theam/actions/lerna-semantic-publish@master
-#        env:
-#          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_ACTION }}
+      - uses: actions/checkout@v2-beta
+        with:
+          token: ${{ secrets.GITHUB_TOKEN_ACTION }}
+
+      # Workaround for https://github.com/actions/checkout/issues/6#issuecomment-520636057
+      - name: Prepare repository
+        run: git checkout "${GITHUB_REF:11}"
+
+      - name: Configure Git
+        run: |
+          git remote rm origin
+          git remote add origin "https://$USER_NAME:$GITHUB_PAT@github.com/boostercloud/booster.git"
+          git fetch
+          git config --local user.email "action@github.com"
+          git config --local user.name "GITHUBACTION"
+        env:
+          USER_NAME: ${{ secrets.DEPLOYING_USER_NAME }}
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN_ACTION }} # Token for pushing
+
+      - uses: actions/setup-node@master
+        with:
+          node-version: 12
+          registry-url: https://registry.npmjs.org/
+
+      - run: npx lerna bootstrap
+
+      # Discard all changes that might have occurred after bootstrap
+      - run: git stash
+
+      - name: Authenticate with Registry
+        run: npm config set "//registry.npmjs.org/:_authToken" "$NPM_TOKEN"
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Running integration tests before release
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: eu-west-1
+        run: npx lerna run integration --stream
+
+      - uses: theam/actions/lerna-semantic-publish@master
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_ACTION }}
