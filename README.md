@@ -54,3 +54,4 @@ open an issue first to discuss what you would like to change.
 ## License
 
 The Booster Cloud Framework is licensed under the Apache License, Version 2.0. See the [LICENSE](LICENSE) file for more details.
+ 
