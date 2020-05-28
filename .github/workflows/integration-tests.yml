@@ -44,7 +44,6 @@ jobs:
           mediaType: '{"previews": ["antiope"]}'
           check_run_id: ${{ fromJson(steps.get_check_run.outputs.data).check_runs[0].id }}
           status: "in_progress"
-          conclusion: null
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

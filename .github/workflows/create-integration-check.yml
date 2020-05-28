@@ -22,8 +22,7 @@ jobs:
           mediaType: '{"previews": ["antiope"]}'
           name: "Integration tests pass"
           head_sha: ${{ github.event.pull_request.head.sha }}
-          status: 'completed'
-          conclusion: 'failure'
+          status: 'queued'
           output: '{"title":"Integration tests","summary": "When you are ready to merge your pull request, post a comment with \"bot: integration\" to run them and pass the check"}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
