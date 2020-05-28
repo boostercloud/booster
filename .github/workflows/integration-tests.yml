@@ -1,10 +1,11 @@
-name: Run integration tests HA
+name: Run integration tests and enable check
 on:
-  check_run:
-    types: [requested_action]
+  issue_comment:
+    types: [created, edited]
 
 jobs:
   integration-tests:
+    if: "github.event.comment.body == 'bot: integration'"
     strategy:
       matrix:
         runs-on: [ubuntu-latest]
@@ -13,16 +14,29 @@ jobs:
     runs-on: ${{ matrix.runs-on }}
 
     steps:
-      - run : echo "$DATA"
+      - name: Fetch PR info
+        uses: octokit/request-action@v2.x
+        id: pull_request_info
+        with:
+          route: GET ${{ github.event.issue.pull_request.url }}
         env:
-          DATA: ${{ toJson(github.event) }}
-#      - name: Fetch PR info
-#        uses: octokit/request-action@v2.x
-#        id: pull_request_info
-#        with:
-#          route: GET ${{ github.event.issue.pull_request.url }}
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get integration test check
+        uses: octokit/request-action@v2.x
+        id: get_check_run
+        with:
+          route: GET /repos/${{ github.repository }}commits/:ref/check-runs
+          mediaType: '{"previews": ["antiope"]}'
+          ref: ${{ fromJson(steps.pull_request_info.outputs.data).head.ref }}
+          check_name: "Integration tests have been run"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Print checks
+        run: echo "$DATA"
+        env:
+          DATA: ${{ toJson(fromJson(get_check_run.outputs.data)) }}
 #
 #      - name: Checkout PR branch
 #        uses: actions/checkout@v2
