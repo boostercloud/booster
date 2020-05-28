@@ -21,10 +21,11 @@ jobs:
           mediaType: '{"previews": ["antiope"]}'
           name: "Ensure integration tests"
           head_sha: ${{ github.sha }}
-          actions:
-            label: Run integration
-            description: Run integration tests
-            identifier: integration-action
+          actions: '[{
+            label: "Run integration"
+            description: "Run integration tests"
+            identifier: "integration-action"
+          }]'
           output: '{"title":"Test check run title","summary": "A summary of the test check run", "images": [{"alt": "Test image", "image_url": "https://octodex.github.com/images/jetpacktocat.png"}]}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
