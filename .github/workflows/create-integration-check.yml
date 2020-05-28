@@ -27,7 +27,7 @@ jobs:
                         {
                           "label": "Run integration",
                           "identifier": "run_integraion",
-                          "description": "Run integration tests suit and unblocks the check if succeeded"
+                          "description": "Run tests suit and unblocks the check"
                         }
                       ]'
           output: '{"title":"Integration tests","summary": "When you are ready to merge your pull request, hit the button to run integration tests and pass the check"}'
