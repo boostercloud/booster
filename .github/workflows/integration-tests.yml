@@ -22,7 +22,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get integration test check
+      - name: Get integration tests check
         uses: octokit/request-action@v2.x
         id: get_check_run
         with:
@@ -32,12 +32,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Print integration check data
+      - name: Print integration tests check data (useful for debuging)
         run: echo "$DATA"
         env:
           DATA: ${{ toJson(fromJson(steps.get_check_run.outputs.data)) }}
 
-      - uses: octokit/request-action@v2.x
+      - name: Set integration tests check to "In progress"
+        uses: octokit/request-action@v2.x
         with:
           route: PATCH /repos/:repository/check-runs/:check_run_id
           repository: ${{ github.repository }}
@@ -72,7 +73,15 @@ jobs:
       - name: Bootstrap the project
         run: npx lerna bootstrap
 
-      - uses: octokit/request-action@v2.x
+      - name: Run integration tests
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: eu-west-1
+        run: npx lerna run integration --stream
+
+      - name: Set integration tests check to "Completed"
+        uses: octokit/request-action@v2.x
         with:
           route: PATCH /repos/:repository/check-runs/:check_run_id
           repository: ${{ github.repository }}
@@ -82,11 +91,3 @@ jobs:
           conclusion: "success"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-#
-#      - name: Running integration tests
-#        env:
-#          AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
-#          AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
-#          AWS_REGION: eu-west-1
-#        run: npx lerna run integration --stream
