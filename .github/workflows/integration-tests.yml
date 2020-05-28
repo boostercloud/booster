@@ -21,35 +21,35 @@ jobs:
           route: GET ${{ github.event.issue.pull_request.url }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Checkout PR branch
-        uses: actions/checkout@v2
-        with:
-          repository: ${{ fromJson(steps.pull_request_info.outputs.data).head.repo.full_name }}
-          ref: ${{ fromJson(steps.pull_request_info.outputs.data).head.ref }}
-
-      - name: Set Node.js 12.x
-        uses: actions/setup-node@master
-        with:
-          node-version: 12.x
-
-      - name: Get yarn cache
-        id: yarn-cache
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-
-      - uses: actions/cache@v1
-        with:
-          path: ${{ steps.yarn-cache.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      - name: Bootstrap the project
-        run: npx lerna bootstrap
-
-      - name: Running integration tests
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: eu-west-1
-        run: npx lerna run integration --stream
+#
+#      - name: Checkout PR branch
+#        uses: actions/checkout@v2
+#        with:
+#          repository: ${{ fromJson(steps.pull_request_info.outputs.data).head.repo.full_name }}
+#          ref: ${{ fromJson(steps.pull_request_info.outputs.data).head.ref }}
+#
+#      - name: Set Node.js 12.x
+#        uses: actions/setup-node@master
+#        with:
+#          node-version: 12.x
+#
+#      - name: Get yarn cache
+#        id: yarn-cache
+#        run: echo "::set-output name=dir::$(yarn cache dir)"
+#
+#      - uses: actions/cache@v1
+#        with:
+#          path: ${{ steps.yarn-cache.outputs.dir }}
+#          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+#          restore-keys: |
+#            ${{ runner.os }}-yarn-
+#
+#      - name: Bootstrap the project
+#        run: npx lerna bootstrap
+#
+#      - name: Running integration tests
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
+#          AWS_REGION: eu-west-1
+#        run: npx lerna run integration --stream
