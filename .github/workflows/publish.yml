@@ -13,7 +13,7 @@ jobs:
     steps:
       - run: echo "$DATA"
         env:
-          DATA: %{{ github.event.head_commit }}
+          DATA: ${{ toJson(github.event.head_commit) }}
 #      - uses: actions/checkout@v2-beta
 #        with:
 #          token: ${{ secrets.GITHUB_TOKEN_ACTION }}
