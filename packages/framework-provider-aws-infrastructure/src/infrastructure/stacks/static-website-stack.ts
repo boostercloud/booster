@@ -9,7 +9,6 @@ import {
 } from '@aws-cdk/aws-cloudfront'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { existsSync } from "fs";
-import {baseURLForAPI} from "../params";
 
 const publicPath = './public'
 const indexHTML = 'index.html'
@@ -34,6 +33,11 @@ export default class StaticWebsiteStack {
 
       staticSiteBucket.grantRead(staticWebsiteOIA)
 
+      new BucketDeployment(this.stack, 'staticWebsiteDeployment', {
+        sources: [Source.asset(publicPath)],
+        destinationBucket: staticSiteBucket
+      })
+
       const cloudFrontDistribution = new CloudFrontWebDistribution(this.stack, 'staticWebsiteDistribution', {
         defaultRootObject: indexHTML,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
@@ -49,15 +53,8 @@ export default class StaticWebsiteStack {
         ],
       })
 
-      new BucketDeployment(this.stack, 'staticWebsiteDeployment', {
-        sources: [Source.asset(publicPath)],
-        destinationBucket: staticSiteBucket,
-        retainOnDelete: false,
-        distribution: cloudFrontDistribution,
-      })
-
       new CfnOutput(this.stack, 'staticWebsiteURL', {
-        value: baseURLForAPI(this.config, this.stack, cloudFrontDistribution.domainName, 'https'),
+        value: `https://${cloudFrontDistribution.domainName}`,
         description: `The URL for the static website generated from ${publicPath} directory`,
       })
     }
