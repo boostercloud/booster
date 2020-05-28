@@ -47,7 +47,7 @@ jobs:
       - name: Bootstrap the project
         run: npx lerna bootstrap
 
-      - name: Running integration tests for master branch
+      - name: Running integration tests
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
