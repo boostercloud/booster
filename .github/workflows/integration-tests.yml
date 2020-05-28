@@ -38,7 +38,6 @@ jobs:
 #          DATA: ${{ toJson(fromJson(steps.get_check_run.outputs.data)) }}
 
       - uses: octokit/request-action@v2.x
-        id: update_check_run
         with:
           route: PATCH /repos/:repository/check-runs/:check_run_id
           repository: ${{ github.repository }}
@@ -55,7 +54,6 @@ jobs:
           ref: ${{ fromJson(steps.pull_request_info.outputs.data).head.ref }}
 
       - uses: octokit/request-action@v2.x
-        id: update_check_run
         with:
           route: PATCH /repos/:repository/check-runs/:check_run_id
           repository: ${{ github.repository }}
