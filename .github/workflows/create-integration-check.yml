@@ -12,30 +12,42 @@ jobs:
 
     runs-on: ${{ matrix.runs-on }}
     steps:
-      - name: Create button to run integration tests
+      - name: Get check runs
         uses: octokit/request-action@v2.x
-        id: create_check_run
+        id: get_check_run
         with:
-          route: POST /repos/${{ github.repository }}/check-runs
+          route: GET /repos/${{ github.repository }}/commits/${{ github.event.pull_request.head.ref }}/check-runs
           mediaType: '{"previews": ["antiope"]}'
-          name: "Ensure integration tests"
-          head_sha: ${{ github.event.pull_request.head.sha }}
-          actions: '[{
-            label: "Run integration",
-            description: "Run integration tests",
-            identifier: "integration-action"
-          }]'
-          output: '{"title":"Test check run title","summary": "A summary of the test check run", "images": [{"alt": "Test image", "image_url": "https://octodex.github.com/images/jetpacktocat.png"}]}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: octokit/request-action@v2.x
-        id: update_check_run
-        with:
-          route: PATCH /repos/:repository/check-runs/:check_run_id
-          repository: ${{ github.repository }}
-          mediaType: '{"previews": ["antiope"]}'
-          check_run_id: ${{ fromJson(steps.create_check_run.outputs.data).id }}
-          conclusion: "success"
-          status: "completed"
+      - name: print them
+        run: echo "$DATA"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DATA: ${{ fromJson(steps.get_check_run.outputs.data) }}
+#      - name: Create button to run integration tests
+#        uses: octokit/request-action@v2.x
+#        id: create_check_run
+#        with:
+#          route: POST /repos/${{ github.repository }}/check-runs
+#          mediaType: '{"previews": ["antiope"]}'
+#          name: "Ensure integration tests"
+#          head_sha: ${{ github.event.pull_request.head.sha }}
+#          actions: '[{
+#            label: "Run integration",
+#            description: "Run integration tests",
+#            identifier: "integration-action"
+#          }]'
+#          output: '{"title":"Test check run title","summary": "A summary of the test check run", "images": [{"alt": "Test image", "image_url": "https://octodex.github.com/images/jetpacktocat.png"}]}'
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      - uses: octokit/request-action@v2.x
+#        id: update_check_run
+#        with:
+#          route: PATCH /repos/:repository/check-runs/:check_run_id
+#          repository: ${{ github.repository }}
+#          mediaType: '{"previews": ["antiope"]}'
+#          check_run_id: ${{ fromJson(steps.create_check_run.outputs.data).id }}
+#          conclusion: "success"
+#          status: "completed"
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
