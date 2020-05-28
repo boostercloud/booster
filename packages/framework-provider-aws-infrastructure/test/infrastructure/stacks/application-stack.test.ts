@@ -2,7 +2,7 @@
 import { expect } from '../../expect'
 import { BoosterConfig, UUID } from '@boostercloud/framework-types'
 import { ApplicationStackBuilder } from '../../../src/infrastructure/stacks/application-stack'
-import { App, Stack } from '@aws-cdk/core'
+import { App } from '@aws-cdk/core'
 import { Function } from '@aws-cdk/aws-lambda'
 import { CfnUserPool, CfnUserPoolDomain, UserPoolClient } from '@aws-cdk/aws-cognito'
 import { RestApi } from '@aws-cdk/aws-apigateway'
@@ -34,7 +34,7 @@ describe('the application stack builder', () => {
   it('builds the application stack of a simple app correctly', () => {
     const boosterApp = new App()
 
-    const staticWebsiteBuilder = stub(StaticWebsiteStack, 'build')
+    const staticWebsiteBuilder = stub(StaticWebsiteStack.prototype, 'build')
 
     new ApplicationStackBuilder(config).buildOn(boosterApp)
 
@@ -75,8 +75,7 @@ describe('the application stack builder', () => {
     // ReadModels
     readModels.forEach(({ name }) => expect(appStack.tryFindChild(name)).not.to.be.undefined)
     // Static website deployer related
-    const stackConstruct = boosterApp.node.findChild(appStackName);
-    expect(staticWebsiteBuilder).calledWith(config as BoosterConfig, stackConstruct as Stack)
+    expect(staticWebsiteBuilder).calledOnce
 
     // Now, check all the construct that must NOT be created (related to roles)
     expect(restAPI.root.getResource('auth')).to.be.undefined
@@ -114,8 +113,8 @@ describe('the application stack builder', () => {
     expect(numberOfLambdas).to.equal(5)
     expect(appStack.tryFindChild(preSignUpValidator)).not.to.be.undefined
     lambdas.forEach((lambda: any) => {
-        expect(lambda.environment.BOOSTER_ENV).to.equal('test')
-        expect(lambda.environment.A_CUSTOM_ENV_VARIABLE).to.equal('important-value')
+      expect(lambda.environment.BOOSTER_ENV).to.equal('test')
+      expect(lambda.environment.A_CUSTOM_ENV_VARIABLE).to.equal('important-value')
     })
     // UserPool-related
     expect(appStack.tryFindChild(userPool)).not.to.be.undefined

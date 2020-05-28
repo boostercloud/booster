@@ -5,25 +5,30 @@ import { CloudFrontWebDistribution, ViewerCertificate, ViewerProtocolPolicy, Ori
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { existsSync } from "fs";
 
-const publicDistPath = './public/dist'
+const publicPath = './public'
 const indexHTML = 'index.html'
 
 export default class StaticWebsiteStack {
-  public static build(config: BoosterConfig, stack: Stack): void {
-    if (existsSync(publicDistPath)) {
-      const staticWebsiteOIA = new OriginAccessIdentity(stack, 'staticWebsiteOIA', {
+  public constructor(
+    private readonly config: BoosterConfig,
+    private readonly stack: Stack
+  ) {}
+
+  public build(): void {
+    if (existsSync(publicPath)) {
+      const staticWebsiteOIA = new OriginAccessIdentity(this.stack, 'staticWebsiteOIA', {
         comment: "Allows static site to be reached only via CloudFront"
       })
-      const staticSiteBucket = new Bucket(stack, 'staticWebsiteBucket', {
+      const staticSiteBucket = new Bucket(this.stack, 'staticWebsiteBucket', {
         websiteIndexDocument: indexHTML,
         websiteErrorDocument: indexHTML,
         blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
-        bucketName: config.resourceNames.staticWebsite
+        bucketName: this.config.resourceNames.staticWebsite
       })
 
       staticSiteBucket.grantRead(staticWebsiteOIA)
 
-      const cloudFrontDistribution = new CloudFrontWebDistribution(stack, 'staticWebsiteDistribution', {
+      const cloudFrontDistribution = new CloudFrontWebDistribution(this.stack, 'staticWebsiteDistribution', {
         defaultRootObject: indexHTML,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         viewerCertificate: ViewerCertificate.fromCloudFrontDefaultCertificate(),
@@ -38,15 +43,15 @@ export default class StaticWebsiteStack {
         ],
       })
 
-      new BucketDeployment(stack, 'staticWebsiteDeployment', {
-        sources: [Source.asset(publicDistPath)],
+      new BucketDeployment(this.stack, 'staticWebsiteDeployment', {
+        sources: [Source.asset(publicPath)],
         destinationBucket: staticSiteBucket,
         distribution: cloudFrontDistribution,
       })
 
-      new CfnOutput(stack, 'staticWebsiteURL', {
+      new CfnOutput(this.stack, 'staticWebsiteURL', {
         value: `https://${cloudFrontDistribution.domainName}`,
-        description: `The URL for the static website generated from ${publicDistPath} directory`,
+        description: `The URL for the static website generated from ${publicPath} directory`,
       })
     }
   }

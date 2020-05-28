@@ -28,7 +28,7 @@ describe('Static website creation', () => {
       }) as SourceConfig
     })
 
-    StaticWebsiteStack.build(config, appStack)
+    new StaticWebsiteStack(config, appStack).build()
 
     const staticSiteBucket = appStack.node.tryFindChild(staticWebsiteBucket) as Bucket
     const cloudFrontDistribution = appStack.node.tryFindChild(staticWebsiteDistribution) as CloudFrontWebDistribution

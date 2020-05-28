@@ -125,6 +125,7 @@ async function nukeToolkit(observer: Subscriber<string>, config: BoosterConfig, 
   const stackName = config.appName + '-toolkit'
   observer.next(colors.blue(stackName) + colors.yellow(': destroying...'))
   await emptyS3Bucket(observer, config.appName + '-toolkit-bucket', aws)
+  await emptyS3Bucket(observer,config.appName + '-staticWebsiteBucket', aws)
   const cloudFormation = await aws.cloudFormation(
     await aws.defaultAccount(),
     await aws.defaultRegion(),

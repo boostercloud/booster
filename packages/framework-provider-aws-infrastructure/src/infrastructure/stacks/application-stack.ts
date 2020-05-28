@@ -26,7 +26,7 @@ export class ApplicationStackBuilder {
     const readModelTables = new ReadModelsStack(this.config, stack).build()
     const graphQLStack = new GraphQLStack(this.config, stack, apis, readModelTables).build()
     const eventsStack = new EventsStack(this.config, stack, apis).build()
-    StaticWebsiteStack.build(this.config, stack)
+    new StaticWebsiteStack(this.config, stack).build()
 
     setupPermissions(
       readModelTables,
