@@ -1,4 +1,4 @@
-name: Run integration tests
+name: Run integration tests HA
 on:
   check_run:
     types: [requested_action]
