@@ -26,10 +26,9 @@ jobs:
         uses: octokit/request-action@v2.x
         id: get_check_run
         with:
-          route: GET /repos/${{ github.repository }}commits/:ref/check-runs
+          route: GET /repos/${{ github.repository }}commits/${{ fromJson(steps.pull_request_info.outputs.data).head.ref }}/check-runs
           mediaType: '{"previews": ["antiope"]}'
-          ref: ${{ fromJson(steps.pull_request_info.outputs.data).head.ref }}
-          check_name: "Integration tests have been run"
+          check_name: "Integration tests pass"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
