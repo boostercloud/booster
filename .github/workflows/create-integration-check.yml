@@ -1,10 +1,11 @@
-name: Create integration tests
+name: Integration tests
 on:
   pull_request:
     types: [opened, reopened]
 
 jobs:
   create-integration-tests-check:
+    name: Create integration test check
     strategy:
       matrix:
         runs-on: [ubuntu-latest]
@@ -18,17 +19,17 @@ jobs:
         with:
           route: POST /repos/${{ github.repository }}/check-runs
           mediaType: '{"previews": ["antiope"]}'
-          name: "Ensure integration tests 3"
+          name: "Integration tests have been run"
           head_sha: ${{ github.event.pull_request.head.sha }}
           status: 'completed'
           conclusion: 'failure'
           actions: '[
                         {
-                          "label": "FixJA",
-                          "identifier": "fix_errors",
-                          "description": "Allow us to fix these errors for you"
+                          "label": "Run integration",
+                          "identifier": "run_integraion",
+                          "description": "Run integration tests suit and unblocks the check if succeeded"
                         }
                       ]'
-          output: '{"title":"Test check run title","summary": "A summary of the test check run", "images": [{"alt": "Test image", "image_url": "https://octodex.github.com/images/jetpacktocat.png"}]}'
+          output: '{"title":"Integration tests","summary": "When you are ready to merge your pull request, hit the button to run integration tests and pass the check"}]}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

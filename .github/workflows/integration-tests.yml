@@ -1,11 +1,10 @@
-name: Integration tests
+name: Run integration tests
 on:
-  issue_comment:
-    types: [created, edited]
+  check_run:
+    types: [requested_action]
 
 jobs:
   integration-tests:
-    if: "github.event.comment.body == 'bot: integration'"
     strategy:
       matrix:
         runs-on: [ubuntu-latest]
@@ -14,13 +13,16 @@ jobs:
     runs-on: ${{ matrix.runs-on }}
 
     steps:
-      - name: Fetch PR info
-        uses: octokit/request-action@v2.x
-        id: pull_request_info
-        with:
-          route: GET ${{ github.event.issue.pull_request.url }}
+      - run : echo "$DATA"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DATA: ${{ toJson(github.event) }}
+#      - name: Fetch PR info
+#        uses: octokit/request-action@v2.x
+#        id: pull_request_info
+#        with:
+#          route: GET ${{ github.event.issue.pull_request.url }}
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 #
 #      - name: Checkout PR branch
 #        uses: actions/checkout@v2
