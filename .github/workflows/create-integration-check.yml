@@ -20,12 +20,22 @@ jobs:
           mediaType: '{"previews": ["antiope"]}'
           name: "Ensure integration tests"
           head_sha: ${{ github.event.pull_request.head.sha }}
-          conclusion: action_required
           actions: '[{
             label: "Run integration",
             description: "Run integration tests",
             identifier: "integration-action"
           }]'
           output: '{"title":"Test check run title","summary": "A summary of the test check run", "images": [{"alt": "Test image", "image_url": "https://octodex.github.com/images/jetpacktocat.png"}]}'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: octokit/request-action@v2.x
+        id: update_check_run
+        with:
+          route: PATCH /repos/:repository/check-runs/:check_run_id
+          repository: ${{ github.repository }}
+          mediaType: '{"previews": ["antiope"]}'
+          check_run_id: ${{ fromJson(steps.create_check_run.outputs.data).id }}
+          conclusion: "success"
+          status: "completed"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
