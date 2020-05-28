@@ -1,0 +1,17 @@
+name: Integration tests
+on:
+  check_run:
+    types: [created]
+
+jobs:
+  create-integration-tests-check:
+    strategy:
+      matrix:
+        runs-on: [ubuntu-latest]
+      fail-fast: false
+
+    runs-on: ${{ matrix.runs-on }}
+    steps:
+      - run: echo "$DATA"
+        env:
+          DATA: ${{ toJson(github.event) }}
