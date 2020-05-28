@@ -32,17 +32,40 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Print checks
-        run: echo "$DATA"
+#      - name: Print checks
+#        run: echo "$DATA"
+#        env:
+#          DATA: ${{ toJson(fromJson(steps.get_check_run.outputs.data)) }}
+
+      - uses: octokit/request-action@v2.x
+        id: update_check_run
+        with:
+          route: PATCH /repos/:repository/check-runs/:check_run_id
+          repository: ${{ github.repository }}
+          mediaType: '{"previews": ["antiope"]}'
+          check_run_id: ${{ fromJson(steps.get_check_run.outputs.data).check_runs[0].id }}
+          status: "in_progress"
         env:
-          DATA: ${{ toJson(fromJson(steps.get_check_run.outputs.data)) }}
-#
-#      - name: Checkout PR branch
-#        uses: actions/checkout@v2
-#        with:
-#          repository: ${{ fromJson(steps.pull_request_info.outputs.data).head.repo.full_name }}
-#          ref: ${{ fromJson(steps.pull_request_info.outputs.data).head.ref }}
-#
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ fromJson(steps.pull_request_info.outputs.data).head.repo.full_name }}
+          ref: ${{ fromJson(steps.pull_request_info.outputs.data).head.ref }}
+
+      - uses: octokit/request-action@v2.x
+        id: update_check_run
+        with:
+          route: PATCH /repos/:repository/check-runs/:check_run_id
+          repository: ${{ github.repository }}
+          mediaType: '{"previews": ["antiope"]}'
+          check_run_id: ${{ fromJson(steps.get_check_run.outputs.data).check_runs[0].id }}
+          conclusion:
+          status: "success"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 #      - name: Set Node.js 12.x
 #        uses: actions/setup-node@master
 #        with:
