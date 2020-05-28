@@ -23,7 +23,7 @@ jobs:
       - name: print them
         run: echo "$DATA"
         env:
-          DATA: ${{ fromJson(steps.get_check_run.outputs.data) }}
+          DATA: ${{ toJson(fromJson(steps.get_check_run.outputs.data)) }}
 #      - name: Create button to run integration tests
 #        uses: octokit/request-action@v2.x
 #        id: create_check_run
