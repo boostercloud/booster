@@ -8,7 +8,13 @@ on:
 
 jobs:
   publish-npm:
-    if: "!contains(github.event.head_commit.author.name, 'GITHUBACTION')"
+    if: "!contains(github.event.head_commit.author.name, 'GITHUBACTION')
+         && (
+           startWith(github.event.head_commit.message, 'BREAKING CHANGE:')
+           || startWith(github.event.head_commit.message, 'feat')
+           || startWith(github.event.head_commit.message, 'fix')
+         )"
+
     runs-on: ubuntu-latest
     steps:
       - run: echo "$DATA"
