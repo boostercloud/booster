@@ -16,11 +16,11 @@ jobs:
         uses: octokit/request-action@v2.x
         id: create_check_run
         with:
-          route: POST /repos/:repository/check-runs
-          repository: ${{ github.repository }}
+          route: POST /repos/${{ github.owner }}/${{ github.repository }}/check-runs
           mediaType: '{"previews": ["antiope"]}'
           name: "Ensure integration tests"
           head_sha: ${{ github.sha }}
+          conclusion: action_required
           actions: '[{
             label: "Run integration",
             description: "Run integration tests",
