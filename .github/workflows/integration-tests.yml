@@ -1,4 +1,4 @@
-name: Integration tests
+name: Run integration tests and enable check
 on:
   issue_comment:
     types: [created, edited]
@@ -19,6 +19,32 @@ jobs:
         id: pull_request_info
         with:
           route: GET ${{ github.event.issue.pull_request.url }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get integration tests check
+        uses: octokit/request-action@v2.x
+        id: get_check_run
+        with:
+          route: GET /repos/${{ github.repository }}/commits/${{ fromJson(steps.pull_request_info.outputs.data).head.ref }}/check-runs
+          mediaType: '{"previews": ["antiope"]}'
+          check_name: "Integration tests pass"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Print integration tests check data (useful for debuging)
+        run: echo "$DATA"
+        env:
+          DATA: ${{ toJson(fromJson(steps.get_check_run.outputs.data)) }}
+
+      - name: Set integration tests check to "In progress"
+        uses: octokit/request-action@v2.x
+        with:
+          route: PATCH /repos/:repository/check-runs/:check_run_id
+          repository: ${{ github.repository }}
+          mediaType: '{"previews": ["antiope"]}'
+          check_run_id: ${{ fromJson(steps.get_check_run.outputs.data).check_runs[0].id }}
+          status: "in_progress"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -47,9 +73,21 @@ jobs:
       - name: Bootstrap the project
         run: npx lerna bootstrap
 
-      - name: Running integration tests for master branch
+      - name: Run integration tests
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: eu-west-1
         run: npx lerna run integration --stream
+
+      - name: Set integration tests check to "Completed"
+        uses: octokit/request-action@v2.x
+        with:
+          route: PATCH /repos/:repository/check-runs/:check_run_id
+          repository: ${{ github.repository }}
+          mediaType: '{"previews": ["antiope"]}'
+          check_run_id: ${{ fromJson(steps.get_check_run.outputs.data).check_runs[0].id }}
+          status: "completed"
+          conclusion: "success"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

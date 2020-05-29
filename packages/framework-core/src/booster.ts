@@ -32,7 +32,7 @@ export class Booster {
   private constructor() {}
 
   public static configureCurrentEnv(configurator: (config: BoosterConfig) => void): void {
-    this.configure(this.config.environmentName, configurator)
+    configurator(this.config)
   }
 
   /**
@@ -42,6 +42,7 @@ export class Booster {
    * @param configurator A function that receives the configuration object to set the values
    */
   public static configure(environment: string, configurator: (config: BoosterConfig) => void): void {
+    this.config.addConfiguredEnvironment(environment)
     if (this.config.environmentName === environment) {
       configurator(this.config)
     }

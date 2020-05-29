@@ -17,6 +17,7 @@ import { Level } from './logger'
  */
 export class BoosterConfig {
   public logLevel: Level = Level.debug
+  private readonly _configuredEnvironments: Set<string> = new Set<string>()
   private _provider?: ProviderLibrary
   public appName = 'new-booster-app'
   public region = 'eu-west-1'
@@ -102,6 +103,14 @@ export class BoosterConfig {
       throw new Error(`Missing environment variable '${varName}'`)
     }
     return value
+  }
+
+  public addConfiguredEnvironment(environmentName: string): void {
+    this._configuredEnvironments.add(environmentName)
+  }
+
+  public get configuredEnvironments(): Set<string> {
+    return this._configuredEnvironments
   }
 
   private validateAllMigrations(): void {
