@@ -74,20 +74,21 @@ jobs:
         run: npx lerna bootstrap
 
       - name: Run integration tests
+        continue-on-error: true
+        id: integration_tests_run
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
         run: npx lerna run integration --stream
 
-      - name: Set integration tests check to "Completed"
+      - name: Update integration tests check status
         uses: octokit/request-action@v2.x
         with:
           route: PATCH /repos/:repository/check-runs/:check_run_id
           repository: ${{ github.repository }}
           mediaType: '{"previews": ["antiope"]}'
           check_run_id: ${{ fromJson(steps.get_check_run.outputs.data).check_runs[0].id }}
-          status: "completed"
-          conclusion: "success"
+          conclusion: ${{ steps.integration_tests_run.outcome }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
