@@ -7,6 +7,8 @@ import { Function } from '@aws-cdk/aws-lambda'
 import { CfnUserPool, CfnUserPoolDomain, UserPoolClient } from '@aws-cdk/aws-cognito'
 import { RestApi } from '@aws-cdk/aws-apigateway'
 import { CfnApi } from '@aws-cdk/aws-apigatewayv2'
+import StaticWebsiteStack from "../../../src/infrastructure/stacks/static-website-stack";
+import { stub } from 'sinon'
 
 describe('the application stack builder', () => {
   class TestReadModel1 {
@@ -31,6 +33,9 @@ describe('the application stack builder', () => {
 
   it('builds the application stack of a simple app correctly', () => {
     const boosterApp = new App()
+
+    const staticWebsiteBuilder = stub(StaticWebsiteStack.prototype, 'build')
+
     new ApplicationStackBuilder(config).buildOn(boosterApp)
 
     const appStackName = config.resourceNames.applicationStack
@@ -67,6 +72,8 @@ describe('the application stack builder', () => {
     expect(appStack.tryFindChild(eventsStore)).not.to.be.undefined
     // ReadModels
     readModels.forEach(({ name }) => expect(appStack.tryFindChild(name)).not.to.be.undefined)
+    // Static website deployer related
+    expect(staticWebsiteBuilder).calledOnce
 
     // Now, check all the construct that must NOT be created (related to roles)
     expect(restAPI.root.getResource('auth')).to.be.undefined

@@ -8,6 +8,7 @@ import { RestApi } from '@aws-cdk/aws-apigateway'
 import { CfnApi, CfnStage } from '@aws-cdk/aws-apigatewayv2'
 import { baseURLForAPI } from '../params'
 import { setupPermissions } from './permissions'
+import StaticWebsiteStack from './static-website-stack'
 
 export class ApplicationStackBuilder {
   public constructor(readonly config: BoosterConfig, readonly props?: StackProps) {}
@@ -25,6 +26,7 @@ export class ApplicationStackBuilder {
     const readModelTables = new ReadModelsStack(this.config, stack).build()
     const graphQLStack = new GraphQLStack(this.config, stack, apis, readModelTables).build()
     const eventsStack = new EventsStack(this.config, stack, apis).build()
+    new StaticWebsiteStack(this.config, stack).build()
 
     setupPermissions(
       readModelTables,
