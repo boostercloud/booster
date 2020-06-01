@@ -1,45 +1,22 @@
-import { KinesisStreamEvent, KinesisStreamRecord } from 'aws-lambda'
+import { DynamoDBStreamEvent, DynamoDBRecord } from 'aws-lambda'
 import { BoosterConfig, EventEnvelope, Logger, UUID } from '@boostercloud/framework-types'
-import { DynamoDB, Kinesis } from 'aws-sdk'
+import { DynamoDB } from 'aws-sdk'
 import { eventStorePartitionKeyAttribute, eventStoreSortKeyAttribute } from '../constants'
 import { partitionKeyForEvent } from './partition-keys'
-import { PutRecordsRequestEntry } from 'aws-sdk/clients/kinesis'
+import { Converter } from 'aws-sdk/clients/dynamodb'
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const originOfTime = new Date(0).toISOString()
 
-export function rawEventsToEnvelopes(rawEvents: KinesisStreamEvent): Array<EventEnvelope> {
+export function rawEventsToEnvelopes(rawEvents: DynamoDBStreamEvent): Array<EventEnvelope> {
   return rawEvents.Records.map(
-    (record: KinesisStreamRecord): EventEnvelope => {
-      const decodedData = Buffer.from(record.kinesis.data, 'base64').toString()
-      return JSON.parse(decodedData) as EventEnvelope
+    (record: DynamoDBRecord): EventEnvelope => {
+      if (!record.dynamodb?.NewImage) {
+        throw new Error('Received a DynamoDB stream event without "NewImage" field. It is required')
+      }
+      return Converter.unmarshall(record.dynamodb?.NewImage) as EventEnvelope
     }
   )
-}
-
-export async function storeEvent(
-  dynamoDB: DynamoDB.DocumentClient,
-  config: BoosterConfig,
-  logger: Logger,
-  eventEnvelope: EventEnvelope
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<void> {
-  logger.debug('[EventsAdapter#storeEvent] EventEnvelope stored with eventEnvelope:', eventEnvelope)
-  await dynamoDB
-    .put({
-      TableName: config.resourceNames.eventsStore,
-      Item: {
-        ...eventEnvelope,
-        [eventStorePartitionKeyAttribute]: partitionKeyForEvent(
-          eventEnvelope.entityTypeName,
-          eventEnvelope.entityID,
-          eventEnvelope.kind
-        ),
-        [eventStoreSortKeyAttribute]: new Date().toISOString(),
-      },
-    })
-    .promise()
-  logger.debug('[EventsAdapter#storeEvent] EventEnvelope stored')
 }
 
 export async function readEntityEventsSince(
@@ -105,25 +82,30 @@ export async function readEntityLatestSnapshot(
   }
 }
 
-export async function publishEvents(
-  eventsStream: Kinesis,
+export async function storeEvents(
+  dynamoDB: DynamoDB.DocumentClient,
   eventEnvelopes: Array<EventEnvelope>,
   config: BoosterConfig,
   logger: Logger
 ): Promise<void> {
-  logger.info('Publishing the following events:', eventEnvelopes)
-  const publishResult = await eventsStream
-    .putRecords({
-      StreamName: config.resourceNames.eventsStream,
-      Records: eventEnvelopes.map(toPutRecordsEntity),
-    })
-    .promise()
-  logger.debug('Events published with result', publishResult.$response)
-}
-
-function toPutRecordsEntity(eventEnvelope: EventEnvelope): PutRecordsRequestEntry {
-  return {
-    PartitionKey: partitionKeyForEvent(eventEnvelope.entityTypeName, eventEnvelope.entityID),
-    Data: Buffer.from(JSON.stringify(eventEnvelope)),
+  logger.debug('[EventsAdapter#storeEvents] Storing EventEnvelopes with eventEnvelopes:', eventEnvelopes)
+  const params: DynamoDB.DocumentClient.BatchWriteItemInput = {
+    RequestItems: {
+      [config.resourceNames.eventsStore]: eventEnvelopes.map((eventEnvelope) => ({
+        PutRequest: {
+          Item: {
+            ...eventEnvelope,
+            [eventStorePartitionKeyAttribute]: partitionKeyForEvent(
+              eventEnvelope.entityTypeName,
+              eventEnvelope.entityID,
+              eventEnvelope.kind
+            ),
+            [eventStoreSortKeyAttribute]: new Date().toISOString(),
+          },
+        },
+      })),
+    },
   }
+  await dynamoDB.batchWrite(params).promise()
+  logger.debug('[EventsAdapter#storeEvents] EventEnvelope stored')
 }

@@ -23,16 +23,6 @@ describe('the config type', () => {
       )
     })
 
-    it('gets the events stream name from the app name', () => {
-      fc.assert(
-        fc.property(fc.string(1, 10), (appName) => {
-          const cfg = new BoosterConfig('test')
-          cfg.appName = appName
-          expect(cfg.resourceNames.eventsStream).to.equal(`${appName}-application-stack-events-stream`)
-        })
-      )
-    })
-
     it('gets the events store name from the app name', () => {
       fc.assert(
         fc.property(fc.string(1, 10), (appName) => {

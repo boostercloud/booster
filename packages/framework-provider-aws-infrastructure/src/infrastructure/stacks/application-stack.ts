@@ -32,7 +32,6 @@ export class ApplicationStackBuilder {
       graphQLStack.subscriptionDispatcherLambda,
       graphQLStack.subscriptionsTable,
       websocketAPI,
-      eventsStack.eventsStream,
       eventsStack.eventsStore,
       eventsStack.eventsLambda
     )

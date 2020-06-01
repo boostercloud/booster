@@ -34,14 +34,19 @@ export class BoosterEventDispatcher {
     logger: Logger
   ): (event: EventEnvelope, config: BoosterConfig) => Promise<void> {
     return async (eventEnvelope, config) => {
-      logger.debug('[BoosterEventDispatcher#eventProcessor]: Started processing workflow for event:', eventEnvelope)
-      await eventStore.append(eventEnvelope)
-
-      // TODO: Separate into two independent processes the snapshotting/read-model generation process from the event handling process
-      await Promise.all([
-        BoosterEventDispatcher.snapshotAndUpdateReadModels(eventEnvelope, eventStore, readModelStore, logger),
-        BoosterEventDispatcher.handleEvent(eventEnvelope, config, logger),
-      ])
+      switch (eventEnvelope.kind) {
+        case 'event':
+          logger.debug('[BoosterEventDispatcher#eventProcessor]: Started processing workflow for event:', eventEnvelope)
+          // TODO: Separate into two independent processes the snapshotting/read-model generation process from the event handling process
+          await Promise.all([
+            BoosterEventDispatcher.snapshotAndUpdateReadModels(eventEnvelope, eventStore, readModelStore, logger),
+            BoosterEventDispatcher.handleEvent(eventEnvelope, config, logger),
+          ])
+          break
+        case 'snapshot':
+          // TODO: The event stream includes snapshots, but we currently just ignore them. In the future we could want to introduce snapshot hooks to backup them or other uses.
+          break
+      }
     }
   }
 
