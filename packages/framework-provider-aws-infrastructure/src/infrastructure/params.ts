@@ -2,10 +2,10 @@
 import { Duration, Stack } from '@aws-cdk/core'
 import { FunctionProps, Runtime, StartingPosition } from '@aws-cdk/aws-lambda'
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { KinesisEventSourceProps } from '@aws-cdk/aws-lambda-event-sources/lib/kinesis'
 import { RestApi } from '@aws-cdk/aws-apigateway'
 import { CfnApi } from '@aws-cdk/aws-apigatewayv2'
 import { environmentVarNames } from '@boostercloud/framework-provider-aws'
+import { DynamoEventSourceProps } from '@aws-cdk/aws-lambda-event-sources'
 
 export interface APIs {
   restAPI: RestApi
@@ -39,7 +39,7 @@ export function baseURLForAPI(
   return `${protocol}://${apiID}.execute-api.${stack.region}.${stack.urlSuffix}/${config.environmentName}/`
 }
 
-export function stream(): Pick<KinesisEventSourceProps, 'startingPosition' | 'batchSize'> {
+export function stream(): Pick<DynamoEventSourceProps, 'startingPosition' | 'batchSize'> {
   return {
     startingPosition: StartingPosition.TRIM_HORIZON,
     batchSize: 100,

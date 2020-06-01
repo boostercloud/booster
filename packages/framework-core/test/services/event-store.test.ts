@@ -89,18 +89,6 @@ describe('EventStore', () => {
   }
 
   describe('public methods', () => {
-    describe('append', () => {
-      it('appends an event to the event store', async () => {
-        replace(config.provider.events, 'store', fake())
-        const eventStore = new EventStore(config, logger)
-        const someEnvelope = eventEnvelopeFor(someEvent)
-
-        await eventStore.append(someEnvelope)
-
-        expect(config.provider.events.store).to.have.been.calledOnceWith(config, logger, someEnvelope)
-      })
-    })
-
     describe('fetchEntitySnapshot', () => {
       it('properly binds `this` to the entityReducer', async () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -449,7 +437,7 @@ describe('EventStore', () => {
 
         await eventStore.storeSnapshot(someSnapshot)
 
-        expect(config.provider.events.store).to.have.been.calledOnceWith(config, logger, someSnapshot)
+        expect(config.provider.events.store).to.have.been.calledOnceWith([someSnapshot], config, logger)
       })
     })
 

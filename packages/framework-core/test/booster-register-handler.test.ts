@@ -27,7 +27,7 @@ describe('the `RegisterHandler` class', () => {
     const config = new BoosterConfig('test')
     config.provider = {
       events: {
-        publish: fake(),
+        store: fake(),
       },
     } as any
     config.reducers['SomeEvent'] = { class: SomeEntity, methodName: 'whatever' }
@@ -45,14 +45,14 @@ describe('the `RegisterHandler` class', () => {
     expect(registerHandler.wrapEvent).to.have.been.calledTwice
     expect(registerHandler.wrapEvent).to.have.been.calledWith(register, config, event1)
     expect(registerHandler.wrapEvent).to.have.been.calledWith(register, config, event2)
-    expect(config.provider.events.publish).to.have.been.calledOnce
+    expect(config.provider.events.store).to.have.been.calledOnce
   })
 
-  it('publishes wrapped events', async () => {
+  it('stores wrapped events', async () => {
     const config = new BoosterConfig('test')
     config.provider = {
       events: {
-        publish: fake(),
+        store: fake(),
       },
     } as any
     config.reducers['SomeEvent'] = {
@@ -69,8 +69,8 @@ describe('the `RegisterHandler` class', () => {
 
     await RegisterHandler.handle(config, logger, register)
 
-    expect(config.provider.events.publish).to.have.been.calledOnce
-    expect(config.provider.events.publish).to.have.been.calledWithMatch(
+    expect(config.provider.events.store).to.have.been.calledOnce
+    expect(config.provider.events.store).to.have.been.calledWithMatch(
       [
         {
           createdAt: 'just the right time',

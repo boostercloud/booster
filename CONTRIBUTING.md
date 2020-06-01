@@ -140,9 +140,10 @@ You can run only the tests for a specific provider using the more specific scope
 Make sure that you describe your change thoroughly in the PR body, adding references for any related issues and links to any resource that helps clarifying the intent and goals of the change. 
 
 When you submit a PR to the Booster repository:
-* Unit and integration tests will be automatically run. PRs with non-passing tests will be closed.
+* _Unit tests_ will be automatically run. PRs with non-passing tests can't be merged.
 * If tests pass, your code will be reviewed by at least two people from the core team. Clarifications or improvements might be asked, and they reserve the right to close any PR that do not meet the project quality standards, goals or philosophy, so it's always a good idea to discuss your plans in an issue or the Spectrum channel before commiting to significant changes.
 * Code must be mergeable and all conflicts solved before merging it.
+* Once the review process is done, unit tests pass and conflicts are fixed, you still need to make the _Integration tests check_ to pass (you'll see it is still in "Queued" status). In order to do that, you need to **post a comment** in the pull request with the content "**bot: integration**". The _integration tests_ will run and the check will now be in "In progress" status. After some time, if everything went well, the status check will become green and your PR is now ready to merge. One of the contributors with write permissions will merge it as soon as possible. 
 
 ### Commit message guidelines
 

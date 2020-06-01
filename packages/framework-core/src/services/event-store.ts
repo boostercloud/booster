@@ -22,16 +22,6 @@ export class EventStore {
     this.logger = logger
   }
 
-  public async append(eventEnvelope: EventEnvelope): Promise<void> {
-    this.logger.debug('[EventStore#append] Appending event envelope in the events store:', eventEnvelope)
-    try {
-      await this.provider.events.store(this.config, this.logger, eventEnvelope)
-    } catch (e) {
-      this.logger.error('[EventStore#append] Unhandled error while appending an event to the event store:', e)
-      throw e
-    }
-  }
-
   public async fetchEntitySnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | null> {
     this.logger.debug(`[EventStore#fetchEntitySnapshot] Fetching snapshot for entity ${entityName} with ID ${entityID}`)
     const latestSnapshotEnvelope = await this.loadLatestSnapshot(entityName, entityID)
@@ -65,7 +55,7 @@ export class EventStore {
       `[EventStore#storeSnapshot] Max number of events after latest stored snapshot reached (${numberOfEventsBetweenSnapshots}). Storing snapshot in the event store:`,
       snapshot
     )
-    return await this.provider.events.store(this.config, this.logger, snapshot)
+    return await this.provider.events.store([snapshot], this.config, this.logger)
   }
 
   private loadLatestSnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | null> {

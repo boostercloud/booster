@@ -1,7 +1,7 @@
 import { Logger, BoosterConfig, EventEnvelope } from '@boostercloud/framework-types'
 import { EventRegistry } from '..'
 
-export async function publishEvents(
+export async function storeEvents(
   eventsStream: EventRegistry,
   eventEnvelopes: Array<EventEnvelope>,
   _config: BoosterConfig,

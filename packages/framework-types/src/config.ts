@@ -47,7 +47,6 @@ export class BoosterConfig {
     const applicationStackName = this.appName + '-application-stack'
     return {
       applicationStack: applicationStackName,
-      eventsStream: applicationStackName + '-events-stream',
       eventsStore: applicationStackName + '-events-store',
       subscriptionsStore: applicationStackName + '-subscriptions-store',
       forReadModel(readModelName: string): string {
@@ -135,7 +134,6 @@ export class BoosterConfig {
 
 interface ResourceNames {
   applicationStack: string
-  eventsStream: string
   eventsStore: string
   subscriptionsStore: string
   forReadModel(entityName: string): string

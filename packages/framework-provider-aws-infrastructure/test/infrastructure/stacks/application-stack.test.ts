@@ -38,7 +38,6 @@ describe('the application stack builder', () => {
 
     const restAPIName = appStackName + '-rest-api'
     const websocketAPIName = appStackName + '-websocket-api'
-    const eventsStreamName = 'events-stream'
     const eventsStore = 'events-store'
     const eventsLambda = 'events-main'
     const authorizerLambda = 'graphql-authorizer'
@@ -65,7 +64,6 @@ describe('the application stack builder', () => {
     expect(appStack.tryFindChild(graphQLLambda)).not.to.be.undefined
     expect(appStack.tryFindChild(subscriptionsNotifierLambda)).not.to.be.undefined
     // Events-related
-    expect(appStack.tryFindChild(eventsStreamName)).not.to.be.undefined
     expect(appStack.tryFindChild(eventsStore)).not.to.be.undefined
     // ReadModels
     readModels.forEach(({ name }) => expect(appStack.tryFindChild(name)).not.to.be.undefined)
