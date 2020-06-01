@@ -139,8 +139,8 @@
         "--colors",
         "--forbid-only",
         "--config",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/aws/.mocharc.yml",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/aws/**/*.integration.ts"
+        "${workspaceFolder}/packages/framework-integration-tests/integration/providers/aws/.mocharc.yml",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/providers/aws/**/*.integration.ts"
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
