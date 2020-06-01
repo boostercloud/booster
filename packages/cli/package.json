@@ -22,7 +22,7 @@
     "execa": "^2.0.3",
     "fp-ts": "^2.0.3",
     "fs-extra": "^8.1.0",
-    "globby": "^8",
+    "globby": "^11",
     "inquirer": "^7.0.0",
     "mustache": "^3.0.1",
     "ora": "^3.4.0",
