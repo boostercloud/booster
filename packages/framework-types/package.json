@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "rxjs": "^6.5.3",
-    "uuid": "^3.3.3"
+    "uuid": "^8.1.0"
   },
   "devDependencies": {
     "@types/uuid": "^3.4.5",
