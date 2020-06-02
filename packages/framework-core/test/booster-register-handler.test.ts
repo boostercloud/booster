@@ -48,6 +48,21 @@ describe('the `RegisterHandler` class', () => {
     expect(config.provider.events.store).to.have.been.calledOnce
   })
 
+  it('does nothing when there are no events', async () => {
+    const config = new BoosterConfig('test')
+    config.provider = {
+      events: {
+        store: fake(),
+      },
+    } as any
+    config.reducers['SomeEvent'] = { class: SomeEntity, methodName: 'whatever' }
+
+    const register = new Register('1234')
+    await RegisterHandler.handle(config, logger, register)
+
+    expect(config.provider.events.store).to.not.have.been.called
+  })
+
   it('stores wrapped events', async () => {
     const config = new BoosterConfig('test')
     config.provider = {

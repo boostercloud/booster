@@ -16,7 +16,7 @@ export class CreateProduct {
     readonly currency: string
   ) {}
 
-  public handle(register: Register): void {
+  public async handle(register: Register): Promise<void> {
     register.events(
       new ProductCreated(UUID.generate(), this.sku, this.displayName, this.description, {
         cents: this.priceInCents,

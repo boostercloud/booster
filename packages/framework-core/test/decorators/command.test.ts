@@ -21,7 +21,7 @@ describe('the `Command` decorator', () => {
     class PostComment {
       public constructor(readonly comment: string) {}
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      public handle(_register: Register): void {
+      public handle(_register: Register): Promise<void> {
         throw new Error('Not implemented')
       }
     }
