@@ -39,9 +39,14 @@
     "packages/framework-provider-azure",
     "packages/framework-provider-local",
     "packages/framework-provider-local-infrastructure",
+    "packages/framework-provider-kubernetes",
+    "packages/framework-provider-kubernetes-infrastructure",
     "packages/framework-core",
     "packages/cli",
     "packages/framework-integration-tests"
   ],
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "dependencies": {
+    "yarn": "^1.22.4"
+  }
 }
