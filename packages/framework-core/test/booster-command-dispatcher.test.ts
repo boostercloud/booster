@@ -32,7 +32,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
         class PostComment {
           public constructor(readonly comment: string) {}
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          public handle(_register: Register): void {
+          public handle(_register: Register): Promise<void> {
             throw new Error('Not implemented')
           }
         }
@@ -55,6 +55,35 @@ describe('the `BoosterCommandsDispatcher`', () => {
             expect(RegisterHandler.handle).to.have.been.calledOnceWith(config, logger, match.instanceOf(Register))
           }
         )
+      })
+
+      it('waits for the handler method of a registered command to finish any async operation', async () => {
+        let asyncOperationFinished = false
+        @Command({ authorize: 'all' })
+        class PostComment {
+          public constructor(readonly comment: string) {}
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          public async handle(_register: Register): Promise<void> {
+            await new Promise((resolve) => setTimeout(resolve, 100))
+            asyncOperationFinished = true
+          }
+        }
+
+        const command = new PostComment('This test is good!')
+        replace(RegisterHandler, 'handle', fake())
+
+        let boosterConfig: any
+        Booster.configure('test', (config) => {
+          boosterConfig = config
+        })
+
+        await new BoosterCommandDispatcher(boosterConfig, logger).dispatchCommand({
+          requestID: '1234',
+          version: 1,
+          typeName: 'PostComment',
+          value: command,
+        })
+        expect(asyncOperationFinished).to.be.true
       })
 
       it('fails if the command "version" is not sent', () => {

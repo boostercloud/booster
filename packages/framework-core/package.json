@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-core",
-  "version": "0.3.3",
+  "version": "0.4.1",
   "description": "Library for your Booster apps",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
@@ -28,7 +28,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "dependencies": {
-    "@boostercloud/framework-types": "^0.3.3",
+    "@boostercloud/framework-types": "^0.4.1",
     "fp-ts": "^2.0.3",
     "graphql": "^15.0.0",
     "graphql-subscriptions": "^1.1.0",
