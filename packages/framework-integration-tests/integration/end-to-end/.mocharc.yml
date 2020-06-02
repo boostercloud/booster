@@ -7,6 +7,6 @@ recursive: true
 reporter: 'spec'
 timeout: 600000
 file:
-  - './integration/e2e/setup.ts'
+  - './integration/end-to-end/setup.ts'
 full-trace: true
 # bail: true -- This option makes the test suite stop after the first failure. Might make sense to enable once tests are stable
