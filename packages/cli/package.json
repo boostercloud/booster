@@ -35,7 +35,7 @@
     "@types/child-process-promise": "^2.2.1",
     "@types/fs-extra": "^8.0.0",
     "@types/inquirer": "^6.5.0",
-    "@types/mustache": "^0.8.32",
+    "@types/mustache": "^4.0.1",
     "@types/rewire": "^2.5.28",
     "rewire": "^4.0.1"
   },
