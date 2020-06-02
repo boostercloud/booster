@@ -27,7 +27,7 @@
     "mustache": "^3.0.1",
     "ora": "^3.4.0",
     "rxjs": "^6.5.2",
-    "tslib": "^1"
+    "tslib": "^2"
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1",
