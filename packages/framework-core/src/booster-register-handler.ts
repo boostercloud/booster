@@ -10,6 +10,9 @@ import {
 
 export class RegisterHandler {
   public static async handle(config: BoosterConfig, logger: Logger, register: Register): Promise<void> {
+    if (register.eventList.length == 0) {
+      return
+    }
     return config.provider.events.store(
       register.eventList.map(RegisterHandler.wrapEvent.bind(null, register, config)),
       config,
