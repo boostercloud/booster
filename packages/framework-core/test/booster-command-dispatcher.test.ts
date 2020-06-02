@@ -73,7 +73,9 @@ describe('the `BoosterCommandsDispatcher`', () => {
         replace(RegisterHandler, 'handle', fake())
 
         let boosterConfig: any
-        Booster.configure('test', (config) => boosterConfig = config)
+        Booster.configure('test', (config) => {
+          boosterConfig = config
+        })
 
         await new BoosterCommandDispatcher(boosterConfig, logger).dispatchCommand({
           requestID: '1234',
