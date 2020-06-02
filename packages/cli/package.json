@@ -37,7 +37,7 @@
     "@types/inquirer": "^6.5.0",
     "@types/mustache": "^0.8.32",
     "@types/rewire": "^2.5.28",
-    "rewire": "^4.0.1"
+    "rewire": "^5.0.0"
   },
   "engines": {
     "node": ">=8.0.0"
