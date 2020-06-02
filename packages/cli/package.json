@@ -21,7 +21,7 @@
     "child-process-promise": "^2.2.1",
     "execa": "^2.0.3",
     "fp-ts": "^2.0.3",
-    "fs-extra": "^8.1.0",
+    "fs-extra": "^9.0.0",
     "globby": "^8",
     "inquirer": "^7.0.0",
     "mustache": "^3.0.1",
