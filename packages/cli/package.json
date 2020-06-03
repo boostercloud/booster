@@ -37,7 +37,6 @@
     "@types/inquirer": "^6.5.0",
     "@types/mustache": "^0.8.32",
     "@types/rewire": "^2.5.28",
-    "faker": "^4.1.0",
     "rewire": "^4.0.1"
   },
   "engines": {
