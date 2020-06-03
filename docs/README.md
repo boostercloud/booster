@@ -147,7 +147,7 @@ running for a blog application in just a few minutes. The steps to follow will b
   - [Retrieving all posts](#72-retrieving-all-posts)
   - [Retrieving specific post](#73-retrieving-specific-post)
 - [Removing stack](#8-removing-stack)
-- [Further improvements](#9-further-improvements)
+- [More functionalities](#9-more-functionalities)
 
 #### 1. Create the project
 
