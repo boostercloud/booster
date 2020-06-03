@@ -1,0 +1,8 @@
+{
+    "default": true,
+    "line-length": {
+        "line_length": 90,
+        "code_blocks": false
+    },
+    "no-trailing-punctuation": false
+}
