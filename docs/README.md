@@ -2,11 +2,44 @@
 
 ## Introduction
 
+> _Progress isn't made by early risers. It's made by lazy men trying to find easier ways to do something._ — [Robert A. Heinlein](https://en.wikipedia.org/wiki/Robert_A._Heinlein)
+
 ### What is Booster?
+
+Booster is a new kind of framework to build scalable and reliable event-driven systems faster, maximizing developer speed by reducing friction at many levels.
+
+We have redesigned the whole developer experience from scratch, taking advantage of the advanced TypeScript type system and Serverless technologies to go from project generation to a production-ready real-time GraphQL API that can ingest thousands of concurrent users in a matter of minutes.
+
+Booster's ultimate goal is fulfilling the developer's dream of writing code at the application layer, and don't care about how anything else is done except it just works!
 
 ### Booster Principles
 
+Booster takes a holistic and highly-opinionated approach at many levels:
+
+* **Focus on business value**: The only code that makes sense is the code that makes your application different from any other.
+* **Convention over configuration**: All the supporting code and configuration that is similar in all applications should be out of programmers' sight.
+* **Serverless-less**: Why going Serverless to avoid managing infrastructure when you can implicitly infer your Serverless architecture from your code and not even deal with that?
+* **Scale smoothly**: A modern project shouldn't need to change their software architecture or rewrite their code in a different language just because they succeed and get a lot of users.
+* **Event-source and CQRS**: Our world is event-driven, businesses are event-driven, and modern software must map reality better being event-driven. We also have enough MVC frameworks already!
+* **Principle of Abstraction**: Building an application is hard enough to have to deal with recurrent low-level details like SQL, API design, or authentication mechanisms, so we tend to build more semantic abstractions on top of them.
+* **Real-time first**: Client applications must be able to react to events happening in the backend and notice data changes.
+
 ### Why using Booster
+
+Booster will fit like a glove in applications that are naturally event-driven like:
+
+* Commerce applications (retail, e-commerce, omnichannel applications, warehouse management, etc.)
+* Business management applications
+* Communication systems
+
+But it's a general-purpose framework that has several advantages over other solutions:
+
+* **Faster time-to-market**: Booster can deploy your application to a production-ready environment from minute one, without complicated configurations or needing to invest any effort to design it. In addition to that, it features a set of code generators to help developers build the project scaffolding faster and focus on actual business code in a matter of seconds instead of dealing with complicated framework folklore.
+* **Write less code**: Booster conventions and abstractions require less code to implement the same features. This not just speeds up development but combined with the clear architecture guidelines, it also makes Booster projects easier to understand, iterate, and maintain.
+* **All the advantages of Microservices, none of its cons**: Microservices are a great way to deal with code complexity, at least on paper. Services are isolated and can scale independently, and different teams can work independently, but that usually comes with a con: interfaces between services introduce huge challenges like delays, hard to solve cyclic dependencies, or deployment errors. In Booster, every handler function works as an independent microservice, it scales separately in its own lambda function, and there are no direct dependencies between them, all communication happens asynchronously via events, and all the infrastructure is compiled, type-checked and deployed atomically to avoid issues.
+* **All advantages of Serverless, without earning a degree in cloud technologies** Serverless technologies are amazing and have made a project like Booster possible, but they're relatively new technologies, and while day after day new tools appear to make them easier, the learning curve is still quite steep. With Booster you'll take advantage of Serverless main selling points of high scalability and reduced hosting costs, without having to learn every detail from minute one.
+* **Event-sourcing by default**: Similarly to Git repositories, Booster keeps all data changes as events indefinitely. This means that any previous state of the system can be recreated and replayed at any moment. This enables a whole world of possibilities for troubleshooting and auditing your system, or syncing development or staging environments with the production data to perform tests and simulations.
+* **Booster makes it easy to build enterprise-grade applications** Implementing an event-sourcing system from scratch is a challenging exercise that usually requires highly specialized experts. There are some technical challenges like eventual consistency, message ordering, and snapshot building. Booster takes care of all of that and more for you, lowering the curve for people that are starting and making expert lives easier.
 
 ## Getting started
 
