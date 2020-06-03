@@ -9,7 +9,7 @@ import { UpdatedShippingAddress } from '../events/updated-shipping-address'
 export class UpdateShippingAddress {
   public constructor(readonly cartId: UUID, readonly address: Address) {}
 
-  public handle(register: Register): void {
+  public async handle(register: Register): Promise<void> {
     register.events(new UpdatedShippingAddress(this.cartId, this.address))
   }
 }

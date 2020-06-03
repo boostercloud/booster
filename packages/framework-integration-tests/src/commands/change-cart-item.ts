@@ -8,7 +8,7 @@ import { ChangedCartItem } from '../events/changed-cart-item'
 export class ChangeCartItem {
   public constructor(readonly cartId: UUID, readonly productId: UUID, readonly quantity: number) {}
 
-  public handle(register: Register): void {
+  public async handle(register: Register): Promise<void> {
     register.events(new ChangedCartItem(this.cartId, this.productId, this.quantity))
   }
 }
