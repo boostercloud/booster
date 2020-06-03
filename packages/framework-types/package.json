@@ -35,7 +35,7 @@
     "uuid": "^3.3.3"
   },
   "devDependencies": {
-    "@types/uuid": "^3.4.5",
+    "@types/uuid": "^8.0.0",
     "fast-check": "^1.18.1"
   },
   "gitHead": "121816dbe55d57df5860b54a871c06dcda761101"
