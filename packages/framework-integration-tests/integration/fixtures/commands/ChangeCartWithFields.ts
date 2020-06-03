@@ -11,7 +11,7 @@ export class ChangeCartWithFields {
     readonly quantity: number,
   ) {}
 
-  public handle(register: Register): void {
+  public async handle(register: Register): Promise<void> {
     register.events( /* YOUR EVENT HERE */)
   }
 }
