@@ -1557,11 +1557,12 @@
     "@octokit/types" "^2.0.1"
     deprecation "^2.3.1"
 
-"@octokit/plugin-rest-endpoint-methods@3.8.0":
-  version "3.8.0"
-  resolved "https://registry.yarnpkg.com/@octokit/plugin-rest-endpoint-methods/-/plugin-rest-endpoint-methods-3.8.0.tgz#649fa2f2e5104b015e1f60076958d69eba281a19"
+"@octokit/plugin-rest-endpoint-methods@^3.12.2":
+  version "3.14.0"
+  resolved "https://registry.yarnpkg.com/@octokit/plugin-rest-endpoint-methods/-/plugin-rest-endpoint-methods-3.14.0.tgz#5aa479ef73d07af80009497d0f78250b8efe7455"
+  integrity sha512-KTLPiXZ45WaDNilFUN3+o2pns0vFWkcWLsKf8mw3Z7AJTST7mI3ukoDk2bJ0FPnLTCHvQYR1qrwMFp8UShR7cQ==
   dependencies:
-    "@octokit/types" "^2.12.1"
+    "@octokit/types" "^4.1.5"
     deprecation "^2.3.1"
 
 "@octokit/request-error@^1.0.2":
@@ -1615,17 +1616,25 @@
     universal-user-agent "^4.0.0"
 
 "@octokit/rest@^17.0.0":
-  version "17.6.0"
-  resolved "https://registry.yarnpkg.com/@octokit/rest/-/rest-17.6.0.tgz#91ba53bd3ab8f989030c8b018a8ccbcf87be0f0a"
+  version "17.9.2"
+  resolved "https://registry.yarnpkg.com/@octokit/rest/-/rest-17.9.2.tgz#725476630c7bc7d59488b8337a0936255d24b7ff"
+  integrity sha512-UXxiE0HhGQAPB3WDHTEu7lYMHH2uRcs/9f26XyHpGGiiXht8hgHWEk6fA7WglwwEvnj8V7mkJOgIntnij132UA==
   dependencies:
     "@octokit/core" "^2.4.3"
     "@octokit/plugin-paginate-rest" "^2.2.0"
     "@octokit/plugin-request-log" "^1.0.0"
-    "@octokit/plugin-rest-endpoint-methods" "3.8.0"
+    "@octokit/plugin-rest-endpoint-methods" "^3.12.2"
 
 "@octokit/types@^2.0.0", "@octokit/types@^2.0.1", "@octokit/types@^2.11.1", "@octokit/types@^2.12.1":
   version "2.12.2"
   resolved "https://registry.yarnpkg.com/@octokit/types/-/types-2.12.2.tgz#e9fbffa294adb54140946d436da9f73bc94b169c"
+  dependencies:
+    "@types/node" ">= 8"
+
+"@octokit/types@^4.1.5":
+  version "4.1.5"
+  resolved "https://registry.yarnpkg.com/@octokit/types/-/types-4.1.5.tgz#465872f9f5f5e6bb85c6ed763053486bba9b251b"
+  integrity sha512-/MKeipxtwMorckj1bfP+SKhbzKhqQimT5JuXKGtwnLazqDwj/noYYSPChpLzstVAwF8JVPygJ7L75cKCK47Ikg==
   dependencies:
     "@types/node" ">= 8"
 
