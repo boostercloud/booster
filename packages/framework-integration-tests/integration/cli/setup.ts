@@ -22,16 +22,16 @@ before(async () => {
     await Promise.all(removeFiles(testFiles))
   } catch (e) {
     // error whilst deleting files
-    console.log(e)
   }
 })
 
 after(async () => {
   try {
     await exec('lerna run compile')
-    await Promise.all(removeFiles(testFiles))
   } catch (e) {
     // error whilst deleting files
     console.log(e)
+  } finally {
+    await Promise.all(removeFiles(testFiles))
   }
 })
