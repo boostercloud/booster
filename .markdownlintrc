@@ -1,4 +1,5 @@
 {
+    "_comment": "Other rules are described here https://github.com/DavidAnson/markdownlint/blob/master/doc/Rules.md#rules",
     "default": true,
     "line-length": {
         "line_length": 90,
