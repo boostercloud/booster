@@ -102,3 +102,24 @@ folder, and a file called `credentials` with this template:
 aws_access_key_id = <YOUR ACCESS KEY ID>
 aws_secret_access_key = <YOUR SECRET ACCESS KEY>
 ```
+#### Installing the Booster CLI
+
+Booster comes with a command-line tool that helps you generating boilerplate code,
+testing and deploying the application, and deleting all the resources in the cloud. All
+the stable versions are published to [`npm`](https://www.npmjs.com/package/@boostercloud/cli),
+these versions are the recommended ones, as they are well documented, and the changes are
+stated in the release notes.
+
+To install the Booster CLI run
+
+```shell
+npm install --global @boostercloud/cli
+```
+
+Verify the Booster CLI installation with the `boost version` command. You should get back
+something like
+
+```shell
+$ boost version
+@boostercloud/cli/0.3.3 darwin-x64 node-v13.12.0
+```
