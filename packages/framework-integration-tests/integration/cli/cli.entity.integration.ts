@@ -51,6 +51,35 @@ describe('Entity', () => {
         expect(entityContent).to.equal(expectedEntityContent)
       })
     })
+
+    describe('with reducer', () => {
+      it('should create new entity with reducer', async () => {
+        // Create event
+        await exec(`${cliPath} new:event PostCreated --fields postId:UUID title:string body:string`)
+        const expectedEventContent = readFileContent('integration/fixtures/events/PostCreated.ts')
+        const eventContent = readFileContent(FILE_POST_CREATED_EVENT)
+        expect(eventContent).to.equal(expectedEventContent)
+
+        // Set event entity ID
+        const updatedEventContent = eventContent.replace(EVENT_ENTITY_ID_PLACEHOLDER, 'this.postId')
+
+        writeFileContent('src/events/PostCreated.ts', updatedEventContent)
+
+        // Create entity
+        await exec(`${cliPath} new:entity PostWithReducer --fields title:string body:string --reduces PostCreated`)
+        const expectedEntityContent = readFileContent('integration/fixtures/entities/PostWithReducer.ts')
+        const entityContent = readFileContent(FILE_POST_WITH_REDUCER_ENTITY)
+        expect(entityContent).to.equal(expectedEntityContent)
+
+        // Set reducer response
+        const updatedEntityContent = entityContent.replace(
+          ENTITY_REDUCER_PLACEHOLDER,
+          'new PostWithReducer(event.postId, event.title, event.body)'
+        )
+
+        writeFileContent(FILE_POST_WITH_REDUCER_ENTITY, updatedEntityContent)
+      })
+    })
   })
 
   context('invalid entity', () => {
@@ -60,35 +89,6 @@ describe('Entity', () => {
 
         expect(stderr).to.equal("You haven't provided an entity name, but it is required, run with --help for usage\n")
       })
-    })
-  })
-
-  describe('entity with reducer', () => {
-    it('should create new entity with reducer', async () => {
-      // Create event
-      await exec(`${cliPath} new:event PostCreated --fields postId:UUID title:string body:string`)
-      const expectedEventContent = readFileContent('integration/fixtures/events/PostCreated.ts')
-      const eventContent = readFileContent(FILE_POST_CREATED_EVENT)
-      expect(eventContent).to.equal(expectedEventContent)
-
-      // Set event entity ID
-      const updatedEventContent = eventContent.replace(EVENT_ENTITY_ID_PLACEHOLDER, 'this.postId')
-
-      writeFileContent('src/events/PostCreated.ts', updatedEventContent)
-
-      // Create entity
-      await exec(`${cliPath} new:entity PostWithReducer --fields title:string body:string --reduces PostCreated`)
-      const expectedEntityContent = readFileContent('integration/fixtures/entities/PostWithReducer.ts')
-      const entityContent = readFileContent(FILE_POST_WITH_REDUCER_ENTITY)
-      expect(entityContent).to.equal(expectedEntityContent)
-
-      // Set reducer response
-      const updatedEntityContent = entityContent.replace(
-        ENTITY_REDUCER_PLACEHOLDER,
-        'new PostWithReducer(event.postId, event.title, event.body)'
-      )
-
-      writeFileContent(FILE_POST_WITH_REDUCER_ENTITY, updatedEntityContent)
     })
   })
 })
