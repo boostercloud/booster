@@ -1,3 +1,4 @@
+/*eslint no-unused-vars: [2, { "args": "none" }]*/
 import { Observable, EMPTY } from 'rxjs'
 import { BoosterConfig } from '@boostercloud/framework-types'
 
