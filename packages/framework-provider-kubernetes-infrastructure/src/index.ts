@@ -1,4 +1,4 @@
-/*eslint no-unused-vars: [2, { "args": "none" }]*/
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Observable, EMPTY } from 'rxjs'
 import { BoosterConfig } from '@boostercloud/framework-types'
 
