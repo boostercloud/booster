@@ -19,7 +19,7 @@ describe('providerService', () => {
     })
 
     it('should throw an error if project name includes a space', () => {
-      const inputString = random.words(3)
+      const inputString = random.words(2)
       const errorString = `Project name cannot contain spaces:\n\n    Found: '${inputString}'`
 
       expect(() => providerService.assertNameIsCorrect(inputString)).to.throw(errorString)
