@@ -25,7 +25,7 @@ const adminPassword = 'Enable_G0d_Mode3e!'
  * Note: this test file is designed to be run sequentially from top to bottom, which seems to be the default in mocha.
  * Running the test cases out of order or in isolation could have unexpected results.
  */
-describe('With the auth API', () => {
+describe('With the auth API', () => 
   let mockProductId: string
   let mockCartId: string
 
