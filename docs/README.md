@@ -286,7 +286,7 @@ export class PostCreated {
 }
 ```
 
-Now that we have an event, we can make the `CreatePost` command to emit it. Let's change
+Now that we have an event, we can edit the `CreatePost` command to emit it. Let's change
 the command's `handle` method to look like this:
 
 ```typescript
