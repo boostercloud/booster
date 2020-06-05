@@ -516,7 +516,7 @@ You should get a response similar to this:
 }
 ```
 
-#### 8. Removing stack
+#### 8. Removing the stack
 
 Now, let's destroy all the infrastructure created for running the application in the cloud.
 Execute the following command from the root of the project. For security reasons, you have
