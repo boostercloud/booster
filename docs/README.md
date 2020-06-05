@@ -128,7 +128,7 @@ something like
 
 ```shell
 $ boost version
-@boostercloud/cli/0.3.3 darwin-x64 node-v13.12.0
+@boostercloud/cli/0.4.1 darwin-x64 node-v13.12.0
 ```
 
 ### Your first Booster app in 10 minutes
