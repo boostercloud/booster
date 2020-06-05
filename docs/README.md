@@ -544,4 +544,4 @@ The are many other options for your serverless backend built with Booster Framew
 - Reading entities within command handlers to apply domain-driven decisions
 - and much more...
 
-Please continue reading to get more details about Booster and its capabilities.
+Continue reading to dig more, you've just scratched the surface of all the Booster capabilities!
