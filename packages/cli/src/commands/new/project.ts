@@ -77,6 +77,8 @@ const getSelectedProviderPackage = (provider: Provider): string => {
   switch (provider) {
     case Provider.AWS:
       return '@boostercloud/framework-provider-aws'
+    case Provider.KUBERNETES:
+      return '@boostercloud/framework-provider-kubernetes'
     default:
       return ''
   }
@@ -89,14 +91,14 @@ const getProviderPackageName = async (prompter: Prompter, providerPackageName?: 
 
   const providerSelection: Provider = (await prompter.defaultOrChoose(
     providerPackageName,
-    "What's the package name of your provider infrastructure library?",
-    [Provider.AWS, Provider.OTHER]
+    "What's the package name of your provider infrastructure infrastructure?",
+    [Provider.AWS, Provider.KUBERNETES, Provider.OTHER]
   )) as Provider
 
   if (providerSelection === Provider.OTHER) {
     return await prompter.defaultOrPrompt(
       undefined,
-      "What's the other provider integration library? e.g. @boostercloud/framework-provider-aws"
+      "What's the other provider integration infrastructure? e.g. @boostercloud/framework-provider-aws"
     )
   } else {
     return getSelectedProviderPackage(providerSelection)
