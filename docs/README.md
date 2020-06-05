@@ -449,9 +449,9 @@ The expected response for each of those requests should be:
 
 Note:
 
-> The IDs are generated on the client-side. For this example, we are not validating ID
-> uniqueness, consider using [a UUID generator](https://www.uuidgenerator.net/version4)
-> when creating more Posts.
+> In Booster the IDs are generated on the client-side, when running production applications
+> consider adding validation for ID uniqueness. For this example, we have used [an UUID generator](https://www.uuidgenerator.net/version4)
+
 
 ##### 7.2 Retrieving all posts
 
