@@ -200,7 +200,7 @@ boosted-blog
 └── tsconfig.json
 ```
 
-Now open the project in your most preferred IDE, e.g. [Visual Studio Code](https://code.visualstudio.com/).
+Now open the project in your favorite editor, e.g. [Visual Studio Code](https://code.visualstudio.com/).
 
 #### 2. First command
 
