@@ -18,9 +18,6 @@ You can develop with Booster using any of the following operating systems:
 - macOS
 - Windows (Native and WSL)
 
-Booster hasn't been tested under other platforms like BSD. By using them, you may face
-unknown issues, so proceed at your own risk.
-
 #### Prerequisites
 
 ##### Install Node.js
