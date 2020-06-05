@@ -261,7 +261,7 @@ the file is the name of the Event:
 boosted-blog
 └── src
     └── events
-        └── CreatePost.ts
+        └── PostCreated.ts
 ```
 
 Edit the `entityID` method to return the id of the entity this Event is referring to. It
