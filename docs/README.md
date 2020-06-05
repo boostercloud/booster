@@ -65,7 +65,7 @@ it apart.
 Alternatively, we recommend you to use a version manager for dealing with different Node.js
 versions:
 
-- [`nvm`](https://github.com/nvm-sh/nvm) - Works with macOS, Linux, and WSL
+- [`nvm`](https://github.com/nvm-sh/nvm) - Works with macOS, Linux, and Windows Subsystem for Linux
 - [`nvm-windows`](https://github.com/coreybutler/nvm-windows) - Works with native Windows
 
 ##### Set up an AWS account
