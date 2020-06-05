@@ -122,7 +122,7 @@ Or in a specific package with yarn:
 Once all your unit tests are passing and your code looks great, if your code changes any behavior in the cloud provider, it's important to update the integration test suite and iterate your code until it passes. Notice that in the `framework-integration-tests` there's an `integration` folder with subfolders for each supported provider (including the local provider). Integration tests require real deployments, so they'll last a while and you must have your provider credentials properly set. The test suite will fail with (hopefully) useful error messages with guidance when some parameter is missed. You can run the integration tests using lerna from any package or the project root, or yarn from within the integration tests package:
 
 ```bash
-~/booster:$ lerna run integration
+~/booster:$ lerna run integration --stream
 ```
 
 You can run only the tests for a specific provider using the more specific scoped commands:
