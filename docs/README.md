@@ -204,8 +204,7 @@ Now open the project in your favorite editor, e.g. [Visual Studio Code](https://
 
 #### 2. First command
 
-We will now define our first [command](#commands), it will allow us to create posts in our
-blog. Write this command in the project's root directory:
+Commands define the input to our system, so we'll start by generating our first [command](#commands) to create posts. Use the command generator in the project's root directory as follows:
 
 ```bash
 boost new:command CreatePost --fields postId:UUID title:string content:string author:string
