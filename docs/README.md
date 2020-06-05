@@ -467,7 +467,7 @@ query {
 }
 ```
 
-It should response something like:
+It should respond with something like:
 
 ```json
 {
