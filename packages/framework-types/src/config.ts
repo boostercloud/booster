@@ -17,6 +17,7 @@ import { Level } from './logger'
  */
 export class BoosterConfig {
   public logLevel: Level = Level.debug
+  private readonly _configuredEnvironments: Set<string> = new Set<string>()
   private _provider?: ProviderLibrary
   public appName = 'new-booster-app'
   public region = 'eu-west-1'
@@ -46,9 +47,9 @@ export class BoosterConfig {
     const applicationStackName = this.appName + '-application-stack'
     return {
       applicationStack: applicationStackName,
-      eventsStream: applicationStackName + '-events-stream',
       eventsStore: applicationStackName + '-events-store',
       subscriptionsStore: applicationStackName + '-subscriptions-store',
+      staticWebsite: applicationStackName + '-static-site',
       forReadModel(readModelName: string): string {
         return applicationStackName + '-' + readModelName
       },
@@ -104,6 +105,14 @@ export class BoosterConfig {
     return value
   }
 
+  public addConfiguredEnvironment(environmentName: string): void {
+    this._configuredEnvironments.add(environmentName)
+  }
+
+  public get configuredEnvironments(): Set<string> {
+    return this._configuredEnvironments
+  }
+
   private validateAllMigrations(): void {
     for (const conceptName in this.migrations) {
       this.validateConceptMigrations(conceptName, this.migrations[conceptName])
@@ -126,9 +135,9 @@ export class BoosterConfig {
 
 interface ResourceNames {
   applicationStack: string
-  eventsStream: string
   eventsStore: string
   subscriptionsStore: string
+  staticWebsite: string
   forReadModel(entityName: string): string
 }
 

@@ -82,21 +82,6 @@ describe('BoosterEventDispatcher', () => {
     })
 
     describe('the `eventProcessor` method', () => {
-      it('appends an event to the event store', async () => {
-        const stubEventStore = createStubInstance(EventStore)
-        const stubReadModelStore = createStubInstance(ReadModelStore)
-
-        const boosterEventDispatcher = BoosterEventDispatcher as any
-        replace(boosterEventDispatcher, 'snapshotAndUpdateReadModels', fake())
-        replace(boosterEventDispatcher, 'handleEvent', fake())
-
-        const callback = boosterEventDispatcher.eventProcessor(stubEventStore, stubReadModelStore, logger)
-
-        await callback(someEvent, config)
-
-        expect(stubEventStore.append).to.have.been.calledOnceWith(someEvent)
-      })
-
       it('waits for snapshotting and read model update process to complete', async () => {
         const stubEventStore = createStubInstance(EventStore)
         const stubReadModelStore = createStubInstance(ReadModelStore)

@@ -6,7 +6,6 @@ export class ApplicationStackBuilder {
   public constructor(readonly config: BoosterConfig) {}
 
   public buildOn(resourceManagementClient:ResourceManagementClient, resourceGroupName: string): void {
-
     this.buildStorageAccount(resourceManagementClient, resourceGroupName)
   }
 

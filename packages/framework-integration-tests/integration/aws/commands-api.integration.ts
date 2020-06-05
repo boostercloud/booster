@@ -107,7 +107,7 @@ describe('the commands API', async () => {
       expect(response?.data?.ChangeCartItem).to.be.true
     })
 
-    await sleep(5000)
+    await sleep(10000)
 
     const expectedSnapshotItemsCount = snapshotsCount + 1
     expect(await countSnapshotItems()).to.be.equal(expectedSnapshotItemsCount)

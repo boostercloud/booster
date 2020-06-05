@@ -1,15 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   rawEventsToEnvelopes,
-  storeEvent,
+  storeEvents,
   readEntityLatestSnapshot,
   readEntityEventsSince,
-  publishEvents,
 } from './library/events-adapter'
 import { fetchReadModel, storeReadModel } from './library/read-model-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import { rawSignUpDataToUserEnvelope, authorizeRequest } from './library/auth-adapter'
-import { Kinesis, DynamoDB, CognitoIdentityServiceProvider } from 'aws-sdk'
+import { DynamoDB, CognitoIdentityServiceProvider } from 'aws-sdk'
 import { ProviderInfrastructure, ProviderLibrary } from '@boostercloud/framework-types'
 import { requestFailed, requestSucceeded } from './library/api-gateway-io'
 import { searchReadModel } from './library/searcher-adapter'
@@ -20,7 +19,6 @@ import {
   subscribeToReadModel,
 } from './library/subscription-adapter'
 
-const eventsStream: Kinesis = new Kinesis()
 const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
 const userPool = new CognitoIdentityServiceProvider()
 
@@ -28,10 +26,9 @@ export const Provider: ProviderLibrary = {
   // ProviderEventsLibrary
   events: {
     rawToEnvelopes: rawEventsToEnvelopes,
-    store: storeEvent.bind(null, dynamoDB),
     forEntitySince: readEntityEventsSince.bind(null, dynamoDB),
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, dynamoDB),
-    publish: publishEvents.bind(null, eventsStream),
+    store: storeEvents.bind(null, dynamoDB),
   },
   // ProviderReadModelsLibrary
   readModels: {
