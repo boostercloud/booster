@@ -210,7 +210,7 @@ Commands define the input to our system, so we'll start by generating our first 
 boost new:command CreatePost --fields postId:UUID title:string content:string author:string
 ```
 
-The `new:command` creates most of the code for us, take a look at it here:
+The `new:command` generator creates a `CreatePost.ts` file in the `commands` folder:
 
 ```text
 boosted-blog
