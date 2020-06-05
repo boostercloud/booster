@@ -519,7 +519,7 @@ You should get a response similar to this:
 #### 8. Removing the stack
 
 Now, let's destroy all the infrastructure created for running the application in the cloud.
-Execute the following command from the root of the project. For security reasons, you have
+Execute the following command from the root of the project. For safety reasons, you have
 to confirm this action by writing the project's name, in our case `boosted-blog` that is
 the same used when we run `new:project` CLI command.
 
