@@ -26,7 +26,7 @@ unknown issues, so proceed at your own risk.
 ##### Install Node.js
 
 The minimal required Node.js version is `v12`. Download the installer
-[from its website](https://nodejs.org/en/), or install it using the system's package
+[from nodejs website](https://nodejs.org/en/), or install it using your system's package
 manager.
 
 ###### Ubuntu
