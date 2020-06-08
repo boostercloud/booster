@@ -22,6 +22,23 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Create a check for integration tests
+        uses: octokit/request-action@v2.x
+        id: create_check_run
+        with:
+          route: POST /repos/${{ github.repository }}/check-runs
+          mediaType: '{"previews": ["antiope"]}'
+          name: "Integration tests pass"
+          head_sha: ${{ fromJson(steps.pull_request_info.outputs.data).head.sha }}
+          status: 'in_progress'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Print integration tests check data (useful for debuging)
+        run: echo "$DATA"
+        env:
+          DATA: ${{ toJson(fromJson(steps.create_check_run.outputs.data)) }}
+
       - name: Checkout PR branch
         uses: actions/checkout@v2
         with:
@@ -55,3 +72,14 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
         run: npx lerna run integration --stream
+
+      - name: Update integration tests check status
+        uses: octokit/request-action@v2.x
+        with:
+          route: PATCH /repos/:repository/check-runs/:check_run_id
+          repository: ${{ github.repository }}
+          mediaType: '{"previews": ["antiope"]}'
+          check_run_id: ${{ fromJson(steps.create_check_run.outputs.data).id }}
+          conclusion: ${{ steps.integration_tests_run.outcome }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
