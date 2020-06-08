@@ -1,4 +1,4 @@
-name: Run integration tests and enable check
+name: Tests
 on:
   issue_comment:
     types: [created, edited]
