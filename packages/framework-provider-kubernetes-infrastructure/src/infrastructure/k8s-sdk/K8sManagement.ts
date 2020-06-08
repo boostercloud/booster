@@ -1,4 +1,6 @@
 import { CoreV1Api, KubeConfig } from '@kubernetes/client-node'
+import { Pod } from './models/pod'
+import { Namespace } from './models/namespace'
 
 export class K8sManagement {
   private kube: KubeConfig
@@ -24,7 +26,7 @@ export class K8sManagement {
     })
   }
 
-  public async getAllNamespace(): Promise<Array<Namespace>> {
+  public async getAllNamespaces(): Promise<Array<Namespace>> {
     const response = await this.unwrapResponse(this.k8sClient.listNamespace())
     return response.items.map((item) => {
       return {
@@ -59,6 +61,24 @@ export class K8sManagement {
       () => {
         return false
       }
+    )
+  }
+
+  public async getNamespace(name: string): Promise<Namespace | null> {
+    const namespaces = await this.getAllNamespaces()
+    return (
+      namespaces.find((namespace) => {
+        return namespace?.name === name
+      }) ?? null
+    )
+  }
+
+  public async getPodFromNamespace(name: string, namespace: string): Promise<Pod | null> {
+    const pods = await this.getAllPodsInNamespace(namespace)
+    return (
+      pods.find((pod) => {
+        return pod?.name === name
+      }) ?? null
     )
   }
 

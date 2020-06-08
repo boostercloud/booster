@@ -1,4 +1,4 @@
-interface Pod {
+export interface Pod {
   name?: string
   namespace?: string
   kind?: string
