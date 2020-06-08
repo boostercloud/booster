@@ -13,3 +13,4 @@ coverage
 scripts/mirroring.js
 .docs
 .booster
+.test
