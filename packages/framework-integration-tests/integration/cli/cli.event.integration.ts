@@ -8,9 +8,11 @@ const exec = util.promisify(require('child_process').exec)
 const EVENT_ENTITY_ID_PLACEHOLDER = '/* the associated entity ID */'
 
 const FILE_CART_CHANGED_EVENT = 'src/events/CartChanged.ts'
+const FILE_CART_CHANGED_WITH_FIELDS_EVENT = 'src/events/CartChangedWithFields.ts'
 
 export const CLI_EVENTS_INTEGRATION_TEST_FILES: Array<string> = [
   FILE_CART_CHANGED_EVENT,
+  FILE_CART_CHANGED_WITH_FIELDS_EVENT
 ]
 
 describe('Event', () => {
@@ -37,12 +39,23 @@ describe('Event', () => {
         // Set event entity ID
         const updatedEventContent = eventContent.replace(EVENT_ENTITY_ID_PLACEHOLDER, '\'some-id\'')
 
-        writeFileContent('src/events/CartChanged.ts', updatedEventContent)
+        writeFileContent(FILE_CART_CHANGED_EVENT, updatedEventContent)
       })
     })
 
     describe('with fields', () => {
+      it('should create new event', async () => {
+        await exec(`${cliPath} new:event CartChangedWithFields --fields cartId:UUID sku:string quantity:number`)
 
+        const expectedEventContent = await readFileContent('integration/fixtures/events/CartChangedWithFields.ts')
+        const eventContent = await readFileContent(FILE_CART_CHANGED_WITH_FIELDS_EVENT)
+        expect(eventContent).to.equal(expectedEventContent)
+
+        // Set event entity ID
+        const updatedEventContent = eventContent.replace(EVENT_ENTITY_ID_PLACEHOLDER, 'this.cartId')
+
+        writeFileContent(FILE_CART_CHANGED_WITH_FIELDS_EVENT, updatedEventContent)
+      })
     })
   })
 
