@@ -25,7 +25,7 @@ describe('nuke', () => {
 
         await runTasks('test-env', fakeLoader, fakeNuke)
 
-        expect(ctx.stdout).to.include('weird exception')
+        expect(ctx.stdout).to.include('foo')
 
         expect(fakeNuke).not.to.have.been.called
       })
