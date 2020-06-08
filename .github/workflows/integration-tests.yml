@@ -10,7 +10,7 @@ jobs:
       matrix:
         runs-on: [ubuntu-latest]
       fail-fast: false
- 
+
     runs-on: ${{ matrix.runs-on }}
 
     steps:
@@ -22,31 +22,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get integration tests check
+      - name: Create a check for integration tests
         uses: octokit/request-action@v2.x
-        id: get_check_run
+        id: create_check_run
         with:
-          route: GET /repos/${{ github.repository }}/commits/${{ fromJson(steps.pull_request_info.outputs.data).head.ref }}/check-runs
+          route: POST /repos/${{ github.repository }}/check-runs
           mediaType: '{"previews": ["antiope"]}'
-          check_name: "Integration tests pass"
+          name: "Integration tests pass"
+          head_sha: ${{ fromJson(steps.pull_request_info.outputs.data).head.sha }}
+          status: 'in_progress'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Print integration tests check data (useful for debuging)
         run: echo "$DATA"
         env:
-          DATA: ${{ toJson(fromJson(steps.get_check_run.outputs.data)) }}
-
-      - name: Set integration tests check to "In progress"
-        uses: octokit/request-action@v2.x
-        with:
-          route: PATCH /repos/:repository/check-runs/:check_run_id
-          repository: ${{ github.repository }}
-          mediaType: '{"previews": ["antiope"]}'
-          check_run_id: ${{ fromJson(steps.get_check_run.outputs.data).check_runs[0].id }}
-          status: "in_progress"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DATA: ${{ toJson(fromJson(steps.create_check_run.outputs.data)) }}
 
       - name: Checkout PR branch
         uses: actions/checkout@v2
@@ -88,7 +79,7 @@ jobs:
           route: PATCH /repos/:repository/check-runs/:check_run_id
           repository: ${{ github.repository }}
           mediaType: '{"previews": ["antiope"]}'
-          check_run_id: ${{ fromJson(steps.get_check_run.outputs.data).check_runs[0].id }}
+          check_run_id: ${{ fromJson(steps.create_check_run.outputs.data).id }}
           conclusion: ${{ steps.integration_tests_run.outcome }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
