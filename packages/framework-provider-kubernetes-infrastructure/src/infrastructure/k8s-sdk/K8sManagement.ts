@@ -1,6 +1,5 @@
 import { CoreV1Api, KubeConfig } from '@kubernetes/client-node'
-import { Pod } from './models/pod'
-import { Namespace } from './models/namespace'
+import { Node, Namespace, Pod } from './models'
 
 export class K8sManagement {
   private kube: KubeConfig
@@ -80,6 +79,27 @@ export class K8sManagement {
         return pod?.name === name
       }) ?? null
     )
+  }
+
+  public async getAllNodesInCluster(): Promise<Array<Node>> {
+    const response = await this.unwrapResponse(this.k8sClient.listNode())
+    return response.items.map((item) => {
+      return {
+        name: item.metadata?.name,
+        labels: item.metadata?.labels ?? {},
+      }
+    })
+  }
+
+  public async getallNodesWithOpenWhiskRole(role: string): Promise<Array<Node>> {
+    const clusterNodes = await this.getAllNodesInCluster()
+    return clusterNodes.filter((node) => {
+      if (node.labels && 'openwhisk-role' in node.labels) {
+        return node.labels['openwhisk-role'] === role
+      } else {
+        return false
+      }
+    })
   }
 
   private async unwrapResponse<TType>(wrapped: Promise<{ body: TType }>): Promise<TType> {

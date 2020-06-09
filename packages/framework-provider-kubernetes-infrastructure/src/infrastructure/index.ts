@@ -7,21 +7,17 @@ export function deploy(configuration: BoosterConfig): Observable<string> {
   console.log('These pods are here bro!! ')
   return new Observable((observer): void => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    myFunc()
+    deployBoosterApp()
       .catch((error): void => observer.error(error))
       .then((): void => observer.complete())
   })
 }
 
-async function myFunc(): Promise<void> {
+async function deployBoosterApp(): Promise<void> {
   const test = new K8sManagement()
+  const nodes = await test.getallNodesWithOpenWhiskRole('invoker')
   console.log('*****************************')
-  const namespace = await test.getAllNamespace()
-  console.log(namespace)
-  console.log('*****************************')
-  await test.deleteNamespace('prueba')
-  const namespace2 = await test.getAllNamespace()
-  console.log(namespace2)
+  console.log(nodes)
 }
 
 export function nuke(configuration: BoosterConfig): Observable<string> {
