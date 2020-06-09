@@ -62,7 +62,8 @@ it apart.
 Alternatively, we recommend you to use a version manager for dealing with different Node.js
 versions:
 
-- [`nvm`](https://github.com/nvm-sh/nvm) - Works with macOS, Linux, and Windows Subsystem for Linux
+- [`nvm`](https://github.com/nvm-sh/nvm) - Works with macOS, Linux, and Windows Subsystem
+  for Linux
 - [`nvm-windows`](https://github.com/coreybutler/nvm-windows) - Works with native Windows
 
 ##### Set up an AWS account
@@ -203,7 +204,9 @@ Now open the project in your favorite editor, e.g. [Visual Studio Code](https://
 
 #### 2. First command
 
-Commands define the input to our system, so we'll start by generating our first [command](#commands) to create posts. Use the command generator in the project's root directory as follows:
+Commands define the input to our system, so we'll start by generating our first
+[command](#commands) to create posts. Use the command generator in the project's root
+directory as follows:
 
 ```bash
 boost new:command CreatePost --fields postId:UUID title:string content:string author:string
@@ -251,9 +254,10 @@ export class CreatePost {
 
 #### 3. First event
 
-Instead of storing full objects, Booster stores data in the form of events, which
-are records of facts and the source of truth. We will save an event called  `PostCreated` containing the initial post info. Any change to a given `Post` will be a
-new event emitted, for example, `PostUpdated`. 
+Instead of storing full objects, Booster stores data in the form of events, which are
+records of facts and the source of truth. We will save an event called `PostCreated`
+containing the initial post info. Any change to a given `Post` will be a new event
+emitted, for example, `PostUpdated`.
 
 For now, let's emit our `PostCreated` event once we have successfully handled
 our `CreatePost` command. You can generate the event with this generator:
@@ -375,7 +379,7 @@ Read models and commands compound the public API of a Booster application. With 
 for the `PostReadModel`.
 
 Just for learning, We also will exclude the `content` field from the `Post` entity so it
-won't be visible. 
+won't be visible.
 
 To authorize anyone to query this read model, and filter out the content, edit the file to
 look like this:
@@ -407,9 +411,10 @@ At this point, we've learned:
 - how to create a publicly accessible command
 - we emitted an event to store the data
 - we reduced the event into an entity
-- and finally, we projected the entity into a read model that is also publicly accessible. 
+- and finally, we projected the entity into a read model that is also publicly accessible.
 
-That's all; you already know the basics to build event-driven, CQRS-based applications with Booster.
+That's all; you already know the basics to build event-driven, CQRS-based applications
+with Booster.
 
 Let's deploy our application to the cloud to see it working. It is as simple as running
 the deploy command:
@@ -438,7 +443,8 @@ Let's get started testing the project. We will perform three actions:
 - Retrieve all posts
 - Retrieve a specific post
 
-Booster applications provide you with a GraphQL API out of the box. Commands are mutations, and read models are queries. To perform calls to the GraphQL API, you can use
+Booster applications provide you with a GraphQL API out of the box. Commands are
+mutations, and read models are queries. To perform calls to the GraphQL API, you can use
 any HTTP client you want; we recommend you to use
 [Postwoman](https://postwoman.io/graphql), which is free and includes great support for
 GraphQL.
