@@ -29,7 +29,11 @@ describe('K8s cluster interaction', () => {
   metadataNode.name = NODE_NAME
   metadataNode.labels = { 'openwhisk-role': 'invoker' }
   node.metadata = metadataNode
-  const nodeList = { response: {}, body: { items: [node] } }
+  const node2 = new V1Node()
+  const metadataNode2 = new V1ObjectMeta()
+  metadataNode.name = NODE_NAME
+  node2.metadata = metadataNode2
+  const nodeList = { response: {}, body: { items: [node, node2] } }
 
   replace(KubeConfig.prototype, 'makeApiClient', fake.returns(new CoreV1Api()))
   replace(CoreV1Api.prototype, 'listNamespace', fake.resolves(namespaceList))
@@ -54,7 +58,7 @@ describe('K8s cluster interaction', () => {
 
   it('list all cluster nodes', async () => {
     const clusterResponse = await k8sManager.getAllNodesInCluster()
-    expect(clusterResponse.length).to.be.equal(1)
+    expect(clusterResponse.length).to.be.equal(2)
     expect(clusterResponse[0].name).to.be.equal(NODE_NAME)
   })
 
