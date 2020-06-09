@@ -152,4 +152,119 @@ describe('Cart end-to-end tests', () => {
       })
     })
   })
+
+  describe('Read models', () => {
+    describe('projecting two entities', () => {
+      const mockCartId: string = random.uuid()
+      const mockPaymentId: string = random.uuid()
+      const mockProductId: string = random.uuid()
+      const mockQuantity: number = random.number({ min: 1 })
+      const mockConfirmationToken: string = random.alphaNumeric(10)
+
+      beforeEach(async () => {
+        // provisioning a cart
+        await client.mutate({
+          variables: {
+            cartId: mockCartId,
+            productId: mockProductId,
+            quantity: mockQuantity,
+          },
+          mutation: gql`
+            mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+              ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+            }
+          `,
+        })
+      })
+
+      it('should project changes for both entities', async () => {
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                cartId: mockCartId,
+              },
+              query: gql`
+                query CartReadModel($cartId: ID!) {
+                  CartReadModel(id: $cartId) {
+                    id
+                    cartItems
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.CartReadModel != null
+        )
+
+        const cartData = queryResult.data.CartReadModel
+        const expectedResult = {
+          __typename: 'CartReadModel',
+          id: mockCartId,
+          cartItems: [
+            {
+              productId: mockProductId,
+              quantity: mockQuantity,
+            },
+          ],
+        }
+
+        expect(cartData).to.be.deep.equal(expectedResult)
+
+        // Make payment
+        await client.mutate({
+          variables: {
+            paymentId: mockPaymentId,
+            cartId: mockCartId,
+            confirmationToken: mockConfirmationToken,
+          },
+          mutation: gql`
+            mutation ConfirmPayment($paymentId: ID!, $cartId: ID!, $confirmationToken: String) {
+              ConfirmPayment(input: { paymentId: $paymentId, cartId: $cartId, confirmationToken: $confirmationToken })
+            }
+          `,
+        })
+
+        // Retrieve updated read model
+        const updatedQueryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                cartId: mockCartId,
+              },
+              query: gql`
+                query CartReadModel($cartId: ID!) {
+                  CartReadModel(id: $cartId) {
+                    id
+                    cartItems
+                    payment
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.CartReadModel.payment != null
+        )
+
+        const updatedCartData = updatedQueryResult.data.CartReadModel
+        const expectedUpdatedResult = {
+          __typename: 'CartReadModel',
+          id: mockCartId,
+          cartItems: [
+            {
+              productId: mockProductId,
+              quantity: mockQuantity,
+            },
+          ],
+          payment: {
+            confirmationToken: mockConfirmationToken,
+            id: mockPaymentId,
+            cartId: mockCartId,
+          },
+        }
+
+        expect(updatedCartData).to.be.deep.equal(expectedUpdatedResult)
+      })
+    })
+  })
 })
