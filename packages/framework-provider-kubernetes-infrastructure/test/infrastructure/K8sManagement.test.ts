@@ -93,13 +93,13 @@ describe('K8s cluster interaction', () => {
   })
 
   it('list all nodes with invoker openwhisk role', async () => {
-    const clusterResponse = await k8sManager.getallNodesWithOpenWhiskRole(OPENWHISK_INVOKER_ROLE)
+    const clusterResponse = await k8sManager.getAllNodesWithOpenWhiskRole(OPENWHISK_INVOKER_ROLE)
     expect(clusterResponse.length).to.be.equal(1)
     expect(clusterResponse[0].name).to.be.equal(NODE_NAME)
   })
 
   it('list all nodes with non existing openwhisk role', async () => {
-    const clusterResponse = await k8sManager.getallNodesWithOpenWhiskRole(OPENWHISK_CORE_ROLE)
+    const clusterResponse = await k8sManager.getAllNodesWithOpenWhiskRole(OPENWHISK_CORE_ROLE)
     expect(clusterResponse.length).to.be.equal(0)
   })
 })

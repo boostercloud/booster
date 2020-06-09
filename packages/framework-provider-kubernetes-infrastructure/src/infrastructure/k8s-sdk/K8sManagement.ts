@@ -91,7 +91,7 @@ export class K8sManagement {
     })
   }
 
-  public async getallNodesWithOpenWhiskRole(role: string): Promise<Array<Node>> {
+  public async getAllNodesWithOpenWhiskRole(role: string): Promise<Array<Node>> {
     const clusterNodes = await this.getAllNodesInCluster()
     return clusterNodes.filter((node) => {
       if (node.labels && 'openwhisk-role' in node.labels) {
