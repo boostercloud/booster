@@ -175,7 +175,7 @@ configured [here](#set-up-an-aws-account)
 > project name
 
 The `new:project` command generates some scaffolding for you. The project name will be the
-project's root so `cd` to it:
+project's root so `cd` into it:
 
 ```shell
 cd boosted-blog
