@@ -473,7 +473,7 @@ mutation {
     input: {
       postId: "05670e55-fd31-490e-b585-3a0096db0412"
       title: "Booster framework rocks"
-      content: "I am so excited for writting the second post"
+      content: "I am so excited for writing the second post"
       author: "Another boosted developer"
     }
   )
