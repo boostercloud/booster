@@ -19,15 +19,15 @@ export const CLI_READ_MODEL_INTEGRATION_TEST_FILES: Array<string> = [
 ]
 describe('Read model', () => {
   const cliPath = path.join('..', 'cli', 'bin', 'run')
+  const EXPECTED_OUTPUT_REGEX = new RegExp(
+    /(.+) boost (.+)?new:read-model(.+)? (.+)\n- Verifying project\n(.+) Verifying project\n- Creating new read model\n(.+) Creating new read model\n(.+) Read model generated!\n/
+  )
 
   context('valid read model', () => {
     describe('without fields', () => {
       it('should create new read model', async () => {
-        const expectedOutputRegex = new RegExp(
-          /(.+) boost (.+)?new:read-model(.+)? (.+)\n- Verifying project\n(.+) Verifying project\n- Creating new read model\n(.+) Creating new read model\n(.+) Read model generated!\n/
-        )
         const { stdout } = await exec(`${cliPath} new:read-model CartReadModel`)
-        expect(stdout).to.match(expectedOutputRegex)
+        expect(stdout).to.match(EXPECTED_OUTPUT_REGEX)
 
         const expectedEntityContent = await readFileContent('integration/fixtures/read-models/CartReadModel.ts')
         const entityContent = await readFileContent(FILE_CART_READ_MODEL)
@@ -42,13 +42,10 @@ describe('Read model', () => {
 
     describe('with fields', () => {
       it('should create new read model', async () => {
-        const expectedOutputRegex = new RegExp(
-          /(.+) boost (.+)?new:read-model(.+)? (.+)\n- Verifying project\n(.+) Verifying project\n- Creating new read model\n(.+) Creating new read model\n(.+) Read model generated!\n/
-        )
         const { stdout } = await exec(
           cliPath + " new:read-model CartWithFieldsReadModel --fields 'items:Array<CartItem>'"
         )
-        expect(stdout).to.match(expectedOutputRegex)
+        expect(stdout).to.match(EXPECTED_OUTPUT_REGEX)
 
         const expectedEntityContent = await readFileContent(
           'integration/fixtures/read-models/CartWithFieldsReadModel.ts'
@@ -68,13 +65,10 @@ describe('Read model', () => {
 
     describe('with projection', () => {
       it('should create new read model', async () => {
-        const expectedOutputRegex = new RegExp(
-          /(.+) boost (.+)?new:read-model(.+)? (.+)\n- Verifying project\n(.+) Verifying project\n- Creating new read model\n(.+) Creating new read model\n(.+) Read model generated!\n/
-        )
         const { stdout } = await exec(
           cliPath + " new:read-model CartWithProjectionReadModel --fields 'items:Array<CartItem>' --projects Cart:id"
         )
-        expect(stdout).to.match(expectedOutputRegex)
+        expect(stdout).to.match(EXPECTED_OUTPUT_REGEX)
 
         const expectedEntityContent = await readFileContent(
           'integration/fixtures/read-models/CartWithProjectionReadModel.ts'
