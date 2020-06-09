@@ -4,9 +4,6 @@ updates:
   directory: "/"
   schedule:
     interval: daily
-    time: '13:00'
   open-pull-requests-limit: 10
-  allowed_updates:
-    - match:
-      update_type: "security"
-  target_branch: "master"
+  target-branch: "master"
+  versioning-strategy: lockfile-only
