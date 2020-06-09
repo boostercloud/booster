@@ -12,7 +12,7 @@ describe('providerService', () => {
 
   describe('assertNameIsCorrect', () => {
     it('should throw an error on surpassing project name max length', () => {
-      const inputString = random.alphaNumeric(38)
+      const inputString = random.alphaNumeric(random.number( { min: 38 } ))
       const errorString = `Project name cannot be longer than 37 chars long:\n\n    Found: '${inputString}'`
 
       expect(() => providerService.assertNameIsCorrect(inputString)).to.throw(errorString)
