@@ -218,13 +218,17 @@ boosted-blog
         └── CreatePost.ts
 ```
 
-We still need to define two more things:
+As we mentioned before, commands are the input of our system. they're requested
+by the users, validate the input, and store one or more events, so we have to
+define two more things:
 
 1. Who is authorized to run this command.
 1. And what events are being triggered when the command is executed.
 
-We will create the first Event later on this guide so, let's start authorizing `'all'` to
-run this command, to do so edit `src/commands/CreatePost.ts` like this:
+Booster allows you to define authorization strategies. We will cover that
+later so, let's start by allowing anyone to send this command to our application
+. To do that, add the string `'all'` to the the `authorize` parameter of the
+`@command` decorator. Your `CreatePost` command should look like this:
 
 ```typescript
 @Command({
@@ -247,15 +251,19 @@ export class CreatePost {
 
 #### 3. First event
 
-It makes sense to emit an event after executing the command `CreatePost`, something like
-`PostCreated`. Let's do it by running this command:
+Instead of storing full objects, Booster stores data in the form of events, which
+are records of facts and the source of truth. We will save an event called  `PostCreated` containing the initial post info. Any change to a given `Post` will be a
+new event emitted, for example, `PostUpdated`. 
+
+For now, let's emit our `PostCreated` event once we have successfully handled
+our `CreatePost` command. You can generate the event with this generator:
 
 ```bash
 boost new:event PostCreated --fields postId:UUID title:string content:string author:string
 ```
 
-The `new:event` command generates a new file under the `src/events` directory. The name of
-the file is the name of the Event:
+The `new:event` command generates a new file under the `src/events` directory.
+The name of the file is the name of the event:
 
 ```text
 boosted-blog
@@ -264,8 +272,11 @@ boosted-blog
         └── PostCreated.ts
 ```
 
-Edit the `entityID` method to return the id of the entity this Event is referring to. It
-should look like this:
+All events in Booster must target an entity, so we need to implement an `entityID`
+method. From there, We'll return the identifier of the post created, the field
+`postID`. This identifier will be used by Booster later to build the final state
+of the `Post` automatically. Edit the `entityID` method in `events/PostCreated.ts`
+to return our `postID`:
 
 ```typescript
 // src/events/PostCreated.ts
@@ -295,19 +306,26 @@ public handle(register: Register): void {
 }
 ```
 
+We can do any validation in the command handler before storing the event, for our
+example, we'll just save the received data in a `PostCreated` event.
+
 #### 4. First entity
 
-Now we have a command and an event, however, we do not have any data representation of a
-`Post`. To do so, we will create an `entity`.
+So far, our `PostCreated` event suggests we need a `Post` entity. Entities are a
+representation of the current state, so an Entity reduces all the events with the same
+`entityID`. Let's then use the entities generator:
 
 ```bash
 boost new:entity Post --fields title:string content:string author:string --reduces PostCreated
 ```
 
 This time Booster has created a file called `Post.ts` in the `src/entities` directory.
-An entity is a reduction function applied to a series of events. For this example, we won't
-take into account the previous state of the `Post`, so we will create a new one
-from the Event's data.
+
+The generator creates one reducer function for each kind of event. As we only have one
+event yet, it will create one function. The reducer functions in Booster work similarly to
+the `reduce` callback functions in Node: they receive an event and the previous state and
+generate a new version of the state. When we receive a `PostCreated` event, we just return
+a new `Post` copying the fields from the event:
 
 ```typescript
 // src/entities/Posts.ts
@@ -322,18 +340,23 @@ export class Post {
 }
 ```
 
+Entities represent the internal state of our system and can be queried from command or
+event handlers to make business decisions or enforcing business rules.
+
 #### 5. First read model
 
-So far, we have been adding data to our blog. Now, we will retrieve our data using read
-models. A read model allows us to query our entire entities or just a subset of their
-attributes. Let's project our `Post` Entity:
+In a real application, we rarely want to publish our entire domain model (entities)
+including all their fields. Also, different people may access one or other data depending
+on their permissions. That's the goal of `ReadModels`. Client applications can query or
+subscribe to them. A read model projects an entity so, let's project our `Post` and
+produce a `PostReadModel`:
 
 ```bash
 boost new:read-model PostReadModel --fields title:string author:string --projects Post:id
 ```
 
-As you might guess, the command will generate a file called `PostReadModel.ts` under
-`src/read-models`:
+As you might guess, the read-model generator will generate a file called
+`PostReadModel.ts` under `src/read-models`:
 
 ```text
 boosted-blog
@@ -344,13 +367,17 @@ boosted-blog
 
 There are two things to do when creating a read model:
 
-1. Define who is authorized to query it
-1. and filter out the entity fields that are not needed in the read model
+1. Define who is authorized to query or subscribe it
+1. and filter out unneeded fields from the entity
 
-Read models and commands constitute the public API of a Booster application. With the
-`CreatePost` command, we authorized `all` to execute it. This time we will be doing the
-same for the read model. Furthermore, We will exclude the `content` field from the `Post`
-entity so it won't be visible when querying this read-model. To do so, edit the class to
+Read models and commands compound the public API of a Booster application. With the
+`CreatePost` command we authorized `all` to execute it, and this time we'll do the same
+for the `PostReadModel`.
+
+Just for learning, We also will exclude the `content` field from the `Post` entity so it
+won't be visible. 
+
+To authorize anyone to query this read model, and filter out the content, edit the file to
 look like this:
 
 ```typescript
@@ -375,8 +402,17 @@ export class PostReadModel {
 
 #### 6. Deployment
 
-We have everything we need to deploy our application to the cloud. It is as simple as
-running this command:
+At this point, we've learned:
+
+- how to create a publicly accessible command
+- we emitted an event to store the data
+- we reduced the event into an entity
+- and finally, we projected the entity into a read model that is also publicly accessible. 
+
+That's all; you already know the basics to build event-driven, CQRS-based applications with Booster.
+
+Let's deploy our application to the cloud to see it working. It is as simple as running
+the deploy command:
 
 ```bash
 boost deploy -e production
@@ -402,9 +438,10 @@ Let's get started testing the project. We will perform three actions:
 - Retrieve all posts
 - Retrieve a specific post
 
-Booster applications provide you with a GraphQL API out of the box. Commands are mapped
-to mutations and read models to queries. To perform calls to the GraphQL API, you can use
-any HTTP client you want; we recommend you to use [Postwoman](https://postwoman.io/graphql).
+Booster applications provide you with a GraphQL API out of the box. Commands are mutations, and read models are queries. To perform calls to the GraphQL API, you can use
+any HTTP client you want; we recommend you to use
+[Postwoman](https://postwoman.io/graphql), which is free and includes great support for
+GraphQL.
 
 ##### 7.1 Creating posts
 
@@ -449,9 +486,8 @@ The expected response for each of those requests should be:
 
 Note:
 
-> In Booster the IDs are generated on the client-side, when running production applications
-> consider adding validation for ID uniqueness. For this example, we have used [an UUID generator](https://www.uuidgenerator.net/version4)
-
+> In Booster, the IDs are generated on the client-side. When running production applications
+> consider adding validation for ID uniqueness. For this example, we have used [a UUID generator](https://www.uuidgenerator.net/version4)
 
 ##### 7.2 Retrieving all posts
 
@@ -518,10 +554,11 @@ You should get a response similar to this:
 
 #### 8. Removing the stack
 
-Now, let's destroy all the infrastructure created for running the application in the cloud.
-Execute the following command from the root of the project. For safety reasons, you have
-to confirm this action by writing the project's name, in our case `boosted-blog` that is
-the same used when we run `new:project` CLI command.
+It is convenient to destroy all the infrastructure created after you stop using
+it to avoid generating cloud resource costs. Execute the following command from
+the root of the project. For safety reasons, you have to confirm this action by
+writing the project's name, in our case `boosted-blog` that is the same used when
+we run `new:project` CLI command.
 
 ```bash
 > boost nuke -e production
@@ -537,6 +574,12 @@ Note:
 
 The are many other options for your serverless backend built with Booster Framework:
 
+- Build more complex authorization schemas for commands and read models based on user roles
+- Use GraphQL subscriptions to get updates in real-time
+- Make events trigger other events
+- Deploy static content
+- and much more...
+
 - Authorize commands and read models based on different roles
 - Use GraphQL subscriptions
 - Make events to trigger other events
@@ -544,4 +587,4 @@ The are many other options for your serverless backend built with Booster Framew
 - Reading entities within command handlers to apply domain-driven decisions
 - and much more...
 
-Continue reading to dig more, you've just scratched the surface of all the Booster capabilities!
+Continue reading to dig more; you've just scratched the surface of all the Booster capabilities!
