@@ -27,28 +27,28 @@ describe('Command', () => {
       const { stdout } = await exec(`${cliPath} new:command ChangeCart`)
       expect(stdout).to.match(expectedOutputRegex)
 
-      const expectedEntityContent = await readFileContent('integration/fixtures/commands/ChangeCart.ts')
-      const entityContent = await readFileContent(FILE_CHANGE_CART_COMMAND)
-      expect(entityContent).to.equal(expectedEntityContent)
+      const expectedCommandContent = await readFileContent('integration/fixtures/commands/ChangeCart.ts')
+      const commandContent = await readFileContent(FILE_CHANGE_CART_COMMAND)
+      expect(commandContent).to.equal(expectedCommandContent)
 
       // Set command auth
-      const updatedEntityContent = entityContent.replace(COMMAND_AUTH_PLACEHOLDER, "'all'")
+      const updatedCommandContent = commandContent.replace(COMMAND_AUTH_PLACEHOLDER, "'all'")
 
-      writeFileContent(FILE_CHANGE_CART_COMMAND, updatedEntityContent)
+      writeFileContent(FILE_CHANGE_CART_COMMAND, updatedCommandContent)
     })
 
     describe('with fields', () => {
       it('should create a new command with fields', async () => {
         await exec(`${cliPath} new:command ChangeCartWithFields --fields cartId:UUID sku:string quantity:number`)
 
-        const expectedEntityContent = await readFileContent('integration/fixtures/commands/ChangeCartWithFields.ts')
-        const entityContent = await readFileContent(FILE_CHANGE_CART_WITH_FIELDS_COMMAND)
-        expect(entityContent).to.equal(expectedEntityContent)
+        const expectedCommandContent = await readFileContent('integration/fixtures/commands/ChangeCartWithFields.ts')
+        const commandContent = await readFileContent(FILE_CHANGE_CART_WITH_FIELDS_COMMAND)
+        expect(commandContent).to.equal(expectedCommandContent)
 
         // Set command auth
-        const updatedEntityContent = entityContent.replace(COMMAND_AUTH_PLACEHOLDER, "'all'")
+        const updatedCommandContent = commandContent.replace(COMMAND_AUTH_PLACEHOLDER, "'all'")
 
-        writeFileContent(FILE_CHANGE_CART_WITH_FIELDS_COMMAND, updatedEntityContent)
+        writeFileContent(FILE_CHANGE_CART_WITH_FIELDS_COMMAND, updatedCommandContent)
       })
     })
   })
