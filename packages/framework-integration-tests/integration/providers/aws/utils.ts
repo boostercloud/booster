@@ -161,6 +161,25 @@ export async function deleteUser(username: string): Promise<void> {
     .promise()
 }
 
+export const getAuthToken = async (email: string, password: string): Promise<string> => {
+  const url = await signInURL()
+  const clientId = await authClientID()
+
+  const response = await fetch(url, {
+    method: 'POST',
+    body: JSON.stringify({
+      clientId: clientId,
+      username: email,
+      password: password,
+    }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+
+  return (await response.json()).accessToken
+}
+
 // --- URL helpers ---
 
 export async function baseURL(): Promise<string> {
@@ -256,6 +275,20 @@ export async function countSnapshotItems(): Promise<number> {
     .promise()
 
   return output.Count ?? -1
+}
+
+export async function getEventsByEntityId(entityID: string): Promise<any> {
+  const output: QueryOutput = await documentClient
+    .scan({
+      TableName: await eventsStoreTableName(),
+      Select: 'ALL_ATTRIBUTES',
+      ExpressionAttributeNames: { '#entityID': 'entityID' },
+      ExpressionAttributeValues: { ':entityID': entityID },
+      FilterExpression: '#entityID = :entityID',
+    })
+    .promise()
+
+  return output.Items
 }
 
 // --- Other helpers ---
