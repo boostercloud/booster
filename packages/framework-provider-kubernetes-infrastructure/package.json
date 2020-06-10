@@ -1,0 +1,41 @@
+{
+  "name": "@boostercloud/framework-provider-kubernetes-infrastructure",
+  "version": "0.4.0",
+  "description": "Handle Booster's integration with Kubernetes",
+  "keywords": [
+    "framework-provider-kubernetes-infrastructure"
+  ],
+  "author": "Booster Cloud",
+  "homepage": "https://booster.cloud",
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boostercloud/booster.git"
+  },
+  "dependencies": {
+    "@boostercloud/framework-types": "^0.4.0",
+    "@boostercloud/framework-provider-kubernetes": "^0.4.0"
+  },
+  "scripts": {
+    "lint": "eslint --ext '.js,.ts' **/*.ts",
+    "fix-lint": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
+    "compile": "tsc -b tsconfig.json",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "prepack": "tsc -b tsconfig.json",
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+  },
+  "bugs": {
+    "url": "https://github.com/boostercloud/booster/issues"
+  },
+  "devDependencies": {
+    "@types/faker": "^4.1.11",
+    "faker": "^4.1.0"
+  }
+}

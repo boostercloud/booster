@@ -39,6 +39,8 @@
     "packages/framework-provider-azure",
     "packages/framework-provider-local",
     "packages/framework-provider-local-infrastructure",
+    "packages/framework-provider-kubernetes",
+    "packages/framework-provider-kubernetes-infrastructure",
     "packages/framework-core",
     "packages/cli",
     "packages/framework-integration-tests"
