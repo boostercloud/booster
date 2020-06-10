@@ -44,7 +44,7 @@ export class BoosterConfig {
 
   public get resourceNames(): ResourceNames {
     if (this.appName.length === 0) throw new Error('Application name cannot be empty')
-    const applicationStackName = this.appName + '-application-stack'
+    const applicationStackName = this.appName + '-app'
     return {
       applicationStack: applicationStackName,
       eventsStore: applicationStackName + '-events-store',

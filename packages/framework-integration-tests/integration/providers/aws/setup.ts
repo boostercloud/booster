@@ -9,7 +9,9 @@ before(async () => {
 })
 
 after(async () => {
-  await checkConfigAnd(nuke)
+  if (!process.env['FULL_INTEGRATION_TEST']) {
+    await checkConfigAnd(nuke)
+  }
 })
 
 async function setEnv(): Promise<void> {
