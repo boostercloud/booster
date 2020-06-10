@@ -1,0 +1,43 @@
+{
+  "name": "project_name_fixture_placeholder",
+  "description": "cart-demo",
+  "version": "1.0.0",
+  "author": "The Agile Monkeys",
+  "dependencies": {
+    "@boostercloud/framework-core": "^0.4.1",
+    "@boostercloud/framework-types": "^0.4.1",
+    "@boostercloud/framework-provider-aws": "*"
+  },
+  "devDependencies": {
+    "@boostercloud/cli": "^0.4.1",
+    "rimraf": "^3.0.1",
+    "@typescript-eslint/eslint-plugin": "^2.18.0",
+    "@typescript-eslint/parser": "^2.18.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "mocha": "^7.0.1",
+    "nyc": "^15.0.0",
+    "prettier": "^1.19.1",
+    "typescript": "^3.7.5",
+    "ts-node": "^8.6.2",
+    "@types/node": "^13.5.1",
+    "@boostercloud/framework-provider-aws-infrastructure": "*"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "homepage": "https://www.booster.cloud/",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "repository": "https://github.com/boostercloud/booster/",
+  "scripts": {
+    "lint:check": "eslint --ext '.js,.ts' **/*.ts",
+    "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
+    "compile": "tsc -b tsconfig.json",
+    "deploy": "boost deploy",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+  },
+  "types": "lib/index.d.ts"
+}
