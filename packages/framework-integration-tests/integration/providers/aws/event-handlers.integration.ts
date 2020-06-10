@@ -34,9 +34,9 @@ describe('Event handlers', () => {
           quantity: mockQuantity,
         },
         mutation: gql`
-            mutation MoveStock($productID: String!, $origin: String, $destination: String, $quantity: Float) {
-                MoveStock(input: { productID: $productID, origin: $origin, destination: $destination, quantity: $quantity })
-            }
+          mutation MoveStock($productID: String!, $origin: String, $destination: String, $quantity: Float) {
+            MoveStock(input: { productID: $productID, origin: $origin, destination: $destination, quantity: $quantity })
+          }
         `,
       })
 
@@ -44,7 +44,7 @@ describe('Event handlers', () => {
         () => getEventsByEntityId(mockProductId),
         (events) => {
           return events?.length > 1
-        },
+        }
       )
 
       expect(events.length).to.be.equal(2)
