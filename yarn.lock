@@ -4096,8 +4096,9 @@ forwarded@~0.1.2:
   resolved "https://registry.yarnpkg.com/forwarded/-/forwarded-0.1.2.tgz#98c23dab1175657b8c0573e8ceccd91b0ff18c84"
 
 fp-ts@^2.0.3:
-  version "2.5.4"
-  resolved "https://registry.yarnpkg.com/fp-ts/-/fp-ts-2.5.4.tgz#f184079aaa78403ea66458517be7787e0d593429"
+  version "2.6.4"
+  resolved "https://registry.yarnpkg.com/fp-ts/-/fp-ts-2.6.4.tgz#8b3415e596ab9b03c680c87941bd834cf114b30a"
+  integrity sha512-EATHwpcln67HgJj/nWbcNDhLcIENC4lImzw9DXNyOxX6S/+k+dJERHd7PGimO1PKTChqu+CQSMqkP+kgsRqyxQ==
 
 fragment-cache@^0.2.1:
   version "0.2.1"
