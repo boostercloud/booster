@@ -2,7 +2,8 @@
 import { Observable, EMPTY, Subscriber } from 'rxjs'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { K8sManagement } from './k8s-sdk/K8sManagement'
-import { getProjectNamespaceName } from './k8s-sdk/utils'
+import { getProjectNamespaceName } from './utils'
+import { exec } from 'child_process'
 
 export function deploy(configuration: BoosterConfig): Observable<string> {
   return new Observable((observer): void => {
@@ -34,6 +35,11 @@ async function deployBoosterApp(observer: Subscriber<string>, configuration: Boo
     }
   }
   observer.next('Deploying your Booster app into the cluster')
+  const result = await exec(
+    `helm install boost-test ./resources/openwhisk-0.2.3.tgz -n ${namespace} --set whisk.ingress.apiHostName=192.168.64.11`
+  )
+  console.log(result.stdout)
+  console.log(result.stderr)
   //TODO: update the user code here
 
   //TODO: we should check here the current stack health instead of suppose that all is properly working.
