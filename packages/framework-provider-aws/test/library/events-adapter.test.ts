@@ -44,7 +44,7 @@ describe('the events-adapter', () => {
 
       expect(dynamoDB.query).to.have.been.calledWith(
         match({
-          TableName: 'nuke-button-application-stack-events-store',
+          TableName: 'nuke-button-app-events-store',
           ConsistentRead: true,
           KeyConditionExpression: `${eventStorePartitionKeyAttribute} = :partitionKey AND ${eventStoreSortKeyAttribute} > :fromTime`,
           ExpressionAttributeValues: {
@@ -68,7 +68,7 @@ describe('the events-adapter', () => {
 
       expect(dynamoDB.query).to.have.been.calledWith(
         match({
-          TableName: 'nuke-button-application-stack-events-store',
+          TableName: 'nuke-button-app-events-store',
           ConsistentRead: true,
           KeyConditionExpression: `${eventStorePartitionKeyAttribute} = :partitionKey`,
           ExpressionAttributeValues: {
