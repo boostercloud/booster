@@ -18,15 +18,10 @@ const testFiles: Array<string> = [
   ...CLI_READ_MODEL_INTEGRATION_TEST_FILES,
 ]
 
-const testFolders: Array<string> = [
-  ...CLI_PROJECT_INTEGRATION_TEST_FOLDERS
-]
+const testFolders: Array<string> = [...CLI_PROJECT_INTEGRATION_TEST_FOLDERS]
 
 const removeGeneratedResources = () => {
-  return Promise.all([
-    ...removeFiles(testFiles),
-    ...removeFolders(testFolders),
-  ])
+  return Promise.all([...removeFiles(testFiles), ...removeFolders(testFolders)])
 }
 
 before(async () => {
