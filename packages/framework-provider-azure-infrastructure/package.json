@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-azure-infrastructure",
-  "version": "0.3.3",
+  "version": "0.4.1",
   "description": "Handle the Booster deployment process to Azure",
   "keywords": [
     "framework-provider-azure-infrastructure"
@@ -20,8 +20,8 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@boostercloud/framework-types": "^0.3.3",
-    "@boostercloud/framework-provider-azure": "^0.3.3",
+    "@boostercloud/framework-types": "^0.4.1",
+    "@boostercloud/framework-provider-azure": "^0.4.0",
     "ms-rest-azure": "^3.0.0",
     "azure-arm-resource": "^7.3.0",
     "copyfiles": "^2.3.0"
