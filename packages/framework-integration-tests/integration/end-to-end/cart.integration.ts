@@ -141,7 +141,7 @@ describe('Cart end-to-end tests', () => {
                 `,
               })
             },
-            (result) => result?.data?.CartReadModel?.cartItems.length == mockCartItemsCount
+            (result) => result?.data?.CartReadModel?.cartItems?.length == mockCartItemsCount
           )
 
           const cartData = queryResult.data.CartReadModel
