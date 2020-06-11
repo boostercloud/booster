@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Observable, EMPTY, Subscriber } from 'rxjs'
+import { Observable, Subscriber } from 'rxjs'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { K8sManagement } from './k8s-sdk/K8sManagement'
 import { getProjectNamespaceName } from './utils'
-import { exec } from 'child_process'
+import { exec } from 'child-process-promise'
+import { HelmManagement } from './helm'
 
 export function deploy(configuration: BoosterConfig): Observable<string> {
   return new Observable((observer): void => {
@@ -26,26 +27,43 @@ async function deployBoosterApp(observer: Subscriber<string>, configuration: Boo
   const namespace = await clusterManager.getNamespace(projectNamespace)
   if (!namespace) {
     observer.next(`Creating the namespace: ${projectNamespace} for your project`)
-    const clusterResult = await clusterManager.createNamespace(projectNamespace)
-    if (clusterResult) {
-      observer.next('Provisioning the cluster resources 👷')
-      //TODO: deploy with helm here
-    } else {
+    const clusterResponse = await clusterManager.createNamespace(projectNamespace)
+    if (!clusterResponse) {
       throw new Error('Unable to create a namespace for your project')
     }
   }
-  observer.next('Deploying your Booster app into the cluster')
-  const result = await exec(
-    `helm install boost-test ./resources/openwhisk-0.2.3.tgz -n ${namespace} --set whisk.ingress.apiHostName=192.168.64.11`
-  )
-  console.log(result.stdout)
-  console.log(result.stderr)
-  //TODO: update the user code here
 
-  //TODO: we should check here the current stack health instead of suppose that all is properly working.
-  // This check should be implemented when the architecture will be fully defined
+  //TODO: we should check here the current cluster health instead of suppose that all is properly working.
+  // This check will be implemented when the architecture will be fully defined
+
+  observer.next('Provisioning all cluster resources 👷')
+  //const command = `helm install boost-test boosterchart/openwhisk -n ${projectNamespace} --set whisk.ingress.apiHostName=192.168.64.11`
+  //await exec(command)
+  const helm = new HelmManagement()
+  await helm.init()
+  const deploy = await helm.exec(
+    `install boost-test boosterchart/openwhisk -n ${projectNamespace} --set whisk.ingress.apiHostName=192.168.64.11`
+  )
+  observer.next(deploy.stdout)
+  observer.next('Deploying your Booster app into the cluster')
+  //TODO: upload the user code to the cluster
+}
+
+async function nukeBoosterApp(observer: Subscriber<string>, configuration: BoosterConfig): Promise<void> {
+  const projectNamespace = getProjectNamespaceName(configuration)
+  const clusterManager = new K8sManagement()
+  observer.next('Nuking your Booster project 🧨')
+  const command = `helm uninstall boost-test -n ${projectNamespace}`
+  await exec(command)
+  observer.next('Nuking your project namespace 🧨')
+  await clusterManager.deleteNamespace(projectNamespace)
 }
 
 export function nuke(configuration: BoosterConfig): Observable<string> {
-  return EMPTY
+  return new Observable((observer): void => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    nukeBoosterApp(observer, configuration)
+      .catch((error): void => observer.error(error))
+      .then((): void => observer.complete())
+  })
 }
