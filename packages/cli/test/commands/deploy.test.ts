@@ -49,7 +49,7 @@ describe('deploy', () => {
       fancy.stdout().it('Starts deployment', async (ctx) => {
         const fakeProvider = {} as ProviderLibrary
 
-        const fakeLoader = Promise.resolve({
+        const fakeLoader = fake.resolves({
           provider: fakeProvider,
           appName: 'fake app',
           region: 'tunte',

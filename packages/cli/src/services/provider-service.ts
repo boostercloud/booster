@@ -35,15 +35,16 @@ export const deployToCloudProvider = (config: BoosterConfig): Observable<string>
   return deployMethod(config)
 }
 
-export async function runProvider(port: number, config: BoosterConfig): Promise<void> {
+export async function runnableProvider(environment: string, port: number, config: BoosterConfig): Promise<void> {
   assertNameIsCorrect(config.appName)
   const runMethod = config.provider.infrastructure().run
   if (!runMethod) {
     throw new Error(
-      'Attempted to run with a provider that is does not support running the project, perhaps you meant `boost deploy`?'
+      'Attempted to run the application with a provider that does not support this feature, please check your configuration for environment ' +
+        environment
     )
   }
-  return Promise.resolve(runMethod(config, port))
+  return runMethod(config, port)
 }
 
 export const nukeCloudProviderResources = (config: BoosterConfig): Observable<string> => {

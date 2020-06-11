@@ -174,8 +174,8 @@
         "--colors",
         "--forbid-only",
         "--config",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/local/.mocharc.yml",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/local/**/*.integration.ts"
+        "${workspaceFolder}/packages/framework-integration-tests/integration/providers/local/.mocharc.yml",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/providers/local/**/*.integration.ts"
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",

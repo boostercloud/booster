@@ -44,7 +44,7 @@
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "integration": "FULL_INTEGRATION_TEST=true yarn integration/aws && yarn integration/local && yarn integration/cli && yarn integration/end-to-end",
     "integration/aws": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --config \"integration/providers/aws/.mocharc.yml\" \"integration/providers/aws/**/*.integration.ts\"",
-    "integration/local": "mocha --forbid-only --config \"integration/local/.mocharc.yml\" \"integration/local/**/*.integration.ts\"",
+    "integration/local": "mocha --forbid-only --config \"integration/providers/local/.mocharc.yml\" \"integration/providers/local/**/*.integration.ts\"",
     "integration/cli": "mocha --forbid-only --config \"integration/cli/.mocharc.yml\" \"integration/cli/**/*.integration.ts\"",
     "integration/end-to-end": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --config \"integration/end-to-end/.mocharc.yml\" \"integration/end-to-end/**/*.integration.ts\""
   },
