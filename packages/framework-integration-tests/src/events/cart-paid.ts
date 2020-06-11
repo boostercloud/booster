@@ -3,9 +3,9 @@ import { UUID } from '@boostercloud/framework-types'
 
 @Event
 export class CartPaid {
-  public constructor(readonly cartId: UUID, readonly confirmationToken: string) {}
+  public constructor(readonly paymentId: UUID, readonly cartId: UUID, readonly confirmationToken: string) {}
 
   public entityID(): UUID {
-    return this.cartId
+    return this.paymentId
   }
 }
