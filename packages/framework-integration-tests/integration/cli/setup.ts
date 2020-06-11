@@ -33,8 +33,10 @@ before(async () => {
   process.chdir('..')
 
   try {
-    await Promise.all(removeFiles(testFiles))
-    await Promise.all(removeFolders(testFolders))
+    await Promise.all([
+      ...removeFiles(testFiles),
+      ...removeFolders(testFolders),
+    ])
   } catch (e) {
     // error whilst deleting files
   }
