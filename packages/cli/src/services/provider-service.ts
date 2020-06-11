@@ -2,10 +2,12 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import { Observable } from 'rxjs'
 
 export function assertNameIsCorrect(name: string): void {
-  // It is 55 because cloudformations max length is 63.
-  // Booster creates an S3 bucket ended in '-toolkit'
-  // which is 8 chars long. 63 - 8 = 55
-  const maxProjectNameLength = 55
+  // Current characters max length: 37
+  // Lambda name limit is 64 characters
+  // `-subscriptions-notifier` lambda is 23 characters
+  // `-app` prefix is added to application stack
+  // which is 64 - 23 - 4 = 37
+  const maxProjectNameLength = 37
   if (name.length > maxProjectNameLength)
     throw new Error(`Project name cannot be longer than ${maxProjectNameLength} chars long:
 

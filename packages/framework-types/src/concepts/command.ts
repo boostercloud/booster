@@ -7,7 +7,7 @@ import { RoleAccess } from './role'
  * All Command classes of your application must extend this class.
  */
 export interface CommandInterface {
-  handle(register: Register): void
+  handle(register: Register): Promise<void>
 }
 
 export interface CommandMetadata {

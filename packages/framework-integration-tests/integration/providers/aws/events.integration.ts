@@ -1,41 +1,22 @@
-import { countEventItems, countSnapshotItems, queryEvents, graphQLClient, sleep } from './utils'
+import { countEventItems, countSnapshotItems, queryEvents, graphQLClient, waitForIt } from './utils'
 import { expect } from 'chai'
 import gql from 'graphql-tag'
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { random } from 'faker'
 
-describe('the commands API', async () => {
+describe('events', async () => {
   let client: ApolloClient<NormalizedCacheObject>
 
   before(async () => {
     client = await graphQLClient()
   })
 
-  it('accepts a command successfully', async () => {
-    const response = await client.mutate({
-      variables: {
-        cartId: random.uuid(),
-        productId: random.uuid(),
-        quantity: random.number({ min: 1 }),
-      },
-      mutation: gql`
-        mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
-          ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
-        }
-      `,
-    })
-
-    expect(response).not.to.be.null
-    expect(response?.data?.ChangeCartItem).to.be.true
-
-    // Let some time to create the event and update the read model
-    await sleep(10000)
-  })
-
   it('should create an event in the event store', async () => {
-    const eventsCount = await countEventItems()
-    expect(eventsCount).to.be.greaterThan(0)
+    const eventsCount = await waitForIt(
+      () => countEventItems(),
+      (eventsCount) => eventsCount > 0
+    )
 
     const mockCartId = random.uuid()
     const mockProductId = random.uuid()
@@ -56,11 +37,12 @@ describe('the commands API', async () => {
     expect(response).not.to.be.null
     expect(response?.data?.ChangeCartItem).to.be.true
 
-    await sleep(5000)
-
     // Verify number of events
     const expectedEventItemsCount = eventsCount + 1
-    expect(await countEventItems()).to.be.equal(expectedEventItemsCount)
+    await waitForIt(
+      () => countEventItems(),
+      (newEventsCount) => newEventsCount === expectedEventItemsCount
+    )
 
     // Verify latest event
     const latestEvent = await queryEvents(`Cart-${mockCartId}-event`)
@@ -107,9 +89,10 @@ describe('the commands API', async () => {
       expect(response?.data?.ChangeCartItem).to.be.true
     })
 
-    await sleep(10000)
-
     const expectedSnapshotItemsCount = snapshotsCount + 1
-    expect(await countSnapshotItems()).to.be.equal(expectedSnapshotItemsCount)
+    await waitForIt(
+      () => countSnapshotItems(),
+      (newSnapshotsCount) => newSnapshotsCount === expectedSnapshotItemsCount
+    )
   })
 })

@@ -1,7 +1,7 @@
 {
   "name": "@boostercloud/framework-integration-tests",
   "description": "Example project for Booster",
-  "version": "0.3.3",
+  "version": "0.4.1",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
   "private": true,
@@ -10,9 +10,9 @@
   },
   "bugs": "https://github.com/boostercloud/booster/issues",
   "dependencies": {
-    "@boostercloud/framework-core": "^0.3.3",
-    "@boostercloud/framework-provider-aws": "^0.3.3",
-    "@boostercloud/framework-provider-local": "^0.3.3",
+    "@boostercloud/framework-core": "^0.4.1",
+    "@boostercloud/framework-provider-aws": "^0.4.1",
+    "@boostercloud/framework-provider-local": "^0.4.1",
     "@typescript-eslint/eslint-plugin": "^2.18.0",
     "@typescript-eslint/parser": "^2.18.0",
     "apollo-cache-inmemory": "^1.6.5",
@@ -25,8 +25,8 @@
     "typescript": "^3.9.3"
   },
   "devDependencies": {
-    "@boostercloud/framework-provider-aws-infrastructure": "^0.3.3",
-    "@boostercloud/framework-provider-local-infrastructure": "^0.3.3",
+    "@boostercloud/framework-provider-aws-infrastructure": "^0.4.1",
+    "@boostercloud/framework-provider-local-infrastructure": "^0.4.1",
     "@types/aws-lambda": "^8.10.48",
     "@types/faker": "^4.1.12",
     "faker": "^4.1.0"
@@ -42,10 +42,11 @@
     "fix-lint": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
-    "integration": "yarn integration/aws && yarn integration/local && yarn integration/cli",
-    "integration/aws": "mocha --forbid-only --config \"integration/aws/.mocharc.yml\" \"integration/aws/**/*.integration.ts\"",
+    "integration": "FULL_INTEGRATION_TEST=true yarn integration/aws && yarn integration/local && yarn integration/cli && yarn integration/end-to-end",
+    "integration/aws": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --config \"integration/providers/aws/.mocharc.yml\" \"integration/providers/aws/**/*.integration.ts\"",
     "integration/local": "mocha --forbid-only --config \"integration/local/.mocharc.yml\" \"integration/local/**/*.integration.ts\"",
-    "integration/cli": "mocha --forbid-only --config \"integration/cli/.mocharc.yml\" \"integration/cli/**/*.integration.ts\""
+    "integration/cli": "mocha --forbid-only --config \"integration/cli/.mocharc.yml\" \"integration/cli/**/*.integration.ts\"",
+    "integration/end-to-end": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --config \"integration/end-to-end/.mocharc.yml\" \"integration/end-to-end/**/*.integration.ts\""
   },
   "types": "dist/index.d.ts",
   "gitHead": "121816dbe55d57df5860b54a871c06dcda761101"

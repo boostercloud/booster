@@ -28,7 +28,7 @@ describe('the "fetchReadModel" method', () => {
     )
 
     expect(db.get).to.have.been.calledOnceWith({
-      TableName: 'new-booster-app-application-stack-SomeReadModel',
+      TableName: 'new-booster-app-app-SomeReadModel',
       Key: { id: 'someReadModelID' },
     })
   })
@@ -47,7 +47,7 @@ describe('the "fetchReadModel" method', () => {
     const result = await fetchReadModel(db, config, logger, 'SomeReadModel', 'someReadModelID')
 
     expect(db.get).to.have.been.calledOnceWithExactly({
-      TableName: 'new-booster-app-application-stack-SomeReadModel',
+      TableName: 'new-booster-app-app-SomeReadModel',
       Key: { id: 'someReadModelID' },
     })
     expect(result).to.deep.equal({ some: 'object' })
@@ -71,7 +71,7 @@ describe('the "storeReadModel" method', () => {
     const something = await storeReadModel(db, config, logger, 'SomeReadModel', { id: 777, some: 'object' } as any)
 
     expect(db.put).to.have.been.calledOnceWithExactly({
-      TableName: 'new-booster-app-application-stack-SomeReadModel',
+      TableName: 'new-booster-app-app-SomeReadModel',
       Item: { id: 777, some: 'object' },
     })
     expect(something).not.to.be.null

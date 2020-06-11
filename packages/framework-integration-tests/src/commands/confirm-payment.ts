@@ -10,9 +10,9 @@ import { CartPaid } from '../events/cart-paid'
   authorize: 'all',
 })
 export class ConfirmPayment {
-  public constructor(readonly cartId: UUID, readonly confirmationToken: string) {}
+  public constructor(readonly paymentId: UUID, readonly cartId: UUID, readonly confirmationToken: string) {}
 
-  public handle(register: Register): void {
-    register.events(new CartPaid(this.cartId, this.confirmationToken))
+  public async handle(register: Register): Promise<void> {
+    register.events(new CartPaid(this.paymentId, this.cartId, this.confirmationToken))
   }
 }

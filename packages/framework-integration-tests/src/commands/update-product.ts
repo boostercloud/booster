@@ -22,7 +22,7 @@ export class UpdateProduct {
     readonly reason: ProductUpdateReason = ProductUpdateReason.CatalogChange
   ) {}
 
-  public handle(register: Register): void {
+  public async handle(register: Register): Promise<void> {
     register.events(
       new ProductUpdated(
         this.id,

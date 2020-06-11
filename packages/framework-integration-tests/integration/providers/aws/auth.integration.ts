@@ -1,4 +1,13 @@
-import { graphQLClient, signUpURL, authClientID, signInURL, confirmUser, createAdmin, deleteUser, sleep } from './utils'
+import {
+  graphQLClient,
+  signUpURL,
+  authClientID,
+  signInURL,
+  confirmUser,
+  createAdmin,
+  deleteUser,
+  waitForIt,
+} from './utils'
 import gql from 'graphql-tag'
 import { expect } from 'chai'
 import fetch from 'cross-fetch'
@@ -92,24 +101,25 @@ describe('With the auth API', () => {
     it('can query a public read model', async () => {
       const client = await graphQLClient()
 
-      // Let's wait 15 seconds to allow previous command results to be projected as a read model
-      await sleep(15000)
-
-      const queryResult = await client.query({
-        variables: {
-          cartId: mockCartId,
+      const queryResult = await waitForIt(
+        () => {
+          return client.query({
+            variables: {
+              cartId: mockCartId,
+            },
+            query: gql`
+              query CartReadModel($cartId: ID!) {
+                CartReadModel(id: $cartId) {
+                  id
+                  cartItems
+                }
+              }
+            `,
+          })
         },
-        query: gql`
-          query CartReadModel($cartId: ID!) {
-            CartReadModel(id: $cartId) {
-              id
-              cartItems
-            }
-          }
-        `,
-      })
+        (result) => result?.data?.CartReadModel != null
+      )
 
-      expect(queryResult).not.to.be.null
       // Result should match the cart created in the previous test case
       expect(queryResult.data.CartReadModel.id).to.be.equal(mockCartId)
       expect(queryResult.data.CartReadModel.cartItems[0]).to.deep.equal({

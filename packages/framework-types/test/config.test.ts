@@ -18,7 +18,7 @@ describe('the config type', () => {
         fc.property(fc.string(1, 10), (appName) => {
           const cfg = new BoosterConfig('test')
           cfg.appName = appName
-          expect(cfg.resourceNames.applicationStack).to.equal(`${appName}-application-stack`)
+          expect(cfg.resourceNames.applicationStack).to.equal(`${appName}-app`)
         })
       )
     })
@@ -28,7 +28,7 @@ describe('the config type', () => {
         fc.property(fc.string(1, 10), (appName) => {
           const cfg = new BoosterConfig('test')
           cfg.appName = appName
-          expect(cfg.resourceNames.eventsStore).to.equal(`${appName}-application-stack-events-store`)
+          expect(cfg.resourceNames.eventsStore).to.equal(`${appName}-app-events-store`)
         })
       )
     })
@@ -38,9 +38,7 @@ describe('the config type', () => {
         fc.property(fc.string(1, 10), fc.string(1, 10), (appName, readModelName) => {
           const cfg = new BoosterConfig('test')
           cfg.appName = appName
-          expect(cfg.resourceNames.forReadModel(readModelName)).to.equal(
-            `${appName}-application-stack-${readModelName}`
-          )
+          expect(cfg.resourceNames.forReadModel(readModelName)).to.equal(`${appName}-app-${readModelName}`)
         })
       )
     })
