@@ -20,7 +20,7 @@ describe('Event handlers', () => {
   })
 
   context('move product', () => {
-    it('should triggers a new ProductAvailabilityChanged event', async () => {
+    it('should trigger a new ProductAvailabilityChanged event', async () => {
       const mockProductId: string = random.uuid()
       const mockOrigin = 'provider'
       const mockDestination: string = address.city()
