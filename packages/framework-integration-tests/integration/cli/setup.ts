@@ -14,13 +14,20 @@ const testFiles: Array<string> = [
   ...CLI_ENTITY_INTEGRATION_TEST_FILES,
   ...CLI_COMMAND_INTEGRATION_TEST_FILES,
   ...CLI_TYPE_INTEGRATION_TEST_FILES,
- ...CLI_EVENTS_INTEGRATION_TEST_FILES,
+  ...CLI_EVENTS_INTEGRATION_TEST_FILES,
   ...CLI_READ_MODEL_INTEGRATION_TEST_FILES,
 ]
 
 const testFolders: Array<string> = [
   ...CLI_PROJECT_INTEGRATION_TEST_FOLDERS
 ]
+
+const removeGeneratedResources = () => {
+  return Promise.all([
+    ...removeFiles(testFiles),
+    ...removeFolders(testFolders),
+  ])
+}
 
 before(async () => {
   const integrationTestsPackageRoot = path.dirname(__dirname)
@@ -33,10 +40,7 @@ before(async () => {
   process.chdir('..')
 
   try {
-    await Promise.all([
-      ...removeFiles(testFiles),
-      ...removeFolders(testFolders),
-    ])
+    await removeGeneratedResources()
   } catch (e) {
     // error whilst deleting files
   }
@@ -49,7 +53,6 @@ after(async () => {
     // error whilst deleting files
     console.log(e)
   } finally {
-    await Promise.all(removeFiles(testFiles))
-    await Promise.all(removeFolders(testFolders))
+    await removeGeneratedResources()
   }
 })
