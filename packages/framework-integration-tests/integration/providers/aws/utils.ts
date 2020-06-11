@@ -16,7 +16,7 @@ const documentClient = new DynamoDB.DocumentClient()
 // --- Stack Helpers ---
 
 function appStackName(): string {
-  return `my-store-${process.env.BOOSTER_APP_SUFFIX}-application-stack`
+  return `my-store-${process.env.BOOSTER_APP_SUFFIX}-app`
 }
 
 export async function appStack(): Promise<Stack> {

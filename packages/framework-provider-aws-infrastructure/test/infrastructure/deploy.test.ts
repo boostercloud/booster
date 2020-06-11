@@ -152,9 +152,9 @@ describe('the deployment process', () => {
     const cloudAssembly = Infrastructure.assemble(config)
 
     it('generates cloudformation for a DynamoDB table to store its state', () => {
-      const stackResources = cloudAssembly.getStackByName('testing-app-application-stack').template['Resources']
+      const stackResources = cloudAssembly.getStackByName('testing-app-app').template['Resources']
       const table = Object.values(stackResources).find((obj: any) => {
-        return obj.Properties.TableName == 'testing-app-application-stack-SomeReadModel'
+        return obj.Properties.TableName == 'testing-app-app-SomeReadModel'
       })
       expect(table).to.deep.equal({
         DeletionPolicy: 'Delete',
@@ -175,7 +175,7 @@ describe('the deployment process', () => {
           StreamSpecification: {
             StreamViewType: StreamViewType.NEW_IMAGE,
           },
-          TableName: 'testing-app-application-stack-SomeReadModel',
+          TableName: 'testing-app-app-SomeReadModel',
         },
         Type: 'AWS::DynamoDB::Table',
         UpdateReplacePolicy: 'Delete',
@@ -183,9 +183,9 @@ describe('the deployment process', () => {
     })
 
     it('generates cloudformation for an API endpoint for graphQL', () => {
-      const stackResources = cloudAssembly.getStackByName('testing-app-application-stack').template['Resources']
+      const stackResources = cloudAssembly.getStackByName('testing-app-app').template['Resources']
       const fun: any = Object.values(stackResources).find((obj: any) => {
-        return obj.Properties.FunctionName == 'testing-app-application-stack-graphql-handler'
+        return obj.Properties.FunctionName == 'testing-app-app-graphql-handler'
       })
       expect(fun.Properties.Handler).to.equal('dist/index.boosterServeGraphQL')
     })
