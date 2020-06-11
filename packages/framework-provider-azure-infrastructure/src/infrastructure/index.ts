@@ -28,7 +28,8 @@ async function deployApp(observer: Subscriber<string>, config: BoosterConfig): P
   const resourceManagementClient = await createResourceManagementClient()
   const resourceGroupName = createResourceGroupName(config)
   await createResourceGroup(resourceGroupName, resourceManagementClient)
-  new ApplicationStackBuilder(config).buildOn(resourceManagementClient, resourceGroupName)
+  const applicationBuilder = new ApplicationStackBuilder(config)
+  await applicationBuilder.buildOn(resourceManagementClient, resourceGroupName)
 }
 
 /**
@@ -40,4 +41,3 @@ async function nukeApp(observer: Subscriber<string>, config: BoosterConfig): Pro
   // By deleting the resource group we are deleting all the resources within it.
   await resourceManagementClient.resourceGroups.deleteMethod(createResourceGroupName(config))
 }
-

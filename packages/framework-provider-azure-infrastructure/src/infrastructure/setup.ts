@@ -4,7 +4,7 @@ import { ApplicationTokenCredentials, loginWithServicePrincipalSecret } from 'ms
 import { ResourceGroup } from 'azure-arm-resource/lib/resource/models'
 import { BoosterConfig } from '@boostercloud/framework-types/dist'
 
-export async function createResourceManagementClient():Promise<ResourceManagementClient> {
+export async function createResourceManagementClient(): Promise<ResourceManagementClient> {
   const credentials = await azureCredentials()
   return new ResourceManagementClient(credentials, configuration.subscriptionId)
 }
@@ -15,14 +15,19 @@ export async function azureCredentials(): Promise<ApplicationTokenCredentials> {
     configuration.secret,
     configuration.tenantId);
 
-  if(!applicationTokenCredentials) {
-    throw new Error('Unable to login with Service Principal. Please verified provided appId, secret and subscription ID in .env file are correct.')
+  if (!applicationTokenCredentials) {
+    throw new Error(
+      'Unable to login with Service Principal. Please verified provided appId, secret and subscription ID in .env file are correct.'
+    )
   }
 
   return applicationTokenCredentials
 }
 
-export async function createResourceGroup(resourceGroupName: string, resourceManagementClient: ResourceManagementClient) {
+export async function createResourceGroup(
+  resourceGroupName: string,
+  resourceManagementClient: ResourceManagementClient
+) {
   const existed = await resourceManagementClient.resourceGroups.checkExistence(resourceGroupName)
 
   if(!existed) {
