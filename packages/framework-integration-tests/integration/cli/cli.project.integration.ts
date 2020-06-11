@@ -40,18 +40,18 @@ describe('Project', () => {
   )
 
   const sendToStdin = (childProcess: ChildProcess, promptAnswers: Array<string>, delay: number) => {
-    let currentRepetitions = 0;
+    let currentRepetitions = 0
     const totalRepetitions = promptAnswers.length
     let answers: Array<string> = promptAnswers.slice()
 
-    let intervalID = setInterval(() => {
+    const intervalID = setInterval(() => {
       childProcess.stdin?.write(answers[0])
       answers = answers.slice(1)
 
       if (++currentRepetitions === totalRepetitions) {
-        clearInterval(intervalID);
+        clearInterval(intervalID)
       }
-    }, delay);
+    }, delay)
   }
 
   const execNewProject = (projectName: string, promptAnswers: Array<string> = [], flags: Array<string> = []) => {
@@ -64,6 +64,20 @@ describe('Project', () => {
 
       if (promptAnswers.length > 0) {
         sendToStdin(childProcess, promptAnswers, 1000)
+      }
+    })
+  }
+
+  const packageJsonAssertions = (expectedJson: string, jsonContent: string, objectsToCompareJustKeys: Array<string>, checkKeysAndValues: boolean = true) => {
+    const expectedJsonObj = JSON.parse(expectedJson)
+    const jsonContentObj = JSON.parse(jsonContent)
+
+    Object.entries(expectedJsonObj).forEach(([key, value]) => {
+      if (objectsToCompareJustKeys.includes(key)) {
+        expect(jsonContentObj.hasOwnProperty(key)).true
+        return packageJsonAssertions(JSON.stringify(expectedJsonObj[key]), JSON.stringify(jsonContentObj[key]), objectsToCompareJustKeys, false)
+      } else {
+        checkKeysAndValues ? expect(jsonContentObj[key]).to.deep.equals(expectedJsonObj[key]) : expect(jsonContentObj.hasOwnProperty(key)).true
       }
     })
   }
@@ -115,7 +129,8 @@ describe('Project', () => {
 
     const expectedCartDemoPackageJson = await readFileContent('integration/fixtures/cart-demo/package.json')
     const cartDemoPackageJsonContent = await readFileContent(CART_DEMO_PACKAGE_JSON)
-    expect(cartDemoPackageJsonContent).to.equal(expectedCartDemoPackageJson.replace(PROJECT_NAME_FIXTURE_PLACEHOLDER, projectName))
+    packageJsonAssertions(expectedCartDemoPackageJson.replace(PROJECT_NAME_FIXTURE_PLACEHOLDER, projectName),
+      cartDemoPackageJsonContent, ['dependencies', 'devDependencies'])
 
     const expectedCartDemoTsConfigEslint = await readFileContent('integration/fixtures/cart-demo/tsconfig.eslint.json')
     const cartDemoTsConfigEslintContent = await readFileContent(CART_DEMO_TS_CONFIG_ESLINT)
@@ -162,7 +177,7 @@ describe('Project', () => {
 
       it('should create a new project using a custom provider, and the project compiles', async () => {
         const projectName = CART_DEMO_CUSTOM_PROVIDER
-        const promptAnswers = [`${DESCRIPTION}\r\n'`, `${VERSION}\r\n`, `${AUTHOR}\r\n`, `${HOMEPAGE}\r\n`, `${LICENSE}\r\n`, `${REPO_URL}\r\n`, DOWN_KEY, `${PROVIDER}\r\n`]
+        const promptAnswers = [`${DESCRIPTION}\r\n'`, `${VERSION}\r\n`, `${AUTHOR}\r\n`, `${HOMEPAGE}\r\n`, `${LICENSE}\r\n`, `${REPO_URL}\r\n`, `${DOWN_KEY}\r\n`, `${PROVIDER}\r\n`]
         const stdout = await execNewProject(projectName, promptAnswers)
 
         await assertions(stdout, projectName)
