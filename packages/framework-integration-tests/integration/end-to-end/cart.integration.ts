@@ -93,25 +93,34 @@ describe('Cart end-to-end tests', () => {
         beforeEach(async () => {
           mockCartId = random.uuid()
           mockCartItemsCount = random.number({ min: 2, max: 10 })
+          const changeCartPromises: Array<Promise<any>> = []
 
           for (let i = 0; i < mockCartItemsCount; i++) {
             const mockProductId: string = random.uuid()
             const mockQuantity: number = random.number({ min: 1 })
             mockCartItems.push({ productId: mockProductId, quantity: mockQuantity })
 
-            // provisioning a cart
-            await client.mutate({
-              variables: {
-                cartId: mockCartId,
-                productId: mockProductId,
-                quantity: mockQuantity,
-              },
-              mutation: gql`
-                mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
-                  ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
-                }
-              `,
-            })
+            changeCartPromises.push(
+              new Promise((resolve, reject) => {
+                client
+                  .mutate({
+                    variables: {
+                      cartId: mockCartId,
+                      productId: mockProductId,
+                      quantity: mockQuantity,
+                    },
+                    mutation: gql`
+                      mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+                        ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+                      }
+                    `,
+                  })
+                  .then((response) => resolve(response))
+                  .catch((error) => reject(error))
+              })
+            )
+
+            await Promise.all(changeCartPromises)
           }
         })
 
@@ -132,7 +141,7 @@ describe('Cart end-to-end tests', () => {
                 `,
               })
             },
-            (result) => result?.data?.CartReadModel.cartItems.length == mockCartItemsCount
+            (result) => result?.data?.CartReadModel?.cartItems.length == mockCartItemsCount
           )
 
           const cartData = queryResult.data.CartReadModel
@@ -243,7 +252,7 @@ describe('Cart end-to-end tests', () => {
               `,
             })
           },
-          (result) => result?.data?.CartReadModel.payment != null
+          (result) => result?.data?.CartReadModel?.payment != null
         )
 
         const updatedCartData = updatedQueryResult.data.CartReadModel
