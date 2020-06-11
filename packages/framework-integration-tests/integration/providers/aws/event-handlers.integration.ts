@@ -1,7 +1,7 @@
 import gql from 'graphql-tag'
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
-import { createAdmin, getAuthToken, getEventsByEntityId, graphQLClient, waitForIt } from './utils'
+import { createUser, getAuthToken, getEventsByEntityId, graphQLClient, waitForIt } from './utils'
 import { random, address, internet } from 'faker'
 import { expect } from 'chai'
 
@@ -13,7 +13,7 @@ describe('Event handlers', () => {
 
   before(async () => {
     adminEmail = internet.email()
-    await createAdmin(adminEmail, adminPassword)
+    await createUser(adminEmail, adminPassword, 'Admin')
     const authToken = await getAuthToken(adminEmail, adminPassword)
 
     client = await graphQLClient(authToken)

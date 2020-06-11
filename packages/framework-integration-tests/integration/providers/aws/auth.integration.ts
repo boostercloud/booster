@@ -4,7 +4,7 @@ import {
   authClientID,
   signInURL,
   confirmUser,
-  createAdmin,
+  createUser,
   deleteUser,
   waitForIt,
 } from './utils'
@@ -310,7 +310,7 @@ describe('With the auth API', () => {
 
     before(async () => {
       // We create the admin account manually
-      await createAdmin(adminEmail, adminPassword)
+      await createUser(adminEmail, adminPassword, 'Admin')
     })
 
     after(async () => {
