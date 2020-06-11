@@ -41,11 +41,11 @@ describe('providerService', () => {
 
   describe.skip('deployToCloudProvider', () => {})
 
-  describe('runnableProvider', () => {
+  describe('startProvider', () => {
     context('when the configured provider implements the run function', () => {
-      it('calls the provider run method', async () => {
+      it('calls the provider start method', async () => {
         const fakeInfrastructure = {
-          run: fake(),
+          start: fake(),
         }
 
         const fakeProvider = {
@@ -58,13 +58,13 @@ describe('providerService', () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any
 
-        await providerService.runnableProvider('whatever', 3000, fakeConfig)
+        await providerService.startProvider(3000, fakeConfig)
 
-        expect(fakeInfrastructure.run).to.have.been.calledOnceWith(fakeConfig)
+        expect(fakeInfrastructure.start).to.have.been.calledOnceWith(fakeConfig)
       })
     })
 
-    context('when the configured provider does not implement the run function', () => {
+    context('when the configured provider does not implement the start function', () => {
       it('throws an error', async () => {
         const fakeProvider = {
           infrastructure: fake.returns({}),
@@ -76,8 +76,8 @@ describe('providerService', () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any
 
-        await expect(providerService.runnableProvider('whatever', 3000, fakeConfig)).to.eventually.be.rejectedWith(
-          'Attempted to run the application with a provider that does not support this feature, please check your configuration for environment whatever'
+        await expect(providerService.startProvider(3000, fakeConfig)).to.eventually.be.rejectedWith(
+          `Attempted to perform the 'start' operation with a provider that does not support this feature, please check your environment configuration.`
         )
       })
     })

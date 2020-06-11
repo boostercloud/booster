@@ -75,6 +75,6 @@ export interface ProviderAPIHandling {
 
 export interface ProviderInfrastructure {
   deploy?: (configuration: BoosterConfig) => Observable<string>
-  run?: (configuration: BoosterConfig, port: number) => Promise<void>
-  nuke(configuration: BoosterConfig): Observable<string>
+  nuke?: (configuration: BoosterConfig) => Observable<string>
+  start?: (configuration: BoosterConfig, port: number) => Promise<void>
 }

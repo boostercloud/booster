@@ -1,5 +1,5 @@
 import { Command, flags } from '@oclif/command'
-import { runnableProvider } from '../services/provider-service'
+import { startProvider } from '../services/provider-service'
 import { compileProjectAndLoadConfig } from '../services/config-service'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { Script } from '../common/script'
@@ -42,7 +42,7 @@ export default class Start extends Command {
       flags.environment,
       flags.port,
       compileProjectAndLoadConfig(),
-      runnableProvider.bind(null, flags.environment, flags.port)
+      startProvider.bind(null, flags.port)
     )
   }
 }

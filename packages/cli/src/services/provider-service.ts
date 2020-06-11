@@ -24,29 +24,25 @@ export function assertNameIsCorrect(name: string): void {
     Found: '${name}'`)
 }
 
-export const deployToCloudProvider = (config: BoosterConfig): Observable<string> => {
+function supportedInfrastructureMethodOrDie(methodName: 'deploy' | 'nuke' | 'start', config: BoosterConfig): any {
   assertNameIsCorrect(config.appName)
-  const deployMethod = config.provider.infrastructure().deploy
-  if (!deployMethod) {
+  const method = config.provider.infrastructure()[methodName]
+  if (!method) {
     throw new Error(
-      'Attempted to deploy with a provider that does not support deploying the project, perhaps you meant `boost run`?'
+      `Attempted to perform the '${methodName}' operation with a provider that does not support this feature, please check your environment configuration.` 
     )
   }
-  return deployMethod(config)
+  return method
 }
 
-export async function runnableProvider(environment: string, port: number, config: BoosterConfig): Promise<void> {
-  assertNameIsCorrect(config.appName)
-  const runMethod = config.provider.infrastructure().run
-  if (!runMethod) {
-    throw new Error(
-      'Attempted to run the application with a provider that does not support this feature, please check your configuration for environment ' +
-        environment
-    )
-  }
-  return runMethod(config, port)
+export function deployToCloudProvider(config: BoosterConfig): Observable<string> {
+  return supportedInfrastructureMethodOrDie('deploy', config)(config)
 }
 
-export const nukeCloudProviderResources = (config: BoosterConfig): Observable<string> => {
-  return config.provider.infrastructure().nuke(config)
+export function nukeCloudProviderResources(config: BoosterConfig): Observable<string> {
+  return supportedInfrastructureMethodOrDie('nuke', config)(config)
+}
+
+export async function startProvider(port: number, config: BoosterConfig): Promise<void> {
+  return supportedInfrastructureMethodOrDie('start', config)(config, port)
 }
