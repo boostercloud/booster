@@ -35,7 +35,7 @@ describe('s3 utils', () => {
       it('should return true', async () => {
         const result = await s3BucketExists(bucketName, s3)
 
-        expect(headBucketStub).to.have.been.calledOnce
+        expect(headBucketStub).to.have.been.calledOnceWith({ Bucket: bucketName })
         expect(result).to.be.true
       })
     })
@@ -56,7 +56,7 @@ describe('s3 utils', () => {
       it('should return false', async () => {
         const result = await s3BucketExists(bucketName, s3)
 
-        expect(headBucketStub).to.have.been.calledOnce
+        expect(headBucketStub).to.have.been.calledOnceWith({ Bucket: bucketName })
         expect(result).to.be.false
       })
     })
