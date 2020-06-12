@@ -1,0 +1,44 @@
+{
+  "name": "@boostercloud/framework-provider-azure-infrastructure",
+  "version": "0.4.1",
+  "description": "Handle the Booster deployment process to Azure",
+  "keywords": [
+    "framework-provider-azure-infrastructure"
+  ],
+  "author": "Booster Cloud",
+  "homepage": "https://booster.cloud",
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boostercloud/booster.git"
+  },
+  "dependencies": {
+    "@boostercloud/framework-types": "^0.4.1",
+    "@boostercloud/framework-provider-azure": "^0.4.0",
+    "ms-rest-azure": "^3.0.0",
+    "azure-arm-resource": "^7.3.0",
+    "copyfiles": "^2.3.0"
+  },
+  "scripts": {
+    "lint": "eslint --ext '.js,.ts' **/*.ts",
+    "fix-lint": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
+    "compile": "tsc -b tsconfig.json && copyfiles -f src/infrastructure/templates/*.json  dist/infrastructure/templates",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "prepack": "tsc -b tsconfig.json",
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+  },
+  "bugs": {
+    "url": "https://github.com/boostercloud/booster/issues"
+  },
+  "devDependencies": {
+    "@types/faker": "^4.1.11",
+    "faker": "^4.1.0"
+  }
+}

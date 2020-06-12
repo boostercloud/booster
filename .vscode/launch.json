@@ -79,6 +79,24 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "framework-provider-azure-infrastructure tests",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "999999",
+        "--colors",
+        "--forbid-only",
+        "${workspaceFolder}/packages/framework-provider-azure-infrastructure/test/**/*.test.ts"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "cli tests",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [
