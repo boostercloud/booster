@@ -62,8 +62,8 @@ export async function deploy(environmentName = 'production'): Promise<void> {
   fs.renameSync('../../node_modules_dev', '../../node_modules')
 
   // Compile the project
-  await run('lerna run clean')
-  await run('lerna run compile')
+  await run('lerna run clean --stream')
+  await run('lerna run compile --stream')
 
   // Remove non-needed packages (lerna adds them as dependencies)
   fs.unlinkSync('./node_modules/@boostercloud/framework-integration-tests')

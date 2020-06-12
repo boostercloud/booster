@@ -45,4 +45,4 @@ jobs:
         run: npx lerna bootstrap
 
       - name: Lint
-        run: npx lerna run lint
+        run: npx lerna run lint --stream
