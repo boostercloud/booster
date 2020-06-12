@@ -16,8 +16,7 @@ const fs = require('fs')
 const integrationTestsPackageRoot = path.dirname(__dirname)
 const cliBinaryPath = path.join('..', 'cli', 'bin', 'run')
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function run(command: string): Promise<ChildProcess> {
+async function run(command: string): Promise<void> {
   const subprocess = exec(command, {
     cwd: integrationTestsPackageRoot, // Commands are run in the integration tests package root
   })
@@ -28,7 +27,7 @@ async function run(command: string): Promise<ChildProcess> {
     subprocess.child.stderr.pipe(process.stderr)
   }
 
-  return subprocess.child
+  return subprocess
 }
 
 async function setEnv(): Promise<void> {
