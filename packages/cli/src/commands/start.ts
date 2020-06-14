@@ -1,21 +1,22 @@
 import { Command, flags } from '@oclif/command'
-import { runProvider } from '../services/provider-service'
+import { startProvider } from '../services/provider-service'
 import { compileProjectAndLoadConfig } from '../services/config-service'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { Script } from '../common/script'
 import Brand from '../common/brand'
 
 const runTasks = async (
+  environment: string,
   port: number,
   loader: Promise<BoosterConfig>,
   runner: (config: BoosterConfig) => Promise<void>
 ): Promise<void> =>
-  Script.init(`boost ${Brand.canarize('debug')} 🐛`, loader)
-    .step(`Running debugging server on port ${port}`, runner)
+  Script.init(`boost ${Brand.canarize('debug')} [${environment}] 🐛`, loader)
+    .step(`Starting debug server on port ${port}`, runner)
     .done()
 
-export default class Run extends Command {
-  public static description = 'Run the current application locally, as configured in your configuration files.'
+export default class Start extends Command {
+  public static description = 'Start local debug server.'
 
   public static flags = {
     help: flags.help({ char: 'h' }),
@@ -27,13 +28,21 @@ export default class Run extends Command {
     environment: flags.string({
       char: 'e',
       description: 'environment configuration to run',
-      default: 'development',
     }),
   }
 
   public async run(): Promise<void> {
-    const { flags } = this.parse(Run)
+    const { flags } = this.parse(Start)
+    if (!flags.environment) {
+      console.log('Error: no environment name provided. Usage: `boost start -e <environment>`.')
+      return
+    }
     process.env.BOOSTER_ENV = flags.environment
-    await runTasks(flags.port, compileProjectAndLoadConfig(), runProvider.bind(null, flags.port))
+    await runTasks(
+      flags.environment,
+      flags.port,
+      compileProjectAndLoadConfig(),
+      startProvider.bind(null, flags.port)
+    )
   }
 }

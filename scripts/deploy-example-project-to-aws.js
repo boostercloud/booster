@@ -8,7 +8,7 @@
 async function main(argv) {
   const exec = require('child-process-promise').exec
   console.info('Compiling project...')
-  await exec('lerna run compile')
+  await exec('lerna run compile --stream')
   console.info('Project compiled.')
 
   const deployScript = require('../packages/framework-integration-tests/dist/deploy')

@@ -30,7 +30,7 @@ before(async () => {
 
   await exec('lerna bootstrap')
   await exec('lerna clean --yes')
-  await exec('lerna run clean')
+  await exec('lerna run clean --stream')
 
   process.chdir('..')
 
@@ -43,7 +43,7 @@ before(async () => {
 
 after(async () => {
   try {
-    await exec('lerna run compile')
+    await exec('lerna run compile --stream')
   } catch (e) {
     // error whilst deleting files
     console.log(e)

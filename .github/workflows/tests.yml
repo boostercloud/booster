@@ -45,7 +45,7 @@ jobs:
         run: npx lerna bootstrap
 
       - name: Compile
-        run: npx lerna run compile
+        run: npx lerna run compile --stream
 
       - name: Tests
-        run: npx lerna run test
+        run: npx lerna run test --stream

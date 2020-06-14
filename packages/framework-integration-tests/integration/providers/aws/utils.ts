@@ -7,6 +7,7 @@ import fetch from 'cross-fetch'
 import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
 import ScanOutput = DocumentClient.ScanOutput
 import QueryOutput = DocumentClient.QueryOutput
+import { sleep } from '../helpers'
 
 const userPoolId = 'userpool'
 const cloudFormation = new CloudFormation()
@@ -293,11 +294,6 @@ export async function getEventsByEntityId(entityID: string): Promise<any> {
 
 // --- Other helpers ---
 
-export async function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-//
 export async function waitForIt<TResult>(
   tryFunction: () => Promise<TResult>,
   checkResult: (result: TResult) => boolean,
