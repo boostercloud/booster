@@ -298,11 +298,6 @@ export async function getEventsByEntityId(entityID: string): Promise<any> {
 
 // --- Other helpers ---
 
-export async function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-//
 export async function waitForIt<TResult>(
   tryFunction: () => Promise<TResult>,
   checkResult: (result: TResult) => boolean,

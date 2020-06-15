@@ -12,3 +12,12 @@ export const removeFiles = (filePaths: Array<string>): Array<Promise<void>> => {
     })
   })
 }
+
+export const removeFolders = (paths: Array<string>): Array<Promise<void>> => {
+  return paths.map((path: string) => {
+    return new Promise((resolve) => {
+      fs.rmdirSync(path, {recursive: true})
+      resolve()
+    })
+  })
+}
