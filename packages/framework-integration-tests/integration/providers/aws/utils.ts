@@ -8,6 +8,7 @@ import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
 import ScanOutput = DocumentClient.ScanOutput
 import QueryOutput = DocumentClient.QueryOutput
 import { internet } from 'faker'
+import { sleep } from '../helpers'
 
 const userPoolId = 'userpool'
 const cloudFormation = new CloudFormation()
