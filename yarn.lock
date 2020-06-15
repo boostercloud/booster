@@ -2418,9 +2418,9 @@ aws4@^1.8.0:
   resolved "https://registry.yarnpkg.com/aws4/-/aws4-1.9.1.tgz#7e33d8f7d449b3f673cd72deb9abdc552dbe528e"
 
 azure-arm-resource@^7.3.0:
-  version "7.3.0"
-  resolved "https://registry.yarnpkg.com/azure-arm-resource/-/azure-arm-resource-7.3.0.tgz#b45c4b4ab48719c00b9a2554cce6c2cb014a6d6f"
-  integrity sha512-2K+ps1Iwa4PBQFwdCn1X8kAVIRLH5M7nlNZtfOWaYd7DXJ131qJpwW8ul6gKZgG7DAI3PBodrGsHFvPdgA+AzQ==
+  version "7.4.0"
+  resolved "https://registry.yarnpkg.com/azure-arm-resource/-/azure-arm-resource-7.4.0.tgz#ef8809edc6ac7222ae544f95d1e8a2556cdcb77f"
+  integrity sha512-GT332g4i90W/PjsKxCMHYnexP6qwWOeWT0iucqLFQYV4C4PnNL8P5SFBuwo2qgbexcqtTSbyZg/YJJ5QLfYxDA==
   dependencies:
     ms-rest "^2.3.3"
     ms-rest-azure "^2.5.5"
