@@ -1566,11 +1566,12 @@
     "@octokit/types" "^2.0.1"
     deprecation "^2.3.1"
 
-"@octokit/plugin-rest-endpoint-methods@3.8.0":
-  version "3.8.0"
-  resolved "https://registry.yarnpkg.com/@octokit/plugin-rest-endpoint-methods/-/plugin-rest-endpoint-methods-3.8.0.tgz#649fa2f2e5104b015e1f60076958d69eba281a19"
+"@octokit/plugin-rest-endpoint-methods@3.17.0":
+  version "3.17.0"
+  resolved "https://registry.yarnpkg.com/@octokit/plugin-rest-endpoint-methods/-/plugin-rest-endpoint-methods-3.17.0.tgz#d8ba04eb883849dd98666c55bf49d8c9fe7be055"
+  integrity sha512-NFV3vq7GgoO2TrkyBRUOwflkfTYkFKS0tLAPym7RNpkwLCttqShaEGjthOsPEEL+7LFcYv3mU24+F2yVd3npmg==
   dependencies:
-    "@octokit/types" "^2.12.1"
+    "@octokit/types" "^4.1.6"
     deprecation "^2.3.1"
 
 "@octokit/request-error@^1.0.2":
@@ -1624,17 +1625,25 @@
     universal-user-agent "^4.0.0"
 
 "@octokit/rest@^17.0.0":
-  version "17.6.0"
-  resolved "https://registry.yarnpkg.com/@octokit/rest/-/rest-17.6.0.tgz#91ba53bd3ab8f989030c8b018a8ccbcf87be0f0a"
+  version "17.11.2"
+  resolved "https://registry.yarnpkg.com/@octokit/rest/-/rest-17.11.2.tgz#f3dbd46f9f06361c646230fd0ef8598e59183ead"
+  integrity sha512-4jTmn8WossTUaLfNDfXk4fVJgbz5JgZE8eCs4BvIb52lvIH8rpVMD1fgRCrHbSd6LRPE5JFZSfAEtszrOq3ZFQ==
   dependencies:
     "@octokit/core" "^2.4.3"
     "@octokit/plugin-paginate-rest" "^2.2.0"
     "@octokit/plugin-request-log" "^1.0.0"
-    "@octokit/plugin-rest-endpoint-methods" "3.8.0"
+    "@octokit/plugin-rest-endpoint-methods" "3.17.0"
 
 "@octokit/types@^2.0.0", "@octokit/types@^2.0.1", "@octokit/types@^2.11.1", "@octokit/types@^2.12.1":
   version "2.12.2"
   resolved "https://registry.yarnpkg.com/@octokit/types/-/types-2.12.2.tgz#e9fbffa294adb54140946d436da9f73bc94b169c"
+  dependencies:
+    "@types/node" ">= 8"
+
+"@octokit/types@^4.1.6":
+  version "4.1.10"
+  resolved "https://registry.yarnpkg.com/@octokit/types/-/types-4.1.10.tgz#e4029c11e2cc1335051775bc1600e7e740e4aca4"
+  integrity sha512-/wbFy1cUIE5eICcg0wTKGXMlKSbaAxEr00qaBXzscLXpqhcwgXeS6P8O0pkysBhRfyjkKjJaYrvR1ExMO5eOXQ==
   dependencies:
     "@types/node" ">= 8"
 
