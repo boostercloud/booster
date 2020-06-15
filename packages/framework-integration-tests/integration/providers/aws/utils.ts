@@ -7,6 +7,7 @@ import fetch from 'cross-fetch'
 import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
 import ScanOutput = DocumentClient.ScanOutput
 import QueryOutput = DocumentClient.QueryOutput
+import { internet } from 'faker'
 
 const userPoolId = 'userpool'
 const cloudFormation = new CloudFormation()
@@ -178,6 +179,10 @@ export const getAuthToken = async (email: string, password: string): Promise<str
   })
 
   return (await response.json()).accessToken
+}
+
+export const createPassword = (): string => {
+  return `${internet.password(8)}Passw0rd!`
 }
 
 // --- URL helpers ---
