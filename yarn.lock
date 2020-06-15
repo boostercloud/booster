@@ -1664,9 +1664,9 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
 
 "@types/aws-lambda@^8.10.31", "@types/aws-lambda@^8.10.48":
-  version "8.10.55"
-  resolved "https://registry.yarnpkg.com/@types/aws-lambda/-/aws-lambda-8.10.55.tgz#7293cf7908766a60efc28262cbf65a8a957dec0e"
-  integrity sha512-rtJhfxbsqmIC6t/vnUqvZH2PyLHJscYc166P+sHWAIp0Rx4szDarL+Ul8esGYZFWrQ36q2MHrPMzuI23zXSlMg==
+  version "8.10.56"
+  resolved "https://registry.yarnpkg.com/@types/aws-lambda/-/aws-lambda-8.10.56.tgz#24fc61bf628db86412bb4f28da051df4baa532d6"
+  integrity sha512-jaxu5br/KYxhNBNmr2GoVhIUady2zNsvSRCa4kCHW+GcM4ladPhfEyeJkkNMGo/IlVAfpcPYTsSzhYWZoSgZXA==
 
 "@types/body-parser@*":
   version "1.19.0"
