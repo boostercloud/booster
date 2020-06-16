@@ -1,6 +1,6 @@
 import { Command } from '@boostercloud/framework-core'
 import { Register } from '@boostercloud/framework-types'
-import { ProductUpdated, ProductUpdateReason } from '../events/product-updated'
+import { ProductUpdated, ProductUpdateReason } from '../events/ProductUpdated'
 import { SKU } from '../common/sku'
 import { Money } from '../common/money'
 import { UUID } from '@boostercloud/framework-types'

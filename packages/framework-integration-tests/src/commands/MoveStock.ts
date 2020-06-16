@@ -1,9 +1,9 @@
 import { Command, Booster } from '@boostercloud/framework-core'
 import { Register } from '@boostercloud/framework-types'
 import { Admin } from '../roles'
-import { Stock } from '../entities/stock'
-import { StockMoved } from '../events/stock-moved'
-import { ErrorEvent } from '../events/error-event'
+import { Stock } from '../entities/Stock'
+import { StockMoved } from '../events/StockMoved'
+import { ErrorEvent } from '../events/ErrorEvent'
 
 @Command({
   authorize: [Admin],

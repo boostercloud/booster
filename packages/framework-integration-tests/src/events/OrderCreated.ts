@@ -1,5 +1,5 @@
 import { Event } from '@boostercloud/framework-core'
-import { Order } from '../entities/order'
+import { Order } from '../entities/Order'
 import { UUID } from '@boostercloud/framework-types'
 
 @Event

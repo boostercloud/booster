@@ -1,7 +1,7 @@
 import { Entity } from '@boostercloud/framework-core'
 import { UUID } from '@boostercloud/framework-types'
 import { Reduces } from '@boostercloud/framework-core/dist'
-import { CartPaid } from '../events/cart-paid'
+import { CartPaid } from '../events/CartPaid'
 
 @Entity
 export class Payment {

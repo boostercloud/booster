@@ -1,8 +1,8 @@
 import '../common/address'
 import { Entity, Reduces } from '@boostercloud/framework-core'
 import { UUID } from '@boostercloud/framework-types'
-import { ChangedCartItem } from '../events/changed-cart-item'
-import { UpdatedShippingAddress as UpdatedCartShippingAddress } from '../events/updated-shipping-address'
+import { CartItemChanged } from '../events/CartItemChanged'
+import { ShippingAddressUpdated as UpdatedCartShippingAddress } from '../events/ShippingAddressUpdated'
 import { Address } from '../common/address'
 import { CartItem } from '../common/cart-item'
 
@@ -13,8 +13,8 @@ import { CartItem } from '../common/cart-item'
 export class Cart {
   public constructor(readonly id: UUID, readonly cartItems: Array<CartItem>, public shippingAddress?: Address) {}
 
-  @Reduces(ChangedCartItem)
-  public static changeItem(event: ChangedCartItem, currentCart: Cart): Cart {
+  @Reduces(CartItemChanged)
+  public static changeItem(event: CartItemChanged, currentCart: Cart): Cart {
     if (currentCart == null) {
       currentCart = new Cart(event.cartId, [])
     }
