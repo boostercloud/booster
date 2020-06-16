@@ -31,7 +31,7 @@ describe('Event handler', () => {
   describe('Invalid event handler', () => {
     context('without name and event', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:event`)
+        const { stderr } = await exec(`${cliPath} new:event-handler`)
 
         expect(stderr).to.equal(
           "You haven't provided an event handler name, but it is required, run with --help for usage\n"
@@ -41,7 +41,7 @@ describe('Event handler', () => {
 
     context('Without name', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:event`)
+        const { stderr } = await exec(`${cliPath} new:event-handler -e CartPaid`)
 
         expect(stderr).to.equal(
           "You haven't provided an event handler name, but it is required, run with --help for usage\n"
@@ -51,7 +51,7 @@ describe('Event handler', () => {
 
     context('Without event', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:event`)
+        const { stderr } = await exec(`${cliPath} new:event-handler CartPaid`)
 
         expect(stderr).to.equal("You haven't provided an event, but it is required, run with --help for usage\n")
       })
