@@ -92,7 +92,7 @@ describe('permissions', () => {
 
     describe('GraphQL Lambda', () => {
       it('should call addToRolePolicy', () => {
-        assert.calledThrice(graphQLAddToRolePolicyStub)
+        assert.callCount(graphQLAddToRolePolicyStub, 4)
 
         assert.calledWithExactly(graphQLAddToRolePolicyStub, mockPolicyStatement)
       })

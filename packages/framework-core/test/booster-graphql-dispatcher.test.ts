@@ -35,7 +35,9 @@ describe('the `BoosterGraphQLDispatcher`', () => {
       const config = mockConfigForGraphQLEnvelope({
         requestID: '123',
         eventType: 'MESSAGE',
-        value: 'query { a { x }}',
+        value: {
+          query: 'query { a { x }}',
+        },
       })
       const dispatcher = new BoosterGraphQLDispatcher(config, logger)
       const errorTextOne = 'graphql error 1'
@@ -59,8 +61,10 @@ describe('the `BoosterGraphQLDispatcher`', () => {
       const graphQLEnvelope: GraphQLRequestEnvelope = {
         requestID: '123',
         eventType: 'MESSAGE',
-        value: graphQLBody,
-        variables: graphQLVariables,
+        value: {
+          query: graphQLBody,
+          variables: graphQLVariables,
+        },
       }
       const resolverContext: GraphQLResolverContext = {
         requestID: graphQLEnvelope.requestID,
@@ -87,6 +91,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
         document: match.any,
         contextValue: match(resolverContext),
         variableValues: match(graphQLVariables),
+        operationName: match.any,
       })
       expect(config.provider.graphQL.handleResult).to.have.been.calledWithExactly(graphQLResult)
     })
@@ -99,6 +104,9 @@ function mockConfigForGraphQLEnvelope(envelope: GraphQLRequestEnvelope): Booster
     graphQL: {
       rawToEnvelope: fake.resolves(envelope),
       handleResult: fake(),
+    },
+    readModels: {
+      notifySubscription: fake(),
     },
   } as any
   return config
