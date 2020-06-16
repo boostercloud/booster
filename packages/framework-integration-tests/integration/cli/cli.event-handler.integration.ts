@@ -7,9 +7,7 @@ const exec = util.promisify(require('child_process').exec)
 
 const FILE_HANDLE_CART_CHANGED_EVENT_HANDLER = 'src/event-handlers/HandleCartChange.ts'
 
-export const CLI_EVENT_HANDLERS_INTEGRATION_TEST_FILES: Array<string> = [
-  FILE_HANDLE_CART_CHANGED_EVENT_HANDLER,
-]
+export const CLI_EVENT_HANDLERS_INTEGRATION_TEST_FILES: Array<string> = [FILE_HANDLE_CART_CHANGED_EVENT_HANDLER]
 
 describe('Event handler', () => {
   const cliPath = path.join('..', 'cli', 'bin', 'run')
@@ -31,10 +29,32 @@ describe('Event handler', () => {
   })
 
   describe('Invalid event handler', () => {
-    context('without name and event', () => {})
+    context('without name and event', () => {
+      it('should fail', async () => {
+        const { stderr } = await exec(`${cliPath} new:event`)
 
-    context('Without name', () => {})
+        expect(stderr).to.equal(
+          "You haven't provided an event handler name, but it is required, run with --help for usage\n"
+        )
+      })
+    })
 
-    context('Without event', () => {})
+    context('Without name', () => {
+      it('should fail', async () => {
+        const { stderr } = await exec(`${cliPath} new:event`)
+
+        expect(stderr).to.equal(
+          "You haven't provided an event handler name, but it is required, run with --help for usage\n"
+        )
+      })
+    })
+
+    context('Without event', () => {
+      it('should fail', async () => {
+        const { stderr } = await exec(`${cliPath} new:event`)
+
+        expect(stderr).to.equal("You haven't provided an event, but it is required, run with --help for usage\n")
+      })
+    })
   })
 })
