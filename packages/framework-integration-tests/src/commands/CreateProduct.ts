@@ -1,11 +1,11 @@
 import { Command } from '@boostercloud/framework-core'
 import { ProductCreated } from '../events/ProductCreated'
 import { Register, UUID } from '@boostercloud/framework-types'
-import { User } from '../roles'
+import { User, Admin } from '../roles'
 import { SKU } from '../common/sku'
 
 @Command({
-  authorize: [User],
+  authorize: [Admin, User],
 })
 export class CreateProduct {
   public constructor(

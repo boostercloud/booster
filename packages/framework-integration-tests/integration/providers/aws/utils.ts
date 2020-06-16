@@ -9,6 +9,11 @@ import ScanOutput = DocumentClient.ScanOutput
 import QueryOutput = DocumentClient.QueryOutput
 import { internet } from 'faker'
 import { sleep } from '../helpers'
+import { WebSocketLink } from 'apollo-link-ws'
+import { getMainDefinition } from 'apollo-utilities'
+import { ApolloLink, split } from 'apollo-link'
+import * as WebSocket from 'ws'
+import { SubscriptionClient } from 'subscriptions-transport-ws'
 
 const userPoolId = 'userpool'
 const cloudFormation = new CloudFormation()
@@ -188,7 +193,7 @@ export const createPassword = (): string => {
 
 // --- URL helpers ---
 
-export async function baseURL(): Promise<string> {
+export async function baseHTTPURL(): Promise<string> {
   const { Outputs } = await appStack()
   const url = Outputs?.find((output) => {
     return output.OutputKey === 'httpURL'
@@ -197,29 +202,58 @@ export async function baseURL(): Promise<string> {
   if (url) {
     return url
   } else {
-    throw 'Unable to get the Base REST URL from the current stack'
+    throw 'Unable to get the Base HTTP URL from the current stack'
+  }
+}
+
+export async function baseWebsocketURL(): Promise<string> {
+  const { Outputs } = await appStack()
+  const url = Outputs?.find((output) => {
+    return output.OutputKey === 'websocketURL'
+  })?.OutputValue
+
+  if (url) {
+    return url
+  } else {
+    throw 'Unable to get the Base Websocket URL from the current stack'
   }
 }
 
 export async function signUpURL(): Promise<string> {
-  return new URL('auth/sign-up', await baseURL()).href
+  return new URL('auth/sign-up', await baseHTTPURL()).href
 }
 
 export async function signInURL(): Promise<string> {
-  return new URL('auth/sign-in', await baseURL()).href
+  return new URL('auth/sign-in', await baseHTTPURL()).href
 }
 
 // --- GraphQL helpers ---
 
-export async function graphQLClient(authToken?: string): Promise<ApolloClient<NormalizedCacheObject>> {
-  const url = await baseURL()
+export async function graphQLClient(
+  authToken?: string,
+  subscriptionClient?: SubscriptionClient
+): Promise<ApolloClient<NormalizedCacheObject>> {
+  const httpURL = await baseHTTPURL()
   const cache = new InMemoryCache()
   const headers = authToken ? { Authorization: `Bearer ${authToken}` } : {}
-  const link = new HttpLink({
-    uri: new URL('graphql', url).href,
+  const httpLink = new HttpLink({
+    uri: new URL('graphql', httpURL).href,
     headers,
     fetch,
   })
+
+  let link: ApolloLink = httpLink
+  if (subscriptionClient) {
+    const websocketLink = new WebSocketLink(subscriptionClient)
+    link = split(
+      ({ query }) => {
+        const definition = getMainDefinition(query)
+        return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
+      },
+      websocketLink,
+      httpLink
+    )
+  }
 
   return new ApolloClient({
     cache: cache,
@@ -230,6 +264,40 @@ export async function graphQLClient(authToken?: string): Promise<ApolloClient<No
       },
     },
   })
+}
+
+export async function graphqlSubscriptionsClient(authToken?: string): Promise<SubscriptionClient> {
+  return new SubscriptionClient(
+    await baseWebsocketURL(),
+    {
+      reconnect: true,
+    },
+    class MyWebSocket extends WebSocket {
+      public constructor(url: string, protocols?: string | string[]) {
+        super(url, protocols, {
+          headers: authToken ? { Authorization: `Bearer ${authToken}` } : {}
+        })
+        this.addListener('open', (): void => {
+          console.log('[GraphQL socket] on open')
+        })
+        this.addListener('ping', (): void => {
+          console.log('[GraphQL socket] on "ping"')
+        })
+        this.addListener('pong', (): void => {
+          console.log('[GraphQL socket] on "pong"')
+        })
+        this.addListener('message', (data: WebSocket.Data): void => {
+          console.log('[GraphQL socket] on message: ', data)
+        })
+        this.addListener('close', (code: number, message: string): void => {
+          console.log('[GraphQL socket] on close: ', code, message)
+        })
+        this.addListener('error', (err: Error): void => {
+          console.log('[GraphQL socket] on error: ', err.message)
+        })
+      }
+    }
+  )
 }
 
 // --- Events store helpers ---
