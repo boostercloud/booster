@@ -88,12 +88,6 @@ describe('Read model', () => {
         // Add CartItem import
         updatedReadModelContent = `import { CartItem } from '../common/cart-item'\n${updatedReadModelContent}`
 
-        // Update Cart import
-        updatedReadModelContent = updatedReadModelContent.replace(
-          "import { Cart } from '../entities/Cart'",
-          "import { Cart } from '../entities/cart'"
-        )
-
         writeFileContent(FILE_CART_WITH_PROJECTION_READ_MODEL, updatedReadModelContent)
       })
     })
