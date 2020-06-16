@@ -1,9 +1,11 @@
-import { HasName, HasFields, Field, HasReaction, ReactionEvent, Projection, HasProjections } from './types'
+import { HasName, HasFields, Field, HasReaction, ReactionEvent, Projection, HasProjections, HasEvent } from './types'
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/generic-type-naming */
 
 export const parseName = (name: string): Promise<HasName> => Promise.resolve({ name })
+
+export const parseEvent = (event: string): Promise<HasEvent> => Promise.resolve({ event })
 
 export const parseFields = (fields: Array<string>): Promise<HasFields> =>
   Promise.all(fields.map(parseField)).then((fields) => ({ fields }))
