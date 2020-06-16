@@ -6,6 +6,7 @@ import {
   ReadModelEnvelope,
   ReadModelInterface,
   SubscriptionEnvelope,
+  GraphQLData,
 } from '@boostercloud/framework-types'
 import { GraphQLSchema, DocumentNode } from 'graphql'
 import * as graphql from 'graphql'
@@ -123,8 +124,12 @@ export class BoosterSubscribersNotifier {
       throw result.errors
     }
     const readModel = result.data as ReadModelInterface
-    this.logger.debug(`Notifying connectionID '${subscription.connectionID}' with read model: `, readModel)
-    await this.config.provider.readModels.notifySubscription(this.config, subscription.connectionID, readModel)
+    const message = new GraphQLData(subscription.operation.id!, { data: readModel })
+    this.logger.debug(
+      `Notifying connectionID '${subscription.connectionID}' with the following wrappeed read model: `,
+      readModel
+    )
+    await this.config.provider.readModels.notifySubscription(this.config, subscription.connectionID, message)
     this.logger.debug('Notifications sent')
   }
 }

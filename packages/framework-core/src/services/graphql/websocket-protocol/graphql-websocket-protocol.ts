@@ -98,7 +98,7 @@ export class GraphQLWebsocketHandler {
       return // It was a subscription. We don't need to send any data
     }
 
-    this.logger.debug('Query or mutation finished. Sending DATA:', result)
+    this.logger.debug('Operation finished. Sending DATA:', result)
     // It was a query or mutation. We send data and complete the operation
     await this.messageSender(connectionID, new GraphQLData(message.id, result))
     await this.messageSender(connectionID, new GraphQLComplete(message.id))
