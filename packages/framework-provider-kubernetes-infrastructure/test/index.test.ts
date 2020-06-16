@@ -11,7 +11,8 @@ describe('The user wants to deploy a booster project into the cluster', async ()
   const ENV_NAME = 'production'
   const APP_NAME = 'test_app'
   const NODE_NAME = 'node'
-  const NODE = { name: NODE_NAME }
+  const NODE = { name: NODE_NAME, ip: '192.168.1.1', mainNode: true }
+  const INCOMPLETE_NODE = { name: NODE_NAME, mainNode: true }
   const NAMESPACE_NAME = 'namespace'
   const NAMESPACE = { name: NAMESPACE_NAME }
   const EXEC_OK = { stdout: 'ok' }
@@ -66,8 +67,29 @@ describe('The user wants to deploy a booster project into the cluster', async ()
     replace(K8sManagement.prototype, 'createNamespace', fake.resolves(true))
     replace(HelmManagement.prototype, 'init', fake.resolves(null))
     replace(HelmManagement.prototype, 'isHelmReady', fake.resolves(true))
+    replace(K8sManagement.prototype, 'getMainNode', fake.resolves(NODE))
     replace(HelmManagement.prototype, 'exec', fake.resolves(EXEC_ERROR))
     await deployAndAssertError(`Error: ${ERROR}`)
+  })
+
+  it('but there is no main node inside the cluster', async () => {
+    replace(K8sManagement.prototype, 'getAllNodesWithOpenWhiskRole', fake.resolves([NODE]))
+    replace(K8sManagement.prototype, 'getNamespace', fake.resolves(null))
+    replace(K8sManagement.prototype, 'createNamespace', fake.resolves(true))
+    replace(HelmManagement.prototype, 'init', fake.resolves(null))
+    replace(HelmManagement.prototype, 'isHelmReady', fake.resolves(true))
+    replace(K8sManagement.prototype, 'getMainNode', fake.resolves(null))
+    await deployAndAssertError('Error: Cluster main node not found')
+  })
+
+  it('but there is no IP in the main node', async () => {
+    replace(K8sManagement.prototype, 'getAllNodesWithOpenWhiskRole', fake.resolves([NODE]))
+    replace(K8sManagement.prototype, 'getNamespace', fake.resolves(null))
+    replace(K8sManagement.prototype, 'createNamespace', fake.resolves(true))
+    replace(HelmManagement.prototype, 'init', fake.resolves(null))
+    replace(HelmManagement.prototype, 'isHelmReady', fake.resolves(true))
+    replace(K8sManagement.prototype, 'getMainNode', fake.resolves(INCOMPLETE_NODE))
+    await deployAndAssertError('Error: Unable to find the main node IP')
   })
 
   it('and the infrastructure deployed', async () => {
@@ -75,6 +97,7 @@ describe('The user wants to deploy a booster project into the cluster', async ()
     replace(K8sManagement.prototype, 'getNamespace', fake.resolves([NAMESPACE]))
     replace(HelmManagement.prototype, 'init', fake.resolves(null))
     replace(HelmManagement.prototype, 'isHelmReady', fake.resolves(true))
+    replace(K8sManagement.prototype, 'getMainNode', fake.resolves(NODE))
     replace(HelmManagement.prototype, 'exec', fake.resolves(EXEC_OK))
     const deployObservable = deploy(CONFIGURATION)
     let progressMessage = ''

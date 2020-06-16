@@ -40,8 +40,18 @@ async function deployBoosterApp(observer: Subscriber<string>, configuration: Boo
   if (!isHelmReady) {
     throw new Error(helm.getHelmError())
   }
+
+  const mainNode = await clusterManager.getMainNode()
+  if (!mainNode) {
+    throw new Error('Cluster main node not found')
+  }
+
+  if (!mainNode.ip) {
+    throw new Error('Unable to find the main node IP')
+  }
+  //TODO: Currently for the IP we are using the main Node IP but this needs to be properly defined when the architecture will be fully defined
   const deploy = await helm.exec(
-    `install boost-test boosterchart/openwhisk -n ${projectNamespace} --set whisk.ingress.apiHostName=192.168.64.11`
+    `install boost-test boosterchart/openwhisk -n ${projectNamespace} --set whisk.ingress.apiHostName=${mainNode.ip}`
   )
   if (deploy.stderr) {
     throw new Error(deploy.stderr)

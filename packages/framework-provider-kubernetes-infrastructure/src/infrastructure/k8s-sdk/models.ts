@@ -1,6 +1,9 @@
 export interface Node {
   name?: string
   labels?: { [key: string]: string }
+  role?: string
+  ip?: string
+  mainNode: boolean
 }
 
 export interface Namespace {

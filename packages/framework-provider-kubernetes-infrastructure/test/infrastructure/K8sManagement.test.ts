@@ -1,4 +1,4 @@
-import { CoreV1Api, KubeConfig, V1Pod, V1ObjectMeta, V1Namespace, V1Node } from '@kubernetes/client-node'
+import { CoreV1Api, KubeConfig, V1Pod, V1ObjectMeta, V1Namespace, V1NodeStatus, V1Node } from '@kubernetes/client-node'
 import { K8sManagement } from '../../src/infrastructure/k8s-sdk/K8sManagement'
 import { replace, fake, restore } from 'sinon'
 import { expect } from '../expect'
@@ -27,8 +27,11 @@ describe('Users want to interact with K8s cluster', () => {
   const node = new V1Node()
   const metadataNode = new V1ObjectMeta()
   metadataNode.name = NODE_NAME
-  metadataNode.labels = { 'openwhisk-role': 'invoker' }
+  metadataNode.labels = { 'openwhisk-role': 'invoker', 'node-role.kubernetes.io/master': '' }
   node.metadata = metadataNode
+  const nodeStatus = new V1NodeStatus()
+  nodeStatus.addresses = [{ address: '192.168.1.1', type: 'InternalIP' }]
+  node.status = nodeStatus
   const node2 = new V1Node()
   const metadataNode2 = new V1ObjectMeta()
   metadataNode.name = NODE_NAME
@@ -102,6 +105,11 @@ describe('Users want to interact with K8s cluster', () => {
     const clusterResponse = await k8sManager.getAllNodesWithOpenWhiskRole(OPENWHISK_INVOKER_ROLE)
     expect(clusterResponse.length).to.be.equal(1)
     expect(clusterResponse[0].name).to.be.equal(NODE_NAME)
+  })
+
+  it('they want to get the main node node', async () => {
+    const clusterResponse = await k8sManager.getMainNode()
+    expect(clusterResponse?.name).to.be.equal(NODE_NAME)
   })
 
   it('they want to list all nodes with non existing openwhisk role', async () => {

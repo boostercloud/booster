@@ -84,9 +84,23 @@ export class K8sManagement {
   public async getAllNodesInCluster(): Promise<Array<Node>> {
     const response = await this.unwrapResponse(this.k8sClient.listNode())
     return response.items.map((item) => {
+      const internalIP =
+        item.status?.addresses?.find((address) => {
+          return address.type === 'InternalIP'
+        }) ?? null
+      let mainNode = false
+      const labels = item.metadata?.labels
+      if (labels) {
+        if ('node-role.kubernetes.io/master' in labels) {
+          mainNode = true
+        }
+      }
+
       return {
         name: item.metadata?.name,
         labels: item.metadata?.labels ?? {},
+        ip: internalIP?.address,
+        mainNode: mainNode,
       }
     })
   }
@@ -100,6 +114,11 @@ export class K8sManagement {
         return false
       }
     })
+  }
+
+  public async getMainNode(): Promise<Node | null> {
+    const clusterNodes = await this.getAllNodesInCluster()
+    return clusterNodes.find((node) => node.mainNode) ?? null
   }
 
   private async unwrapResponse<TType>(wrapped: Promise<{ body: TType }>): Promise<TType> {
