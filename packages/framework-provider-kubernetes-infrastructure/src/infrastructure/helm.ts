@@ -53,7 +53,7 @@ export class HelmManagement {
     return true
   }
 
-  private async updateHelmRepo(): Promise<boolean> {
+  public async updateHelmRepo(): Promise<boolean> {
     const update = await this.exec('repo update')
     if (!update.stdout) {
       return false
@@ -61,7 +61,7 @@ export class HelmManagement {
     return true
   }
 
-  private async isBoosterRepoReady(): Promise<boolean> {
+  public async isBoosterRepoReady(): Promise<boolean> {
     const isBoosterInstalled = await this.boosterRepoInstalled()
     if (!isBoosterInstalled) {
       const installRepo = await this.installBoosterRepo()
@@ -90,7 +90,8 @@ export class HelmManagement {
       return false
     }
     //check that the booster helm repo is ready and updated
-    if (!this.isBoosterRepoReady()) {
+    const repoReady = await this.isBoosterRepoReady()
+    if (!repoReady) {
       this.helmError = 'Unable to install the Booster repo in Helm'
       return false
     }

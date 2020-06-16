@@ -3,7 +3,6 @@ import { Observable, Subscriber } from 'rxjs'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { K8sManagement } from './k8s-sdk/K8sManagement'
 import { getProjectNamespaceName } from './utils'
-import { exec } from 'child-process-promise'
 import { HelmManagement } from './helm'
 
 export function deploy(configuration: BoosterConfig): Observable<string> {
@@ -32,31 +31,45 @@ async function deployBoosterApp(observer: Subscriber<string>, configuration: Boo
       throw new Error('Unable to create a namespace for your project')
     }
   }
-
   //TODO: we should check here the current cluster health instead of suppose that all is properly working.
   // This check will be implemented when the architecture will be fully defined
-
   observer.next('Provisioning all cluster resources 👷')
-  //const command = `helm install boost-test boosterchart/openwhisk -n ${projectNamespace} --set whisk.ingress.apiHostName=192.168.64.11`
-  //await exec(command)
   const helm = new HelmManagement()
   await helm.init()
+  const isHelmReady = await helm.isHelmReady()
+  if (!isHelmReady) {
+    throw new Error(helm.getHelmError())
+  }
   const deploy = await helm.exec(
     `install boost-test boosterchart/openwhisk -n ${projectNamespace} --set whisk.ingress.apiHostName=192.168.64.11`
   )
+  if (deploy.stderr) {
+    throw new Error(deploy.stderr)
+  }
   observer.next(deploy.stdout)
   observer.next('Deploying your Booster app into the cluster')
-  //TODO: upload the user code to the cluster
+  //TODO: upload the user code to the cluster this will be managed when the cluster architecture will be fully defined
+  observer.complete()
 }
 
 async function nukeBoosterApp(observer: Subscriber<string>, configuration: BoosterConfig): Promise<void> {
   const projectNamespace = getProjectNamespaceName(configuration)
   const clusterManager = new K8sManagement()
+  const helm = new HelmManagement()
+  await helm.init()
   observer.next('Nuking your Booster project 🧨')
-  const command = `helm uninstall boost-test -n ${projectNamespace}`
-  await exec(command)
+  const command = `uninstall boost-test -n ${projectNamespace}`
+  const deleteResult = await helm.exec(command)
+  if (deleteResult.stderr) {
+    throw new Error(deleteResult.stderr)
+  }
   observer.next('Nuking your project namespace 🧨')
-  await clusterManager.deleteNamespace(projectNamespace)
+  const deleteNamespace = await clusterManager.deleteNamespace(projectNamespace)
+  if (!deleteNamespace) {
+    throw new Error('Unable to delete the app namespace')
+  }
+  observer.next('Your app is terminated and destroyed 💥')
+  observer.complete
 }
 
 export function nuke(configuration: BoosterConfig): Observable<string> {
