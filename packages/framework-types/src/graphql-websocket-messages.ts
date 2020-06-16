@@ -5,7 +5,7 @@ export enum MessageTypes {
   GQL_CONNECTION_INIT = 'connection_init',
   GQL_CONNECTION_ACK = 'connection_ack',
   GQL_CONNECTION_ERROR = 'connection_error',
-  GQL_CONNECTION_KEEP_ALIVE = 'ka',
+  // GQL_CONNECTION_KEEP_ALIVE = 'ka', // Not used on server side. Socket remains open until client decides to close it
   GQL_CONNECTION_TERMINATE = 'connection_terminate',
   GQL_START = 'start',
   GQL_DATA = 'data',
@@ -36,13 +36,7 @@ export interface GraphQLTerminate {
 
 // Server -> Client messages shapes
 // They are classes because they need to be built by the server (Booster)
-export type GraphQLServerMessage =
-  | GraphQLInitError
-  | GraphQLInitAck
-  | GraphQLKeepAlive
-  | GraphQLData
-  | GraphQLError
-  | GraphQLComplete
+export type GraphQLServerMessage = GraphQLInitError | GraphQLInitAck | GraphQLData | GraphQLError | GraphQLComplete
 
 export class GraphQLInitError {
   public readonly type = MessageTypes.GQL_CONNECTION_ERROR
@@ -51,12 +45,9 @@ export class GraphQLInitError {
 export class GraphQLInitAck {
   public readonly type = MessageTypes.GQL_CONNECTION_ACK
 }
-export class GraphQLKeepAlive {
-  public readonly type = MessageTypes.GQL_CONNECTION_KEEP_ALIVE
-}
 export class GraphQLData {
   public readonly type = MessageTypes.GQL_DATA
-  public constructor(public readonly id: string, public readonly payload?: ExecutionResult) {}
+  public constructor(public readonly id: string, public readonly payload: ExecutionResult) {}
 }
 export class GraphQLError {
   public readonly type = MessageTypes.GQL_ERROR
