@@ -5,7 +5,6 @@ import {
   CfnIntegration,
   CfnIntegrationResponse,
   CfnRoute,
-  CfnRouteResponse,
 } from '@aws-cdk/aws-apigatewayv2'
 import { Code, Function, IEventSource } from '@aws-cdk/aws-lambda'
 import * as params from '../params'
@@ -76,8 +75,7 @@ export class GraphQLStack {
     const websocketAuthorizer = this.buildWebsocketAuthorizer(authorizerLambda)
 
     this.buildRoute('$connect', lambdaIntegration, websocketAuthorizer)
-    const defaultRoute = this.buildRoute('$default', lambdaIntegration)
-    this.buildRouteResponse(defaultRoute)
+    this.buildRoute('$default', lambdaIntegration)
     this.buildRoute('$disconnect', lambdaIntegration)
   }
 
@@ -121,16 +119,6 @@ export class GraphQLStack {
     }
     route.addDependsOn(integration)
     return route
-  }
-
-  private buildRouteResponse(route: CfnRoute): void {
-    const localID = `route-${route.routeKey}-response`
-    const routeResponse = new CfnRouteResponse(this.stack, localID, {
-      apiId: this.apis.websocketAPI.ref,
-      routeId: route.ref,
-      routeResponseKey: '$default',
-    })
-    routeResponse.addDependsOn(route)
   }
 
   private buildWebsocketAuthorizer(lambda: Function): CfnAuthorizer {

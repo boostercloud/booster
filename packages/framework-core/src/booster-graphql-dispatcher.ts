@@ -4,7 +4,6 @@ import {
   InvalidParameterError,
   GraphQLRequestEnvelope,
   InvalidProtocolError,
-  GraphQLServerMessage,
   GraphQLOperation,
 } from '@boostercloud/framework-types'
 import { GraphQLSchema, DocumentNode, ExecutionResult, GraphQLError } from 'graphql'
@@ -16,7 +15,7 @@ import { GraphQLResolverContext, graphQLWebsocketSubprotocolHeaders } from './se
 import { NoopReadModelPubSub } from './services/pub-sub/noop-read-model-pub-sub'
 import { GraphQLWebsocketHandler } from './services/graphql/websocket-protocol/graphql-websocket-protocol'
 
-type DispatchResult = AsyncIterableIterator<ExecutionResult> | ExecutionResult | GraphQLServerMessage
+type DispatchResult = AsyncIterableIterator<ExecutionResult> | ExecutionResult | void
 
 export class BoosterGraphQLDispatcher {
   private readonly graphQLSchema: GraphQLSchema

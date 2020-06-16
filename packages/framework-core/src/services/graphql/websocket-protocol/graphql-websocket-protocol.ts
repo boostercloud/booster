@@ -7,10 +7,10 @@ import {
   GraphQLInitError,
   GraphQLServerMessage,
   GraphQLInitAck,
-  GraphQLKeepAlive,
   GraphQLData,
   GraphQLStart,
   GraphQLComplete,
+  GraphQLError,
 } from '@boostercloud/framework-types'
 
 export class GraphQLWebsocketHandler {
@@ -24,22 +24,26 @@ export class GraphQLWebsocketHandler {
     private readonly onTerminate: (envelope: GraphQLRequestEnvelope) => Promise<ExecutionResult>
   ) {}
 
-  public async handle(envelope: GraphQLRequestEnvelope): Promise<GraphQLServerMessage> {
+  public async handle(envelope: GraphQLRequestEnvelope): Promise<void> {
+    if (!envelope.connectionID) {
+      // Impossible case, but just to be sure. The only thing we can do here is to log, as we don't have the connection
+      // to send the message to
+      this.logger.error('Missing websocket connectionID')
+      return
+    }
+
     try {
       this.logger.debug('Handling websocket message')
       if (!envelope.value) {
         throw new Error('Received an empty GraphQL body')
       }
-      if (!envelope.connectionID) {
-        throw new Error('Missing websocket connectionID')
-      }
       const clientMessage = envelope.value as GraphQLClientMessage
       this.logger.debug('Received client message: ', clientMessage)
       switch (clientMessage.type) {
         case MessageTypes.GQL_CONNECTION_INIT:
-          return this.handleInit(envelope.connectionID)
+          return await this.handleInit(envelope.connectionID)
         case MessageTypes.GQL_START:
-          return this.handleStart(envelope.connectionID, envelope, clientMessage)
+          return await this.handleStart(envelope.connectionID, envelope, clientMessage)
         case MessageTypes.GQL_STOP:
           console.log(this.onUnsubscribe) // TODO
           break
@@ -48,32 +52,35 @@ export class GraphQLWebsocketHandler {
           break
         default:
           // This branch should be impossible, but just in case
-          return new GraphQLInitError(`Unknown message type. Message=${clientMessage}`)
+          throw new Error(`Unknown message type. Message=${clientMessage}`)
       }
     } catch (e) {
       this.logger.error(e)
-      return new GraphQLInitError(e.message)
+      await this.messageSender(envelope.connectionID, new GraphQLInitError(e.message))
     }
-    return undefined as any // TODO remove this when all switch cases are handled
   }
 
-  private async handleInit(connectionID: string): Promise<GraphQLServerMessage> {
+  private async handleInit(connectionID: string): Promise<void> {
     this.logger.debug('Sending ACK')
     await this.messageSender(connectionID, new GraphQLInitAck())
-    this.logger.debug('Sending KEEP_ALIVE')
-    return new GraphQLKeepAlive()
   }
 
   private async handleStart(
     connectionID: string,
     envelope: GraphQLRequestEnvelope,
     message: GraphQLStart
-  ): Promise<GraphQLServerMessage> {
+  ): Promise<void> {
     if (!message.id) {
       throw new Error(`Missing "id" in ${message.type} message`)
     }
     if (!message.payload || !message.payload.query) {
-      throw new Error('Message payload is invalid it must contain at least the "query" property')
+      await this.messageSender(
+        connectionID,
+        new GraphQLError(message.id, {
+          errors: [new Error('Message payload is invalid it must contain at least the "query" property')],
+        })
+      )
+      return
     }
     const unwrappedEnvelope: GraphQLRequestEnvelope = {
       ...envelope,
@@ -86,13 +93,14 @@ export class GraphQLWebsocketHandler {
     this.logger.debug('Executing operation. Envelope: ', unwrappedEnvelope)
     const result = await this.onOperation(unwrappedEnvelope)
 
-    this.logger.debug('Execution finished. Sending DATA:', result)
     if ('next' in result) {
-      // It was a subscription. We send data and nothing more
-      return new GraphQLData(message.id)
+      this.logger.debug('Subscription finished.')
+      return // It was a subscription. We don't need to send any data
     }
+
+    this.logger.debug('Query or mutation finished. Sending DATA:', result)
     // It was a query or mutation. We send data and complete the operation
     await this.messageSender(connectionID, new GraphQLData(message.id, result))
-    return new GraphQLComplete(message.id)
+    await this.messageSender(connectionID, new GraphQLComplete(message.id))
   }
 }
