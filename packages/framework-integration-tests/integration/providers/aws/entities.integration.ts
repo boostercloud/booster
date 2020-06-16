@@ -1,0 +1,78 @@
+import { countReadModelItems, graphQLClient, queryReadModels, waitForIt } from './utils'
+import { expect } from 'chai'
+import gql from 'graphql-tag'
+import { ApolloClient } from 'apollo-client'
+import { NormalizedCacheObject } from 'apollo-cache-inmemory'
+import { random } from 'faker'
+
+const CART_READ_MODEL_NAME = 'CartReadModel'
+
+describe('entities', async () => {
+  let client: ApolloClient<NormalizedCacheObject>
+
+  before(async () => {
+    client = await graphQLClient()
+  })
+
+  it('should be projected into a read model', async () => {
+    const readModelItemsCount = await countReadModelItems(CART_READ_MODEL_NAME)
+
+    const commandsPromises: Promise<any>[] = []
+
+    const mockCartId = random.uuid()
+    const mockProductId = random.uuid()
+    const mockQuantity = random.number({ min: 1 })
+    const mockPaymentId: string = random.uuid()
+    const mockConfirmationToken: string = random.alphaNumeric(10)
+
+    commandsPromises.push(
+      client.mutate({
+        variables: {
+          cartId: mockCartId,
+          productId: mockProductId,
+          quantity: mockQuantity,
+        },
+        mutation: gql`
+          mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+            ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+          }
+        `,
+      }),
+      client.mutate({
+        variables: {
+          paymentId: mockPaymentId,
+          cartId: mockCartId,
+          confirmationToken: mockConfirmationToken,
+        },
+        mutation: gql`
+          mutation ConfirmPayment($paymentId: ID!, $cartId: ID!, $confirmationToken: String) {
+            ConfirmPayment(input: { paymentId: $paymentId, cartId: $cartId, confirmationToken: $confirmationToken })
+          }
+        `,
+      })
+    )
+
+    const commandsPromisesResult = await Promise.all(commandsPromises)
+
+    expect(commandsPromisesResult[0]).not.to.be.null
+    expect(commandsPromisesResult[0].data?.ChangeCartItem).to.be.true
+    expect(commandsPromisesResult[1]).not.to.be.null
+    expect(commandsPromisesResult[1].data?.ConfirmPayment).to.be.true
+
+    const expectedReadModelItemsCount = readModelItemsCount + 1
+    await waitForIt(
+      () => countReadModelItems(CART_READ_MODEL_NAME),
+      (newReadModelItemsCount) => newReadModelItemsCount === expectedReadModelItemsCount
+    )
+
+    const latestReadModelItem = await queryReadModels(mockCartId, CART_READ_MODEL_NAME)
+    expect(latestReadModelItem).not.to.be.null
+    expect(latestReadModelItem[0].id).to.be.equal(mockCartId)
+    expect(latestReadModelItem[0].cartItems[0].productId).to.be.equal(mockProductId)
+    expect(latestReadModelItem[0].cartItems[0].quantity).to.be.equal(mockQuantity)
+    expect(latestReadModelItem[0].cartItems[0].shippingAddress).to.be.undefined
+    expect(latestReadModelItem[0].payment.id).to.be.equal(mockPaymentId)
+    expect(latestReadModelItem[0].payment.cartId).to.be.equal(mockCartId)
+    expect(latestReadModelItem[0].payment.confirmationToken).to.be.equal(mockConfirmationToken)
+  })
+})
