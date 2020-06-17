@@ -15,7 +15,7 @@ import * as path from 'path'
 import { templates } from '../../templates'
 
 export default class EventHandler extends Oclif.Command {
-  public static description = 'create a new event'
+  public static description = 'create a new event handler'
   public static flags = {
     help: Oclif.flags.help({ char: 'h' }),
     event: Oclif.flags.string({
