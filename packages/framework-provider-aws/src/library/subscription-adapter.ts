@@ -8,6 +8,7 @@ import {
 import { ApiGatewayManagementApi, DynamoDB } from 'aws-sdk'
 import {
   environmentVarNames,
+  subscriptionsStoreIndexSortKeyAttribute,
   subscriptionsStorePartitionKeyAttribute,
   subscriptionsStoreSortKeyAttribute,
   subscriptionsStoreTTLAttribute,
@@ -25,17 +26,23 @@ export async function subscribeToReadModel(
   if (
     !subscriptionEnvelope[subscriptionsStorePartitionKeyAttribute] ||
     !subscriptionEnvelope[subscriptionsStoreSortKeyAttribute] ||
-    !subscriptionEnvelope[subscriptionsStoreTTLAttribute]
+    !subscriptionEnvelope[subscriptionsStoreTTLAttribute] ||
+    !subscriptionEnvelope.operation.id
   ) {
     throw new Error(
       'Subscription envelope is missing any of the following required attributes: ' +
-        `"${subscriptionsStorePartitionKeyAttribute}", ${subscriptionsStoreSortKeyAttribute}", ${subscriptionsStoreTTLAttribute}"`
+        `"${subscriptionsStorePartitionKeyAttribute}", ${subscriptionsStoreSortKeyAttribute}", ${subscriptionsStoreTTLAttribute}", ` +
+        '"subscriptionEnvelope.operation.id"'
     )
   }
+
   await db
     .put({
       TableName: config.resourceNames.subscriptionsStore,
-      Item: subscriptionEnvelope,
+      Item: {
+        ...subscriptionEnvelope,
+        [subscriptionsStoreIndexSortKeyAttribute]: subscriptionEnvelope.operation.id,
+      },
     })
     .promise()
 }
