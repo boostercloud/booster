@@ -641,4 +641,86 @@ The are many other options for your serverless backend built with Booster Framew
 - Reading entities within command handlers to apply domain-driven decisions
 - and much more...
 
-Continue reading to dig more; you've just scratched the surface of all the Booster capabilities!
+Continue reading to dig more; you've just scratched the surface of all the Booster
+capabilities!
+
+## Booster architecture
+
+Two patterns influence the Booster's event-driven architecture: Command-Query Responsibility Segregation ([CQRS](https://www.martinfowler.com/bliki/CQRS.html)) and [Event Sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). They're complex techniques to implement from scratch with lower-level frameworks, but Booster makes them feel natural and very easy to use.
+
+![architecture][booster-arch-png]
+
+The public interface of a Booster application is just `Commands` and `ReadModels`. Booster proposes an entirely different approach to the Model-View-* and CRUD frameworks. With Booster, the clients submit commands, query the read models, or subscribe to them for receiving real-time updates thanks to the out of the box [GraphQL API][booster-graphql-api].
+
+Booster applications are event-driven and event-sourced so, **the source of truth is the whole history of events**. When a client submits a command, the `CommandHandler` _wakes up_ and executes its logic. Optionally, it can *register* as many `Events` as needed. The framework caches the current state by automatically *reducing* all the registered events into `Entities`. Interested parties can *react* to events via `EventHandlers`, and finally, the *projection* functions transform the entities into `ReadModels`.
+
+In this chapter you'll walk through these concepts and its details.
+
+[booster-graphql-api]:#graphql-api
+[booster-arch-png]:./img/booster-arch.png
+
+### Event handlers
+In event-driven architectures we have different parts of our application that react to events, one of them is the `@Entity`, in charge of reducing the event. But we also have event handlers, a class with the `@EventHandler` decorator. The event handlers also react to events, and are used when you want to trigger new events based on the original one.
+
+An event handler would look like this:
+
+```typescript
+@EventHandler(StockMoved)
+export class HandleAvailability {
+  public static async handle(event: StockMoved, register: Register): Promise<void> {
+    if (event.origin == 'provider') {
+      // New stock enters the system
+      register.events(new ProductAvailabilityChanged(event.productID, event.quantity))
+    } else if (event.destination == 'customer') {
+      // Stock goes to the customer
+      register.events(new ProductAvailabilityChanged(event.productID, -event.quantity))
+    }
+    // In terms of availability, it doesn't matter in which warehouse the stock is as soon as there's stock
+  }
+}
+```
+
+#### Naming convention
+Event handler name should normally start by `Handle`, followed by what the event will be affecting to. In the above example we can see that based on a stock move, we want to handle the availability of a product. In this case, the event handler is named `HandleAvailability`.
+
+#### Creating an event handler
+Event handlers can be easily created using the Booster CLI. There are two compulsory arguments that will need to be provided following the `boost new:event-handler` command, the first one will be the event handler name, and the other will be the event that we will be reacting to. For instance:
+
+`boost new:event-handler HandleAvailability -e StockMoved`
+
+The flag `-e` can be replaced by `--event`.
+
+Once the creation is completed, there will be a new file in the event handlers directory `project-root/src/event-handlers/HandleAvailability.ts`.
+
+```text
+project-root
+├── src
+│   ├── commands
+│   ├── common
+│   ├── config
+│   ├── entities
+│   ├── events
+│   ├── event-handlers <------ They must be here
+│   ├── index.ts
+│   └── read-models
+```
+
+#### Registering events from an event handler
+By default, your newly created event handler will not trigger any event. However, we have a `register` available that will help us doing so. In the above example you could see that there is some logic based on the event information.
+
+The `register` through its `event` function allows triggering several events, you can specify as many as you need separated by comma as arguments of the function.
+
+An example can be found below:
+
+`register.events(new ProductAvailabilityChanged(event.productID, -event.quantity))`
+
+#### Reading entities from event handlers
+Event handlers are also a good place to retrieve entity information before triggering new events.
+
+Let's say that we want to check the status of a product before we trigger its availability update. In that case we would call the `Booster core` `fetchEntitySnapshot` function, which will return information about the entity.
+```typescript
+public static async handle(event: StockMoved, register: Register): Promise<void> {
+  await Booster.fetchEntitySnapshot(Product, event.productID)
+  ...
+}
+```
