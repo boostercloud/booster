@@ -641,4 +641,20 @@ The are many other options for your serverless backend built with Booster Framew
 - Reading entities within command handlers to apply domain-driven decisions
 - and much more...
 
-Continue reading to dig more; you've just scratched the surface of all the Booster capabilities!
+Continue reading to dig more; you've just scratched the surface of all the Booster
+capabilities!
+
+## Booster architecture
+
+Two patterns influence the Booster's event-driven architecture: Command-Query Responsibility Segregation ([CQRS](https://www.martinfowler.com/bliki/CQRS.html)) and [Event Sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). They're complex techniques to implement from scratch with lower-level frameworks, but Booster makes them feel natural and very easy to use.
+
+![architecture][booster-arch-png]
+
+The public interface of a Booster application is just `Commands` and `ReadModels`. Booster proposes an entirely different approach to the Model-View-* and CRUD frameworks. With Booster, the clients submit commands, query the read models, or subscribe to them for receiving real-time updates thanks to the out of the box [GraphQL API][booster-graphql-api].
+
+Booster applications are event-driven and event-sourced so, **the source of truth is the whole history of events**. When a client submits a command, the `CommandHandler` _wakes up_ and executes its logic. Optionally, it can *register* as many `Events` as needed. The framework caches the current state by automatically *reducing* all the registered events into `Entities`. Interested parties can *react* to events via `EventHandlers`, and finally, the *projection* functions transform the entities into `ReadModels`.
+
+In this chapter you'll walk through these concepts and its details.
+
+[booster-graphql-api]:#graphql-api
+[booster-arch-png]:./img/booster-arch.png
