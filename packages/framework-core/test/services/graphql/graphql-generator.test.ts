@@ -62,13 +62,7 @@ describe('GraphQL generator', () => {
     })
 
     it('should return a GraphQL schema', () => {
-      const result = sut.generateSchema()
-
-
+      // TODO
     })
-  })
-
-  describe('readModelResolverBuilder', () => {
-    
   })
 })
