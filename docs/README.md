@@ -684,9 +684,9 @@ export class HandleAvailability {
 Event handler name should normally start by `Handle`, followed by what the action that the event will do or have an impact on. In the above example we can see that based on a stock move, we want to handle the availability of a product. In this case, the event handler is named `HandleAvailability`.
 
 Other examples could be:
-- HandlePayment, reacting to PaymentProcessed event
-- HandleNewProduct, reacting to ProductCreated event
-- HandleUserPermissions, reacting to UserRoleUpdated event
+- **HandlePayment**, reacting to PaymentProcessed event
+- **HandleNewProduct**, reacting to ProductCreated event
+- **HandleUserPermissions**, reacting to UserRoleUpdated event
 
 #### Creating an event handler
 Event handlers can be easily created using the Booster CLI. There are two compulsory arguments that will need to be provided following the `boost new:event-handler` command, the first one will be the event handler name, and the other will be the event that we will be reacting to. For instance:
