@@ -17,7 +17,20 @@ describe('the `BoosterGraphQLDispatcher`', () => {
     restore()
   })
 
-  describe('the `dispatchGraphQL` method', () => {
+  describe('the `dispatch` method', () => {
+    it('on CONNECT message, it calls the provider "handleGraphQLResult" with the GraphQL websocket subprotocol headers', async () => {
+      const config = mockConfigForGraphQLEnvelope({
+        requestID: '123',
+        eventType: 'CONNECT',
+      })
+      const dispatcher = new BoosterGraphQLDispatcher(config, logger)
+      await dispatcher.dispatch({})
+
+      expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly(null, {
+        'Sec-WebSocket-Protocol': 'graphql-ws',
+      })
+    })
+
     it('calls the provider "handleGraphQLResult" with an error when there is an empty body', async () => {
       const config = mockConfigForGraphQLEnvelope({
         requestID: '123',
