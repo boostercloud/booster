@@ -721,7 +721,7 @@ Event handlers are also a good place to retrieve entity information before trigg
 Let's say that we want to check the status of a product before we trigger its availability update. In that case we would call the `Booster core` `fetchEntitySnapshot` function, which will return information about the entity.
 ```typescript
 public static async handle(event: StockMoved, register: Register): Promise<void> {
-  await Booster.fetchEntitySnapshot(Product, event.productID)
+  const productSnapshot = await Booster.fetchEntitySnapshot(Product, event.productID)
   ...
 }
 ```
