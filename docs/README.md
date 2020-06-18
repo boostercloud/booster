@@ -657,9 +657,37 @@ Booster applications are event-driven and event-sourced so, **the source of trut
 In this chapter you'll walk through these concepts and its details.
 
 [booster-graphql-api]:#graphql-api
-[booster-arch-png]:./img/booster-arch.png
+[booster-arch-png**:./img/booster-arch.png
 
-### Event handlers
+### 1. Command and command handlers
+
+#### Commands naming convention
+
+#### Creating a command
+
+#### The command handler function
+
+##### Validating data
+
+##### Reading entities
+
+##### Registering events
+
+#### Authorizing a command
+
+#### Submitting a command
+
+### 2. Events
+
+#### Events naming convention
+
+#### Creating events
+
+#### The event store
+
+#### Events ordering
+
+### 3. Event handlers
 In event-driven architectures we have different parts of our application that react to events, one of them is the `@Entity`, in charge of reducing the event. But we also have event handlers, a class with the `@EventHandler` decorator. The event handlers also react to events, and are used when you want to trigger new events based on the original one.
 
 An event handler would look like this:
@@ -725,3 +753,30 @@ public static async handle(event: StockMoved, register: Register): Promise<void>
   ...
 }
 ```
+
+### 4. Entities and reducers
+
+#### Entities naming convention
+
+#### Creating entities
+
+#### The reducer function
+
+#### Aggregate data using entities
+
+#### Eventual consistency
+
+### 5. Read models and projections
+
+#### Read models naming convention
+
+#### Creating a read model
+
+#### The projection function
+
+#### Authorizing read models
+
+#### Querying a read model
+
+#### Getting real-time updates for a read model
+
