@@ -703,7 +703,7 @@ project-root
 ```
 
 #### Registering events from an event handler
-By default, your newly created event handler will not trigger any event. However, we have a `register` available that will help us doing so. In the above example you could see that there is some logic based on the event information.
+By default, your newly created event handler will not trigger any event. However, Booster injects in our handler a `register` instance that we can use to do so. In the above example, you could see that there is some logic based on the event information.
 
 The `register` through its `event` function allows triggering several events, you can specify as many as you need separated by comma as arguments of the function.
 
