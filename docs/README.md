@@ -658,9 +658,67 @@ In this chapter you'll walk through these concepts and its details.
 
 ### 1. Command and command handlers
 
+Booster is different than MVC frameworks in which you typically implement controller classes with the five CRUD methods per model. Instead of that, you define the user actions when interacting with an application, this approach fits very well with Domain-Driven Design. Depending on your application's domain, some examples of commands would be: `RemoveItemFromCart`, `RatePhoto`, `AddCommentToPost`, etc. Although, you can still have `Create*`, `Delete*`, or `Update*` commands when they make sense.
+
+There is an splitting between commands and command handlers though they *live* under the same file. The command is the class with the `@Command` decorator, and the generated handle function is the command handler. That is because Booster adopts several concepts from functional programming, the separation between data structures and data transformations is one of them. In Booster a command looks like this:
+
+```typescript
+@Command({
+  authorize: 'all' | Array<RoleClass>
+})
+export class CommandName {
+  public constructor(readonly fieldA: SomeType, 
+                     readonly fieldB: SomeOtherType,
+                     /* as many fields as needed */) {}
+
+  public async handle(register: Register): Promise<void> {
+    // Validate inputs
+    // Run domain logic
+    // register.events([event1,...])
+  }
+}
+```
+
+Every time you submit a command through the GraphQL API, Booster calls the command handler function for the given command. The Commands are part of the public API so that you can define authorization policies for them. They are also the place for validating input data before registering events into the event store, once there, the events are immutable.
+
 #### Commands naming convention
 
+The semantic is very important in Booster as it will play an essential role in designing a coherent system. Your application should reflect your domain concepts and commands are not an exception. Although you can name commands whatever you want, we strongly recommend you to name them starting with verbs in imperative and then describe the object being affected. If we were designing an e-commerce application, some commands would be:
+
+- CreateProduct
+- DeleteProduct
+- UpdateProduct
+- ChangeCartItems
+- ConfirmPayment
+- MoveStock
+- UpdateCartShippingAddress
+
+Additionally, commands must be placed within the commands directory of the project source: `project-root/src/commands`.
+
+```text
+project-root
+├── src
+│   ├── commands <------ They must be here
+│   ├── common
+│   ├── config
+│   ├── entities
+│   ├── events
+│   ├── index.ts
+│   └── read-models
+```
+
 #### Creating a command
+
+The preferred way to create a command is by using the generator, e.g.
+
+```shell
+boost new:command CreateProduct --fields sku:SKU displayName:string description:string price:Money
+```
+
+The generator will create a file called `CreateProduct.ts` with a TypeScript class of the same name under the commands directory automatically. You can still create the command manually since the generator is not doing any *magic*, all you need is a class decorated as `@Command`. Anyway, we recommend you to use the generator as much as you can since it handles the boilerplate code for you.
+
+Note:
+> Running the command generator with a `CommandName` already existing, will override the content of the current one. Soon, we will display a warning before overwriting anything. Meantime, if you missed a field, just add it to the class because in booster, all the infrastructure and data structures are inferred from your code.
 
 #### The command handler function
 
@@ -673,6 +731,45 @@ In this chapter you'll walk through these concepts and its details.
 #### Authorizing a command
 
 #### Submitting a command
+
+Booster commands are accessible to the outside world as GraphQL mutations. GrahpQL fits very well with the Booster's CQRS approach because there are two kind of operations: Mutations and Queries. Mutations are actions that modifies the server-side data, and so are commands.
+
+Booster automatically creates one mutation per every command. It infers the mutation input type from the command fields, e.g., given this `CreateProduct` command:
+
+```typescript
+@Command({
+  authorize: 'all',
+})
+export class CreateProduct {
+  public constructor(
+    readonly sku: Sku,
+    readonly displayName: string,
+    readonly description: string,
+    readonly price: number
+  ) {}
+
+  public async handle(register: Register): Promise<void> {
+    register.events(/* YOUR EVENT HERE */)
+  }
+}
+```
+
+Booster generates this GraphQL mutation:
+
+```text
+mutation CreateProduct($input: CreateProductInput!): Boolean
+```
+
+where `CreateProductInput` is 
+
+```text
+{
+  sku: String
+  displayName: String
+  description: String
+  price: Float
+}
+```
 
 ### 2. Events
 
