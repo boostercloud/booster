@@ -1,6 +1,6 @@
 import { Command } from '@boostercloud/framework-core'
 import { Register, UUID } from '@boostercloud/framework-types'
-import { ProductDeleted } from '../events/product-deleted'
+import { ProductDeleted } from '../events/ProductDeleted'
 import { Admin } from '../roles'
 
 @Command({

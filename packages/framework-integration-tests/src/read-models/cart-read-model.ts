@@ -2,8 +2,8 @@ import { ReadModel, Projects } from '@boostercloud/framework-core'
 import { UUID } from '@boostercloud/framework-types'
 import { CartItem } from '../common/cart-item'
 import { Address } from '../common/address'
-import { Cart } from '../entities/cart'
-import { Payment } from '../entities/payment'
+import { Cart } from '../entities/Cart'
+import { Payment } from '../entities/Payment'
 
 @ReadModel({
   authorize: 'all',
