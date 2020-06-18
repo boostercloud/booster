@@ -683,7 +683,9 @@ export class HandleAvailability {
 #### Creating an event handler
 Event handlers can be easily created using the Booster CLI. There are two compulsory arguments that will need to be provided following the `boost new:event-handler` command, the first one will be the event handler name, and the other will be the name of the event that it will react to. For instance:
 
-`boost new:event-handler HandleAvailability -e StockMoved`
+```typescript
+boost new:event-handler HandleAvailability -e StockMoved
+```
 
 The flag `-e` can be replaced by `--event`.
 
@@ -709,7 +711,9 @@ The `events` method of the `register` allows triggering several events, you can 
 
 An example can be found below:
 
-`register.events(new ProductAvailabilityChanged(event.productID, -event.quantity))`
+```typescript
+register.events(new ProductAvailabilityChanged(event.productID, -event.quantity))
+```
 
 #### Reading entities from event handlers
 Event handlers are also a good place to retrieve entity information before triggering new events.
