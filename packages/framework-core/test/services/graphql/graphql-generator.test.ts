@@ -1,4 +1,4 @@
-import { SinonStubbedInstance, replace, fake, SinonSpy, restore } from 'sinon'
+import { SinonStubbedInstance, replace, restore, SinonStub, stub } from 'sinon'
 import { BoosterCommandDispatcher } from '../../../src/booster-command-dispatcher'
 import sinon = require('sinon')
 import { BoosterReadModelDispatcher } from '../../../src/booster-read-model-dispatcher'
@@ -8,6 +8,7 @@ import { expect } from '../../expect'
 import { GraphQLQueryGenerator } from '../../../src/services/graphql/graphql-query-generator'
 import { GraphQLMutationGenerator } from '../../../src/services/graphql/graphql-mutation-generator'
 import { GraphQLSubscriptionGenerator } from '../../../src/services/graphql/graphql-subcriptions-generator'
+import { random } from 'faker'
 
 describe('GraphQL generator', () => {
   let configStub: SinonStubbedInstance<BoosterConfig>
@@ -29,14 +30,21 @@ describe('GraphQL generator', () => {
   })
 
   describe('generateSchema', () => {
-    let fakeQueryGenerator: SinonSpy
-    let fakeMutationGenerator: SinonSpy
-    let fakeSubscriptionGenerator: SinonSpy
+    let mockQueryTypeName: string
+    let mockMutationTypeName: string
+    let mockSubscriptionTypeName: string
+
+    let fakeQueryGenerator: SinonStub
+    let fakeMutationGenerator: SinonStub
+    let fakeSubscriptionGenerator: SinonStub
 
     beforeEach(() => {
-      fakeQueryGenerator = fake()
-      fakeMutationGenerator = fake()
-      fakeSubscriptionGenerator = fake()
+      mockQueryTypeName = random.alphaNumeric(10)
+      mockMutationTypeName = random.alphaNumeric(10)
+      mockSubscriptionTypeName = random.alphaNumeric(10)
+      fakeQueryGenerator = stub().returns({ name: mockQueryTypeName })
+      fakeMutationGenerator = stub().returns({ name: mockMutationTypeName })
+      fakeSubscriptionGenerator = stub().returns({ name: mockSubscriptionTypeName  })
 
       replace(GraphQLQueryGenerator.prototype, 'generate', fakeQueryGenerator)
       replace(GraphQLMutationGenerator.prototype, 'generate', fakeMutationGenerator)
@@ -62,7 +70,20 @@ describe('GraphQL generator', () => {
     })
 
     it('should return a GraphQL schema', () => {
-      // TODO
+      const result = sut.generateSchema()
+
+      const expectedTypes = {
+        _queryType: {
+          name: mockQueryTypeName,
+        },
+        _mutationType: {
+          name: mockMutationTypeName,
+        },
+        _subscriptionType: {
+          name: mockSubscriptionTypeName,
+        },
+      }
+      expect(result).to.deep.contain(expectedTypes)
     })
   })
 })
