@@ -681,7 +681,7 @@ export class HandleAvailability {
 ```
 
 #### Creating an event handler
-Event handlers can be easily created using the Booster CLI. There are two compulsory arguments that will need to be provided following the `boost new:event-handler` command, the first one will be the event handler name, and the other will be the event that we will be reacting to. For instance:
+Event handlers can be easily created using the Booster CLI. There are two compulsory arguments that will need to be provided following the `boost new:event-handler` command, the first one will be the event handler name, and the other will be the name of the event that it will react to. For instance:
 
 `boost new:event-handler HandleAvailability -e StockMoved`
 
