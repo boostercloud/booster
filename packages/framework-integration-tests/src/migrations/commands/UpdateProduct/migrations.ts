@@ -1,6 +1,6 @@
 import { UpdateProductV1, UpdateProductV2 } from './schema-versions'
 import { Migrates, ToVersion } from '@boostercloud/framework-core'
-import { UpdateProduct } from '../../../commands/update-product'
+import { UpdateProduct } from '../../../commands/UpdateProduct'
 
 @Migrates(UpdateProduct)
 export class UpdateProductMigration {

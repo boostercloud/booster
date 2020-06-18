@@ -1,6 +1,6 @@
-import { StockMoved } from '../events/stock-moved'
+import { StockMoved } from '../events/StockMoved'
 import { Register } from '@boostercloud/framework-types'
-import { ProductAvailabilityChanged } from '../events/product-availability-changed'
+import { ProductAvailabilityChanged } from '../events/ProductAvailabilityChanged'
 import { EventHandler } from '@boostercloud/framework-core'
 
 @EventHandler(StockMoved)

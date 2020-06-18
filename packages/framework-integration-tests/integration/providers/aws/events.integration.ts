@@ -54,7 +54,7 @@ describe('events', async () => {
     expect(latestEvent[0].value.quantity).to.be.equal(mockQuantity)
     expect(latestEvent[0].kind).to.be.equal('event')
     expect(latestEvent[0].entityTypeName).to.be.equal('Cart')
-    expect(latestEvent[0].typeName).to.be.equal('ChangedCartItem')
+    expect(latestEvent[0].typeName).to.be.equal('CartItemChanged')
   })
 
   it('should generate a snapshot after 5 events with the same entity id', async () => {

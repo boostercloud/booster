@@ -2,6 +2,10 @@ export interface HasName {
   name: string
 }
 
+export interface HasEvent {
+  event: string
+}
+
 export interface HasFields {
   fields: Array<Field>
 }

@@ -10,7 +10,7 @@ import { UUID } from './uuid'
  * ```typescript
  *  public handle(register: Register): void {
  *    //...
- *    register.events(new ChangedCartItem(cart, this.sku, this.quantity))
+ *    register.events(new CartItemChanged(cart, this.sku, this.quantity))
  *    if (this.hasPromotion()) {
  *      if (this.isEmpty()) {
  *        throw new Error("Added a promotion to an empty cart")
