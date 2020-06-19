@@ -792,15 +792,15 @@ There could be situations in which you want to register an event representing an
 
 ##### Reading entities
 
-How to do it, why this is useful and an example
+TODO: How to do it, why this is useful and an example
 
 ##### Registering events
 
-How to do it, what the impact is and an example
+TODO: How to do it, what the impact is and an example
 
 #### Authorizing a command
 
-How  a command without going deeper with the roles creation. Roles creation is documented in the features section
+TODO: How to authorize a command without going more in-depth with the role's creation. Roles creation will be in the features section, within AIM - Authentication and Authorization
 
 #### Submitting a command
 
