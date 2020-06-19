@@ -658,9 +658,9 @@ In this chapter you'll walk through these concepts and its details.
 
 ### 1. Command and command handlers
 
-Booster is different than MVC frameworks in which you typically implement controller classes with the five CRUD methods per model. Instead of that, you define the user actions when interacting with an application, this approach fits very well with Domain-Driven Design. Depending on your application's domain, some examples of commands would be: `RemoveItemFromCart`, `RatePhoto`, `AddCommentToPost`, etc. Although, you can still have `Create*`, `Delete*`, or `Update*` commands when they make sense.
+Booster is different than MVC frameworks in which you typically implement controller classes with the five CRUD methods per model. Instead of that, you define the user actions when interacting with an application. This approach fits very well with Domain-Driven Design. Depending on your application's domain, some examples of commands would be: `RemoveItemFromCart`, `RatePhoto`, `AddCommentToPost`, etc. Although, you can still have `Create*`, `Delete*`, or `Update*` commands when they make sense.
 
-There is an splitting between commands and command handlers though they *live* under the same file. The command is the class with the `@Command` decorator, and the generated handle function is the command handler. That is because Booster adopts several concepts from functional programming, the separation between data structures and data transformations is one of them. In Booster a command looks like this:
+There is an architectural splitting between commands and command handlers though they *live* under the same file. The command is the class with the `@Command` decorator, and the generated method called `handle` is the command handler. That is because Booster adopts several concepts from functional programming; the separation between data structures and data transformations is one of them. In Booster a command looks like this:
 
 ```typescript
 @Command({
@@ -679,11 +679,11 @@ export class CommandName {
 }
 ```
 
-Every time you submit a command through the GraphQL API, Booster calls the command handler function for the given command. The Commands are part of the public API so that you can define authorization policies for them. They are also the place for validating input data before registering events into the event store, once there, the events are immutable.
+Every time you submit a command through the GraphQL API, Booster calls the command handler function for the given command. The Commands are part of the public API so that you can define authorization policies for them. They are also the place for validating input data before registering events into the event store because they are immutable once there.
 
 #### Commands naming convention
 
-The semantic is very important in Booster as it will play an essential role in designing a coherent system. Your application should reflect your domain concepts and commands are not an exception. Although you can name commands whatever you want, we strongly recommend you to name them starting with verbs in imperative and then describe the object being affected. If we were designing an e-commerce application, some commands would be:
+Semantic is very important in Booster as it will play an essential role in designing a coherent system. Your application should reflect your domain concepts, and commands are not an exception. Although you can name commands whatever you want, we strongly recommend you to name them starting with verbs in imperative plus the object being affected. If we were designing an e-commerce application, some commands would be:
 
 - CreateProduct
 - DeleteProduct
@@ -693,7 +693,7 @@ The semantic is very important in Booster as it will play an essential role in d
 - MoveStock
 - UpdateCartShippingAddress
 
-Additionally, commands must be placed within the commands directory of the project source: `project-root/src/commands`.
+Additionally, commands must be within the commands directory of the project source: `project-root/src/commands`.
 
 ```text
 project-root
@@ -715,18 +715,18 @@ The preferred way to create a command is by using the generator, e.g.
 boost new:command CreateProduct --fields sku:SKU displayName:string description:string price:Money
 ```
 
-The generator will create a file called `CreateProduct.ts` with a TypeScript class of the same name under the commands directory automatically. You can still create the command manually since the generator is not doing any *magic*, all you need is a class decorated as `@Command`. Anyway, we recommend you to use the generator as much as you can since it handles the boilerplate code for you.
+The generator will automatically create a file called `CreateProduct.ts` with a TypeScript class of the same name under the commands directory. You can still create the command manually. Since the generator is not doing any *magic*, all you need is a class decorated as `@Command`. Anyway, we recommend you to use the generator as much as you can because it handles the boilerplate code for you.
 
 Note:
-> Running the command generator with a `CommandName` already existing, will override the content of the current one. Soon, we will display a warning before overwriting anything. Meantime, if you missed a field, just add it to the class because in booster, all the infrastructure and data structures are inferred from your code.
+> Running the command generator with a `CommandName` already existing, will override the content of the current one. Soon, we will display a warning before overwriting anything. Meantime, if you missed a field, just add it to the class because in Booster, all the infrastructure and data structures are inferred from your code.
 
 #### The command handler function
 
-Booster generates the command handler function as a method of the command class. That function is called by the framework up every time its command is submitted. This function is the place to run validations, return errors, query entities to make decisions and register relevant domain events.
+Booster generates the command handler function as a method of the command class. That function is called by the framework every time its command is submitted. It is the place to run validations, return errors, query entities to make decisions, and register relevant domain events.
 
 ##### Validating data
 
-Booster uses the typed nature of GraphQL for ensuring that types are correct before reaching the handler, so you don't have to validate types. There are still business rules to be checked before proceeding with a command, for example, a given number must be between a threshold or a string must match a regular expression. In that case it is enough to just throw an error in the handler and the Booster will use the error's message in the response, e.g.
+Booster uses the typed nature of GraphQL for ensuring that types are correct before reaching the handler, so you don't have to validate types. There are still business rules to be checked before proceeding with a command. For example, a given number must be between a threshold or a string must match a regular expression. In that case, it is enough just to throw an error in the handler, and then Booster will use the error's message as the response to make it descriptive, e.g.
 
 Given this command:
 
@@ -767,7 +767,7 @@ mutation($input: CreateProductInput!) {
 }
 ```
 
-You'll get this response
+You'll get this response:
 
 ```grapqhl
 {
@@ -788,7 +788,7 @@ You'll get this response
 }
 ```
 
-There could be situations in which you actually want to register an event representing an error. (Example here, I've seen the example of the error event in the integration tests but I'm not 100% it works here. I'm thinking in an stock error related to an item that should not be there initially)
+There could be situations in which you want to register an event representing an error. (TODO: Example here, I've seen the example of the error event in the integration tests, but I'm not 100% it works here. I'm thinking in a stock error related to an item that should not be there initially)
 
 ##### Reading entities
 
