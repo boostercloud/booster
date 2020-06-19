@@ -200,14 +200,16 @@ describe('GraphQL generator', () => {
     })
 
     describe('commandResolverBuilder', () => {
-      let mockInput: string
+      let mockInput: any
 
       let dispatchCommandStub: SinonStub
 
       let returnedFunction: Function
 
       beforeEach(() => {
-        mockInput = random.alphaNumeric(10)
+        mockInput = {
+          testObjectKey: random.alphaNumeric(10),
+        }
 
         dispatchCommandStub = stub()
 
