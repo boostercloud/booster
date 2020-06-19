@@ -119,9 +119,9 @@ describe('Cart end-to-end tests', () => {
                   .catch((error) => reject(error))
               })
             )
-
-            await Promise.all(changeCartPromises)
           }
+
+          await Promise.all(changeCartPromises)
         })
 
         it('should retrieve expected cart', async () => {
