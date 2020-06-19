@@ -19,7 +19,7 @@ type DispatchResult = AsyncIterableIterator<ExecutionResult> | ExecutionResult |
 
 export class BoosterGraphQLDispatcher {
   private readonly graphQLSchema: GraphQLSchema
-  private readonly graphQLWebsocketHandler: GraphQLWebsocketHandler
+  private readonly websocketHandler: GraphQLWebsocketHandler
 
   public constructor(private config: BoosterConfig, private logger: Logger) {
     this.graphQLSchema = new GraphQLGenerator(
@@ -27,12 +27,15 @@ export class BoosterGraphQLDispatcher {
       new BoosterCommandDispatcher(config, logger),
       new BoosterReadModelDispatcher(config, logger)
     ).generateSchema()
-    this.graphQLWebsocketHandler = new GraphQLWebsocketHandler(
+
+    this.websocketHandler = new GraphQLWebsocketHandler(
       logger,
       this.config.provider.readModels.notifySubscription.bind(null, this.config),
-      this.runGraphQLOperation.bind(this),
-      undefined as any,
-      undefined as any
+      {
+        onStartOperation: this.runGraphQLOperation.bind(this),
+        onStopOperation: undefined as any,
+        onTerminateOperations: undefined as any,
+      }
     )
   }
 
@@ -59,7 +62,7 @@ export class BoosterGraphQLDispatcher {
   private async handleMessage(envelope: GraphQLRequestEnvelope): Promise<DispatchResult> {
     this.logger.debug('Starting GraphQL operation')
     if (cameThroughSocket(envelope)) {
-      return this.graphQLWebsocketHandler.handle(envelope)
+      return this.websocketHandler.handle(envelope)
     } else {
       return this.runGraphQLOperation(envelope)
     }

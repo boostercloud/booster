@@ -13,15 +13,19 @@ import {
   GraphQLError,
 } from '@boostercloud/framework-types'
 
+export interface GraphQLWebsocketHandlerCallbacks {
+  onStartOperation: (
+    envelope: GraphQLRequestEnvelope
+  ) => Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult>
+  onStopOperation: (envelope: GraphQLRequestEnvelope) => Promise<ExecutionResult>
+  onTerminateOperations: (envelope: GraphQLRequestEnvelope) => Promise<ExecutionResult>
+}
+
 export class GraphQLWebsocketHandler {
   public constructor(
     private readonly logger: Logger,
-    private readonly messageSender: (connectionID: string, data: GraphQLServerMessage) => Promise<void>,
-    private readonly onOperation: (
-      envelope: GraphQLRequestEnvelope
-    ) => Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult>,
-    private readonly onUnsubscribe: (envelope: GraphQLRequestEnvelope) => Promise<ExecutionResult>,
-    private readonly onTerminate: (envelope: GraphQLRequestEnvelope) => Promise<ExecutionResult>
+    private readonly sendToConnection: (connectionID: string, data: GraphQLServerMessage) => Promise<void>,
+    private readonly callbacks: GraphQLWebsocketHandlerCallbacks
   ) {}
 
   public async handle(envelope: GraphQLRequestEnvelope): Promise<void> {
@@ -45,10 +49,10 @@ export class GraphQLWebsocketHandler {
         case MessageTypes.GQL_START:
           return await this.handleStart(envelope.connectionID, envelope, clientMessage)
         case MessageTypes.GQL_STOP:
-          console.log(this.onUnsubscribe) // TODO
+          console.log(this.callbacks.onStopOperation) // TODO
           break
         case MessageTypes.GQL_CONNECTION_TERMINATE:
-          console.log(this.onTerminate) // TODO
+          console.log(this.callbacks.onTerminateOperations) // TODO
           break
         default:
           // This branch should be impossible, but just in case
@@ -56,13 +60,13 @@ export class GraphQLWebsocketHandler {
       }
     } catch (e) {
       this.logger.error(e)
-      await this.messageSender(envelope.connectionID, new GraphQLInitError(e.message))
+      await this.sendToConnection(envelope.connectionID, new GraphQLInitError(e.message))
     }
   }
 
   private async handleInit(connectionID: string): Promise<void> {
     this.logger.debug('Sending ACK')
-    await this.messageSender(connectionID, new GraphQLInitAck())
+    await this.sendToConnection(connectionID, new GraphQLInitAck())
   }
 
   private async handleStart(
@@ -74,7 +78,7 @@ export class GraphQLWebsocketHandler {
       throw new Error(`Missing "id" in ${message.type} message`)
     }
     if (!message.payload || !message.payload.query) {
-      await this.messageSender(
+      await this.sendToConnection(
         connectionID,
         new GraphQLError(message.id, {
           errors: [new Error('Message payload is invalid it must contain at least the "query" property')],
@@ -91,7 +95,7 @@ export class GraphQLWebsocketHandler {
     }
 
     this.logger.debug('Executing operation. Envelope: ', unwrappedEnvelope)
-    const result = await this.onOperation(unwrappedEnvelope)
+    const result = await this.callbacks.onStartOperation(unwrappedEnvelope)
 
     if ('next' in result) {
       this.logger.debug('Subscription finished.')
@@ -100,7 +104,7 @@ export class GraphQLWebsocketHandler {
 
     this.logger.debug('Operation finished. Sending DATA:', result)
     // It was a query or mutation. We send data and complete the operation
-    await this.messageSender(connectionID, new GraphQLData(message.id, result))
-    await this.messageSender(connectionID, new GraphQLComplete(message.id))
+    await this.sendToConnection(connectionID, new GraphQLData(message.id, result))
+    await this.sendToConnection(connectionID, new GraphQLComplete(message.id))
   }
 }
