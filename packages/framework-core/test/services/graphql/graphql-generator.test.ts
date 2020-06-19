@@ -3,7 +3,7 @@ import { BoosterCommandDispatcher } from '../../../src/booster-command-dispatche
 import sinon = require('sinon')
 import { BoosterReadModelDispatcher } from '../../../src/booster-read-model-dispatcher'
 import { GraphQLGenerator } from '../../../src/services/graphql/graphql-generator'
-import { BoosterConfig } from '@boostercloud/framework-types/dist'
+import { BoosterConfig, ReadModelInterface } from '@boostercloud/framework-types/dist'
 import { expect } from '../../expect'
 import { GraphQLQueryGenerator } from '../../../src/services/graphql/graphql-query-generator'
 import { GraphQLMutationGenerator } from '../../../src/services/graphql/graphql-mutation-generator'
@@ -155,19 +155,24 @@ describe('GraphQL generator', () => {
     })
 
     describe('readModelByIDResolverBuilder', () => {
-      let mockResolverBuilderResult0: string
-      let mockResolverBuilderResult1: string
+      let mockReadModels: Array<ReadModelInterface>
 
       let readModelResolverBuilderStub: SinonStub
 
       let returnedFunction: Function
 
       beforeEach(() => {
-        mockResolverBuilderResult0 = random.alphaNumeric(10)
-        mockResolverBuilderResult1 = random.alphaNumeric(10)
+        mockReadModels = []
+
+        for (let i = 0; i < random.number({ min: 1, max: 10 }); i++) {
+          mockReadModels.push({
+            id: random.uuid(),
+            testKey: random.number(),
+          })
+        }
 
         readModelResolverBuilderStub = stub().returns(() => {
-          return [mockResolverBuilderResult0, mockResolverBuilderResult1]
+          return mockReadModels
         })
         replace(sut, 'readModelResolverBuilder', readModelResolverBuilderStub)
 
@@ -183,7 +188,7 @@ describe('GraphQL generator', () => {
       it('should return expected result', async () => {
         const result = await returnedFunction('', {}, mockResolverContext, mockResolverInfo)
 
-        expect(result).to.be.equal(mockResolverBuilderResult0)
+        expect(result).to.be.equal(mockReadModels[0])
       })
     })
 
