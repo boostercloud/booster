@@ -104,9 +104,9 @@ export class BoosterGraphQLDispatcher {
       switch (operationData.operation) {
         case 'query':
         case 'mutation':
-          return this.handleQueryOrMutation(queryDocument, resolverContext)
+          return await this.handleQueryOrMutation(queryDocument, resolverContext)
         case 'subscription':
-          return this.handleSubscription(queryDocument, resolverContext)
+          return await this.handleSubscription(queryDocument, resolverContext)
       }
     } catch (e) {
       this.logger.error(e)
