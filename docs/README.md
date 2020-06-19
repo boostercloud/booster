@@ -722,19 +722,91 @@ Note:
 
 #### The command handler function
 
+Booster generates the command handler function as a method of the command class. That function is called by the framework up every time its command is submitted. This function is the place to run validations, return errors, query entities to make decisions and register relevant domain events.
+
 ##### Validating data
+
+Booster uses the typed nature of GraphQL for ensuring that types are correct before reaching the handler, so you don't have to validate types. There are still business rules to be checked before proceeding with a command, for example, a given number must be between a threshold or a string must match a regular expression. In that case it is enough to just throw an error in the handler and the Booster will use the error's message in the response, e.g.
+
+Given this command:
+
+```typescript
+@Command({
+  authorize: 'all',
+})
+export class CreateProduct {
+  public constructor(
+    readonly sku: string,
+    readonly price: number
+  ) {}
+
+  public async handle(register: Register): Promise<void> {
+    const priceLimit = 10
+    if (this.price >= priceLimit) {
+      throw new Error(`price must be below ${priceLimit}, and it was ${this.price}`)
+    }
+  }
+}
+
+```
+
+And this mutation:
+
+```graphql
+mutation($input: CreateProductInput!) {
+  CreateProduct(input: $input)
+}
+
+# Variables
+
+{
+  "input": {
+    "sku": "MYSKU",
+    "price": 19.99
+  }
+}
+```
+
+You'll get this response
+
+```grapqhl
+{
+  "errors": [
+    {
+      "message": "price must be below 10, and it was 19.99",
+      "locations": [
+        {
+          "line": 5,
+          "column": 3
+        }
+      ],
+      "path": [
+        "CreateProduct"
+      ]
+    }
+  ]
+}
+```
+
+There could be situations in which you actually want to register an event representing an error. (Example here, I've seen the example of the error event in the integration tests but I'm not 100% it works here. I'm thinking in an stock error related to an item that should not be there initially)
 
 ##### Reading entities
 
+How to do it, why this is useful and an example
+
 ##### Registering events
+
+How to do it, what the impact is and an example
 
 #### Authorizing a command
 
+How  a command without going deeper with the roles creation. Roles creation is documented in the features section
+
 #### Submitting a command
 
-Booster commands are accessible to the outside world as GraphQL mutations. GrahpQL fits very well with the Booster's CQRS approach because there are two kind of operations: Mutations and Queries. Mutations are actions that modifies the server-side data, and so are commands.
+Booster commands are accessible to the outside world as GraphQL mutations. GrahpQL fits very well with Booster's CQRS approach because it has two kinds of operations: Mutations and Queries. Mutations are actions that modify the server-side data, as the commands are.
 
-Booster automatically creates one mutation per every command. It infers the mutation input type from the command fields, e.g., given this `CreateProduct` command:
+Booster automatically creates one mutation per command. The framework infers the mutation input type from the command fields, e.g., given this `CreateProduct` command:
 
 ```typescript
 @Command({
