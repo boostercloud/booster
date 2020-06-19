@@ -93,7 +93,7 @@ describe('GraphQL generator', () => {
     let mockRequestId: string
     let mockEmail: string
     let mockRole: string
-    let mockFetchResult: string
+    let mockFetchResult: Array<ReadModelInterface>
     let mockResolverContext: any
     let mockResolverInfo: any
 
@@ -102,7 +102,14 @@ describe('GraphQL generator', () => {
       mockRequestId = random.uuid()
       mockEmail = internet.email()
       mockRole = random.alphaNumeric(10)
-      mockFetchResult = lorem.word()
+      mockFetchResult = []
+
+      for (let i = 0; i < random.number({ min: 1, max: 10 }); i++) {
+        mockFetchResult.push({
+          id: random.uuid(),
+          testKey: random.number(),
+        })
+      }
 
       mockResolverContext = {
         requestID: mockRequestId,

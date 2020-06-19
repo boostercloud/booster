@@ -3,7 +3,7 @@ import { afterEach, describe } from 'mocha'
 import * as providerService from '../../src/services/provider-service'
 import { restore, fake } from 'sinon'
 import { expect } from '../expect'
-import { random } from 'faker'
+import { lorem, random } from 'faker'
 
 describe('providerService', () => {
   afterEach(() => {
@@ -19,7 +19,7 @@ describe('providerService', () => {
     })
 
     it('should throw an error if project name includes a space', () => {
-      const inputString = random.words(2)
+      const inputString = lorem.words(2)
       const errorString = `Project name cannot contain spaces:\n\n    Found: '${inputString}'`
 
       expect(() => providerService.assertNameIsCorrect(inputString)).to.throw(errorString)
