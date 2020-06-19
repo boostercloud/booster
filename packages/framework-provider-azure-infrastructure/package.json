@@ -20,11 +20,15 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@boostercloud/framework-types": "^0.3.3",
+    "@azure/arm-appservice": "^6.0.0",
     "@boostercloud/framework-provider-azure": "^0.3.3",
-    "ms-rest-azure": "^3.0.0",
+    "@boostercloud/framework-types": "^0.3.3",
+    "archiver": "^4.0.1",
     "azure-arm-resource": "^7.3.0",
-    "copyfiles": "^2.3.0"
+    "azure-arm-website": "^5.7.0",
+    "copyfiles": "^2.3.0",
+    "ms-rest-azure": "^3.0.0",
+    "needle": "^2.5.0"
   },
   "scripts": {
     "lint": "eslint --ext '.js,.ts' **/*.ts",

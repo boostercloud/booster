@@ -61,7 +61,7 @@
             },
             {
               "name": "FUNCTIONS_EXTENSION_VERSION",
-              "value": "~2"
+              "value": "~3"
             },
             {
               "name": "WEBSITE_NODE_DEFAULT_VERSION",
@@ -72,7 +72,9 @@
               "value": "node"
             }
           ]
-        }
+        },
+        "hostingEnvironment": "",
+        "clientAffinityEnabled": true
       }
     },
     {
@@ -80,9 +82,13 @@
       "apiVersion": "2019-08-01",
       "name": "[variables('hostingPlanName')]",
       "location": "[parameters('location')]",
-      "kind": "linux",
+      "kind": "",
       "properties": {
-        "reserved": true
+        "name": "[variables('hostingPlanName')]",
+        "workerSize": "0",
+        "workerSizeId": "0",
+        "numberOfWorkers": "1",
+        "hostingEnvironment": ""
       },
       "sku": {
         "Tier": "Dynamic",

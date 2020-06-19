@@ -3,17 +3,24 @@ import { configuration } from './params'
 import { ApplicationTokenCredentials, loginWithServicePrincipalSecret } from 'ms-rest-azure'
 import { ResourceGroup } from 'azure-arm-resource/lib/resource/models'
 import { BoosterConfig } from '@boostercloud/framework-types/dist'
+import WebSiteManagement from 'azure-arm-website'
 
 export async function createResourceManagementClient(): Promise<ResourceManagementClient> {
   const credentials = await azureCredentials()
   return new ResourceManagementClient(credentials, configuration.subscriptionId)
 }
 
+export async function createWebSiteManagementClient(): Promise<WebSiteManagement> {
+  const credentials = await azureCredentials()
+  return new WebSiteManagement(credentials, configuration.subscriptionId)
+}
+
 export async function azureCredentials(): Promise<ApplicationTokenCredentials> {
   const applicationTokenCredentials = await loginWithServicePrincipalSecret(
     configuration.appId,
     configuration.secret,
-    configuration.tenantId);
+    configuration.tenantId
+  )
 
   if (!applicationTokenCredentials) {
     throw new Error(
@@ -30,7 +37,7 @@ export async function createResourceGroup(
 ) {
   const existed = await resourceManagementClient.resourceGroups.checkExistence(resourceGroupName)
 
-  if(!existed) {
+  if (!existed) {
     const groupParameters: ResourceGroup = { location: configuration.region }
     await resourceManagementClient.resourceGroups.createOrUpdate(resourceGroupName, groupParameters)
   }

@@ -1,7 +1,12 @@
 import { Observable, Subscriber } from 'rxjs'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { ApplicationStackBuilder } from './stacks/application-stack'
-import { createResourceGroup, createResourceGroupName, createResourceManagementClient } from './setup'
+import {
+  createResourceGroup,
+  createResourceGroupName,
+  createResourceManagementClient,
+  createWebSiteManagementClient,
+} from './setup'
 
 export function deploy(configuration: BoosterConfig): Observable<string> {
   return new Observable((observer): void => {
@@ -26,10 +31,11 @@ export function nuke(configuration: BoosterConfig): Observable<string> {
  */
 async function deployApp(observer: Subscriber<string>, config: BoosterConfig): Promise<void> {
   const resourceManagementClient = await createResourceManagementClient()
+  const webSiteManagementClient = await createWebSiteManagementClient()
   const resourceGroupName = createResourceGroupName(config)
   await createResourceGroup(resourceGroupName, resourceManagementClient)
   const applicationBuilder = new ApplicationStackBuilder(config)
-  await applicationBuilder.buildOn(resourceManagementClient, resourceGroupName)
+  await applicationBuilder.buildOn(resourceManagementClient, webSiteManagementClient, resourceGroupName)
 }
 
 /**

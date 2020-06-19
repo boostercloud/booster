@@ -56,6 +56,9 @@
     },
     "apiPath": {
       "type": "string"
+    },
+    "policy": {
+      "type": "string"
     }
   },
   "variables": {
@@ -90,10 +93,47 @@
             "protocols": [
               "http",
               "https"
-            ]
-          }
+            ],
+            "subscriptionRequired": false
+          },
+          "resources": [
+            {
+              "apiVersion": "2017-03-01",
+              "type": "operations",
+              "name": "graphqlPOST",
+              "dependsOn": [
+                "[concat('Microsoft.ApiManagement/service/', variables('apiManagementServiceName'), '/apis/', parameters('apiName'))]"
+              ],
+              "properties": {
+                "displayName": "/graphql",
+                "method": "POST",
+                "urlTemplate": "/graphql"
+              },
+              "resources": [
+                {
+                  "apiVersion": "2017-03-01",
+                  "type": "policies",
+                  "name": "policy",
+                  "dependsOn": [
+                    "[concat('Microsoft.ApiManagement/service/', variables('apiManagementServiceName'))]",
+                    "[concat('Microsoft.ApiManagement/service/', variables('apiManagementServiceName'), '/apis/', parameters('apiName'))]",
+                    "[concat('Microsoft.ApiManagement/service/', variables('apiManagementServiceName'), '/apis/', parameters('apiName'), '/operations/graphqlPOST')]"
+                  ],
+                  "properties": {
+                    "policyContent": "[parameters('policy')]"
+                  }
+                }
+              ]
+            }
+          ]
         }
       ]
     }
-  ]
+  ],
+  "outputs": {
+    "apiManagementServiceName": {
+      "type": "string",
+      "value": "[variables('apiManagementServiceName')]"
+    }
+  }
 }
