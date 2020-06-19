@@ -127,7 +127,7 @@ describe('GraphQL generator', () => {
       let returnedFunction: Function
 
       beforeEach(() => {
-        fetchStub = stub().returns(mockFetchResult)
+        fetchStub = stub().resolves(mockFetchResult)
 
         readModelDispatcherStub = sinon.createStubInstance(BoosterReadModelDispatcher)
         replace(readModelDispatcherStub, 'fetch', fetchStub as any)
@@ -157,7 +157,7 @@ describe('GraphQL generator', () => {
       it('should return expected result', async () => {
         const result = await returnedFunction('', {}, mockResolverContext, mockResolverInfo)
 
-        expect(result).to.be.equal(mockFetchResult)
+        expect(result).to.be.deep.equal(mockFetchResult)
       })
     })
 
