@@ -648,18 +648,43 @@ capabilities!
 
 Two patterns influence the Booster's event-driven architecture: Command-Query Responsibility Segregation ([CQRS](https://www.martinfowler.com/bliki/CQRS.html)) and [Event Sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). They're complex techniques to implement from scratch with lower-level frameworks, but Booster makes them feel natural and very easy to use.
 
-![architecture][booster-arch-png]
+![architecture](./img/booster-arch.png)
 
-The public interface of a Booster application is just `Commands` and `ReadModels`. Booster proposes an entirely different approach to the Model-View-* and CRUD frameworks. With Booster, the clients submit commands, query the read models, or subscribe to them for receiving real-time updates thanks to the out of the box [GraphQL API][booster-graphql-api].
+The public interface of a Booster application is just `Commands` and `ReadModels`. Booster proposes an entirely different approach to the Model-View-* and CRUD frameworks. With Booster, the clients submit commands, query the read models, or subscribe to them for receiving real-time updates thanks to the out of the box [GraphQL API](#graphql-api)
 
 Booster applications are event-driven and event-sourced so, **the source of truth is the whole history of events**. When a client submits a command, the `CommandHandler` _wakes up_ and executes its logic. Optionally, it can *register* as many `Events` as needed. The framework caches the current state by automatically *reducing* all the registered events into `Entities`. Interested parties can *react* to events via `EventHandlers`, and finally, the *projection* functions transform the entities into `ReadModels`.
 
 In this chapter you'll walk through these concepts and its details.
 
-[booster-graphql-api]:#graphql-api
-[booster-arch-png]:./img/booster-arch.png
+### 1. Command and command handlers
 
-### Event handlers
+#### Commands naming convention
+
+#### Creating a command
+
+#### The command handler function
+
+##### Validating data
+
+##### Reading entities
+
+##### Registering events
+
+#### Authorizing a command
+
+#### Submitting a command
+
+### 2. Events
+
+#### Events naming convention
+
+#### Creating events
+
+#### The event store
+
+#### Events ordering
+
+### 3. Event handlers
 In event-driven architectures we have different parts of our application that react to events, one of them is the `@Entity`, in charge of reducing the event. But we also have event handlers, a class with the `@EventHandler` decorator. The event handlers also react to events, and are used when you want to trigger new events based on the original one.
 
 An event handler would look like this:
@@ -725,3 +750,30 @@ public static async handle(event: StockMoved, register: Register): Promise<void>
   ...
 }
 ```
+
+### 4. Entities and reducers
+
+#### Entities naming convention
+
+#### Creating entities
+
+#### The reducer function
+
+#### Aggregate data using entities
+
+#### Eventual consistency
+
+### 5. Read models and projections
+
+#### Read models naming convention
+
+#### Creating a read model
+
+#### The projection function
+
+#### Authorizing read models
+
+#### Querying a read model
+
+#### Getting real-time updates for a read model
+

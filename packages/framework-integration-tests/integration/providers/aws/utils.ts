@@ -7,6 +7,7 @@ import fetch from 'cross-fetch'
 import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
 import ScanOutput = DocumentClient.ScanOutput
 import QueryOutput = DocumentClient.QueryOutput
+import { internet } from 'faker'
 import { sleep } from '../helpers'
 
 const userPoolId = 'userpool'
@@ -181,6 +182,10 @@ export const getAuthToken = async (email: string, password: string): Promise<str
   return (await response.json()).accessToken
 }
 
+export const createPassword = (): string => {
+  return `${internet.password(8)}Passw0rd!`
+}
+
 // --- URL helpers ---
 
 export async function baseURL(): Promise<string> {
@@ -246,6 +251,38 @@ export async function queryEvents(primaryKey: string, latestFirst = true): Promi
     .promise()
 
   return output.Items
+}
+
+// --- Read models helpers ---
+
+export async function readModelTableName(readModelName: string): Promise<string> {
+  const stackName = appStackName()
+
+  return `${stackName}-${readModelName}`
+}
+
+export async function queryReadModels(primaryKey: string, readModelName: string, latestFirst = true): Promise<any> {
+  const output: QueryOutput = await documentClient
+    .query({
+      TableName: await readModelTableName(readModelName),
+      KeyConditionExpression: 'id = :v',
+      ExpressionAttributeValues: { ':v': primaryKey },
+      ScanIndexForward: !latestFirst,
+    })
+    .promise()
+
+  return output.Items
+}
+
+export async function countReadModelItems(readModelName: string): Promise<number> {
+  const output: ScanOutput = await documentClient
+    .scan({
+      TableName: await readModelTableName(readModelName),
+      Select: 'COUNT',
+    })
+    .promise()
+
+  return output.Count ?? -1
 }
 
 // --- DynamoDB helpers ---

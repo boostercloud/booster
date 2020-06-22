@@ -2404,9 +2404,9 @@ aws-cdk@1.26.0:
     yargs "^15.0.2"
 
 aws-sdk@^2.625.0, aws-sdk@^2.656.0:
-  version "2.696.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.696.0.tgz#f726932d37ce7db85e4a9ba3160de7846a29d934"
-  integrity sha512-LpEZf0ozwVOARKiqXzJ5njXt9eQswRDCwLNK+iTeADGv1up5g7pwU23itOrSLeer3FHV6iueEr+CxEpjQhrEQw==
+  version "2.700.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.700.0.tgz#4bad5970e262d04f47484506f49f6d34735d3f6c"
+  integrity sha512-faBkr/D3IavfL2mwst4/thiKsHkN8YCwU9927Mkiushbe7n4UXxlcNf7LnVxFyjr3WIf4KfziSw4bajRAiAjYA==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
@@ -4186,9 +4186,9 @@ forwarded@~0.1.2:
   resolved "https://registry.yarnpkg.com/forwarded/-/forwarded-0.1.2.tgz#98c23dab1175657b8c0573e8ceccd91b0ff18c84"
 
 fp-ts@^2.0.3:
-  version "2.6.5"
-  resolved "https://registry.yarnpkg.com/fp-ts/-/fp-ts-2.6.5.tgz#da4c369626ff3f4bb1518f8459b226fc19eb8e3c"
-  integrity sha512-lQNzOMJj98b623+UZLQ+tnN/8qtNXz/vRoR9k7L/9OlUIyYH3qVzSUVZBDXYsAd7nOWzzdQALCX1ZqcF70altQ==
+  version "2.6.6"
+  resolved "https://registry.yarnpkg.com/fp-ts/-/fp-ts-2.6.6.tgz#cfb57772a845628e56da05d8c5dc03227aedadb4"
+  integrity sha512-zYfhPNb2fwpkrJ5RpgEMsrvMv8r9x+guJptnaEBF295YtoVr3+jbGDXZqSqPcfEWas5Trj3FpbDkzmXbx0YYzQ==
 
 fragment-cache@^0.2.1:
   version "0.2.1"
