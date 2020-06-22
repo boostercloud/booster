@@ -167,13 +167,12 @@ describe('Project', () => {
 
   context('Valid project', () => {
     describe('using flags', () => {
-      // TODO remove skip when '-h' flag works fine, now it's throwing an error
-      it.skip('should create a new project using short flags to configure it, and the project compiles', async () => {
+      it('should create a new project using short flags to configure it, and the project compiles', async () => {
         const projectName = CART_DEMO_SHORT_FLAGS
         const flags = [
           `-a "${AUTHOR}"`,
           `-d "${DESCRIPTION}"`,
-          `-h "${HOMEPAGE}"`,
+          `-H "${HOMEPAGE}"`,
           `-l "${LICENSE}"`,
           `-p "${PROVIDER}"`,
           `-r "${REPO_URL}"`,
