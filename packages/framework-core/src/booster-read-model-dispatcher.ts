@@ -19,7 +19,7 @@ const subscriptionDurationSeconds = 24 * 60 * 60 // 24 hours
 export class BoosterReadModelDispatcher {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
 
-  public async fetch(readModelRequest: ReadModelRequestEnvelope): Promise<any> {
+  public async fetch(readModelRequest: ReadModelRequestEnvelope): Promise<Array<ReadModelInterface>> {
     this.validateRequest(readModelRequest)
     return this.processFetch(readModelRequest)
   }
@@ -49,9 +49,7 @@ export class BoosterReadModelDispatcher {
     }
   }
 
-  private processFetch(
-    readModelRequest: ReadModelRequestEnvelope
-  ): Promise<ReadModelInterface | Array<ReadModelInterface>> {
+  private async processFetch(readModelRequest: ReadModelRequestEnvelope): Promise<Array<ReadModelInterface>> {
     const readModelMetadata = this.config.readModels[readModelRequest.typeName]
     const searcher = Booster.readModel(readModelMetadata.class)
     if (readModelRequest.filters) {
