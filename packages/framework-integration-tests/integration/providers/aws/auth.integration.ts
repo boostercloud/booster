@@ -7,24 +7,17 @@ import {
   createUser,
   deleteUser,
   waitForIt,
+  createPassword,
+  getAuthToken,
 } from './utils'
 import gql from 'graphql-tag'
 import { expect } from 'chai'
 import fetch from 'cross-fetch'
 import * as chai from 'chai'
-import { random } from 'faker'
+import { random, internet, lorem, finance } from 'faker'
 
 chai.use(require('chai-as-promised'))
 
-const userEmail = 'Su_morenito_19@example.com' // Why this user name? Reasons: https://youtu.be/h6k5qbt72Os
-const userPassword = 'Flama_69'
-const adminEmail = 'admin@example.com'
-const adminPassword = 'Enable_G0d_Mode3e!'
-
-/*
- * Note: this test file is designed to be run sequentially from top to bottom, which seems to be the default in mocha.
- * Running the test cases out of order or in isolation could have unexpected results.
- */
 describe('With the auth API', () => {
   let mockProductId: string
   let mockCartId: string
@@ -76,7 +69,7 @@ describe('With the auth API', () => {
         `,
       })
 
-      await expect(queryPromise).to.eventually.be.rejectedWith('Access denied for read model ProductUpdatesReadMode')
+      await expect(queryPromise).to.eventually.be.rejectedWith('Access denied for read model ProductUpdatesReadModel')
     })
 
     it('can submit a public command', async () => {
@@ -99,8 +92,28 @@ describe('With the auth API', () => {
     })
 
     it('can query a public read model', async () => {
+      mockCartId = random.uuid()
+      mockProductId = random.uuid()
+
       const client = await graphQLClient()
 
+      // Provision cart
+      const mutationResult = await client.mutate({
+        variables: {
+          cartId: mockCartId,
+          productId: mockProductId,
+        },
+        mutation: gql`
+          mutation ChangeCartItem($cartId: ID!, $productId: ID!) {
+            ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: 2 })
+          }
+        `,
+      })
+
+      expect(mutationResult).not.to.be.null
+      expect(mutationResult.data.ChangeCartItem).to.be.true
+
+      // Query cart read model
       const queryResult = await waitForIt(
         () => {
           return client.query({
@@ -129,6 +142,9 @@ describe('With the auth API', () => {
     })
 
     it('can sign up for a user account', async () => {
+      const userEmail = internet.email()
+      const userPassword = createPassword()
+
       const url = await signUpURL()
       const clientId = await authClientID()
 
@@ -154,6 +170,9 @@ describe('With the auth API', () => {
     })
 
     it("can't sign up for an admin account", async () => {
+      const adminEmail = internet.email()
+      const adminPassword = createPassword()
+
       const url = await signUpURL()
       const clientId = await authClientID()
 
@@ -162,7 +181,7 @@ describe('With the auth API', () => {
         body: JSON.stringify({
           clientId: clientId,
           username: adminEmail,
-          password: userPassword,
+          password: adminPassword,
           userAttributes: {
             roles: ['Admin'],
           },
@@ -182,10 +201,33 @@ describe('With the auth API', () => {
 
   // The User role is configured in the test project to allow sign ups
   context('someone with a user account', () => {
+    let userEmail: string
+    let userPassword: string
     let userAccessToken: string
 
     before(async () => {
-      // We'll confirm here the user account created in the previous test
+      userEmail = internet.email()
+      userPassword = createPassword()
+
+      // Create user
+      const url = await signUpURL()
+      const clientId = await authClientID()
+      await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          clientId: clientId,
+          username: userEmail,
+          password: userPassword,
+          userAttributes: {
+            roles: ['User'],
+          },
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      // Confirm user
       await confirmUser(userEmail)
     })
 
@@ -243,28 +285,110 @@ describe('With the auth API', () => {
     })
 
     it('can query a secured read model they have privileges for', async () => {
+      const mockSku = random.alphaNumeric(random.number({ min: 10, max: 20 }))
+      const mockDisplayName = lorem.sentence()
+      const mockDescription = lorem.paragraph()
+      const mockPriceInCents = random.number({ min: 1 })
+      const mockCurrency = finance.currencyCode()
+
+      userAccessToken = await getAuthToken(userEmail, userPassword)
       const client = await graphQLClient(userAccessToken)
 
+      // Create a product
+      await client.mutate({
+        variables: {
+          sku: mockSku,
+          displayName: mockDisplayName,
+          description: mockDescription,
+          priceInCents: mockPriceInCents,
+          currency: mockCurrency,
+        },
+        mutation: gql`
+          mutation CreateProduct(
+            $sku: String
+            $displayName: String
+            $description: String
+            $priceInCents: Float
+            $currency: String
+          ) {
+            CreateProduct(
+              input: {
+                sku: $sku
+                displayName: $displayName
+                description: $description
+                priceInCents: $priceInCents
+                currency: $currency
+              }
+            )
+          }
+        `,
+      })
+
+      // Wait for product to be available in read model
+      const products = await waitForIt(
+        () => {
+          return client.query({
+            query: gql`
+              query {
+                ProductReadModels {
+                  id
+                  sku
+                  displayName
+                  description
+                  price
+                  availability
+                  deleted
+                }
+              }
+            `,
+          })
+        },
+        (result) => result?.data?.ProductReadModels?.some((product: any) => product.sku === mockSku)
+      )
+
+      const product = products.data.ProductReadModels.find((product: any) => product.sku === mockSku)
+      const productId = product.id
+
+      // Query just created product
       const queryResult = await client.query({
         variables: {
-          productId: mockProductId,
+          productId: productId,
         },
         query: gql`
           query ProductReadModel($productId: ID!) {
             ProductReadModel(id: $productId) {
               id
               sku
+              displayName
+              description
+              price
+              availability
+              deleted
             }
           }
         `,
       })
 
+      const expectedProduct = {
+        __typename: 'ProductReadModel',
+        sku: mockSku,
+        id: productId,
+        description: mockDescription,
+        displayName: mockDisplayName,
+        availability: 0,
+        deleted: false,
+        price: {
+          cents: mockPriceInCents,
+          currency: mockCurrency,
+        },
+      }
       expect(queryResult).not.to.be.null
-      // TODO: In the current implementation, commands do not return the Ids of the affected entities.
-      // When we do, we could check here that we can get the product created in the previous test
+      const queryProduct = queryResult.data.ProductReadModel
+      expect(queryProduct).to.be.deep.equal(expectedProduct)
     })
 
     it("can't send a command they don't have privileges for", async () => {
+      userAccessToken = await getAuthToken(userEmail, userPassword)
       const client = await graphQLClient(userAccessToken)
 
       const mutationPromise = client.mutate({
@@ -282,6 +406,7 @@ describe('With the auth API', () => {
     })
 
     it("can't query a read model they don't have privileges for", async () => {
+      userAccessToken = await getAuthToken(userEmail, userPassword)
       const client = await graphQLClient(userAccessToken)
 
       const queryPromise = client.query({
@@ -306,10 +431,15 @@ describe('With the auth API', () => {
 
   // The Admin role is configured in the test project to forbid sign ups
   context('someone with an admin account', () => {
+    let adminEmail: string
+    let adminPassword: string
     let adminAccessToken: string
 
     before(async () => {
-      // We create the admin account manually
+      adminEmail = internet.email()
+      adminPassword = createPassword()
+
+      // Create admin user
       await createUser(adminEmail, adminPassword, 'Admin')
     })
 
@@ -344,6 +474,7 @@ describe('With the auth API', () => {
     })
 
     it('can query a read model they have privileges for', async () => {
+      adminAccessToken = await getAuthToken(adminEmail, adminPassword)
       const client = await graphQLClient(adminAccessToken)
 
       const queryResult = await client.query({
@@ -364,6 +495,7 @@ describe('With the auth API', () => {
     })
 
     it('can send a command they have privileges for', async () => {
+      adminAccessToken = await getAuthToken(adminEmail, adminPassword)
       const client = await graphQLClient(adminAccessToken)
 
       const mutationResult = await client.mutate({
