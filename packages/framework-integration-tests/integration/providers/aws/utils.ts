@@ -253,6 +253,38 @@ export async function queryEvents(primaryKey: string, latestFirst = true): Promi
   return output.Items
 }
 
+// --- Read models helpers ---
+
+export async function readModelTableName(readModelName: string): Promise<string> {
+  const stackName = appStackName()
+
+  return `${stackName}-${readModelName}`
+}
+
+export async function queryReadModels(primaryKey: string, readModelName: string, latestFirst = true): Promise<any> {
+  const output: QueryOutput = await documentClient
+    .query({
+      TableName: await readModelTableName(readModelName),
+      KeyConditionExpression: 'id = :v',
+      ExpressionAttributeValues: { ':v': primaryKey },
+      ScanIndexForward: !latestFirst,
+    })
+    .promise()
+
+  return output.Items
+}
+
+export async function countReadModelItems(readModelName: string): Promise<number> {
+  const output: ScanOutput = await documentClient
+    .scan({
+      TableName: await readModelTableName(readModelName),
+      Select: 'COUNT',
+    })
+    .promise()
+
+  return output.Count ?? -1
+}
+
 // --- DynamoDB helpers ---
 
 export async function countEventItems(): Promise<number> {
