@@ -20,6 +20,7 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
+    "@azure/functions": "^1.2.2",
     "@boostercloud/framework-types": "^0.3.3"
   },
   "scripts": {

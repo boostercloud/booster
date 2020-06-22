@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ProviderInfrastructure, ProviderLibrary } from '@boostercloud/framework-types'
+import { requestFailed, requestSucceeded } from './library/api-adapter'
+import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 
 export const Provider: ProviderLibrary = {
   // ProviderEventsLibrary
@@ -22,8 +24,8 @@ export const Provider: ProviderLibrary = {
   // ProviderGraphQLLibrary
   graphQL: {
     authorizeRequest: undefined as any,
-    rawToEnvelope: undefined as any,
-    handleResult: undefined as any,
+    rawToEnvelope: rawGraphQLRequestToEnvelope,
+    handleResult: requestSucceeded,
   },
   // ProviderAuthLibrary
   auth: {
@@ -31,8 +33,8 @@ export const Provider: ProviderLibrary = {
   },
   // ProviderAPIHandling
   api: {
-    requestSucceeded: undefined as any,
-    requestFailed: undefined as any,
+    requestSucceeded,
+    requestFailed,
   },
   // ProviderInfrastructureGetter
   infrastructure: () =>
