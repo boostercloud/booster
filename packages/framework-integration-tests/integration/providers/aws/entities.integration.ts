@@ -67,7 +67,7 @@ describe('entities', async () => {
 
     const latestReadModelItem = await waitForIt(
       () => queryReadModels(mockCartId, CART_READ_MODEL_NAME),
-      (readModel) => readModel && readModel[0]?.id === mockCartId
+      (readModel) => readModel && readModel[0]?.id === mockCartId && readModel[0]?.cartItems[0]?.productId === mockProductId
     )
 
     expect(latestReadModelItem).not.to.be.null
