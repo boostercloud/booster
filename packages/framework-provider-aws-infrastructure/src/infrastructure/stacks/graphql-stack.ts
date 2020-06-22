@@ -8,12 +8,7 @@ import { ServicePrincipal } from '@aws-cdk/aws-iam'
 import { AuthorizationType, LambdaIntegration, RequestAuthorizer } from '@aws-cdk/aws-apigateway'
 import { Cors } from '@aws-cdk/aws-apigateway/lib/cors'
 import { AttributeType, BillingMode, ProjectionType, Table } from '@aws-cdk/aws-dynamodb'
-import {
-  subscriptionsStoreIndexSortKeyAttribute,
-  subscriptionsStorePartitionKeyAttribute,
-  subscriptionsStoreSortKeyAttribute,
-  subscriptionsStoreTTLAttribute,
-} from '@boostercloud/framework-provider-aws'
+import { subscriptionsStoreAttributes } from '@boostercloud/framework-provider-aws'
 import { DynamoEventSource } from '@aws-cdk/aws-lambda-event-sources'
 
 interface GraphQLStackMembers {
@@ -163,25 +158,26 @@ export class GraphQLStack {
     const table = new Table(this.stack, this.config.resourceNames.subscriptionsStore, {
       tableName: this.config.resourceNames.subscriptionsStore,
       partitionKey: {
-        name: subscriptionsStorePartitionKeyAttribute,
+        name: subscriptionsStoreAttributes.partitionKey,
         type: AttributeType.STRING,
       },
       sortKey: {
-        name: subscriptionsStoreSortKeyAttribute,
+        name: subscriptionsStoreAttributes.sortKey,
         type: AttributeType.STRING,
       },
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY,
-      timeToLiveAttribute: subscriptionsStoreTTLAttribute,
+      timeToLiveAttribute: subscriptionsStoreAttributes.ttl,
     })
     table.addGlobalSecondaryIndex({
-      indexName: this.config.resourceNames.subscriptionsStore + '-subscriptions-by-connection',
+      indexName:
+        this.config.resourceNames.subscriptionsStore + subscriptionsStoreAttributes.indexByConnectionIDNameSuffix,
       partitionKey: {
-        name: subscriptionsStoreSortKeyAttribute, // Use the sort key of the main table as partitionKey of the index
+        name: subscriptionsStoreAttributes.indexByConnectionIDPartitionKey,
         type: AttributeType.STRING,
       },
       sortKey: {
-        name: subscriptionsStoreIndexSortKeyAttribute,
+        name: subscriptionsStoreAttributes.indexByConnectionIDSortKey,
         type: AttributeType.STRING,
       },
       projectionType: ProjectionType.KEYS_ONLY,

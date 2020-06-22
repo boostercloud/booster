@@ -6,13 +6,7 @@ import {
   ReadModelEnvelope,
 } from '@boostercloud/framework-types'
 import { ApiGatewayManagementApi, DynamoDB } from 'aws-sdk'
-import {
-  environmentVarNames,
-  subscriptionsStoreIndexSortKeyAttribute,
-  subscriptionsStorePartitionKeyAttribute,
-  subscriptionsStoreSortKeyAttribute,
-  subscriptionsStoreTTLAttribute,
-} from '../constants'
+import { environmentVarNames, subscriptionsStoreAttributes } from '../constants'
 import { DynamoDBRecord, DynamoDBStreamEvent } from 'aws-lambda'
 import { Converter } from 'aws-sdk/clients/dynamodb'
 import { Arn } from './arn'
@@ -24,14 +18,14 @@ export async function subscribeToReadModel(
   subscriptionEnvelope: SubscriptionEnvelope
 ): Promise<void> {
   if (
-    !subscriptionEnvelope[subscriptionsStorePartitionKeyAttribute] ||
-    !subscriptionEnvelope[subscriptionsStoreSortKeyAttribute] ||
-    !subscriptionEnvelope[subscriptionsStoreTTLAttribute] ||
+    !subscriptionEnvelope[subscriptionsStoreAttributes.partitionKey] ||
+    !subscriptionEnvelope[subscriptionsStoreAttributes.sortKey] ||
+    !subscriptionEnvelope[subscriptionsStoreAttributes.ttl] ||
     !subscriptionEnvelope.operation.id
   ) {
     throw new Error(
       'Subscription envelope is missing any of the following required attributes: ' +
-        `"${subscriptionsStorePartitionKeyAttribute}", ${subscriptionsStoreSortKeyAttribute}", ${subscriptionsStoreTTLAttribute}", ` +
+        `"${subscriptionsStoreAttributes.partitionKey}", ${subscriptionsStoreAttributes.sortKey}", ${subscriptionsStoreAttributes.ttl}", ` +
         '"subscriptionEnvelope.operation.id"'
     )
   }
@@ -41,7 +35,7 @@ export async function subscribeToReadModel(
       TableName: config.resourceNames.subscriptionsStore,
       Item: {
         ...subscriptionEnvelope,
-        [subscriptionsStoreIndexSortKeyAttribute]: subscriptionEnvelope.operation.id,
+        [subscriptionsStoreAttributes.indexByConnectionIDSortKey]: subscriptionEnvelope.operation.id,
       },
     })
     .promise()
@@ -66,7 +60,7 @@ export async function fetchSubscriptions(
     .query({
       TableName: config.resourceNames.subscriptionsStore,
       ConsistentRead: true,
-      KeyConditionExpression: `${subscriptionsStorePartitionKeyAttribute} = :partitionKey`,
+      KeyConditionExpression: `${subscriptionsStoreAttributes.partitionKey} = :partitionKey`,
       ExpressionAttributeValues: {
         ':partitionKey': subscriptionName,
       },
