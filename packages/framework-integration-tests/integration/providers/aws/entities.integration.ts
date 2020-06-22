@@ -65,7 +65,11 @@ describe('entities', async () => {
       (newReadModelItemsCount) => newReadModelItemsCount === expectedReadModelItemsCount
     )
 
-    const latestReadModelItem = await queryReadModels(mockCartId, CART_READ_MODEL_NAME)
+    const latestReadModelItem = await waitForIt(
+      () => queryReadModels(mockCartId, CART_READ_MODEL_NAME),
+      (readModel) => readModel && readModel[0]?.id === mockCartId
+    )
+
     expect(latestReadModelItem).not.to.be.null
     expect(latestReadModelItem[0].id).to.be.equal(mockCartId)
     expect(latestReadModelItem[0].cartItems[0].productId).to.be.equal(mockProductId)
