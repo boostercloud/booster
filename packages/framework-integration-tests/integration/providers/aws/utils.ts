@@ -200,11 +200,10 @@ export async function baseHTTPURL(): Promise<string> {
     return output.OutputKey === 'httpURL'
   })?.OutputValue
 
-  if (url) {
-    return url
-  } else {
+  if (!url) {
     throw 'Unable to get the Base HTTP URL from the current stack'
   }
+  return url
 }
 
 export async function baseWebsocketURL(): Promise<string> {
@@ -213,11 +212,10 @@ export async function baseWebsocketURL(): Promise<string> {
     return output.OutputKey === 'websocketURL'
   })?.OutputValue
 
-  if (url) {
-    return url
-  } else {
+  if (!url) {
     throw 'Unable to get the Base Websocket URL from the current stack'
   }
+  return url
 }
 
 export async function signUpURL(): Promise<string> {
