@@ -201,10 +201,68 @@ describe('GraphQLQueryGenerator', () => {
       })
 
       context('several target types', () => {
-        it('should call typeInformer.getGraphQLTypeFor n*4', () => {})
+        beforeEach(() => {
+          // Provision target types
+          mockTargetTypes = {}
+          mockTargetTypes['boolean'] = {
+            class: Boolean,
+            properties: [],
+          }
+          mockTargetTypes['string'] = {
+            class: String,
+            properties: [],
+          }
+
+          sut = new GraphQLQueryGenerator(
+            mockTargetTypes,
+            mockTypeInformer as any,
+            mockByIdResolverBuilder,
+            mockFilterResolverBuilder
+          )
+        })
+
+        it('should call typeInformer.getGraphQLTypeFor n of target types * 2', () => {
+          sut.generate()
+
+          expect(getGraphQLTypeForStub)
+            .callCount(4)
+            .and.calledWith(Boolean)
+            .and.calledWith(String)
+        })
 
         describe('repeated type', () => {
-          it('should call typeInformer.getGraphQLTypeFor n*4-(repeated types)', () => {})
+          beforeEach(() => {
+            // Provision target types
+            mockTargetTypes = {}
+            mockTargetTypes['boolean'] = {
+              class: Boolean,
+              properties: [],
+            }
+            mockTargetTypes['string'] = {
+              class: String,
+              properties: [],
+            }
+            mockTargetTypes['string'] = {
+              class: String,
+              properties: [],
+            }
+
+            sut = new GraphQLQueryGenerator(
+              mockTargetTypes,
+              mockTypeInformer as any,
+              mockByIdResolverBuilder,
+              mockFilterResolverBuilder
+            )
+          })
+
+          it('should call typeInformer.getGraphQLTypeFor (number of types * 2) - (2 * (repeated types))', () => {
+            sut.generate()
+
+            expect(getGraphQLTypeForStub)
+              .to.be.callCount(4)
+              .and.calledWith(Boolean)
+              .and.calledWith(String)
+          })
         })
       })
 
@@ -222,8 +280,6 @@ describe('GraphQLQueryGenerator', () => {
 
       it('should return expected result', () => {
         const result = sut.generate()
-
-        console.log()
 
         expect(result.name).to.be.equal('Query')
         expect(result.description).to.be.undefined
