@@ -81,7 +81,7 @@ describe('GraphQLQueryGenerator', () => {
           expect(getGraphQLTypeForStub).calledTwice.and.calledWith(mockTargetTypeClass)
         })
 
-        it('should call filterResolverBuilder once', () => {
+        it('should call filterResolverBuilder once with expected argument', () => {
           sut.generate()
 
           expect(mockByIdResolverBuilder).calledOnce.and.calledWith(mockTargetTypeClass)
@@ -156,6 +156,13 @@ describe('GraphQLQueryGenerator', () => {
                 .and.calledWith(mockPropertyType)
             })
 
+            it('should call filterResolverBuilder once with expected arguments', () => {
+              sut.generate()
+
+              expect(mockByIdResolverBuilder).to.be.calledOnce.and.calledWith(Boolean)
+              expect(mockByIdResolverBuilder).to.be.calledAfter(getGraphQLTypeForStub)
+            })
+
             it('should have expected args', () => {
               const result = sut.generate()
 
@@ -196,6 +203,13 @@ describe('GraphQLQueryGenerator', () => {
                 .and.calledWith(mockTargetType)
                 .and.calledWith(mockPropertyType)
             })
+
+            it('should call filterResolverBuilder once with expected arguments', () => {
+              sut.generate()
+
+              expect(mockByIdResolverBuilder).to.be.calledOnce.and.calledWith(Boolean)
+              expect(mockByIdResolverBuilder).to.be.calledAfter(getGraphQLTypeForStub)
+            })
           })
         })
       })
@@ -230,6 +244,15 @@ describe('GraphQLQueryGenerator', () => {
             .and.calledWith(String)
         })
 
+        it('should call filterResolverBuilder twice with expected arguments', () => {
+          sut.generate()
+
+          expect(mockByIdResolverBuilder)
+            .to.be.calledTwice.and.calledWith(Boolean)
+            .and.calledWith(String)
+          expect(mockByIdResolverBuilder).to.be.calledAfter(getGraphQLTypeForStub)
+        })
+
         describe('repeated type', () => {
           beforeEach(() => {
             // Provision target types
@@ -262,6 +285,15 @@ describe('GraphQLQueryGenerator', () => {
               .to.be.callCount(4)
               .and.calledWith(Boolean)
               .and.calledWith(String)
+          })
+
+          it('should call filterResolverBuilder twice with expected arguments', () => {
+            sut.generate()
+
+            expect(mockByIdResolverBuilder)
+              .to.be.calledTwice.and.calledWith(Boolean)
+              .and.calledWith(String)
+            expect(mockByIdResolverBuilder).to.be.calledAfter(getGraphQLTypeForStub)
           })
         })
       })
