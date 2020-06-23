@@ -1,3 +1,5 @@
+import { BoosterConfig } from '@boostercloud/framework-types'
+
 export const eventsStoreAttributes = {
   partitionKey: 'entityTypeName_entityID_kind',
   sortKey: 'createdAt',
@@ -9,7 +11,7 @@ export const subscriptionsStoreAttributes = {
   ttl: 'expirationTime',
   indexByConnectionIDPartitionKey: 'connectionID',
   indexByConnectionIDSortKey: 'subscriptionID',
-  indexByConnectionIDNameSuffix: '-index-by-connection',
+  indexByConnectionIDName: (config: BoosterConfig) => config.resourceNames.subscriptionsStore + '-index-by-connection',
 } as const
 
 export const environmentVarNames = {

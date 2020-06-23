@@ -1,15 +1,6 @@
-import {
-  BoosterConfig,
-  Logger,
-  SubscriptionEnvelope,
-  ReadModelInterface,
-  ReadModelEnvelope,
-} from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, SubscriptionEnvelope } from '@boostercloud/framework-types'
 import { ApiGatewayManagementApi, DynamoDB } from 'aws-sdk'
 import { environmentVarNames, subscriptionsStoreAttributes } from '../constants'
-import { DynamoDBRecord, DynamoDBStreamEvent } from 'aws-lambda'
-import { Converter } from 'aws-sdk/clients/dynamodb'
-import { Arn } from './arn'
 
 export async function subscribeToReadModel(
   db: DynamoDB.DocumentClient,
@@ -41,21 +32,13 @@ export async function subscribeToReadModel(
     .promise()
 }
 
-export async function rawReadModelEventsToEnvelopes(
-  config: BoosterConfig,
-  logger: Logger,
-  rawEvents: DynamoDBStreamEvent
-): Promise<Array<ReadModelEnvelope>> {
-  return rawEvents.Records.map(toReadModelEnvelope.bind(null, config))
-}
-
 export async function fetchSubscriptions(
   db: DynamoDB.DocumentClient,
   config: BoosterConfig,
   logger: Logger,
   subscriptionName: string
 ): Promise<Array<SubscriptionEnvelope>> {
-  // TODO: filter expired ones
+  // TODO: filter expired ones. Or... is it needed?
   const result = await db
     .query({
       TableName: config.resourceNames.subscriptionsStore,
@@ -85,17 +68,88 @@ export async function notifySubscription(
     .promise()
 }
 
-function toReadModelEnvelope(config: BoosterConfig, record: DynamoDBRecord): ReadModelEnvelope {
-  if (!record.dynamodb?.NewImage || !record.eventSourceARN) {
-    throw new Error('Received a DynamoDB stream event without "eventSourceARN" or "NewImage" field. They are required')
+export async function deleteSubscription(
+  db: DynamoDB.DocumentClient,
+  config: BoosterConfig,
+  logger: Logger,
+  connectionID: string,
+  subscriptionID: string
+): Promise<void> {
+  // TODO: Manage query pagination
+  const result = await db
+    .query({
+      TableName: config.resourceNames.subscriptionsStore,
+      IndexName: subscriptionsStoreAttributes.indexByConnectionIDName(config),
+      ConsistentRead: true,
+      KeyConditionExpression:
+        `${subscriptionsStoreAttributes.indexByConnectionIDPartitionKey} = :partitionKey AND ` +
+        `${subscriptionsStoreAttributes.indexByConnectionIDSortKey} = :sortKey`,
+      ExpressionAttributeValues: {
+        ':partitionKey': connectionID,
+        ':sortKey': subscriptionID,
+      },
+    })
+    .promise()
+  const foundSubscriptions = result.Items as Array<SubscriptionEnvelope>
+  if (foundSubscriptions?.length == 0) {
+    logger.info(
+      `[deleteSubscription] No subscriptions found with connectionID=${connectionID} and subscriptionID=${subscriptionID}`
+    )
+    return
   }
-  const tableARNComponents = Arn.parse(record.eventSourceARN)
-  if (!tableARNComponents.resourceName) {
-    throw new Error('Could not extract the table name from the eventSourceARN')
+
+  const subscriptionToDelete = foundSubscriptions[0] // There can't be more than one, as we used the full primary key in the query
+  logger.debug('[deleteSubscription] Deleting subscription = ', subscriptionToDelete)
+  await db
+    .delete({
+      TableName: config.resourceNames.subscriptionsStore,
+      Key: {
+        [subscriptionsStoreAttributes.partitionKey]: subscriptionToDelete.typeName,
+        [subscriptionsStoreAttributes.sortKey]: subscriptionToDelete.connectionID,
+      },
+    })
+    .promise()
+}
+
+export async function deleteAllSubscriptions(
+  db: DynamoDB.DocumentClient,
+  config: BoosterConfig,
+  logger: Logger,
+  connectionID: string
+): Promise<void> {
+  // TODO: Manage query pagination and db.batchWrite limit of 25 operations at a time
+  const result = await db
+    .query({
+      TableName: config.resourceNames.subscriptionsStore,
+      IndexName: subscriptionsStoreAttributes.indexByConnectionIDName(config),
+      ConsistentRead: true,
+      KeyConditionExpression: `${subscriptionsStoreAttributes.indexByConnectionIDPartitionKey} = :partitionKey`,
+      ExpressionAttributeValues: { ':partitionKey': connectionID },
+    })
+    .promise()
+  const foundSubscriptions = result.Items as Array<SubscriptionEnvelope>
+  if (foundSubscriptions?.length == 0) {
+    logger.info(`[deleteAllSubscription] No subscriptions found with connectionID=${connectionID}`)
+    return
   }
-  const readModelTableName = tableARNComponents.resourceName.split('/')[0]
-  return {
-    typeName: config.readModelNameFromResourceName(readModelTableName),
-    value: Converter.unmarshall(record.dynamodb.NewImage) as ReadModelInterface,
+
+  logger.debug(
+    `[deleteAllSubscription] Deleting all subscriptions for connectionID=${connectionID}, which are: `,
+    foundSubscriptions
+  )
+
+  const params: DynamoDB.DocumentClient.BatchWriteItemInput = {
+    RequestItems: {
+      [config.resourceNames.subscriptionsStore]: foundSubscriptions.map((subscriptionEnvelope) => ({
+        DeleteRequest: {
+          Key: {
+            [subscriptionsStoreAttributes.partitionKey]: subscriptionEnvelope.typeName,
+            [subscriptionsStoreAttributes.sortKey]: subscriptionEnvelope.connectionID,
+          },
+        },
+      })),
+    },
   }
+
+  await db.batchWrite(params).promise()
 }

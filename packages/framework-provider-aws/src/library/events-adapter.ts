@@ -88,6 +88,7 @@ export async function storeEvents(
   config: BoosterConfig,
   logger: Logger
 ): Promise<void> {
+  // TODO: Manage query pagination and db.batchWrite limit of 25 operations at a time
   logger.debug('[EventsAdapter#storeEvents] Storing EventEnvelopes with eventEnvelopes:', eventEnvelopes)
   const params: DynamoDB.DocumentClient.BatchWriteItemInput = {
     RequestItems: {

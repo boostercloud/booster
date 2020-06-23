@@ -27,18 +27,23 @@ export const Provider: ProviderLibrary = {
   // ProviderReadModelsLibrary
   readModels: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rawToEnvelopes: undefined as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fetch: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     search: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    subscribe: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rawToEnvelopes: undefined as any,
+    store: undefined as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    subscribe: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fetchSubscriptions: undefined as any,
     notifySubscription: notifySubscription,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    store: undefined as any,
+    deleteSubscription: undefined as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    deleteAllSubscriptions: undefined as any,
   },
   // ProviderGraphQLLibrary
   graphQL: {

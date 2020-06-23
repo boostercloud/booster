@@ -170,8 +170,7 @@ export class GraphQLStack {
       timeToLiveAttribute: subscriptionsStoreAttributes.ttl,
     })
     table.addGlobalSecondaryIndex({
-      indexName:
-        this.config.resourceNames.subscriptionsStore + subscriptionsStoreAttributes.indexByConnectionIDNameSuffix,
+      indexName: subscriptionsStoreAttributes.indexByConnectionIDName(this.config),
       partitionKey: {
         name: subscriptionsStoreAttributes.indexByConnectionIDPartitionKey,
         type: AttributeType.STRING,
