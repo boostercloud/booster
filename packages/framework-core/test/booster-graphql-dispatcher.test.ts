@@ -26,7 +26,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
     context('on CONNECT message', () => {
       it('calls the provider "handleGraphQLResult" with the GraphQL websocket subprotocol headers', async () => {
         const config = mockConfigForGraphQLEnvelope({
-          requestID: '123',
+          requestID: random.uuid(),
           eventType: 'CONNECT',
         })
         const dispatcher = new BoosterGraphQLDispatcher(config, logger)
@@ -42,7 +42,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
       describe('when the message came through socket', () => {
         it('calls the websocket handler', async () => {
           const messageEnvelope: GraphQLRequestEnvelope = {
-            requestID: '123',
+            requestID: random.uuid(),
             eventType: 'MESSAGE',
             connectionID: random.uuid(), // A non-null connectionID means it came through socket
           }
@@ -62,7 +62,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
       describe('when the message came through HTTP', () => {
         it('does not call the websocket handler', async () => {
           const config = mockConfigForGraphQLEnvelope({
-            requestID: '123',
+            requestID: random.uuid(),
             eventType: 'MESSAGE',
           })
           const dispatcher = new BoosterGraphQLDispatcher(config, logger)
@@ -76,7 +76,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
 
         it('calls the provider "handleGraphQLResult" with an error when there is an empty query', async () => {
           const config = mockConfigForGraphQLEnvelope({
-            requestID: '123',
+            requestID: random.uuid(),
             eventType: 'MESSAGE',
           })
           const dispatcher = new BoosterGraphQLDispatcher(config, logger)
@@ -92,7 +92,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
 
         it('calls the provider "handleGraphQLResult" with an error when there is an empty body', async () => {
           const config = mockConfigForGraphQLEnvelope({
-            requestID: '123',
+            requestID: random.uuid(),
             eventType: 'MESSAGE',
             value: {
               query: undefined,
@@ -111,7 +111,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
 
         it('calls the provider "handleGraphQLResult" with an error when a subscription operation is used', async () => {
           const config = mockConfigForGraphQLEnvelope({
-            requestID: '123',
+            requestID: random.uuid(),
             eventType: 'MESSAGE',
             value: {
               query: 'subscription { a { x }}',
@@ -144,7 +144,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
 
           it('calls the provider "handleGraphQLResult" with the error with a query', async () => {
             const config = mockConfigForGraphQLEnvelope({
-              requestID: '123',
+              requestID: random.uuid(),
               eventType: 'MESSAGE',
               value: {
                 query: 'query { a { x }}',
@@ -160,7 +160,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
 
           it('calls the provider "handleGraphQLResult" with the error with a mutation', async () => {
             const config = mockConfigForGraphQLEnvelope({
-              requestID: '123',
+              requestID: random.uuid(),
               eventType: 'MESSAGE',
               value: {
                 query: 'mutation { a { x }}',
@@ -180,7 +180,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
           const graphQLResult = { data: 'the result' }
           const graphQLVariables = { productId: 'productId' }
           const graphQLEnvelope: GraphQLRequestEnvelope = {
-            requestID: '123',
+            requestID: random.uuid(),
             eventType: 'MESSAGE',
             value: {
               query: graphQLBody,
