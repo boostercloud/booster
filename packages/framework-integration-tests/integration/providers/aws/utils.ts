@@ -246,7 +246,7 @@ export class DisconnectableApolloClient extends ApolloClient<NormalizedCacheObje
 export async function graphQLClient(authToken?: string): Promise<DisconnectableApolloClient> {
   const httpURL = await baseHTTPURL()
   const cache = new InMemoryCache()
-  const headers = authToken ? { Authorization: `Bearer ${authToken}` } : {}
+  const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {}
   const httpLink = new HttpLink({
     uri: new URL('graphql', httpURL).href,
     headers,
@@ -277,7 +277,7 @@ export async function graphQLClient(authToken?: string): Promise<DisconnectableA
   return client
 }
 
-export async function graphqlSubscriptionsClient(headers: Record<string, string>): Promise<SubscriptionClient> {
+export async function graphqlSubscriptionsClient(headers?: Record<string, string>): Promise<SubscriptionClient> {
   return new SubscriptionClient(
     await baseWebsocketURL(),
     {

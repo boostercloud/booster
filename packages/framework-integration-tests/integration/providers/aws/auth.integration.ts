@@ -396,7 +396,7 @@ describe('With the auth API', () => {
         })
 
         // Query the product
-        const products = await waitForIt(
+        const result = await waitForIt(
           () => {
             return client.query({
               query: gql`
@@ -417,7 +417,7 @@ describe('With the auth API', () => {
           (result) => result?.data?.ProductReadModels?.some((product: any) => product.sku === mockSku)
         )
 
-        const product = products.data.ProductReadModels.find((product: any) => product.sku === mockSku)
+        const product = result.data.ProductReadModels.find((product: any) => product.sku === mockSku)
         const productId = product.id
 
         const expectedProduct = {
@@ -434,8 +434,7 @@ describe('With the auth API', () => {
           },
         }
         expect(product).not.to.be.null
-        const queryProduct = product.data.ProductReadModel
-        expect(queryProduct).to.be.deep.equal(expectedProduct)
+        expect(product).to.be.deep.equal(expectedProduct)
       })
 
       it('can subscribe to a secured read model they have privileges for', async () => {
