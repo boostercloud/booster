@@ -14,6 +14,7 @@ import { getMainDefinition } from 'apollo-utilities'
 import { ApolloLink, split } from 'apollo-link'
 import * as WebSocket from 'ws'
 import { SubscriptionClient } from 'subscriptions-transport-ws'
+import { ApolloClientOptions } from 'apollo-client/ApolloClient'
 
 const userPoolId = 'userpool'
 const cloudFormation = new CloudFormation()
@@ -81,7 +82,7 @@ export async function userPoolPhysicalResourceId(): Promise<string> {
   }
 }
 
-export async function createUser(username: string, password: string, role: string = 'User'): Promise<void> {
+export async function createUser(username: string, password: string, role = 'User'): Promise<void> {
   const physicalResourceId = await userPoolPhysicalResourceId()
   const clientId = await authClientID()
   const temporaryPassword = 'ChangeMePleas3!'
@@ -229,10 +230,20 @@ export async function signInURL(): Promise<string> {
 
 // --- GraphQL helpers ---
 
-export async function graphQLClient(
-  authToken?: string,
-  subscriptionClient?: SubscriptionClient
-): Promise<ApolloClient<NormalizedCacheObject>> {
+export class DisconnectableApolloClient extends ApolloClient<NormalizedCacheObject> {
+  constructor(
+    private readonly subscriptionClient: SubscriptionClient,
+    options: ApolloClientOptions<NormalizedCacheObject>
+  ) {
+    super(options)
+  }
+
+  public disconnect(): void {
+    this.subscriptionClient.close()
+    this.stop()
+  }
+}
+export async function graphQLClient(authToken?: string): Promise<DisconnectableApolloClient> {
   const httpURL = await baseHTTPURL()
   const cache = new InMemoryCache()
   const headers = authToken ? { Authorization: `Bearer ${authToken}` } : {}
@@ -243,19 +254,18 @@ export async function graphQLClient(
   })
 
   let link: ApolloLink = httpLink
-  if (subscriptionClient) {
-    const websocketLink = new WebSocketLink(subscriptionClient)
-    link = split(
-      ({ query }) => {
-        const definition = getMainDefinition(query)
-        return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
-      },
-      websocketLink,
-      httpLink
-    )
-  }
+  const subscriptionClient = await graphqlSubscriptionsClient(headers)
+  const websocketLink = new WebSocketLink(subscriptionClient)
+  link = split(
+    ({ query }) => {
+      const definition = getMainDefinition(query)
+      return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
+    },
+    websocketLink,
+    httpLink
+  )
 
-  return new ApolloClient({
+  const client = new DisconnectableApolloClient(subscriptionClient, {
     cache: cache,
     link: link,
     defaultOptions: {
@@ -264,9 +274,10 @@ export async function graphQLClient(
       },
     },
   })
+  return client
 }
 
-export async function graphqlSubscriptionsClient(authToken?: string): Promise<SubscriptionClient> {
+export async function graphqlSubscriptionsClient(headers: Record<string, string>): Promise<SubscriptionClient> {
   return new SubscriptionClient(
     await baseWebsocketURL(),
     {
@@ -275,7 +286,7 @@ export async function graphqlSubscriptionsClient(authToken?: string): Promise<Su
     class MyWebSocket extends WebSocket {
       public constructor(url: string, protocols?: string | string[]) {
         super(url, protocols, {
-          headers: authToken ? { Authorization: `Bearer ${authToken}` } : {}
+          headers,
         })
         this.addListener('open', (): void => {
           console.log('[GraphQL socket] on open')

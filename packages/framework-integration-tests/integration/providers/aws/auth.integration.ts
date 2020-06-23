@@ -1,6 +1,5 @@
 import {
   graphQLClient,
-  graphqlSubscriptionsClient,
   signUpURL,
   authClientID,
   signInURL,
@@ -10,15 +9,13 @@ import {
   waitForIt,
   createPassword,
   getAuthToken,
+  DisconnectableApolloClient,
 } from './utils'
 import gql from 'graphql-tag'
 import { expect } from 'chai'
 import fetch from 'cross-fetch'
 import * as chai from 'chai'
 import { random, internet, lorem, finance } from 'faker'
-import ApolloClient from 'apollo-client'
-import { NormalizedCacheObject } from 'apollo-cache-inmemory'
-import { SubscriptionClient } from 'subscriptions-transport-ws'
 
 chai.use(require('chai-as-promised'))
 
@@ -34,18 +31,15 @@ describe('With the auth API', () => {
   })
 
   context('an internet rando', () => {
-    let client: ApolloClient<NormalizedCacheObject>
-    let subscriptionClient: SubscriptionClient
+    let client: DisconnectableApolloClient
 
     beforeEach(async () => {
-      subscriptionClient = await graphqlSubscriptionsClient()
-      client = await graphQLClient(undefined, subscriptionClient)
+      client = await graphQLClient()
+    })
+    afterEach(async () => {
+      client.disconnect()
     })
 
-    afterEach(async () => {
-      subscriptionClient.close()
-      client.stop()
-    })
     it("can't submit a secured command", async () => {
       const mutationPromise = client.mutate({
         mutation: gql`
@@ -88,26 +82,31 @@ describe('With the auth API', () => {
 
     it("can't subscribe to a secured read model", async () => {
       const subscriptionPromise = new Promise((_, reject) => {
-        client.subscribe({
-          variables: {
-            productId: mockProductId,
-          },
-          query: gql`
+        client
+          .subscribe({
+            variables: {
+              productId: mockProductId,
+            },
+            query: gql`
               subscription ProductUpdatesReadModel($productId: ID!) {
-                  ProductUpdatesReadModel(id: $productId) {
-                      id
-                      availability
-                      lastUpdate
-                      previousUpdate
-                  }
+                ProductUpdatesReadModel(id: $productId) {
+                  id
+                  availability
+                  lastUpdate
+                  previousUpdate
+                }
               }
-          `,
-        }).subscribe({ // This "subscribe" is the one of the Observable returned by Apollo
-          error: reject
-        })
+            `,
+          })
+          .subscribe({
+            // This "subscribe" is the one of the Observable returned by Apollo
+            error: reject,
+          })
       })
 
-      await expect(subscriptionPromise).to.eventually.be.rejectedWith(/Access denied for read model ProductUpdatesReadModel/)
+      await expect(subscriptionPromise).to.eventually.be.rejectedWith(
+        /Access denied for read model ProductUpdatesReadModel/
+      )
     })
 
     it('can submit a public command', async () => {
@@ -178,22 +177,25 @@ describe('With the auth API', () => {
     it('can subscribe to a public read model', async () => {
       // We check that we receive data after modifying the read model with a command
       const subscriptionPromise = new Promise((resolve, reject) => {
-        client.subscribe({
-          variables: {
-            cartId: mockCartId,
-          },
-          query: gql`
+        client
+          .subscribe({
+            variables: {
+              cartId: mockCartId,
+            },
+            query: gql`
               subscription CartReadModel($cartId: ID!) {
-                  CartReadModel(id: $cartId) {
-                      id
-                      cartItems
-                  }
+                CartReadModel(id: $cartId) {
+                  id
+                  cartItems
+                }
               }
-          `,
-        }).subscribe({ // This "subscribe" is the one of the Observable returned by Apollo
-          next: resolve,
-          error: reject,
-        })
+            `,
+          })
+          .subscribe({
+            // This "subscribe" is the one of the Observable returned by Apollo
+            next: resolve,
+            error: reject,
+          })
       })
 
       await client.mutate({
@@ -202,9 +204,9 @@ describe('With the auth API', () => {
           productId: mockProductId,
         },
         mutation: gql`
-            mutation ChangeCartItem($cartId: ID!, $productId: ID!) {
-                ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: 2 })
-            }
+          mutation ChangeCartItem($cartId: ID!, $productId: ID!) {
+            ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: 2 })
+          }
         `,
       })
 
@@ -273,9 +275,6 @@ describe('With the auth API', () => {
   context('someone with a user account', () => {
     let userEmail: string
     let userPassword: string
-    let userAccessToken: string
-    let client: ApolloClient<NormalizedCacheObject>
-    let subscriptionClient: SubscriptionClient
 
     before(async () => {
       userEmail = internet.email()
@@ -305,14 +304,6 @@ describe('With the auth API', () => {
     after(async () => {
       await deleteUser(userEmail)
     })
-    beforeEach(async () => {
-      subscriptionClient = await graphqlSubscriptionsClient(userAccessToken)
-      client = await graphQLClient(userAccessToken, subscriptionClient)
-    })
-    afterEach(async () => {
-      subscriptionClient.close()
-      client.stop()
-    })
 
     it('can sign in their account and get a valid token', async () => {
       const url = await signInURL()
@@ -335,232 +326,218 @@ describe('With the auth API', () => {
       const message = await response.json()
       expect(message).not.to.be.empty
       expect(message.accessToken).not.to.be.empty
-
-      // We save the access token for next tests
-      userAccessToken = message.accessToken
     })
 
-    it('can submit a secured command they have privileges for', async () => {
-      const mutationResult = await client.mutate({
-        mutation: gql`
-          mutation {
-            CreateProduct(
-              input: {
-                sku: "314"
-                displayName: "Something fancy"
-                description: "It's really fancy"
-                priceInCents: 4000
-                currency: "EUR"
-              }
-            )
-          }
-        `,
+    context('with a signed-in user', () => {
+      let client: DisconnectableApolloClient
+      beforeEach(async () => {
+        client = await graphQLClient(await getAuthToken(userEmail, userPassword))
+      })
+      afterEach(async () => {
+        client.disconnect()
       })
 
-      expect(mutationResult).not.to.be.null
-      expect(mutationResult.data.CreateProduct).to.be.true
-    })
-
-    it('can query a secured read model they have privileges for', async () => {
-      const mockSku = random.alphaNumeric(random.number({ min: 10, max: 20 }))
-      const mockDisplayName = lorem.sentence()
-      const mockDescription = lorem.paragraph()
-      const mockPriceInCents = random.number({ min: 1 })
-      const mockCurrency = finance.currencyCode()
-
-      userAccessToken = await getAuthToken(userEmail, userPassword)
-      const client = await graphQLClient(userAccessToken)
-
-      // Create a product
-      await client.mutate({
-        variables: {
-          sku: mockSku,
-          displayName: mockDisplayName,
-          description: mockDescription,
-          priceInCents: mockPriceInCents,
-          currency: mockCurrency,
-        },
-        mutation: gql`
-          mutation CreateProduct(
-            $sku: String
-            $displayName: String
-            $description: String
-            $priceInCents: Float
-            $currency: String
-          ) {
-            CreateProduct(
-              input: {
-                sku: $sku
-                displayName: $displayName
-                description: $description
-                priceInCents: $priceInCents
-                currency: $currency
-              }
-            )
-          }
-        `,
-      })
-
-      // Wait for product to be available in read model
-      const products = await waitForIt(
-        () => {
-          return client.query({
-            query: gql`
-              query {
-                ProductReadModels {
-                  id
-                  sku
-                  displayName
-                  description
-                  price
-                  availability
-                  deleted
+      it('can submit a secured command they have privileges for', async () => {
+        const mutationResult = await client.mutate({
+          mutation: gql`
+            mutation {
+              CreateProduct(
+                input: {
+                  sku: "314"
+                  displayName: "Something fancy"
+                  description: "It's really fancy"
+                  priceInCents: 4000
+                  currency: "EUR"
                 }
-              }
-            `,
-          })
-        },
-        (result) => result?.data?.ProductReadModels?.some((product: any) => product.sku === mockSku)
-      )
-
-      const product = products.data.ProductReadModels.find((product: any) => product.sku === mockSku)
-      const productId = product.id
-
-      // Query just created product
-      const queryResult = await client.query({
-        variables: {
-          productId: productId,
-        },
-        query: gql`
-          query ProductReadModel($productId: ID!) {
-            ProductReadModel(id: $productId) {
-              id
-              sku
-              displayName
-              description
-              price
-              availability
-              deleted
+              )
             }
-          }
-        `,
+          `,
+        })
+
+        expect(mutationResult).not.to.be.null
+        expect(mutationResult.data.CreateProduct).to.be.true
       })
 
-      const expectedProduct = {
-        __typename: 'ProductReadModel',
-        sku: mockSku,
-        id: productId,
-        description: mockDescription,
-        displayName: mockDisplayName,
-        availability: 0,
-        deleted: false,
-        price: {
-          cents: mockPriceInCents,
-          currency: mockCurrency,
-        },
-      }
-      expect(queryResult).not.to.be.null
-      const queryProduct = queryResult.data.ProductReadModel
-      expect(queryProduct).to.be.deep.equal(expectedProduct)
-    })
+      it('can query a secured read model they have privileges for', async () => {
+        const mockSku = random.alphaNumeric(random.number({ min: 10, max: 20 }))
+        const mockDisplayName = lorem.sentence()
+        const mockDescription = lorem.paragraph()
+        const mockPriceInCents = random.number({ min: 1 })
+        const mockCurrency = finance.currencyCode()
 
-    it('can subscribe to a secured read model they have privileges for', async () => {
-      // We check that we receive data after modifying the read model with a command
-      const subscriptionPromise = new Promise((resolve, reject) => {
-        client.subscribe({
-          query: gql`
-              subscription {
+        // Create a product
+        await client.mutate({
+          variables: {
+            sku: mockSku,
+            displayName: mockDisplayName,
+            description: mockDescription,
+            priceInCents: mockPriceInCents,
+            currency: mockCurrency,
+          },
+          mutation: gql`
+            mutation CreateProduct(
+              $sku: String
+              $displayName: String
+              $description: String
+              $priceInCents: Float
+              $currency: String
+            ) {
+              CreateProduct(
+                input: {
+                  sku: $sku
+                  displayName: $displayName
+                  description: $description
+                  priceInCents: $priceInCents
+                  currency: $currency
+                }
+              )
+            }
+          `,
+        })
+
+        // Query the product
+        const products = await waitForIt(
+          () => {
+            return client.query({
+              query: gql`
+                query {
                   ProductReadModels {
-                      id
-                      sku
+                    id
+                    sku
+                    displayName
+                    description
+                    price
+                    availability
+                    deleted
                   }
-              }
-          `,
-        }).subscribe({ // This "subscribe" is the one of the Observable returned by Apollo
-          next: resolve,
-          error: reject,
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ProductReadModels?.some((product: any) => product.sku === mockSku)
+        )
+
+        const product = products.data.ProductReadModels.find((product: any) => product.sku === mockSku)
+        const productId = product.id
+
+        const expectedProduct = {
+          __typename: 'ProductReadModel',
+          sku: mockSku,
+          id: productId,
+          description: mockDescription,
+          displayName: mockDisplayName,
+          availability: 0,
+          deleted: false,
+          price: {
+            cents: mockPriceInCents,
+            currency: mockCurrency,
+          },
+        }
+        expect(product).not.to.be.null
+        const queryProduct = product.data.ProductReadModel
+        expect(queryProduct).to.be.deep.equal(expectedProduct)
+      })
+
+      it('can subscribe to a secured read model they have privileges for', async () => {
+        // We check that we receive data after modifying the read model with a command
+        const subscriptionPromise = new Promise((resolve, reject) => {
+          client
+            .subscribe({
+              query: gql`
+                subscription {
+                  ProductReadModels {
+                    id
+                    sku
+                  }
+                }
+              `,
+            })
+            .subscribe({
+              // This "subscribe" is the one of the Observable returned by Apollo
+              next: resolve,
+              error: reject,
+            })
         })
-      })
 
-      await client.mutate({
-        variables: {
-          productSKU: mockProductSKU,
-        },
-        mutation: gql`
-            mutation CreateProduct($productSKU: String!){
-                CreateProduct(
-                    input: {
-                        sku: $productSKU
-                        displayName: "Something fancy"
-                        description: "It's really fancy"
-                        priceInCents: 4000
-                        currency: "EUR"
-                    }
-                )
+        await client.mutate({
+          variables: {
+            productSKU: mockProductSKU,
+          },
+          mutation: gql`
+            mutation CreateProduct($productSKU: String!) {
+              CreateProduct(
+                input: {
+                  sku: $productSKU
+                  displayName: "Something fancy"
+                  description: "It's really fancy"
+                  priceInCents: 4000
+                  currency: "EUR"
+                }
+              )
             }
-        `,
+          `,
+        })
+
+        await expect(subscriptionPromise).to.eventually.be.fulfilled
       })
 
-      await expect(subscriptionPromise).to.eventually.be.fulfilled
-    })
-
-    it("can't send a command they don't have privileges for", async () => {
-      userAccessToken = await getAuthToken(userEmail, userPassword)
-      const client = await graphQLClient(userAccessToken)
-
-      const mutationPromise = client.mutate({
-        variables: {
-          productId: mockProductId,
-        },
-        mutation: gql`
-          mutation DeleteProduct($productId: ID!) {
-            DeleteProduct(input: { productId: $productId })
-          }
-        `,
-      })
-
-      await expect(mutationPromise).to.eventually.be.rejectedWith("Access denied for command 'DeleteProduct'")
-    })
-
-    it("can't query a read model they don't have privileges for", async () => {
-      userAccessToken = await getAuthToken(userEmail, userPassword)
-      const client = await graphQLClient(userAccessToken)
-
-      const queryPromise = client.query({
-        variables: {
-          productId: mockProductId,
-        },
-        query: gql`
-          query ProductUpdatesReadModel($productId: ID!) {
-            ProductUpdatesReadModel(id: $productId) {
-              id
-              availability
-              lastUpdate
-              previousUpdate
+      it("can't send a command they don't have privileges for", async () => {
+        const mutationPromise = client.mutate({
+          variables: {
+            productId: mockProductId,
+          },
+          mutation: gql`
+            mutation DeleteProduct($productId: ID!) {
+              DeleteProduct(input: { productId: $productId })
             }
-          }
-        `,
+          `,
+        })
+
+        await expect(mutationPromise).to.eventually.be.rejectedWith("Access denied for command 'DeleteProduct'")
       })
 
-      await expect(queryPromise).to.eventually.be.rejectedWith('Access denied for read model ProductUpdatesReadMode')
-    })
-
-    it("can't subscribe to a read model they don't have privileges for", async () => {
-      const subscriptionPromise = new Promise((_, reject) => {
-        client.subscribe({
+      it("can't query a read model they don't have privileges for", async () => {
+        const queryPromise = client.query({
+          variables: {
+            productId: mockProductId,
+          },
           query: gql`
-              subscription {
-                  ProductUpdatesReadModels {
-                      id
-                  }
+            query ProductUpdatesReadModel($productId: ID!) {
+              ProductUpdatesReadModel(id: $productId) {
+                id
+                availability
+                lastUpdate
+                previousUpdate
               }
+            }
           `,
-        }).subscribe({ // This "subscribe" is the one of the Observable returned by Apollo
-          error: reject
         })
+
+        await expect(queryPromise).to.eventually.be.rejectedWith('Access denied for read model ProductUpdatesReadMode')
       })
 
-      await expect(subscriptionPromise).to.eventually.be.rejectedWith(/Access denied for read model ProductUpdatesReadModel/)
+      it("can't subscribe to a read model they don't have privileges for", async () => {
+        const subscriptionPromise = new Promise((_, reject) => {
+          client
+            .subscribe({
+              query: gql`
+                subscription {
+                  ProductUpdatesReadModels {
+                    id
+                  }
+                }
+              `,
+            })
+            .subscribe({
+              // This "subscribe" is the one of the Observable returned by Apollo
+              error: reject,
+            })
+        })
+
+        await expect(subscriptionPromise).to.eventually.be.rejectedWith(
+          /Access denied for read model ProductUpdatesReadModel/
+        )
+      })
     })
   })
 
@@ -568,9 +545,6 @@ describe('With the auth API', () => {
   context('someone with an admin account', () => {
     let adminEmail: string
     let adminPassword: string
-    let adminAccessToken: string
-    let client: ApolloClient<NormalizedCacheObject>
-    let subscriptionClient: SubscriptionClient
 
     before(async () => {
       adminEmail = internet.email()
@@ -581,15 +555,6 @@ describe('With the auth API', () => {
     })
     after(async () => {
       await deleteUser(adminEmail)
-    })
-
-    beforeEach(async () => {
-      subscriptionClient = await graphqlSubscriptionsClient(adminAccessToken)
-      client = await graphQLClient(adminAccessToken, subscriptionClient)
-    })
-    afterEach(async () => {
-      subscriptionClient.close()
-      client.stop()
     })
 
     it('can sign in their account and get a valid token', async () => {
@@ -613,89 +578,93 @@ describe('With the auth API', () => {
       const message = await response.json()
       expect(message).not.to.be.empty
       expect(message.accessToken).not.to.be.empty
-
-      // We save the access token for next tests
-      adminAccessToken = message.accessToken
     })
 
-    it('can query a read model they have privileges for', async () => {
-      adminAccessToken = await getAuthToken(adminEmail, adminPassword)
-      const client = await graphQLClient(adminAccessToken)
-
-      const queryResult = await client.query({
-        variables: {
-          productId: mockProductId,
-        },
-        query: gql`
-          query ProductUpdatesReadModel($productId: ID!) {
-            ProductUpdatesReadModel(id: $productId) {
-              id
-              availability
-            }
-          }
-        `,
+    context('with a signed-in admin user', () => {
+      let client: DisconnectableApolloClient
+      beforeEach(async () => {
+        client = await graphQLClient(await getAuthToken(adminEmail, adminPassword))
+      })
+      afterEach(async () => {
+        client.disconnect()
       })
 
-      expect(queryResult).not.to.be.null // It's enough that the query wasn't rejected
-    })
-
-    it('can send a command they have privileges for', async () => {
-      adminAccessToken = await getAuthToken(adminEmail, adminPassword)
-      const client = await graphQLClient(adminAccessToken)
-
-      const mutationResult = await client.mutate({
-        variables: {
-          productId: mockProductId,
-        },
-        mutation: gql`
-          mutation DeleteProduct($productId: ID!) {
-            DeleteProduct(input: { productId: $productId })
-          }
-        `,
-      })
-
-      expect(mutationResult).not.to.be.null
-      expect(mutationResult.data.DeleteProduct).to.be.true
-    })
-
-    it('can subscribe to a read model they have privileges for', async () => {
-      // We check that we receive data after modifying the read model with a command
-      const subscriptionPromise = new Promise((resolve, reject) => {
-        client.subscribe({
+      it('can query a read model they have privileges for', async () => {
+        const queryResult = await client.query({
+          variables: {
+            productId: mockProductId,
+          },
           query: gql`
-              subscription {
-                  ProductUpdatesReadModels {
-                      id
-                      availability
-                  }
+            query ProductUpdatesReadModel($productId: ID!) {
+              ProductUpdatesReadModel(id: $productId) {
+                id
+                availability
               }
+            }
           `,
-        }).subscribe({ // This "subscribe" is the one of the Observable returned by Apollo
-          next: resolve,
-          error: reject,
         })
+
+        expect(queryResult).not.to.be.null // It's enough that the query wasn't rejected
       })
 
-      await client.mutate({
-        variables: {
-          productSKU: mockProductSKU,
-        },
-        mutation: gql`
-          mutation CreateProduct($productSKU: String!){
-            CreateProduct(
-              input: {
-                sku: $productSKU
-                displayName: "Something fancy"
-                description: "It's really fancy"
-                priceInCents: 4000
-                currency: "EUR"
-              }
-            )
-          }
-        `,
+      it('can send a command they have privileges for', async () => {
+        const mutationResult = await client.mutate({
+          variables: {
+            productId: mockProductId,
+          },
+          mutation: gql`
+            mutation DeleteProduct($productId: ID!) {
+              DeleteProduct(input: { productId: $productId })
+            }
+          `,
+        })
+
+        expect(mutationResult).not.to.be.null
+        expect(mutationResult.data.DeleteProduct).to.be.true
       })
 
-      await expect(subscriptionPromise).to.eventually.be.fulfilled
+      it('can subscribe to a read model they have privileges for', async () => {
+        // We check that we receive data after modifying the read model with a command
+        const subscriptionPromise = new Promise((resolve, reject) => {
+          client
+            .subscribe({
+              query: gql`
+                subscription {
+                  ProductUpdatesReadModels {
+                    id
+                    availability
+                  }
+                }
+              `,
+            })
+            .subscribe({
+              // This "subscribe" is the one of the Observable returned by Apollo
+              next: resolve,
+              error: reject,
+            })
+        })
+
+        await client.mutate({
+          variables: {
+            productSKU: mockProductSKU,
+          },
+          mutation: gql`
+            mutation CreateProduct($productSKU: String!) {
+              CreateProduct(
+                input: {
+                  sku: $productSKU
+                  displayName: "Something fancy"
+                  description: "It's really fancy"
+                  priceInCents: 4000
+                  currency: "EUR"
+                }
+              )
+            }
+          `,
+        })
+
+        await expect(subscriptionPromise).to.eventually.be.fulfilled
+      })
     })
   })
 })
