@@ -173,13 +173,22 @@ describe('GraphQLQueryGenerator', () => {
               expect(config.fields[mockTargetTypeName].args['id'].description).to.be.undefined
               expect(config.fields[mockTargetTypeName].args['id'].extensions).to.be.undefined
 
-              expect(config.fields[`${mockTargetTypeName}s`].args[mockPropertyName].type.toString()).to.be.equal(
-                'BooleanPropertyFilter'
+              const booleansTypeFilterConfig = config.fields[`${mockTargetTypeName}s`].args[
+                mockPropertyName
+              ].type.toConfig()
+              expect(booleansTypeFilterConfig.name).to.be.equal('BooleanPropertyFilter')
+              expect(booleansTypeFilterConfig.fields.operation.description).to.be.undefined
+              expect(booleansTypeFilterConfig.fields.operation.type.toString()).to.be.equal('BooleanOperations!')
+              expect(booleansTypeFilterConfig.fields.operation.defaultValue).to.be.undefined
+              expect(booleansTypeFilterConfig.fields.operation.extensions).to.be.undefined
+              expect(booleansTypeFilterConfig.fields.operation.astNode).to.be.undefined
+              expect(booleansTypeFilterConfig.fields.values.description).to.be.undefined
+              expect(booleansTypeFilterConfig.fields.values.type.toString()).to.be.equal(
+                `[${mockGraphQLType.toString()}!]!`
               )
-              expect(config.fields[`${mockTargetTypeName}s`].args[mockPropertyName].astNode).to.be.undefined
-              expect(config.fields[`${mockTargetTypeName}s`].args[mockPropertyName].defaultValue).to.be.undefined
-              expect(config.fields[`${mockTargetTypeName}s`].args[mockPropertyName].description).to.be.undefined
-              expect(config.fields[`${mockTargetTypeName}s`].args[mockPropertyName].extensions).to.be.undefined
+              expect(booleansTypeFilterConfig.fields.values.defaultValue).to.be.undefined
+              expect(booleansTypeFilterConfig.fields.values.extensions).to.be.undefined
+              expect(booleansTypeFilterConfig.fields.values.astNode).to.be.undefined
             })
           })
 
