@@ -36,7 +36,7 @@ describe('With the auth API', () => {
     beforeEach(async () => {
       client = await graphQLClient()
     })
-    afterEach(async () => {
+    afterEach(() => {
       client.disconnect()
     })
 
@@ -333,7 +333,7 @@ describe('With the auth API', () => {
       beforeEach(async () => {
         client = await graphQLClient(await getAuthToken(userEmail, userPassword))
       })
-      afterEach(async () => {
+      afterEach(() => {
         client.disconnect()
       })
 
@@ -584,7 +584,7 @@ describe('With the auth API', () => {
       beforeEach(async () => {
         client = await graphQLClient(await getAuthToken(adminEmail, adminPassword))
       })
-      afterEach(async () => {
+      afterEach(() => {
         client.disconnect()
       })
 
