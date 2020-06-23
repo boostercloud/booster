@@ -63,9 +63,8 @@ export class BoosterGraphQLDispatcher {
     this.logger.debug('Starting GraphQL operation')
     if (cameThroughSocket(envelope)) {
       return this.websocketHandler.handle(envelope)
-    } else {
-      return this.runGraphQLOperation(envelope)
     }
+    return this.runGraphQLOperation(envelope)
   }
 
   private async runGraphQLOperation(
