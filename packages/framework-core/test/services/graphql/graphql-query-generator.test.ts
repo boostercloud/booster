@@ -1,14 +1,17 @@
 import { GraphQLQueryGenerator } from '../../../src/services/graphql/graphql-query-generator'
-import { SinonStub, stub, replace, SinonStubbedInstance } from 'sinon'
+import { SinonStub, stub, replace, SinonStubbedInstance, restore } from 'sinon'
 import { expect } from '../../expect'
 import { GraphQLTypeInformer } from '../../../src/services/graphql/graphql-type-informer'
 import sinon = require('sinon')
 import { TargetTypesMap } from '../../../src/services/graphql/common'
-import { GraphQLBoolean, GraphQLObjectType } from 'graphql'
+import { GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql'
 import { random } from 'faker'
+import GraphQLJSON, { GraphQLJSONObject } from 'graphql-type-json'
 
 describe('GraphQLQueryGenerator', () => {
   let mockTargetTypes: TargetTypesMap
+  let mockGraphQLType: any
+
   let mockTypeInformer: SinonStubbedInstance<GraphQLTypeInformer>
   let mockByIdResolverBuilder: SinonStub
   let mockFilterResolverBuilder: SinonStub
@@ -19,12 +22,20 @@ describe('GraphQLQueryGenerator', () => {
 
   beforeEach(() => {
     mockTargetTypes = {}
+    mockGraphQLType = random.arrayElement([
+      GraphQLBoolean,
+      GraphQLID,
+      GraphQLString,
+      GraphQLFloat,
+      GraphQLInt,
+      GraphQLJSON,
+    ])
+
     mockTypeInformer = sinon.createStubInstance(GraphQLTypeInformer)
     mockByIdResolverBuilder = stub()
     mockFilterResolverBuilder = stub()
 
-    getGraphQLTypeForStub = stub().returns(GraphQLBoolean)
-
+    getGraphQLTypeForStub = stub().returns(mockGraphQLType)
     replace(mockTypeInformer, 'getGraphQLTypeFor', getGraphQLTypeForStub as any)
 
     sut = new GraphQLQueryGenerator(
@@ -35,16 +46,25 @@ describe('GraphQLQueryGenerator', () => {
     )
   })
 
+  afterEach(() => {
+    restore()
+  })
+
   describe('generate', () => {
     describe('with target types', () => {
       context('1 target type', () => {
+        let mockTargetTypeClass: BooleanConstructor | StringConstructor | NumberConstructor
+        let mockTargetTypeName: string
+
         beforeEach(() => {
+          mockTargetTypeClass = random.arrayElement([Boolean, String, Number])
+          mockTargetTypeName = mockTargetTypeClass.name.toLowerCase()
+
           // Provision target types
-          mockTargetTypes = {
-            boolean: {
-              class: Boolean,
-              properties: [],
-            },
+          mockTargetTypes = {}
+          mockTargetTypes[mockTargetTypeName] = {
+            class: mockTargetTypeClass,
+            properties: [],
           }
 
           sut = new GraphQLQueryGenerator(
@@ -55,30 +75,47 @@ describe('GraphQLQueryGenerator', () => {
           )
         })
 
-        it('should call typeInformer.getGraphQLTypeFor twice times', () => {
+        it('should call typeInformer.getGraphQLTypeFor twice', () => {
           sut.generate()
 
-          expect(getGraphQLTypeForStub).calledTwice.and.calledWith(Boolean)
+          expect(getGraphQLTypeForStub).calledTwice.and.calledWith(mockTargetTypeClass)
         })
 
-        it('should call filterResolverBuilder 1 time', () => {
+        it('should call filterResolverBuilder once', () => {
           sut.generate()
 
-          expect(mockByIdResolverBuilder).calledOnce.and.calledWith(Boolean)
+          expect(mockByIdResolverBuilder).calledOnce.and.calledWith(mockTargetTypeClass)
           expect(mockByIdResolverBuilder).to.be.calledAfter(getGraphQLTypeForStub)
         })
 
         it('should return expected result', () => {
-          const expectedResult = {} as GraphQLObjectType
-
           const result = sut.generate()
 
-          console.log(result)
+          expect(result.name).to.be.equal('Query')
+          expect(result.description).to.be.undefined
+          expect(result.extensions).to.be.undefined
+          expect(result.astNode).to.be.undefined
+          expect(result.extensionASTNodes).to.be.undefined
 
-          expect(result).to.deep.equal(expectedResult)
+          const config: any = result.toConfig()
+          expect(config.fields[mockTargetTypeName].description).to.be.undefined
+          expect(config.fields[mockTargetTypeName].type).to.be.equal(mockGraphQLType)
+          expect(config.fields[mockTargetTypeName].resolve).to.be.undefined
+          expect(config.fields[mockTargetTypeName].subscribe).to.be.undefined
+          expect(config.fields[mockTargetTypeName].deprecationReason).to.be.undefined
+          expect(config.fields[mockTargetTypeName].extensions).to.be.undefined
+          expect(config.fields[mockTargetTypeName].astNode).to.be.undefined
+
+          expect(config.fields[`${mockTargetTypeName}s`].description).to.be.undefined
+          expect(config.fields[`${mockTargetTypeName}s`].type.toString()).to.be.equal(`[${mockGraphQLType}]`)
+          expect(config.fields[`${mockTargetTypeName}s`].resolve).to.be.undefined
+          expect(config.fields[`${mockTargetTypeName}s`].subscribe).to.be.undefined
+          expect(config.fields[`${mockTargetTypeName}s`].deprecationReason).to.be.undefined
+          expect(config.fields[`${mockTargetTypeName}s`].extensions).to.be.undefined
+          expect(config.fields[`${mockTargetTypeName}s`].astNode).to.be.undefined
         })
 
-        describe('with property', () => {
+        describe('with properties', () => {
           let mockPropertyName: string
           let mockTargetType: any
           let mockPropertyType: any
@@ -86,38 +123,80 @@ describe('GraphQLQueryGenerator', () => {
           beforeEach(() => {
             // Provision target types
             mockPropertyName = random.alphaNumeric(10)
-            mockTargetType = random.arrayElement([String, Boolean, Number])
-            mockPropertyType = random.arrayElement([String, Boolean, Number])
-            mockTargetTypes = {
-              boolean: {
-                class: mockTargetType,
-                properties: [
-                  {
-                    name: mockPropertyName,
-                    type: mockPropertyType,
-                  },
-                ],
-              },
+            mockTargetType = Boolean
+            mockPropertyType = Boolean
+            mockTargetTypes = {}
+            mockTargetTypes[mockTargetTypeName] = {
+              class: mockTargetType,
+              properties: [
+                {
+                  name: mockPropertyName,
+                  type: mockPropertyType,
+                },
+              ],
             }
-
-            sut = new GraphQLQueryGenerator(
-              mockTargetTypes,
-              mockTypeInformer as any,
-              mockByIdResolverBuilder,
-              mockFilterResolverBuilder
-            )
           })
 
-          it('should call typeInformer.getGraphQLTypeFor 2 + # of properties * 2', () => {
-            sut.generate()
+          context('Property GraphQL Type is scalar', () => {
+            beforeEach(() => {
+              sut = new GraphQLQueryGenerator(
+                mockTargetTypes,
+                mockTypeInformer as any,
+                mockByIdResolverBuilder,
+                mockFilterResolverBuilder
+              )
+            })
 
-            expect(getGraphQLTypeForStub)
-              .callCount(4)
-              .and.calledWith(mockTargetType)
-              .and.calledWith(mockPropertyType)
+            it('should call typeInformer.getGraphQLTypeFor 4 times', () => {
+              sut.generate()
+
+              expect(getGraphQLTypeForStub)
+                .callCount(4)
+                .and.calledWith(mockTargetType)
+                .and.calledWith(mockPropertyType)
+            })
+
+            it('should have expected args', () => {
+              const result = sut.generate()
+
+              const config: any = result.toConfig()
+              expect(config.fields[mockTargetTypeName].args['id'].type.toString()).to.be.equal('ID!')
+              expect(config.fields[mockTargetTypeName].args['id'].astNode).to.be.undefined
+              expect(config.fields[mockTargetTypeName].args['id'].defaultValue).to.be.undefined
+              expect(config.fields[mockTargetTypeName].args['id'].description).to.be.undefined
+              expect(config.fields[mockTargetTypeName].args['id'].extensions).to.be.undefined
+
+              expect(config.fields[`${mockTargetTypeName}s`].args[mockPropertyName].type.toString()).to.be.equal(
+                'BooleanPropertyFilter'
+              )
+              expect(config.fields[`${mockTargetTypeName}s`].args[mockPropertyName].astNode).to.be.undefined
+              expect(config.fields[`${mockTargetTypeName}s`].args[mockPropertyName].defaultValue).to.be.undefined
+              expect(config.fields[`${mockTargetTypeName}s`].args[mockPropertyName].description).to.be.undefined
+              expect(config.fields[`${mockTargetTypeName}s`].args[mockPropertyName].extensions).to.be.undefined
+            })
           })
 
-          it('should return expected result', () => {})
+          context('Property GraphQL Type is GraphQLJSONObject', () => {
+            beforeEach(() => {
+              getGraphQLTypeForStub.returns(GraphQLJSONObject)
+
+              sut = new GraphQLQueryGenerator(
+                mockTargetTypes,
+                mockTypeInformer as any,
+                mockByIdResolverBuilder,
+                mockFilterResolverBuilder
+              )
+            })
+
+            it('should call typeInformer.getGraphQLTypeFor 3 times', () => {
+              sut.generate()
+
+              expect(getGraphQLTypeForStub)
+                .callCount(3)
+                .and.calledWith(mockTargetType)
+                .and.calledWith(mockPropertyType)
+            })
+          })
         })
       })
 
@@ -139,6 +218,21 @@ describe('GraphQLQueryGenerator', () => {
         sut.generate()
 
         expect(getGraphQLTypeForStub).to.not.be.called
+      })
+
+      it('should return expected result', () => {
+        const result = sut.generate()
+
+        console.log()
+
+        expect(result.name).to.be.equal('Query')
+        expect(result.description).to.be.undefined
+        expect(result.extensions).to.be.undefined
+        expect(result.astNode).to.be.undefined
+        expect(result.extensionASTNodes).to.be.undefined
+
+        const config: any = result.toConfig()
+        expect(config.fields).to.be.deep.equal({})
       })
     })
   })
