@@ -71,7 +71,7 @@ export class GraphQLStack {
   }
 
   private buildWebsocketRoutes(graphQLLambda: Function, authorizerLambda: Function): void {
-    const lambdaIntegration = this.buildLambdaIntegrationWithDefaultIntegrationResponse(graphQLLambda)
+    const lambdaIntegration = this.buildLambdaIntegration(graphQLLambda)
     const websocketAuthorizer = this.buildWebsocketAuthorizer(authorizerLambda)
 
     this.buildRoute('$connect', lambdaIntegration, websocketAuthorizer)
@@ -79,7 +79,7 @@ export class GraphQLStack {
     this.buildRoute('$disconnect', lambdaIntegration)
   }
 
-  private buildLambdaIntegrationWithDefaultIntegrationResponse(lambda: Function): CfnIntegration {
+  private buildLambdaIntegration(lambda: Function): CfnIntegration {
     const localID = 'graphql-handler-integration'
     const integration = new CfnIntegration(this.stack, localID, {
       apiId: this.apis.websocketAPI.ref,
