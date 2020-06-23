@@ -44,7 +44,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
           const messageEnvelope: GraphQLRequestEnvelope = {
             requestID: '123',
             eventType: 'MESSAGE',
-            connectionID: random.word(), // A non-null connectionID means it came through socket
+            connectionID: random.uuid(), // A non-null connectionID means it came through socket
           }
           const config = mockConfigForGraphQLEnvelope(messageEnvelope)
 
