@@ -49,7 +49,10 @@ export function confirmUserURL(username: string): string {
   return new URL(`auth/confirm/${username}`, 'http://localhost:3000').href
 }
 
-
 export function signInURL(): string {
   return new URL('auth/sign-in', 'http://localhost:3000').href
+}
+
+export function signOutURL(): string {
+  return new URL('auth/sign-out', 'http://localhost:3000').href
 }

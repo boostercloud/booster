@@ -57,7 +57,7 @@ export class AuthController {
       const token = req.body?.accessToken
       if (token) {
         await this.userRegistry.signOut(token)
-        res.status(HttpCodes.Ok).json()
+        res.status(HttpCodes.Ok).json('')
       } else {
         res.status(HttpCodes.BadRequest).json('accessToken field not set')
       }

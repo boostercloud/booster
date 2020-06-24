@@ -1,7 +1,7 @@
-import { confirmUser, confirmUserURL, createUser, signUpURL } from './utils'
+import { confirmUser, confirmUserURL, createUser, signOutURL, signUpURL } from './utils'
 import { expect } from 'chai'
 import fetch from 'cross-fetch'
-import { internet } from 'faker'
+import { internet, random } from 'faker'
 import { signInURL } from '../local/utils'
 
 describe('With the auth API', () => {
@@ -239,6 +239,44 @@ describe('With the auth API', () => {
         const message = await response.json()
 
         expect(message).not.to.be.empty
+        expect(response.status).to.equal(200)
+      })
+    })
+  })
+
+  describe('sign-out', () => {
+    context('missing token', () => {
+      it('should return a 400 error with expected message', async () => {
+        const response: Response = await fetch(signOutURL(), {
+          method: 'POST',
+          body: JSON.stringify({}),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+
+        const message = await response.json()
+
+        expect(message).to.be.equal('accessToken field not set')
+        expect(response.status).to.equal(400)
+      })
+    })
+
+    context('token provided', () => {
+      it('should successfully sign-out', async () => {
+        const response: Response = await fetch(signOutURL(), {
+          method: 'POST',
+          body: JSON.stringify({
+            accessToken: random.uuid(),
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+
+        const message = await response.json()
+
+        expect(message).to.be.equal('')
         expect(response.status).to.equal(200)
       })
     })
