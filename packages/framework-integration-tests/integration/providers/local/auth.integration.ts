@@ -1,7 +1,8 @@
-import { confirmUserURL, createUser, signUpURL } from './utils'
+import { confirmUser, confirmUserURL, createUser, signUpURL } from './utils'
 import { expect } from 'chai'
 import fetch from 'cross-fetch'
 import { internet } from 'faker'
+import { signInURL } from '../local/utils'
 
 describe('With the auth API', () => {
   describe('sign-up', () => {
@@ -127,7 +128,7 @@ describe('With the auth API', () => {
         notRegisteredUserEmail = internet.email()
       })
 
-      it('should return an error with expected message', async () => {
+      it('should return a 404 error with expected message', async () => {
         const response: Response = await fetch(confirmUserURL(notRegisteredUserEmail), {
           method: 'GET',
           headers: {
@@ -142,6 +143,103 @@ describe('With the auth API', () => {
           reason: `Incorrect username ${notRegisteredUserEmail}`,
         })
         expect(response.status).to.equal(404)
+      })
+    })
+  })
+
+  describe('sign-in', () => {
+    context('invalid username', () => {
+      let userEmail: string
+      let userPassword: string
+
+      beforeEach(() => {
+        userEmail = internet.email()
+        userPassword = internet.password()
+      })
+
+      it('should return a 401 error with expected message', async () => {
+        const response: Response = await fetch(signInURL(), {
+          method: 'POST',
+          body: JSON.stringify({
+            username: userEmail,
+            password: userPassword,
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+
+        const message = await response.json()
+
+        expect(message).to.be.deep.equal({
+          title: 'Not Authorized Error',
+          reason: 'Incorrect username or password',
+        })
+        expect(response.status).to.equal(401)
+      })
+    })
+
+    context('not confirmed username', () => {
+      let userEmail: string
+      let userPassword: string
+
+      beforeEach(async () => {
+        userEmail = internet.email()
+        userPassword = internet.password()
+
+        await createUser(userEmail, userPassword)
+      })
+
+      it('should return a 401 error with expected message', async () => {
+        const response: Response = await fetch(signInURL(), {
+          method: 'POST',
+          body: JSON.stringify({
+            username: userEmail,
+            password: userPassword,
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+
+        const message = await response.json()
+
+        expect(message).to.be.deep.equal({
+          title: 'Not Authorized Error',
+          reason: `User with username ${userEmail} has not been confirmed`,
+        })
+        expect(response.status).to.equal(401)
+      })
+    })
+
+    context('valid confirmed username', () => {
+      let userEmail: string
+      let userPassword: string
+
+      beforeEach(async () => {
+        userEmail = internet.email()
+        userPassword = internet.password()
+
+        await createUser(userEmail, userPassword)
+        await confirmUser(userEmail)
+      })
+
+      it('should sign-in successfully', async () => {
+        const response: Response = await fetch(signInURL(), {
+          method: 'POST',
+          body: JSON.stringify({
+            username: userEmail,
+            password: userPassword,
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+
+        const message = await response.json()
+
+        expect(message).not.to.be.empty
+        expect(response.status).to.equal(200)
       })
     })
   })

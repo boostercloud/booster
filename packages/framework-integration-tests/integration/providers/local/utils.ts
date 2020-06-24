@@ -24,6 +24,21 @@ export async function createUser(username: string, password: string, roles: stri
   }
 }
 
+export async function confirmUser(username: string): Promise<void> {
+  const response: Response = await fetch(confirmUserURL(username), {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+
+  await response.json()
+
+  if (response.status != 200) {
+    throw new Error('Failed to confirm user')
+  }
+}
+
 // --- URL helpers ---
 
 export function signUpURL(): string {
@@ -32,4 +47,9 @@ export function signUpURL(): string {
 
 export function confirmUserURL(username: string): string {
   return new URL(`auth/confirm/${username}`, 'http://localhost:3000').href
+}
+
+
+export function signInURL(): string {
+  return new URL('auth/sign-in', 'http://localhost:3000').href
 }
