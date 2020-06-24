@@ -199,16 +199,27 @@ describe('the user registry', () => {
   describe('the confirmUser method', () => {
     it('should fail if the database fails', () => {
       const userRegistry = new UserRegistry()
+      const username = faker.internet.email()
       const error = new Error(faker.random.words())
+      userRegistry.registeredUsers.find = stub().yields(null, [username])
       userRegistry.registeredUsers.update = stub().yields(error, null)
-      const username = faker.random.word()
       return expect(userRegistry.confirmUser(username)).to.have.be.rejectedWith(error)
     })
+
+    it('should fail if user does not exist', () => {
+      const userRegistry = new UserRegistry()
+      const username = faker.internet.email()
+      userRegistry.registeredUsers.find = stub().yields(null, [])
+      return expect(userRegistry.confirmUser(username)).to.have.been.rejectedWith(`Incorrect username ${username}`)
+    })
+
     it('should call the update method of the database', async () => {
       const userRegistry = new UserRegistry()
+      const username = faker.internet.email()
+      userRegistry.registeredUsers.find = stub().yields(null, [username])
       userRegistry.registeredUsers.update = stub().yields(null, [])
-      await userRegistry.confirmUser(faker.random.word())
-      return expect(userRegistry.registeredUsers.update).to.have.be.called
+      await userRegistry.confirmUser(username)
+      return expect(userRegistry.registeredUsers.update).to.have.been.called
     })
   })
 })

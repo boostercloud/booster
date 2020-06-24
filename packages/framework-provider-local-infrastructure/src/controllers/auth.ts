@@ -26,7 +26,7 @@ export class AuthController {
         console.info(
           `To confirm the user, use the following link: http://localhost:${this.port}/auth/confirm/${user.username}`
         )
-        res.status(HttpCodes.Ok).json()
+        res.status(HttpCodes.Ok).json('')
       } else {
         res
           .status(HttpCodes.BadRequest)
