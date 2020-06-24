@@ -43,7 +43,7 @@ describe('the user registry', () => {
         password: faker.internet.password(),
       }
 
-      const error = new Error(faker.random.words())
+      const error = new Error(faker.lorem.words())
 
       userRegistry.registeredUsers.find = stub().yields(null, [])
       userRegistry.registeredUsers.insert = stub().yields(error, user)
@@ -62,7 +62,7 @@ describe('the user registry', () => {
         password: faker.internet.password(),
       }
 
-      const error = new Error(faker.random.words())
+      const error = new Error(faker.lorem.words())
 
       userRegistry.registeredUsers.find = stub().yields(error, [])
       userRegistry.registeredUsers.insert = stub().yields(null, user)
@@ -134,7 +134,7 @@ describe('the user registry', () => {
         roles: [],
       }
 
-      const error = new Error(faker.random.words())
+      const error = new Error(faker.lorem.words())
       userRegistry.registeredUsers.findOne = stub().yields(error, null)
       return expect(userRegistry.signIn(user)).to.be.rejectedWith(error)
     })
@@ -152,7 +152,7 @@ describe('the user registry', () => {
 
     it('should fail if database `remove` fails', async () => {
       const userRegistry = new UserRegistry()
-      const error = new Error(faker.random.words())
+      const error = new Error(faker.lorem.words())
       userRegistry.authenticatedUsers.remove = stub().yields(error, null)
       const mockToken = faker.random.uuid()
       return expect(userRegistry.signOut(mockToken)).to.have.be.rejectedWith(error)
@@ -162,7 +162,7 @@ describe('the user registry', () => {
   describe('the getAuthenticatedUser method', () => {
     it('should fail if the authenticatedUsers database fails', () => {
       const userRegistry = new UserRegistry()
-      const error = new Error(faker.random.words())
+      const error = new Error(faker.lorem.words())
       userRegistry.authenticatedUsers.findOne = stub().yields(error, null)
       const mockToken = faker.random.uuid()
       return expect(userRegistry.getAuthenticatedUser(mockToken)).to.have.be.rejectedWith(error)
@@ -170,7 +170,7 @@ describe('the user registry', () => {
 
     it('should fail if the registeredUsers database fails', () => {
       const userRegistry = new UserRegistry()
-      const error = new Error(faker.random.words())
+      const error = new Error(faker.lorem.words())
       userRegistry.authenticatedUsers.findOne = stub().yields(error, null)
       const mockToken = faker.random.uuid()
       return expect(userRegistry.getAuthenticatedUser(mockToken)).to.have.be.rejectedWith(error)
@@ -200,7 +200,7 @@ describe('the user registry', () => {
     it('should fail if the database fails', () => {
       const userRegistry = new UserRegistry()
       const username = faker.internet.email()
-      const error = new Error(faker.random.words())
+      const error = new Error(faker.lorem.words())
       userRegistry.registeredUsers.find = stub().yields(null, [username])
       userRegistry.registeredUsers.update = stub().yields(error, null)
       return expect(userRegistry.confirmUser(username)).to.have.be.rejectedWith(error)
