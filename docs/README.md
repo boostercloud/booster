@@ -658,7 +658,7 @@ In this chapter you'll walk through these concepts and its details.
 
 ### 1. Command and command handlers
 
-Booster is different than MVC frameworks in which you typically implement controller classes with the five CRUD methods per model. Instead of that, you define the user actions when interacting with an application. This approach fits very well with Domain-Driven Design. Depending on your application's domain, some examples of commands would be: `RemoveItemFromCart`, `RatePhoto`, `AddCommentToPost`, etc. Although, you can still have `Create*`, `Delete*`, or `Update*` commands when they make sense.
+Booster is different than MVC frameworks in which you typically implement controller classes with the five CRUD methods per model. Instead of that, you define commands, which are the user actions when interacting with an application. This approach fits very well with Domain-Driven Design. Depending on your application's domain, some examples of commands would be: `RemoveItemFromCart`, `RatePhoto`, `AddCommentToPost`, etc. Although, you can still have `Create*`, `Delete*`, or `Update*` commands when they make sense.
 
 There is an architectural splitting between commands and command handlers though they *live* under the same file. The command is the class with the `@Command` decorator, and the generated method called `handle` is the command handler. That is because Booster adopts several concepts from functional programming; the separation between data structures and data transformations is one of them. In Booster a command looks like this:
 
@@ -726,7 +726,11 @@ Booster generates the command handler function as a method of the command class.
 
 ##### Validating data
 
-Booster uses the typed nature of GraphQL to make sure that types are correct before reaching the handler, so you don't have to validate types. There are still business rules to be checked before proceeding with a command. For example, a given number must be between a threshold or a string must match a regular expression. In that case, it is enough just to throw an error in the handler, and then Booster will use the error's message as the response to make it descriptive, e.g.
+Booster uses the typed nature of GraphQL to make sure that types are correct before reaching the handler, so you don't have to validate types.
+
+###### Throw an error
+
+There are still business rules to be checked before proceeding with a command. For example, a given number must be between a threshold or a string must match a regular expression. In that case, it is enough just to throw an error in the handler, and then Booster will use the error's message as the response to make it descriptive, e.g.
 
 Given this command:
 
@@ -782,7 +786,37 @@ You'll get something like this response:
 }
 ```
 
-There could be situations in which you want to register an event representing an error. (TODO: Example here, I've seen the example of the error event in the integration tests, but I'm not 100% it works here. I'm thinking in a stock error related to an item that should not be there initially)
+###### Register error events 
+
+There could be situations in which you want to register an event representing an error. For example when moving items with insufficient stock from one location to another:
+
+```typescript
+@Command({
+  authorize: [Admin],
+})
+export class MoveStock {
+  public constructor(
+    readonly productID: string,
+    readonly origin: string,
+    readonly destination: string,
+    readonly quantity: number
+  ) {}
+
+  public async handle(register: Register): Promise<void> {
+    if (!this.enoughStock(this.productID, this.origin)) {
+      register.events(new ErrorEvent(`There is not enough stock for ${this.productID} at ${this.origin}`))
+    } else {
+      register.events(new StockMoved(/*...*/))
+    }
+  }
+
+  private enoughStock(productID: string, origin: string): boolean {
+    /* ... */
+  }
+}
+```
+
+In this case, the client who submitted the command can still complete the operation. Then an event handler will take care of that `ErrorEvent` and proceed accordingly.
 
 ##### Reading entities
 
