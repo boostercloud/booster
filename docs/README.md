@@ -726,7 +726,7 @@ Booster generates the command handler function as a method of the command class.
 
 ##### Validating data
 
-Booster uses the typed nature of GraphQL to make sure that types are correct before reaching the handler, so you don't have to validate types.
+Booster uses the typed nature of GraphQL to ensure that types are correct before reaching the handler, so you don't have to validate types.
 
 ###### Throw an error
 
@@ -788,7 +788,7 @@ You'll get something like this response:
 
 ###### Register error events 
 
-There could be situations in which you want to register an event representing an error. For example when moving items with insufficient stock from one location to another:
+There could be situations in which you want to register an event representing an error. For example, when moving items with insufficient stock from one location to another:
 
 ```typescript
 @Command({
@@ -820,7 +820,7 @@ In this case, the client who submitted the command can still complete the operat
 
 ##### Reading entities
 
-Event handlers are a good place to make decisions and for making better decisions you need information. There is a Booster function called `fetchEntitySnapshots` within the `Booster` package and allows you to inspect the application state. This functions receives two arguments, the `Entity` to fetch and the `entityID`. This is an example fetching an entity called `Stock`:
+Event handlers are a good place to make decisions, and for making better decisions, you need information. There is a Booster function called `fetchEntitySnapshots` within the `Booster` package and allows you to inspect the application state. This function receives two arguments, the `Entity` to fetch and the `entityID`. Here is an example of fetching an entity called `Stock`:
 
 ```typescript
 @Command({
@@ -849,11 +849,11 @@ export class MoveStock {
 
 ##### Registering events
 
-After a command handler execution, it is possible to register domain events. The command handler function receives `register` argument so, within the handler, it is possible to call `register.events(...)` with a list of events. Events and the register are described [here](#2-events).
+After a command handler execution, it is possible to register domain events. The command handler function receives the `register` argument, so within the handler, it is possible to call `register.events(...)` with a list of events. For more details about events and the register, see the [`Events`](#2-events) section.
 
 #### Authorizing a command
 
-Commands are part of the public API of a Booster application so you can define who is authorized to submit them. The Booster authorization feature is covered in [this](#iam-authentication-and-authorization) section. So far, we have seen that you can make a command publicly accessible by authorizing `'all'` to submit it, or well, a set of specific Roles as we did with the `authorize: [Admin]` parameter of the `MoveStock` command.
+Commands are part of the public API of a Booster application, so you can define who is authorized to submit them. The Booster authorization feature is covered in [this](#iam-authentication-and-authorization) section. So far, we have seen that you can make a command publicly accessible by authorizing `'all'` to submit it. You can also set specific roles as we did with the `authorize: [Admin]` parameter of the `MoveStock` command.
 
 #### Submitting a command
 
