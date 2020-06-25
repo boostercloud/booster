@@ -39,7 +39,7 @@ export const Infrastructure = {
     const userRegistry = new UserRegistry()
     const graphQLService = new GraphQLService()
     router.use('/auth', new AuthController(port, userRegistry, userProject).router)
-    router.use('/graphql', new GraphQLController(config, graphQLService).router)
+    router.use('/graphql', new GraphQLController(graphQLService).router)
     expressServer.use(express.json())
     expressServer.use(router)
     expressServer.use(defaultErrorHandler)

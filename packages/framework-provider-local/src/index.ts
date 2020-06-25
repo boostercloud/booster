@@ -2,7 +2,7 @@ import { ProviderLibrary, ProviderInfrastructure } from '@boostercloud/framework
 import { authorizeRequest, rawSignUpDataToUserEnvelope } from './library/auth-adapter'
 import { storeEvents } from './library/events-adapter'
 import { requestSucceeded, requestFailed } from './library/api-adapter'
-import { EventRegistry, UserRegistry } from './services'
+import { EventRegistry } from './services'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 
 export { User, LoginCredentials, SignUpUser, RegisteredUser, AuthenticatedUser } from './library/auth-adapter'
@@ -10,7 +10,6 @@ export * from './paths'
 export * from './services'
 
 const eventRegistry = new EventRegistry()
-const userRegistry = new UserRegistry()
 
 export const Provider: ProviderLibrary = {
   // ProviderEventsLibrary
@@ -43,7 +42,7 @@ export const Provider: ProviderLibrary = {
   },
   // ProviderGraphQLLibrary
   graphQL: {
-    authorizeRequest: authorizeRequest.bind(null, userRegistry),
+    authorizeRequest: authorizeRequest,
     rawToEnvelope: rawGraphQLRequestToEnvelope,
     handleResult: requestSucceeded,
   },
