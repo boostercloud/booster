@@ -849,11 +849,11 @@ export class MoveStock {
 
 ##### Registering events
 
-TODO: How to do it, what the impact is and an example
+After a command handler execution, it is possible to register domain events. The command handler function receives `register` argument so, within the handler, it is possible to call `register.events(...)` with a list of events. Events and the register are described [here](#2-events).
 
 #### Authorizing a command
 
-TODO: How to authorize a command without going more in-depth with the role's creation. Roles creation will be in the features section, within AIM - Authentication and Authorization
+Commands are part of the public API of a Booster application so you can define who is authorized to submit them. The Booster authorization feature is covered in [this](#iam-authentication-and-authorization) section. So far, we have seen that you can make a command publicly accessible by authorizing `'all'` to submit it, or well, a set of specific Roles as we did with the `authorize: [Admin]` parameter of the `MoveStock` command.
 
 #### Submitting a command
 
