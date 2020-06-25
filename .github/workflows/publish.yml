@@ -5,15 +5,15 @@ on:
       - 'master'
     paths-ignore:
       - '**.md'
- 
+
 jobs:
   publish-npm:
     if: "!contains(github.event.head_commit.author.name, 'GITHUBACTION')
-         && (
-           startsWith(github.event.head_commit.message, 'BREAKING CHANGE:')
-           || startsWith(github.event.head_commit.message, 'feat')
-           || startsWith(github.event.head_commit.message, 'fix')
-         )"
+      && (
+      startsWith(github.event.head_commit.message, 'BREAKING CHANGE:')
+      || startsWith(github.event.head_commit.message, 'feat')
+      || startsWith(github.event.head_commit.message, 'fix')
+      )"
     runs-on: ubuntu-latest
     steps:
       - run: echo "$DATA"
@@ -59,6 +59,9 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
         run: npx lerna run integration --stream
+
+      - name: Restore yarn.lock after integration tests
+        run: git restore yarn.lock
 
       - uses: theam/actions/lerna-semantic-publish@master
         env:
