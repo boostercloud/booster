@@ -13,29 +13,29 @@ export const setupPermissions = (
   eventsStore: Table,
   eventsLambda: Function
 ): void => {
+  const websocketManageConnectionsPolicy = createPolicyStatement(
+    [
+      Fn.join(':', [
+        'arn',
+        Fn.ref('AWS::Partition'),
+        'execute-api',
+        Fn.ref('AWS::Region'),
+        Fn.ref('AWS::AccountId'),
+        `${websocketAPI.ref}/*`,
+      ]),
+    ],
+    ['execute-api:ManageConnections']
+  )
   graphQLLambda.addToRolePolicy(
     createPolicyStatement([eventsStore.tableArn], ['dynamodb:BatchWriteItem', 'dynamodb:Query*', 'dynamodb:Put*'])
   )
   graphQLLambda.addToRolePolicy(createPolicyStatement([subscriptionsTable.tableArn], ['dynamodb:Put*']))
+  graphQLLambda.addToRolePolicy(websocketManageConnectionsPolicy)
 
   subscriptionDispatcherLambda.addToRolePolicy(
     createPolicyStatement([subscriptionsTable.tableArn], ['dynamodb:Query*'])
   )
-  subscriptionDispatcherLambda.addToRolePolicy(
-    createPolicyStatement(
-      [
-        Fn.join(':', [
-          'arn',
-          Fn.ref('AWS::Partition'),
-          'execute-api',
-          Fn.ref('AWS::Region'),
-          Fn.ref('AWS::AccountId'),
-          `${websocketAPI.ref}/*`,
-        ]),
-      ],
-      ['execute-api:ManageConnections']
-    )
-  )
+  subscriptionDispatcherLambda.addToRolePolicy(websocketManageConnectionsPolicy)
 
   eventsLambda.addToRolePolicy(
     createPolicyStatement([eventsStore.tableArn], ['dynamodb:BatchWriteItem', 'dynamodb:Query*', 'dynamodb:Put*'])
