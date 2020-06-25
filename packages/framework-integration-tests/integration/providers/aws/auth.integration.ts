@@ -1,5 +1,5 @@
 import {
-  graphQLClient,
+  graphQLClientWithSubscriptions,
   signUpURL,
   authClientID,
   signInURL,
@@ -34,7 +34,7 @@ describe('With the auth API', () => {
     let client: DisconnectableApolloClient
 
     beforeEach(async () => {
-      client = await graphQLClient()
+      client = await graphQLClientWithSubscriptions()
     })
     afterEach(() => {
       client.disconnect()
@@ -331,7 +331,7 @@ describe('With the auth API', () => {
     context('with a signed-in user', () => {
       let client: DisconnectableApolloClient
       beforeEach(async () => {
-        client = await graphQLClient(await getAuthToken(userEmail, userPassword))
+        client = await graphQLClientWithSubscriptions(await getAuthToken(userEmail, userPassword))
       })
       afterEach(() => {
         client.disconnect()
@@ -582,7 +582,7 @@ describe('With the auth API', () => {
     context('with a signed-in admin user', () => {
       let client: DisconnectableApolloClient
       beforeEach(async () => {
-        client = await graphQLClient(await getAuthToken(adminEmail, adminPassword))
+        client = await graphQLClientWithSubscriptions(await getAuthToken(adminEmail, adminPassword))
       })
       afterEach(() => {
         client.disconnect()

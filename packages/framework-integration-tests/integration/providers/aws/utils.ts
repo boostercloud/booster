@@ -11,7 +11,7 @@ import { internet } from 'faker'
 import { sleep } from '../helpers'
 import { WebSocketLink } from 'apollo-link-ws'
 import { getMainDefinition } from 'apollo-utilities'
-import { ApolloLink, split } from 'apollo-link'
+import { split } from 'apollo-link'
 import * as WebSocket from 'ws'
 import { SubscriptionClient } from 'subscriptions-transport-ws'
 import { ApolloClientOptions } from 'apollo-client/ApolloClient'
@@ -228,6 +228,28 @@ export async function signInURL(): Promise<string> {
 
 // --- GraphQL helpers ---
 
+export async function graphQLClient(authToken?: string): Promise<ApolloClient<NormalizedCacheObject>> {
+  return new ApolloClient({
+    cache: new InMemoryCache(),
+    link: await getApolloHTTPLink(authToken),
+    defaultOptions: {
+      query: {
+        fetchPolicy: 'no-cache',
+      },
+    },
+  })
+}
+
+async function getApolloHTTPLink(authToken?: string): Promise<HttpLink> {
+  const httpURL = await baseHTTPURL()
+  const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {}
+  return new HttpLink({
+    uri: new URL('graphql', httpURL).href,
+    headers,
+    fetch,
+  })
+}
+
 export class DisconnectableApolloClient extends ApolloClient<NormalizedCacheObject> {
   constructor(
     private readonly subscriptionClient: SubscriptionClient,
@@ -241,30 +263,27 @@ export class DisconnectableApolloClient extends ApolloClient<NormalizedCacheObje
     this.stop()
   }
 }
-export async function graphQLClient(authToken?: string): Promise<DisconnectableApolloClient> {
-  const httpURL = await baseHTTPURL()
-  const cache = new InMemoryCache()
-  const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {}
-  const httpLink = new HttpLink({
-    uri: new URL('graphql', httpURL).href,
-    headers,
-    fetch,
-  })
 
-  let link: ApolloLink = httpLink
-  const subscriptionClient = await graphqlSubscriptionsClient(headers)
+/**
+ * IMPORTANT: After using this "DisconnectableApolloClient", you must call ".disconnect()" to close the socket. Otherwise
+ * it will keep waiting for messages forever
+ * @param authToken
+ */
+export async function graphQLClientWithSubscriptions(authToken?: string): Promise<DisconnectableApolloClient> {
+  const subscriptionClient = await graphqlSubscriptionsClient(authToken)
   const websocketLink = new WebSocketLink(subscriptionClient)
-  link = split(
+
+  const link = split(
     ({ query }) => {
       const definition = getMainDefinition(query)
       return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
     },
     websocketLink,
-    httpLink
+    await getApolloHTTPLink(authToken)
   )
 
-  const client = new DisconnectableApolloClient(subscriptionClient, {
-    cache: cache,
+  return new DisconnectableApolloClient(subscriptionClient, {
+    cache: new InMemoryCache(),
     link: link,
     defaultOptions: {
       query: {
@@ -272,10 +291,10 @@ export async function graphQLClient(authToken?: string): Promise<DisconnectableA
       },
     },
   })
-  return client
 }
 
-export async function graphqlSubscriptionsClient(headers?: Record<string, string>): Promise<SubscriptionClient> {
+export async function graphqlSubscriptionsClient(authToken?: string): Promise<SubscriptionClient> {
+  const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {}
   return new SubscriptionClient(
     await baseWebsocketURL(),
     {
