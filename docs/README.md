@@ -767,19 +767,13 @@ mutation($input: CreateProductInput!) {
 }
 ```
 
-You'll get this response:
+You'll get something like this response:
 
 ```grapqhl
 {
   "errors": [
     {
       "message": "price must be below 10, and it was 19.99",
-      "locations": [
-        {
-          "line": 5,
-          "column": 3
-        }
-      ],
       "path": [
         "CreateProduct"
       ]
