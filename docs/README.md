@@ -722,7 +722,7 @@ Note:
 
 #### The command handler function
 
-Booster generates the command handler function as a method of the command class. That function is called by the framework every time its command is submitted. It is the place to run validations, return errors, query entities to make decisions, and register relevant domain events.
+Booster generates the command handler function as a method of the command class. That function is called by the framework every time that one instance of this command is submitted. This is the right place to run validations, return errors, query entities to make decisions and register relevant domain events.
 
 ##### Validating data
 
