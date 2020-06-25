@@ -683,7 +683,7 @@ Every time you submit a command through the GraphQL API, Booster calls the comma
 
 #### Commands naming convention
 
-Semantic is very important in Booster as it will play an essential role in designing a coherent system. Your application should reflect your domain concepts, and commands are not an exception. Although you can name commands whatever you want, we strongly recommend you to name them starting with verbs in imperative plus the object being affected. If we were designing an e-commerce application, some commands would be:
+Semantic is very important in Booster as it will play an essential role in designing a coherent system. Your application should reflect your domain concepts, and commands are not an exception. Although you can name commands in any way you want, we strongly recommend you to name them starting with verbs in imperative plus the object being affected. If we were designing an e-commerce application, some commands would be:
 
 - CreateProduct
 - DeleteProduct
@@ -945,4 +945,3 @@ public static async handle(event: StockMoved, register: Register): Promise<void>
 #### Querying a read model
 
 #### Getting real-time updates for a read model
-
