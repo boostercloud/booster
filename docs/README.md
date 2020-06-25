@@ -803,14 +803,14 @@ export class MoveStock {
   ) {}
 
   public async handle(register: Register): Promise<void> {
-    if (!this.enoughStock(this.productID, this.origin)) {
+    if (!this.enoughStock(this.productID, this.origin, this.quantity)) {
       register.events(new ErrorEvent(`There is not enough stock for ${this.productID} at ${this.origin}`))
     } else {
       register.events(new StockMoved(/*...*/))
     }
   }
 
-  private enoughStock(productID: string, origin: string): boolean {
+  private enoughStock(productID: string, origin: string, quantity: number): boolean {
     /* ... */
   }
 }
@@ -820,7 +820,32 @@ In this case, the client who submitted the command can still complete the operat
 
 ##### Reading entities
 
-TODO: How to do it, why this is useful and an example
+Event handlers are a good place to make decisions and for making better decisions you need information. There is a Booster function called `fetchEntitySnapshots` within the `Booster` package and allows you to inspect the application state. This functions receives two arguments, the `Entity` to fetch and the `entityID`. This is an example fetching an entity called `Stock`:
+
+```typescript
+@Command({
+  authorize: [Admin],
+})
+export class MoveStock {
+  public constructor(
+    readonly productID: string,
+    readonly origin: string,
+    readonly destination: string,
+    readonly quantity: number
+  ) {}
+
+  public async handle(register: Register): Promise<void> {
+    const stock = await Booster.fetchEntitySnapshot(Stock, this.productID)
+    if (!this.enoughStock(this.origin, this.quantity, stock)) {
+      register.events(new ErrorEvent(`There is not enough stock for ${this.productID} at ${this.origin}`))
+    }
+  }
+
+  private enoughStock(origin: string, quantity: number, stock?: Stock): boolean {
+    return stock !== undefined && stock.countByLocation[origin] >= quantity
+  }
+}
+```
 
 ##### Registering events
 
