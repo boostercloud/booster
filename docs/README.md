@@ -726,7 +726,7 @@ Booster generates the command handler function as a method of the command class.
 
 ##### Validating data
 
-Booster uses the typed nature of GraphQL for ensuring that types are correct before reaching the handler, so you don't have to validate types. There are still business rules to be checked before proceeding with a command. For example, a given number must be between a threshold or a string must match a regular expression. In that case, it is enough just to throw an error in the handler, and then Booster will use the error's message as the response to make it descriptive, e.g.
+Booster uses the typed nature of GraphQL to make sure that types are correct before reaching the handler, so you don't have to validate types. There are still business rules to be checked before proceeding with a command. For example, a given number must be between a threshold or a string must match a regular expression. In that case, it is enough just to throw an error in the handler, and then Booster will use the error's message as the response to make it descriptive, e.g.
 
 Given this command:
 
