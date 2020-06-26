@@ -2,11 +2,12 @@ import { UUID, NotAuthorizedError } from '@boostercloud/framework-types'
 import * as DataStore from 'nedb'
 import { registeredUsersDatabase, authenticatedUsersDatabase } from '../paths'
 import { RegisteredUser, AuthenticatedUser, SignUpUser, LoginCredentials } from '../library/auth-adapter'
-import { UserEnvelope } from '@boostercloud/framework-types'
+import { NotFoundError, UserEnvelope } from '@boostercloud/framework-types'
 
 export class UserRegistry {
   public readonly registeredUsers: DataStore<RegisteredUser> = new DataStore(registeredUsersDatabase)
   public readonly authenticatedUsers: DataStore<AuthenticatedUser> = new DataStore(authenticatedUsersDatabase)
+
   public constructor() {
     this.registeredUsers.loadDatabase()
     this.authenticatedUsers.loadDatabase()
@@ -52,7 +53,13 @@ export class UserRegistry {
   }
 
   public async confirmUser(username: string): Promise<void> {
+    const registeredUsers = await this.getRegisteredUsersByEmail(username)
+
     return new Promise((resolve, reject) => {
+      if (registeredUsers.length < 1) {
+        reject(new NotFoundError(`Incorrect username ${username}`))
+      }
+
       this.registeredUsers.update({ username }, { $set: { confirmed: true } }, {}, (err) => {
         err ? reject(err) : resolve()
       })
