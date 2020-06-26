@@ -2,8 +2,7 @@ import { UUID, NotAuthorizedError } from '@boostercloud/framework-types'
 import * as DataStore from 'nedb'
 import { registeredUsersDatabase, authenticatedUsersDatabase } from '../paths'
 import { RegisteredUser, AuthenticatedUser, SignUpUser, LoginCredentials } from '../library/auth-adapter'
-import { UserEnvelope } from '@boostercloud/framework-types'
-import { NotFoundError } from '@boostercloud/framework-types/dist'
+import { NotFoundError, UserEnvelope } from '@boostercloud/framework-types'
 
 export class UserRegistry {
   public readonly registeredUsers: DataStore<RegisteredUser> = new DataStore(registeredUsersDatabase)
