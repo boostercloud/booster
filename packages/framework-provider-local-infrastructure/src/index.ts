@@ -31,7 +31,7 @@ export const Infrastructure = {
    * @param config The user's project config
    * @param port Port on which the express server will listen
    */
-  run: (config: BoosterConfig, port: number): void => {
+  start: (config: BoosterConfig, port: number): void => {
     const expressServer = express()
     const router = express.Router()
     const userProject = require(path.join(process.cwd(), 'dist', 'index.js'))

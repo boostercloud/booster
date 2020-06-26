@@ -50,7 +50,6 @@ export const Provider: ProviderLibrary = {
   },
   // ProviderAuthLibrary
   auth: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rawToEnvelope: rawSignUpDataToUserEnvelope,
   },
   // ProviderAPIHandling

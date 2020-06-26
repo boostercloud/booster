@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-kubernetes-infrastructure",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Handle Booster's integration with Kubernetes",
   "keywords": [
     "framework-provider-kubernetes-infrastructure"
@@ -20,8 +20,8 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@boostercloud/framework-types": "^0.4.0",
-    "@boostercloud/framework-provider-kubernetes": "^0.4.0"
+    "@boostercloud/framework-provider-kubernetes": "^0.5.0",
+    "@boostercloud/framework-types": "^0.5.0"
   },
   "scripts": {
     "lint": "eslint --ext '.js,.ts' **/*.ts",

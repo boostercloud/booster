@@ -32,7 +32,7 @@ describe('Cart end-to-end tests', () => {
       expect(response?.data?.ChangeCartItem).to.be.true
     })
 
-    describe('Read models', () => {
+    describe('Query read models', () => {
       context('1 cart item', () => {
         const mockCartId: string = random.uuid()
         const mockProductId: string = random.uuid()
