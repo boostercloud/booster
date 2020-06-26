@@ -1,4 +1,5 @@
 import fetch from 'cross-fetch'
+import { LOCAL_PROVIDER_HOST } from './constants'
 
 // --- Auth helpers ---
 
@@ -42,17 +43,17 @@ export async function confirmUser(username: string): Promise<void> {
 // --- URL helpers ---
 
 export function signUpURL(): string {
-  return new URL('auth/sign-up', 'http://localhost:3000').href
+  return new URL('auth/sign-up', LOCAL_PROVIDER_HOST).href
 }
 
 export function confirmUserURL(username: string): string {
-  return new URL(`auth/confirm/${username}`, 'http://localhost:3000').href
+  return new URL(`auth/confirm/${username}`, LOCAL_PROVIDER_HOST).href
 }
 
 export function signInURL(): string {
-  return new URL('auth/sign-in', 'http://localhost:3000').href
+  return new URL('auth/sign-in', LOCAL_PROVIDER_HOST).href
 }
 
 export function signOutURL(): string {
-  return new URL('auth/sign-out', 'http://localhost:3000').href
+  return new URL('auth/sign-out', LOCAL_PROVIDER_HOST).href
 }
