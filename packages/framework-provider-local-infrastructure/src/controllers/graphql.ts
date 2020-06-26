@@ -10,7 +10,7 @@ export class GraphQLController {
 
   public async handleQuery(req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> {
     try {
-      const response = await this.graphQLService.query(req)
+      const response = await this.graphQLService.handleGraphQLRequest(req)
       res.status(HttpCodes.Ok).json(response.result)
     } catch (e) {
       await requestFailed(e, res)

@@ -4,6 +4,7 @@ import { storeEvents } from './library/events-adapter'
 import { requestSucceeded, requestFailed } from './library/api-adapter'
 import { EventRegistry } from './services'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
+import { notifySubscription } from './library/subscription-adapter'
 
 export { User, LoginCredentials, SignUpUser, RegisteredUser, AuthenticatedUser } from './library/auth-adapter'
 export * from './paths'
@@ -35,8 +36,7 @@ export const Provider: ProviderLibrary = {
     rawToEnvelopes: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fetchSubscriptions: undefined as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    notifySubscription: undefined as any,
+    notifySubscription: notifySubscription,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     store: undefined as any,
   },

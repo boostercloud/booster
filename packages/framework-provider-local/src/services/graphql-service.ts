@@ -1,9 +1,10 @@
-import { boosterServeGraphQL } from '@boostercloud/framework-core'
+import * as express from 'express'
+import { UserApp } from '@boostercloud/framework-types'
 
 export class GraphQLService {
-  public constructor() {}
+  public constructor(readonly userApp: UserApp) {}
 
-  public async query(request: any): Promise<any> {
-    return await boosterServeGraphQL(request)
+  public async handleGraphQLRequest(request: express.Request): Promise<any> {
+    return await this.userApp.boosterServeGraphQL(request)
   }
 }

@@ -5,6 +5,7 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import path = require('path')
 import { requestFailed } from './http'
 import { GraphQLController } from './controllers/graphql'
+import { UserApp } from '@boostercloud/framework-types'
 
 /**
  * Default error handling middleware. Instead of performing a try/catch in all endpoints
@@ -35,9 +36,9 @@ export const Infrastructure = {
   start: (config: BoosterConfig, port: number): void => {
     const expressServer = express()
     const router = express.Router()
-    const userProject = require(path.join(process.cwd(), 'dist', 'index.js'))
+    const userProject: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
     const userRegistry = new UserRegistry()
-    const graphQLService = new GraphQLService()
+    const graphQLService = new GraphQLService(userProject)
     router.use('/auth', new AuthController(port, userRegistry, userProject).router)
     router.use('/graphql', new GraphQLController(graphQLService).router)
     expressServer.use(express.json())
