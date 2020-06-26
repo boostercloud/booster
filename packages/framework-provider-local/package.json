@@ -20,8 +20,8 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@boostercloud/framework-types": "^0.5.0",
-    "@boostercloud/framework-core": "^0.5.0"
+    "@boostercloud/framework-core": "^0.5.0",
+    "@boostercloud/framework-types": "^0.5.0"
   },
   "scripts": {
     "lint": "eslint --ext '.js,.ts' **/*.ts",
@@ -34,5 +34,9 @@
   "bugs": {
     "url": "https://github.com/boostercloud/booster/issues"
   },
-  "gitHead": "121816dbe55d57df5860b54a871c06dcda761101"
+  "gitHead": "121816dbe55d57df5860b54a871c06dcda761101",
+  "devDependencies": {
+    "@types/faker": "^4.1.12",
+    "faker": "^4.1.0"
+  }
 }
