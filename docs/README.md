@@ -90,7 +90,7 @@ Events are the cornerstone of a Booster application, and that’s why we say tha
 * **High data resiliency**: Events are stored by default in an append-only database, so the data is never lost and it’s possible to recover any previous state of the system.
 * **Decoupled by nature**: Dependencies only happen at data level, so it’s easier to evolve the code without affecting other parts of the system.
 
-Before Booster, building an event-driven system with the mentioned characteristics required huge investments in hiring engineers with the needed expertise. Booster packs this expertise, acquired from real-case scenarios in high-scale companies, into a very simple tool that handles with the hard parts for you, even provisioning the infrastructure! 
+Before Booster, building an event-driven system with the mentioned characteristics required huge investments in hiring engineers with the needed expertise. Booster packs this expertise, acquired from real-case scenarios in high-scale companies, into a very simple tool that handles with the hard parts for you, even provisioning the infrastructure!
 
 We have redesigned the whole developer experience from scratch, taking advantage of the advanced TypeScript type system and Serverless technologies to go from project generation to a production-ready real-time GraphQL API that can ingest thousands of concurrent users in a matter of minutes.
 
@@ -1046,15 +1046,137 @@ public static async handle(event: StockMoved, register: Register): Promise<void>
 
 ### 4. Entities and reducers
 
+The source of truth of your Booster app are the events, but events make sense in the context of a domain entity.
+For example, in a banking app, there might be two events: `MoneyDeposited` and `MoneyWithdrawn`. But these events
+only make sense in the context of a `BankAccount`.
+
+Entities are created on the fly, by _reducing_ the whole event stream. They aren't saved anywhere, although Booster
+does create automatic snapshots in order to make the reduction process efficient. You are the one that defines the
+reducer function.
+
+An entity is defined as a class with the `@Entity` decorator. Inside of it there is a static method with
+the `@Reduces` decorator that also specifies the event the reducer is subscribed to. In Booster an entity looks like this:
+
+```typescript
+@Entity
+export class EntityName {
+  public constructor(
+    readonly fieldA: SomeType,
+    readonly fieldB: SomeOtherType,
+    /* as many fields as needed */
+  ) {}
+
+  @Reduces(SomeEvent)
+  public static reduceSomeEvent(event: SomeEvent, previousState?: EntityName): EntityName {
+    /* Return a new entity based on the previous one */
+  }
+}
+```
+
+Each time an event is generated, all reducers that are listening to it are triggered. Note that event ordering is
+preserved per entity instance. This means that if two events arrive at the same time at a reducer, the first one to
+be picked will be the one that was generated first.
+
 #### Entities naming convention
+
+Entities model your data, so name them as closely to your domain as possible. Typical entity names are nouns that
+might appear when you think about your app. In an e-commerce application, some entities would be:
+
+* Cart
+* Product
+* UserProfile
+* Order
+* Address
+* PaymentMethod
+* Stock
+
+Entities live within the entities directory of the project source: `project-root/src/entities`.
+
+```text
+project-root
+├── src
+│   ├── commands
+│   ├── common
+│   ├── config
+│   ├── entities <------ They must be here
+│   ├── events
+│   ├── index.ts
+│   └── read-models
+```
 
 #### Creating entities
 
+The preferred way to create an entity is by using the generator, e.g.
+
+```text
+boost new:entity Product --fields displayName:string description:string price:Money
+```
+
+The generator will automatically create a file called `Product.ts` with a TypeScript class of the same name under the entities directory. You can still create the entity manually. Since the generator is not doing any magic, all you need is a class decorated as `@Command`. Anyway, we recommend you always to use the generator, because it handles the boilerplate code for you.
+
+Note:
+
+> Running the entity generator with an EntityName that already exists, it will override the content of the current one. In future releases, we will display a warning before overwriting anything. Meantime, if you missed a field, just add it to the class because in Booster, all the infrastructure and data structures are inferred from your code.
+
 #### The reducer function
+
+Booster generates the reducer function as a static method of the entity class. That function is called by the framework every time that an event of the
+specified type is emitted. **This function must be pure**, which means that no side effects should happen.
+
+The reducer has two parameters by default:
+
+* `event` - The event object that has triggered this reducer
+* `currentEntity?` - A possible previous entity generated from another call to a reducer. Note that **this parameter is optional**, and can be `undefined` if this reducer call is the first one, like when you just deployed your app.
+
+This is the place to write business logic for your data generation.
+
+Given this entity:
+
+```ts
+@Entity
+export class Cart {
+  public constructor(
+    public id: UUID,
+    readonly items: Array<CartItem>
+  ) {}
+
+  @Reduces(ProductAdded)
+  public static reduceProductAdded(
+    event: ProductAdded,
+    currentCart?: Cart
+  ): Cart {
+    const newItems = addToCart(event.item, currentCart)
+    return new Cart(event.cartID, newItems)
+  }
+
+  @Reduces(ProductRemoved)
+  public static reduceProductRemoved(
+    event: ProductRemoved,
+    currentCart?: Cart
+  ): Cart {
+    const newItems = removeFromCart(event.item, currentCart)
+    return new Cart(event.cartID, newItems)
+  }
+}
+```
+
+We can visualize reduction like this:
+
+![reducer process gif](img/reducer.gif)
 
 #### Aggregate data using entities
 
+TODO:
+
 #### Eventual consistency
+
+Due to the event driven and async nature of Booster, your data might
+not be instantly updated. Booster will consume the commands,
+generate events, and _eventually_ generate the entities. Most of the
+time this is not perceivable, but under huge load this might appear.
+
+This property is called [Eventual Consistency](https://en.wikipedia.org/wiki/Eventual_consistency), and it is a trade-off of high availability for
+extreme situations, where other systems might simply fail.
 
 ### 5. Read models and projections
 Read Models are cached data optimized for read operations and they're updated reactively when [Entities](#4-entities-and-reducers) are updated by new [events](#2-events). They also define the *Read* API, the available REST endpoints and their structure.
