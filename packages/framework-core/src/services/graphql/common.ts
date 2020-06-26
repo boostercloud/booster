@@ -14,12 +14,14 @@ export type GraphQLNonInputType = GraphQLObjectType | GraphQLScalarType | GraphQ
 export type ResolverBuilder = (objectClass: AnyClass) => GraphQLFieldResolver<any, GraphQLResolverContext, any>
 
 export interface GraphQLResolverContext {
-  // TODO: check this to allow for any extra params for example in GQL_CONNECTION_INIT
-  // [key: string]: any
   connectionID?: string
   operation: GraphQLOperation
   requestID: UUID
   user?: UserEnvelope
   storeSubscriptions: boolean
   pubSub: ReadModelPubSub
+}
+
+export const graphQLWebsocketSubprotocolHeaders = {
+  'Sec-WebSocket-Protocol': 'graphql-ws',
 }

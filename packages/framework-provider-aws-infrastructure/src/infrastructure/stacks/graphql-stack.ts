@@ -5,7 +5,6 @@ import {
   CfnIntegration,
   CfnIntegrationResponse,
   CfnRoute,
-  CfnRouteResponse,
 } from '@aws-cdk/aws-apigatewayv2'
 import { Code, Function, IEventSource } from '@aws-cdk/aws-lambda'
 import * as params from '../params'
@@ -73,13 +72,10 @@ export class GraphQLStack {
 
   private buildWebsocketRoutes(graphQLLambda: Function, authorizerLambda: Function): void {
     const lambdaIntegration = this.buildLambdaIntegration(graphQLLambda)
-    const mockIntegration = this.buildMockIntegration()
     const websocketAuthorizer = this.buildWebsocketAuthorizer(authorizerLambda)
 
-    const connectRoute = this.buildRoute('$connect', mockIntegration, websocketAuthorizer)
-    this.buildRouteResponse(connectRoute, mockIntegration)
-    const defaultRoute = this.buildRoute('$default', lambdaIntegration)
-    this.buildRouteResponse(defaultRoute, lambdaIntegration)
+    this.buildRoute('$connect', lambdaIntegration, websocketAuthorizer)
+    this.buildRoute('$default', lambdaIntegration)
     this.buildRoute('$disconnect', lambdaIntegration)
   }
 
@@ -99,20 +95,14 @@ export class GraphQLStack {
       ]),
     })
     integration.addDependsOn(this.apis.websocketAPI)
-    return integration
-  }
 
-  private buildMockIntegration(): CfnIntegration {
-    const localID = 'graphql-mock-integration'
-    const integration = new CfnIntegration(this.stack, localID, {
+    const integrationResponseLocalId = 'graphql-handler-integration-response'
+    const integrationResponse = new CfnIntegrationResponse(this.stack, integrationResponseLocalId, {
+      integrationId: integration.ref,
       apiId: this.apis.websocketAPI.ref,
-      integrationType: 'MOCK',
-      templateSelectionExpression: '200',
-      requestTemplates: {
-        '200': '{"statusCode":200}',
-      },
+      integrationResponseKey: '$default',
     })
-    integration.addDependsOn(this.apis.websocketAPI)
+    integrationResponse.addDependsOn(integration)
     return integration
   }
 
@@ -129,24 +119,6 @@ export class GraphQLStack {
     }
     route.addDependsOn(integration)
     return route
-  }
-
-  private buildRouteResponse(route: CfnRoute, integration: CfnIntegration): void {
-    const localID = `route-${route.routeKey}-response`
-    const routeResponse = new CfnRouteResponse(this.stack, localID, {
-      apiId: this.apis.websocketAPI.ref,
-      routeId: route.ref,
-      routeResponseKey: '$default',
-    })
-    routeResponse.addDependsOn(route)
-
-    const integrationResponseLocalId = `route-${route.routeKey}-integration-response`
-    const integrationResponse = new CfnIntegrationResponse(this.stack, integrationResponseLocalId, {
-      integrationId: integration.ref,
-      apiId: this.apis.websocketAPI.ref,
-      integrationResponseKey: '$default',
-    })
-    integrationResponse.addDependsOn(integration)
   }
 
   private buildWebsocketAuthorizer(lambda: Function): CfnAuthorizer {
