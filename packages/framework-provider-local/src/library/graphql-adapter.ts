@@ -1,14 +1,11 @@
-import { Logger } from '@boostercloud/framework-types'
-import { GraphQLRequestEnvelope } from '@boostercloud/framework-types/dist'
+import { GraphQLRequestEnvelope, Logger } from '@boostercloud/framework-types'
 
 export async function rawGraphQLRequestToEnvelope(request: any, logger: Logger): Promise<GraphQLRequestEnvelope> {
   logger.debug('Received GraphQL request: ', request)
-  let graphQLBody = undefined
-  let graphQLVariables = undefined
 
+  let graphQLValue = undefined
   if (request.body) {
-    graphQLBody = request.body?.query
-    graphQLVariables = request.body?.variables
+    graphQLValue = JSON.parse(request.body)
   }
 
   return {
@@ -19,7 +16,6 @@ export async function rawGraphQLRequestToEnvelope(request: any, logger: Logger):
       email: 'test@test.com',
       roles: [],
     },
-    value: graphQLBody,
-    variables: graphQLVariables,
+    value: graphQLValue,
   }
 }
