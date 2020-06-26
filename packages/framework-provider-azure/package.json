@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-azure",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "Handle Booster's integration with Azure",
   "keywords": [
     "framework-provider-azure"
@@ -20,7 +20,7 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@boostercloud/framework-types": "^0.4.2"
+    "@boostercloud/framework-types": "^0.5.0"
   },
   "scripts": {
     "lint": "eslint --ext '.js,.ts' **/*.ts",
