@@ -3,6 +3,7 @@ import ResourceManagementClient from 'azure-arm-resource/lib/resource/resourceMa
 import { DeploymentExtended } from 'azure-arm-resource/lib/resource/models'
 import webSiteManagement from 'azure-arm-website'
 import { configuration } from '../params'
+import { eventStorePartitionKeyAttribute } from '@boostercloud/framework-provider-azure'
 
 const fs = require('fs')
 const archiver = require('archiver')
@@ -116,6 +117,17 @@ export class ApplicationStackBuilder {
       credentials.publishingUserName,
       credentials.publishingPassword,
       credentials.name
+    )
+
+    await this.buildResource(
+      resourceManagementClient,
+      resourceGroupName,
+      {
+        databaseName: { value: this.config.resourceNames.applicationStack },
+        containerName: { value: this.config.resourceNames.eventsStore },
+        partitionKey: { value: eventStorePartitionKeyAttribute },
+      },
+      '../templates/cosmos-db-account.json'
     )
 
     // @ts-ignore

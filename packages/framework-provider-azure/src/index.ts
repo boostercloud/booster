@@ -40,3 +40,5 @@ export const Provider: ProviderLibrary = {
   infrastructure: () =>
     require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
 }
+
+export * from './constants'
