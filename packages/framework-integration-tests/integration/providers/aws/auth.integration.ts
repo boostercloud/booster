@@ -33,10 +33,10 @@ describe('With the auth API', () => {
   context('an internet rando', () => {
     let client: DisconnectableApolloClient
 
-    before(async () => {
+    beforeEach(async () => {
       client = await graphQLClientWithSubscriptions()
     })
-    after(() => {
+    afterEach(() => {
       client.disconnect()
     })
 
@@ -330,10 +330,11 @@ describe('With the auth API', () => {
 
     context('with a signed-in user', () => {
       let client: DisconnectableApolloClient
-      before(async () => {
+
+      beforeEach(async () => {
         client = await graphQLClientWithSubscriptions(await getAuthToken(userEmail, userPassword))
       })
-      after(() => {
+      afterEach(() => {
         client.disconnect()
       })
 
@@ -581,10 +582,11 @@ describe('With the auth API', () => {
 
     context('with a signed-in admin user', () => {
       let client: DisconnectableApolloClient
-      before(async () => {
+
+      beforeEach(async () => {
         client = await graphQLClientWithSubscriptions(await getAuthToken(adminEmail, adminPassword))
       })
-      after(() => {
+      afterEach(() => {
         client.disconnect()
       })
 
