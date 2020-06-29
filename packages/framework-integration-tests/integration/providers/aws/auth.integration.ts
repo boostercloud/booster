@@ -24,7 +24,7 @@ describe('With the auth API', () => {
   let mockProductSKU: string
   let mockCartId: string
 
-  before(() => {
+  beforeEach(() => {
     mockProductId = random.uuid()
     mockProductSKU = random.alphaNumeric(6)
     mockCartId = random.uuid()
@@ -36,6 +36,7 @@ describe('With the auth API', () => {
     before(async () => {
       client = await graphQLClientWithSubscriptions()
     })
+
     after(() => {
       client.disconnect()
     })
@@ -330,6 +331,7 @@ describe('With the auth API', () => {
 
     context('with a signed-in user', () => {
       let client: DisconnectableApolloClient
+
       before(async () => {
         client = await graphQLClientWithSubscriptions(await getAuthToken(userEmail, userPassword))
       })
@@ -581,6 +583,7 @@ describe('With the auth API', () => {
 
     context('with a signed-in admin user', () => {
       let client: DisconnectableApolloClient
+
       before(async () => {
         client = await graphQLClientWithSubscriptions(await getAuthToken(adminEmail, adminPassword))
       })

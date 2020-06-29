@@ -1494,9 +1494,9 @@
     wrap-ansi "^4.0.0"
 
 "@oclif/errors@^1.2.1":
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/@oclif/errors/-/errors-1.3.0.tgz#76a58c44d884a144fb683d57583c092e24d7492e"
-  integrity sha512-mnet8Wzr5iUDiagkcjjmCfZ/+s6RlrfODZN0D/Kq4bPFevACIOxK2jbfG98nxRuAwGy2kwHdFOl6GvvsbsNOQQ==
+  version "1.3.2"
+  resolved "https://registry.yarnpkg.com/@oclif/errors/-/errors-1.3.2.tgz#ac2ec91ba892c1981008e6173e37deded866358c"
+  integrity sha512-ecWNfMBatBGfBzMNW8a4FDAfixXzYiekOskTYZhqOKDUheFDNP0vT17k97qWfvCAcrKsflp4RVwBVTOEdf62iA==
   dependencies:
     clean-stack "^3.0.0"
     fs-extra "^9.0.1"
@@ -2492,10 +2492,25 @@ aws-cdk@1.26.0:
     yaml "^1.7.2"
     yargs "^15.0.2"
 
-aws-sdk@^2.625.0, aws-sdk@^2.656.0:
+aws-sdk@^2.625.0:
   version "2.704.0"
   resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.704.0.tgz#7b039a0a5ba8eaabb91c5f73d06d4330192c5f30"
   integrity sha512-Cjkc86+9sKNn34iIiMa4MimHmr1xpNQZaPVHnnQCpBuh0p6VMDPloz3xc+4LEyoNuwIBzTRjZCVUePVyc31+gw==
+  dependencies:
+    buffer "4.9.2"
+    events "1.1.1"
+    ieee754 "1.1.13"
+    jmespath "0.15.0"
+    querystring "0.2.0"
+    sax "1.2.1"
+    url "0.10.3"
+    uuid "3.3.2"
+    xml2js "0.4.19"
+
+aws-sdk@^2.656.0:
+  version "2.706.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.706.0.tgz#09f65e9a91ecac5a635daf934082abae30eca953"
+  integrity sha512-7GT+yrB5Wb/zOReRdv/Pzkb2Qt+hz6B/8FGMVaoysX3NryHvQUdz7EQWi5yhg9CxOjKxdw5lFwYSs69YlSp1KA==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
