@@ -5,10 +5,10 @@ import { GraphQLService } from '@boostercloud/framework-provider-local'
 export class GraphQLController {
   public router: express.Router = express.Router()
   constructor(readonly graphQLService: GraphQLService) {
-    this.router.post('/', this.handleQuery.bind(this))
+    this.router.post('/', this.handleGraphQL.bind(this))
   }
 
-  public async handleQuery(req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> {
+  public async handleGraphQL(req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> {
     try {
       const response = await this.graphQLService.handleGraphQLRequest(req)
       res.status(HttpCodes.Ok).json(response.result)

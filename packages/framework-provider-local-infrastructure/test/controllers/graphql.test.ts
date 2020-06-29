@@ -53,14 +53,14 @@ describe('GraphQL controller', () => {
     })
 
     it('should call GraphQLService.query', async () => {
-      await sut.handleQuery(mockRequest, mockResponse, nextStub)
+      await sut.handleGraphQL(mockRequest, mockResponse, nextStub)
 
       expect(queryStub).to.have.been.calledOnce.and.calledWith(mockRequest)
     })
 
     context('on success', () => {
       beforeEach(async () => {
-        await sut.handleQuery(mockRequest, mockResponse, nextStub)
+        await sut.handleGraphQL(mockRequest, mockResponse, nextStub)
       })
 
       it('should not call next', () => {
@@ -84,7 +84,7 @@ describe('GraphQL controller', () => {
 
         queryStub.rejects(error)
 
-        await sut.handleQuery(mockRequest, mockResponse, nextStub)
+        await sut.handleGraphQL(mockRequest, mockResponse, nextStub)
       })
 
       it('should return expected status code', async () => {
