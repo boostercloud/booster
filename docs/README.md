@@ -979,7 +979,7 @@ export class EventName {
 }
 ```
 
-All the event classes must implement an `entityID` method, returning the ID of the entity they are tied to. This id will be used later for building up the application's state via [entities](#entities-and-reducers). In most situations, you can reduce the event stream to an entity like a Cart. However, in some use cases, the event stream relates to a specific entity without reducing it. For example, a register of sensor values in a weather station; in that case, the station has no specific value to be reduced. You can implement the semantics that best suits your needs.
+All the event classes must implement an `entityID` method, returning the ID of the entity they are tied to. This id will be used later for building up the application's state via [entities](#4-entities-and-reducers). In most situations, you can reduce the event stream to an entity like a Cart. However, in some use cases, the event stream relates to a specific entity without reducing it. For example, a register of sensor values in a weather station; in that case, the station has no specific value to be reduced. You can implement the semantics that best suits your needs.
 
 #### Events naming convention
 
