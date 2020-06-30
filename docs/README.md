@@ -253,7 +253,7 @@ Now open the project in your favorite editor, e.g. [Visual Studio Code](https://
 #### 2. First command
 
 Commands define the input to our system, so we'll start by generating our first
-[command](#commands) to create posts. Use the command generator in the project's root
+[command](#1-command-and-command-handlers) to create posts. Use the command generator in the project's root
 directory as follows:
 
 ```bash
@@ -988,15 +988,565 @@ public static async handle(event: StockMoved, register: Register): Promise<void>
 #### Eventual consistency
 
 ### 5. Read models and projections
+Read Models are cached data optimized for read operations and they're updated reactively when [Entities](#4-entities-and-reducers) are updated by new [events](#2-events). They also define the *Read* API, the available REST endpoints and their structure.
+
+Read Models are classes decorated with the `@ReadModel` decorator that have one or more projection methods.
+
+```typescript
+@ReadModel
+export class CartReadModel {
+  public constructor(
+    readonly id: UUID,
+    readonly cartItems: Array<CartItem>,
+    public paid: boolean
+  ) {}
+
+  @Projection(Cart, 'id')
+  public static updateWithCart(cart: Cart, oldCartReadModel?: CartReadModel): CartReadModel {
+    return new CartReadModel(cart.id, cart.cartItems, cart.paid)
+  }
+}
+```
 
 #### Read models naming convention
 
 #### Creating a read model
+```shell
+boost new:read-model CartReadModel --fields id:UUID cartItems:"Array<CartItem>" paid:boolean --projects Cart
+```
+
+This will create a file in the read-models directory `project-root/src/read-models/CartReadModel.ts`.
+
+Read Model classes can also be created by hand and there are no restrictions regarding the place you put the files. The structure of the data is totally open and can be as complex as you can manage in your projection functions.
 
 #### The projection function
+A `Projection` is a method decorated with the `@Projection` decorator that, given a new entity value and (optionally) a previous read model state, generate a new read model value.
+
+Read models can be projected from multiple [entities](#4-entities-and-reducers) as soon as they share some common key called `joinKey`.
 
 #### Authorizing read models
 
 #### Querying a read model
+You can use the GraphQL endpoint to query or subscribe to the read model records: [see the API documentation](#GraphQL-API).
 
 #### Getting real-time updates for a read model
+
+## Features
+
+### IAM - Authentication and Authorization
+Authorization in Booster is done through roles. Every Command and ReadModel has an `authorize` policy that
+tells Booster who can execute or access it. It consists of one of the following two values:
+
+- `'all'`: Meaning that the command is public: any user, both authenticated and anonymous, can execute it.
+- An array of authorized roles `[Role1, Role2, ...]`: This means that only those authenticated users that
+  have any of the roles listed there are authorized to execute the command
+
+> For example, the following command can be executed by anyone:
+
+```typescript
+@Command({
+  authorize: 'all',
+})
+export class CreateComment {
+  ...
+}
+```
+
+> While this one can be executed by authenticated users that have the role `Admin` or `User`:
+
+```typescript
+@Command({
+  authorize: [Admin, User],
+})
+export class UpdateUser {
+  ...
+}
+```
+
+By default, a Booster application has no roles defined, so the only allowed value you can use in the `authorize` policy is `'all'` (good for public APIs).
+If you want to add user authorization, you first need to create the roles that are suitable for your application.
+Roles are classes annotated with the `@Role` decorator, where you can specify some attributes.
+
+> Example definition of roles `Admin` and `User`:
+
+```typescript
+@Role({
+  allowSelfSignUp: false,
+})
+export class Admin {}
+
+@Role({
+  allowSelfSignUp: true,
+})
+export class User {}
+```
+
+Here, we have defined the `Admin` and `User` roles. The former contains the following attribute `allowSelfSignUp: false`,
+which means that when users sign-up, they can't specify the role `Admin` as one of its roles.
+The latter has this attribute set to `true`, which means that any user can self-assign the role `User` when signing up.
+
+If your Booster application has roles defined, an authentication API will be provisioned. It will allow your users to gain
+access to your resources.
+
+Once a user has an access token, it can be included in any request made to your Booster application as a
+Bearer Authorization header (`Authorization: Bearer`). It will be used to get the user information and
+authorize it to access protected resources.
+
+#### Sign-up
+Users can use this endpoint to register in your application and get some roles assigned to them.
+Only roles with the attribute `allowSelfSignUp: true` can be specified upon sign-up. After calling this endpoint, the
+registration is not yet finished. Users need to confirm their emails by clicking in the link that will be sent to their 
+inbox.
+
+![confirmation email](./img/sign-up-verificaiton-email.png)
+![email confirmed](./img/sign-up-confirmed.png)
+
+##### Endpoint
+```http request
+POST https://<httpURL>/auth/sign-up
+```
+##### Request body
+```json
+{
+  "clientId": "string",
+  "username": "string",
+  "password": "string",
+  "userAttributes": {
+   	"roles": ["string"]
+  }
+}
+```
+
+Parameter | Description
+--------- | -----------
+_clientId_ | The application client Id that you got as an output when the application was deployed.
+_username_ | The username of the user you want to register. It **must be an email**.
+_password_ | The password the user will use to later login into your application and get access tokens.
+_userAttributes_ | Here you can specify the attributes of your user. These are: <br/> -_**roles**_:  An array of roles this user will have. You can only specify here roles with the property `allowSelfSignUp = true`
+
+
+##### Response
+An Empty Body
+
+##### Errors
+> Sign-up error response body example: Not specifying an email as username.
+
+```json
+{
+  "__type": "InvalidParameterException",
+  "message": "Username should be an email."
+}
+```
+
+You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
+
+#### Sign-in
+This endpoint creates a session for an already registered user, returning an access token that can be used
+to access role-protected resources
+
+##### Endpoint
+```http request
+POST https://<httpURL>/auth/sign-in
+```
+##### Request body
+```json
+{
+  "clientId": "string",
+  "username": "string",
+  "password": "string"
+}
+```
+Parameter | Description
+--------- | -----------
+_clientId_ | The application client Id that you got as an output when the application was deployed.
+_username_ | The username of the user you want to sign in. They must have previously signed up.
+_password_ | The password used to sign up the user.
+
+##### Response
+```json
+{
+  "accessToken": "string",
+  "expiresIn": "string",
+  "refreshToken": "string",
+  "tokenType": "string"
+}
+```
+
+Parameter | Description
+--------- | -----------
+_accessToken_ | The token you can use to access restricted resources. It must be sent in the `Authorization` header (prefixed with the `tokenType`).
+_expiresIn_ | The period of time, in seconds, after which the token will expire.
+_refreshToken_ | The token you can use to get a new access token after it has expired.
+_tokenType_ | The type of token used. It is always `Bearer`.
+
+##### Errors
+> Sign-in error response body example: Login of an user that has not been confirmed
+
+```json
+{
+  "__type": "UserNotConfirmedException",
+  "message": "User is not confirmed."
+}
+```
+
+You will get a HTTP status code different from 2XX and a body with a message telling you the reason of the error.
+
+#### Sign-out
+Users can call this endpoint to finish the session.
+
+##### Endpoint
+```http request
+POST https://<httpURL>/auth/sign-out
+```
+##### Request body
+> Sign-out request body
+```json
+{
+  "accessToken": "string"
+}
+```
+
+Parameter | Description
+--------- | -----------
+_accessToken_ | The access token you get in the sign-in call.
+
+##### Response
+An empty body
+
+##### Errors
+> Sign-out error response body example: Invalid access token specified
+```json
+{
+  "__type": "NotAuthorizedException",
+  "message": "Invalid Access Token"
+}
+```
+You will get a HTTP status code different from 2XX and a body with a message telling you the reason of the error.
+
+### GraphQL API
+This is the main API of your application, as it allows you to:
+
+ - _Modify_ data by **sending commands**
+ - _Read_ data by **querying read models**
+ - _Receive data in real time_ by **subscribing to read models** 
+ 
+All this is done through [GraphQL](https://graphql.org/), a query language for APIs that has useful advantages over simple REST APIs.
+
+If you are not familiar with GraphQL, then, first of all, don't worry! 
+_Using_ a GraphQL API is simple and straightforward.
+_Implementing it_ on the server side is the hardest part, as you need to define your schema, operation, resolvers, etc.
+Luckily, you can forget about that because it is already done by Booster.
+ 
+The GraphQL API is fully **auto-generated** based on your _commands_ and _read models_.
+
+#### Relationship between GraphQL operations and commands and read models
+GraphQL defines three kinds of operations that you can use: _mutations_, _queries_, and _subscriptions_. 
+
+The names are pretty meaningful, but we can say that you use a `mutation` when you want to change data, a `query` when you want to get
+data on-demand, and a `subscription` when you want to receive data at the moment it is updated.
+
+Knowing this, you can infer the relationship between those operations and your Booster components:
+
+- You _send_ a **command** using a **mutation**
+- You _read_ a **read model** using a **query**
+- You _subscribe_ to a **read model** using a **subscription** 
+
+#### How to send GraphQL request
+GraphQL uses two existing protocols: 
+
+- _HTTP_ for `mutation` and `query` operations
+- _WebSocket_ for `subscription` operations
+
+The reason for the WebSocket protocol is that, in order for subscriptions to work, there must be a way for the server to send data
+to clients when it is changed. HTTP doesn't allow that, as it is the client the one which always initiates the request.
+ 
+This is the reason why Booster provisions two main URLs: the **httpURL** and the **websocketURL** (you can see them after
+deploying your application). You need to use the "httpURL" to send GraphQL queries and mutations, and the "websocketURL"
+to send subscriptions.
+
+Therefore:
+
+- To send a GraphQL mutation/query, you send an HTTP request to _"<httpURL>/graphql"_, with _method POST_, and a _JSON-encoded body_ with the mutation/query deatils.
+- To send a GraphQL subscription, you first connect to the _websocketURL_, and then send a _JSON-encoded message_ with the subscription details.
+
+Check the following section for details and examples.
+
+You normally don't need to deal with this low-level details. There are plenty of GraphQL clients for sending request manually
+(like [Postwoman](https://postwoman.io/)) or libraries you can use in the client-side of your application
+(like [Apollo](https://www.apollographql.com/))
+
+#### Sending commands
+
+As mentioned in the previous section, we need to use a "mutation" to send a command. The structure of a mutation (the body
+of the request) is the following:
+
+```graphql
+mutation {
+  command_name(input: {
+    input_field_list
+  })
+}
+```
+
+Where:
+- _**command_name**_ is the name of the class corresponding to the command you want to send
+- _**field_list**_ is list of pairs in the form of `fieldName: fieldValue` containing the data of your command. The field names
+correspond to the names of the properties you defined in the command class. 
+
+Check the examples where we send a command named "ChangeCart" that will add/remove an item to/from a shopping cart. The 
+command requires the ID of the cart (`cartId`), the item identifier (`sku`) and the quantity of units we are adding/removing
+(`quantity`).
+
+Remember that in case you want to send a command that is restricted to a specific set of roles, you must send the **access token**
+in the **"Authorization"** header: *"Authorization: Bearer &lt;token retrieved upon sign-in&gt;"*
+
+> Using a GraphQL-specific client:
+
+```
+URL: "<httpURL>/graphql"
+```
+```graphql
+mutation {
+  ChangeCart(input: {
+    cartId: "demo"
+    sku: "ABC_01"
+    quantity: 2
+  })
+}
+```
+
+> Equivalent bare HTTP request:
+
+```
+URL: "<httpURL>/graphql"
+METHOD: "POST"
+```
+```json
+{
+  "query":"mutation { ChangeCart(input: { cartId: \"demo\" sku: \"ABC_01\" quantity: 2 }) }"
+}
+```
+
+> Response:
+```json
+{
+  "data": {
+    "ChangeCart": true
+  }
+}
+```
+
+### Reading read models
+
+To read a specific read model, we need to use a "query" operation. The structure of the "query" (the body
+of the request) is the following:
+
+```graphql
+query {
+  read_model_name(id: "<id of the read model>") {
+    selection_field_list
+  }
+}
+```
+
+Where:
+- _read_model_name_ is the name of the class corresponding to the read model you want to retrieve.
+- _&lt;id of the read model&gt;_ is the ID of the specific read model instance you are interested in.
+- _selection_field_list_ is a list with the names of the specific read model fields you want to get as response.
+
+Check the examples where we send a query to read a read model named "CartReadModel" whose ID is "demo" and we get back as
+response its `id` and the list of cart `items`
+
+Remember that in case you want to query a read model that is restricted to a specific set of roles, you must send the **access token**
+in the **"Authorization"** header: *"Authorization: Bearer &lt;token retrieved upon sign-in&gt;"*
+
+> Using a GraphQL-specific client:
+
+```
+URL: "<httpURL>/graphql"
+```
+```graphql
+query {
+  CartReadModel(id: "demo") {
+    id
+    items
+  }
+}
+```
+
+> Equivalent bare HTTP request:
+
+```
+URL: "<httpURL>/graphql"
+METHOD: "POST"
+```
+```json
+{
+  "query":"query { CartReadModel(id: \"demo\") { id items } }"
+}
+```
+
+> Response
+
+```json
+{
+  "data": {
+    "CartReadModel": {
+      "id": "demo",
+      "items": [
+        {
+          "sku": "ABC_01",
+          "quantity": 2
+        }
+      ]
+    }
+  }
+}
+```
+
+### Subscribing to read models
+
+To subscribe to a specific read model, we need to use a "subscription" operation, and it must be _sent through the **websocketURL**_.
+
+
+Before sending any subscription, you need to _connect_ to the web socket to open the two-way communication channel. This connection
+is done differently depending on the client/library you use to manage web sockets. In this section, we will show examples 
+using the ["wscat"](https://github.com/websockets/wscat) command line program. 
+
+Once you have connected successfully, you can use this channel to:
+- Send the subscription messages
+- Listen for messages sent by the server with data corresponding to your active subscriptions. 
+
+The structure of the "subscription" (the body of the message) is exactly the same as the "query" operation:
+
+```graphql
+subscription {
+  read_model_name(id: "<id of the read model>") {
+    selection_field_list
+  }
+}
+```
+
+Where:
+- _read_model_name_ is the name of the class corresponding to the read model you want to subscribe to.
+- _&lt;id of the read model&gt;_ is the ID of the specific read model instance you are interested in.
+- _selection_field_list_ is a list with the names of the specific read model fields you want to get when data is sent back to you.
+
+In the following examples we use ["wscat"](https://github.com/websockets/wscat) to connect to the web socket and send a subscription
+to the read model `CartReadModel` with ID "demo"
+
+Remember that in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send, 
+in the *connection operation*, the **access token** in the **"Authorization"** header: 
+*"Authorization: Bearer &lt;token retrieved upon sign-in&gt;"*
+
+> Connecting to the web socket:
+
+```sh
+ wscat -c <websocketURL>
+```
+
+> Sending a message with the subscription
+
+```json
+{"query": "subscription { CartReadModel(id:\"demo\") { id items } }" }
+```
+
+After a successful subscription, you won't receive anything in return. Now, every time the read model you subscribed to
+is modified, a new incoming message will appear in the socket with the updated version of the read model. This message
+will have exactly the same format as if you were done a query with the same parameters.
+
+Following the previous example, we now send a command (using a "mutation" operation) that adds
+a new item with sku "ABC_02" to the `CartReadModel`. After it has been added, we receive the updated version of the read model through the
+socket.
+
+> Send the Command
+
+```
+URL: "<httpURL>/graphql"
+```
+```graphql
+mutation {
+  ChangeCart(input: {
+    cartId: "demo"
+    sku: "ABC_02"
+    quantity: 3
+  })
+}
+```
+
+> The following message appears in the socket
+
+```json
+{
+  "data": {
+    "CartReadModel": {
+      "id": "demo",
+      "items": [
+        {
+          "sku": "ABC_01",
+          "quantity": 2
+        },
+        {
+          "sku": "ABC_02",
+          "quantity": 3
+        }
+      ]
+    }
+  }
+}
+```
+
+## Deploying
+
+One of the goals of Booster is to become provider agnostic so you can deploy your application to any serverless provider like AWS, Google Cloud, Azure, etc...
+
+So far, in the current version, only AWS is supported, but given the high level of abstraction, it will eventually support
+all cloud providers. (**Contributions are welcome!** 😜)
+
+### AWS
+
+#### Configure your provider credentials
+> Creating a plain text file manually named `~/.aws/credentials` with the following content will be enough:
+
+```text
+[default]
+aws_access_key_id = <YOUR KEY ID>
+aws_secret_access_key = <YOUR ACCESS KEY>
+region = eu-west-1
+```
+
+In AWS, it is required that your `~/.aws/credentials` are properly setup, and a `region` attribute is specified. If you have the [AWS CLI installed](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html), you can create the config file by running the command `aws configure`, but that is completely optional, **AWS CLI is not required to run booster**. 
+
+It's recomended to use IAM user keys and avoiding your root access keys. If you need help obtaining a `KEY ID` and `ACCESS KEY`, [check out the oficial AWS guides](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey).
+
+### Deploy your project
+
+To deploy your Booster project, run the following command:
+
+```shell
+boost deploy -e production
+```
+
+It will take a while, but you should have your project deployed to your cloud provider.
+
+If you make changes to your code, you can run `boost deploy -e production` again to update your project in the cloud.
+
+### Deleting your cloud stack
+
+If you want to delete the Booster application that has been deployed to the cloud, you can run:
+
+```shell
+boost nuke -e production
+```
+
+**Note**: This will delete everything in your stack, including databases. This action is **not** reversible!
+
+## Frequently Asked Questions
+**1.- When deploying my application in AWS for the first time, I got an error saying _"StagingBucket <your app name>-toolkit-bucket already exists"_**
+  
+When you deploy a Booster application to AWS, an S3 bucket needs to be created to upload the application code. Booster names that bucket
+using your application name as a prefix. 
+In AWS, bucket names must be unique _globally_, so if there is another bucket in the world with exactly the same name as
+the one generated for your application, you will get this error.  
+
+The solution is to change your application name in the configuration file so that the bucket name is unique. 
