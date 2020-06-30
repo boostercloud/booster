@@ -348,6 +348,24 @@ export async function queryEvents(primaryKey: string, latestFirst = true): Promi
 
   return output.Items
 }
+// --- Subscriptions store helpers ---
+
+export async function subscriptionsStoreTableName(): Promise<string> {
+  const stackName = appStackName()
+
+  return `${stackName}-subscriptions-store`
+}
+
+export async function countSubscriptions(): Promise<number> {
+  const output: ScanOutput = await documentClient
+    .scan({
+      TableName: await subscriptionsStoreTableName(),
+      Select: 'COUNT',
+    })
+    .promise()
+
+  return output.Count ?? -1
+}
 
 // --- Subscriptions store helpers ---
 export async function subscriptionsTableName(): Promise<string> {

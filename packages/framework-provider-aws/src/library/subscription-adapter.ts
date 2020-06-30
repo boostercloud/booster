@@ -80,7 +80,6 @@ export async function deleteSubscription(
     .query({
       TableName: config.resourceNames.subscriptionsStore,
       IndexName: subscriptionsStoreAttributes.indexByConnectionIDName(config),
-      ConsistentRead: true,
       KeyConditionExpression:
         `${subscriptionsStoreAttributes.indexByConnectionIDPartitionKey} = :partitionKey AND ` +
         `${subscriptionsStoreAttributes.indexByConnectionIDSortKey} = :sortKey`,
@@ -122,7 +121,6 @@ export async function deleteAllSubscriptions(
     .query({
       TableName: config.resourceNames.subscriptionsStore,
       IndexName: subscriptionsStoreAttributes.indexByConnectionIDName(config),
-      ConsistentRead: true,
       KeyConditionExpression: `${subscriptionsStoreAttributes.indexByConnectionIDPartitionKey} = :partitionKey`,
       ExpressionAttributeValues: { ':partitionKey': connectionID },
     })
