@@ -667,9 +667,11 @@ There is an architectural splitting between commands and command handlers though
   authorize: 'all' | Array<RoleClass>
 })
 export class CommandName {
-  public constructor(readonly fieldA: SomeType, 
-                     readonly fieldB: SomeOtherType,
-                     /* as many fields as needed */) {}
+  public constructor(
+    readonly fieldA: SomeType,
+    readonly fieldB: SomeOtherType,
+    /* as many fields as needed */
+  ) {}
 
   public async handle(register: Register): Promise<void> {
     // Validate inputs
