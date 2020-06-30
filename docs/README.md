@@ -1161,7 +1161,7 @@ As an example, let's say you have already an app that has a `Cart` entity and a 
 
 Instead of polluting the `Profile` entity with the events of the `Cart`, you create a third entity: `ProfileFavorites`.
 
-Then create two event handlers:
+Then create two (event handlers)[#3-event-handlers]:
 
 - One that's listening for `ProfileCreated` and emits a `FavoritesCreated` event
 - Another one that listens for `OrderPlaced` and emits a `NewItemsPurchased`
