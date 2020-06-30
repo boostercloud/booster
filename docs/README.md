@@ -764,16 +764,46 @@ public static async handle(event: StockMoved, register: Register): Promise<void>
 #### Eventual consistency
 
 ### 5. Read models and projections
+Read Models are cached data optimized for read operations and they're updated reactively when [Entities](#entities) are updated by new [events](#events). They also define the *Read* API, the available REST endpoints and their structure.
+
+Read Models are classes decorated with the `@ReadModel` decorator that have one or more projection methods.
+
+```typescript
+@ReadModel
+export class CartReadModel {
+  public constructor(
+    readonly id: UUID,
+    readonly cartItems: Array<CartItem>,
+    public paid: boolean
+  ) {}
+
+  @Projection(Cart, 'id')
+  public static updateWithCart(cart: Cart, oldCartReadModel?: CartReadModel): CartReadModel {
+    return new CartReadModel(cart.id, cart.cartItems, cart.paid)
+  }
+}
+```
 
 #### Read models naming convention
 
 #### Creating a read model
+```shell
+boost new:read-model CartReadModel --fields id:UUID cartItems:"Array<CartItem>" paid:boolean --projects Cart
+```
+
+This will create a file in the read-models directory `project-root/src/read-models/CartReadModel.ts`.
+
+Read Model classes can also be created by hand and there are no restrictions regarding the place you put the files. The structure of the data is totally open and can be as complex as you can manage in your projection functions.
 
 #### The projection function
+A Projection is a method decorated with the `@Projection` decorator that, given a new entity value and (optionally) a previous read model state, generate a new read model value.
+
+Read models can be projected from multiple [entities](#entities) as soon as they share some common key called `joinKey`.
 
 #### Authorizing read models
 
 #### Querying a read model
+Defining a read models enables a new REST Read endpoint that you can use to query or poll the read model records [see the API documentation](#booster-cloud-framework-rest-api).
 
 #### Getting real-time updates for a read model
 
