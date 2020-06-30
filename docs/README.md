@@ -658,21 +658,245 @@ In this chapter you'll walk through these concepts and its details.
 
 ### 1. Command and command handlers
 
+Booster is different than MVC frameworks in which you typically implement controller classes with the five CRUD methods per model. Instead of that, you define commands, which are the user actions when interacting with an application. This approach fits very well with Domain-Driven Design. Depending on your application's domain, some examples of commands would be: `RemoveItemFromCart`, `RatePhoto`, `AddCommentToPost`, etc. Although, you can still have `Create*`, `Delete*`, or `Update*` commands when they make sense.
+
+There is an architectural splitting between commands and command handlers though they *live* under the same file. The command is the class with the `@Command` decorator, and the generated method called `handle` is the command handler. That is because Booster adopts several concepts from functional programming; the separation between data structures and data transformations is one of them. In Booster a command looks like this:
+
+```typescript
+@Command({
+  authorize: 'all' | Array<RoleClass>
+})
+export class CommandName {
+  public constructor(
+    readonly fieldA: SomeType,
+    readonly fieldB: SomeOtherType,
+    /* as many fields as needed */
+  ) {}
+
+  public async handle(register: Register): Promise<void> {
+    // Validate inputs
+    // Run domain logic
+    // register.events([event1,...])
+  }
+}
+```
+
+Every time you submit a command through the GraphQL API, Booster calls the command handler function for the given command. The Commands are part of the public API so that you can define authorization policies for them. They are also the place for validating input data before registering events into the event store because they are immutable once there.
+
 #### Commands naming convention
+
+Semantic is very important in Booster as it will play an essential role in designing a coherent system. Your application should reflect your domain concepts, and commands are not an exception. Although you can name commands in any way you want, we strongly recommend you to name them starting with verbs in imperative plus the object being affected. If we were designing an e-commerce application, some commands would be:
+
+- CreateProduct
+- DeleteProduct
+- UpdateProduct
+- ChangeCartItems
+- ConfirmPayment
+- MoveStock
+- UpdateCartShippingAddress
+
+Despite you can place commands, and other Booster files, in any directory, we strongly recommend you to put them here `project-root/src/commands`. Having all the commands in one place will help you to understand your application's capabilities at a glance.
+
+```text
+project-root
+├── src
+│   ├── commands <------ They should be here
+│   ├── common
+│   ├── config
+│   ├── entities
+│   ├── events
+│   ├── index.ts
+│   └── read-models
+```
 
 #### Creating a command
 
+The preferred way to create a command is by using the generator, e.g.
+
+```shell
+boost new:command CreateProduct --fields sku:SKU displayName:string description:string price:Money
+```
+
+The generator will automatically create a file called `CreateProduct.ts` with a TypeScript class of the same name under the commands directory. You can still create the command manually. Since the generator is not doing any *magic*, all you need is a class decorated as `@Command`. Anyway, we recommend you always to use the generator, because it handles the boilerplate code for you.
+
+Note:
+> Running the command generator with a `CommandName` already existing, will override the content of the current one. Soon, we will display a warning before overwriting anything. Meantime, if you missed a field, just add it to the class because in Booster, all the infrastructure and data structures are inferred from your code.
+
 #### The command handler function
+
+Booster generates the command handler function as a method of the command class. This function is called by the framework every time that one instance of this command is submitted. The command handler the right place to run validations, return errors, query entities to make decisions and register relevant domain events.
 
 ##### Validating data
 
+Booster uses the typed nature of GraphQL to ensure that types are correct before reaching the handler, so you don't have to validate types.
+
+###### Throw an error
+
+There are still business rules to be checked before proceeding with a command. For example, a given number must be between a threshold or a string must match a regular expression. In that case, it is enough just to throw an error in the handler, and then Booster will use the error's message as the response to make it descriptive, e.g.
+
+Given this command:
+
+```typescript
+@Command({
+  authorize: 'all',
+})
+export class CreateProduct {
+  public constructor(
+    readonly sku: string,
+    readonly price: number
+  ) {}
+
+  public async handle(register: Register): Promise<void> {
+    const priceLimit = 10
+    if (this.price >= priceLimit) {
+      throw new Error(`price must be below ${priceLimit}, and it was ${this.price}`)
+    }
+  }
+}
+
+```
+
+And this mutation:
+
+```graphql
+mutation($input: CreateProductInput!) {
+  CreateProduct(input: $input)
+}
+
+# Variables
+
+{
+  "input": {
+    "sku": "MYSKU",
+    "price": 19.99
+  }
+}
+```
+
+You'll get something like this response:
+
+```grapqhl
+{
+  "errors": [
+    {
+      "message": "price must be below 10, and it was 19.99",
+      "path": [
+        "CreateProduct"
+      ]
+    }
+  ]
+}
+```
+
+###### Register error events 
+
+There could be situations in which you want to register an event representing an error. For example, when moving items with insufficient stock from one location to another:
+
+```typescript
+@Command({
+  authorize: [Admin],
+})
+export class MoveStock {
+  public constructor(
+    readonly productID: string,
+    readonly origin: string,
+    readonly destination: string,
+    readonly quantity: number
+  ) {}
+
+  public async handle(register: Register): Promise<void> {
+    if (!this.enoughStock(this.productID, this.origin, this.quantity)) {
+      register.events(new ErrorEvent(`There is not enough stock for ${this.productID} at ${this.origin}`))
+    } else {
+      register.events(new StockMoved(/*...*/))
+    }
+  }
+
+  private enoughStock(productID: string, origin: string, quantity: number): boolean {
+    /* ... */
+  }
+}
+```
+
+In this case, the client who submitted the command can still complete the operation. Then an event handler will take care of that `ErrorEvent` and proceed accordingly.
+
 ##### Reading entities
+
+Event handlers are a good place to make decisions, and for making better decisions, you need information. There is a Booster function called `fetchEntitySnapshots` within the `Booster` package and allows you to inspect the application state. This function receives two arguments, the `Entity` to fetch and the `entityID`. Here is an example of fetching an entity called `Stock`:
+
+```typescript
+@Command({
+  authorize: [Admin],
+})
+export class MoveStock {
+  public constructor(
+    readonly productID: string,
+    readonly origin: string,
+    readonly destination: string,
+    readonly quantity: number
+  ) {}
+
+  public async handle(register: Register): Promise<void> {
+    const stock = await Booster.fetchEntitySnapshot(Stock, this.productID)
+    if (!this.enoughStock(this.origin, this.quantity, stock)) {
+      register.events(new ErrorEvent(`There is not enough stock for ${this.productID} at ${this.origin}`))
+    }
+  }
+
+  private enoughStock(origin: string, quantity: number, stock?: Stock): boolean {
+    const count = stock?.countByLocation[origin]
+    return !!count && count >= quantity
+  }}
+```
 
 ##### Registering events
 
+Within the command handler execution, it is possible to register domain events. The command handler function receives the `register` argument, so within the handler, it is possible to call `register.events(...)` with a list of events. For more details about events and the register parameter, see the [`Events`](#2-events) section.
+
 #### Authorizing a command
 
+Commands are part of the public API of a Booster application, so you can define who is authorized to submit them. The Booster authorization feature is covered in [this](#iam-authentication-and-authorization) section. So far, we have seen that you can make a command publicly accessible by authorizing `'all'` to submit it. You can also set specific roles as we did with the `authorize: [Admin]` parameter of the `MoveStock` command.
+
 #### Submitting a command
+
+Booster commands are accessible to the outside world as GraphQL mutations. GrahpQL fits very well with Booster's CQRS approach because it has two kinds of operations: Mutations and Queries. Mutations are actions that modify the server-side data, as the commands are.
+
+Booster automatically creates one mutation per command. The framework infers the mutation input type from the command fields, e.g., given this `CreateProduct` command:
+
+```typescript
+@Command({
+  authorize: 'all',
+})
+export class CreateProduct {
+  public constructor(
+    readonly sku: Sku,
+    readonly displayName: string,
+    readonly description: string,
+    readonly price: number
+  ) {}
+
+  public async handle(register: Register): Promise<void> {
+    register.events(/* YOUR EVENT HERE */)
+  }
+}
+```
+
+Booster generates this GraphQL mutation:
+
+```text
+mutation CreateProduct($input: CreateProductInput!): Boolean
+```
+
+where the schema for `CreateProductInput` is 
+
+```text
+{
+  sku: String
+  displayName: String
+  description: String
+  price: Float
+}
+```
 
 ### 2. Events
 
@@ -776,4 +1000,3 @@ public static async handle(event: StockMoved, register: Register): Promise<void>
 #### Querying a read model
 
 #### Getting real-time updates for a read model
-
