@@ -28,7 +28,7 @@ describe('GraphQL controller', () => {
     queryStub = stub().resolves(mockQueryResponse)
     nextStub = stub()
 
-    replace(graphQLServiceStub, 'query', queryStub as any)
+    replace(graphQLServiceStub, 'handleGraphQLRequest', queryStub as any)
 
     sut = new GraphQLController(graphQLServiceStub)
   })
