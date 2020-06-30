@@ -25,6 +25,19 @@ export class ApplicationStackBuilder {
       {},
       '../templates/storage-account.json'
     )
+    const cosmosDbDeployment = await this.buildResource(
+      resourceManagementClient,
+      resourceGroupName,
+      {
+        databaseName: { value: this.config.resourceNames.applicationStack },
+        containerName: { value: this.config.resourceNames.eventsStore },
+        partitionKey: { value: eventStorePartitionKeyAttribute },
+      },
+      '../templates/cosmos-db-account.json'
+    )
+
+    const cosmosDbConnectionString = cosmosDbDeployment.properties?.outputs.connectionString.value
+
     const functionAppDeployment = await this.buildResource(
       resourceManagementClient,
       resourceGroupName,
@@ -82,6 +95,8 @@ export class ApplicationStackBuilder {
     appSettings.properties.BOOSTER_ENV = this.config.environmentName
     // @ts-ignore
     appSettings.properties.BOOSTER_REST_API_URL = `https://${apiManagementServiceDeployment.properties?.outputs.apiManagementServiceName.value}.azure-api.net/${this.config.environmentName}`
+    // @ts-ignore
+    appSettings.properties.COSMOSDB_CONNECTION_STRING = cosmosDbConnectionString
 
     // update app settings
     await webSiteManagementClient.webApps.updateApplicationSettings(
@@ -92,24 +107,48 @@ export class ApplicationStackBuilder {
       }
     )
 
-    const zipPath = await this.packageAzureFunction('graphql', {
-      bindings: [
-        {
-          authLevel: 'anonymous',
-          type: 'httpTrigger',
-          direction: 'in',
-          name: 'rawRequest',
-          methods: ['post'],
+    const zipPath = await this.packageAzureFunction([
+      {
+        functionName: 'graphql',
+        functionConfig: {
+          bindings: [
+            {
+              authLevel: 'anonymous',
+              type: 'httpTrigger',
+              direction: 'in',
+              name: 'rawRequest',
+              methods: ['post'],
+            },
+            {
+              type: 'http',
+              direction: 'out',
+              name: '$return',
+            },
+          ],
+          scriptFile: '../dist/index.js',
+          entryPoint: this.config.serveGraphQLHandler.split('.')[1],
         },
-        {
-          type: 'http',
-          direction: 'out',
-          name: '$return',
+      },
+      {
+        functionName: 'eventHandler',
+        functionConfig: {
+          bindings: [
+            {
+              type: 'cosmosDBTrigger',
+              name: 'documents',
+              direction: 'in',
+              leaseCollectionName: 'leases',
+              connectionStringSetting: 'COSMOSDB_CONNECTION_STRING',
+              databaseName: this.config.resourceNames.applicationStack,
+              collectionName: this.config.resourceNames.eventsStore,
+              createLeaseCollectionIfNotExists: 'true',
+            },
+          ],
+          scriptFile: '../dist/index.js',
+          entryPoint: this.config.eventDispatcherHandler.split('.')[1],
         },
-      ],
-      scriptFile: '../dist/index.js',
-      entryPoint: 'boosterServeGraphQL',
-    })
+      },
+    ])
 
     // @ts-ignore
     const deployResponse = await this.deployFunctionPackage(
@@ -169,7 +208,9 @@ export class ApplicationStackBuilder {
     )
   }
 
-  private async packageAzureFunction(functionName: string, functionConfig: object): Promise<any> {
+  private async packageAzureFunction(
+    functionDefinitions: Array<{ functionName: string; functionConfig: object }>
+  ): Promise<any> {
     const output = fs.createWriteStream(os.tmpdir() + '/example.zip')
     const archive = archiver('zip', {
       zlib: { level: 9 }, // Sets the compression level.
@@ -177,7 +218,11 @@ export class ApplicationStackBuilder {
 
     archive.pipe(output)
     archive.glob('**/*')
-    archive.append(JSON.stringify(functionConfig, null, 2), { name: functionName + '/function.json' })
+    functionDefinitions.forEach((functionDefinition) => {
+      archive.append(JSON.stringify(functionDefinition.functionConfig, null, 2), {
+        name: functionDefinition.functionName + '/function.json',
+      })
+    })
     archive.finalize()
 
     return new Promise((resolve, reject) => {

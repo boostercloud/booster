@@ -2,14 +2,30 @@
 import { ProviderInfrastructure, ProviderLibrary } from '@boostercloud/framework-types'
 import { requestFailed, requestSucceeded } from './library/api-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
+import {
+  rawEventsToEnvelopes,
+  storeEvents,
+  readEntityEventsSince,
+  readEntityLatestSnapshot,
+} from './library/events-adapter'
+import { CosmosClient } from '@azure/cosmos'
+import { environmentVarNames } from './constants'
+
+let cosmosClient
+if (process.env[environmentVarNames.cosmosDbConnectionString]) {
+  // @ts-ignore
+  cosmosClient = new CosmosClient(process.env[environmentVarNames.cosmosDbConnectionString])
+} else {
+  cosmosClient = undefined
+}
 
 export const Provider: ProviderLibrary = {
   // ProviderEventsLibrary
   events: {
-    rawToEnvelopes: undefined as any,
-    store: undefined as any,
-    forEntitySince: undefined as any,
-    latestEntitySnapshot: undefined as any,
+    rawToEnvelopes: rawEventsToEnvelopes,
+    store: storeEvents.bind(null, cosmosClient),
+    forEntitySince: readEntityEventsSince.bind(null, cosmosClient),
+    latestEntitySnapshot: readEntityLatestSnapshot.bind(null, cosmosClient),
   },
   // ProviderReadModelsLibrary
   readModels: {
