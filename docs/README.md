@@ -803,7 +803,7 @@ Read models can be projected from multiple [entities](#4-entities-and-reducers) 
 #### Authorizing read models
 
 #### Querying a read model
-Defining a read models enables a new REST Read endpoint that you can use to query or poll the read model records [see the API documentation](#GraphQL-API).
+You can use the GraphQL endpoint to query or subscribe to the read model records: [see the API documentation](#GraphQL-API).
 
 #### Getting real-time updates for a read model
 
