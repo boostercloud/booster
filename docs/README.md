@@ -1126,7 +1126,7 @@ specified type is emitted. **This function must be pure**, which means that no s
 The reducer has two parameters by default:
 
 * `event` - The event object that has triggered this reducer
-* `currentEntity?` - A possible previous entity generated from another call to a reducer. Note that **this parameter is optional**, and can be `undefined` if this reducer call is the first one, like when you just deployed your app.
+* `currentEntity?` - A possible entity generated from a previous call to the reducer. **This parameter is optional**, and will be `undefined` when an event occurred for the very first time.
 
 This is the place to write business logic for your data generation.
 
