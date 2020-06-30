@@ -1121,7 +1121,7 @@ Note:
 #### The reducer function
 
 Booster generates the reducer function as a static method of the entity class. That function is called by the framework every time that an event of the
-specified type is emitted. **This function must be pure**, which means that no side effects should happen.
+specified type is emitted. **This function must be pure**, which means that you shouldn't be calling third party services, reading or writing to a database, or changing something somewhere.
 
 The reducer has two parameters by default:
 
