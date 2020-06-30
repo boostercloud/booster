@@ -983,7 +983,7 @@ All the event classes must implement an `entityID` method, returning the ID of t
 
 #### Events naming convention
 
-As with commands, you can name events in any way you want, depending on your application's domain. Though, we recommend you to chose short sentences written in past tense because events are facts that have happened and can't be changed. Some event names would be:
+As with commands, you can name events in any way you want, depending on your application's domain. Though, we recommend you to choose short sentences written in past tense because events are facts that have happened and can't be changed. Some event names would be:
 
 - ProductCreated
 - ProductUpdated
