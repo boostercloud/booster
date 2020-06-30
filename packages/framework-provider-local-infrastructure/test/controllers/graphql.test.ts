@@ -52,7 +52,7 @@ describe('GraphQL controller', () => {
       replace(mockResponse, 'json', jsonStub)
     })
 
-    it('should call GraphQLService.query', async () => {
+    it('should call GraphQLService.handleGraphQLRequest', async () => {
       await sut.handleGraphQL(mockRequest, mockResponse, nextStub)
 
       expect(queryStub).to.have.been.calledOnce.and.calledWith(mockRequest)
