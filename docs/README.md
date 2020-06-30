@@ -700,7 +700,7 @@ Despite you can place commands, and other Booster files, in any directory, we st
 ```text
 project-root
 ├── src
-│   ├── commands <------ They must be here
+│   ├── commands <------ They should be here
 │   ├── common
 │   ├── config
 │   ├── entities
