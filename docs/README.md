@@ -844,9 +844,9 @@ export class MoveStock {
   }
 
   private enoughStock(origin: string, quantity: number, stock?: Stock): boolean {
-    return stock !== undefined && stock.countByLocation[origin] >= quantity
-  }
-}
+    const count = stock?.countByLocation[origin]
+    return !!count && count >= quantity
+  }}
 ```
 
 ##### Registering events
