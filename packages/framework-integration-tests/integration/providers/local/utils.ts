@@ -1,4 +1,7 @@
 import fetch from 'cross-fetch'
+import { ApolloClient } from 'apollo-client'
+import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
+import { HttpLink } from 'apollo-link-http'
 import { LOCAL_PROVIDER_HOST } from './constants'
 
 // --- Auth helpers ---
@@ -56,4 +59,26 @@ export function signInURL(): string {
 
 export function signOutURL(): string {
   return new URL('auth/sign-out', LOCAL_PROVIDER_HOST).href
+}
+
+// --- GraphQL helpers ---
+
+export async function graphQLClient(authToken?: string): Promise<ApolloClient<NormalizedCacheObject>> {
+  const cache = new InMemoryCache()
+  const headers = authToken ? { Authorization: `Bearer ${authToken}` } : {}
+  const link = new HttpLink({
+    uri: new URL('graphql', LOCAL_PROVIDER_HOST).href,
+    headers,
+    fetch,
+  })
+
+  return new ApolloClient({
+    cache: cache,
+    link: link,
+    defaultOptions: {
+      query: {
+        fetchPolicy: 'no-cache',
+      },
+    },
+  })
 }
