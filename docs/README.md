@@ -764,7 +764,7 @@ public static async handle(event: StockMoved, register: Register): Promise<void>
 #### Eventual consistency
 
 ### 5. Read models and projections
-Read Models are cached data optimized for read operations and they're updated reactively when [Entities](#entities) are updated by new [events](#events). They also define the *Read* API, the available REST endpoints and their structure.
+Read Models are cached data optimized for read operations and they're updated reactively when [Entities](#4-entities-and-reducers) are updated by new [events](#2-events). They also define the *Read* API, the available REST endpoints and their structure.
 
 Read Models are classes decorated with the `@ReadModel` decorator that have one or more projection methods.
 
@@ -796,20 +796,20 @@ This will create a file in the read-models directory `project-root/src/read-mode
 Read Model classes can also be created by hand and there are no restrictions regarding the place you put the files. The structure of the data is totally open and can be as complex as you can manage in your projection functions.
 
 #### The projection function
-A Projection is a method decorated with the `@Projection` decorator that, given a new entity value and (optionally) a previous read model state, generate a new read model value.
+A `Projection` is a method decorated with the `@Projection` decorator that, given a new entity value and (optionally) a previous read model state, generate a new read model value.
 
-Read models can be projected from multiple [entities](#entities) as soon as they share some common key called `joinKey`.
+Read models can be projected from multiple [entities](#4-entities-and-reducers) as soon as they share some common key called `joinKey`.
 
 #### Authorizing read models
 
 #### Querying a read model
-Defining a read models enables a new REST Read endpoint that you can use to query or poll the read model records [see the API documentation](#booster-cloud-framework-rest-api).
+Defining a read models enables a new REST Read endpoint that you can use to query or poll the read model records [see the API documentation](#GraphQL-API).
 
 #### Getting real-time updates for a read model
 
-## Features
+## Features
 
-### IAM - Authentication and Authorization
+### IAM - Authentication and Authorization
 Authorization in Booster is done through roles. Every Command and ReadModel has an `authorize` policy that
 tells Booster who can execute or access it. It consists of one of the following two values:
 
@@ -884,12 +884,12 @@ POST https://<httpURL>/auth/sign-up
 ##### Request body
 ```json
 {
-	"clientId": "string",
-	"username": "string",
-	"password": "string",
-	"userAttributes": {
+  "clientId": "string",
+  "username": "string",
+  "password": "string",
+  "userAttributes": {
    	"roles": ["string"]
-	}
+  }
 }
 ```
 
@@ -898,13 +898,11 @@ Parameter | Description
 _clientId_ | The application client Id that you got as an output when the application was deployed.
 _username_ | The username of the user you want to register. It **must be an email**.
 _password_ | The password the user will use to later login into your application and get access tokens.
-_userAttributes_ | Here you can specify the attributes of your user. These are: <br/> - _roles_  An array of roles this user will have. You can only specify here roles with the property `allowSelfSignUp = true`
+_userAttributes_ | Here you can specify the attributes of your user. These are: <br/> -_**roles**_:  An array of roles this user will have. You can only specify here roles with the property `allowSelfSignUp = true`
 
 
 ##### Response
-```json
-{}
-```
+An Empty Body
 
 ##### Errors
 > Sign-up error response body example: Not specifying an email as username.
@@ -929,15 +927,15 @@ POST https://<httpURL>/auth/sign-in
 ##### Request body
 ```json
 {
-	"clientId": "string",
-	"username": "string",
-	"password": "string"
+  "clientId": "string",
+  "username": "string",
+  "password": "string"
 }
 ```
 Parameter | Description
 --------- | -----------
 _clientId_ | The application client Id that you got as an output when the application was deployed.
-_username_ | The username of the user you want to sign in. They must have previously signed up
+_username_ | The username of the user you want to sign in. They must have previously signed up.
 _password_ | The password used to sign up the user.
 
 ##### Response
@@ -952,10 +950,10 @@ _password_ | The password used to sign up the user.
 
 Parameter | Description
 --------- | -----------
-_accessToken_ | The token you can use to access restricted resources. It must be sent in the `Authorization` header (prefixed with the `tokenType`)
-_expiresIn_ | The period of time, in seconds, after which the token will expire
+_accessToken_ | The token you can use to access restricted resources. It must be sent in the `Authorization` header (prefixed with the `tokenType`).
+_expiresIn_ | The period of time, in seconds, after which the token will expire.
 _refreshToken_ | The token you can use to get a new access token after it has expired.
-_tokenType_ | The type of token used. It is always `Bearer`
+_tokenType_ | The type of token used. It is always `Bearer`.
 
 ##### Errors
 > Sign-in error response body example: Login of an user that has not been confirmed
@@ -980,7 +978,7 @@ POST https://<httpURL>/auth/sign-out
 > Sign-out request body
 ```json
 {
-	"accessToken": "string"
+  "accessToken": "string"
 }
 ```
 
@@ -989,9 +987,8 @@ Parameter | Description
 _accessToken_ | The access token you get in the sign-in call.
 
 ##### Response
-```json
-{}
-```
+An empty body
+
 ##### Errors
 > Sign-out error response body example: Invalid access token specified
 ```json
@@ -1068,9 +1065,8 @@ mutation {
 ```
 
 Where:
-
-- _command_name_ is the name of the class corresponding to the command you want to send
-- _field_list_ is list of pairs in the form of `fieldName: fieldValue` containing the data of your command. The field names
+- _**command_name**_ is the name of the class corresponding to the command you want to send
+- _**field_list**_ is list of pairs in the form of `fieldName: fieldValue` containing the data of your command. The field names
 correspond to the names of the properties you defined in the command class. 
 
 Check the examples where we send a command named "ChangeCart" that will add/remove an item to/from a shopping cart. The 
@@ -1130,7 +1126,6 @@ query {
 ```
 
 Where:
-
 - _read_model_name_ is the name of the class corresponding to the read model you want to retrieve.
 - _&lt;id of the read model&gt;_ is the ID of the specific read model instance you are interested in.
 - _selection_field_list_ is a list with the names of the specific read model fields you want to get as response.
@@ -1195,7 +1190,6 @@ is done differently depending on the client/library you use to manage web socket
 using the ["wscat"](https://github.com/websockets/wscat) command line program. 
 
 Once you have connected successfully, you can use this channel to:
-
 - Send the subscription messages
 - Listen for messages sent by the server with data corresponding to your active subscriptions. 
 
@@ -1210,7 +1204,6 @@ subscription {
 ```
 
 Where:
-
 - _read_model_name_ is the name of the class corresponding to the read model you want to subscribe to.
 - _&lt;id of the read model&gt;_ is the ID of the specific read model instance you are interested in.
 - _selection_field_list_ is a list with the names of the specific read model fields you want to get when data is sent back to you.
@@ -1279,14 +1272,15 @@ mutation {
 }
 ```
 
-## Deploying
+## Deploying
 
 One of the goals of Booster is to become provider agnostic so you can deploy your application to any serverless provider like AWS, Google Cloud, Azure, etc...
 
 So far, in the current version, only AWS is supported, but given the high level of abstraction, it will eventually support
 all cloud providers. (**Contributions are welcome!** 😜)
 
-### AWS
+### AWS
+
 #### Configure your provider credentials
 > Creating a plain text file manually named `~/.aws/credentials` with the following content will be enough:
 
@@ -1299,13 +1293,15 @@ region = eu-west-1
 
 In AWS, it is required that your `~/.aws/credentials` are properly setup, and a `region` attribute is specified. If you have the [AWS CLI installed](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html), you can create the config file by running the command `aws configure`, but that is completely optional, **AWS CLI is not required to run booster**. 
 
-It's recomended to use IAM user keys and avoiding your root access keys. If you need help obtaining a `KEY ID` and `ACCESS KEY`, [check out the oficial AWS guides](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey)
+It's recomended to use IAM user keys and avoiding your root access keys. If you need help obtaining a `KEY ID` and `ACCESS KEY`, [check out the oficial AWS guides](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey).
 
 ### Deploy your project
 
 To deploy your Booster project, run the following command:
 
-`boost deploy -e production`
+```shell
+boost deploy -e production
+```
 
 It will take a while, but you should have your project deployed to your cloud provider.
 
@@ -1315,11 +1311,13 @@ If you make changes to your code, you can run `boost deploy -e production` again
 
 If you want to delete the Booster application that has been deployed to the cloud, you can run:
 
-`boost nuke -e production`
+```shell
+boost nuke -e production
+```
 
 **Note**: This will delete everything in your stack, including databases. This action is **not** reversible!
 
-## Frequently Asked Questions
+## Frequently Asked Questions
 **1.- When deploying my application in AWS for the first time, I got an error saying _"StagingBucket <your app name>-toolkit-bucket already exists"_**
   
 When you deploy a Booster application to AWS, an S3 bucket needs to be created to upload the application code. Booster names that bucket
