@@ -1,6 +1,14 @@
 import { BoosterConfig, Logger, SubscriptionEnvelope } from '@boostercloud/framework-types'
 import { ApiGatewayManagementApi, DynamoDB } from 'aws-sdk'
 import { environmentVarNames, subscriptionsStoreAttributes } from '../constants'
+import { sortKeyForSubscription } from './partition-keys'
+
+interface SusbscriptionIndexRecord {
+  [subscriptionsStoreAttributes.partitionKey]: string
+  [subscriptionsStoreAttributes.sortKey]: string
+  [subscriptionsStoreAttributes.indexByConnectionIDPartitionKey]: string
+  [subscriptionsStoreAttributes.indexByConnectionIDSortKey]: string
+}
 
 export async function subscribeToReadModel(
   db: DynamoDB.DocumentClient,
@@ -10,14 +18,13 @@ export async function subscribeToReadModel(
 ): Promise<void> {
   if (
     !subscriptionEnvelope[subscriptionsStoreAttributes.partitionKey] ||
-    !subscriptionEnvelope[subscriptionsStoreAttributes.sortKey] ||
-    !subscriptionEnvelope[subscriptionsStoreAttributes.ttl] ||
-    !subscriptionEnvelope.operation.id
+    !subscriptionEnvelope.connectionID || // First part of subscriptionsStoreAttributes.sortKey
+    !subscriptionEnvelope.operation.id || // Second part of subscriptionsStoreAttributes.sortKey
+    !subscriptionEnvelope[subscriptionsStoreAttributes.ttl]
   ) {
     throw new Error(
       'Subscription envelope is missing any of the following required attributes: ' +
-        `"${subscriptionsStoreAttributes.partitionKey}", ${subscriptionsStoreAttributes.sortKey}", ${subscriptionsStoreAttributes.ttl}", ` +
-        '"subscriptionEnvelope.operation.id"'
+        `"${subscriptionsStoreAttributes.partitionKey}", "connectionID", "operation.id", ${subscriptionsStoreAttributes.ttl}"`
     )
   }
 
@@ -26,6 +33,10 @@ export async function subscribeToReadModel(
       TableName: config.resourceNames.subscriptionsStore,
       Item: {
         ...subscriptionEnvelope,
+        [subscriptionsStoreAttributes.sortKey]: sortKeyForSubscription(
+          subscriptionEnvelope.connectionID,
+          subscriptionEnvelope.operation.id
+        ),
         [subscriptionsStoreAttributes.indexByConnectionIDSortKey]: subscriptionEnvelope.operation.id,
       },
     })
@@ -89,7 +100,7 @@ export async function deleteSubscription(
       },
     })
     .promise()
-  const foundSubscriptions = result.Items as Array<SubscriptionEnvelope>
+  const foundSubscriptions = result.Items as Array<SusbscriptionIndexRecord>
   if (foundSubscriptions?.length == 0) {
     logger.info(
       `[deleteSubscription] No subscriptions found with connectionID=${connectionID} and subscriptionID=${subscriptionID}`
@@ -103,8 +114,8 @@ export async function deleteSubscription(
     .delete({
       TableName: config.resourceNames.subscriptionsStore,
       Key: {
-        [subscriptionsStoreAttributes.partitionKey]: subscriptionToDelete.typeName,
-        [subscriptionsStoreAttributes.sortKey]: subscriptionToDelete.connectionID,
+        [subscriptionsStoreAttributes.partitionKey]: subscriptionToDelete[subscriptionsStoreAttributes.partitionKey],
+        [subscriptionsStoreAttributes.sortKey]: subscriptionToDelete[subscriptionsStoreAttributes.sortKey],
       },
     })
     .promise()
@@ -125,7 +136,7 @@ export async function deleteAllSubscriptions(
       ExpressionAttributeValues: { ':partitionKey': connectionID },
     })
     .promise()
-  const foundSubscriptions = result.Items as Array<SubscriptionEnvelope>
+  const foundSubscriptions = result.Items as Array<SusbscriptionIndexRecord>
   if (foundSubscriptions?.length == 0) {
     logger.info(`[deleteAllSubscription] No subscriptions found with connectionID=${connectionID}`)
     return
@@ -141,8 +152,9 @@ export async function deleteAllSubscriptions(
       [config.resourceNames.subscriptionsStore]: foundSubscriptions.map((subscriptionEnvelope) => ({
         DeleteRequest: {
           Key: {
-            [subscriptionsStoreAttributes.partitionKey]: subscriptionEnvelope.typeName,
-            [subscriptionsStoreAttributes.sortKey]: subscriptionEnvelope.connectionID,
+            [subscriptionsStoreAttributes.partitionKey]:
+              subscriptionEnvelope[subscriptionsStoreAttributes.partitionKey],
+            [subscriptionsStoreAttributes.sortKey]: subscriptionEnvelope[subscriptionsStoreAttributes.sortKey],
           },
         },
       })),
