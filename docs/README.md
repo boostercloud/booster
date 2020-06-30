@@ -253,7 +253,7 @@ Now open the project in your favorite editor, e.g. [Visual Studio Code](https://
 #### 2. First command
 
 Commands define the input to our system, so we'll start by generating our first
-[command](#commands) to create posts. Use the command generator in the project's root
+[command](#1-command-and-command-handlers) to create posts. Use the command generator in the project's root
 directory as follows:
 
 ```bash
