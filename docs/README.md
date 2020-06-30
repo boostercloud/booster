@@ -888,7 +888,7 @@ POST https://<httpURL>/auth/sign-up
 	"username": "string",
 	"password": "string",
 	"userAttributes": {
-   		"roles": ["string"]
+   	"roles": ["string"]
 	}
 }
 ```
@@ -911,8 +911,8 @@ _userAttributes_ | Here you can specify the attributes of your user. These are: 
 
 ```json
 {
-    "__type": "InvalidParameterException",
-    "message": "Username should be an email."
+  "__type": "InvalidParameterException",
+  "message": "Username should be an email."
 }
 ```
 
@@ -929,9 +929,9 @@ POST https://<httpURL>/auth/sign-in
 ##### Request body
 ```json
 {
-	"clientId":"string",
-	"username":"string",
-	"password":"string"
+	"clientId": "string",
+	"username": "string",
+	"password": "string"
 }
 ```
 Parameter | Description
@@ -943,10 +943,10 @@ _password_ | The password used to sign up the user.
 ##### Response
 ```json
 {
-    "accessToken": "string",
-    "expiresIn": "string",
-    "refreshToken": "string",
-    "tokenType": "string"
+  "accessToken": "string",
+  "expiresIn": "string",
+  "refreshToken": "string",
+  "tokenType": "string"
 }
 ```
 
@@ -962,8 +962,8 @@ _tokenType_ | The type of token used. It is always `Bearer`
 
 ```json
 {
-    "__type": "UserNotConfirmedException",
-    "message": "User is not confirmed."
+  "__type": "UserNotConfirmedException",
+  "message": "User is not confirmed."
 }
 ```
 
@@ -978,10 +978,9 @@ POST https://<httpURL>/auth/sign-out
 ```
 ##### Request body
 > Sign-out request body
-
 ```json
 {
-	"accessToken":"string"
+	"accessToken": "string"
 }
 ```
 
@@ -997,8 +996,8 @@ _accessToken_ | The access token you get in the sign-in call.
 > Sign-out error response body example: Invalid access token specified
 ```json
 {
-    "__type": "NotAuthorizedException",
-    "message": "Invalid Access Token"
+  "__type": "NotAuthorizedException",
+  "message": "Invalid Access Token"
 }
 ```
 You will get a HTTP status code different from 2XX and a body with a message telling you the reason of the error.
@@ -1006,5 +1005,43 @@ You will get a HTTP status code different from 2XX and a body with a message tel
 ### GraphQL API
 
 ## Deploying
+
+One of the goals of Booster is to become provider agnostic so you can deploy your application to any serverless provider like AWS, Google Cloud, Azure, etc...
+
+So far, in the current version, only AWS is supported, but given the high level of abstraction, it will eventually support
+all cloud providers. (**Contributions are welcome!** 😜)
+
+### AWS
+#### Configure your provider credentials
+> Creating a plain text file manually named `~/.aws/credentials` with the following content will be enough:
+
+```text
+[default]
+aws_access_key_id = <YOUR KEY ID>
+aws_secret_access_key = <YOUR ACCESS KEY>
+region = eu-west-1
+```
+
+In AWS, it is required that your `~/.aws/credentials` are properly setup, and a `region` attribute is specified. If you have the [AWS CLI installed](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html), you can create the config file by running the command `aws configure`, but that is completely optional, **AWS CLI is not required to run booster**. 
+
+It's recomended to use IAM user keys and avoiding your root access keys. If you need help obtaining a `KEY ID` and `ACCESS KEY`, [check out the oficial AWS guides](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey)
+
+### Deploy your project
+
+To deploy your Booster project, run the following command:
+
+`boost deploy -e production`
+
+It will take a while, but you should have your project deployed to your cloud provider.
+
+If you make changes to your code, you can run `boost deploy -e production` again to update your project in the cloud.
+
+### Deleting your cloud stack
+
+If you want to delete the Booster application that has been deployed to the cloud, you can run:
+
+`boost nuke -e production`
+
+**Note**: This will delete everything in your stack, including databases. This action is **not** reversible!
 
 ## Frequently Asked Questions
