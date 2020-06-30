@@ -887,7 +887,7 @@ Booster generates this GraphQL mutation:
 mutation CreateProduct($input: CreateProductInput!): Boolean
 ```
 
-where `CreateProductInput` is 
+where the schema for `CreateProductInput` is 
 
 ```text
 {
