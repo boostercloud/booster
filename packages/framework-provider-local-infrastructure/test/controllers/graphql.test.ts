@@ -37,7 +37,7 @@ describe('GraphQL controller', () => {
     restore()
   })
 
-  describe('handleQuery', () => {
+  describe('handleGraphQL', () => {
     let mockRequest: Request
     let mockResponse: Response
 
