@@ -964,7 +964,7 @@ where the schema for `CreateProductInput` is
 
 ### 2. Events
 
-Events are **immutable facts** within your application's domain. They are the cornerstone in Booster because of its event-driven and event-sourced nature. Booster events are TypeScript classes decorated with `@Event `:
+Events are **immutable facts** within your application's domain. They are the cornerstone of Booster because of its event-driven and event-sourced nature. Booster events are TypeScript classes decorated with `@Event`:
 
 ```typescript
 @Event
@@ -1258,6 +1258,7 @@ This property is called [Eventual Consistency](https://en.wikipedia.org/wiki/Eve
 extreme situations, where other systems might simply fail.
 
 ### 5. Read models and projections
+
 Read Models are cached data optimized for read operations and they're updated reactively when [Entities](#4-entities-and-reducers) are updated by new [events](#2-events). They also define the *Read* API, the available REST endpoints and their structure.
 
 Read Models are classes decorated with the `@ReadModel` decorator that have one or more projection methods.
