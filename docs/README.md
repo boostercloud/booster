@@ -851,7 +851,7 @@ export class MoveStock {
 
 ##### Registering events
 
-After a command handler execution, it is possible to register domain events. The command handler function receives the `register` argument, so within the handler, it is possible to call `register.events(...)` with a list of events. For more details about events and the register, see the [`Events`](#2-events) section.
+Within the command handler execution, it is possible to register domain events. The command handler function receives the `register` argument, so within the handler, it is possible to call `register.events(...)` with a list of events. For more details about events and the register parameter, see the [`Events`](#2-events) section.
 
 #### Authorizing a command
 
