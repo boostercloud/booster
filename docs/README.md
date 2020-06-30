@@ -1148,7 +1148,7 @@ export class Cart {
 }
 ```
 
-We can visualize reduction like this:
+You can visualize reduction like this:
 
 ![reducer process gif](img/reducer.gif)
 
