@@ -991,7 +991,7 @@ As with commands, you can name events in any way you want, depending on your app
 - CartItemChanged
 - StockMoved
 
-As with other Booster files, events have their directory:
+As with other Booster files, events have their own directory:
 
 ```text
 project-root
