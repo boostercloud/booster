@@ -864,23 +864,144 @@ The latter has this attribute set to `true`, which means that any user can self-
 If your Booster application has roles defined, an authentication API will be provisioned. It will allow your users to gain
 access to your resources.
 
-This API consists of three endpoints ([see the API documentation](#authentication-and-authorization-api)):
+Once a user has an access token, it can be included in any request made to your Booster application as a
+Bearer Authorization header (`Authorization: Bearer`). It will be used to get the user information and
+authorize it to access protected resources.
 
-- `/auth/sign-up`: Users can use this endpoint to register in your application and get some roles assigned to them.
-  Only roles with the attribute `allowSelfSignUp: true` can be specified upon sign-up. After calling this endpoint, the
-  registration is not yet finished. Users need to confirm their emails by clicking in the link that will be sent to their
-  inbox.
+#### Sign-up
+Users can use this endpoint to register in your application and get some roles assigned to them.
+Only roles with the attribute `allowSelfSignUp: true` can be specified upon sign-up. After calling this endpoint, the
+registration is not yet finished. Users need to confirm their emails by clicking in the link that will be sent to their 
+inbox.
 
 ![confirmation email](./img/sign-up-verificaiton-email.png)
 ![email confirmed](./img/sign-up-confirmed.png)
 
-- `/auth/sign-in`: This endpoint creates a session for an already registered user, returning an access token that
-  can be used to access role-protected resources (like Commands)
-- `/auth/sign-out`: Users can call this endpoint to finish the session.
+##### Endpoint
+```http request
+POST https://<httpURL>/auth/sign-up
+```
+##### Request body
+```json
+{
+	"clientId": "string",
+	"username": "string",
+	"password": "string",
+	"userAttributes": {
+   		"roles": ["string"]
+	}
+}
+```
 
-Once a user has an access token, it can be included in any request made to your Booster application as a
-Bearer Authorization header (`Authorization: Bearer`). It will be used to get the user information and
-authorize it to access protected resources.
+Parameter | Description
+--------- | -----------
+_clientId_ | The application client Id that you got as an output when the application was deployed.
+_username_ | The username of the user you want to register. It **must be an email**.
+_password_ | The password the user will use to later login into your application and get access tokens.
+_userAttributes_ | Here you can specify the attributes of your user. These are: <br/> - _roles_  An array of roles this user will have. You can only specify here roles with the property `allowSelfSignUp = true`
+
+
+##### Response
+```json
+{}
+```
+
+##### Errors
+> Sign-up error response body example: Not specifying an email as username.
+
+```json
+{
+    "__type": "InvalidParameterException",
+    "message": "Username should be an email."
+}
+```
+
+You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
+
+#### Sign-in
+This endpoint creates a session for an already registered user, returning an access token that can be used
+to access role-protected resources
+
+##### Endpoint
+```http request
+POST https://<httpURL>/auth/sign-in
+```
+##### Request body
+```json
+{
+	"clientId":"string",
+	"username":"string",
+	"password":"string"
+}
+```
+Parameter | Description
+--------- | -----------
+_clientId_ | The application client Id that you got as an output when the application was deployed.
+_username_ | The username of the user you want to sign in. They must have previously signed up
+_password_ | The password used to sign up the user.
+
+##### Response
+```json
+{
+    "accessToken": "string",
+    "expiresIn": "string",
+    "refreshToken": "string",
+    "tokenType": "string"
+}
+```
+
+Parameter | Description
+--------- | -----------
+_accessToken_ | The token you can use to access restricted resources. It must be sent in the `Authorization` header (prefixed with the `tokenType`)
+_expiresIn_ | The period of time, in seconds, after which the token will expire
+_refreshToken_ | The token you can use to get a new access token after it has expired.
+_tokenType_ | The type of token used. It is always `Bearer`
+
+##### Errors
+> Sign-in error response body example: Login of an user that has not been confirmed
+
+```json
+{
+    "__type": "UserNotConfirmedException",
+    "message": "User is not confirmed."
+}
+```
+
+You will get a HTTP status code different from 2XX and a body with a message telling you the reason of the error.
+
+#### Sign-out
+Users can call this endpoint to finish the session.
+
+##### Endpoint
+```http request
+POST https://<httpURL>/auth/sign-out
+```
+##### Request body
+> Sign-out request body
+
+```json
+{
+	"accessToken":"string"
+}
+```
+
+Parameter | Description
+--------- | -----------
+_accessToken_ | The access token you get in the sign-in call.
+
+##### Response
+```json
+{}
+```
+##### Errors
+> Sign-out error response body example: Invalid access token specified
+```json
+{
+    "__type": "NotAuthorizedException",
+    "message": "Invalid Access Token"
+}
+```
+You will get a HTTP status code different from 2XX and a body with a message telling you the reason of the error.
 
 ### GraphQL API
 
