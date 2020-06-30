@@ -20,21 +20,20 @@ type DispatchResult = AsyncIterableIterator<ExecutionResult> | ExecutionResult |
 export class BoosterGraphQLDispatcher {
   private readonly graphQLSchema: GraphQLSchema
   private readonly websocketHandler: GraphQLWebsocketHandler
+  private readonly readModelDispatcher: BoosterReadModelDispatcher
 
   public constructor(private config: BoosterConfig, private logger: Logger) {
-    this.graphQLSchema = new GraphQLGenerator(
-      config,
-      new BoosterCommandDispatcher(config, logger),
-      new BoosterReadModelDispatcher(config, logger)
-    ).generateSchema()
+    this.readModelDispatcher = new BoosterReadModelDispatcher(config, logger)
+    const commandDispatcher = new BoosterCommandDispatcher(config, logger)
 
+    this.graphQLSchema = new GraphQLGenerator(config, commandDispatcher, this.readModelDispatcher).generateSchema()
     this.websocketHandler = new GraphQLWebsocketHandler(
       logger,
-      this.config.provider.readModels.notifySubscription.bind(null, this.config),
+      this.config.provider.readModels.notifySubscription.bind(null, config),
       {
         onStartOperation: this.runGraphQLOperation.bind(this),
-        onStopOperation: undefined as any,
-        onTerminateOperations: undefined as any,
+        onStopOperation: this.readModelDispatcher.unsubscribe.bind(this.readModelDispatcher),
+        onTerminateOperations: this.readModelDispatcher.unsubscribeAll.bind(this.readModelDispatcher),
       }
     )
   }
@@ -50,8 +49,7 @@ export class BoosterGraphQLDispatcher {
       case 'MESSAGE':
         return this.config.provider.graphQL.handleResult(await this.handleMessage(envelope))
       case 'DISCONNECT':
-        // TODO: Remove subscriptions
-        return this.config.provider.graphQL.handleResult()
+        return this.config.provider.graphQL.handleResult(await this.handleDisconnect(envelope))
       default:
         return this.config.provider.graphQL.handleResult({
           errors: [new Error(`Unknown message type ${envelope.eventType}`)],
@@ -150,6 +148,15 @@ export class BoosterGraphQLDispatcher {
     })
     this.logger.debug('GraphQL subscription finished')
     return result
+  }
+
+  private async handleDisconnect(envelope: GraphQLRequestEnvelope): Promise<void> {
+    if (!envelope.connectionID) {
+      // This should be impossible, but just in case
+      this.logger.debug("Received a DISCONNECT message but field 'connectionID' is missing. Doing nothing")
+      return
+    }
+    return this.readModelDispatcher.unsubscribeAll(envelope.connectionID)
   }
 }
 
