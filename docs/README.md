@@ -695,7 +695,7 @@ Semantic is very important in Booster as it will play an essential role in desig
 - MoveStock
 - UpdateCartShippingAddress
 
-Additionally, commands must be within the commands directory of the project source: `project-root/src/commands`.
+Despite you can place commands, and other Booster files, in any directory, we strongly recommend you to put them here `project-root/src/commands`. Having all the commands in one place will help you to understand your application's capabilities at a glance.
 
 ```text
 project-root
