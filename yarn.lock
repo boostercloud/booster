@@ -4670,8 +4670,9 @@ graphql@^14.5.3:
     iterall "^1.2.2"
 
 graphql@^15.0.0:
-  version "15.0.0"
-  resolved "https://registry.yarnpkg.com/graphql/-/graphql-15.0.0.tgz#042a5eb5e2506a2e2111ce41eb446a8e570b8be9"
+  version "15.2.0"
+  resolved "https://registry.yarnpkg.com/graphql/-/graphql-15.2.0.tgz#d9c655a523a3196d4b23657ec6ec5963b3bd4970"
+  integrity sha512-tsceRyHfgzZo+ee0YK3o8f0CR0cXAXxRlxoORWFo/CoM1bVy3UXGWeyzBcf+Y6oqPvO27BDmOEVATcunOO/MrQ==
 
 growl@1.10.5:
   version "1.10.5"
