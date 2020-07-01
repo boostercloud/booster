@@ -82,27 +82,27 @@ describe('With the auth API', () => {
     })
 
     it("can't subscribe to a secured read model", async () => {
+      const subscription = await client.subscribe({
+        variables: {
+          productId: mockProductId,
+        },
+        query: gql`
+          subscription ProductUpdatesReadModel($productId: ID!) {
+            ProductUpdatesReadModel(id: $productId) {
+              id
+              availability
+              lastUpdate
+              previousUpdate
+            }
+          }
+        `,
+      })
+
       const subscriptionPromise = new Promise((_, reject) => {
-        client
-          .subscribe({
-            variables: {
-              productId: mockProductId,
-            },
-            query: gql`
-              subscription ProductUpdatesReadModel($productId: ID!) {
-                ProductUpdatesReadModel(id: $productId) {
-                  id
-                  availability
-                  lastUpdate
-                  previousUpdate
-                }
-              }
-            `,
-          })
-          .subscribe({
-            // This "subscribe" is the one of the Observable returned by Apollo
-            error: reject,
-          })
+        subscription.subscribe({
+          // This "subscribe" is the one of the Observable returned by Apollo
+          error: reject,
+        })
       })
 
       await expect(subscriptionPromise).to.eventually.be.rejectedWith(
