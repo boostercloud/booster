@@ -964,14 +964,14 @@ where the schema for `CreateProductInput` is
 
 ### 2. Events
 
-Events are **immutable facts** within your application's domain. They are the cornerstone of Booster because of its event-driven and event-sourced nature. Booster events are TypeScript classes decorated with `@Event`:
+Events are **immutable facts** within your application's domain. They are the cornerstone of Booster because of its event-driven and event-sourced nature. Booster events are TypeScript classes decorated with `@Event`. An event class may looks like this:
 
 ```typescript
 @Event
 export class EventName {
   public constructor(readonly field1: SomeType,
                      readonly field2: SomeOtherType,
-                     /*as many fields as you needed*/) {}
+                     /* This event's entity ID must be present */) {}
 
   public entityID(): UUID {
     return /* the associated entity ID */
@@ -979,7 +979,27 @@ export class EventName {
 }
 ```
 
-All the event classes must implement an `entityID` method, returning the ID of the entity they are tied to. This id will be used later for building up the application's state via [entities](#4-entities-and-reducers). In most situations, you can reduce the event stream to an entity like a Cart. However, in some use cases, the event stream relates to a specific entity without reducing it. For example, a register of sensor values in a weather station; in that case, the station has no specific value to be reduced. You can implement the semantics that best suits your needs.
+Events and [entities](#4-entities-and-reducers) are closely related because entities represent the application's state after reducing the stream of events. All the events associated with the same entity are reduced together in the order they have occurred. If an event is related to an entity or not, it is domain-dependent. That's why Booster requires you to implement the `entityID` method. Entities and events are somehow coupled, but that coupling is limited to data. Take a look at this event:
+
+```typescript
+@Event
+export class CartPaid {
+  public constructor(
+    readonly cartID: UUID,
+    readonly paymentID: UUID) {}
+
+  public entityID(): UUID {
+    // returning cartID or paymentID depends on the business logic
+    return this.paymentID
+  }
+}
+```
+
+Note:
+
+> An event must be able to find the entity ID value within the arguments. Or well because it got injected directly, or because it is present as a nested attribute. In the case of the `CartPaid` example, the entity ID is injected directly.
+
+In most situations, you can reduce the event stream to an entity like a Cart or Payment. However, in some use cases, the event stream relates to a specific entity without reducing it. For example, a record of sensor values in a weather station; in that case, the station has no particular value to be reduced. You can implement the semantics that best suits your needs.
 
 #### Events naming convention
 
