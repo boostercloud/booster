@@ -5,7 +5,7 @@ extension:
 package: './package.json'
 recursive: true
 reporter: 'spec'
-timeout: 150000
+timeout: 1500000
 file:
   - './integration/providers/aws/setup.ts'
 full-trace: true
