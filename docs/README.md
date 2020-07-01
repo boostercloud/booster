@@ -1037,7 +1037,7 @@ That will generate a file called `StockMoved.ts` under the proper `project-root/
 
 Note:
 
-> Running the event generator with an EventName already existing, will override the content of the current one. Soon, we will display a warning before overwriting anything. Meantime, if you missed a field, just add it to the class because, in Booster, all the infrastructure and data structures are inferred from your code.
+> Running the event generator for an existing EventName, will override the content of the current one. Soon, we will display a warning before overwriting anything. Meanwhile, if you missed a field, just add it to the class because, in Booster, all the infrastructure and data structures are inferred from your code.
 
 #### Registering events and the event store
 
