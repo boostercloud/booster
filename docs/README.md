@@ -1176,7 +1176,7 @@ not be instantly updated. Booster will consume the commands,
 generate events, and _eventually_ generate the entities. Most of the
 time this is not perceivable, but under huge loads, it could be noticed.
 
-This property is called [Eventual Consistency](https://en.wikipedia.org/wiki/Eventual_consistency), and it is a trade-off of high availability for
+This property is called [Eventual Consistency](https://en.wikipedia.org/wiki/Eventual_consistency), and it is a trade-off to have high availability for
 extreme situations, where other systems might simply fail.
 
 ### 5. Read models and projections
