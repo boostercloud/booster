@@ -964,7 +964,7 @@ where the schema for `CreateProductInput` is
 
 ### 2. Events
 
-Events are **immutable facts** within your application's domain. They are the cornerstone of Booster because of its event-driven and event-sourced nature. Booster events are TypeScript classes decorated with `@Event`. An event class may looks like this:
+Events are **immutable records of facts** within your application's domain. They are the cornerstone of Booster because of its event-driven and event-sourced nature. Booster events are TypeScript classes decorated with `@Event`. An event class may look like this:
 
 ```typescript
 @Event
