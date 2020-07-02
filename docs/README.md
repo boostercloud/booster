@@ -764,7 +764,7 @@ Despite you can place commands, and other Booster files, in any directory, we st
 ```text
 project-root
 ├── src
-│   ├── commands <------ They should be here
+│   ├── commands <------ put them here
 │   ├── common
 │   ├── config
 │   ├── entities
@@ -1030,7 +1030,7 @@ project-root
 │   ├── common
 │   ├── config
 │   ├── entities
-│   ├── events <------ They must be here
+│   ├── events <------ put them here
 │   ├── index.ts
 │   └── read-models
 ```
@@ -1140,8 +1140,7 @@ project-root
 │   ├── config
 │   ├── entities
 │   ├── events
-│   ├── event-handlers <------ They must be here
-│   ├── index.ts
+│   ├── event-handlers <------ put them here
 │   └── read-models
 ```
 
