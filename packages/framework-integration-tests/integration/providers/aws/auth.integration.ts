@@ -82,27 +82,27 @@ describe('With the auth API', () => {
     })
 
     it("can't subscribe to a secured read model", async () => {
-      const subscription = await client.subscribe({
-        variables: {
-          productId: mockProductId,
-        },
-        query: gql`
-          subscription ProductUpdatesReadModel($productId: ID!) {
-            ProductUpdatesReadModel(id: $productId) {
-              id
-              availability
-              lastUpdate
-              previousUpdate
-            }
-          }
-        `,
-      })
-
       const subscriptionPromise = new Promise((_, reject) => {
-        subscription.subscribe({
-          // This "subscribe" is the one of the Observable returned by Apollo
-          error: reject,
-        })
+        client
+          .subscribe({
+            variables: {
+              productId: mockProductId,
+            },
+            query: gql`
+              subscription ProductUpdatesReadModel($productId: ID!) {
+                ProductUpdatesReadModel(id: $productId) {
+                  id
+                  availability
+                  lastUpdate
+                  previousUpdate
+                }
+              }
+            `,
+          })
+          .subscribe({
+            // This "subscribe" is the one of the Observable returned by Apollo
+            error: reject,
+          })
       })
 
       await expect(subscriptionPromise).to.eventually.be.rejectedWith(
@@ -176,27 +176,27 @@ describe('With the auth API', () => {
     })
 
     it('can subscribe to a public read model', async () => {
-      const subscription = await client.subscribe({
-        variables: {
-          cartId: mockCartId,
-        },
-        query: gql`
-          subscription CartReadModel($cartId: ID!) {
-            CartReadModel(id: $cartId) {
-              id
-              cartItems
-            }
-          }
-        `,
-      })
-
       // We check that we receive data after modifying the read model with a command
       const subscriptionPromise = new Promise((resolve, reject) => {
-        subscription.subscribe({
-          // This "subscribe" is the one of the Observable returned by Apollo
-          next: resolve,
-          error: reject,
-        })
+        client
+          .subscribe({
+            variables: {
+              cartId: mockCartId,
+            },
+            query: gql`
+              subscription CartReadModel($cartId: ID!) {
+                CartReadModel(id: $cartId) {
+                  id
+                  cartItems
+                }
+              }
+            `,
+          })
+          .subscribe({
+            // This "subscribe" is the one of the Observable returned by Apollo
+            next: resolve,
+            error: reject,
+          })
       })
 
       await client.mutate({
@@ -440,24 +440,24 @@ describe('With the auth API', () => {
       })
 
       it('can subscribe to a secured read model they have privileges for', async () => {
-        const subscription = await client.subscribe({
-          query: gql`
-            subscription {
-              ProductReadModels {
-                id
-                sku
-              }
-            }
-          `,
-        })
-
         // We check that we receive data after modifying the read model with a command
         const subscriptionPromise = new Promise((resolve, reject) => {
-          subscription.subscribe({
-            // This "subscribe" is the one of the Observable returned by Apollo
-            next: resolve,
-            error: reject,
-          })
+          client
+            .subscribe({
+              query: gql`
+                subscription {
+                  ProductReadModels {
+                    id
+                    sku
+                  }
+                }
+              `,
+            })
+            .subscribe({
+              // This "subscribe" is the one of the Observable returned by Apollo
+              next: resolve,
+              error: reject,
+            })
         })
 
         await client.mutate({
@@ -626,24 +626,24 @@ describe('With the auth API', () => {
       })
 
       it('can subscribe to a read model they have privileges for', async () => {
-        const subscription = await client.subscribe({
-          query: gql`
-            subscription {
-              ProductUpdatesReadModels {
-                id
-                availability
-              }
-            }
-          `,
-        })
-
         // We check that we receive data after modifying the read model with a command
         const subscriptionPromise = new Promise((resolve, reject) => {
-          subscription.subscribe({
-            // This "subscribe" is the one of the Observable returned by Apollo
-            next: resolve,
-            error: reject,
-          })
+          client
+            .subscribe({
+              query: gql`
+                subscription {
+                  ProductUpdatesReadModels {
+                    id
+                    availability
+                  }
+                }
+              `,
+            })
+            .subscribe({
+              // This "subscribe" is the one of the Observable returned by Apollo
+              next: resolve,
+              error: reject,
+            })
         })
 
         await client.mutate({
