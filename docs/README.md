@@ -979,7 +979,7 @@ export class EventName {
 }
 ```
 
-Events and [entities](#4-entities-and-reducers) are closely related because entities represent the application's state after reducing the stream of events. All the events associated with the same entity are reduced together in the order they have occurred. If an event is related to an entity or not, it is domain-dependent. That's why Booster requires you to implement the `entityID` method. Entities and events are somehow coupled, but that coupling is limited to data. Take a look at this event:
+Events and [entities](#4-entities-and-reducers) are intimately related. All events belong to one entity through the `entityID` method, and entities represent the application's state after reducing the stream of events. Indeed, an entity is just an aggregated representation of the same data present in its events. It is possible to rebuild entities from events at any time. Booster guarantees that all the events associated with an entity, will be reduced in the same order they were stored. Take a look at this event:
 
 ```typescript
 @Event
@@ -995,11 +995,21 @@ export class CartPaid {
 }
 ```
 
-Note:
+An event must be able to find the entity ID value within the event attributes. Either among a parameter injected in the constructor or because it is nested in one of them. In the `CartPaid` example, the entity ID (`paymentID`) is injected directly. However, there are scenarios where the entity ID is not known, or it doesn't exist. For example, in events like `ProductCreated` you can return a completely new ID:
 
-> An event must be able to find the entity ID value within the arguments. Or well because it got injected directly, or because it is present as a nested attribute. In the case of the `CartPaid` example, the entity ID is injected directly.
+```typescript
+@Event
+export class ProductCreated {
+  public constructor(
+    readonly displayName: string,
+    readonly price: Money
+  ) {}
 
-In most situations, you can reduce the event stream to an entity like a Cart or Payment. However, in some use cases, the event stream relates to a specific entity without reducing it. For example, a record of sensor values in a weather station; in that case, the station has no particular value to be reduced. You can implement the semantics that best suits your needs.
+  public entityID(): UUID {
+    return UUID.generate()
+  }
+}
+```
 
 #### Events naming convention
 
