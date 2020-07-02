@@ -1051,7 +1051,7 @@ The source of truth of your Booster app are the events, but events make sense in
 For example, in a banking app, there might be two events: `MoneyDeposited` and `MoneyWithdrawn`. But these events
 only make sense in the context of a `BankAccount`.
 
-Entities are created on the fly, by _reducing_ the whole event stream. They aren't saved anywhere, although Booster
+Entities are created on the fly, by _reducing_ the whole event stream. You shouldn't assume that they are stored anywhere, but Booster
 does create automatic snapshots in order to make the reduction process efficient. You are the one that defines the
 reducer function.
 
