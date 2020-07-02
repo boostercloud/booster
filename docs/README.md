@@ -1047,9 +1047,9 @@ That will generate a file called `StockMoved.ts` under the proper `project-root/
 
 Note:
 
-> Running the event generator for an existing EventName, will override the content of the current one. Soon, we will display a warning before overwriting anything. Meanwhile, if you missed a field, just add it to the class because, in Booster, all the infrastructure and data structures are inferred from your code.
+> Running the event generator for an existing EventName, will overwrite the content of the current one. Soon, we will display a warning before overwriting anything. Meanwhile, if you missed a field, just add it to the class because, in Booster, there is no hidden magic, all the infrastructure and data structures are inferred from your code.
 
-#### Registering events and the event store
+#### Registering events in the event store
 
 Creating an event file is different than storing an event instance in the event store. Booster calls the last `registering` an event. As said before, Booster applications are event-sourced, which means that all the events are stored forever. Think that all events go to a kind of event store, the store is a log queried by the [reducer functions](#4-entities-and-reducers) to recreate the application's current state.
 
