@@ -1051,9 +1051,9 @@ Note:
 
 #### Registering events in the event store
 
-Creating an event file is different than storing an event instance in the event store. Booster calls the last `registering` an event. As said before, Booster applications are event-sourced, which means that all the events are stored forever. Think that all events go to a kind of event store, the store is a log queried by the [reducer functions](#4-entities-and-reducers) to recreate the application's current state.
+Creating an event file is different than storing an event instance in the event store. In Booster terminology, the latter receives the name of `registering` an event. As said before, Booster applications are event-sourced, which means that all the events are stored forever. Imagine this store as an infinite log used by the [reducer functions](#4-entities-and-reducers) to recreate the application's current state.
 
-Booster injects the register as a parameter in the `handle` method of both the command and the event handlers. Then, registering an event is as simple as calling this function `register.events([event1, event2, ...])`, e.g.
+Booster injects the register as a parameter in the `handle` method of both the command and the event handlers. Then you can register events by calling the `register.events(...)` method as many times as you want, e.g.
 
 ##### Registering events from command handlers
 
