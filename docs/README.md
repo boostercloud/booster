@@ -1123,7 +1123,7 @@ specified type is emitted. It's highly recommended to **keep your reducer functi
 Booster injects two parameters to the reducer functions:
 
 - `event` - The event object that triggered the reducer
-- `currentEntity?` - A possible entity generated from a previous call to the reducer. **This parameter is optional**, and will be `undefined` when an event occurred for the very first time.
+- `currentEntity?` - The current state of the entity instance that the event belongs to if it exists. **This parameter is optional** and will be `undefined` if the entity don't exist yet (For example, when you process a `ProductCreated` event that will generate the first version of a `Product` entity).
 
 This is the place to write business logic for your data generation.
 
