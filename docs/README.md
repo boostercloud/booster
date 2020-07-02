@@ -1113,7 +1113,7 @@ The generator will automatically create a file called `Product.ts` with a TypeSc
 
 Note:
 
-> Running the entity generator with an EntityName that already exists, it will override the content of the current one. In future releases, we will display a warning before overwriting anything. Meantime, if you missed a field, just add it to the class because in Booster, all the infrastructure and data structures are inferred from your code.
+> Running the entity generator with an EntityName that already exists will overwrite the content of the current one. In future releases, we will display a warning before overwriting anything. Meantime, if you missed a field, just add it to the class because, in Booster, all the infrastructure and data structures are inferred from your code.
 
 #### The reducer function
 
