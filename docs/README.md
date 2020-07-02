@@ -1076,7 +1076,7 @@ be picked will be the one that was generated first.
 
 #### Entities naming convention
 
-Entities model your data, so name them as closely to your domain as possible. Typical entity names are nouns that
+Entities are a representation of your application state in a specific moment, so name them as closely to your domain objects as possible. Typical entity names are nouns that
 might appear when you think about your app. In an e-commerce application, some entities would be:
 
 - Cart
