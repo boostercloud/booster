@@ -1071,7 +1071,7 @@ export class EntityName {
 ```
 
 Each time an event is registered, the reducer of its entity is triggered. Note that event ordering is
-preserved per entity instance. This means that if two events arrive at the same time at a reducer, the first one to
+preserved per entity instance. This means that one entity will receive just **one event each time**, and all other events of any kind that belong to the same entity will be waiting in a queue until the previous reducer has finished. This is important to make sure that entities state can be easily predicted even when events are being generated concurrently all over the place. It's also one of the reasons why we recommend to keep reducer functions simple and pure: with no side effects or external data gathering.
 be picked will be the one that was generated first.
 
 #### Entities naming convention
