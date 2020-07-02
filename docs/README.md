@@ -1055,7 +1055,7 @@ Entities are created on the fly, by _reducing_ the whole event stream. You shoul
 does create automatic snapshots to make the reduction process efficient. You are the one in charge of writing the
 reducer function.
 
-An entity is defined as a class with the `@Entity` decorator. Inside of it there is a static method with
+An entity is defined as a class with the `@Entity` decorator. Inside of it, you can write one or more static methods with
 the `@Reduces` decorator that also specifies the event the reducer is subscribed to. In Booster an entity looks like this:
 
 ```typescript
