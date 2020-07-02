@@ -989,8 +989,9 @@ export class CartPaid {
     readonly paymentID: UUID) {}
 
   public entityID(): UUID {
-    // returning cartID or paymentID depends on the business logic
-    return this.paymentID
+    // returns cartID because we want to associate
+    // (and reduce) it within the Cart entity
+    return this.cartID
   }
 }
 ```
@@ -1006,6 +1007,8 @@ export class ProductCreated {
   ) {}
 
   public entityID(): UUID {
+    // returns a new UUID because the Product entity
+    // does not exist yet
     return UUID.generate()
   }
 }
