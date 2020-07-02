@@ -1155,18 +1155,14 @@ You can visualize reduction like this:
 #### Aggregate data using entities
 
 You can create entities to aggregate data that would belong to different
-entities.
+entities. For example, having a `Cart` and a `Profile` entity, if you want to list the user's last purchased items, instead of polluting the `Profile` entity with the events of the `Cart`, you can create a third entity called `ProfilePurchases`,
 
-As an example, let's say you have already an app that has a `Cart` entity and a `Profile` entity and you want to add a new feature to have a list of the users favorite items.
+And then create two [event handlers](#3-event-handlers), to aggregate them:
 
-Instead of polluting the `Profile` entity with the events of the `Cart`, you create a third entity: `ProfileFavorites`.
-
-Then create two (event handlers)[#3-event-handlers]:
-
-- One that's listening for `ProfileCreated` and emits a `FavoritesCreated` event
+- One that's listening for `ProfileCreated` and emits a `PurchasesListCreated` event
 - Another one that listens for `OrderPlaced` and emits a `NewItemsPurchased`
 
-Then, the reducers of the `ProfileFavorites` entity will be subscribed to
+Then, the reducers of the `ProfilePurchases` entity will be subscribed to
 these newly emitted events. Aggregating the required data into a single entity.
 
 #### Eventual consistency
