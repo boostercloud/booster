@@ -1120,7 +1120,7 @@ Note:
 Booster generates the reducer function as a static method of the entity class. That function is called by the framework every time that an event of the
 specified type is emitted. It's highly recommended to **keep your reducer functions pure**, which means that you should be able to produce the new entity version by just looking at the event and the previous entity state (which are both injected via parameter by the framework). You should avoid calling third party services, reading or writing to a database, or changing any external state.
 
-The reducer has two parameters by default:
+Booster injects two parameters to the reducer functions:
 
 - `event` - The event object that has triggered this reducer
 - `currentEntity?` - A possible entity generated from a previous call to the reducer. **This parameter is optional**, and will be `undefined` when an event occurred for the very first time.
