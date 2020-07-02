@@ -1070,7 +1070,7 @@ export class EntityName {
 }
 ```
 
-Each time an event is generated, all reducers that are listening to it are triggered. Note that event ordering is
+Each time an event is registered, the reducer of its entity is triggered. Note that event ordering is
 preserved per entity instance. This means that if two events arrive at the same time at a reducer, the first one to
 be picked will be the one that was generated first.
 
