@@ -83,27 +83,27 @@ describe('With the auth API', () => {
     })
 
     it("can't subscribe to a secured read model", async () => {
+      const subscription = await client.subscribe({
+        variables: {
+          productId: mockProductId,
+        },
+        query: gql`
+          subscription ProductUpdatesReadModel($productId: ID!) {
+            ProductUpdatesReadModel(id: $productId) {
+              id
+              availability
+              lastUpdate
+              previousUpdate
+            }
+          }
+        `,
+      })
+
       const subscriptionPromise = new Promise((_, reject) => {
-        client
-          .subscribe({
-            variables: {
-              productId: mockProductId,
-            },
-            query: gql`
-              subscription ProductUpdatesReadModel($productId: ID!) {
-                ProductUpdatesReadModel(id: $productId) {
-                  id
-                  availability
-                  lastUpdate
-                  previousUpdate
-                }
-              }
-            `,
-          })
-          .subscribe({
-            // This "subscribe" is the one of the Observable returned by Apollo
-            error: reject,
-          })
+        subscription.subscribe({
+          // This "subscribe" is the one of the Observable returned by Apollo
+          error: reject,
+        })
       })
 
       await expect(subscriptionPromise).to.eventually.be.rejectedWith(
@@ -449,6 +449,7 @@ describe('With the auth API', () => {
 
       it('can subscribe to a secured read model they have privileges for', async () => {
         const currentSubscriptionsCount = await countSubscriptionsItems()
+
         // We check that we receive data after modifying the read model with a command
         const subscription = await client.subscribe({
           query: gql`
@@ -532,21 +533,21 @@ describe('With the auth API', () => {
       })
 
       it("can't subscribe to a read model they don't have privileges for", async () => {
+        const subscription = await client.subscribe({
+          query: gql`
+            subscription {
+              ProductUpdatesReadModels {
+                id
+              }
+            }
+          `,
+        })
+
         const subscriptionPromise = new Promise((_, reject) => {
-          client
-            .subscribe({
-              query: gql`
-                subscription {
-                  ProductUpdatesReadModels {
-                    id
-                  }
-                }
-              `,
-            })
-            .subscribe({
-              // This "subscribe" is the one of the Observable returned by Apollo
-              error: reject,
-            })
+          subscription.subscribe({
+            // This "subscribe" is the one of the Observable returned by Apollo
+            error: reject,
+          })
         })
 
         await expect(subscriptionPromise).to.eventually.be.rejectedWith(
