@@ -1174,7 +1174,7 @@ these newly emitted events. Aggregating the required data into a single entity.
 Due to the event driven and async nature of Booster, your data might
 not be instantly updated. Booster will consume the commands,
 generate events, and _eventually_ generate the entities. Most of the
-time this is not perceivable, but under huge load this might appear.
+time this is not perceivable, but under huge loads, it could be noticed.
 
 This property is called [Eventual Consistency](https://en.wikipedia.org/wiki/Eventual_consistency), and it is a trade-off of high availability for
 extreme situations, where other systems might simply fail.
