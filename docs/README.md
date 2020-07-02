@@ -1056,7 +1056,7 @@ does create automatic snapshots to make the reduction process efficient. You are
 reducer function.
 
 An entity is defined as a class with the `@Entity` decorator. Inside of it, you can write one or more static methods with
-the `@Reduces` decorator that also specifies the event the reducer is subscribed to. In Booster an entity looks like this:
+the `@Reduces` decorator that defines the name of the event class that the reducer is subscribed to. The reducer method is called once every time that one event of that type is registered in the event store, and Booster expects you to return how the entity ends up after the event has been applied. An entity class looks like this:
 
 ```typescript
 @Entity
