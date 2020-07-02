@@ -17,47 +17,43 @@ describe('entities', async () => {
   it('should be projected into a read model', async () => {
     const readModelItemsCount = await countReadModelItems(CART_READ_MODEL_NAME)
 
-    const commandsPromises: Promise<any>[] = []
-
     const mockCartId = random.uuid()
     const mockProductId = random.uuid()
     const mockQuantity = random.number({ min: 1 })
     const mockPaymentId: string = random.uuid()
     const mockConfirmationToken: string = random.alphaNumeric(10)
 
-    commandsPromises.push(
-      client.mutate({
-        variables: {
-          cartId: mockCartId,
-          productId: mockProductId,
-          quantity: mockQuantity,
-        },
-        mutation: gql`
-          mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
-            ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
-          }
-        `,
-      }),
-      client.mutate({
-        variables: {
-          paymentId: mockPaymentId,
-          cartId: mockCartId,
-          confirmationToken: mockConfirmationToken,
-        },
-        mutation: gql`
-          mutation ConfirmPayment($paymentId: ID!, $cartId: ID!, $confirmationToken: String) {
-            ConfirmPayment(input: { paymentId: $paymentId, cartId: $cartId, confirmationToken: $confirmationToken })
-          }
-        `,
-      })
-    )
+    const changeCartItemResponse = await client.mutate({
+      variables: {
+        cartId: mockCartId,
+        productId: mockProductId,
+        quantity: mockQuantity,
+      },
+      mutation: gql`
+        mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+          ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+        }
+      `,
+    })
 
-    const commandsPromisesResult = await Promise.all(commandsPromises)
+    expect(changeCartItemResponse).not.to.be.null
+    expect(changeCartItemResponse?.data?.ChangeCartItem).to.be.true
 
-    expect(commandsPromisesResult[0]).not.to.be.null
-    expect(commandsPromisesResult[0].data?.ChangeCartItem).to.be.true
-    expect(commandsPromisesResult[1]).not.to.be.null
-    expect(commandsPromisesResult[1].data?.ConfirmPayment).to.be.true
+    const ConfirmPaymentResponse = await client.mutate({
+      variables: {
+        paymentId: mockPaymentId,
+        cartId: mockCartId,
+        confirmationToken: mockConfirmationToken,
+      },
+      mutation: gql`
+        mutation ConfirmPayment($paymentId: ID!, $cartId: ID!, $confirmationToken: String) {
+          ConfirmPayment(input: { paymentId: $paymentId, cartId: $cartId, confirmationToken: $confirmationToken })
+        }
+      `,
+    })
+  
+    expect(ConfirmPaymentResponse).not.to.be.null
+    expect(ConfirmPaymentResponse?.data?.ConfirmPayment).to.be.true
 
     const expectedReadModelItemsCount = readModelItemsCount + 1
     await waitForIt(
@@ -68,7 +64,10 @@ describe('entities', async () => {
     const latestReadModelItem = await waitForIt(
       () => queryReadModels(mockCartId, CART_READ_MODEL_NAME),
       (readModel) =>
-        readModel && readModel[0]?.id === mockCartId && readModel[0]?.payment && readModel[0]?.cartItems[0]?.productId === mockProductId
+        readModel &&
+        readModel[0]?.id === mockCartId &&
+        readModel[0]?.payment &&
+        readModel[0]?.cartItems[0]?.productId === mockProductId
     )
 
     expect(latestReadModelItem).not.to.be.null
