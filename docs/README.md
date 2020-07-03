@@ -30,7 +30,7 @@
   * [2. Events](#2-events)
     + [Events naming convention](#events-naming-convention)
     + [Creating events](#creating-events)
-    + [Registering events in the event store](#registering-events-in-the-event-store)
+    + [The event store](#the-event-store)
     + [Events ordering](#events-ordering)
   * [3. Event handlers](#3-event-handlers)
     + [Creating an event handler](#creating-an-event-handler)
@@ -58,8 +58,8 @@
     + [Relationship between GraphQL operations and commands and read models](#relationship-between-graphql-operations-and-commands-and-read-models)
     + [How to send GraphQL request](#how-to-send-graphql-request)
     + [Sending commands](#sending-commands)
-  * [Reading read models](#reading-read-models)
-  * [Subscribing to read models](#subscribing-to-read-models)
+    + [Reading read models](#reading-read-models)
+    + [Subscribing to read models](#subscribing-to-read-models)
 - [Deploying](#deploying)
   * [AWS](#aws)
     + [Configure your provider credentials](#configure-your-provider-credentials)
@@ -1405,7 +1405,7 @@ METHOD: "POST"
 }
 ```
 
-### Reading read models
+#### Reading read models
 
 To read a specific read model, we need to use a "query" operation. The structure of the "query" (the body
 of the request) is the following:
@@ -1473,7 +1473,7 @@ METHOD: "POST"
 }
 ```
 
-### Subscribing to read models
+#### Subscribing to read models
 
 To subscribe to a specific read model, we need to use a "subscription" operation, and it must be _sent through the **websocketURL**_.
 
