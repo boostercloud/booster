@@ -8,7 +8,7 @@ import {
   boosterServeGraphQL,
   boosterRequestAuthorizer,
 } from '../src/booster'
-import { replace, fake, restore } from 'sinon'
+import { replace, fake, restore, match, replaceGetter } from 'sinon'
 import { Importer } from '../src/importer'
 import * as EntitySnapshotFetcher from '../src/entity-snapshot-fetcher'
 import { UUID } from '@boostercloud/framework-types'
@@ -67,6 +67,32 @@ describe('the `Booster` class', () => {
         booster.logger,
         SomeEntity,
         '42'
+      )
+    })
+  })
+
+  describe('the `readModel` method', () => {
+    class TestReadModel {
+      constructor(public id: string) {}
+    }
+    it('returns a properly configured Searcher', async () => {
+      const searcherFunctionFake = fake()
+      Booster.configureCurrentEnv((config) => {
+        replaceGetter(config, 'provider', () => {
+          return {
+            readModels: {
+              search: searcherFunctionFake,
+            },
+          } as any
+        })
+      })
+      await Booster.readModel(TestReadModel).search()
+
+      expect(searcherFunctionFake).to.have.been.calledOnceWithExactly(
+        match.any,
+        match.any,
+        TestReadModel.name,
+        match.any
       )
     })
   })
