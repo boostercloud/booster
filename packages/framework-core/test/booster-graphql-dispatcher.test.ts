@@ -38,6 +38,35 @@ describe('the `BoosterGraphQLDispatcher`', () => {
       })
     })
 
+    context('on DISCONNECT message', () => {
+      it('does not call the provider.deleteAllSubscriptions method of the read model dispatcher when there is no connection ID', async () => {
+        const config = mockConfigForGraphQLEnvelope({
+          requestID: random.uuid(),
+          eventType: 'DISCONNECT',
+          connectionID: undefined,
+        })
+        const dispatcher = new BoosterGraphQLDispatcher(config, logger)
+        await dispatcher.dispatch({})
+
+        expect(config.provider.readModels.deleteAllSubscriptions).not.to.have.been.called
+        expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly(undefined)
+      })
+
+      it('calls the provider.deleteAllSubscriptions method of the read model dispatcher', async () => {
+        const mockConnectionID = random.uuid()
+        const config = mockConfigForGraphQLEnvelope({
+          requestID: random.uuid(),
+          eventType: 'DISCONNECT',
+          connectionID: mockConnectionID,
+        })
+        const dispatcher = new BoosterGraphQLDispatcher(config, logger)
+        await dispatcher.dispatch({})
+
+        expect(config.provider.readModels.deleteAllSubscriptions).to.have.been.calledOnceWithExactly(config, logger, mockConnectionID)
+        expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly(undefined)
+      })
+    })
+
     context('on MESSAGE message', () => {
       describe('when the message came through socket', () => {
         it('calls the websocket handler', async () => {
@@ -131,6 +160,48 @@ describe('the `BoosterGraphQLDispatcher`', () => {
           )
         })
 
+        it('calls the the GraphQL engine with the passed envelope and handles the result', async () => {
+          const graphQLBody = 'query { a { x }}'
+          const graphQLResult = { data: 'the result' }
+          const graphQLVariables = { productId: 'productId' }
+          const graphQLEnvelope: GraphQLRequestEnvelope = {
+            requestID: random.uuid(),
+            eventType: 'MESSAGE',
+            value: {
+              query: graphQLBody,
+              variables: graphQLVariables,
+            },
+          }
+          const resolverContext: GraphQLResolverContext = {
+            requestID: graphQLEnvelope.requestID,
+            operation: {
+              query: graphQLBody,
+              variables: graphQLVariables,
+            },
+            pubSub: new NoopReadModelPubSub(),
+            storeSubscriptions: true,
+          }
+          const config = mockConfigForGraphQLEnvelope(graphQLEnvelope)
+          const dispatcher = new BoosterGraphQLDispatcher(config, logger)
+          const executeFake = fake.returns(graphQLResult)
+          const parseSpy = spy(gqlParser.parse)
+          replace(gqlParser, 'parse', parseSpy)
+          replace(gqlValidator, 'validate', fake.returns([]))
+          replace(gqlExecutor, 'execute', executeFake)
+
+          await dispatcher.dispatch({})
+
+          expect(parseSpy).to.have.been.calledWithExactly(graphQLBody)
+          expect(executeFake).to.have.been.calledWithExactly({
+            schema: match.any,
+            document: match.any,
+            contextValue: match(resolverContext),
+            variableValues: match(graphQLVariables),
+            operationName: match.any,
+          })
+          expect(config.provider.graphQL.handleResult).to.have.been.calledWithExactly(graphQLResult)
+        })
+
         context('with graphql execution returning errors', () => {
           let graphQLErrorResult: ExecutionResult
           beforeEach(() => {
@@ -174,48 +245,6 @@ describe('the `BoosterGraphQLDispatcher`', () => {
             expect(config.provider.graphQL.handleResult).to.have.been.calledWithExactly(graphQLErrorResult)
           })
         })
-
-        it('calls the the GraphQL engine with the passed envelope and handles the result', async () => {
-          const graphQLBody = 'query { a { x }}'
-          const graphQLResult = { data: 'the result' }
-          const graphQLVariables = { productId: 'productId' }
-          const graphQLEnvelope: GraphQLRequestEnvelope = {
-            requestID: random.uuid(),
-            eventType: 'MESSAGE',
-            value: {
-              query: graphQLBody,
-              variables: graphQLVariables,
-            },
-          }
-          const resolverContext: GraphQLResolverContext = {
-            requestID: graphQLEnvelope.requestID,
-            operation: {
-              query: graphQLBody,
-              variables: graphQLVariables,
-            },
-            pubSub: new NoopReadModelPubSub(),
-            storeSubscriptions: true,
-          }
-          const config = mockConfigForGraphQLEnvelope(graphQLEnvelope)
-          const dispatcher = new BoosterGraphQLDispatcher(config, logger)
-          const executeFake = fake.returns(graphQLResult)
-          const parseSpy = spy(gqlParser.parse)
-          replace(gqlParser, 'parse', parseSpy)
-          replace(gqlValidator, 'validate', fake.returns([]))
-          replace(gqlExecutor, 'execute', executeFake)
-
-          await dispatcher.dispatch({})
-
-          expect(parseSpy).to.have.been.calledWithExactly(graphQLBody)
-          expect(executeFake).to.have.been.calledWithExactly({
-            schema: match.any,
-            document: match.any,
-            contextValue: match(resolverContext),
-            variableValues: match(graphQLVariables),
-            operationName: match.any,
-          })
-          expect(config.provider.graphQL.handleResult).to.have.been.calledWithExactly(graphQLResult)
-        })
       })
     })
   })
@@ -230,6 +259,7 @@ function mockConfigForGraphQLEnvelope(envelope: GraphQLRequestEnvelope): Booster
     },
     readModels: {
       notifySubscription: fake(),
+      deleteAllSubscriptions: fake(),
     },
   } as any
   return config
