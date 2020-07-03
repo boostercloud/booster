@@ -1,5 +1,74 @@
 # Booster Documentation
 
+<!-- toc -->
+
+- [Introduction](#introduction)
+  * [What is Booster?](#what-is-booster)
+  * [Booster Principles](#booster-principles)
+  * [Why use Booster](#why-use-booster)
+- [Getting started](#getting-started)
+  * [Installing Booster](#installing-booster)
+    + [Prerequisites](#prerequisites)
+    + [Installing the Booster CLI](#installing-the-booster-cli)
+  * [Your first Booster app in 10 minutes](#your-first-booster-app-in-10-minutes)
+    + [1. Create the project](#1-create-the-project)
+    + [2. First command](#2-first-command)
+    + [3. First event](#3-first-event)
+    + [4. First entity](#4-first-entity)
+    + [5. First read model](#5-first-read-model)
+    + [6. Deployment](#6-deployment)
+    + [7. Testing](#7-testing)
+    + [8. Removing the stack](#8-removing-the-stack)
+    + [9. More functionalities](#9-more-functionalities)
+- [Booster architecture](#booster-architecture)
+  * [1. Command and command handlers](#1-command-and-command-handlers)
+    + [Commands naming convention](#commands-naming-convention)
+    + [Creating a command](#creating-a-command)
+    + [The command handler function](#the-command-handler-function)
+    + [Authorizing a command](#authorizing-a-command)
+    + [Submitting a command](#submitting-a-command)
+  * [2. Events](#2-events)
+    + [Events naming convention](#events-naming-convention)
+    + [Creating events](#creating-events)
+    + [Registering events in the event store](#registering-events-in-the-event-store)
+    + [Events ordering](#events-ordering)
+  * [3. Event handlers](#3-event-handlers)
+    + [Creating an event handler](#creating-an-event-handler)
+    + [Registering events from an event handler](#registering-events-from-an-event-handler)
+    + [Reading entities from event handlers](#reading-entities-from-event-handlers)
+  * [4. Entities and reducers](#4-entities-and-reducers)
+    + [Entities naming convention](#entities-naming-convention)
+    + [Creating entities](#creating-entities)
+    + [The reducer function](#the-reducer-function)
+    + [Aggregate data using entities](#aggregate-data-using-entities)
+    + [Eventual consistency](#eventual-consistency)
+  * [5. Read models and projections](#5-read-models-and-projections)
+    + [Read models naming convention](#read-models-naming-convention)
+    + [Creating a read model](#creating-a-read-model)
+    + [The projection function](#the-projection-function)
+    + [Authorizing read models](#authorizing-read-models)
+    + [Querying a read model](#querying-a-read-model)
+    + [Getting real-time updates for a read model](#getting-real-time-updates-for-a-read-model)
+- [Features](#features)
+  * [IAM - Authentication and Authorization](#iam---authentication-and-authorization)
+    + [Sign-up](#sign-up)
+    + [Sign-in](#sign-in)
+    + [Sign-out](#sign-out)
+  * [GraphQL API](#graphql-api)
+    + [Relationship between GraphQL operations and commands and read models](#relationship-between-graphql-operations-and-commands-and-read-models)
+    + [How to send GraphQL request](#how-to-send-graphql-request)
+    + [Sending commands](#sending-commands)
+  * [Reading read models](#reading-read-models)
+  * [Subscribing to read models](#subscribing-to-read-models)
+- [Deploying](#deploying)
+  * [AWS](#aws)
+    + [Configure your provider credentials](#configure-your-provider-credentials)
+  * [Deploy your project](#deploy-your-project)
+  * [Deleting your cloud stack](#deleting-your-cloud-stack)
+- [Frequently Asked Questions](#frequently-asked-questions)
+
+<!-- tocstop -->
+
 ## Introduction
 
 > _Progress isn't made by early risers. It's made by lazy men trying to find easier ways to do something._ — [Robert A. Heinlein](https://en.wikipedia.org/wiki/Robert_A._Heinlein)
@@ -1549,4 +1618,4 @@ using your application name as a prefix.
 In AWS, bucket names must be unique _globally_, so if there is another bucket in the world with exactly the same name as
 the one generated for your application, you will get this error.  
 
-The solution is to change your application name in the configuration file so that the bucket name is unique. 
+The solution is to change your application name in the configuration file so that the bucket name is unique.
