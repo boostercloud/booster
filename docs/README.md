@@ -979,7 +979,7 @@ export class EventName {
 }
 ```
 
-Events and [entities](#4-entities-and-reducers) are intimately related. All events belong to one entity through the `entityID` method, and entities represent the application's state after reducing the stream of events. Indeed, an entity is just an aggregated representation of the same data present in its events. It is possible to rebuild entities from events at any time. Booster guarantees that all the events associated with an entity, will be reduced in the same order they were stored. Take a look at this event:
+Events and [entities](#4-entities-and-reducers) are intimately related. All events belong to one entity through the `entityID` method, and entities represent the application's state after reducing the stream of events. Indeed, an entity is just an aggregated representation of the same data present in its events. It is possible to rebuild entities from events at any time. Booster guarantees that all the events associated with an entity will be reduced in the same order they were stored. Take a look at this event:
 
 ```typescript
 @Event
