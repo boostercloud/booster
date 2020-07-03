@@ -5,6 +5,9 @@
   "homepage": "https://booster.cloud",
   "bugs": "https://github.com/boostercloud/booster/issues",
   "private": true,
+  "scripts": {
+    "update-documentation-toc": "markdown-toc -i --maxdepth 4 docs/README.md"
+  },
   "devDependencies": {
     "@octokit/rest": "^17.0.0",
     "@types/chai": "^4.2.7",
