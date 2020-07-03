@@ -996,7 +996,9 @@ export class CartPaid {
 }
 ```
 
-An event must be able to find the entity ID value within the event attributes. Either among a parameter injected in the constructor or because it is nested in one of them. In the `CartPaid` example, the entity ID (`paymentID`) is injected directly. However, there are scenarios where the entity ID is not known, or it doesn't exist. For example, in events like `ProductCreated` you can return a completely new ID:
+An event has to know the ID of the entity it belongs to, and there are several strategies to do so. One would be injecting the entity ID directly in the constructor, or as a nested attribute. Alternatively, for events like `ProductCreated` it is common to return a brand new ID as the entity did not exist. For _singleton_ entities, where there's only one instance, you can even use a constant value. 
+
+In the `CartPaid` example, the entity ID (`paymentID`) is injected directly, and here is another example of a newly generated value:
 
 ```typescript
 @Event
