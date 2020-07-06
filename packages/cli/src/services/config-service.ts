@@ -8,7 +8,6 @@ import { withinWorkingDirectory } from './executor-service'
 export async function compileProjectAndLoadConfig(): Promise<BoosterConfig> {
   const userProjectPath = process.cwd()
   await checkItIsABoosterProject()
-  await exec('npm run clean')
   await compileProject(userProjectPath)
   return readProjectConfig(userProjectPath)
 }
