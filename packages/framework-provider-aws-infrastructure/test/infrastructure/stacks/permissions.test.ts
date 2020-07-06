@@ -102,12 +102,15 @@ describe('permissions', () => {
         it('should add events store permissions', () => {
           expect(createPolicyStatementStub).calledWithExactly(
             [mockEventsStoreTableArn],
-            ['dynamodb:BatchWriteItem', 'dynamodb:Query*', 'dynamodb:Put*']
+            ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchWriteItem']
           )
         })
 
         it('should create subscriptions table permissions', () => {
-          expect(createPolicyStatementStub).calledWithExactly([mockSubscriptionsTableArn], ['dynamodb:Put*'])
+          expect(createPolicyStatementStub).calledWithExactly(
+            [mockSubscriptionsTableArn + '*'],
+            ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:DeleteItem', 'dynamodb:BatchWriteItem']
+          )
         })
 
         it('should create read model permissions', () => {

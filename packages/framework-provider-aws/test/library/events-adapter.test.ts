@@ -7,7 +7,7 @@ import { EventEnvelope, BoosterConfig, UUID, Logger } from '@boostercloud/framew
 import { DynamoDBStreamEvent } from 'aws-lambda'
 import { createStubInstance } from 'sinon'
 import { DynamoDB } from 'aws-sdk'
-import { eventStorePartitionKeyAttribute, eventStoreSortKeyAttribute } from '../../src'
+import { eventsStoreAttributes } from '../../src'
 import { partitionKeyForEvent } from '../../src/library/partition-keys'
 import { DocumentClient, Converter } from 'aws-sdk/clients/dynamodb'
 
@@ -46,7 +46,7 @@ describe('the events-adapter', () => {
         match({
           TableName: 'nuke-button-app-events-store',
           ConsistentRead: true,
-          KeyConditionExpression: `${eventStorePartitionKeyAttribute} = :partitionKey AND ${eventStoreSortKeyAttribute} > :fromTime`,
+          KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey AND ${eventsStoreAttributes.sortKey} > :fromTime`,
           ExpressionAttributeValues: {
             ':partitionKey': partitionKeyForEvent('SomeEntity', 'someSpecialID'),
             ':fromTime': match.defined,
@@ -70,7 +70,7 @@ describe('the events-adapter', () => {
         match({
           TableName: 'nuke-button-app-events-store',
           ConsistentRead: true,
-          KeyConditionExpression: `${eventStorePartitionKeyAttribute} = :partitionKey`,
+          KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey`,
           ExpressionAttributeValues: {
             ':partitionKey': partitionKeyForEvent('SomeEntity', 'someSpecialID', 'snapshot'),
           },

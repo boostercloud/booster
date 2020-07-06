@@ -1,7 +1,7 @@
 import { expect } from '../expect'
 import { fake } from 'sinon'
 import { DynamoDBStreamEvent } from 'aws-lambda'
-import { rawReadModelEventsToEnvelopes } from '../../src/library/subscription-adapter'
+import { rawReadModelEventsToEnvelopes } from '../../src/library/read-model-adapter'
 import { BoosterConfig, Logger, ReadModelEnvelope } from '@boostercloud/framework-types'
 
 const logger: Logger = {
