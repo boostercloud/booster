@@ -3,7 +3,7 @@ import { ApiGatewayManagementApi, DynamoDB } from 'aws-sdk'
 import { environmentVarNames, subscriptionsStoreAttributes } from '../constants'
 import { sortKeyForSubscription } from './partition-keys'
 
-interface SusbscriptionIndexRecord {
+export interface SubscriptionIndexRecord {
   [subscriptionsStoreAttributes.partitionKey]: string
   [subscriptionsStoreAttributes.sortKey]: string
   [subscriptionsStoreAttributes.indexByConnectionIDPartitionKey]: string
@@ -100,8 +100,9 @@ export async function deleteSubscription(
       },
     })
     .promise()
-  const foundSubscriptions = result.Items as Array<SusbscriptionIndexRecord>
-  if (foundSubscriptions?.length == 0) {
+
+  const foundSubscriptions = result.Items as Array<SubscriptionIndexRecord>
+  if (!foundSubscriptions || foundSubscriptions.length == 0) {
     logger.info(
       `[deleteSubscription] No subscriptions found with connectionID=${connectionID} and subscriptionID=${subscriptionID}`
     )
@@ -136,8 +137,8 @@ export async function deleteAllSubscriptions(
       ExpressionAttributeValues: { ':partitionKey': connectionID },
     })
     .promise()
-  const foundSubscriptions = result.Items as Array<SusbscriptionIndexRecord>
-  if (foundSubscriptions?.length == 0) {
+  const foundSubscriptions = result.Items as Array<SubscriptionIndexRecord>
+  if (!foundSubscriptions || foundSubscriptions.length == 0) {
     logger.info(`[deleteAllSubscription] No subscriptions found with connectionID=${connectionID}`)
     return
   }
@@ -149,12 +150,12 @@ export async function deleteAllSubscriptions(
 
   const params: DynamoDB.DocumentClient.BatchWriteItemInput = {
     RequestItems: {
-      [config.resourceNames.subscriptionsStore]: foundSubscriptions.map((subscriptionEnvelope) => ({
+      [config.resourceNames.subscriptionsStore]: foundSubscriptions.map((subscriptionRecord) => ({
         DeleteRequest: {
           Key: {
             [subscriptionsStoreAttributes.partitionKey]:
-              subscriptionEnvelope[subscriptionsStoreAttributes.partitionKey],
-            [subscriptionsStoreAttributes.sortKey]: subscriptionEnvelope[subscriptionsStoreAttributes.sortKey],
+              subscriptionRecord[subscriptionsStoreAttributes.partitionKey],
+            [subscriptionsStoreAttributes.sortKey]: subscriptionRecord[subscriptionsStoreAttributes.sortKey],
           },
         },
       })),
