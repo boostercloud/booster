@@ -62,7 +62,11 @@ describe('the `BoosterGraphQLDispatcher`', () => {
         const dispatcher = new BoosterGraphQLDispatcher(config, logger)
         await dispatcher.dispatch({})
 
-        expect(config.provider.readModels.deleteAllSubscriptions).to.have.been.calledOnceWithExactly(config, logger, mockConnectionID)
+        expect(config.provider.readModels.deleteAllSubscriptions).to.have.been.calledOnceWithExactly(
+          config,
+          logger,
+          mockConnectionID
+        )
         expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly(undefined)
       })
     })
