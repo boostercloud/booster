@@ -10,7 +10,7 @@ import {
   fetchSubscriptions,
   subscribeToReadModel,
   SubscriptionIndexRecord,
-} from '../../src/library/read-model-adapter'
+} from '../../src/library/subscription-adapter'
 import { sortKeyForSubscription } from '../../src/library/partition-keys'
 import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
 
