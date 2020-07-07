@@ -20,7 +20,7 @@ describe('the "rawReadModelEventsToEnvelopes" method', () => {
       Records: [
         {
           // A well formed event
-          eventSourceARN: testARNForReadModelName(config, 'CartReadModel'),
+          eventSourceARN: generateReadModelTableARN(config, 'CartReadModel'),
           dynamodb: { NewImage: { id: { S: 'test' } } },
         },
         {
@@ -40,12 +40,12 @@ describe('the "rawReadModelEventsToEnvelopes" method', () => {
       Records: [
         {
           // A well formed event
-          eventSourceARN: testARNForReadModelName(config, 'CartReadModel'),
+          eventSourceARN: generateReadModelTableARN(config, 'CartReadModel'),
           dynamodb: { NewImage: { id: { S: 'test' } } },
         },
         {
           // An event with missing required fields
-          eventSourceARN: testARNForReadModelName(config, 'CartReadModel'),
+          eventSourceARN: generateReadModelTableARN(config, 'CartReadModel'),
           dynamodb: { NewImage: undefined },
         },
       ],
@@ -74,7 +74,7 @@ describe('the "rawReadModelEventsToEnvelopes" method', () => {
     const events: DynamoDBStreamEvent = {
       Records: [
         {
-          eventSourceARN: testARNForReadModelName(config, 'ReadModelOne'),
+          eventSourceARN: generateReadModelTableARN(config, 'ReadModelOne'),
           dynamodb: {
             NewImage: {
               id: { S: expectedReadModelOne.value.id.toString() },
@@ -83,7 +83,7 @@ describe('the "rawReadModelEventsToEnvelopes" method', () => {
           },
         },
         {
-          eventSourceARN: testARNForReadModelName(config, 'ReadModelTwo'),
+          eventSourceARN: generateReadModelTableARN(config, 'ReadModelTwo'),
           dynamodb: {
             NewImage: {
               id: { S: expectedReadModelTwo.value.id.toString() },
@@ -167,6 +167,6 @@ describe('the "storeReadModel" method', () => {
   })
 })
 
-function testARNForReadModelName(config: BoosterConfig, readModelName: string): string {
+function generateReadModelTableARN(config: BoosterConfig, readModelName: string): string {
   return `arn:aws:dynamodb:eu-west-1:123456:table/${config.resourceNames.forReadModel(readModelName)}`
 }
