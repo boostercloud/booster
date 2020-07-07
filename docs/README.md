@@ -30,7 +30,7 @@
   * [2. Events](#2-events)
     + [Events naming convention](#events-naming-convention)
     + [Creating events](#creating-events)
-    + [The event store](#the-event-store)
+    + [Registering events in the event store](#registering-events-in-the-event-store)
     + [Events ordering](#events-ordering)
   * [3. Event handlers](#3-event-handlers)
     + [Creating an event handler](#creating-an-event-handler)
@@ -764,7 +764,7 @@ Despite you can place commands, and other Booster files, in any directory, we st
 ```text
 project-root
 ├── src
-│   ├── commands <------ They should be here
+│   ├── commands <------ put them here
 │   ├── common
 │   ├── config
 │   ├── entities
@@ -964,13 +964,144 @@ where the schema for `CreateProductInput` is
 
 ### 2. Events
 
+Events are **immutable records of facts** within your application's domain. They are the cornerstone of Booster because of its event-driven and event-sourced nature. Booster events are TypeScript classes decorated with `@Event`. An event class may look like this:
+
+```typescript
+@Event
+export class EventName {
+  public constructor(readonly field1: SomeType,
+                     readonly field2: SomeOtherType,
+                     /* This event's entity ID must be present */) {}
+
+  public entityID(): UUID {
+    return /* the associated entity ID */
+  }
+}
+```
+
+Events and [entities](#4-entities-and-reducers) are intimately related. All events belong to one entity through the `entityID` method, and entities represent the application's state after reducing the stream of events. Indeed, an entity is just an aggregated representation of the same data present in its events. It is possible to rebuild entities from events at any time. Booster guarantees that all the events associated with an entity will be reduced in the same order they were stored. Take a look at this event:
+
+```typescript
+@Event
+export class CartPaid {
+  public constructor(
+    readonly cartID: UUID,
+    readonly paymentID: UUID) {}
+
+  public entityID(): UUID {
+    // returns cartID because we want to associate
+    // (and reduce) it within the Cart entity
+    return this.cartID
+  }
+}
+```
+
+An event has to know the ID of the entity it belongs to, and there are several strategies to do so. One would be injecting the entity ID directly in the constructor, or as a nested attribute. Alternatively, for events like `ProductCreated` it is common to return a brand new ID as the entity did not exist. For _singleton_ entities, where there's only one instance, you can even use a constant value. 
+
+In the `CartPaid` example, the entity ID (`paymentID`) is injected directly, and here is another example of a newly generated value:
+
+```typescript
+@Event
+export class ProductCreated {
+  public constructor(
+    readonly displayName: string,
+    readonly price: Money
+  ) {}
+
+  public entityID(): UUID {
+    // returns a new UUID because the Product entity
+    // does not exist yet
+    return UUID.generate()
+  }
+}
+```
+
 #### Events naming convention
+
+As with commands, you can name events in any way you want, depending on your application's domain. Though, we recommend you to choose short sentences written in past tense because events are facts that have happened and can't be changed. Some event names would be:
+
+- ProductCreated
+- ProductUpdated
+- ProductDeleted
+- CartItemChanged
+- StockMoved
+
+As with other Booster files, events have their own directory:
+
+```text
+project-root
+├── src
+│   ├── commands
+│   ├── common
+│   ├── config
+│   ├── entities
+│   ├── events <------ put them here
+│   ├── index.ts
+│   └── read-models
+```
 
 #### Creating events
 
-#### The event store
+The preferred way to create event files is the `new:event` generator, e.g.
+
+```shell
+boost new:event StockMoved --fields productID:string origin:string destination:string quantity:number
+```
+
+That will generate a file called `StockMoved.ts` under the proper `project-root/src/events` directory. You can also create the file manually, but we recommend using the generator and avoid dealing manually with boilerplate code.
+
+Note:
+
+> Running the event generator for an existing EventName, will overwrite the content of the current one. Soon, we will display a warning before overwriting anything. Meanwhile, if you missed a field, just add it to the class because, in Booster, there is no hidden magic, all the infrastructure and data structures are inferred from your code.
+
+#### Registering events in the event store
+
+Creating an event file is different than storing an event instance in the event store. In Booster terminology, the latter receives the name of `registering` an event. As said before, Booster applications are event-sourced, which means that all the events are stored forever. Imagine this store as an infinite log used by the [reducer functions](#4-entities-and-reducers) to recreate the application's current state.
+
+Booster injects the register as a parameter in the `handle` method of both the command and the event handlers. Then you can register events by calling the `register.events(...)` method as many times as you want, e.g.
+
+##### Registering events from command handlers
+
+```typescript
+@Command({
+  authorize: [Admin],
+})
+export class MoveStock {
+  public constructor(
+    readonly productID: string,
+    readonly origin: string,
+    readonly destination: string,
+    readonly quantity: number
+  ) {}
+
+  public async handle(register: Register): Promise<void> {
+    if (!this.enoughStock(this.origin, this.quantity, this.productID)) {
+      register.events(new ErrorEvent(`There is not enough stock for ${this.productID} at ${this.origin}`))
+    }
+  }
+}
+```
+
+##### Registering events from event handlers
+
+In the case of the event handlers, you also receive the event instance that triggered the handle function.
+
+```typescript
+@EventHandler(StockMoved)
+export class HandleAvailability {
+  public static async handle(event: StockMoved, register: Register): Promise<void> {
+    if (event.origin == 'provider') {
+      register.events(new ProductAvailabilityChanged(event.productID, event.quantity))
+    } else if (event.destination == 'customer') {
+      register.events(new ProductAvailabilityChanged(event.productID, -event.quantity))
+    }
+  }
+}
+```
 
 #### Events ordering
+
+<!-- TODO: several people have asked about how Booster ensures event ordering. I think it makes sense to explain that here  -->
 
 ### 3. Event handlers
 
@@ -1014,8 +1145,7 @@ project-root
 │   ├── config
 │   ├── entities
 │   ├── events
-│   ├── event-handlers <------ They must be here
-│   ├── index.ts
+│   ├── event-handlers <------ put them here
 │   └── read-models
 ```
 
@@ -1162,6 +1292,7 @@ This property is called [Eventual Consistency](https://en.wikipedia.org/wiki/Eve
 extreme situations, where other systems might simply fail.
 
 ### 5. Read models and projections
+
 Read Models are cached data optimized for read operations and they're updated reactively when [Entities](#4-entities-and-reducers) are updated by new [events](#2-events). They also define the *Read* API, the available REST endpoints and their structure.
 
 Read Models are classes decorated with the `@ReadModel` decorator that have one or more projection methods.
