@@ -1125,7 +1125,7 @@ Booster injects two parameters to the reducer functions:
 - `event` - The event object that triggered the reducer
 - `currentEntity?` - The current state of the entity instance that the event belongs to if it exists. **This parameter is optional** and will be `undefined` if the entity don't exist yet (For example, when you process a `ProductCreated` event that will generate the first version of a `Product` entity).
 
-This is how you define how events change your application state.
+This is how events change your application state.
 
 Given this entity:
 
