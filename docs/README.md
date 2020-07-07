@@ -1095,7 +1095,7 @@ project-root
 │   ├── commands
 │   ├── common
 │   ├── config
-│   ├── entities <------ They must be here
+│   ├── entities <------ put them here
 │   ├── events
 │   ├── index.ts
 │   └── read-models
