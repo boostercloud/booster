@@ -40,7 +40,6 @@
     + [Entities naming convention](#entities-naming-convention)
     + [Creating entities](#creating-entities)
     + [The reducer function](#the-reducer-function)
-    + [Aggregate data using entities](#aggregate-data-using-entities)
     + [Eventual consistency](#eventual-consistency)
   * [5. Read models and projections](#5-read-models-and-projections)
     + [Read models naming convention](#read-models-naming-convention)
