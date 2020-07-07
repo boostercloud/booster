@@ -30,7 +30,7 @@
   * [2. Events](#2-events)
     + [Events naming convention](#events-naming-convention)
     + [Creating events](#creating-events)
-    + [The event store](#the-event-store)
+    + [Registering events in the event store](#registering-events-in-the-event-store)
     + [Events ordering](#events-ordering)
   * [3. Event handlers](#3-event-handlers)
     + [Creating an event handler](#creating-an-event-handler)
