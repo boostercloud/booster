@@ -93,7 +93,7 @@ describe('the "rawReadModelEventsToEnvelopes" method', () => {
         },
       ],
     }
-    await expect(rawReadModelEventsToEnvelopes(config, logger, events)).to.be.eventually.become([
+    await expect(rawReadModelEventsToEnvelopes(config, logger, events)).to.eventually.become([
       expectedReadModelOne,
       expectedReadModelTwo,
     ])
