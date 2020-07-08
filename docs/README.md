@@ -59,11 +59,8 @@
     + [Sending commands](#sending-commands)
     + [Reading read models](#reading-read-models)
     + [Subscribing to read models](#subscribing-to-read-models)
-- [Deploying](#deploying)
-  * [AWS](#aws)
-    + [Configure your provider credentials](#configure-your-provider-credentials)
-  * [Deploy your project](#deploy-your-project)
-  * [Deleting your cloud stack](#deleting-your-cloud-stack)
+  * [Cloud native](#cloud-native)
+    + [Deploying to AWS](#deploying-to-aws)
 - [Frequently Asked Questions](#frequently-asked-questions)
 
 <!-- tocstop -->
@@ -1801,7 +1798,7 @@ mutation {
 }
 ```
 
-### Serverless ready
+### Cloud native
 
 One of the goals of Booster is to become provider agnostic so you can deploy your application to any serverless provider like AWS, Google Cloud, Azure, etc...
 
@@ -1811,6 +1808,7 @@ all cloud providers. (**Contributions are welcome!** 😜)
 #### Deploying to AWS
 
 ##### Configure your provider credentials
+
 > Creating a plain text file manually named `~/.aws/credentials` with the following content will be enough:
 
 ```text
