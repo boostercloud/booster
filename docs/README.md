@@ -64,6 +64,22 @@
     + [Configure your provider credentials](#configure-your-provider-credentials)
   * [Deploy your project](#deploy-your-project)
   * [Deleting your cloud stack](#deleting-your-cloud-stack)
+- [Going deeper with Booster](#going-deeper-with-booster)
+  * [Framework Core](#framework-core)
+  * [Framework Types](#framework-types)
+  * [Framework integration tests](#framework-integration-tests)
+  * [Providers](#providers)
+    + [framework-provider-aws-*](#framework-provider-aws-)
+    + [framework-provider-local-*](#framework-provider-local-)
+    + [framework-provider-kubernetes-*](#framework-provider-kubernetes-)
+    + [framework-provider-azure-*](#framework-provider-azure-)
+  * [Configuration and environments](#configuration-and-environments)
+- [Debugging and testing Booster applications](#debugging-and-testing-booster-applications)
+  * [Running Booster applications locally](#running-booster-applications-locally)
+    + [Starting application](#starting-application)
+    + [Performing requests](#performing-requests)
+    + [Inspect Database information](#inspect-database-information)
+  * [Booster examples](#booster-examples)
 - [Frequently Asked Questions](#frequently-asked-questions)
 
 <!-- tocstop -->
@@ -1845,6 +1861,188 @@ boost nuke -e production
 ```
 
 **Note**: This will delete everything in your stack, including databases. This action is **not** reversible!
+
+## Going deeper with Booster
+
+### Framework Core
+
+### Framework Types
+
+### Framework integration tests
+
+Booster framework integration tests package is used to test the Booster project itself, but it is also an example of how a Booster application could be tested. We encourage developers to have a look at our [Booster project repository](https://github.com/boostercloud/booster/tree/master/packages/framework-integration-tests).
+
+Some integration tests highly depend on the provider chosen for the project, and the infrastructure is normally deployed locally or in the cloud right before the tests run. Once tests are completed, the application is teared down.
+
+There are several types if integration tests in this package:
+- Tests to ensure that different packages integrate as expected with each other
+- Tests to ensure that a Booster application behaves as expected when it is hit by a client (a GraphQL client)
+- Tests to ensure that the application behaves in the same way no matter what provider is selected
+
+If you are curious about the framework providers, you will be able to read more about them in the following section.
+
+### Providers
+
+The providers are the different implementations of Booster backend depending on the cloud provider or technologies. They all implement the same interface, and the main idea behind the providers is that no matter what the developer chooses as backend, they will not need to know anything about infrastructure.  
+
+#### framework-provider-aws-*
+
+#### framework-provider-local-*
+
+The Booster framework local provider combines in-memory databases with a GraphQL API served through a Node.js Express Server.
+
+One of the advantages of having a local provider available is the fact that the deployment time dramatically drops, being able to speed up the development time.
+
+#### framework-provider-kubernetes-*
+
+#### framework-provider-azure-*
+
+### Configuration and environments
+
+One of the goals of booster is to avoid configuration parameters as much as possible, inferring everything automatically from your code. However, there are some aspects that can't be inferred (like the application name), or it is useful to change them under certain circumstances, especially when using different [environments](#environments)
+
+#### Booster configuration
+```typescript
+import { Booster } from '@boostercloud/framework-core'
+import { BoosterConfig } from '@boostercloud/framework-types'
+import { Provider } from '@boostercloud/framework-provider-aws'
+
+Booster.configure('pre-production', (config: BoosterConfig): void => {
+  config.appName = 'my-app-name'
+  config.provider = Provider
+})
+```
+
+You configure your application by doing a call to the Booster.configure() method. There are no restrictions about where you should do this call, but the convention is to do it in your configuration files located in the src/config folder. If you used the project generator (boost new:project <project-name>), this is where the config files are by default.
+
+The following is the list of the fields you can configure:
+- **appName:** This is the name that identifies your application. It will be used for many things, such us prefixing the resources created by the provider. There are certain restrictions regarding the characters you can use: all of them must be lower-cased and can't contain spaces. Two apps with different names are completely independent.
+
+- **provider:** This field contains the provider library instance that Booster will use when deploying or running your application. So far, there is only one provider supported in Booster yet, @boostercloud/framework-provider-aws, and it is probably the one you have already set if you used the generator to create your project. There will be more providers, like one that allows running your Booster app locally.
+
+#### Environments
+
+You can configure multiple environments calling to the Booster.configure function several times using different environment names:
+
+```typescript
+import { Booster } from '@boostercloud/framework-core'
+import { BoosterConfig } from '@boostercloud/framework-types'
+// A provider that deploys your app to AWS:
+import * as AWSProvider from '@boostercloud/framework-provider-aws'
+// A provider that deploys your app locally:
+import * as LocalProvider from '@boostercloud/framework-provider-local' 
+
+Booster.configure('dev', (config: BoosterConfig): void => {
+  config.appName = 'fruit-store-dev'
+  config.provider = LocalProvider.Provider
+})
+
+Booster.configure('stage', (config: BoosterConfig): void => {
+  config.appName = 'fruit-store-stage'
+  config.provider = AWSProvider.Provider
+})
+
+Booster.configure('prod', (config: BoosterConfig): void => {
+  config.appName = 'fruit-store-prod'
+  config.provider = AWSProvider.Provider
+})
+
+// This other configuration could be in another file that Pepe doesn't commit
+Booster.configure('pepe', (config: BoosterConfig): void => {
+  config.appName = 'pepe-fruit-store'
+  config.provider = AWSProvider.Provider
+})
+```
+
+The environment name will be required by any command from the Booster CLI that depends on the provider. For instance, when you deploy your application, you'll need to specify which environment you want to deploy.
+
+This way, you can have different configurations depending on your needs.
+
+For example, your 'fruit-store' app can have three environments: 'dev', 'stage', and 'prod', each of them with different app names or providers. A developer named "Pepe" could have another environment with a different app name so that he can deploy the entire application to a production-like environment and test it. Check the example to see how this app would be configured.
+
+The only thing you need to do to deploy a whole new completely-independent copy of your application is to use a different name.
+
+## Debugging and testing Booster applications
+
+
+### Running Booster applications locally
+
+Having the ability to run your Booster application locally will dramatically reduce the deployment time of your application and speed-up the feedback loop. Furthermore, it allows developers to view application logs in the terminal.
+
+#### Prerequisites
+
+In order to run locally, it is necessary to add the `framework-provider-local` package to the project, and also define a new configuration environment `local`.
+
+First of all, we will have to install the local provider package as a new application dependency
+
+`npm install @boostercloud/framework-provider-local`
+
+Once the local provider is installed, we will also need to update our existing config, that can be found in `src/config/config.ts` in order to include the local environment configuration. More instructions on how to do add a new environment can be found [here](#Environments).
+
+#### Starting application
+
+This step is very simple, you only need to open a terminal window and run:
+
+```bash
+boost start -e local
+```
+
+By default, the application will be available at `http://localhost:3000`
+
+optionally, you could also specify what port you want the application to be running in but adding as arguments `-p <port-number>`
+
+```bash
+boost start -e local -p 3333
+```
+
+After a few seconds the Booster application should be ready to be hit by a client at `http://localhost:<port-number>`
+
+There will be two different endpoints available for our application:
+- `/auth`
+- `/graphql`
+
+#### Performing Auth requests
+Booster also provides you with user management for free, allowing you to sign-up, confirm and sign-in users. An example of a sign up would be as follow:
+
+`POST http://localhost:3000/auth/sign-up`
+
+```json
+{
+	"username": "user@test.com",
+	"password": "passw0rd!",
+	"userAttributes": {
+		"roles": ['User']
+	}
+}
+```
+
+#### Performing GraphQL requests
+
+We should now be able to perform queries and mutations to our GraphQL endpoint `http://localhost:<port-number>/graphql` with a client or tool, for example, a React App, Postwoman or Postman.
+
+`POST http://localhost:3000/graphql`
+
+Query
+```graphql
+mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+    ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+}
+```
+
+Variables
+```json
+{
+    "cartId": "e46d1d0e-5e7f-4934-850c-9559dc55af79",
+    "productId": "9214d0a9-0915-417d-852b-de79e54d8e95",
+    "quantity": 10
+}
+```
+
+#### Inspect Database information
+
+The databases for the local provider are just json files in the `<project-root>/.booster` folder. If you are wondering what data is available in the application you will only need to chose what file to look into.
+
+### Booster examples
 
 ## Frequently Asked Questions
 **1.- When deploying my application in AWS for the first time, I got an error saying _"StagingBucket <your app name>-toolkit-bucket already exists"_**
