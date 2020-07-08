@@ -17,12 +17,11 @@ describe('subscriptions', () => {
     })
 
     it('should delete a subscription when the client calls "unsubscribe"', async () => {
-      const mockCartId = random.uuid()
       const originalSubscriptionsCount = await countSubscriptionsItems()
 
       // Let's create two subscriptions to the same read model
-      cartSubscription(client, mockCartId).subscribe(() => {})
-      const subscriptionObservable = cartSubscription(client, mockCartId).subscribe(() => {})
+      cartSubscription(client, random.uuid()).subscribe(() => {})
+      const subscriptionObservable = cartSubscription(client, random.uuid()).subscribe(() => {})
 
       // Wait for for the subscriptions to arrive
       await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount + 2)
