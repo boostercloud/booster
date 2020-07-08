@@ -349,6 +349,19 @@ export async function queryEvents(primaryKey: string, latestFirst = true): Promi
   return output.Items
 }
 
+// --- Subscriptions store helpers ---
+export async function subscriptionsTableName(): Promise<string> {
+  const stackName = appStackName()
+
+  return `${stackName}-subscriptions-store`
+}
+
+export async function countSubscriptionsItems(): Promise<number> {
+  const tableName = await subscriptionsTableName()
+
+  return countTableItems(tableName)
+}
+
 // --- Read models helpers ---
 
 export async function readModelTableName(readModelName: string): Promise<string> {
@@ -371,17 +384,23 @@ export async function queryReadModels(primaryKey: string, readModelName: string,
 }
 
 export async function countReadModelItems(readModelName: string): Promise<number> {
+  const tableName = await readModelTableName(readModelName)
+
+  return countTableItems(tableName)
+}
+
+// --- DynamoDB helpers ---
+
+export async function countTableItems(tableName: string): Promise<number> {
   const output: ScanOutput = await documentClient
     .scan({
-      TableName: await readModelTableName(readModelName),
+      TableName: tableName,
       Select: 'COUNT',
     })
     .promise()
 
   return output.Count ?? -1
 }
-
-// --- DynamoDB helpers ---
 
 export async function countEventItems(): Promise<number> {
   const output: ScanOutput = await documentClient
@@ -423,6 +442,13 @@ export async function getEventsByEntityId(entityID: string): Promise<any> {
     .promise()
 
   return output.Items
+}
+
+export async function clearSubscriptions(): Promise<any> {
+  await documentClient.scan({
+    TableName: await subscriptionsTableName(),
+    Select: 'ALL_ATTRIBUTES',
+  })
 }
 
 // --- Other helpers ---
