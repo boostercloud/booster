@@ -1836,7 +1836,7 @@ It will take a while, but you should have your project deployed to your cloud pr
 
 If you make changes to your code, you can run `boost deploy -e production` again to update your project in the cloud.
 
-##### Deleting your cloud stack
+##### Delete your cloud stack
 
 If you want to delete the Booster application that has been deployed to the cloud, you can run:
 
