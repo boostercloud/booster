@@ -35,7 +35,7 @@ async function deployApp(observer: Subscriber<string>, config: BoosterConfig): P
   const resourceGroupName = createResourceGroupName(config)
   await createResourceGroup(resourceGroupName, resourceManagementClient)
   const applicationBuilder = new ApplicationStackBuilder(config)
-  await applicationBuilder.buildOn(resourceManagementClient, webSiteManagementClient, resourceGroupName)
+  await applicationBuilder.buildOn(observer, resourceManagementClient, webSiteManagementClient, resourceGroupName)
 }
 
 /**
