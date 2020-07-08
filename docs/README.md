@@ -270,7 +270,7 @@ running for a blog application in just a few minutes. The steps to follow will b
 
 First of all, we will use the Booster CLI to create a project. Run this command and follow
 the instructions, when asked for the provider, select AWS as that is what we have
-configured [here](#set-up-an-aws-account)
+configured [here](#set-up-an-aws-account).
 
 ```shell
 > boost new:project boosted-blog
