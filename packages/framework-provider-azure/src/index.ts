@@ -10,6 +10,8 @@ import {
 } from './library/events-adapter'
 import { CosmosClient } from '@azure/cosmos'
 import { environmentVarNames } from './constants'
+import { fetchReadModel, storeReadModel } from './library/read-model-adapter'
+import { searchReadModel } from './library/searcher-adapter'
 
 let cosmosClient
 if (process.env[environmentVarNames.cosmosDbConnectionString]) {
@@ -29,13 +31,13 @@ export const Provider: ProviderLibrary = {
   },
   // ProviderReadModelsLibrary
   readModels: {
-    fetch: undefined as any,
-    search: undefined as any,
+    fetch: fetchReadModel.bind(null, cosmosClient),
+    search: searchReadModel.bind(null, cosmosClient),
     subscribe: undefined as any,
     rawToEnvelopes: undefined as any,
     fetchSubscriptions: undefined as any,
     notifySubscription: undefined as any,
-    store: undefined as any,
+    store: storeReadModel.bind(null, cosmosClient),
   },
   // ProviderGraphQLLibrary
   graphQL: {

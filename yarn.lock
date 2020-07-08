@@ -507,6 +507,22 @@
     tslib "^2.0.0"
     uuid "^8.1.0"
 
+"@azure/cosmos@^3.7.3":
+  version "3.7.3"
+  resolved "https://registry.yarnpkg.com/@azure/cosmos/-/cosmos-3.7.3.tgz#c4b81317503d470aaf0797b5d35fd3c2cdeb5c42"
+  integrity sha512-WG/3bjjtx2hX85UDxKScM0eMDm6PVBn5gieNKKJVXGE1WadT4hlU3+E/SzaOEP5/lmMTmrgOxFzm/6aegnsdGA==
+  dependencies:
+    "@types/debug" "^4.1.4"
+    debug "^4.1.1"
+    fast-json-stable-stringify "^2.0.0"
+    node-abort-controller "^1.0.4"
+    node-fetch "^2.6.0"
+    os-name "^3.1.0"
+    priorityqueuejs "^1.0.0"
+    semaphore "^1.0.5"
+    tslib "^2.0.0"
+    uuid "^8.1.0"
+
 "@azure/functions@^1.2.2":
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/@azure/functions/-/functions-1.2.2.tgz#8fcb6aa3a879d3be0dc3d68919f969b054bbe3f3"

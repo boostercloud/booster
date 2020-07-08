@@ -17,6 +17,7 @@ export async function requestSucceeded(body?: any): Promise<ContextResponse> {
   return {
     headers: {
       'Access-Control-Allow-Origin': '*',
+      'Content-Type': 'application/json',
     },
     status: 200,
     body: body ? JSON.stringify(body) : '',
@@ -28,6 +29,7 @@ export async function requestFailed(error: Error): Promise<ContextResponse> {
   return {
     headers: {
       'Access-Control-Allow-Origin': '*',
+      'Content-Type': 'application/json',
     },
     status,
     body: JSON.stringify({

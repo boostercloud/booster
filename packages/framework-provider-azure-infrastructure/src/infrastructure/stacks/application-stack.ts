@@ -4,6 +4,7 @@ import { DeploymentExtended } from 'azure-arm-resource/lib/resource/models'
 import webSiteManagement from 'azure-arm-website'
 import { configuration } from '../params'
 import { eventStorePartitionKeyAttribute } from '@boostercloud/framework-provider-azure'
+import { CosmosClient } from '@azure/cosmos'
 
 const fs = require('fs')
 const archiver = require('archiver')
@@ -30,8 +31,6 @@ export class ApplicationStackBuilder {
       resourceGroupName,
       {
         databaseName: { value: this.config.resourceNames.applicationStack },
-        containerName: { value: this.config.resourceNames.eventsStore },
-        partitionKey: { value: eventStorePartitionKeyAttribute },
       },
       '../templates/cosmos-db-account.json'
     )
@@ -107,6 +106,25 @@ export class ApplicationStackBuilder {
       }
     )
 
+    // create Cosmos DB containers
+    const cosmosClient = new CosmosClient(cosmosDbConnectionString)
+
+    // container for event store
+    await cosmosClient.database(this.config.resourceNames.applicationStack).containers.createIfNotExists({
+      id: this.config.resourceNames.eventsStore,
+      partitionKey: `/${eventStorePartitionKeyAttribute}`,
+    })
+
+    // containers for read models
+    const readModelContainers = Object.keys(this.config.readModels).map((readModelName) => {
+      return cosmosClient.database(this.config.resourceNames.applicationStack).containers.createIfNotExists({
+        id: this.config.resourceNames.forReadModel(readModelName),
+        partitionKey: '/id',
+      })
+    })
+
+    await Promise.all(readModelContainers)
+
     const zipPath = await this.packageAzureFunction([
       {
         functionName: 'graphql',
@@ -135,7 +153,7 @@ export class ApplicationStackBuilder {
           bindings: [
             {
               type: 'cosmosDBTrigger',
-              name: 'documents',
+              name: 'rawEvent',
               direction: 'in',
               leaseCollectionName: 'leases',
               connectionStringSetting: 'COSMOSDB_CONNECTION_STRING',
@@ -156,17 +174,6 @@ export class ApplicationStackBuilder {
       credentials.publishingUserName,
       credentials.publishingPassword,
       credentials.name
-    )
-
-    await this.buildResource(
-      resourceManagementClient,
-      resourceGroupName,
-      {
-        databaseName: { value: this.config.resourceNames.applicationStack },
-        containerName: { value: this.config.resourceNames.eventsStore },
-        partitionKey: { value: eventStorePartitionKeyAttribute },
-      },
-      '../templates/cosmos-db-account.json'
     )
 
     // @ts-ignore

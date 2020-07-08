@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@azure/arm-appservice": "^6.0.0",
+    "@azure/cosmos": "^3.7.3",
     "@boostercloud/framework-provider-azure": "^0.3.3",
     "@boostercloud/framework-types": "^0.3.3",
     "archiver": "^4.0.1",

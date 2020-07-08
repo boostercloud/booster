@@ -12,12 +12,6 @@
     },
     "databaseName": {
       "type": "string"
-    },
-    "containerName": {
-      "type": "string"
-    },
-    "partitionKey": {
-      "type": "string"
     }
   },
   "functions": [],
@@ -69,30 +63,7 @@
             "options": {
               "throughput": 400
             }
-          },
-          "resources": [
-            {
-              "type": "Microsoft.DocumentDb/databaseAccounts/apis/databases/containers",
-              "name": "[concat(parameters('cosmosDbAccountName'), '/sql/', parameters('databaseName'), '/', parameters('containerName'))]",
-              "apiVersion": "2016-03-31",
-              "dependsOn": [
-                "[resourceId('Microsoft.DocumentDB/databaseAccounts/apis/databases', parameters('cosmosDbAccountName'), 'sql', parameters('databaseName'))]"
-              ],
-              "properties": {
-                "resource": {
-                  "id": "[parameters('containerName')]",
-                  "partitionKey": {
-                    "paths": [
-                      "[concat('/', parameters('partitionKey'))]"
-                    ],
-                    "kind": "Hash"
-                  }
-                },
-                "options": {
-                }
-              }
-            }
-          ]
+          }
         }
       ]
     }
