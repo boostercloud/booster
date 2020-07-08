@@ -5,7 +5,7 @@ import { rawGraphQLRequestToEnvelope } from '../../src/library/graphql-adapter'
 import { Context } from '@azure/functions'
 
 describe('the graphql-adapter', () => {
-  describe('the `rawGraphQLRequestToEnvelope`', () => {
+  describe('the "rawGraphQLRequestToEnvelope"', () => {
     it('generates an envelope correctly from an Azure event', async () => {
       const expectedQuery = 'GraphQL query'
       const expectedVariables = {
