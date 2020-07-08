@@ -41,14 +41,13 @@ describe('subscriptions', () => {
       const clientB = await graphQLClientWithSubscriptions()
       try {
         const originalSubscriptionsCount = await countSubscriptionsItems()
-        const mockCartId = random.uuid()
 
         // Let's create one subscription for one client
-        cartSubscription(clientA, mockCartId).subscribe(() => {})
+        cartSubscription(clientA, random.uuid()).subscribe(() => {})
 
         // Let's create two subscriptions for another client
-        cartSubscription(clientB, mockCartId).subscribe(() => {})
-        cartSubscription(clientB, mockCartId).subscribe(() => {})
+        cartSubscription(clientB, random.uuid()).subscribe(() => {})
+        cartSubscription(clientB, random.uuid()).subscribe(() => {})
 
         // Wait for for the subscriptions to arrive
         await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount + 3)
