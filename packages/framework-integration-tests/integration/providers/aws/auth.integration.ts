@@ -202,10 +202,7 @@ describe('With the auth API', () => {
         })
       })
 
-      await waitForIt(
-        () => countSubscriptionsItems(),
-        (count: number) => count > currentSubscriptionsCount
-      )
+      await waitForIt(countSubscriptionsItems, (count) => count > currentSubscriptionsCount)
 
       await client.mutate({
         variables: {
@@ -663,10 +660,7 @@ describe('With the auth API', () => {
           })
         })
 
-        await waitForIt(
-          () => countSubscriptionsItems(),
-          (count: number) => count > currentSubscriptionsCount
-        )
+        await waitForIt(countSubscriptionsItems, (count) => count > currentSubscriptionsCount)
 
         await client.mutate({
           variables: {
