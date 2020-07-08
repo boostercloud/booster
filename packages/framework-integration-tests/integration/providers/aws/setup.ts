@@ -2,10 +2,14 @@ import util = require('util')
 const exec = util.promisify(require('child_process').exec)
 import { deploy, nuke } from '../../../src/deploy'
 import { config } from 'aws-sdk'
+import { sleep } from '../helpers'
 
 before(async () => {
   await setEnv()
   await checkConfigAnd(deploy)
+  console.log('Waiting 30 seconds after deployment to let the stack finish its initialization...')
+  await sleep(30000)
+  console.log('...sleep finished. Let the tests begin 🔥!')
 })
 
 after(async () => {

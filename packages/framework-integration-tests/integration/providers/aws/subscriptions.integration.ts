@@ -37,28 +37,33 @@ describe('subscriptions', () => {
 
   describe('the "terminate" operation', () => {
     it('should delete al subscription of the connectionID when socket is disconnected', async () => {
-      const originalSubscriptionsCount = await countSubscriptionsItems()
-      const mockCartId = random.uuid()
-
-      // Let's create one subscription for one client
       const clientA = await graphQLClientWithSubscriptions()
-      cartSubscription(clientA, mockCartId).subscribe(() => {})
-
-      // Let's create two subscriptions for another client
       const clientB = await graphQLClientWithSubscriptions()
-      cartSubscription(clientB, mockCartId).subscribe(() => {})
-      cartSubscription(clientB, mockCartId).subscribe(() => {})
+      try {
+        const originalSubscriptionsCount = await countSubscriptionsItems()
+        const mockCartId = random.uuid()
 
-      // Wait for for the subscriptions to arrive
-      await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount + 3)
+        // Let's create one subscription for one client
+        cartSubscription(clientA, mockCartId).subscribe(() => {})
 
-      // Now we close the socket of client B and check its 2 subscriptions were deleted
-      clientB.disconnect()
-      await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount + 1)
+        // Let's create two subscriptions for another client
+        cartSubscription(clientB, mockCartId).subscribe(() => {})
+        cartSubscription(clientB, mockCartId).subscribe(() => {})
 
-      // Finally, close the socket of client A and check that we are back to the original count of subscriptions
-      clientA.disconnect()
-      await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount)
+        // Wait for for the subscriptions to arrive
+        await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount + 3)
+
+        // Now we close the socket of client B and check its 2 subscriptions were deleted
+        clientB.disconnect()
+        await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount + 1)
+
+        // Finally, close the socket of client A and check that we are back to the original count of subscriptions
+        clientA.disconnect()
+        await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount)
+      } catch (e) {
+        clientA.disconnect()
+        clientB.disconnect()
+      }
     })
   })
 })
