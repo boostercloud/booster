@@ -102,7 +102,7 @@ export async function deleteSubscription(
     .promise()
 
   const foundSubscriptions = result.Items as Array<SubscriptionIndexRecord>
-  if (!foundSubscriptions || foundSubscriptions.length == 0) {
+  if (foundSubscriptions?.length < 1) {
     logger.info(
       `[deleteSubscription] No subscriptions found with connectionID=${connectionID} and subscriptionID=${subscriptionID}`
     )
@@ -138,7 +138,7 @@ export async function deleteAllSubscriptions(
     })
     .promise()
   const foundSubscriptions = result.Items as Array<SubscriptionIndexRecord>
-  if (!foundSubscriptions || foundSubscriptions.length == 0) {
+  if (foundSubscriptions?.length < 1) {
     logger.info(`[deleteAllSubscription] No subscriptions found with connectionID=${connectionID}`)
     return
   }
