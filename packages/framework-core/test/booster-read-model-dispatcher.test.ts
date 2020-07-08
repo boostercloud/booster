@@ -124,10 +124,12 @@ describe('BoosterReadModelDispatcher', () => {
 
         const result = await readModelDispatcher.fetch(envelope)
 
-        expect(providerSearcherFunctionFake).to.have.been.calledOnce
-        const args = providerSearcherFunctionFake.getCall(0).args
-        expect(args[2]).to.be.equal(TestReadModel.name)
-        expect(args[3]).to.be.deep.equal(filters)
+        expect(providerSearcherFunctionFake).to.have.been.calledOnceWithExactly(
+          match.any,
+          match.any,
+          TestReadModel.name,
+          filters
+        )
         expect(result).to.be.deep.equal(expectedReadModels)
       })
     })
