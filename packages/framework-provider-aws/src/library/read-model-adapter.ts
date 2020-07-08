@@ -1,6 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/no-magic-numbers */
-import { BoosterConfig, Logger, ReadModelInterface, UUID } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, ReadModelInterface, UUID, ReadModelEnvelope } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
+import { DynamoDBRecord, DynamoDBStreamEvent } from 'aws-lambda'
+import { Arn } from './arn'
+import { Converter } from 'aws-sdk/clients/dynamodb'
+
+export async function rawReadModelEventsToEnvelopes(
+  config: BoosterConfig,
+  logger: Logger,
+  rawEvents: DynamoDBStreamEvent
+): Promise<Array<ReadModelEnvelope>> {
+  return rawEvents.Records.map(toReadModelEnvelope.bind(null, config))
+}
 
 export async function fetchReadModel(
   db: DynamoDB.DocumentClient,
@@ -35,4 +46,19 @@ export async function storeReadModel(
     })
     .promise()
   logger.debug('[ReadModelAdapter#storeReadModel] Read model stored')
+}
+
+function toReadModelEnvelope(config: BoosterConfig, record: DynamoDBRecord): ReadModelEnvelope {
+  if (!record.dynamodb?.NewImage || !record.eventSourceARN) {
+    throw new Error('Received a DynamoDB stream event without "eventSourceARN" or "NewImage" field. They are required')
+  }
+  const tableARNComponents = Arn.parse(record.eventSourceARN)
+  if (!tableARNComponents.resourceName) {
+    throw new Error('Could not extract the table name from the eventSourceARN')
+  }
+  const readModelTableName = tableARNComponents.resourceName.split('/')[0]
+  return {
+    typeName: config.readModelNameFromResourceName(readModelTableName),
+    value: Converter.unmarshall(record.dynamodb.NewImage) as ReadModelInterface,
+  }
 }

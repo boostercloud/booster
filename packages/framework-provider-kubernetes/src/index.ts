@@ -11,13 +11,15 @@ export const Provider: ProviderLibrary = {
   },
   // ProviderReadModelsLibrary
   readModels: {
+    rawToEnvelopes: undefined as any,
     fetch: undefined as any,
     search: undefined as any,
+    store: undefined as any,
     subscribe: undefined as any,
-    rawToEnvelopes: undefined as any,
     fetchSubscriptions: undefined as any,
     notifySubscription: undefined as any,
-    store: undefined as any,
+    deleteSubscription: undefined as any,
+    deleteAllSubscriptions: undefined as any,
   },
   // ProviderGraphQLLibrary
   graphQL: {

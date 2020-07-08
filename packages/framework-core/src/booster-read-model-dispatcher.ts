@@ -33,6 +33,14 @@ export class BoosterReadModelDispatcher {
     return this.processSubscription(connectionID, readModelRequest, operation)
   }
 
+  public async unsubscribe(connectionID: string, subscriptionID: string): Promise<void> {
+    return this.config.provider.readModels.deleteSubscription(this.config, this.logger, connectionID, subscriptionID)
+  }
+
+  public async unsubscribeAll(connectionID: string): Promise<void> {
+    return this.config.provider.readModels.deleteAllSubscriptions(this.config, this.logger, connectionID)
+  }
+
   private validateRequest(readModelRequest: ReadModelRequestEnvelope): void {
     this.logger.debug('Validating the following read model request: ', readModelRequest)
     if (!readModelRequest.version) {

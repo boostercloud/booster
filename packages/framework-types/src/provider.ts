@@ -40,6 +40,7 @@ export interface ProviderEventsLibrary {
   store(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig, logger: Logger): Promise<void>
 }
 export interface ProviderReadModelsLibrary {
+  rawToEnvelopes(config: BoosterConfig, logger: Logger, rawEvents: any): Promise<Array<ReadModelEnvelope>>
   fetch(config: BoosterConfig, logger: Logger, readModelName: string, readModelID: UUID): Promise<ReadModelInterface>
   search<TReadModel extends ReadModelInterface>(
     config: BoosterConfig,
@@ -47,15 +48,16 @@ export interface ProviderReadModelsLibrary {
     entityTypeName: string,
     filters: Record<string, Filter<any>>
   ): Promise<Array<TReadModel>>
+  store(config: BoosterConfig, logger: Logger, readModelName: string, readModel: ReadModelInterface): Promise<any>
   subscribe(config: BoosterConfig, logger: Logger, subscriptionEnvelope: SubscriptionEnvelope): Promise<void>
-  rawToEnvelopes(config: BoosterConfig, logger: Logger, rawEvents: any): Promise<Array<ReadModelEnvelope>>
   fetchSubscriptions(
     config: BoosterConfig,
     logger: Logger,
     subscriptionName: string
   ): Promise<Array<SubscriptionEnvelope>>
   notifySubscription(config: BoosterConfig, connectionID: string, data: Record<string, any>): Promise<void>
-  store(config: BoosterConfig, logger: Logger, readModelName: string, readModel: ReadModelInterface): Promise<any>
+  deleteSubscription(config: BoosterConfig, logger: Logger, connectionID: string, subscriptionID: string): Promise<void>
+  deleteAllSubscriptions(config: BoosterConfig, logger: Logger, connectionID: string): Promise<void>
 }
 
 export interface ProviderGraphQLLibrary {

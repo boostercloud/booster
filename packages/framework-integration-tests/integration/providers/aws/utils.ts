@@ -298,6 +298,7 @@ export async function graphqlSubscriptionsClient(authToken?: string): Promise<Su
   return new SubscriptionClient(
     await baseWebsocketURL(),
     {
+      lazy: true,
       reconnect: true,
     },
     class MyWebSocket extends WebSocket {
