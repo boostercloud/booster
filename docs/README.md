@@ -1808,7 +1808,7 @@ One of the goals of Booster is to become provider agnostic so you can deploy you
 So far, in the current version, only AWS is supported, but given the high level of abstraction, it will eventually support
 all cloud providers. (**Contributions are welcome!** 😜)
 
-#### Deploying in AWS
+#### Deploying to AWS
 
 ##### Configure your provider credentials
 > Creating a plain text file manually named `~/.aws/credentials` with the following content will be enough:
