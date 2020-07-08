@@ -63,7 +63,7 @@ describe('commands', () => {
 
       // Wait until event is stored in database
       await waitForIt(
-        async () => events.loadDatabase()
+        async () => events.loadDatabase(),
         (_) => events.getAllData().some((value) => value.entityID === mockCartId)
       )
 
