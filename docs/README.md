@@ -1989,7 +1989,7 @@ boost start -e local
 
 By default, the application will be available at `http://localhost:3000`
 
-optionally, you could also specify what port you want the application to be running in but adding as arguments `-p <port-number>`
+optionally, you could also specify on which port you want your application to be running on with the option `-p <port-number>`:
 
 ```bash
 boost start -e local -p 3333
