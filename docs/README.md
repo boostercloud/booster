@@ -1995,7 +1995,7 @@ optionally, you could also specify what port you want the application to be runn
 boost start -e local -p 3333
 ```
 
-After a few seconds the Booster application should be ready to be hit by a client at `http://localhost:<port-number>`
+After a few seconds, the Booster application should be ready at `http://localhost:<port-number>`
 
 There will be two different endpoints available for our application:
 - `/auth`
