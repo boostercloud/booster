@@ -2018,7 +2018,7 @@ Booster also provides you with user management for free, allowing you to sign-up
 
 #### Performing GraphQL requests
 
-We should now be able to perform queries and mutations to our GraphQL endpoint `http://localhost:<port-number>/graphql` with a client or tool, for example, a React App, Postwoman or Postman.
+We should now be able to perform queries and mutations to our GraphQL endpoint `http://localhost:<port-number>/graphql` with a client or tool, for example, a React App, [Postwoman](https://postwoman.io), or [Postman](https://www.postman.com).
 
 `POST http://localhost:3000/graphql`
 
