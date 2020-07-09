@@ -1899,7 +1899,7 @@ The local runtime is a convenient and fast way to deploy and test your code in a
 
 ### Configuration and environments
 
-One of the goals of booster is to avoid configuration parameters as much as possible, inferring everything automatically from your code. However, there are some aspects that can't be inferred (like the application name), or it is useful to change them under certain circumstances, especially when using different [environments](#environments)
+Booster uses sensible defaults, convention over configuration, and code inference to reduce dramatically the amount of configuration needed. However, there are some aspects that can't be inferred (like the application name) or the provider library used for each [environment](#environments).
 
 #### Booster configuration
 ```typescript
