@@ -1874,7 +1874,7 @@ Booster framework integration tests package is used to test the Booster project 
 
 Some integration tests highly depend on the provider chosen for the project, and the infrastructure is normally deployed locally or in the cloud right before the tests run. Once tests are completed, the application is teared down.
 
-There are several types if integration tests in this package:
+There are several types of integration tests in this package:
 - Tests to ensure that different packages integrate as expected with each other
 - Tests to ensure that a Booster application behaves as expected when it is hit by a client (a GraphQL client)
 - Tests to ensure that the application behaves in the same way no matter what provider is selected
