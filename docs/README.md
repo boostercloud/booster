@@ -1883,7 +1883,7 @@ If you are curious about the framework providers, you will be able to read more 
 
 ### Providers
 
-The providers are the different implementations of Booster backend depending on the cloud provider or technologies. They all implement the same interface, and the main idea behind the providers is that no matter what the developer chooses as backend, they will not need to know anything about infrastructure.  
+The providers are different implementations of the Booster runtime to allow Booster applications run on different cloud providers or services. They all implement the same interface, and the main idea behind the providers is that no matter what the developer chooses as backend, they won't need to know anything about the underlying infrastructure.  
 
 #### framework-provider-aws-*
 
