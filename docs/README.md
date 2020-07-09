@@ -1975,7 +1975,7 @@ In order to run locally, it is necessary to add the `framework-provider-local` p
 
 First of all, we will have to install the local provider package as a new application dependency
 
-`npm install @boostercloud/framework-provider-local`
+`npm install --save-dev @boostercloud/framework-provider-local`
 
 Once the local provider is installed, we will also need to update our existing config, that can be found in `src/config/config.ts` in order to include the local environment configuration. More instructions on how to do add a new environment can be found [here](#Environments).
 
