@@ -2011,7 +2011,7 @@ Booster also provides you with user management for free, allowing you to sign-up
 	"username": "user@test.com",
 	"password": "passw0rd!",
 	"userAttributes": {
-		"roles": ['User']
+		"roles": ["User"]
 	}
 }
 ```
