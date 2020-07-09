@@ -62,7 +62,7 @@ describe('the events-adapter', () => {
 
       expect(cosmosDb.database().container().items.query).to.have.been.calledWith(
         match({
-          query: `SELECT * FROM c where c.${eventStorePartitionKeyAttribute} = @partitionKey AND c.${eventStoreSortKeyAttribute} > @fromTime ORDER BY c.${eventStoreSortKeyAttribute} DESC`,
+          query: `SELECT * FROM c WHERE c["${eventStorePartitionKeyAttribute}"] = @partitionKey AND c["${eventStoreSortKeyAttribute}"] > @fromTime ORDER BY c["${eventStoreSortKeyAttribute}"] DESC`,
           parameters: [
             {
               name: '@partitionKey',
@@ -84,7 +84,7 @@ describe('the events-adapter', () => {
 
       expect(cosmosDb.database().container().items.query).to.have.been.calledWith(
         match({
-          query: `SELECT * FROM c WHERE c.${eventStorePartitionKeyAttribute} = @partitionKey ORDER BY c.${eventStoreSortKeyAttribute} DESC OFFSET 0 LIMIT 1`,
+          query: `SELECT * FROM c WHERE c["${eventStorePartitionKeyAttribute}"] = @partitionKey ORDER BY c["${eventStoreSortKeyAttribute}"] DESC OFFSET 0 LIMIT 1`,
           parameters: [
             {
               name: '@partitionKey',

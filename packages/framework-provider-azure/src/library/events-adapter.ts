@@ -26,7 +26,7 @@ export async function readEntityEventsSince(
 ): Promise<Array<EventEnvelope>> {
   const fromTime = since ? since : originOfTime
   const querySpec: SqlQuerySpec = {
-    query: `SELECT * FROM c where c.${eventStorePartitionKeyAttribute} = @partitionKey AND c.${eventStoreSortKeyAttribute} > @fromTime ORDER BY c.${eventStoreSortKeyAttribute} DESC`,
+    query: `SELECT * FROM c WHERE c["${eventStorePartitionKeyAttribute}"] = @partitionKey AND c["${eventStoreSortKeyAttribute}"] > @fromTime ORDER BY c["${eventStoreSortKeyAttribute}"] DESC`,
     parameters: [
       {
         name: '@partitionKey',
@@ -59,7 +59,7 @@ export async function readEntityLatestSnapshot(
     .database(config.resourceNames.applicationStack)
     .container(config.resourceNames.eventsStore)
     .items.query({
-      query: `SELECT * FROM c WHERE c.${eventStorePartitionKeyAttribute} = @partitionKey ORDER BY c.${eventStoreSortKeyAttribute} DESC OFFSET 0 LIMIT 1`,
+      query: `SELECT * FROM c WHERE c["${eventStorePartitionKeyAttribute}"] = @partitionKey ORDER BY c["${eventStoreSortKeyAttribute}"] DESC OFFSET 0 LIMIT 1`,
       parameters: [
         {
           name: '@partitionKey',

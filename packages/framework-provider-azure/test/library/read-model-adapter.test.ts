@@ -20,7 +20,7 @@ const cosmosDb = createStubInstance(CosmosClient, {
         query: sinon.stub().returns({
           fetchAll: fake.resolves({ resources: [] }) as any,
         }),
-        create: sinon.stub().returns(fake.resolves({})),
+        upsert: sinon.stub().returns(fake.resolves({})),
       },
       item: sinon.stub().returns({
         read: sinon.stub().returns(fake.resolves({})),
@@ -37,7 +37,7 @@ describe('the "fetchReadModel" method', () => {
     expect(cosmosDb.database().container).to.have.been.calledOnceWithExactly(
       'new-booster-app-application-stack-SomeReadModel'
     )
-    expect(cosmosDb.database().container().item).to.have.been.calledWithExactly('someReadModelID')
+    expect(cosmosDb.database().container().item).to.have.been.calledWithExactly('someReadModelID', 'someReadModelID')
     expect(result).not.to.be.null
   })
 })
@@ -52,7 +52,7 @@ describe('the "storeReadModel" method', () => {
     expect(cosmosDb.database().container).to.have.been.calledWithExactly(
       'new-booster-app-application-stack-SomeReadModel'
     )
-    expect(cosmosDb.database().container().items.create).to.have.been.calledWithExactly(
+    expect(cosmosDb.database().container().items.upsert).to.have.been.calledWithExactly(
       match({
         id: 777,
         some: 'object',
