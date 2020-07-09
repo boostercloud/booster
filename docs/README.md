@@ -1891,7 +1891,7 @@ The providers are different implementations of the Booster runtime to allow Boos
 
 The Booster framework local provider combines in-memory databases with a GraphQL API served through a Node.js Express Server.
 
-One of the advantages of having a local provider available is the fact that the deployment time dramatically drops, being able to speed up the development time.
+The local runtime is a convenient and fast way to deploy and test your code in a local development environment. From the API and semantic perspectives, there are no differences from using a real cloud provider, it just runs locally!
 
 #### framework-provider-kubernetes-*
 
