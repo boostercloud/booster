@@ -1979,7 +1979,7 @@ First of all, we will have to install the local provider package as a new applic
 
 Once the local provider is installed, we will also need to update our existing config, that can be found in `src/config/config.ts` in order to include the local environment configuration. More instructions on how to do add a new environment can be found [here](#Environments).
 
-#### Starting application
+#### Starting your application
 
 This step is very simple, you only need to open a terminal window and run:
 
