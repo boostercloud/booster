@@ -7,7 +7,6 @@
 ## Checks
 - [ ] Project Builds
 - [ ] Project passes tests and checks
-- [ ] Updated documentation accordingly at [the docs repo](https://github.com/boostercloud/docs)
-- [ ] Added a link pointing to the documentation PR in this PR
+- [ ] Updated documentation accordingly
 
 ## Additional information

@@ -17,10 +17,11 @@ export async function requestFailed(error: Error): Promise<APIGatewayProxyResult
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function requestSucceeded(body?: any): Promise<APIGatewayProxyResult> {
+export async function requestSucceeded(body?: any, headers?: Record<string, string>): Promise<APIGatewayProxyResult> {
   return {
     headers: {
       'Access-Control-Allow-Origin': '*',
+      ...headers,
     },
     statusCode: 200,
     body: body ? JSON.stringify(body) : '',

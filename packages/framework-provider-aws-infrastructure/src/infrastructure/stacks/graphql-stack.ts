@@ -1,25 +1,15 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { Fn, Stack, Duration, RemovalPolicy } from '@aws-cdk/core'
-import {
-  CfnAuthorizer,
-  CfnIntegration,
-  CfnIntegrationResponse,
-  CfnRoute,
-  CfnRouteResponse,
-} from '@aws-cdk/aws-apigatewayv2'
+import { Duration, Fn, RemovalPolicy, Stack } from '@aws-cdk/core'
+import { CfnAuthorizer, CfnIntegration, CfnIntegrationResponse, CfnRoute } from '@aws-cdk/aws-apigatewayv2'
 import { Code, Function, IEventSource } from '@aws-cdk/aws-lambda'
 import * as params from '../params'
+import { APIs } from '../params'
 import { ServicePrincipal } from '@aws-cdk/aws-iam'
 import { AuthorizationType, LambdaIntegration, RequestAuthorizer } from '@aws-cdk/aws-apigateway'
 import { Cors } from '@aws-cdk/aws-apigateway/lib/cors'
-import { Table, AttributeType, BillingMode } from '@aws-cdk/aws-dynamodb'
-import {
-  subscriptionsStorePartitionKeyAttribute,
-  subscriptionsStoreSortKeyAttribute,
-  subscriptionsStoreTTLAttribute,
-} from '@boostercloud/framework-provider-aws'
+import { AttributeType, BillingMode, ProjectionType, Table } from '@aws-cdk/aws-dynamodb'
+import { subscriptionsStoreAttributes } from '@boostercloud/framework-provider-aws'
 import { DynamoEventSource } from '@aws-cdk/aws-lambda-event-sources'
-import { APIs } from '../params'
 
 interface GraphQLStackMembers {
   graphQLLambda: Function
@@ -73,13 +63,10 @@ export class GraphQLStack {
 
   private buildWebsocketRoutes(graphQLLambda: Function, authorizerLambda: Function): void {
     const lambdaIntegration = this.buildLambdaIntegration(graphQLLambda)
-    const mockIntegration = this.buildMockIntegration()
     const websocketAuthorizer = this.buildWebsocketAuthorizer(authorizerLambda)
 
-    const connectRoute = this.buildRoute('$connect', mockIntegration, websocketAuthorizer)
-    this.buildRouteResponse(connectRoute, mockIntegration)
-    const defaultRoute = this.buildRoute('$default', lambdaIntegration)
-    this.buildRouteResponse(defaultRoute, lambdaIntegration)
+    this.buildRoute('$connect', lambdaIntegration, websocketAuthorizer)
+    this.buildRoute('$default', lambdaIntegration)
     this.buildRoute('$disconnect', lambdaIntegration)
   }
 
@@ -99,20 +86,14 @@ export class GraphQLStack {
       ]),
     })
     integration.addDependsOn(this.apis.websocketAPI)
-    return integration
-  }
 
-  private buildMockIntegration(): CfnIntegration {
-    const localID = 'graphql-mock-integration'
-    const integration = new CfnIntegration(this.stack, localID, {
+    const integrationResponseLocalId = 'graphql-handler-integration-response'
+    const integrationResponse = new CfnIntegrationResponse(this.stack, integrationResponseLocalId, {
+      integrationId: integration.ref,
       apiId: this.apis.websocketAPI.ref,
-      integrationType: 'MOCK',
-      templateSelectionExpression: '200',
-      requestTemplates: {
-        '200': '{"statusCode":200}',
-      },
+      integrationResponseKey: '$default',
     })
-    integration.addDependsOn(this.apis.websocketAPI)
+    integrationResponse.addDependsOn(integration)
     return integration
   }
 
@@ -129,24 +110,6 @@ export class GraphQLStack {
     }
     route.addDependsOn(integration)
     return route
-  }
-
-  private buildRouteResponse(route: CfnRoute, integration: CfnIntegration): void {
-    const localID = `route-${route.routeKey}-response`
-    const routeResponse = new CfnRouteResponse(this.stack, localID, {
-      apiId: this.apis.websocketAPI.ref,
-      routeId: route.ref,
-      routeResponseKey: '$default',
-    })
-    routeResponse.addDependsOn(route)
-
-    const integrationResponseLocalId = `route-${route.routeKey}-integration-response`
-    const integrationResponse = new CfnIntegrationResponse(this.stack, integrationResponseLocalId, {
-      integrationId: integration.ref,
-      apiId: this.apis.websocketAPI.ref,
-      integrationResponseKey: '$default',
-    })
-    integrationResponse.addDependsOn(integration)
   }
 
   private buildWebsocketAuthorizer(lambda: Function): CfnAuthorizer {
@@ -192,19 +155,32 @@ export class GraphQLStack {
   }
 
   private buildSubscriptionsTable(): Table {
-    return new Table(this.stack, this.config.resourceNames.subscriptionsStore, {
+    const table = new Table(this.stack, this.config.resourceNames.subscriptionsStore, {
       tableName: this.config.resourceNames.subscriptionsStore,
       partitionKey: {
-        name: subscriptionsStorePartitionKeyAttribute,
+        name: subscriptionsStoreAttributes.partitionKey,
         type: AttributeType.STRING,
       },
       sortKey: {
-        name: subscriptionsStoreSortKeyAttribute,
+        name: subscriptionsStoreAttributes.sortKey,
         type: AttributeType.STRING,
       },
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY,
-      timeToLiveAttribute: subscriptionsStoreTTLAttribute,
+      timeToLiveAttribute: subscriptionsStoreAttributes.ttl,
     })
+    table.addGlobalSecondaryIndex({
+      indexName: subscriptionsStoreAttributes.indexByConnectionIDName(this.config),
+      partitionKey: {
+        name: subscriptionsStoreAttributes.indexByConnectionIDPartitionKey,
+        type: AttributeType.STRING,
+      },
+      sortKey: {
+        name: subscriptionsStoreAttributes.indexByConnectionIDSortKey,
+        type: AttributeType.STRING,
+      },
+      projectionType: ProjectionType.KEYS_ONLY,
+    })
+    return table
   }
 }

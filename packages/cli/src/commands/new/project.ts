@@ -28,7 +28,7 @@ export default class Project extends Command {
       description: 'who is writing this?',
     }),
     homepage: flags.string({
-      char: 'h',
+      char: 'H',
       description: 'the website of this project',
     }),
     license: flags.string({

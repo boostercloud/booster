@@ -5,7 +5,7 @@ import { APIGatewayProxyWithLambdaAuthorizerEvent } from 'aws-lambda'
 import { AuthorizerWithUserData } from '../../src/library/auth-adapter'
 import { rawGraphQLRequestToEnvelope } from '../../src/library/graphql-adapter'
 
-describe('the graphql-adapter', () => {
+describe('AWS Provider graphql-adapter', () => {
   describe('the `rawGraphQLRequestToEnvelope`', () => {
     it('generates an envelope correctly from an AWS event', async () => {
       const expectedUser: UserEnvelope = {
@@ -37,8 +37,10 @@ describe('the graphql-adapter', () => {
         eventType: 'CONNECT',
         connectionID: '456',
         currentUser: expectedUser,
-        value: expectedQuery,
-        variables: expectedVariables,
+        value: {
+          query: expectedQuery,
+          variables: expectedVariables,
+        },
       }
       const gotOutput = await rawGraphQLRequestToEnvelope(request, console)
 

@@ -1,5 +1,6 @@
 import util = require('util')
 import path = require('path')
+import { ChildProcess, spawn } from 'child_process'
 const exec = util.promisify(require('child_process').exec)
 const fs = require('fs')
 
@@ -13,6 +14,7 @@ const fs = require('fs')
  */
 
 const integrationTestsPackageRoot = path.dirname(__dirname)
+const cliBinaryPath = path.join('..', 'cli', 'bin', 'run')
 
 async function run(command: string): Promise<void> {
   const subprocess = exec(command, {
@@ -60,22 +62,36 @@ export async function deploy(environmentName = 'production'): Promise<void> {
   fs.renameSync('../../node_modules_dev', '../../node_modules')
 
   // Compile the project
-  await run('lerna run clean')
-  await run('lerna run compile')
+  await run('lerna run clean --stream')
+  await run('lerna run compile --stream')
 
   // Remove non-needed packages (lerna adds them as dependencies)
   fs.unlinkSync('./node_modules/@boostercloud/framework-integration-tests')
   fs.unlinkSync('./node_modules/@boostercloud/cli')
 
   // Finally invoke the "boost deploy" command using the compiled cli.
-  const deployScript = path.join('..', 'cli', 'bin', 'run')
-  await run(`${deployScript} deploy -e ${environmentName}`)
+  await run(`${cliBinaryPath} deploy -e ${environmentName}`)
 }
 
 export async function nuke(environmentName = 'production'): Promise<void> {
   await setEnv()
 
   // Nuke works in the cloud exclusively, no need for preparation
-  const nukeScript = path.join('..', 'cli', 'bin', 'run')
-  await run(`${nukeScript} nuke -e ${environmentName} --force`)
+  await run(`${cliBinaryPath} nuke -e ${environmentName} --force`)
+}
+
+export function start(environmentName = 'local'): ChildProcess {
+  const serverProcess = spawn(cliBinaryPath, ['start', '-e', environmentName], {
+    cwd: integrationTestsPackageRoot,
+  })
+
+  serverProcess.stdout?.on('data', (data) => {
+    process.stdout.write(data)
+  })
+
+  serverProcess.stderr?.on('data', (data) => {
+    process.stderr.write(data)
+  })
+
+  return serverProcess
 }

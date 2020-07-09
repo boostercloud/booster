@@ -122,7 +122,7 @@ Or in a specific package with yarn:
 Once all your unit tests are passing and your code looks great, if your code changes any behavior in the cloud provider, it's important to update the integration test suite and iterate your code until it passes. Notice that in the `framework-integration-tests` there's an `integration` folder with subfolders for each supported provider (including the local provider). Integration tests require real deployments, so they'll last a while and you must have your provider credentials properly set. The test suite will fail with (hopefully) useful error messages with guidance when some parameter is missed. You can run the integration tests using lerna from any package or the project root, or yarn from within the integration tests package:
 
 ```bash
-~/booster:$ lerna run integration
+~/booster:$ lerna run integration --stream
 ```
 
 You can run only the tests for a specific provider using the more specific scoped commands:
@@ -143,7 +143,7 @@ When you submit a PR to the Booster repository:
 * _Unit tests_ will be automatically run. PRs with non-passing tests can't be merged.
 * If tests pass, your code will be reviewed by at least two people from the core team. Clarifications or improvements might be asked, and they reserve the right to close any PR that do not meet the project quality standards, goals or philosophy, so it's always a good idea to discuss your plans in an issue or the Spectrum channel before commiting to significant changes.
 * Code must be mergeable and all conflicts solved before merging it.
-* Once the review process is done, unit tests pass and conflicts are fixed, you still need to make the _Integration tests check_ to pass (you'll see it is still in "Queued" status). In order to do that, you need to **post a comment** in the pull request with the content "**bot: integration**". The _integration tests_ will run and the check will now be in "In progress" status. After some time, if everything went well, the status check will become green and your PR is now ready to merge. One of the contributors with write permissions will merge it as soon as possible. 
+* Once the review process is done, unit tests pass and conflicts are fixed, you still need to make the _Integration tests check_ to pass. In order to do that, you need to **post a comment** in the pull request with the content "**bot: integration**". The _integration tests_ will run and a new check will appear with an "In progress" status. After some time, if everything went well, the status check will become green and your PR is now ready to merge. One of the contributors with write permissions will merge it as soon as possible. 
 
 ### Commit message guidelines
 

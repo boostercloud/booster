@@ -2,7 +2,8 @@ import { Function } from '@aws-cdk/aws-lambda'
 import { setupPermissions } from '../../../src/infrastructure/stacks/permissions'
 import { Table } from '@aws-cdk/aws-dynamodb'
 import { CfnApi } from '@aws-cdk/aws-apigatewayv2'
-import { SinonStub, assert, stub, restore } from 'sinon'
+import { SinonStub, stub, restore } from 'sinon'
+import { expect } from '../../expect'
 import { random } from 'faker'
 import * as policies from '../../../src/infrastructure/stacks/policies'
 import { PolicyStatement } from '@aws-cdk/aws-iam'
@@ -92,27 +93,28 @@ describe('permissions', () => {
 
     describe('GraphQL Lambda', () => {
       it('should call addToRolePolicy', () => {
-        assert.calledThrice(graphQLAddToRolePolicyStub)
+        expect(graphQLAddToRolePolicyStub).to.has.callCount(4)
 
-        assert.calledWithExactly(graphQLAddToRolePolicyStub, mockPolicyStatement)
+        expect(graphQLAddToRolePolicyStub).calledWithExactly(mockPolicyStatement)
       })
 
       describe('policy statements', () => {
         it('should add events store permissions', () => {
-          assert.calledWithExactly(
-            createPolicyStatementStub,
+          expect(createPolicyStatementStub).calledWithExactly(
             [mockEventsStoreTableArn],
-            ['dynamodb:BatchWriteItem', 'dynamodb:Query*', 'dynamodb:Put*']
+            ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchWriteItem']
           )
         })
 
         it('should create subscriptions table permissions', () => {
-          assert.calledWithExactly(createPolicyStatementStub, [mockSubscriptionsTableArn], ['dynamodb:Put*'])
+          expect(createPolicyStatementStub).calledWithExactly(
+            [mockSubscriptionsTableArn + '*'],
+            ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:DeleteItem', 'dynamodb:BatchWriteItem']
+          )
         })
 
         it('should create read model permissions', () => {
-          assert.calledWithExactly(
-            createPolicyStatementStub,
+          expect(createPolicyStatementStub).calledWithExactly(
             [mockReadModelTableArn],
             ['dynamodb:Query*', 'dynamodb:Scan*']
           )
@@ -122,20 +124,19 @@ describe('permissions', () => {
 
     describe('Subscriptions Lambda', () => {
       it('should call addToRolePolicy', () => {
-        assert.calledTwice(subscriptionAddToRolePolicyStub)
-
-        assert.calledWithExactly(subscriptionAddToRolePolicyStub, mockPolicyStatement)
+        expect(subscriptionAddToRolePolicyStub).to.be.calledTwice
+        expect(subscriptionAddToRolePolicyStub).to.be.calledWithExactly(mockPolicyStatement)
       })
 
       describe('policy statements', () => {
         it('should create subscriptions table permissions', () => {
-          assert.calledWithExactly(createPolicyStatementStub, [mockSubscriptionsTableArn], ['dynamodb:Query*'])
+          expect(createPolicyStatementStub).to.be.calledWithExactly([mockSubscriptionsTableArn], ['dynamodb:Query*'])
         })
 
         describe('web socket API', () => {
           it('should call Fn Join', () => {
-            assert.calledOnce(fnJoinStub)
-            assert.calledWithExactly(fnJoinStub, ':', [
+            expect(fnJoinStub).to.be.calledOnce
+            expect(fnJoinStub).to.be.calledWithExactly(':', [
               'arn',
               mockFnRef,
               'execute-api',
@@ -146,11 +147,11 @@ describe('permissions', () => {
           })
 
           it('should call Fn Ref', () => {
-            assert.calledThrice(fnRefStub)
+            expect(fnRefStub).to.be.calledThrice
           })
 
           it('should create web socket API permissions', () => {
-            assert.calledWithExactly(createPolicyStatementStub, [mockFnJoin], ['execute-api:ManageConnections'])
+            expect(createPolicyStatementStub).calledWithExactly([mockFnJoin], ['execute-api:ManageConnections'])
           })
         })
       })
@@ -158,23 +159,20 @@ describe('permissions', () => {
 
     describe('Events Lambda', () => {
       it('should call addToRolePolicy', () => {
-        assert.calledTwice(eventsAddToRolePolicyStub)
-
-        assert.calledWithExactly(eventsAddToRolePolicyStub, mockPolicyStatement)
+        expect(eventsAddToRolePolicyStub).calledTwice
+        expect(eventsAddToRolePolicyStub).calledWithExactly(mockPolicyStatement)
       })
 
       describe('policy statements', () => {
         it('should add events store permissions', () => {
-          assert.calledWithExactly(
-            createPolicyStatementStub,
+          expect(createPolicyStatementStub).calledWithExactly(
             [mockEventsStoreTableArn],
             ['dynamodb:BatchWriteItem', 'dynamodb:Query*', 'dynamodb:Put*']
           )
         })
 
         it('should create read model permissions', () => {
-          assert.calledWithExactly(
-            createPolicyStatementStub,
+          expect(createPolicyStatementStub).calledWithExactly(
             [mockReadModelTableArn],
             ['dynamodb:Get*', 'dynamodb:Put*']
           )

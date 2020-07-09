@@ -7,11 +7,13 @@
     "packages/framework-provider-azure-infrastructure",
     "packages/framework-provider-local",
     "packages/framework-provider-local-infrastructure",
+    "packages/framework-provider-kubernetes",
+    "packages/framework-provider-kubernetes-infrastructure",
     "packages/framework-core",
     "packages/cli",
     "packages/framework-integration-tests"
   ],
-  "version": "0.3.3",
+  "version": "0.5.0",
   "npmClient": "yarn",
   "useWorkspaces": true
 }

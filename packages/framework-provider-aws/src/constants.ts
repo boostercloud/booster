@@ -1,8 +1,19 @@
-export const eventStorePartitionKeyAttribute = 'entityTypeName_entityID_kind'
-export const eventStoreSortKeyAttribute = 'createdAt'
-export const subscriptionsStorePartitionKeyAttribute = 'typeName'
-export const subscriptionsStoreSortKeyAttribute = 'connectionID'
-export const subscriptionsStoreTTLAttribute = 'expirationTime'
+import { BoosterConfig } from '@boostercloud/framework-types'
+
+export const eventsStoreAttributes = {
+  partitionKey: 'entityTypeName_entityID_kind',
+  sortKey: 'createdAt',
+} as const
+
+export const subscriptionsStoreAttributes = {
+  partitionKey: 'typeName',
+  sortKey: 'connectionID_subscriptionID',
+  ttl: 'expirationTime',
+  indexByConnectionIDPartitionKey: 'connectionID',
+  indexByConnectionIDSortKey: 'subscriptionID',
+  indexByConnectionIDName: (config: BoosterConfig) => config.resourceNames.subscriptionsStore + '-index-by-connection',
+} as const
+
 export const environmentVarNames = {
   restAPIURL: 'BOOSTER_REST_API_URL',
   websocketAPIURL: 'BOOSTER_WEBSOCKET_API_URL',
