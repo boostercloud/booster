@@ -1973,7 +1973,7 @@ The environment name will be required by any command from the Booster CLI that d
 
 This way, you can have different configurations depending on your needs.
 
-For example, your 'fruit-store' app can have three environments: 'dev', 'stage', and 'prod', each of them with different app names or providers. A developer named "Pepe" could have another environment with a different app name so that he can deploy the entire application to a production-like environment and test it. Check the example to see how this app would be configured.
+Booster environments are extremely flexible. For example, your 'fruit-store' app can have three team-wide environments: 'dev', 'stage', and 'prod', each of them with different app names or providers, that are deployed by your CI/CD processes. Developers can create their own private environments very easily by just adding an additional config file to test their changes in realistic environments before committing them. Likewise, CI/CD processes could generate separate production-like environments to test different branches to perform QA in separate environments without interferences from other features under test.
 
 The only thing you need to do to deploy a whole new completely-independent copy of your application is to use a different name.
 
