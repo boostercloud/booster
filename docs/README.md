@@ -268,7 +268,7 @@ running for a blog application in just a few minutes. The steps to follow will b
 
 #### 1. Create the project
 
-First of all, we will use the Booster CLI to create a project. Run this command and follow
+First of all, we will use the Booster generators to create a project. Run this command and follow
 the instructions, when asked for the provider, select AWS as that is what we have
 configured [here](#set-up-an-aws-account).
 
@@ -284,14 +284,18 @@ configured [here](#set-up-an-aws-account).
 ℹ Project generated!
 ```
 
-> Booster's new: commands follows this structure
+> Booster CLI commands follow this structure: `boost <subcommand> [<flags>] [<parameters>]`. 
+> Let's break down the command we have just executed:
 >
-> - `boost` is the Booster CLI
-> - `new:<resource>` new is a CLI command, :project tells booster the kind of resource
-> - `boosted-blog` is a parameter for the `new:project` command
->   project name
+> - `boost` is the Booster CLI executable
+> - `new:project` is the "subcommand" part. In this case, it is composed of two parts separated by a colon. 
+> The first part, `new`, means that we want to generate a new resource. The second part, `project`, indicates which
+> kind of resource we are interested in. Other examples are `new:command`, `new:event`, etc. We'll see a bunch of them later.
+> - `boosted-blog` is a "parameter" for the subcommand `new:project`. Flags and parameters are optional and
+> their meaning and shape depend on the subcommand you used. In this case, we are specifying the name of the project
+> we are creating.
 
-The `new:project` command generates some scaffolding for you. The project name will be the
+When finished, you'll see some scaffolding that has been generated. The project name will be the
 project's root so `cd` into it:
 
 ```shell
@@ -322,8 +326,8 @@ Now open the project in your favorite editor, e.g. [Visual Studio Code](https://
 #### 2. First command
 
 Commands define the input to our system, so we'll start by generating our first
-[command](#1-command-and-command-handlers) to create posts. Use the command generator in the project's root
-directory as follows:
+[command](#1-command-and-command-handlers) to create posts. Use the command generator, while in the project's root
+directory, as follows:
 
 ```bash
 boost new:command CreatePost --fields postId:UUID title:string content:string author:string
@@ -338,17 +342,17 @@ boosted-blog
         └── CreatePost.ts
 ```
 
-As we mentioned before, commands are the input of our system. they're requested
-by the users, validate the input, and store one or more events, so we have to
-define two more things:
+As we mentioned before, commands are the input of our system. They're sent
+by the users of our application. When they are received you can validate its data,
+execute some business logic, and register one or more events. Therefore, we have to define two more things:
 
 1. Who is authorized to run this command.
-1. And what events are being triggered when the command is executed.
+1. The type of the events that will be triggered.
 
-Booster allows you to define authorization strategies. We will cover that
-later so, let's start by allowing anyone to send this command to our application
-. To do that, add the string `'all'` to the the `authorize` parameter of the
-`@command` decorator. Your `CreatePost` command should look like this:
+Booster allows you to define authorization strategies (we will cover that
+later). Let's start by allowing anyone to send this command to our application.
+To do that, open the file we have just generated and add the string `'all'` to the
+`authorize` parameter of the `@Command` decorator. Your `CreatePost` command should look like this:
 
 ```typescript
 @Command({
@@ -370,19 +374,15 @@ export class CreatePost {
 
 #### 3. First event
 
-Instead of storing full objects, Booster stores data in the form of events, which are
-records of facts and the source of truth. We will save an event called `PostCreated`
-containing the initial post info. Any change to a given `Post` will be a new event
-emitted, for example, `PostUpdated`.
-
-For now, let's emit our `PostCreated` event once we have successfully handled
-our `CreatePost` command. You can generate the event with this generator:
+Instead of creating, updating, or deleting objects, Booster stores data in the form of events.
+They are records of facts and represent the source of truth. Let's generate an event called `PostCreated`
+that will contain the initial post info:
 
 ```bash
 boost new:event PostCreated --fields postId:UUID title:string content:string author:string
 ```
 
-The `new:event` command generates a new file under the `src/events` directory.
+The `new:event` generator creates a new file under the `src/events` directory.
 The name of the file is the name of the event:
 
 ```text
@@ -393,8 +393,8 @@ boosted-blog
 ```
 
 All events in Booster must target an entity, so we need to implement an `entityID`
-method. From there, We'll return the identifier of the post created, the field
-`postID`. This identifier will be used by Booster later to build the final state
+method. From there, we'll return the identifier of the post created, the field
+`postID`. This identifier will be used later by Booster to build the final state
 of the `Post` automatically. Edit the `entityID` method in `events/PostCreated.ts`
 to return our `postID`:
 
@@ -427,25 +427,27 @@ public handle(register: Register): void {
 ```
 
 We can do any validation in the command handler before storing the event, for our
-example, we'll just save the received data in a `PostCreated` event.
+example, we'll just save the received data in the `PostCreated` event.
 
 #### 4. First entity
 
 So far, our `PostCreated` event suggests we need a `Post` entity. Entities are a
-representation of the current state, so an Entity reduces all the events with the same
-`entityID`. Let's then use the entities generator:
+representation of our system internal state. They are in charge of reducing (combining) all the events
+with the same `entityID`. Let's generate our `Post` entity:
 
 ```bash
 boost new:entity Post --fields title:string content:string author:string --reduces PostCreated
 ```
 
-This time Booster has created a file called `Post.ts` in the `src/entities` directory.
+You should see now a new file called `Post.ts` in the `src/entities` directory.
 
-The generator creates one reducer function for each kind of event. As we only have one
-event yet, it will create one function. The reducer functions in Booster work similarly to
-the `reduce` callback functions in Node: they receive an event and the previous state and
-generate a new version of the state. When we receive a `PostCreated` event, we just return
-a new `Post` copying the fields from the event:
+This time, besides using the `--fields` flag to indicate the properties of our `Post` entity, we have
+also used the `--reduces` flag to specify the events the entity will reduce to produce the Post current
+state. The generator will create one _reducer function_ for each event we have specified (only one in this case).
+Reducer functions in Booster work similarly to the `reduce` callbacks in Javascript: they receive an event
+and the current state of the entity, and generate a new version of the state.
+In this case, when we receive a `PostCreated` event, we can just return a new `Post` entity copying the fields 
+from the event. There is no previous state of the Post as we are creating it for the first time:
 
 ```typescript
 // src/entities/Posts.ts
@@ -460,22 +462,28 @@ export class Post {
 }
 ```
 
-Entities represent the internal state of our system and can be queried from command or
+Entities represent domain model our system and can be queried from command or
 event handlers to make business decisions or enforcing business rules.
 
 #### 5. First read model
 
-In a real application, we rarely want to publish our entire domain model (entities)
-including all their fields. Also, different people may access one or other data depending
+In a real application, we rarely want to make public our entire domain model (entities)
+including all their fields. What is more, different users may have different views of the data depending
 on their permissions. That's the goal of `ReadModels`. Client applications can query or
-subscribe to them. A read model projects an entity so, let's project our `Post` and
-produce a `PostReadModel`:
+subscribe to them. 
+
+Read models _project_ entities to build themselves. Let's generate a `PostReadModel` that projects our 
+`Post` entity:
 
 ```bash
 boost new:read-model PostReadModel --fields title:string author:string --projects Post:id
 ```
 
-As you might guess, the read-model generator will generate a file called
+We have used a new flag, `--projects`, that allow us to specify the entities (can be many) the read model will
+project. You might be wondering what is the `:id` after the entity name. That's the [joinKey](#the-projection-function),
+but you can forget about it now. 
+
+As you might guess, the read-model generator will create a file called
 `PostReadModel.ts` under `src/read-models`:
 
 ```text
@@ -488,17 +496,14 @@ boosted-blog
 There are two things to do when creating a read model:
 
 1. Define who is authorized to query or subscribe it
-1. and filter out unneeded fields from the entity
+1. Add the logic of the projection functions, where you can filter, combine, etc., the entities fields.
 
-Read models and commands compound the public API of a Booster application. With the
-`CreatePost` command we authorized `all` to execute it, and this time we'll do the same
-for the `PostReadModel`.
+While commands define the input to our system, read models define the output, and together they compound
+the public API of a Booster application. Let's do the same we did in the command and authorize `all` to
+query/subscribe the `PostReadModel`. Also, and for learning purposes, we will exclude the `content` field 
+from the `Post` entity, so it won't be returned when users request the read model.
 
-Just for learning, We also will exclude the `content` field from the `Post` entity so it
-won't be visible.
-
-To authorize anyone to query this read model, and filter out the content, edit the file to
-look like this:
+Edit the `PostReadModel.ts` file to look like this:
 
 ```typescript
 // src/read-models/PostReadModel.ts
@@ -517,14 +522,14 @@ export class PostReadModel {
 
 #### 6. Deployment
 
-At this point, we've learned:
+At this point, we've:
 
-- how to create a publicly accessible command
-- we emitted an event to store the data
-- we reduced the event into an entity
-- and finally, we projected the entity into a read model that is also publicly accessible.
+- Learned to create a publicly accessible command
+- Emitted an event as a mechanism to store data.
+- Reduced the event into an entity
+- Projected the entity into a read model that is also publicly accessible.
 
-That's all; you already know the basics to build event-driven, CQRS-based applications
+With this, you already know the basics to build event-driven, CQRS-based applications
 with Booster.
 
 Let's deploy our application to the cloud to see it working. It is as simple as running
@@ -534,17 +539,15 @@ the deploy command:
 boost deploy -e production
 ```
 
+> With `-e production` we are specifying which environment we want to deploy. We'll talk about them later.
+
 It will take a couple of minutes to deploy all the resources. Once finished, you will see
-information about your stack endpoints. For this example, we will only need to pick the
-API endpoint. Look into the output for something like `backend-application-stack.baseRESTURL`
-e.g.
+information about your application endpoints and other outputs. For this example, we will 
+only need to pick the output ending in `httpURL`, e.g.:
 
 ```text
-https://<some random number>.execute-api.us-east-1.amazonaws.com/production/graphql
+https://<some random number>.execute-api.us-east-1.amazonaws.com/production
 ```
-
-We are close to testing our app, and to do so, we will use the GraphQL API endpoint.
-Let's address that in the next section.
 
 #### 7. Testing
 
