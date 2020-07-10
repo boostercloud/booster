@@ -11,14 +11,15 @@ import {
   GraphQLStart,
   GraphQLComplete,
   GraphQLError,
+  GraphQLStop,
 } from '@boostercloud/framework-types'
 
 export interface GraphQLWebsocketHandlerCallbacks {
   onStartOperation: (
     envelope: GraphQLRequestEnvelope
   ) => Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult>
-  onStopOperation: (envelope: GraphQLRequestEnvelope) => Promise<ExecutionResult>
-  onTerminateOperations: (envelope: GraphQLRequestEnvelope) => Promise<ExecutionResult>
+  onStopOperation: (connectionID: string, messageID: string) => Promise<void>
+  onTerminateOperations: (connectionID: string) => Promise<void>
 }
 
 export class GraphQLWebsocketHandler {
@@ -49,10 +50,9 @@ export class GraphQLWebsocketHandler {
         case MessageTypes.GQL_START:
           return await this.handleStart(envelope.connectionID, envelope, clientMessage)
         case MessageTypes.GQL_STOP:
-          console.log(this.callbacks.onStopOperation) // TODO
-          break
+          return await this.handleStop(envelope.connectionID, clientMessage)
         case MessageTypes.GQL_CONNECTION_TERMINATE:
-          console.log(this.callbacks.onTerminateOperations) // TODO
+          return await this.handleTerminate(envelope.connectionID)
           break
         default:
           // This branch should be impossible, but just in case
@@ -106,5 +106,22 @@ export class GraphQLWebsocketHandler {
     // It was a query or mutation. We send data and complete the operation
     await this.sendToConnection(connectionID, new GraphQLData(message.id, result))
     await this.sendToConnection(connectionID, new GraphQLComplete(message.id))
+  }
+
+  private async handleStop(connectionID: string, message: GraphQLStop): Promise<void> {
+    if (!message.id) {
+      throw new Error(`Missing "id" in ${message.type} message`)
+    }
+
+    this.logger.debug('Executing stop operation')
+    await this.callbacks.onStopOperation(connectionID, message.id)
+    this.logger.debug('Stop operation finished')
+    await this.sendToConnection(connectionID, new GraphQLComplete(message.id))
+  }
+
+  private async handleTerminate(connectionID: string): Promise<void> {
+    this.logger.debug('Executing terminate operation')
+    await this.callbacks.onTerminateOperations(connectionID)
+    this.logger.debug('Terminate operation finished')
   }
 }

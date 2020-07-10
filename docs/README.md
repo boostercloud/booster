@@ -59,11 +59,8 @@
     + [Sending commands](#sending-commands)
     + [Reading read models](#reading-read-models)
     + [Subscribing to read models](#subscribing-to-read-models)
-- [Deploying](#deploying)
-  * [AWS](#aws)
-    + [Configure your provider credentials](#configure-your-provider-credentials)
-  * [Deploy your project](#deploy-your-project)
-  * [Deleting your cloud stack](#deleting-your-cloud-stack)
+  * [Cloud native](#cloud-native)
+    + [Deploying to AWS](#deploying-to-aws)
 - [Going deeper with Booster](#going-deeper-with-booster)
   * [Framework Core](#framework-core)
   * [Framework Types](#framework-types)
@@ -1386,11 +1383,13 @@ export class UpdateUser {
 
 By default, a Booster application has no roles defined, so the only allowed value you can use in the `authorize` policy is `'all'` (good for public APIs).
 If you want to add user authorization, you first need to create the roles that are suitable for your application.
-Roles are classes annotated with the `@Role` decorator, where you can specify some attributes.
+Roles are classes annotated with the `@Role` decorator, where you can specify some attributes. We recommend that you define your roles in the file `src/roles.ts` or, if you have too much roles, create a `src/roles` folder and one file for each scope or role.
 
 > Example definition of roles `Admin` and `User`:
 
 ```typescript
+// src/roles.ts
+
 @Role({
   allowSelfSignUp: false,
 })
@@ -1817,16 +1816,17 @@ mutation {
 }
 ```
 
-## Deploying
+### Cloud native
 
 One of the goals of Booster is to become provider agnostic so you can deploy your application to any serverless provider like AWS, Google Cloud, Azure, etc...
 
 So far, in the current version, only AWS is supported, but given the high level of abstraction, it will eventually support
 all cloud providers. (**Contributions are welcome!** 😜)
 
-### AWS
+#### Deploying to AWS
 
-#### Configure your provider credentials
+##### Configure your provider credentials
+
 > Creating a plain text file manually named `~/.aws/credentials` with the following content will be enough:
 
 ```text
@@ -1840,7 +1840,7 @@ In AWS, it is required that your `~/.aws/credentials` are properly setup, and a 
 
 It's recomended to use IAM user keys and avoiding your root access keys. If you need help obtaining a `KEY ID` and `ACCESS KEY`, [check out the oficial AWS guides](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey).
 
-### Deploy your project
+##### Deploy your project
 
 To deploy your Booster project, run the following command:
 
@@ -1852,7 +1852,7 @@ It will take a while, but you should have your project deployed to your cloud pr
 
 If you make changes to your code, you can run `boost deploy -e production` again to update your project in the cloud.
 
-### Deleting your cloud stack
+##### Delete your cloud stack
 
 If you want to delete the Booster application that has been deployed to the cloud, you can run:
 

@@ -7,3 +7,7 @@ export function partitionKeyForEvent(
 ): string {
   return `${entityTypeName}-${entityID}-${kind}`
 }
+
+export function sortKeyForSubscription(connectionID: string, subscriptionID: string): string {
+  return `${connectionID}-${subscriptionID}`
+}

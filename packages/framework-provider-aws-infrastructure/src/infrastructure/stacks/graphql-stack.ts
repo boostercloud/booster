@@ -1,24 +1,15 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { Fn, Stack, Duration, RemovalPolicy } from '@aws-cdk/core'
-import {
-  CfnAuthorizer,
-  CfnIntegration,
-  CfnIntegrationResponse,
-  CfnRoute,
-} from '@aws-cdk/aws-apigatewayv2'
+import { Duration, Fn, RemovalPolicy, Stack } from '@aws-cdk/core'
+import { CfnAuthorizer, CfnIntegration, CfnIntegrationResponse, CfnRoute } from '@aws-cdk/aws-apigatewayv2'
 import { Code, Function, IEventSource } from '@aws-cdk/aws-lambda'
 import * as params from '../params'
+import { APIs } from '../params'
 import { ServicePrincipal } from '@aws-cdk/aws-iam'
 import { AuthorizationType, LambdaIntegration, RequestAuthorizer } from '@aws-cdk/aws-apigateway'
 import { Cors } from '@aws-cdk/aws-apigateway/lib/cors'
-import { Table, AttributeType, BillingMode } from '@aws-cdk/aws-dynamodb'
-import {
-  subscriptionsStorePartitionKeyAttribute,
-  subscriptionsStoreSortKeyAttribute,
-  subscriptionsStoreTTLAttribute,
-} from '@boostercloud/framework-provider-aws'
+import { AttributeType, BillingMode, ProjectionType, Table } from '@aws-cdk/aws-dynamodb'
+import { subscriptionsStoreAttributes } from '@boostercloud/framework-provider-aws'
 import { DynamoEventSource } from '@aws-cdk/aws-lambda-event-sources'
-import { APIs } from '../params'
 
 interface GraphQLStackMembers {
   graphQLLambda: Function
@@ -164,19 +155,32 @@ export class GraphQLStack {
   }
 
   private buildSubscriptionsTable(): Table {
-    return new Table(this.stack, this.config.resourceNames.subscriptionsStore, {
+    const table = new Table(this.stack, this.config.resourceNames.subscriptionsStore, {
       tableName: this.config.resourceNames.subscriptionsStore,
       partitionKey: {
-        name: subscriptionsStorePartitionKeyAttribute,
+        name: subscriptionsStoreAttributes.partitionKey,
         type: AttributeType.STRING,
       },
       sortKey: {
-        name: subscriptionsStoreSortKeyAttribute,
+        name: subscriptionsStoreAttributes.sortKey,
         type: AttributeType.STRING,
       },
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY,
-      timeToLiveAttribute: subscriptionsStoreTTLAttribute,
+      timeToLiveAttribute: subscriptionsStoreAttributes.ttl,
     })
+    table.addGlobalSecondaryIndex({
+      indexName: subscriptionsStoreAttributes.indexByConnectionIDName(this.config),
+      partitionKey: {
+        name: subscriptionsStoreAttributes.indexByConnectionIDPartitionKey,
+        type: AttributeType.STRING,
+      },
+      sortKey: {
+        name: subscriptionsStoreAttributes.indexByConnectionIDSortKey,
+        type: AttributeType.STRING,
+      },
+      projectionType: ProjectionType.KEYS_ONLY,
+    })
+    return table
   }
 }
