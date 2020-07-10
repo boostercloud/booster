@@ -1967,7 +1967,9 @@ Booster.configure('pepe', (config: BoosterConfig): void => {
 })
 ```
 
-The environment name will be required by any command from the Booster CLI that depends on the provider. For instance, when you deploy your application, you'll need to specify which environment you want to deploy.
+The environment name will be required by any command from the Booster CLI that depends on the provider. For instance, when you deploy your application, you'll need to specify on which environment you want to deploy it:
+
+    $ boost deploy -e 'prod'
 
 This way, you can have different configurations depending on your needs.
 
