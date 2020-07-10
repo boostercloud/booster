@@ -169,8 +169,6 @@ describe('events-adapter', () => {
     context('without snapshot', () => {
       beforeEach(async () => {
         queryLatestStub.resolves(undefined)
-
-        await readEntityLatestSnapshot(mockEventRegistry, mockConfig, mockLogger, mockEntityTypeName, mockEntityID)
       })
 
       it('should log expected message', async () => {
