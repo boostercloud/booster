@@ -1,9 +1,8 @@
 import { Logger, BoosterConfig, EventEnvelope } from '@boostercloud/framework-types'
 import { EventRegistry } from '..'
-import { UserApp, UUID } from '@boostercloud/framework-types/dist'
-import * as path from 'path'
+import { UUID } from '@boostercloud/framework-types'
+import { UserApp } from '@boostercloud/framework-types/dist'
 
-const userProject: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const originOfTime = new Date(0).toISOString()
 
@@ -12,7 +11,7 @@ export function rawEventsToEnvelopes(rawEvents: Array<any>): Array<EventEnvelope
 }
 
 export async function readEntityEventsSince(
-  eventsStream: EventRegistry,
+  eventRegistry: EventRegistry,
   config: BoosterConfig,
   logger: Logger,
   entityTypeName: string,
@@ -29,11 +28,11 @@ export async function readEntityEventsSince(
     },
   }
 
-  return (await eventsStream.query(query)) as Array<EventEnvelope>
+  return (await eventRegistry.query(query)) as Array<EventEnvelope>
 }
 
 export async function readEntityLatestSnapshot(
-  eventsStream: EventRegistry,
+  eventRegistry: EventRegistry,
   config: BoosterConfig,
   logger: Logger,
   entityTypeName: string,
@@ -45,7 +44,7 @@ export async function readEntityLatestSnapshot(
     kind: 'snapshot',
   }
 
-  const snapshot = (await eventsStream.queryLatest(query)) as EventEnvelope
+  const snapshot = (await eventRegistry.queryLatest(query)) as EventEnvelope
 
   if (snapshot) {
     logger.debug(
@@ -62,15 +61,16 @@ export async function readEntityLatestSnapshot(
 }
 
 export async function storeEvents(
-  eventsStream: EventRegistry,
+  userApp: UserApp,
+  eventRegistry: EventRegistry,
   eventEnvelopes: Array<EventEnvelope>,
   _config: BoosterConfig,
   logger: Logger
 ): Promise<void> {
   logger.info('Publishing the following events:', eventEnvelopes)
 
-  const storeEventPromises = eventEnvelopes.map((envelop: EventEnvelope) => eventsStream.store(envelop))
+  const storeEventPromises = eventEnvelopes.map((envelop: EventEnvelope) => eventRegistry.store(envelop))
   await Promise.all(storeEventPromises)
 
-  await userProject.boosterEventDispatcher(eventEnvelopes)
+  await userApp.boosterEventDispatcher(eventEnvelopes)
 }

@@ -10,12 +10,15 @@ import { requestSucceeded, requestFailed } from './library/api-adapter'
 import { EventRegistry } from './services'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import { notifySubscription } from './library/subscription-adapter'
+import { UserApp } from '@boostercloud/framework-types/dist'
+import * as path from 'path'
 
 export { User, LoginCredentials, SignUpUser, RegisteredUser, AuthenticatedUser } from './library/auth-adapter'
 export * from './paths'
 export * from './services'
 
 const eventRegistry = new EventRegistry()
+const userApp: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
 
 export const Provider: ProviderLibrary = {
   // ProviderEventsLibrary
@@ -23,7 +26,7 @@ export const Provider: ProviderLibrary = {
     rawToEnvelopes: rawEventsToEnvelopes,
     forEntitySince: readEntityEventsSince.bind(null, eventRegistry),
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, eventRegistry),
-    store: storeEvents.bind(null, eventRegistry),
+    store: storeEvents.bind(null, userApp, eventRegistry),
   },
   // ProviderReadModelsLibrary
   readModels: {

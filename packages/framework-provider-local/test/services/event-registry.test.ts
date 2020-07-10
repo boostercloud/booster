@@ -4,7 +4,7 @@ import { expect } from '../expect'
 import * as faker from 'faker'
 import { stub, restore } from 'sinon'
 import { EventRegistry } from '../../src/services'
-import { createMockEvent } from '../helpers/event-helper'
+import { createMockEventEnvelop } from '../helpers/event-helper'
 import { date, random } from 'faker'
 
 describe('the event registry', () => {
@@ -30,12 +30,12 @@ describe('the event registry', () => {
       const publishPromises: Array<Promise<any>> = []
 
       for (let i = 0; i < initialEventsCount; i++) {
-        publishPromises.push(eventRegistry.store(createMockEvent()))
+        publishPromises.push(eventRegistry.store(createMockEventEnvelop()))
       }
 
       await Promise.all(publishPromises)
 
-      mockTargetEvent = createMockEvent()
+      mockTargetEvent = createMockEventEnvelop()
       await eventRegistry.store(mockTargetEvent)
     })
 
@@ -61,7 +61,7 @@ describe('the event registry', () => {
     let newerMockDate: string
 
     beforeEach(async () => {
-      mockTargetEvent = createMockEvent()
+      mockTargetEvent = createMockEventEnvelop()
       await eventRegistry.store(mockTargetEvent)
 
       newerMockDate = date.recent().toISOString()
@@ -88,12 +88,12 @@ describe('the event registry', () => {
       const publishPromises: Array<Promise<any>> = []
 
       for (let i = 0; i < initialEventsCount; i++) {
-        publishPromises.push(eventRegistry.store(createMockEvent()))
+        publishPromises.push(eventRegistry.store(createMockEventEnvelop()))
       }
 
       await Promise.all(publishPromises)
 
-      mockTargetEvent = createMockEvent()
+      mockTargetEvent = createMockEventEnvelop()
       await eventRegistry.store(mockTargetEvent)
     })
 
@@ -111,7 +111,7 @@ describe('the event registry', () => {
 
   describe('delete all', () => {
     beforeEach(async () => {
-      const mockEvent: EventEnvelope = createMockEvent()
+      const mockEvent: EventEnvelope = createMockEventEnvelop()
       await eventRegistry.store(mockEvent)
     })
 
@@ -125,7 +125,7 @@ describe('the event registry', () => {
 
   describe('the publish method', () => {
     it('should insert events into the events database', async () => {
-      const mockEvent: EventEnvelope = createMockEvent()
+      const mockEvent: EventEnvelope = createMockEventEnvelop()
 
       eventRegistry.events.insert = stub().yields(null, mockEvent)
 
