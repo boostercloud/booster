@@ -1922,7 +1922,7 @@ The following is the list of the fields you can configure:
 
 #### Environments
 
-You can configure multiple environments calling to the Booster.configure function several times using different environment names:
+You can create multiple environments calling to the `Booster.configure` function several times using different environment names. You can create one file for each environment, but it is not required. In this example we set all environments in a single file:
 
 ```typescript
 // Here we use a single file called src/config.ts, but you can use separate files for each environment too.
