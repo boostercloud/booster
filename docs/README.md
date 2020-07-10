@@ -1913,7 +1913,7 @@ Booster.configure('pre-production', (config: BoosterConfig): void => {
 })
 ```
 
-You configure your application by doing a call to the Booster.configure() method. There are no restrictions about where you should do this call, but the convention is to do it in your configuration files located in the src/config folder. If you used the project generator (boost new:project <project-name>), this is where the config files are by default.
+You configure your application by calling the `Booster.configure()` method. There are no restrictions about where you should do this call, but the convention is to do it in your configuration files located in the `src/config` folder. If you used the project generator (`boost new:project <project-name>`), this is where the config files are by default.
 
 The following is the list of the fields you can configure:
 - **appName:** This is the name that identifies your application. It will be used for many things, such us prefixing the resources created by the provider. There are certain restrictions regarding the characters you can use: all of them must be lower-cased and can't contain spaces. Two apps with different names are completely independent.
