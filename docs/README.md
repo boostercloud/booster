@@ -1988,7 +1988,7 @@ The Booster approach to run cloud applications locally is very different from th
 
 #### Prerequisites
 
-In order to run locally, it is necessary to add the `framework-provider-local` package to the project, and also define a new configuration environment `local`.
+In order to run locally, it is necessary to add the `framework-provider-local` package to the project, and also define a new configuration environment that you can call, for instance `local`.
 
 First of all, we will have to install the local provider package as a new application dependency
 
