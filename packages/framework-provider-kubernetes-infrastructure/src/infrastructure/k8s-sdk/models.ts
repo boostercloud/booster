@@ -21,3 +21,9 @@ export interface Pod {
   nodeName?: string
   ip?: string
 }
+
+export interface TemplateValues {
+  namespace?: string
+  clusterVolume?: string
+  environment?: string
+}

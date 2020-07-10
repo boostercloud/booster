@@ -17,12 +17,29 @@ export function deploy(configuration: BoosterConfig): Observable<string> {
 async function deployBoosterApp(observer: Subscriber<string>, configuration: BoosterConfig): Promise<void> {
   const clusterManager = new K8sManagement()
   const projectNamespace = getProjectNamespaceName(configuration)
-  const nodes = await clusterManager.getAllNodesWithOpenWhiskRole('invoker')
-  if (nodes.length == 0) {
-    throw new Error(
-      'Unable to find a openwhisk invoker node inside the cluster. Please remember to set at least one invoker node'
-    )
+  const namespace = await clusterManager.getNamespace(projectNamespace)
+
+  if (!namespace) {
+    observer.next(`Creating the namespace: ${projectNamespace} for your project`)
+    const clusterResponse = await clusterManager.createNamespace(projectNamespace)
+    if (!clusterResponse) {
+      throw new Error('Unable to create a namespace for your project, please check your Kubectl configuration')
+    }
   }
+  const templateValues = {
+    environment: configuration.environmentName,
+    namespace: projectNamespace,
+    clusterVolume: 'booster-pvc',
+  }
+  observer.next('Preparing the environment to launch tyou code 🏗')
+  await clusterManager.applyTemplate('fileUploader', templateValues)
+  const fileUploaderReady = await clusterManager.waitForPodToBeReady(projectNamespace, 'fileuploader')
+  if (!fileUploaderReady) {
+    throw new Error('Unable to create a resource inside your cluster, please review your Kubectl configuration')
+  }
+
+  observer.next('Packing your to send it into the space  📦')
+  /*
   const namespace = await clusterManager.getNamespace(projectNamespace)
   if (!namespace) {
     observer.next(`Creating the namespace: ${projectNamespace} for your project`)
@@ -58,7 +75,7 @@ async function deployBoosterApp(observer: Subscriber<string>, configuration: Boo
   }
   observer.next(deploy.stdout)
   observer.next('Deploying your Booster app into the cluster')
-  //TODO: upload the user code to the cluster this will be managed when the cluster architecture will be fully defined
+  //TODO: upload the user code to the cluster this will be managed when the cluster architecture will be fully defined*/
   observer.complete()
 }
 

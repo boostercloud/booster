@@ -1,9 +1,20 @@
-import { CoreV1Api, KubeConfig } from '@kubernetes/client-node'
-import { Node, Namespace, Pod } from './models'
+import { CoreV1Api, KubeConfig, KubernetesObject, KubernetesObjectApi } from '@kubernetes/client-node'
+import { Node, Namespace, Pod, TemplateValues } from './models'
+import * as Mustache from 'mustache'
+import { boosterApp } from '../templates/boosterApp'
+import { fileUploader } from '../templates/fileUploader'
+import { boosterVolumeClaim } from '../templates/boosterVolumeClaim'
+import { safeLoadAll } from 'js-yaml'
+import { sleep } from '../utils'
 
 export class K8sManagement {
   private kube: KubeConfig
   private k8sClient: CoreV1Api
+  private kubernetesTemplates = new Map([
+    ['boosterApp', boosterApp],
+    ['fileUploader', fileUploader],
+    ['boosterVolumeClaim', boosterVolumeClaim],
+  ])
 
   constructor() {
     this.kube = new KubeConfig()
@@ -73,7 +84,7 @@ export class K8sManagement {
   public async getPodFromNamespace(name: string, namespace: string): Promise<Pod | undefined> {
     const pods = await this.getAllPodsInNamespace(namespace)
     return pods.find((pod) => {
-      return pod?.name === name
+      return pod?.labels?.['app'] === name
     })
   }
 
@@ -115,6 +126,52 @@ export class K8sManagement {
   public async getMainNode(): Promise<Node | null> {
     const clusterNodes = await this.getAllNodesInCluster()
     return clusterNodes.find((node) => node.mainNode) ?? null
+  }
+
+  public async applyTemplate(templateName: string, templateData: TemplateValues): Promise<Array<KubernetesObject>> {
+    const client = KubernetesObjectApi.makeApiClient(this.kube)
+    const template = this.kubernetesTemplates.get(templateName)
+    if (!template) {
+      throw new Error('Kubernetes template for deploy not found')
+    }
+    const renderedYaml = Mustache.render(template, templateData)
+    const specs = safeLoadAll(renderedYaml)
+    const validSpecs = specs.filter((s) => s && s.kind && s.metadata)
+    const created: KubernetesObject[] = []
+    for (const spec of validSpecs) {
+      spec.metadata = spec.metadata || {}
+      spec.metadata.annotations = spec.metadata.annotations || {}
+      delete spec.metadata.annotations['kubectl.kubernetes.io/last-applied-configuration']
+      spec.metadata.annotations['kubectl.kubernetes.io/last-applied-configuration'] = JSON.stringify(spec)
+      try {
+        await client.read(spec)
+        const response = await client.patch(spec)
+        created.push(response.body)
+      } catch (e) {
+        const response = await client.create(spec)
+        created.push(response.body)
+      }
+    }
+    return created
+  }
+
+  public async waitForPodToBeReady(namespace: string, podName: string, timeout = 180): Promise<boolean> {
+    let waitedTime = 0
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const podInfo = await this.getPodFromNamespace(podName, namespace)
+      if (podInfo?.status != 'Running') {
+        console.log(' ', podInfo?.status)
+        if (waitedTime >= timeout) {
+          return false
+        } else {
+          waitedTime += 1
+          await sleep(1000)
+        }
+      } else {
+        return true
+      }
+    }
   }
 
   private async unwrapResponse<TBody>(wrapped: Promise<{ body: TBody }>): Promise<TBody> {

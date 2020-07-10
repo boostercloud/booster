@@ -5791,10 +5791,14 @@ js-yaml@3.13.1:
     esprima "^4.0.0"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 js-yaml@^3.13.1, js-yaml@^3.8.1:
 =======
 js-yaml@^3.8.1, js-yaml@^3.9.1:
 >>>>>>> changes after the old code review
+=======
+js-yaml@^3.14.0, js-yaml@^3.8.1, js-yaml@^3.9.1:
+>>>>>>> [BOOST-715] started to implement the new architecture using Dapr and normal K8s deploys
   version "3.14.0"
   resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.14.0.tgz#a7a34170f26a21bb162424d8adacb4113a69e482"
   integrity sha512-/4IbIeHcD9VMHFqDR/gQ7EdZdLimOvW2DdcxFjdyyZ9NsbS+ccrXqVWDtab/lRl5AlUqmpBx8EhPaWR+OtY17A==
