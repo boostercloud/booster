@@ -557,16 +557,15 @@ Let's get started testing the project. We will perform three actions:
 - Retrieve all posts
 - Retrieve a specific post
 
-Booster applications provide you with a GraphQL API out of the box. Commands are
-mutations, and read models are queries. To perform calls to the GraphQL API, you can use
-any HTTP client you want; we recommend you to use
-[Postwoman](https://postwoman.io/graphql), which is free and includes great support for
-GraphQL.
+Booster applications provide you with a GraphQL API out of the box. You send commands using
+_mutations_ and get read models data using _queries_ or _subscriptions_. 
+
+In this section, we will be sending requests by hand using the online tool [Postwoman](https://postwoman.io/graphql), 
+which is free and includes great support for GraphQL. However, you can use any HTTP client you want.
 
 ##### 7.1 Creating posts
 
-Use your favorite GraphQL client to run these mutations. No authorization header is
-required since we have allowed `all` to execute our commands and query the read models.
+Let's use two mutations to send two `CreatePost` commands.
 
 ```graphql
 mutation {
@@ -606,7 +605,7 @@ The expected response for each of those requests should be:
 
 Note:
 
-> In Booster, the IDs are generated on the client-side. When running production applications
+> In this example, the IDs are generated on the client-side. When running production applications
 > consider adding validation for ID uniqueness. For this example, we have used [a UUID generator](https://www.uuidgenerator.net/version4)
 
 ##### 7.2 Retrieving all posts
@@ -686,29 +685,21 @@ we run `new:project` CLI command.
 ? Please, enter the app name to confirm deletion of all resources: boosted-blog
 ```
 
-Note:
-
 > Congratulations! You've built a serverless backend in less than 10 minutes. We hope you
 > have enjoyed discovering the magic of the Booster Framework.
 
 #### 9. More functionalities
 
-The are many other options for your serverless backend built with Booster Framework:
+This is a really basic example of a Booster application. The are many other features Booster provides like:
 
-- Build more complex authorization schemas for commands and read models based on user roles
+- Use a more complex authorization schema for commands and read models based on user roles
 - Use GraphQL subscriptions to get updates in real-time
 - Make events trigger other events
 - Deploy static content
-- and much more...
-
-- Authorize commands and read models based on different roles
-- Use GraphQL subscriptions
-- Make events to trigger other events
-- Serving static content
 - Reading entities within command handlers to apply domain-driven decisions
-- and much more...
+- And much more...
 
-Continue reading to dig more; you've just scratched the surface of all the Booster
+Continue reading to dig more. You've just scratched the surface of all the Booster
 capabilities!
 
 ## Booster architecture
