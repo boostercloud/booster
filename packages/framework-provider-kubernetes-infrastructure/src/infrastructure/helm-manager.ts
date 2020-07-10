@@ -1,7 +1,8 @@
-import { exec, ChildProcessPromise, PromiseResult } from 'child-process-promise'
+import util = require('util')
+const exec = util.promisify(require('child_process').exec)
 const semver = require('semver')
 
-export class HelmManagement {
+export class HelmManager {
   private BASE_COMMAND = 'helm'
   private BOOSTER_HELM_REPO = 'http://booster.helm.s3-website-eu-west-1.amazonaws.com'
   private helmError = ''
@@ -11,16 +12,16 @@ export class HelmManagement {
     this.helmReady = await this.isHelmReadyToDeploy()
   }
 
-  public exec(args: string): ChildProcessPromise<PromiseResult<string>> {
+  public exec(args: string): Promise<any> {
     return exec(`${this.BASE_COMMAND} ${args}`)
   }
 
   public async getVersion(): Promise<string | null> {
-    const helmVersion = await this.exec('version')
-    if (!helmVersion.stdout) {
+    const { stdout } = await this.exec('version')
+    if (!stdout) {
       return null
     }
-    const match = helmVersion.stdout.match(/Version:"(.*?)"/)
+    const match = stdout.match(/Version:"(.*?)"/)
     return !match ? null : match[1]
   }
 

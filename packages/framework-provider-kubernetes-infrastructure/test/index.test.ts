@@ -5,7 +5,7 @@ import { KubeConfig, CoreV1Api } from '@kubernetes/client-node'
 
 import { replace, fake, restore } from 'sinon'
 import { expect } from './expect'
-import { HelmManagement } from '../src/infrastructure/helm'
+import { HelmManager } from '../src/infrastructure/helm-manager'
 
 describe('The user wants to deploy a booster project into the cluster', async () => {
   const ENV_NAME = 'production'
@@ -55,9 +55,9 @@ describe('The user wants to deploy a booster project into the cluster', async ()
   it('but helm is not ready to install the resources inside the cluster', async () => {
     replace(K8sManagement.prototype, 'getAllNodesWithOpenWhiskRole', fake.resolves([NODE]))
     replace(K8sManagement.prototype, 'getNamespace', fake.resolves([NAMESPACE]))
-    replace(HelmManagement.prototype, 'init', fake.resolves(null))
-    replace(HelmManagement.prototype, 'isHelmReady', fake.resolves(false))
-    replace(HelmManagement.prototype, 'getHelmError', fake.returns('error with helm'))
+    replace(HelmManager.prototype, 'init', fake.resolves(null))
+    replace(HelmManager.prototype, 'isHelmReady', fake.resolves(false))
+    replace(HelmManager.prototype, 'getHelmError', fake.returns('error with helm'))
     await deployAndAssertError('Error: error with helm')
   })
 
@@ -65,10 +65,10 @@ describe('The user wants to deploy a booster project into the cluster', async ()
     replace(K8sManagement.prototype, 'getAllNodesWithOpenWhiskRole', fake.resolves([NODE]))
     replace(K8sManagement.prototype, 'getNamespace', fake.resolves(null))
     replace(K8sManagement.prototype, 'createNamespace', fake.resolves(true))
-    replace(HelmManagement.prototype, 'init', fake.resolves(null))
-    replace(HelmManagement.prototype, 'isHelmReady', fake.resolves(true))
+    replace(HelmManager.prototype, 'init', fake.resolves(null))
+    replace(HelmManager.prototype, 'isHelmReady', fake.resolves(true))
     replace(K8sManagement.prototype, 'getMainNode', fake.resolves(NODE))
-    replace(HelmManagement.prototype, 'exec', fake.resolves(EXEC_ERROR))
+    replace(HelmManager.prototype, 'exec', fake.resolves(EXEC_ERROR))
     await deployAndAssertError(`Error: ${ERROR}`)
   })
 
@@ -76,8 +76,8 @@ describe('The user wants to deploy a booster project into the cluster', async ()
     replace(K8sManagement.prototype, 'getAllNodesWithOpenWhiskRole', fake.resolves([NODE]))
     replace(K8sManagement.prototype, 'getNamespace', fake.resolves(null))
     replace(K8sManagement.prototype, 'createNamespace', fake.resolves(true))
-    replace(HelmManagement.prototype, 'init', fake.resolves(null))
-    replace(HelmManagement.prototype, 'isHelmReady', fake.resolves(true))
+    replace(HelmManager.prototype, 'init', fake.resolves(null))
+    replace(HelmManager.prototype, 'isHelmReady', fake.resolves(true))
     replace(K8sManagement.prototype, 'getMainNode', fake.resolves(null))
     await deployAndAssertError('Error: Cluster main node not found')
   })
@@ -86,8 +86,8 @@ describe('The user wants to deploy a booster project into the cluster', async ()
     replace(K8sManagement.prototype, 'getAllNodesWithOpenWhiskRole', fake.resolves([NODE]))
     replace(K8sManagement.prototype, 'getNamespace', fake.resolves(null))
     replace(K8sManagement.prototype, 'createNamespace', fake.resolves(true))
-    replace(HelmManagement.prototype, 'init', fake.resolves(null))
-    replace(HelmManagement.prototype, 'isHelmReady', fake.resolves(true))
+    replace(HelmManager.prototype, 'init', fake.resolves(null))
+    replace(HelmManager.prototype, 'isHelmReady', fake.resolves(true))
     replace(K8sManagement.prototype, 'getMainNode', fake.resolves(INCOMPLETE_NODE))
     await deployAndAssertError('Error: Unable to find the main node IP')
   })
@@ -95,10 +95,10 @@ describe('The user wants to deploy a booster project into the cluster', async ()
   it('and the infrastructure deployed', async () => {
     replace(K8sManagement.prototype, 'getAllNodesWithOpenWhiskRole', fake.resolves([NODE]))
     replace(K8sManagement.prototype, 'getNamespace', fake.resolves([NAMESPACE]))
-    replace(HelmManagement.prototype, 'init', fake.resolves(null))
-    replace(HelmManagement.prototype, 'isHelmReady', fake.resolves(true))
+    replace(HelmManager.prototype, 'init', fake.resolves(null))
+    replace(HelmManager.prototype, 'isHelmReady', fake.resolves(true))
     replace(K8sManagement.prototype, 'getMainNode', fake.resolves(NODE))
-    replace(HelmManagement.prototype, 'exec', fake.resolves(EXEC_OK))
+    replace(HelmManager.prototype, 'exec', fake.resolves(EXEC_OK))
     const deployObservable = deploy(CONFIGURATION)
     let progressMessage = ''
     deployObservable.subscribe(
@@ -131,9 +131,9 @@ describe('the user wants to nuke a booster app', async () => {
   })
 
   it('but helm fails deleting the booster infrastructure', async () => {
-    replace(HelmManagement.prototype, 'init', fake.resolves(null))
-    replace(HelmManagement.prototype, 'isHelmReady', fake.resolves(true))
-    replace(HelmManagement.prototype, 'exec', fake.resolves(EXEC_ERROR))
+    replace(HelmManager.prototype, 'init', fake.resolves(null))
+    replace(HelmManager.prototype, 'isHelmReady', fake.resolves(true))
+    replace(HelmManager.prototype, 'exec', fake.resolves(EXEC_ERROR))
     replace(K8sManagement.prototype, 'deleteNamespace', fake.resolves(false))
 
     const nukeObservable = nuke(configuration)
@@ -146,9 +146,9 @@ describe('the user wants to nuke a booster app', async () => {
   })
 
   it('but the namespace is not deleted', async () => {
-    replace(HelmManagement.prototype, 'init', fake.resolves(null))
-    replace(HelmManagement.prototype, 'isHelmReady', fake.resolves(true))
-    replace(HelmManagement.prototype, 'exec', fake.resolves(EXEC_OK))
+    replace(HelmManager.prototype, 'init', fake.resolves(null))
+    replace(HelmManager.prototype, 'isHelmReady', fake.resolves(true))
+    replace(HelmManager.prototype, 'exec', fake.resolves(EXEC_OK))
     replace(K8sManagement.prototype, 'deleteNamespace', fake.resolves(false))
 
     const nukeObservable = nuke(configuration)
@@ -161,9 +161,9 @@ describe('the user wants to nuke a booster app', async () => {
   })
 
   it('and the command is executed sucessfully', async () => {
-    replace(HelmManagement.prototype, 'init', fake.resolves(null))
-    replace(HelmManagement.prototype, 'isHelmReady', fake.resolves(true))
-    replace(HelmManagement.prototype, 'exec', fake.resolves(EXEC_OK))
+    replace(HelmManager.prototype, 'init', fake.resolves(null))
+    replace(HelmManager.prototype, 'isHelmReady', fake.resolves(true))
+    replace(HelmManager.prototype, 'exec', fake.resolves(EXEC_OK))
     replace(K8sManagement.prototype, 'deleteNamespace', fake.resolves(true))
 
     let progressMessage = ''

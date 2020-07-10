@@ -63,22 +63,18 @@ export class K8sManagement {
     )
   }
 
-  public async getNamespace(name: string): Promise<Namespace | null> {
+  public async getNamespace(name: string): Promise<Namespace | undefined> {
     const namespaces = await this.getAllNamespaces()
-    return (
-      namespaces.find((namespace) => {
-        return namespace?.name === name
-      }) ?? null
-    )
+    return namespaces.find((namespace) => {
+      return namespace?.name === name
+    })
   }
 
-  public async getPodFromNamespace(name: string, namespace: string): Promise<Pod | null> {
+  public async getPodFromNamespace(name: string, namespace: string): Promise<Pod | undefined> {
     const pods = await this.getAllPodsInNamespace(namespace)
-    return (
-      pods.find((pod) => {
-        return pod?.name === name
-      }) ?? null
-    )
+    return pods.find((pod) => {
+      return pod?.name === name
+    })
   }
 
   public async getAllNodesInCluster(): Promise<Array<Node>> {
@@ -121,7 +117,7 @@ export class K8sManagement {
     return clusterNodes.find((node) => node.mainNode) ?? null
   }
 
-  private async unwrapResponse<TType>(wrapped: Promise<{ body: TType }>): Promise<TType> {
+  private async unwrapResponse<TBody>(wrapped: Promise<{ body: TBody }>): Promise<TBody> {
     const unwrapped = await wrapped
     return unwrapped.body
   }

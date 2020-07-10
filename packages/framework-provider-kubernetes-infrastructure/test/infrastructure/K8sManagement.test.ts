@@ -88,7 +88,7 @@ describe('Users want to interact with K8s cluster', () => {
 
   it('they try to search a non existing namespace', async () => {
     const clusterResponse = await k8sManager.getNamespace(NAMESPACE_NAME_NON_EXIST)
-    expect(clusterResponse).to.be.equal(null)
+    expect(clusterResponse).to.be.equal(undefined)
   })
 
   it('they want to get a specific pod', async () => {
@@ -98,7 +98,7 @@ describe('Users want to interact with K8s cluster', () => {
 
   it('they try to search a non existing pod', async () => {
     const clusterResponse = await k8sManager.getPodFromNamespace(POD_NAME_NON_EXIST, NAMESPACE_NAME)
-    expect(clusterResponse).to.be.equal(null)
+    expect(clusterResponse).to.be.equal(undefined)
   })
 
   it('they want to list all nodes with invoker openwhisk role', async () => {

@@ -1,10 +1,9 @@
-import { HelmManagement } from '../../src/infrastructure/helm'
-import * as exec from 'child-process-promise'
+import { HelmManager } from '../../src/infrastructure/helm-manager'
 import { replace, fake, restore } from 'sinon'
 import { expect } from '../expect'
 
 describe('The user wants to get the Helm version', async () => {
-  const helm = new HelmManagement()
+  const helm = new HelmManager()
   await helm.init()
 
   afterEach(() => {
@@ -12,14 +11,14 @@ describe('The user wants to get the Helm version', async () => {
   })
 
   it('but Helm is not installed', async () => {
-    replace(exec, 'exec', fake.resolves({ stderr: 'command not found,' }))
+    replace(HelmManager.prototype, 'exec', fake.resolves({ stderr: 'command not found,' }))
     const helmResponse = await helm.getVersion()
     expect(helmResponse).to.be.null
   })
 
   it('Helm is installed and it returns the current installed version', async () => {
     replace(
-      exec,
+      HelmManager.prototype,
       'exec',
       fake.resolves({
         stdout:
@@ -38,34 +37,34 @@ describe('The user wants to use Helm', () => {
   })
 
   it('but helm is not installed', async () => {
-    replace(exec, 'exec', fake.resolves({ stderr: 'command not found,' }))
-    const helm = new HelmManagement()
+    replace(HelmManager.prototype, 'exec', fake.resolves({ stderr: 'command not found,' }))
+    const helm = new HelmManager()
     await helm.init()
     expect(helm.isHelmReady()).to.be.false
     expect(helm.getHelmError()).to.be.equal('Helm installation not found')
   })
 
   it('but helm has an old version', async () => {
-    replace(HelmManagement.prototype, 'getVersion', fake.resolves('v2.9.9'))
-    const helm = new HelmManagement()
+    replace(HelmManager.prototype, 'getVersion', fake.resolves('v2.9.9'))
+    const helm = new HelmManager()
     await helm.init()
     expect(helm.isHelmReady()).to.be.false
     expect(helm.getHelmError()).to.be.equal('Current Helm version lower than 3.0.0')
   })
 
   it('but repo is not ready', async () => {
-    replace(HelmManagement.prototype, 'getVersion', fake.resolves('v3.0.0'))
-    replace(HelmManagement.prototype, 'isBoosterRepoReady', fake.returns(false))
-    const helm = new HelmManagement()
+    replace(HelmManager.prototype, 'getVersion', fake.resolves('v3.0.0'))
+    replace(HelmManager.prototype, 'isBoosterRepoReady', fake.returns(false))
+    const helm = new HelmManager()
     await helm.init()
     expect(helm.isHelmReady()).to.be.false
     expect(helm.getHelmError()).to.be.equal('Unable to install the Booster repo in Helm')
   })
 
   it('helm is ready', async () => {
-    replace(HelmManagement.prototype, 'getVersion', fake.resolves('v3.0.0'))
-    replace(HelmManagement.prototype, 'isBoosterRepoReady', fake.returns(true))
-    const helm = new HelmManagement()
+    replace(HelmManager.prototype, 'getVersion', fake.resolves('v3.0.0'))
+    replace(HelmManager.prototype, 'isBoosterRepoReady', fake.returns(true))
+    const helm = new HelmManager()
     await helm.init()
     expect(helm.isHelmReady()).to.be.true
     expect(helm.getHelmError()).to.be.equal('')

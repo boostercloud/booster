@@ -3,7 +3,7 @@ import { Observable, Subscriber } from 'rxjs'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { K8sManagement } from './k8s-sdk/K8sManagement'
 import { getProjectNamespaceName } from './utils'
-import { HelmManagement } from './helm'
+import { HelmManager } from './helm-manager'
 
 export function deploy(configuration: BoosterConfig): Observable<string> {
   return new Observable((observer): void => {
@@ -31,10 +31,10 @@ async function deployBoosterApp(observer: Subscriber<string>, configuration: Boo
       throw new Error('Unable to create a namespace for your project')
     }
   }
-  //TODO: we should check here the current cluster health instead of suppose that all is properly working.
-  // This check will be implemented when the architecture will be fully defined
+  //TODO: we should check here the current cluster health instead of suppose that all is properly working
+
   observer.next('Provisioning all cluster resources 👷')
-  const helm = new HelmManagement()
+  const helm = new HelmManager()
   await helm.init()
   const isHelmReady = await helm.isHelmReady()
   if (!isHelmReady) {
@@ -65,7 +65,7 @@ async function deployBoosterApp(observer: Subscriber<string>, configuration: Boo
 async function nukeBoosterApp(observer: Subscriber<string>, configuration: BoosterConfig): Promise<void> {
   const projectNamespace = getProjectNamespaceName(configuration)
   const clusterManager = new K8sManagement()
-  const helm = new HelmManagement()
+  const helm = new HelmManager()
   await helm.init()
   observer.next('Nuking your Booster project 🧨')
   const command = `uninstall boost-test -n ${projectNamespace}`
