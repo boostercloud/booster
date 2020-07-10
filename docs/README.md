@@ -1946,6 +1946,18 @@ Booster.configure('prod', (config: BoosterConfig): void => {
   config.appName = 'fruit-store-prod'
   config.provider = AWSProvider.Provider
 })
+```
+
+It is also possible to place an environment configuration in a separated file, for instance:
+
+`src/config/pepe.ts`
+```typescript
+import { Booster } from '@boostercloud/framework-core'
+import { BoosterConfig } from '@boostercloud/framework-types'
+// A provider that deploys your app to AWS:
+import * as AWSProvider from '@boostercloud/framework-provider-aws'
+// A provider that deploys your app locally:
+import * as LocalProvider from '@boostercloud/framework-provider-local' 
 
 // This other configuration could be in another file that Pepe doesn't commit
 Booster.configure('pepe', (config: BoosterConfig): void => {
