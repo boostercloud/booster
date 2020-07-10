@@ -1905,11 +1905,11 @@ Booster uses sensible defaults, convention over configuration, and code inferenc
 ```typescript
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { Provider } from '@boostercloud/framework-provider-aws'
+import * as AWS from '@boostercloud/framework-provider-aws'
 
 Booster.configure('pre-production', (config: BoosterConfig): void => {
   config.appName = 'my-app-name'
-  config.provider = Provider
+  config.provider = AWS.Provider
 })
 ```
 
@@ -1928,23 +1928,23 @@ You can configure multiple environments calling to the Booster.configure functio
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
 // A provider that deploys your app to AWS:
-import * as AWSProvider from '@boostercloud/framework-provider-aws'
+import * as AWS from '@boostercloud/framework-provider-aws'
 // A provider that deploys your app locally:
-import * as LocalProvider from '@boostercloud/framework-provider-local' 
+import * as Local from '@boostercloud/framework-provider-local' 
 
 Booster.configure('dev', (config: BoosterConfig): void => {
   config.appName = 'fruit-store-dev'
-  config.provider = LocalProvider.Provider
+  config.provider = Local.Provider
 })
 
 Booster.configure('stage', (config: BoosterConfig): void => {
   config.appName = 'fruit-store-stage'
-  config.provider = AWSProvider.Provider
+  config.provider = AWS.Provider
 })
 
 Booster.configure('prod', (config: BoosterConfig): void => {
   config.appName = 'fruit-store-prod'
-  config.provider = AWSProvider.Provider
+  config.provider = AWS.Provider
 })
 ```
 
@@ -1955,14 +1955,14 @@ It is also possible to place an environment configuration in a separated file, f
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
 // A provider that deploys your app to AWS:
-import * as AWSProvider from '@boostercloud/framework-provider-aws'
+import * as AWS from '@boostercloud/framework-provider-aws'
 // A provider that deploys your app locally:
 import * as LocalProvider from '@boostercloud/framework-provider-local' 
 
 // This other configuration could be in another file that Pepe doesn't commit
 Booster.configure('pepe', (config: BoosterConfig): void => {
   config.appName = 'pepe-fruit-store'
-  config.provider = AWSProvider.Provider
+  config.provider = AWS.Provider
 })
 ```
 
