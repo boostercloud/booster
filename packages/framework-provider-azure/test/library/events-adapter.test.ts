@@ -60,6 +60,7 @@ describe('the events-adapter', () => {
     it('queries the events table to find all events related to a specific entity', async () => {
       await EventsAdapter.readEntityEventsSince(cosmosDb, config, fakeLogger, 'SomeEntity', 'someSpecialID')
 
+      // @ts-ignore
       expect(cosmosDb.database().container().items.query).to.have.been.calledWith(
         match({
           query: `SELECT * FROM c WHERE c["${eventStorePartitionKeyAttribute}"] = @partitionKey AND c["${eventStoreSortKeyAttribute}"] > @fromTime ORDER BY c["${eventStoreSortKeyAttribute}"] DESC`,
@@ -82,6 +83,7 @@ describe('the events-adapter', () => {
     it('finds the latest entity snapshot', async () => {
       await EventsAdapter.readEntityLatestSnapshot(cosmosDb, config, fakeLogger, 'SomeEntity', 'someSpecialID')
 
+      // @ts-ignore
       expect(cosmosDb.database().container().items.query).to.have.been.calledWith(
         match({
           query: `SELECT * FROM c WHERE c["${eventStorePartitionKeyAttribute}"] = @partitionKey ORDER BY c["${eventStoreSortKeyAttribute}"] DESC OFFSET 0 LIMIT 1`,
@@ -119,6 +121,7 @@ describe('the events-adapter', () => {
         fakeLogger
       )
 
+      // @ts-ignore
       expect(cosmosDb.database().container().items.create).to.have.been.calledWithExactly(
         match({
           version: 1,

@@ -34,9 +34,9 @@ describe('the "fetchReadModel" method', () => {
   it('responds with a read model when it exist', async () => {
     const result = await fetchReadModel(cosmosDb, config, logger, 'SomeReadModel', 'someReadModelID')
 
-    expect(cosmosDb.database().container).to.have.been.calledOnceWithExactly(
-      'new-booster-app-application-stack-SomeReadModel'
-    )
+    // @ts-ignore
+    expect(cosmosDb.database().container).to.have.been.calledOnceWithExactly('new-booster-app-app-SomeReadModel')
+    // @ts-ignore
     expect(cosmosDb.database().container().item).to.have.been.calledWithExactly('someReadModelID', 'someReadModelID')
     expect(result).not.to.be.null
   })
@@ -49,9 +49,9 @@ describe('the "storeReadModel" method', () => {
       some: 'object',
     } as any)
 
-    expect(cosmosDb.database().container).to.have.been.calledWithExactly(
-      'new-booster-app-application-stack-SomeReadModel'
-    )
+    // @ts-ignore
+    expect(cosmosDb.database().container).to.have.been.calledWithExactly('new-booster-app-app-SomeReadModel')
+    // @ts-ignore
     expect(cosmosDb.database().container().items.upsert).to.have.been.calledWithExactly(
       match({
         id: 777,

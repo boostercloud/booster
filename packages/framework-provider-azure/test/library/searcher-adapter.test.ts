@@ -34,6 +34,7 @@ describe('The "searchReadModel" method', () => {
   it('Executes a SQL query without filters in the read model table', async () => {
     await searchReadModel(cosmosDb, config, fakeLogger, 'MyReadModel', {})
 
+    // @ts-ignore
     expect(cosmosDb.database().container().items.query).to.have.been.calledWith(
       match({
         query: 'SELECT * FROM c ',
@@ -51,6 +52,7 @@ describe('The "searchReadModel" method', () => {
 
     await searchReadModel(cosmosDb, config, fakeLogger, 'MyReadModel', filters)
 
+    // @ts-ignore
     expect(cosmosDb.database().container().items.query).to.have.been.calledWith(
       match({
         query:

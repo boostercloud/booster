@@ -3,17 +3,14 @@ import { Context } from '@azure/functions'
 
 export async function rawGraphQLRequestToEnvelope(context: Context, logger: Logger): Promise<GraphQLRequestEnvelope> {
   logger.debug('Received GraphQL request: ', context.req)
-  let graphQLBody = undefined
-  let graphQLVariables = undefined
+  let graphQLValue = undefined
   if (context.req) {
-    graphQLBody = context.req.body.query
-    graphQLVariables = context.req.body.variables
+    graphQLValue = context.req.body
   }
 
   return {
     requestID: context.executionContext.invocationId,
     eventType: 'MESSAGE',
-    value: graphQLBody,
-    variables: graphQLVariables,
+    value: graphQLValue,
   }
 }

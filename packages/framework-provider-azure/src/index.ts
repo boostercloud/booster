@@ -12,8 +12,9 @@ import { CosmosClient } from '@azure/cosmos'
 import { environmentVarNames } from './constants'
 import { fetchReadModel, storeReadModel } from './library/read-model-adapter'
 import { searchReadModel } from './library/searcher-adapter'
+import { notifySubscription } from './library/subscription-adapter'
 
-let cosmosClient
+let cosmosClient: CosmosClient | undefined
 if (process.env[environmentVarNames.cosmosDbConnectionString]) {
   // @ts-ignore
   cosmosClient = new CosmosClient(process.env[environmentVarNames.cosmosDbConnectionString])
@@ -36,8 +37,10 @@ export const Provider: ProviderLibrary = {
     subscribe: undefined as any,
     rawToEnvelopes: undefined as any,
     fetchSubscriptions: undefined as any,
-    notifySubscription: undefined as any,
+    notifySubscription,
     store: storeReadModel.bind(null, cosmosClient),
+    deleteSubscription: undefined as any,
+    deleteAllSubscriptions: undefined as any,
   },
   // ProviderGraphQLLibrary
   graphQL: {

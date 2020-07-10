@@ -22,7 +22,7 @@
   "dependencies": {
     "@azure/cosmos": "^3.7.2",
     "@azure/functions": "^1.2.2",
-    "@boostercloud/framework-types": "^0.3.3"
+    "@boostercloud/framework-types": "^0.5.0"
   },
   "scripts": {
     "lint": "eslint --ext '.js,.ts' **/*.ts",

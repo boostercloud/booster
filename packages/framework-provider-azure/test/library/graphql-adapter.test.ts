@@ -27,8 +27,10 @@ describe('the graphql-adapter', () => {
       const expectedOutput: GraphQLRequestEnvelope = {
         requestID: '123',
         eventType: 'MESSAGE',
-        value: expectedQuery,
-        variables: expectedVariables,
+        value: {
+          query: expectedQuery,
+          variables: expectedVariables,
+        },
       }
       const gotOutput = await rawGraphQLRequestToEnvelope(request, console)
 
