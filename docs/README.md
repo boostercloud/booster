@@ -1925,6 +1925,7 @@ The following is the list of the fields you can configure:
 You can configure multiple environments calling to the Booster.configure function several times using different environment names:
 
 ```typescript
+// Here we use a single file called src/config.ts, but you can use separate files for each environment too.
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
 // A provider that deploys your app to AWS:
