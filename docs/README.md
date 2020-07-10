@@ -1975,7 +1975,7 @@ This way, you can have different configurations depending on your needs.
 
 Booster environments are extremely flexible. For example, your 'fruit-store' app can have three team-wide environments: 'dev', 'stage', and 'prod', each of them with different app names or providers, that are deployed by your CI/CD processes. Developers can create their own private environments very easily by just adding an additional config file to test their changes in realistic environments before committing them. Likewise, CI/CD processes could generate separate production-like environments to test different branches to perform QA in separate environments without interferences from other features under test.
 
-The only thing you need to do to deploy a whole new completely-independent copy of your application is to use a different name.
+The only thing you need to do to deploy a whole new completely-independent copy of your application is to use a different name. Also, Booster uses the credentials available in the machine (`~/.aws/credentials` in AWS) that performs the deployment process, so developers can even work on separate accounts than production or staging environments.
 
 ## Debugging and testing Booster applications
 
