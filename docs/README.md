@@ -1984,7 +1984,7 @@ The only thing you need to do to deploy a whole new completely-independent copy 
 
 While Booster is designed to deploy your applications to a cloud provider, having the ability to run your code locally speeds-up dramatically the feedback loop and allows developers to view application logs in the terminal.
 
-The Booster approach to run cloud applications locally is very different from the route taken by other major cloud frameworks, we don't try to replicate the cloud services in your machine, but simulate how the code runs in the cloud in a very light local environment based on node and express.js. This approach reduces dramatically the hardware requirements to develop Booster applications and increase the speed of development.
+The Booster approach to run cloud applications locally is very different from the route taken by other major cloud frameworks, we don't try to replicate the cloud services in your machine, but simulate how the code runs in the cloud in a very light local environment based on node and express.js. This approach reduces dramatically the hardware requirements to develop Booster applications and increases the speed of development.
 
 #### Prerequisites
 
