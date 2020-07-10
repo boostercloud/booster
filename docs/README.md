@@ -1994,7 +1994,15 @@ First of all, we will have to install the local provider package as a new applic
 
 `npm install --save-dev @boostercloud/framework-provider-local`
 
-Once the local provider is installed, we will also need to update our existing config, that can be found in `src/config/config.ts` in order to include the local environment configuration. More instructions on how to do add a new environment can be found [here](#Environments).
+Once the local provider is installed, we will need to create a new config file or update the existing one (usually `src/config/config.ts`). Then you'll have to load and initialize your environment as follows:
+
+    import { BoosterConfig } from '@boostercloud/framework-types'
+    import * as LocalProvider from '@boostercloud/framework-provider-local' 
+    
+    Booster.configure('local', (config: BoosterConfig): void => {
+       config.appName = 'fruit-store-local'
+       config.provider = LocalProvider.Provider
+    })
 
 #### Starting your application
 
