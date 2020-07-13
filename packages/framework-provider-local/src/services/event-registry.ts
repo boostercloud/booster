@@ -30,7 +30,6 @@ export class EventRegistry {
   }
 
   public async store(event: EventEnvelope): Promise<void> {
-    console.log('storing event: ', event)
     return new Promise((resolve, reject) => {
       this.events.insert(event, (err) => {
         err ? reject(err) : resolve()
