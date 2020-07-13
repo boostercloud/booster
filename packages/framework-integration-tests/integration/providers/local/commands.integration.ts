@@ -106,9 +106,7 @@ describe('commands', () => {
       // Sixth event - Quantity shouldn't be added to snapshot
       mockQuantity = random.number()
       await changeCartItem(client, mockCartId, mockProductId, mockQuantity)
-
-      console.log(`expected quantity: ${expectedSnapshotQuantity} for productId: ${mockProductId}`)
-
+      
       await waitForIt(
         async () => events.loadDatabase(),
         (_) =>
