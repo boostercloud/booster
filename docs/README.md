@@ -1,5 +1,70 @@
 # Booster Documentation
 
+<!-- toc -->
+
+- [Introduction](#introduction)
+  * [What is Booster?](#what-is-booster)
+  * [Booster Principles](#booster-principles)
+  * [Why use Booster](#why-use-booster)
+- [Getting started](#getting-started)
+  * [Installing Booster](#installing-booster)
+    + [Prerequisites](#prerequisites)
+    + [Installing the Booster CLI](#installing-the-booster-cli)
+  * [Your first Booster app in 10 minutes](#your-first-booster-app-in-10-minutes)
+    + [1. Create the project](#1-create-the-project)
+    + [2. First command](#2-first-command)
+    + [3. First event](#3-first-event)
+    + [4. First entity](#4-first-entity)
+    + [5. First read model](#5-first-read-model)
+    + [6. Deployment](#6-deployment)
+    + [7. Testing](#7-testing)
+    + [8. Removing the stack](#8-removing-the-stack)
+    + [9. More functionalities](#9-more-functionalities)
+- [Booster architecture](#booster-architecture)
+  * [1. Command and command handlers](#1-command-and-command-handlers)
+    + [Commands naming convention](#commands-naming-convention)
+    + [Creating a command](#creating-a-command)
+    + [The command handler function](#the-command-handler-function)
+    + [Authorizing a command](#authorizing-a-command)
+    + [Submitting a command](#submitting-a-command)
+  * [2. Events](#2-events)
+    + [Events naming convention](#events-naming-convention)
+    + [Creating events](#creating-events)
+    + [Registering events in the event store](#registering-events-in-the-event-store)
+    + [Events ordering](#events-ordering)
+  * [3. Event handlers](#3-event-handlers)
+    + [Creating an event handler](#creating-an-event-handler)
+    + [Registering events from an event handler](#registering-events-from-an-event-handler)
+    + [Reading entities from event handlers](#reading-entities-from-event-handlers)
+  * [4. Entities and reducers](#4-entities-and-reducers)
+    + [Entities naming convention](#entities-naming-convention)
+    + [Creating entities](#creating-entities)
+    + [The reducer function](#the-reducer-function)
+    + [Eventual consistency](#eventual-consistency)
+  * [5. Read models and projections](#5-read-models-and-projections)
+    + [Read models naming convention](#read-models-naming-convention)
+    + [Creating a read model](#creating-a-read-model)
+    + [The projection function](#the-projection-function)
+    + [Authorizing read models](#authorizing-read-models)
+    + [Querying a read model](#querying-a-read-model)
+    + [Getting real-time updates for a read model](#getting-real-time-updates-for-a-read-model)
+- [Features](#features)
+  * [IAM - Authentication and Authorization](#iam---authentication-and-authorization)
+    + [Sign-up](#sign-up)
+    + [Sign-in](#sign-in)
+    + [Sign-out](#sign-out)
+  * [GraphQL API](#graphql-api)
+    + [Relationship between GraphQL operations and commands and read models](#relationship-between-graphql-operations-and-commands-and-read-models)
+    + [How to send GraphQL request](#how-to-send-graphql-request)
+    + [Sending commands](#sending-commands)
+    + [Reading read models](#reading-read-models)
+    + [Subscribing to read models](#subscribing-to-read-models)
+  * [Cloud native](#cloud-native)
+    + [Deploying to AWS](#deploying-to-aws)
+- [Frequently Asked Questions](#frequently-asked-questions)
+
+<!-- tocstop -->
+
 ## Introduction
 
 > _Progress isn't made by early risers. It's made by lazy men trying to find easier ways to do something._ — [Robert A. Heinlein](https://en.wikipedia.org/wiki/Robert_A._Heinlein)
@@ -10,18 +75,18 @@ Booster is a new kind of framework to build scalable and reliable event-driven s
 
 Booster follows a Domain-Driven Design approach in which you define your application in terms that are understandable by anyone in your company. From a bird’s eye view your project is organized into:
 
-* **Commands**: Define what a user can request from the system (i.e: Add an item to the cart)
-* **Events**: Simple records of facts (i.e: User X added item Y to the cart Z)
-* **Entities**: Data about the things that the people in your company talk about (i.e: Orders, Customers, etc.)
-* **Handlers**: Code that processes commands, reacts to events to trigger other actions, or update the entities after new events happen.
+- **Commands**: Define what a user can request from the system (i.e: Add an item to the cart)
+- **Events**: Simple records of facts (i.e: User X added item Y to the cart Z)
+- **Entities**: Data about the things that the people in your company talk about (i.e: Orders, Customers, etc.)
+- **Handlers**: Code that processes commands, reacts to events to trigger other actions, or update the entities after new events happen.
 
 Events are the cornerstone of a Booster application, and that’s why we say that Booster is an event-driven framework. Events bring us many of the differentiating characteristics of Booster:
 
-* **Real-time**: Events can trigger other actions when they’re created, and updates can be pushed to the connected clients without extra requests.
-* **High data resiliency**: Events are stored by default in an append-only database, so the data is never lost and it’s possible to recover any previous state of the system.
-* **Decoupled by nature**: Dependencies only happen at data level, so it’s easier to evolve the code without affecting other parts of the system.
+- **Real-time**: Events can trigger other actions when they’re created, and updates can be pushed to the connected clients without extra requests.
+- **High data resiliency**: Events are stored by default in an append-only database, so the data is never lost and it’s possible to recover any previous state of the system.
+- **Decoupled by nature**: Dependencies only happen at data level, so it’s easier to evolve the code without affecting other parts of the system.
 
-Before Booster, building an event-driven system with the mentioned characteristics required huge investments in hiring engineers with the needed expertise. Booster packs this expertise, acquired from real-case scenarios in high-scale companies, into a very simple tool that handles with the hard parts for you, even provisioning the infrastructure! 
+Before Booster, building an event-driven system with the mentioned characteristics required huge investments in hiring engineers with the needed expertise. Booster packs this expertise, acquired from real-case scenarios in high-scale companies, into a very simple tool that handles with the hard parts for you, even provisioning the infrastructure!
 
 We have redesigned the whole developer experience from scratch, taking advantage of the advanced TypeScript type system and Serverless technologies to go from project generation to a production-ready real-time GraphQL API that can ingest thousands of concurrent users in a matter of minutes.
 
@@ -31,30 +96,30 @@ Booster's ultimate goal is fulfilling the developer's dream of writing code at t
 
 Booster takes a holistic and highly-opinionated approach at many levels:
 
-* **Focus on business value**: The only code that makes sense is the code that makes your application different from any other.
-* **Convention over configuration**: All the supporting code and configuration that is similar in all applications should be out of programmers’ sight.
-* **Serverless-less**: Why go Serverless to avoid managing infrastructure when you can implicitly infer your Serverless architecture from your code and not even deal with that?
-* **Scale smoothly**: A modern project shouldn't need to change their software architecture or rewrite their code in a different language just because they succeed and get a lot of users.
-* **Event-source and CQRS**: Our world is event-driven, businesses are event-driven, and modern software maps better to reality when it’s event-driven. We have enough MVC frameworks already!
-* **Principle of Abstraction**: Building an application is hard enough to have to deal with recurring low-level details like SQL, API design, or authentication mechanisms, so we tend to build more semantic abstractions on top of them.
-* **Real-time first**: Client applications must be able to react to events happening in the backend and notice data changes.
+- **Focus on business value**: The only code that makes sense is the code that makes your application different from any other.
+- **Convention over configuration**: All the supporting code and configuration that is similar in all applications should be out of programmers’ sight.
+- **Serverless-less**: Why go Serverless to avoid managing infrastructure when you can implicitly infer your Serverless architecture from your code and not even deal with that?
+- **Scale smoothly**: A modern project shouldn't need to change their software architecture or rewrite their code in a different language just because they succeed and get a lot of users.
+- **Event-source and CQRS**: Our world is event-driven, businesses are event-driven, and modern software maps better to reality when it’s event-driven. We have enough MVC frameworks already!
+- **Principle of Abstraction**: Building an application is hard enough to have to deal with recurring low-level details like SQL, API design, or authentication mechanisms, so we tend to build more semantic abstractions on top of them.
+- **Real-time first**: Client applications must be able to react to events happening in the backend and notice data changes.
 
 ### Why use Booster
 
 Booster will fit like a glove in applications that are naturally event-driven like:
 
-* Commerce applications (retail, e-commerce, omnichannel applications, warehouse management, etc.)
-* Business management applications
-* Communication systems
+- Commerce applications (retail, e-commerce, omnichannel applications, warehouse management, etc.)
+- Business management applications
+- Communication systems
 
 But it's a general-purpose framework that has several advantages over other solutions:
 
-* **Faster time-to-market**: Booster can deploy your application to a production-ready environment from minute one, without complicated configurations or needing to invest any effort to design it. In addition to that, it features a set of code generators to help developers build the project scaffolding faster and focus on actual business code in a matter of seconds instead of dealing with complicated framework folklore.
-* **Write less code**: Booster conventions and abstractions require less code to implement the same features. This not only speeds up development but combined with clear architecture guidelines also makes Booster projects easier to understand, iterate, and maintain.
-* **All the advantages of Microservices, none of its cons**: Microservices are a great way to deal with code complexity, at least on paper. Services are isolated and can scale independently, and different teams can work independently, but that usually comes with a con: interfaces between services introduce huge challenges like delays, hard to solve cyclic dependencies, or deployment errors. In Booster, every handler function works as an independent microservice, it scales separately in its own lambda function, and there are no direct dependencies between them, all communication happens asynchronously via events, and all the infrastructure is compiled, type-checked and deployed atomically to avoid issues.
-* **All the advantages of Serverless, without needing a degree in cloud technologies**: Serverless technologies are amazing and have made a project like Booster possible, but they're relatively new technologies, and while day after day new tools appear to make them easier, the learning curve is still quite steep. With Booster you'll take advantage of Serverless’ main selling points of high scalability and reduced hosting costs, without having to learn every detail from minute one.
-* **Event-sourcing by default**: Similarly to Git repositories, Booster keeps all data changes as events indefinitely. This means that any previous state of the system can be recreated and replayed at any moment. This enables a whole world of possibilities for troubleshooting and auditing your system, or syncing development or staging environments with the production data to perform tests and simulations.
-* **Booster makes it easy to build enterprise-grade applications**: Implementing an event-sourcing system from scratch is a challenging exercise that usually requires highly specialized experts. There are some technical challenges like eventual consistency, message ordering, and snapshot building. Booster takes care of all of that and more for you, lowering the curve for people that are starting and making expert lives easier.
+- **Faster time-to-market**: Booster can deploy your application to a production-ready environment from minute one, without complicated configurations or needing to invest any effort to design it. In addition to that, it features a set of code generators to help developers build the project scaffolding faster and focus on actual business code in a matter of seconds instead of dealing with complicated framework folklore.
+- **Write less code**: Booster conventions and abstractions require less code to implement the same features. This not only speeds up development but combined with clear architecture guidelines also makes Booster projects easier to understand, iterate, and maintain.
+- **All the advantages of Microservices, none of its cons**: Microservices are a great way to deal with code complexity, at least on paper. Services are isolated and can scale independently, and different teams can work independently, but that usually comes with a con: interfaces between services introduce huge challenges like delays, hard to solve cyclic dependencies, or deployment errors. In Booster, every handler function works as an independent microservice, it scales separately in its own lambda function, and there are no direct dependencies between them, all communication happens asynchronously via events, and all the infrastructure is compiled, type-checked and deployed atomically to avoid issues.
+- **All the advantages of Serverless, without needing a degree in cloud technologies**: Serverless technologies are amazing and have made a project like Booster possible, but they're relatively new technologies, and while day after day new tools appear to make them easier, the learning curve is still quite steep. With Booster you'll take advantage of Serverless’ main selling points of high scalability and reduced hosting costs, without having to learn every detail from minute one.
+- **Event-sourcing by default**: Similarly to Git repositories, Booster keeps all data changes as events indefinitely. This means that any previous state of the system can be recreated and replayed at any moment. This enables a whole world of possibilities for troubleshooting and auditing your system, or syncing development or staging environments with the production data to perform tests and simulations.
+- **Booster makes it easy to build enterprise-grade applications**: Implementing an event-sourcing system from scratch is a challenging exercise that usually requires highly specialized experts. There are some technical challenges like eventual consistency, message ordering, and snapshot building. Booster takes care of all of that and more for you, lowering the curve for people that are starting and making expert lives easier.
 
 ## Getting started
 
@@ -123,6 +188,7 @@ this step if you only want to get a grip of Booster or test it locally without m
 deployment.
 
 Note:
+
 > Booster is free to use, but notice that the resources deployed to your cloud provider
 > might generate some expenses.
 >
@@ -256,7 +322,7 @@ configured [here](#set-up-an-aws-account)
 > - `boost` is the Booster CLI
 > - `new:<resource>` new is a CLI command, :project tells booster the kind of resource
 > - `boosted-blog` is a parameter for the `new:project` command
-> project name
+>   project name
 
 The `new:project` command generates some scaffolding for you. The project name will be the
 project's root so `cd` into it:
@@ -333,7 +399,6 @@ export class CreatePost {
     register.events(/* YOUR EVENT HERE */)
   }
 }
-
 ```
 
 #### 3. First event
@@ -379,7 +444,7 @@ export class PostCreated {
   ) {}
 
   public entityID(): UUID {
-    return this.postId;
+    return this.postId
   }
 }
 ```
@@ -471,20 +536,15 @@ look like this:
 ```typescript
 // src/read-models/PostReadModel.ts
 @ReadModel({
-  authorize: 'all'// Specify authorized roles here. Use 'all' to authorize anyone
+  authorize: 'all', // Specify authorized roles here. Use 'all' to authorize anyone
 })
 export class PostReadModel {
-  public constructor(
-    public id: UUID,
-    readonly title: string,
-    readonly author: string,
-  ) {}
+  public constructor(public id: UUID, readonly title: string, readonly author: string) {}
 
-  @Projects(Post, "postId")
+  @Projects(Post, 'postId')
   public static projectPost(entity: Post, currentPostReadModel?: PostReadModel): PostReadModel {
-      return new PostReadModel(entity.id, entity.title, entity.author);
+    return new PostReadModel(entity.id, entity.title, entity.author)
   }
-
 }
 ```
 
@@ -657,6 +717,7 @@ we run `new:project` CLI command.
 ```
 
 Note:
+
 > Congratulations! You've built a serverless backend in less than 10 minutes. We hope you
 > have enjoyed discovering the magic of the Booster Framework.
 
@@ -686,9 +747,9 @@ Two patterns influence the Booster's event-driven architecture: Command-Query Re
 
 ![architecture](./img/booster-arch.png)
 
-The public interface of a Booster application is just `Commands` and `ReadModels`. Booster proposes an entirely different approach to the Model-View-* and CRUD frameworks. With Booster, the clients submit commands, query the read models, or subscribe to them for receiving real-time updates thanks to the out of the box [GraphQL API](#graphql-api)
+The public interface of a Booster application is just `Commands` and `ReadModels`. Booster proposes an entirely different approach to the Model-View-\* and CRUD frameworks. With Booster, the clients submit commands, query the read models, or subscribe to them for receiving real-time updates thanks to the out of the box [GraphQL API](#graphql-api)
 
-Booster applications are event-driven and event-sourced so, **the source of truth is the whole history of events**. When a client submits a command, the `CommandHandler` _wakes up_ and executes its logic. Optionally, it can *register* as many `Events` as needed. The framework caches the current state by automatically *reducing* all the registered events into `Entities`. Interested parties can *react* to events via `EventHandlers`, and finally, the *projection* functions transform the entities into `ReadModels`.
+Booster applications are event-driven and event-sourced so, **the source of truth is the whole history of events**. When a client submits a command, the `CommandHandler` _wakes up_ and executes its logic. Optionally, it can _register_ as many `Events` as needed. The framework caches the current state by automatically _reducing_ all the registered events into `Entities`. Interested parties can _react_ to events via `EventHandlers`, and finally, the _projection_ functions transform the entities into `ReadModels`.
 
 In this chapter you'll walk through these concepts and its details.
 
@@ -736,7 +797,7 @@ Despite you can place commands, and other Booster files, in any directory, we st
 ```text
 project-root
 ├── src
-│   ├── commands <------ They should be here
+│   ├── commands <------ put them here
 │   ├── common
 │   ├── config
 │   ├── entities
@@ -936,15 +997,147 @@ where the schema for `CreateProductInput` is
 
 ### 2. Events
 
+Events are **immutable records of facts** within your application's domain. They are the cornerstone of Booster because of its event-driven and event-sourced nature. Booster events are TypeScript classes decorated with `@Event`. An event class may look like this:
+
+```typescript
+@Event
+export class EventName {
+  public constructor(readonly field1: SomeType,
+                     readonly field2: SomeOtherType,
+                     /* This event's entity ID must be present */) {}
+
+  public entityID(): UUID {
+    return /* the associated entity ID */
+  }
+}
+```
+
+Events and [entities](#4-entities-and-reducers) are intimately related. All events belong to one entity through the `entityID` method, and entities represent the application's state after reducing the stream of events. Indeed, an entity is just an aggregated representation of the same data present in its events. It is possible to rebuild entities from events at any time. Booster guarantees that all the events associated with an entity will be reduced in the same order they were stored. Take a look at this event:
+
+```typescript
+@Event
+export class CartPaid {
+  public constructor(
+    readonly cartID: UUID,
+    readonly paymentID: UUID) {}
+
+  public entityID(): UUID {
+    // returns cartID because we want to associate
+    // (and reduce) it within the Cart entity
+    return this.cartID
+  }
+}
+```
+
+An event has to know the ID of the entity it belongs to, and there are several strategies to do so. One would be injecting the entity ID directly in the constructor, or as a nested attribute. Alternatively, for events like `ProductCreated` it is common to return a brand new ID as the entity did not exist. For _singleton_ entities, where there's only one instance, you can even use a constant value. 
+
+In the `CartPaid` example, the entity ID (`paymentID`) is injected directly, and here is another example of a newly generated value:
+
+```typescript
+@Event
+export class ProductCreated {
+  public constructor(
+    readonly displayName: string,
+    readonly price: Money
+  ) {}
+
+  public entityID(): UUID {
+    // returns a new UUID because the Product entity
+    // does not exist yet
+    return UUID.generate()
+  }
+}
+```
+
 #### Events naming convention
+
+As with commands, you can name events in any way you want, depending on your application's domain. Though, we recommend you to choose short sentences written in past tense because events are facts that have happened and can't be changed. Some event names would be:
+
+- ProductCreated
+- ProductUpdated
+- ProductDeleted
+- CartItemChanged
+- StockMoved
+
+As with other Booster files, events have their own directory:
+
+```text
+project-root
+├── src
+│   ├── commands
+│   ├── common
+│   ├── config
+│   ├── entities
+│   ├── events <------ put them here
+│   ├── index.ts
+│   └── read-models
+```
 
 #### Creating events
 
-#### The event store
+The preferred way to create event files is the `new:event` generator, e.g.
+
+```shell
+boost new:event StockMoved --fields productID:string origin:string destination:string quantity:number
+```
+
+That will generate a file called `StockMoved.ts` under the proper `project-root/src/events` directory. You can also create the file manually, but we recommend using the generator and avoid dealing manually with boilerplate code.
+
+Note:
+
+> Running the event generator for an existing EventName, will overwrite the content of the current one. Soon, we will display a warning before overwriting anything. Meanwhile, if you missed a field, just add it to the class because, in Booster, there is no hidden magic, all the infrastructure and data structures are inferred from your code.
+
+#### Registering events in the event store
+
+Creating an event file is different than storing an event instance in the event store. In Booster terminology, the latter receives the name of `registering` an event. As said before, Booster applications are event-sourced, which means that all the events are stored forever. Imagine this store as an infinite log used by the [reducer functions](#4-entities-and-reducers) to recreate the application's current state.
+
+Booster injects the register as a parameter in the `handle` method of both the command and the event handlers. Then you can register events by calling the `register.events(...)` method as many times as you want, e.g.
+
+##### Registering events from command handlers
+
+```typescript
+@Command({
+  authorize: [Admin],
+})
+export class MoveStock {
+  public constructor(
+    readonly productID: string,
+    readonly origin: string,
+    readonly destination: string,
+    readonly quantity: number
+  ) {}
+
+  public async handle(register: Register): Promise<void> {
+    if (!this.enoughStock(this.origin, this.quantity, this.productID)) {
+      register.events(new ErrorEvent(`There is not enough stock for ${this.productID} at ${this.origin}`))
+    }
+  }
+}
+```
+
+##### Registering events from event handlers
+
+In the case of the event handlers, you also receive the event instance that triggered the handle function.
+
+```typescript
+@EventHandler(StockMoved)
+export class HandleAvailability {
+  public static async handle(event: StockMoved, register: Register): Promise<void> {
+    if (event.origin == 'provider') {
+      register.events(new ProductAvailabilityChanged(event.productID, event.quantity))
+    } else if (event.destination == 'customer') {
+      register.events(new ProductAvailabilityChanged(event.productID, -event.quantity))
+    }
+  }
+}
+```
 
 #### Events ordering
 
+<!-- TODO: several people have asked about how Booster ensures event ordering. I think it makes sense to explain that here  -->
+
 ### 3. Event handlers
+
 In event-driven architectures we have different parts of our application that react to events, one of them is the `@Entity`, in charge of reducing the event. But we also have event handlers, a class with the `@EventHandler` decorator. The event handlers also react to events, and are used when you want to trigger new events based on the original one.
 
 An event handler would look like this:
@@ -966,6 +1159,7 @@ export class HandleAvailability {
 ```
 
 #### Creating an event handler
+
 Event handlers can be easily created using the Booster CLI. There are two compulsory arguments that will need to be provided following the `boost new:event-handler` command, the first one will be the event handler name, and the other will be the name of the event that it will react to. For instance:
 
 ```typescript
@@ -984,12 +1178,12 @@ project-root
 │   ├── config
 │   ├── entities
 │   ├── events
-│   ├── event-handlers <------ They must be here
-│   ├── index.ts
+│   ├── event-handlers <------ put them here
 │   └── read-models
 ```
 
 #### Registering events from an event handler
+
 By default, your newly created event handler will not trigger any event. However, Booster injects in our handler a `register` instance that we can use to do so. In the above example, you could see that there is some logic based on the event information.
 
 The `events` method of the `register` allows triggering several events, you can specify as many as you need separated by commas as arguments of the function.
@@ -1001,9 +1195,11 @@ register.events(new ProductAvailabilityChanged(event.productID, -event.quantity)
 ```
 
 #### Reading entities from event handlers
+
 Event handlers are also a good place to retrieve entity information before triggering new events.
 
 Let's say that we want to check the status of a product before we trigger its availability update. In that case we would call the `Booster core` `fetchEntitySnapshot` function, which will return information about the entity.
+
 ```typescript
 public static async handle(event: StockMoved, register: Register): Promise<void> {
   const productSnapshot = await Booster.fetchEntitySnapshot(Product, event.productID)
@@ -1013,17 +1209,123 @@ public static async handle(event: StockMoved, register: Register): Promise<void>
 
 ### 4. Entities and reducers
 
+The source of truth of your Booster app are the events, but events make sense in the context of a domain entity.
+For example, in a banking app, there might be two events: `MoneyDeposited` and `MoneyWithdrawn`. But these events
+only make sense in the context of a `BankAccount`.
+
+Entities are created on the fly, by _reducing_ the whole event stream. You shouldn't assume that they are stored anywhere. However, Booster
+does create automatic snapshots to make the reduction process efficient. You are the one in charge of writing the
+reducer function.
+
+An entity is defined as a class with the `@Entity` decorator. Inside of it, you can write one or more static methods with
+the `@Reduces` decorator that defines the name of the event class that the reducer is subscribed to. The reducer method is called once every time that one event of that type is registered in the event store, and Booster expects you to return how the entity ends up after the event has been applied. An entity class looks like this:
+
+```typescript
+@Entity
+export class EntityName {
+  public constructor(readonly fieldA: SomeType, readonly fieldB: SomeOtherType /* as many fields as needed */) {}
+
+  @Reduces(SomeEvent)
+  public static reduceSomeEvent(event: SomeEvent, previousState?: EntityName): EntityName {
+    /* Return a new entity based on the previous one */
+  }
+}
+```
+
+Each time an event is registered, the reducer of its entity is triggered. Note that event ordering is
+preserved per entity instance. This means that one entity will receive just **one event each time**, and all other events of any kind that belong to the same entity will be waiting in a queue until the previous reducer has finished. This is important to make sure that entities state can be easily predicted even when events are being generated concurrently all over the place. It's also one of the reasons why we recommend to keep reducer functions simple and pure: with no side effects or external data gathering.
+be picked will be the one that was generated first.
+
 #### Entities naming convention
+
+Entities are a representation of your application state in a specific moment, so name them as closely to your domain objects as possible. Typical entity names are nouns that
+might appear when you think about your app. In an e-commerce application, some entities would be:
+
+- Cart
+- Product
+- UserProfile
+- Order
+- Address
+- PaymentMethod
+- Stock
+
+Entities live within the entities directory of the project source: `project-root/src/entities`.
+
+```text
+project-root
+├── src
+│   ├── commands
+│   ├── common
+│   ├── config
+│   ├── entities <------ put them here
+│   ├── events
+│   ├── index.ts
+│   └── read-models
+```
 
 #### Creating entities
 
+The preferred way to create an entity is by using the generator, e.g.
+
+```text
+boost new:entity Product --fields displayName:string description:string price:Money
+```
+
+The generator will automatically create a file called `Product.ts` with a TypeScript class of the same name under the entities directory. You can still create the entity manually. Since the generator is not doing any magic, all you need is a class decorated as `@Command`. Anyway, we recommend you always to use the generator, because it handles the boilerplate code for you.
+
+Note:
+
+> Running the entity generator with an EntityName that already exists will overwrite the content of the current one. In future releases, we will display a warning before overwriting anything. Meantime, if you missed a field, just add it to the class because, in Booster, all the infrastructure and data structures are inferred from your code.
+
 #### The reducer function
 
-#### Aggregate data using entities
+Booster generates the reducer function as a static method of the entity class. That function is called by the framework every time that an event of the
+specified type is emitted. It's highly recommended to **keep your reducer functions pure**, which means that you should be able to produce the new entity version by just looking at the event and the previous entity state (which are both injected via parameter by the framework). You should avoid calling third party services, reading or writing to a database, or changing any external state.
+
+Booster injects two parameters to the reducer functions:
+
+- `event` - The event object that triggered the reducer
+- `currentEntity?` - The current state of the entity instance that the event belongs to if it exists. **This parameter is optional** and will be `undefined` if the entity don't exist yet (For example, when you process a `ProductCreated` event that will generate the first version of a `Product` entity).
+
+This is how events change your application state.
+
+Given this entity:
+
+```ts
+@Entity
+export class Cart {
+  public constructor(public id: UUID, readonly items: Array<CartItem>) {}
+
+  @Reduces(ProductAdded)
+  public static reduceProductAdded(event: ProductAdded, currentCart?: Cart): Cart {
+    const newItems = addToCart(event.item, currentCart)
+    return new Cart(event.cartID, newItems)
+  }
+
+  @Reduces(ProductRemoved)
+  public static reduceProductRemoved(event: ProductRemoved, currentCart?: Cart): Cart {
+    const newItems = removeFromCart(event.item, currentCart)
+    return new Cart(event.cartID, newItems)
+  }
+}
+```
+
+You can visualize reduction like this:
+
+![reducer process gif](img/reducer.gif)
 
 #### Eventual consistency
 
+Due to the event driven and async nature of Booster, your data might
+not be instantly updated. Booster will consume the commands,
+generate events, and _eventually_ generate the entities. Most of the
+time this is not perceivable, but under huge loads, it could be noticed.
+
+This property is called [Eventual Consistency](https://en.wikipedia.org/wiki/Eventual_consistency), and it is a trade-off to have high availability for
+extreme situations, where other systems might simply fail.
+
 ### 5. Read models and projections
+
 Read Models are cached data optimized for read operations and they're updated reactively when [Entities](#4-entities-and-reducers) are updated by new [events](#2-events). They also define the *Read* API, the available REST endpoints and their structure.
 
 Read Models are classes decorated with the `@ReadModel` decorator that have one or more projection methods.
@@ -1101,11 +1403,13 @@ export class UpdateUser {
 
 By default, a Booster application has no roles defined, so the only allowed value you can use in the `authorize` policy is `'all'` (good for public APIs).
 If you want to add user authorization, you first need to create the roles that are suitable for your application.
-Roles are classes annotated with the `@Role` decorator, where you can specify some attributes.
+Roles are classes annotated with the `@Role` decorator, where you can specify some attributes. We recommend that you define your roles in the file `src/roles.ts` or, if you have too much roles, create a `src/roles` folder and one file for each scope or role.
 
 > Example definition of roles `Admin` and `User`:
 
 ```typescript
+// src/roles.ts
+
 @Role({
   allowSelfSignUp: false,
 })
@@ -1372,7 +1676,7 @@ METHOD: "POST"
 }
 ```
 
-### Reading read models
+#### Reading read models
 
 To read a specific read model, we need to use a "query" operation. The structure of the "query" (the body
 of the request) is the following:
@@ -1440,7 +1744,7 @@ METHOD: "POST"
 }
 ```
 
-### Subscribing to read models
+#### Subscribing to read models
 
 To subscribe to a specific read model, we need to use a "subscription" operation, and it must be _sent through the **websocketURL**_.
 
@@ -1532,16 +1836,17 @@ mutation {
 }
 ```
 
-## Deploying
+### Cloud native
 
 One of the goals of Booster is to become provider agnostic so you can deploy your application to any serverless provider like AWS, Google Cloud, Azure, etc...
 
 So far, in the current version, only AWS is supported, but given the high level of abstraction, it will eventually support
 all cloud providers. (**Contributions are welcome!** 😜)
 
-### AWS
+#### Deploying to AWS
 
-#### Configure your provider credentials
+##### Configure your provider credentials
+
 > Creating a plain text file manually named `~/.aws/credentials` with the following content will be enough:
 
 ```text
@@ -1555,7 +1860,7 @@ In AWS, it is required that your `~/.aws/credentials` are properly setup, and a 
 
 It's recomended to use IAM user keys and avoiding your root access keys. If you need help obtaining a `KEY ID` and `ACCESS KEY`, [check out the oficial AWS guides](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey).
 
-### Deploy your project
+##### Deploy your project
 
 To deploy your Booster project, run the following command:
 
@@ -1567,7 +1872,7 @@ It will take a while, but you should have your project deployed to your cloud pr
 
 If you make changes to your code, you can run `boost deploy -e production` again to update your project in the cloud.
 
-### Deleting your cloud stack
+##### Delete your cloud stack
 
 If you want to delete the Booster application that has been deployed to the cloud, you can run:
 
@@ -1585,4 +1890,4 @@ using your application name as a prefix.
 In AWS, bucket names must be unique _globally_, so if there is another bucket in the world with exactly the same name as
 the one generated for your application, you will get this error.  
 
-The solution is to change your application name in the configuration file so that the bucket name is unique. 
+The solution is to change your application name in the configuration file so that the bucket name is unique.

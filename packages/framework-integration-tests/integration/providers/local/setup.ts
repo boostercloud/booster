@@ -7,7 +7,7 @@ let serverProcess: ChildProcess
 before(async () => {
   console.log('starting local server')
   serverProcess = start()
-  await sleep(5000) // TODO: We need some time for the server to start, but maybe we can do this faster using the `waitForIt` method developed for waiting for AWS resources.
+  await sleep(10000) // TODO: We need some time for the server to start, but maybe we can do this faster using the `waitForIt` method developed for waiting for AWS resources.
 })
 
 after(async () => {

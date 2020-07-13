@@ -2,7 +2,7 @@ import { Code, Function } from '@aws-cdk/aws-lambda'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { Stack, RemovalPolicy } from '@aws-cdk/core'
 import * as dynamodb from '@aws-cdk/aws-dynamodb'
-import { eventStorePartitionKeyAttribute, eventStoreSortKeyAttribute } from '@boostercloud/framework-provider-aws'
+import { eventsStoreAttributes } from '@boostercloud/framework-provider-aws'
 import * as params from '../params'
 import { DynamoEventSource } from '@aws-cdk/aws-lambda-event-sources'
 import { APIs } from '../params'
@@ -34,11 +34,11 @@ export class EventsStack {
     return new dynamodb.Table(this.stack, localID, {
       tableName: this.config.resourceNames.eventsStore,
       partitionKey: {
-        name: eventStorePartitionKeyAttribute,
+        name: eventsStoreAttributes.partitionKey,
         type: dynamodb.AttributeType.STRING,
       },
       sortKey: {
-        name: eventStoreSortKeyAttribute,
+        name: eventsStoreAttributes.sortKey,
         type: dynamodb.AttributeType.STRING,
       },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,

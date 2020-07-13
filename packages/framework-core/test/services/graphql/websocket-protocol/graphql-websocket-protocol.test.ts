@@ -1,10 +1,11 @@
-import { fake, match, SinonStub, stub } from 'sinon'
+import { fake, match, SinonStub } from 'sinon'
 import { random } from 'faker'
 import {
   Logger,
   GraphQLServerMessage,
   GraphQLRequestEnvelope,
   GraphQLStart,
+  GraphQLStop,
   MessageTypes,
 } from '@boostercloud/framework-types'
 import { GraphQLWebsocketHandler } from '../../../../src/services/graphql/websocket-protocol/graphql-websocket-protocol'
@@ -17,17 +18,21 @@ describe('the `GraphQLWebsocketHandler`', () => {
   let onStartCallback: (
     envelope: GraphQLRequestEnvelope
   ) => Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult>
+  let onStopCallback: (connectionID: string, messageID: string) => Promise<void>
+  let onTerminateCallback: (connectionID: string) => Promise<void>
   let logger: Logger
   let envelope: GraphQLRequestEnvelope
 
   beforeEach(() => {
-    sendToConnection = stub()
+    sendToConnection = fake()
     onStartCallback = fake()
+    onStopCallback = fake()
+    onTerminateCallback = fake()
     logger = console
     websocketHandler = new GraphQLWebsocketHandler(logger, sendToConnection, {
       onStartOperation: onStartCallback,
-      onStopOperation: undefined as any,
-      onTerminateOperations: undefined as any,
+      onStopOperation: onStopCallback,
+      onTerminateOperations: onTerminateCallback,
     })
     envelope = {
       eventType: 'MESSAGE',
@@ -231,6 +236,64 @@ describe('the `GraphQLWebsocketHandler`', () => {
               },
             ])
           })
+        })
+      })
+
+      describe('with a value with GQL_STOP message', () => {
+        beforeEach(() => {
+          envelope.value = {
+            type: MessageTypes.GQL_STOP,
+            id: random.alphaNumeric(10),
+          }
+        })
+
+        it('fails if there is no "id"', async () => {
+          const value = envelope.value as GraphQLStop
+          value.id = undefined as any // Force "id" to be undefined
+          resultPromise = websocketHandler.handle(envelope)
+          await resultPromise
+          expect(sendToConnection).to.be.calledOnceWithExactly(
+            envelope.connectionID,
+            match({
+              type: MessageTypes.GQL_CONNECTION_ERROR,
+              payload: `Missing "id" in ${MessageTypes.GQL_STOP} message`,
+            })
+          )
+        })
+
+        it('calls "onStopOperation" with the right parameters', async () => {
+          const value = envelope.value as GraphQLStop
+          resultPromise = websocketHandler.handle(envelope)
+          await resultPromise
+          expect(onStopCallback).to.have.been.calledOnceWithExactly(envelope.connectionID, value.id)
+        })
+
+        it('sends back a GQL_COMPLETE message', async () => {
+          const value = envelope.value as GraphQLStop
+          resultPromise = websocketHandler.handle(envelope)
+          await resultPromise
+          expect(sendToConnection).to.have.been.calledOnceWithExactly(
+            envelope.connectionID,
+            match({
+              type: MessageTypes.GQL_COMPLETE,
+              id: value.id,
+            })
+          )
+        })
+      })
+
+      describe('with a value with GQL_CONNECTION_TERMINATE message', () => {
+        beforeEach(() => {
+          envelope.value = {
+            type: MessageTypes.GQL_CONNECTION_TERMINATE,
+          }
+        })
+
+        it('calls "onTerminateOperation" with the right parameters and sends nothing back', async () => {
+          resultPromise = websocketHandler.handle(envelope)
+          await resultPromise
+          expect(onTerminateCallback).to.have.been.calledOnceWithExactly(envelope.connectionID)
+          expect(sendToConnection).not.to.have.been.called
         })
       })
     })

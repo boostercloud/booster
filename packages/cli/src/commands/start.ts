@@ -38,11 +38,6 @@ export default class Start extends Command {
       return
     }
     process.env.BOOSTER_ENV = flags.environment
-    await runTasks(
-      flags.environment,
-      flags.port,
-      compileProjectAndLoadConfig(),
-      startProvider.bind(null, flags.port)
-    )
+    await runTasks(flags.environment, flags.port, compileProjectAndLoadConfig(), startProvider.bind(null, flags.port))
   }
 }

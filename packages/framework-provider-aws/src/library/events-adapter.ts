@@ -1,7 +1,7 @@
 import { DynamoDBStreamEvent, DynamoDBRecord } from 'aws-lambda'
 import { BoosterConfig, EventEnvelope, Logger, UUID } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
-import { eventStorePartitionKeyAttribute, eventStoreSortKeyAttribute } from '../constants'
+import { eventsStoreAttributes } from '../constants'
 import { partitionKeyForEvent } from './partition-keys'
 import { Converter } from 'aws-sdk/clients/dynamodb'
 
@@ -32,7 +32,7 @@ export async function readEntityEventsSince(
     .query({
       TableName: config.resourceNames.eventsStore,
       ConsistentRead: true,
-      KeyConditionExpression: `${eventStorePartitionKeyAttribute} = :partitionKey AND ${eventStoreSortKeyAttribute} > :fromTime`,
+      KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey AND ${eventsStoreAttributes.sortKey} > :fromTime`,
       ExpressionAttributeValues: {
         ':partitionKey': partitionKeyForEvent(entityTypeName, entityID),
         ':fromTime': fromTime,
@@ -58,7 +58,7 @@ export async function readEntityLatestSnapshot(
     .query({
       TableName: config.resourceNames.eventsStore,
       ConsistentRead: true,
-      KeyConditionExpression: `${eventStorePartitionKeyAttribute} = :partitionKey`,
+      KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey`,
       ExpressionAttributeValues: {
         ':partitionKey': partitionKeyForEvent(entityTypeName, entityID, 'snapshot'),
       },
@@ -88,6 +88,7 @@ export async function storeEvents(
   config: BoosterConfig,
   logger: Logger
 ): Promise<void> {
+  // TODO: Manage query pagination and db.batchWrite limit of 25 operations at a time
   logger.debug('[EventsAdapter#storeEvents] Storing EventEnvelopes with eventEnvelopes:', eventEnvelopes)
   const params: DynamoDB.DocumentClient.BatchWriteItemInput = {
     RequestItems: {
@@ -95,12 +96,12 @@ export async function storeEvents(
         PutRequest: {
           Item: {
             ...eventEnvelope,
-            [eventStorePartitionKeyAttribute]: partitionKeyForEvent(
+            [eventsStoreAttributes.partitionKey]: partitionKeyForEvent(
               eventEnvelope.entityTypeName,
               eventEnvelope.entityID,
               eventEnvelope.kind
             ),
-            [eventStoreSortKeyAttribute]: new Date().toISOString(),
+            [eventsStoreAttributes.sortKey]: new Date().toISOString(),
           },
         },
       })),
