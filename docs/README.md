@@ -159,31 +159,31 @@ aws_secret_access_key = <YOUR SECRET ACCESS KEY>
 
 ##### Multiple AWS Accounts
 
-In case you are using multiple AWS accounts and not depending on the default profile,
-you will need to add a `region` field to let AWS know which region we should deploy our application to.
+If you are using multiple AWS accounts and don't want to use the default profile,
+you will need to set a `region` option to let the AWS SDK know which region you want your application to be deployed to.
 To do so, we have two possible solutions:
-* Adding the region to the profile in the `credentials` file
+* Add the region to the profile of your choice in your `~/.aws/credentials` file
 
 ```ini
 # ~/.aws/credentials
 [default]
-aws_access_key_id = <YOUR ACCESS KEY ID>
-aws_secret_access_key = <YOUR SECRET ACCESS KEY>
-region=<Region you want to deploy the application to>
+aws_access_key_id = <DEFAULT ACCESS KEY ID>
+aws_secret_access_key = <DEFAULT SECRET ACCESS KEY>
+region=<DEFAULT REGION>
 
-[other_profile]
+[other_profile] # Give this profile the name that works best for you
 aws_access_key_id = <YOUR ACCESS KEY ID>
 aws_secret_access_key = <YOUR SECRET ACCESS KEY>
-region=<Region you want to deploy the application to>
+region=<REGION FOR YOUR BOOSTER APP>
 ```
-* Or creating a `config` file
+* Or creating a `~/.aws/config` file
 ```ini
 # ~/.aws/config
 [default]
-region=<Region you want to deploy the application to>
+region=<DEFAULT REGION>
 
-[profile other_profile]
-region=<Region you want to deploy the application to
+[profile other_profile] # You can rename the profile in any way that works for you
+region=<REGION FOR YOUR BOOSTER APP>
 ```
 
 When using multiple profiles make sure to export the `AWS_PROFILE` environment variable to deploy or nuke
