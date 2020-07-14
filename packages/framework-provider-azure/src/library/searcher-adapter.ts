@@ -12,13 +12,13 @@ export async function searchReadModel(
     query: `SELECT * FROM c ${buildFilterExpression(filters)}`,
     parameters: buildExpressionAttributeValues(filters),
   }
+  logger.debug('Running search with the following params: \n', querySpec)
+
   const { resources } = await cosmosDb
     .database(config.resourceNames.applicationStack)
     .container(config.resourceNames.forReadModel(readModelName))
     .items.query(querySpec)
     .fetchAll()
-
-  logger.debug('Running search with the following params: \n', querySpec)
 
   logger.debug('Search result: ', resources)
 
