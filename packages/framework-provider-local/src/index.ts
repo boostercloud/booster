@@ -10,7 +10,7 @@ import { requestSucceeded, requestFailed } from './library/api-adapter'
 import { EventRegistry } from './services'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import { notifySubscription } from './library/subscription-adapter'
-import { UserApp } from '@boostercloud/framework-types/dist'
+import { UserApp } from '@boostercloud/framework-types'
 import * as path from 'path'
 
 export { User, LoginCredentials, SignUpUser, RegisteredUser, AuthenticatedUser } from './library/auth-adapter'
