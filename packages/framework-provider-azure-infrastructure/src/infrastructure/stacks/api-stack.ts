@@ -11,6 +11,8 @@ export class ApiStack {
     private readonly functionAppName: string
   ) {}
 
+  apiManagementTemplatePath = './templates/api-management.json'
+
   public async build(): Promise<string> {
     const policy = `<policies>
         <inbound>
@@ -39,7 +41,7 @@ export class ApiStack {
         apiPath: { value: '/' + this.config.environmentName },
         policy: { value: policy },
       },
-      './templates/api-management.json'
+      this.apiManagementTemplatePath
     )
 
     return apiManagementServiceDeployment.properties?.outputs.apiManagementServiceName.value

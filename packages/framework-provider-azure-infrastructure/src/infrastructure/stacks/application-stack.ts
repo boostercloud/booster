@@ -11,6 +11,10 @@ import { DeploymentExtended } from 'azure-arm-resource/lib/resource/models'
 export class ApplicationStackBuilder {
   public constructor(readonly config: BoosterConfig) {}
 
+  cosmosAccountTemplatePath = './templates/cosmos-db-account.json'
+  functionAppTemplatePath = './templates/function-app.json'
+  storageAccountTemplatePath = './templates/storage-account.json'
+
   public async buildOn(
     observer: Subscriber<string>,
     resourceManagementClient: ResourceManagementClient,
@@ -19,14 +23,14 @@ export class ApplicationStackBuilder {
   ): Promise<void> {
     observer.next('Creating Storage and Cosmos DB accounts...')
     const accountCreationResults: Array<DeploymentExtended> = await Promise.all([
-      buildResource(resourceManagementClient, resourceGroupName, {}, './templates/storage-account.json'),
+      buildResource(resourceManagementClient, resourceGroupName, {}, this.storageAccountTemplatePath),
       buildResource(
         resourceManagementClient,
         resourceGroupName,
         {
           databaseName: { value: this.config.resourceNames.applicationStack },
         },
-        './templates/cosmos-db-account.json'
+        this.cosmosAccountTemplatePath
       ),
     ])
 
@@ -42,7 +46,7 @@ export class ApplicationStackBuilder {
           value: storageAccountName,
         },
       },
-      './templates/function-app.json'
+      this.functionAppTemplatePath
     )
 
     const apiStack = new ApiStack(
