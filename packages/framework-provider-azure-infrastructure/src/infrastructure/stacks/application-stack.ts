@@ -7,13 +7,10 @@ import { ApiStack } from './api-stack'
 import { EventsStack } from './events-stack'
 import { ReadModelsStack } from './read-models-stack'
 import { DeploymentExtended } from 'azure-arm-resource/lib/resource/models'
+import { armTemplates } from '../arm-templates'
 
 export class ApplicationStackBuilder {
   public constructor(readonly config: BoosterConfig) {}
-
-  cosmosAccountTemplatePath = './templates/cosmos-db-account.json'
-  functionAppTemplatePath = './templates/function-app.json'
-  storageAccountTemplatePath = './templates/storage-account.json'
 
   public async buildOn(
     observer: Subscriber<string>,
@@ -23,14 +20,14 @@ export class ApplicationStackBuilder {
   ): Promise<void> {
     observer.next('Creating Storage and Cosmos DB accounts...')
     const accountCreationResults: Array<DeploymentExtended> = await Promise.all([
-      buildResource(resourceManagementClient, resourceGroupName, {}, this.storageAccountTemplatePath),
+      buildResource(resourceManagementClient, resourceGroupName, {}, armTemplates.storageAccount),
       buildResource(
         resourceManagementClient,
         resourceGroupName,
         {
           databaseName: { value: this.config.resourceNames.applicationStack },
         },
-        this.cosmosAccountTemplatePath
+        armTemplates.cosmosDbAccount
       ),
     ])
 
@@ -46,7 +43,7 @@ export class ApplicationStackBuilder {
           value: storageAccountName,
         },
       },
-      this.functionAppTemplatePath
+      armTemplates.functionApp
     )
 
     const apiStack = new ApiStack(

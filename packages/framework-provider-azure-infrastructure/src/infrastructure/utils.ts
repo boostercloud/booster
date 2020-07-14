@@ -18,7 +18,7 @@ interface FunctionDefinition {
  * @param {ResourceManagementClient} resourceManagementClient A ResourceManagementClient instance
  * @param {string} resourceGroupName The resource group where the resource will be deployed to
  * @param {object} parameters A JSON object with parameters for the ARM template
- * @param {string} templatePath The path of the ARM template JSON file
+ * @param {string} armTemplate ARM template JSON
  *
  * @returns {Promise<DeploymentExtended>}
  */
@@ -26,14 +26,12 @@ export async function buildResource(
   resourceManagementClient: ResourceManagementClient,
   resourceGroupName: string,
   parameters: object,
-  templatePath: string
+  armTemplate: object
 ): Promise<DeploymentExtended> {
-  const template = require(templatePath)
-
   const deploymentParameters = {
     properties: {
       parameters: parameters,
-      template: template,
+      template: armTemplate,
       mode: 'Incremental',
     },
   }

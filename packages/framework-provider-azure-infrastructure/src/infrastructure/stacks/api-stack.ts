@@ -2,6 +2,9 @@ import { BoosterConfig } from '@boostercloud/framework-types/dist'
 import { buildResource } from '../utils'
 import { configuration } from '../params'
 import ResourceManagementClient from 'azure-arm-resource/lib/resource/resourceManagementClient'
+import * as Mustache from 'mustache'
+import { templates } from '../templates'
+import { armTemplates } from '../arm-templates'
 
 export class ApiStack {
   public constructor(
@@ -11,24 +14,8 @@ export class ApiStack {
     private readonly functionAppName: string
   ) {}
 
-  apiManagementTemplatePath = './templates/api-management.json'
-
   public async build(): Promise<string> {
-    const policy = `<policies>
-        <inbound>
-          <base />
-      <set-backend-service base-url="https://${this.functionAppName}.azurewebsites.net/api" />
-      </inbound>
-      <backend>
-      <base />
-      </backend>
-      <outbound>
-      <base />
-      </outbound>
-      <on-error>
-      <base />
-      </on-error>
-      </policies>`
+    const policy = Mustache.render(templates.policy, { functionAppName: this.functionAppName })
 
     const apiManagementServiceDeployment = await buildResource(
       this.resourceManagementClient,
@@ -41,7 +28,7 @@ export class ApiStack {
         apiPath: { value: '/' + this.config.environmentName },
         policy: { value: policy },
       },
-      this.apiManagementTemplatePath
+      armTemplates.apiManagement
     )
 
     return apiManagementServiceDeployment.properties?.outputs.apiManagementServiceName.value
