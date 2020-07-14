@@ -45,9 +45,7 @@ export async function buildResource(
   )
 }
 
-export async function packageAzureFunction(
-  functionDefinitions: Array<FunctionDefinition>
-): Promise<any> {
+export async function packageAzureFunction(functionDefinitions: Array<FunctionDefinition>): Promise<any> {
   const output = fs.createWriteStream(os.tmpdir() + '/example.zip')
   const archive = archiver('zip', {
     zlib: { level: 9 }, // Sets the compression level.
@@ -64,19 +62,15 @@ export async function packageAzureFunction(
 
   return new Promise((resolve, reject) => {
     output.on('close', () => {
-      // console.log(archive.pointer() + ' total bytes')
-      // console.log('archiver has been finalized and the output file descriptor has closed.')
       resolve(output.path)
     })
 
     output.on('end', () => {
-      // console.log('Data has been drained')
       resolve()
     })
 
     archive.on('warning', (err: any) => {
       if (err.code === 'ENOENT') {
-        // console.error(err.message)
         resolve()
       } else {
         reject(err)
@@ -92,8 +86,8 @@ export async function packageAzureFunction(
 export async function deployFunctionPackage(
   packagePath: string,
   username: string,
-  password: string | undefined,
-  functionAppName: string | undefined
+  password: string,
+  functionAppName: string
 ): Promise<any> {
   return needle(
     'post',
