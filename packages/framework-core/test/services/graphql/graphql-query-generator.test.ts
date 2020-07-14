@@ -85,6 +85,7 @@ describe('GraphQLQueryGenerator', () => {
           sut.generate()
 
           expect(mockByIdResolverBuilder).calledOnce.and.calledWith(mockTargetTypeClass)
+          // @ts-ignore
           expect(mockByIdResolverBuilder).to.be.calledAfter(getGraphQLTypeForStub)
         })
 
@@ -160,6 +161,7 @@ describe('GraphQLQueryGenerator', () => {
               sut.generate()
 
               expect(mockByIdResolverBuilder).to.be.calledOnce.and.calledWith(Boolean)
+              // @ts-ignore
               expect(mockByIdResolverBuilder).to.be.calledAfter(getGraphQLTypeForStub)
             })
 
@@ -217,6 +219,7 @@ describe('GraphQLQueryGenerator', () => {
               sut.generate()
 
               expect(mockByIdResolverBuilder).to.be.calledOnce.and.calledWith(Boolean)
+              // @ts-ignore
               expect(mockByIdResolverBuilder).to.be.calledAfter(getGraphQLTypeForStub)
             })
           })
@@ -259,6 +262,7 @@ describe('GraphQLQueryGenerator', () => {
           expect(mockByIdResolverBuilder)
             .to.be.calledTwice.and.calledWith(Boolean)
             .and.calledWith(String)
+          // @ts-ignore
           expect(mockByIdResolverBuilder).to.be.calledAfter(getGraphQLTypeForStub)
         })
 
@@ -302,6 +306,7 @@ describe('GraphQLQueryGenerator', () => {
             expect(mockByIdResolverBuilder)
               .to.be.calledTwice.and.calledWith(Boolean)
               .and.calledWith(String)
+            // @ts-ignore
             expect(mockByIdResolverBuilder).to.be.calledAfter(getGraphQLTypeForStub)
           })
         })
