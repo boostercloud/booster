@@ -69,8 +69,9 @@ export async function storeEvents(
 ): Promise<void> {
   logger.info('Publishing the following events:', eventEnvelopes)
 
-  const storeEventPromises = eventEnvelopes.map((envelop: EventEnvelope) => eventRegistry.store(envelop))
-  await Promise.all(storeEventPromises)
+  for (const event of eventEnvelopes) {
+    await eventRegistry.store(event)
+  }
 
   await userApp.boosterEventDispatcher(eventEnvelopes)
 }
