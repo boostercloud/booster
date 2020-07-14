@@ -78,30 +78,11 @@ describe('commands', () => {
       let mockQuantity: number
       let expectedSnapshotQuantity = 0
 
-      // First event
-      mockQuantity = random.number()
-      expectedSnapshotQuantity += mockQuantity
-      await changeCartItem(client, mockCartId, mockProductId, mockQuantity)
-
-      // Second event
-      mockQuantity = random.number()
-      expectedSnapshotQuantity += mockQuantity
-      await changeCartItem(client, mockCartId, mockProductId, mockQuantity)
-
-      // Third event
-      mockQuantity = random.number()
-      expectedSnapshotQuantity += mockQuantity
-      await changeCartItem(client, mockCartId, mockProductId, mockQuantity)
-
-      // Fourth event
-      mockQuantity = random.number()
-      expectedSnapshotQuantity += mockQuantity
-      await changeCartItem(client, mockCartId, mockProductId, mockQuantity)
-
-      // Fifth event
-      mockQuantity = random.number()
-      expectedSnapshotQuantity += mockQuantity
-      await changeCartItem(client, mockCartId, mockProductId, mockQuantity)
+      for (let i = 0; i < 5; i++) {
+        mockQuantity = random.number()
+        expectedSnapshotQuantity += mockQuantity
+        await changeCartItem(client, mockCartId, mockProductId, mockQuantity)
+      }
 
       // Sixth event - Quantity shouldn't be added to snapshot
       mockQuantity = random.number()
