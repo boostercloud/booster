@@ -711,7 +711,7 @@ Two patterns influence the Booster's event-driven architecture: Command-Query Re
 
 ![architecture](./img/booster-arch.png)
 
-The public interface of a Booster application is just `Commands` and `ReadModels`. Booster proposes an entirely different approach to the Model-View-\* and CRUD frameworks. With Booster, the clients submit commands, query the read models, or subscribe to them for receiving real-time updates thanks to the out of the box [GraphQL API](#graphql-api)
+The public interface of a Booster application is just `Commands` and `ReadModels`. Booster proposes an entirely different approach to the Model-View-\* and CRUD frameworks. With Booster, clients submit commands, query the read models, or subscribe to them for receiving real-time updates thanks to the out of the box [GraphQL API](#graphql-api)
 
 Booster applications are event-driven and event-sourced so, **the source of truth is the whole history of events**. When a client submits a command, the `CommandHandler` _wakes up_ and executes its logic. Optionally, it can _register_ as many `Events` as needed. The framework caches the current state by automatically _reducing_ all the registered events into `Entities`. Interested parties can _react_ to events via `EventHandlers`, and finally, the _projection_ functions transform the entities into `ReadModels`.
 
@@ -719,9 +719,9 @@ In this chapter you'll walk through these concepts and its details.
 
 ### 1. Command and command handlers
 
-Booster is different than MVC frameworks in which you typically implement controller classes with the five CRUD methods per model. Instead of that, you define commands, which are the user actions when interacting with an application. This approach fits very well with Domain-Driven Design. Depending on your application's domain, some examples of commands would be: `RemoveItemFromCart`, `RatePhoto`, `AddCommentToPost`, etc. Although, you can still have `Create*`, `Delete*`, or `Update*` commands when they make sense.
+Booster is different than MVC frameworks in which you typically implement controller classes with the four CRUD methods per model. Instead of that, you define commands, which are the user actions when interacting with an application. This approach fits very well with Domain-Driven Design. Depending on your application's domain, some examples of commands would be: `RemoveItemFromCart`, `RatePhoto`, `AddCommentToPost`, etc. Although, you can still have `Create*`, `Delete*`, or `Update*` commands when they make sense.
 
-There is an architectural splitting between commands and command handlers though they *live* under the same file. The command is the class with the `@Command` decorator, and the generated method called `handle` is the command handler. That is because Booster adopts several concepts from functional programming; the separation between data structures and data transformations is one of them. In Booster a command looks like this:
+There is an architectural splitting between commands and command handlers though they *live* under the same file. The command is the class with the `@Command` decorator, and the generated method called `handle` is the command handler. That is because Booster adopts several concepts from functional programming; the separation between data structures and data transformations is one of them. In Booster, a command looks like this:
 
 ```typescript
 @Command({
@@ -742,11 +742,11 @@ export class CommandName {
 }
 ```
 
-Every time you submit a command through the GraphQL API, Booster calls the command handler function for the given command. The Commands are part of the public API so that you can define authorization policies for them. They are also the place for validating input data before registering events into the event store because they are immutable once there.
+Every time you submit a command through the GraphQL API, Booster calls the command handler function for the given command. Commands are part of the public API, so you can define authorization policies for them. They are also the place for validating input data before registering events into the event store because they are immutable once there.
 
 #### Commands naming convention
 
-Semantic is very important in Booster as it will play an essential role in designing a coherent system. Your application should reflect your domain concepts, and commands are not an exception. Although you can name commands in any way you want, we strongly recommend you to name them starting with verbs in imperative plus the object being affected. If we were designing an e-commerce application, some commands would be:
+Semantics is very important in Booster as it will play an essential role in designing a coherent system. Your application should reflect your domain concepts, and commands are not an exception. Although you can name commands in any way you want, we strongly recommend you to name them starting with verbs in imperative plus the object being affected. If we were designing an e-commerce application, some commands would be:
 
 - CreateProduct
 - DeleteProduct
@@ -756,7 +756,7 @@ Semantic is very important in Booster as it will play an essential role in desig
 - MoveStock
 - UpdateCartShippingAddress
 
-Despite you can place commands, and other Booster files, in any directory, we strongly recommend you to put them here `project-root/src/commands`. Having all the commands in one place will help you to understand your application's capabilities at a glance.
+Despite you can place commands, and other Booster files, in any directory, we strongly recommend you to put them in `<project-root>/src/commands`. Having all the commands in one place will help you to understand your application's capabilities at a glance.
 
 ```text
 project-root
@@ -778,14 +778,14 @@ The preferred way to create a command is by using the generator, e.g.
 boost new:command CreateProduct --fields sku:SKU displayName:string description:string price:Money
 ```
 
-The generator will automatically create a file called `CreateProduct.ts` with a TypeScript class of the same name under the commands directory. You can still create the command manually. Since the generator is not doing any *magic*, all you need is a class decorated as `@Command`. Anyway, we recommend you always to use the generator, because it handles the boilerplate code for you.
+The above generator will automatically create a file called `CreateProduct.ts` with a TypeScript class of the same name under the `commands` directory. You can still create (or modify) the command manually. Since the generator is not doing any *magic*, all you need is a class decorated as `@Command`. Anyway, we recommend you always to use the generator, because it handles the boilerplate code for you.
 
 Note:
-> Running the command generator with a `CommandName` already existing, will override the content of the current one. Soon, we will display a warning before overwriting anything. Meantime, if you missed a field, just add it to the class because in Booster, all the infrastructure and data structures are inferred from your code.
+> Generating a command with the same name as an already existing one will override its content. Soon, we will display a warning before overwriting anything.
 
 #### The command handler function
 
-Booster generates the command handler function as a method of the command class. This function is called by the framework every time that one instance of this command is submitted. The command handler the right place to run validations, return errors, query entities to make decisions and register relevant domain events.
+Each command class must have a method called `handle`. This function is the command handler, and it will be called by the framework every time one instance of this command is submitted. Inside it you can run validations, return errors, query entities to make decisions and register relevant domain events.
 
 ##### Validating data
 
@@ -793,7 +793,7 @@ Booster uses the typed nature of GraphQL to ensure that types are correct before
 
 ###### Throw an error
 
-There are still business rules to be checked before proceeding with a command. For example, a given number must be between a threshold or a string must match a regular expression. In that case, it is enough just to throw an error in the handler, and then Booster will use the error's message as the response to make it descriptive, e.g.
+There are still business rules to be checked before proceeding with a command. For example, a given number must be between a threshold or a string must match a regular expression. In that case, it is enough just to throw an error in the handler. Booster will use the error's message as the response to make it descriptive, e.g.
 
 Given this command:
 
@@ -883,7 +883,7 @@ In this case, the client who submitted the command can still complete the operat
 
 ##### Reading entities
 
-Event handlers are a good place to make decisions, and for making better decisions, you need information. There is a Booster function called `fetchEntitySnapshots` within the `Booster` package and allows you to inspect the application state. This function receives two arguments, the `Entity` to fetch and the `entityID`. Here is an example of fetching an entity called `Stock`:
+Event handlers are a good place to make decisions and, to make better decisions, you need information. There is a Booster function called `fetchEntitySnapshots` within the `Booster` package and allows you to inspect the application state. This function receives two arguments, the `Entity` to fetch and the `entityID`. Here is an example of fetching an entity called `Stock`:
 
 ```typescript
 @Command({
@@ -916,7 +916,7 @@ Within the command handler execution, it is possible to register domain events. 
 
 #### Authorizing a command
 
-Commands are part of the public API of a Booster application, so you can define who is authorized to submit them. The Booster authorization feature is covered in [this](#iam-authentication-and-authorization) section. So far, we have seen that you can make a command publicly accessible by authorizing `'all'` to submit it. You can also set specific roles as we did with the `authorize: [Admin]` parameter of the `MoveStock` command.
+Commands are part of the public API of a Booster application, so you can define who is authorized to submit them. The Booster authorization feature is covered in [this](#authentication-and-authorization) section. So far, we have seen that you can make a command publicly accessible by authorizing `'all'` to submit it. You can also set specific roles as we did with the `authorize: [Admin]` parameter of the `MoveStock` command.
 
 #### Submitting a command
 
@@ -967,8 +967,7 @@ Events are **immutable records of facts** within your application's domain. They
 @Event
 export class EventName {
   public constructor(readonly field1: SomeType,
-                     readonly field2: SomeOtherType,
-                     /* This event's entity ID must be present */) {}
+                     readonly field2: SomeOtherType) {}
 
   public entityID(): UUID {
     return /* the associated entity ID */
@@ -976,7 +975,7 @@ export class EventName {
 }
 ```
 
-Events and [entities](#4-entities-and-reducers) are intimately related. All events belong to one entity through the `entityID` method, and entities represent the application's state after reducing the stream of events. Indeed, an entity is just an aggregated representation of the same data present in its events. It is possible to rebuild entities from events at any time. Booster guarantees that all the events associated with an entity will be reduced in the same order they were stored. Take a look at this event:
+Events and [entities](#4-entities-and-reducers) are intimately related. Each event belongs to one entity through the `entityID` method, and entities represent the application's state after reducing the stream of events. Indeed, an entity is just an aggregated representation of the same data present in its events, so it is possible to rebuild entities from events at any time. Booster guarantees that all the events associated with an entity will be reduced in the same order they were stored. Take a look at this event:
 
 ```typescript
 @Event
@@ -986,8 +985,8 @@ export class CartPaid {
     readonly paymentID: UUID) {}
 
   public entityID(): UUID {
-    // returns cartID because we want to associate
-    // (and reduce) it within the Cart entity
+    // returns cartID because we want to associate it with
+    // (and reduce it within) the Cart entity
     return this.cartID
   }
 }
@@ -1015,7 +1014,7 @@ export class ProductCreated {
 
 #### Events naming convention
 
-As with commands, you can name events in any way you want, depending on your application's domain. Though, we recommend you to choose short sentences written in past tense because events are facts that have happened and can't be changed. Some event names would be:
+As with commands, you can name events in any way you want, depending on your application's domain. However, we recommend you to choose short sentences written in past tense because events are facts that have happened and can't be changed. Some event names would be:
 
 - ProductCreated
 - ProductUpdated
@@ -1049,7 +1048,7 @@ That will generate a file called `StockMoved.ts` under the proper `project-root/
 
 Note:
 
-> Running the event generator for an existing EventName, will overwrite the content of the current one. Soon, we will display a warning before overwriting anything. Meanwhile, if you missed a field, just add it to the class because, in Booster, there is no hidden magic, all the infrastructure and data structures are inferred from your code.
+> Generating an event with the same name as an already existing one will overwrite its content. Soon, we will display a warning before overwriting anything.
 
 #### Registering events in the event store
 
@@ -1335,7 +1334,7 @@ You can use the GraphQL endpoint to query or subscribe to the read model records
 
 ## Features
 
-### IAM - Authentication and Authorization
+### Authentication and Authorization
 Authorization in Booster is done through roles. Every Command and ReadModel has an `authorize` policy that
 tells Booster who can execute or access it. It consists of one of the following two values:
 
