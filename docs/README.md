@@ -759,7 +759,7 @@ Semantic is very important in Booster as it will play an essential role in desig
 Despite you can place commands, and other Booster files, in any directory, we strongly recommend you to put them here `project-root/src/commands`. Having all the commands in one place will help you to understand your application's capabilities at a glance.
 
 ```text
-project-root
+<project-root>
 ├── src
 │   ├── commands <------ put them here
 │   ├── common
@@ -1026,7 +1026,7 @@ As with commands, you can name events in any way you want, depending on your app
 As with other Booster files, events have their own directory:
 
 ```text
-project-root
+<project-root>
 ├── src
 │   ├── commands
 │   ├── common
@@ -1045,7 +1045,7 @@ The preferred way to create event files is the `new:event` generator, e.g.
 boost new:event StockMoved --fields productID:string origin:string destination:string quantity:number
 ```
 
-That will generate a file called `StockMoved.ts` under the proper `project-root/src/events` directory. You can also create the file manually, but we recommend using the generator and avoid dealing manually with boilerplate code.
+That will generate a file called `StockMoved.ts` under the proper `<project-root>/src/events` directory. You can also create the file manually, but we recommend using the generator and avoid dealing manually with boilerplate code.
 
 Note:
 
@@ -1102,7 +1102,7 @@ export class HandleAvailability {
 
 ### 3. Event handlers
 
-In event-driven architectures we have different parts of our application that react to events, one of them is the `@Entity`, in charge of reducing the event. But we also have event handlers, a class with the `@EventHandler` decorator. The event handlers also react to events, and are used when you want to trigger new events based on the original one.
+In event-driven architectures we have different parts of our application that react to events. In the case of Booster, we have the entities (in charge of reducing the events), and the _event handlers_. These are classes decorated with the `@EventHandler` decorator whose goal is to execute business logic or trigger other events when a specific event occurs.
 
 An event handler would look like this:
 
@@ -1124,18 +1124,16 @@ export class HandleAvailability {
 
 #### Creating an event handler
 
-Event handlers can be easily created using the Booster CLI. There are two compulsory arguments that will need to be provided following the `boost new:event-handler` command, the first one will be the event handler name, and the other will be the name of the event that it will react to. For instance:
+Event handlers can be easily created using the Booster CLI command `boost new:event-handler`. There are two compulsory arguments: the event handler name, and the name of the event it will react to. For instance:
 
 ```typescript
-boost new:event-handler HandleAvailability -e StockMoved
+boost new:event-handler HandleAvailability --event StockMoved
 ```
 
-The flag `-e` can be replaced by `--event`.
-
-Once the creation is completed, there will be a new file in the event handlers directory `project-root/src/event-handlers/HandleAvailability.ts`.
+Once the creation is completed, there will be a new file in the event handlers directory `<project-root>/src/event-handlers/HandleAvailability.ts`.
 
 ```text
-project-root
+<project-root>
 ├── src
 │   ├── commands
 │   ├── common
@@ -1148,9 +1146,9 @@ project-root
 
 #### Registering events from an event handler
 
-By default, your newly created event handler will not trigger any event. However, Booster injects in our handler a `register` instance that we can use to do so. In the above example, you could see that there is some logic based on the event information.
+Booster injects a `register` instance in the `handle` method that we can use to register extra events. In the above example, you can see there is some logic that ends up registering new events.
 
-The `events` method of the `register` allows triggering several events, you can specify as many as you need separated by commas as arguments of the function.
+The `events(...)` method of the `register` allows triggering several events, you can specify as many as you need separated by commas as arguments of the function.
 
 An example can be found below:
 
@@ -1160,9 +1158,9 @@ register.events(new ProductAvailabilityChanged(event.productID, -event.quantity)
 
 #### Reading entities from event handlers
 
-Event handlers are also a good place to retrieve entity information before triggering new events.
+Just as we do in command handlers, we can also retrieve entities information to make decisions based on its current state.
 
-Let's say that we want to check the status of a product before we trigger its availability update. In that case we would call the `Booster core` `fetchEntitySnapshot` function, which will return information about the entity.
+Let's say that we want to check the status of a product before we trigger its availability update. In that case we would call the `Booster.fetchEntitySnapshot` function, which will return information about the entity.
 
 ```typescript
 public static async handle(event: StockMoved, register: Register): Promise<void> {
@@ -1174,15 +1172,17 @@ public static async handle(event: StockMoved, register: Register): Promise<void>
 ### 4. Entities and reducers
 
 The source of truth of your Booster app are the events, but events make sense in the context of a domain entity.
-For example, in a banking app, there might be two events: `MoneyDeposited` and `MoneyWithdrawn`. But these events
+For example, in a banking app, there might be two events: `MoneyDeposited` and `MoneyWithdrawn`. However, these events
 only make sense in the context of a `BankAccount`.
 
-Entities are created on the fly, by _reducing_ the whole event stream. You shouldn't assume that they are stored anywhere. However, Booster
-does create automatic snapshots to make the reduction process efficient. You are the one in charge of writing the
-reducer function.
+You can assume that entities are created on the fly by _reducing_ the whole event stream. Under the hood, Booster is creating
+automatic snapshots for each entity so that the reduction process is efficient.
 
-An entity is defined as a class with the `@Entity` decorator. Inside of it, you can write one or more static methods with
-the `@Reduces` decorator that defines the name of the event class that the reducer is subscribed to. The reducer method is called once every time that one event of that type is registered in the event store, and Booster expects you to return how the entity ends up after the event has been applied. An entity class looks like this:
+An entity is defined as a class with the `@Entity` decorator. Inside of it, you can write one or more static methods (called "reducers") with
+the `@Reduces` decorator specifying the event they reduce. The reducer method will be called with two arguments: the event
+and the current state of the entity. Booster expects you to return a new entity with the changes implied by the event applied to the current one. 
+
+An entity class looks like this:
 
 ```typescript
 @Entity
@@ -1190,15 +1190,15 @@ export class EntityName {
   public constructor(readonly fieldA: SomeType, readonly fieldB: SomeOtherType /* as many fields as needed */) {}
 
   @Reduces(SomeEvent)
-  public static reduceSomeEvent(event: SomeEvent, previousState?: EntityName): EntityName {
-    /* Return a new entity based on the previous one */
+  public static reduceSomeEvent(event: SomeEvent, currentEntityState?: EntityName): EntityName {
+    /* Return a new entity based on the current one */
   }
 }
 ```
 
-Each time an event is registered, the reducer of its entity is triggered. Note that event ordering is
-preserved per entity instance. This means that one entity will receive just **one event each time**, and all other events of any kind that belong to the same entity will be waiting in a queue until the previous reducer has finished. This is important to make sure that entities state can be easily predicted even when events are being generated concurrently all over the place. It's also one of the reasons why we recommend to keep reducer functions simple and pure: with no side effects or external data gathering.
-be picked will be the one that was generated first.
+There could be a lot of events being reduced concurrently among many entities, but, **for a specific entity instance, the events order is preserved**.
+This means that while one event is being reduced, all other events of any kind _that belong to the same entity instance_ will be waiting in a queue until the previous reducer has finished (with "entity instance" we refer to an entity of a specific type and with a specific ID).
+This is important to make sure that entities state is built correctly.
 
 #### Entities naming convention
 
@@ -1213,10 +1213,10 @@ might appear when you think about your app. In an e-commerce application, some e
 - PaymentMethod
 - Stock
 
-Entities live within the entities directory of the project source: `project-root/src/entities`.
+Entities live within the entities directory of the project source: `<project-root>/src/entities`.
 
 ```text
-project-root
+<project-root>
 ├── src
 │   ├── commands
 │   ├── common
@@ -1235,16 +1235,16 @@ The preferred way to create an entity is by using the generator, e.g.
 boost new:entity Product --fields displayName:string description:string price:Money
 ```
 
-The generator will automatically create a file called `Product.ts` with a TypeScript class of the same name under the entities directory. You can still create the entity manually. Since the generator is not doing any magic, all you need is a class decorated as `@Command`. Anyway, we recommend you always to use the generator, because it handles the boilerplate code for you.
+The generator will automatically create a file called `Product.ts` with a TypeScript class of the same name under the `entities` directory. You can still create the entity manually by creating a class decorated as `@Entity`. Anyway, we recommend you always to use the generator because it handles the boilerplate code for you.
 
 Note:
 
-> Running the entity generator with an EntityName that already exists will overwrite the content of the current one. In future releases, we will display a warning before overwriting anything. Meantime, if you missed a field, just add it to the class because, in Booster, all the infrastructure and data structures are inferred from your code.
+> Generating an entity with the same name as an already existing one will overwrite its content. Soon, we will display a warning before overwriting anything.
 
 #### The reducer function
 
 Booster generates the reducer function as a static method of the entity class. That function is called by the framework every time that an event of the
-specified type is emitted. It's highly recommended to **keep your reducer functions pure**, which means that you should be able to produce the new entity version by just looking at the event and the previous entity state (which are both injected via parameter by the framework). You should avoid calling third party services, reading or writing to a database, or changing any external state.
+specified type needs to be reduced. It's highly recommended to **keep your reducer functions pure**, which means that you should be able to produce the new entity version by just looking at the event and the current entity state. You should avoid calling third party services, reading or writing to a database, or changing any external state.
 
 Booster injects two parameters to the reducer functions:
 
@@ -1290,7 +1290,7 @@ extreme situations, where other systems might simply fail.
 
 ### 5. Read models and projections
 
-Read Models are cached data optimized for read operations and they're updated reactively when [Entities](#4-entities-and-reducers) are updated by new [events](#2-events). They also define the *Read* API, the available REST endpoints and their structure.
+Read Models are cached data optimized for read operations. They're updated reactively when [Entities](#4-entities-and-reducers) are updated after reducing [events](#2-events). They also define the *Read API*.
 
 Read Models are classes decorated with the `@ReadModel` decorator that have one or more projection methods.
 
@@ -1303,8 +1303,8 @@ export class CartReadModel {
     public paid: boolean
   ) {}
 
-  @Projection(Cart, 'id')
-  public static updateWithCart(cart: Cart, oldCartReadModel?: CartReadModel): CartReadModel {
+  @Projects(Cart, 'id')
+  public static updateWithCart(cart: Cart, currentCartReadModel?: CartReadModel): CartReadModel {
     return new CartReadModel(cart.id, cart.cartItems, cart.paid)
   }
 }
@@ -1317,12 +1317,12 @@ export class CartReadModel {
 boost new:read-model CartReadModel --fields id:UUID cartItems:"Array<CartItem>" paid:boolean --projects Cart
 ```
 
-This will create a file in the read-models directory `project-root/src/read-models/CartReadModel.ts`.
+This will create a file in the read-models directory `<project-root>/src/read-models/CartReadModel.ts`.
 
 Read Model classes can also be created by hand and there are no restrictions regarding the place you put the files. The structure of the data is totally open and can be as complex as you can manage in your projection functions.
 
 #### The projection function
-A `Projection` is a method decorated with the `@Projection` decorator that, given a new entity value and (optionally) a previous read model state, generate a new read model value.
+A `Projection` is a method decorated with the `@Projects` decorator that, given a new entity value and (optionally) the current read model state, generate a new read model value.
 
 Read models can be projected from multiple [entities](#4-entities-and-reducers) as soon as they share some common key called `joinKey`.
 
