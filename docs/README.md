@@ -441,9 +441,7 @@ boost new:entity Post --fields title:string content:string author:string --reduc
 
 You should see now a new file called `Post.ts` in the `src/entities` directory.
 
-This time, besides using the `--fields` flag to indicate the properties of our `Post` entity, we have
-also used the `--reduces` flag to specify the events the entity will reduce to produce the Post current
-state. The generator will create one _reducer function_ for each event we have specified (only one in this case).
+This time, besides using the `--fields` flag, we use the `--reduces` flag to specify the events the entity will reduce and, this way, produce the Post current state. The generator will create one _reducer function_ for each event we have specified (only one in this case).
 Reducer functions in Booster work similarly to the `reduce` callbacks in Javascript: they receive an event
 and the current state of the entity, and returns the next version of the same entity.
 In this case, when we receive a `PostCreated` event, we can just return a new `Post` entity copying the fields 
@@ -524,7 +522,7 @@ export class PostReadModel {
 
 At this point, we've:
 
-- Learned to create a publicly accessible command
+- Created a publicly accessible command
 - Emitted an event as a mechanism to store data.
 - Reduced the event into an entity
 - Projected the entity into a read model that is also publicly accessible.
