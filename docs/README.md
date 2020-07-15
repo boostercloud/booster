@@ -49,7 +49,7 @@
     + [Querying a read model](#querying-a-read-model)
     + [Getting real-time updates for a read model](#getting-real-time-updates-for-a-read-model)
 - [Features](#features)
-  * [IAM - Authentication and Authorization](#iam---authentication-and-authorization)
+  * [Authentication and Authorization](#authentication-and-authorization)
     + [Sign-up](#sign-up)
     + [Sign-in](#sign-in)
     + [Sign-out](#sign-out)
@@ -719,7 +719,7 @@ In this chapter you'll walk through these concepts and its details.
 
 ### 1. Command and command handlers
 
-Booster is different than MVC frameworks in which you typically implement controller classes with the four CRUD methods per model. Instead of that, you define commands, which are the user actions when interacting with an application. This approach fits very well with Domain-Driven Design. Depending on your application's domain, some examples of commands would be: `RemoveItemFromCart`, `RatePhoto`, `AddCommentToPost`, etc. Although, you can still have `Create*`, `Delete*`, or `Update*` commands when they make sense.
+Booster is different than MVC frameworks in which you typically implement controller classes with CRUD methods. Instead of that, you define commands, which are the user actions when interacting with an application. This approach fits very well with Domain-Driven Design. Depending on your application's domain, some examples of commands would be: `RemoveItemFromCart`, `RatePhoto`, `AddCommentToPost`, etc. Although, you can still have `Create*`, `Delete*`, or `Update*` commands when they make sense.
 
 There is an architectural split between commands and command handlers though they *live* in the same file. The command is the class with the `@Command` decorator, and the generated method called `handle` is the command handler. That is because Booster adopts several concepts from functional programming; the separation between data structures and data transformations is one of them. In Booster, a command looks like this:
 
@@ -785,7 +785,7 @@ Note:
 
 #### The command handler function
 
-Each command class must have a method called `handle`. This function is the command handler, and it will be called by the framework every time one instance of this command is submitted. Inside the handler you can run validations, return errors, query entities to make decisions and register relevant domain events.
+Each command class must have a method called `handle`. This function is the command handler, and it will be called by the framework every time one instance of this command is submitted. Inside the handler you can run validations, return errors, query entities to make decisions, and register relevant domain events.
 
 ##### Validating data
 
