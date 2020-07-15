@@ -1,21 +1,6 @@
-export const fileUploader = `kind: Service
-apiVersion: v1
-metadata:
-  name: fileuploader
-  namespace: {{ namespace }}
-  labels:
-    app: fileuploader
-spec:
-  selector:
-    app: fileuploader
-  ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 2000
-  type: LoadBalancer
-
----
-apiVersion: apps/v1
+export const uploaderPod = {
+  name: 'fileuploader',
+  template: `apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: fileuploader
@@ -48,4 +33,5 @@ spec:
           - mountPath: "/data/appCode"
             name: app-code
         imagePullPolicy: Always
-`
+`,
+}

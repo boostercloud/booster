@@ -25,7 +25,14 @@
     "semver": "^7.3.2",
     "@types/semver": "5.5.0",
     "mustache": "^3.0.1",
-    "js-yaml": "^3.14.0"
+    "js-yaml": "^3.14.0",
+    "archiver": "^4.0.1",
+    "@types/archiver":"^3.1.0",
+    "form-data":"^3.0.0",
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4",
+    "isomorphic-fetch": "^2.2.1",
+    "cors": "^2.8.5"
   },
   "scripts": {
     "lint": "eslint --ext '.js,.ts' **/*.ts",

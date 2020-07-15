@@ -52,5 +52,8 @@
     "packages/cli",
     "packages/framework-integration-tests"
   ],
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@types/archiver": "^3.1.0"
+  }
 }

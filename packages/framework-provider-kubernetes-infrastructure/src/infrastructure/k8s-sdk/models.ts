@@ -22,8 +22,17 @@ export interface Pod {
   ip?: string
 }
 
-export interface TemplateValues {
+export interface Service {
+  name?: string
   namespace?: string
-  clusterVolume?: string
-  environment?: string
+  kind?: string
+  labels?: { [key: string]: string }
+  status?: string
+  ip?: string
+}
+
+export interface VolumeClaim {
+  name?: string
+  status?: string
+  labels?: { [key: string]: string }
 }

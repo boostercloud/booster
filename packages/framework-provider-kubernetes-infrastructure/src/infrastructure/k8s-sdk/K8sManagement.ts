@@ -1,20 +1,13 @@
 import { CoreV1Api, KubeConfig, KubernetesObject, KubernetesObjectApi } from '@kubernetes/client-node'
-import { Node, Namespace, Pod, TemplateValues } from './models'
+import { Node, Namespace, Pod, Service, VolumeClaim } from './models'
 import * as Mustache from 'mustache'
-import { boosterApp } from '../templates/boosterApp'
-import { fileUploader } from '../templates/fileUploader'
-import { boosterVolumeClaim } from '../templates/boosterVolumeClaim'
 import { safeLoadAll } from 'js-yaml'
-import { sleep } from '../utils'
+import { waitForIt } from '../utils'
+import { TemplateValues } from '../templates/templateInterface'
 
 export class K8sManagement {
   private kube: KubeConfig
   private k8sClient: CoreV1Api
-  private kubernetesTemplates = new Map([
-    ['boosterApp', boosterApp],
-    ['fileUploader', fileUploader],
-    ['boosterVolumeClaim', boosterVolumeClaim],
-  ])
 
   constructor() {
     this.kube = new KubeConfig()
@@ -34,6 +27,31 @@ export class K8sManagement {
         ip: item.status?.podIP,
       }
     })
+  }
+
+  public async getAllServicesInNamespace(namespace: string): Promise<Array<Service>> {
+    const response = await this.unwrapResponse(this.k8sClient.listNamespacedService(namespace))
+    return response.items.map((item) => {
+      return {
+        name: item.metadata?.name,
+        namespace: item.metadata?.namespace ?? 'default',
+        labels: item.metadata?.labels ?? {},
+        ip: item.status?.loadBalancer?.ingress?.[0].ip ? item.status.loadBalancer.ingress[0].ip : '',
+      }
+    })
+  }
+
+  public async getAllVolumeClaimFromNamespace(namespace: string): Promise<Array<VolumeClaim>> {
+    const response = await this.unwrapResponse(this.k8sClient.listPersistentVolumeClaimForAllNamespaces())
+    return response.items
+      .filter((item) => item.metadata?.namespace === namespace)
+      .map((item) => {
+        return {
+          name: item.metadata?.name,
+          status: item.status?.phase,
+          labels: item.metadata?.labels ?? {},
+        }
+      })
   }
 
   public async getAllNamespaces(): Promise<Array<Namespace>> {
@@ -81,10 +99,24 @@ export class K8sManagement {
     })
   }
 
-  public async getPodFromNamespace(name: string, namespace: string): Promise<Pod | undefined> {
+  public async getPodFromNamespace(namespace: string, podName: string): Promise<Pod | undefined> {
     const pods = await this.getAllPodsInNamespace(namespace)
     return pods.find((pod) => {
-      return pod?.labels?.['app'] === name
+      return pod?.labels?.['app'] === podName
+    })
+  }
+
+  public async getServiceFromNamespace(namespace: string, serviceName: string): Promise<Pod | undefined> {
+    const pods = await this.getAllServicesInNamespace(namespace)
+    return pods.find((pod) => {
+      return pod?.labels?.['app'] === serviceName
+    })
+  }
+
+  public async getVolumeClaimFromNamespace(namespace: string, volumeClaim: string): Promise<VolumeClaim | undefined> {
+    const pods = await this.getAllVolumeClaimFromNamespace(namespace)
+    return pods.find((pod) => {
+      return pod?.labels?.['app'] === volumeClaim
     })
   }
 
@@ -112,28 +144,13 @@ export class K8sManagement {
     })
   }
 
-  public async getAllNodesWithOpenWhiskRole(role: string): Promise<Array<Node>> {
-    const clusterNodes = await this.getAllNodesInCluster()
-    return clusterNodes.filter((node) => {
-      if (node.labels && 'openwhisk-role' in node.labels) {
-        return node.labels['openwhisk-role'] === role
-      } else {
-        return false
-      }
-    })
-  }
-
   public async getMainNode(): Promise<Node | null> {
     const clusterNodes = await this.getAllNodesInCluster()
     return clusterNodes.find((node) => node.mainNode) ?? null
   }
 
-  public async applyTemplate(templateName: string, templateData: TemplateValues): Promise<Array<KubernetesObject>> {
+  public async applyTemplate(template: string, templateData: TemplateValues): Promise<Array<KubernetesObject>> {
     const client = KubernetesObjectApi.makeApiClient(this.kube)
-    const template = this.kubernetesTemplates.get(templateName)
-    if (!template) {
-      throw new Error('Kubernetes template for deploy not found')
-    }
     const renderedYaml = Mustache.render(template, templateData)
     const specs = safeLoadAll(renderedYaml)
     const validSpecs = specs.filter((s) => s && s.kind && s.metadata)
@@ -145,7 +162,7 @@ export class K8sManagement {
       spec.metadata.annotations['kubectl.kubernetes.io/last-applied-configuration'] = JSON.stringify(spec)
       try {
         await client.read(spec)
-        const response = await client.patch(spec)
+        const response = await client.replace(spec)
         created.push(response.body)
       } catch (e) {
         const response = await client.create(spec)
@@ -155,23 +172,26 @@ export class K8sManagement {
     return created
   }
 
-  public async waitForPodToBeReady(namespace: string, podName: string, timeout = 180): Promise<boolean> {
-    let waitedTime = 0
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const podInfo = await this.getPodFromNamespace(podName, namespace)
-      if (podInfo?.status != 'Running') {
-        console.log(' ', podInfo?.status)
-        if (waitedTime >= timeout) {
-          return false
-        } else {
-          waitedTime += 1
-          await sleep(1000)
-        }
-      } else {
-        return true
-      }
-    }
+  public waitForPodToBeReady(namespace: string, podName: string, timeout = 180000): Promise<Pod | undefined> {
+    return waitForIt(
+      () => this.getPodFromNamespace(namespace, podName),
+      (podInfo) => podInfo?.status === 'Running',
+      `Unable to get the pod ${podName} in status Running, please check your cluster for more information`,
+      timeout
+    )
+  }
+
+  public waitForServiceToBeReady(
+    namespace: string,
+    serviceName: string,
+    timeout = 180000
+  ): Promise<Service | undefined> {
+    return waitForIt(
+      () => this.getServiceFromNamespace(namespace, serviceName),
+      (serviceInfo) => serviceInfo?.ip !== '',
+      `Unable to get the service ${serviceName} in status Running, please check your cluster for more information`,
+      timeout
+    )
   }
 
   private async unwrapResponse<TBody>(wrapped: Promise<{ body: TBody }>): Promise<TBody> {

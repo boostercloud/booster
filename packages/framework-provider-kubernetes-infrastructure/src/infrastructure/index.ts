@@ -2,8 +2,9 @@
 import { Observable, Subscriber } from 'rxjs'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { K8sManagement } from './k8s-sdk/K8sManagement'
-import { getProjectNamespaceName } from './utils'
 import { HelmManager } from './helm-manager'
+import { DeployManager } from './deploy-manager'
+import { getProjectNamespaceName } from './utils'
 
 export function deploy(configuration: BoosterConfig): Observable<string> {
   return new Observable((observer): void => {
@@ -15,67 +16,25 @@ export function deploy(configuration: BoosterConfig): Observable<string> {
 }
 
 async function deployBoosterApp(observer: Subscriber<string>, configuration: BoosterConfig): Promise<void> {
-  const clusterManager = new K8sManagement()
-  const projectNamespace = getProjectNamespaceName(configuration)
-  const namespace = await clusterManager.getNamespace(projectNamespace)
-
-  if (!namespace) {
-    observer.next(`Creating the namespace: ${projectNamespace} for your project`)
-    const clusterResponse = await clusterManager.createNamespace(projectNamespace)
-    if (!clusterResponse) {
-      throw new Error('Unable to create a namespace for your project, please check your Kubectl configuration')
-    }
-  }
-  const templateValues = {
-    environment: configuration.environmentName,
-    namespace: projectNamespace,
-    clusterVolume: 'booster-pvc',
-  }
-  observer.next('Preparing the environment to launch tyou code 🏗')
-  await clusterManager.applyTemplate('fileUploader', templateValues)
-  const fileUploaderReady = await clusterManager.waitForPodToBeReady(projectNamespace, 'fileuploader')
-  if (!fileUploaderReady) {
-    throw new Error('Unable to create a resource inside your cluster, please review your Kubectl configuration')
-  }
-
-  observer.next('Packing your to send it into the space  📦')
-  /*
-  const namespace = await clusterManager.getNamespace(projectNamespace)
-  if (!namespace) {
-    observer.next(`Creating the namespace: ${projectNamespace} for your project`)
-    const clusterResponse = await clusterManager.createNamespace(projectNamespace)
-    if (!clusterResponse) {
-      throw new Error('Unable to create a namespace for your project')
-    }
-  }
-  //TODO: we should check here the current cluster health instead of suppose that all is properly working
-
-  observer.next('Provisioning all cluster resources 👷')
-  const helm = new HelmManager()
-  await helm.init()
-  const isHelmReady = await helm.isHelmReady()
-  if (!isHelmReady) {
-    throw new Error(helm.getHelmError())
-  }
-
-  const mainNode = await clusterManager.getMainNode()
-  if (!mainNode) {
-    throw new Error('Cluster main node not found')
-  }
-
-  if (!mainNode.ip) {
-    throw new Error('Unable to find the main node IP')
-  }
-  //TODO: Currently for the IP we are using the main Node IP but this needs to be properly defined when the architecture will be fully defined
-  const deploy = await helm.exec(
-    `install boost-test boosterchart/openwhisk -n ${projectNamespace} --set whisk.ingress.apiHostName=${mainNode.ip}`
-  )
-  if (deploy.stderr) {
-    throw new Error(deploy.stderr)
-  }
-  observer.next(deploy.stdout)
-  observer.next('Deploying your Booster app into the cluster')
-  //TODO: upload the user code to the cluster this will be managed when the cluster architecture will be fully defined*/
+  const deployManager = new DeployManager(configuration)
+  const initTime = Date.now()
+  observer.next(`${initTime}`)
+  observer.next('Checking your project namespace')
+  await deployManager.verifyNamespace()
+  observer.next('Deploying all the neccesary services')
+  //TODO: deploy Dapr here!!
+  await deployManager.verifyUploadService()
+  await deployManager.verifyBoosterService()
+  observer.next('Waiting for cluster to be ready to receive your code')
+  await deployManager.verifyUploadPod()
+  observer.next('Packing and uploading your code into the cluster')
+  await deployManager.uploadUserCode()
+  observer.next('Deploying your booster app 🚀')
+  const serviceURL = await deployManager.deployBoosterApp()
+  observer.next(`Your app is ready in this url: http://${serviceURL}`)
+  const endTime = Date.now()
+  observer.next(`${endTime}`)
+  observer.next(`Deploy Time: ${endTime - initTime}`)
   observer.complete()
 }
 

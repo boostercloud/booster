@@ -1,22 +1,6 @@
-export const boosterApp = `kind: Service
-apiVersion: v1
-metadata:
-  name: booster
-  namespace: {{ namespace }}
-  labels:
-    app: booster
-spec:
-  selector:
-    app: booster
-  ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 3000
-  type: LoadBalancer
- 
----
-
-apiVersion: apps/v1
+export const boosterAppPod = {
+  name: 'booster',
+  template: `apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: {{ namespace }}
@@ -25,6 +9,11 @@ metadata:
     app: booster
 spec:
   replicas: 2
+  strategy:
+    type: "RollingUpdate"
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 50%
   selector:
     matchLabels:
       app: booster
@@ -33,6 +22,9 @@ spec:
       labels:
         app: booster
       annotations:
+        {{#timestamp}}
+        booster/deployed: "{{ timestamp }}"
+        {{/timestamp}}
         dapr.io/enabled: "true"
         dapr.io/id: "booster"
         dapr.io/port: "3000"
@@ -45,6 +37,13 @@ spec:
           value: {{ environment }}
         ports:
         - containerPort: 3000
+        readinessProbe:
+          httpGet:
+              path: /ready
+              port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          successThreshold: 1
         volumeMounts: 
           - mountPath: /data/appCode
             name: app-code
@@ -62,4 +61,5 @@ spec:
       volumes: 
       - name: app-code
         persistentVolumeClaim: 
-          claimName: {{ clusterVolume }} `
+          claimName: {{ clusterVolume }} `,
+}
