@@ -98,7 +98,7 @@ Booster documentation, located at `/docs/README.md`, is treated as a live docume
 
 Bear in mind that if you have added a new section, or changed an existing one you will need to update the table of content. This can be easily done with the following command:
 
-```typescript
+```sh
 yarn update-tocs
 ```
 
