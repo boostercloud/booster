@@ -38,12 +38,8 @@ export class EventRegistry {
   }
 
   public async deleteAll(): Promise<number> {
-    return await this.delete({})
-  }
-
-  public async delete(query: object): Promise<number> {
     const deletePromise = new Promise((resolve, reject) =>
-      this.events.remove(query, { multi: true }, (err, numRemoved: number) => err ? reject(err) : resolve(numRemoved))
+      this.events.remove({}, { multi: true }, (err, numRemoved: number) => err ? reject(err) : resolve(numRemoved))
     )
 
     return (await deletePromise) as number
