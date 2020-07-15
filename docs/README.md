@@ -524,7 +524,7 @@ At this point, we've:
 
 - Created a publicly accessible command
 - Emitted an event as a mechanism to store data.
-- Reduced the event into an entity
+- Reduced the event into an entity to have a representation of our internal state
 - Projected the entity into a read model that is also publicly accessible.
 
 With this, you already know the basics to build event-driven, CQRS-based applications
