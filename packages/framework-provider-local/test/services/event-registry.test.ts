@@ -82,7 +82,7 @@ describe('the event registry', () => {
       expect(result).to.deep.include(copyOfMockTargetEvent)
     })
   })
-  
+
   describe('delete all', () => {
     beforeEach(async () => {
       const mockEvent: EventEnvelope = createMockEventEnvelop()

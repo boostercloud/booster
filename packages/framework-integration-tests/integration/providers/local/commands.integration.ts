@@ -8,6 +8,7 @@ import * as DataStore from 'nedb'
 import { eventsDatabase } from '@boostercloud/framework-provider-local'
 import { EventEnvelope } from '@boostercloud/framework-types'
 import { waitForIt } from '../aws/utils'
+import util = require('util')
 
 describe('commands', () => {
   const events: DataStore<EventEnvelope> = new DataStore(eventsDatabase)
@@ -102,17 +103,10 @@ describe('commands', () => {
             )
       )
 
-      const snapshotsCount = new Promise((resolve, reject) =>
-        events.count(
-          {
-            kind: 'snapshot',
-            entityID: mockCartId,
-          },
-          (err, count) => err ? reject(err) : resolve(count)
-        )
-      )
-
-      expect(await snapshotsCount).to.be.equal(1)
+      const countPromise = util.promisify((query: any, callback: any) =>
+        events.count(query, (err, count) => callback(err, count)))
+      
+      expect(await countPromise({ kind: 'snapshot', entityID: mockCartId })).to.be.equal(1)
     })
   })
 })
