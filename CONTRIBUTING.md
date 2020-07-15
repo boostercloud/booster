@@ -6,19 +6,23 @@ This document is a set of guidelines to help you contribute to Booster, which is
 organization. These aren’t absolute laws, use your judgment and common sense 😀.
 Remember that if something here doesn't make sense, you can also propose a change to this document.
 
+<!-- toc -->
+
 - [Code of Conduct](#code-of-conduct)
 - [I don't want to read this whole thing, I just have a question!!!](#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
 - [What should I know before I get started?](#what-should-i-know-before-i-get-started)
-  - [Packages](#packages)
+  * [Packages](#packages)
 - [How Can I Contribute?](#how-can-i-contribute)
-  - [Reporting Bugs](#reporting-bugs)
-  - [Suggesting Enhancements](#suggesting-enhancements)
+  * [Reporting Bugs](#reporting-bugs)
+  * [Suggesting Enhancements](#suggesting-enhancements)
+  * [Improving documentation](#improving-documentation)
 - [Your First Code Contribution](#your-first-code-contribution)
-  - [Github Flow](#github-flow)
-  - [Test-driven approach](#test-driven-approach)
-  - [Publishing your Pull Request](#publishing-your-pull-request)
-  - [Commit message guidelines](#commit-message-guidelines)
+  * [Github flow](#github-flow)
+  * [Test-driven approach](#test-driven-approach)
+  * [Publishing your Pull Request](#publishing-your-pull-request)
+  * [Commit message guidelines](#commit-message-guidelines)
 
+<!-- tocstop -->
 
 ## Code of Conduct
 
@@ -87,6 +91,16 @@ Enhancement suggestions are tracked as GitHub issues. Make sure you provide the 
 - Describe the current behavior and explain which behavior you expected to see instead and why.
 - Explain why this enhancement would be useful to most Booster users and isn't something that can or should be implemented as a community package.
 - List some other libraries or frameworks where this enhancement exists.
+
+### Improving documentation
+
+Booster documentation, located at `/docs/README.md`, is treated as a live document that continues improving on a daily basis. If you find something that is missing or can be improved, please contribute, it will be of great help for other developers.
+
+Bear in mind that if you have added a new section, or changed an existing one you will need to update the table of content. This can be easily done with the following command:
+
+```typescript
+yarn update-tocs
+```
 
 ## Your First Code Contribution
 
