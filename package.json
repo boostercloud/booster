@@ -6,7 +6,9 @@
   "bugs": "https://github.com/boostercloud/booster/issues",
   "private": true,
   "scripts": {
-    "update-documentation-toc": "markdown-toc -i --maxdepth 4 docs/README.md"
+    "update-tocs": "yarn update-documentation-toc && yarn update-contributing-toc",
+    "update-documentation-toc": "markdown-toc -i --maxdepth 4 docs/README.md",
+    "update-contributing-toc": "markdown-toc -i --maxdepth 4 CONTRIBUTING.md"
   },
   "devDependencies": {
     "@octokit/rest": "^17.0.0",
