@@ -1158,7 +1158,7 @@ register.events(new ProductAvailabilityChanged(event.productID, -event.quantity)
 
 #### Reading entities from event handlers
 
-Just as we do in command handlers, we can also retrieve entities information to make decisions based on its current state.
+Just as we do in command handlers, we can also retrieve entities information to make decisions based on their current state.
 
 Let's say that we want to check the status of a product before we trigger its availability update. In that case we would call the `Booster.fetchEntitySnapshot` function, which will return information about the entity.
 
@@ -1235,7 +1235,7 @@ The preferred way to create an entity is by using the generator, e.g.
 boost new:entity Product --fields displayName:string description:string price:Money
 ```
 
-The generator will automatically create a file called `Product.ts` with a TypeScript class of the same name under the `entities` directory. You can still create the entity manually by creating a class decorated as `@Entity`. Anyway, we recommend you always to use the generator because it handles the boilerplate code for you.
+The generator will automatically create a file called `Product.ts` with a TypeScript class of the same name under the `entities` directory. You can still create the entity manually, writing a class decorated with `@Entity`. Anyway, we recommend you always to use the generator because it handles the boilerplate code for you.
 
 Note:
 
