@@ -239,6 +239,42 @@ aws_access_key_id = <YOUR ACCESS KEY ID>
 aws_secret_access_key = <YOUR SECRET ACCESS KEY>
 ```
 
+##### Multiple AWS Accounts
+
+If you are using multiple AWS accounts and don't want to use the default profile,
+you will need to set a `region` option to let the AWS SDK know which region you want your application to be deployed to.
+To do so, we have two possible solutions:
+* Add the region to the profile of your choice in your `~/.aws/credentials` file
+
+```ini
+# ~/.aws/credentials
+[default]
+aws_access_key_id = <DEFAULT ACCESS KEY ID>
+aws_secret_access_key = <DEFAULT SECRET ACCESS KEY>
+region=<DEFAULT REGION>
+
+[other_profile] # Give this profile the name that works best for you
+aws_access_key_id = <YOUR ACCESS KEY ID>
+aws_secret_access_key = <YOUR SECRET ACCESS KEY>
+region=<REGION FOR YOUR BOOSTER APP>
+```
+* Or creating a `~/.aws/config` file
+```ini
+# ~/.aws/config
+[default]
+region=<DEFAULT REGION>
+
+[profile other_profile] # You can rename the profile in any way that works for you
+region=<REGION FOR YOUR BOOSTER APP>
+```
+
+When using multiple profiles make sure to export the `AWS_PROFILE` environment variable to deploy or nuke
+the application with the selected profile.
+
+```shell
+export AWS_PROFILE=other_profile
+```
+
 #### Installing the Booster CLI
 
 Booster comes with a command-line tool that helps you generating boilerplate code,
