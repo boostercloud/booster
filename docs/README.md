@@ -347,7 +347,7 @@ by the users of our application. When they are received you can validate its dat
 execute some business logic, and register one or more events. Therefore, we have to define two more things:
 
 1. Who is authorized to run this command.
-1. The type of the events that will be triggered.
+1. The events that it will trigger.
 
 Booster allows you to define authorization strategies (we will cover that
 later). Let's start by allowing anyone to send this command to our application.
@@ -445,7 +445,7 @@ This time, besides using the `--fields` flag to indicate the properties of our `
 also used the `--reduces` flag to specify the events the entity will reduce to produce the Post current
 state. The generator will create one _reducer function_ for each event we have specified (only one in this case).
 Reducer functions in Booster work similarly to the `reduce` callbacks in Javascript: they receive an event
-and the current state of the entity, and generate a new version of the state.
+and the current state of the entity, and returns the next version of the same entity.
 In this case, when we receive a `PostCreated` event, we can just return a new `Post` entity copying the fields 
 from the event. There is no previous state of the Post as we are creating it for the first time:
 
@@ -462,7 +462,7 @@ export class Post {
 }
 ```
 
-Entities represent domain model our system and can be queried from command or
+Entities represent our domain model and can be queried from command or
 event handlers to make business decisions or enforcing business rules.
 
 #### 5. First read model
@@ -472,7 +472,7 @@ including all their fields. What is more, different users may have different vie
 on their permissions. That's the goal of `ReadModels`. Client applications can query or
 subscribe to them. 
 
-Read models _project_ entities to build themselves. Let's generate a `PostReadModel` that projects our 
+Read models are _projections_ of one or more entities into a new object that is reachable through the query and subscriptions APIs. Let's generate a `PostReadModel` that projects our 
 `Post` entity:
 
 ```bash
@@ -480,7 +480,7 @@ boost new:read-model PostReadModel --fields title:string author:string --project
 ```
 
 We have used a new flag, `--projects`, that allow us to specify the entities (can be many) the read model will
-project. You might be wondering what is the `:id` after the entity name. That's the [joinKey](#the-projection-function),
+watch for changes. You might be wondering what is the `:id` after the entity name. That's the [joinKey](#the-projection-function),
 but you can forget about it now. 
 
 As you might guess, the read-model generator will create a file called
