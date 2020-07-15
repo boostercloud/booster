@@ -82,33 +82,7 @@ describe('the event registry', () => {
       expect(result).to.deep.include(copyOfMockTargetEvent)
     })
   })
-
-  describe('delete', () => {
-    beforeEach(async () => {
-      const publishPromises: Array<Promise<any>> = []
-
-      for (let i = 0; i < initialEventsCount; i++) {
-        publishPromises.push(eventRegistry.store(createMockEventEnvelop()))
-      }
-
-      await Promise.all(publishPromises)
-
-      mockTargetEvent = createMockEventEnvelop()
-      await eventRegistry.store(mockTargetEvent)
-    })
-
-    it('should delete expected event', async () => {
-      expect((await eventRegistry.query({})).length).to.be.equal(initialEventsCount + 1)
-
-      const numberOfDeletedEvents = await eventRegistry.delete({
-        entityID: mockTargetEvent.entityID,
-      })
-
-      expect(numberOfDeletedEvents).to.be.equal(1)
-      expect((await eventRegistry.query({})).length).to.be.equal(initialEventsCount)
-    })
-  })
-
+  
   describe('delete all', () => {
     beforeEach(async () => {
       const mockEvent: EventEnvelope = createMockEventEnvelop()
