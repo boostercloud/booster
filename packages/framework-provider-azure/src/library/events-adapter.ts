@@ -9,11 +9,7 @@ import { Context } from '@azure/functions'
 const originOfTime = new Date(0).toISOString()
 
 export function rawEventsToEnvelopes(context: Context): Array<EventEnvelope> {
-  return context.bindings.rawEvent.map(
-    (event: any): EventEnvelope => {
-      return event as EventEnvelope
-    }
-  )
+  return context.bindings.rawEvent as Array<EventEnvelope>
 }
 
 export async function readEntityEventsSince(
@@ -43,9 +39,7 @@ export async function readEntityEventsSince(
     .container(config.resourceNames.eventsStore)
     .items.query(querySpec)
     .fetchAll()
-  return resources.map((resource: any) => {
-    return resource as EventEnvelope
-  })
+  return resources as Array<EventEnvelope>
 }
 
 export async function readEntityLatestSnapshot(
