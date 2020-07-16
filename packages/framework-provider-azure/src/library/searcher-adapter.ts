@@ -30,7 +30,7 @@ function buildFilterExpression(filters: Record<string, Filter<any>>): string {
     .map(([propName, filter]) => buildOperation(propName, filter))
     .join(' AND ')
   if (filterExpression !== '') {
-    return 'WHERE ' + filterExpression
+    return `WHERE ${filterExpression}`
   }
   return filterExpression
 }
