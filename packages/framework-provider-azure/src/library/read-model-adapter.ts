@@ -11,7 +11,7 @@ export async function fetchReadModel(
   const { resource } = await db
     .database(config.resourceNames.applicationStack)
     .container(config.resourceNames.forReadModel(readModelName))
-    .item(readModelID as string, readModelID)
+    .item(readModelID, readModelID)
     .read()
 
   logger.debug(
