@@ -13,7 +13,7 @@ import { WebSocketLink } from 'apollo-link-ws'
 import { getMainDefinition } from 'apollo-utilities'
 import { split } from 'apollo-link'
 import * as WebSocket from 'ws'
-import { SubscriptionClient } from 'subscriptions-transport-ws'
+import { OperationOptions, SubscriptionClient } from 'subscriptions-transport-ws'
 import { ApolloClientOptions } from 'apollo-client/ApolloClient'
 
 const userPoolId = 'userpool'
@@ -271,6 +271,15 @@ export class DisconnectableApolloClient extends ApolloClient<NormalizedCacheObje
  */
 export async function graphQLClientWithSubscriptions(authToken?: string): Promise<DisconnectableApolloClient> {
   const subscriptionClient = await graphqlSubscriptionsClient(authToken)
+  subscriptionClient.use([
+    {
+      applyMiddleware(options: OperationOptions, next: Function): void {
+        options.Authorization = authToken
+        next()
+      }
+    }
+  ])
+
   const websocketLink = new WebSocketLink(subscriptionClient)
 
   const link = split(

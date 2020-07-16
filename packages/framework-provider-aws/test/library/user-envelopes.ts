@@ -99,7 +99,7 @@ describe('the fetchUserFromRequest function', () => {
       headers: {},
     } as any
 
-    await expect(fetchUserFromRequest(apiEvent, userPool)).to.be.eventually.equal(undefined)
+    await expect(fetchUserFromRequest(userPool, apiEvent)).to.be.eventually.equal(undefined)
   })
 
   it('returns a user when the corresponding token is provided', async () => {
@@ -134,7 +134,7 @@ describe('the fetchUserFromRequest function', () => {
         Authorization: `Bearer ${token}`,
       },
     } as any
-    await expect(fetchUserFromRequest(apiEvent, userPool)).to.be.eventually.deep.equal(expectedUser)
+    await expect(fetchUserFromRequest(userPool, apiEvent)).to.be.eventually.deep.equal(expectedUser)
     expect(userPool.getUser).to.have.been.calledWith({
       AccessToken: token,
     })

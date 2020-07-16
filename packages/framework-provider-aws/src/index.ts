@@ -46,7 +46,7 @@ export const Provider: ProviderLibrary = {
   // ProviderGraphQLLibrary
   graphQL: {
     authorizeRequest: authorizeRequest.bind(null, userPool),
-    rawToEnvelope: rawGraphQLRequestToEnvelope,
+    rawToEnvelope: rawGraphQLRequestToEnvelope.bind(null, userPool),
     handleResult: requestSucceeded,
   },
   // ProviderAuthLibrary

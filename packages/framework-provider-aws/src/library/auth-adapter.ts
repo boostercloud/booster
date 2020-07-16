@@ -14,7 +14,7 @@ export async function authorizeRequest(
   logger: Logger
 ): Promise<APIGatewayAuthorizerWithContextResult<AuthorizerWithUserData>> {
   logger.debug('Received an authorization request: ', request)
-  const user = await fetchUserFromRequest(request, userPool)
+  const user = await fetchUserFromRequest(userPool, request)
   return {
     principalId: user?.email ?? 'anonymous',
     policyDocument: {
