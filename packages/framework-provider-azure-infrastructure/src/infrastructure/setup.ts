@@ -5,13 +5,15 @@ import { ResourceGroup } from 'azure-arm-resource/lib/resource/models'
 import { BoosterConfig } from '@boostercloud/framework-types/dist'
 import WebSiteManagement from 'azure-arm-website'
 
-export async function createResourceManagementClient(): Promise<ResourceManagementClient> {
-  const credentials = await azureCredentials()
+export async function createResourceManagementClient(
+  credentials: ApplicationTokenCredentials
+): Promise<ResourceManagementClient> {
   return new ResourceManagementClient(credentials, configuration.subscriptionId)
 }
 
-export async function createWebSiteManagementClient(): Promise<WebSiteManagement> {
-  const credentials = await azureCredentials()
+export async function createWebSiteManagementClient(
+  credentials: ApplicationTokenCredentials
+): Promise<WebSiteManagement> {
   return new WebSiteManagement(credentials, configuration.subscriptionId)
 }
 

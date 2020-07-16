@@ -2,6 +2,7 @@ import { Observable, Subscriber } from 'rxjs'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { ApplicationStackBuilder } from './stacks/application-stack'
 import {
+  azureCredentials,
   createResourceGroup,
   createResourceGroupName,
   createResourceManagementClient,
@@ -30,8 +31,11 @@ export function nuke(configuration: BoosterConfig): Observable<string> {
  * Deploys the application in Azure
  */
 async function deployApp(observer: Subscriber<string>, config: BoosterConfig): Promise<void> {
-  const resourceManagementClient = await createResourceManagementClient()
-  const webSiteManagementClient = await createWebSiteManagementClient()
+  const credentials = await azureCredentials()
+  const [resourceManagementClient, webSiteManagementClient] = await Promise.all([
+    createResourceManagementClient(credentials),
+    createWebSiteManagementClient(credentials),
+  ])
   const resourceGroupName = createResourceGroupName(config)
   await createResourceGroup(resourceGroupName, resourceManagementClient)
   const applicationBuilder = new ApplicationStackBuilder(config)
@@ -42,7 +46,8 @@ async function deployApp(observer: Subscriber<string>, config: BoosterConfig): P
  * Nuke all the resources used in the Resource Group
  */
 async function nukeApp(observer: Subscriber<string>, config: BoosterConfig): Promise<void> {
-  const resourceManagementClient = await createResourceManagementClient()
+  const credentials = await azureCredentials()
+  const resourceManagementClient = await createResourceManagementClient(credentials)
 
   // By deleting the resource group we are deleting all the resources within it.
   await resourceManagementClient.resourceGroups.deleteMethod(createResourceGroupName(config))
