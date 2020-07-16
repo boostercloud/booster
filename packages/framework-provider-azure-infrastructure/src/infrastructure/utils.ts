@@ -6,6 +6,7 @@ const archiver = require('archiver')
 const os = require('os')
 const needle = require('needle')
 const uuid = require('uuid')
+const path = require('path')
 
 interface FunctionDefinition {
   name: string
@@ -44,14 +45,14 @@ export async function buildResource(
 }
 
 export async function packageAzureFunction(functionDefinitions: Array<FunctionDefinition>): Promise<any> {
-  const output = fs.createWriteStream(os.tmpdir() + '/example.zip')
+  const output = fs.createWriteStream(path.join(os.tmpdir(), 'example.zip'))
   const archive = archiver('zip', {
     zlib: { level: 9 }, // Sets the compression level.
   })
 
   archive.pipe(output)
   archive.glob('**/*')
-  functionDefinitions.forEach((functionDefinition) => {
+  functionDefinitions.forEach((functionDefinition: FunctionDefinition) => {
     archive.append(JSON.stringify(functionDefinition.config, null, 2), {
       name: functionDefinition.name + '/function.json',
     })
