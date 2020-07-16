@@ -1,5 +1,5 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { eventStorePartitionKeyAttribute } from '@boostercloud/framework-provider-azure'
+import { eventsStoreAttributes } from '@boostercloud/framework-provider-azure'
 import { CosmosClient } from '@azure/cosmos'
 
 export class EventsStack {
@@ -11,7 +11,7 @@ export class EventsStack {
     // container for event store
     await cosmosClient.database(this.config.resourceNames.applicationStack).containers.createIfNotExists({
       id: this.config.resourceNames.eventsStore,
-      partitionKey: `/${eventStorePartitionKeyAttribute}`,
+      partitionKey: `/${eventsStoreAttributes.partitionKey}`,
     })
   }
 }

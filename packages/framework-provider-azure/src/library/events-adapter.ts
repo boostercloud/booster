@@ -1,7 +1,7 @@
 import { EventEnvelope } from '@boostercloud/framework-types'
 import { CosmosClient, ItemResponse, SqlQuerySpec } from '@azure/cosmos'
 import { BoosterConfig, Logger, UUID } from '@boostercloud/framework-types'
-import { eventStorePartitionKeyAttribute, eventStoreSortKeyAttribute } from '../constants'
+import { eventsStoreAttributes } from '../constants'
 import { partitionKeyForEvent } from './partition-keys'
 import { Context } from '@azure/functions'
 
@@ -26,7 +26,7 @@ export async function readEntityEventsSince(
 ): Promise<Array<EventEnvelope>> {
   const fromTime = since ? since : originOfTime
   const querySpec: SqlQuerySpec = {
-    query: `SELECT * FROM c WHERE c["${eventStorePartitionKeyAttribute}"] = @partitionKey AND c["${eventStoreSortKeyAttribute}"] > @fromTime ORDER BY c["${eventStoreSortKeyAttribute}"] DESC`,
+    query: `SELECT * FROM c WHERE c["${eventsStoreAttributes.partitionKey}"] = @partitionKey AND c["${eventsStoreAttributes.sortKey}"] > @fromTime ORDER BY c["${eventsStoreAttributes.sortKey}"] DESC`,
     parameters: [
       {
         name: '@partitionKey',
@@ -59,7 +59,7 @@ export async function readEntityLatestSnapshot(
     .database(config.resourceNames.applicationStack)
     .container(config.resourceNames.eventsStore)
     .items.query({
-      query: `SELECT * FROM c WHERE c["${eventStorePartitionKeyAttribute}"] = @partitionKey ORDER BY c["${eventStoreSortKeyAttribute}"] DESC OFFSET 0 LIMIT 1`,
+      query: `SELECT * FROM c WHERE c["${eventsStoreAttributes.partitionKey}"] = @partitionKey ORDER BY c["${eventsStoreAttributes.sortKey}"] DESC OFFSET 0 LIMIT 1`,
       parameters: [
         {
           name: '@partitionKey',
@@ -97,12 +97,12 @@ export async function storeEvents(
       .container(config.resourceNames.eventsStore)
       .items.create({
         ...eventEnvelope,
-        [eventStorePartitionKeyAttribute]: partitionKeyForEvent(
+        [eventsStoreAttributes.partitionKey]: partitionKeyForEvent(
           eventEnvelope.entityTypeName,
           eventEnvelope.entityID,
           eventEnvelope.kind
         ),
-        [eventStoreSortKeyAttribute]: new Date().toISOString(),
+        [eventsStoreAttributes.sortKey]: new Date().toISOString(),
       })
   })
   await Promise.all(events)

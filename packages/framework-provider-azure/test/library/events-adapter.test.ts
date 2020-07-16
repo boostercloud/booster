@@ -5,7 +5,7 @@ import { createStubInstance, fake, restore, match } from 'sinon'
 import { BoosterConfig, Logger, EventEnvelope } from '@boostercloud/framework-types'
 import { CosmosClient } from '@azure/cosmos'
 import sinon = require('sinon')
-import { eventStorePartitionKeyAttribute, eventStoreSortKeyAttribute } from '../../src'
+import { eventsStoreAttributes } from '../../src'
 import { partitionKeyForEvent } from '../../src/library/partition-keys'
 import { Context, ExecutionContext, TraceContext, Logger as AzureLogger } from '@azure/functions'
 
@@ -63,7 +63,7 @@ describe('the events-adapter', () => {
       // @ts-ignore
       expect(cosmosDb.database().container().items.query).to.have.been.calledWith(
         match({
-          query: `SELECT * FROM c WHERE c["${eventStorePartitionKeyAttribute}"] = @partitionKey AND c["${eventStoreSortKeyAttribute}"] > @fromTime ORDER BY c["${eventStoreSortKeyAttribute}"] DESC`,
+          query: `SELECT * FROM c WHERE c["${eventsStoreAttributes.partitionKey}"] = @partitionKey AND c["${eventsStoreAttributes.sortKey}"] > @fromTime ORDER BY c["${eventsStoreAttributes.sortKey}"] DESC`,
           parameters: [
             {
               name: '@partitionKey',
@@ -86,7 +86,7 @@ describe('the events-adapter', () => {
       // @ts-ignore
       expect(cosmosDb.database().container().items.query).to.have.been.calledWith(
         match({
-          query: `SELECT * FROM c WHERE c["${eventStorePartitionKeyAttribute}"] = @partitionKey ORDER BY c["${eventStoreSortKeyAttribute}"] DESC OFFSET 0 LIMIT 1`,
+          query: `SELECT * FROM c WHERE c["${eventsStoreAttributes.partitionKey}"] = @partitionKey ORDER BY c["${eventsStoreAttributes.sortKey}"] DESC OFFSET 0 LIMIT 1`,
           parameters: [
             {
               name: '@partitionKey',
@@ -133,8 +133,8 @@ describe('the events-adapter', () => {
           typeName: 'EventName',
           entityTypeName: 'EntityName',
           requestID: 'requestID',
-          [eventStorePartitionKeyAttribute]: partitionKeyForEvent('EntityName', 'id', 'event'),
-          [eventStoreSortKeyAttribute]: match.defined,
+          [eventsStoreAttributes.partitionKey]: partitionKeyForEvent('EntityName', 'id', 'event'),
+          [eventsStoreAttributes.sortKey]: match.defined,
         })
       )
     })
