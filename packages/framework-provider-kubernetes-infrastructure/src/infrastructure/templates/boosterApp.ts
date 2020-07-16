@@ -41,7 +41,7 @@ spec:
           httpGet:
               path: /ready
               port: 3000
-          initialDelaySeconds: 5
+          initialDelaySeconds: 15
           periodSeconds: 5
           successThreshold: 1
         volumeMounts: 

@@ -1,9 +1,11 @@
 import { CoreV1Api, KubeConfig, KubernetesObject, KubernetesObjectApi } from '@kubernetes/client-node'
-import { Node, Namespace, Pod, Service, VolumeClaim } from './models'
+import { Node, Namespace, Pod, Service, VolumeClaim, Secret } from './models'
 import * as Mustache from 'mustache'
 import { safeLoadAll } from 'js-yaml'
 import { waitForIt } from '../utils'
 import { TemplateValues } from '../templates/templateInterface'
+import util = require('util')
+const exec = util.promisify(require('child_process').exec)
 
 export class K8sManagement {
   private kube: KubeConfig
@@ -116,7 +118,7 @@ export class K8sManagement {
   public async getVolumeClaimFromNamespace(namespace: string, volumeClaim: string): Promise<VolumeClaim | undefined> {
     const pods = await this.getAllVolumeClaimFromNamespace(namespace)
     return pods.find((pod) => {
-      return pod?.labels?.['app'] === volumeClaim
+      return pod?.name === volumeClaim
     })
   }
 
@@ -150,9 +152,13 @@ export class K8sManagement {
   }
 
   public async applyTemplate(template: string, templateData: TemplateValues): Promise<Array<KubernetesObject>> {
-    const client = KubernetesObjectApi.makeApiClient(this.kube)
     const renderedYaml = Mustache.render(template, templateData)
-    const specs = safeLoadAll(renderedYaml)
+    return await this.applyYamlString(renderedYaml)
+  }
+
+  public async applyYamlString(yaml: string): Promise<Array<KubernetesObject>> {
+    const client = KubernetesObjectApi.makeApiClient(this.kube)
+    const specs = safeLoadAll(yaml)
     const validSpecs = specs.filter((s) => s && s.kind && s.metadata)
     const created: KubernetesObject[] = []
     for (const spec of validSpecs) {
@@ -192,6 +198,22 @@ export class K8sManagement {
       `Unable to get the service ${serviceName} in status Running, please check your cluster for more information`,
       timeout
     )
+  }
+
+  public async getSecret(namespace: string, secretName: string): Promise<Secret | undefined> {
+    const secret = await this.unwrapResponse(this.k8sClient.readNamespacedSecret(secretName, namespace))
+    if (!secret) {
+      return
+    }
+    return {
+      name: secret.metadata?.name,
+      data: secret.data,
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public async execRawCommand(command: string): Promise<any> {
+    return exec(`kubectl ${command}`)
   }
 
   private async unwrapResponse<TBody>(wrapped: Promise<{ body: TBody }>): Promise<TBody> {

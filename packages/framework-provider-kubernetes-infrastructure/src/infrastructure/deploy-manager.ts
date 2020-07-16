@@ -8,20 +8,54 @@ import { boosterService } from './templates/boosterService'
 import { Template, TemplateValues } from './templates/templateInterface'
 import { uploaderPod } from './templates/fileUploader'
 import { boosterAppPod } from './templates/boosterApp'
+import { HelmManager } from './helm-manager'
+import { DaprManager } from './dapr-manager'
 
 export class DeployManager {
   private clusterManager: K8sManagement
   private namespace: string
   private templateValues: TemplateValues
+  private helmManager: HelmManager
+  private DaprRepo = 'https://daprio.azurecr.io/helm/v1/repo'
+  private daprManager: DaprManager
 
-  constructor(configuration: BoosterConfig) {
-    this.clusterManager = new K8sManagement()
+  constructor(
+    configuration: BoosterConfig,
+    clusterManager: K8sManagement,
+    daprManager: DaprManager,
+    helmManager: HelmManager
+  ) {
+    this.clusterManager = clusterManager
+    this.daprManager = daprManager
     this.namespace = getProjectNamespaceName(configuration)
+    this.helmManager = helmManager
     this.templateValues = {
       environment: configuration.environmentName,
       namespace: this.namespace,
       clusterVolume: boosterVolumeClaim.name,
     }
+  }
+
+  public async verifyHelm() {
+    await this.helmManager.isVersion3()
+  }
+
+  public async verifyDapr() {
+    const repoInstalled = await this.helmManager.isRepoInstalled('dapr')
+    if (!repoInstalled) {
+      await this.helmManager.installRepo('dapr', this.DaprRepo)
+    }
+    const daprPod = await this.clusterManager.getPodFromNamespace(this.namespace, 'dapr-operator')
+    if (!daprPod) {
+      await this.helmManager.exec(`install dapr dapr/dapr --namespace ${this.namespace}`)
+      await this.clusterManager.waitForPodToBeReady(this.namespace, 'dapr-operator')
+    }
+  }
+
+  public async verifyEventStore() {
+    await this.daprManager.configureEventStore().catch((err) => {
+      console.log(err)
+    })
   }
 
   public async verifyNamespace() {
@@ -30,6 +64,19 @@ export class DeployManager {
       const clusterResponse = await this.clusterManager.createNamespace(this.namespace)
       if (!clusterResponse) {
         throw new Error('Unable to create a namespace for your project, please check your Kubectl configuration')
+      }
+    }
+  }
+
+  public async verifyVolumeClaim() {
+    const clusterVolumeClaim = await this.clusterManager.getVolumeClaimFromNamespace(
+      this.namespace,
+      this.templateValues.clusterVolume
+    )
+    if (!clusterVolumeClaim) {
+      const clusterResponse = await this.clusterManager.applyTemplate(boosterVolumeClaim.template, this.templateValues)
+      if (!clusterResponse) {
+        throw new Error('Unable to create a volume claim for your project, please check your Kubectl configuration')
       }
     }
   }
@@ -51,8 +98,16 @@ export class DeployManager {
   }
 
   public async uploadUserCode() {
-    await this.clusterManager.waitForPodToBeReady(this.namespace, uploaderPod.name)
-    const fileUploadService = await this.clusterManager.waitForServiceToBeReady(this.namespace, uploadService.name)
+    await this.clusterManager.waitForPodToBeReady(this.namespace, uploaderPod.name).catch((err) => {
+      console.log(err)
+      throw new Error(err)
+    })
+    const fileUploadService = await this.clusterManager
+      .waitForServiceToBeReady(this.namespace, uploadService.name)
+      .catch((err) => {
+        console.log('error2 ', err)
+        throw new Error(err)
+      })
     const codeZipFile = await createProjectZipFile()
     const indexFile = await createIndexFile()
     const fileUploadResponse = await uploadFile(fileUploadService?.ip ?? '', codeZipFile)

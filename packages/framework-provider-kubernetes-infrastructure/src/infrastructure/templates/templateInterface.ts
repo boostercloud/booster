@@ -5,7 +5,14 @@ export interface Template {
 
 export interface TemplateValues {
   timestamp?: string
-  namespace?: string
-  clusterVolume?: string
-  environment?: string
+  namespace: string
+  clusterVolume: string
+  environment: string
+}
+
+export interface DaprTemplateValues {
+  namespace: string
+  eventStoreHost: string
+  eventStoreUsername: string
+  eventStorePassword: string
 }

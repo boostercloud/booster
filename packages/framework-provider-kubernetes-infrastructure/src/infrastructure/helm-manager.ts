@@ -4,98 +4,54 @@ const semver = require('semver')
 
 export class HelmManager {
   private BASE_COMMAND = 'helm'
-  private BOOSTER_HELM_REPO = 'http://booster.helm.s3-website-eu-west-1.amazonaws.com'
-  private helmError = ''
-  private helmReady = false
-
-  public async init(): Promise<void> {
-    this.helmReady = await this.isHelmReadyToDeploy()
-  }
 
   public exec(args: string): Promise<any> {
     return exec(`${this.BASE_COMMAND} ${args}`)
   }
 
-  public async getVersion(): Promise<string | null> {
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+  public async isVersion3() {
     const { stdout } = await this.exec('version')
     if (!stdout) {
-      return null
+      throw new Error('Unable to get Helm version, please check your Helm installation')
     }
     const match = stdout.match(/Version:"(.*?)"/)
-    return !match ? null : match[1]
+    const version = !match ? null : match[1]
+    const cleanVersion = semver.clean(version)
+    if (!semver.gte(cleanVersion, '3.0.0')) {
+      throw new Error('Current Helm version lower than 3.0.0, please update it')
+    }
   }
 
-  public isHelmReady(): boolean {
-    return this.helmReady
-  }
-
-  public getHelmError(): string {
-    return this.helmError
-  }
-
-  private async boosterRepoInstalled(): Promise<boolean> {
+  public async isRepoInstalled(repoName: string): Promise<boolean> {
     const listRepo = await this.exec('repo list')
     if (!listRepo.stdout) {
-      this.helmError = 'Unable to get the Helm repo list'
       return false
     }
-    if (!listRepo.stdout.includes('boosterchart')) {
-      this.helmError = 'Booster Helm repo not found'
+    if (!listRepo.stdout.includes(repoName)) {
       return false
     }
     return true
   }
 
-  private async installBoosterRepo(): Promise<boolean> {
-    const install = await this.exec(`repo add boosterchart ${this.BOOSTER_HELM_REPO}`)
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+  public async installRepo(repoName: string, repoUrl: string) {
+    const install = await this.exec(`repo add ${repoName} ${repoUrl}`)
     if (!install.stdout) {
-      return false
+      throw new Error('Unable to install Helm repo, please check your Helm installation')
     }
-    return true
+    await this.updateHelmRepo()
+    const repoInstalled = await this.isRepoInstalled(repoName)
+    if (!repoInstalled) {
+      throw new Error('Unable to install Helm repo, please check your Helm installation')
+    }
   }
 
-  public async updateHelmRepo(): Promise<boolean> {
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+  public async updateHelmRepo() {
     const update = await this.exec('repo update')
     if (!update.stdout) {
-      return false
+      throw new Error('Unable to update Helm repo, please check your Helm installation')
     }
-    return true
-  }
-
-  public async isBoosterRepoReady(): Promise<boolean> {
-    const isBoosterInstalled = await this.boosterRepoInstalled()
-    if (!isBoosterInstalled) {
-      const installRepo = await this.installBoosterRepo()
-      if (!installRepo) {
-        return false
-      }
-    }
-    const updateRepos = await this.updateHelmRepo()
-    if (!updateRepos) {
-      return false
-    }
-    return true
-  }
-
-  private async isHelmReadyToDeploy(): Promise<boolean> {
-    //check that helm is installed on client side
-    const helmVersion = await this.getVersion()
-    if (!helmVersion) {
-      this.helmError = 'Helm installation not found'
-      return false
-    }
-    //check that we are using helm 3
-    const cleanVersion = semver.clean(helmVersion)
-    if (!semver.gte(cleanVersion, '3.0.0')) {
-      this.helmError = 'Current Helm version lower than 3.0.0'
-      return false
-    }
-    //check that the booster helm repo is ready and updated
-    const repoReady = await this.isBoosterRepoReady()
-    if (!repoReady) {
-      this.helmError = 'Unable to install the Booster repo in Helm'
-      return false
-    }
-    return true
   }
 }

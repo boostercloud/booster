@@ -1,7 +1,6 @@
 export const boosterVolumeClaim = {
   name: 'booster-pvc',
-  template: `
-apiVersion: v1
+  template: `apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: booster-pvc
@@ -11,5 +10,5 @@ spec:
   - ReadWriteOnce
   resources:
     requests:
-      storage: 200Mi`,
+      storage: 1Gi`,
 }

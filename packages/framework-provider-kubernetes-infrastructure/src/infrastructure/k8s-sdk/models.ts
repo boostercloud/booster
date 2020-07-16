@@ -36,3 +36,8 @@ export interface VolumeClaim {
   status?: string
   labels?: { [key: string]: string }
 }
+
+export interface Secret {
+  name?: string
+  data?: { [key: string]: string }
+}
