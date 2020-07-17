@@ -268,17 +268,20 @@ export class DisconnectableApolloClient extends ApolloClient<NormalizedCacheObje
  * IMPORTANT: After using this "DisconnectableApolloClient", you must call ".disconnect()" to close the socket. Otherwise
  * it will keep waiting for messages forever
  * @param authToken
+ * @param tokenInHeader
  */
 export async function graphQLClientWithSubscriptions(authToken?: string): Promise<DisconnectableApolloClient> {
-  const subscriptionClient = await graphqlSubscriptionsClient(authToken)
-  subscriptionClient.use([
-    {
-      applyMiddleware(options: OperationOptions, next: Function): void {
-        options.Authorization = authToken
-        next()
-      }
-    }
-  ])
+  const subscriptionClient: SubscriptionClient = await graphqlSubscriptionsClient()
+  if (authToken) {
+    subscriptionClient.use([
+      {
+        applyMiddleware(options: OperationOptions, next: Function): void {
+          options.Authorization = authToken
+          next()
+        },
+      },
+    ])
+  }
 
   const websocketLink = new WebSocketLink(subscriptionClient)
 

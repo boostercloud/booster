@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
 import { GraphQLRequestEnvelope, UserEnvelope } from '@boostercloud/framework-types'
-import { APIGatewayProxyWithLambdaAuthorizerEvent } from 'aws-lambda'
-import { AuthorizerWithUserData } from '../../src/library/auth-adapter'
 import { rawGraphQLRequestToEnvelope } from '../../src/library/graphql-adapter'
 import { SinonStub, stub, restore } from 'sinon'
 import * as userEnvelopes from '../../src/library/user-envelopes'
 import { internet, random } from 'faker'
+import { APIGatewayProxyEvent } from 'aws-lambda'
 
 describe('AWS Provider graphql-adapter', () => {
   let userPoolStub: SinonStub
@@ -28,7 +27,7 @@ describe('AWS Provider graphql-adapter', () => {
     let expectedUser: UserEnvelope
     let expectedQuery: string
     let expectedVariables: object
-    let request: APIGatewayProxyWithLambdaAuthorizerEvent<AuthorizerWithUserData>
+    let request: APIGatewayProxyEvent
 
     beforeEach(() => {
       mockRequestId = random.number().toString()

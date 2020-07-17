@@ -1,12 +1,11 @@
-import { APIGatewayProxyWithLambdaAuthorizerEvent } from 'aws-lambda'
+import { APIGatewayProxyEvent } from 'aws-lambda'
 import { GraphQLRequestEnvelope, Logger } from '@boostercloud/framework-types'
-import { AuthorizerWithUserData } from './auth-adapter'
 import { fetchUserFromRequest } from './user-envelopes'
 import { CognitoIdentityServiceProvider } from 'aws-sdk'
 
 export async function rawGraphQLRequestToEnvelope(
   userPool: CognitoIdentityServiceProvider,
-  request: APIGatewayProxyWithLambdaAuthorizerEvent<AuthorizerWithUserData>,
+  request: APIGatewayProxyEvent,
   logger: Logger
 ): Promise<GraphQLRequestEnvelope> {
   logger.debug('Received GraphQL request: ', request)
