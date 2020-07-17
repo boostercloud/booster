@@ -1,11 +1,11 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { Duration, Fn, RemovalPolicy, Stack } from '@aws-cdk/core'
+import { Fn, RemovalPolicy, Stack } from '@aws-cdk/core'
 import { CfnAuthorizer, CfnIntegration, CfnIntegrationResponse, CfnRoute } from '@aws-cdk/aws-apigatewayv2'
 import { Code, Function, IEventSource } from '@aws-cdk/aws-lambda'
 import * as params from '../params'
 import { APIs } from '../params'
 import { ServicePrincipal } from '@aws-cdk/aws-iam'
-import { AuthorizationType, LambdaIntegration, RequestAuthorizer } from '@aws-cdk/aws-apigateway'
+import { AuthorizationType, LambdaIntegration } from '@aws-cdk/aws-apigateway'
 import { Cors } from '@aws-cdk/aws-apigateway/lib/cors'
 import { AttributeType, BillingMode, ProjectionType, Table } from '@aws-cdk/aws-dynamodb'
 import { subscriptionsStoreAttributes } from '@boostercloud/framework-provider-aws'
@@ -26,7 +26,6 @@ export class GraphQLStack {
   ) {}
 
   public build(): GraphQLStackMembers {
-    const authorizerLambda = this.buildLambda('graphql-authorizer', this.config.authorizerHandler)
     const graphQLLambda = this.buildLambda('graphql-handler', this.config.serveGraphQLHandler)
     const readModelsEventSources = this.buildEventSourcesForTables(this.readModelTables)
     const subscriptionDispatcherLambda = this.buildLambda(
@@ -35,8 +34,8 @@ export class GraphQLStack {
       readModelsEventSources
     )
 
-    this.buildWebsocketRoutes(graphQLLambda, authorizerLambda)
-    this.buildRESTRoutes(graphQLLambda, authorizerLambda)
+    this.buildWebsocketRoutes(graphQLLambda)
+    this.buildRESTRoutes(graphQLLambda)
     const subscriptionsTable = this.buildSubscriptionsTable()
 
     return { graphQLLambda, subscriptionDispatcherLambda, subscriptionsTable }
@@ -61,11 +60,10 @@ export class GraphQLStack {
     return readModelTables.map((table) => new DynamoEventSource(table, params.stream()))
   }
 
-  private buildWebsocketRoutes(graphQLLambda: Function, authorizerLambda: Function): void {
+  private buildWebsocketRoutes(graphQLLambda: Function): void {
     const lambdaIntegration = this.buildLambdaIntegration(graphQLLambda)
-    const websocketAuthorizer = this.buildWebsocketAuthorizer(authorizerLambda)
 
-    this.buildRoute('$connect', lambdaIntegration, websocketAuthorizer)
+    this.buildRoute('$connect', lambdaIntegration)
     this.buildRoute('$default', lambdaIntegration)
     this.buildRoute('$disconnect', lambdaIntegration)
   }
@@ -112,27 +110,7 @@ export class GraphQLStack {
     return route
   }
 
-  private buildWebsocketAuthorizer(lambda: Function): CfnAuthorizer {
-    const localID = 'websocket-authorizer'
-    return new CfnAuthorizer(this.stack, localID, {
-      apiId: this.apis.websocketAPI.ref,
-      authorizerType: 'REQUEST',
-      name: localID,
-      identitySource: [],
-      authorizerUri: Fn.join('', [
-        'arn:',
-        Fn.ref('AWS::Partition'),
-        ':apigateway:',
-        Fn.ref('AWS::Region'),
-        ':lambda:path/2015-03-31/functions/',
-        lambda.functionArn,
-        '/invocations',
-      ]),
-    })
-  }
-
-  private buildRESTRoutes(graphQLLambda: Function, authorizerLambda: Function): void {
-    const restAuthorizer = this.buildRESTAuthorizer(authorizerLambda)
+  private buildRESTRoutes(graphQLLambda: Function): void {
     this.apis.restAPI.root
       .addResource('graphql', {
         defaultCorsPreflightOptions: {
@@ -140,18 +118,8 @@ export class GraphQLStack {
         },
       })
       .addMethod('POST', new LambdaIntegration(graphQLLambda), {
-        authorizationType: AuthorizationType.CUSTOM,
-        authorizer: restAuthorizer,
+        authorizationType: AuthorizationType.NONE,
       })
-  }
-
-  private buildRESTAuthorizer(lambda: Function): RequestAuthorizer {
-    const localID = 'rest-authorizer'
-    return new RequestAuthorizer(this.stack, localID, {
-      handler: lambda,
-      resultsCacheTtl: Duration.seconds(0),
-      identitySources: [],
-    })
   }
 
   private buildSubscriptionsTable(): Table {

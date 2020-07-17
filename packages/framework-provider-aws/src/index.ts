@@ -7,7 +7,6 @@ import {
 } from './library/events-adapter'
 import { fetchReadModel, storeReadModel, rawReadModelEventsToEnvelopes } from './library/read-model-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
-import { rawSignUpDataToUserEnvelope, authorizeRequest } from './library/auth-adapter'
 import { DynamoDB, CognitoIdentityServiceProvider } from 'aws-sdk'
 import { ProviderInfrastructure, ProviderLibrary } from '@boostercloud/framework-types'
 import { requestFailed, requestSucceeded } from './library/api-gateway-io'
@@ -19,6 +18,7 @@ import {
   notifySubscription,
   subscribeToReadModel,
 } from './library/subscription-adapter'
+import { rawSignUpDataToUserEnvelope } from './library/auth-adapter'
 
 const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
 const userPool = new CognitoIdentityServiceProvider()
@@ -45,7 +45,6 @@ export const Provider: ProviderLibrary = {
   },
   // ProviderGraphQLLibrary
   graphQL: {
-    authorizeRequest: authorizeRequest.bind(null, userPool),
     rawToEnvelope: rawGraphQLRequestToEnvelope.bind(null, userPool),
     handleResult: requestSucceeded,
   },

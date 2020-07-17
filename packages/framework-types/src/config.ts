@@ -24,7 +24,6 @@ export class BoosterConfig {
   public readonly userProjectRootPath: string = process.cwd()
   public readonly eventDispatcherHandler: string = 'dist/index.boosterEventDispatcher'
   public readonly preSignUpHandler: string = 'dist/index.boosterPreSignUpChecker'
-  public readonly authorizerHandler: string = 'dist/index.boosterRequestAuthorizer'
   public readonly serveGraphQLHandler: string = 'dist/index.boosterServeGraphQL'
   public readonly notifySubscribersHandler: string = 'dist/index.boosterNotifySubscribers'
 

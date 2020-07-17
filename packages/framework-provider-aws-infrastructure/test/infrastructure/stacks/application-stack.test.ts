@@ -7,7 +7,7 @@ import { Function } from '@aws-cdk/aws-lambda'
 import { CfnUserPool, CfnUserPoolDomain, UserPoolClient } from '@aws-cdk/aws-cognito'
 import { RestApi } from '@aws-cdk/aws-apigateway'
 import { CfnApi } from '@aws-cdk/aws-apigatewayv2'
-import StaticWebsiteStack from "../../../src/infrastructure/stacks/static-website-stack";
+import StaticWebsiteStack from '../../../src/infrastructure/stacks/static-website-stack'
 import { stub } from 'sinon'
 
 describe('the application stack builder', () => {
@@ -45,7 +45,6 @@ describe('the application stack builder', () => {
     const websocketAPIName = appStackName + '-websocket-api'
     const eventsStore = 'events-store'
     const eventsLambda = 'events-main'
-    const authorizerLambda = 'graphql-authorizer'
     const graphQLLambda = 'graphql-handler'
     const subscriptionsNotifierLambda = 'subscriptions-notifier'
     const websocketRoutes = ['route-$connect', 'route-$disconnect', 'route-$default']
@@ -63,9 +62,8 @@ describe('the application stack builder', () => {
     expect(websocketAPI.protocolType).to.be.eq('WEBSOCKET')
     websocketRoutes.forEach((route) => expect(appStack.tryFindChild(route)).not.to.be.undefined)
     // Lambdas
-    expect(numberOfLambdas).to.equal(4)
+    expect(numberOfLambdas).to.equal(3)
     expect(appStack.tryFindChild(eventsLambda)).not.to.be.undefined
-    expect(appStack.tryFindChild(authorizerLambda)).not.to.be.undefined
     expect(appStack.tryFindChild(graphQLLambda)).not.to.be.undefined
     expect(appStack.tryFindChild(subscriptionsNotifierLambda)).not.to.be.undefined
     // Events-related
@@ -108,7 +106,7 @@ describe('the application stack builder', () => {
     expect(api).not.to.be.undefined
     expect(api.root.getResource('auth')).not.to.be.undefined
     // Lambdas
-    expect(numberOfLambdas).to.equal(5)
+    expect(numberOfLambdas).to.equal(4)
     expect(appStack.tryFindChild(preSignUpValidator)).not.to.be.undefined
     lambdas.forEach((lambda: any) => {
       expect(lambda.environment.BOOSTER_ENV).to.equal('test')
