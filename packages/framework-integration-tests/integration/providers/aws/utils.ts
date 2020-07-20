@@ -55,6 +55,12 @@ export async function authClientID(): Promise<string> {
 }
 
 // --- Auth helpers ---
+export interface UserAuthInformation {
+  accessToken: string
+  refreshToken: string
+  expiresIn?: number
+  tokenType?: string
+}
 
 export async function userPool(): Promise<StackResourceDetail> {
   const stackName = appStackName()
@@ -169,7 +175,7 @@ export async function deleteUser(username: string): Promise<void> {
     .promise()
 }
 
-export const getAuthToken = async (email: string, password: string): Promise<string> => {
+export const getUserAuthInformation = async (email: string, password: string): Promise<UserAuthInformation> => {
   const url = await signInURL()
   const clientId = await authClientID()
 
@@ -185,7 +191,14 @@ export const getAuthToken = async (email: string, password: string): Promise<str
     },
   })
 
-  return (await response.json()).accessToken
+  const responseBody = await response.json()
+
+  return {
+    accessToken: responseBody.accessToken,
+    refreshToken: responseBody.refreshToken,
+    expiresIn: responseBody.expiresIn,
+    tokenType: responseBody.tokenType,
+  }
 }
 
 export const createPassword = (): string => {

@@ -8,9 +8,10 @@ import {
   deleteUser,
   waitForIt,
   createPassword,
-  getAuthToken,
+  getUserAuthInformation,
   DisconnectableApolloClient,
   countSubscriptionsItems,
+  UserAuthInformation,
 } from './utils'
 import gql from 'graphql-tag'
 import { expect } from 'chai'
@@ -335,10 +336,12 @@ describe('With the auth API', () => {
     })
 
     context('with a signed-in user', () => {
+      let userAuthInformation: UserAuthInformation
       let client: DisconnectableApolloClient
 
       before(async () => {
-        client = await graphQLClientWithSubscriptions(await getAuthToken(userEmail, userPassword))
+        userAuthInformation = await getUserAuthInformation(userEmail, userPassword)
+        client = await graphQLClientWithSubscriptions(userAuthInformation.accessToken)
       })
       after(() => {
         client.disconnect()
@@ -594,10 +597,12 @@ describe('With the auth API', () => {
     })
 
     context('with a signed-in admin user', () => {
+      let userAuthInformation: UserAuthInformation
       let client: DisconnectableApolloClient
 
       before(async () => {
-        client = await graphQLClientWithSubscriptions(await getAuthToken(adminEmail, adminPassword))
+        userAuthInformation = await getUserAuthInformation(adminEmail, adminPassword)
+        client = await graphQLClientWithSubscriptions(userAuthInformation.accessToken)
       })
       after(() => {
         client.disconnect()
