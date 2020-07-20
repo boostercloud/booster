@@ -47,9 +47,6 @@ describe('AWS Provider graphql-adapter', () => {
           requestId: mockRequestId,
           eventType: 'CONNECT',
           connectionId: mockConnectionId,
-          authorizer: {
-            userJSON: JSON.stringify(expectedUser),
-          },
         },
         body: JSON.stringify({
           query: expectedQuery,
@@ -93,15 +90,12 @@ describe('AWS Provider graphql-adapter', () => {
             requestId: mockRequestId,
             eventType: 'CONNECT',
             connectionId: mockConnectionId,
-            authorizer: {
-              userJSON: JSON.stringify(expectedUser),
-            },
           },
           body: JSON.stringify({
             query: expectedQuery,
             variables: expectedVariables,
             payload: {
-              Authorization: mockAuthorizationToken
+              Authorization: mockAuthorizationToken,
             },
           }),
         } as any
