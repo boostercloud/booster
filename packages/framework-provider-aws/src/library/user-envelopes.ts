@@ -34,7 +34,7 @@ type CouldHaveHeaders = { headers: { [name: string]: string } | null }
 export async function fetchUserFromRequest(
   userPool: CognitoIdentityServiceProvider,
   request: CouldHaveHeaders,
-  graphQLValueAuthorization: string | undefined = undefined,
+  graphQLValueAuthorization?: string,
 ): Promise<UserEnvelope | undefined> {
   const accessToken = getTokenFromRequest(request) ?? graphQLValueAuthorization
   if (!accessToken) {
