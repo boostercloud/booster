@@ -1616,7 +1616,7 @@ _refreshToken_ | The token you can use to get a new access token after it has ex
 ```
 
 ##### Errors
-> Refresh token error response body example: Invalid access token specified
+> Refresh token error response body example: Invalid refresh token specified
 ```json
 {
   "__type": "NotAuthorizedException",
