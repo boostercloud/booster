@@ -305,8 +305,7 @@ export async function graphQLClientWithSubscriptions(authToken?: string): Promis
   })
 }
 
-export async function graphqlSubscriptionsClient(authToken?: string): Promise<SubscriptionClient> {
-  const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {}
+export async function graphqlSubscriptionsClient(): Promise<SubscriptionClient> {
   return new SubscriptionClient(
     await baseWebsocketURL(),
     {
@@ -315,9 +314,8 @@ export async function graphqlSubscriptionsClient(authToken?: string): Promise<Su
     },
     class MyWebSocket extends WebSocket {
       public constructor(url: string, protocols?: string | string[]) {
-        super(url, protocols, {
-          headers,
-        })
+        super(url, protocols)
+
         this.addListener('open', (): void => {
           console.log('[GraphQL socket] on open')
         })
