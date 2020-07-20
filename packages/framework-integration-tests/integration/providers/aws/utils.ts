@@ -201,6 +201,31 @@ export const getUserAuthInformation = async (email: string, password: string): P
   }
 }
 
+export const refreshUserAuthInformation = async (refreshToken: string): Promise<UserAuthInformation> => {
+  const url = await refreshTokenURL()
+  const clientId = await authClientID()
+
+  const response = await fetch(url, {
+    method: 'POST',
+    body: JSON.stringify({
+      clientId: clientId,
+      refreshToken: refreshToken,
+    }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+
+  const responseBody = await response.json()
+
+  return {
+    accessToken: responseBody.accessToken,
+    refreshToken: responseBody.refreshToken,
+    expiresIn: responseBody.expiresIn,
+    tokenType: responseBody.tokenType,
+  }
+}
+
 export const createPassword = (): string => {
   return `${internet.password(8)}Passw0rd!`
 }
@@ -237,6 +262,10 @@ export async function signUpURL(): Promise<string> {
 
 export async function signInURL(): Promise<string> {
   return new URL('auth/sign-in', await baseHTTPURL()).href
+}
+
+export async function refreshTokenURL(): Promise<string> {
+  return new URL('auth/refresh-token', await baseHTTPURL()).href
 }
 
 // --- GraphQL helpers ---
