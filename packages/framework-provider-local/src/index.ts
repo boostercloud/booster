@@ -1,26 +1,32 @@
 import { ProviderLibrary, ProviderInfrastructure } from '@boostercloud/framework-types'
 import { authorizeRequest, rawSignUpDataToUserEnvelope } from './library/auth-adapter'
-import { rawEventsToEnvelopes, storeEvents } from './library/events-adapter'
+import {
+  rawEventsToEnvelopes,
+  readEntityEventsSince,
+  readEntityLatestSnapshot,
+  storeEvents,
+} from './library/events-adapter'
 import { requestSucceeded, requestFailed } from './library/api-adapter'
 import { EventRegistry } from './services'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import { notifySubscription } from './library/subscription-adapter'
+import { UserApp } from '@boostercloud/framework-types'
+import * as path from 'path'
 
 export { User, LoginCredentials, SignUpUser, RegisteredUser, AuthenticatedUser } from './library/auth-adapter'
 export * from './paths'
 export * from './services'
 
 const eventRegistry = new EventRegistry()
+const userApp: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
 
 export const Provider: ProviderLibrary = {
   // ProviderEventsLibrary
   events: {
     rawToEnvelopes: rawEventsToEnvelopes,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    forEntitySince: undefined as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    latestEntitySnapshot: undefined as any,
-    store: storeEvents.bind(null, eventRegistry),
+    forEntitySince: readEntityEventsSince.bind(null, eventRegistry),
+    latestEntitySnapshot: readEntityLatestSnapshot.bind(null, eventRegistry),
+    store: storeEvents.bind(null, userApp, eventRegistry),
   },
   // ProviderReadModelsLibrary
   readModels: {

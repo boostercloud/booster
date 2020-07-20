@@ -8,6 +8,7 @@ import * as DataStore from 'nedb'
 import { eventsDatabase } from '@boostercloud/framework-provider-local'
 import { EventEnvelope } from '@boostercloud/framework-types'
 import { waitForIt } from '../aws/utils'
+import util = require('util')
 
 describe('commands', () => {
   const events: DataStore<EventEnvelope> = new DataStore(eventsDatabase)
@@ -30,36 +31,14 @@ describe('commands', () => {
     })
 
     it('should successfully process a command', async () => {
-      const mutationResult = await client.mutate({
-        variables: {
-          cartId: mockCartId,
-          productId: mockProductId,
-          quantity: mockQuantity,
-        },
-        mutation: gql`
-          mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
-            ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
-          }
-        `,
-      })
+      const mutationResult = await changeCartItem(client, mockCartId, mockProductId, mockQuantity)
 
       expect(mutationResult).not.to.be.null
       expect(mutationResult.data.ChangeCartItem).to.be.true
     })
 
     it('should store event in the database', async () => {
-      await client.mutate({
-        variables: {
-          cartId: mockCartId,
-          productId: mockProductId,
-          quantity: mockQuantity,
-        },
-        mutation: gql`
-          mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
-            ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
-          }
-        `,
-      })
+      await changeCartItem(client, mockCartId, mockProductId, mockQuantity)
 
       // Wait until event is stored in database
       await waitForIt(
@@ -93,5 +72,59 @@ describe('commands', () => {
 
       expect(result).to.deep.include(expectedResult)
     })
+
+    it('should create a snapshot after 5 events', async () => {
+      const mockCartId = random.uuid()
+      const mockProductId = random.uuid()
+      let mockQuantity: number
+      let expectedSnapshotQuantity = 0
+
+      for (let i = 0; i < 5; i++) {
+        mockQuantity = random.number()
+        expectedSnapshotQuantity += mockQuantity
+        await changeCartItem(client, mockCartId, mockProductId, mockQuantity)
+      }
+
+      // Sixth event - Quantity shouldn't be added to snapshot
+      mockQuantity = random.number()
+      await changeCartItem(client, mockCartId, mockProductId, mockQuantity)
+
+      await waitForIt(
+        async () => events.loadDatabase(),
+        (_) =>
+          events
+            .getAllData()
+            .some(
+              (record) =>
+                record.entityID === mockCartId &&
+                record.kind === 'snapshot' &&
+                record.value?.cartItems[0]?.productId === mockProductId &&
+                record.value?.cartItems[0]?.quantity === expectedSnapshotQuantity
+            )
+      )
+
+      const countPromise = util.promisify((query: any, callback: any) => events.count(query, callback))
+      expect(await countPromise({ kind: 'snapshot', entityID: mockCartId })).to.be.equal(1)
+    })
   })
 })
+
+async function changeCartItem(
+  client: ApolloClient<NormalizedCacheObject>,
+  cartId: string,
+  productId: string,
+  quantity: number
+): Promise<any> {
+  return client.mutate({
+    variables: {
+      cartId: cartId,
+      productId: productId,
+      quantity: quantity,
+    },
+    mutation: gql`
+      mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+        ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+      }
+    `,
+  })
+}
