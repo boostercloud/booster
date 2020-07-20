@@ -193,12 +193,7 @@ export const getUserAuthInformation = async (email: string, password: string): P
 
   const responseBody = await response.json()
 
-  return {
-    accessToken: responseBody.accessToken,
-    refreshToken: responseBody.refreshToken,
-    expiresIn: responseBody.expiresIn,
-    tokenType: responseBody.tokenType,
-  }
+  return responseBody
 }
 
 export const refreshUserAuthInformation = async (refreshToken: string): Promise<UserAuthInformation> => {
