@@ -561,11 +561,15 @@ describe('With the auth API', () => {
       describe('after refreshing the token', () => {
         let refreshedUserAuthInformation: UserAuthInformation
 
-        beforeEach(async () => {
+        before(async () => {
           refreshedUserAuthInformation = await refreshUserAuthInformation(userAuthInformation.refreshToken)
 
           // Reinitialize client with a refreshed token
           client = await graphQLClientWithSubscriptions(refreshedUserAuthInformation.accessToken)
+        })
+
+        after(() => {
+          client.disconnect()
         })
 
         it('should return a new access token', () => {
@@ -749,6 +753,7 @@ describe('With the auth API', () => {
       // Create admin user
       await createUser(adminEmail, adminPassword, 'Admin')
     })
+
     after(async () => {
       await deleteUser(adminEmail)
     })
@@ -873,11 +878,15 @@ describe('With the auth API', () => {
       describe('after refreshing the token', () => {
         let refreshedUserAuthInformation: UserAuthInformation
 
-        beforeEach(async () => {
+        before(async () => {
           refreshedUserAuthInformation = await refreshUserAuthInformation(adminUserAuthInformation.refreshToken)
 
           // Reinitialize client with a refreshed token
           client = await graphQLClientWithSubscriptions(refreshedUserAuthInformation.accessToken)
+        })
+
+        after(() => {
+          client.disconnect()
         })
 
         it('should return a new access token', () => {
