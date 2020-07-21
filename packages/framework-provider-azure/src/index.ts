@@ -1,30 +1,51 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ProviderInfrastructure, ProviderLibrary } from '@boostercloud/framework-types'
+import { requestFailed, requestSucceeded } from './library/api-adapter'
+import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
+import {
+  rawEventsToEnvelopes,
+  storeEvents,
+  readEntityEventsSince,
+  readEntityLatestSnapshot,
+} from './library/events-adapter'
+import { CosmosClient } from '@azure/cosmos'
+import { environmentVarNames } from './constants'
+import { fetchReadModel, storeReadModel } from './library/read-model-adapter'
+import { searchReadModel } from './library/searcher-adapter'
+import { notifySubscription } from './library/subscription-adapter'
+
+let cosmosClient: CosmosClient | undefined
+if (process.env[environmentVarNames.cosmosDbConnectionString]) {
+  // @ts-ignore
+  cosmosClient = new CosmosClient(process.env[environmentVarNames.cosmosDbConnectionString])
+} else {
+  cosmosClient = undefined
+}
 
 export const Provider: ProviderLibrary = {
   // ProviderEventsLibrary
   events: {
-    rawToEnvelopes: undefined as any,
-    store: undefined as any,
-    forEntitySince: undefined as any,
-    latestEntitySnapshot: undefined as any,
+    rawToEnvelopes: rawEventsToEnvelopes,
+    store: storeEvents.bind(null, cosmosClient),
+    forEntitySince: readEntityEventsSince.bind(null, cosmosClient),
+    latestEntitySnapshot: readEntityLatestSnapshot.bind(null, cosmosClient),
   },
   // ProviderReadModelsLibrary
   readModels: {
-    rawToEnvelopes: undefined as any,
-    fetch: undefined as any,
-    search: undefined as any,
-    store: undefined as any,
+    fetch: fetchReadModel.bind(null, cosmosClient),
+    search: searchReadModel.bind(null, cosmosClient),
     subscribe: undefined as any,
+    rawToEnvelopes: undefined as any,
     fetchSubscriptions: undefined as any,
-    notifySubscription: undefined as any,
+    notifySubscription,
+    store: storeReadModel.bind(null, cosmosClient),
     deleteSubscription: undefined as any,
     deleteAllSubscriptions: undefined as any,
   },
   // ProviderGraphQLLibrary
   graphQL: {
-    rawToEnvelope: undefined as any,
-    handleResult: undefined as any,
+    rawToEnvelope: rawGraphQLRequestToEnvelope,
+    handleResult: requestSucceeded,
   },
   // ProviderAuthLibrary
   auth: {
@@ -32,10 +53,12 @@ export const Provider: ProviderLibrary = {
   },
   // ProviderAPIHandling
   api: {
-    requestSucceeded: undefined as any,
-    requestFailed: undefined as any,
+    requestSucceeded,
+    requestFailed,
   },
   // ProviderInfrastructureGetter
   infrastructure: () =>
     require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
 }
+
+export * from './constants'
