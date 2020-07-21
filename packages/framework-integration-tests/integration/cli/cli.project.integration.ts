@@ -8,7 +8,7 @@ import { ChildProcess, ExecException } from 'child_process'
 const exec = util.promisify(require('child_process').exec)
 
 const PROJECT_NAME_FIXTURE_PLACEHOLDER = 'project_name_fixture_placeholder'
-const TEST_TIMEOUT = 60000
+const TEST_TIMEOUT = 80000
 const DOWN_KEY = '\u001b[B'
 const DESCRIPTION = 'cart-demo'
 const VERSION = '1.0.0'

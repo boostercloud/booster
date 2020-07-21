@@ -269,8 +269,8 @@ describe('Cart end-to-end tests', () => {
         // provision admin user to delete a product
         const adminEmail: string = internet.email()
         await createUser(adminEmail, mockPassword, 'Admin')
-        const userAuthInformation = await getUserAuthInformation(adminEmail, mockPassword)
-        client = await graphQLClient(userAuthInformation.accessToken)
+        const adminUserAuthInformation = await getUserAuthInformation(adminEmail, mockPassword)
+        client = await graphQLClient(adminUserAuthInformation.accessToken)
 
         // Delete a product given an id
         await client.mutate({
@@ -284,7 +284,7 @@ describe('Cart end-to-end tests', () => {
           `,
         })
 
-        client = await graphQLClient(userAuthToken)
+        client = await graphQLClient(userAuthInformation.accessToken)
         // Retrieve updated entity
         const queryResult = await waitForIt(
           () => {

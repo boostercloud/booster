@@ -191,9 +191,7 @@ export const getUserAuthInformation = async (email: string, password: string): P
     },
   })
 
-  const responseBody = await response.json()
-
-  return responseBody
+  return await response.json()
 }
 
 export const refreshUserAuthInformation = async (refreshToken: string): Promise<UserAuthInformation> => {
@@ -211,9 +209,7 @@ export const refreshUserAuthInformation = async (refreshToken: string): Promise<
     },
   })
 
-  const responseBody = await response.json()
-
-  return responseBody
+  return await response.json()
 }
 
 export const createPassword = (): string => {
