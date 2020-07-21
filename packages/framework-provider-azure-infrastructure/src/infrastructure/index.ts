@@ -1,7 +1,13 @@
 import { Observable, Subscriber } from 'rxjs'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { ApplicationStackBuilder } from './stacks/application-stack'
-import { createResourceGroup, createResourceGroupName, createResourceManagementClient } from './setup'
+import {
+  azureCredentials,
+  createResourceGroup,
+  createResourceGroupName,
+  createResourceManagementClient,
+  createWebSiteManagementClient,
+} from './setup'
 
 export function deploy(configuration: BoosterConfig): Observable<string> {
   return new Observable((observer): void => {
@@ -25,18 +31,23 @@ export function nuke(configuration: BoosterConfig): Observable<string> {
  * Deploys the application in Azure
  */
 async function deployApp(observer: Subscriber<string>, config: BoosterConfig): Promise<void> {
-  const resourceManagementClient = await createResourceManagementClient()
+  const credentials = await azureCredentials()
+  const [resourceManagementClient, webSiteManagementClient] = await Promise.all([
+    createResourceManagementClient(credentials),
+    createWebSiteManagementClient(credentials),
+  ])
   const resourceGroupName = createResourceGroupName(config)
   await createResourceGroup(resourceGroupName, resourceManagementClient)
   const applicationBuilder = new ApplicationStackBuilder(config)
-  await applicationBuilder.buildOn(resourceManagementClient, resourceGroupName)
+  await applicationBuilder.buildOn(observer, resourceManagementClient, webSiteManagementClient, resourceGroupName)
 }
 
 /**
  * Nuke all the resources used in the Resource Group
  */
 async function nukeApp(observer: Subscriber<string>, config: BoosterConfig): Promise<void> {
-  const resourceManagementClient = await createResourceManagementClient()
+  const credentials = await azureCredentials()
+  const resourceManagementClient = await createResourceManagementClient(credentials)
 
   // By deleting the resource group we are deleting all the resources within it.
   await resourceManagementClient.resourceGroups.deleteMethod(createResourceGroupName(config))

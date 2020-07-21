@@ -47,11 +47,14 @@ describe('The Script class', () => {
         .done()
 
       expect(fakeAction1).to.have.been.calledOnce
+      // @ts-ignore
       expect(fakeAction1).to.have.been.calledBefore(fakeAction2)
       expect(fakeAction1).to.have.been.calledOnceWith({ ctxParam: 'value' })
 
+      // @ts-ignore
       expect(fakeAction2).to.have.been.calledBefore(fakeAction3)
       expect(fakeAction2).to.have.been.calledOnceWith({ ctxParam: 'value' })
+      // @ts-ignore
       expect(fakeAction2).to.have.been.calledBefore(fakeAction3)
     })
 
@@ -68,8 +71,10 @@ describe('The Script class', () => {
         .done()
 
       expect(fakeAction1).to.have.been.calledOnce
+      // @ts-ignore
       expect(fakeAction1).to.have.been.calledBefore(fakeAction2)
       expect(fakeAction1).to.have.been.calledOnceWith({ ctxParam: 'value' })
+      // @ts-ignore
       expect(fakeAction1).to.have.been.calledBefore(fakeAction2)
 
       expect(fakeAction2).to.have.been.calledOnceWith({ ctxParam: 'value' })
