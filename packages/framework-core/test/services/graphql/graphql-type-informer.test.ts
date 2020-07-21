@@ -30,6 +30,14 @@ describe('GraphQLTypeInformer', () => {
   })
 
   describe('getGraphQLTypeFor', () => {
+    it('should return expected GraphQL Type', () => {
+      const result = sut.getGraphQLTypeFor({
+        name: 'testClass',
+      } as AnyClass)
+
+      expect(result.toString()).to.be.equal('testClass')
+    })
+
     context('without types by name', () => {
       beforeEach(() => {
         sut = new GraphQLTypeInformer({})
