@@ -2,11 +2,14 @@ import { GraphQLTypeInformer } from '../../../src/services/graphql/graphql-type-
 import { AnyClass, UUID } from '@boostercloud/framework-types'
 import {
   GraphQLBoolean,
+  GraphQLEnumType,
   GraphQLFloat,
   GraphQLID,
   GraphQLInputType,
+  GraphQLInterfaceType,
   GraphQLList,
   GraphQLNonNull,
+  GraphQLObjectType,
   GraphQLString,
 } from 'graphql'
 import { expect } from '../../expect'
@@ -24,18 +27,46 @@ describe('GraphQLTypeInformer', () => {
         class: {
           name: 'testClass',
         } as AnyClass,
-        properties: {} as any,
+        properties: {
+          someProperty: {
+            name: 'someProperty',
+            type: String,
+          },
+        } as any,
+      },
+      anotherTestClass: {
+        class: {
+          name: 'anotherTestClass',
+        } as AnyClass,
+        properties: {
+          someProperty: {
+            name: 'someProperty',
+            type: String,
+          },
+        } as any,
       },
     })
   })
 
   describe('getGraphQLTypeFor', () => {
-    it('should return expected GraphQL Type', () => {
-      const result = sut.getGraphQLTypeFor({
-        name: 'testClass',
-      } as AnyClass)
+    describe('existing graphQLTypesByName', () => {
+      it('should return expected GraphQL Type', () => {
+        const result = sut.getGraphQLTypeFor({
+          name: 'anotherTestClass',
+        } as AnyClass)
 
-      expect(result.toString()).to.be.equal('testClass')
+        expect(result.toString()).to.be.equal('anotherTestClass')
+      })
+    })
+
+    describe('not existing graphQLTypesByName', () => {
+      it('should return expected GraphQL Type', () => {
+        const result = sut.getGraphQLTypeFor({
+          name: 'unknownClass',
+        } as AnyClass)
+
+        expect(result).to.be.equal(GraphQLJSONObject)
+      })
     })
 
     context('without types by name', () => {
@@ -171,6 +202,46 @@ describe('GraphQLTypeInformer', () => {
         const result = sut.toInputType(GraphQLNonNull(GraphQLFloat))
 
         expect(result).to.be.deep.equal(GraphQLNonNull(GraphQLFloat))
+      })
+    })
+
+    describe('instance of GraphQLObjectType', () => {
+      it('should return custom input type', () => {
+        const result = sut.toInputType(
+          new GraphQLObjectType({
+            name: 'randomObjectType',
+            fields: {},
+          })
+        )
+
+        expect(result.toString()).to.be.deep.equal('randomObjectTypeInput')
+      })
+    })
+
+    describe('instance of GraphQLEnumType', () => {
+      it('should return custom input type', () => {
+        expect(() => sut.toInputType({ name: 'myEnumGraphQLType' } as GraphQLEnumType)).to.throw(
+          `Types '${GraphQLEnumType.name}' and '${GraphQLInterfaceType}' are not allowed as input type, ` +
+            "and 'myEnumGraphQLType' was found"
+        )
+      })
+    })
+
+    describe('instance of GraphQLInterfaceType', () => {
+      it('should return custom input type', () => {
+        expect(() => sut.toInputType({ name: 'myGraphQLInterfaceType' } as GraphQLInterfaceType)).to.throw(
+          `Types '${GraphQLEnumType.name}' and '${GraphQLInterfaceType}' are not allowed as input type, ` +
+            "and 'myGraphQLInterfaceType' was found"
+        )
+      })
+    })
+
+    describe('instance of unknown GraphQL type', () => {
+      it('should return custom input type', () => {
+        expect(() => sut.toInputType({ name: 'unknownGraphQLType' } as any)).to.throw(
+          `Types '${GraphQLEnumType.name}' and '${GraphQLInterfaceType}' are not allowed as input type, ` +
+            "and 'unknownGraphQLType' was found"
+        )
       })
     })
   })
