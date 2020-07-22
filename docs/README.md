@@ -1856,6 +1856,38 @@ mutation {
 }
 ```
 
+It is also possible to use a GraphQL client to subscribe to changes in the application. However, it might be necessary to include an access token, provided when the user signs-in, in the request if the operation requires authorization. This token should be added to the GraphQL client as an operation option through a middleware. An example can be seen below:
+
+```typescript
+client.use([
+  {
+    applyMiddleware(options: OperationOptions, next: Function): void {
+      options.Authorization = <access-token>
+      next()
+    },
+  },
+])
+```
+
+an example GraphQL request through a client could be:
+```typescript
+await client.subscribe({
+    variables: {
+      productId: <some-product-id>,
+    },
+    query: gql`
+      subscription ProductUpdatesReadModel($productId: ID!) {
+        ProductUpdatesReadModel(id: $productId) {
+          id
+          availability
+          lastUpdate
+          previousUpdate
+        }
+      }
+    `,
+})
+```
+
 ### Cloud native
 
 One of the goals of Booster is to become provider agnostic so you can deploy your application to any serverless provider like AWS, Google Cloud, Azure, etc...
