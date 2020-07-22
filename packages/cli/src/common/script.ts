@@ -109,7 +109,8 @@ export class Script<TContext> {
     } catch (err) {
       const defaultHandler = (e: Error): string => e.stack || e.message
       const handler = this.errorHandlers[err.name] || defaultHandler
-      throw new Error(handler(err))
+      Script.logger.fail(handler(err))
+      throw new Error(err)
     }
   }
 
