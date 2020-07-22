@@ -997,7 +997,7 @@ An event has to know the ID of the entity it belongs to and you need to implemen
 
 Note:
 
-> The `entityID` method must always return the same value for the same event's instance because Booster will call it several times during its lifecycle. Otherwise, the entities' data will corrupt.
+> The `entityID` method must always return the same value for the same event's instance. Otherwise, the result of the entity reduction will be unpredictable.
 
 #### Events naming convention
 
