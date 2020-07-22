@@ -5,6 +5,8 @@ kind: Component
 metadata:
   name: statestore
   namespace: {{ namespace }}
+  annotations:
+    booster/created: "true"
 spec:
   type: state.redis
   metadata:

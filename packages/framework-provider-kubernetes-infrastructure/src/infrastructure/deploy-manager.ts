@@ -91,6 +91,7 @@ export class DeployManager {
 
   public async verifyUploadPod() {
     await this.verifyPod(uploaderPod)
+    await this.clusterManager.waitForPodToBeReady(this.namespace, uploaderPod.name)
   }
 
   public async verifyBoosterPod() {
@@ -98,14 +99,9 @@ export class DeployManager {
   }
 
   public async uploadUserCode() {
-    await this.clusterManager.waitForPodToBeReady(this.namespace, uploaderPod.name).catch((err) => {
-      console.log(err)
-      throw new Error(err)
-    })
     const fileUploadService = await this.clusterManager
       .waitForServiceToBeReady(this.namespace, uploadService.name)
       .catch((err) => {
-        console.log('error2 ', err)
         throw new Error(err)
       })
     const codeZipFile = await createProjectZipFile()
@@ -125,6 +121,18 @@ export class DeployManager {
     await this.clusterManager.waitForPodToBeReady(this.namespace, boosterAppPod.name)
     const service = await this.clusterManager.waitForServiceToBeReady(this.namespace, boosterService.name)
     return service?.ip ?? ''
+  }
+
+  public async deleteDapr() {
+    await this.daprManager.deleteDaprService()
+  }
+
+  public async deleteRedis() {
+    await this.daprManager.deleteEventStore()
+  }
+
+  public async deleteAllResources() {
+    await this.clusterManager.deleteNamespace(this.namespace)
   }
 
   private async verifyService(template: Template) {
