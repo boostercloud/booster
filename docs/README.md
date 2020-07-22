@@ -523,7 +523,7 @@ export class PostReadModel {
 At this point, we've:
 
 - Created a publicly accessible command
-- Emitted an event as a mechanism to store data.
+- Emitted an event as a mechanism to store data
 - Reduced the event into an entity to have a representation of our internal state
 - Projected the entity into a read model that is also publicly accessible.
 
