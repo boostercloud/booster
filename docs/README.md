@@ -1124,7 +1124,7 @@ export class HandleAvailability {
 
 #### Creating an event handler
 
-Event handlers can be easily created using the Booster CLI command `boost new:event-handler`. There are two compulsory arguments: the event handler name, and the name of the event it will react to. For instance:
+Event handlers can be easily created using the Booster CLI command `boost new:event-handler`. There are two mandatory arguments: the event handler name, and the name of the event it will react to. For instance:
 
 ```typescript
 boost new:event-handler HandleAvailability --event StockMoved
