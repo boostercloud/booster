@@ -1869,7 +1869,7 @@ client.use([
 ])
 ```
 
-an example GraphQL request through a client could be:
+Once the client is setup, a subscription to read model GraphQL request through a GraphQL client could be:
 ```typescript
 await client.subscribe({
     variables: {
