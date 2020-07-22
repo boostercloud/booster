@@ -993,7 +993,7 @@ export class CartPaid {
 }
 ```
 
-An event has to know the ID of the entity it belongs to, that's why you have to implement the `entityID` method. For getting the entity ID, you could inject it directly in the event's constructor, or as a nested attribute. If your domain requires a _singleton_ entity, where there's only one instance, you can return a constant value. In the `CartPaid` example, the entity ID (`paymentID`) is injected directly.
+An event has to know the ID of the entity it belongs to and you need to implement the `entityID` method to return it. You can inject the entity ID directly in the event's constructor or as a nested attribute. If your domain requires a _singleton_ entity, where there's only one instance, you can return a constant value. In the `CartPaid` example, the entity ID (`cartID`) is injected directly.
 
 Note:
 
