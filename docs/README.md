@@ -1040,25 +1040,11 @@ export class CartPaid {
 }
 ```
 
-An event has to know the ID of the entity it belongs to, and there are several strategies to do so. One would be injecting the entity ID directly in the constructor, or as a nested attribute. Alternatively, for events like `ProductCreated` it is common to return a brand new ID as the entity did not exist. For _singleton_ entities, where there's only one instance, you can even use a constant value. 
+An event has to know the ID of the entity it belongs to and you need to implement the `entityID` method to return it. You can inject the entity ID directly in the event's constructor or as a nested attribute. If your domain requires a _singleton_ entity, where there's only one instance, you can return a constant value. In the `CartPaid` example, the entity ID (`cartID`) is injected directly.
 
-In the `CartPaid` example, the entity ID (`paymentID`) is injected directly, and here is another example of a newly generated value:
+Note:
 
-```typescript
-@Event
-export class ProductCreated {
-  public constructor(
-    readonly displayName: string,
-    readonly price: Money
-  ) {}
-
-  public entityID(): UUID {
-    // returns a new UUID because the Product entity
-    // does not exist yet
-    return UUID.generate()
-  }
-}
-```
+> The `entityID` method must always return the same value for the same event's instance. Otherwise, the result of the entity reduction will be unpredictable.
 
 #### Events naming convention
 
