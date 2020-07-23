@@ -23,12 +23,9 @@ describe('nuke', () => {
         const fakeLoader = Promise.reject(new Error('weird exception'))
         const fakeNuke = fake()
 
-        try {
-          await runTasks('test-env', fakeLoader, fakeNuke)
-        } catch (err) {
-          expect(ctx.stdout).to.include('weird exception')
-          expect(fakeNuke).not.to.have.been.called
-        }
+        await expect(runTasks('test-env', fakeLoader, fakeNuke)).to.eventually.be.rejectedWith()
+        expect(ctx.stdout).to.include('weird exception')
+        expect(fakeNuke).not.to.have.been.called
       })
     })
 
@@ -48,12 +45,9 @@ describe('nuke', () => {
         replace(prompter, 'defaultOrPrompt', fakePrompter)
         const fakeNuke = fake()
 
-        try {
-          await runTasks('test-env', loader(prompter, false, fakeConfig), fakeNuke)
-        } catch (err) {
-          expect(ctx.stdout).to.include('Wrong app name, stopping nuke!')
-          expect(fakeNuke).not.to.have.been.called
-        }
+        await expect(runTasks('test-env', loader(prompter, false, fakeConfig), fakeNuke)).to.eventually.be.rejectedWith()
+        expect(ctx.stdout).to.include('Wrong app name, stopping nuke!')
+        expect(fakeNuke).not.to.have.been.called
       })
     })
 
@@ -73,12 +67,9 @@ describe('nuke', () => {
         replace(prompter, 'defaultOrPrompt', fakePrompter)
         const fakeNuke = fake()
 
-        try{
-          await runTasks('test-env', loader(prompter, true, fakeConfig), fakeNuke)
-        } catch (err) {
-          expect(prompter.defaultOrPrompt).not.to.have.been.called
-          expect(fakeNuke).to.have.been.calledOnce
-        }
+        await expect(runTasks('test-env', loader(prompter, true, fakeConfig), fakeNuke)).to.eventually.be.rejectedWith()
+        expect(prompter.defaultOrPrompt).not.to.have.been.called
+        expect(fakeNuke).to.have.been.calledOnce
       })
     })
 

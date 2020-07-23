@@ -25,12 +25,9 @@ describe('deploy', () => {
         const fakeLoader = Promise.reject(new Error('weird exception'))
         const fakeDeployer = fake()
 
-        try {
-          await runTasks('test-env', fakeLoader, fakeDeployer)
-        } catch (err) {
-          expect(ctx.stdout).to.include('weird exception')
-          expect(fakeDeployer).not.to.have.been.called
-        }
+        await expect(runTasks('test-env', fakeLoader, fakeDeployer)).to.eventually.be.rejectedWith()
+        expect(ctx.stdout).to.include('weird exception')
+        expect(fakeDeployer).not.to.have.been.called
       })
     })
 
@@ -39,13 +36,9 @@ describe('deploy', () => {
         const fakeLoader = Promise.reject(new Error('An error when loading project'))
         const fakeDeployer = fake()
 
-        try {
-          await runTasks('test-env', fakeLoader, fakeDeployer)
-        } catch (err) {
-          expect(ctx.stdout).to.include('An error when loading project')
-
-          expect(fakeDeployer).not.to.have.been.called
-        }
+        await expect(runTasks('test-env', fakeLoader, fakeDeployer)).to.eventually.be.rejectedWith()
+        expect(ctx.stdout).to.include('An error when loading project')
+        expect(fakeDeployer).not.to.have.been.called
       })
     })
 
