@@ -44,7 +44,6 @@ export const Provider: ProviderLibrary = {
   },
   // ProviderGraphQLLibrary
   graphQL: {
-    authorizeRequest: undefined as any,
     rawToEnvelope: rawGraphQLRequestToEnvelope,
     handleResult: requestSucceeded,
   },

@@ -32,10 +32,11 @@ export class UserEnvelopeBuilder {
 
 type CouldHaveHeaders = { headers: { [name: string]: string } | null }
 export async function fetchUserFromRequest(
+  userPool: CognitoIdentityServiceProvider,
   request: CouldHaveHeaders,
-  userPool: CognitoIdentityServiceProvider
+  graphQLValueAuthorization?: string,
 ): Promise<UserEnvelope | undefined> {
-  const accessToken = getTokenFromRequest(request)
+  const accessToken = getTokenFromRequest(request) ?? graphQLValueAuthorization
   if (!accessToken) {
     return undefined
   }

@@ -1,13 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from './expect'
-import {
-  Booster,
-  boosterEventDispatcher,
-  boosterPreSignUpChecker,
-  boosterServeGraphQL,
-  boosterRequestAuthorizer,
-} from '../src/booster'
+import { Booster, boosterEventDispatcher, boosterPreSignUpChecker, boosterServeGraphQL } from '../src/booster'
 import { replace, fake, restore, match, replaceGetter } from 'sinon'
 import { Importer } from '../src/importer'
 import * as EntitySnapshotFetcher from '../src/entity-snapshot-fetcher'
@@ -128,16 +122,5 @@ describe('the public static function `boosterServeGraphQL`', () => {
     await boosterServeGraphQL(message)
 
     expect(Booster.serveGraphQL).to.have.been.calledOnceWith(message)
-  })
-})
-
-describe('the public static function `boosterRequestAuthorizer`', () => {
-  it('calls `Booster.authorizeRequest` passing the rawMessage', async () => {
-    replace(Booster, 'authorizeRequest', fake())
-    const message = { body: 'Test body' }
-
-    await boosterRequestAuthorizer(message)
-
-    expect(Booster.authorizeRequest).to.have.been.calledOnceWith(message)
   })
 })

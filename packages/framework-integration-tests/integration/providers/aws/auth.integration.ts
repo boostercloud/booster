@@ -1,9 +1,5 @@
 import {
   graphQLClientWithSubscriptions,
-  signUpURL,
-  authClientID,
-  signInURL,
-  confirmUser,
   createUser,
   deleteUser,
   waitForIt,
@@ -11,12 +7,16 @@ import {
   getAuthToken,
   DisconnectableApolloClient,
   countSubscriptionsItems,
+  authClientID,
+  signUpURL,
+  confirmUser,
+  signInURL,
 } from './utils'
 import gql from 'graphql-tag'
 import { expect } from 'chai'
-import fetch from 'cross-fetch'
 import * as chai from 'chai'
-import { random, internet, lorem, finance } from 'faker'
+import { random, internet, finance, lorem } from 'faker'
+import fetch from 'cross-fetch'
 
 chai.use(require('chai-as-promised'))
 
@@ -289,6 +289,7 @@ describe('With the auth API', () => {
       // Create user
       const url = await signUpURL()
       const clientId = await authClientID()
+
       await fetch(url, {
         method: 'POST',
         body: JSON.stringify({
@@ -307,6 +308,7 @@ describe('With the auth API', () => {
       // Confirm user
       await confirmUser(userEmail)
     })
+
     after(async () => {
       await deleteUser(userEmail)
     })
@@ -454,6 +456,8 @@ describe('With the auth API', () => {
               ProductReadModels {
                 id
                 sku
+                description
+                displayName
               }
             }
           `,
@@ -566,6 +570,7 @@ describe('With the auth API', () => {
       // Create admin user
       await createUser(adminEmail, adminPassword, 'Admin')
     })
+
     after(async () => {
       await deleteUser(adminEmail)
     })
@@ -599,6 +604,7 @@ describe('With the auth API', () => {
       before(async () => {
         client = await graphQLClientWithSubscriptions(await getAuthToken(adminEmail, adminPassword))
       })
+
       after(() => {
         client.disconnect()
       })

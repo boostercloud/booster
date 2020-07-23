@@ -13,7 +13,7 @@ import { WebSocketLink } from 'apollo-link-ws'
 import { getMainDefinition } from 'apollo-utilities'
 import { split } from 'apollo-link'
 import * as WebSocket from 'ws'
-import { SubscriptionClient } from 'subscriptions-transport-ws'
+import { OperationOptions, SubscriptionClient } from 'subscriptions-transport-ws'
 import { ApolloClientOptions } from 'apollo-client/ApolloClient'
 
 const userPoolId = 'userpool'
@@ -268,9 +268,21 @@ export class DisconnectableApolloClient extends ApolloClient<NormalizedCacheObje
  * IMPORTANT: After using this "DisconnectableApolloClient", you must call ".disconnect()" to close the socket. Otherwise
  * it will keep waiting for messages forever
  * @param authToken
+ * @param tokenInHeader
  */
 export async function graphQLClientWithSubscriptions(authToken?: string): Promise<DisconnectableApolloClient> {
-  const subscriptionClient = await graphqlSubscriptionsClient(authToken)
+  const subscriptionClient: SubscriptionClient = await graphqlSubscriptionsClient()
+  if (authToken) {
+    subscriptionClient.use([
+      {
+        applyMiddleware(options: OperationOptions, next: Function): void {
+          options.Authorization = authToken
+          next()
+        },
+      },
+    ])
+  }
+
   const websocketLink = new WebSocketLink(subscriptionClient)
 
   const link = split(
@@ -293,8 +305,7 @@ export async function graphQLClientWithSubscriptions(authToken?: string): Promis
   })
 }
 
-export async function graphqlSubscriptionsClient(authToken?: string): Promise<SubscriptionClient> {
-  const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {}
+export async function graphqlSubscriptionsClient(): Promise<SubscriptionClient> {
   return new SubscriptionClient(
     await baseWebsocketURL(),
     {
@@ -303,9 +314,8 @@ export async function graphqlSubscriptionsClient(authToken?: string): Promise<Su
     },
     class MyWebSocket extends WebSocket {
       public constructor(url: string, protocols?: string | string[]) {
-        super(url, protocols, {
-          headers,
-        })
+        super(url, protocols)
+
         this.addListener('open', (): void => {
           console.log('[GraphQL socket] on open')
         })

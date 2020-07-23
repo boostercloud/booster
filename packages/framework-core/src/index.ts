@@ -5,7 +5,6 @@ export {
   boosterEventDispatcher,
   boosterPreSignUpChecker,
   boosterServeGraphQL,
-  boosterRequestAuthorizer,
   boosterNotifySubscribers,
 } from './booster'
 
