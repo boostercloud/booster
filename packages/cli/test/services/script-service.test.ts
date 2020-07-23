@@ -62,7 +62,6 @@ describe('The Script class', () => {
       const fakeAction1 = stub().resolves()
       const fakeAction2 = stub().rejects('some error')
       const fakeAction3 = stub().resolves()
-      const { loggerFail } = replaceLogger(Script)
 
       await expect(Script.init('initializing test', Promise.resolve(testContext))
         .step('step', fakeAction1)
@@ -81,8 +80,6 @@ describe('The Script class', () => {
 
       expect(fakeAction3).not.to.have.been.called
       expect(fakeAction2).to.have.been.calledOnceWith({ ctxParam: 'value' })
-
-      expect(loggerFail).to.have.been.calledOnce
     })
 
     it('prints the provided message', async () => {
@@ -96,12 +93,11 @@ describe('The Script class', () => {
 
     it('fails gracefully in case of initializer failure', async () => {
       const msg = 'initializing'
-      const err = new Error('some error')
+      const errorMessage = 'some error'
+      const err = new Error(errorMessage)
       const initializer = stub().rejects(err)
-      const { loggerFail } = replaceLogger(Script)
 
-      await expect(Script.init(msg, initializer()).done()).to.eventually.be.rejectedWith()
-      expect(loggerFail).to.have.been.calledWithMatch(err.stack)
+      await expect(Script.init(msg, initializer()).done()).to.eventually.be.rejectedWith(errorMessage)
     })
   })
 
@@ -139,14 +135,13 @@ describe('The Script class', () => {
       const err = new Error('some error')
       const msg = 'That is no step for anyone'
       const stepFn = stub().rejects(err)
-      const { loggerStart, loggerSucceed, loggerFail } = replaceLogger(Script)
+      const { loggerStart, loggerSucceed} = replaceLogger(Script)
 
       await expect(Script.init('initializing', Promise.resolve(testContext))
         .step(msg, stepFn)
         .done()).to.eventually.be.rejectedWith()
       expect(loggerStart).to.have.been.calledOnceWith(msg)
       expect(loggerSucceed).not.to.have.been.called
-      expect(loggerFail).to.have.been.calledOnceWith(err.stack)
       expect(stepFn).to.have.been.calledOnceWith(testContext)
     })
   })
@@ -155,23 +150,19 @@ describe('The Script class', () => {
     it('prints a custom error message for specified error types', async () => {
       const err = new SyntaxError('other message')
       const msg = 'much nicer message'
-      const { loggerFail } = replaceLogger(Script)
 
       await expect(Script.init('initializing', Promise.reject(err))
         .catch('SyntaxError', () => msg)
-        .done()).to.eventually.be.rejectedWith()
-      expect(loggerFail).to.have.been.calledOnceWith(msg)
+        .done()).to.eventually.be.rejectedWith(msg)
     })
 
     it('prints the error message for non specified error types', async () => {
       const msg = 'some message'
       const err = new Error(msg)
-      const { loggerFail } = replaceLogger(Script)
 
       await expect(Script.init('initializing', Promise.reject(err))
         .catch('SyntaxError', () => msg)
-        .done()).to.eventually.be.rejectedWith()
-      expect(loggerFail).to.have.been.calledOnceWith(err.stack)
+        .done()).to.eventually.be.rejectedWith(msg)
     })
   })
 })

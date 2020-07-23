@@ -20,11 +20,11 @@ describe('nuke', () => {
   describe('runTasks function', () => {
     context('when an unexpected problem happens', () => {
       fancy.stdout().it('fails gracefully showing the error message', async (ctx) => {
-        const fakeLoader = Promise.reject(new Error('weird exception'))
+        const msg = 'weird exception'
+        const fakeLoader = Promise.reject(new Error(msg))
         const fakeNuke = fake()
 
-        await expect(runTasks('test-env', fakeLoader, fakeNuke)).to.eventually.be.rejectedWith()
-        expect(ctx.stdout).to.include('weird exception')
+        await expect(runTasks('test-env', fakeLoader, fakeNuke)).to.eventually.be.rejectedWith(msg)
         expect(fakeNuke).not.to.have.been.called
       })
     })
@@ -45,8 +45,8 @@ describe('nuke', () => {
         replace(prompter, 'defaultOrPrompt', fakePrompter)
         const fakeNuke = fake()
 
-        await expect(runTasks('test-env', loader(prompter, false, fakeConfig), fakeNuke)).to.eventually.be.rejectedWith()
-        expect(ctx.stdout).to.include('Wrong app name, stopping nuke!')
+        await expect(runTasks('test-env', loader(prompter, false, fakeConfig), fakeNuke))
+          .to.eventually.be.rejectedWith('Wrong app name, stopping nuke!')
         expect(fakeNuke).not.to.have.been.called
       })
     })
