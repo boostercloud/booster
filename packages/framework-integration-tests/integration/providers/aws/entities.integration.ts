@@ -23,7 +23,7 @@ describe('entities', async () => {
     const mockPaymentId: string = random.uuid()
     const mockConfirmationToken: string = random.alphaNumeric(10)
 
-    const changeCartItemResponse = await client.mutate({
+    await client.mutate({
       variables: {
         cartId: mockCartId,
         productId: mockProductId,
@@ -36,8 +36,13 @@ describe('entities', async () => {
       `,
     })
 
-    expect(changeCartItemResponse).not.to.be.null
-    expect(changeCartItemResponse?.data?.ChangeCartItem).to.be.true
+    await waitForIt(
+      () => queryReadModels(mockCartId, CART_READ_MODEL_NAME),
+      (readModel) =>
+        readModel &&
+        readModel[0]?.id === mockCartId &&
+        readModel[0]?.cartItems[0]?.productId === mockProductId
+    )
 
     const ConfirmPaymentResponse = await client.mutate({
       variables: {
