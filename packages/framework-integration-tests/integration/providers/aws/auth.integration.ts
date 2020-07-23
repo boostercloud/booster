@@ -567,8 +567,8 @@ describe('With the auth API', () => {
         before(async () => {
           refreshedUserAuthInformation = await refreshUserAuthInformation(userAuthInformation.refreshToken)
 
-          // Reinitialize client with a refreshed token
-          client = await graphQLClientWithSubscriptions(refreshedUserAuthInformation.accessToken)
+          // Update access token in client
+          client.updateToken(refreshedUserAuthInformation.accessToken)
         })
 
         after(() => {
@@ -884,8 +884,8 @@ describe('With the auth API', () => {
         before(async () => {
           refreshedUserAuthInformation = await refreshUserAuthInformation(adminUserAuthInformation.refreshToken)
 
-          // Reinitialize client with a refreshed token
-          client = await graphQLClientWithSubscriptions(refreshedUserAuthInformation.accessToken)
+          // Update access token in client
+          client.updateToken(refreshedUserAuthInformation.accessToken)
         })
 
         after(() => {
