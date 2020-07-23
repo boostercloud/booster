@@ -16,9 +16,9 @@ import {
 } from './utils'
 import gql from 'graphql-tag'
 import { expect } from 'chai'
-import fetch from 'cross-fetch'
 import * as chai from 'chai'
-import { random, internet, lorem, finance } from 'faker'
+import { random, internet, finance, lorem } from 'faker'
+import fetch from 'cross-fetch'
 
 chai.use(require('chai-as-promised'))
 
@@ -291,6 +291,7 @@ describe('With the auth API', () => {
       // Create user
       const url = await signUpURL()
       const clientId = await authClientID()
+
       await fetch(url, {
         method: 'POST',
         body: JSON.stringify({
@@ -460,6 +461,8 @@ describe('With the auth API', () => {
               ProductReadModels {
                 id
                 sku
+                description
+                displayName
               }
             }
           `,
