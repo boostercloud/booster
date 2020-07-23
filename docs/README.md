@@ -50,10 +50,7 @@
     + [Getting real-time updates for a read model](#getting-real-time-updates-for-a-read-model)
 - [Features](#features)
   * [Authentication and Authorization](#authentication-and-authorization)
-    + [Sign-up](#sign-up)
-    + [Sign-in](#sign-in)
-    + [Sign-out](#sign-out)
-    + [Refresh token](#refresh-token)
+    + [Authentication API](#authentication-api)
   * [GraphQL API](#graphql-api)
     + [Relationship between GraphQL operations and commands and read models](#relationship-between-graphql-operations-and-commands-and-read-models)
     + [How to send GraphQL request](#how-to-send-graphql-request)
@@ -61,7 +58,10 @@
     + [Reading read models](#reading-read-models)
     + [Subscribing to read models](#subscribing-to-read-models)
   * [Cloud native](#cloud-native)
-    + [Deploying to AWS](#deploying-to-aws)
+    + [Configure your provider credentials](#configure-your-provider-credentials)
+    + [Deploy your project](#deploy-your-project)
+    + [Application outputs](#application-outputs)
+    + [Delete your cloud stack](#delete-your-cloud-stack)
 - [Going deeper with Booster](#going-deeper-with-booster)
   * [Framework Core](#framework-core)
   * [Framework Types](#framework-types)
@@ -1377,7 +1377,7 @@ tells Booster who can execute or access it. It consists of one of the following 
 - An array of authorized roles `[Role1, Role2, ...]`: This means that only those authenticated users that
   have any of the roles listed there are authorized to execute the command
 
-> For example, the following command can be executed by anyone:
+For example, the following command can be executed by anyone:
 
 ```typescript
 @Command({
@@ -1388,7 +1388,7 @@ export class CreateComment {
 }
 ```
 
-> While this one can be executed by authenticated users that have the role `Admin` or `User`:
+While this one can be executed by authenticated users that have the role `Admin` or `User`:
 
 ```typescript
 @Command({
@@ -1401,9 +1401,9 @@ export class UpdateUser {
 
 By default, a Booster application has no roles defined, so the only allowed value you can use in the `authorize` policy is `'all'` (good for public APIs).
 If you want to add user authorization, you first need to create the roles that are suitable for your application.
-Roles are classes annotated with the `@Role` decorator, where you can specify some attributes. We recommend that you define your roles in the file `src/roles.ts` or, if you have too much roles, create a `src/roles` folder and one file for each scope or role.
+Roles are classes annotated with the `@Role` decorator, where you can specify some attributes. We recommend that you define your roles in the file `src/roles.ts` or, if you have too many roles, put them in several files under a `src/roles` folder.
 
-> Example definition of roles `Admin` and `User`:
+In the following example we define two roles, `Admin` and `User`:
 
 ```typescript
 // src/roles.ts
@@ -1419,19 +1419,24 @@ export class Admin {}
 export class User {}
 ```
 
-Here, we have defined the `Admin` and `User` roles. The former contains the following attribute `allowSelfSignUp: false`,
-which means that when users sign-up, they can't specify the role `Admin` as their role.
-The latter has this attribute set to `true`, which means that any user can self-assign the role `User` when signing up.
+The `Admin` role contains the following attribute `allowSelfSignUp: false`,
+which means that when users sign-up, they can't specify themselves the role `Admin` as their role.
+The `User` role has this attribute set to `true`, so users can self-assign this role to themselves.
 
-If your Booster application has roles defined, an authentication API will be provisioned. It will allow your users to gain
+If your Booster application has roles defined, an [authentication API](#authentication-api) will be provisioned. It will allow your users to gain
 access to your resources.
 
 Once a user has an access token, it can be included in any request made to your Booster application as a
-Bearer Authorization header (`Authorization: Bearer`). It will be used to get the user information and
-authorize it to access protected resources.
+_Bearer_ token. It will be used to get the user information and
+authorize them to access protected resources.
 
-#### Sign-up
-Users can use this endpoint to register in your application and get a unique role assigned to them.
+#### Authentication API
+The authentication API consists of several endpoints that allow you to manage user registrations, sessions, tokens and more.
+
+The base URL of all these endpoints is the `httpURL` output of your application. See the ["Application Outputs"](#application-outputs) section know more.
+
+##### Sign-up
+Users can use this endpoint to register in your application and get a role assigned to them.
 Only roles with the attribute `allowSelfSignUp: true` can be specified upon sign-up. After calling this endpoint, the
 registration is not yet finished. Users need to confirm their emails by clicking in the link that will be sent to their 
 inbox.
@@ -1439,11 +1444,11 @@ inbox.
 ![confirmation email](./img/sign-up-verificaiton-email.png)
 ![email confirmed](./img/sign-up-confirmed.png)
 
-##### Endpoint
+###### Endpoint
 ```http request
 POST https://<httpURL>/auth/sign-up
 ```
-##### Request body
+###### Request body
 ```json
 {
   "clientId": "string",
@@ -1463,11 +1468,13 @@ _password_ | The password the user will use to later login into your application
 _userAttributes_ | Here you can specify the attributes of your user. These are: <br/> -_**role**_:  A unique role this user will have. You can only specify here a role with the property `allowSelfSignUp = true`
 
 
-##### Response
+###### Response
 An Empty Body
 
-##### Errors
-> Sign-up error response body example: Not specifying an email as username.
+###### Errors
+You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
+
+Example: The `username` is not an email:
 
 ```json
 {
@@ -1475,18 +1482,15 @@ An Empty Body
   "message": "Username should be an email."
 }
 ```
-
-You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
-
-#### Sign-in
+##### Sign-in
 This endpoint creates a session for an already registered user, returning an access token that can be used
 to access role-protected resources
 
-##### Endpoint
+###### Endpoint
 ```http request
 POST https://<httpURL>/auth/sign-in
 ```
-##### Request body
+###### Request body
 ```json
 {
   "clientId": "string",
@@ -1500,7 +1504,7 @@ _clientId_ | The application client Id that you got as an output when the applic
 _username_ | The username of the user you want to sign in. They must have previously signed up.
 _password_ | The password used to sign up the user.
 
-##### Response
+###### Response
 ```json
 {
   "accessToken": "string",
@@ -1517,8 +1521,10 @@ _expiresIn_ | The period of time, in seconds, after which the token will expire.
 _refreshToken_ | The token you can use to get a new access token after it has expired.
 _tokenType_ | The type of token used. It is always `Bearer`.
 
-##### Errors
-> Sign-in error response body example: Login of an user that has not been confirmed
+###### Errors
+You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
+
+Example: Login of a user that has not been confirmed
 
 ```json
 {
@@ -1527,17 +1533,14 @@ _tokenType_ | The type of token used. It is always `Bearer`.
 }
 ```
 
-You will get a HTTP status code different from 2XX and a body with a message telling you the reason of the error.
-
-#### Sign-out
+##### Sign-out
 Users can call this endpoint to finish the session.
 
-##### Endpoint
+###### Endpoint
 ```http request
 POST https://<httpURL>/auth/sign-out
 ```
-##### Request body
-> Sign-out request body
+###### Request body
 ```json
 {
   "accessToken": "string"
@@ -1548,18 +1551,19 @@ Parameter | Description
 --------- | -----------
 _accessToken_ | The access token you get in the sign-in call.
 
-##### Response
+###### Response
 An empty body
 
-##### Errors
-> Sign-out error response body example: Invalid access token specified
+###### Errors
+You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
+
+Example: Invalid access token specified
 ```json
 {
   "__type": "NotAuthorizedException",
   "message": "Invalid Access Token"
 }
 ```
-You will get a HTTP status code different from 2XX and a body with a message telling you the reason of the error.
 
 #### Refresh token
 Users can call this endpoint to refresh the access token.
@@ -1914,11 +1918,12 @@ One of the goals of Booster is to become provider agnostic so you can deploy you
 So far, in the current version, only AWS is supported, but given the high level of abstraction, it will eventually support
 all cloud providers. (**Contributions are welcome!** 😜)
 
-#### Deploying to AWS
+#### Configure your provider credentials
 
-##### Configure your provider credentials
+##### AWS provider
+In AWS, it is required that your `~/.aws/credentials` file is properly setup, and a `region` attribute is specified. If you have the [AWS CLI installed](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html), you can create the config file by running the command `aws configure`, but that is completely optional, **AWS CLI is not required to run booster**. 
 
-> Creating a plain text file manually named `~/.aws/credentials` with the following content will be enough:
+This is an example of the minimal content your `~/.aws/credentials` file should have:
 
 ```text
 [default]
@@ -1927,28 +1932,37 @@ aws_secret_access_key = <YOUR ACCESS KEY>
 region = eu-west-1
 ```
 
-In AWS, it is required that your `~/.aws/credentials` are properly setup, and a `region` attribute is specified. If you have the [AWS CLI installed](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html), you can create the config file by running the command `aws configure`, but that is completely optional, **AWS CLI is not required to run booster**. 
+It's recommended to use IAM user keys and avoiding your root access keys. If you need help obtaining a `KEY ID` and `ACCESS KEY`, [check out the official AWS guides](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey).
 
-It's recomended to use IAM user keys and avoiding your root access keys. If you need help obtaining a `KEY ID` and `ACCESS KEY`, [check out the oficial AWS guides](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey).
-
-##### Deploy your project
+#### Deploy your project
 
 To deploy your Booster project, run the following command:
 
 ```shell
-boost deploy -e production
+boost deploy -e <environment name>
 ```
 
+The `<environment name>` parameter is the name of the [environment](#environments) you want to deploy.
 It will take a while, but you should have your project deployed to your cloud provider.
 
-If you make changes to your code, you can run `boost deploy -e production` again to update your project in the cloud.
+If you make changes to your code, you can run `boost deploy -e <environment name>` again to update your project in the cloud.
 
-##### Delete your cloud stack
+#### Application outputs
 
-If you want to delete the Booster application that has been deployed to the cloud, you can run:
+After any deployment, an "Outputs" section will be printed to the console with useful information needed to interact with your application. The meaning of those outputs are:
+
+- **httpURL**: This is the base HTTP URL of your application. You will need it to interact with the 
+authentication/authorization API and the GraphQL API.
+- **websocketURL**: This is the WebSocket URL you need to use to send GraphQL subscriptions.
+- **clientID**: This parameter is _specific for the AWS provider_ (only shown if used AWS when deployint) and is 
+needed only for the `auth/sign-up` and `auth/sign-in` endpoints.
+
+#### Delete your cloud stack
+
+If you want to delete the Booster application that has been deployed, you can run:
 
 ```shell
-boost nuke -e production
+boost nuke -e <environment name>
 ```
 
 **Note**: This will delete everything in your stack, including databases. This action is **not** reversible!
@@ -1993,6 +2007,10 @@ The local runtime is a convenient and fast way to deploy and test your code in a
 Booster uses sensible defaults, convention over configuration, and code inference to reduce dramatically the amount of configuration needed. However, there are some aspects that can't be inferred (like the application name) or the provider library used for each [environment](#environments).
 
 #### Booster configuration
+
+You configure your application by calling the `Booster.configure()` method. There are no restrictions about where you should do this call, but the convention is to do it in your configuration files located in the `src/config` folder. If you used the project generator (`boost new:project <project-name>`), this is where the config files are by default.
+
+This is an example of a possible configuration:
 ```typescript
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
@@ -2004,16 +2022,16 @@ Booster.configure('pre-production', (config: BoosterConfig): void => {
 })
 ```
 
-You configure your application by calling the `Booster.configure()` method. There are no restrictions about where you should do this call, but the convention is to do it in your configuration files located in the `src/config` folder. If you used the project generator (`boost new:project <project-name>`), this is where the config files are by default.
-
 The following is the list of the fields you can configure:
 - **appName:** This is the name that identifies your application. It will be used for many things, such us prefixing the resources created by the provider. There are certain restrictions regarding the characters you can use: all of them must be lower-cased and can't contain spaces. Two apps with different names are completely independent.
 
-- **provider:** This field contains the provider library instance that Booster will use when deploying or running your application. _**Note:** So far, there is only one provider fully supported in Booster yet, @boostercloud/framework-provider-aws, and it is probably the one you have already set if you used the generator to create your project. The team is currently working on providers for local development, azure, and Kubernetes._
+- **provider:** This field contains the provider library instance that Booster will use when deploying or running your application. 
+
+_**Note:** So far, there is only one provider fully supported in Booster yet, @boostercloud/framework-provider-aws, and it is probably the one you have already set if you used the generator to create your project. The team is currently working on providers for local development, Azure, and Kubernetes._
 
 #### Environments
 
-You can create multiple environments calling the `Booster.configure` function several times using different environment names. You can create one file for each environment, but it is not required. In this example we set all environments in a single file:
+You can create multiple environments calling the `Booster.configure` function several times using different environment names as the first argument. You can create one file for each environment, but it is not required. In this example we set all environments in a single file:
 
 ```typescript
 // Here we use a single file called src/config.ts, but you can use separate files for each environment too.
@@ -2040,18 +2058,13 @@ Booster.configure('prod', (config: BoosterConfig): void => {
 })
 ```
 
-It is also possible to place an environment configuration in a separated file, for instance:
+It is also possible to place an environment configuration in a separated file. Let's say that a developer called "Pepe" created its own configuration file `src/config/pepe.ts`. The content would be the following:
 
-`src/config/pepe.ts`
 ```typescript
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
-// A provider that deploys your app to AWS:
 import * as AWS from '@boostercloud/framework-provider-aws'
-// A provider that deploys your app locally:
-import * as LocalProvider from '@boostercloud/framework-provider-local' 
 
-// This other configuration could be in another file that Pepe doesn't commit
 Booster.configure('pepe', (config: BoosterConfig): void => {
   config.appName = 'pepe-fruit-store'
   config.provider = AWS.Provider
@@ -2060,11 +2073,11 @@ Booster.configure('pepe', (config: BoosterConfig): void => {
 
 The environment name will be required by any command from the Booster CLI that depends on the provider. For instance, when you deploy your application, you'll need to specify on which environment you want to deploy it:
 
-    $ boost deploy -e 'prod'
+    $ boost deploy -e prod
 
 This way, you can have different configurations depending on your needs.
 
-Booster environments are extremely flexible. For example, your 'fruit-store' app can have three team-wide environments: 'dev', 'stage', and 'prod', each of them with different app names or providers, that are deployed by your CI/CD processes. Developers can create their own private environments very easily by just adding an additional config file to test their changes in realistic environments before committing them. Likewise, CI/CD processes could generate separate production-like environments to test different branches to perform QA in separate environments without interferences from other features under test.
+Booster environments are extremely flexible. As shown in the first example, your 'fruit-store' app can have three team-wide environments: 'dev', 'stage', and 'prod', each of them with different app names or providers, that are deployed by your CI/CD processes. Developers, like "Pepe" in the second example, can create their own private environments in separate config files to test their changes in realistic environments before committing them. Likewise, CI/CD processes could generate separate production-like environments to test different branches to perform QA in separate environments without interferences from other features under test.
 
 The only thing you need to do to deploy a whole new completely-independent copy of your application is to use a different name. Also, Booster uses the credentials available in the machine (`~/.aws/credentials` in AWS) that performs the deployment process, so developers can even work on separate accounts than production or staging environments.
 
