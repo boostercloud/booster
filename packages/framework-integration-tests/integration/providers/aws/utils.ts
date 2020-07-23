@@ -286,6 +286,17 @@ export class DisconnectableApolloClient extends ApolloClient<NormalizedCacheObje
     super(options)
   }
 
+  public updateToken(token: string): void {
+    this.subscriptionClient.use([
+      {
+        applyMiddleware(options: OperationOptions, next: Function): void {
+          options.Authorization = token
+          next()
+        },
+      },
+    ])
+  }
+
   public disconnect(): void {
     this.subscriptionClient.close()
     this.stop()
