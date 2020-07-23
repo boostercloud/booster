@@ -59,15 +59,16 @@ describe('The Script class', () => {
     })
 
     it('runs a sequence of successful actions and stops on failure', async () => {
+      const errorMsg = 'some error'
       const fakeAction1 = stub().resolves()
-      const fakeAction2 = stub().rejects('some error')
+      const fakeAction2 = stub().rejects(errorMsg)
       const fakeAction3 = stub().resolves()
 
       await expect(Script.init('initializing test', Promise.resolve(testContext))
         .step('step', fakeAction1)
         .step('step', fakeAction2)
         .step('step', fakeAction3)
-        .done()).to.eventually.be.rejectedWith()
+        .done()).to.eventually.be.rejectedWith(errorMsg)
 
       expect(fakeAction1).to.have.been.calledOnce
       // @ts-ignore
@@ -132,14 +133,15 @@ describe('The Script class', () => {
     })
 
     it('fails gracefully on step function failure', async () => {
-      const err = new Error('some error')
+      const errorMsg = 'some error'
+      const err = new Error(errorMsg)
       const msg = 'That is no step for anyone'
       const stepFn = stub().rejects(err)
       const { loggerStart, loggerSucceed} = replaceLogger(Script)
 
       await expect(Script.init('initializing', Promise.resolve(testContext))
         .step(msg, stepFn)
-        .done()).to.eventually.be.rejectedWith()
+        .done()).to.eventually.be.rejectedWith(errorMsg)
       expect(loggerStart).to.have.been.calledOnceWith(msg)
       expect(loggerSucceed).not.to.have.been.called
       expect(stepFn).to.have.been.calledOnceWith(testContext)
