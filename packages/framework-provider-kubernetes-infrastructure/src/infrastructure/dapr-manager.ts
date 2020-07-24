@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
+
 import * as path from 'path'
 import fs = require('fs')
 import util = require('util')
@@ -33,42 +33,51 @@ export class DaprManager {
     this.helmManager = helmManager
   }
 
-  public async configureEventStore() {
+  public async configureEventStore(): Promise<string[]> {
+    const errors: string[] = []
     if (!this.existsComponentFolder()) {
       const templateValues: DaprTemplateValues = await this.verifyEventStore()
       await this.createDaprComponentFile(templateValues)
     }
-    const daprComponents = await readdir(this.daprComponentsPath)
+    const daprComponents = await this.readDaprComponentDirectory()
     daprComponents.forEach(async (component: string) => {
       const componentYaml = path.join(this.daprComponentsPath, component)
       try {
         await this.clusterManager.execRawCommand(`apply -f ${componentYaml}`)
       } catch (err) {
-        console.log(err)
+        errors.push(err.toString())
       }
     })
-  }
-
-  public async deleteDaprService() {
-    await this.helmManager.exec(`uninstall dapr -n ${this.namespace}`)
-  }
-
-  public async deleteEventStore() {
-    const eventStorePath = path.join(this.daprComponentsPath, this.stateStoreFileName)
-    const fileContent = await readFile(eventStorePath, { encoding: 'utf-8' })
-    if (fileContent.indexOf('booster/created: "true"') > -1) {
-      await this.helmManager.exec(`uninstall redis -n ${this.namespace}`)
+    if (errors.length > 0) {
+      return Promise.reject(errors)
     }
+    return Promise.resolve(errors)
   }
 
-  private existsComponentFolder(): boolean {
+  public async deleteDaprService(): Promise<void | string> {
+    const { stderr } = await this.helmManager.exec(`uninstall dapr -n ${this.namespace}`)
+    return stderr ? Promise.reject(stderr) : Promise.resolve('ok')
+  }
+
+  public async deleteEventStore(): Promise<string> {
+    const fileContent = await this.readDaprComponentFile(this.stateStoreFileName)
+    if (fileContent.indexOf('booster/created: "true"') > -1) {
+      const { stderr } = await this.helmManager.exec(`uninstall redis -n ${this.namespace}`)
+      if (stderr) {
+        return Promise.reject(stderr.toString())
+      }
+    }
+    return Promise.resolve('ok')
+  }
+
+  public existsComponentFolder(): boolean {
     if (fs.existsSync(this.daprComponentsPath)) {
       return true
     }
     return false
   }
 
-  private async verifyEventStore(): Promise<DaprTemplateValues> {
+  public async verifyEventStore(): Promise<DaprTemplateValues> {
     const eventStore = await this.clusterManager.getPodFromNamespace(this.namespace, this.eventStorePod)
     if (!eventStore) {
       const repoInstalled = await this.helmManager.isRepoInstalled(this.eventStoreRepo)
@@ -79,7 +88,7 @@ export class DaprManager {
       await this.clusterManager.waitForPodToBeReady(this.namespace, this.eventStorePod)
     }
     const eventStorePassword = await this.clusterManager.getSecret(this.namespace, this.eventStorePod).catch((err) => {
-      throw new Error(err)
+      return Promise.reject(err)
     })
     const buff = Buffer.from(eventStorePassword?.data?.[this.eventStoreSecretName] ?? '', 'base64')
     const decodePassword = buff.toString('utf-8')
@@ -92,15 +101,25 @@ export class DaprManager {
     }
   }
 
-  private async createDaprComponentFile(templateValues: DaprTemplateValues) {
+  public async readDaprComponentDirectory(): Promise<string[]> {
+    return readdir(this.daprComponentsPath)
+  }
+
+  public async readDaprComponentFile(componentFile: string): Promise<string> {
+    const filePath = path.join(this.daprComponentsPath, componentFile)
+    return await readFile(filePath, { encoding: 'utf-8' })
+  }
+
+  public async createDaprComponentFile(templateValues: DaprTemplateValues): Promise<string | void> {
     await mkdir(this.daprComponentsPath).catch(() => {
-      throw new Error('Unable to create folder for Dapr components, review permissions')
+      return Promise.reject('Unable to create folder for Dapr components, review permissions')
     })
     const outFile = path.join(this.daprComponentsPath, this.stateStoreFileName)
     const renderedYaml = Mustache.render(stateStore.template, templateValues)
 
     writeFile(outFile, renderedYaml).catch(() => {
-      throw new Error('Unable to create the index file for your app')
+      return Promise.reject('Unable to create the index file for your app')
     })
+    return Promise.resolve()
   }
 }

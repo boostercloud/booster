@@ -8,6 +8,9 @@ import util = require('util')
 const exec = util.promisify(require('child_process').exec)
 
 export class K8sManagement {
+  prototype(prototype: any, arg1: string) {
+    throw new Error("Method not implemented.")
+  }
   private kube: KubeConfig
   private k8sClient: CoreV1Api
 
@@ -109,16 +112,16 @@ export class K8sManagement {
   }
 
   public async getServiceFromNamespace(namespace: string, serviceName: string): Promise<Pod | undefined> {
-    const pods = await this.getAllServicesInNamespace(namespace)
-    return pods.find((pod) => {
-      return pod?.labels?.['app'] === serviceName
+    const services = await this.getAllServicesInNamespace(namespace)
+    return services.find((service) => {
+      return service?.labels?.['app'] === serviceName
     })
   }
 
   public async getVolumeClaimFromNamespace(namespace: string, volumeClaim: string): Promise<VolumeClaim | undefined> {
-    const pods = await this.getAllVolumeClaimFromNamespace(namespace)
-    return pods.find((pod) => {
-      return pod?.name === volumeClaim
+    const claims = await this.getAllVolumeClaimFromNamespace(namespace)
+    return claims.find((claim) => {
+      return claim?.name === volumeClaim
     })
   }
 

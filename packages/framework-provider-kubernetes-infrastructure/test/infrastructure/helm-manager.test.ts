@@ -2,21 +2,20 @@ import { HelmManager } from '../../src/infrastructure/helm-manager'
 import { replace, fake, restore } from 'sinon'
 import { expect } from '../expect'
 
-describe('The user wants to get the Helm version', async () => {
+describe('The user wants to use Helm', async () => {
   const helm = new HelmManager()
-  await helm.init()
-
   afterEach(() => {
     restore()
   })
 
-  it('but Helm is not installed', async () => {
+  it('but it is not installed', async () => {
     replace(HelmManager.prototype, 'exec', fake.resolves({ stderr: 'command not found,' }))
-    const helmResponse = await helm.getVersion()
-    expect(helmResponse).to.be.null
+    await expect(helm.isVersion3()).eventually.to.be.rejectedWith(
+      'Unable to get Helm version, please check your Helm installation'
+    )
   })
 
-  it('Helm is installed and it returns the current installed version', async () => {
+  it('but there is a lower version than expected installed', async () => {
     replace(
       HelmManager.prototype,
       'exec',
@@ -25,48 +24,67 @@ describe('The user wants to get the Helm version', async () => {
           'version.BuildInfo{Version:"v2.9.9", GitCommit:"fe51cd1e31e6a202cba7dead9552a6d418ded79a", GitTreeState:"clean", GoVersion:"go1.13.10"}',
       })
     )
-
-    const helmResponse = await helm.getVersion()
-    expect(helmResponse).to.be.equal('v2.9.9')
-  })
-})
-
-describe('The user wants to use Helm', () => {
-  afterEach(() => {
-    restore()
+    await expect(helm.isVersion3()).to.eventually.be.rejectedWith(
+      'Current Helm version lower than 3.0.0, please update it'
+    )
   })
 
-  it('but helm is not installed', async () => {
-    replace(HelmManager.prototype, 'exec', fake.resolves({ stderr: 'command not found,' }))
-    const helm = new HelmManager()
-    await helm.init()
-    expect(helm.isHelmReady()).to.be.false
-    expect(helm.getHelmError()).to.be.equal('Helm installation not found')
+  it('and the user wants to check for a non installed repo', async () => {
+    replace(HelmManager.prototype, 'exec', fake.resolves({ stdout: 'repo1 installed' }))
+    const isRepoInstalled = await helm.isRepoInstalled('repoName')
+    expect(isRepoInstalled).to.be.false
   })
 
-  it('but helm has an old version', async () => {
-    replace(HelmManager.prototype, 'getVersion', fake.resolves('v2.9.9'))
-    const helm = new HelmManager()
-    await helm.init()
-    expect(helm.isHelmReady()).to.be.false
-    expect(helm.getHelmError()).to.be.equal('Current Helm version lower than 3.0.0')
+  it('and the user wants to check for a repo installed but command fails', async () => {
+    replace(HelmManager.prototype, 'exec', fake.resolves({ stderr: 'random error' }))
+    const isRepoInstalled = await helm.isRepoInstalled('repoName')
+    expect(isRepoInstalled).to.be.false
   })
 
-  it('but repo is not ready', async () => {
-    replace(HelmManager.prototype, 'getVersion', fake.resolves('v3.0.0'))
-    replace(HelmManager.prototype, 'isBoosterRepoReady', fake.returns(false))
-    const helm = new HelmManager()
-    await helm.init()
-    expect(helm.isHelmReady()).to.be.false
-    expect(helm.getHelmError()).to.be.equal('Unable to install the Booster repo in Helm')
+  it('and the user wants to check for a repo installed and the repo is already installed', async () => {
+    replace(HelmManager.prototype, 'exec', fake.resolves({ stdout: 'repoName otherRepo' }))
+    const isRepoInstalled = await helm.isRepoInstalled('repoName')
+    expect(isRepoInstalled).to.be.true
   })
 
-  it('helm is ready', async () => {
-    replace(HelmManager.prototype, 'getVersion', fake.resolves('v3.0.0'))
-    replace(HelmManager.prototype, 'isBoosterRepoReady', fake.returns(true))
-    const helm = new HelmManager()
-    await helm.init()
-    expect(helm.isHelmReady()).to.be.true
-    expect(helm.getHelmError()).to.be.equal('')
+  it('and the user wants to install a new repo but the installation fails', async () => {
+    replace(HelmManager.prototype, 'exec', fake.resolves({ stderr: 'random error' }))
+    await expect(helm.installRepo('repo', 'url')).to.be.eventually.rejectedWith(
+      'Unable to install Helm repo, please check your Helm installation'
+    )
+  })
+
+  it('and the user wants to install a new repo but we are not able to verify it', async () => {
+    replace(HelmManager.prototype, 'exec', fake.resolves({ stdout: 'ok' }))
+    replace(HelmManager.prototype, 'isRepoInstalled', fake.resolves(false))
+    await expect(helm.installRepo('repo', 'url')).to.eventually.be.rejectedWith(
+      'Unable to install Helm repo, please check your Helm installation'
+    )
+  })
+
+  it('and the user sucessfully update the repo', async () => {
+    replace(HelmManager.prototype, 'exec', fake.resolves({ stdout: 'ok' }))
+    replace(HelmManager.prototype, 'isRepoInstalled', fake.resolves(true))
+    let error = false
+    await helm.installRepo('repo', 'url').catch(() => {
+      error = true
+    })
+    expect(error).to.be.false
+  })
+
+  it('and the user wants to update a repo but there is an error', async () => {
+    replace(HelmManager.prototype, 'exec', fake.resolves({ stderr: 'error updating repo' }))
+    await expect(helm.updateHelmRepo()).to.be.eventually.rejectedWith(
+      'Unable to update Helm repo, please check your Helm installation'
+    )
+  })
+
+  it('and the user update repo sucessfully', async () => {
+    replace(HelmManager.prototype, 'exec', fake.resolves({ stdout: 'ok' }))
+    let error = false
+    await helm.updateHelmRepo().catch(() => {
+      error = true
+    })
+    expect(error).to.be.false
   })
 })

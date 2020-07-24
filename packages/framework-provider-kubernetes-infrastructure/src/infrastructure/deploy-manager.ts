@@ -36,128 +36,190 @@ export class DeployManager {
     }
   }
 
-  public async verifyHelm() {
-    await this.helmManager.isVersion3()
-  }
-
-  public async verifyDapr() {
-    const repoInstalled = await this.helmManager.isRepoInstalled('dapr')
-    if (!repoInstalled) {
-      await this.helmManager.installRepo('dapr', this.DaprRepo)
-    }
-    const daprPod = await this.clusterManager.getPodFromNamespace(this.namespace, 'dapr-operator')
-    if (!daprPod) {
-      await this.helmManager.exec(`install dapr dapr/dapr --namespace ${this.namespace}`)
-      await this.clusterManager.waitForPodToBeReady(this.namespace, 'dapr-operator')
-    }
-  }
-
-  public async verifyEventStore() {
-    await this.daprManager.configureEventStore().catch((err) => {
-      console.log(err)
+  public async verifyHelm(): Promise<boolean> {
+    await this.helmManager.isVersion3().catch((err) => {
+      return Promise.reject(err.toString())
     })
+    return true
   }
 
-  public async verifyNamespace() {
-    const clusterNamespace = await this.clusterManager.getNamespace(this.namespace)
-    if (!clusterNamespace) {
-      const clusterResponse = await this.clusterManager.createNamespace(this.namespace)
-      if (!clusterResponse) {
-        throw new Error('Unable to create a namespace for your project, please check your Kubectl configuration')
+  public async verifyDapr(): Promise<boolean> {
+    try {
+      const repoInstalled = await this.helmManager.isRepoInstalled('dapr')
+      if (!repoInstalled) {
+        await this.helmManager.installRepo('dapr', this.DaprRepo)
       }
-    }
-  }
-
-  public async verifyVolumeClaim() {
-    const clusterVolumeClaim = await this.clusterManager.getVolumeClaimFromNamespace(
-      this.namespace,
-      this.templateValues.clusterVolume
-    )
-    if (!clusterVolumeClaim) {
-      const clusterResponse = await this.clusterManager.applyTemplate(boosterVolumeClaim.template, this.templateValues)
-      if (!clusterResponse) {
-        throw new Error('Unable to create a volume claim for your project, please check your Kubectl configuration')
+      const daprPod = await this.clusterManager.getPodFromNamespace(this.namespace, 'dapr-operator')
+      if (!daprPod) {
+        await this.helmManager.exec(`install dapr dapr/dapr --namespace ${this.namespace}`)
+        await this.clusterManager.waitForPodToBeReady(this.namespace, 'dapr-operator')
       }
+      return true
+    } catch (err) {
+      return Promise.reject(err.toString())
     }
   }
 
-  public async verifyUploadService() {
-    await this.verifyService(uploadService)
+  public async verifyEventStore(): Promise<boolean> {
+    await this.daprManager.configureEventStore().catch((err) => {
+      return Promise.reject(err.toString())
+    })
+    return true
   }
 
-  public async verifyBoosterService() {
-    await this.verifyService(boosterService)
-  }
-
-  public async verifyUploadPod() {
-    await this.verifyPod(uploaderPod)
-    await this.clusterManager.waitForPodToBeReady(this.namespace, uploaderPod.name)
-  }
-
-  public async verifyBoosterPod() {
-    await this.verifyPod(boosterAppPod, true)
-  }
-
-  public async uploadUserCode() {
-    const fileUploadService = await this.clusterManager
-      .waitForServiceToBeReady(this.namespace, uploadService.name)
-      .catch((err) => {
-        throw new Error(err)
-      })
-    const codeZipFile = await createProjectZipFile()
-    const indexFile = await createIndexFile()
-    const fileUploadResponse = await uploadFile(fileUploadService?.ip ?? '', codeZipFile)
-    if (fileUploadResponse.statusCode !== 200) {
-      throw new Error('Unable to upload your code, please check the fileuploader pod for more information')
+  public async verifyNamespace(): Promise<boolean> {
+    try {
+      const clusterNamespace = await this.clusterManager.getNamespace(this.namespace)
+      if (!clusterNamespace) {
+        const clusterResponse = await this.clusterManager.createNamespace(this.namespace)
+        if (!clusterResponse) {
+          return Promise.reject(
+            'Unable to create a namespace for your project, please check your Kubectl configuration'
+          )
+        }
+      }
+      return true
+    } catch (err) {
+      return Promise.reject(err.toString())
     }
-    const indexUploadResult = await uploadFile(fileUploadService?.ip ?? '', indexFile)
-    if (indexUploadResult.statusCode !== 200) {
-      throw new Error('Unable to upload your code, please check the fileuploader pod for more information')
+  }
+
+  public async verifyVolumeClaim(): Promise<boolean> {
+    try {
+      const clusterVolumeClaim = await this.clusterManager.getVolumeClaimFromNamespace(
+        this.namespace,
+        this.templateValues.clusterVolume
+      )
+      if (!clusterVolumeClaim) {
+        const clusterResponse = await this.clusterManager.applyTemplate(
+          boosterVolumeClaim.template,
+          this.templateValues
+        )
+        if (clusterResponse.length == 0) {
+          return Promise.reject(
+            'Unable to create a volume claim for your project, please check your Kubectl configuration'
+          )
+        }
+      }
+      return true
+    } catch (err) {
+      return Promise.reject(err.toString())
+    }
+  }
+
+  public async verifyUploadService(): Promise<boolean> {
+    return await this.verifyService(uploadService)
+  }
+
+  public async verifyBoosterService(): Promise<boolean> {
+    return await this.verifyService(boosterService)
+  }
+
+  public async verifyUploadPod(): Promise<boolean> {
+    try {
+      await this.verifyPod(uploaderPod)
+      await this.clusterManager.waitForPodToBeReady(this.namespace, uploaderPod.name)
+      return true
+    } catch (err) {
+      return Promise.reject(err.toString())
+    }
+  }
+
+  public async verifyBoosterPod(): Promise<boolean> {
+    try {
+      await this.verifyPod(boosterAppPod, true)
+      return true
+    } catch (err) {
+      return Promise.reject(err.toString())
+    }
+  }
+
+  public async uploadUserCode(): Promise<boolean> {
+    try {
+      const fileUploadService = await this.clusterManager.waitForServiceToBeReady(this.namespace, uploadService.name)
+      const codeZipFile = await createProjectZipFile()
+      const indexFile = await createIndexFile()
+      const fileUploadResponse = await uploadFile(fileUploadService?.ip ?? '', codeZipFile)
+      if (fileUploadResponse.statusCode !== 200) {
+        return Promise.reject('Unable to upload your code, please check the fileuploader pod for more information')
+      }
+      const indexUploadResult = await uploadFile(fileUploadService?.ip ?? '', indexFile)
+      if (indexUploadResult.statusCode !== 200) {
+        return Promise.reject('Unable to upload your code, please check the fileuploader pod for more information')
+      }
+      return true
+    } catch (err) {
+      return Promise.reject(err.toString())
     }
   }
 
   public async deployBoosterApp(): Promise<string> {
-    await this.verifyBoosterPod()
-    await this.clusterManager.waitForPodToBeReady(this.namespace, boosterAppPod.name)
-    const service = await this.clusterManager.waitForServiceToBeReady(this.namespace, boosterService.name)
-    return service?.ip ?? ''
+    try {
+      await this.verifyBoosterPod()
+      await this.clusterManager.waitForPodToBeReady(this.namespace, boosterAppPod.name)
+      const service = await this.clusterManager.waitForServiceToBeReady(this.namespace, boosterService.name)
+      return service?.ip ?? ''
+    } catch (err) {
+      return Promise.reject(err.toString())
+    }
   }
 
   public async deleteDapr() {
-    await this.daprManager.deleteDaprService()
+    await this.daprManager.deleteDaprService().catch((err) => {
+      return Promise.reject(err.toString())
+    })
   }
 
   public async deleteRedis() {
-    await this.daprManager.deleteEventStore()
+    await this.daprManager.deleteEventStore().catch((err) => {
+      return Promise.reject(err.toString())
+    })
   }
 
   public async deleteAllResources() {
-    await this.clusterManager.deleteNamespace(this.namespace)
+    await this.clusterManager.deleteNamespace(this.namespace).catch((err) => {
+      return Promise.reject(err.toString())
+    })
   }
 
   private async verifyService(template: Template) {
-    const clusterService = await this.clusterManager.getServiceFromNamespace(this.namespace, template.name)
-    if (!clusterService) {
-      await this.applyTemplate(template, this.templateValues)
+    try {
+      const clusterService = await this.clusterManager.getServiceFromNamespace(this.namespace, template.name)
+      if (!clusterService) {
+        await this.applyTemplate(template, this.templateValues)
+      }
+      return true
+    } catch (error) {
+      return Promise.reject(error.toString())
     }
   }
 
-  private async verifyPod(template: Template, forceRestart = false) {
-    const clusterPod = await this.clusterManager.getPodFromNamespace(this.namespace, template.name)
-    if (!clusterPod) {
-      await this.applyTemplate(template, this.templateValues)
-    } else if (forceRestart) {
-      this.templateValues.timestamp = Date.now().toString()
-      await this.applyTemplate(template, this.templateValues)
+  private async verifyPod(template: Template, forceRestart = false): Promise<boolean> {
+    try {
+      const clusterPod = await this.clusterManager.getPodFromNamespace(this.namespace, template.name)
+      if (!clusterPod) {
+        await this.applyTemplate(template, this.templateValues)
+      } else if (forceRestart) {
+        this.templateValues.timestamp = Date.now().toString()
+        await this.applyTemplate(template, this.templateValues)
+      }
+      return true
+    } catch (err) {
+      return Promise.reject(err.toString())
     }
   }
 
-  private async applyTemplate(template: Template, templateValues: TemplateValues) {
-    const clusterResponse = await this.clusterManager.applyTemplate(template.template, templateValues)
-    if (!clusterResponse) {
-      throw new Error(
-        `Unable to create ${template.name} service for your project, please check your Kubectl configuration`
-      )
+  private async applyTemplate(template: Template, templateValues: TemplateValues): Promise<boolean> {
+    try {
+      const clusterResponse = await this.clusterManager.applyTemplate(template.template, templateValues)
+      if (clusterResponse.length == 0) {
+        return Promise.reject(
+          `Unable to create ${template.name} service for your project, please check your Kubectl configuration`
+        )
+      }
+      return true
+    } catch (err) {
+      return Promise.reject(err.toString())
     }
   }
 }

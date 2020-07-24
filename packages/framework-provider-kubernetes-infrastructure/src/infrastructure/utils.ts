@@ -5,6 +5,7 @@ import os = require('os')
 import FormData = require('form-data')
 import { IncomingMessage } from 'http'
 import { indexTemplate } from './templates/indexTemplate'
+import path = require('path')
 const util = require('util')
 const writeFile = util.promisify(require('fs').writeFile)
 
@@ -36,7 +37,7 @@ export async function waitForIt<TResult>(
     const elapsed = Date.now() - start
 
     if (elapsed > timeoutMs) {
-      throw new Error(errorMessage)
+      return Promise.reject(errorMessage)
     }
     const nextExecutionDelay = (timeoutMs - elapsed) % tryEveryMs
     await sleep(nextExecutionDelay)
@@ -45,15 +46,15 @@ export async function waitForIt<TResult>(
 }
 
 export async function createIndexFile(): Promise<string> {
-  const outFile = os.tmpdir() + '/index.js'
-  writeFile(outFile, indexTemplate).catch((error: any) => {
-    throw new Error('Unable to create the index file for your app')
+  const outFile = path.join(os.tmpdir(), 'index.js')
+  writeFile(outFile, indexTemplate).catch(() => {
+    return Promise.reject('Unable to create the index file for your app')
   })
   return outFile
 }
 
 export function createProjectZipFile(): Promise<string> {
-  const output = fs.createWriteStream(os.tmpdir() + '/boosterCode.zip')
+  const output = fs.createWriteStream(path.join(os.tmpdir(), 'boosterCode.zip'))
   const archive = archiver('zip', { zlib: { level: 9 } })
   archive.pipe(output)
   archive.glob('**/*')
