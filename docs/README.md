@@ -53,6 +53,7 @@
     + [Sign-up](#sign-up)
     + [Sign-in](#sign-in)
     + [Sign-out](#sign-out)
+    + [Refresh token](#refresh-token)
   * [GraphQL API](#graphql-api)
     + [Relationship between GraphQL operations and commands and read models](#relationship-between-graphql-operations-and-commands-and-read-models)
     + [How to send GraphQL request](#how-to-send-graphql-request)
@@ -1556,6 +1557,47 @@ An empty body
 {
   "__type": "NotAuthorizedException",
   "message": "Invalid Access Token"
+}
+```
+You will get a HTTP status code different from 2XX and a body with a message telling you the reason of the error.
+
+#### Refresh token
+Users can call this endpoint to refresh the access token.
+
+##### Endpoint
+```http request
+POST https://<httpURL>/auth/refresh-token
+```
+##### Request body
+> Refresh-token request body
+```json
+{
+  "clientId": "string",
+  "refreshToken": "string"
+}
+```
+
+Parameter | Description
+--------- | -----------
+_clientId_ | The application client Id that you got as an output when the application was deployed.
+_refreshToken_ | The token you can use to get a new access token after it has expired.
+
+##### Response
+```json
+{
+  "accessToken": "string",
+  "expiresIn": "string",
+  "refreshToken": "string",
+  "tokenType": "string"
+}
+```
+
+##### Errors
+> Refresh token error response body example: Invalid refresh token specified
+```json
+{
+  "__type": "NotAuthorizedException",
+  "message": "Invalid Refresh Token"
 }
 ```
 You will get a HTTP status code different from 2XX and a body with a message telling you the reason of the error.

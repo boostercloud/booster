@@ -55,6 +55,12 @@ export async function authClientID(): Promise<string> {
 }
 
 // --- Auth helpers ---
+export interface UserAuthInformation {
+  accessToken: string
+  refreshToken: string
+  expiresIn?: number
+  tokenType?: string
+}
 
 export async function userPool(): Promise<StackResourceDetail> {
   const stackName = appStackName()
@@ -169,7 +175,7 @@ export async function deleteUser(username: string): Promise<void> {
     .promise()
 }
 
-export const getAuthToken = async (email: string, password: string): Promise<string> => {
+export const getUserAuthInformation = async (email: string, password: string): Promise<UserAuthInformation> => {
   const url = await signInURL()
   const clientId = await authClientID()
 
@@ -185,7 +191,25 @@ export const getAuthToken = async (email: string, password: string): Promise<str
     },
   })
 
-  return (await response.json()).accessToken
+  return await response.json()
+}
+
+export const refreshUserAuthInformation = async (refreshToken: string): Promise<UserAuthInformation> => {
+  const url = await refreshTokenURL()
+  const clientId = await authClientID()
+
+  const response = await fetch(url, {
+    method: 'POST',
+    body: JSON.stringify({
+      clientId: clientId,
+      refreshToken: refreshToken,
+    }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+
+  return await response.json()
 }
 
 export const createPassword = (): string => {
@@ -226,6 +250,10 @@ export async function signInURL(): Promise<string> {
   return new URL('auth/sign-in', await baseHTTPURL()).href
 }
 
+export async function refreshTokenURL(): Promise<string> {
+  return new URL('auth/refresh-token', await baseHTTPURL()).href
+}
+
 // --- GraphQL helpers ---
 
 export async function graphQLClient(authToken?: string): Promise<ApolloClient<NormalizedCacheObject>> {
@@ -256,6 +284,17 @@ export class DisconnectableApolloClient extends ApolloClient<NormalizedCacheObje
     options: ApolloClientOptions<NormalizedCacheObject>
   ) {
     super(options)
+  }
+
+  public updateToken(token: string): void {
+    this.subscriptionClient.use([
+      {
+        applyMiddleware(options: OperationOptions, next: Function): void {
+          options.Authorization = token
+          next()
+        },
+      },
+    ])
   }
 
   public disconnect(): void {

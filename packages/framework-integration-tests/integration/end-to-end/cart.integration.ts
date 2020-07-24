@@ -1,6 +1,12 @@
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
-import { createUser, getAuthToken, graphQLClient, waitForIt } from '../providers/aws/utils'
+import {
+  createUser,
+  getUserAuthInformation,
+  graphQLClient,
+  UserAuthInformation,
+  waitForIt,
+} from '../providers/aws/utils'
 import { random, commerce, finance, lorem, internet } from 'faker'
 import { expect } from 'chai'
 import gql from 'graphql-tag'
@@ -158,7 +164,7 @@ describe('Cart end-to-end tests', () => {
   })
 
   describe('Entities', () => {
-    let userAuthToken: string
+    let userAuthInformation: UserAuthInformation
     let userEmail: string
     const mockPassword = 'Enable_G0d_Mode3e!'
 
@@ -166,8 +172,8 @@ describe('Cart end-to-end tests', () => {
       userEmail = internet.email()
       // TODO: Make retrieval of auth token cloud agnostic
       await createUser(userEmail, mockPassword, 'User')
-      userAuthToken = await getAuthToken(userEmail, mockPassword)
-      client = await graphQLClient(userAuthToken)
+      userAuthInformation = await getUserAuthInformation(userEmail, mockPassword)
+      client = await graphQLClient(userAuthInformation.accessToken)
     })
 
     context('Reducers', () => {
@@ -263,8 +269,8 @@ describe('Cart end-to-end tests', () => {
         // provision admin user to delete a product
         const adminEmail: string = internet.email()
         await createUser(adminEmail, mockPassword, 'Admin')
-        const adminAuthToken = await getAuthToken(adminEmail, mockPassword)
-        client = await graphQLClient(adminAuthToken)
+        const adminUserAuthInformation = await getUserAuthInformation(adminEmail, mockPassword)
+        client = await graphQLClient(adminUserAuthInformation.accessToken)
 
         // Delete a product given an id
         await client.mutate({
@@ -278,7 +284,7 @@ describe('Cart end-to-end tests', () => {
           `,
         })
 
-        client = await graphQLClient(userAuthToken)
+        client = await graphQLClient(userAuthInformation.accessToken)
         // Retrieve updated entity
         const queryResult = await waitForIt(
           () => {
