@@ -1,50 +1,115 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
 import { GraphQLRequestEnvelope, UserEnvelope } from '@boostercloud/framework-types'
-import { APIGatewayProxyWithLambdaAuthorizerEvent } from 'aws-lambda'
-import { AuthorizerWithUserData } from '../../src/library/auth-adapter'
 import { rawGraphQLRequestToEnvelope } from '../../src/library/graphql-adapter'
+import { SinonStub, stub, restore } from 'sinon'
+import * as userEnvelopes from '../../src/library/user-envelopes'
+import { internet, random } from 'faker'
+import { APIGatewayProxyEvent } from 'aws-lambda'
 
 describe('AWS Provider graphql-adapter', () => {
+  let userPoolStub: SinonStub
+  let fetchUserFromRequestStub: SinonStub
+
+  beforeEach(() => {
+    userPoolStub = stub()
+    fetchUserFromRequestStub = stub(userEnvelopes, 'fetchUserFromRequest')
+  })
+
+  afterEach(() => {
+    restore()
+  })
+
   describe('the `rawGraphQLRequestToEnvelope`', () => {
-    it('generates an envelope correctly from an AWS event', async () => {
-      const expectedUser: UserEnvelope = {
-        email: 'test@user.com',
+    let mockRequestId: string
+    let mockConnectionId: string
+
+    let expectedUser: UserEnvelope
+    let expectedQuery: string
+    let expectedVariables: object
+    let request: APIGatewayProxyEvent
+
+    beforeEach(() => {
+      mockRequestId = random.number().toString()
+      mockConnectionId = random.uuid()
+
+      expectedUser = {
+        email: internet.email(),
         roles: ['Admin'],
       }
-      const expectedQuery = 'GraphQL query'
-      const expectedVariables = {
-        varOne: 3,
-        varTwo: 'test',
+      expectedQuery = 'GraphQL query'
+      expectedVariables = {
+        varOne: random.number(),
+        varTwo: random.alphaNumeric(10),
       }
-      const request: APIGatewayProxyWithLambdaAuthorizerEvent<AuthorizerWithUserData> = {
+      request = {
         requestContext: {
-          requestId: '123',
+          requestId: mockRequestId,
           eventType: 'CONNECT',
-          connectionId: '456',
-          authorizer: {
-            userJSON: JSON.stringify(expectedUser),
-          },
+          connectionId: mockConnectionId,
         },
         body: JSON.stringify({
           query: expectedQuery,
           variables: expectedVariables,
         }),
       } as any
+    })
 
+    it('should call fetchUserFromRequest with expected arguments', async () => {
+      await rawGraphQLRequestToEnvelope(userPoolStub as any, request, console)
+
+      expect(fetchUserFromRequestStub).to.have.been.calledOnceWithExactly(userPoolStub, request, undefined)
+    })
+
+    it('generates an envelope correctly from an AWS event', async () => {
       const expectedOutput: GraphQLRequestEnvelope = {
-        requestID: '123',
+        requestID: mockRequestId,
         eventType: 'CONNECT',
-        connectionID: '456',
+        connectionID: mockConnectionId,
         currentUser: expectedUser,
         value: {
           query: expectedQuery,
           variables: expectedVariables,
         },
       }
-      const gotOutput = await rawGraphQLRequestToEnvelope(request, console)
+
+      fetchUserFromRequestStub.resolves(expectedUser)
+
+      const gotOutput = await rawGraphQLRequestToEnvelope(userPoolStub as any, request, console)
 
       expect(gotOutput).to.be.deep.equal(expectedOutput)
+    })
+
+    describe('Authorization as part of requests body', () => {
+      let mockAuthorizationToken: string
+
+      beforeEach(() => {
+        mockAuthorizationToken = random.uuid()
+        request = {
+          requestContext: {
+            requestId: mockRequestId,
+            eventType: 'CONNECT',
+            connectionId: mockConnectionId,
+          },
+          body: JSON.stringify({
+            query: expectedQuery,
+            variables: expectedVariables,
+            payload: {
+              Authorization: mockAuthorizationToken,
+            },
+          }),
+        } as any
+      })
+
+      it('should call fetchUserFromRequest with expected arguments', async () => {
+        await rawGraphQLRequestToEnvelope(userPoolStub as any, request, console)
+
+        expect(fetchUserFromRequestStub).to.have.been.calledOnceWithExactly(
+          userPoolStub,
+          request,
+          mockAuthorizationToken
+        )
+      })
     })
   })
 })

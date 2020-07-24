@@ -43,6 +43,23 @@ export const CognitoTemplates = {
                    "tokenType": "$root.AuthenticationResult.TokenType"
                }`,
   },
+  refreshToken: {
+    request: `#set($root = $input.path('$'))
+              {
+                "ClientId":"$root.clientId",
+                "AuthFlow": "REFRESH_TOKEN_AUTH",
+                "AuthParameters": { 
+                  "REFRESH_TOKEN" : "$root.refreshToken"
+                }
+              }`,
+    response: `#set($root = $input.path('$'))
+               {
+                   "accessToken": "$root.AuthenticationResult.AccessToken",
+                   "expiresIn": "$root.AuthenticationResult.ExpiresIn",
+                   "refreshToken": "$root.AuthenticationResult.RefreshToken",
+                   "tokenType": "$root.AuthenticationResult.TokenType"
+               }`,
+  },
   signOut: {
     request: `#set($root = $input.path('$'))
               {

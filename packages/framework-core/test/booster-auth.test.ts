@@ -112,20 +112,3 @@ describe('the "isUserAuthorized" method', () => {
     expect(BoosterAuth.isUserAuthorized(authorizedRoles, userEnvelope)).to.eq(true)
   })
 })
-
-describe('the "authorizeRequest" method', () => {
-  it('calls the provider authorizer', async () => {
-    const request = {}
-    const config = new BoosterConfig('test')
-    const fakeProviderAuthorizer = fake()
-    config.provider = {
-      graphQL: {
-        authorizeRequest: fakeProviderAuthorizer,
-      },
-    } as any
-
-    await BoosterAuth.authorizeRequest(request, config, logger)
-
-    expect(fakeProviderAuthorizer).to.have.been.calledOnce
-  })
-})

@@ -1,7 +1,14 @@
 import gql from 'graphql-tag'
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
-import { createUser, getAuthToken, getEventsByEntityId, graphQLClient, waitForIt } from './utils'
+import {
+  createUser,
+  getUserAuthInformation,
+  getEventsByEntityId,
+  graphQLClient,
+  waitForIt,
+  UserAuthInformation,
+} from './utils'
 import { random, address, internet } from 'faker'
 import { expect } from 'chai'
 
@@ -9,14 +16,15 @@ describe('Event handlers', () => {
   let adminEmail: string
   const adminPassword = 'Enable_G0d_Mode3e!'
 
+  let userAuthInformation: UserAuthInformation
   let client: ApolloClient<NormalizedCacheObject>
 
   before(async () => {
     adminEmail = internet.email()
     await createUser(adminEmail, adminPassword, 'Admin')
-    const authToken = await getAuthToken(adminEmail, adminPassword)
+    userAuthInformation = await getUserAuthInformation(adminEmail, adminPassword)
 
-    client = await graphQLClient(authToken)
+    client = await graphQLClient(userAuthInformation.accessToken)
   })
 
   context('move product', () => {

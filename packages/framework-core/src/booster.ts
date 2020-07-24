@@ -83,10 +83,6 @@ export class Booster {
     return BoosterEventDispatcher.dispatch(rawEvent, this.config, this.logger)
   }
 
-  public static authorizeRequest(request: any): Promise<any> {
-    return BoosterAuth.authorizeRequest(request, this.config, this.logger)
-  }
-
   public static serveGraphQL(request: any): Promise<any> {
     return new BoosterGraphQLDispatcher(this.config, this.logger).dispatch(request)
   }
@@ -124,10 +120,6 @@ export async function boosterEventDispatcher(rawEvent: any): Promise<any> {
 
 export async function boosterPreSignUpChecker(rawMessage: any): Promise<void> {
   return Booster.checkSignUp(rawMessage)
-}
-
-export async function boosterRequestAuthorizer(rawRequest: any): Promise<any> {
-  return Booster.authorizeRequest(rawRequest)
 }
 
 export async function boosterServeGraphQL(rawRequest: any): Promise<void> {

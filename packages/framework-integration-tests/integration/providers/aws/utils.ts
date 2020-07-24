@@ -13,7 +13,7 @@ import { WebSocketLink } from 'apollo-link-ws'
 import { getMainDefinition } from 'apollo-utilities'
 import { split } from 'apollo-link'
 import * as WebSocket from 'ws'
-import { SubscriptionClient } from 'subscriptions-transport-ws'
+import { OperationOptions, SubscriptionClient } from 'subscriptions-transport-ws'
 import { ApolloClientOptions } from 'apollo-client/ApolloClient'
 
 const userPoolId = 'userpool'
@@ -55,6 +55,12 @@ export async function authClientID(): Promise<string> {
 }
 
 // --- Auth helpers ---
+export interface UserAuthInformation {
+  accessToken: string
+  refreshToken: string
+  expiresIn?: number
+  tokenType?: string
+}
 
 export async function userPool(): Promise<StackResourceDetail> {
   const stackName = appStackName()
@@ -169,7 +175,7 @@ export async function deleteUser(username: string): Promise<void> {
     .promise()
 }
 
-export const getAuthToken = async (email: string, password: string): Promise<string> => {
+export const getUserAuthInformation = async (email: string, password: string): Promise<UserAuthInformation> => {
   const url = await signInURL()
   const clientId = await authClientID()
 
@@ -185,7 +191,25 @@ export const getAuthToken = async (email: string, password: string): Promise<str
     },
   })
 
-  return (await response.json()).accessToken
+  return await response.json()
+}
+
+export const refreshUserAuthInformation = async (refreshToken: string): Promise<UserAuthInformation> => {
+  const url = await refreshTokenURL()
+  const clientId = await authClientID()
+
+  const response = await fetch(url, {
+    method: 'POST',
+    body: JSON.stringify({
+      clientId: clientId,
+      refreshToken: refreshToken,
+    }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+
+  return await response.json()
 }
 
 export const createPassword = (): string => {
@@ -226,6 +250,10 @@ export async function signInURL(): Promise<string> {
   return new URL('auth/sign-in', await baseHTTPURL()).href
 }
 
+export async function refreshTokenURL(): Promise<string> {
+  return new URL('auth/refresh-token', await baseHTTPURL()).href
+}
+
 // --- GraphQL helpers ---
 
 export async function graphQLClient(authToken?: string): Promise<ApolloClient<NormalizedCacheObject>> {
@@ -258,6 +286,17 @@ export class DisconnectableApolloClient extends ApolloClient<NormalizedCacheObje
     super(options)
   }
 
+  public updateToken(token: string): void {
+    this.subscriptionClient.use([
+      {
+        applyMiddleware(options: OperationOptions, next: Function): void {
+          options.Authorization = token
+          next()
+        },
+      },
+    ])
+  }
+
   public disconnect(): void {
     this.subscriptionClient.close()
     this.stop()
@@ -268,9 +307,21 @@ export class DisconnectableApolloClient extends ApolloClient<NormalizedCacheObje
  * IMPORTANT: After using this "DisconnectableApolloClient", you must call ".disconnect()" to close the socket. Otherwise
  * it will keep waiting for messages forever
  * @param authToken
+ * @param tokenInHeader
  */
 export async function graphQLClientWithSubscriptions(authToken?: string): Promise<DisconnectableApolloClient> {
-  const subscriptionClient = await graphqlSubscriptionsClient(authToken)
+  const subscriptionClient: SubscriptionClient = await graphqlSubscriptionsClient()
+  if (authToken) {
+    subscriptionClient.use([
+      {
+        applyMiddleware(options: OperationOptions, next: Function): void {
+          options.Authorization = authToken
+          next()
+        },
+      },
+    ])
+  }
+
   const websocketLink = new WebSocketLink(subscriptionClient)
 
   const link = split(
@@ -293,8 +344,7 @@ export async function graphQLClientWithSubscriptions(authToken?: string): Promis
   })
 }
 
-export async function graphqlSubscriptionsClient(authToken?: string): Promise<SubscriptionClient> {
-  const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {}
+export async function graphqlSubscriptionsClient(): Promise<SubscriptionClient> {
   return new SubscriptionClient(
     await baseWebsocketURL(),
     {
@@ -303,9 +353,8 @@ export async function graphqlSubscriptionsClient(authToken?: string): Promise<Su
     },
     class MyWebSocket extends WebSocket {
       public constructor(url: string, protocols?: string | string[]) {
-        super(url, protocols, {
-          headers,
-        })
+        super(url, protocols)
+
         this.addListener('open', (): void => {
           console.log('[GraphQL socket] on open')
         })

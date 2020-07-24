@@ -49,10 +49,11 @@
     + [Querying a read model](#querying-a-read-model)
     + [Getting real-time updates for a read model](#getting-real-time-updates-for-a-read-model)
 - [Features](#features)
-  * [IAM - Authentication and Authorization](#iam---authentication-and-authorization)
+  * [Authentication and Authorization](#authentication-and-authorization)
     + [Sign-up](#sign-up)
     + [Sign-in](#sign-in)
     + [Sign-out](#sign-out)
+    + [Refresh token](#refresh-token)
   * [GraphQL API](#graphql-api)
     + [Relationship between GraphQL operations and commands and read models](#relationship-between-graphql-operations-and-commands-and-read-models)
     + [How to send GraphQL request](#how-to-send-graphql-request)
@@ -321,9 +322,9 @@ running for a blog application in just a few minutes. The steps to follow will b
 
 #### 1. Create the project
 
-First of all, we will use the Booster CLI to create a project. Run this command and follow
+First of all, we will use the Booster generators to create a project. Run this command and follow
 the instructions, when asked for the provider, select AWS as that is what we have
-configured [here](#set-up-an-aws-account)
+configured [here](#set-up-an-aws-account).
 
 ```shell
 > boost new:project boosted-blog
@@ -337,14 +338,18 @@ configured [here](#set-up-an-aws-account)
 ℹ Project generated!
 ```
 
-> Booster's new: commands follows this structure
+> Booster CLI commands follow this structure: `boost <subcommand> [<flags>] [<parameters>]`. 
+> Let's break down the command we have just executed:
 >
-> - `boost` is the Booster CLI
-> - `new:<resource>` new is a CLI command, :project tells booster the kind of resource
-> - `boosted-blog` is a parameter for the `new:project` command
->   project name
+> - `boost` is the Booster CLI executable
+> - `new:project` is the "subcommand" part. In this case, it is composed of two parts separated by a colon. 
+> The first part, `new`, means that we want to generate a new resource. The second part, `project`, indicates which
+> kind of resource we are interested in. Other examples are `new:command`, `new:event`, etc. We'll see a bunch of them later.
+> - `boosted-blog` is a "parameter" for the subcommand `new:project`. Flags and parameters are optional and
+> their meaning and shape depend on the subcommand you used. In this case, we are specifying the name of the project
+> we are creating.
 
-The `new:project` command generates some scaffolding for you. The project name will be the
+When finished, you'll see some scaffolding that has been generated. The project name will be the
 project's root so `cd` into it:
 
 ```shell
@@ -375,8 +380,8 @@ Now open the project in your favorite editor, e.g. [Visual Studio Code](https://
 #### 2. First command
 
 Commands define the input to our system, so we'll start by generating our first
-[command](#1-command-and-command-handlers) to create posts. Use the command generator in the project's root
-directory as follows:
+[command](#1-command-and-command-handlers) to create posts. Use the command generator, while in the project's root
+directory, as follows:
 
 ```bash
 boost new:command CreatePost --fields postId:UUID title:string content:string author:string
@@ -391,17 +396,17 @@ boosted-blog
         └── CreatePost.ts
 ```
 
-As we mentioned before, commands are the input of our system. they're requested
-by the users, validate the input, and store one or more events, so we have to
-define two more things:
+As we mentioned before, commands are the input of our system. They're sent
+by the users of our application. When they are received you can validate its data,
+execute some business logic, and register one or more events. Therefore, we have to define two more things:
 
 1. Who is authorized to run this command.
-1. And what events are being triggered when the command is executed.
+1. The events that it will trigger.
 
-Booster allows you to define authorization strategies. We will cover that
-later so, let's start by allowing anyone to send this command to our application
-. To do that, add the string `'all'` to the the `authorize` parameter of the
-`@command` decorator. Your `CreatePost` command should look like this:
+Booster allows you to define authorization strategies (we will cover that
+later). Let's start by allowing anyone to send this command to our application.
+To do that, open the file we have just generated and add the string `'all'` to the
+`authorize` parameter of the `@Command` decorator. Your `CreatePost` command should look like this:
 
 ```typescript
 @Command({
@@ -423,19 +428,15 @@ export class CreatePost {
 
 #### 3. First event
 
-Instead of storing full objects, Booster stores data in the form of events, which are
-records of facts and the source of truth. We will save an event called `PostCreated`
-containing the initial post info. Any change to a given `Post` will be a new event
-emitted, for example, `PostUpdated`.
-
-For now, let's emit our `PostCreated` event once we have successfully handled
-our `CreatePost` command. You can generate the event with this generator:
+Instead of creating, updating, or deleting objects, Booster stores data in the form of events.
+They are records of facts and represent the source of truth. Let's generate an event called `PostCreated`
+that will contain the initial post info:
 
 ```bash
 boost new:event PostCreated --fields postId:UUID title:string content:string author:string
 ```
 
-The `new:event` command generates a new file under the `src/events` directory.
+The `new:event` generator creates a new file under the `src/events` directory.
 The name of the file is the name of the event:
 
 ```text
@@ -446,8 +447,8 @@ boosted-blog
 ```
 
 All events in Booster must target an entity, so we need to implement an `entityID`
-method. From there, We'll return the identifier of the post created, the field
-`postID`. This identifier will be used by Booster later to build the final state
+method. From there, we'll return the identifier of the post created, the field
+`postID`. This identifier will be used later by Booster to build the final state
 of the `Post` automatically. Edit the `entityID` method in `events/PostCreated.ts`
 to return our `postID`:
 
@@ -480,25 +481,25 @@ public handle(register: Register): void {
 ```
 
 We can do any validation in the command handler before storing the event, for our
-example, we'll just save the received data in a `PostCreated` event.
+example, we'll just save the received data in the `PostCreated` event.
 
 #### 4. First entity
 
 So far, our `PostCreated` event suggests we need a `Post` entity. Entities are a
-representation of the current state, so an Entity reduces all the events with the same
-`entityID`. Let's then use the entities generator:
+representation of our system internal state. They are in charge of reducing (combining) all the events
+with the same `entityID`. Let's generate our `Post` entity:
 
 ```bash
 boost new:entity Post --fields title:string content:string author:string --reduces PostCreated
 ```
 
-This time Booster has created a file called `Post.ts` in the `src/entities` directory.
+You should see now a new file called `Post.ts` in the `src/entities` directory.
 
-The generator creates one reducer function for each kind of event. As we only have one
-event yet, it will create one function. The reducer functions in Booster work similarly to
-the `reduce` callback functions in Node: they receive an event and the previous state and
-generate a new version of the state. When we receive a `PostCreated` event, we just return
-a new `Post` copying the fields from the event:
+This time, besides using the `--fields` flag, we use the `--reduces` flag to specify the events the entity will reduce and, this way, produce the Post current state. The generator will create one _reducer function_ for each event we have specified (only one in this case).
+Reducer functions in Booster work similarly to the `reduce` callbacks in Javascript: they receive an event
+and the current state of the entity, and returns the next version of the same entity.
+In this case, when we receive a `PostCreated` event, we can just return a new `Post` entity copying the fields 
+from the event. There is no previous state of the Post as we are creating it for the first time:
 
 ```typescript
 // src/entities/Posts.ts
@@ -513,22 +514,28 @@ export class Post {
 }
 ```
 
-Entities represent the internal state of our system and can be queried from command or
+Entities represent our domain model and can be queried from command or
 event handlers to make business decisions or enforcing business rules.
 
 #### 5. First read model
 
-In a real application, we rarely want to publish our entire domain model (entities)
-including all their fields. Also, different people may access one or other data depending
+In a real application, we rarely want to make public our entire domain model (entities)
+including all their fields. What is more, different users may have different views of the data depending
 on their permissions. That's the goal of `ReadModels`. Client applications can query or
-subscribe to them. A read model projects an entity so, let's project our `Post` and
-produce a `PostReadModel`:
+subscribe to them. 
+
+Read models are _projections_ of one or more entities into a new object that is reachable through the query and subscriptions APIs. Let's generate a `PostReadModel` that projects our 
+`Post` entity:
 
 ```bash
 boost new:read-model PostReadModel --fields title:string author:string --projects Post:id
 ```
 
-As you might guess, the read-model generator will generate a file called
+We have used a new flag, `--projects`, that allow us to specify the entities (can be many) the read model will
+watch for changes. You might be wondering what is the `:id` after the entity name. That's the [joinKey](#the-projection-function),
+but you can forget about it now. 
+
+As you might guess, the read-model generator will create a file called
 `PostReadModel.ts` under `src/read-models`:
 
 ```text
@@ -541,17 +548,14 @@ boosted-blog
 There are two things to do when creating a read model:
 
 1. Define who is authorized to query or subscribe it
-1. and filter out unneeded fields from the entity
+1. Add the logic of the projection functions, where you can filter, combine, etc., the entities fields.
 
-Read models and commands compound the public API of a Booster application. With the
-`CreatePost` command we authorized `all` to execute it, and this time we'll do the same
-for the `PostReadModel`.
+While commands define the input to our system, read models define the output, and together they compound
+the public API of a Booster application. Let's do the same we did in the command and authorize `all` to
+query/subscribe the `PostReadModel`. Also, and for learning purposes, we will exclude the `content` field 
+from the `Post` entity, so it won't be returned when users request the read model.
 
-Just for learning, We also will exclude the `content` field from the `Post` entity so it
-won't be visible.
-
-To authorize anyone to query this read model, and filter out the content, edit the file to
-look like this:
+Edit the `PostReadModel.ts` file to look like this:
 
 ```typescript
 // src/read-models/PostReadModel.ts
@@ -570,14 +574,14 @@ export class PostReadModel {
 
 #### 6. Deployment
 
-At this point, we've learned:
+At this point, we've:
 
-- how to create a publicly accessible command
-- we emitted an event to store the data
-- we reduced the event into an entity
-- and finally, we projected the entity into a read model that is also publicly accessible.
+- Created a publicly accessible command
+- Emitted an event as a mechanism to store data
+- Reduced the event into an entity to have a representation of our internal state
+- Projected the entity into a read model that is also publicly accessible.
 
-That's all; you already know the basics to build event-driven, CQRS-based applications
+With this, you already know the basics to build event-driven, CQRS-based applications
 with Booster.
 
 Let's deploy our application to the cloud to see it working. It is as simple as running
@@ -587,17 +591,15 @@ the deploy command:
 boost deploy -e production
 ```
 
+> With `-e production` we are specifying which environment we want to deploy. We'll talk about them later.
+
 It will take a couple of minutes to deploy all the resources. Once finished, you will see
-information about your stack endpoints. For this example, we will only need to pick the
-API endpoint. Look into the output for something like `backend-application-stack.baseRESTURL`
-e.g.
+information about your application endpoints and other outputs. For this example, we will 
+only need to pick the output ending in `httpURL`, e.g.:
 
 ```text
-https://<some random number>.execute-api.us-east-1.amazonaws.com/production/graphql
+https://<some random number>.execute-api.us-east-1.amazonaws.com/production
 ```
-
-We are close to testing our app, and to do so, we will use the GraphQL API endpoint.
-Let's address that in the next section.
 
 #### 7. Testing
 
@@ -607,16 +609,15 @@ Let's get started testing the project. We will perform three actions:
 - Retrieve all posts
 - Retrieve a specific post
 
-Booster applications provide you with a GraphQL API out of the box. Commands are
-mutations, and read models are queries. To perform calls to the GraphQL API, you can use
-any HTTP client you want; we recommend you to use
-[Postwoman](https://postwoman.io/graphql), which is free and includes great support for
-GraphQL.
+Booster applications provide you with a GraphQL API out of the box. You send commands using
+_mutations_ and get read models data using _queries_ or _subscriptions_. 
+
+In this section, we will be sending requests by hand using the online tool [Postwoman](https://postwoman.io/graphql), 
+which is free and includes great support for GraphQL. However, you can use any HTTP client you want.
 
 ##### 7.1 Creating posts
 
-Use your favorite GraphQL client to run these mutations. No authorization header is
-required since we have allowed `all` to execute our commands and query the read models.
+Let's use two mutations to send two `CreatePost` commands.
 
 ```graphql
 mutation {
@@ -656,7 +657,7 @@ The expected response for each of those requests should be:
 
 Note:
 
-> In Booster, the IDs are generated on the client-side. When running production applications
+> In this example, the IDs are generated on the client-side. When running production applications
 > consider adding validation for ID uniqueness. For this example, we have used [a UUID generator](https://www.uuidgenerator.net/version4)
 
 ##### 7.2 Retrieving all posts
@@ -736,29 +737,21 @@ we run `new:project` CLI command.
 ? Please, enter the app name to confirm deletion of all resources: boosted-blog
 ```
 
-Note:
-
 > Congratulations! You've built a serverless backend in less than 10 minutes. We hope you
 > have enjoyed discovering the magic of the Booster Framework.
 
 #### 9. More functionalities
 
-The are many other options for your serverless backend built with Booster Framework:
+This is a really basic example of a Booster application. The are many other features Booster provides like:
 
-- Build more complex authorization schemas for commands and read models based on user roles
+- Use a more complex authorization schema for commands and read models based on user roles
 - Use GraphQL subscriptions to get updates in real-time
 - Make events trigger other events
 - Deploy static content
-- and much more...
-
-- Authorize commands and read models based on different roles
-- Use GraphQL subscriptions
-- Make events to trigger other events
-- Serving static content
 - Reading entities within command handlers to apply domain-driven decisions
-- and much more...
+- And much more...
 
-Continue reading to dig more; you've just scratched the surface of all the Booster
+Continue reading to dig more. You've just scratched the surface of all the Booster
 capabilities!
 
 ## Booster architecture
@@ -767,7 +760,7 @@ Two patterns influence the Booster's event-driven architecture: Command-Query Re
 
 ![architecture](./img/booster-arch.png)
 
-The public interface of a Booster application is just `Commands` and `ReadModels`. Booster proposes an entirely different approach to the Model-View-\* and CRUD frameworks. With Booster, the clients submit commands, query the read models, or subscribe to them for receiving real-time updates thanks to the out of the box [GraphQL API](#graphql-api)
+The public interface of a Booster application is just `Commands` and `ReadModels`. Booster proposes an entirely different approach to the Model-View-\* and CRUD frameworks. With Booster, clients submit commands, query the read models, or subscribe to them for receiving real-time updates thanks to the out of the box [GraphQL API](#graphql-api)
 
 Booster applications are event-driven and event-sourced so, **the source of truth is the whole history of events**. When a client submits a command, the `CommandHandler` _wakes up_ and executes its logic. Optionally, it can _register_ as many `Events` as needed. The framework caches the current state by automatically _reducing_ all the registered events into `Entities`. Interested parties can _react_ to events via `EventHandlers`, and finally, the _projection_ functions transform the entities into `ReadModels`.
 
@@ -775,9 +768,9 @@ In this chapter you'll walk through these concepts and its details.
 
 ### 1. Command and command handlers
 
-Booster is different than MVC frameworks in which you typically implement controller classes with the five CRUD methods per model. Instead of that, you define commands, which are the user actions when interacting with an application. This approach fits very well with Domain-Driven Design. Depending on your application's domain, some examples of commands would be: `RemoveItemFromCart`, `RatePhoto`, `AddCommentToPost`, etc. Although, you can still have `Create*`, `Delete*`, or `Update*` commands when they make sense.
+Booster is different than MVC frameworks in which you typically implement controller classes with CRUD methods. Instead of that, you define commands, which are the user actions when interacting with an application. This approach fits very well with Domain-Driven Design. Depending on your application's domain, some examples of commands would be: `RemoveItemFromCart`, `RatePhoto`, `AddCommentToPost`, etc. Although, you can still have `Create*`, `Delete*`, or `Update*` commands when they make sense.
 
-There is an architectural splitting between commands and command handlers though they *live* under the same file. The command is the class with the `@Command` decorator, and the generated method called `handle` is the command handler. That is because Booster adopts several concepts from functional programming; the separation between data structures and data transformations is one of them. In Booster a command looks like this:
+There is an architectural split between commands and command handlers though they *live* in the same file. The command is the class with the `@Command` decorator, and the generated method called `handle` is the command handler. That is because Booster adopts several concepts from functional programming; the separation between data structures and data transformations is one of them. In Booster, a command looks like this:
 
 ```typescript
 @Command({
@@ -798,11 +791,11 @@ export class CommandName {
 }
 ```
 
-Every time you submit a command through the GraphQL API, Booster calls the command handler function for the given command. The Commands are part of the public API so that you can define authorization policies for them. They are also the place for validating input data before registering events into the event store because they are immutable once there.
+Every time you submit a command through the GraphQL API, Booster calls the command handler function for the given command. Commands are part of the public API, so you can define authorization policies for them. They are also the place for validating input data before registering events into the event store because they are immutable once there.
 
 #### Commands naming convention
 
-Semantic is very important in Booster as it will play an essential role in designing a coherent system. Your application should reflect your domain concepts, and commands are not an exception. Although you can name commands in any way you want, we strongly recommend you to name them starting with verbs in imperative plus the object being affected. If we were designing an e-commerce application, some commands would be:
+Semantics is very important in Booster as it will play an essential role in designing a coherent system. Your application should reflect your domain concepts, and commands are not an exception. Although you can name commands in any way you want, we strongly recommend you to name them starting with verbs in imperative plus the object being affected. If we were designing an e-commerce application, some commands would be:
 
 - CreateProduct
 - DeleteProduct
@@ -812,10 +805,10 @@ Semantic is very important in Booster as it will play an essential role in desig
 - MoveStock
 - UpdateCartShippingAddress
 
-Despite you can place commands, and other Booster files, in any directory, we strongly recommend you to put them here `project-root/src/commands`. Having all the commands in one place will help you to understand your application's capabilities at a glance.
+Despite you can place commands, and other Booster files, in any directory, we strongly recommend you to put them in `<project-root>/src/commands`. Having all the commands in one place will help you to understand your application's capabilities at a glance.
 
 ```text
-project-root
+<project-root>
 ├── src
 │   ├── commands <------ put them here
 │   ├── common
@@ -834,14 +827,14 @@ The preferred way to create a command is by using the generator, e.g.
 boost new:command CreateProduct --fields sku:SKU displayName:string description:string price:Money
 ```
 
-The generator will automatically create a file called `CreateProduct.ts` with a TypeScript class of the same name under the commands directory. You can still create the command manually. Since the generator is not doing any *magic*, all you need is a class decorated as `@Command`. Anyway, we recommend you always to use the generator, because it handles the boilerplate code for you.
+The generator will automatically create a file called `CreateProduct.ts` with a TypeScript class of the same name under the `commands` directory. You can still create (or modify) the command manually. Since the generator is not doing any *magic*, all you need is a class decorated as `@Command`. Anyway, we recommend you always to use the generator, because it handles the boilerplate code for you.
 
 Note:
-> Running the command generator with a `CommandName` already existing, will override the content of the current one. Soon, we will display a warning before overwriting anything. Meantime, if you missed a field, just add it to the class because in Booster, all the infrastructure and data structures are inferred from your code.
+> Generating a command with the same name as an already existing one will override its content. Soon, we will display a warning before overwriting anything.
 
 #### The command handler function
 
-Booster generates the command handler function as a method of the command class. This function is called by the framework every time that one instance of this command is submitted. The command handler the right place to run validations, return errors, query entities to make decisions and register relevant domain events.
+Each command class must have a method called `handle`. This function is the command handler, and it will be called by the framework every time one instance of this command is submitted. Inside the handler you can run validations, return errors, query entities to make decisions, and register relevant domain events.
 
 ##### Validating data
 
@@ -849,7 +842,7 @@ Booster uses the typed nature of GraphQL to ensure that types are correct before
 
 ###### Throw an error
 
-There are still business rules to be checked before proceeding with a command. For example, a given number must be between a threshold or a string must match a regular expression. In that case, it is enough just to throw an error in the handler, and then Booster will use the error's message as the response to make it descriptive, e.g.
+There are still business rules to be checked before proceeding with a command. For example, a given number must be between a threshold or a string must match a regular expression. In that case, it is enough just to throw an error in the handler. Booster will use the error's message as the response to make it descriptive, e.g.
 
 Given this command:
 
@@ -939,7 +932,7 @@ In this case, the client who submitted the command can still complete the operat
 
 ##### Reading entities
 
-Event handlers are a good place to make decisions, and for making better decisions, you need information. There is a Booster function called `fetchEntitySnapshots` within the `Booster` package and allows you to inspect the application state. This function receives two arguments, the `Entity` to fetch and the `entityID`. Here is an example of fetching an entity called `Stock`:
+Event handlers are a good place to make decisions and, to make better decisions, you need information. There is a Booster function called `fetchEntitySnapshots` within the `Booster` package and allows you to inspect the application state. This function receives two arguments, the `Entity` to fetch and the `entityID`. Here is an example of fetching an entity called `Stock`:
 
 ```typescript
 @Command({
@@ -972,7 +965,7 @@ Within the command handler execution, it is possible to register domain events. 
 
 #### Authorizing a command
 
-Commands are part of the public API of a Booster application, so you can define who is authorized to submit them. The Booster authorization feature is covered in [this](#iam-authentication-and-authorization) section. So far, we have seen that you can make a command publicly accessible by authorizing `'all'` to submit it. You can also set specific roles as we did with the `authorize: [Admin]` parameter of the `MoveStock` command.
+Commands are part of the public API of a Booster application, so you can define who is authorized to submit them. The Booster authorization feature is covered in [this](#authentication-and-authorization) section. So far, we have seen that you can make a command publicly accessible by authorizing `'all'` to submit it. You can also set specific roles as we did with the `authorize: [Admin]` parameter of the `MoveStock` command.
 
 #### Submitting a command
 
@@ -1023,8 +1016,7 @@ Events are **immutable records of facts** within your application's domain. They
 @Event
 export class EventName {
   public constructor(readonly field1: SomeType,
-                     readonly field2: SomeOtherType,
-                     /* This event's entity ID must be present */) {}
+                     readonly field2: SomeOtherType) {}
 
   public entityID(): UUID {
     return /* the associated entity ID */
@@ -1032,7 +1024,7 @@ export class EventName {
 }
 ```
 
-Events and [entities](#4-entities-and-reducers) are intimately related. All events belong to one entity through the `entityID` method, and entities represent the application's state after reducing the stream of events. Indeed, an entity is just an aggregated representation of the same data present in its events. It is possible to rebuild entities from events at any time. Booster guarantees that all the events associated with an entity will be reduced in the same order they were stored. Take a look at this event:
+Events and [entities](#4-entities-and-reducers) are intimately related. Each event belongs to one entity through the `entityID` method, and entities represent the application's state after reducing the stream of events. Indeed, an entity is just an aggregated representation of the same data present in its events, so it is possible to rebuild entities from events at any time. Booster guarantees that all the events associated with an entity will be reduced in the same order they were stored. Take a look at this event:
 
 ```typescript
 @Event
@@ -1042,36 +1034,22 @@ export class CartPaid {
     readonly paymentID: UUID) {}
 
   public entityID(): UUID {
-    // returns cartID because we want to associate
-    // (and reduce) it within the Cart entity
+    // returns cartID because we want to associate it with
+    // (and reduce it within) the Cart entity
     return this.cartID
   }
 }
 ```
 
-An event has to know the ID of the entity it belongs to, and there are several strategies to do so. One would be injecting the entity ID directly in the constructor, or as a nested attribute. Alternatively, for events like `ProductCreated` it is common to return a brand new ID as the entity did not exist. For _singleton_ entities, where there's only one instance, you can even use a constant value. 
+An event has to know the ID of the entity it belongs to and you need to implement the `entityID` method to return it. You can inject the entity ID directly in the event's constructor or as a nested attribute. If your domain requires a _singleton_ entity, where there's only one instance, you can return a constant value. In the `CartPaid` example, the entity ID (`cartID`) is injected directly.
 
-In the `CartPaid` example, the entity ID (`paymentID`) is injected directly, and here is another example of a newly generated value:
+Note:
 
-```typescript
-@Event
-export class ProductCreated {
-  public constructor(
-    readonly displayName: string,
-    readonly price: Money
-  ) {}
-
-  public entityID(): UUID {
-    // returns a new UUID because the Product entity
-    // does not exist yet
-    return UUID.generate()
-  }
-}
-```
+> The `entityID` method must always return the same value for the same event's instance. Otherwise, the result of the entity reduction will be unpredictable.
 
 #### Events naming convention
 
-As with commands, you can name events in any way you want, depending on your application's domain. Though, we recommend you to choose short sentences written in past tense because events are facts that have happened and can't be changed. Some event names would be:
+As with commands, you can name events in any way you want, depending on your application's domain. However, we recommend you to choose short sentences written in past tense because events are facts that have happened and can't be changed. Some event names would be:
 
 - ProductCreated
 - ProductUpdated
@@ -1082,7 +1060,7 @@ As with commands, you can name events in any way you want, depending on your app
 As with other Booster files, events have their own directory:
 
 ```text
-project-root
+<project-root>
 ├── src
 │   ├── commands
 │   ├── common
@@ -1101,11 +1079,11 @@ The preferred way to create event files is the `new:event` generator, e.g.
 boost new:event StockMoved --fields productID:string origin:string destination:string quantity:number
 ```
 
-That will generate a file called `StockMoved.ts` under the proper `project-root/src/events` directory. You can also create the file manually, but we recommend using the generator and avoid dealing manually with boilerplate code.
+That will generate a file called `StockMoved.ts` under the proper `<project-root>/src/events` directory. You can also create the file manually, but we recommend using the generator and avoid dealing manually with boilerplate code.
 
 Note:
 
-> Running the event generator for an existing EventName, will overwrite the content of the current one. Soon, we will display a warning before overwriting anything. Meanwhile, if you missed a field, just add it to the class because, in Booster, there is no hidden magic, all the infrastructure and data structures are inferred from your code.
+> Generating an event with the same name as an already existing one will overwrite its content. Soon, we will display a warning before overwriting anything.
 
 #### Registering events in the event store
 
@@ -1158,7 +1136,7 @@ export class HandleAvailability {
 
 ### 3. Event handlers
 
-In event-driven architectures we have different parts of our application that react to events, one of them is the `@Entity`, in charge of reducing the event. But we also have event handlers, a class with the `@EventHandler` decorator. The event handlers also react to events, and are used when you want to trigger new events based on the original one.
+In event-driven architectures we have different parts of our application that react to events. In the case of Booster, we have the entities (in charge of reducing the events), and the _event handlers_. These are classes decorated with the `@EventHandler` decorator whose goal is to execute business logic or trigger other events when a specific event occurs.
 
 An event handler would look like this:
 
@@ -1180,18 +1158,16 @@ export class HandleAvailability {
 
 #### Creating an event handler
 
-Event handlers can be easily created using the Booster CLI. There are two compulsory arguments that will need to be provided following the `boost new:event-handler` command, the first one will be the event handler name, and the other will be the name of the event that it will react to. For instance:
+Event handlers can be easily created using the Booster CLI command `boost new:event-handler`. There are two mandatory arguments: the event handler name, and the name of the event it will react to. For instance:
 
 ```typescript
-boost new:event-handler HandleAvailability -e StockMoved
+boost new:event-handler HandleAvailability --event StockMoved
 ```
 
-The flag `-e` can be replaced by `--event`.
-
-Once the creation is completed, there will be a new file in the event handlers directory `project-root/src/event-handlers/HandleAvailability.ts`.
+Once the creation is completed, there will be a new file in the event handlers directory `<project-root>/src/event-handlers/HandleAvailability.ts`.
 
 ```text
-project-root
+<project-root>
 ├── src
 │   ├── commands
 │   ├── common
@@ -1204,9 +1180,9 @@ project-root
 
 #### Registering events from an event handler
 
-By default, your newly created event handler will not trigger any event. However, Booster injects in our handler a `register` instance that we can use to do so. In the above example, you could see that there is some logic based on the event information.
+Booster injects a `register` instance in the `handle` method that we can use to register extra events. In the above example, you can see there is some logic that ends up registering new events.
 
-The `events` method of the `register` allows triggering several events, you can specify as many as you need separated by commas as arguments of the function.
+The `events(...)` method of the `register` allows triggering several events, you can specify as many as you need separated by commas as arguments of the function.
 
 An example can be found below:
 
@@ -1216,9 +1192,9 @@ register.events(new ProductAvailabilityChanged(event.productID, -event.quantity)
 
 #### Reading entities from event handlers
 
-Event handlers are also a good place to retrieve entity information before triggering new events.
+Just as we do in command handlers, we can also retrieve entities information to make decisions based on their current state.
 
-Let's say that we want to check the status of a product before we trigger its availability update. In that case we would call the `Booster core` `fetchEntitySnapshot` function, which will return information about the entity.
+Let's say that we want to check the status of a product before we trigger its availability update. In that case we would call the `Booster.fetchEntitySnapshot` function, which will return information about the entity.
 
 ```typescript
 public static async handle(event: StockMoved, register: Register): Promise<void> {
@@ -1230,15 +1206,17 @@ public static async handle(event: StockMoved, register: Register): Promise<void>
 ### 4. Entities and reducers
 
 The source of truth of your Booster app are the events, but events make sense in the context of a domain entity.
-For example, in a banking app, there might be two events: `MoneyDeposited` and `MoneyWithdrawn`. But these events
+For example, in a banking app, there might be two events: `MoneyDeposited` and `MoneyWithdrawn`. However, these events
 only make sense in the context of a `BankAccount`.
 
-Entities are created on the fly, by _reducing_ the whole event stream. You shouldn't assume that they are stored anywhere. However, Booster
-does create automatic snapshots to make the reduction process efficient. You are the one in charge of writing the
-reducer function.
+You can assume that entities are created on the fly by _reducing_ the whole event stream. Under the hood, Booster is creating
+automatic snapshots for each entity so that the reduction process is efficient.
 
-An entity is defined as a class with the `@Entity` decorator. Inside of it, you can write one or more static methods with
-the `@Reduces` decorator that defines the name of the event class that the reducer is subscribed to. The reducer method is called once every time that one event of that type is registered in the event store, and Booster expects you to return how the entity ends up after the event has been applied. An entity class looks like this:
+An entity is defined as a class with the `@Entity` decorator. Inside of it, you can write one or more static methods (called "reducers") with
+the `@Reduces` decorator specifying the event they reduce. The reducer method will be called with two arguments: the event
+and the current state of the entity. Booster expects you to return a new entity with the changes implied by the event applied to the current one. 
+
+An entity class looks like this:
 
 ```typescript
 @Entity
@@ -1246,15 +1224,15 @@ export class EntityName {
   public constructor(readonly fieldA: SomeType, readonly fieldB: SomeOtherType /* as many fields as needed */) {}
 
   @Reduces(SomeEvent)
-  public static reduceSomeEvent(event: SomeEvent, previousState?: EntityName): EntityName {
-    /* Return a new entity based on the previous one */
+  public static reduceSomeEvent(event: SomeEvent, currentEntityState?: EntityName): EntityName {
+    /* Return a new entity based on the current one */
   }
 }
 ```
 
-Each time an event is registered, the reducer of its entity is triggered. Note that event ordering is
-preserved per entity instance. This means that one entity will receive just **one event each time**, and all other events of any kind that belong to the same entity will be waiting in a queue until the previous reducer has finished. This is important to make sure that entities state can be easily predicted even when events are being generated concurrently all over the place. It's also one of the reasons why we recommend to keep reducer functions simple and pure: with no side effects or external data gathering.
-be picked will be the one that was generated first.
+There could be a lot of events being reduced concurrently among many entities, but, **for a specific entity instance, the events order is preserved**.
+This means that while one event is being reduced, all other events of any kind _that belong to the same entity instance_ will be waiting in a queue until the previous reducer has finished (with "entity instance" we refer to an entity of a specific type and with a specific ID).
+This is important to make sure that entities state is built correctly.
 
 #### Entities naming convention
 
@@ -1269,10 +1247,10 @@ might appear when you think about your app. In an e-commerce application, some e
 - PaymentMethod
 - Stock
 
-Entities live within the entities directory of the project source: `project-root/src/entities`.
+Entities live within the entities directory of the project source: `<project-root>/src/entities`.
 
 ```text
-project-root
+<project-root>
 ├── src
 │   ├── commands
 │   ├── common
@@ -1291,16 +1269,16 @@ The preferred way to create an entity is by using the generator, e.g.
 boost new:entity Product --fields displayName:string description:string price:Money
 ```
 
-The generator will automatically create a file called `Product.ts` with a TypeScript class of the same name under the entities directory. You can still create the entity manually. Since the generator is not doing any magic, all you need is a class decorated as `@Command`. Anyway, we recommend you always to use the generator, because it handles the boilerplate code for you.
+The generator will automatically create a file called `Product.ts` with a TypeScript class of the same name under the `entities` directory. You can still create the entity manually, writing a class decorated with `@Entity`. Anyway, we recommend you always to use the generator because it handles the boilerplate code for you.
 
 Note:
 
-> Running the entity generator with an EntityName that already exists will overwrite the content of the current one. In future releases, we will display a warning before overwriting anything. Meantime, if you missed a field, just add it to the class because, in Booster, all the infrastructure and data structures are inferred from your code.
+> Generating an entity with the same name as an already existing one will overwrite its content. Soon, we will display a warning before overwriting anything.
 
 #### The reducer function
 
 Booster generates the reducer function as a static method of the entity class. That function is called by the framework every time that an event of the
-specified type is emitted. It's highly recommended to **keep your reducer functions pure**, which means that you should be able to produce the new entity version by just looking at the event and the previous entity state (which are both injected via parameter by the framework). You should avoid calling third party services, reading or writing to a database, or changing any external state.
+specified type needs to be reduced. It's highly recommended to **keep your reducer functions pure**, which means that you should be able to produce the new entity version by just looking at the event and the current entity state. You should avoid calling third party services, reading or writing to a database, or changing any external state.
 
 Booster injects two parameters to the reducer functions:
 
@@ -1346,7 +1324,7 @@ extreme situations, where other systems might simply fail.
 
 ### 5. Read models and projections
 
-Read Models are cached data optimized for read operations and they're updated reactively when [Entities](#4-entities-and-reducers) are updated by new [events](#2-events). They also define the *Read* API, the available REST endpoints and their structure.
+Read Models are cached data optimized for read operations. They're updated reactively when [Entities](#4-entities-and-reducers) are updated after reducing [events](#2-events). They also define the *Read API*.
 
 Read Models are classes decorated with the `@ReadModel` decorator that have one or more projection methods.
 
@@ -1359,8 +1337,8 @@ export class CartReadModel {
     public paid: boolean
   ) {}
 
-  @Projection(Cart, 'id')
-  public static updateWithCart(cart: Cart, oldCartReadModel?: CartReadModel): CartReadModel {
+  @Projects(Cart, 'id')
+  public static updateWithCart(cart: Cart, currentCartReadModel?: CartReadModel): CartReadModel {
     return new CartReadModel(cart.id, cart.cartItems, cart.paid)
   }
 }
@@ -1373,12 +1351,12 @@ export class CartReadModel {
 boost new:read-model CartReadModel --fields id:UUID cartItems:"Array<CartItem>" paid:boolean --projects Cart
 ```
 
-This will create a file in the read-models directory `project-root/src/read-models/CartReadModel.ts`.
+This will create a file in the read-models directory `<project-root>/src/read-models/CartReadModel.ts`.
 
 Read Model classes can also be created by hand and there are no restrictions regarding the place you put the files. The structure of the data is totally open and can be as complex as you can manage in your projection functions.
 
 #### The projection function
-A `Projection` is a method decorated with the `@Projection` decorator that, given a new entity value and (optionally) a previous read model state, generate a new read model value.
+A `Projection` is a method decorated with the `@Projects` decorator that, given a new entity value and (optionally) the current read model state, generate a new read model value.
 
 Read models can be projected from multiple [entities](#4-entities-and-reducers) as soon as they share some common key called `joinKey`.
 
@@ -1391,7 +1369,7 @@ You can use the GraphQL endpoint to query or subscribe to the read model records
 
 ## Features
 
-### IAM - Authentication and Authorization
+### Authentication and Authorization
 Authorization in Booster is done through roles. Every Command and ReadModel has an `authorize` policy that
 tells Booster who can execute or access it. It consists of one of the following two values:
 
@@ -1579,6 +1557,47 @@ An empty body
 {
   "__type": "NotAuthorizedException",
   "message": "Invalid Access Token"
+}
+```
+You will get a HTTP status code different from 2XX and a body with a message telling you the reason of the error.
+
+#### Refresh token
+Users can call this endpoint to refresh the access token.
+
+##### Endpoint
+```http request
+POST https://<httpURL>/auth/refresh-token
+```
+##### Request body
+> Refresh-token request body
+```json
+{
+  "clientId": "string",
+  "refreshToken": "string"
+}
+```
+
+Parameter | Description
+--------- | -----------
+_clientId_ | The application client Id that you got as an output when the application was deployed.
+_refreshToken_ | The token you can use to get a new access token after it has expired.
+
+##### Response
+```json
+{
+  "accessToken": "string",
+  "expiresIn": "string",
+  "refreshToken": "string",
+  "tokenType": "string"
+}
+```
+
+##### Errors
+> Refresh token error response body example: Invalid refresh token specified
+```json
+{
+  "__type": "NotAuthorizedException",
+  "message": "Invalid Refresh Token"
 }
 ```
 You will get a HTTP status code different from 2XX and a body with a message telling you the reason of the error.
@@ -1854,6 +1873,38 @@ mutation {
     }
   }
 }
+```
+
+It is also possible to use a GraphQL client to subscribe to changes in the application. However, it might be necessary to include an access token, provided when the user signs-in, in the request if the operation requires authorization. This token should be added to the GraphQL client as an operation option through a middleware. An example can be seen below:
+
+```typescript
+client.use([
+  {
+    applyMiddleware(options: OperationOptions, next: Function): void {
+      options.Authorization = <access-token>
+      next()
+    },
+  },
+])
+```
+
+Once the client is setup, a subscription to read model GraphQL request through a GraphQL client could be:
+```typescript
+await client.subscribe({
+    variables: {
+      productId: <some-product-id>,
+    },
+    query: gql`
+      subscription ProductUpdatesReadModel($productId: ID!) {
+        ProductUpdatesReadModel(id: $productId) {
+          id
+          availability
+          lastUpdate
+          previousUpdate
+        }
+      }
+    `,
+})
 ```
 
 ### Cloud native

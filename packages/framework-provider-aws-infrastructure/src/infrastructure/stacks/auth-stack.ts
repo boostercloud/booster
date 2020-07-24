@@ -19,7 +19,7 @@ export class AuthStack {
     if (this.config.thereAreRoles) {
       const userPool = this.buildUserPool()
       this.buildUserPoolClient(userPool)
-      this.buildAuthAPI()
+      this.buildAuthAPI(userPool)
     }
   }
 
@@ -89,8 +89,8 @@ export class AuthStack {
     })
   }
 
-  private buildAuthAPI(): void {
-    const cognitoIntegrationRole = this.buildCognitoIntegrationRole()
+  private buildAuthAPI(userPool: CfnUserPool): void {
+    const cognitoIntegrationRole = this.buildCognitoIntegrationRole(userPool)
 
     const authResource = this.apis.restAPI.root.addResource('auth')
     const methodOptions = {
@@ -113,11 +113,14 @@ export class AuthStack {
       .addResource('sign-in')
       .addMethod('POST', this.buildSignInIntegration(cognitoIntegrationRole), methodOptions)
     authResource
+      .addResource('refresh-token')
+      .addMethod('POST', this.buildRefreshTokenIntegration(cognitoIntegrationRole), methodOptions)
+    authResource
       .addResource('sign-out')
       .addMethod('POST', this.buildSignOutIntegration(cognitoIntegrationRole), methodOptions)
   }
 
-  private buildCognitoIntegrationRole(): Role {
+  private buildCognitoIntegrationRole(userPool: CfnUserPool): Role {
     return new Role(this.stack, 'cognito-integration-role', {
       assumedBy: new ServicePrincipal('apigateway.amazonaws.com'),
       inlinePolicies: {
@@ -126,7 +129,7 @@ export class AuthStack {
             new PolicyStatement({
               effect: Effect.ALLOW,
               actions: ['cognito-idp:SignUp', 'cognito-idp:InitiateAuth', 'cognito-idp:GlobalSignOut'],
-              resources: ['*'],
+              resources: [userPool.attrArn],
             }),
           ],
         }),
@@ -152,6 +155,13 @@ export class AuthStack {
     return this.buildCognitoIntegration('InitiateAuth', withRole, {
       requestTemplate: CognitoTemplates.signIn.request,
       responseTemplate: CognitoTemplates.signIn.response,
+    })
+  }
+
+  private buildRefreshTokenIntegration(withRole: IRole): AwsIntegration {
+    return this.buildCognitoIntegration('InitiateAuth', withRole, {
+      requestTemplate: CognitoTemplates.refreshToken.request,
+      responseTemplate: CognitoTemplates.refreshToken.response,
     })
   }
 
@@ -192,4 +202,5 @@ export class AuthStack {
   }
 }
 
+// Note: InitiateAuth is used for sign-in and refresh-token
 type CognitoAuthActions = 'InitiateAuth' | 'SignUp' | 'GlobalSignOut'
