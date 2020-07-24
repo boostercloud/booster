@@ -2008,7 +2008,7 @@ Booster uses sensible defaults, convention over configuration, and code inferenc
 
 #### Booster configuration
 
-You configure your application by calling the `Booster.configure()` method. There are no restrictions about where you should do this call, but the convention is to do it in your configuration files located in the `src/config` folder. If you used the project generator (`boost new:project <project-name>`), this is where the config files are by default.
+You configure your application by calling the `Booster.configure()` method. There are no restrictions about where you should do this call, but the convention is to do it in your configuration files located in the `src/config` folder. This folder will get automatically generated for you after running the `boost new:project <project-name>` CLI command.
 
 This is an example of a possible configuration:
 ```typescript
