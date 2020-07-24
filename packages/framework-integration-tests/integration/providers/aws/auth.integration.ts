@@ -571,10 +571,6 @@ describe('With the auth API', () => {
           client.updateToken(refreshedUserAuthInformation.accessToken)
         })
 
-        after(() => {
-          client.disconnect()
-        })
-
         it('should return a new access token', () => {
           expect(userAuthInformation.accessToken).not.to.be.equal(refreshedUserAuthInformation.accessToken)
         })
@@ -886,10 +882,6 @@ describe('With the auth API', () => {
 
           // Update access token in client
           client.updateToken(refreshedUserAuthInformation.accessToken)
-        })
-
-        after(() => {
-          client.disconnect()
         })
 
         it('should return a new access token', () => {
