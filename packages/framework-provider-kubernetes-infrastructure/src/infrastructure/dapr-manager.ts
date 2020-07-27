@@ -1,4 +1,3 @@
-
 import * as path from 'path'
 import fs = require('fs')
 import util = require('util')
@@ -33,6 +32,13 @@ export class DaprManager {
     this.helmManager = helmManager
   }
 
+  /**
+   * checks if the event store is provided by the user but if the user has not provided a event store,
+   * it will create a specific Dapr compatible event store to be used by Booster applications
+   *
+   * @returns {Promise<string[]>}
+   * @memberof DaprManager
+   */
   public async configureEventStore(): Promise<string[]> {
     const errors: string[] = []
     if (!this.existsComponentFolder()) {
@@ -54,11 +60,24 @@ export class DaprManager {
     return Promise.resolve(errors)
   }
 
+  /**
+   * removes dapr services from your cluster
+   *
+   * @returns {(Promise<void | string>)}
+   * @memberof DaprManager
+   */
   public async deleteDaprService(): Promise<void | string> {
     const { stderr } = await this.helmManager.exec(`uninstall dapr -n ${this.namespace}`)
     return stderr ? Promise.reject(stderr) : Promise.resolve('ok')
   }
 
+  /**
+   * deletes the event store from your cluster if the event store was created by booster during the deploy,
+   * in the case that the event store were provided by the user, this method is not going to delete it
+   *
+   * @returns {Promise<string>}
+   * @memberof DaprManager
+   */
   public async deleteEventStore(): Promise<string> {
     const fileContent = await this.readDaprComponentFile(this.stateStoreFileName)
     if (fileContent.indexOf('booster/created: "true"') > -1) {
@@ -70,6 +89,12 @@ export class DaprManager {
     return Promise.resolve('ok')
   }
 
+  /**
+   * checks if the current project provides a Dapr component folder
+   *
+   * @returns {boolean}
+   * @memberof DaprManager
+   */
   public existsComponentFolder(): boolean {
     if (fs.existsSync(this.daprComponentsPath)) {
       return true
@@ -77,6 +102,12 @@ export class DaprManager {
     return false
   }
 
+  /**
+   * create an event store to be used by booster
+   *
+   * @returns {Promise<DaprTemplateValues>}
+   * @memberof DaprManager
+   */
   public async verifyEventStore(): Promise<DaprTemplateValues> {
     const eventStore = await this.clusterManager.getPodFromNamespace(this.namespace, this.eventStorePod)
     if (!eventStore) {
@@ -101,15 +132,35 @@ export class DaprManager {
     }
   }
 
+  /**
+   * returns all the dapr components filename included inside the Dapr component folder
+   *
+   * @returns {Promise<string[]>}
+   * @memberof DaprManager
+   */
   public async readDaprComponentDirectory(): Promise<string[]> {
     return readdir(this.daprComponentsPath)
   }
 
+  /**
+   * Parse a Dapr component file
+   *
+   * @param {string} componentFile
+   * @returns {Promise<string>}
+   * @memberof DaprManager
+   */
   public async readDaprComponentFile(componentFile: string): Promise<string> {
     const filePath = path.join(this.daprComponentsPath, componentFile)
     return await readFile(filePath, { encoding: 'utf-8' })
   }
 
+  /**
+   * Create a Dapr component file using the provided template inside the Dapr component folder
+   *
+   * @param {DaprTemplateValues} templateValues
+   * @returns {(Promise<string | void>)}
+   * @memberof DaprManager
+   */
   public async createDaprComponentFile(templateValues: DaprTemplateValues): Promise<string | void> {
     await mkdir(this.daprComponentsPath).catch(() => {
       return Promise.reject('Unable to create folder for Dapr components, review permissions')

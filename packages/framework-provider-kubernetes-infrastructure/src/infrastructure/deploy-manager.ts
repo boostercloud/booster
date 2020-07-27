@@ -36,6 +36,12 @@ export class DeployManager {
     }
   }
 
+  /**
+   * verifies that helm is installed and if not tries to install it
+   *
+   * @returns {Promise<boolean>}
+   * @memberof DeployManager
+   */
   public async verifyHelm(): Promise<boolean> {
     await this.helmManager.isVersion3().catch((err) => {
       return Promise.reject(err.toString())
@@ -43,6 +49,13 @@ export class DeployManager {
     return true
   }
 
+  /**
+   * verifies that Dapr is installed and if not tries to install it
+
+   *
+   * @returns {Promise<boolean>}
+   * @memberof DeployManager
+   */
   public async verifyDapr(): Promise<boolean> {
     try {
       const repoInstalled = await this.helmManager.isRepoInstalled('dapr')
@@ -60,6 +73,12 @@ export class DeployManager {
     }
   }
 
+  /**
+   *  verifies that the event store is present and in a negative case, it tries to create one
+   *
+   * @returns {Promise<boolean>}
+   * @memberof DeployManager
+   */
   public async verifyEventStore(): Promise<boolean> {
     await this.daprManager.configureEventStore().catch((err) => {
       return Promise.reject(err.toString())
@@ -67,6 +86,12 @@ export class DeployManager {
     return true
   }
 
+  /**
+   * checks that the specified namespace exists and if not it tries to create it
+   *
+   * @returns {Promise<boolean>}
+   * @memberof DeployManager
+   */
   public async verifyNamespace(): Promise<boolean> {
     try {
       const clusterNamespace = await this.clusterManager.getNamespace(this.namespace)
@@ -84,6 +109,12 @@ export class DeployManager {
     }
   }
 
+  /**
+   * verifies that the specified Persistent Volume Claim and in a negative case it tries to create it
+   *
+   * @returns {Promise<boolean>}
+   * @memberof DeployManager
+   */
   public async verifyVolumeClaim(): Promise<boolean> {
     try {
       const clusterVolumeClaim = await this.clusterManager.getVolumeClaimFromNamespace(
@@ -106,15 +137,32 @@ export class DeployManager {
       return Promise.reject(err.toString())
     }
   }
-
+  /**
+   * Verifies that the upload service is running and in a negative case it tries to create it
+   *
+   * @returns {Promise<boolean>}
+   * @memberof DeployManager
+   */
   public async verifyUploadService(): Promise<boolean> {
     return await this.verifyService(uploadService)
   }
 
+  /**
+   * Verifies that the booster service is running and in a negative case it tries to create it
+   *
+   * @returns {Promise<boolean>}
+   * @memberof DeployManager
+   */
   public async verifyBoosterService(): Promise<boolean> {
     return await this.verifyService(boosterService)
   }
 
+  /**
+   * Verifies that the upload pod is running and in a negative case it tries to create it
+   *
+   * @returns {Promise<boolean>}
+   * @memberof DeployManager
+   */
   public async verifyUploadPod(): Promise<boolean> {
     try {
       await this.verifyPod(uploaderPod)
@@ -125,6 +173,12 @@ export class DeployManager {
     }
   }
 
+  /**
+   * Verifies that the booster pod is running and in a negative case it tries to create it
+   *
+   * @returns {Promise<boolean>}
+   * @memberof DeployManager
+   */
   public async verifyBoosterPod(): Promise<boolean> {
     try {
       await this.verifyPod(boosterAppPod, true)
@@ -134,6 +188,12 @@ export class DeployManager {
     }
   }
 
+  /**
+   * upload all the user code into the cluster and create the express server index for the booster project
+   *
+   * @returns {Promise<boolean>}
+   * @memberof DeployManager
+   */
   public async uploadUserCode(): Promise<boolean> {
     try {
       const fileUploadService = await this.clusterManager.waitForServiceToBeReady(this.namespace, uploadService.name)
@@ -153,6 +213,12 @@ export class DeployManager {
     }
   }
 
+  /**
+   * deploy a booster app pod inside the cluster and get the booster app url from the cluster
+   *
+   * @returns {Promise<string>}
+   * @memberof DeployManager
+   */
   public async deployBoosterApp(): Promise<string> {
     try {
       await this.verifyBoosterPod()
@@ -164,6 +230,12 @@ export class DeployManager {
     }
   }
 
+  /**
+   * delete Dapr services from cluster
+   *
+   * @returns {Promise<boolean>}
+   * @memberof DeployManager
+   */
   public async deleteDapr(): Promise<boolean> {
     await this.daprManager.deleteDaprService().catch((err) => {
       return Promise.reject(err.toString())
@@ -171,6 +243,12 @@ export class DeployManager {
     return true
   }
 
+  /**
+   * delete Redis event store from cluster if it was create automatically by booster during deploy
+   *
+   * @returns {Promise<boolean>}
+   * @memberof DeployManager
+   */
   public async deleteRedis(): Promise<boolean> {
     await this.daprManager.deleteEventStore().catch((err) => {
       return Promise.reject(err.toString())
@@ -178,6 +256,11 @@ export class DeployManager {
     return true
   }
 
+  /**
+   * delete all booster resources from the cluster
+   *
+   * @memberof DeployManager
+   */
   public async deleteAllResources() {
     await this.clusterManager.deleteNamespace(this.namespace).catch((err) => {
       return Promise.reject(err.toString())

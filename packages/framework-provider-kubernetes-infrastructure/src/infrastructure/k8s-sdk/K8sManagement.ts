@@ -17,6 +17,13 @@ export class K8sManagement {
     this.k8sClient = this.kube.makeApiClient(CoreV1Api)
   }
 
+  /**
+   * Get a list including all available pods in an specific namespace
+   *
+   * @param {string} namespace
+   * @returns {Promise<Array<Pod>>}
+   * @memberof K8sManagement
+   */
   public async getAllPodsInNamespace(namespace: string): Promise<Array<Pod>> {
     const response = await this.unwrapResponse(this.k8sClient.listNamespacedPod(namespace))
     return response.items.map((item) => {
@@ -31,6 +38,13 @@ export class K8sManagement {
     })
   }
 
+  /**
+   * Get a list including all available services in an specific namespace
+   *
+   * @param {string} namespace
+   * @returns {Promise<Array<Service>>}
+   * @memberof K8sManagement
+   */
   public async getAllServicesInNamespace(namespace: string): Promise<Array<Service>> {
     const response = await this.unwrapResponse(this.k8sClient.listNamespacedService(namespace))
     return response.items.map((item) => {
@@ -43,6 +57,13 @@ export class K8sManagement {
     })
   }
 
+  /**
+   * get a list including all Persistent Volume Claim in an specific namespace
+   *
+   * @param {string} namespace
+   * @returns {Promise<Array<VolumeClaim>>}
+   * @memberof K8sManagement
+   */
   public async getAllVolumeClaimFromNamespace(namespace: string): Promise<Array<VolumeClaim>> {
     const response = await this.unwrapResponse(this.k8sClient.listPersistentVolumeClaimForAllNamespaces())
     return response.items
@@ -56,6 +77,12 @@ export class K8sManagement {
       })
   }
 
+  /**
+   * get a list including all namespaces inside your cluster
+   *
+   * @returns {Promise<Array<Namespace>>}
+   * @memberof K8sManagement
+   */
   public async getAllNamespaces(): Promise<Array<Namespace>> {
     const response = await this.unwrapResponse(this.k8sClient.listNamespace())
     return response.items.map((item) => {
@@ -67,6 +94,13 @@ export class K8sManagement {
     })
   }
 
+  /**
+   * create a namespace inside your cluster
+   *
+   * @param {string} name
+   * @returns {Promise<boolean>}
+   * @memberof K8sManagement
+   */
   public async createNamespace(name: string): Promise<boolean> {
     const namespace = {
       metadata: {
@@ -83,6 +117,13 @@ export class K8sManagement {
     )
   }
 
+  /**
+   * delete an existing namespace inside your cluster
+   *
+   * @param {string} name
+   * @returns {Promise<boolean>}
+   * @memberof K8sManagement
+   */
   public async deleteNamespace(name: string): Promise<boolean> {
     return this.k8sClient.deleteNamespace(name).then(
       () => {
@@ -94,6 +135,13 @@ export class K8sManagement {
     )
   }
 
+  /**
+   * get the information from a specific namespace inside your cluster
+   *
+   * @param {string} name
+   * @returns {(Promise<Namespace | undefined>)}
+   * @memberof K8sManagement
+   */
   public async getNamespace(name: string): Promise<Namespace | undefined> {
     const namespaces = await this.getAllNamespaces()
     return namespaces.find((namespace) => {
@@ -101,6 +149,14 @@ export class K8sManagement {
     })
   }
 
+  /**
+   * get a specific pod included in the provided namespace. The search is performed using the label `app` from your pod
+   *
+   * @param {string} namespace
+   * @param {string} podName
+   * @returns {(Promise<Pod | undefined>)}
+   * @memberof K8sManagement
+   */
   public async getPodFromNamespace(namespace: string, podName: string): Promise<Pod | undefined> {
     const pods = await this.getAllPodsInNamespace(namespace)
     return pods.find((pod) => {
@@ -108,6 +164,14 @@ export class K8sManagement {
     })
   }
 
+  /**
+   * get a specific service in the provided namespace. The search is performed using the label `app` from your service
+   *
+   * @param {string} namespace
+   * @param {string} serviceName
+   * @returns {(Promise<Pod | undefined>)}
+   * @memberof K8sManagement
+   */
   public async getServiceFromNamespace(namespace: string, serviceName: string): Promise<Pod | undefined> {
     const services = await this.getAllServicesInNamespace(namespace)
     return services.find((service) => {
@@ -115,6 +179,14 @@ export class K8sManagement {
     })
   }
 
+  /**
+   * get a specific persistent volume claim from the provided namespace.
+   *
+   * @param {string} namespace
+   * @param {string} volumeClaim
+   * @returns {(Promise<VolumeClaim | undefined>)}
+   * @memberof K8sManagement
+   */
   public async getVolumeClaimFromNamespace(namespace: string, volumeClaim: string): Promise<VolumeClaim | undefined> {
     const claims = await this.getAllVolumeClaimFromNamespace(namespace)
     return claims.find((claim) => {
@@ -122,6 +194,12 @@ export class K8sManagement {
     })
   }
 
+  /**
+   * get a list of all nodes that are running inside your cluster
+   *
+   * @returns {Promise<Array<Node>>}
+   * @memberof K8sManagement
+   */
   public async getAllNodesInCluster(): Promise<Array<Node>> {
     const response = await this.unwrapResponse(this.k8sClient.listNode())
     return response.items.map((item) => {
@@ -146,16 +224,37 @@ export class K8sManagement {
     })
   }
 
+  /**
+   * get the main node of your cluster
+   *
+   * @returns {(Promise<Node | null>)}
+   * @memberof K8sManagement
+   */
   public async getMainNode(): Promise<Node | null> {
     const clusterNodes = await this.getAllNodesInCluster()
     return clusterNodes.find((node) => node.mainNode) ?? null
   }
 
+  /**
+   * apply the provided template to the cluster. This method will try to render the provided template using the provided data and apply the result to the cluster
+   *
+   * @param {string} template
+   * @param {TemplateValues} templateData
+   * @returns {Promise<Array<KubernetesObject>>}
+   * @memberof K8sManagement
+   */
   public async applyTemplate(template: string, templateData: TemplateValues): Promise<Array<KubernetesObject>> {
     const renderedYaml = Mustache.render(template, templateData)
     return await this.applyYamlString(renderedYaml)
   }
 
+  /**
+   * apply a string to the cluster. This method allow the user to pass a string containing a yaml definition and apply it to the cluster
+   *
+   * @param {string} yaml
+   * @returns {Promise<Array<KubernetesObject>>}
+   * @memberof K8sManagement
+   */
   public async applyYamlString(yaml: string): Promise<Array<KubernetesObject>> {
     const client = KubernetesObjectApi.makeApiClient(this.kube)
     const specs = safeLoadAll(yaml)
@@ -178,6 +277,15 @@ export class K8sManagement {
     return created
   }
 
+  /**
+   * This method will wait for a pod to be ready or will reject with an error if the pod is not ready after the provided timeout time
+   *
+   * @param {string} namespace
+   * @param {string} podName
+   * @param {number} [timeout=180000]
+   * @returns {(Promise<Pod | undefined>)}
+   * @memberof K8sManagement
+   */
   public waitForPodToBeReady(namespace: string, podName: string, timeout = 180000): Promise<Pod | undefined> {
     return waitForIt(
       () => this.getPodFromNamespace(namespace, podName),
@@ -187,6 +295,15 @@ export class K8sManagement {
     )
   }
 
+  /**
+   * This method will wait for a service to be ready or will reject with an error if the service is not ready after the provided timeout time
+   *
+   * @param {string} namespace
+   * @param {string} serviceName
+   * @param {number} [timeout=180000]
+   * @returns {(Promise<Service | undefined>)}
+   * @memberof K8sManagement
+   */
   public waitForServiceToBeReady(
     namespace: string,
     serviceName: string,
@@ -200,6 +317,14 @@ export class K8sManagement {
     )
   }
 
+  /**
+   * Get a secret value from the cluster. This method returns the secret encoded in base64 string
+   *
+   * @param {string} namespace
+   * @param {string} secretName
+   * @returns {(Promise<Secret | undefined>)}
+   * @memberof K8sManagement
+   */
   public async getSecret(namespace: string, secretName: string): Promise<Secret | undefined> {
     const secret = await this.unwrapResponse(this.k8sClient.readNamespacedSecret(secretName, namespace))
     if (!secret) {
@@ -211,6 +336,13 @@ export class K8sManagement {
     }
   }
 
+  /**
+   * Exect a raw kubectl command in your cluster, the user only need to write the command without the `kubectl`
+   * for example: `kubectl apply -f file.yaml` will be `execRawCommand('apply -f file.yaml')`
+   * @param {string} command
+   * @returns {Promise<any>}
+   * @memberof K8sManagement
+   */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public async execRawCommand(command: string): Promise<any> {
     return exec(`kubectl ${command}`)
