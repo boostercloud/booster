@@ -22,25 +22,22 @@ describe('deploy', () => {
   describe('runTasks function', () => {
     context('when an unexpected problem happens', () => {
       fancy.stdout().it('fails gracefully showing the error message', async (ctx) => {
-        const fakeLoader = Promise.reject(new Error('weird exception'))
+        const msg = 'weird exception'
+        const fakeLoader = Promise.reject(new Error(msg))
         const fakeDeployer = fake()
 
-        await runTasks('test-env', fakeLoader, fakeDeployer)
-
-        expect(ctx.stdout).to.include('weird exception')
+        await expect(runTasks('test-env', fakeLoader, fakeDeployer)).to.eventually.be.rejectedWith(msg)
         expect(fakeDeployer).not.to.have.been.called
       })
     })
 
     context('when index.ts structure is not correct', () => {
       fancy.stdout().it('fails gracefully', async (ctx) => {
-        const fakeLoader = Promise.reject(new Error('An error when loading project'))
+        const msg = 'An error when loading project'
+        const fakeLoader = Promise.reject(new Error(msg))
         const fakeDeployer = fake()
 
-        await runTasks('test-env', fakeLoader, fakeDeployer)
-
-        expect(ctx.stdout).to.include('An error when loading project')
-
+        await expect(runTasks('test-env', fakeLoader, fakeDeployer)).to.eventually.be.rejectedWith(msg)
         expect(fakeDeployer).not.to.have.been.called
       })
     })

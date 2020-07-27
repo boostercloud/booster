@@ -20,13 +20,11 @@ describe('nuke', () => {
   describe('runTasks function', () => {
     context('when an unexpected problem happens', () => {
       fancy.stdout().it('fails gracefully showing the error message', async (ctx) => {
-        const fakeLoader = Promise.reject(new Error('weird exception'))
+        const msg = 'weird exception'
+        const fakeLoader = Promise.reject(new Error(msg))
         const fakeNuke = fake()
 
-        await runTasks('test-env', fakeLoader, fakeNuke)
-
-        expect(ctx.stdout).to.include('weird exception')
-
+        await expect(runTasks('test-env', fakeLoader, fakeNuke)).to.eventually.be.rejectedWith(msg)
         expect(fakeNuke).not.to.have.been.called
       })
     })
@@ -46,11 +44,10 @@ describe('nuke', () => {
         const fakePrompter = fake.resolves('fake app 2') // The user entered wrong app name
         replace(prompter, 'defaultOrPrompt', fakePrompter)
         const fakeNuke = fake()
+        const errorMsg = 'Wrong app name, stopping nuke!'
 
-        await runTasks('test-env', loader(prompter, false, fakeConfig), fakeNuke)
-
-        expect(ctx.stdout).to.include('Wrong app name, stopping nuke!')
-
+        await expect(runTasks('test-env', loader(prompter, false, fakeConfig), fakeNuke))
+          .to.eventually.be.rejectedWith(errorMsg)
         expect(fakeNuke).not.to.have.been.called
       })
     })
@@ -70,9 +67,9 @@ describe('nuke', () => {
         const fakePrompter = fake.resolves('fake app 2') // The user entered wrong app name
         replace(prompter, 'defaultOrPrompt', fakePrompter)
         const fakeNuke = fake()
+        const errorMsg = 'Cannot read property'
 
-        await runTasks('test-env', loader(prompter, true, fakeConfig), fakeNuke)
-
+        await expect(runTasks('test-env', loader(prompter, true, fakeConfig), fakeNuke)).to.eventually.be.rejectedWith(errorMsg)
         expect(prompter.defaultOrPrompt).not.to.have.been.called
         expect(fakeNuke).to.have.been.calledOnce
       })
