@@ -23,7 +23,7 @@ spec:
             claimName: {{ clusterVolume }}
       containers:
       - name: fileuploader
-        image: braeder/testuploadfilekubernetes:latest
+        image: boostercloud/boosterfileuploader:latest
         env:
         - name: BOOSTER_ENV
           value: {{ environment }}
