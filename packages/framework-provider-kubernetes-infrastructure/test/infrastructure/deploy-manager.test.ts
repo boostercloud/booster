@@ -6,14 +6,19 @@ import { DeployManager } from '../../src/infrastructure/deploy-manager'
 import { stub, restore, replace, fake } from 'sinon'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import * as utils from '../../src/infrastructure/utils'
-//import { stateStore } from '../../src/infrastructure/templates/statestore'
+import { CoreV1Api, KubeConfig, KubernetesObjectApi } from '@kubernetes/client-node'
 
 describe('As part of the deploy the users want to:', async () => {
   const k8sManager = new K8sManagement()
-  const configuration = new BoosterConfig('test')
+  const configuration = new BoosterConfig('production')
   const helmManager = new HelmManager()
   const daprManager = new DaprManager(configuration, k8sManager, helmManager)
   const deployManager = new DeployManager(configuration, k8sManager, daprManager, helmManager)
+
+  beforeEach(() => {
+    replace(KubeConfig.prototype, 'makeApiClient', fake.returns(new CoreV1Api()))
+    replace(KubernetesObjectApi, 'makeApiClient', fake.returns(new KubernetesObjectApi()))
+  })
 
   afterEach(() => {
     restore()
@@ -128,6 +133,7 @@ describe('As part of the deploy the users want to:', async () => {
   it('check that boosterPod is ready', async () => {
     stub(k8sManager, 'getPodFromNamespace').resolves({ name: 'name' })
     stub(k8sManager, 'waitForPodToBeReady').resolves()
+    stub(k8sManager, 'applyTemplate').resolves([{ apiVersion: '1' }])
     await expect(deployManager.verifyBoosterPod()).to.be.eventually.equal(true)
   })
 

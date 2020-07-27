@@ -8,9 +8,6 @@ import util = require('util')
 const exec = util.promisify(require('child_process').exec)
 
 export class K8sManagement {
-  prototype(prototype: any, arg1: string) {
-    throw new Error("Method not implemented.")
-  }
   private kube: KubeConfig
   private k8sClient: CoreV1Api
 

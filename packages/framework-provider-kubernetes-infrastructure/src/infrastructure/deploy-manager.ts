@@ -80,7 +80,7 @@ export class DeployManager {
       }
       return true
     } catch (err) {
-      return Promise.reject(err.toString())
+      return Promise.reject(err)
     }
   }
 
@@ -164,16 +164,18 @@ export class DeployManager {
     }
   }
 
-  public async deleteDapr() {
+  public async deleteDapr(): Promise<boolean> {
     await this.daprManager.deleteDaprService().catch((err) => {
       return Promise.reject(err.toString())
     })
+    return true
   }
 
-  public async deleteRedis() {
+  public async deleteRedis(): Promise<boolean> {
     await this.daprManager.deleteEventStore().catch((err) => {
       return Promise.reject(err.toString())
     })
+    return true
   }
 
   public async deleteAllResources() {

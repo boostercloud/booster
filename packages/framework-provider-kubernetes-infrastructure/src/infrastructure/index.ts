@@ -15,6 +15,15 @@ export function deploy(configuration: BoosterConfig): Observable<string> {
   })
 }
 
+export function nuke(configuration: BoosterConfig): Observable<string> {
+  return new Observable((observer): void => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    nukeBoosterApp(observer, configuration)
+      .catch((error): void => observer.error(error))
+      .then((): void => observer.complete())
+  })
+}
+
 async function deployBoosterApp(observer: Subscriber<string>, configuration: BoosterConfig): Promise<void> {
   const clusterManager = new K8sManagement()
   const helmManager = new HelmManager()
@@ -63,13 +72,4 @@ async function nukeBoosterApp(observer: Subscriber<string>, configuration: Boost
   } catch (err) {
     throw new Error(err)
   }
-}
-
-export function nuke(configuration: BoosterConfig): Observable<string> {
-  return new Observable((observer): void => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    nukeBoosterApp(observer, configuration)
-      .catch((error): void => observer.error(error))
-      .then((): void => observer.complete())
-  })
 }
