@@ -144,7 +144,7 @@ describe('As part of the deploy the users want to:', async () => {
   })
 
   it('check that the upload code works', async () => {
-    stub(k8sManager, 'waitForPodToBeReady').resolves()
+    stub(k8sManager, 'waitForServiceToBeReady').resolves()
     replace(utils, 'createIndexFile', fake.resolves(''))
     replace(utils, 'uploadFile', fake.resolves({ statusCode: 200 }))
     await expect(deployManager.uploadUserCode()).to.be.eventually.equal(true)
