@@ -66,13 +66,11 @@ export function createProjectZipFile(): Promise<string> {
     })
 
     output.on('end', () => {
-      // console.log('Data has been drained')
       resolve()
     })
 
     archive.on('warning', (err: any) => {
       if (err.code === 'ENOENT') {
-        // console.error(err.message)
         resolve()
       } else {
         reject(err)

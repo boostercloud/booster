@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { K8sManagement } from './k8s-sdk/K8sManagement'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { getProjectNamespaceName, createProjectZipFile, createIndexFile, uploadFile } from './utils'
@@ -261,13 +260,14 @@ export class DeployManager {
    *
    * @memberof DeployManager
    */
-  public async deleteAllResources() {
+  public async deleteAllResources(): Promise<boolean> {
     await this.clusterManager.deleteNamespace(this.namespace).catch((err) => {
       return Promise.reject(err.toString())
     })
+    return true
   }
 
-  private async verifyService(template: Template) {
+  private async verifyService(template: Template): Promise<boolean> {
     try {
       const clusterService = await this.clusterManager.getServiceFromNamespace(this.namespace, template.name)
       if (!clusterService) {

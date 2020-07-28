@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Observable, Subscriber } from 'rxjs'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { K8sManagement } from './k8s-sdk/K8sManagement'
