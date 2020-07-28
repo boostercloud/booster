@@ -9,6 +9,13 @@ import path = require('path')
 const util = require('util')
 const writeFile = util.promisify(require('fs').writeFile)
 
+/**
+ * get cluster namespace from Booster configuration
+ *
+ * @export
+ * @param {BoosterConfig} configuration
+ * @returns {string}
+ */
 export function getProjectNamespaceName(configuration: BoosterConfig): string {
   return `booster-${configuration.appName}-${configuration.environmentName}`
 }
@@ -18,6 +25,18 @@ export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+/**
+ * wait for a resource to be ready or reject if not ready after a timeout
+ *
+ * @export
+ * @template TResult
+ * @param {() => Promise<TResult>} tryFunction
+ * @param {(result: TResult) => boolean} checkResult
+ * @param {string} errorMessage
+ * @param {number} [timeoutMs=180000]
+ * @param {number} [tryEveryMs=1000]
+ * @returns {Promise<TResult>}
+ */
 export async function waitForIt<TResult>(
   tryFunction: () => Promise<TResult>,
   checkResult: (result: TResult) => boolean,
@@ -45,6 +64,12 @@ export async function waitForIt<TResult>(
   }
 }
 
+/**
+ * create index.js file based on template
+ *
+ * @export
+ * @returns {Promise<string>}
+ */
 export async function createIndexFile(): Promise<string> {
   const outFile = path.join(os.tmpdir(), 'index.js')
   writeFile(outFile, indexTemplate).catch(() => {
@@ -53,6 +78,12 @@ export async function createIndexFile(): Promise<string> {
   return outFile
 }
 
+/**
+ * create a zip file with the project content
+ *
+ * @export
+ * @returns {Promise<string>}
+ */
 export function createProjectZipFile(): Promise<string> {
   const output = fs.createWriteStream(path.join(os.tmpdir(), 'boosterCode.zip'))
   const archive = archiver('zip', { zlib: { level: 9 } })
@@ -83,6 +114,14 @@ export function createProjectZipFile(): Promise<string> {
   })
 }
 
+/**
+ * upload file into the cluster using the uploader file service
+ *
+ * @export
+ * @param {string} serviceIp
+ * @param {string} filepath
+ * @returns {Promise<IncomingMessage>}
+ */
 export async function uploadFile(serviceIp: string, filepath: string): Promise<IncomingMessage> {
   return new Promise((resolve, reject) => {
     const formData = new FormData()

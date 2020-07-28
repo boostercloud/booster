@@ -36,7 +36,7 @@ export class DeployManager {
   }
 
   /**
-   * verifies that helm is installed and if not tries to install it
+   * verify that helm is installed and if not tries to install it
    *
    * @returns {Promise<boolean>}
    * @memberof DeployManager
@@ -49,7 +49,7 @@ export class DeployManager {
   }
 
   /**
-   * verifies that Dapr is installed and if not tries to install it
+   * verify that Dapr is installed and if not tries to install it
 
    *
    * @returns {Promise<boolean>}
@@ -73,7 +73,7 @@ export class DeployManager {
   }
 
   /**
-   *  verifies that the event store is present and in a negative case, it tries to create one
+   *  verify that the event store is present and in a negative case, it tries to create one
    *
    * @returns {Promise<boolean>}
    * @memberof DeployManager
@@ -86,7 +86,7 @@ export class DeployManager {
   }
 
   /**
-   * checks that the specified namespace exists and if not it tries to create it
+   * check that the specified namespace exists and if not it tries to create it
    *
    * @returns {Promise<boolean>}
    * @memberof DeployManager
@@ -109,7 +109,7 @@ export class DeployManager {
   }
 
   /**
-   * verifies that the specified Persistent Volume Claim and in a negative case it tries to create it
+   * verify that the specified Persistent Volume Claim and in a negative case it tries to create it
    *
    * @returns {Promise<boolean>}
    * @memberof DeployManager
@@ -137,7 +137,7 @@ export class DeployManager {
     }
   }
   /**
-   * Verifies that the upload service is running and in a negative case it tries to create it
+   * verify that the upload service is running and in a negative case it tries to create it
    *
    * @returns {Promise<boolean>}
    * @memberof DeployManager
@@ -147,7 +147,7 @@ export class DeployManager {
   }
 
   /**
-   * Verifies that the booster service is running and in a negative case it tries to create it
+   * verify that the booster service is running and in a negative case it tries to create it
    *
    * @returns {Promise<boolean>}
    * @memberof DeployManager
@@ -157,7 +157,7 @@ export class DeployManager {
   }
 
   /**
-   * Verifies that the upload pod is running and in a negative case it tries to create it
+   * verify that the upload pod is running and in a negative case it tries to create it
    *
    * @returns {Promise<boolean>}
    * @memberof DeployManager
@@ -173,7 +173,7 @@ export class DeployManager {
   }
 
   /**
-   * Verifies that the booster pod is running and in a negative case it tries to create it
+   * verify that the booster pod is running and in a negative case it tries to create it
    *
    * @returns {Promise<boolean>}
    * @memberof DeployManager

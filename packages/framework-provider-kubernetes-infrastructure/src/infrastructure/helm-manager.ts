@@ -17,7 +17,7 @@ export class HelmManager {
   }
 
   /**
-   * checks that current installed helm version is greater than 3
+   * check that current installed helm version is greater than 3
    *
    * @returns {Promise<boolean>}
    * @memberof HelmManager
@@ -37,7 +37,7 @@ export class HelmManager {
   }
 
   /**
-   * checks if a specific repo is already available to be used by helm
+   * check if a specific repo is already available to be used by helm
    *
    * @param {string} repoName
    * @returns {Promise<boolean>}
@@ -76,7 +76,7 @@ export class HelmManager {
   }
 
   /**
-   * updates repo definition in helm
+   * update repo definition in helm
    *
    * @returns {Promise<void>}
    * @memberof HelmManager

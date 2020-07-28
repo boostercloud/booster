@@ -33,7 +33,7 @@ export class DaprManager {
   }
 
   /**
-   * checks if the event store is provided by the user but if the user has not provided a event store,
+   * check if the event store is provided by the user but if the user has not provided a event store,
    * it will create a specific Dapr compatible event store to be used by Booster applications
    *
    * @returns {Promise<string[]>}
@@ -61,7 +61,7 @@ export class DaprManager {
   }
 
   /**
-   * removes dapr services from your cluster
+   * remove dapr services from your cluster
    *
    * @returns {(Promise<void | string>)}
    * @memberof DaprManager
@@ -72,7 +72,7 @@ export class DaprManager {
   }
 
   /**
-   * deletes the event store from your cluster if the event store was created by booster during the deploy,
+   * delete the event store from your cluster if the event store was created by booster during the deploy,
    * in the case that the event store were provided by the user, this method is not going to delete it
    *
    * @returns {Promise<string>}
@@ -90,7 +90,7 @@ export class DaprManager {
   }
 
   /**
-   * checks if the current project provides a Dapr component folder
+   * check if the current project provides a Dapr component folder
    *
    * @returns {boolean}
    * @memberof DaprManager
@@ -133,7 +133,7 @@ export class DaprManager {
   }
 
   /**
-   * returns all the dapr components filename included inside the Dapr component folder
+   * return all the dapr components filename included inside the Dapr component folder
    *
    * @returns {Promise<string[]>}
    * @memberof DaprManager
@@ -143,7 +143,7 @@ export class DaprManager {
   }
 
   /**
-   * Parse a Dapr component file
+   * parse a Dapr component file
    *
    * @param {string} componentFile
    * @returns {Promise<string>}
@@ -155,7 +155,7 @@ export class DaprManager {
   }
 
   /**
-   * Create a Dapr component file using the provided template inside the Dapr component folder
+   * create a Dapr component file using the provided template inside the Dapr component folder
    *
    * @param {DaprTemplateValues} templateValues
    * @returns {(Promise<string | void>)}

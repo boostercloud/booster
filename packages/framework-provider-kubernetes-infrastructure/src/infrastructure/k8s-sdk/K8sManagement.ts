@@ -18,7 +18,7 @@ export class K8sManagement {
   }
 
   /**
-   * Get a list including all available pods in an specific namespace
+   * get a list including all available pods in an specific namespace
    *
    * @param {string} namespace
    * @returns {Promise<Array<Pod>>}
@@ -39,7 +39,7 @@ export class K8sManagement {
   }
 
   /**
-   * Get a list including all available services in an specific namespace
+   * get a list including all available services in an specific namespace
    *
    * @param {string} namespace
    * @returns {Promise<Array<Service>>}
@@ -278,7 +278,7 @@ export class K8sManagement {
   }
 
   /**
-   * This method will wait for a pod to be ready or will reject with an error if the pod is not ready after the provided timeout time
+   * wait for a pod to be ready or reject with an error if the pod is not ready after the provided timeout time
    *
    * @param {string} namespace
    * @param {string} podName
@@ -296,7 +296,7 @@ export class K8sManagement {
   }
 
   /**
-   * This method will wait for a service to be ready or will reject with an error if the service is not ready after the provided timeout time
+   * wait for a service to be ready or reject with an error if the service is not ready after the provided timeout time
    *
    * @param {string} namespace
    * @param {string} serviceName
@@ -318,7 +318,7 @@ export class K8sManagement {
   }
 
   /**
-   * Get a secret value from the cluster. This method returns the secret encoded in base64 string
+   * get a secret value from the cluster. This method returns the secret encoded in base64 string
    *
    * @param {string} namespace
    * @param {string} secretName
@@ -337,7 +337,7 @@ export class K8sManagement {
   }
 
   /**
-   * Exect a raw kubectl command in your cluster, the user only need to write the command without the `kubectl`
+   * exec a raw kubectl command in your cluster, the user only need to write the command without the `kubectl`
    * for example: `kubectl apply -f file.yaml` will be `execRawCommand('apply -f file.yaml')`
    * @param {string} command
    * @returns {Promise<any>}
