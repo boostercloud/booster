@@ -1821,10 +1821,10 @@ in the *connection operation*, the **access token** in the **"Authorization"** h
 > Connecting to the web socket:
 
 ```sh
- wscat -c <websocketURL> -s graphqlws
+ wscat -c <websocketURL> -s graphql-ws
 ```
 
-**Note:** You should specify the `graphqlws` subprotocol to your clients via the `Sec-WebSocket-Protocol` header.
+**Note:** You should specify the `graphql-ws` subprotocol to your clients via the `Sec-WebSocket-Protocol` header.
 
 > Sending a message with the subscription
 
