@@ -2,13 +2,15 @@ import { expect } from '../expect'
 import { K8sManagement } from '../../src/infrastructure/k8s-sdk/K8sManagement'
 import { HelmManager } from '../../src/infrastructure/helm-manager'
 import { DaprManager } from '../../src/infrastructure/dapr-manager'
-import { stub, restore } from 'sinon'
+import { stub, restore, replace, fake } from 'sinon'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { stateStore } from '../../src/infrastructure/templates/statestore'
+import { lorem } from 'faker'
+const fs = require('fs')
 
 describe('Users want to manage Dapr inside the cluster', () => {
   const k8sManager = new K8sManagement()
-  const configuration = new BoosterConfig('test')
+  const configuration = new BoosterConfig(lorem.word())
   const helmManager = new HelmManager()
   const daprManager = new DaprManager(configuration, k8sManager, helmManager)
 
@@ -17,12 +19,12 @@ describe('Users want to manage Dapr inside the cluster', () => {
   })
 
   it('they want to configure the eventStore', async () => {
-    stub(daprManager, 'existsComponentFolder').resolves(false)
+    replace(fs, 'existsSync', fake.returns(false))
     stub(daprManager, 'verifyEventStore').resolves({
-      namespace: 'test',
-      eventStoreHost: 'test',
-      eventStoreUsername: 'test',
-      eventStorePassword: 'test',
+      namespace: lorem.word(),
+      eventStoreHost: lorem.word(),
+      eventStoreUsername: lorem.word(),
+      eventStorePassword: lorem.word(),
     })
     stub(daprManager, 'createDaprComponentFile').resolves
     stub(daprManager, 'readDaprComponentDirectory').resolves(['statestore.yaml'])
@@ -32,18 +34,17 @@ describe('Users want to manage Dapr inside the cluster', () => {
   })
 
   it('they want to configure the eventStore but the cluster fails', async () => {
-    stub(daprManager, 'existsComponentFolder').resolves(false)
+    replace(fs, 'existsSync', fake.returns(false))
     stub(daprManager, 'verifyEventStore').resolves({
-      namespace: 'test',
-      eventStoreHost: 'test',
-      eventStoreUsername: 'test',
-      eventStorePassword: 'test',
+      namespace: lorem.word(),
+      eventStoreHost: lorem.word(),
+      eventStoreUsername: lorem.word(),
+      eventStorePassword: lorem.word(),
     })
     stub(daprManager, 'createDaprComponentFile').resolves
     stub(daprManager, 'readDaprComponentDirectory').resolves(['statestore.yaml'])
     stub(k8sManager, 'execRawCommand').rejects('error!!')
-    const result = await daprManager.configureEventStore()
-    expect(result.length).to.be.equal(1)
+    await expect(daprManager.configureEventStore()).eventually.to.be.rejectedWith('error!!')
   })
 
   it('they want to delete Dapr service', async () => {

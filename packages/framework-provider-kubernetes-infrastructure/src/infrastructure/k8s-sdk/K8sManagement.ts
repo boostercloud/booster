@@ -10,6 +10,7 @@ const exec = util.promisify(require('child_process').exec)
 export class K8sManagement {
   private kube: KubeConfig
   private k8sClient: CoreV1Api
+  private kubectlCommand = 'kubectl'
 
   constructor() {
     this.kube = new KubeConfig()
@@ -345,11 +346,10 @@ export class K8sManagement {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public async execRawCommand(command: string): Promise<any> {
-    return exec(`kubectl ${command}`)
+    return exec(`${this.kubectlCommand} ${command}`)
   }
 
   private async unwrapResponse<TBody>(wrapped: Promise<{ body: TBody }>): Promise<TBody> {
-    const unwrapped = await wrapped
-    return unwrapped.body
+    return (await wrapped).body
   }
 }

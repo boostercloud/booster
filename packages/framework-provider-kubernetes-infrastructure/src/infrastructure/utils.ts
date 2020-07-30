@@ -7,7 +7,7 @@ import { IncomingMessage } from 'http'
 import { indexTemplate } from './templates/indexTemplate'
 import path = require('path')
 const util = require('util')
-const writeFile = util.promisify(require('fs').writeFile)
+const writeFile = util.promisify(fs.writeFile)
 
 /**
  * get cluster namespace from Booster configuration
@@ -20,8 +20,8 @@ export function getProjectNamespaceName(configuration: BoosterConfig): string {
   return `booster-${configuration.appName}-${configuration.environmentName}`
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function sleep(ms: number) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function sleep(ms: number): Promise<any> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
@@ -101,11 +101,7 @@ export function createProjectZipFile(): Promise<string> {
     })
 
     archive.on('warning', (err: any) => {
-      if (err.code === 'ENOENT') {
-        resolve()
-      } else {
-        reject(err)
-      }
+      err.code === 'ENOENT' ? resolve() : reject(err)
     })
 
     archive.on('error', (err: any) => {

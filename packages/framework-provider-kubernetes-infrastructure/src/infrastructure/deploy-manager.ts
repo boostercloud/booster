@@ -73,7 +73,7 @@ export class DeployManager {
   }
 
   /**
-   *  verify that the event store is present and in a negative case, it tries to create one
+   *  verify that the event store is present and in a negative case, it tries to create one through Dapr Manager
    *
    * @returns {Promise<boolean>}
    * @memberof DeployManager
@@ -97,9 +97,7 @@ export class DeployManager {
       if (!clusterNamespace) {
         const clusterResponse = await this.clusterManager.createNamespace(this.namespace)
         if (!clusterResponse) {
-          return Promise.reject(
-            'Unable to create a namespace for your project, please check your Kubectl configuration'
-          )
+          throw new Error('Unable to create a namespace for your project, please check your Kubectl configuration')
         }
       }
       return true

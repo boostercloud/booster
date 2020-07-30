@@ -4,6 +4,7 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import { restore, replace, fake } from 'sinon'
 import { CoreV1Api, KubeConfig, KubernetesObjectApi } from '@kubernetes/client-node'
 import { DeployManager } from '../../src/infrastructure/deploy-manager'
+import { internet } from 'faker'
 
 describe('During the deploy or nuke of Booster apps:', async () => {
   const config = new BoosterConfig('production')
@@ -17,9 +18,9 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     restore()
   })
 
-  it('the deploy finish correctly', (done) => {
+  it('the deploy finishes correctly', (done) => {
     const msgArray: string[] = []
-    const serviceUrl = 'http://192.168.0.1'
+    const serviceUrl = internet.ip
     replace(DeployManager.prototype, 'verifyNamespace', fake.resolves(true))
     replace(DeployManager.prototype, 'verifyHelm', fake.resolves(true))
     replace(DeployManager.prototype, 'verifyVolumeClaim', fake.resolves(true))
@@ -221,7 +222,7 @@ describe('During the deploy or nuke of Booster apps:', async () => {
       undefined,
       () => {
         expect(msgArray.length).to.be.equal(4)
-        expect(msgArray[msgArray.length - 1]).to.be.equal('Your app is terminated and destroyed 💥')
+        expect(msgArray[msgArray.length - 1]).to.include('Your app is terminated and destroyed')
         done()
       }
     )

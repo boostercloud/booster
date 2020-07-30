@@ -41,23 +41,20 @@ export class DaprManager {
    */
   public async configureEventStore(): Promise<string[]> {
     const errors: string[] = []
-    if (!this.existsComponentFolder()) {
+    if (!fs.existsSync(this.daprComponentsPath)) {
       const templateValues: DaprTemplateValues = await this.verifyEventStore()
       await this.createDaprComponentFile(templateValues)
     }
     const daprComponents = await this.readDaprComponentDirectory()
-    daprComponents.forEach(async (component: string) => {
+    for (const component of daprComponents) {
       const componentYaml = path.join(this.daprComponentsPath, component)
       try {
         await this.clusterManager.execRawCommand(`apply -f ${componentYaml}`)
       } catch (err) {
         errors.push(err.toString())
       }
-    })
-    if (errors.length > 0) {
-      return Promise.reject(errors)
     }
-    return Promise.resolve(errors)
+    return errors.length > 0 ? Promise.reject(errors.toString()) : Promise.resolve([])
   }
 
   /**
@@ -90,19 +87,6 @@ export class DaprManager {
   }
 
   /**
-   * check if the current project provides a Dapr component folder
-   *
-   * @returns {boolean}
-   * @memberof DaprManager
-   */
-  public existsComponentFolder(): boolean {
-    if (fs.existsSync(this.daprComponentsPath)) {
-      return true
-    }
-    return false
-  }
-
-  /**
    * create an event store to be used by booster
    *
    * @returns {Promise<DaprTemplateValues>}
@@ -122,13 +106,13 @@ export class DaprManager {
       return Promise.reject(err)
     })
     const buff = Buffer.from(eventStorePassword?.data?.[this.eventStoreSecretName] ?? '', 'base64')
-    const decodePassword = buff.toString('utf-8')
+    const decodedPassword = buff.toString('utf-8')
 
     return {
       namespace: this.namespace,
       eventStoreHost: this.eventStoreHost,
       eventStoreUsername: this.eventStoreUser,
-      eventStorePassword: decodePassword,
+      eventStorePassword: decodedPassword,
     }
   }
 
@@ -161,7 +145,7 @@ export class DaprManager {
    * @returns {(Promise<string | void>)}
    * @memberof DaprManager
    */
-  public async createDaprComponentFile(templateValues: DaprTemplateValues): Promise<string | void> {
+  public async createDaprComponentFile(templateValues: DaprTemplateValues): Promise<void> {
     await mkdir(this.daprComponentsPath).catch(() => {
       return Promise.reject('Unable to create folder for Dapr components, review permissions')
     })

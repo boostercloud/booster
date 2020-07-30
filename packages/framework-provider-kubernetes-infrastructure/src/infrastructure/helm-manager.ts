@@ -29,8 +29,8 @@ export class HelmManager {
     }
     const match = stdout.match(/Version:"(.*?)"/)
     const version = !match ? null : match[1]
-    const cleanVersion = semver.clean(version)
-    if (!semver.gte(cleanVersion, '3.0.0')) {
+    const cleanedVersion = semver.clean(version)
+    if (!semver.gte(cleanedVersion, '3.0.0')) {
       return Promise.reject('Current Helm version lower than 3.0.0, please update it')
     }
     return true
@@ -44,11 +44,11 @@ export class HelmManager {
    * @memberof HelmManager
    */
   public async isRepoInstalled(repoName: string): Promise<boolean> {
-    const listRepo = await this.exec('repo list')
-    if (!listRepo.stdout) {
+    const { stdout } = await this.exec('repo list')
+    if (!stdout) {
       return false
     }
-    if (!listRepo.stdout.includes(repoName)) {
+    if (!stdout.includes(repoName)) {
       return false
     }
     return true

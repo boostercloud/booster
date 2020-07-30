@@ -18,23 +18,25 @@ import { K8sManagement } from '../../src/infrastructure/k8s-sdk/K8sManagement'
 import { replace, fake, restore } from 'sinon'
 import { expect } from '../expect'
 import { boosterAppPod } from '../../src/infrastructure/templates/boosterApp'
+import { internet, random } from 'faker'
+
 describe('Users want to interact with K8s cluster', () => {
-  const NAMESPACE_NAME = 'nameSpace_test'
-  const NAMESPACE_NAME_NON_EXIST = 'non_existing_namespace'
-  const POD_NAME = 'pod_test'
-  const POD_NAME_NON_EXIST = 'non_existing_pod'
-  const NODE_NAME = 'node1_test'
-  const SERVICE_NAME = 'service'
-  const SERVICE_IP = '129.129.129.0'
-  const PVC_NAME = 'pvc_test'
+  const NAMESPACE_NAME = random.word()
+  const NAMESPACE_NAME_NON_EXIST = random.word()
+  const POD_NAME = random.word()
+  const POD_NAME_NON_EXIST = random.word()
+  const NODE_NAME = random.word()
+  const SERVICE_NAME = random.word()
+  const SERVICE_IP = internet.ip()
+  const PVC_NAME = random.word()
   const TEMPLATE_VALUES = {
-    timestamp: 'time',
+    timestamp: random.number().toString(),
     namespace: NAMESPACE_NAME,
     clusterVolume: PVC_NAME,
-    environment: 'environment',
+    environment: random.word(),
   }
-  const SECRET_NAME = 'secretName'
-  const SECRET_DATA = { sensibleData: 'sensibleInfo' }
+  const SECRET_NAME = random.word()
+  const SECRET_DATA = { sensibleData: random.word() }
 
   const namespace = new V1Namespace()
   const metadata = new V1ObjectMeta()
@@ -207,7 +209,6 @@ describe('Users want to interact with K8s cluster', () => {
 
   it('they want to get a secret', async () => {
     const clusterResponse = await k8sManager.getSecret(NAMESPACE_NAME, SECRET_NAME)
-    expect(clusterResponse).to.be.not.undefined
     expect(clusterResponse?.data).to.be.equal(SECRET_DATA)
     expect(clusterResponse?.name).to.be.equal(SECRET_NAME)
   })
