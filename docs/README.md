@@ -1714,12 +1714,7 @@ While it is OK to know how to manually send GraphQL request, you normally don't 
 
 To have a great developer experience, we **strongly recommend** to use a GraphQL client for your platform of choice. Here are some great ones:
 - **[Postwoman](https://postwoman.io/)**: Ideal for testing sending manual requests, getting the schema, etc.
-- **Apollo clients**: These are the "go-to" SDKs to interact with a GraphQL API from your clients. It is very likely that there is a version for your client programming language. These are the main ones:
-    - [For Javascript/Typescript](https://github.com/apollographql/apollo-client))
-    - [For iOS](https://github.com/apollographql/apollo-ios)
-    - [For Java/Kotlin/Android](https://github.com/apollographql/apollo-android)
-    
-To know more about how to use the Apollo Client check the ["Using Apollo Client"](#using-apollo-client) section.
+- **Apollo clients**: These are the "go-to" SDKs to interact with a GraphQL API from your clients. It is very likely that there is a version for your client programming language. Check the ["Using Apollo Client"](#using-apollo-client) section to know more about this.
 
 #### Sending commands
 
@@ -1846,7 +1841,7 @@ And would get the following as response:
 
 To subscribe to a specific read model, we need to use a "subscription" operation, and it must be _sent through the **websocketURL**_ using the ["GraphQL over WebSocket" protocol](#the-graphql-over-websocket-protocol).
 
-Doing this process manually is a bit cumbersome. You will probably never need to do this, as GraphQL clients like [Apollo](#using-apollo-client) abstract this process away. However, we will explain how to do it for learning purposes. 
+Doing this process manually is a bit cumbersome. _You will probably never need to do this_, as GraphQL clients like [Apollo](#using-apollo-client) abstract this process away. However, we will explain how to do it for learning purposes. 
 
 Before sending any subscription, you need to _connect_ to the WebSocket to open the two-way communication channel. This connection
 is done differently depending on the client/library you use to manage web sockets. In this section, we will show examples 
@@ -1871,7 +1866,7 @@ Where:
 - _&lt;id of the read model&gt;_ is the ID of the specific read model instance you are interested in.
 - _selection_field_list_ is a list with the names of the specific read model fields you want to get when data is sent back to you.
 
-In the following examples we use ["wscat"](https://github.com/websockets/wscat) to connect to the web socket. Then we send the required messages to conform the ["GraphQL over WebSocket" protocol](#the-graphql-over-websocket-protocol) including the subscription operation
+In the following examples we use ["wscat"](https://github.com/websockets/wscat) to connect to the web socket. After that, we send the required messages to conform the ["GraphQL over WebSocket" protocol](#the-graphql-over-websocket-protocol), including the subscription operation
 to the read model `CartReadModel` with ID "demo".
 
 1. Connect to the web socket:
@@ -1885,7 +1880,7 @@ Now we can start sending messages just by writing them and hitting "Enter".
 ```json
 { "type": "connection_init" }
 ```
-3. Sending a message with the subscription. We need to provide an ID for the operation. When the server sends us data back, it will include this same ID so that we know which subscription the received data belongs to (again, this is just for learning, [GraphQL clients](#using-apollo-client) manages this for you)
+3. Send a message with the subscription. We need to provide an ID for the operation. When the server sends us data back, it will include this same ID so that we know which subscription the received data belongs to (again, this is just for learning, [GraphQL clients](#using-apollo-client) manages this for you)
 ```json
 { "id": "1", "type": "start", "payload": { "query": "subscription { CartReadModel(id:\"demo\") { id items } }" } }
 ```
@@ -1941,10 +1936,18 @@ mutation {
 **Note**: Remember that, in case you want to send a command that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
 
 #### Using Apollo Client
+One of the best clients to connect to a GraphQL API is the [Apollo](https://www.apollographql.com/) client.
+There will probably be a version for your client technology of choice. These are the main ones:
+- [For Javascript/Typescript](https://www.apollographql.com/docs/react/) [(Github)](https://github.com/apollographql/apollo-client)
+- [For iOS](https://www.apollographql.com/docs/ios/) [(Github)](https://github.com/apollographql/apollo-ios)
+- [For Java/Kotlin/Android](https://www.apollographql.com/docs/android/) [(Github)](https://github.com/apollographql/apollo-android)
+
+//TODO
 
 #### Authorizing operations
 
-TODO: 
+//TODO
+
 It is also possible to use a GraphQL client to subscribe to changes in the application. However, it might be necessary to include an access token, provided when the user signs-in, in the request if the operation requires authorization. This token should be added to the GraphQL client as an operation option through a middleware. An example can be seen below:
 
 ```typescript
