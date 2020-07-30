@@ -37,7 +37,7 @@ describe('During the deploy or nuke of Booster apps:', async () => {
       },
       undefined,
       () => {
-        expect(msgArray.length).to.be.equal(9)
+        expect(msgArray.length).to.be.equal(8)
         expect(msgArray[msgArray.length - 1]).to.be.equal(`Your app is ready in this url: http://${serviceUrl}`)
         done()
       }
