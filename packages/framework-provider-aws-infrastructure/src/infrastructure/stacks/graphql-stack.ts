@@ -8,13 +8,14 @@ import { ServicePrincipal } from '@aws-cdk/aws-iam'
 import { AuthorizationType, LambdaIntegration } from '@aws-cdk/aws-apigateway'
 import { Cors } from '@aws-cdk/aws-apigateway/lib/cors'
 import { AttributeType, BillingMode, ProjectionType, Table } from '@aws-cdk/aws-dynamodb'
-import { subscriptionsStoreAttributes } from '@boostercloud/framework-provider-aws'
+import { connectionsStoreAttributes, subscriptionsStoreAttributes } from '@boostercloud/framework-provider-aws'
 import { DynamoEventSource } from '@aws-cdk/aws-lambda-event-sources'
 
 interface GraphQLStackMembers {
   graphQLLambda: Function
   subscriptionDispatcherLambda: Function
   subscriptionsTable: Table
+  connectionsTable: Table
 }
 
 export class GraphQLStack {
@@ -37,8 +38,9 @@ export class GraphQLStack {
     this.buildWebsocketRoutes(graphQLLambda)
     this.buildRESTRoutes(graphQLLambda)
     const subscriptionsTable = this.buildSubscriptionsTable()
+    const connectionsTable = this.buildConnectionsTable()
 
-    return { graphQLLambda, subscriptionDispatcherLambda, subscriptionsTable }
+    return { graphQLLambda, subscriptionDispatcherLambda, subscriptionsTable, connectionsTable }
   }
 
   private buildLambda(name: string, handler: string, eventSources?: Array<IEventSource>): Function {
@@ -150,5 +152,18 @@ export class GraphQLStack {
       projectionType: ProjectionType.KEYS_ONLY,
     })
     return table
+  }
+
+  private buildConnectionsTable(): Table {
+    return new Table(this.stack, this.config.resourceNames.connectionsStore, {
+      tableName: this.config.resourceNames.connectionsStore,
+      partitionKey: {
+        name: connectionsStoreAttributes.partitionKey,
+        type: AttributeType.STRING,
+      },
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      removalPolicy: RemovalPolicy.DESTROY,
+      timeToLiveAttribute: connectionsStoreAttributes.ttl,
+    })
   }
 }
