@@ -75,7 +75,7 @@ export interface ProviderConnectionsLibrary {
 
 export interface ProviderAuthLibrary {
   rawToEnvelope(rawMessage: any): UserEnvelope
-  fromAuthToken(token: string): UserEnvelope | undefined
+  fromAuthToken(token: string): Promise<UserEnvelope | undefined>
   handleSignUpResult(config: BoosterConfig, request: any, userEnvelope: UserEnvelope): any
 }
 

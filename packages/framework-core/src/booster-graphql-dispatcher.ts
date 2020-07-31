@@ -42,6 +42,7 @@ export class BoosterGraphQLDispatcher {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public async dispatch(request: any): Promise<any> {
+    //TODO: Add here a try catch because if the token is exired, it throws an exception and no one will handle it
     const envelope = await this.config.provider.graphQL.rawToEnvelope(request, this.logger)
     this.logger.debug('Received the following GraphQL envelope: ', envelope)
 
