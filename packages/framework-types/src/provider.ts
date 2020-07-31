@@ -5,6 +5,7 @@ import {
   SubscriptionEnvelope,
   UserEnvelope,
   ReadModelEnvelope,
+  ConnectionDataEnvelope,
 } from './envelope'
 import { BoosterConfig } from './config'
 import { Observable } from 'rxjs'
@@ -16,9 +17,10 @@ export interface ProviderLibrary {
   events: ProviderEventsLibrary
   readModels: ProviderReadModelsLibrary
   auth: ProviderAuthLibrary
-  api: ProviderAPIHandling
-  infrastructure: () => ProviderInfrastructure
   graphQL: ProviderGraphQLLibrary
+  api: ProviderAPIHandling
+  connections: ProviderConnectionsLibrary
+  infrastructure: () => ProviderInfrastructure
 }
 
 export interface ProviderEventsLibrary {
@@ -55,7 +57,6 @@ export interface ProviderReadModelsLibrary {
     logger: Logger,
     subscriptionName: string
   ): Promise<Array<SubscriptionEnvelope>>
-  notifySubscription(config: BoosterConfig, connectionID: string, data: Record<string, any>): Promise<void>
   deleteSubscription(config: BoosterConfig, logger: Logger, connectionID: string, subscriptionID: string): Promise<void>
   deleteAllSubscriptions(config: BoosterConfig, logger: Logger, connectionID: string): Promise<void>
 }
@@ -65,8 +66,16 @@ export interface ProviderGraphQLLibrary {
   handleResult(result?: any, headers?: Record<string, string>): Promise<any>
 }
 
+export interface ProviderConnectionsLibrary {
+  storeData(config: BoosterConfig, connectionID: string, connectionEnvelope: ConnectionDataEnvelope): Promise<void>
+  fetchData(config: BoosterConfig, connectionID: string): Promise<ConnectionDataEnvelope | undefined>
+  deleteData(config: BoosterConfig, connectionID: string): Promise<void>
+  sendMessage(config: BoosterConfig, connectionID: string, data: Record<string, any>): Promise<void>
+}
+
 export interface ProviderAuthLibrary {
   rawToEnvelope(rawMessage: any): UserEnvelope
+  fromAuthToken(token: string): UserEnvelope | undefined
   handleSignUpResult(config: BoosterConfig, request: any, userEnvelope: UserEnvelope): any
 }
 

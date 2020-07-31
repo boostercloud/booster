@@ -1,6 +1,6 @@
 import { BoosterConfig, Logger, SubscriptionEnvelope } from '@boostercloud/framework-types'
-import { ApiGatewayManagementApi, DynamoDB } from 'aws-sdk'
-import { environmentVarNames, subscriptionsStoreAttributes } from '../constants'
+import { DynamoDB } from 'aws-sdk'
+import { subscriptionsStoreAttributes } from '../constants'
 import { sortKeyForSubscription } from './partition-keys'
 
 export interface SubscriptionIndexRecord {
@@ -62,21 +62,6 @@ export async function fetchSubscriptions(
     .promise()
 
   return result.Items as Array<SubscriptionEnvelope>
-}
-
-export async function notifySubscription(
-  config: BoosterConfig,
-  connectionID: string,
-  data: Record<string, any>
-): Promise<void> {
-  await new ApiGatewayManagementApi({
-    endpoint: config.mustGetEnvironmentVar(environmentVarNames.websocketAPIURL),
-  })
-    .postToConnection({
-      ConnectionId: connectionID,
-      Data: JSON.stringify(data),
-    })
-    .promise()
 }
 
 export async function deleteSubscription(

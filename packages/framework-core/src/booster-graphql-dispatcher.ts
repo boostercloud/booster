@@ -28,12 +28,14 @@ export class BoosterGraphQLDispatcher {
 
     this.graphQLSchema = new GraphQLGenerator(config, commandDispatcher, this.readModelDispatcher).generateSchema()
     this.websocketHandler = new GraphQLWebsocketHandler(
+      config,
       logger,
-      this.config.provider.readModels.notifySubscription.bind(null, config),
+      this.config.provider.auth,
+      this.config.provider.connections,
       {
         onStartOperation: this.runGraphQLOperation.bind(this),
         onStopOperation: this.readModelDispatcher.unsubscribe.bind(this.readModelDispatcher),
-        onTerminateOperations: this.readModelDispatcher.unsubscribeAll.bind(this.readModelDispatcher),
+        onTerminate: this.readModelDispatcher.unsubscribeAll.bind(this.readModelDispatcher),
       }
     )
   }

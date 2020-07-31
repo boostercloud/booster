@@ -15,10 +15,15 @@ import {
   deleteAllSubscriptions,
   deleteSubscription,
   fetchSubscriptions,
-  notifySubscription,
   subscribeToReadModel,
 } from './library/subscription-adapter'
-import { handleSignUpResult, rawSignUpDataToUserEnvelope } from './library/auth-adapter'
+import { handleSignUpResult, rawSignUpDataToUserEnvelope, userEnvelopeFromAuthToken } from './library/auth-adapter'
+import {
+  deleteConnectionData,
+  fetchConnectionData,
+  sendMessageToConnection,
+  storeConnectionData,
+} from './library/connections-adapter'
 
 const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
 const userPool = new CognitoIdentityServiceProvider()
@@ -39,7 +44,6 @@ export const Provider: ProviderLibrary = {
     store: storeReadModel.bind(null, dynamoDB),
     subscribe: subscribeToReadModel.bind(null, dynamoDB),
     fetchSubscriptions: fetchSubscriptions.bind(null, dynamoDB),
-    notifySubscription,
     deleteSubscription: deleteSubscription.bind(null, dynamoDB),
     deleteAllSubscriptions: deleteAllSubscriptions.bind(null, dynamoDB),
   },
@@ -51,12 +55,19 @@ export const Provider: ProviderLibrary = {
   // ProviderAuthLibrary
   auth: {
     rawToEnvelope: rawSignUpDataToUserEnvelope,
+    fromAuthToken: userEnvelopeFromAuthToken.bind(null, userPool),
     handleSignUpResult: handleSignUpResult,
   },
   // ProviderAPIHandling
   api: {
     requestSucceeded,
     requestFailed,
+  },
+  connections: {
+    storeData: storeConnectionData.bind(null, dynamoDB),
+    fetchData: fetchConnectionData.bind(null, dynamoDB),
+    deleteData: deleteConnectionData.bind(null, dynamoDB),
+    sendMessage: sendMessageToConnection,
   },
   // ProviderInfrastructureGetter
   infrastructure: () =>

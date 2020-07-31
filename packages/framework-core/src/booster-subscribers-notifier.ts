@@ -129,7 +129,7 @@ export class BoosterSubscribersNotifier {
       `Notifying connectionID '${subscription.connectionID}' with the following wrappeed read model: `,
       readModel
     )
-    await this.config.provider.readModels.notifySubscription(this.config, subscription.connectionID, message)
+    await this.config.provider.connections.sendMessage(this.config, subscription.connectionID, message)
     this.logger.debug('Notifications sent')
   }
 }
