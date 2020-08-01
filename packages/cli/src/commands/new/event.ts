@@ -28,15 +28,15 @@ export default class Event extends Oclif.Command {
   public static args = [{ name: 'eventName' }]
 
   public async run(): Promise<void> {
-    return this.runWithErrors().catch(console.error)
-  }
-
-  private async runWithErrors(): Promise<void> {
     const { args, flags } = this.parse(Event)
-    const fields = flags.fields || []
-    if (!args.eventName)
-      return Promise.reject("You haven't provided an event name, but it is required, run with --help for usage")
-    return run(args.eventName, fields)
+    try {
+      const fields = flags.fields || []
+      if (!args.eventName)
+        return Promise.reject("You haven't provided an event name, but it is required, run with --help for usage")
+      return run(args.eventName, fields)
+    } catch (error) {
+      console.error(error)
+    }
   }
 }
 
