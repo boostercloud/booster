@@ -26,7 +26,7 @@ export default class Type extends Oclif.Command {
     try {
       const fields = flags.fields || []
       if (!args.typeName)
-        return Promise.reject("You haven't provided a type name, but it is required, run with --help for usage")
+        throw new Error("You haven't provided a type name, but it is required, run with --help for usage")
       return run(args.typeName, fields)
     } catch (error) {
       console.error(error)

@@ -40,7 +40,7 @@ export default class ReadModel extends Oclif.Command {
       const fields = flags.fields ?? []
       const projections = flags.projects ?? []
       if (!args.readModelName)
-        return Promise.reject("You haven't provided a read model name, but it is required, run with --help for usage")
+        throw new Error("You haven't provided a read model name, but it is required, run with --help for usage")
       return run(args.readModelName, fields, projections)
     } catch (error) {
       console.error(error)
