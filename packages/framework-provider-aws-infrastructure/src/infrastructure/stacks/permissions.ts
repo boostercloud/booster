@@ -1,17 +1,15 @@
 import { Table } from '@aws-cdk/aws-dynamodb'
-import { Function } from '@aws-cdk/aws-lambda'
 import { CfnApi } from '@aws-cdk/aws-apigatewayv2'
 import { Fn } from '@aws-cdk/core'
 import { createPolicyStatement } from './policies'
+import { GraphQLStackMembers } from './graphql-stack'
+import { EventsStackMembers } from './events-stack'
 
 export const setupPermissions = (
+  graphQLStack: GraphQLStackMembers,
+  eventsStack: EventsStackMembers,
   readModelTables: Array<Table>,
-  graphQLLambda: Function,
-  subscriptionDispatcherLambda: Function,
-  subscriptionsTable: Table,
-  websocketAPI: CfnApi,
-  eventsStore: Table,
-  eventsLambda: Function
+  websocketAPI: CfnApi
 ): void => {
   const websocketManageConnectionsPolicy = createPolicyStatement(
     [
@@ -26,6 +24,9 @@ export const setupPermissions = (
     ],
     ['execute-api:ManageConnections']
   )
+
+  const { graphQLLambda, subscriptionsTable, subscriptionDispatcherLambda, connectionsStore } = graphQLStack
+  const { eventsLambda, eventsStore } = eventsStack
   graphQLLambda.addToRolePolicy(
     createPolicyStatement([eventsStore.tableArn], ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchWriteItem'])
   )
@@ -34,6 +35,9 @@ export const setupPermissions = (
       [subscriptionsTable.tableArn + '*'], // The '*' at the end is to also grant permissions on table indexes
       ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:DeleteItem', 'dynamodb:BatchWriteItem']
     )
+  )
+  graphQLLambda.addToRolePolicy(
+    createPolicyStatement([connectionsStore.tableArn], ['dynamodb:GetItem', 'dynamodb:PutItem', 'dynamodb:DeleteItem'])
   )
   graphQLLambda.addToRolePolicy(websocketManageConnectionsPolicy)
 

@@ -11,11 +11,11 @@ import { AttributeType, BillingMode, ProjectionType, Table } from '@aws-cdk/aws-
 import { connectionsStoreAttributes, subscriptionsStoreAttributes } from '@boostercloud/framework-provider-aws'
 import { DynamoEventSource } from '@aws-cdk/aws-lambda-event-sources'
 
-interface GraphQLStackMembers {
+export interface GraphQLStackMembers {
   graphQLLambda: Function
   subscriptionDispatcherLambda: Function
   subscriptionsTable: Table
-  connectionsTable: Table
+  connectionsStore: Table
 }
 
 export class GraphQLStack {
@@ -38,9 +38,9 @@ export class GraphQLStack {
     this.buildWebsocketRoutes(graphQLLambda)
     this.buildRESTRoutes(graphQLLambda)
     const subscriptionsTable = this.buildSubscriptionsTable()
-    const connectionsTable = this.buildConnectionsTable()
+    const connectionsStore = this.buildConnectionsTable()
 
-    return { graphQLLambda, subscriptionDispatcherLambda, subscriptionsTable, connectionsTable }
+    return { graphQLLambda, subscriptionDispatcherLambda, subscriptionsTable, connectionsStore }
   }
 
   private buildLambda(name: string, handler: string, eventSources?: Array<IEventSource>): Function {
