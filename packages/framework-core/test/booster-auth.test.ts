@@ -39,7 +39,7 @@ describe('the "checkSignUp" method', () => {
       config.provider.auth,
       'rawToEnvelope',
       fake.returns({
-        role: 'NonExistingRole'
+        role: 'NonExistingRole',
       })
     )
 
