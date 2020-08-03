@@ -21,7 +21,10 @@ describe('the auth-adapter', () => {
       }
 
       const expectedOutput: UserEnvelope = {
-        email: cognitoUserEvent.request.userAttributes.email,
+        username: {
+          value: cognitoUserEvent.request.userAttributes.email,
+          type: 'email',
+        },
         role: 'User',
       }
       const gotOutput = rawSignUpDataToUserEnvelope(cognitoUserEvent as any)

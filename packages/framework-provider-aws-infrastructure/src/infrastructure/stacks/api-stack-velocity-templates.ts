@@ -23,6 +23,15 @@ export const CognitoTemplates = {
              }`,
     response: '{}',
   },
+  confirmSignUp: {
+    request: `#set($root = $input.path('$'))
+             {
+               "ClientId": "$root.clientId",
+               "ConfirmationCode": "$root.confirmationCode",
+               "Username": "$root.username"
+             }`,
+    response: '{}',
+  },
   signIn: {
     request: `#set($root = $input.path('$'))
               {

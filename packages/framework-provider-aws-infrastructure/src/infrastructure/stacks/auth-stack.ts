@@ -3,10 +3,10 @@ import { CfnOutput, RemovalPolicy, Stack } from '@aws-cdk/core'
 import { AuthFlow, CfnUserPool, CfnUserPoolDomain, UserPoolAttribute, UserPoolClient } from '@aws-cdk/aws-cognito'
 import { Code, Function } from '@aws-cdk/aws-lambda'
 import * as params from '../params'
+import { APIs } from '../params'
 import { Effect, IRole, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam'
 import { AwsIntegration, PassthroughBehavior } from '@aws-cdk/aws-apigateway'
 import { CognitoTemplates } from './api-stack-velocity-templates'
-import { APIs } from '../params'
 
 export class AuthStack {
   public constructor(
@@ -33,9 +33,12 @@ export class AuthStack {
     })
 
     const localUserPoolID = 'user-pool'
+    const externalId = 'external'
+    const cognitoSNSMessageRole = this.buildCognitoRoleToSendSNSMessages()
+
     const userPool = new CfnUserPool(this.stack, localUserPoolID, {
       userPoolName: this.config.resourceNames.applicationStack + '-' + localUserPoolID,
-      autoVerifiedAttributes: [UserPoolAttribute.EMAIL],
+      autoVerifiedAttributes: [UserPoolAttribute.EMAIL, UserPoolAttribute.PHONE_NUMBER],
       schema: [
         {
           attributeDataType: 'String',
@@ -43,9 +46,13 @@ export class AuthStack {
           name: 'role',
         },
       ],
-      usernameAttributes: [UserPoolAttribute.EMAIL],
+      usernameAttributes: [UserPoolAttribute.EMAIL, UserPoolAttribute.PHONE_NUMBER],
       verificationMessageTemplate: {
         defaultEmailOption: 'CONFIRM_WITH_LINK',
+      },
+      smsConfiguration: {
+        externalId: this.config.resourceNames.applicationStack + '-' + externalId,
+        snsCallerArn: cognitoSNSMessageRole.roleArn,
       },
       lambdaConfig: {
         preSignUp: preSignUpLambda.functionArn,
@@ -110,6 +117,9 @@ export class AuthStack {
       .addResource('sign-up')
       .addMethod('POST', this.buildSignUpIntegration(cognitoIntegrationRole), methodOptions)
     authResource
+      .addResource('confirm-sign-up')
+      .addMethod('POST', this.buildConfirmSignUpIntegration(cognitoIntegrationRole), methodOptions)
+    authResource
       .addResource('sign-in')
       .addMethod('POST', this.buildSignInIntegration(cognitoIntegrationRole), methodOptions)
     authResource
@@ -137,6 +147,24 @@ export class AuthStack {
     })
   }
 
+  private buildCognitoRoleToSendSNSMessages(): Role {
+    return new Role(this.stack, 'cognito-sns-messages-role', {
+      assumedBy: new ServicePrincipal('cognito-idp.amazonaws.com'),
+      description: 'An IAM Role to allow Cognito to send SNS messages',
+      inlinePolicies: {
+        'cognito-sns-managed-policy': new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              effect: Effect.ALLOW,
+              actions: ['sns:publish'],
+              resources: ['*'],
+            }),
+          ],
+        }),
+      },
+    })
+  }
+
   private buildSignOutIntegration(withRole: IRole): AwsIntegration {
     return this.buildCognitoIntegration('GlobalSignOut', withRole, {
       requestTemplate: CognitoTemplates.signOut.request,
@@ -148,6 +176,13 @@ export class AuthStack {
     return this.buildCognitoIntegration('SignUp', withRole, {
       requestTemplate: CognitoTemplates.signUp.request,
       responseTemplate: CognitoTemplates.signUp.response,
+    })
+  }
+
+  private buildConfirmSignUpIntegration(withRole: IRole): AwsIntegration {
+    return this.buildCognitoIntegration('ConfirmSignUp', withRole, {
+      requestTemplate: CognitoTemplates.confirmSignUp.request,
+      responseTemplate: CognitoTemplates.confirmSignUp.response,
     })
   }
 
@@ -203,4 +238,4 @@ export class AuthStack {
 }
 
 // Note: InitiateAuth is used for sign-in and refresh-token
-type CognitoAuthActions = 'InitiateAuth' | 'SignUp' | 'GlobalSignOut'
+type CognitoAuthActions = 'InitiateAuth' | 'SignUp' | 'ConfirmSignUp' | 'GlobalSignOut'

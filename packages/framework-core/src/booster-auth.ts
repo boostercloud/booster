@@ -17,13 +17,31 @@ export class BoosterAuth {
     const roleName = userEnvelope.role
     if (roleName) {
       const roleMetadata = config.roles[userEnvelope.role]
-
       if (!roleMetadata) {
         throw new InvalidParameterError(`Unknown role ${roleName}`)
       }
-      if (!roleMetadata.allowSelfSignUp) {
+
+      const authenticationMetadata = roleMetadata.authentication
+      if (
+        !authenticationMetadata ||
+        !authenticationMetadata.signUpMethods ||
+        (Array.isArray(authenticationMetadata.signUpMethods) && !authenticationMetadata.signUpMethods.length)
+      ) {
         throw new InvalidParameterError(
           `User with role ${roleName} can't sign up by themselves. Choose a different role or contact and administrator`
+        )
+      }
+
+      const signUpOptions = authenticationMetadata.signUpMethods
+      const username = userEnvelope.username
+
+      if (signUpOptions === 'phone' && username.type === 'email') {
+        throw new InvalidParameterError(
+          `User with role ${roleName} can't sign up with an email, a phone number is expected`
+        )
+      } else if (signUpOptions === 'email' && username.type === 'phone') {
+        throw new InvalidParameterError(
+          `User with role ${roleName} can't sign up with a phone number, an email is expected`
         )
       }
     }

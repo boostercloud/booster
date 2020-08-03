@@ -25,15 +25,32 @@ describe('the "checkSignUp" method', () => {
       auth: { rawToEnvelope: () => {} },
     } as unknown) as ProviderLibrary
     config.roles['Admin'] = {
-      allowSelfSignUp: false,
+      authentication: {
+        signUpMethods: [],
+      },
     }
     config.roles['Developer'] = {
-      allowSelfSignUp: true,
+      authentication: {
+        signUpMethods: 'email',
+      },
     }
+
+    config.roles['User'] = {
+      authentication: {
+        signUpMethods: 'phone',
+      },
+    }
+
+    config.roles['SuperUser'] = {
+      authentication: {
+        signUpMethods: ['phone', 'email'],
+      },
+    }
+
     return config
   }
 
-  it('throws when the user has a non-existing role', () => {
+  it('throws an error when the user has a non-existing role', () => {
     const config = buildBoosterConfig()
     replace(
       config.provider.auth,
@@ -46,7 +63,7 @@ describe('the "checkSignUp" method', () => {
     expect(() => BoosterAuth.checkSignUp({}, config, logger)).to.throw('Unknown role NonExistingRole')
   })
 
-  it('throws when the user has a role not allowed to self sign-up', () => {
+  it('throws a error when the user has a role not allowed to self sign-up', () => {
     const config = buildBoosterConfig()
     replace(
       config.provider.auth,
@@ -61,17 +78,110 @@ describe('the "checkSignUp" method', () => {
     )
   })
 
-  it('succeeds user has a role allowed to self sign-up', () => {
+  it('succeeds user to sign up with email when SignUpOptions has email as value', () => {
     const config = buildBoosterConfig()
     replace(
       config.provider.auth,
       'rawToEnvelope',
       fake.returns({
         role: 'Developer',
+        username: {
+          value: 'test@gmail.com',
+          type: 'email',
+        },
       })
     )
 
     expect(() => BoosterAuth.checkSignUp({}, config, logger)).not.to.throw()
+  })
+
+  it('succeeds user to sign up with phone when SignUpOptions has phone as value', () => {
+    const config = buildBoosterConfig()
+    replace(
+      config.provider.auth,
+      'rawToEnvelope',
+      fake.returns({
+        role: 'User',
+        username: {
+          value: '+59165783459',
+          type: 'phone',
+        },
+      })
+    )
+
+    expect(() => BoosterAuth.checkSignUp({}, config, logger)).not.to.throw()
+  })
+
+  it('succeeds user to sign up with email when SignUpOptions has phone and email as value', () => {
+    const config = buildBoosterConfig()
+    replace(
+      config.provider.auth,
+      'rawToEnvelope',
+      fake.returns({
+        role: 'SuperUser',
+        username: {
+          value: 'test@gmail.com',
+          type: 'email',
+        },
+      })
+    )
+
+    expect(() => BoosterAuth.checkSignUp({}, config, logger)).not.to.throw()
+  })
+
+  it('succeeds user to sign up with phone when SignUpOptions has phone and email as value', () => {
+    const config = buildBoosterConfig()
+    replace(
+      config.provider.auth,
+      'rawToEnvelope',
+      fake.returns({
+        role: 'SuperUser',
+        username: {
+          value: '+59165783459',
+          type: 'phone',
+        },
+      })
+    )
+
+    expect(() => BoosterAuth.checkSignUp({}, config, logger)).not.to.throw()
+  })
+
+  it('throws an error when user signs up with phone but SignUpOptions has email as value', () => {
+    const config = buildBoosterConfig()
+    replace(
+      config.provider.auth,
+      'rawToEnvelope',
+      fake.returns({
+        role: 'Developer',
+        username: {
+          value: '+59165783459',
+          type: 'phone',
+        },
+      })
+    )
+
+    expect(() => BoosterAuth.checkSignUp({}, config, logger)).to.throw(
+      /User with role Developer can't sign up with a phone number, an email is expected/
+    )
+  })
+
+  it('throws an error when user signs up with email but SignUpOptions has phone as value', () => {
+    const config = buildBoosterConfig()
+    replace(
+      config.provider.auth,
+      'rawToEnvelope',
+      fake.returns({
+        role: 'User',
+        username: {
+          value: 'test@gmail.com',
+          type: 'email',
+        },
+      })
+    )
+
+    expect(() => BoosterAuth.checkSignUp({}, config, logger)).to.throw(
+      /User with role User can't sign up with an email, a phone number is expected/
+    )
   })
 })
 
@@ -95,7 +205,10 @@ describe('the "isUserAuthorized" method', () => {
   it('returns false when the user does not have any of the "authorizedRoles"', () => {
     const authorizedRoles: RoleAccess['authorize'] = [Admin]
     const userEnvelope: UserEnvelope = {
-      email: 'user@test.com',
+      username: {
+        value: 'user@test.com',
+        type: 'email',
+      },
       role: 'Developer',
     }
 
@@ -105,7 +218,10 @@ describe('the "isUserAuthorized" method', () => {
   it('returns true when the user has any of the "authorizedRoles"', () => {
     const authorizedRoles: RoleAccess['authorize'] = [Admin, Developer]
     const userEnvelope: UserEnvelope = {
-      email: 'user@test.com',
+      username: {
+        value: 'user@test.com',
+        type: 'email',
+      },
       role: 'Developer',
     }
 

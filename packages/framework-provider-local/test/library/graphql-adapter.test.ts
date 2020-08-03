@@ -53,7 +53,10 @@ describe('Local provider graphql-adapter', () => {
         eventType: 'MESSAGE',
         connectionID: undefined,
         currentUser: {
-          email: 'test@test.com',
+          username: {
+            value: 'test@test.com',
+            type: 'email',
+          },
           role: '',
         },
         value: mockBody,

@@ -4,10 +4,14 @@ import { CognitoIdentityServiceProvider } from 'aws-sdk'
 
 export class UserEnvelopeBuilder {
   public static fromAttributeMap(attributes: AttributeMappingType): UserEnvelope {
-    const { email, 'custom:role': role } = attributes
+    // eslint-disable-next-line @typescript-eslint/camelcase
+    const { phone_number, email, 'custom:role': role } = attributes
+    // eslint-disable-next-line @typescript-eslint/camelcase
+    const username = email ? { value: email, type: 'email' } : { value: phone_number, type: 'phone' }
+
     return {
-      email,
-      role: role ? role.trim(): '',
+      username,
+      role: role ? role.trim() : '',
     }
   }
 

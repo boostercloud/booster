@@ -1,11 +1,17 @@
 import { Role } from '@boostercloud/framework-core'
 
 @Role({
-  allowSelfSignUp: false,
+  authentication: {
+    // Do not specify (or use an empty array) if you don't want to allow sign-ups
+    signUpMethods: [],
+  }
 })
 export class Admin {}
 
 @Role({
-  allowSelfSignUp: true,
+  authentication: {
+    // Do not specify (or use an empty array) if you don't want to allow sign-ups
+    signUpMethods: 'email',
+  }
 })
 export class User {}

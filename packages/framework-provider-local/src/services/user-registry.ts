@@ -93,7 +93,10 @@ export class UserRegistry {
               reject(err)
             } else {
               resolve({
-                email: doc.username,
+                username: {
+                  value: doc.username,
+                  type: 'email',
+                },
                 role: doc.userAttributes.role,
               })
             }
