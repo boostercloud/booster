@@ -4,19 +4,15 @@ import { CognitoIdentityServiceProvider } from 'aws-sdk'
 
 export class UserEnvelopeBuilder {
   public static fromAttributeMap(attributes: AttributeMappingType): UserEnvelope {
-    const { email, 'custom:roles': rolesString } = attributes
+    const { email, 'custom:role': role } = attributes
     return {
       email,
-      roles: this.rolesStringToArray(rolesString),
+      role: role ? role.trim(): '',
     }
   }
 
   public static fromAttributeList(attributes: AttributeListType): UserEnvelope {
     return this.fromAttributeMap(this.attributeListToMap(attributes))
-  }
-
-  private static rolesStringToArray(rolesString: string): Array<string> {
-    return rolesString ? rolesString.split(',').map((role) => role.trim()) : []
   }
 
   private static attributeListToMap(attributes: AttributeListType): AttributeMappingType {

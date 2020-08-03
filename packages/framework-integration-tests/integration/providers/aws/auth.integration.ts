@@ -235,7 +235,7 @@ describe('With the auth API', () => {
           username: userEmail,
           password: userPassword,
           userAttributes: {
-            roles: ['User'],
+            role: 'User',
           },
         }),
         headers: {
@@ -263,7 +263,7 @@ describe('With the auth API', () => {
           username: adminEmail,
           password: adminPassword,
           userAttributes: {
-            roles: ['Admin'],
+            role: 'Admin',
           },
         }),
         headers: {
@@ -299,7 +299,7 @@ describe('With the auth API', () => {
           username: userEmail,
           password: userPassword,
           userAttributes: {
-            roles: ['User'],
+            role: 'User',
           },
         }),
         headers: {

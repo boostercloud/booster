@@ -4,7 +4,7 @@ export interface User {
   username: string
   password: string
   userAttributes: {
-    roles: Array<string>
+    role: string
   }
   token: UUID
   confirmed: boolean
@@ -16,5 +16,5 @@ export type RegisteredUser = Pick<User, 'username' | 'password' | 'userAttribute
 export type AuthenticatedUser = Pick<User, 'username' | 'token'>
 
 export function rawSignUpDataToUserEnvelope(rawMessage: SignUpUser): UserEnvelope {
-  return { email: rawMessage.username, roles: rawMessage.userAttributes.roles }
+  return { email: rawMessage.username, role: rawMessage.userAttributes.role }
 }

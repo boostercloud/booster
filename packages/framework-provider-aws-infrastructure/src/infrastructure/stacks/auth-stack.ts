@@ -40,7 +40,7 @@ export class AuthStack {
         {
           attributeDataType: 'String',
           mutable: true,
-          name: 'roles',
+          name: 'role',
         },
       ],
       usernameAttributes: [UserPoolAttribute.EMAIL],

@@ -94,7 +94,7 @@ export class UserRegistry {
             } else {
               resolve({
                 email: doc.username,
-                roles: doc.userAttributes.roles,
+                role: doc.userAttributes.role,
               })
             }
           })

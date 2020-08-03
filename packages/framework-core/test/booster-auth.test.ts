@@ -39,7 +39,7 @@ describe('the "checkSignUp" method', () => {
       config.provider.auth,
       'rawToEnvelope',
       fake.returns({
-        roles: ['Developer', 'NonExistingRole', 'Admin'],
+        role: 'NonExistingRole'
       })
     )
 
@@ -52,7 +52,7 @@ describe('the "checkSignUp" method', () => {
       config.provider.auth,
       'rawToEnvelope',
       fake.returns({
-        roles: ['Developer', 'Admin'],
+        role: 'Admin',
       })
     )
 
@@ -67,7 +67,7 @@ describe('the "checkSignUp" method', () => {
       config.provider.auth,
       'rawToEnvelope',
       fake.returns({
-        roles: ['Developer'],
+        role: 'Developer',
       })
     )
 
@@ -96,7 +96,7 @@ describe('the "isUserAuthorized" method', () => {
     const authorizedRoles: RoleAccess['authorize'] = [Admin]
     const userEnvelope: UserEnvelope = {
       email: 'user@test.com',
-      roles: ['Developer'],
+      role: 'Developer',
     }
 
     expect(BoosterAuth.isUserAuthorized(authorizedRoles, userEnvelope)).to.eq(false)
@@ -106,7 +106,7 @@ describe('the "isUserAuthorized" method', () => {
     const authorizedRoles: RoleAccess['authorize'] = [Admin, Developer]
     const userEnvelope: UserEnvelope = {
       email: 'user@test.com',
-      roles: ['Developer'],
+      role: 'Developer',
     }
 
     expect(BoosterAuth.isUserAuthorized(authorizedRoles, userEnvelope)).to.eq(true)

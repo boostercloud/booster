@@ -73,7 +73,7 @@ describe('Event handlers', () => {
         entityID: mockProductId,
         currentUser: {
           email: adminEmail,
-          roles: ['Admin'],
+          role: 'Admin',
         },
       }
       const stockMovedEvent = events.find((event) => event.typeName === 'StockMoved')
@@ -93,7 +93,7 @@ describe('Event handlers', () => {
         entityID: mockProductId,
         currentUser: {
           email: adminEmail,
-          roles: ['Admin'],
+          role: 'Admin',
         },
       }
       const productAvailabilityChangedEvent = events.find((event) => event.typeName === 'ProductAvailabilityChanged')

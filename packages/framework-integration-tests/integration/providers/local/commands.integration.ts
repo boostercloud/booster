@@ -59,7 +59,7 @@ describe('commands', () => {
         entityID: mockCartId,
         currentUser: {
           email: 'test@test.com',
-          roles: [],
+          role: '',
         },
         entityTypeName: 'Cart',
         typeName: 'CartItemChanged',

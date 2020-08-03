@@ -20,7 +20,7 @@ describe('the user registry', () => {
         clientId: faker.random.uuid(),
         username: faker.internet.email(),
         userAttributes: {
-          roles: [],
+          role: '',
         },
         password: faker.internet.password(),
       }
@@ -38,7 +38,7 @@ describe('the user registry', () => {
         clientId: faker.random.uuid(),
         username: faker.internet.email(),
         userAttributes: {
-          roles: [],
+          role: '',
         },
         password: faker.internet.password(),
       }
@@ -57,7 +57,7 @@ describe('the user registry', () => {
         clientId: faker.random.uuid(),
         username: faker.internet.email(),
         userAttributes: {
-          roles: [],
+          role: '',
         },
         password: faker.internet.password(),
       }
@@ -78,7 +78,7 @@ describe('the user registry', () => {
         clientId: faker.random.uuid(),
         username: faker.internet.email(),
         userAttributes: {
-          roles: [],
+          role: '',
         },
         password: faker.internet.password(),
       }
@@ -94,7 +94,7 @@ describe('the user registry', () => {
         clientId: faker.random.uuid(),
         username: faker.internet.email(),
         userAttributes: {
-          roles: [],
+          role: '',
         },
         password: faker.internet.password(),
       }
@@ -109,7 +109,7 @@ describe('the user registry', () => {
       const user = {
         username: faker.internet.email(),
         password: faker.internet.password(),
-        roles: [],
+        role: '',
       }
       userRegistry.registeredUsers.findOne = stub().yields(null, undefined)
       return expect(userRegistry.signIn(user)).to.be.rejectedWith(NotAuthorizedError)
@@ -120,7 +120,7 @@ describe('the user registry', () => {
       const user = {
         username: faker.internet.email(),
         password: faker.internet.password(),
-        roles: [],
+        role: '',
       }
       userRegistry.registeredUsers.findOne = stub().yields(null, { ...user, confirmed: false })
       return expect(userRegistry.signIn(user)).to.be.rejectedWith(NotAuthorizedError)
@@ -131,7 +131,7 @@ describe('the user registry', () => {
       const user = {
         username: faker.internet.email(),
         password: faker.internet.password(),
-        roles: [],
+        role: '',
       }
 
       const error = new Error(faker.lorem.words())
@@ -181,7 +181,7 @@ describe('the user registry', () => {
         clientId: faker.random.uuid(),
         username: faker.internet.email(),
         userAttributes: {
-          roles: [],
+          role: '',
         },
         password: faker.internet.password(),
       }
@@ -192,7 +192,7 @@ describe('the user registry', () => {
       const retrievedUser = await userRegistry.getAuthenticatedUser(mockToken)
       expect(userRegistry.authenticatedUsers.findOne).to.have.been.called
       expect(userRegistry.registeredUsers.findOne).to.have.been.called
-      expect(retrievedUser).to.deep.equal({ email: user.username, roles: user.userAttributes.roles })
+      expect(retrievedUser).to.deep.equal({ email: user.username, role: user.userAttributes.role })
     })
   })
 

@@ -14,8 +14,10 @@ export class BoosterAuth {
     const userEnvelope = config.provider.auth.rawToEnvelope(rawMessage)
     logger.info('User envelope: ', userEnvelope)
 
-    userEnvelope.roles.forEach((roleName: string) => {
-      const roleMetadata = config.roles[roleName]
+    const roleName = userEnvelope.role
+    if (roleName) {
+      const roleMetadata = config.roles[userEnvelope.role]
+
       if (!roleMetadata) {
         throw new InvalidParameterError(`Unknown role ${roleName}`)
       }
@@ -24,7 +26,7 @@ export class BoosterAuth {
           `User with role ${roleName} can't sign up by themselves. Choose a different role or contact and administrator`
         )
       }
-    })
+    }
 
     return rawMessage
   }
@@ -46,5 +48,5 @@ export class BoosterAuth {
 }
 
 function userHasSomeRole(user: UserEnvelope, authorizedRoles: Array<Class<RoleInterface>>): boolean {
-  return authorizedRoles.some((roleClass) => user.roles.includes(roleClass.name))
+  return authorizedRoles.some((roleClass) => user.role === roleClass.name)
 }
