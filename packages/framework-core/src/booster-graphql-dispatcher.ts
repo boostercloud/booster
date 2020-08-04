@@ -5,6 +5,7 @@ import {
   GraphQLRequestEnvelope,
   InvalidProtocolError,
   GraphQLOperation,
+  GraphQLRequestEnvelopeError,
 } from '@boostercloud/framework-types'
 import { GraphQLSchema, DocumentNode, ExecutionResult, GraphQLError } from 'graphql'
 import * as graphql from 'graphql'
@@ -42,25 +43,24 @@ export class BoosterGraphQLDispatcher {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public async dispatch(request: any): Promise<any> {
-    //TODO: Add here a try catch because if the token is exired, it throws an exception and no one will handle it
-    const envelope = await this.config.provider.graphQL.rawToEnvelope(request, this.logger)
-    this.logger.debug('Received the following GraphQL envelope: ', envelope)
+    const envelopeOrError = await this.config.provider.graphQL.rawToEnvelope(request, this.logger)
+    this.logger.debug('Received the following GraphQL envelope: ', envelopeOrError)
 
-    switch (envelope.eventType) {
+    switch (envelopeOrError.eventType) {
       case 'CONNECT':
         return this.config.provider.graphQL.handleResult(null, graphQLWebsocketSubprotocolHeaders)
       case 'MESSAGE':
-        return this.config.provider.graphQL.handleResult(await this.handleMessage(envelope))
+        return this.config.provider.graphQL.handleResult(await this.handleMessage(envelopeOrError))
       case 'DISCONNECT':
-        return this.config.provider.graphQL.handleResult(await this.handleDisconnect(envelope))
+        return this.config.provider.graphQL.handleResult(await this.handleDisconnect(envelopeOrError))
       default:
         return this.config.provider.graphQL.handleResult({
-          errors: [new Error(`Unknown message type ${envelope.eventType}`)],
+          errors: [new Error(`Unknown message type ${envelopeOrError.eventType}`)],
         })
     }
   }
 
-  private async handleMessage(envelope: GraphQLRequestEnvelope): Promise<DispatchResult> {
+  private async handleMessage(envelope: GraphQLRequestEnvelope | GraphQLRequestEnvelopeError): Promise<DispatchResult> {
     this.logger.debug('Starting GraphQL operation')
     if (cameThroughSocket(envelope)) {
       return this.websocketHandler.handle(envelope)
@@ -69,9 +69,12 @@ export class BoosterGraphQLDispatcher {
   }
 
   private async runGraphQLOperation(
-    envelope: GraphQLRequestEnvelope
+    envelope: GraphQLRequestEnvelope | GraphQLRequestEnvelopeError
   ): Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult> {
     try {
+      if ('error' in envelope) {
+        throw envelope.error
+      }
       if (!envelope.value) {
         throw new InvalidParameterError('Received an empty GraphQL body')
       }

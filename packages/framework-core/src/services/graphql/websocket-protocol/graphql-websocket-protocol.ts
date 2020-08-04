@@ -9,6 +9,7 @@ import {
   GraphQLInitAck,
   GraphQLInitError,
   GraphQLRequestEnvelope,
+  GraphQLRequestEnvelopeError,
   GraphQLStart,
   GraphQLStop,
   Logger,
@@ -35,7 +36,7 @@ export class GraphQLWebsocketHandler {
     private readonly callbacks: GraphQLWebsocketHandlerCallbacks
   ) {}
 
-  public async handle(envelope: GraphQLRequestEnvelope): Promise<void> {
+  public async handle(envelope: GraphQLRequestEnvelope | GraphQLRequestEnvelopeError): Promise<void> {
     if (!envelope.connectionID) {
       // Impossible case, but just to be sure. The only thing we can do here is to log, as we don't have the connection
       // to send the message to
@@ -45,9 +46,13 @@ export class GraphQLWebsocketHandler {
 
     try {
       this.logger.debug('Handling websocket message')
+      if ('error' in envelope) {
+        throw envelope.error
+      }
       if (!envelope.value) {
         throw new Error('Received an empty GraphQL body')
       }
+
       const clientMessage = envelope.value as GraphQLClientMessage
       this.logger.debug('Received client message: ', clientMessage)
       switch (clientMessage.type) {

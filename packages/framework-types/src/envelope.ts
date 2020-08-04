@@ -49,6 +49,9 @@ export interface GraphQLRequestEnvelope extends Envelope {
   connectionID?: string
   value?: GraphQLOperation | GraphQLClientMessage
 }
+export type GraphQLRequestEnvelopeError = Pick<GraphQLRequestEnvelope, 'eventType' | 'connectionID' | 'requestID'> & {
+  error: Error
+}
 
 export interface SubscriptionEnvelope extends ReadModelRequestEnvelope {
   expirationTime: number // In Epoch format

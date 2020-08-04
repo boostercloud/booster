@@ -6,6 +6,7 @@ import {
   UserEnvelope,
   ReadModelEnvelope,
   ConnectionDataEnvelope,
+  GraphQLRequestEnvelopeError,
 } from './envelope'
 import { BoosterConfig } from './config'
 import { Observable } from 'rxjs'
@@ -62,7 +63,7 @@ export interface ProviderReadModelsLibrary {
 }
 
 export interface ProviderGraphQLLibrary {
-  rawToEnvelope(rawGraphQLRequest: any, logger: Logger): Promise<GraphQLRequestEnvelope>
+  rawToEnvelope(rawGraphQLRequest: any, logger: Logger): Promise<GraphQLRequestEnvelope | GraphQLRequestEnvelopeError>
   handleResult(result?: any, headers?: Record<string, string>): Promise<any>
 }
 
