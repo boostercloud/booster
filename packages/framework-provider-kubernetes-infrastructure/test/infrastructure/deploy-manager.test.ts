@@ -40,7 +40,7 @@ describe('As part of the deploy the users want to:', async () => {
     stub(k8sManager, 'getPodFromNamespace').resolves(undefined)
     stub(helmManager, 'exec').resolves()
     stub(k8sManager, 'waitForPodToBeReady').resolves()
-    await expect(deployManager.verifyDapr()).to.be.eventually.equal(true)
+    await expect(deployManager.verifyDapr()).to.eventually.be.fulfilled
   })
 
   it('check that Dapr is ready and it fails', async () => {
@@ -54,7 +54,7 @@ describe('As part of the deploy the users want to:', async () => {
 
   it('check that EventStore is ready and it is working', async () => {
     stub(daprManager, 'configureEventStore').resolves()
-    await expect(deployManager.verifyEventStore()).to.be.eventually.equal(true)
+    await expect(deployManager.verifyEventStore()).to.eventually.be.fulfilled
   })
 
   it('check that EventStore is ready and it fails', async () => {
@@ -65,13 +65,13 @@ describe('As part of the deploy the users want to:', async () => {
 
   it('check that namespace exists', async () => {
     stub(k8sManager, 'getNamespace').resolves({ name: 'name' })
-    await expect(deployManager.verifyNamespace()).to.be.eventually.equal(true)
+    await expect(deployManager.verifyNamespace()).to.eventually.be.fulfilled
   })
 
   it('check that namespace is correctly created', async () => {
     stub(k8sManager, 'getNamespace').resolves(undefined)
     stub(k8sManager, 'createNamespace').resolves(true)
-    await expect(deployManager.verifyNamespace()).to.be.eventually.equal(true)
+    await expect(deployManager.verifyNamespace()).to.eventually.be.fulfilled
   })
 
   it('check that namespace is correctly created but it fails', async () => {
@@ -83,7 +83,7 @@ describe('As part of the deploy the users want to:', async () => {
 
   it('check that volumeClaim is ready', async () => {
     stub(k8sManager, 'getVolumeClaimFromNamespace').resolves({ name: 'name' })
-    await expect(deployManager.verifyVolumeClaim()).to.be.eventually.equal(true)
+    await expect(deployManager.verifyVolumeClaim()).to.eventually.be.fulfilled
   })
 
   it('check that volumeClaim is ready but it fails', async () => {
@@ -95,7 +95,7 @@ describe('As part of the deploy the users want to:', async () => {
 
   it('check that uploadService is ready', async () => {
     stub(k8sManager, 'getServiceFromNamespace').resolves({ name: 'name' })
-    await expect(deployManager.verifyUploadService()).to.be.eventually.equal(true)
+    await expect(deployManager.verifyUploadService()).to.eventually.be.fulfilled
   })
 
   it('check that uploadService is ready but it fails', async () => {
@@ -107,7 +107,7 @@ describe('As part of the deploy the users want to:', async () => {
 
   it('check that boosterService is ready', async () => {
     stub(k8sManager, 'getServiceFromNamespace').resolves({ name: 'name' })
-    await expect(deployManager.verifyBoosterService()).to.be.eventually.equal(true)
+    await expect(deployManager.verifyBoosterService()).to.eventually.be.fulfilled
   })
 
   it('check that boosterService is ready but it fails', async () => {
@@ -120,7 +120,7 @@ describe('As part of the deploy the users want to:', async () => {
   it('check that uploadPod is ready', async () => {
     stub(k8sManager, 'getPodFromNamespace').resolves({ name: 'name' })
     stub(k8sManager, 'waitForPodToBeReady').resolves()
-    await expect(deployManager.verifyUploadPod()).to.be.eventually.equal(true)
+    await expect(deployManager.verifyUploadPod()).to.eventually.be.fulfilled
   })
 
   it('check that uploadPod is ready but it fails', async () => {
@@ -134,7 +134,7 @@ describe('As part of the deploy the users want to:', async () => {
     stub(k8sManager, 'getPodFromNamespace').resolves({ name: 'name' })
     stub(k8sManager, 'waitForPodToBeReady').resolves()
     stub(k8sManager, 'applyTemplate').resolves([{ apiVersion: '1' }])
-    await expect(deployManager.verifyBoosterPod()).to.be.eventually.equal(true)
+    await expect(deployManager.verifyBoosterPod()).to.eventually.be.fulfilled
   })
 
   it('check that boosterPod is ready but it fails', async () => {
@@ -147,6 +147,6 @@ describe('As part of the deploy the users want to:', async () => {
     stub(k8sManager, 'waitForServiceToBeReady').resolves()
     replace(utils, 'createIndexFile', fake.resolves(''))
     replace(utils, 'uploadFile', fake.resolves({ statusCode: 200 }))
-    await expect(deployManager.uploadUserCode()).to.be.eventually.equal(true)
+    await expect(deployManager.uploadUserCode()).to.eventually.be.fulfilled
   })
 })
