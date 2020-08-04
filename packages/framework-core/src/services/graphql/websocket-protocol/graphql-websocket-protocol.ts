@@ -1,6 +1,7 @@
 import { ExecutionResult } from 'graphql'
 import {
   BoosterConfig,
+  ConnectionDataEnvelope,
   GraphQLClientMessage,
   GraphQLComplete,
   GraphQLData,
@@ -64,7 +65,6 @@ export class GraphQLWebsocketHandler {
           return await this.handleStop(envelope.connectionID, clientMessage)
         case MessageTypes.GQL_CONNECTION_TERMINATE:
           return await this.handleTerminate(envelope.connectionID)
-          break
         default:
           // This branch should be impossible, but just in case
           throw new Error(`Unknown message type. Message=${clientMessage}`)
@@ -80,8 +80,12 @@ export class GraphQLWebsocketHandler {
     if (clientMessage.payload?.Authorization) {
       userEnvelope = await this.authManager.fromAuthToken(clientMessage.payload.Authorization)
     }
-    this.logger.debug('Storing connection data: ', clientMessage.payload)
-    await this.connectionManager.storeData(this.config, connectionID, { user: userEnvelope })
+    const connectionData: ConnectionDataEnvelope = {
+      expirationTime: this.config.subscriptions.maxDurationInSeconds,
+      user: userEnvelope,
+    }
+    this.logger.debug('Storing connection data: ', connectionData)
+    await this.connectionManager.storeData(this.config, connectionID, connectionData)
     this.logger.debug('Sending ACK')
     await this.connectionManager.sendMessage(this.config, connectionID, new GraphQLInitAck())
   }

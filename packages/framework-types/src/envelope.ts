@@ -68,6 +68,7 @@ export interface GraphQLOperation {
 }
 
 export interface ConnectionDataEnvelope {
+  expirationTime: number // In Epoch format
   user?: UserEnvelope
 }
 

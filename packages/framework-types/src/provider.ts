@@ -68,7 +68,7 @@ export interface ProviderGraphQLLibrary {
 }
 
 export interface ProviderConnectionsLibrary {
-  storeData(config: BoosterConfig, connectionID: string, connectionEnvelope: ConnectionDataEnvelope): Promise<void>
+  storeData(config: BoosterConfig, connectionID: string, data: ConnectionDataEnvelope): Promise<void>
   fetchData(config: BoosterConfig, connectionID: string): Promise<ConnectionDataEnvelope | undefined>
   deleteData(config: BoosterConfig, connectionID: string): Promise<void>
   sendMessage(config: BoosterConfig, connectionID: string, data: Record<string, any>): Promise<void>

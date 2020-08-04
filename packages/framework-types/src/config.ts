@@ -20,7 +20,9 @@ export class BoosterConfig {
   private readonly _configuredEnvironments: Set<string> = new Set<string>()
   private _provider?: ProviderLibrary
   public appName = 'new-booster-app'
-  public region = 'eu-west-1'
+  public readonly subscriptions = {
+    maxDurationInSeconds: 2 * 24 * 60 * 60, // 2 days
+  }
   public readonly userProjectRootPath: string = process.cwd()
   public readonly eventDispatcherHandler: string = 'dist/index.boosterEventDispatcher'
   public readonly preSignUpHandler: string = 'dist/index.boosterPreSignUpChecker'
