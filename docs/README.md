@@ -480,6 +480,12 @@ public handle(register: Register): void {
 }
 ```
 
+Remember to import the event class correctly on the top part of the file:
+
+```typescript
+import { PostCreated } from '../events/PostCreated'
+```
+
 We can do any validation in the command handler before storing the event, for our
 example, we'll just save the received data in the `PostCreated` event.
 
@@ -613,7 +619,12 @@ Booster applications provide you with a GraphQL API out of the box. You send com
 _mutations_ and get read models data using _queries_ or _subscriptions_. 
 
 In this section, we will be sending requests by hand using the online tool [Postwoman](https://postwoman.io/graphql), 
-which is free and includes great support for GraphQL. However, you can use any HTTP client you want.
+which is free and includes great support for GraphQL. However, you can use any HTTP client you want. In Postwoman
+online tool, you should enter the following URL as Endpoint:
+
+```text
+https://<some random number>.execute-api.us-east-1.amazonaws.com/production/graphql
+```
 
 ##### 7.1 Creating posts
 
