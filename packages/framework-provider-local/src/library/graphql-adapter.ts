@@ -13,7 +13,7 @@ export async function rawGraphQLRequestToEnvelope(
     connectionID: undefined, // TODO: Retrieve connectionId if available,
     currentUser: {
       email: 'test@test.com',
-      roles: [],
+      role: '',
     },
     value: request.body,
   }

@@ -1,7 +1,5 @@
 export const CognitoTemplates = {
   signUp: {
-    // This template is a bit more complex because we are transforming the attribute 'roles' from an array to a
-    // comma-separated string
     request: `#set($root = $input.path('$'))
              {
                "ClientId": "$root.clientId",
@@ -9,9 +7,9 @@ export const CognitoTemplates = {
                "Password": "$root.password",
                "UserAttributes": [
                  #foreach($attributeKey in $root.userAttributes.keySet())
-                     #if($attributeKey == "roles")
-                         #set($attributeName = "custom:roles")
-                         #set($attributeValue = "#foreach($rol in $root.userAttributes.get('roles'))$rol#if($foreach.hasNext),#end#end")
+                     #if($attributeKey == "role")
+                         #set($attributeName = "custom:role")
+                         #set($attributeValue = $root.userAttributes.get('role'))
                      #else
                          #set($attributeName = $attributeKey)
                          #set($attributeValue = $root.userAttributes.get($attributeKey))

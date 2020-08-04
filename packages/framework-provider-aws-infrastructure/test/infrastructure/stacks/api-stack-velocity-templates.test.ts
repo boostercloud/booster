@@ -14,7 +14,7 @@ function buildAwsTemplateContext(withData: Record<string, any>): Record<string, 
 describe('CognitoTemplates', () => {
   describe('SignUp', () => {
     describe('request', () => {
-      it('returns the Cognito expected input for a user without roles', () => {
+      it('returns the Cognito expected input for a user without role', () => {
         const input = {
           clientId: 'a-client-id',
           username: 'user@name.com',
@@ -33,41 +33,14 @@ describe('CognitoTemplates', () => {
         expect(gotOutputJSON).to.be.deep.equal(expectedOutput)
       })
 
-      it('returns the Cognito expected input for a user with ONE role', () => {
-        const input = {
-          clientId: 'a-client-id',
-          username: 'user@name.com',
-          password: 'test_password',
-          userAttributes: {
-            roles: ['Admin'],
-          },
-        }
-        const expectedOutput = {
-          ClientId: input.clientId,
-          Username: input.username,
-          Password: input.password,
-          UserAttributes: [
-            {
-              Name: 'custom:roles',
-              Value: 'Admin',
-            },
-          ],
-        }
-
-        const context = buildAwsTemplateContext(input)
-        const gotOutputJSON = JSON.parse(Velocity.render(CognitoTemplates.signUp.request, context))
-
-        expect(gotOutputJSON).to.be.deep.equal(expectedOutput)
-      })
-
-      it('returns the Cognito expected input for a user with MULTIPLE roles and other attributes', () => {
+      it('returns the Cognito expected input for a user with ONE role and other attributes', () => {
         const input = {
           clientId: 'a-client-id',
           username: 'user@name.com',
           password: 'test_password',
           userAttributes: {
             name: 'Test user',
-            roles: ['Admin', 'Sales', 'Business'],
+            role: 'Admin',
             age: 30,
           },
         }
@@ -81,8 +54,8 @@ describe('CognitoTemplates', () => {
               Value: 'Test user',
             },
             {
-              Name: 'custom:roles',
-              Value: 'Admin,Sales,Business',
+              Name: 'custom:role',
+              Value: 'Admin',
             },
             {
               Name: 'age',

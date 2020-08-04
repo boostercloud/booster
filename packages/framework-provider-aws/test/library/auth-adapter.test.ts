@@ -15,14 +15,14 @@ describe('the auth-adapter', () => {
         request: {
           userAttributes: {
             email: 'test@user.com',
-            'custom:roles': 'Admin,User,Agent',
+            'custom:role': 'User',
           },
         },
       }
 
       const expectedOutput: UserEnvelope = {
         email: cognitoUserEvent.request.userAttributes.email,
-        roles: ['Admin', 'User', 'Agent'],
+        role: 'User',
       }
       const gotOutput = rawSignUpDataToUserEnvelope(cognitoUserEvent as any)
       expect(gotOutput).to.be.deep.equal(expectedOutput)

@@ -8,28 +8,28 @@ import CognitoIdentityServiceProvider = require('aws-sdk/clients/cognitoidentity
 import { restore, replace, fake } from 'sinon'
 
 describe('the UserEnvelopeBuilder.fromAttributeMap', () => {
-  it('works with a user with no roles', () => {
+  it('works with a user with no role', () => {
     const input: AttributeMappingType = {
       email: 'test@user.com',
     }
 
     const expected: UserEnvelope = {
       email: input.email,
-      roles: [],
+      role: '',
     }
     const got = UserEnvelopeBuilder.fromAttributeMap(input)
     expect(got).to.be.deep.equal(expected)
   })
 
-  it('works with a user with empty roles', () => {
+  it('works with a user with empty role', () => {
     const input: AttributeMappingType = {
       email: 'test@user.com',
-      'custom:roles': '',
+      'custom:role': '',
     }
 
     const expected: UserEnvelope = {
       email: input.email,
-      roles: [],
+      role: '',
     }
     const got = UserEnvelopeBuilder.fromAttributeMap(input)
     expect(got).to.be.deep.equal(expected)
@@ -38,26 +38,12 @@ describe('the UserEnvelopeBuilder.fromAttributeMap', () => {
   it('works with a user with one role', () => {
     const input: AttributeMappingType = {
       email: 'test@user.com',
-      'custom:roles': 'Admin',
+      'custom:role': 'Admin',
     }
 
     const expected: UserEnvelope = {
       email: input.email,
-      roles: ['Admin'],
-    }
-    const got = UserEnvelopeBuilder.fromAttributeMap(input)
-    expect(got).to.be.deep.equal(expected)
-  })
-
-  it('works with a user with several roles', () => {
-    const input: AttributeMappingType = {
-      email: 'test@user.com',
-      'custom:roles': 'Admin,User,Tester,SalesAgent',
-    }
-
-    const expected: UserEnvelope = {
-      email: input.email,
-      roles: ['Admin', 'User', 'Tester', 'SalesAgent'],
+      role: 'Admin',
     }
     const got = UserEnvelopeBuilder.fromAttributeMap(input)
     expect(got).to.be.deep.equal(expected)
@@ -65,21 +51,21 @@ describe('the UserEnvelopeBuilder.fromAttributeMap', () => {
 })
 
 describe('the UserEnvelopeBuilder.fromAttributeList', () => {
-  it('works with a user with roles', () => {
+  it('works with a user with one role', () => {
     const input: AttributeListType = [
       {
         Name: 'email',
         Value: 'test@user.com',
       },
       {
-        Name: 'custom:roles',
-        Value: 'Admin,User',
+        Name: 'custom:role',
+        Value: 'User',
       },
     ]
 
     const expected: UserEnvelope = {
       email: 'test@user.com',
-      roles: ['Admin', 'User'],
+      role: 'User',
     }
 
     const got = UserEnvelopeBuilder.fromAttributeList(input)
@@ -111,13 +97,13 @@ describe('the fetchUserFromRequest function', () => {
         Value: 'test@user.com',
       },
       {
-        Name: 'custom:roles',
-        Value: 'Admin,User',
+        Name: 'custom:role',
+        Value: 'User',
       },
     ]
     const expectedUser = {
       email: 'test@user.com',
-      roles: ['Admin', 'User'],
+      role: 'User',
     }
 
     replace(

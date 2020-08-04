@@ -6,14 +6,14 @@ import { LOCAL_PROVIDER_HOST } from './constants'
 
 // --- Auth helpers ---
 
-export async function createUser(username: string, password: string, roles: string[] = []): Promise<void> {
+export async function createUser(username: string, password: string, role = ''): Promise<void> {
   const response = await fetch(signUpURL(), {
     method: 'POST',
     body: JSON.stringify({
       username: username,
       password: password,
       userAttributes: {
-        roles: roles,
+        role: role,
       },
     }),
     headers: {

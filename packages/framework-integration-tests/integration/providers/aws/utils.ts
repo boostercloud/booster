@@ -122,7 +122,7 @@ export async function createUser(username: string, password: string, role = 'Use
       Username: username,
       UserAttributes: [
         {
-          Name: 'custom:roles',
+          Name: 'custom:role',
           Value: role,
         },
       ],

@@ -1420,7 +1420,7 @@ export class User {}
 ```
 
 Here, we have defined the `Admin` and `User` roles. The former contains the following attribute `allowSelfSignUp: false`,
-which means that when users sign-up, they can't specify the role `Admin` as one of its roles.
+which means that when users sign-up, they can't specify the role `Admin` as their role.
 The latter has this attribute set to `true`, which means that any user can self-assign the role `User` when signing up.
 
 If your Booster application has roles defined, an authentication API will be provisioned. It will allow your users to gain
@@ -1431,7 +1431,7 @@ Bearer Authorization header (`Authorization: Bearer`). It will be used to get th
 authorize it to access protected resources.
 
 #### Sign-up
-Users can use this endpoint to register in your application and get some roles assigned to them.
+Users can use this endpoint to register in your application and get a unique role assigned to them.
 Only roles with the attribute `allowSelfSignUp: true` can be specified upon sign-up. After calling this endpoint, the
 registration is not yet finished. Users need to confirm their emails by clicking in the link that will be sent to their 
 inbox.
@@ -1450,7 +1450,7 @@ POST https://<httpURL>/auth/sign-up
   "username": "string",
   "password": "string",
   "userAttributes": {
-   	"roles": ["string"]
+   	"role": "string"
   }
 }
 ```
@@ -1460,7 +1460,7 @@ Parameter | Description
 _clientId_ | The application client Id that you got as an output when the application was deployed.
 _username_ | The username of the user you want to register. It **must be an email**.
 _password_ | The password the user will use to later login into your application and get access tokens.
-_userAttributes_ | Here you can specify the attributes of your user. These are: <br/> -_**roles**_:  An array of roles this user will have. You can only specify here roles with the property `allowSelfSignUp = true`
+_userAttributes_ | Here you can specify the attributes of your user. These are: <br/> -_**role**_:  A unique role this user will have. You can only specify here a role with the property `allowSelfSignUp = true`
 
 
 ##### Response
@@ -2127,7 +2127,7 @@ Booster also provides you with user management for free, allowing you to sign-up
 	"username": "user@test.com",
 	"password": "passw0rd!",
 	"userAttributes": {
-		"roles": ["User"]
+		"role": "User"
 	}
 }
 ```

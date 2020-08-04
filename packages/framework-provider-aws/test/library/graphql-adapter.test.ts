@@ -35,7 +35,7 @@ describe('AWS Provider graphql-adapter', () => {
 
       expectedUser = {
         email: internet.email(),
-        roles: ['Admin'],
+        role: 'Admin',
       }
       expectedQuery = 'GraphQL query'
       expectedVariables = {

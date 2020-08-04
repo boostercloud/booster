@@ -80,7 +80,7 @@ describe('BoosterReadModelDispatcher', () => {
         version: 1,
         currentUser: {
           email: internet.email(),
-          roles: [],
+          role: '',
         },
       }
       await expect(readModelDispatcher.fetch(envelope)).to.eventually.be.rejectedWith(NotAuthorizedError)
@@ -108,7 +108,7 @@ describe('BoosterReadModelDispatcher', () => {
       filters,
       currentUser: {
         email: internet.email(),
-        roles: [UserRole.name],
+        role: UserRole.name,
       },
     }
 

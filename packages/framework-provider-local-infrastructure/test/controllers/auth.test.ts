@@ -26,7 +26,7 @@ describe('the auth controller', () => {
         clientId: faker.random.uuid(),
         username: faker.internet.email(),
         userAttributes: {
-          roles: [],
+          role: '',
         },
         password: faker.internet.password(),
       }
@@ -48,7 +48,7 @@ describe('the auth controller', () => {
         clientId: faker.random.uuid(),
         username: faker.internet.email(),
         userAttributes: {
-          roles: [],
+          role: '',
         },
         password: faker.internet.password(),
       }
