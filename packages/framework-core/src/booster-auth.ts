@@ -25,6 +25,7 @@ export class BoosterAuth {
       if (
         !authenticationMetadata ||
         !authenticationMetadata.signUpMethods ||
+        // eslint-disable-next-line @typescript-eslint/no-extra-parens
         (Array.isArray(authenticationMetadata.signUpMethods) && !authenticationMetadata.signUpMethods.length)
       ) {
         throw new InvalidParameterError(
