@@ -1401,7 +1401,7 @@ export class UpdateUser {
 
 By default, a Booster application has no roles defined, so the only allowed value you can use in the `authorize` policy is `'all'` (good for public APIs).
 If you want to add user authorization, you first need to create the roles that are suitable for your application.
-Roles are classes annotated with the `@Role` decorator, where you can specify some attributes. We recommend that you define your roles in the file `src/roles.ts` or, if you have too many roles, put them in several files under a `src/roles` folder.
+Roles are classes annotated with the `@Role` decorator, where you can specify some attributes. We recommend that you define your roles in the file `src/roles.ts` or, if you have too many roles, put them in several files under the `src/roles` folder.
 
 In the following example we define two roles, `Admin` and `User`:
 
@@ -1433,7 +1433,7 @@ authorize them to access protected resources.
 #### Authentication API
 The authentication API consists of several endpoints that allow you to manage user registrations, sessions, tokens and more.
 
-The base URL of all these endpoints is the `httpURL` output of your application. See the ["Application Outputs"](#application-outputs) section know more.
+The base URL of all these endpoints is the `httpURL` output of your application. See the ["Application Outputs"](#application-outputs) section to know more.
 
 ##### Sign-up
 Users can use this endpoint to register in your application and get a role assigned to them.
@@ -2058,15 +2058,15 @@ Booster.configure('prod', (config: BoosterConfig): void => {
 })
 ```
 
-It is also possible to place an environment configuration in a separated file. Let's say that a developer called "Pepe" created its own configuration file `src/config/pepe.ts`. The content would be the following:
+It is also possible to place an environment configuration in a separated file. Let's say that a developer called "John" created its own configuration file `src/config/john.ts`. The content would be the following:
 
 ```typescript
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import * as AWS from '@boostercloud/framework-provider-aws'
 
-Booster.configure('pepe', (config: BoosterConfig): void => {
-  config.appName = 'pepe-fruit-store'
+Booster.configure('john', (config: BoosterConfig): void => {
+  config.appName = 'john-fruit-store'
   config.provider = AWS.Provider
 })
 ```
@@ -2077,7 +2077,7 @@ The environment name will be required by any command from the Booster CLI that d
 
 This way, you can have different configurations depending on your needs.
 
-Booster environments are extremely flexible. As shown in the first example, your 'fruit-store' app can have three team-wide environments: 'dev', 'stage', and 'prod', each of them with different app names or providers, that are deployed by your CI/CD processes. Developers, like "Pepe" in the second example, can create their own private environments in separate config files to test their changes in realistic environments before committing them. Likewise, CI/CD processes could generate separate production-like environments to test different branches to perform QA in separate environments without interferences from other features under test.
+Booster environments are extremely flexible. As shown in the first example, your 'fruit-store' app can have three team-wide environments: 'dev', 'stage', and 'prod', each of them with different app names or providers, that are deployed by your CI/CD processes. Developers, like "John" in the second example, can create their own private environments in separate config files to test their changes in realistic environments before committing them. Likewise, CI/CD processes could generate separate production-like environments to test different branches to perform QA in separate environments without interferences from other features under test.
 
 The only thing you need to do to deploy a whole new completely-independent copy of your application is to use a different name. Also, Booster uses the credentials available in the machine (`~/.aws/credentials` in AWS) that performs the deployment process, so developers can even work on separate accounts than production or staging environments.
 
