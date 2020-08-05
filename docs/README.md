@@ -1565,14 +1565,14 @@ Example: Invalid access token specified
 }
 ```
 
-#### Refresh token
+##### Refresh token
 Users can call this endpoint to refresh the access token.
 
-##### Endpoint
+###### Endpoint
 ```http request
 POST https://<httpURL>/auth/refresh-token
 ```
-##### Request body
+###### Request body
 > Refresh-token request body
 ```json
 {
@@ -1586,7 +1586,7 @@ Parameter | Description
 _clientId_ | The application client Id that you got as an output when the application was deployed.
 _refreshToken_ | The token you can use to get a new access token after it has expired.
 
-##### Response
+###### Response
 ```json
 {
   "accessToken": "string",
@@ -1596,7 +1596,7 @@ _refreshToken_ | The token you can use to get a new access token after it has ex
 }
 ```
 
-##### Errors
+###### Errors
 > Refresh token error response body example: Invalid refresh token specified
 ```json
 {
