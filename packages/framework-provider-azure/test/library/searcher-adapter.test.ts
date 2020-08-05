@@ -32,7 +32,7 @@ describe('The "searchReadModel" method', () => {
   })
 
   it('Executes a SQL query without filters in the read model table', async () => {
-    await searchReadModel(cosmosDb, config, fakeLogger, 'MyReadModel', {})
+    await searchReadModel((cosmosDb as unknown) as CosmosClient, config, fakeLogger, 'MyReadModel', {})
 
     // @ts-ignore
     expect(cosmosDb.database().container().items.query).to.have.been.calledWith(
@@ -50,7 +50,7 @@ describe('The "searchReadModel" method', () => {
       propertyC: { operation: 'between', values: [1, 100] },
     }
 
-    await searchReadModel(cosmosDb, config, fakeLogger, 'MyReadModel', filters)
+    await searchReadModel((cosmosDb as unknown) as CosmosClient, config, fakeLogger, 'MyReadModel', filters)
 
     // @ts-ignore
     expect(cosmosDb.database().container().items.query).to.have.been.calledWith(
