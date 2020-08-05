@@ -14,13 +14,7 @@ import { fetchReadModel, storeReadModel } from './library/read-model-adapter'
 import { searchReadModel } from './library/searcher-adapter'
 import { notifySubscription } from './library/subscription-adapter'
 
-let cosmosClient: CosmosClient | undefined
-if (process.env[environmentVarNames.cosmosDbConnectionString]) {
-  // @ts-ignore
-  cosmosClient = new CosmosClient(process.env[environmentVarNames.cosmosDbConnectionString])
-} else {
-  cosmosClient = undefined
-}
+const cosmosClient = new CosmosClient(process.env[environmentVarNames.cosmosDbConnectionString] as string)
 
 export const Provider: ProviderLibrary = {
   // ProviderEventsLibrary

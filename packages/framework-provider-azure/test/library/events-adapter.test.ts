@@ -5,7 +5,7 @@ import { createStubInstance, fake, restore, match } from 'sinon'
 import { BoosterConfig, Logger, EventEnvelope } from '@boostercloud/framework-types'
 import { CosmosClient } from '@azure/cosmos'
 import sinon = require('sinon')
-import { eventsStoreAttributes } from '../../src'
+import { eventsStoreAttributes } from '../../src/constants'
 import { partitionKeyForEvent } from '../../src/library/partition-keys'
 import { Context, ExecutionContext, TraceContext, Logger as AzureLogger } from '@azure/functions'
 
