@@ -58,7 +58,13 @@ describe('the events-adapter', () => {
 
   describe('the "readEntityEventsSince" method', () => {
     it('queries the events table to find all events related to a specific entity', async () => {
-      await EventsAdapter.readEntityEventsSince(cosmosDb, config, fakeLogger, 'SomeEntity', 'someSpecialID')
+      await EventsAdapter.readEntityEventsSince(
+        (cosmosDb as unknown) as CosmosClient,
+        config,
+        fakeLogger,
+        'SomeEntity',
+        'someSpecialID'
+      )
 
       // @ts-ignore
       expect(cosmosDb.database().container().items.query).to.have.been.calledWith(
@@ -81,7 +87,13 @@ describe('the events-adapter', () => {
 
   describe('the "readEntityLatestSnapshot" method', () => {
     it('finds the latest entity snapshot', async () => {
-      await EventsAdapter.readEntityLatestSnapshot(cosmosDb, config, fakeLogger, 'SomeEntity', 'someSpecialID')
+      await EventsAdapter.readEntityLatestSnapshot(
+        (cosmosDb as unknown) as CosmosClient,
+        config,
+        fakeLogger,
+        'SomeEntity',
+        'someSpecialID'
+      )
 
       // @ts-ignore
       expect(cosmosDb.database().container().items.query).to.have.been.calledWith(
@@ -102,7 +114,7 @@ describe('the events-adapter', () => {
     it('publishes the eventEnvelopes passed via parameter', async () => {
       // @ts-ignore
       await EventsAdapter.storeEvents(
-        cosmosDb,
+        (cosmosDb as unknown) as CosmosClient,
         [
           {
             version: 1,

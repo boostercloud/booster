@@ -13,7 +13,7 @@ export function rawEventsToEnvelopes(context: Context): Array<EventEnvelope> {
 }
 
 export async function readEntityEventsSince(
-  cosmosDb: CosmosClient | any,
+  cosmosDb: CosmosClient,
   config: BoosterConfig,
   logger: Logger,
   entityTypeName: string,
@@ -43,7 +43,7 @@ export async function readEntityEventsSince(
 }
 
 export async function readEntityLatestSnapshot(
-  cosmosDb: CosmosClient | any,
+  cosmosDb: CosmosClient,
   config: BoosterConfig,
   logger: Logger,
   entityTypeName: string,
@@ -79,7 +79,7 @@ export async function readEntityLatestSnapshot(
 }
 
 export async function storeEvents(
-  cosmosDb: CosmosClient | any,
+  cosmosDb: CosmosClient,
   eventEnvelopes: Array<EventEnvelope>,
   config: BoosterConfig,
   logger: Logger
