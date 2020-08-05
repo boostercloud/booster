@@ -32,7 +32,13 @@ const config = new BoosterConfig('test')
 
 describe('the "fetchReadModel" method', () => {
   it('responds with a read model when it exist', async () => {
-    const result = await fetchReadModel(cosmosDb, config, logger, 'SomeReadModel', 'someReadModelID')
+    const result = await fetchReadModel(
+      (cosmosDb as unknown) as CosmosClient,
+      config,
+      logger,
+      'SomeReadModel',
+      'someReadModelID'
+    )
 
     // @ts-ignore
     expect(cosmosDb.database().container).to.have.been.calledOnceWithExactly('new-booster-app-app-SomeReadModel')
@@ -44,7 +50,7 @@ describe('the "fetchReadModel" method', () => {
 
 describe('the "storeReadModel" method', () => {
   it('saves a read model', async () => {
-    const something = await storeReadModel(cosmosDb, config, logger, 'SomeReadModel', {
+    const something = await storeReadModel((cosmosDb as unknown) as CosmosClient, config, logger, 'SomeReadModel', {
       id: 777,
       some: 'object',
     } as any)
