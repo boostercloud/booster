@@ -16,7 +16,6 @@ const fakeLogger: Logger = {
 }
 
 const cosmosDb = createStubInstance(CosmosClient, {
-  // @ts-ignore
   database: sinon.stub().returns({
     container: sinon.stub().returns({
       items: {
@@ -26,7 +25,7 @@ const cosmosDb = createStubInstance(CosmosClient, {
         create: sinon.stub().returns(fake.resolves({})),
       },
     }),
-  }),
+  }) as any,
 })
 const config = new BoosterConfig('test')
 
@@ -58,16 +57,15 @@ describe('the events-adapter', () => {
 
   describe('the "readEntityEventsSince" method', () => {
     it('queries the events table to find all events related to a specific entity', async () => {
-      await EventsAdapter.readEntityEventsSince(
-        (cosmosDb as unknown) as CosmosClient,
-        config,
-        fakeLogger,
-        'SomeEntity',
-        'someSpecialID'
-      )
+      await EventsAdapter.readEntityEventsSince(cosmosDb as any, config, fakeLogger, 'SomeEntity', 'someSpecialID')
 
-      // @ts-ignore
-      expect(cosmosDb.database().container().items.query).to.have.been.calledWith(
+      expect(cosmosDb.database).to.have.been.calledWithExactly(config.resourceNames.applicationStack)
+      expect(cosmosDb.database(config.resourceNames.applicationStack).container).to.have.been.calledWithExactly(
+        config.resourceNames.eventsStore
+      )
+      expect(
+        cosmosDb.database(config.resourceNames.applicationStack).container(config.resourceNames.eventsStore).items.query
+      ).to.have.been.calledWithExactly(
         match({
           query: `SELECT * FROM c WHERE c["${eventsStoreAttributes.partitionKey}"] = @partitionKey AND c["${eventsStoreAttributes.sortKey}"] > @fromTime ORDER BY c["${eventsStoreAttributes.sortKey}"] DESC`,
           parameters: [
@@ -87,16 +85,15 @@ describe('the events-adapter', () => {
 
   describe('the "readEntityLatestSnapshot" method', () => {
     it('finds the latest entity snapshot', async () => {
-      await EventsAdapter.readEntityLatestSnapshot(
-        (cosmosDb as unknown) as CosmosClient,
-        config,
-        fakeLogger,
-        'SomeEntity',
-        'someSpecialID'
-      )
+      await EventsAdapter.readEntityLatestSnapshot(cosmosDb as any, config, fakeLogger, 'SomeEntity', 'someSpecialID')
 
-      // @ts-ignore
-      expect(cosmosDb.database().container().items.query).to.have.been.calledWith(
+      expect(cosmosDb.database).to.have.been.calledWithExactly(config.resourceNames.applicationStack)
+      expect(cosmosDb.database(config.resourceNames.applicationStack).container).to.have.been.calledWithExactly(
+        config.resourceNames.eventsStore
+      )
+      expect(
+        cosmosDb.database(config.resourceNames.applicationStack).container(config.resourceNames.eventsStore).items.query
+      ).to.have.been.calledWithExactly(
         match({
           query: `SELECT * FROM c WHERE c["${eventsStoreAttributes.partitionKey}"] = @partitionKey ORDER BY c["${eventsStoreAttributes.sortKey}"] DESC OFFSET 0 LIMIT 1`,
           parameters: [
@@ -112,9 +109,8 @@ describe('the events-adapter', () => {
 
   describe('the "storeEvents" method', () => {
     it('publishes the eventEnvelopes passed via parameter', async () => {
-      // @ts-ignore
       await EventsAdapter.storeEvents(
-        (cosmosDb as unknown) as CosmosClient,
+        cosmosDb as any,
         [
           {
             version: 1,
@@ -133,8 +129,14 @@ describe('the events-adapter', () => {
         fakeLogger
       )
 
-      // @ts-ignore
-      expect(cosmosDb.database().container().items.create).to.have.been.calledWithExactly(
+      expect(cosmosDb.database).to.have.been.calledWithExactly(config.resourceNames.applicationStack)
+      expect(cosmosDb.database(config.resourceNames.applicationStack).container).to.have.been.calledWithExactly(
+        config.resourceNames.eventsStore
+      )
+      expect(
+        cosmosDb.database(config.resourceNames.applicationStack).container(config.resourceNames.eventsStore).items
+          .create
+      ).to.have.been.calledWithExactly(
         match({
           version: 1,
           entityID: 'id',

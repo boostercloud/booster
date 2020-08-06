@@ -13,7 +13,6 @@ const logger: Logger = {
 }
 
 const cosmosDb = createStubInstance(CosmosClient, {
-  // @ts-ignore
   database: sinon.stub().returns({
     container: sinon.stub().returns({
       items: {
@@ -26,7 +25,7 @@ const cosmosDb = createStubInstance(CosmosClient, {
         read: sinon.stub().returns(fake.resolves({})),
       }),
     }),
-  }),
+  }) as any,
 })
 const config = new BoosterConfig('test')
 
@@ -40,25 +39,35 @@ describe('the "fetchReadModel" method', () => {
       'someReadModelID'
     )
 
-    // @ts-ignore
-    expect(cosmosDb.database().container).to.have.been.calledOnceWithExactly('new-booster-app-app-SomeReadModel')
-    // @ts-ignore
-    expect(cosmosDb.database().container().item).to.have.been.calledWithExactly('someReadModelID', 'someReadModelID')
+    expect(cosmosDb.database).to.have.been.calledWithExactly(config.resourceNames.applicationStack)
+    expect(cosmosDb.database(config.resourceNames.applicationStack).container).to.have.been.calledWithExactly(
+      `${config.resourceNames.applicationStack}-SomeReadModel`
+    )
+    expect(
+      cosmosDb
+        .database(config.resourceNames.applicationStack)
+        .container(`${config.resourceNames.applicationStack}-SomeReadModel`).item
+    ).to.have.been.calledWithExactly('someReadModelID', 'someReadModelID')
     expect(result).not.to.be.null
   })
 })
 
 describe('the "storeReadModel" method', () => {
   it('saves a read model', async () => {
-    const something = await storeReadModel((cosmosDb as unknown) as CosmosClient, config, logger, 'SomeReadModel', {
+    const something = await storeReadModel(cosmosDb as any, config, logger, 'SomeReadModel', {
       id: 777,
       some: 'object',
     } as any)
 
-    // @ts-ignore
-    expect(cosmosDb.database().container).to.have.been.calledWithExactly('new-booster-app-app-SomeReadModel')
-    // @ts-ignore
-    expect(cosmosDb.database().container().items.upsert).to.have.been.calledWithExactly(
+    expect(cosmosDb.database).to.have.been.calledWithExactly(config.resourceNames.applicationStack)
+    expect(cosmosDb.database(config.resourceNames.applicationStack).container).to.have.been.calledWithExactly(
+      `${config.resourceNames.applicationStack}-SomeReadModel`
+    )
+    expect(
+      cosmosDb
+        .database(config.resourceNames.applicationStack)
+        .container(`${config.resourceNames.applicationStack}-SomeReadModel`).items.upsert
+    ).to.have.been.calledWithExactly(
       match({
         id: 777,
         some: 'object',

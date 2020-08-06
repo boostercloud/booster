@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
 import { searchReadModel } from '../../src/library/searcher-adapter'
 import { createStubInstance, fake, match, restore } from 'sinon'
@@ -12,7 +13,6 @@ const fakeLogger: Logger = {
 }
 
 const cosmosDb = createStubInstance(CosmosClient, {
-  // @ts-ignore
   database: sinon.stub().returns({
     container: sinon.stub().returns({
       items: {
@@ -21,7 +21,7 @@ const cosmosDb = createStubInstance(CosmosClient, {
         }),
       },
     }),
-  }),
+  }) as any,
 })
 
 const config = new BoosterConfig('test')
@@ -32,10 +32,17 @@ describe('The "searchReadModel" method', () => {
   })
 
   it('Executes a SQL query without filters in the read model table', async () => {
-    await searchReadModel((cosmosDb as unknown) as CosmosClient, config, fakeLogger, 'MyReadModel', {})
+    await searchReadModel(cosmosDb as any, config, fakeLogger, 'MyReadModel', {})
 
-    // @ts-ignore
-    expect(cosmosDb.database().container().items.query).to.have.been.calledWith(
+    expect(cosmosDb.database).to.have.been.calledWithExactly(config.resourceNames.applicationStack)
+    expect(cosmosDb.database(config.resourceNames.applicationStack).container).to.have.been.calledWithExactly(
+      `${config.resourceNames.applicationStack}-MyReadModel`
+    )
+    expect(
+      cosmosDb
+        .database(config.resourceNames.applicationStack)
+        .container(`${config.resourceNames.applicationStack}-MyReadModel`).items.query
+    ).to.have.been.calledWith(
       match({
         query: 'SELECT * FROM c ',
         parameters: [],
@@ -50,10 +57,17 @@ describe('The "searchReadModel" method', () => {
       propertyC: { operation: 'between', values: [1, 100] },
     }
 
-    await searchReadModel((cosmosDb as unknown) as CosmosClient, config, fakeLogger, 'MyReadModel', filters)
+    await searchReadModel(cosmosDb as any, config, fakeLogger, 'MyReadModel', filters)
 
-    // @ts-ignore
-    expect(cosmosDb.database().container().items.query).to.have.been.calledWith(
+    expect(cosmosDb.database).to.have.been.calledWithExactly(config.resourceNames.applicationStack)
+    expect(cosmosDb.database(config.resourceNames.applicationStack).container).to.have.been.calledWithExactly(
+      `${config.resourceNames.applicationStack}-MyReadModel`
+    )
+    expect(
+      cosmosDb
+        .database(config.resourceNames.applicationStack)
+        .container(`${config.resourceNames.applicationStack}-MyReadModel`).items.query
+    ).to.have.been.calledWith(
       match({
         query:
           'SELECT * FROM c WHERE c["propertyA"] = @propertyA_0 AND c["propertyB"] <> @propertyB_0 AND c["propertyC"] BETWEEN @propertyC_0 AND @propertyC_1',
