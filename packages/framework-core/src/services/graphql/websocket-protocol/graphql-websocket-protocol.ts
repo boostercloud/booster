@@ -108,10 +108,10 @@ export class GraphQLWebsocketHandler {
       )
       return
     }
-    const unwrappedEnvelope = await this.augmentEnvelope(connectionID, envelope, message)
+    const augmentedEnvelope = await this.augmentEnvelope(connectionID, envelope, message)
 
-    this.logger.debug('Executing operation. Envelope: ', unwrappedEnvelope)
-    const result = await this.callbacks.onStartOperation(unwrappedEnvelope)
+    this.logger.debug('Executing operation. Envelope: ', augmentedEnvelope)
+    const result = await this.callbacks.onStartOperation(augmentedEnvelope)
 
     if ('next' in result) {
       this.logger.debug('Subscription finished.')

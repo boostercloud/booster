@@ -2,19 +2,23 @@ import { fake, match, SinonStub } from 'sinon'
 import { random } from 'faker'
 import {
   Logger,
-  GraphQLServerMessage,
   GraphQLRequestEnvelope,
   GraphQLStart,
   GraphQLStop,
   MessageTypes,
+  BoosterConfig,
+  ProviderConnectionsLibrary,
+  ProviderAuthLibrary,
 } from '@boostercloud/framework-types'
 import { GraphQLWebsocketHandler } from '../../../../src/services/graphql/websocket-protocol/graphql-websocket-protocol'
 import { ExecutionResult } from 'graphql'
 import { expect } from '../../../expect'
 
 describe('the `GraphQLWebsocketHandler`', () => {
+  let config: BoosterConfig
   let websocketHandler: GraphQLWebsocketHandler
-  let sendToConnection: (connectionID: string, data: GraphQLServerMessage) => Promise<void>
+  let authManager: ProviderAuthLibrary
+  let connectionsManager: ProviderConnectionsLibrary
   let onStartCallback: (
     envelope: GraphQLRequestEnvelope
   ) => Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult>
@@ -24,17 +28,28 @@ describe('the `GraphQLWebsocketHandler`', () => {
   let envelope: GraphQLRequestEnvelope
 
   beforeEach(() => {
-    sendToConnection = fake()
+    config = new BoosterConfig('test')
+    authManager = {
+      fromAuthToken: fake(),
+      rawToEnvelope: fake(),
+    }
+    connectionsManager = {
+      sendMessage: fake(),
+      deleteData: fake(),
+      fetchData: fake(),
+      storeData: fake(),
+    }
     onStartCallback = fake()
     onStopCallback = fake()
     onTerminateCallback = fake()
     logger = console
-    websocketHandler = new GraphQLWebsocketHandler(logger, sendToConnection, {
+    websocketHandler = new GraphQLWebsocketHandler(config, logger, authManager, connectionsManager, {
       onStartOperation: onStartCallback,
       onStopOperation: onStopCallback,
-      onTerminateOperations: onTerminateCallback,
+      onTerminate: onTerminateCallback,
     })
     envelope = {
+      currentUser: undefined,
       eventType: 'MESSAGE',
       requestID: random.alphaNumeric(10),
     }
@@ -79,7 +94,8 @@ describe('the `GraphQLWebsocketHandler`', () => {
         it('sends the right error', async () => {
           resultPromise = websocketHandler.handle(envelope)
           await resultPromise
-          expect(sendToConnection).to.be.calledOnceWithExactly(
+          expect(connectionsManager.sendMessage).to.be.calledOnceWithExactly(
+            config,
             envelope.connectionID,
             match({
               type: MessageTypes.GQL_CONNECTION_ERROR,
@@ -100,7 +116,8 @@ describe('the `GraphQLWebsocketHandler`', () => {
         it('sends back a GQL_CONNECTION_ACK', async () => {
           resultPromise = websocketHandler.handle(envelope)
           await resultPromise
-          expect(sendToConnection).to.be.calledOnceWithExactly(
+          expect(connectionsManager.sendMessage).to.be.calledOnceWithExactly(
+            config,
             envelope.connectionID,
             match({ type: MessageTypes.GQL_CONNECTION_ACK })
           )
@@ -125,7 +142,8 @@ describe('the `GraphQLWebsocketHandler`', () => {
           value.id = undefined as any // Force "id" to be undefined
           resultPromise = websocketHandler.handle(envelope)
           await resultPromise
-          expect(sendToConnection).to.be.calledOnceWithExactly(
+          expect(connectionsManager.sendMessage).to.be.calledOnceWithExactly(
+            config,
             envelope.connectionID,
             match({
               type: MessageTypes.GQL_CONNECTION_ERROR,
@@ -139,7 +157,8 @@ describe('the `GraphQLWebsocketHandler`', () => {
           value.payload = undefined as any
           resultPromise = websocketHandler.handle(envelope)
           await resultPromise
-          expect(sendToConnection).to.be.calledOnceWithExactly(
+          expect(connectionsManager.sendMessage).to.be.calledOnceWithExactly(
+            config,
             envelope.connectionID,
             match({
               type: MessageTypes.GQL_ERROR,
@@ -158,7 +177,8 @@ describe('the `GraphQLWebsocketHandler`', () => {
           message.payload.query = undefined as any
           resultPromise = websocketHandler.handle(envelope)
           await resultPromise
-          expect(sendToConnection).to.be.calledOnceWithExactly(
+          expect(connectionsManager.sendMessage).to.be.calledOnceWithExactly(
+            config,
             envelope.connectionID,
             match({
               type: MessageTypes.GQL_ERROR,
@@ -188,17 +208,17 @@ describe('the `GraphQLWebsocketHandler`', () => {
         context('when "onStartOperation" returns the result of a subscription', () => {
           beforeEach(() => {
             onStartCallback = fake.returns({ next: () => {} })
-            websocketHandler = new GraphQLWebsocketHandler(logger, sendToConnection, {
+            websocketHandler = new GraphQLWebsocketHandler(config, logger, authManager, connectionsManager, {
               onStartOperation: onStartCallback,
               onStopOperation: undefined as any,
-              onTerminateOperations: undefined as any,
+              onTerminate: undefined as any,
             })
           })
 
           it('does not send anything back', async () => {
             resultPromise = websocketHandler.handle(envelope)
             await resultPromise
-            expect(sendToConnection).not.to.be.called
+            expect(connectionsManager.sendMessage).not.to.be.called
           })
         })
 
@@ -208,19 +228,20 @@ describe('the `GraphQLWebsocketHandler`', () => {
           }
           beforeEach(() => {
             onStartCallback = fake.returns(result)
-            websocketHandler = new GraphQLWebsocketHandler(logger, sendToConnection, {
+            websocketHandler = new GraphQLWebsocketHandler(config, logger, authManager, connectionsManager, {
               onStartOperation: onStartCallback,
               onStopOperation: undefined as any,
-              onTerminateOperations: undefined as any,
+              onTerminate: undefined as any,
             })
           })
 
           it('sends back the expected messages', async () => {
             resultPromise = websocketHandler.handle(envelope)
             await resultPromise
-            const sendToConnectionFake: SinonStub = sendToConnection as any
-            expect(sendToConnectionFake).to.be.calledTwice
-            expect(sendToConnectionFake.getCall(0).args).to.be.deep.equal([
+            const sendMessageFake: SinonStub = connectionsManager.sendMessage as any
+            expect(sendMessageFake).to.be.calledTwice
+            expect(sendMessageFake.getCall(0).args).to.be.deep.equal([
+              config,
               envelope.connectionID,
               {
                 type: MessageTypes.GQL_DATA,
@@ -228,7 +249,8 @@ describe('the `GraphQLWebsocketHandler`', () => {
                 payload: result,
               },
             ])
-            expect(sendToConnectionFake.getCall(1).args).to.be.deep.equal([
+            expect(sendMessageFake.getCall(1).args).to.be.deep.equal([
+              config,
               envelope.connectionID,
               {
                 type: MessageTypes.GQL_COMPLETE,
@@ -252,7 +274,8 @@ describe('the `GraphQLWebsocketHandler`', () => {
           value.id = undefined as any // Force "id" to be undefined
           resultPromise = websocketHandler.handle(envelope)
           await resultPromise
-          expect(sendToConnection).to.be.calledOnceWithExactly(
+          expect(connectionsManager.sendMessage).to.be.calledOnceWithExactly(
+            config,
             envelope.connectionID,
             match({
               type: MessageTypes.GQL_CONNECTION_ERROR,
@@ -272,7 +295,8 @@ describe('the `GraphQLWebsocketHandler`', () => {
           const value = envelope.value as GraphQLStop
           resultPromise = websocketHandler.handle(envelope)
           await resultPromise
-          expect(sendToConnection).to.have.been.calledOnceWithExactly(
+          expect(connectionsManager.sendMessage).to.have.been.calledOnceWithExactly(
+            config,
             envelope.connectionID,
             match({
               type: MessageTypes.GQL_COMPLETE,
@@ -293,7 +317,7 @@ describe('the `GraphQLWebsocketHandler`', () => {
           resultPromise = websocketHandler.handle(envelope)
           await resultPromise
           expect(onTerminateCallback).to.have.been.calledOnceWithExactly(envelope.connectionID)
-          expect(sendToConnection).not.to.have.been.called
+          expect(connectionsManager.sendMessage).not.to.have.been.called
         })
       })
     })

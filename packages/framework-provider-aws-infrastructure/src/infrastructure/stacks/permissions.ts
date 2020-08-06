@@ -25,14 +25,14 @@ export const setupPermissions = (
     ['execute-api:ManageConnections']
   )
 
-  const { graphQLLambda, subscriptionsTable, subscriptionDispatcherLambda, connectionsStore } = graphQLStack
+  const { graphQLLambda, subscriptionsStore, subscriptionDispatcherLambda, connectionsStore } = graphQLStack
   const { eventsLambda, eventsStore } = eventsStack
   graphQLLambda.addToRolePolicy(
     createPolicyStatement([eventsStore.tableArn], ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchWriteItem'])
   )
   graphQLLambda.addToRolePolicy(
     createPolicyStatement(
-      [subscriptionsTable.tableArn + '*'], // The '*' at the end is to also grant permissions on table indexes
+      [subscriptionsStore.tableArn + '*'], // The '*' at the end is to also grant permissions on table indexes
       ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:DeleteItem', 'dynamodb:BatchWriteItem']
     )
   )
@@ -42,7 +42,7 @@ export const setupPermissions = (
   graphQLLambda.addToRolePolicy(websocketManageConnectionsPolicy)
 
   subscriptionDispatcherLambda.addToRolePolicy(
-    createPolicyStatement([subscriptionsTable.tableArn], ['dynamodb:Query*'])
+    createPolicyStatement([subscriptionsStore.tableArn], ['dynamodb:Query*'])
   )
   subscriptionDispatcherLambda.addToRolePolicy(websocketManageConnectionsPolicy)
 

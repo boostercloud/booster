@@ -1,9 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
-import { rawSignUpDataToUserEnvelope, handleSignUpResult } from '../../src/library/auth-adapter'
-import { UserEnvelope } from '@boostercloud/framework-types'
-import { restore } from 'sinon'
-import { BoosterConfig } from '@boostercloud/framework-types'
+import {
+  rawSignUpDataToUserEnvelope,
+  userEnvelopeFromAuthToken,
+  handleSignUpResult,
+} from '../../src/library/auth-adapter'
+import { UserEnvelope, BoosterConfig } from '@boostercloud/framework-types'
+import { fake, replace, restore } from 'sinon'
+import { AttributeListType } from 'aws-sdk/clients/cognitoidentityserviceprovider'
+import { CognitoIdentityServiceProvider } from 'aws-sdk'
+import { random } from 'faker'
 
 describe('the auth-adapter', () => {
   afterEach(() => {
@@ -28,6 +34,55 @@ describe('the auth-adapter', () => {
       const gotOutput = rawSignUpDataToUserEnvelope(cognitoUserEvent as any)
       expect(gotOutput).to.be.deep.equal(expectedOutput)
     })
+  })
+
+  describe('the userEnvelopeFromAuthToken function', () => {
+    afterEach(() => {
+      restore()
+    })
+
+    it('returns nothing when no token is provided', async () => {
+      const userPool: CognitoIdentityServiceProvider = new CognitoIdentityServiceProvider()
+      const token = undefined
+      await expect(userEnvelopeFromAuthToken(userPool, token)).to.be.eventually.equal(undefined)
+    })
+
+    it('returns a user when the corresponding token is provided', async () => {
+      const userPool: CognitoIdentityServiceProvider = new CognitoIdentityServiceProvider()
+      const token = random.uuid()
+      const userReturnedFromPool: AttributeListType = [
+        {
+          Name: 'email',
+          Value: 'test@user.com',
+        },
+        {
+          Name: 'custom:role',
+          Value: 'User',
+        },
+      ]
+      const expectedUser = {
+        email: 'test@user.com',
+        role: 'User',
+      }
+
+      replace(
+        userPool,
+        'getUser',
+        fake.returns({
+          promise: fake.resolves({
+            UserAttributes: userReturnedFromPool,
+          }),
+        })
+      )
+      const bearerToken = `Bearer ${token}`
+      await expect(userEnvelopeFromAuthToken(userPool, bearerToken)).to.be.eventually.deep.equal(expectedUser)
+      expect(userPool.getUser).to.have.been.calledWith({
+        AccessToken: token,
+      })
+    })
+  })
+  describe('throw errors with token invalid', () => {
+    // TODO
   })
 
   describe('the `handleSignUpResult`', () => {
