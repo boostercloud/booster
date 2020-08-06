@@ -85,10 +85,7 @@ describe('the "checkSignUp" method', () => {
       'rawToEnvelope',
       fake.returns({
         role: 'Developer',
-        username: {
-          value: 'test@gmail.com',
-          type: 'email',
-        },
+        username: 'test@gmail.com',
       })
     )
 
@@ -102,10 +99,7 @@ describe('the "checkSignUp" method', () => {
       'rawToEnvelope',
       fake.returns({
         role: 'User',
-        username: {
-          value: '+59165783459',
-          type: 'phone',
-        },
+        username: '+59165783459',
       })
     )
 
@@ -119,10 +113,7 @@ describe('the "checkSignUp" method', () => {
       'rawToEnvelope',
       fake.returns({
         role: 'SuperUser',
-        username: {
-          value: 'test@gmail.com',
-          type: 'email',
-        },
+        username: 'test@gmail.com',
       })
     )
 
@@ -136,10 +127,7 @@ describe('the "checkSignUp" method', () => {
       'rawToEnvelope',
       fake.returns({
         role: 'SuperUser',
-        username: {
-          value: '+59165783459',
-          type: 'phone',
-        },
+        username: '+59165783459',
       })
     )
 
@@ -153,10 +141,7 @@ describe('the "checkSignUp" method', () => {
       'rawToEnvelope',
       fake.returns({
         role: 'Developer',
-        username: {
-          value: '+59165783459',
-          type: 'phone',
-        },
+        username: '+59165783459',
       })
     )
 
@@ -172,10 +157,7 @@ describe('the "checkSignUp" method', () => {
       'rawToEnvelope',
       fake.returns({
         role: 'User',
-        username: {
-          value: 'test@gmail.com',
-          type: 'email',
-        },
+        username: 'test@gmail.com',
       })
     )
 
@@ -205,10 +187,7 @@ describe('the "isUserAuthorized" method', () => {
   it('returns false when the user does not have any of the "authorizedRoles"', () => {
     const authorizedRoles: RoleAccess['authorize'] = [Admin]
     const userEnvelope: UserEnvelope = {
-      username: {
-        value: 'user@test.com',
-        type: 'email',
-      },
+      username: 'user@test.com',
       role: 'Developer',
     }
 
@@ -218,10 +197,7 @@ describe('the "isUserAuthorized" method', () => {
   it('returns true when the user has any of the "authorizedRoles"', () => {
     const authorizedRoles: RoleAccess['authorize'] = [Admin, Developer]
     const userEnvelope: UserEnvelope = {
-      username: {
-        value: 'user@test.com',
-        type: 'email',
-      },
+      username: 'user@test.com',
       role: 'Developer',
     }
 

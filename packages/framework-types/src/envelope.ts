@@ -64,12 +64,7 @@ export interface GraphQLOperation {
   variables?: Record<string, any>
 }
 
-export interface UserName {
-  value: string
-  type: string
-}
-
 export interface UserEnvelope {
-  username: UserName
+  username: string
   role: string
 }

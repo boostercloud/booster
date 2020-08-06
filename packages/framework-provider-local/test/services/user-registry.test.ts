@@ -193,7 +193,7 @@ describe('the user registry', () => {
       expect(userRegistry.authenticatedUsers.findOne).to.have.been.called
       expect(userRegistry.registeredUsers.findOne).to.have.been.called
       expect(retrievedUser).to.deep.equal({
-        username: { value: user.username, type: 'email' },
+        username: user.username,
         role: user.userAttributes.role,
       })
     })

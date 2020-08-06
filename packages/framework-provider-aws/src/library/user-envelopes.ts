@@ -7,7 +7,7 @@ export class UserEnvelopeBuilder {
     // eslint-disable-next-line @typescript-eslint/camelcase
     const { phone_number, email, 'custom:role': role } = attributes
     // eslint-disable-next-line @typescript-eslint/camelcase
-    const username = email ? { value: email, type: 'email' } : { value: phone_number, type: 'phone' }
+    const username = email ? email : phone_number
 
     return {
       username,
