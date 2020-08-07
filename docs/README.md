@@ -63,6 +63,7 @@
     + [Application outputs](#application-outputs)
     + [Delete your cloud stack](#delete-your-cloud-stack)
 - [Going deeper with Booster](#going-deeper-with-booster)
+  * [Contributing](*contributing) 
   * [Framework Core](#framework-core)
   * [Framework Types](#framework-types)
   * [Framework integration tests](#framework-integration-tests)
@@ -1970,6 +1971,10 @@ boost nuke -e <environment name>
 **Note**: This will delete everything in your stack, including databases. This action is **not** reversible!
 
 ## Going deeper with Booster
+
+### Contributing
+
+If you want to start making contributions to Booster, we strongly recommend that you read our [contributing guide](https://github.com/boostercloud/booster/blob/master/CONTRIBUTING.md).
 
 ### Framework Core
 
