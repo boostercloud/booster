@@ -78,7 +78,7 @@ describe('the "checkSignUp" method', () => {
     )
   })
 
-  it('succeeds user to sign up with email when SignUpOptions has email as value', () => {
+  it('succeeds when the user signs up with an email and SignUpOptions has email as value', () => {
     const config = buildBoosterConfig()
     replace(
       config.provider.auth,
@@ -92,7 +92,7 @@ describe('the "checkSignUp" method', () => {
     expect(() => BoosterAuth.checkSignUp({}, config, logger)).not.to.throw()
   })
 
-  it('succeeds user to sign up with phone when SignUpOptions has phone as value', () => {
+  it('succeeds when the user signs up with a phone number and SignUpOptions has phone as value', () => {
     const config = buildBoosterConfig()
     replace(
       config.provider.auth,
