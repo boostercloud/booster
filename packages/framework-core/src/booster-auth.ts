@@ -33,11 +33,13 @@ export class BoosterAuth {
       const signUpOptions = authenticationMetadata.signUpMethods
       const username = userEnvelope.username
 
-      if (JSON.stringify(signUpOptions) == JSON.stringify(['phone']) && validator.isEmail(username)) {
+      if (validator.isEmail(username) && !signUpOptions.includes('email')) {
         throw new InvalidParameterError(
           `User with role ${roleName} can't sign up with an email, a phone number is expected`
         )
-      } else if (JSON.stringify(signUpOptions) == JSON.stringify(['email']) && !validator.isEmail(username)) {
+      }
+
+      if (!validator.isEmail(username) && !signUpOptions.includes('phone')) {
         throw new InvalidParameterError(
           `User with role ${roleName} can't sign up with a phone number, an email is expected`
         )
