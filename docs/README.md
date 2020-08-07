@@ -1432,7 +1432,7 @@ export class User {}
 export class SuperUser {}
 ```
 
-Here, we have defined the `Admin`, `User` and `SuperUser` roles. They all contain an `authentication` attribute. This one contains a `signUpMethods` attribute. When this value is empty (`Admin` role) a user sign-up can't use this role to sign up.
+Here, we have defined the `Admin`, `User` and `SuperUser` roles. They all contain an `authentication` attribute. This one contains a `signUpMethods` attribute. When this value is empty (`Admin` role) a user can't use this role to sign up.
 
 `signUpMethods` is an array with limited possible values: `email` or `phone` or a combination of both.
 Users with the `User` role will only be able to sign up with their emails, whereas the ones with the `SuperUser` role will be able to sign up with either their email or their phone number.
@@ -1449,12 +1449,12 @@ The authentication API consists of several endpoints that allow you to manage us
 
 The base URL of all these endpoints is the `httpURL` output of your application. See the ["Application Outputs"](#application-outputs) section to know more.
 
-#### Sign-up
+##### Sign-up
 Users can use this endpoint to register in your application and get a role assigned to them.
 Only roles that filled `signUpMethods` with valid entries can be used upon sign-up. After calling this endpoint, the
 registration isn't completed yet. 
 Users that sign up with their emails will receive a confirmation link in their inbox. They just need to click it to confirm their registration.
-Users that sign up with their phones will receive a confirmation code as an SMS message. 
+Users that sign up with their phones will receive a confirmation code as an SMS message. That code needs to be sent back using the [confirmation endpoint](#confirm-sign-up)
 
 ![confirmation email](./img/sign-up-verificaiton-email.png)
 ![email confirmed](./img/sign-up-confirmed.png)
@@ -1480,7 +1480,7 @@ Parameter | Description
 _clientId_ | The application client Id that you got as an output when the application was deployed.
 _username_ | The username of the user you want to register. It **must be an email**.
 _password_ | The password the user will use to later login into your application and get access tokens.
-_userAttributes_ | Here you can specify the attributes of your user. These are: <br/> -_**role**_:  A unique role this user will have. You can only specify here a role where the `signUpOptions` property is not empty and has a valid entry.
+_userAttributes_ | Here you can specify the attributes of your user. These are: <br/> -_**role**_:  A unique role this user will have. You can only specify here a role where the `signUpOptions` property is not empty.
 
 
 ###### Response
@@ -1500,17 +1500,17 @@ Example: The `username` is not an email or a phone number:
 
 You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
 
-#### Confirm-sign-up
+##### Confirm-sign-up
 
 Whenever a User signs up with their phone number, an SMS message will be sent with a confirmation code.
 They will need to provide this code to confirm registation by calling the`confirm-sign-up` endpoint 
 
-##### Endpoint
+###### Endpoint
 ```http request
 POST https://<httpURL>/auth/confirm-sign-up
 ```
 
-##### Request body
+###### Request body
 ```json
 {
   "clientId": "string",
@@ -1525,15 +1525,15 @@ _clientId_ | The application client Id that you got as an output when the applic
 _confirmationCode_ | The confirmation code received in the SMS message.
 _username_ | The username of the user you want to sign in. They must have previously signed up.
 
-##### Response
+###### Response
 An Empty Body
 
-##### Errors
+###### Errors
 
 You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
 Common errors would be like submitting an expired confirmation code or a non valid one.
 
-#### Sign-in
+##### Sign-in
 This endpoint creates a session for an already registered user, returning an access token that can be used
 to access role-protected resources
 
