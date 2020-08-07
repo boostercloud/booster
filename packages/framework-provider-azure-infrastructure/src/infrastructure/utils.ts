@@ -1,12 +1,12 @@
 import ResourceManagementClient from 'azure-arm-resource/lib/resource/resourceManagementClient'
 import { DeploymentExtended } from 'azure-arm-resource/lib/resource/models'
 
-const fs = require('fs')
-const archiver = require('archiver')
-const os = require('os')
-const needle = require('needle')
-const uuid = require('uuid')
-const path = require('path')
+import * as fs from 'fs'
+import * as os from 'os'
+import * as uuid from 'uuid'
+import * as path from 'path'
+import * as archiver from 'archiver'
+import * as needle from 'needle'
 
 interface FunctionDefinition {
   name: string

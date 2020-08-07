@@ -1890,6 +1890,13 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
+"@types/archiver@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@types/archiver/-/archiver-3.1.0.tgz#0d5bd922ba5cf06e137cd6793db7942439b1805e"
+  integrity sha512-nTvHwgWONL+iXG+9CX+gnQ/tTOV+qucAjwpXqeUn4OCRMxP42T29FFP/7XaOo0EqqO3TlENhObeZEe7RUJAriw==
+  dependencies:
+    "@types/glob" "*"
+
 "@types/aws-lambda@^8.10.31", "@types/aws-lambda@^8.10.48":
   version "8.10.59"
   resolved "https://registry.yarnpkg.com/@types/aws-lambda/-/aws-lambda-8.10.59.tgz#64f602aef1cac9b21a74aad6705bf350c4a5173a"
@@ -1975,7 +1982,7 @@
   dependencies:
     "@types/node" "*"
 
-"@types/glob@^7.1.1":
+"@types/glob@*", "@types/glob@^7.1.1":
   version "7.1.3"
   resolved "https://registry.yarnpkg.com/@types/glob/-/glob-7.1.3.tgz#e6ba80f36b7daad2c685acd9266382e68985c183"
   integrity sha512-SEYeGAIQIQX8NN6LDKprLjbrd5dARM5EXsd8GI/A5l0apYI1fGMWgPHSe4ZKL4eozlAyI+doUE9XbYS4xCkQ1w==
@@ -2042,6 +2049,13 @@
   version "1.8.10"
   resolved "https://registry.yarnpkg.com/@types/nedb/-/nedb-1.8.10.tgz#b3bdbe1a702751e55976581d79c8b344c059cf29"
   integrity sha512-M0ISm1qsNvkdXNZml1r/1bEVqt5SJHF/LFcCtH5dHfsSIG0LEj5FhwK0f4fZy9WPCsXjmrKfpzgEW/bdQuKqmQ==
+  dependencies:
+    "@types/node" "*"
+
+"@types/needle@^2.0.4":
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/@types/needle/-/needle-2.0.4.tgz#c8c3e81a7776cb99e96cb529d0d94d91f6b39bf5"
+  integrity sha512-dBSmQsIIGjqSu//zVPhQbTsAUI6sA05Q/raZTXqEna8+jjW7BxF9Sxjif9wkKwP6CYHfnz+E8nP3PdExGm6jOQ==
   dependencies:
     "@types/node" "*"
 
