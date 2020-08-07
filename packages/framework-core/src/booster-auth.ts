@@ -23,14 +23,14 @@ export class BoosterAuth {
         throw new InvalidParameterError(`Unknown role ${roleName}`)
       }
 
-      const authenticationMetadata = roleMetadata.authentication
-      if (!authenticationMetadata?.signUpMethods?.length) {
+      const authMetadata = roleMetadata.auth
+      if (!authMetadata?.signUpMethods?.length) {
         throw new InvalidParameterError(
           `User with role ${roleName} can't sign up by themselves. Choose a different role or contact and administrator`
         )
       }
 
-      const signUpOptions = authenticationMetadata.signUpMethods
+      const signUpOptions = authMetadata.signUpMethods
       const username = userEnvelope.username
 
       if (validator.isEmail(username) && !signUpOptions.includes('email')) {

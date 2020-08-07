@@ -1,7 +1,7 @@
 import { Role } from '@boostercloud/framework-core'
 
 @Role({
-  authentication: {
+  auth: {
     // Do not specify (or use an empty array) if you don't want to allow sign-ups
     signUpMethods: [],
   },
@@ -9,7 +9,7 @@ import { Role } from '@boostercloud/framework-core'
 export class Admin {}
 
 @Role({
-  authentication: {
+  auth: {
     // Do not specify (or use an empty array) if you don't want to allow sign-ups
     signUpMethods: ['email'],
   },

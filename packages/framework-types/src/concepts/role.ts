@@ -4,12 +4,12 @@ import { Class } from '../typelevel'
 export interface RoleInterface {}
 
 export interface RoleMetadata {
-  readonly authentication: AuthenticationMetadata
+  readonly auth: AuthMetadata
 }
 
 export type SignUpMethod = 'email' | 'phone'
 
-export interface AuthenticationMetadata {
+export interface AuthMetadata {
   readonly signUpMethods: Array<SignUpMethod>
 }
 

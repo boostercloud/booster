@@ -48,7 +48,7 @@ describe('the config type', () => {
     it('returns true when there are roles defined', () => {
       const config = new BoosterConfig('test')
       config.roles['test-role'] = {
-        authentication: {
+        auth: {
           signUpMethods: [],
         },
       }

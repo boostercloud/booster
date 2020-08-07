@@ -25,24 +25,24 @@ describe('the "checkSignUp" method', () => {
       auth: { rawToEnvelope: () => {} },
     } as unknown) as ProviderLibrary
     config.roles['Admin'] = {
-      authentication: {
+      auth: {
         signUpMethods: [],
       },
     }
     config.roles['UserWithEmail'] = {
-      authentication: {
+      auth: {
         signUpMethods: ['email'],
       },
     }
 
     config.roles['UserWithPhone'] = {
-      authentication: {
+      auth: {
         signUpMethods: ['phone'],
       },
     }
 
     config.roles['SuperUser'] = {
-      authentication: {
+      auth: {
         signUpMethods: ['phone', 'email'],
       },
     }

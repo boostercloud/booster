@@ -1409,7 +1409,7 @@ In the following example we define two roles, `Admin` and `User`:
 // src/roles.ts
 
 @Role({
-  authentication: {
+  auth: {
     // Do not specify (or use an empty array) if you don't want to allow sign-ups
     signUpMethods: [],
   }
@@ -1417,7 +1417,7 @@ In the following example we define two roles, `Admin` and `User`:
 export class Admin {}
 
 @Role({
-  authentication: {
+  auth: {
     // Do not specify (or use an empty array) if you don't want to allow sign-ups
     signUpMethods: ['email'],
   },
@@ -1425,14 +1425,14 @@ export class Admin {}
 export class User {}
 
 @Role({
-  authentication: {
+  auth: {
     signUpMethods: ['email', 'phone'],
   },
 })
 export class SuperUser {}
 ```
 
-Here, we have defined the `Admin`, `User` and `SuperUser` roles. They all contain an `authentication` attribute. This one contains a `signUpMethods` attribute. When this value is empty (`Admin` role) a user can't use this role to sign up.
+Here, we have defined the `Admin`, `User` and `SuperUser` roles. They all contain an `auth` attribute. This one contains a `signUpMethods` attribute. When this value is empty (`Admin` role) a user can't use this role to sign up.
 
 `signUpMethods` is an array with limited possible values: `email` or `phone` or a combination of both.
 Users with the `User` role will only be able to sign up with their emails, whereas the ones with the `SuperUser` role will be able to sign up with either their email or their phone number.
