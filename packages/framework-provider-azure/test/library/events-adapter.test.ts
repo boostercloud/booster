@@ -52,8 +52,8 @@ describe('Events adapter', () => {
     restore()
   })
 
-  describe('the `rawEventsToEnvelopes` method', () => {
-    it('generates envelopes correctly from a Cosmos DB event', async () => {
+  describe('The "rawEventsToEnvelopes" method', () => {
+    it('Generates envelopes correctly from a Cosmos DB event', async () => {
       const expectedEnvelopes = addMockSystemGeneratedProperties(mockEvents)
       const cosmosDbMessage: Context = wrapEventEnvelopesForCosmosDB(expectedEnvelopes)
 
@@ -63,8 +63,8 @@ describe('Events adapter', () => {
     })
   })
 
-  describe('the "readEntityEventsSince" method', () => {
-    it('queries the events table to find all events related to a specific entity', async () => {
+  describe('The "readEntityEventsSince" method', () => {
+    it('Queries the events table to find all events related to a specific entity', async () => {
       await EventsAdapter.readEntityEventsSince(
         mockCosmosDbClient as any,
         mockConfig,
@@ -83,7 +83,9 @@ describe('Events adapter', () => {
           .container(mockConfig.resourceNames.eventsStore).items.query
       ).to.have.been.calledWithExactly(
         match({
-          query: `SELECT * FROM c WHERE c["${eventsStoreAttributes.partitionKey}"] = @partitionKey AND c["${eventsStoreAttributes.sortKey}"] > @fromTime ORDER BY c["${eventsStoreAttributes.sortKey}"] DESC`,
+          query:
+            `SELECT * FROM c WHERE c["${eventsStoreAttributes.partitionKey}"] = @partitionKey ` +
+            `AND c["${eventsStoreAttributes.sortKey}"] > @fromTime ORDER BY c["${eventsStoreAttributes.sortKey}"] DESC`,
           parameters: [
             {
               name: '@partitionKey',
@@ -99,8 +101,8 @@ describe('Events adapter', () => {
     })
   })
 
-  describe('the "readEntityLatestSnapshot" method', () => {
-    it('finds the latest entity snapshot', async () => {
+  describe('The "readEntityLatestSnapshot" method', () => {
+    it('Finds the latest entity snapshot', async () => {
       await EventsAdapter.readEntityLatestSnapshot(
         mockCosmosDbClient as any,
         mockConfig,
@@ -119,7 +121,9 @@ describe('Events adapter', () => {
           .container(mockConfig.resourceNames.eventsStore).items.query
       ).to.have.been.calledWithExactly(
         match({
-          query: `SELECT * FROM c WHERE c["${eventsStoreAttributes.partitionKey}"] = @partitionKey ORDER BY c["${eventsStoreAttributes.sortKey}"] DESC OFFSET 0 LIMIT 1`,
+          query:
+            `SELECT * FROM c WHERE c["${eventsStoreAttributes.partitionKey}"] = @partitionKey ` +
+            `ORDER BY c["${eventsStoreAttributes.sortKey}"] DESC OFFSET 0 LIMIT 1`,
           parameters: [
             {
               name: '@partitionKey',
@@ -131,8 +135,8 @@ describe('Events adapter', () => {
     })
   })
 
-  describe('the "storeEvents" method', () => {
-    it('publishes the eventEnvelopes passed via parameter', async () => {
+  describe('The "storeEvents" method', () => {
+    it('Publishes the eventEnvelopes passed via parameter', async () => {
       await EventsAdapter.storeEvents(mockCosmosDbClient as any, [mockEvents[0]], mockConfig, mockLogger)
 
       expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)

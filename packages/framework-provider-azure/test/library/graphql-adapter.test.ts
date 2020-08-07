@@ -4,9 +4,9 @@ import { GraphQLRequestEnvelope } from '@boostercloud/framework-types'
 import { rawGraphQLRequestToEnvelope } from '../../src/library/graphql-adapter'
 import { Context } from '@azure/functions'
 
-describe('the graphql-adapter', () => {
-  describe('the "rawGraphQLRequestToEnvelope"', () => {
-    it('generates an envelope correctly from an Azure event', async () => {
+describe('GraphQL adapter', () => {
+  describe('The "rawGraphQLRequestToEnvelope"', () => {
+    it('Generates an envelope correctly from an Azure event', async () => {
       const expectedQuery = 'GraphQL query'
       const expectedVariables = {
         varOne: 3,

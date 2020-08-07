@@ -44,8 +44,8 @@ describe('Read Model adapter', () => {
     mockReadModel = createMockReadModel()
   })
 
-  describe('the "fetchReadModel" method', () => {
-    it('responds with a read model when it exists', async () => {
+  describe('The "fetchReadModel" method', () => {
+    it('Responds with a read model when it exists', async () => {
       const result = await fetchReadModel(
         mockCosmosDbClient as any,
         mockConfig,
@@ -67,8 +67,8 @@ describe('Read Model adapter', () => {
     })
   })
 
-  describe('the "storeReadModel" method', () => {
-    it('saves a read model', async () => {
+  describe('The "storeReadModel" method', () => {
+    it('Saves a read model', async () => {
       const something = await storeReadModel(
         mockCosmosDbClient as any,
         mockConfig,
