@@ -8,7 +8,7 @@ import {
   InvalidParameterError,
 } from '@boostercloud/framework-types'
 
-const validator = require('validator')
+import * as validator from 'validator'
 
 export class BoosterAuth {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -33,13 +33,13 @@ export class BoosterAuth {
       const signUpOptions = authMetadata.signUpMethods
       const username = userEnvelope.username
 
-      if (validator.isEmail(username) && !signUpOptions.includes('email')) {
+      if (validator.default.isEmail(username) && !signUpOptions.includes('email')) {
         throw new InvalidParameterError(
           `User with role ${roleName} can't sign up with an email, a phone number is expected`
         )
       }
 
-      if (!validator.isEmail(username) && !signUpOptions.includes('phone')) {
+      if (!validator.default.isEmail(username) && !signUpOptions.includes('phone')) {
         throw new InvalidParameterError(
           `User with role ${roleName} can't sign up with a phone number, an email is expected`
         )
