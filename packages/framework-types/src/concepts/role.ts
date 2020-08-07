@@ -7,8 +7,10 @@ export interface RoleMetadata {
   readonly authentication: AuthenticationMetadata
 }
 
+export type SignUpMethod = 'email' | 'phone'
+
 export interface AuthenticationMetadata {
-  readonly signUpMethods: 'email' | 'phone' | ['email', 'phone'] | ['phone', 'email'] | []
+  readonly signUpMethods: Array<SignUpMethod>
 }
 
 export interface RoleAccess {

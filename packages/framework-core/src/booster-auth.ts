@@ -24,12 +24,7 @@ export class BoosterAuth {
       }
 
       const authenticationMetadata = roleMetadata.authentication
-      if (
-        !authenticationMetadata ||
-        !authenticationMetadata.signUpMethods ||
-        // eslint-disable-next-line @typescript-eslint/no-extra-parens
-        (Array.isArray(authenticationMetadata.signUpMethods) && !authenticationMetadata.signUpMethods.length)
-      ) {
+      if (!authenticationMetadata?.signUpMethods?.length) {
         throw new InvalidParameterError(
           `User with role ${roleName} can't sign up by themselves. Choose a different role or contact and administrator`
         )
@@ -38,11 +33,11 @@ export class BoosterAuth {
       const signUpOptions = authenticationMetadata.signUpMethods
       const username = userEnvelope.username
 
-      if (signUpOptions === 'phone' && validator.isEmail(username)) {
+      if (JSON.stringify(signUpOptions) == JSON.stringify(['phone']) && validator.isEmail(username)) {
         throw new InvalidParameterError(
           `User with role ${roleName} can't sign up with an email, a phone number is expected`
         )
-      } else if (signUpOptions === 'email' && !validator.isEmail(username)) {
+      } else if (JSON.stringify(signUpOptions) == JSON.stringify(['email']) && !validator.isEmail(username)) {
         throw new InvalidParameterError(
           `User with role ${roleName} can't sign up with a phone number, an email is expected`
         )

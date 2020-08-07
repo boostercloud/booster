@@ -11,7 +11,7 @@ export class UserEnvelopeBuilder {
 
     return {
       username,
-      role: role ? role.trim() : '',
+      role: role?.trim() ?? '',
     }
   }
 

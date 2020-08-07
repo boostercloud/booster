@@ -150,7 +150,8 @@ export class AuthStack {
   private buildCognitoRoleToSendSNSMessages(): Role {
     return new Role(this.stack, 'cognito-sns-messages-role', {
       assumedBy: new ServicePrincipal('cognito-idp.amazonaws.com'),
-      description: 'An IAM Role to allow Cognito to send SNS messages',
+      description:
+        'An IAM Role to allow Cognito to send SNS messages in order for users to be register themselves through their phones',
       inlinePolicies: {
         'cognito-sns-managed-policy': new PolicyDocument({
           statements: [

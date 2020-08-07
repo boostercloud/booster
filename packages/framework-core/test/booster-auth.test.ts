@@ -29,15 +29,15 @@ describe('the "checkSignUp" method', () => {
         signUpMethods: [],
       },
     }
-    config.roles['Developer'] = {
+    config.roles['UserWithEmail'] = {
       authentication: {
-        signUpMethods: 'email',
+        signUpMethods: ['email'],
       },
     }
 
-    config.roles['User'] = {
+    config.roles['UserWithPhone'] = {
       authentication: {
-        signUpMethods: 'phone',
+        signUpMethods: ['phone'],
       },
     }
 
@@ -84,7 +84,7 @@ describe('the "checkSignUp" method', () => {
       config.provider.auth,
       'rawToEnvelope',
       fake.returns({
-        role: 'Developer',
+        role: 'UserWithEmail',
         username: 'test@gmail.com',
       })
     )
@@ -98,7 +98,7 @@ describe('the "checkSignUp" method', () => {
       config.provider.auth,
       'rawToEnvelope',
       fake.returns({
-        role: 'User',
+        role: 'UserWithPhone',
         username: '+59165783459',
       })
     )
@@ -140,13 +140,13 @@ describe('the "checkSignUp" method', () => {
       config.provider.auth,
       'rawToEnvelope',
       fake.returns({
-        role: 'Developer',
+        role: 'UserWithEmail',
         username: '+59165783459',
       })
     )
 
     expect(() => BoosterAuth.checkSignUp({}, config, logger)).to.throw(
-      /User with role Developer can't sign up with a phone number, an email is expected/
+      /User with role UserWithEmail can't sign up with a phone number, an email is expected/
     )
   })
 
@@ -156,13 +156,13 @@ describe('the "checkSignUp" method', () => {
       config.provider.auth,
       'rawToEnvelope',
       fake.returns({
-        role: 'User',
+        role: 'UserWithPhone',
         username: 'test@gmail.com',
       })
     )
 
     expect(() => BoosterAuth.checkSignUp({}, config, logger)).to.throw(
-      /User with role User can't sign up with an email, a phone number is expected/
+      /User with role UserWithPhone can't sign up with an email, a phone number is expected/
     )
   })
 })
@@ -170,7 +170,7 @@ describe('the "checkSignUp" method', () => {
 describe('the "isUserAuthorized" method', () => {
   // Define some roles to use in tests
   class Admin {}
-  class Developer {}
+  class UserWithEmail {}
 
   it('returns true when the "authorizedRoles" is "all"', () => {
     const authorizedRoles: RoleAccess['authorize'] = 'all'
@@ -179,7 +179,7 @@ describe('the "isUserAuthorized" method', () => {
   })
 
   it('returns false when the "authorizedRoles" is not "all" and no user was provided', () => {
-    const authorizedRoles: RoleAccess['authorize'] = [Admin, Developer]
+    const authorizedRoles: RoleAccess['authorize'] = [Admin, UserWithEmail]
 
     expect(BoosterAuth.isUserAuthorized(authorizedRoles)).to.eq(false)
   })
@@ -188,17 +188,17 @@ describe('the "isUserAuthorized" method', () => {
     const authorizedRoles: RoleAccess['authorize'] = [Admin]
     const userEnvelope: UserEnvelope = {
       username: 'user@test.com',
-      role: 'Developer',
+      role: 'UserWithEmail',
     }
 
     expect(BoosterAuth.isUserAuthorized(authorizedRoles, userEnvelope)).to.eq(false)
   })
 
   it('returns true when the user has any of the "authorizedRoles"', () => {
-    const authorizedRoles: RoleAccess['authorize'] = [Admin, Developer]
+    const authorizedRoles: RoleAccess['authorize'] = [Admin, UserWithEmail]
     const userEnvelope: UserEnvelope = {
       username: 'user@test.com',
-      role: 'Developer',
+      role: 'UserWithEmail',
     }
 
     expect(BoosterAuth.isUserAuthorized(authorizedRoles, userEnvelope)).to.eq(true)

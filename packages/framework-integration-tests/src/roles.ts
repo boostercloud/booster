@@ -11,7 +11,7 @@ export class Admin {}
 @Role({
   authentication: {
     // Do not specify (or use an empty array) if you don't want to allow sign-ups
-    signUpMethods: 'email',
+    signUpMethods: ['email'],
   },
 })
 export class User {}
