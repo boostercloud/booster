@@ -12,7 +12,7 @@ export class {{{ name }}} {
     {{/fields}}
   ) {}
 
-  public async handle(register: Register): Promise<void> {
+  public static async handle(command: {{{ name }}} , register: Register): Promise<void> {
     register.events( /* YOUR EVENT HERE */)
   }
 }
