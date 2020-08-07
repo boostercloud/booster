@@ -1330,7 +1330,7 @@ Read Models are classes decorated with the `@ReadModel` decorator that have one 
 
 ```typescript
 @ReadModel
-export class NameReadModel {
+export class ReadModelName {
   public constructor(
     readonly fieldA: SomeType,
     readonly fieldB: SomeType,
@@ -1338,13 +1338,13 @@ export class NameReadModel {
   ) {}
 
   @Projects(SomeEntity, 'entityField')
-  public static projectionName(entity: SomeEntity, currentEntityReadModel?: NameReadModel): NameReadModel {
-    return new NameReadModel(/* initialize here your constructor properties */)
+  public static projectionName(entity: SomeEntity, currentEntityReadModel?: ReadModelName): ReadModelName {
+    return new ReadModelName(/* initialize here your constructor properties */)
   }
   
   @Projects(SomeEntity, 'othetEntityField')
-  public static projectionName(entity: SomeEntity, currentEntityReadModel?: NameReadModel): NameReadModel {
-    return new NameReadModel(/* initialize here your constructor properties */)
+  public static projectionName(entity: SomeEntity, currentEntityReadModel?: ReadModelName): ReadModelName {
+    return new ReadModelName(/* initialize here your constructor properties */)
   }
   /* as many projections as needed */
 }
@@ -1352,9 +1352,9 @@ export class NameReadModel {
 
 #### Read models naming convention
 
-As it has been previously commented, but semantics plays an important role in designing a coherent system and your application should reflect your domain concepts. Altough you have freedom to choose your read model names, we strongly recommend you to name them using the name of the entity that they are projecting followed by `ReadModel` suffix. 
+As it has been previously commented, semantics plays an important role in designing a coherent system and your application should reflect your domain concepts, we recommend to chooose a representative domain name and use the `ReadModel` suffix in your read models name.
 
-Despite you can place commands, and other Booster files, in any directory, we strongly recommend you to put them in `<project-root>/src/read-models`. Having all the commands in one place will help you to understand your application's capabilities at a glance.
+Despite you can place your read models in any directory, we strongly recommend you to put them in `<project-root>/src/read-models`. Having all the read models in one place will help you to understand your application's capabilities at a glance.
 
 ```text
 <project-root>
@@ -1379,7 +1379,7 @@ boost new:read-model CartReadModel --fields id:UUID cartItems:"Array<CartItem>" 
 
 The generator will create a Typescript class under the read-models directory `<project-root>/src/read-models/CartReadModel.ts`.
 
-Read Model classes can also be created by hand and there are no restrictions regarding the place you put the files. The structure of the data is totally open and can be as complex as you can manage in your projection functions.
+Read Model classes can also be created by hand and there are no restrictions. The structure of the data is totally open and can be as complex as you can manage in your projection functions.
 
 #### The projection function
 A `Projection` is a method decorated with the `@Projects` decorator that, given a new entity value and (optionally) the current read model state, generate a new read model value.
@@ -1388,76 +1388,48 @@ Read models can be projected from multiple [entities](#4-entities-and-reducers) 
 
 ```typescript
 @Projects(Cart, "id")
-	public static projectCart(entity:Cart, currentReadModel: CartReadModel): CartReadModel {
-		return new CartReadModel(entity.id, entity.items)
-	}
+public static projectCart(entity:Cart, currentReadModel: CartReadModel): CartReadModel {
+  return new CartReadModel(entity.id, entity.items)
+}
 ```
 
-In the previous code, the `id` property is used as `joinKey`. This means that each time that a `Cart` that has the same `id` as the read model's `id` is modified, the projection is called.
+In the previous code, the `id` project's parameter, matches the name of a `Cart` entity property and it is used as `joinKey`. This means that each time that a `Cart` that has the same `id` as the read model's `id` is modified, the projection is called.
 
 #### Authorizing read models
 
-Read models are part of the public API of a Booster application, so you can define who is authorized to query them. The Booster authorization feature is covered in [this](https://github.com/boostercloud/booster/blob/master/docs/README.md#authentication-and-authorization) section. So far, we have seen that you can make a read command publicly accessible by authorizing `'all'` to query it. You can also set specific roles providing the users role array in this way: `authorize: [Admin]`.
+Read models are part of the public API of a Booster application, so you can define who is authorized to query them. The Booster authorization feature is covered in [this](#authentication-and-authorization) section. So far, we have seen that you can make a read model publicly accessible by authorizing `'all'` to query it. You can also set specific roles providing the users role array in this way: `authorize: [Admin]`.
 
 #### Querying a read model
 
-Read models are the read API for Booster applications. they can be accessed using the GraphQL queries. When you create a read model Booster automatically creates all the neccesary queries for your read models, e.g., given this `CartReadModel` read model:
+Read models are the read API for Booster applications and they can be accessed using the GraphQL queries. For every read model, Booster automatically creates all the necessary queries. For example, given this `CartReadModel` read model:
 
 ```typescript
 @ReadModel({
-	authorize: 'all'
+  authorize: 'all'
 })
 export class CartReadModel {
-	public constructor(
-		public id: UUID,
-		readonly items: Array<CartItem>,
-	) {}
+  public constructor(
+    public id: UUID,
+    readonly items: Array<CartItem>,
+    ) {}
 
-	@Projects(Cart, "id")
-	public static projectCart(entity:Cart, currentReadModel: CartReadModel): CartReadModel {
-		return new CartReadModel(entity.id, entity.items)
-	}
+  @Projects(Cart, "id")
+  public static projectCart(entity:Cart, currentReadModel: CartReadModel): CartReadModel {
+    return new CartReadModel(entity.id, entity.items)
+  }
 }
 ```
 
-if you hit the provided Url at the end of the deploy process:
-
-```
-<httpURL>/graphql
-```
-
-and you also provide this query using any graphQL client:
+You will get the following GraphQL query:
 
 ```graphQL
-query {
-	CartReadModel(id: "012345") {
-		id
-		items
-	}
-}
+query CartReadModel(id: ID!): CartReadModel
 ```
-
-you can get some results in the following format:
-
-```json
-{
-	data: {
-		"CartReadModel": {
-			"id" : "012345",
-			"items": [
-				{
-					"sku":"ABC_01",
-					"quantity": 1
-				}
-			]
-		}
-	}
-}
-```
+For more information about queries and how to use them, please check the [GraphQL API](#reading-read-models) section.
 
 #### Getting real-time updates for a read model
 
-Booster GraphQL API also provides support for real-time updates using subscriptions and websocket, to get more information about it go to the [GraphQL API](https://github.com/boostercloud/booster/blob/master/docs/README.md#subscribing-to-read-models) section.
+Booster GraphQL API also provides support for real-time updates using subscriptions and websocket, to get more information about it go to the [GraphQL API](#subscribing-to-read-models) section.
 
 ## Features
 
