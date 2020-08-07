@@ -1454,7 +1454,7 @@ Users can use this endpoint to register in your application and get a role assig
 Only roles that filled `signUpMethods` with valid entries can be used upon sign-up. After calling this endpoint, the
 registration isn't completed yet. 
 Users that sign up with their emails will receive a confirmation link in their inbox. They just need to click it to confirm their registration.
-Users that sign up with their phones will receive a confirmation code as an SMS message. That code needs to be sent back using the [confirmation endpoint](#confirm-sign-up)
+Users that sign up with their phones will receive a confirmation code as an SMS message. That code needs to be sent back using the [confirmation endpoint](#sign-up/confirm)
 
 ![confirmation email](./img/sign-up-verificaiton-email.png)
 ![email confirmed](./img/sign-up-confirmed.png)
@@ -1503,11 +1503,11 @@ You will get an HTTP status code different from 2XX and a body with a message te
 ##### Confirm-sign-up
 
 Whenever a User signs up with their phone number, an SMS message will be sent with a confirmation code.
-They will need to provide this code to confirm registation by calling the`confirm-sign-up` endpoint 
+They will need to provide this code to confirm registation by calling the`sign-up/confirm` endpoint 
 
 ###### Endpoint
 ```http request
-POST https://<httpURL>/auth/confirm-sign-up
+POST https://<httpURL>/auth/sign-up/confirm
 ```
 
 ###### Request body

@@ -113,11 +113,10 @@ export class AuthStack {
         },
       ],
     }
-    authResource
-      .addResource('sign-up')
-      .addMethod('POST', this.buildSignUpIntegration(cognitoIntegrationRole), methodOptions)
-    authResource
-      .addResource('confirm-sign-up')
+    const signUpResource = authResource.addResource('sign-up')
+    signUpResource.addMethod('POST', this.buildSignUpIntegration(cognitoIntegrationRole), methodOptions)
+    signUpResource
+      .addResource('confirm')
       .addMethod('POST', this.buildConfirmSignUpIntegration(cognitoIntegrationRole), methodOptions)
     authResource
       .addResource('sign-in')
