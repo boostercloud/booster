@@ -59,8 +59,8 @@ export class ChangeCart {
     readonly quantity: number,
   ) {}
 
-  public handle(register: Register): void {
-    register.events(new CartChanged(this.cartId, this.sku, this.quantity)) // <-- This is the main change we did
+  public static async handle(command: ChangeCart, register: Register): Promise<void> {
+    register.events(new CartChanged(command.cartId, command.sku, command.quantity)) // <-- This is the main change we did
   }
 }
 ```
