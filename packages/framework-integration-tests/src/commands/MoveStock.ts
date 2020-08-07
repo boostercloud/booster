@@ -16,22 +16,26 @@ export class MoveStock {
     readonly quantity: number
   ) {}
 
-  public async handle(register: Register): Promise<void> {
-    const stock = await Booster.fetchEntitySnapshot(Stock, this.productID)
-    if (this.enoughStock(stock)) {
-      register.events(new StockMoved(this.productID, this.origin, this.destination, this.quantity))
+  public static async handle(command: MoveStock, register: Register): Promise<void> {
+    const stock = await Booster.fetchEntitySnapshot(Stock, command.productID)
+    if (MoveStock.enoughStock(command, stock)) {
+      register.events(new StockMoved(command.productID, command.origin, command.destination, command.quantity))
     } else {
       register.events(
-        new ErrorEvent('MoveStock-' + this.productID, 'There is not enough stock to perform this operation', this)
+        new ErrorEvent(
+          'MoveStock-' + command.productID,
+          'There is not enough stock to perform command operation',
+          command
+        )
       )
     }
   }
 
-  private enoughStock(stock?: Stock): boolean {
-    if (this.origin == 'provider') return true
+  private static enoughStock(command: MoveStock, stock?: Stock): boolean {
+    if (command.origin == 'provider') return true
     if (!stock) return false
-    const count = stock.warehouses[this.origin]
-    if (count >= this.quantity) return true
+    const count = stock.warehouses[command.origin]
+    if (count >= command.quantity) return true
     return false
   }
 }

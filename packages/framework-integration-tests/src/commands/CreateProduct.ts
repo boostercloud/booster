@@ -16,11 +16,11 @@ export class CreateProduct {
     readonly currency: string
   ) {}
 
-  public async handle(register: Register): Promise<void> {
+  public static async handle(command: CreateProduct, register: Register): Promise<void> {
     register.events(
-      new ProductCreated(UUID.generate(), this.sku, this.displayName, this.description, {
-        cents: this.priceInCents,
-        currency: this.currency,
+      new ProductCreated(UUID.generate(), command.sku, command.displayName, command.description, {
+        cents: command.priceInCents,
+        currency: command.currency,
       })
     )
   }

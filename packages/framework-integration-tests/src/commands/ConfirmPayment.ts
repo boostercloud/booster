@@ -12,7 +12,7 @@ import { CartPaid } from '../events/CartPaid'
 export class ConfirmPayment {
   public constructor(readonly paymentId: UUID, readonly cartId: UUID, readonly confirmationToken: string) {}
 
-  public async handle(register: Register): Promise<void> {
-    register.events(new CartPaid(this.paymentId, this.cartId, this.confirmationToken))
+  public static async handle(command: ConfirmPayment, register: Register): Promise<void> {
+    register.events(new CartPaid(command.paymentId, command.cartId, command.confirmationToken))
   }
 }

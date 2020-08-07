@@ -110,10 +110,11 @@ describe('Migrator', () => {
         } as any,
       }
 
-      const got = migrator.migrate(toMigrate)
+      const got = migrator.migrate(toMigrate) as CommandEnvelope
+      const value = got.value as TestConceptV3
       expect(got).not.to.be.equal(toMigrate) // This checks the reference is not the same (i.e. a different object is returned)
       expect(got).to.be.deep.equal(expected)
-      expect(got.value.constructor.name).to.be.equal('TestConceptV3')
+      expect(value.constructor.name).to.be.equal('TestConceptV3')
     })
   })
 })

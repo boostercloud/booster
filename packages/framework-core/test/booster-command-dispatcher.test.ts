@@ -32,14 +32,13 @@ describe('the `BoosterCommandsDispatcher`', () => {
         class PostComment {
           public constructor(readonly comment: string) {}
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          public handle(_register: Register): Promise<void> {
+          public static async handle(_command: PostComment, _register: Register): Promise<void> {
             throw new Error('Not implemented')
           }
         }
 
         const fakeHandler = fake()
         const command = new PostComment('This test is good!')
-        replace(command, 'handle', fakeHandler)
         replace(RegisterHandler, 'handle', fake())
 
         Booster.configure(
@@ -63,7 +62,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
         class PostComment {
           public constructor(readonly comment: string) {}
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          public async handle(_register: Register): Promise<void> {
+          public static async handle(command: PostComment, _register: Register): Promise<void> {
             await new Promise((resolve) => setTimeout(resolve, 100))
             asyncOperationFinished = true
           }

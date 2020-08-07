@@ -2,16 +2,24 @@ import { Register } from './register'
 import { Class, PropertyMetadata } from '../typelevel'
 import { RoleAccess } from './role'
 
-/**
- * A `Command` is an imperative intent in your system.
- * All Command classes of your application must extend this class.
- */
-export interface CommandInterface {
-  handle(register: Register): Promise<void>
+export type CommandInterface = unknown
+
+export interface CommandClassInterface<TCommand = unknown> extends Class<TCommand> {
+  // The command's type is `unknown` because the CommandInterface type specifies the
+  // structure of the class, rather than the instance of the commands, which is what
+  // arrives to the `handle` static method.
+  handle(command: TCommand, register: Register): Promise<void>
 }
 
-export interface CommandMetadata {
-  readonly class: Class<CommandInterface>
+// We set the TCommand type to `unknown` because at the time of execution of the
+// command handlers, we don't really know what's the type, nor we do care about it.
+// The type correctness is ensured by the decorator, which ensures all of this.
+export interface CommandMetadata<TCommand = unknown> {
+  // For the class, we care that it has the static methods specified by CommandInterface
+  // and it has at least the properties of a class (like name, constructor, etc...)
+  // We don't care about the properties of the instance, so we set the type parameter of
+  // Class to unknown.
+  readonly class: CommandClassInterface<TCommand>
   readonly properties: Array<PropertyMetadata>
   readonly authorizedRoles: RoleAccess['authorize']
 }
