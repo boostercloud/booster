@@ -1,5 +1,5 @@
 import { ReadModel, Projects } from '@boostercloud/framework-core'
-import { User } from '../roles'
+import { UserWithEmail } from '../roles'
 import { UUID } from '@boostercloud/framework-types'
 import { Product } from '../entities/Product'
 import { SKU } from '../common/sku'
@@ -7,7 +7,7 @@ import { Money } from '../common/money'
 
 // This is an example read model for a possible admin-exclusive report to show last and previous updates to products
 @ReadModel({
-  authorize: [User],
+  authorize: [UserWithEmail],
 })
 export class ProductReadModel {
   public constructor(

@@ -72,7 +72,7 @@ describe('Event handlers', () => {
         typeName: 'StockMoved',
         entityID: mockProductId,
         currentUser: {
-          email: adminEmail,
+          username: adminEmail,
           role: 'Admin',
         },
       }
@@ -92,7 +92,7 @@ describe('Event handlers', () => {
         typeName: 'ProductAvailabilityChanged',
         entityID: mockProductId,
         currentUser: {
-          email: adminEmail,
+          username: adminEmail,
           role: 'Admin',
         },
       }

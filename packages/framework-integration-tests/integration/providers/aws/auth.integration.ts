@@ -221,7 +221,7 @@ describe('With the auth API', () => {
       await expect(subscriptionPromise).to.eventually.be.fulfilled
     })
 
-    it('can sign up for a user account', async () => {
+    it('can sign up with an email', async () => {
       const userEmail = internet.email()
       const userPassword = createPassword()
 
@@ -235,7 +235,35 @@ describe('With the auth API', () => {
           username: userEmail,
           password: userPassword,
           userAttributes: {
-            role: 'User',
+            role: 'UserWithEmail',
+          },
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const message = await response.json()
+      expect(message).to.be.empty
+
+      expect(response.status).to.equal(200)
+    })
+
+    it('can sign up with a phone number', async () => {
+      const userEmail = internet.email()
+      const userPassword = createPassword()
+
+      const url = await signUpURL()
+      const clientId = await authClientID()
+
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          clientId: clientId,
+          username: userEmail,
+          password: userPassword,
+          userAttributes: {
+            role: 'UserWithPhone',
           },
         }),
         headers: {
@@ -299,7 +327,7 @@ describe('With the auth API', () => {
           username: userEmail,
           password: userPassword,
           userAttributes: {
-            role: 'User',
+            role: 'UserWithEmail',
           },
         }),
         headers: {

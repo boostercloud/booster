@@ -10,8 +10,21 @@ export class Admin {}
 
 @Role({
   auth: {
-    // Do not specify (or use an empty array) if you don't want to allow sign-ups
     signUpMethods: ['email'],
   },
 })
-export class User {}
+export class UserWithEmail {}
+
+@Role({
+  auth: {
+    signUpMethods: ['phone'],
+  },
+})
+export class UserWithPhone {}
+
+@Role({
+  auth: {
+    signUpMethods: ['email', 'phone'],
+  },
+})
+export class SuperUser {}
