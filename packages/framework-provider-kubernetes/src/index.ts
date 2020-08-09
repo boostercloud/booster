@@ -29,6 +29,7 @@ export const Provider: ProviderLibrary = {
   // ProviderAuthLibrary
   auth: {
     rawToEnvelope: undefined as any,
+    enrichRawMessage: undefined as any,
   },
   // ProviderAPIHandling
   api: {

@@ -11,6 +11,7 @@ export type SignUpMethod = 'email' | 'phone'
 
 export interface AuthMetadata {
   readonly signUpMethods?: Array<SignUpMethod>
+  readonly requiresConfirmation?: boolean
 }
 
 export interface RoleAccess {
