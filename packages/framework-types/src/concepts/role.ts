@@ -10,7 +10,7 @@ export interface RoleMetadata {
 export type SignUpMethod = 'email' | 'phone'
 
 export interface AuthMetadata {
-  readonly signUpMethods: Array<SignUpMethod>
+  readonly signUpMethods?: Array<SignUpMethod>
 }
 
 export interface RoleAccess {
