@@ -14,10 +14,10 @@ import {
   V1PodStatus,
   V1Secret,
 } from '@kubernetes/client-node'
-import { K8sManagement } from '../../src/infrastructure/k8s-sdk/K8sManagement'
+import { K8sManagement } from '../../src/infrastructure/k8s-sdk/k8s-management'
 import { replace, fake, restore } from 'sinon'
 import { expect } from '../expect'
-import { boosterAppPod } from '../../src/infrastructure/templates/boosterApp'
+import { boosterAppPod } from '../../src/infrastructure/templates/booster-app-template'
 import { internet, random } from 'faker'
 
 describe('Users interaction with K8s cluster', () => {

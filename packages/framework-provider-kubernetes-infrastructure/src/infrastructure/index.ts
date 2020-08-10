@@ -1,6 +1,6 @@
 import { Observable, Subscriber } from 'rxjs'
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { K8sManagement } from './k8s-sdk/K8sManagement'
+import { K8sManagement } from './k8s-sdk/k8s-management'
 import { HelmManager } from './helm-manager'
 import { DeployManager } from './deploy-manager'
 import { DaprManager } from './dapr-manager'

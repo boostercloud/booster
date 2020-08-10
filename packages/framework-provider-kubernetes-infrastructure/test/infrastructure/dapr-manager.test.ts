@@ -1,16 +1,16 @@
 import { expect } from '../expect'
-import { K8sManagement } from '../../src/infrastructure/k8s-sdk/K8sManagement'
+import { K8sManagement } from '../../src/infrastructure/k8s-sdk/k8s-management'
 import { HelmManager } from '../../src/infrastructure/helm-manager'
 import { DaprManager } from '../../src/infrastructure/dapr-manager'
 import { stub, restore, replace, fake } from 'sinon'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { stateStore } from '../../src/infrastructure/templates/statestore'
-import { lorem } from 'faker'
+import { internet } from 'faker'
 const fs = require('fs')
 
 describe('Users Dapr interaction inside the cluster', () => {
   const k8sManager = new K8sManagement()
-  const configuration = new BoosterConfig(lorem.word())
+  const configuration = new BoosterConfig('test')
   const helmManager = new HelmManager()
   const daprManager = new DaprManager(configuration, k8sManager, helmManager)
 
@@ -21,10 +21,10 @@ describe('Users Dapr interaction inside the cluster', () => {
   it('allows configuring the eventStore', async () => {
     replace(fs, 'existsSync', fake.returns(false))
     stub(daprManager, 'verifyEventStore').resolves({
-      namespace: lorem.word(),
-      eventStoreHost: lorem.word(),
-      eventStoreUsername: lorem.word(),
-      eventStorePassword: lorem.word(),
+      namespace: internet.domainWord(),
+      eventStoreHost: internet.url(),
+      eventStoreUsername: internet.userName(),
+      eventStorePassword: internet.password(),
     })
     stub(daprManager, 'createDaprComponentFile').resolves
     stub(daprManager, 'readDaprComponentDirectory').resolves(['statestore.yaml'])
@@ -35,10 +35,10 @@ describe('Users Dapr interaction inside the cluster', () => {
   it('allows configuring the eventStore but the cluster fails', async () => {
     replace(fs, 'existsSync', fake.returns(false))
     stub(daprManager, 'verifyEventStore').resolves({
-      namespace: lorem.word(),
-      eventStoreHost: lorem.word(),
-      eventStoreUsername: lorem.word(),
-      eventStorePassword: lorem.word(),
+      namespace: internet.domainWord(),
+      eventStoreHost: internet.url(),
+      eventStoreUsername: internet.userName(),
+      eventStorePassword: internet.password(),
     })
     stub(daprManager, 'createDaprComponentFile').resolves
     stub(daprManager, 'readDaprComponentDirectory').resolves(['statestore.yaml'])

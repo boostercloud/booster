@@ -1,5 +1,5 @@
 import { expect } from '../expect'
-import { K8sManagement } from '../../src/infrastructure/k8s-sdk/K8sManagement'
+import { K8sManagement } from '../../src/infrastructure/k8s-sdk/k8s-management'
 import { HelmManager } from '../../src/infrastructure/helm-manager'
 import { DaprManager } from '../../src/infrastructure/dapr-manager'
 import { DeployManager } from '../../src/infrastructure/deploy-manager'
@@ -32,9 +32,7 @@ describe('User interaction during the deploy:', async () => {
   it('allows verifying helm is ready and it is not working', async () => {
     const error = 'helm is not ready'
     stub(helmManager, 'isVersion3').throws(error)
-    await deployManager.ensureHelmIsReady().catch((err) => {
-      expect(err.toString()).to.be.equal(error)
-    })
+    await expect(deployManager.ensureHelmIsReady()).to.eventually.be.rejected
   })
 
   it('allows verifying that Dapr is ready and it is working', async () => {
@@ -51,9 +49,7 @@ describe('User interaction during the deploy:', async () => {
     stub(k8sManager, 'getPodFromNamespace').resolves(undefined)
     stub(helmManager, 'exec').resolves()
     stub(k8sManager, 'waitForPodToBeReady').throws(error)
-    deployManager.ensureDaprExists().catch((err) => {
-      expect(err.toString()).to.be.equal(error)
-    })
+    await expect(deployManager.ensureDaprExists()).to.eventually.be.rejected
   })
 
   it('allows verifying that EventStore is ready and it is working', async () => {
@@ -64,9 +60,7 @@ describe('User interaction during the deploy:', async () => {
   it('allows verifying that EventStore is ready and it fails', async () => {
     const error = 'error'
     stub(daprManager, 'configureEventStore').throws(error)
-    deployManager.ensureEventStoreExists().catch((err) => {
-      expect(err.toString()).to.be.equal(error)
-    })
+    await expect(deployManager.ensureEventStoreExists()).to.eventually.be.rejected
   })
 
   it('allows verifying that namespace exists', async () => {
@@ -133,9 +127,7 @@ describe('User interaction during the deploy:', async () => {
     const error = 'timeout'
     stub(k8sManager, 'getPodFromNamespace').resolves({ name: 'name' })
     stub(k8sManager, 'waitForPodToBeReady').throws(error)
-    await deployManager.ensureUploadPodExists().catch((err) => {
-      expect(err.toString()).to.be.equal(error)
-    })
+    await expect(deployManager.ensureUploadPodExists()).to.eventually.be.rejected
   })
 
   it('allows verifying that boosterPod is ready', async () => {
@@ -148,9 +140,7 @@ describe('User interaction during the deploy:', async () => {
   it('allows verifying that boosterPod is ready but it fails', async () => {
     const error = 'error'
     stub(k8sManager, 'getPodFromNamespace').throws(error)
-    deployManager.ensureBoosterPodExists().catch((err) => {
-      expect(err.toString()).to.be.equal(error)
-    })
+    await expect(deployManager.ensureBoosterPodExists()).to.eventually.be.rejected
   })
 
   it('allows verifying that the upload code works', async () => {

@@ -1,9 +1,9 @@
 import { CoreV1Api, KubeConfig, KubernetesObject, KubernetesObjectApi } from '@kubernetes/client-node'
-import { Node, Namespace, Pod, Service, VolumeClaim, Secret } from './models'
+import { Node, Namespace, Pod, Service, VolumeClaim, Secret } from './types'
 import * as Mustache from 'mustache'
 import { safeLoadAll } from 'js-yaml'
 import { waitForIt } from '../utils'
-import { TemplateValues } from '../templates/templateInterface'
+import { TemplateValues } from '../templates/template-types'
 import * as util from 'util'
 const exec = util.promisify(require('child_process').exec)
 

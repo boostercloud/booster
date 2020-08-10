@@ -4,7 +4,7 @@ import * as archiver from 'archiver'
 import * as os from 'os'
 import * as FormData from 'form-data'
 import { IncomingMessage } from 'http'
-import { indexTemplate } from './templates/indexTemplate'
+import { indexTemplate } from './templates/index-template'
 import * as path from 'path'
 import * as util from 'util'
 const writeFile = util.promisify(fs.writeFile)
