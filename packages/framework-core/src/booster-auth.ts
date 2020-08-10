@@ -46,8 +46,7 @@ export class BoosterAuth {
       }
     }
 
-    const enrichedRawMessage = config.provider.auth.enrichRawMessage(config, rawMessage)
-    return enrichedRawMessage ? enrichedRawMessage : rawMessage
+    return config.provider.auth.enrichRawMessage(config, rawMessage) ?? rawMessage
   }
 
   public static isUserAuthorized(authorizedRoles: RoleAccess['authorize'], user?: UserEnvelope): boolean {

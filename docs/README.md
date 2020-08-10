@@ -1448,10 +1448,10 @@ export class SuperUser {}
     requiresConfirmation: false
   },
 })
-export class SuperUserWithoutVerification {}
+export class SuperUserWithoutConfirmation {}
 ```
 
-Here, we have defined the `Admin`, `User`, `SuperUser` and `SuperUserWithoutVerification` roles. They all contain an `auth` attribute which contains a `signUpMethods` and `requiresConfirmation` attributes.
+Here, we have defined the `Admin`, `User`, `SuperUser` and `SuperUserWithoutConfirmation` roles. They all contain an `auth` attribute which contains a `signUpMethods` and `requiresConfirmation` attributes.
 
 When `signUpMethods` is empty (`Admin` role) or is not specified, a user can't use this role to sign up.
 `signUpMethods` is an array with limited possible values: `email` or `phone` or a combination of both.

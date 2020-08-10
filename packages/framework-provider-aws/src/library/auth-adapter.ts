@@ -10,8 +10,7 @@ export function rawSignUpDataToUserEnvelope(rawMessage: CognitoUserPoolEvent): U
 
 export function enrichRawMessage(config: BoosterConfig, rawMessage: CognitoUserPoolEvent): CognitoUserPoolEvent {
   const userAttributes = rawMessage.request.userAttributes
-  // eslint-disable-next-line @typescript-eslint/camelcase
-  const { phone_number, email, 'custom:role': roleName } = userAttributes
+  const { phone_number: phoneNumber, email, 'custom:role': roleName } = userAttributes
 
   if (roleName) {
     const roleMetadata = config.roles[roleName]
@@ -28,11 +27,9 @@ export function enrichRawMessage(config: BoosterConfig, rawMessage: CognitoUserP
       rawMessage.response.autoVerifyEmail = true
     }
 
-    // eslint-disable-next-line @typescript-eslint/camelcase
-    if (phone_number && (requiresConfirmation || requiresConfirmation == undefined)) {
+    if (phoneNumber && (requiresConfirmation || requiresConfirmation == undefined)) {
       rawMessage.response.autoVerifyPhone = false
-      // eslint-disable-next-line @typescript-eslint/camelcase
-    } else if (phone_number && !requiresConfirmation) {
+    } else if (phoneNumber && !requiresConfirmation) {
       rawMessage.response.autoVerifyPhone = true
     }
   }
