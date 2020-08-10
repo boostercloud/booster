@@ -29,8 +29,7 @@ describe('Users Dapr interaction inside the cluster', () => {
     stub(daprManager, 'createDaprComponentFile').resolves
     stub(daprManager, 'readDaprComponentDirectory').resolves(['statestore.yaml'])
     stub(k8sManager, 'execRawCommand').resolves('')
-    const result = await daprManager.configureEventStore()
-    expect(result.length).to.be.equal(0)
+    await expect(daprManager.configureEventStore()).to.eventually.be.fulfilled
   })
 
   it('allows configuring the eventStore but the cluster fails', async () => {
@@ -50,7 +49,7 @@ describe('Users Dapr interaction inside the cluster', () => {
   it('allows deleting Dapr service', async () => {
     stub(helmManager, 'exec').resolves({ stdout: 'ok' })
     stub(daprManager, 'readDaprComponentFile').resolves(stateStore.template)
-    await expect(daprManager.deleteDaprService()).eventually.to.be.equal('ok')
+    await expect(daprManager.deleteDaprService()).to.eventually.be.fulfilled
   })
 
   it('allows deleting Dapr service but helms fails', async () => {
@@ -62,7 +61,7 @@ describe('Users Dapr interaction inside the cluster', () => {
   it('allows deleting Event Store', async () => {
     stub(helmManager, 'exec').resolves({ stdout: 'ok' })
     stub(daprManager, 'readDaprComponentFile').resolves(stateStore.template)
-    await expect(daprManager.deleteEventStore()).eventually.to.be.equal('ok')
+    await expect(daprManager.deleteEventStore()).to.eventually.be.fulfilled
   })
 
   it('allows deleting Event Store but helms fails', async () => {

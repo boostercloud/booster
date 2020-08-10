@@ -34,6 +34,6 @@ describe('Users want to use utility methods', () => {
       errorMessage = err.toString()
     })
     expect(error).to.be.true
-    expect(errorMessage).to.be.equal('error!!!')
+    expect(errorMessage).to.be.equal('Error: error!!!')
   })
 })

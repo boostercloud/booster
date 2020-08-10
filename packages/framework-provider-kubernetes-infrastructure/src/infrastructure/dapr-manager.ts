@@ -35,18 +35,20 @@ export class DaprManager {
    * check if the event store is provided by the user but if the user has not provided a event store,
    * it will create a specific Dapr compatible event store to be used by Booster applications
    */
-  public async configureEventStore(): Promise<string[]> {
+  public async configureEventStore(): Promise<void> {
     if (!fs.existsSync(this.daprComponentsPath)) {
       const templateValues: DaprTemplateValues = await this.verifyEventStore()
       await this.createDaprComponentFile(templateValues)
     }
     const daprComponents = await this.readDaprComponentDirectory()
-    return Promise.all(
+    await Promise.all(
       daprComponents.map((component) => {
         const componentYaml = path.join(this.daprComponentsPath, component)
         return this.clusterManager.execRawCommand(`apply -f ${componentYaml}`)
       })
-    )
+    ).catch((err) => {
+      throw new Error(err)
+    })
   }
 
   /**

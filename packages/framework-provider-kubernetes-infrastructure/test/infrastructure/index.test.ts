@@ -8,6 +8,7 @@ import { internet } from 'faker'
 
 describe('During the deploy or nuke of Booster apps:', async () => {
   const config = new BoosterConfig('production')
+  const errorMsg = 'error!'
 
   beforeEach(() => {
     replace(KubeConfig.prototype, 'makeApiClient', fake.returns(new CoreV1Api()))
@@ -45,11 +46,11 @@ describe('During the deploy or nuke of Booster apps:', async () => {
   })
 
   it('allows deploying but the namespace validation fails', (done) => {
-    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.rejects('error'))
+    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.throws(errorMsg))
     deploy(config).subscribe(
       () => {},
-      (error) => {
-        expect(error.toString()).to.be.equal('Error: Error: error')
+      (err) => {
+        expect(err.toString()).to.be.equal(`Error: ${errorMsg}`)
         done()
       },
       undefined
@@ -58,11 +59,11 @@ describe('During the deploy or nuke of Booster apps:', async () => {
 
   it('allows deploying but the helms validation fails', (done) => {
     replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.rejects('error'))
+    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.throws(errorMsg))
     deploy(config).subscribe(
       () => {},
-      (error) => {
-        expect(error.toString()).to.be.equal('Error: Error: error')
+      (err) => {
+        expect(err.toString()).to.be.equal(`Error: ${errorMsg}`)
         done()
       },
       undefined
@@ -72,11 +73,11 @@ describe('During the deploy or nuke of Booster apps:', async () => {
   it('allows deploying but the volume claim validation fails', (done) => {
     replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.rejects('error'))
+    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.throws(errorMsg))
     deploy(config).subscribe(
       () => {},
-      (error) => {
-        expect(error.toString()).to.be.equal('Error: Error: error')
+      (err) => {
+        expect(err.toString()).to.be.equal(`Error: ${errorMsg}`)
         done()
       },
       undefined
@@ -87,11 +88,11 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.rejects('error'))
+    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.throws(errorMsg))
     deploy(config).subscribe(
       () => {},
-      (error) => {
-        expect(error.toString()).to.be.equal('Error: Error: error')
+      (err) => {
+        expect(err.toString()).to.be.equal(`Error: ${errorMsg}`)
         done()
       },
       undefined
@@ -103,11 +104,11 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.rejects('error'))
+    replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.throws(errorMsg))
     deploy(config).subscribe(
       () => {},
-      (error) => {
-        expect(error.toString()).to.be.equal('Error: Error: error')
+      (err) => {
+        expect(err.toString()).to.be.equal(`Error: ${errorMsg}`)
         done()
       },
       undefined
@@ -120,11 +121,11 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureDaprExists', fake.rejects('error'))
+    replace(DeployManager.prototype, 'ensureDaprExists', fake.throws(errorMsg))
     deploy(config).subscribe(
       () => {},
-      (error) => {
-        expect(error.toString()).to.be.equal('Error: Error: error')
+      (err) => {
+        expect(err.toString()).to.be.equal(`Error: ${errorMsg}`)
         done()
       },
       undefined
@@ -138,12 +139,12 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureDaprExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureEventStoreExists', fake.rejects('error'))
+    replace(DeployManager.prototype, 'ensureEventStoreExists', fake.throws(errorMsg))
 
     deploy(config).subscribe(
       () => {},
-      (error) => {
-        expect(error.toString()).to.be.equal('Error: Error: error')
+      (err) => {
+        expect(err.toString()).to.be.equal(`Error: ${errorMsg}`)
         done()
       },
       undefined
@@ -158,11 +159,11 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureDaprExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureEventStoreExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureUploadPodExists', fake.rejects('error'))
+    replace(DeployManager.prototype, 'ensureUploadPodExists', fake.throws(errorMsg))
     deploy(config).subscribe(
       () => {},
-      (error) => {
-        expect(error.toString()).to.be.equal('Error: Error: error')
+      (err) => {
+        expect(err.toString()).to.be.equal(`Error: ${errorMsg}`)
         done()
       },
       undefined
@@ -178,11 +179,11 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     replace(DeployManager.prototype, 'ensureDaprExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureEventStoreExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureUploadPodExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'uploadUserCode', fake.rejects('error'))
+    replace(DeployManager.prototype, 'uploadUserCode', fake.throws(errorMsg))
     deploy(config).subscribe(
       () => {},
-      (error) => {
-        expect(error.toString()).to.be.equal('Error: Error: error')
+      (err) => {
+        expect(err.toString()).to.be.equal(`Error: ${errorMsg}`)
         done()
       },
       undefined
@@ -199,11 +200,11 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     replace(DeployManager.prototype, 'ensureEventStoreExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureUploadPodExists', fake.resolves(true))
     replace(DeployManager.prototype, 'uploadUserCode', fake.resolves(true))
-    replace(DeployManager.prototype, 'deployBoosterApp', fake.rejects('error'))
+    replace(DeployManager.prototype, 'deployBoosterApp', fake.throws(errorMsg))
     deploy(config).subscribe(
       () => {},
-      (error) => {
-        expect(error.toString()).to.be.equal('Error: Error: error')
+      (err) => {
+        expect(err.toString()).to.be.equal(`Error: ${errorMsg}`)
         done()
       },
       undefined
@@ -229,11 +230,11 @@ describe('During the deploy or nuke of Booster apps:', async () => {
   })
 
   it('allows nuking but delete dapr fails', (done) => {
-    replace(DeployManager.prototype, 'deleteDapr', fake.rejects('error'))
+    replace(DeployManager.prototype, 'deleteDapr', fake.throws(errorMsg))
     nuke(config).subscribe(
       () => {},
-      (error) => {
-        expect(error.toString()).to.be.equal('Error: Error: error')
+      (err) => {
+        expect(err.toString()).to.be.equal(`Error: ${errorMsg}`)
         done()
       },
       undefined
@@ -242,12 +243,12 @@ describe('During the deploy or nuke of Booster apps:', async () => {
 
   it('alows nuking but delete redis fails', (done) => {
     replace(DeployManager.prototype, 'deleteDapr', fake.resolves(true))
-    replace(DeployManager.prototype, 'deleteRedis', fake.rejects('error'))
+    replace(DeployManager.prototype, 'deleteRedis', fake.throws(errorMsg))
 
     nuke(config).subscribe(
       () => {},
-      (error) => {
-        expect(error.toString()).to.be.equal('Error: Error: error')
+      (err) => {
+        expect(err.toString()).to.be.equal(`Error: ${errorMsg}`)
         done()
       },
       undefined
@@ -257,12 +258,12 @@ describe('During the deploy or nuke of Booster apps:', async () => {
   it('allows nuking but delete resources fails', (done) => {
     replace(DeployManager.prototype, 'deleteDapr', fake.resolves(true))
     replace(DeployManager.prototype, 'deleteRedis', fake.resolves(true))
-    replace(DeployManager.prototype, 'deleteAllResources', fake.rejects('error'))
+    replace(DeployManager.prototype, 'deleteAllResources', fake.throws(errorMsg))
 
     nuke(config).subscribe(
       () => {},
-      (error) => {
-        expect(error.toString()).to.be.equal('Error: Error: error')
+      (err) => {
+        expect(err.toString()).to.be.equal(`Error: ${errorMsg}`)
         done()
       },
       undefined
