@@ -476,9 +476,6 @@ describe('With the auth API', () => {
       let client: DisconnectableApolloClient
 
       before(async () => {
-        // Manually confirming user
-        await confirmUser(userEmail)
-
         userAuthInformation = await getUserAuthInformation(userEmail, userPassword)
         client = await graphQLClientWithSubscriptions(userAuthInformation.accessToken)
       })
