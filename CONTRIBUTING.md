@@ -31,8 +31,7 @@ If you see unacceptable behavior, please communicate so to `hello@booster.cloud`
 
 ## I don't want to read this whole thing, I just have a question!!!
 
-**Please don't file an issue to ask questions**. You'll get faster results by using our [Spectrum Community channel](https://spectrum.chat/boostercloud).
-Note that even though it looks like a chat, some members might take some time to answer.
+Go ahead and [create a new issue](https://github.com/boostercloud/booster/issues).
 
 ## What should I know before I get started?
 
