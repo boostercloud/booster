@@ -369,16 +369,16 @@ describe('With the auth API', () => {
     })
   })
 
-  // The UserWithEmail role is configured in the test project to allow sign ups
   context('someone with a user with email account', () => {
     let userEmail: string
+    let anotherUserEmail: string
     let userPassword: string
 
     before(async () => {
       userEmail = internet.email()
       userPassword = createPassword()
 
-      // Create user
+      // Create user with confirmation
       const url = await signUpURL()
       const clientId = await authClientID()
 
@@ -397,15 +397,58 @@ describe('With the auth API', () => {
         },
       })
 
-      // Confirm user
-      await confirmUser(userEmail)
+      // Create user without confirmation
+      anotherUserEmail = internet.email()
+      const urlNoConfirmation = await signUpURL()
+      const clientIdNoConfirmation = await authClientID()
+
+      await fetch(urlNoConfirmation, {
+        method: 'POST',
+        body: JSON.stringify({
+          clientId: clientIdNoConfirmation,
+          username: anotherUserEmail,
+          password: userPassword,
+          userAttributes: {
+            role: 'SuperUserNoConfirmation',
+          },
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
     })
 
     after(async () => {
       await deleteUser(userEmail)
     })
 
-    it('can sign in their account and get a valid token', async () => {
+    it('can sign in their account when requiresConfirmation is true and user is manually confirmed. User will get a valid token.', async () => {
+      // Manually confirming user
+      await confirmUser(userEmail)
+
+      const url = await signInURL()
+      const clientId = await authClientID()
+
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          clientId: clientId,
+          username: userEmail,
+          password: userPassword,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      expect(response.status).to.equal(200)
+
+      const message = await response.json()
+      expect(message).not.to.be.empty
+      expect(message.accessToken).not.to.be.empty
+    })
+
+    it('can sign in their account without manually confirming user when requiresConfirmation is false. User will get a valid token.', async () => {
       const url = await signInURL()
       const clientId = await authClientID()
 
@@ -433,6 +476,9 @@ describe('With the auth API', () => {
       let client: DisconnectableApolloClient
 
       before(async () => {
+        // Manually confirming user
+        await confirmUser(userEmail)
+
         userAuthInformation = await getUserAuthInformation(userEmail, userPassword)
         client = await graphQLClientWithSubscriptions(userAuthInformation.accessToken)
       })
@@ -830,16 +876,16 @@ describe('With the auth API', () => {
     })
   })
 
-  // The UserWithPhone role is configured in the test project to allow sign ups
   context('someone with a user with phone number account', () => {
     let userPhoneNumber: string
+    let userPhoneNumberNoConfirmation: string
     let userPassword: string
 
     before(async () => {
       userPhoneNumber = phone.phoneNumber('+1##########')
       userPassword = createPassword()
 
-      // Create user
+      // Create user with confirmation required
       const url = await signUpURL()
       const clientId = await authClientID()
 
@@ -858,15 +904,36 @@ describe('With the auth API', () => {
         },
       })
 
-      // Confirm user
-      await confirmUser(userPhoneNumber)
+      // Create user with confirmation required
+      userPhoneNumberNoConfirmation = phone.phoneNumber('+1##########')
+
+      const urlNoConfirmation = await signUpURL()
+      const clientIdNoConfirmation = await authClientID()
+
+      await fetch(urlNoConfirmation, {
+        method: 'POST',
+        body: JSON.stringify({
+          clientId: clientIdNoConfirmation,
+          username: userPhoneNumberNoConfirmation,
+          password: userPassword,
+          userAttributes: {
+            role: 'SuperUserNoConfirmation',
+          },
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
     })
 
     after(async () => {
       await deleteUser(userPhoneNumber)
     })
 
-    it('can sign in their account and get a valid token', async () => {
+    it('can sign in their account when requiresConfirmation is true and user is manually confirmed. User will get a valid token.', async () => {
+      // Manually confirming user
+      await confirmUser(userPhoneNumber)
+
       const url = await signInURL()
       const clientId = await authClientID()
 
@@ -875,6 +942,29 @@ describe('With the auth API', () => {
         body: JSON.stringify({
           clientId: clientId,
           username: userPhoneNumber,
+          password: userPassword,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      expect(response.status).to.equal(200)
+
+      const message = await response.json()
+      expect(message).not.to.be.empty
+      expect(message.accessToken).not.to.be.empty
+    })
+
+    it('can sign in their account without manually confirming user when requiresConfirmation is false. User will get a valid token.', async () => {
+      const url = await signInURL()
+      const clientId = await authClientID()
+
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          clientId: clientId,
+          username: userPhoneNumberNoConfirmation,
           password: userPassword,
         }),
         headers: {

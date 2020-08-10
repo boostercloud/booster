@@ -19,7 +19,6 @@ export class UserWithEmail {}
 @Role({
   auth: {
     signUpMethods: ['phone'],
-    requiresConfirmation: true,
   },
 })
 export class UserWithPhone {}
@@ -31,3 +30,11 @@ export class UserWithPhone {}
   },
 })
 export class SuperUser {}
+
+@Role({
+  auth: {
+    signUpMethods: ['email', 'phone'],
+    requiresConfirmation: false,
+  },
+})
+export class SuperUserNoConfirmation {}
