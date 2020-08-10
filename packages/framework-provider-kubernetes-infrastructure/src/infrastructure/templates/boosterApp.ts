@@ -54,7 +54,7 @@ spec:
           env:
           - name: BOOSTER_ENV
             value: {{ environment }}
-          command: ['sh', '-c', "while [ ! -f /data/appCode/boosterCode.zip ]; do echo Waiting for file; sleep 5; done"]
+          command: ['sh', '-c', "while [ ! -f /data/appCode/boosterCode.zip ]; do echo Waiting for user code tobe uploaded to the storage; sleep 5; done"]
           volumeMounts: 
             - mountPath: /data/appCode
               name: app-code

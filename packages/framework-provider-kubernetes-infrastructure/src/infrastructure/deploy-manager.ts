@@ -41,7 +41,7 @@ export class DeployManager {
    * @returns {Promise<boolean>}
    * @memberof DeployManager
    */
-  public async verifyHelm(): Promise<boolean> {
+  public async ensureHelmIsReady(): Promise<boolean> {
     await this.helmManager.isVersion3().catch((err) => {
       return Promise.reject(err.toString())
     })
@@ -55,7 +55,7 @@ export class DeployManager {
    * @returns {Promise<void>}
    * @memberof DeployManager
    */
-  public async verifyDapr(): Promise<void> {
+  public async ensureDaprExists(): Promise<void> {
     try {
       const repoInstalled = await this.helmManager.isRepoInstalled('dapr')
       if (!repoInstalled) {
@@ -77,7 +77,7 @@ export class DeployManager {
    * @returns {Promise<void>}
    * @memberof DeployManager
    */
-  public async verifyEventStore(): Promise<void> {
+  public async ensureEventStoreExists(): Promise<void> {
     await this.daprManager.configureEventStore().catch((err) => {
       return Promise.reject(err.toString())
     })
@@ -89,18 +89,11 @@ export class DeployManager {
    * @returns {Promise<void>}
    * @memberof DeployManager
    */
-  public async verifyNamespace(): Promise<void> {
-    try {
-      const clusterNamespace = await this.clusterManager.getNamespace(this.namespace)
-      if (!clusterNamespace) {
-        const clusterResponse = await this.clusterManager.createNamespace(this.namespace)
-        if (!clusterResponse) {
-          throw new Error('Unable to create a namespace for your project, please check your Kubectl configuration')
-        }
-      }
-    } catch (err) {
-      return Promise.reject(err)
-    }
+  public async ensureNamespaceExists(): Promise<void> {
+    const currentNameSpace = await this.clusterManager.getNamespace(this.namespace)
+    const nameSpaceExists = currentNameSpace ?? (await this.clusterManager.createNamespace(this.namespace))
+    if (!nameSpaceExists)
+      return Promise.reject('Unable to create a namespace for your project, please check your Kubectl configuration')
   }
 
   /**
@@ -109,7 +102,7 @@ export class DeployManager {
    * @returns {Promise<void>}
    * @memberof DeployManager
    */
-  public async verifyVolumeClaim(): Promise<void> {
+  public async ensureVolumeClaimExists(): Promise<void> {
     try {
       const clusterVolumeClaim = await this.clusterManager.getVolumeClaimFromNamespace(
         this.namespace,
@@ -136,7 +129,7 @@ export class DeployManager {
    * @returns {Promise<void>}
    * @memberof DeployManager
    */
-  public async verifyUploadService(): Promise<void> {
+  public async ensureUploadServiceExists(): Promise<void> {
     return await this.verifyService(uploadService)
   }
 
@@ -146,7 +139,7 @@ export class DeployManager {
    * @returns {Promise<void>}
    * @memberof DeployManager
    */
-  public async verifyBoosterService(): Promise<void> {
+  public async ensureBoosterServiceExists(): Promise<void> {
     return await this.verifyService(boosterService)
   }
 
@@ -156,7 +149,7 @@ export class DeployManager {
    * @returns {Promise<void>}
    * @memberof DeployManager
    */
-  public async verifyUploadPod(): Promise<void> {
+  public async ensureUploadPodExists(): Promise<void> {
     try {
       await this.verifyPod(uploaderPod)
       await this.clusterManager.waitForPodToBeReady(this.namespace, uploaderPod.name)
@@ -171,7 +164,7 @@ export class DeployManager {
    * @returns {Promise<void>}
    * @memberof DeployManager
    */
-  public async verifyBoosterPod(): Promise<void> {
+  public async ensureBoosterPodExists(): Promise<void> {
     try {
       await this.verifyPod(boosterAppPod, true)
     } catch (err) {
@@ -190,7 +183,7 @@ export class DeployManager {
       const fileUploadService = await this.clusterManager.waitForServiceToBeReady(this.namespace, uploadService.name)
       const codeZipFile = await createProjectZipFile()
       const indexFile = await createIndexFile()
-      const fileUploadResponse = await uploadFile(fileUploadService?.ip ?? '', codeZipFile)
+      const fileUploadResponse = await uploadFile(fileUploadService?.ip, codeZipFile)
       if (fileUploadResponse.statusCode !== 200) {
         return Promise.reject('Unable to upload your code, please check the fileuploader pod for more information')
       }
@@ -211,7 +204,7 @@ export class DeployManager {
    */
   public async deployBoosterApp(): Promise<string> {
     try {
-      await this.verifyBoosterPod()
+      await this.ensureBoosterPodExists()
       await this.clusterManager.waitForPodToBeReady(this.namespace, boosterAppPod.name)
       const service = await this.clusterManager.waitForServiceToBeReady(this.namespace, boosterService.name)
       return service?.ip ?? ''

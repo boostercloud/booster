@@ -2,20 +2,20 @@ import { HelmManager } from '../../src/infrastructure/helm-manager'
 import { replace, fake, restore } from 'sinon'
 import { expect } from '../expect'
 
-describe('The user wants to use Helm', async () => {
+describe('The user interaction with Helm', async () => {
   const helm = new HelmManager()
   afterEach(() => {
     restore()
   })
 
-  it('but it is not installed', async () => {
+  it('allows checking helm is installed but it is not installed', async () => {
     replace(HelmManager.prototype, 'exec', fake.resolves({ stderr: 'command not found,' }))
     await expect(helm.isVersion3()).eventually.to.be.rejectedWith(
       'Unable to get Helm version, please check your Helm installation'
     )
   })
 
-  it('but there is a lower version than expected installed', async () => {
+  it('allows checking helm is installed but but there is a lower version than expected installed', async () => {
     replace(
       HelmManager.prototype,
       'exec',
@@ -29,32 +29,32 @@ describe('The user wants to use Helm', async () => {
     )
   })
 
-  it('and the user wants to check for a non installed repo', async () => {
+  it('allows checking for a non installed repo', async () => {
     replace(HelmManager.prototype, 'exec', fake.resolves({ stdout: 'repo1 installed' }))
     const isRepoInstalled = await helm.isRepoInstalled('repoName')
     expect(isRepoInstalled).to.be.false
   })
 
-  it('and the user wants to check for a repo installed but command fails', async () => {
+  it('allows checking for a repo installed but command fails', async () => {
     replace(HelmManager.prototype, 'exec', fake.resolves({ stderr: 'random error' }))
     const isRepoInstalled = await helm.isRepoInstalled('repoName')
     expect(isRepoInstalled).to.be.false
   })
 
-  it('and the user wants to check for a repo installed and the repo is already installed', async () => {
+  it('allows checking for a repo installed and the repo is already installed', async () => {
     replace(HelmManager.prototype, 'exec', fake.resolves({ stdout: 'repoName otherRepo' }))
     const isRepoInstalled = await helm.isRepoInstalled('repoName')
     expect(isRepoInstalled).to.be.true
   })
 
-  it('and the user wants to install a new repo but the installation fails', async () => {
+  it('allows installing a new repo but the installation fails', async () => {
     replace(HelmManager.prototype, 'exec', fake.resolves({ stderr: 'random error' }))
     await expect(helm.installRepo('repo', 'url')).to.be.eventually.rejectedWith(
       'Unable to install Helm repo, please check your Helm installation'
     )
   })
 
-  it('and the user wants to install a new repo but we are not able to verify it', async () => {
+  it('allows installing a new repo but we are not able to verify it', async () => {
     replace(HelmManager.prototype, 'exec', fake.resolves({ stdout: 'ok' }))
     replace(HelmManager.prototype, 'isRepoInstalled', fake.resolves(false))
     await expect(helm.installRepo('repo', 'url')).to.eventually.be.rejectedWith(
@@ -62,7 +62,7 @@ describe('The user wants to use Helm', async () => {
     )
   })
 
-  it('and the user sucessfully update the repo', async () => {
+  it('allows sucessfully installing the repo', async () => {
     replace(HelmManager.prototype, 'exec', fake.resolves({ stdout: 'ok' }))
     replace(HelmManager.prototype, 'isRepoInstalled', fake.resolves(true))
     let error = false
@@ -72,14 +72,14 @@ describe('The user wants to use Helm', async () => {
     expect(error).to.be.false
   })
 
-  it('and the user wants to update a repo but there is an error', async () => {
+  it('allows updating a repo but there is an error', async () => {
     replace(HelmManager.prototype, 'exec', fake.resolves({ stderr: 'error updating repo' }))
     await expect(helm.updateHelmRepo()).to.be.eventually.rejectedWith(
       'Unable to update Helm repo, please check your Helm installation'
     )
   })
 
-  it('and the user update repo sucessfully', async () => {
+  it('allows sucessfully update the repo', async () => {
     replace(HelmManager.prototype, 'exec', fake.resolves({ stdout: 'ok' }))
     let error = false
     await helm.updateHelmRepo().catch(() => {

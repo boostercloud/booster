@@ -18,17 +18,17 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     restore()
   })
 
-  it('the deploy finishes correctly', (done) => {
+  it('allows finishing deploy correctly', (done) => {
     const msgArray: string[] = []
     const serviceUrl = internet.ip
-    replace(DeployManager.prototype, 'verifyNamespace', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyHelm', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyVolumeClaim', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyUploadService', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyBoosterService', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyDapr', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyEventStore', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyUploadPod', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureDaprExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureEventStoreExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureUploadPodExists', fake.resolves(true))
     replace(DeployManager.prototype, 'uploadUserCode', fake.resolves(true))
     replace(DeployManager.prototype, 'deployBoosterApp', fake.resolves(serviceUrl))
     deploy(config).subscribe(
@@ -44,8 +44,8 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     )
   })
 
-  it('the namespace validation fails', (done) => {
-    replace(DeployManager.prototype, 'verifyNamespace', fake.rejects('error'))
+  it('allows deploying but the namespace validation fails', (done) => {
+    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.rejects('error'))
     deploy(config).subscribe(
       () => {},
       (error) => {
@@ -56,9 +56,9 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     )
   })
 
-  it('the helms validation fails', (done) => {
-    replace(DeployManager.prototype, 'verifyNamespace', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyHelm', fake.rejects('error'))
+  it('allows deploying but the helms validation fails', (done) => {
+    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.rejects('error'))
     deploy(config).subscribe(
       () => {},
       (error) => {
@@ -69,10 +69,10 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     )
   })
 
-  it('the volume claim validation fails', (done) => {
-    replace(DeployManager.prototype, 'verifyNamespace', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyHelm', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyVolumeClaim', fake.rejects('error'))
+  it('allows deploying but the volume claim validation fails', (done) => {
+    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.rejects('error'))
     deploy(config).subscribe(
       () => {},
       (error) => {
@@ -83,11 +83,11 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     )
   })
 
-  it('the upload service validation fails', (done) => {
-    replace(DeployManager.prototype, 'verifyNamespace', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyHelm', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyVolumeClaim', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyUploadService', fake.rejects('error'))
+  it('allows deploying but the upload service validation fails', (done) => {
+    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.rejects('error'))
     deploy(config).subscribe(
       () => {},
       (error) => {
@@ -98,12 +98,12 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     )
   })
 
-  it('the booster service validation fails', (done) => {
-    replace(DeployManager.prototype, 'verifyNamespace', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyHelm', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyVolumeClaim', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyUploadService', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyBoosterService', fake.rejects('error'))
+  it('tallows deploying but he booster service validation fails', (done) => {
+    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.rejects('error'))
     deploy(config).subscribe(
       () => {},
       (error) => {
@@ -114,13 +114,13 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     )
   })
 
-  it('the dapr service validation fails', (done) => {
-    replace(DeployManager.prototype, 'verifyNamespace', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyHelm', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyVolumeClaim', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyUploadService', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyBoosterService', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyDapr', fake.rejects('error'))
+  it('allows deploying but the dapr service validation fails', (done) => {
+    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureDaprExists', fake.rejects('error'))
     deploy(config).subscribe(
       () => {},
       (error) => {
@@ -131,14 +131,14 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     )
   })
 
-  it('the eventStore validation fails', (done) => {
-    replace(DeployManager.prototype, 'verifyNamespace', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyHelm', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyVolumeClaim', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyUploadService', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyBoosterService', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyDapr', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyEventStore', fake.rejects('error'))
+  it('allows deploying but the eventStore validation fails', (done) => {
+    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureDaprExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureEventStoreExists', fake.rejects('error'))
 
     deploy(config).subscribe(
       () => {},
@@ -150,15 +150,15 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     )
   })
 
-  it('the Upload pod validation fails', (done) => {
-    replace(DeployManager.prototype, 'verifyNamespace', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyHelm', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyVolumeClaim', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyUploadService', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyBoosterService', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyDapr', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyEventStore', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyUploadPod', fake.rejects('error'))
+  it('allows deploying but the Upload pod validation fails', (done) => {
+    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureDaprExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureEventStoreExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureUploadPodExists', fake.rejects('error'))
     deploy(config).subscribe(
       () => {},
       (error) => {
@@ -169,15 +169,15 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     )
   })
 
-  it('the User code Upload fails', (done) => {
-    replace(DeployManager.prototype, 'verifyNamespace', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyHelm', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyVolumeClaim', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyUploadService', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyBoosterService', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyDapr', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyEventStore', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyUploadPod', fake.resolves(true))
+  it('allows deploying but the User code Upload fails', (done) => {
+    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureDaprExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureEventStoreExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureUploadPodExists', fake.resolves(true))
     replace(DeployManager.prototype, 'uploadUserCode', fake.rejects('error'))
     deploy(config).subscribe(
       () => {},
@@ -189,15 +189,15 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     )
   })
 
-  it('the booster pod validation fails', (done) => {
-    replace(DeployManager.prototype, 'verifyNamespace', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyHelm', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyVolumeClaim', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyUploadService', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyBoosterService', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyDapr', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyEventStore', fake.resolves(true))
-    replace(DeployManager.prototype, 'verifyUploadPod', fake.resolves(true))
+  it('allows deploying butthe booster pod validation fails', (done) => {
+    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureDaprExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureEventStoreExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureUploadPodExists', fake.resolves(true))
     replace(DeployManager.prototype, 'uploadUserCode', fake.resolves(true))
     replace(DeployManager.prototype, 'deployBoosterApp', fake.rejects('error'))
     deploy(config).subscribe(
@@ -210,7 +210,7 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     )
   })
 
-  it('the nuke finish correctly', (done) => {
+  it('allows finishing nuke correctly', (done) => {
     const msgArray: string[] = []
     replace(DeployManager.prototype, 'deleteDapr', fake.resolves(true))
     replace(DeployManager.prototype, 'deleteRedis', fake.resolves(true))
@@ -228,7 +228,7 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     )
   })
 
-  it('delete dapr fails', (done) => {
+  it('allows nuking but delete dapr fails', (done) => {
     replace(DeployManager.prototype, 'deleteDapr', fake.rejects('error'))
     nuke(config).subscribe(
       () => {},
@@ -240,7 +240,7 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     )
   })
 
-  it('delete redis fails', (done) => {
+  it('alows nuking but delete redis fails', (done) => {
     replace(DeployManager.prototype, 'deleteDapr', fake.resolves(true))
     replace(DeployManager.prototype, 'deleteRedis', fake.rejects('error'))
 
@@ -254,7 +254,7 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     )
   })
 
-  it('delete resources fails', (done) => {
+  it('allows nuking but delete resources fails', (done) => {
     replace(DeployManager.prototype, 'deleteDapr', fake.resolves(true))
     replace(DeployManager.prototype, 'deleteRedis', fake.resolves(true))
     replace(DeployManager.prototype, 'deleteAllResources', fake.rejects('error'))

@@ -45,13 +45,7 @@ export class HelmManager {
    */
   public async isRepoInstalled(repoName: string): Promise<boolean> {
     const { stdout } = await this.exec('repo list')
-    if (!stdout) {
-      return false
-    }
-    if (!stdout.includes(repoName)) {
-      return false
-    }
-    return true
+    return !!stdout?.includes(repoName)
   }
 
   /**

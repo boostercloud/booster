@@ -12,7 +12,6 @@ const readdir = util.promisify(require('fs').readdir)
 const mkdir = util.promisify(require('fs').mkdir)
 const writeFile = util.promisify(require('fs').writeFile)
 const readFile = util.promisify(require('fs').readFile)
-
 export class DaprManager {
   private eventStoreRepo = 'https://charts.bitnami.com/bitnami'
   private eventStoreRepoName = 'bitnami'
@@ -60,12 +59,13 @@ export class DaprManager {
   /**
    * remove dapr services from your cluster
    *
-   * @returns {(Promise<void | string>)}
+   * @returns {(Promise<string>)}
    * @memberof DaprManager
    */
-  public async deleteDaprService(): Promise<void | string> {
+  public async deleteDaprService(): Promise<string> {
     const { stderr } = await this.helmManager.exec(`uninstall dapr -n ${this.namespace}`)
-    return stderr ? Promise.reject(stderr) : Promise.resolve('ok')
+    if (stderr) throw new Error(stderr)
+    return 'ok'
   }
 
   /**
@@ -83,7 +83,7 @@ export class DaprManager {
         return Promise.reject(stderr.toString())
       }
     }
-    return Promise.resolve('ok')
+    return 'ok'
   }
 
   /**
@@ -135,7 +135,7 @@ export class DaprManager {
    */
   public async readDaprComponentFile(componentFile: string): Promise<string> {
     const filePath = path.join(this.daprComponentsPath, componentFile)
-    return await readFile(filePath, { encoding: 'utf-8' })
+    return readFile(filePath, { encoding: 'utf-8' })
   }
 
   /**
@@ -155,6 +155,5 @@ export class DaprManager {
     writeFile(outFile, renderedYaml).catch(() => {
       return Promise.reject('Unable to create the index file for your app')
     })
-    return Promise.resolve()
   }
 }

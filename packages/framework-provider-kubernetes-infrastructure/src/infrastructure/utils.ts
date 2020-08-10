@@ -1,12 +1,12 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
-import fs = require('fs')
-import archiver = require('archiver')
-import os = require('os')
+import * as fs from 'fs'
+import * as archiver from 'archiver'
+import * as os from 'os'
 import FormData = require('form-data')
 import { IncomingMessage } from 'http'
 import { indexTemplate } from './templates/indexTemplate'
 import path = require('path')
-const util = require('util')
+import * as util from 'util'
 const writeFile = util.promisify(fs.writeFile)
 
 /**
@@ -118,7 +118,10 @@ export function createProjectZipFile(): Promise<string> {
  * @param {string} filepath
  * @returns {Promise<IncomingMessage>}
  */
-export async function uploadFile(serviceIp: string, filepath: string): Promise<IncomingMessage> {
+export async function uploadFile(serviceIp: string | undefined, filepath: string): Promise<IncomingMessage> {
+  if (!serviceIp) {
+    throw new Error('Undefined upload service IP, please check the uploadService in your cluster for more information')
+  }
   return new Promise((resolve, reject) => {
     const formData = new FormData()
     formData.append('myfile', fs.createReadStream(filepath))

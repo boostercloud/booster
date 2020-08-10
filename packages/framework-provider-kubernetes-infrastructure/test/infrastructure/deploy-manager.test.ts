@@ -8,7 +8,7 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import * as utils from '../../src/infrastructure/utils'
 import { CoreV1Api, KubeConfig, KubernetesObjectApi } from '@kubernetes/client-node'
 
-describe('As part of the deploy the users want to:', async () => {
+describe('User interaction during the deploy:', async () => {
   const k8sManager = new K8sManagement()
   const configuration = new BoosterConfig('production')
   const helmManager = new HelmManager()
@@ -24,126 +24,126 @@ describe('As part of the deploy the users want to:', async () => {
     restore()
   })
 
-  it('check that helm is ready and it is working', async () => {
+  it('allows verifying that helm is ready and it is working', async () => {
     stub(helmManager, 'isVersion3').resolves(true)
-    await expect(deployManager.verifyHelm()).to.be.eventually.equal(true)
+    await expect(deployManager.ensureHelmIsReady()).to.be.eventually.equal(true)
   })
 
-  it('check that helm is ready and it is not working', async () => {
+  it('allows verifying helm is ready and it is not working', async () => {
     const error = 'helm is not ready'
     stub(helmManager, 'isVersion3').rejects(error)
-    await expect(deployManager.verifyHelm()).to.be.eventually.rejectedWith(error)
+    await expect(deployManager.ensureDaprExists()).to.be.eventually.rejectedWith(error)
   })
 
-  it('check that Dapr is ready and it is working', async () => {
+  it('allows verifying that Dapr is ready and it is working', async () => {
     stub(helmManager, 'isRepoInstalled').resolves(true)
     stub(k8sManager, 'getPodFromNamespace').resolves(undefined)
     stub(helmManager, 'exec').resolves()
     stub(k8sManager, 'waitForPodToBeReady').resolves()
-    await expect(deployManager.verifyDapr()).to.eventually.be.fulfilled
+    await expect(deployManager.ensureDaprExists()).to.eventually.be.fulfilled
   })
 
-  it('check that Dapr is ready and it fails', async () => {
+  it('allows verifying that Dapr is ready and it fails', async () => {
     const error = 'timeout'
     stub(helmManager, 'isRepoInstalled').resolves(true)
     stub(k8sManager, 'getPodFromNamespace').resolves(undefined)
     stub(helmManager, 'exec').resolves()
     stub(k8sManager, 'waitForPodToBeReady').rejects(error)
-    await expect(deployManager.verifyDapr()).to.be.eventually.rejectedWith(error)
+    await expect(deployManager.ensureDaprExists()).to.be.eventually.rejectedWith(error)
   })
 
-  it('check that EventStore is ready and it is working', async () => {
+  it('allows verifying that EventStore is ready and it is working', async () => {
     stub(daprManager, 'configureEventStore').resolves()
-    await expect(deployManager.verifyEventStore()).to.eventually.be.fulfilled
+    await expect(deployManager.ensureEventStoreExists()).to.eventually.be.fulfilled
   })
 
-  it('check that EventStore is ready and it fails', async () => {
+  it('allows verifying that EventStore is ready and it fails', async () => {
     const error = 'error'
     stub(daprManager, 'configureEventStore').rejects(error)
-    await expect(deployManager.verifyEventStore()).to.be.eventually.rejectedWith(error)
+    await expect(deployManager.ensureEventStoreExists()).to.be.eventually.rejectedWith(error)
   })
 
-  it('check that namespace exists', async () => {
+  it('allows verifying that namespace exists', async () => {
     stub(k8sManager, 'getNamespace').resolves({ name: 'name' })
-    await expect(deployManager.verifyNamespace()).to.eventually.be.fulfilled
+    await expect(deployManager.ensureNamespaceExists()).to.eventually.be.fulfilled
   })
 
-  it('check that namespace is correctly created', async () => {
+  it('allows verifying that namespace is correctly created', async () => {
     stub(k8sManager, 'getNamespace').resolves(undefined)
     stub(k8sManager, 'createNamespace').resolves(true)
-    await expect(deployManager.verifyNamespace()).to.eventually.be.fulfilled
+    await expect(deployManager.ensureNamespaceExists()).to.eventually.be.fulfilled
   })
 
-  it('check that namespace is correctly created but it fails', async () => {
+  it('allows verifying that namespace is correctly created but it fails', async () => {
     const error = 'Unable to create a namespace for your project, please check your Kubectl configuration'
     stub(k8sManager, 'getNamespace').resolves(undefined)
     stub(k8sManager, 'createNamespace').resolves(false)
-    await expect(deployManager.verifyNamespace()).to.be.eventually.rejectedWith(error)
+    await expect(deployManager.ensureNamespaceExists()).to.be.eventually.rejectedWith(error)
   })
 
-  it('check that volumeClaim is ready', async () => {
+  it('allows verifying that volumeClaim is ready', async () => {
     stub(k8sManager, 'getVolumeClaimFromNamespace').resolves({ name: 'name' })
-    await expect(deployManager.verifyVolumeClaim()).to.eventually.be.fulfilled
+    await expect(deployManager.ensureVolumeClaimExists()).to.eventually.be.fulfilled
   })
 
-  it('check that volumeClaim is ready but it fails', async () => {
+  it('allows verifying that volumeClaim is ready but it fails', async () => {
     const error = 'Unable to create a volume claim for your project, please check your Kubectl configuration'
     stub(k8sManager, 'getVolumeClaimFromNamespace').resolves(undefined)
     stub(k8sManager, 'applyTemplate').resolves([])
-    await expect(deployManager.verifyVolumeClaim()).to.be.eventually.rejectedWith(error)
+    await expect(deployManager.ensureVolumeClaimExists()).to.be.eventually.rejectedWith(error)
   })
 
-  it('check that uploadService is ready', async () => {
+  it('allows verifying that uploadService is ready', async () => {
     stub(k8sManager, 'getServiceFromNamespace').resolves({ name: 'name' })
-    await expect(deployManager.verifyUploadService()).to.eventually.be.fulfilled
+    await expect(deployManager.ensureUploadServiceExists()).to.eventually.be.fulfilled
   })
 
-  it('check that uploadService is ready but it fails', async () => {
+  it('allows verifying that uploadService is ready but it fails', async () => {
     const error = 'Unable to create fileuploader service for your project, please check your Kubectl configuration'
     stub(k8sManager, 'getServiceFromNamespace').resolves(undefined)
     stub(k8sManager, 'applyTemplate').resolves([])
-    await expect(deployManager.verifyUploadService()).to.be.eventually.rejectedWith(error)
+    await expect(deployManager.ensureUploadServiceExists()).to.be.eventually.rejectedWith(error)
   })
 
-  it('check that boosterService is ready', async () => {
+  it('allows verifying that boosterService is ready', async () => {
     stub(k8sManager, 'getServiceFromNamespace').resolves({ name: 'name' })
-    await expect(deployManager.verifyBoosterService()).to.eventually.be.fulfilled
+    await expect(deployManager.ensureBoosterServiceExists()).to.eventually.be.fulfilled
   })
 
-  it('check that boosterService is ready but it fails', async () => {
+  it('allows verifying that boosterService is ready but it fails', async () => {
     const error = 'Unable to create booster service for your project, please check your Kubectl configuration'
     stub(k8sManager, 'getServiceFromNamespace').resolves(undefined)
     stub(k8sManager, 'applyTemplate').resolves([])
-    await expect(deployManager.verifyBoosterService()).to.be.eventually.rejectedWith(error)
+    await expect(deployManager.ensureBoosterServiceExists()).to.be.eventually.rejectedWith(error)
   })
 
-  it('check that uploadPod is ready', async () => {
+  it('allows verifying that uploadPod is ready', async () => {
     stub(k8sManager, 'getPodFromNamespace').resolves({ name: 'name' })
     stub(k8sManager, 'waitForPodToBeReady').resolves()
-    await expect(deployManager.verifyUploadPod()).to.eventually.be.fulfilled
+    await expect(deployManager.ensureUploadPodExists()).to.eventually.be.fulfilled
   })
 
-  it('check that uploadPod is ready but it fails', async () => {
+  it('allows verifying that uploadPod is ready but it fails', async () => {
     const error = 'timeout'
     stub(k8sManager, 'getPodFromNamespace').resolves({ name: 'name' })
     stub(k8sManager, 'waitForPodToBeReady').rejects(error)
-    await expect(deployManager.verifyUploadPod()).to.be.eventually.rejectedWith(error)
+    await expect(deployManager.ensureUploadPodExists()).to.be.eventually.rejectedWith(error)
   })
 
-  it('check that boosterPod is ready', async () => {
+  it('allows verifying that boosterPod is ready', async () => {
     stub(k8sManager, 'getPodFromNamespace').resolves({ name: 'name' })
     stub(k8sManager, 'waitForPodToBeReady').resolves()
     stub(k8sManager, 'applyTemplate').resolves([{ apiVersion: '1' }])
-    await expect(deployManager.verifyBoosterPod()).to.eventually.be.fulfilled
+    await expect(deployManager.ensureBoosterPodExists()).to.eventually.be.fulfilled
   })
 
-  it('check that boosterPod is ready but it fails', async () => {
+  it('allows verifying that boosterPod is ready but it fails', async () => {
     const error = 'error'
     stub(k8sManager, 'getPodFromNamespace').rejects(error)
-    await expect(deployManager.verifyBoosterPod()).to.be.eventually.rejectedWith(error)
+    await expect(deployManager.ensureBoosterPodExists()).to.be.eventually.rejectedWith(error)
   })
 
-  it('check that the upload code works', async () => {
+  it('allows verifying that the upload code works', async () => {
     stub(k8sManager, 'waitForServiceToBeReady').resolves()
     replace(utils, 'createIndexFile', fake.resolves(''))
     replace(utils, 'uploadFile', fake.resolves({ statusCode: 200 }))

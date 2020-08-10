@@ -8,7 +8,7 @@ import { stateStore } from '../../src/infrastructure/templates/statestore'
 import { lorem } from 'faker'
 const fs = require('fs')
 
-describe('Users want to manage Dapr inside the cluster', () => {
+describe('Users Dapr interaction inside the cluster', () => {
   const k8sManager = new K8sManagement()
   const configuration = new BoosterConfig(lorem.word())
   const helmManager = new HelmManager()
@@ -18,7 +18,7 @@ describe('Users want to manage Dapr inside the cluster', () => {
     restore()
   })
 
-  it('they want to configure the eventStore', async () => {
+  it('allows configuring the eventStore', async () => {
     replace(fs, 'existsSync', fake.returns(false))
     stub(daprManager, 'verifyEventStore').resolves({
       namespace: lorem.word(),
@@ -33,7 +33,7 @@ describe('Users want to manage Dapr inside the cluster', () => {
     expect(result.length).to.be.equal(0)
   })
 
-  it('they want to configure the eventStore but the cluster fails', async () => {
+  it('allows configuring the eventStore but the cluster fails', async () => {
     replace(fs, 'existsSync', fake.returns(false))
     stub(daprManager, 'verifyEventStore').resolves({
       namespace: lorem.word(),
@@ -47,25 +47,25 @@ describe('Users want to manage Dapr inside the cluster', () => {
     await expect(daprManager.configureEventStore()).eventually.to.be.rejectedWith('error!!')
   })
 
-  it('they want to delete Dapr service', async () => {
+  it('allows deleting Dapr service', async () => {
     stub(helmManager, 'exec').resolves({ stdout: 'ok' })
     stub(daprManager, 'readDaprComponentFile').resolves(stateStore.template)
     await expect(daprManager.deleteDaprService()).eventually.to.be.equal('ok')
   })
 
-  it('they want to delete Dapr service but helms fails', async () => {
+  it('allows deleting Dapr service but helms fails', async () => {
     stub(helmManager, 'exec').resolves({ stderr: 'error!!' })
     stub(daprManager, 'readDaprComponentFile').resolves(stateStore.template)
     await expect(daprManager.deleteDaprService()).eventually.to.be.rejectedWith('error!!')
   })
 
-  it('they want to delete Event Store', async () => {
+  it('allows deleting Event Store', async () => {
     stub(helmManager, 'exec').resolves({ stdout: 'ok' })
     stub(daprManager, 'readDaprComponentFile').resolves(stateStore.template)
     await expect(daprManager.deleteEventStore()).eventually.to.be.equal('ok')
   })
 
-  it('they want to delete Event Store but helms fails', async () => {
+  it('allows deleting Event Store but helms fails', async () => {
     stub(helmManager, 'exec').resolves({ stderr: 'error!!' })
     stub(daprManager, 'readDaprComponentFile').resolves(stateStore.template)
     await expect(daprManager.deleteEventStore()).eventually.to.be.rejectedWith('error!!')

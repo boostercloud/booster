@@ -20,7 +20,7 @@ import { expect } from '../expect'
 import { boosterAppPod } from '../../src/infrastructure/templates/boosterApp'
 import { internet, random } from 'faker'
 
-describe('Users want to interact with K8s cluster', () => {
+describe('Users interaction with K8s cluster', () => {
   const NAMESPACE_NAME = random.word()
   const NAMESPACE_NAME_NON_EXIST = random.word()
   const POD_NAME = random.word()
@@ -119,95 +119,95 @@ describe('Users want to interact with K8s cluster', () => {
     restore()
   })
 
-  it('and list all pods', async () => {
+  it('allows listing all pods', async () => {
     const clusterResponse = await k8sManager.getAllPodsInNamespace(NAMESPACE_NAME)
     expect(clusterResponse.length).to.be.equal(1)
     expect(clusterResponse[0].name).to.be.equal(POD_NAME)
   })
 
-  it('and list all namespaces', async () => {
+  it('allows listing all namespaces', async () => {
     const clusterResponse = await k8sManager.getAllNamespaces()
     expect(clusterResponse.length).to.be.equal(1)
     expect(clusterResponse[0].name).to.be.equal(NAMESPACE_NAME)
   })
 
-  it('and list all cluster nodes', async () => {
+  it('allows listing all cluster nodes', async () => {
     const clusterResponse = await k8sManager.getAllNodesInCluster()
     expect(clusterResponse.length).to.be.equal(2)
     expect(clusterResponse[0].name).to.be.equal(NODE_NAME)
   })
 
-  it('and they want to create a namespace', async () => {
+  it('allows creating a namespace', async () => {
     const clusterResponse = await k8sManager.createNamespace(NAMESPACE_NAME)
     expect(clusterResponse).to.be.true
   })
 
-  it('and they want to delete a namespace', async () => {
+  it('allows deleting a namespace', async () => {
     const clusterResponse = await k8sManager.deleteNamespace(NAMESPACE_NAME)
     expect(clusterResponse).to.be.true
   })
 
-  it('and they want to get a specific namespace', async () => {
+  it('allows getting a specific namespace', async () => {
     const clusterResponse = await k8sManager.getNamespace(NAMESPACE_NAME)
     expect(clusterResponse?.name).to.be.equal(NAMESPACE_NAME)
   })
 
-  it('they try to search a non existing namespace', async () => {
+  it('allows searching a non existing namespace', async () => {
     const clusterResponse = await k8sManager.getNamespace(NAMESPACE_NAME_NON_EXIST)
     expect(clusterResponse).to.be.equal(undefined)
   })
 
-  it('they want to get a specific pod', async () => {
+  it('allows getting a specific pod', async () => {
     const clusterResponse = await k8sManager.getPodFromNamespace(NAMESPACE_NAME, POD_NAME)
     expect(clusterResponse?.name).to.be.equal(POD_NAME)
   })
 
-  it('they try to search a non existing pod', async () => {
+  it('allows searching a non existing pod', async () => {
     const clusterResponse = await k8sManager.getPodFromNamespace(NAMESPACE_NAME, POD_NAME_NON_EXIST)
     expect(clusterResponse).to.be.equal(undefined)
   })
 
-  it('they want to get the main node node', async () => {
+  it('allows getting the main node node', async () => {
     const clusterResponse = await k8sManager.getMainNode()
     expect(clusterResponse?.name).to.be.equal(NODE_NAME)
   })
 
-  it('they want to get the list of services in a namespace', async () => {
+  it('allows getting the list of services in a namespace', async () => {
     const clusterResponse = await k8sManager.getAllServicesInNamespace(NAMESPACE_NAME)
     expect(clusterResponse.length).to.be.equal(1)
   })
 
-  it('they want to get the list of volume claims in a namespace', async () => {
+  it('allows getting the list of volume claims in a namespace', async () => {
     const clusterResponse = await k8sManager.getAllVolumeClaimFromNamespace(NAMESPACE_NAME)
     expect(clusterResponse.length).to.be.equal(1)
   })
 
-  it('they want to get one service from a namespace', async () => {
+  it('allows getting one service from a namespace', async () => {
     const clusterResponse = await k8sManager.getServiceFromNamespace(NAMESPACE_NAME, SERVICE_NAME)
     expect(clusterResponse?.labels?.['app']).to.be.equal(SERVICE_NAME)
   })
 
-  it('they want to get a claim from a namespace', async () => {
+  it('allows getting a claim from a namespace', async () => {
     const clusterResponse = await k8sManager.getVolumeClaimFromNamespace(NAMESPACE_NAME, PVC_NAME)
     expect(clusterResponse?.name).to.be.equal(PVC_NAME)
   })
 
-  it('they want to get apply a template into the cluster', async () => {
+  it('allows applying a template into the cluster', async () => {
     const clusterResponse = await k8sManager.applyTemplate(boosterAppPod.template, TEMPLATE_VALUES)
     expect(clusterResponse.length).to.be.equal(1)
   })
 
-  it('they want to wait for a pod to be ready', async () => {
+  it('allows waiting for a pod to be ready', async () => {
     const clusterResponse = await k8sManager.waitForPodToBeReady(NAMESPACE_NAME, POD_NAME)
     expect(clusterResponse).to.be.not.undefined
   })
 
-  it('they want to wait for a service to be ready', async () => {
+  it('allows waiting for a service to be ready', async () => {
     const clusterResponse = await k8sManager.waitForServiceToBeReady(NAMESPACE_NAME, SERVICE_NAME)
     expect(clusterResponse).to.be.not.undefined
   })
 
-  it('they want to get a secret', async () => {
+  it('allows getting a secret', async () => {
     const clusterResponse = await k8sManager.getSecret(NAMESPACE_NAME, SECRET_NAME)
     expect(clusterResponse?.data).to.be.equal(SECRET_DATA)
     expect(clusterResponse?.name).to.be.equal(SECRET_NAME)

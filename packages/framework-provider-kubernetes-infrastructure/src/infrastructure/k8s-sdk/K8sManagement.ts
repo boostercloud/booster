@@ -53,7 +53,7 @@ export class K8sManagement {
         name: item.metadata?.name,
         namespace: item.metadata?.namespace ?? 'default',
         labels: item.metadata?.labels ?? {},
-        ip: item.status?.loadBalancer?.ingress?.[0].ip ? item.status.loadBalancer.ingress[0].ip : '',
+        ip: item.status?.loadBalancer?.ingress?.[0]?.ip ?? '',
       }
     })
   }
@@ -204,10 +204,9 @@ export class K8sManagement {
   public async getAllNodesInCluster(): Promise<Array<Node>> {
     const response = await this.unwrapResponse(this.k8sClient.listNode())
     return response.items.map((item) => {
-      const internalIP =
-        item.status?.addresses?.find((address) => {
-          return address.type === 'InternalIP'
-        }) ?? null
+      const internalIP = item.status?.addresses?.find((address) => {
+        return address.type === 'InternalIP'
+      })
       let mainNode = false
       const labels = item.metadata?.labels
       if (labels) {
@@ -228,12 +227,12 @@ export class K8sManagement {
   /**
    * get the main node of your cluster
    *
-   * @returns {(Promise<Node | null>)}
+   * @returns {(Promise<Node | undefined>)}
    * @memberof K8sManagement
    */
-  public async getMainNode(): Promise<Node | null> {
+  public async getMainNode(): Promise<Node | undefined> {
     const clusterNodes = await this.getAllNodesInCluster()
-    return clusterNodes.find((node) => node.mainNode) ?? null
+    return clusterNodes.find((node) => node?.mainNode)
   }
 
   /**
@@ -259,7 +258,7 @@ export class K8sManagement {
   public async applyYamlString(yaml: string): Promise<Array<KubernetesObject>> {
     const client = KubernetesObjectApi.makeApiClient(this.kube)
     const specs = safeLoadAll(yaml)
-    const validSpecs = specs.filter((s) => s && s.kind && s.metadata)
+    const validSpecs = specs.filter((s) => s?.kind && s?.metadata)
     const created: KubernetesObject[] = []
     for (const spec of validSpecs) {
       spec.metadata = spec.metadata || {}
