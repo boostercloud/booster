@@ -2,40 +2,27 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import * as fs from 'fs'
 import * as archiver from 'archiver'
 import * as os from 'os'
-import FormData = require('form-data')
+import * as FormData from 'form-data'
 import { IncomingMessage } from 'http'
 import { indexTemplate } from './templates/indexTemplate'
-import path = require('path')
+import * as path from 'path'
 import * as util from 'util'
 const writeFile = util.promisify(fs.writeFile)
 
 /**
  * get cluster namespace from Booster configuration
- *
- * @export
- * @param {BoosterConfig} configuration
- * @returns {string}
  */
 export function getProjectNamespaceName(configuration: BoosterConfig): string {
   return `booster-${configuration.appName}-${configuration.environmentName}`
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function sleep(ms: number): Promise<any> {
+function sleep(ms: number): Promise<any> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 /**
  * wait for a resource to be ready or reject if not ready after a timeout
- *
- * @export
- * @template TResult
- * @param {() => Promise<TResult>} tryFunction
- * @param {(result: TResult) => boolean} checkResult
- * @param {string} errorMessage
- * @param {number} [timeoutMs=180000]
- * @param {number} [tryEveryMs=1000]
- * @returns {Promise<TResult>}
  */
 export async function waitForIt<TResult>(
   tryFunction: () => Promise<TResult>,
@@ -56,7 +43,7 @@ export async function waitForIt<TResult>(
     const elapsed = Date.now() - start
 
     if (elapsed > timeoutMs) {
-      return Promise.reject(errorMessage)
+      throw new Error(errorMessage)
     }
     const nextExecutionDelay = (timeoutMs - elapsed) % tryEveryMs
     await sleep(nextExecutionDelay)
@@ -66,23 +53,17 @@ export async function waitForIt<TResult>(
 
 /**
  * create index.js file based on template
- *
- * @export
- * @returns {Promise<string>}
  */
 export async function createIndexFile(): Promise<string> {
   const outFile = path.join(os.tmpdir(), 'index.js')
   writeFile(outFile, indexTemplate).catch(() => {
-    return Promise.reject('Unable to create the index file for your app')
+    throw new Error('Unable to create the index file for your app')
   })
   return outFile
 }
 
 /**
  * create a zip file with the project content
- *
- * @export
- * @returns {Promise<string>}
  */
 export function createProjectZipFile(): Promise<string> {
   const output = fs.createWriteStream(path.join(os.tmpdir(), 'boosterCode.zip'))
@@ -105,18 +86,13 @@ export function createProjectZipFile(): Promise<string> {
     })
 
     archive.on('error', (err: any) => {
-      reject(err)
+      throw new Error(err)
     })
   })
 }
 
 /**
  * upload file into the cluster using the uploader file service
- *
- * @export
- * @param {string} serviceIp
- * @param {string} filepath
- * @returns {Promise<IncomingMessage>}
  */
 export async function uploadFile(serviceIp: string | undefined, filepath: string): Promise<IncomingMessage> {
   if (!serviceIp) {
@@ -127,7 +103,7 @@ export async function uploadFile(serviceIp: string | undefined, filepath: string
     formData.append('myfile', fs.createReadStream(filepath))
     formData.submit(`http://${serviceIp}/uploadFile`, (err, res) => {
       if (err) {
-        reject(err)
+        throw err
       }
       resolve(res)
     })
