@@ -296,9 +296,12 @@ export class DisconnectableApolloClient extends ApolloClient<NormalizedCacheObje
     super(options)
   }
 
-  public reconnect(onReconnected?: () => void): void {
-    if (onReconnected) this.subscriptionClient.onReconnected(onReconnected)
+  public reconnect(): Promise<void> {
+    const reconnectPromise = new Promise<void>((resolve) => {
+      this.subscriptionClient.onReconnected(resolve)
+    })
     this.subscriptionClient.close(false)
+    return reconnectPromise
   }
 
   public disconnect(): void {

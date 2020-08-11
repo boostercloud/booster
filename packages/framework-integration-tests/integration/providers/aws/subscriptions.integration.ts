@@ -1,6 +1,7 @@
 import { countSubscriptionsItems, DisconnectableApolloClient, graphQLClientWithSubscriptions, waitForIt } from './utils'
 import { random } from 'faker'
 import gql from 'graphql-tag'
+import { expect } from 'chai'
 import * as chai from 'chai'
 import { Observable } from 'apollo-client/util/Observable'
 
@@ -64,6 +65,38 @@ describe('subscriptions', () => {
       }
     })
   })
+
+  describe('when socket reconnects ', () => {
+    let client: DisconnectableApolloClient
+    before(async () => {
+      client = await graphQLClientWithSubscriptions()
+    })
+    after(() => {
+      client.disconnect()
+    })
+
+    it('keeps the same subscriptions', async () => {
+      const cartID = random.uuid()
+      const originalSubscriptionsCount = await countSubscriptionsItems()
+      // Let's create two subscriptions to the same read model
+      const observableOne = cartSubscription(client, cartID)
+      const observableTwo = cartSubscription(client, cartID)
+      // Call the subscribe function to send the subscription to server
+      observableOne.subscribe(() => {})
+      observableTwo.subscribe(() => {})
+      // Wait for for the subscriptions to arrive
+      await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount + 2)
+      // Check we receive data when the read model is modified
+      await cartMutation(client, cartID)
+      await expect(Promise.all([promisify(observableOne), promisify(observableTwo)])).to.eventually.be.fulfilled
+
+      // Now reconnect and see if we keep the having the same subscription and receive data
+      await client.reconnect()
+      await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount + 2)
+      await cartMutation(client, cartID)
+      await expect(Promise.all([promisify(observableOne), promisify(observableTwo)])).to.eventually.be.fulfilled
+    })
+  })
 })
 
 function cartSubscription(client: DisconnectableApolloClient, cartID: string): Observable<any> {
@@ -75,6 +108,29 @@ function cartSubscription(client: DisconnectableApolloClient, cartID: string): O
           id
           cartItems
         }
+      }
+    `,
+  })
+}
+
+function promisify(observable: Observable<any>): Promise<any> {
+  return new Promise((resolve, reject) => {
+    observable.subscribe({
+      next: resolve,
+      error: reject,
+    })
+  })
+}
+
+async function cartMutation(client: DisconnectableApolloClient, cartID: string): Promise<void> {
+  await client.mutate({
+    variables: {
+      cartId: cartID,
+      productId: random.uuid(),
+    },
+    mutation: gql`
+      mutation ChangeCartItem($cartId: ID!, $productId: ID!) {
+        ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: 2 })
       }
     `,
   })

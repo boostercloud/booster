@@ -703,9 +703,7 @@ describe('With the auth API', () => {
           refreshedUserAuthInformation = await refreshUserAuthInformation(userAuthInformation.refreshToken)
           // Update access token that's being used by the Apollo client
           authToken = refreshedUserAuthInformation.accessToken
-          await new Promise((resolve) => {
-            client.reconnect(() => resolve())
-          })
+          await client.reconnect()
         })
 
         it('should return a new access token', () => {
@@ -1124,9 +1122,7 @@ describe('With the auth API', () => {
           refreshedUserAuthInformation = await refreshUserAuthInformation(adminUserAuthInformation.refreshToken)
           // Update access token that's being used by the Apollo client
           authToken = refreshedUserAuthInformation.accessToken
-          await new Promise((resolve) => {
-            client.reconnect(() => resolve())
-          })
+          await client.reconnect()
         })
 
         it('should return a new access token', () => {
