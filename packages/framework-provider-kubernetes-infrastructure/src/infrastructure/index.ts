@@ -32,7 +32,7 @@ async function deployBoosterApp(observer: Subscriber<string>, configuration: Boo
   await Promise.all([deployManager.ensureNamespaceExists(), deployManager.ensureHelmIsReady()])
   observer.next('Checking your volume claim')
   await deployManager.ensureVolumeClaimExists()
-  observer.next('Deploying all neccesary services')
+  observer.next('Deploying all necessary services')
   await Promise.all([deployManager.ensureUploadServiceExists(), deployManager.ensureBoosterServiceExists()])
   observer.next('Checking your Dapr services and event store')
   await Promise.all([deployManager.ensureDaprExists(), deployManager.ensureEventStoreExists()])

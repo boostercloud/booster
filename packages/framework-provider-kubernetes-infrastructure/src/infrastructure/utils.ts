@@ -98,7 +98,7 @@ export async function uploadFile(serviceIp: string | undefined, filepath: string
   if (!serviceIp) {
     throw new Error('Undefined upload service IP, please check the uploadService in your cluster for more information')
   }
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const formData = new FormData()
     formData.append('myfile', fs.createReadStream(filepath))
     formData.submit(`http://${serviceIp}/uploadFile`, (err, res) => {
