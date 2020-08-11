@@ -36,7 +36,7 @@ export class BoosterGraphQLDispatcher {
       {
         onStartOperation: this.runGraphQLOperation.bind(this),
         onStopOperation: this.readModelDispatcher.unsubscribe.bind(this.readModelDispatcher),
-        onTerminate: this.readModelDispatcher.unsubscribeAll.bind(this.readModelDispatcher),
+        onTerminate: this.handleDisconnect.bind(this),
       }
     )
   }
@@ -52,7 +52,7 @@ export class BoosterGraphQLDispatcher {
       case 'MESSAGE':
         return this.config.provider.graphQL.handleResult(await this.handleMessage(envelopeOrError))
       case 'DISCONNECT':
-        return this.config.provider.graphQL.handleResult(await this.handleDisconnect(envelopeOrError))
+        return this.config.provider.graphQL.handleResult(await this.handleDisconnect(envelopeOrError.connectionID))
       default:
         return this.config.provider.graphQL.handleResult({
           errors: [new Error(`Unknown message type ${envelopeOrError.eventType}`)],
@@ -156,13 +156,15 @@ export class BoosterGraphQLDispatcher {
     return result
   }
 
-  private async handleDisconnect(envelope: GraphQLRequestEnvelope): Promise<void> {
-    if (!envelope.connectionID) {
+  private async handleDisconnect(connectionID?: string): Promise<void> {
+    if (!connectionID) {
       // This should be impossible, but just in case
       this.logger.debug("Received a DISCONNECT message but field 'connectionID' is missing. Doing nothing")
       return
     }
-    return this.readModelDispatcher.unsubscribeAll(envelope.connectionID)
+    this.logger.debug('Deleting all subscriptions and connection data')
+    await this.config.provider.connections.deleteData(this.config, connectionID)
+    await this.readModelDispatcher.unsubscribeAll(connectionID)
   }
 }
 

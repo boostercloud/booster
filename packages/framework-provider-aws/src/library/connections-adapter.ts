@@ -28,6 +28,7 @@ export async function fetchConnectionData(
     .get({
       TableName: config.resourceNames.connectionsStore,
       Key: { [connectionsStoreAttributes.partitionKey]: connectionID },
+      ConsistentRead: true,
     })
     .promise()
   return response.Item as ConnectionDataEnvelope

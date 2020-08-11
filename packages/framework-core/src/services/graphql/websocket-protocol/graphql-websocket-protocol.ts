@@ -80,8 +80,9 @@ export class GraphQLWebsocketHandler {
     if (clientMessage.payload?.Authorization) {
       userEnvelope = await this.authManager.fromAuthToken(clientMessage.payload.Authorization)
     }
+    const nowEpoch = Math.floor(new Date().getTime() / 1000)
     const connectionData: ConnectionDataEnvelope = {
-      expirationTime: this.config.subscriptions.maxDurationInSeconds,
+      expirationTime: nowEpoch + this.config.subscriptions.maxDurationInSeconds,
       user: userEnvelope,
     }
     this.logger.debug('Storing connection data: ', connectionData)
@@ -130,6 +131,7 @@ export class GraphQLWebsocketHandler {
     message: GraphQLStart
   ): Promise<GraphQLRequestEnvelope> {
     const connectionData = await this.connectionManager.fetchData(this.config, connectionID)
+    this.logger.debug('Found connection data: ', connectionData)
     return {
       ...envelope,
       currentUser: connectionData?.user,
@@ -154,8 +156,6 @@ export class GraphQLWebsocketHandler {
   private async handleTerminate(connectionID: string): Promise<void> {
     this.logger.debug('Executing terminate operation')
     await this.callbacks.onTerminate(connectionID)
-    this.logger.debug('Deleting connection data')
-    await this.connectionManager.deleteData(this.config, connectionID)
     this.logger.debug('Terminate operation finished')
   }
 }
