@@ -473,11 +473,13 @@ describe('With the auth API', () => {
 
     context('with a signed-in user', () => {
       let userAuthInformation: UserAuthInformation
+      let authToken: string
       let client: DisconnectableApolloClient
 
       before(async () => {
         userAuthInformation = await getUserAuthInformation(userEmail, userPassword)
-        client = await graphQLClientWithSubscriptions(userAuthInformation.accessToken)
+        authToken = userAuthInformation.accessToken
+        client = await graphQLClientWithSubscriptions(() => authToken)
       })
 
       after(() => {
@@ -699,9 +701,11 @@ describe('With the auth API', () => {
 
         before(async () => {
           refreshedUserAuthInformation = await refreshUserAuthInformation(userAuthInformation.refreshToken)
-
-          // Update access token in client
-          client.updateToken(refreshedUserAuthInformation.accessToken)
+          // Update access token that's being used by the Apollo client
+          authToken = refreshedUserAuthInformation.accessToken
+          await new Promise((resolve) => {
+            client.reconnect(() => resolve())
+          })
         })
 
         it('should return a new access token', () => {
@@ -1019,11 +1023,13 @@ describe('With the auth API', () => {
 
     context('with a signed-in admin user', () => {
       let adminUserAuthInformation: UserAuthInformation
+      let authToken: string
       let client: DisconnectableApolloClient
 
       before(async () => {
         adminUserAuthInformation = await getUserAuthInformation(adminEmail, adminPassword)
-        client = await graphQLClientWithSubscriptions(adminUserAuthInformation.accessToken)
+        authToken = adminUserAuthInformation.accessToken
+        client = await graphQLClientWithSubscriptions(() => authToken)
       })
 
       after(() => {
@@ -1116,9 +1122,11 @@ describe('With the auth API', () => {
 
         before(async () => {
           refreshedUserAuthInformation = await refreshUserAuthInformation(adminUserAuthInformation.refreshToken)
-
-          // Update access token in client
-          client.updateToken(refreshedUserAuthInformation.accessToken)
+          // Update access token that's being used by the Apollo client
+          authToken = refreshedUserAuthInformation.accessToken
+          await new Promise((resolve) => {
+            client.reconnect(() => resolve())
+          })
         })
 
         it('should return a new access token', () => {

@@ -11,9 +11,9 @@ import { internet } from 'faker'
 import { sleep } from '../helpers'
 import { WebSocketLink } from 'apollo-link-ws'
 import { getMainDefinition } from 'apollo-utilities'
-import { split } from 'apollo-link'
+import { split, ApolloLink } from 'apollo-link'
 import * as WebSocket from 'ws'
-import { OperationOptions, SubscriptionClient } from 'subscriptions-transport-ws'
+import { SubscriptionClient } from 'subscriptions-transport-ws'
 import { ApolloClientOptions } from 'apollo-client/ApolloClient'
 
 const userPoolId = 'userpool'
@@ -256,10 +256,12 @@ export async function refreshTokenURL(): Promise<string> {
 
 // --- GraphQL helpers ---
 
-export async function graphQLClient(authToken?: string): Promise<ApolloClient<NormalizedCacheObject>> {
+type AuthToken = string | (() => string)
+
+export async function graphQLClient(authToken?: AuthToken): Promise<ApolloClient<NormalizedCacheObject>> {
   return new ApolloClient({
     cache: new InMemoryCache(),
-    link: await getApolloHTTPLink(authToken),
+    link: getAuthLink(authToken).concat(await getApolloHTTPLink()),
     defaultOptions: {
       query: {
         fetchPolicy: 'no-cache',
@@ -268,13 +270,21 @@ export async function graphQLClient(authToken?: string): Promise<ApolloClient<No
   })
 }
 
-async function getApolloHTTPLink(authToken?: string): Promise<HttpLink> {
+async function getApolloHTTPLink(): Promise<HttpLink> {
   const httpURL = await baseHTTPURL()
-  const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {}
   return new HttpLink({
     uri: new URL('graphql', httpURL).href,
-    headers,
     fetch,
+  })
+}
+
+function getAuthLink(authToken?: string | (() => string)): ApolloLink {
+  return new ApolloLink((operation, forward) => {
+    if (authToken) {
+      const token = typeof authToken == 'function' ? authToken() : authToken
+      operation.setContext({ headers: { Authorization: 'Bearer ' + token } })
+    }
+    return forward(operation)
   })
 }
 
@@ -286,15 +296,9 @@ export class DisconnectableApolloClient extends ApolloClient<NormalizedCacheObje
     super(options)
   }
 
-  public updateToken(token: string): void {
-    this.subscriptionClient.use([
-      {
-        applyMiddleware(options: OperationOptions, next: Function): void {
-          options.Authorization = token
-          next()
-        },
-      },
-    ])
+  public reconnect(onReconnected?: () => void): void {
+    if (onReconnected) this.subscriptionClient.onReconnected(onReconnected)
+    this.subscriptionClient.close(false)
   }
 
   public disconnect(): void {
@@ -309,28 +313,16 @@ export class DisconnectableApolloClient extends ApolloClient<NormalizedCacheObje
  * @param authToken
  * @param tokenInHeader
  */
-export async function graphQLClientWithSubscriptions(authToken?: string): Promise<DisconnectableApolloClient> {
-  const subscriptionClient: SubscriptionClient = await graphqlSubscriptionsClient()
-  if (authToken) {
-    subscriptionClient.use([
-      {
-        applyMiddleware(options: OperationOptions, next: Function): void {
-          options.Authorization = authToken
-          next()
-        },
-      },
-    ])
-  }
-
-  const websocketLink = new WebSocketLink(subscriptionClient)
+export async function graphQLClientWithSubscriptions(authToken?: AuthToken): Promise<DisconnectableApolloClient> {
+  const subscriptionClient: SubscriptionClient = await graphqlSubscriptionsClient(authToken)
 
   const link = split(
     ({ query }) => {
       const definition = getMainDefinition(query)
       return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
     },
-    websocketLink,
-    await getApolloHTTPLink(authToken)
+    new WebSocketLink(subscriptionClient),
+    getAuthLink(authToken).concat(await getApolloHTTPLink())
   )
 
   return new DisconnectableApolloClient(subscriptionClient, {
@@ -344,12 +336,20 @@ export async function graphQLClientWithSubscriptions(authToken?: string): Promis
   })
 }
 
-export async function graphqlSubscriptionsClient(): Promise<SubscriptionClient> {
+export async function graphqlSubscriptionsClient(authToken?: AuthToken): Promise<SubscriptionClient> {
   return new SubscriptionClient(
     await baseWebsocketURL(),
     {
-      lazy: true,
       reconnect: true,
+      connectionParams: function() {
+        if (authToken) {
+          const token = typeof authToken == 'function' ? authToken() : authToken
+          return {
+            Authorization: 'Bearer ' + token,
+          }
+        }
+        return {}
+      },
     },
     class MyWebSocket extends WebSocket {
       public constructor(url: string, protocols?: string | string[]) {
