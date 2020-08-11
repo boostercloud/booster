@@ -1454,7 +1454,7 @@ export class SuperUserWithoutConfirmation {}
 Here, we have defined the `Admin`, `User`, `SuperUser` and `SuperUserWithoutConfirmation` roles. They all contain an `auth` attribute which contains a `signUpMethods` and `requiresConfirmation` attributes.
 
 When `signUpMethods` is empty (`Admin` role) or is not specified, a user can't use this role to sign up.
-`signUpMethods` is an array with limited possible values: `email` or `phone` or a combination of both.
+`signUpMethods` is an array with limited possible values: `email`, `phone` or a combination of both.
 Users with the `User` role will only be able to sign up with their emails, whereas the ones with the `SuperUser` role will be able to sign up with either their email or their phone number.
 
 When `requiresConfirmation` is true or not specified, a confirmation is required for the chosen sign up method.
@@ -1476,9 +1476,6 @@ The base URL of all these endpoints is the `httpURL` output of your application.
 
 ##### Sign-up
 Users can use this endpoint to register in your application and get a role assigned to them.
-Only roles that filled `signUpMethods` with valid entries can be used upon sign-up. 
-Depending on the value of `requiresConfirmation` a confirmation might be required or not.
-
 
 ![confirmation email](./img/sign-up-verificaiton-email.png)
 ![email confirmed](./img/sign-up-confirmed.png)
