@@ -8,6 +8,8 @@ import {
   InvalidParameterError,
 } from '@boostercloud/framework-types'
 
+import * as validator from 'validator'
+
 export class BoosterAuth {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public static checkSignUp(rawMessage: any, config: BoosterConfig, logger: Logger): any {
@@ -17,13 +19,29 @@ export class BoosterAuth {
     const roleName = userEnvelope.role
     if (roleName) {
       const roleMetadata = config.roles[userEnvelope.role]
-
       if (!roleMetadata) {
         throw new InvalidParameterError(`Unknown role ${roleName}`)
       }
-      if (!roleMetadata.allowSelfSignUp) {
+
+      const authMetadata = roleMetadata.auth
+      if (!authMetadata?.signUpMethods?.length) {
         throw new InvalidParameterError(
           `User with role ${roleName} can't sign up by themselves. Choose a different role or contact and administrator`
+        )
+      }
+
+      const signUpOptions = authMetadata.signUpMethods
+      const username = userEnvelope.username
+
+      if (validator.default.isEmail(username) && !signUpOptions.includes('email')) {
+        throw new InvalidParameterError(
+          `User with role ${roleName} can't sign up with an email, a phone number is expected`
+        )
+      }
+
+      if (!validator.default.isEmail(username) && !signUpOptions.includes('phone')) {
+        throw new InvalidParameterError(
+          `User with role ${roleName} can't sign up with a phone number, an email is expected`
         )
       }
     }

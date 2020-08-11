@@ -122,7 +122,7 @@ describe('the `RegisterHandler` class', () => {
       methodName: 'someReducer',
     }
     const user: UserEnvelope = {
-      email: 'paco@example.com',
+      username: 'paco@example.com',
       role: 'Paco',
     }
     const register = new Register('1234', user)

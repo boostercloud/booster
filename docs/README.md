@@ -1409,19 +1409,33 @@ In the following example we define two roles, `Admin` and `User`:
 // src/roles.ts
 
 @Role({
-  allowSelfSignUp: false,
+  auth: {
+    // Do not specify (or use an empty array) if you don't want to allow sign-ups
+    signUpMethods: [],
+  }
 })
 export class Admin {}
 
 @Role({
-  allowSelfSignUp: true,
+  auth: {
+    // Do not specify (or use an empty array) if you don't want to allow sign-ups
+    signUpMethods: ['email'],
+  },
 })
 export class User {}
+
+@Role({
+  auth: {
+    signUpMethods: ['email', 'phone'],
+  },
+})
+export class SuperUser {}
 ```
 
-The `Admin` role contains the following attribute `allowSelfSignUp: false`,
-which means that when users sign-up, they can't specify themselves the role `Admin` as their role.
-The `User` role has this attribute set to `true`, so users can self-assign this role to themselves.
+Here, we have defined the `Admin`, `User` and `SuperUser` roles. They all contain an `auth` attribute. This one contains a `signUpMethods` attribute. When this value is empty (`Admin` role) a user can't use this role to sign up.
+
+`signUpMethods` is an array with limited possible values: `email` or `phone` or a combination of both.
+Users with the `User` role will only be able to sign up with their emails, whereas the ones with the `SuperUser` role will be able to sign up with either their email or their phone number.
 
 If your Booster application has roles defined, an [authentication API](#authentication-api) will be provisioned. It will allow your users to gain
 access to your resources.
@@ -1437,9 +1451,10 @@ The base URL of all these endpoints is the `httpURL` output of your application.
 
 ##### Sign-up
 Users can use this endpoint to register in your application and get a role assigned to them.
-Only roles with the attribute `allowSelfSignUp: true` can be specified upon sign-up. After calling this endpoint, the
-registration is not yet finished. Users need to confirm their emails by clicking in the link that will be sent to their 
-inbox.
+Only roles that filled `signUpMethods` with valid entries can be used upon sign-up. After calling this endpoint, the
+registration isn't completed yet. 
+Users that sign up with their emails will receive a confirmation link in their inbox. They just need to click it to confirm their registration.
+Users that sign up with their phones will receive a confirmation code as an SMS message. That code needs to be sent back using the [confirmation endpoint](#sign-up/confirm)
 
 ![confirmation email](./img/sign-up-verificaiton-email.png)
 ![email confirmed](./img/sign-up-confirmed.png)
@@ -1465,7 +1480,7 @@ Parameter | Description
 _clientId_ | The application client Id that you got as an output when the application was deployed.
 _username_ | The username of the user you want to register. It **must be an email**.
 _password_ | The password the user will use to later login into your application and get access tokens.
-_userAttributes_ | Here you can specify the attributes of your user. These are: <br/> -_**role**_:  A unique role this user will have. You can only specify here a role with the property `allowSelfSignUp = true`
+_userAttributes_ | Here you can specify the attributes of your user. These are: <br/> -_**role**_:  A unique role this user will have. You can only specify here a role where the `signUpOptions` property is not empty.
 
 
 ###### Response
@@ -1474,14 +1489,50 @@ An Empty Body
 ###### Errors
 You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
 
-Example: The `username` is not an email:
+Example: The `username` is not an email or a phone number:
 
 ```json
 {
   "__type": "InvalidParameterException",
-  "message": "Username should be an email."
+  "message": "Username should be an email or a phone number."
 }
 ```
+
+You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
+
+##### Confirm-sign-up
+
+Whenever a User signs up with their phone number, an SMS message will be sent with a confirmation code.
+They will need to provide this code to confirm registation by calling the`sign-up/confirm` endpoint 
+
+###### Endpoint
+```http request
+POST https://<httpURL>/auth/sign-up/confirm
+```
+
+###### Request body
+```json
+{
+  "clientId": "string",
+  "confirmationCode": "string",
+  "password": "string"
+}
+```
+
+Parameter | Description
+--------- | -----------
+_clientId_ | The application client Id that you got as an output when the application was deployed.
+_confirmationCode_ | The confirmation code received in the SMS message.
+_username_ | The username of the user you want to sign in. They must have previously signed up.
+
+###### Response
+An Empty Body
+
+###### Errors
+
+You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
+Common errors would be like submitting an expired confirmation code or a non valid one.
+
 ##### Sign-in
 This endpoint creates a session for an already registered user, returning an access token that can be used
 to access role-protected resources

@@ -34,7 +34,7 @@ describe('AWS Provider graphql-adapter', () => {
       mockConnectionId = random.uuid()
 
       expectedUser = {
-        email: internet.email(),
+        username: internet.email(),
         role: 'Admin',
       }
       expectedQuery = 'GraphQL query'

@@ -65,6 +65,6 @@ export interface GraphQLOperation {
 }
 
 export interface UserEnvelope {
-  email: string
+  username: string
   role: string
 }
