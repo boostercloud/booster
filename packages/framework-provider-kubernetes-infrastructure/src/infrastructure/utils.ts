@@ -65,13 +65,12 @@ export async function createIndexFile(): Promise<string> {
 /**
  * create a zip file with the project content
  */
-export function createProjectZipFile(): Promise<string> {
+export async function createProjectZipFile(): Promise<string> {
   const output = fs.createWriteStream(path.join(os.tmpdir(), 'boosterCode.zip'))
   const archive = archiver('zip', { zlib: { level: 9 } })
   archive.pipe(output)
   archive.glob('**/*')
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  archive.finalize()
+  await archive.finalize()
   return new Promise((resolve, reject) => {
     output.on('close', () => {
       resolve(output.path.toString())
@@ -86,7 +85,7 @@ export function createProjectZipFile(): Promise<string> {
     })
 
     archive.on('error', (err: any) => {
-      throw new Error(err)
+      reject(err)
     })
   })
 }

@@ -20,7 +20,7 @@ describe('Users Dapr interaction inside the cluster', () => {
 
   it('allows configuring the eventStore', async () => {
     replace(fs, 'existsSync', fake.returns(false))
-    stub(daprManager, 'verifyEventStore').resolves({
+    stub(daprManager, 'ensureEventStoreIsReady').resolves({
       namespace: internet.domainWord(),
       eventStoreHost: internet.url(),
       eventStoreUsername: internet.userName(),
@@ -34,7 +34,7 @@ describe('Users Dapr interaction inside the cluster', () => {
 
   it('allows configuring the eventStore but the cluster fails', async () => {
     replace(fs, 'existsSync', fake.returns(false))
-    stub(daprManager, 'verifyEventStore').resolves({
+    stub(daprManager, 'ensureEventStoreIsReady').resolves({
       namespace: internet.domainWord(),
       eventStoreHost: internet.url(),
       eventStoreUsername: internet.userName(),

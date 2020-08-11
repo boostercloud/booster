@@ -99,7 +99,7 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     )
   })
 
-  it('tallows deploying but he booster service validation fails', (done) => {
+  it('allows deploying but he booster service validation fails', (done) => {
     replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))

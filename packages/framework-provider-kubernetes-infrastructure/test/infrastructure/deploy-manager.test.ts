@@ -30,9 +30,9 @@ describe('User interaction during the deploy:', async () => {
   })
 
   it('allows verifying helm is ready and it is not working', async () => {
-    const error = 'helm is not ready'
+    const error = new Error('helm is not ready')
     stub(helmManager, 'isVersion3').throws(error)
-    await expect(deployManager.ensureHelmIsReady()).to.eventually.be.rejected
+    await expect(deployManager.ensureHelmIsReady()).to.eventually.be.rejectedWith(error)
   })
 
   it('allows verifying that Dapr is ready and it is working', async () => {
@@ -43,13 +43,13 @@ describe('User interaction during the deploy:', async () => {
     await expect(deployManager.ensureDaprExists()).to.eventually.be.fulfilled
   })
 
-  it('allows verifying that Dapr is ready and it fails', async () => {
-    const error = 'timeout'
+  it('allows checking if Dapr is ready but it is failing', async () => {
+    const error = new Error('timeout')
     stub(helmManager, 'isRepoInstalled').resolves(true)
     stub(k8sManager, 'getPodFromNamespace').resolves(undefined)
     stub(helmManager, 'exec').resolves()
     stub(k8sManager, 'waitForPodToBeReady').throws(error)
-    await expect(deployManager.ensureDaprExists()).to.eventually.be.rejected
+    await expect(deployManager.ensureDaprExists()).to.eventually.be.rejectedWith(error)
   })
 
   it('allows verifying that EventStore is ready and it is working', async () => {
@@ -58,9 +58,9 @@ describe('User interaction during the deploy:', async () => {
   })
 
   it('allows verifying that EventStore is ready and it fails', async () => {
-    const error = 'error'
+    const error = new Error('error')
     stub(daprManager, 'configureEventStore').throws(error)
-    await expect(deployManager.ensureEventStoreExists()).to.eventually.be.rejected
+    await expect(deployManager.ensureEventStoreExists()).to.eventually.be.rejectedWith(error)
   })
 
   it('allows verifying that namespace exists', async () => {

@@ -18,7 +18,7 @@ describe('Users want to use utility methods', () => {
     expect(error).to.be.false
   })
 
-  it('and they want for a specific element but it not repond', async () => {
+  it('and they want for a specific element but does not repond', async () => {
     const tryFunction = async (): Promise<boolean> => {
       return false
     }

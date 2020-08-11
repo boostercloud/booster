@@ -58,5 +58,5 @@ async function nukeBoosterApp(observer: Subscriber<string>, configuration: Boost
   observer.next('Finishing to delete all resources')
   await deployManager.deleteAllResources()
   observer.next('Your app is terminated and destroyed 💥')
-  observer.complete
+  observer.complete()
 }

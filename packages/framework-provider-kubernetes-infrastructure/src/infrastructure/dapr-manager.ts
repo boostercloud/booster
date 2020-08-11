@@ -37,7 +37,7 @@ export class DaprManager {
    */
   public async configureEventStore(): Promise<void> {
     if (!fs.existsSync(this.daprComponentsPath)) {
-      const templateValues: DaprTemplateValues = await this.verifyEventStore()
+      const templateValues: DaprTemplateValues = await this.ensureEventStoreIsReady()
       await this.createDaprComponentFile(templateValues)
     }
     const daprComponents = await this.readDaprComponentDirectory()
@@ -76,7 +76,7 @@ export class DaprManager {
   /**
    * create an event store to be used by booster
    */
-  public async verifyEventStore(): Promise<DaprTemplateValues> {
+  public async ensureEventStoreIsReady(): Promise<DaprTemplateValues> {
     const eventStore = await this.clusterManager.getPodFromNamespace(this.namespace, this.eventStorePod)
     if (!eventStore) {
       const repoInstalled = await this.helmManager.isRepoInstalled(this.eventStoreRepo)
@@ -123,7 +123,7 @@ export class DaprManager {
    */
   public async createDaprComponentFile(templateValues: DaprTemplateValues): Promise<void> {
     await mkdir(this.daprComponentsPath).catch(() => {
-      throw new Error('Unable to create folder for Dapr components, review permissions')
+      throw new Error('Unable to create folder for Dapr components. Please check permissions')
     })
     const outFile = path.join(this.daprComponentsPath, this.stateStoreFileName)
     const renderedYaml = Mustache.render(stateStore.template, templateValues)

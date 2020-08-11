@@ -93,21 +93,21 @@ export class DeployManager {
    * verify that the upload service is running and in a negative case it tries to create it
    */
   public async ensureUploadServiceExists(): Promise<void> {
-    return await this.verifyService(uploadService)
+    return await this.ensureServiceIsReady(uploadService)
   }
 
   /**
    * verify that the booster service is running and in a negative case it tries to create it
    */
   public async ensureBoosterServiceExists(): Promise<void> {
-    return await this.verifyService(boosterService)
+    return await this.ensureServiceIsReady(boosterService)
   }
 
   /**
    * verify that the upload pod is running and in a negative case it tries to create it
    */
   public async ensureUploadPodExists(): Promise<void> {
-    await this.verifyPod(uploaderPod)
+    await this.ensurePodIsReady(uploaderPod)
     await this.clusterManager.waitForPodToBeReady(this.namespace, uploaderPod.name)
   }
 
@@ -115,7 +115,7 @@ export class DeployManager {
    * verify that the booster pod is running and in a negative case it tries to create it
    */
   public async ensureBoosterPodExists(): Promise<void> {
-    await this.verifyPod(boosterAppPod, true)
+    await this.ensurePodIsReady(boosterAppPod, true)
   }
 
   /**
@@ -166,14 +166,14 @@ export class DeployManager {
     await this.clusterManager.deleteNamespace(this.namespace)
   }
 
-  private async verifyService(template: Template): Promise<void> {
+  private async ensureServiceIsReady(template: Template): Promise<void> {
     const clusterService = await this.clusterManager.getServiceFromNamespace(this.namespace, template.name)
     if (!clusterService) {
       await this.applyTemplate(template, this.templateValues)
     }
   }
 
-  private async verifyPod(template: Template, forceRestart = false): Promise<void> {
+  private async ensurePodIsReady(template: Template, forceRestart = false): Promise<void> {
     const clusterPod = await this.clusterManager.getPodFromNamespace(this.namespace, template.name)
     if (!clusterPod) {
       await this.applyTemplate(template, this.templateValues)
