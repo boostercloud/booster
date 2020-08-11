@@ -82,7 +82,7 @@ export class GraphQLWebsocketHandler {
     }
     const nowEpoch = Math.floor(new Date().getTime() / 1000)
     const connectionData: ConnectionDataEnvelope = {
-      expirationTime: nowEpoch + this.config.subscriptions.maxDurationInSeconds,
+      expirationTime: nowEpoch + this.config.subscriptions.maxConnectionDuration,
       user: userEnvelope,
     }
     this.logger.debug('Storing connection data: ', connectionData)
