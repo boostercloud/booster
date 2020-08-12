@@ -5,7 +5,7 @@ part here is the one in which they learn. It is challenging because, under the s
 we (humans) don't have the same information-processing capacity. That idea is going to work as our compass, it should drive our efforts so people with less 
 capacity is still able to follow and understand our documentation.
 
-To achieve our goal I propose writing documentation following these principles:
+To achieve our goal we propose writing documentation following these principles:
 
 1. Clean and Clear
 2. Simple
@@ -22,7 +22,7 @@ To achieve our goal I propose writing documentation following these principles:
 Less is more. Apple is, among many others, a good example of creating clean and clear content, where visual elements are carefully chosen to look beautiful
 (e.g. [Apple's swift UI](https://developer.apple.com/tutorials/swiftui)) and making the reader getting the point as soon as possible.
 
-The intention of every section, paragraph, and sentence must be clear, we should avoid writing details of 2 different things even when they are related. 
+The intention of every section, paragraph, and sentence must be clear, we should avoid writing details of two different things even when they are related. 
 It is better to link pages and keep the focus and the intention clear, Wikipedia is the best example on this.
 
 ### Simple
@@ -66,12 +66,12 @@ sense of continuation to the whole paragraph. If not, when people read the parag
 For example, read this paragraph and try to hear your internal voice:
 
 > Entities are created on the fly, by reducing the whole event stream. You shouldn't assume that they are stored anywhere.  Booster does create 
-> automatic snapshots to make the reduction process efficient. You are the one in charge of writing the reducer function.
+automatic snapshots to make the reduction process efficient. You are the one in charge of writing the reducer function.
 
 And now read this one:
 
 > Entities are created on the fly by reducing the whole event stream. While you shouldn't assume that they are stored anywhere,  Booster does create automatic
-> snapshots to make the reduction process efficient. In any case, this is opaque to you and the only thing you should care is to provide the reducer function.
+snapshots to make the reduction process efficient. In any case, this is opaque to you and the only thing you should care is to provide the reducer function.
 
 Did you feel the difference? The latter makes you feel that everything is connected, it is more cohesive.
 
