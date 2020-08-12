@@ -21,7 +21,7 @@ export class BoosterConfig {
   private _provider?: ProviderLibrary
   public appName = 'new-booster-app'
   public readonly subscriptions = {
-    maxConnectionDuration: 7 * 24 * 60 * 60, // 7 days
+    maxConnectionDurationInSeconds: 7 * 24 * 60 * 60, // 7 days
     maxDurationInSeconds: 2 * 24 * 60 * 60, // 2 days
   }
   public readonly userProjectRootPath: string = process.cwd()
