@@ -145,7 +145,6 @@ describe('User interaction during the deploy:', async () => {
 
   it('allows verifying that the upload code works', async () => {
     stub(k8sManager, 'waitForServiceToBeReady').resolves()
-    replace(utils, 'createIndexFile', fake.resolves(''))
     replace(utils, 'uploadFile', fake.resolves({ statusCode: 200 }))
     await expect(deployManager.uploadUserCode()).to.eventually.be.fulfilled
   })

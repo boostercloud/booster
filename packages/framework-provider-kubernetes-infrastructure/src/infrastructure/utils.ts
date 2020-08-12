@@ -4,10 +4,7 @@ import * as archiver from 'archiver'
 import * as os from 'os'
 import * as FormData from 'form-data'
 import { IncomingMessage } from 'http'
-import { indexTemplate } from './templates/index-template'
 import * as path from 'path'
-import * as util from 'util'
-const writeFile = util.promisify(fs.writeFile)
 
 /**
  * get cluster namespace from Booster configuration
@@ -49,17 +46,6 @@ export async function waitForIt<TResult>(
     await sleep(nextExecutionDelay)
     return doWaitFor()
   }
-}
-
-/**
- * create index.js file based on template
- */
-export async function createIndexFile(): Promise<string> {
-  const outFile = path.join(os.tmpdir(), 'index.js')
-  writeFile(outFile, indexTemplate).catch(() => {
-    throw new Error('Unable to create the index file for your app')
-  })
-  return outFile
 }
 
 /**

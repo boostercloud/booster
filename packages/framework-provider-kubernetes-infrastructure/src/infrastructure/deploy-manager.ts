@@ -1,6 +1,6 @@
 import { K8sManagement } from './k8s-sdk/k8s-management'
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { getProjectNamespaceName, createProjectZipFile, createIndexFile, uploadFile } from './utils'
+import { getProjectNamespaceName, createProjectZipFile, uploadFile } from './utils'
 import { uploadService } from './templates/upload-service-template'
 import { boosterVolumeClaim } from './templates/volume-claim-template'
 import { boosterService } from './templates/booster-service-template'
@@ -124,13 +124,8 @@ export class DeployManager {
   public async uploadUserCode(): Promise<void> {
     const fileUploadService = await this.clusterManager.waitForServiceToBeReady(this.namespace, uploadService.name)
     const codeZipFile = await createProjectZipFile()
-    const indexFile = await createIndexFile()
     const fileUploadResponse = await uploadFile(fileUploadService?.ip, codeZipFile)
     if (fileUploadResponse.statusCode !== 200) {
-      throw new Error('Unable to upload your code, please check the fileuploader pod for more information')
-    }
-    const indexUploadResult = await uploadFile(fileUploadService?.ip ?? '', indexFile)
-    if (indexUploadResult.statusCode !== 200) {
       throw new Error('Unable to upload your code, please check the fileuploader pod for more information')
     }
   }
