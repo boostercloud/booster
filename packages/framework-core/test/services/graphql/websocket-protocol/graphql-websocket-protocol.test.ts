@@ -1,5 +1,5 @@
-import { fake, match, SinonStub } from 'sinon'
-import { random } from 'faker'
+import { stub, match, SinonStub } from 'sinon'
+import { random, lorem, internet } from 'faker'
 import {
   Logger,
   GraphQLRequestEnvelope,
@@ -9,6 +9,9 @@ import {
   BoosterConfig,
   ProviderConnectionsLibrary,
   ProviderAuthLibrary,
+  GraphQLRequestEnvelopeError,
+  UserEnvelope,
+  ConnectionDataEnvelope, GraphQLInit,
 } from '@boostercloud/framework-types'
 import { GraphQLWebsocketHandler } from '../../../../src/services/graphql/websocket-protocol/graphql-websocket-protocol'
 import { ExecutionResult } from 'graphql'
@@ -30,18 +33,18 @@ describe('the `GraphQLWebsocketHandler`', () => {
   beforeEach(() => {
     config = new BoosterConfig('test')
     authManager = {
-      fromAuthToken: fake(),
-      rawToEnvelope: fake(),
+      fromAuthToken: stub(),
+      rawToEnvelope: stub(),
     }
     connectionsManager = {
-      sendMessage: fake(),
-      deleteData: fake(),
-      fetchData: fake(),
-      storeData: fake(),
+      sendMessage: stub(),
+      deleteData: stub(),
+      fetchData: stub(),
+      storeData: stub(),
     }
-    onStartCallback = fake()
-    onStopCallback = fake()
-    onTerminateCallback = fake()
+    onStartCallback = stub()
+    onStopCallback = stub()
+    onTerminateCallback = stub()
     logger = console
     websocketHandler = new GraphQLWebsocketHandler(config, logger, authManager, connectionsManager, {
       onStartOperation: onStartCallback,
@@ -74,7 +77,7 @@ describe('the `GraphQLWebsocketHandler`', () => {
       })
 
       it('just logs an error', async () => {
-        logger.error = fake()
+        logger.error = stub()
         resultPromise = websocketHandler.handle(envelope)
         await resultPromise
         expect(logger.error).to.be.calledOnceWithExactly('Missing websocket connectionID')
@@ -84,6 +87,30 @@ describe('the `GraphQLWebsocketHandler`', () => {
     describe('with an envelope with connectionID', () => {
       beforeEach(() => {
         envelope.connectionID = random.alphaNumeric(10)
+      })
+
+      describe('with an error in the envelope', () => {
+        const errorMessage = lorem.sentences(1)
+        let erroneousEnvelope: GraphQLRequestEnvelopeError
+        beforeEach(() => {
+          erroneousEnvelope = {
+            ...envelope,
+            error: new Error(errorMessage),
+          }
+        })
+
+        it('sends the error to the client', async () => {
+          resultPromise = websocketHandler.handle(erroneousEnvelope)
+          await resultPromise
+          expect(connectionsManager.sendMessage).to.be.calledOnceWithExactly(
+            config,
+            erroneousEnvelope.connectionID,
+            match({
+              type: MessageTypes.GQL_CONNECTION_ERROR,
+              payload: errorMessage,
+            })
+          )
+        })
       })
 
       describe('with an empty value', () => {
@@ -121,6 +148,51 @@ describe('the `GraphQLWebsocketHandler`', () => {
             envelope.connectionID,
             match({ type: MessageTypes.GQL_CONNECTION_ACK })
           )
+        })
+
+        it('stores connection data', async () => {
+          resultPromise = websocketHandler.handle(envelope)
+          await resultPromise
+          expect(connectionsManager.storeData).to.be.calledOnceWithExactly(
+            config,
+            envelope.connectionID,
+            match({
+              user: undefined,
+              expirationTime: match.number,
+            })
+          )
+        })
+
+        describe('with an access token', () => {
+          beforeEach(() => {
+            envelope.value = {
+              type: MessageTypes.GQL_CONNECTION_INIT,
+              payload: {
+                Authorization: random.uuid(),
+              },
+            }
+          })
+
+          it('stores connection data including the user', async () => {
+            const message = envelope.value as GraphQLInit
+            const expectedUser: UserEnvelope = {
+              email: internet.email(),
+              role: lorem.word(),
+            }
+            const fromAuthTokenFake: SinonStub = authManager.fromAuthToken as any
+            fromAuthTokenFake.withArgs(message.payload.Authorization).returns(expectedUser)
+
+            resultPromise = websocketHandler.handle(envelope)
+            await resultPromise
+            expect(connectionsManager.storeData).to.be.calledOnceWithExactly(
+              config,
+              envelope.connectionID,
+              match({
+                user: expectedUser,
+                expirationTime: match.number,
+              })
+            )
+          })
         })
       })
 
@@ -194,10 +266,21 @@ describe('the `GraphQLWebsocketHandler`', () => {
 
         it('calls "onStartOperation" with the right parameters', async () => {
           const message = envelope.value as GraphQLStart
+          const connectionData: ConnectionDataEnvelope = {
+            user: {
+              email: internet.email(),
+              role: lorem.word(),
+            },
+            expirationTime: random.number(),
+          }
+          const fetchDataFake: SinonStub = connectionsManager.fetchData as any
+          fetchDataFake.withArgs(config, envelope.connectionID).returns(connectionData)
+
           resultPromise = websocketHandler.handle(envelope)
           await resultPromise
           expect(onStartCallback).to.be.calledOnceWithExactly({
             ...envelope,
+            currentUser: connectionData.user,
             value: {
               ...message.payload,
               id: message.id,
@@ -207,7 +290,7 @@ describe('the `GraphQLWebsocketHandler`', () => {
 
         context('when "onStartOperation" returns the result of a subscription', () => {
           beforeEach(() => {
-            onStartCallback = fake.returns({ next: () => {} })
+            onStartCallback = stub().returns({ next: () => {} })
             websocketHandler = new GraphQLWebsocketHandler(config, logger, authManager, connectionsManager, {
               onStartOperation: onStartCallback,
               onStopOperation: undefined as any,
@@ -227,7 +310,7 @@ describe('the `GraphQLWebsocketHandler`', () => {
             data: 'The result',
           }
           beforeEach(() => {
-            onStartCallback = fake.returns(result)
+            onStartCallback = stub().returns(result)
             websocketHandler = new GraphQLWebsocketHandler(config, logger, authManager, connectionsManager, {
               onStartOperation: onStartCallback,
               onStopOperation: undefined as any,
