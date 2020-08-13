@@ -480,7 +480,7 @@ public handle(register: Register): void {
 }
 ```
 
-Remember to import the event class correctly on the top part of the file:
+Remember to import the event class correctly on the top of the file:
 
 ```typescript
 import { PostCreated } from '../events/PostCreated'
