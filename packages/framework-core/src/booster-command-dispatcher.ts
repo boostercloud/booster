@@ -32,12 +32,13 @@ export class BoosterCommandDispatcher {
     const commandClass = commandMetadata.class
     this.logger.debug('Found the following command:', commandClass.name)
     const command = commandClass as CommandClassInterface
-    Object.assign(command, commandEnvelope.value)
+    const commandInstance = new command()
+    Object.assign(commandInstance, commandEnvelope.value)
     // TODO: Here we could call "command.validate()" so that the user can prevalidate
     // the command inputted by the user.
     const register = new Register(commandEnvelope.requestID, commandEnvelope.currentUser)
     this.logger.debug('Calling "handle" method on command: ', command)
-    await command.handle(commandEnvelope.value, register)
+    await command.handle(commandInstance, register)
     this.logger.debug('Command dispatched with register: ', register)
     await RegisterHandler.handle(this.config, this.logger, register)
   }
