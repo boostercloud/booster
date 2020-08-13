@@ -5,6 +5,7 @@ import { safeLoadAll } from 'js-yaml'
 import { waitForIt } from '../utils'
 import { TemplateValues } from '../templates/template-types'
 import * as util from 'util'
+import { IncomingMessage } from 'http'
 const exec = util.promisify(require('child_process').exec)
 
 export class K8sManagement {
@@ -188,6 +189,21 @@ export class K8sManagement {
   }
 
   /**
+   * check if a yaml spec exists inside the cluster
+   */
+  //disabling linter here because spec has type any when we parse the yaml file with Kubernetes client :(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public async existsResourceSpec(spec: any): Promise<boolean> {
+    const client = KubernetesObjectApi.makeApiClient(this.kube)
+    try {
+      await client.read(spec)
+      return true
+    } catch (e) {
+      return false
+    }
+  }
+
+  /**
    * apply a string to the cluster. This method allow the user to pass a string containing a yaml definition and apply it to the cluster
    */
   public async applyYamlString(yaml: string): Promise<Array<KubernetesObject>> {
@@ -200,14 +216,14 @@ export class K8sManagement {
       spec.metadata.annotations = spec.metadata.annotations || {}
       delete spec.metadata.annotations['kubectl.kubernetes.io/last-applied-configuration']
       spec.metadata.annotations['kubectl.kubernetes.io/last-applied-configuration'] = JSON.stringify(spec)
-      try {
-        await client.read(spec)
-        const response = await client.replace(spec)
-        created.push(response.body)
-      } catch (e) {
-        const response = await client.create(spec)
-        created.push(response.body)
+      const resourceExists = this.existsResourceSpec(spec)
+      let response: { body: KubernetesObject; response: IncomingMessage }
+      if (resourceExists) {
+        response = await client.replace(spec)
+      } else {
+        response = await client.create(spec)
       }
+      created.push(response.body)
     }
     return created
   }

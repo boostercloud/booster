@@ -109,7 +109,7 @@ describe('Users interaction with K8s cluster', () => {
     replace(CoreV1Api.prototype, 'listNamespacedService', fake.resolves(serviceList))
     replace(CoreV1Api.prototype, 'listPersistentVolumeClaimForAllNamespaces', fake.resolves(volumeClaimList))
     replace(KubernetesObjectApi.prototype, 'read', fake.resolves(clientRead))
-    replace(KubernetesObjectApi.prototype, 'create', fake.resolves(new KubernetesObjectApi()))
+    replace(KubernetesObjectApi.prototype, 'replace', fake.resolves(new KubernetesObjectApi()))
     replace(CoreV1Api.prototype, 'readNamespacedSecret', fake.resolves(secret))
 
     k8sManager = new K8sManagement()
