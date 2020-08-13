@@ -18,7 +18,7 @@ export class MoveStock {
 
   public static async handle(command: MoveStock, register: Register): Promise<void> {
     const stock = await Booster.fetchEntitySnapshot(Stock, command.productID)
-    if (MoveStock.enoughStock(command, stock)) {
+    if (command.enoughStock(stock)) {
       register.events(new StockMoved(command.productID, command.origin, command.destination, command.quantity))
     } else {
       register.events(
@@ -31,11 +31,11 @@ export class MoveStock {
     }
   }
 
-  private static enoughStock(command: MoveStock, stock?: Stock): boolean {
-    if (command.origin == 'provider') return true
+  private enoughStock(stock?: Stock): boolean {
+    if (this.origin == 'provider') return true
     if (!stock) return false
-    const count = stock.warehouses[command.origin]
-    if (count >= command.quantity) return true
+    const count = stock.warehouses[this.origin]
+    if (count >= this.quantity) return true
     return false
   }
 }
