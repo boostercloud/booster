@@ -28,7 +28,7 @@ describe('Users Dapr interaction inside the cluster', () => {
     })
     stub(daprManager, 'createDaprComponentFile').resolves
     stub(daprManager, 'readDaprComponentDirectory').resolves(['statestore.yaml'])
-    stub(k8sManager, 'execRawCommand').resolves('')
+    stub(k8sManager, 'execRawCommand').resolves({ stdout: '' })
     await expect(daprManager.configureEventStore()).to.eventually.be.fulfilled
   })
 
@@ -42,7 +42,7 @@ describe('Users Dapr interaction inside the cluster', () => {
     })
     stub(daprManager, 'createDaprComponentFile').resolves
     stub(daprManager, 'readDaprComponentDirectory').resolves(['statestore.yaml'])
-    stub(k8sManager, 'execRawCommand').rejects('error!!')
+    stub(k8sManager, 'execRawCommand').resolves({ stderr: 'error!!' })
     await expect(daprManager.configureEventStore()).eventually.to.be.rejectedWith('error!!')
   })
 

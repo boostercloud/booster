@@ -1,6 +1,5 @@
 import * as path from 'path'
 import * as fs from 'fs'
-import * as util from 'util'
 import { stateStore } from './templates/statestore'
 import { K8sManagement } from './k8s-sdk/k8s-management'
 import { DaprTemplateValues } from './templates/template-types'
@@ -8,10 +7,6 @@ import { HelmManager } from './helm-manager'
 import * as Mustache from 'mustache'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { getProjectNamespaceName } from './utils'
-const readdir = util.promisify(require('fs').readdir)
-const mkdir = util.promisify(require('fs').mkdir)
-const writeFile = util.promisify(require('fs').writeFile)
-const readFile = util.promisify(require('fs').readFile)
 export class DaprManager {
   private eventStoreRepo = 'https://charts.bitnami.com/bitnami'
   private eventStoreRepoName = 'bitnami'
@@ -42,13 +37,12 @@ export class DaprManager {
     }
     const daprComponents = await this.readDaprComponentDirectory()
     await Promise.all(
-      daprComponents.map((component) => {
+      daprComponents.map(async (component) => {
         const componentYaml = path.join(this.daprComponentsPath, component)
-        return this.clusterManager.execRawCommand(`apply -f ${componentYaml}`)
+        const { stderr } = await this.clusterManager.execRawCommand(`apply -f ${componentYaml}`)
+        if (stderr) throw new Error(stderr)
       })
-    ).catch((err) => {
-      throw new Error(err)
-    })
+    )
   }
 
   /**
@@ -68,7 +62,7 @@ export class DaprManager {
     if (fileContent.indexOf('booster/created: "true"') > -1) {
       const { stderr } = await this.helmManager.exec(`uninstall redis -n ${this.namespace}`)
       if (stderr) {
-        throw new Error(stderr.toString())
+        throw new Error(stderr)
       }
     }
   }
@@ -89,7 +83,7 @@ export class DaprManager {
     const eventStorePassword = await this.clusterManager.getSecret(this.namespace, this.eventStorePod)
     if (!eventStorePassword) {
       throw new Error(
-        'imposible to get the secret from the cluster for your event store, please check your cluster for more information'
+        'Impossible to get the secret from the cluster for your event store, please check your cluster for more information'
       )
     }
     const buff = Buffer.from(eventStorePassword?.data?.[this.eventStoreSecretName] ?? '', 'base64')
@@ -107,7 +101,7 @@ export class DaprManager {
    * return all the dapr components filename included inside the Dapr component folder
    */
   public async readDaprComponentDirectory(): Promise<string[]> {
-    return readdir(this.daprComponentsPath)
+    return fs.promises.readdir(this.daprComponentsPath)
   }
 
   /**
@@ -115,21 +109,23 @@ export class DaprManager {
    */
   public async readDaprComponentFile(componentFile: string): Promise<string> {
     const filePath = path.join(this.daprComponentsPath, componentFile)
-    return readFile(filePath, { encoding: 'utf-8' })
+    return fs.promises.readFile(filePath, { encoding: 'utf-8' })
   }
 
   /**
    * create a Dapr component file using the provided template inside the Dapr component folder
    */
   public async createDaprComponentFile(templateValues: DaprTemplateValues): Promise<void> {
-    await mkdir(this.daprComponentsPath).catch(() => {
-      throw new Error('Unable to create folder for Dapr components. Please check permissions')
+    await fs.promises.mkdir(this.daprComponentsPath).catch(() => {
+      throw new Error(
+        'Unable to create folder for Dapr components. Please check permissions of your booster project folder'
+      )
     })
     const outFile = path.join(this.daprComponentsPath, this.stateStoreFileName)
     const renderedYaml = Mustache.render(stateStore.template, templateValues)
 
-    writeFile(outFile, renderedYaml).catch(() => {
-      throw new Error('Unable to create the index file for your app')
+    fs.promises.writeFile(outFile, renderedYaml).catch(() => {
+      throw new Error(`Unable to create the index file for your app: Tried to write ${outFile} and failed`)
     })
   }
 }

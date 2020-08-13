@@ -90,12 +90,8 @@ export class K8sManagement {
       },
     }
     return this.k8sClient.createNamespace(namespace).then(
-      () => {
-        return true
-      },
-      () => {
-        return false
-      }
+      () => true,
+      () => false
     )
   }
 
@@ -104,12 +100,8 @@ export class K8sManagement {
    */
   public async deleteNamespace(name: string): Promise<boolean> {
     return this.k8sClient.deleteNamespace(name).then(
-      () => {
-        return true
-      },
-      () => {
-        return false
-      }
+      () => true,
+      () => false
     )
   }
 
@@ -266,9 +258,8 @@ export class K8sManagement {
    * exec a raw kubectl command in your cluster, the user only need to write the command without the `kubectl`
    * for example: `kubectl apply -f file.yaml` will be `execRawCommand('apply -f file.yaml')`
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public async execRawCommand(command: string): Promise<any> {
-    return exec(`${this.kubectlCommand} ${command}`)
+  public async execRawCommand(command: string): Promise<{ stderr?: string; stdout?: string }> {
+    return await exec(`${this.kubectlCommand} ${command}`)
   }
 
   private async unwrapResponse<TBody>(wrapped: Promise<{ body: TBody }>): Promise<TBody> {
