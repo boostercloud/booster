@@ -422,7 +422,7 @@ describe('With the auth API', () => {
       await deleteUser(userEmail)
     })
 
-    it('can sign in their account when requiresConfirmation is true and user is manually confirmed. User will get a valid token.', async () => {
+    it('can sign in their account when skipConfirmation is false and user is manually confirmed. User will get a valid token.', async () => {
       // Manually confirming user
       await confirmUser(userEmail)
 
@@ -448,7 +448,7 @@ describe('With the auth API', () => {
       expect(message.accessToken).not.to.be.empty
     })
 
-    it('can sign in their account without manually confirming user when requiresConfirmation is false. User will get a valid token.', async () => {
+    it('can sign in their account without manually confirming user when skipConfirmation is true. User will get a valid token.', async () => {
       const url = await signInURL()
       const clientId = await authClientID()
 
@@ -927,7 +927,7 @@ describe('With the auth API', () => {
       await deleteUser(userPhoneNumber)
     })
 
-    it('can sign in their account when requiresConfirmation is true and user is manually confirmed. User will get a valid token.', async () => {
+    it('can sign in their account when skipConfirmation is false and user is manually confirmed. User will get a valid token.', async () => {
       // Manually confirming user
       await confirmUser(userPhoneNumber)
 
@@ -953,7 +953,7 @@ describe('With the auth API', () => {
       expect(message.accessToken).not.to.be.empty
     })
 
-    it('can sign in their account without manually confirming user when requiresConfirmation is false. User will get a valid token.', async () => {
+    it('can sign in their account without manually confirming user when skipConfirmation is true. User will get a valid token.', async () => {
       const url = await signInURL()
       const clientId = await authClientID()
 

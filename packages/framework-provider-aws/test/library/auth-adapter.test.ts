@@ -58,7 +58,7 @@ describe('the auth-adapter', () => {
       config.roles['User'] = {
         auth: {
           signUpMethods: ['email'],
-          requiresConfirmation: true,
+          skipConfirmation: false,
         },
       }
 
@@ -67,11 +67,11 @@ describe('the auth-adapter', () => {
       expect(enrichedRawMessage.response.autoVerifyEmail).to.be.eq(false)
     })
 
-    it('enrich rawMessage if sign up with email and if confirmation is not required', async () => {
+    it('enrich rawMessage if sign up with email and if confirmation is skipped', async () => {
       config.roles['User'] = {
         auth: {
           signUpMethods: ['email'],
-          requiresConfirmation: false,
+          skipConfirmation: true,
         },
       }
 
@@ -92,11 +92,11 @@ describe('the auth-adapter', () => {
       expect(enrichedRawMessage.response.autoVerifyPhone).to.be.eq(false)
     })
 
-    it('enrich rawMessage if sign up with phone number and confirmation is not required', async () => {
+    it('enrich rawMessage if sign up with phone number and confirmation is skipped', async () => {
       config.roles['User'] = {
         auth: {
           signUpMethods: ['phone', 'email'],
-          requiresConfirmation: false,
+          skipConfirmation: true,
         },
       }
 

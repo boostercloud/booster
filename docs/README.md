@@ -1437,7 +1437,7 @@ export class User {}
 @Role({
   auth: {
     signUpMethods: ['email', 'phone'],
-    requiresConfirmation: true
+    skipConfirmation: false
   },
 })
 export class SuperUser {}
@@ -1445,22 +1445,22 @@ export class SuperUser {}
 @Role({
   auth: {
     signUpMethods: ['email', 'phone'],
-    requiresConfirmation: false
+    skipConfirmation: true
   },
 })
 export class SuperUserWithoutConfirmation {}
 ```
 
-Here, we have defined the `Admin`, `User`, `SuperUser` and `SuperUserWithoutConfirmation` roles. They all contain an `auth` attribute which contains a `signUpMethods` and `requiresConfirmation` attributes.
+Here, we have defined the `Admin`, `User`, `SuperUser` and `SuperUserWithoutConfirmation` roles. They all contain an `auth` attribute which contains a `signUpMethods` and `skipConfirmation` attributes.
 
 When `signUpMethods` is empty (`Admin` role) or is not specified, a user can't use this role to sign up.
 `signUpMethods` is an array with limited possible values: `email`, `phone` or a combination of both.
 Users with the `User` role will only be able to sign up with their emails, whereas the ones with the `SuperUser` role will be able to sign up with either their email or their phone number.
 
-When `requiresConfirmation` is true or not specified, a confirmation is required for the chosen sign up method.
+When `skipConfirmation` is false or not specified, a confirmation is required for the chosen sign up method.
 Users that sign up with their emails will receive a confirmation link in their inbox. They just need to click it to confirm their registration.
 Users that sign up with their phones will receive a confirmation code as an SMS message. That code needs to be sent back using the [confirmation endpoint](#sign-up/confirm)
-If `requiresConfirmation` is set to false, users can sign in without confirmation after signing up.
+If `skipConfirmation` is set to true, users can sign in without confirmation after signing up.
 
 If your Booster application has roles defined, an [authentication API](#authentication-api) will be provisioned. It will allow your users to gain
 access to your resources.

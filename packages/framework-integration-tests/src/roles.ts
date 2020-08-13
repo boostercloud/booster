@@ -11,7 +11,7 @@ export class Admin {}
 @Role({
   auth: {
     signUpMethods: ['email'],
-    requiresConfirmation: true,
+    skipConfirmation: false,
   },
 })
 export class UserWithEmail {}
@@ -26,7 +26,7 @@ export class UserWithPhone {}
 @Role({
   auth: {
     signUpMethods: ['email', 'phone'],
-    requiresConfirmation: true,
+    skipConfirmation: false,
   },
 })
 export class SuperUser {}
@@ -34,7 +34,7 @@ export class SuperUser {}
 @Role({
   auth: {
     signUpMethods: ['email', 'phone'],
-    requiresConfirmation: false,
+    skipConfirmation: true,
   },
 })
 export class SuperUserNoConfirmation {}

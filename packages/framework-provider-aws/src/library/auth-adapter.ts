@@ -18,18 +18,18 @@ export function enrichRawMessage(config: BoosterConfig, rawMessage: CognitoUserP
       throw new InvalidParameterError(`Unknown role ${roleName}`)
     }
 
-    const requiresConfirmation = roleMetadata?.auth?.requiresConfirmation
-    rawMessage.response.autoConfirmUser = requiresConfirmation != undefined ? !requiresConfirmation : false
+    const skipConfirmation = roleMetadata?.auth?.skipConfirmation
+    rawMessage.response.autoConfirmUser = skipConfirmation != undefined ? skipConfirmation : false
 
-    if (email && (requiresConfirmation || requiresConfirmation == undefined)) {
+    if (email && !skipConfirmation) {
       rawMessage.response.autoVerifyEmail = false
-    } else if (email && !requiresConfirmation) {
+    } else if (email && skipConfirmation) {
       rawMessage.response.autoVerifyEmail = true
     }
 
-    if (phoneNumber && (requiresConfirmation || requiresConfirmation == undefined)) {
+    if (phoneNumber && !skipConfirmation) {
       rawMessage.response.autoVerifyPhone = false
-    } else if (phoneNumber && !requiresConfirmation) {
+    } else if (phoneNumber && skipConfirmation) {
       rawMessage.response.autoVerifyPhone = true
     }
   }

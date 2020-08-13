@@ -35,21 +35,21 @@ describe('the "checkSignUp" method', () => {
     config.roles['UserWithEmail'] = {
       auth: {
         signUpMethods: ['email'],
-        requiresConfirmation: true,
+        skipConfirmation: false,
       },
     }
 
     config.roles['UserWithPhone'] = {
       auth: {
         signUpMethods: ['phone'],
-        requiresConfirmation: true,
+        skipConfirmation: false,
       },
     }
 
     config.roles['SuperUser'] = {
       auth: {
         signUpMethods: ['phone', 'email'],
-        requiresConfirmation: true,
+        skipConfirmation: true,
       },
     }
 
