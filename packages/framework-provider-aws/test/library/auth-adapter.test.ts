@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
-import { rawSignUpDataToUserEnvelope, enrichRawMessage } from '../../src/library/auth-adapter'
+import { rawSignUpDataToUserEnvelope, handleSignUpResult } from '../../src/library/auth-adapter'
 import { UserEnvelope } from '@boostercloud/framework-types'
 import { restore } from 'sinon'
 import { BoosterConfig } from '@boostercloud/framework-types'
@@ -30,7 +30,7 @@ describe('the auth-adapter', () => {
     })
   })
 
-  describe('the `enrichRawMessage`', () => {
+  describe('the `handleSignUpResult`', () => {
     const config = new BoosterConfig('test')
 
     const cognitoUserEventEmail = {
@@ -41,6 +41,11 @@ describe('the auth-adapter', () => {
         },
       },
       response: {},
+    }
+
+    const userEnvelopeEmail = {
+      username: 'test@user.com',
+      role: 'User',
     }
 
     const cognitoUserEventPhone = {
@@ -54,6 +59,11 @@ describe('the auth-adapter', () => {
       response: {},
     }
 
+    const userEnvelopePhone = {
+      username: '+14514319874',
+      role: 'User',
+    }
+
     it('enrich rawMessage if sign up with email and if requires confirmation', async () => {
       config.roles['User'] = {
         auth: {
@@ -62,9 +72,8 @@ describe('the auth-adapter', () => {
         },
       }
 
-      const enrichedRawMessage = enrichRawMessage(config, cognitoUserEventEmail as any)
+      const enrichedRawMessage = handleSignUpResult(config, cognitoUserEventEmail as any, userEnvelopeEmail)
       expect(enrichedRawMessage.response.autoConfirmUser).to.be.eq(false)
-      expect(enrichedRawMessage.response.autoVerifyEmail).to.be.eq(false)
     })
 
     it('enrich rawMessage if sign up with email and if confirmation is skipped', async () => {
@@ -75,9 +84,8 @@ describe('the auth-adapter', () => {
         },
       }
 
-      const enrichedRawMessage = enrichRawMessage(config, cognitoUserEventEmail as any)
+      const enrichedRawMessage = handleSignUpResult(config, cognitoUserEventEmail as any, userEnvelopeEmail)
       expect(enrichedRawMessage.response.autoConfirmUser).to.be.eq(true)
-      expect(enrichedRawMessage.response.autoVerifyEmail).to.be.eq(true)
     })
 
     it('enrich rawMessage if sign up with phone number and if requires confirmation', async () => {
@@ -87,9 +95,8 @@ describe('the auth-adapter', () => {
         },
       }
 
-      const enrichedRawMessage = enrichRawMessage(config, cognitoUserEventPhone as any)
+      const enrichedRawMessage = handleSignUpResult(config, cognitoUserEventPhone as any, userEnvelopePhone)
       expect(enrichedRawMessage.response.autoConfirmUser).to.be.eq(false)
-      expect(enrichedRawMessage.response.autoVerifyPhone).to.be.eq(false)
     })
 
     it('enrich rawMessage if sign up with phone number and confirmation is skipped', async () => {
@@ -100,9 +107,8 @@ describe('the auth-adapter', () => {
         },
       }
 
-      const enrichedRawMessage = enrichRawMessage(config, cognitoUserEventPhone as any)
+      const enrichedRawMessage = handleSignUpResult(config, cognitoUserEventPhone as any, userEnvelopePhone)
       expect(enrichedRawMessage.response.autoConfirmUser).to.be.eq(true)
-      expect(enrichedRawMessage.response.autoVerifyPhone).to.be.eq(true)
     })
   })
 })

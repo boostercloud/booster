@@ -24,7 +24,7 @@ describe('the "checkSignUp" method', () => {
     config.provider = ({
       auth: {
         rawToEnvelope: () => {},
-        enrichRawMessage: () => {},
+        handleSignUpResult: () => {},
       },
     } as unknown) as ProviderLibrary
     config.roles['Admin'] = {
@@ -96,18 +96,16 @@ describe('the "checkSignUp" method', () => {
     )
     replace(
       config.provider.auth,
-      'enrichRawMessage',
+      'handleSignUpResult',
       fake.returns({
         response: {
           autoConfirmUser: false,
-          autoVerifyEmail: false,
         },
       })
     )
 
     const rawMessage = BoosterAuth.checkSignUp({}, config, logger)
     expect(rawMessage.response.autoConfirmUser).to.be.false
-    expect(rawMessage.response.autoVerifyEmail).to.be.false
   })
 
   it('succeeds when the user signs up with a phone number and confirmation is required', () => {
@@ -122,18 +120,16 @@ describe('the "checkSignUp" method', () => {
     )
     replace(
       config.provider.auth,
-      'enrichRawMessage',
+      'handleSignUpResult',
       fake.returns({
         response: {
           autoConfirmUser: false,
-          autoVerifyPhone: false,
         },
       })
     )
 
     const rawMessage = BoosterAuth.checkSignUp({}, config, logger)
     expect(rawMessage.response.autoConfirmUser).to.be.false
-    expect(rawMessage.response.autoVerifyPhone).to.be.false
   })
 
   it('succeeds user to sign up with email when role allows both sign up options email and phone number, confirmation is not required', () => {
@@ -148,20 +144,16 @@ describe('the "checkSignUp" method', () => {
     )
     replace(
       config.provider.auth,
-      'enrichRawMessage',
+      'handleSignUpResult',
       fake.returns({
         response: {
           autoConfirmUser: true,
-          autoVerifyPhone: true,
-          autoVerifyEmail: true,
         },
       })
     )
 
     const rawMessage = BoosterAuth.checkSignUp({}, config, logger)
     expect(rawMessage.response.autoConfirmUser).to.be.true
-    expect(rawMessage.response.autoVerifyPhone).to.be.true
-    expect(rawMessage.response.autoVerifyEmail).to.be.true
   })
 
   it('succeeds user to sign up with phone number when role allows both sign up options email and phone number, confirmation is not required', () => {
@@ -176,20 +168,16 @@ describe('the "checkSignUp" method', () => {
     )
     replace(
       config.provider.auth,
-      'enrichRawMessage',
+      'handleSignUpResult',
       fake.returns({
         response: {
           autoConfirmUser: true,
-          autoVerifyPhone: true,
-          autoVerifyEmail: true,
         },
       })
     )
 
     const rawMessage = BoosterAuth.checkSignUp({}, config, logger)
     expect(rawMessage.response.autoConfirmUser).to.be.true
-    expect(rawMessage.response.autoVerifyPhone).to.be.true
-    expect(rawMessage.response.autoVerifyEmail).to.be.true
   })
 
   it('throws an error when user signs up with phone but role only allows email to sign up', () => {
