@@ -622,7 +622,7 @@ In this section, we will be sending requests by hand using the online tool [Post
 which is free and includes great support for GraphQL. However, you can use any client you want. Your endpoint URL should look like this:
 
 ```text
-https://<some random number>.execute-api.us-east-1.amazonaws.com/production/graphql
+<httpURL>/graphql
 ```
 
 ##### 7.1 Creating posts
