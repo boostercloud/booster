@@ -137,12 +137,6 @@ describe('The "fetchSubscriptions" method', () => {
   })
 })
 
-describe('The "notifySubscription" method', () => {
-  it('sends the proper data to the connectionID', () => {
-    // TODO: I didn't find a way to properly mock ApiGatewayManagementApi and check it is being called correctly
-  })
-})
-
 describe('The "deleteSubscription" method', () => {
   let dbQueryStub: SinonStub
   let dbDeleteFake: SinonStub
