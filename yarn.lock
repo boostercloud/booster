@@ -2215,6 +2215,11 @@
   resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-3.4.9.tgz#fcf01997bbc9f7c09ae5f91383af076d466594e1"
   integrity sha512-XDwyIlt/47l2kWLTzw/mtrpLdB+GPSskR2n/PIcPn+VYhVO77rGhRncIR5GPU0KRzXuqkDO+J5qqrG0Y8P6jzQ==
 
+"@types/validator@^13.1.0":
+  version "13.1.0"
+  resolved "https://registry.yarnpkg.com/@types/validator/-/validator-13.1.0.tgz#3d776127dbce7dd31fc06f86d3428b072e631eba"
+  integrity sha512-gHUHI6pJaANIO2r6WcbT7+WMgbL9GZooR4tWpuBOETpDIqFNxwaJluE+6rj6VGYe8k6OkfhbHz2Fkm8kl06Igw==
+
 "@types/ws@^6.0.1":
   version "6.0.4"
   resolved "https://registry.yarnpkg.com/@types/ws/-/ws-6.0.4.tgz#7797707c8acce8f76d8c34b370d4645b70421ff1"
@@ -2871,9 +2876,9 @@ aws-cdk@1.26.0:
     yargs "^15.0.2"
 
 aws-sdk@^2.625.0, aws-sdk@^2.656.0:
-  version "2.720.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.720.0.tgz#b834adc6b7458c41621f8e2169602c69c655f504"
-  integrity sha512-899YXs6iWae82GGJM95S5MFBPIG8pE9aq+GlSr47mz7te97hGX0OcjPs3GuGZWA6Nrp0MCR9eMqu6DwBlYGltA==
+  version "2.733.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.733.0.tgz#2f3c8b1c6afc26bed97213682cbec47f996f6120"
+  integrity sha512-unW3UYTwhpNZmCgMHby+8EFDNROoaU5ogWWjcUj/ZlFQCAtYCJdf2JqUT+rIi7+6KWqrDKY3sTredfK1KKXZ8A==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
@@ -10130,6 +10135,11 @@ validate-npm-package-name@^3.0.0:
   integrity sha1-X6kS2B630MdK/BQN5zF/DKffQ34=
   dependencies:
     builtins "^1.0.3"
+
+validator@^13.1.1:
+  version "13.1.1"
+  resolved "https://registry.yarnpkg.com/validator/-/validator-13.1.1.tgz#f8811368473d2173a9d8611572b58c5783f223bf"
+  integrity sha512-8GfPiwzzRoWTg7OV1zva1KvrSemuMkv07MA9TTl91hfhe+wKrsrgVN4H2QSFd/U/FhiU3iWPYVgvbsOGwhyFWw==
 
 vary@^1, vary@~1.1.2:
   version "1.1.2"
