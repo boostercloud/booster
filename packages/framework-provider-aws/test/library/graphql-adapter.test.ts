@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
-import { GraphQLRequestEnvelope, UserEnvelope } from '@boostercloud/framework-types'
+import { GraphQLRequestEnvelope, GraphQLRequestEnvelopeError, UserEnvelope } from '@boostercloud/framework-types'
 import { rawGraphQLRequestToEnvelope } from '../../src/library/graphql-adapter'
 import { SinonStub, stub, restore } from 'sinon'
 import * as authAdapter from '../../src/library/auth-adapter'
@@ -9,11 +9,11 @@ import { APIGatewayProxyEvent } from 'aws-lambda'
 
 describe('AWS Provider graphql-adapter', () => {
   let userPoolStub: SinonStub
-  let fetchUserFromRequestStub: SinonStub
+  let userEnvelopeFromAuthToken: SinonStub
 
   beforeEach(() => {
     userPoolStub = stub()
-    fetchUserFromRequestStub = stub(authAdapter, 'userEnvelopeFromAuthToken')
+    userEnvelopeFromAuthToken = stub(authAdapter, 'userEnvelopeFromAuthToken')
   })
 
   afterEach(() => {
@@ -60,9 +60,9 @@ describe('AWS Provider graphql-adapter', () => {
       } as any
     })
 
-    it('should call fetchUserFromRequest with expected arguments', async () => {
+    it('should call userEnvelopeFromAuthToken with expected arguments', async () => {
       await rawGraphQLRequestToEnvelope(userPoolStub as any, request, console)
-      expect(fetchUserFromRequestStub).to.have.been.calledOnceWithExactly(userPoolStub, mockToken)
+      expect(userEnvelopeFromAuthToken).to.have.been.calledOnceWithExactly(userPoolStub, mockToken)
     })
 
     it('generates an envelope correctly from an AWS event', async () => {
@@ -77,11 +77,31 @@ describe('AWS Provider graphql-adapter', () => {
         },
       }
 
-      fetchUserFromRequestStub.resolves(expectedUser)
+      userEnvelopeFromAuthToken.resolves(expectedUser)
 
       const gotOutput = await rawGraphQLRequestToEnvelope(userPoolStub as any, request, console)
 
       expect(gotOutput).to.be.deep.equal(expectedOutput)
+    })
+
+    context('when there is an error retrieving the user', () => {
+      const mockError = new Error('fake error')
+      beforeEach(() => {
+        userEnvelopeFromAuthToken.throws(mockError)
+      })
+
+      it('generates an envelope with the error', async () => {
+        const expectedOutput: GraphQLRequestEnvelopeError = {
+          requestID: mockRequestId,
+          eventType: 'CONNECT',
+          connectionID: mockConnectionId,
+          error: mockError,
+        }
+
+        const gotOutput = await rawGraphQLRequestToEnvelope(userPoolStub as any, request, console)
+
+        expect(gotOutput).to.be.deep.equal(expectedOutput)
+      })
     })
   })
 })
