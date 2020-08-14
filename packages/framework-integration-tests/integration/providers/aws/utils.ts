@@ -316,8 +316,11 @@ export class DisconnectableApolloClient extends ApolloClient<NormalizedCacheObje
  * @param authToken
  * @param tokenInHeader
  */
-export async function graphQLClientWithSubscriptions(authToken?: AuthToken): Promise<DisconnectableApolloClient> {
-  const subscriptionClient: SubscriptionClient = await graphqlSubscriptionsClient(authToken)
+export async function graphQLClientWithSubscriptions(
+  authToken?: AuthToken,
+  onConnected?: (err?: string) => void
+): Promise<DisconnectableApolloClient> {
+  const subscriptionClient: SubscriptionClient = await graphqlSubscriptionsClient(authToken, onConnected)
 
   const link = split(
     ({ query }) => {
@@ -339,12 +342,15 @@ export async function graphQLClientWithSubscriptions(authToken?: AuthToken): Pro
   })
 }
 
-export async function graphqlSubscriptionsClient(authToken?: AuthToken): Promise<SubscriptionClient> {
+export async function graphqlSubscriptionsClient(
+  authToken?: AuthToken,
+  onConnected?: (err?: string) => void
+): Promise<SubscriptionClient> {
   return new SubscriptionClient(
     await baseWebsocketURL(),
     {
       reconnect: true,
-      connectionParams: function() {
+      connectionParams: () => {
         if (authToken) {
           const token = typeof authToken == 'function' ? authToken() : authToken
           return {
@@ -352,6 +358,12 @@ export async function graphqlSubscriptionsClient(authToken?: AuthToken): Promise
           }
         }
         return {}
+      },
+      connectionCallback: (err?: any) => {
+        if (onConnected) {
+          const errMessage = err ?? err.toString()
+          onConnected(errMessage)
+        }
       },
     },
     class MyWebSocket extends WebSocket {

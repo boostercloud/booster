@@ -81,9 +81,6 @@ describe('the auth-adapter', () => {
       })
     })
   })
-  describe('throw errors with token invalid', () => {
-    // TODO
-  })
 
   describe('the `handleSignUpResult`', () => {
     const config = new BoosterConfig('test')
