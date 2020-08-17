@@ -6,7 +6,7 @@ import {
   InvalidParameterError,
   NotAuthorizedError,
   NotFoundError,
-  CommandClassInterface,
+  CommandInterface,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
 import { RegisterHandler } from './booster-register-handler'
@@ -31,7 +31,7 @@ export class BoosterCommandDispatcher {
 
     const commandClass = commandMetadata.class
     this.logger.debug('Found the following command:', commandClass.name)
-    const command = commandClass as CommandClassInterface
+    const command = commandClass as CommandInterface
     const commandInstance = new command()
     Object.assign(commandInstance, commandEnvelope.value)
     // TODO: Here we could call "command.validate()" so that the user can prevalidate

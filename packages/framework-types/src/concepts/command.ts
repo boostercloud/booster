@@ -1,10 +1,8 @@
 import { Register } from './register'
-import { Class, PropertyMetadata } from '../typelevel'
+import { PropertyMetadata, Class } from '../typelevel'
 import { RoleAccess } from './role'
 
-export type CommandInterface = unknown
-
-export interface CommandClassInterface<TCommand = unknown> extends Class<TCommand> {
+export interface CommandInterface<TCommand = unknown> extends Class<TCommand> {
   // The command's type is `unknown` because the CommandInterface type specifies the
   // structure of the class, rather than the instance of the commands, which is what
   // arrives to the `handle` static method.
@@ -19,7 +17,7 @@ export interface CommandMetadata<TCommand = unknown> {
   // and it has at least the properties of a class (like name, constructor, etc...)
   // We don't care about the properties of the instance, so we set the type parameter of
   // Class to unknown.
-  readonly class: CommandClassInterface<TCommand>
+  readonly class: CommandInterface<TCommand>
   readonly properties: Array<PropertyMetadata>
   readonly authorizedRoles: RoleAccess['authorize']
 }
