@@ -118,6 +118,7 @@ describe('the "fetchReadModel" method', () => {
 
     expect(db.get).to.have.been.calledOnceWith({
       TableName: 'new-booster-app-app-SomeReadModel',
+      ConsistentRead: true,
       Key: { id: 'someReadModelID' },
     })
   })
@@ -137,6 +138,7 @@ describe('the "fetchReadModel" method', () => {
 
     expect(db.get).to.have.been.calledOnceWithExactly({
       TableName: 'new-booster-app-app-SomeReadModel',
+      ConsistentRead: true,
       Key: { id: 'someReadModelID' },
     })
     expect(result).to.deep.equal({ some: 'object' })

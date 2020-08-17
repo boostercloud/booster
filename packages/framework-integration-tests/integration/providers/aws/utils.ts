@@ -415,16 +415,12 @@ export async function queryEvents(primaryKey: string, latestFirst = true): Promi
 }
 
 // --- Subscriptions store helpers ---
-export async function subscriptionsTableName(): Promise<string> {
-  const stackName = appStackName()
-
-  return `${stackName}-subscriptions-store`
+export async function countSubscriptionsItems(): Promise<number> {
+  return countTableItems(`${appStackName()}-subscriptions-store`)
 }
 
-export async function countSubscriptionsItems(): Promise<number> {
-  const tableName = await subscriptionsTableName()
-
-  return countTableItems(tableName)
+export async function countConnectionsItems(): Promise<number> {
+  return countTableItems(`${appStackName()}-connections-store`)
 }
 
 // --- Read models helpers ---
@@ -509,13 +505,6 @@ export async function getEventsByEntityId(entityID: string): Promise<any> {
     .promise()
 
   return output.Items
-}
-
-export async function clearSubscriptions(): Promise<any> {
-  await documentClient.scan({
-    TableName: await subscriptionsTableName(),
-    Select: 'ALL_ATTRIBUTES',
-  })
 }
 
 // --- Other helpers ---
