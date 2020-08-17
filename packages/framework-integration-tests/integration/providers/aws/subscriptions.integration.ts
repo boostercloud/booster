@@ -1,4 +1,10 @@
-import { countSubscriptionsItems, DisconnectableApolloClient, graphQLClientWithSubscriptions, waitForIt } from './utils'
+import {
+  countConnectionsItems,
+  countSubscriptionsItems,
+  DisconnectableApolloClient,
+  graphQLClientWithSubscriptions,
+  waitForIt,
+} from './utils'
 import { random } from 'faker'
 import gql from 'graphql-tag'
 import { expect } from 'chai'
@@ -7,7 +13,7 @@ import { Observable } from 'apollo-client/util/Observable'
 
 chai.use(require('chai-as-promised'))
 
-describe('subscriptions', () => {
+describe.only('subscriptions', () => {
   describe('the "unsubscribe" operation', () => {
     let client: DisconnectableApolloClient
     before(async () => {
@@ -62,6 +68,18 @@ describe('subscriptions', () => {
       } catch (e) {
         clientA.disconnect()
         clientB.disconnect()
+      }
+    })
+
+    it('should delete connection data when socket is disconnected', async () => {
+      const connectionsCount = await countConnectionsItems()
+      const client = await graphQLClientWithSubscriptions()
+      try {
+        await waitForIt(countConnectionsItems, (newCount) => newCount == connectionsCount + 1)
+        client.disconnect()
+        await waitForIt(countConnectionsItems, (newCount) => newCount == connectionsCount)
+      } catch {
+        client.disconnect()
       }
     })
   })

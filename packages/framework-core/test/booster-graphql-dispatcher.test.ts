@@ -7,7 +7,7 @@ import {
   BoosterConfig,
   Logger,
   GraphQLRequestEnvelope,
-  GraphQLRequestEnvelopeError
+  GraphQLRequestEnvelopeError,
 } from '@boostercloud/framework-types'
 import { BoosterGraphQLDispatcher } from '../src/booster-graphql-dispatcher'
 import * as gqlParser from 'graphql/language/parser'
