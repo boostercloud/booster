@@ -11,7 +11,7 @@ describe('the UserEnvelopeBuilder.fromAttributeMap', () => {
     }
 
     const expected: UserEnvelope = {
-      email: input.email,
+      username: input.email,
       role: '',
     }
     const got = UserEnvelopeBuilder.fromAttributeMap(input)
@@ -25,7 +25,7 @@ describe('the UserEnvelopeBuilder.fromAttributeMap', () => {
     }
 
     const expected: UserEnvelope = {
-      email: input.email,
+      username: input.email,
       role: '',
     }
     const got = UserEnvelopeBuilder.fromAttributeMap(input)
@@ -39,7 +39,7 @@ describe('the UserEnvelopeBuilder.fromAttributeMap', () => {
     }
 
     const expected: UserEnvelope = {
-      email: input.email,
+      username: input.email,
       role: 'Admin',
     }
     const got = UserEnvelopeBuilder.fromAttributeMap(input)
@@ -61,7 +61,7 @@ describe('the UserEnvelopeBuilder.fromAttributeList', () => {
     ]
 
     const expected: UserEnvelope = {
-      email: 'test@user.com',
+      username: 'test@user.com',
       role: 'User',
     }
 

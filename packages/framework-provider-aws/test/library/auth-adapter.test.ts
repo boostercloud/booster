@@ -61,7 +61,7 @@ describe('the auth-adapter', () => {
         },
       ]
       const expectedUser = {
-        email: 'test@user.com',
+        username: 'test@user.com',
         role: 'User',
       }
 

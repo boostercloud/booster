@@ -176,7 +176,7 @@ describe('the `GraphQLWebsocketHandler`', () => {
           it('stores connection data including the user', async () => {
             const message = envelope.value as GraphQLInit
             const expectedUser: UserEnvelope = {
-              email: internet.email(),
+              username: internet.email(),
               role: lorem.word(),
             }
             const fromAuthTokenFake: SinonStub = authManager.fromAuthToken as any
@@ -268,7 +268,7 @@ describe('the `GraphQLWebsocketHandler`', () => {
           const message = envelope.value as GraphQLStart
           const connectionData: ConnectionDataEnvelope = {
             user: {
-              email: internet.email(),
+              username: internet.email(),
               role: lorem.word(),
             },
             expirationTime: random.number(),

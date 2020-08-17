@@ -21,7 +21,7 @@ describe('The "storeConnectionData" method', () => {
       expirationTime: random.number(),
       user: {
         role: lorem.word(),
-        email: internet.email(),
+        username: internet.email(),
       },
     }
     await storeConnectionData(fakeDB, config, connectionID, expectedData)
@@ -42,7 +42,7 @@ describe('The "fetchConnectionData" method', () => {
       expirationTime: random.number(),
       user: {
         role: lorem.word(),
-        email: internet.email(),
+        username: internet.email(),
       },
     }
     const fakeGet = stub().returns({
