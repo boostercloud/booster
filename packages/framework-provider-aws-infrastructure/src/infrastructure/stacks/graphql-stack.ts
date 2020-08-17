@@ -37,10 +37,10 @@ export class GraphQLStack {
 
     this.buildWebsocketRoutes(graphQLLambda)
     this.buildRESTRoutes(graphQLLambda)
-    const subscriptionsTable = this.buildSubscriptionsTable()
+    const subscriptionsStore = this.buildSubscriptionsTable()
     const connectionsStore = this.buildConnectionsTable()
 
-    return { graphQLLambda, subscriptionDispatcherLambda, subscriptionsStore: subscriptionsTable, connectionsStore }
+    return { graphQLLambda, subscriptionDispatcherLambda, subscriptionsStore, connectionsStore }
   }
 
   private buildLambda(name: string, handler: string, eventSources?: Array<IEventSource>): Function {
