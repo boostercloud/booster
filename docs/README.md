@@ -2041,39 +2041,68 @@ subscriptionOperation.subscribe({
 
 #### Authorizing operations
 
-//TODO
+When you have a command or read model whose access is authorized to users with a specific set of roles (see ["Authentication and Authorization"](#authentication-and-authorization)), you need to use an authorization token when 
+sending queries, mutations or subscriptions to that command or read model. See the ["Authentication API"](#authentication-api) and, more especifically, the ["Sign in"](#sign-in) section to know how to get a token.
 
-It is also possible to use a GraphQL client to subscribe to changes in the application. However, it might be necessary to include an access token, provided when the user signs-in, in the request if the operation requires authorization. This token should be added to the GraphQL client as an operation option through a middleware. An example can be seen below:
+Once you have a token, the way to send it varies depending on the protocol you are using to send GraphQL operations:
+- For **HTTP**, you need to send the HTTP header `Authorization` with the token, making sure you prefix it with `Bearer ` (the kind of token Booster uses). For example:
+```http request
+Authorization: Bearer <your token>
+```
+- For **WebSocket**, you need to adhere to the ["GraphQL over WebSocket" protocol](#the-graphql-over-websocket-protocol) to send authorization data. The way to do that is by sending the token in the payload of the first message you send when initializing the connection (see ["Subscribing to read models](#subscribing-to-read-models)). For example:
+```json
+ { "type": "connection_init", "payload": { "Authorization": "<your token>" } }
+```
 
+You normally won't be sending tokens in such a low-level way. GraphQL clients has easier ways to send these tokens. See ["Sending tokens with Apollo client"](#sending-tokens-with-apollo-clients) 
+
+##### Sending tokens with Apollo clients
+
+We recommend going to the specific documentation of the specific Apollo client you are using to know how to send tokens. However, the basics remains the same. Here is an example of how you would configure the Javascript/Typescript Apollo client to send the authorization token. The example is exactly the same as the one shown in section ["Using Apollo clients"](#using-apollo-client) but with the changes needed to send the token. Notice that the only things that changes are the `HttpLink` and the `WebSocketLink`:
 ```typescript
-client.use([
-  {
-    applyMiddleware(options: OperationOptions, next: Function): void {
-      options.Authorization = <access-token>
-      next()
+import { split, HttpLink } from '@apollo/client';
+import { getMainDefinition } from '@apollo/client/utilities';
+import { WebSocketLink } from '@apollo/client/link/ws';
+import { ApolloClient, InMemoryCache } from '@apollo/client';
+
+
+// Create an HTTP link for sending queries and mutations
+const httpLink = new HttpLink({
+  uri: '<httpURL>',
+  headers: { // <--  ADDED: a "headers" property with the `Authorizaiton` header containing our token
+    Authorization: `Bearer <your token>` 
+  }
+});
+
+// Create a WebSocket link for sending subscriptions
+const wsLink = new WebSocketLink({
+  uri: '<websocketURL>',
+  options: { 
+    reconnect: true,
+    connectionParams: {  // <--  ADDED: a "connectionParam" property with the `Authorizaiton` header containing our token
+      Authorization: 'Bearer <your token>',
     },
+  }
+});
+
+// Combine both links so that depending on the operation, it uses one or another
+const splitLink = split( ({ query }) => {
+    const definition = getMainDefinition(query);
+    return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
   },
-])
+  wsLink,
+  httpLink,
+);
+
+// Finally, create the client using the link created above
+const client = new ApolloClient({
+  link: splitLink,
+  cache: new InMemoryCache()
+});
 ```
 
-Once the client is setup, a subscription to read model GraphQL request through a GraphQL client could be:
-```typescript
-await client.subscribe({
-    variables: {
-      productId: <some-product-id>,
-    },
-    query: gql`
-      subscription ProductUpdatesReadModel($productId: ID!) {
-        ProductUpdatesReadModel(id: $productId) {
-          id
-          availability
-          lastUpdate
-          previousUpdate
-        }
-      }
-    `,
-})
-```
+##### Refreshing tokens with Apollo clients
+
 #### The GraphQL over WebSocket protocol
 
 ### Cloud native
