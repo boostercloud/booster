@@ -63,7 +63,7 @@
     + [Application outputs](#application-outputs)
     + [Delete your cloud stack](#delete-your-cloud-stack)
 - [Going deeper with Booster](#going-deeper-with-booster)
-  * [Contributing](*contributing) 
+  * [Contributing](#contributing) 
   * [Framework Core](#framework-core)
   * [Framework Types](#framework-types)
   * [Framework integration tests](#framework-integration-tests)
