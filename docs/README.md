@@ -1948,6 +1948,96 @@ There will probably be a version for your client technology of choice. These are
 - [For iOS](https://www.apollographql.com/docs/ios/) ([Github)](https://github.com/apollographql/apollo-ios))
 - [For Java/Kotlin/Android](https://www.apollographql.com/docs/android/) ([Github](https://github.com/apollographql/apollo-android))
 
+We recommend referring to the documentation of those clients to know how to 
+use them. Here is an example of how to fully instantiate the Javascript client so that it works for queries, mutations and subscriptions:
+```typescript
+import { split, HttpLink } from '@apollo/client';
+import { getMainDefinition } from '@apollo/client/utilities';
+import { WebSocketLink } from '@apollo/client/link/ws';
+import { ApolloClient, InMemoryCache } from '@apollo/client';
+
+
+// Create an HTTP link for sending queries and mutations
+const httpLink = new HttpLink({
+  uri: '<httpURL>'
+});
+
+// Create a WebSocket link for sending subscriptions
+const wsLink = new WebSocketLink({
+  uri: '<websocketURL>',
+  options: { reconnect: true }
+});
+
+// Combine both links so that depending on the operation, it uses one or another
+const splitLink = split( ({ query }) => {
+    const definition = getMainDefinition(query);
+    return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
+  },
+  wsLink,
+  httpLink,
+);
+
+// Finally, create the client using the link created above
+const client = new ApolloClient({
+  link: splitLink,
+  cache: new InMemoryCache()
+});
+```
+
+Now, we can send queries, mutations and subscriptions using the `client` instance:
+```typescript
+import gql from 'graphql-tag'
+
+// Query the CartReadModel
+const readModelData = await client.query({
+  variables: {
+    cartID: "demo",
+  },
+  query: gql`
+    query QueryCart($cartID: ID!){
+      CartReadModel(id: $cartID) {
+        id
+        items
+      }
+    }
+  `,
+})
+
+// Send a command (mutation)
+const commandResult = await client.mutate({
+  variables: {
+    cartID: "demo",
+    sku: "ABC_02",
+  },
+  mutation: gql`
+    mutation AddOneItemToCart($cartID: ID!, $sku: string!) {
+      ChangeCart(input: { cartId: $cartID, sku: $sku, quantity: 1 })
+    }
+  `,
+})
+
+// Subscribe to changes in the CartReadModel
+const subscriptionOperation = client.subscribe({
+  variables: {
+    cartID: "demo",
+  },
+  query: gql`
+    subscription SubscribeToCart($cartID: ID!) {
+      CartReadModel(id: $cartID) {
+        id
+        cartItems
+      }
+    }
+  `,
+})
+
+subscriptionOperation.subscribe({
+  next: (cartReadModel) => {
+    // This function is called everytime the CartReadModel with ID="demo" is changed
+    // Parameter "cartReadModel" contains the latest version of the cart
+  }
+})
+```
 
 #### Authorizing operations
 
