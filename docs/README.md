@@ -1773,6 +1773,8 @@ And this would be the response:
 }
 ```
 
+> **Note**: Remember that, in case you want to send a command that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
+
 #### Reading read models
 
 To read a specific read model, we need to use a "query" operation. The structure of the "query" (the body
@@ -1817,7 +1819,7 @@ METHOD: "POST"
 }
 ```
 
-And would get the following as response:
+And we would get the following as response:
 
 ```json
 {
@@ -1835,7 +1837,7 @@ And would get the following as response:
 }
 ```
 
-**Note**: Remember that, in case you want to send a command that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
+>**Note**: Remember that, in case you want to query a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
 
 #### Subscribing to read models
 
@@ -1880,6 +1882,10 @@ Now we can start sending messages just by writing them and hitting "Enter".
 ```json
 { "type": "connection_init" }
 ```
+In case you want to authorize the connection, you need to send the authorization token in the `payload.Authorization` field:
+ ```json
+ { "type": "connection_init", "payload": { "Authorization": "<your token>" } }
+ ```
 3. Send a message with the subscription. We need to provide an ID for the operation. When the server sends us data back, it will include this same ID so that we know which subscription the received data belongs to (again, this is just for learning, [GraphQL clients](#using-apollo-client) manages this for you)
 ```json
 { "id": "1", "type": "start", "payload": { "query": "subscription { CartReadModel(id:\"demo\") { id items } }" } }
@@ -1933,16 +1939,15 @@ mutation {
 }
 ```
 
-**Note**: Remember that, in case you want to send a command that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
+>**Note**: Remember that, in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
 
 #### Using Apollo Client
 One of the best clients to connect to a GraphQL API is the [Apollo](https://www.apollographql.com/) client.
 There will probably be a version for your client technology of choice. These are the main ones:
-- [For Javascript/Typescript](https://www.apollographql.com/docs/react/) [(Github)](https://github.com/apollographql/apollo-client)
-- [For iOS](https://www.apollographql.com/docs/ios/) [(Github)](https://github.com/apollographql/apollo-ios)
-- [For Java/Kotlin/Android](https://www.apollographql.com/docs/android/) [(Github)](https://github.com/apollographql/apollo-android)
+- [For Javascript/Typescript](https://www.apollographql.com/docs/react/) ([Github](https://github.com/apollographql/apollo-client))
+- [For iOS](https://www.apollographql.com/docs/ios/) ([Github)](https://github.com/apollographql/apollo-ios))
+- [For Java/Kotlin/Android](https://www.apollographql.com/docs/android/) ([Github](https://github.com/apollographql/apollo-android))
 
-//TODO
 
 #### Authorizing operations
 
