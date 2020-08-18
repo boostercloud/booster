@@ -12,8 +12,8 @@ export function handleSignUpResult(
   userEnvelope: UserEnvelope
 ): CognitoUserPoolEvent {
   const roleMetadata = config.roles[userEnvelope.role]
-  const skipConfirmation = roleMetadata?.auth?.skipConfirmation
-  rawMessage.response.autoConfirmUser = skipConfirmation != undefined ? skipConfirmation : false
+  const skipConfirmation = roleMetadata?.auth?.skipConfirmation ?? false
+  rawMessage.response.autoConfirmUser = skipConfirmation
 
   return rawMessage
 }

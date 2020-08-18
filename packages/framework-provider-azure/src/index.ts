@@ -50,7 +50,7 @@ export const Provider: ProviderLibrary = {
   // ProviderAuthLibrary
   auth: {
     rawToEnvelope: undefined as any,
-    handleSignUpResult: undefined as any,
+    handleSignUpResult: (() => {}) as any,
   },
   // ProviderAPIHandling
   api: {

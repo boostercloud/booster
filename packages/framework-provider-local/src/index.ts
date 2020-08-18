@@ -57,7 +57,7 @@ export const Provider: ProviderLibrary = {
   // ProviderAuthLibrary
   auth: {
     rawToEnvelope: rawSignUpDataToUserEnvelope,
-    handleSignUpResult: undefined as any,
+    handleSignUpResult: (() => {}) as any,
   },
   // ProviderAPIHandling
   api: {
