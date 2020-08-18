@@ -49,19 +49,19 @@ export default class Project extends Command {
   public static args = [{ name: 'projectName' }]
 
   public async run(): Promise<void> {
-    return this.runWithErrors().catch(console.error)
-  }
-
-  private async runWithErrors(): Promise<void> {
     const { args, flags } = this.parse(Project)
-    if (!args.projectName)
-      return Promise.reject("You haven't provided a project name, but it is required, run with --help for usage")
-    assertNameIsCorrect(args.projectName)
-    const parsedFlags = {
-      projectName: args.projectName,
-      ...flags,
+    try {
+      if (!args.projectName)
+        throw new Error("You haven't provided a project name, but it is required, run with --help for usage")
+      assertNameIsCorrect(args.projectName)
+      const parsedFlags = {
+        projectName: args.projectName,
+        ...flags,
+      }
+      await run(parsedFlags as Partial<ProjectInitializerConfig>, this.config.version)
+    } catch (error) {
+      console.error(error)
     }
-    await run(parsedFlags as Partial<ProjectInitializerConfig>, this.config.version)
   }
 }
 
