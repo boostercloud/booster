@@ -1385,7 +1385,7 @@ Read Model classes can also be created by hand and there are no restrictions. Th
 A `Projection` is a method decorated with the `@Projects` decorator that, given a new entity value and (optionally) the current read model state, generate a new read model value.
 
 Read models can be projected from multiple [entities](#4-entities-and-reducers) as soon as they share some common key called `joinKey`. The `joinKey` is an entity field used to join data for projections. Read models can be considered as reactive join operations that can listen to different entities that has common fields between them. Let's see an example:
-```
+```typescript
 @ReadModel
 export class UserReadModel {
   public constructor(readonly username: string, /* ...(other interesting fields from users)... */) {}
