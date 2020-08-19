@@ -1394,10 +1394,10 @@ export class UserReadModel {
   public static projectUser(entity: User, current?: UserReadModel) { // Here we update the user fields}
 
   @Projects(Post, 'ownerId')
-  public static projectPostInteraction(entity: Post, current?: UserReadModel) { //Here we can adapt the read model to show specific user information related with the Post entity}
+  public static projectUserPost(entity: Post, current?: UserReadModel) { //Here we can adapt the read model to show specific user information related with the Post entity}
 }
 ```
-In the previous example we are projecting the `User` entity using the user `id` and also we are projecting the `User` entity using the `ownerId` of a `Post` entity
+In the previous example we are projecting the `User` entity using the user `id` and also we are projecting the `User` entity based on the `ownerId` of the `Post` entity
 
 #### Authorizing read models
 
