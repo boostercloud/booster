@@ -16,5 +16,5 @@ export type RegisteredUser = Pick<User, 'username' | 'password' | 'userAttribute
 export type AuthenticatedUser = Pick<User, 'username' | 'token'>
 
 export function rawSignUpDataToUserEnvelope(rawMessage: SignUpUser): UserEnvelope {
-  return { email: rawMessage.username, role: rawMessage.userAttributes.role }
+  return { username: rawMessage.username, role: rawMessage.userAttributes.role }
 }

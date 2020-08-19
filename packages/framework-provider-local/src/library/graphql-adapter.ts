@@ -12,7 +12,7 @@ export async function rawGraphQLRequestToEnvelope(
     eventType: 'MESSAGE', // TODO: (request.requestContext?.eventType as GraphQLRequestEnvelope['eventType']) ?? 'MESSAGE',
     connectionID: undefined, // TODO: Retrieve connectionId if available,
     currentUser: {
-      email: 'test@test.com',
+      username: 'test@test.com',
       role: '',
     },
     value: request.body,

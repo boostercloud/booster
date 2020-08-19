@@ -58,7 +58,7 @@ describe('commands', () => {
         kind: 'event',
         entityID: mockCartId,
         currentUser: {
-          email: 'test@test.com',
+          username: 'test@test.com',
           role: '',
         },
         entityTypeName: 'Cart',

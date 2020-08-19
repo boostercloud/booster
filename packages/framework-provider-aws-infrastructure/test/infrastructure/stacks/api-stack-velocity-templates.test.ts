@@ -87,6 +87,42 @@ describe('CognitoTemplates', () => {
     })
   })
 
+  describe('ConfirmSignUp', () => {
+    describe('request', () => {
+      it('returns the Cognito expected input', () => {
+        const input = {
+          clientId: 'a-client-id',
+          confirmationCode: '12345',
+          username: 'user@name.com',
+        }
+        const expectedOutput = {
+          ClientId: input.clientId,
+          ConfirmationCode: input.confirmationCode,
+          Username: input.username,
+        }
+
+        const context = buildAwsTemplateContext(input)
+        const gotOutputJSON = JSON.parse(Velocity.render(CognitoTemplates.confirmSignUp.request, context))
+
+        expect(gotOutputJSON).to.be.deep.equal(expectedOutput)
+      })
+    })
+    describe('response', () => {
+      it('returns an empty json object', () => {
+        const input = {
+          any: 'field',
+          other: 'value',
+        }
+        const expectedOutput = {}
+
+        const context = buildAwsTemplateContext(input)
+        const gotOutputJSON = JSON.parse(Velocity.render(CognitoTemplates.confirmSignUp.response, context))
+
+        expect(gotOutputJSON).to.be.deep.equal(expectedOutput)
+      })
+    })
+  })
+
   describe('SignIn', () => {
     describe('request', () => {
       it('returns the Cognito expected input', () => {

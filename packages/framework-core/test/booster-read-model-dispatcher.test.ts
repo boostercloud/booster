@@ -79,7 +79,7 @@ describe('BoosterReadModelDispatcher', () => {
         requestID: random.uuid(),
         version: 1,
         currentUser: {
-          email: internet.email(),
+          username: internet.email(),
           role: '',
         },
       }
@@ -107,7 +107,7 @@ describe('BoosterReadModelDispatcher', () => {
       version: 1,
       filters,
       currentUser: {
-        email: internet.email(),
+        username: internet.email(),
         role: UserRole.name,
       },
     }

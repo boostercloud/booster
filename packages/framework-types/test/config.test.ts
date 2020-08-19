@@ -48,7 +48,9 @@ describe('the config type', () => {
     it('returns true when there are roles defined', () => {
       const config = new BoosterConfig('test')
       config.roles['test-role'] = {
-        allowSelfSignUp: false,
+        auth: {
+          signUpMethods: [],
+        },
       }
 
       expect(config.thereAreRoles).to.be.equal(true)

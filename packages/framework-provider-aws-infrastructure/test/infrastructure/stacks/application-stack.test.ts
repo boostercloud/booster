@@ -83,7 +83,9 @@ describe('the application stack builder', () => {
 
   it('builds the application stack of an app with roles correctly', () => {
     config.roles['Admin'] = {
-      allowSelfSignUp: false,
+      auth: {
+        signUpMethods: [],
+      }
     }
 
     const boosterApp = new App()

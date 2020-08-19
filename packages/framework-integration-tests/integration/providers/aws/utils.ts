@@ -88,7 +88,7 @@ export async function userPoolPhysicalResourceId(): Promise<string> {
   }
 }
 
-export async function createUser(username: string, password: string, role = 'User'): Promise<void> {
+export async function createUser(username: string, password: string, role = 'UserWithEmail'): Promise<void> {
   const physicalResourceId = await userPoolPhysicalResourceId()
   const clientId = await authClientID()
   const temporaryPassword = 'ChangeMePleas3!'

@@ -17,7 +17,7 @@ import {
 import gql from 'graphql-tag'
 import { expect } from 'chai'
 import * as chai from 'chai'
-import { random, internet, finance, lorem } from 'faker'
+import { random, internet, finance, lorem, phone } from 'faker'
 import fetch from 'cross-fetch'
 
 chai.use(require('chai-as-promised'))
@@ -221,7 +221,7 @@ describe('With the auth API', () => {
       await expect(subscriptionPromise).to.eventually.be.fulfilled
     })
 
-    it('can sign up for a user account', async () => {
+    it('can sign up with an email', async () => {
       const userEmail = internet.email()
       const userPassword = createPassword()
 
@@ -235,7 +235,35 @@ describe('With the auth API', () => {
           username: userEmail,
           password: userPassword,
           userAttributes: {
-            role: 'User',
+            role: 'UserWithEmail',
+          },
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const message = await response.json()
+      expect(message).to.be.empty
+
+      expect(response.status).to.equal(200)
+    })
+
+    it('can sign up with a phone number', async () => {
+      const userPhoneNumber = phone.phoneNumber('+1##########')
+      const userPassword = createPassword()
+
+      const url = await signUpURL()
+      const clientId = await authClientID()
+
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          clientId: clientId,
+          username: userPhoneNumber,
+          password: userPassword,
+          userAttributes: {
+            role: 'SuperUser',
           },
         }),
         headers: {
@@ -277,10 +305,72 @@ describe('With the auth API', () => {
 
       expect(response.status).to.equal(400)
     })
+
+    it("can't sign up with an email if specified role only has phone as sign up option", async () => {
+      const userEmail = internet.email()
+      const userPassword = createPassword()
+
+      const url = await signUpURL()
+      const clientId = await authClientID()
+
+      const response = await fetch(url, {
+        method: 'post',
+        body: JSON.stringify({
+          clientId: clientId,
+          username: userEmail,
+          password: userPassword,
+          userAttributes: {
+            role: 'UserWithPhone',
+          },
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const message = await response.json()
+      expect(message).not.to.be.empty
+      expect(message.message).to.match(
+        /PreSignUp failed with error User with role UserWithPhone can't sign up with an email, a phone number is expected./
+      )
+
+      expect(response.status).to.equal(400)
+    })
+
+    it("can't sign up with a phone number if specified role only has email as sign up option", async () => {
+      const userPhoneNumber = phone.phoneNumber('+1##########')
+      const userPassword = createPassword()
+
+      const url = await signUpURL()
+      const clientId = await authClientID()
+
+      const response = await fetch(url, {
+        method: 'post',
+        body: JSON.stringify({
+          clientId: clientId,
+          username: userPhoneNumber,
+          password: userPassword,
+          userAttributes: {
+            role: 'UserWithEmail',
+          },
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const message = await response.json()
+      expect(message).not.to.be.empty
+      expect(message.message).to.match(
+        /PreSignUp failed with error User with role UserWithEmail can't sign up with a phone number, an email is expected./
+      )
+
+      expect(response.status).to.equal(400)
+    })
   })
 
-  // The User role is configured in the test project to allow sign ups
-  context('someone with a user account', () => {
+  // The UserWithEmail role is configured in the test project to allow sign ups
+  context('someone with a user with email account', () => {
     let userEmail: string
     let userPassword: string
 
@@ -299,7 +389,7 @@ describe('With the auth API', () => {
           username: userEmail,
           password: userPassword,
           userAttributes: {
-            role: 'User',
+            role: 'UserWithEmail',
           },
         }),
         headers: {
@@ -737,6 +827,66 @@ describe('With the auth API', () => {
           await expect(subscriptionPromise).to.eventually.be.fulfilled
         })
       })
+    })
+  })
+
+  // The UserWithPhone role is configured in the test project to allow sign ups
+  context('someone with a user with phone number account', () => {
+    let userPhoneNumber: string
+    let userPassword: string
+
+    before(async () => {
+      userPhoneNumber = phone.phoneNumber('+1##########')
+      userPassword = createPassword()
+
+      // Create user
+      const url = await signUpURL()
+      const clientId = await authClientID()
+
+      await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          clientId: clientId,
+          username: userPhoneNumber,
+          password: userPassword,
+          userAttributes: {
+            role: 'UserWithPhone',
+          },
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      // Confirm user
+      await confirmUser(userPhoneNumber)
+    })
+
+    after(async () => {
+      await deleteUser(userPhoneNumber)
+    })
+
+    it('can sign in their account and get a valid token', async () => {
+      const url = await signInURL()
+      const clientId = await authClientID()
+
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          clientId: clientId,
+          username: userPhoneNumber,
+          password: userPassword,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      expect(response.status).to.equal(200)
+
+      const message = await response.json()
+      expect(message).not.to.be.empty
+      expect(message.accessToken).not.to.be.empty
     })
   })
 

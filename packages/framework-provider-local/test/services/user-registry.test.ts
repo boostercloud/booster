@@ -192,7 +192,10 @@ describe('the user registry', () => {
       const retrievedUser = await userRegistry.getAuthenticatedUser(mockToken)
       expect(userRegistry.authenticatedUsers.findOne).to.have.been.called
       expect(userRegistry.registeredUsers.findOne).to.have.been.called
-      expect(retrievedUser).to.deep.equal({ email: user.username, role: user.userAttributes.role })
+      expect(retrievedUser).to.deep.equal({
+        username: user.username,
+        role: user.userAttributes.role,
+      })
     })
   })
 

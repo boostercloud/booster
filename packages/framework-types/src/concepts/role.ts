@@ -4,7 +4,13 @@ import { Class } from '../typelevel'
 export interface RoleInterface {}
 
 export interface RoleMetadata {
-  readonly allowSelfSignUp: boolean
+  readonly auth: AuthMetadata
+}
+
+export type SignUpMethod = 'email' | 'phone'
+
+export interface AuthMetadata {
+  readonly signUpMethods?: Array<SignUpMethod>
 }
 
 export interface RoleAccess {

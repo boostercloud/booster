@@ -171,7 +171,7 @@ describe('Cart end-to-end tests', () => {
     before(async () => {
       userEmail = internet.email()
       // TODO: Make retrieval of auth token cloud agnostic
-      await createUser(userEmail, mockPassword, 'User')
+      await createUser(userEmail, mockPassword, 'UserWithEmail')
       userAuthInformation = await getUserAuthInformation(userEmail, mockPassword)
       client = await graphQLClient(userAuthInformation.accessToken)
     })
