@@ -1384,16 +1384,20 @@ Read Model classes can also be created by hand and there are no restrictions. Th
 #### The projection function
 A `Projection` is a method decorated with the `@Projects` decorator that, given a new entity value and (optionally) the current read model state, generate a new read model value.
 
-Read models can be projected from multiple [entities](#4-entities-and-reducers) as soon as they share some common key called `joinKey`. The `joinKey` is the field used across entities to relaunch the projection function. To clarify this let's see an example:
+Read models can be projected from multiple [entities](#4-entities-and-reducers) as soon as they share some common key called `joinKey`. The `joinKey` is an entity field used to join data for projections. Read models can be considered as reactive join operations that can listen to different entities that has common fields between them. Let's see an example:
+```
+@ReadModel
+export class UserReadModel {
+  public constructor(readonly username: string, /* ...(other interesting fields from users)... */) {}
+  
+  @Projects(User, 'id')
+  public static projectUser(entity: User, current?: UserReadModel) { // Here we update the user fields}
 
-```typescript
-@Projects(Cart, "id")
-public static projectCart(entity:Cart, currentReadModel: CartReadModel): CartReadModel {
-  return new CartReadModel(entity.id, entity.items)
+  @Projects(Post, 'ownerId')
+  public static projectPostInteraction(entity: Post, current?: UserReadModel) { //Here we can adapt the read model to show specific user information related with the Post entity}
 }
 ```
-
-In the previous code, the `id` project's parameter, matches the name of a `Cart` entity property and it is used as `joinKey`. This means that each time that a `Cart` that has the same `id` as the read model's `id` is modified, the projection is called.
+In the previous example we are projecting the `User` entity using the user `id` and also we are projecting the `User` entity using the `ownerId` of a `Post` entity
 
 #### Authorizing read models
 
