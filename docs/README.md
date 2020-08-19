@@ -1955,27 +1955,28 @@ import { split, HttpLink } from '@apollo/client';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { WebSocketLink } from '@apollo/client/link/ws';
 import { ApolloClient, InMemoryCache } from '@apollo/client';
+import { SubscriptionClient } from 'subscriptions-transport-ws'
 
+// Helper function that checks if a GraphQL operation is a subscription or not
+function isSubscriptionOperation({ query }) {
+  const definition = getMainDefinition(query);
+  return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
+}
 
 // Create an HTTP link for sending queries and mutations
 const httpLink = new HttpLink({
   uri: '<httpURL>'
 });
 
-// Create a WebSocket link for sending subscriptions
-const wsLink = new WebSocketLink({
-  uri: '<websocketURL>',
-  options: { reconnect: true }
-});
+// Create a SusbscriptionClient and a WebSocket link for sending subscriptions
+const subscriptionClient = new SubscriptionClient('<websocketURL>', {
+  reconnect: true
+})
+const wsLink = new WebSocketLink(subscriptionClient);
 
 // Combine both links so that depending on the operation, it uses one or another
-const splitLink = split( ({ query }) => {
-    const definition = getMainDefinition(query);
-    return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
-  },
-  wsLink,
-  httpLink,
-);
+const splitLink = split(isSubscriptionOperation, wsLink, httpLink);
+
 
 // Finally, create the client using the link created above
 const client = new ApolloClient({
@@ -2058,43 +2059,48 @@ You normally won't be sending tokens in such a low-level way. GraphQL clients ha
 
 ##### Sending tokens with Apollo clients
 
-We recommend going to the specific documentation of the specific Apollo client you are using to know how to send tokens. However, the basics remains the same. Here is an example of how you would configure the Javascript/Typescript Apollo client to send the authorization token. The example is exactly the same as the one shown in section ["Using Apollo clients"](#using-apollo-client) but with the changes needed to send the token. Notice that the only things that changes are the `HttpLink` and the `WebSocketLink`:
+We recommend going to the specific documentation of the specific Apollo client you are using to know how to send tokens. However, the basics remains the same. Here is an example of how you would configure the Javascript/Typescript Apollo client to send the authorization token. The example is exactly the same as the one shown in section ["Using Apollo clients"](#using-apollo-client) but with the changes needed to send the token. Notice that the only things that change are the `HttpLink` and the `WebSocketLink`:
 ```typescript
 import { split, HttpLink } from '@apollo/client';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { WebSocketLink } from '@apollo/client/link/ws';
 import { ApolloClient, InMemoryCache } from '@apollo/client';
 
+function isSubscriptionOperation({ query }) {
+  const definition = getMainDefinition(query);
+  return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
+}
 
-// Create an HTTP link for sending queries and mutations
 const httpLink = new HttpLink({
   uri: '<httpURL>',
-  headers: { // <--  ADDED: a "headers" property with the `Authorizaiton` header containing our token
-    Authorization: `Bearer <your token>` 
-  }
 });
 
-// Create a WebSocket link for sending subscriptions
-const wsLink = new WebSocketLink({
-  uri: '<websocketURL>',
-  options: { 
-    reconnect: true,
-    connectionParams: {  // <--  ADDED: a "connectionParam" property with the `Authorizaiton` header containing our token
-      Authorization: 'Bearer <your token>',
-    },
+// CHANGED: We create an "authLink" that modifies the operation by adding the token to the headers
+const authLink = new ApolloLink((operation, forward) => {
+  operation.setContext({ 
+    headers: { 
+      Authorization: 'Bearer <your token>'
+    }
+  })
+  return forward(operation)
+})
+
+// <-- CHANGED: Concatenate the links so that the "httpLink" receives the operation with the headers set by the "authLink"
+const httpLinkWithAuth = authLink.concat(httpLink) 
+
+const subscriptionClient = new SubscriptionClient('<websocketURL>', {
+  reconnect: true,
+  // CHANGED: added a "connectionParam" property with a function that returns the `Authorizaiton` header containing our token
+  connectionParams: () => {
+    return {
+      Authorization: 'Bearer <your token>'
+    }
   }
-});
+})
+const wsLink = new WebSocketLink(subscriptionClient);
 
-// Combine both links so that depending on the operation, it uses one or another
-const splitLink = split( ({ query }) => {
-    const definition = getMainDefinition(query);
-    return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
-  },
-  wsLink,
-  httpLink,
-);
+const splitLink = split(isSubscriptionOperation, wsLink, httpLinkWithAuth); // Note that we now are using "httpLinkWithAuth"
 
-// Finally, create the client using the link created above
 const client = new ApolloClient({
   link: splitLink,
   cache: new InMemoryCache()
@@ -2102,6 +2108,70 @@ const client = new ApolloClient({
 ```
 
 ##### Refreshing tokens with Apollo clients
+
+Authorization tokens expire after a certain amount of time. When a token is expired, you will get an error and you will need to call the [refresh the token](#refresh-token) endpoint to get a new token. After you have done so, you need to use the new token in your GraphQL operations.
+
+There are several ways to do this. Here we show the simplest one for learning purposes. 
+
+First, we modify the example shown in the section ["Sending tokens with apollo clients](#sending-tokens-with-apollo-clients) so that the token is stored in a global variable and the Apollo links get the token from it. That variable will be updated when the user signs-in and the token is refreshed:
+
+```typescript
+import { split, HttpLink } from '@apollo/client';
+import { getMainDefinition } from '@apollo/client/utilities';
+import { WebSocketLink } from '@apollo/client/link/ws';
+import { ApolloClient, InMemoryCache } from '@apollo/client';
+
+let authToken = undefined // <-- CHANGED: This variable will hold the token and will be updated everytime the token is refreshed
+
+function isSubscriptionOperation({ query }) {
+  const definition = getMainDefinition(query);
+  return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
+}
+
+const httpLink = new HttpLink({
+  uri: '<httpURL>',
+});
+
+const authLink = new ApolloLink((operation, forward) => {
+  if (authToken) {
+      operation.setContext({ 
+        headers: { 
+          Authorization: `Bearer ${authToken}` // <-- CHANGED: We use the "authToken" global variable
+        }
+      })
+  }
+  return forward(operation)
+})
+
+const httpLinkWithAuth = authLink.concat(httpLink) 
+
+const subscriptionClient = new SubscriptionClient('<websocketURL>', {
+  reconnect: true,
+  // CHANGED: added a "connectionParam" property with a function that returns the `Authorizaiton` header containing our token
+  connectionParams: () => {
+    if (authToken) {
+      return {
+        Authorization: `Bearer ${authToken}` // <-- CHANGED: We use the "authToken" global variable
+      }
+    }
+    return {}
+  }
+})
+const wsLink = new WebSocketLink(subscriptionClient);
+
+const splitLink = split(isSubscriptionOperation, wsLink, httpLinkWithAuth);
+
+const client = new ApolloClient({
+  link: splitLink,
+  cache: new InMemoryCache()
+});
+```
+
+Now, _when the user signs-in_ or _when the token is refreshed_, we need to do two things:
+1. Update the global variable `authToken` with the new token.
+2. Reconnect the socket used by the subscription client by doing `subscriptionClient.close(false)`
+
+You might be wondering why we need to do the second step. The reason is that, with operations sent through HTTP, the token goes along with every operation, in the headers. However, with operations sent through WebSockets, like subscriptions, the token is only sent when the socket connection is established. For this reason, **everytime we update the token we need to reconnect the `SubscriptionClient`** so that it sends again the token (the updated one in this case).
 
 #### The GraphQL over WebSocket protocol
 
