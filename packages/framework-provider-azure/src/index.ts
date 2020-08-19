@@ -14,6 +14,9 @@ import { fetchReadModel, storeReadModel } from './library/read-model-adapter'
 import { searchReadModel } from './library/searcher-adapter'
 import { notifySubscription } from './library/subscription-adapter'
 
+if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefined') {
+  throw new Error('No Cosmos DB connection string has been found')
+}
 const cosmosClient = new CosmosClient(process.env[environmentVarNames.cosmosDbConnectionString] as string)
 
 export const Provider: ProviderLibrary = {
