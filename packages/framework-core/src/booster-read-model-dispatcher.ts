@@ -25,7 +25,7 @@ export class BoosterReadModelDispatcher {
     connectionID: string,
     readModelRequest: ReadModelRequestEnvelope,
     operation: GraphQLOperation
-  ): Promise<any> {
+  ): Promise<unknown> {
     this.validateRequest(readModelRequest)
     return this.processSubscription(connectionID, readModelRequest, operation)
   }

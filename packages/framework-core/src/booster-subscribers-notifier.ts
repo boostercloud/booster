@@ -28,8 +28,7 @@ export class BoosterSubscribersNotifier {
     ).generateSchema()
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public async dispatch(request: any): Promise<void> {
+  public async dispatch(request: unknown): Promise<void> {
     try {
       this.logger.debug('Received the following event for subscription dispatching: ', request)
       const readModelEnvelopes = await this.config.provider.readModels.rawToEnvelopes(this.config, this.logger, request)
@@ -73,7 +72,10 @@ export class BoosterSubscribersNotifier {
     return new FilteredReadModelPubSub(readModelInstances)
   }
 
-  private async runSubscriptionAndNotify(pubSub: ReadModelPubSub, subscription: SubscriptionEnvelope): Promise<void> {
+  private async runSubscriptionAndNotify(
+    pubSub: ReadModelPubSub,
+    subscription: SubscriptionEnvelope
+  ): Promise<unknown> {
     const context: GraphQLResolverContext = {
       connectionID: subscription.connectionID,
       requestID: subscription.requestID,
@@ -111,7 +113,7 @@ export class BoosterSubscribersNotifier {
   private async processSubscriptionsIterator(
     iterator: AsyncIterableIterator<ExecutionResult>,
     subscription: SubscriptionEnvelope
-  ): Promise<any> {
+  ): Promise<unknown> {
     const notificationPromises: Array<Promise<void>> = []
     for await (const result of iterator) {
       notificationPromises.push(this.notifyWithGraphQLResult(subscription, result))

@@ -41,8 +41,7 @@ export class BoosterGraphQLDispatcher {
     )
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public async dispatch(request: any): Promise<any> {
+  public async dispatch(request: unknown): Promise<unknown> {
     const envelopeOrError = await this.config.provider.graphQL.rawToEnvelope(request, this.logger)
     this.logger.debug('Received the following GraphQL envelope: ', envelopeOrError)
 
