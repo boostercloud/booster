@@ -13,7 +13,7 @@ import { Observable } from 'apollo-client/util/Observable'
 
 chai.use(require('chai-as-promised'))
 
-describe.only('subscriptions', () => {
+describe('subscriptions', () => {
   describe('the "unsubscribe" operation', () => {
     let client: DisconnectableApolloClient
     before(async () => {
