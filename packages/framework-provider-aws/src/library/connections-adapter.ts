@@ -50,7 +50,7 @@ export async function deleteConnectionData(
 export async function sendMessageToConnection(
   config: BoosterConfig,
   connectionID: string,
-  data: Record<string, any>
+  data: unknown
 ): Promise<void> {
   await new ApiGatewayManagementApi({
     endpoint: config.mustGetEnvironmentVar(environmentVarNames.websocketAPIURL),
