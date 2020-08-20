@@ -158,7 +158,7 @@ export class BoosterGraphQLDispatcher {
   private async handleDisconnect(connectionID?: string): Promise<void> {
     if (!connectionID) {
       // This should be impossible, but just in case
-      this.logger.debug("Received a DISCONNECT message but field 'connectionID' is missing. Doing nothing")
+      this.logger.info("Received a DISCONNECT message but field 'connectionID' is missing. Doing nothing")
       return
     }
     this.logger.debug('Deleting all subscriptions and connection data')
