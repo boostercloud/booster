@@ -91,20 +91,20 @@ describe('the `GraphQLWebsocketHandler`', () => {
 
       describe('with an error in the envelope', () => {
         const errorMessage = lorem.sentences(1)
-        let erroneousEnvelope: GraphQLRequestEnvelopeError
+        let envelopeWithError: GraphQLRequestEnvelopeError
         beforeEach(() => {
-          erroneousEnvelope = {
+          envelopeWithError = {
             ...envelope,
             error: new Error(errorMessage),
           }
         })
 
         it('sends the error to the client', async () => {
-          resultPromise = websocketHandler.handle(erroneousEnvelope)
+          resultPromise = websocketHandler.handle(envelopeWithError)
           await resultPromise
           expect(connectionsManager.sendMessage).to.be.calledOnceWithExactly(
             config,
-            erroneousEnvelope.connectionID,
+            envelopeWithError.connectionID,
             match({
               type: MessageTypes.GQL_CONNECTION_ERROR,
               payload: errorMessage,
