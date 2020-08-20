@@ -1899,7 +1899,7 @@ Following with the previous example, we now send a command (using a "mutation" o
 a new item with sku "ABC_02" to the `CartReadModel`. After it has been added, we receive the updated version of the read model through the
 socket.
 
-1. Send the following command:
+1. Send the following command (this time using an HTTP request):
 
 ```
 URL: "<httpURL>/graphql"
