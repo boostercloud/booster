@@ -2055,7 +2055,7 @@ Authorization: Bearer <your token>
  { "type": "connection_init", "payload": { "Authorization": "<your token>" } }
 ```
 
-You normally won't be sending tokens in such a low-level way. GraphQL clients has easier ways to send these tokens. See [Sending tokens with Apollo client](#sending-tokens-with-apollo-clients) 
+You normally won't be sending tokens in such a low-level way. GraphQL clients have easier ways to send these tokens. See [Sending tokens with Apollo client](#sending-tokens-with-apollo-clients) 
 
 ##### Sending tokens with Apollo clients
 
