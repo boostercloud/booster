@@ -7,16 +7,16 @@ import {
 } from '@boostercloud/framework-types'
 import { requestFailed } from '../../src/library/api-adapter'
 
-describe('the requestFailed method', () => {
-  interface TestCase {
-    input: Error
-    expectedOutput: {
-      status: number
-      title: string
+describe('API adapter', () => {
+  describe('The "requestFailed" method', () => {
+    interface TestCase {
+      input: Error
+      expectedOutput: {
+        status: number
+        title: string
+      }
     }
-  }
 
-  it('returns a proper body with several errors', async () => {
     const testCases: Array<TestCase> = [
       {
         input: new InvalidParameterError('error message'),
@@ -49,11 +49,12 @@ describe('the requestFailed method', () => {
     ]
 
     for (const testCase of testCases) {
-      const testDescription = `In test case '${testCase.input.constructor.name}'`
-      const got = await requestFailed(testCase.input)
-      expect(got.status).to.be.equal(testCase.expectedOutput.status, testDescription)
-      const body = JSON.parse(got.body)
-      expect(body.title).to.be.equal(testCase.expectedOutput.title, testDescription)
+      it(`returns the proper body for error '${testCase.input.constructor.name}'`, async () => {
+        const got = await requestFailed(testCase.input)
+        expect(got.status).to.be.equal(testCase.expectedOutput.status)
+        const body = JSON.parse(got.body)
+        expect(body.title).to.be.equal(testCase.expectedOutput.title)
+      })
     }
   })
 })

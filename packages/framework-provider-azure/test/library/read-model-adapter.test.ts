@@ -1,63 +1,92 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
-import { createStubInstance, fake, match } from 'sinon'
+import { createStubInstance, fake, match, SinonStubbedInstance, stub } from 'sinon'
 import { fetchReadModel, storeReadModel } from '../../src/library/read-model-adapter'
-import { BoosterConfig, Logger } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, ReadModelInterface, UUID } from '@boostercloud/framework-types'
 import { CosmosClient } from '@azure/cosmos'
-import sinon = require('sinon')
+import { random } from 'faker'
+import { createMockReadModel } from '../helpers/read-model-helper'
 
-const logger: Logger = {
-  info: fake(),
-  error: fake(),
-  debug: fake(),
-}
+describe('Read Model adapter', () => {
+  let mockLogger: Logger
+  let mockConfig: BoosterConfig
+  let mockReadModel: ReadModelInterface
 
-const cosmosDb = createStubInstance(CosmosClient, {
-  // @ts-ignore
-  database: sinon.stub().returns({
-    container: sinon.stub().returns({
-      items: {
-        query: sinon.stub().returns({
-          fetchAll: fake.resolves({ resources: [] }) as any,
+  let mockReadModelName: string
+  let mockReadModelId: UUID
+
+  let mockCosmosDbClient: SinonStubbedInstance<CosmosClient>
+
+  beforeEach(() => {
+    mockCosmosDbClient = createStubInstance(CosmosClient, {
+      database: stub().returns({
+        container: stub().returns({
+          items: {
+            query: stub().returns({
+              fetchAll: fake.resolves({ resources: [] }) as any,
+            }),
+            upsert: stub().returns(fake.resolves({})),
+          },
+          item: stub().returns({
+            read: stub().returns(fake.resolves({})),
+          }),
         }),
-        upsert: sinon.stub().returns(fake.resolves({})),
-      },
-      item: sinon.stub().returns({
-        read: sinon.stub().returns(fake.resolves({})),
-      }),
-    }),
-  }),
-})
-const config = new BoosterConfig('test')
-
-describe('the "fetchReadModel" method', () => {
-  it('responds with a read model when it exist', async () => {
-    const result = await fetchReadModel(cosmosDb, config, logger, 'SomeReadModel', 'someReadModelID')
-
-    // @ts-ignore
-    expect(cosmosDb.database().container).to.have.been.calledOnceWithExactly('new-booster-app-app-SomeReadModel')
-    // @ts-ignore
-    expect(cosmosDb.database().container().item).to.have.been.calledWithExactly('someReadModelID', 'someReadModelID')
-    expect(result).not.to.be.null
+      }) as any,
+    })
+    mockLogger = {
+      info: fake(),
+      error: fake(),
+      debug: fake(),
+    }
+    mockConfig = new BoosterConfig('test')
+    mockReadModelName = random.word()
+    mockReadModelId = random.uuid()
+    mockReadModel = createMockReadModel()
   })
-})
 
-describe('the "storeReadModel" method', () => {
-  it('saves a read model', async () => {
-    const something = await storeReadModel(cosmosDb, config, logger, 'SomeReadModel', {
-      id: 777,
-      some: 'object',
-    } as any)
+  describe('The "fetchReadModel" method', () => {
+    it('Responds with a read model when it exists', async () => {
+      const result = await fetchReadModel(
+        mockCosmosDbClient as any,
+        mockConfig,
+        mockLogger,
+        mockReadModelName,
+        mockReadModelId
+      )
 
-    // @ts-ignore
-    expect(cosmosDb.database().container).to.have.been.calledWithExactly('new-booster-app-app-SomeReadModel')
-    // @ts-ignore
-    expect(cosmosDb.database().container().items.upsert).to.have.been.calledWithExactly(
-      match({
-        id: 777,
-        some: 'object',
-      })
-    )
-    expect(something).not.to.be.null
+      expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container
+      ).to.have.been.calledWithExactly(`${mockConfig.resourceNames.applicationStack}-${mockReadModelName}`)
+      expect(
+        mockCosmosDbClient
+          .database(mockConfig.resourceNames.applicationStack)
+          .container(`${mockConfig.resourceNames.applicationStack}-${mockReadModelName}`).item
+      ).to.have.been.calledWithExactly(mockReadModelId, mockReadModelId)
+      expect(result).not.to.be.null
+    })
+  })
+
+  describe('The "storeReadModel" method', () => {
+    it('Saves a read model', async () => {
+      const something = await storeReadModel(
+        mockCosmosDbClient as any,
+        mockConfig,
+        mockLogger,
+        mockReadModelName,
+        mockReadModel as any
+      )
+
+      expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container
+      ).to.have.been.calledWithExactly(`${mockConfig.resourceNames.applicationStack}-${mockReadModelName}`)
+      expect(
+        mockCosmosDbClient
+          .database(mockConfig.resourceNames.applicationStack)
+          .container(`${mockConfig.resourceNames.applicationStack}-${mockReadModelName}`).items.upsert
+      ).to.have.been.calledWithExactly(match(mockReadModel))
+      expect(something).not.to.be.null
+    })
   })
 })
