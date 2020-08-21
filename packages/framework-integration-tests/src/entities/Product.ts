@@ -36,13 +36,17 @@ export class Product {
 
   @Reduces(ProductDeleted)
   public static delete(_event: ProductDeleted, currentProduct: Product): Product {
-    currentProduct.deleted = true
+    if (currentProduct) {
+      currentProduct.deleted = true
+    }
     return currentProduct
   }
 
   @Reduces(ProductAvailabilityChanged)
   public static changeAvailability(event: ProductAvailabilityChanged, currentProduct: Product): Product {
-    currentProduct.availability += event.quantity
+    if (currentProduct) {
+      currentProduct.availability += event.quantity
+    }
     return currentProduct
   }
 }
