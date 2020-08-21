@@ -466,14 +466,16 @@ export async function countEventItems(): Promise<number> {
   return output.Count ?? -1
 }
 
-export async function countSnapshotItems(): Promise<number> {
-  const output: ScanOutput = await documentClient
-    .scan({
+export async function countSnapshotItems(entityTypeName: string, entityID: string): Promise<number> {
+  const output: QueryOutput = await documentClient
+    .query({
       TableName: await eventsStoreTableName(),
       Select: 'COUNT',
-      FilterExpression: '#k = :kind',
-      ExpressionAttributeNames: { '#k': 'kind' },
-      ExpressionAttributeValues: { ':kind': 'snapshot' },
+      ConsistentRead: true,
+      KeyConditionExpression: 'entityTypeName_entityID_kind = :partitionKey',
+      ExpressionAttributeValues: {
+        ':partitionKey': `${entityTypeName}-${entityID}-snapshot`,
+      },
     })
     .promise()
 

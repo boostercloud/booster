@@ -18,7 +18,7 @@ import {
   notifySubscription,
   subscribeToReadModel,
 } from './library/subscription-adapter'
-import { rawSignUpDataToUserEnvelope } from './library/auth-adapter'
+import { handleSignUpResult, rawSignUpDataToUserEnvelope } from './library/auth-adapter'
 
 const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
 const userPool = new CognitoIdentityServiceProvider()
@@ -51,6 +51,7 @@ export const Provider: ProviderLibrary = {
   // ProviderAuthLibrary
   auth: {
     rawToEnvelope: rawSignUpDataToUserEnvelope,
+    handleSignUpResult: handleSignUpResult,
   },
   // ProviderAPIHandling
   api: {

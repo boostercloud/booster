@@ -74,8 +74,6 @@ describe('commands', () => {
     })
 
     it('should create a snapshot after 5 events', async () => {
-      const mockCartId = random.uuid()
-      const mockProductId = random.uuid()
       let mockQuantity: number
       let expectedSnapshotQuantity = 0
 
@@ -104,7 +102,7 @@ describe('commands', () => {
       )
 
       const countPromise = util.promisify((query: any, callback: any) => events.count(query, callback))
-      expect(await countPromise({ kind: 'snapshot', entityID: mockCartId })).to.be.equal(1)
+      expect(await countPromise({ kind: 'snapshot', entityID: mockCartId, entityTypeName: 'Cart' })).to.be.equal(1)
     })
   })
 })

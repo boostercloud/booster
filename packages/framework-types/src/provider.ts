@@ -67,6 +67,7 @@ export interface ProviderGraphQLLibrary {
 
 export interface ProviderAuthLibrary {
   rawToEnvelope(rawMessage: any): UserEnvelope
+  handleSignUpResult(config: BoosterConfig, request: any, userEnvelope: UserEnvelope): any
 }
 
 export interface ProviderAPIHandling {
