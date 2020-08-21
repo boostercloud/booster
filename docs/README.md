@@ -1437,15 +1437,30 @@ export class User {}
 @Role({
   auth: {
     signUpMethods: ['email', 'phone'],
+    skipConfirmation: false
   },
 })
 export class SuperUser {}
+
+@Role({
+  auth: {
+    signUpMethods: ['email', 'phone'],
+    skipConfirmation: true
+  },
+})
+export class SuperUserWithoutConfirmation {}
 ```
 
-Here, we have defined the `Admin`, `User` and `SuperUser` roles. They all contain an `auth` attribute. This one contains a `signUpMethods` attribute. When this value is empty (`Admin` role) a user can't use this role to sign up.
+Here, we have defined the `Admin`, `User`, `SuperUser` and `SuperUserWithoutConfirmation` roles. They all contain an `auth` attribute which contains a `signUpMethods` and `skipConfirmation` attributes.
 
-`signUpMethods` is an array with limited possible values: `email` or `phone` or a combination of both.
+When `signUpMethods` is empty (`Admin` role) or is not specified, a user can't use this role to sign up.
+`signUpMethods` is an array with limited possible values: `email`, `phone` or a combination of both.
 Users with the `User` role will only be able to sign up with their emails, whereas the ones with the `SuperUser` role will be able to sign up with either their email or their phone number.
+
+When `skipConfirmation` is false or not specified, a confirmation is required for the chosen sign up method.
+Users that sign up with their emails will receive a confirmation link in their inbox. They just need to click it to confirm their registration.
+Users that sign up with their phones will receive a confirmation code as an SMS message. That code needs to be sent back using the [confirmation endpoint](#sign-up/confirm)
+If `skipConfirmation` is set to true, users can sign in without confirmation after signing up.
 
 If your Booster application has roles defined, an [authentication API](#authentication-api) will be provisioned. It will allow your users to gain
 access to your resources.
@@ -1461,10 +1476,6 @@ The base URL of all these endpoints is the `httpURL` output of your application.
 
 ##### Sign-up
 Users can use this endpoint to register in your application and get a role assigned to them.
-Only roles that filled `signUpMethods` with valid entries can be used upon sign-up. After calling this endpoint, the
-registration isn't completed yet. 
-Users that sign up with their emails will receive a confirmation link in their inbox. They just need to click it to confirm their registration.
-Users that sign up with their phones will receive a confirmation code as an SMS message. That code needs to be sent back using the [confirmation endpoint](#sign-up/confirm)
 
 ![confirmation email](./img/sign-up-verificaiton-email.png)
 ![email confirmed](./img/sign-up-confirmed.png)

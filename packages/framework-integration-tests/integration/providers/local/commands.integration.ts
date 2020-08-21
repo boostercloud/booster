@@ -74,8 +74,6 @@ describe('commands', () => {
     })
 
     it('should create a snapshot after 5 events', async () => {
-      const mockCartId = random.uuid()
-      const mockProductId = random.uuid()
       let mockQuantity: number
       let expectedSnapshotQuantity = 0
 
