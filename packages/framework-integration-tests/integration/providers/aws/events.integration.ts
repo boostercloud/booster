@@ -58,13 +58,13 @@ describe('events', async () => {
   })
 
   it('should generate a snapshot after 5 events with the same entity id', async () => {
-    const snapshotsCount = await countSnapshotItems()
-
-    const commandsPromises: Promise<any>[] = []
-
     const mockCartId = random.uuid()
     const mockProductId = random.uuid()
 
+    const snapshotsCount = await countSnapshotItems('Cart', mockCartId)
+    expect(snapshotsCount).to.be.equal(0)
+
+    const commandsPromises: Promise<any>[] = []
     for (let i = 0; i < 5; i++) {
       commandsPromises.push(
         client.mutate({
@@ -90,9 +90,10 @@ describe('events', async () => {
     })
 
     const expectedSnapshotItemsCount = snapshotsCount + 1
-    await waitForIt(
-      () => countSnapshotItems(),
+    const newSnapshotItemsCount = await waitForIt(
+      () => countSnapshotItems('Cart', mockCartId),
       (newSnapshotsCount) => newSnapshotsCount === expectedSnapshotItemsCount
     )
+    expect(newSnapshotItemsCount).to.be.equal(expectedSnapshotItemsCount)
   })
 })

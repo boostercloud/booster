@@ -102,7 +102,7 @@ describe('commands', () => {
       )
 
       const countPromise = util.promisify((query: any, callback: any) => events.count(query, callback))
-      expect(await countPromise({ kind: 'snapshot', entityID: mockCartId })).to.be.equal(1)
+      expect(await countPromise({ kind: 'snapshot', entityID: mockCartId, entityTypeName: 'Cart' })).to.be.equal(1)
     })
   })
 })

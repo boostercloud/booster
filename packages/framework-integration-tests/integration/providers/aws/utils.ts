@@ -15,6 +15,7 @@ import { split } from 'apollo-link'
 import * as WebSocket from 'ws'
 import { OperationOptions, SubscriptionClient } from 'subscriptions-transport-ws'
 import { ApolloClientOptions } from 'apollo-client/ApolloClient'
+import { eventsStoreAttributes } from '@boostercloud/framework-provider-aws'
 
 const userPoolId = 'userpool'
 const cloudFormation = new CloudFormation()
@@ -466,14 +467,16 @@ export async function countEventItems(): Promise<number> {
   return output.Count ?? -1
 }
 
-export async function countSnapshotItems(): Promise<number> {
-  const output: ScanOutput = await documentClient
-    .scan({
+export async function countSnapshotItems(entityTypeName: string, entityID: string): Promise<number> {
+  const output: QueryOutput = await documentClient
+    .query({
       TableName: await eventsStoreTableName(),
       Select: 'COUNT',
-      FilterExpression: '#k = :kind',
-      ExpressionAttributeNames: { '#k': 'kind' },
-      ExpressionAttributeValues: { ':kind': 'snapshot' },
+      ConsistentRead: true,
+      KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey`,
+      ExpressionAttributeValues: {
+        ':partitionKey': `${entityTypeName}-${entityID}-snapshot`,
+      },
     })
     .promise()
 
