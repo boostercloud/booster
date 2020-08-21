@@ -4,12 +4,12 @@ export const template = `{
   "version": "{{{version}}}",
   "author": "{{{author}}}",
   "dependencies": {
-    "@boostercloud/framework-core": "^{{{boosterVersion}}}",
-    "@boostercloud/framework-types": "^{{{boosterVersion}}}",
+    "@boostercloud/framework-core": "^0.5.0",
+    "@boostercloud/framework-types": "^0.5.0",
     "{{{providerPackageName}}}": "*"
   },
   "devDependencies": {
-    "@boostercloud/cli": "^{{{boosterVersion}}}",
+    "@boostercloud/cli": "^0.5.0",
     "rimraf": "^3.0.1",
     "@typescript-eslint/eslint-plugin": "^2.18.0",
     "@typescript-eslint/parser": "^2.18.0",
