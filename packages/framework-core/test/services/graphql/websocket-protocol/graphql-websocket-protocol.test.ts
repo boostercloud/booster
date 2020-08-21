@@ -35,6 +35,7 @@ describe('the `GraphQLWebsocketHandler`', () => {
     authManager = {
       fromAuthToken: stub(),
       rawToEnvelope: stub(),
+      handleSignUpResult: stub(),
     }
     connectionsManager = {
       sendMessage: stub(),

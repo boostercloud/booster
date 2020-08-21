@@ -104,7 +104,7 @@ describe('the "checkSignUp" method', () => {
       })
     )
 
-    const rawMessage = BoosterAuth.checkSignUp({}, config, logger)
+    const rawMessage = BoosterAuth.checkSignUp({}, config, logger) as any
     expect(rawMessage.response.autoConfirmUser).to.be.false
   })
 
@@ -128,7 +128,7 @@ describe('the "checkSignUp" method', () => {
       })
     )
 
-    const rawMessage = BoosterAuth.checkSignUp({}, config, logger)
+    const rawMessage = BoosterAuth.checkSignUp({}, config, logger) as any
     expect(rawMessage.response.autoConfirmUser).to.be.false
   })
 
@@ -152,7 +152,7 @@ describe('the "checkSignUp" method', () => {
       })
     )
 
-    const rawMessage = BoosterAuth.checkSignUp({}, config, logger)
+    const rawMessage = BoosterAuth.checkSignUp({}, config, logger) as any
     expect(rawMessage.response.autoConfirmUser).to.be.true
   })
 
@@ -176,7 +176,7 @@ describe('the "checkSignUp" method', () => {
       })
     )
 
-    const rawMessage = BoosterAuth.checkSignUp({}, config, logger)
+    const rawMessage = BoosterAuth.checkSignUp({}, config, logger) as any
     expect(rawMessage.response.autoConfirmUser).to.be.true
   })
 
