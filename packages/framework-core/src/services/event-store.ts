@@ -52,7 +52,7 @@ export class EventStore {
 
   private async storeSnapshot(snapshot: EventEnvelope): Promise<void> {
     this.logger.debug(
-      `[EventStore#storeSnapshot] Max number of events after latest stored snapshot reached (${numberOfEventsBetweenSnapshots}). Storing snapshot in the event store:`,
+      `[EventStore#storeSnapshot] Maximum number of events after latest stored snapshot reached (${numberOfEventsBetweenSnapshots}). Storing snapshot in the event store:`,
       snapshot
     )
     return await this.provider.events.store([snapshot], this.config, this.logger)
