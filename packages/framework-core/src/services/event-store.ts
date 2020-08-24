@@ -92,7 +92,7 @@ export class EventStore {
         value: newEntity,
         createdAt: eventEnvelope.createdAt,
       }
-      this.logger.debug('[EventStore#entityReducer]: Result from the reducer: ', newSnapshot)
+      this.logger.debug('[EventStore#entityReducer]: Reducer result: ', newSnapshot)
       return newSnapshot
     } catch (e) {
       this.logger.error('Error when calling reducer', e)
