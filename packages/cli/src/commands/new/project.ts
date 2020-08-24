@@ -52,7 +52,7 @@ export default class Project extends Command {
     const { args, flags } = this.parse(Project)
     try {
       if (!args.projectName)
-        throw new Error("You haven't provided a project name, but it is required, run with --help for usage")
+        throw "You haven't provided a project name, but it is required, run with --help for usage"
       assertNameIsCorrect(args.projectName)
       const parsedFlags = {
         projectName: args.projectName,

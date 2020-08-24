@@ -32,13 +32,14 @@ export default class Event extends Oclif.Command {
     try {
       const fields = flags.fields || []
       if (!args.eventName)
-        throw new Error("You haven't provided an event name, but it is required, run with --help for usage")
+        throw "You haven't provided an event name, but it is required, run with --help for usage"
       return run(args.eventName, fields)
     } catch (error) {
       console.error(error)
     }
   }
 }
+
 
 type EventInfo = HasName & HasFields
 
