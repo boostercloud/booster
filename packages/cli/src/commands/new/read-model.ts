@@ -35,16 +35,16 @@ export default class ReadModel extends Oclif.Command {
   public static args = [{ name: 'readModelName' }]
 
   public async run(): Promise<void> {
-    return this.runWithErrors().catch(console.error)
-  }
-
-  private async runWithErrors(): Promise<void> {
     const { args, flags } = this.parse(ReadModel)
-    const fields = flags.fields ?? []
-    const projections = flags.projects ?? []
-    if (!args.readModelName)
-      return Promise.reject("You haven't provided a read model name, but it is required, run with --help for usage")
-    return run(args.readModelName, fields, projections)
+    try {
+      const fields = flags.fields ?? []
+      const projections = flags.projects ?? []
+      if (!args.readModelName)
+        throw new Error("You haven't provided a read model name, but it is required, run with --help for usage")
+      return run(args.readModelName, fields, projections)
+    } catch (error) {
+      console.error(error)
+    }
   }
 }
 

@@ -35,16 +35,16 @@ export default class Entity extends Oclif.Command {
   public static args = [{ name: 'entityName' }]
 
   public async run(): Promise<void> {
-    return this.runWithErrors().catch(console.error)
-  }
-
-  private async runWithErrors(): Promise<void> {
     const { args, flags } = this.parse(Entity)
-    const fields = flags.fields || []
-    const events = flags.reduces || []
-    if (!args.entityName)
-      return Promise.reject("You haven't provided an entity name, but it is required, run with --help for usage")
-    return run(args.entityName, fields, events)
+    try {
+      const fields = flags.fields || []
+      const events = flags.reduces || []
+      if (!args.entityName)
+        throw new Error("You haven't provided an entity name, but it is required, run with --help for usage")
+      return run(args.entityName, fields, events)
+    } catch (error) {
+      console.error(error)
+    }
   }
 }
 

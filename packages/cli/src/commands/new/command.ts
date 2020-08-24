@@ -28,15 +28,15 @@ export default class Command extends Oclif.Command {
   public static args = [{ name: 'commandName' }]
 
   public async run(): Promise<void> {
-    return this.runWithErrors().catch(console.error)
-  }
-
-  private async runWithErrors(): Promise<void> {
     const { args, flags } = this.parse(Command)
-    const fields = flags.fields || []
-    if (!args.commandName)
-      return Promise.reject("You haven't provided a command name, but it is required, run with --help for usage")
-    return run(args.commandName, fields)
+    try {
+      const fields = flags.fields || []
+      if (!args.commandName)
+        throw new Error("You haven't provided a command name, but it is required, run with --help for usage")
+      return run(args.commandName, fields)
+    } catch (error) {
+      console.error(error)
+    }
   }
 }
 
