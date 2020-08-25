@@ -22,7 +22,7 @@ export class MoveStock {
       register.events(new StockMoved(this.productID, this.origin, this.destination, this.quantity))
     } else {
       register.events(
-        new ErrorEvent('MoveStock-' + this.productID, 'There is not enough stock of this product to perform this operation', this)
+        new ErrorEvent('MoveStock-' + this.productID, 'There is not enough stock to perform this operation', this)
       )
     }
   }
