@@ -509,7 +509,7 @@ export async function waitForIt<TResult>(
   tryFunction: () => Promise<TResult>,
   checkResult: (result: TResult) => boolean,
   tryEveryMs = 1000,
-  timeoutMs = 60000
+  timeoutMs = 300000
 ): Promise<TResult> {
   const start = Date.now()
   return doWaitFor()
