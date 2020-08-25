@@ -39,8 +39,7 @@ export default class Entity extends Oclif.Command {
     try {
       const fields = flags.fields || []
       const events = flags.reduces || []
-      if (!args.entityName)
-        throw "You haven't provided an entity name, but it is required, run with --help for usage"
+      if (!args.entityName) throw "You haven't provided an entity name, but it is required, run with --help for usage"
       return run(args.entityName, fields, events)
     } catch (error) {
       console.error(error)
