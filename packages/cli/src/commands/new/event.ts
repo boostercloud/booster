@@ -31,8 +31,7 @@ export default class Event extends Oclif.Command {
     const { args, flags } = this.parse(Event)
     try {
       const fields = flags.fields || []
-      if (!args.eventName)
-        throw new Error("You haven't provided an event name, but it is required, run with --help for usage")
+      if (!args.eventName) throw "You haven't provided an event name, but it is required, run with --help for usage"
       return run(args.eventName, fields)
     } catch (error) {
       console.error(error)

@@ -31,8 +31,7 @@ export default class Command extends Oclif.Command {
     const { args, flags } = this.parse(Command)
     try {
       const fields = flags.fields || []
-      if (!args.commandName)
-        throw new Error("You haven't provided a command name, but it is required, run with --help for usage")
+      if (!args.commandName) throw "You haven't provided a command name, but it is required, run with --help for usage"
       return run(args.commandName, fields)
     } catch (error) {
       console.error(error)
