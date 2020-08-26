@@ -36,7 +36,7 @@ describe('With the auth API', () => {
     mockCartId = random.uuid()
   })
 
-  context('an internet rando', () => {
+  context('an internet random', () => {
     let client: DisconnectableApolloClient
 
     before(async () => {
