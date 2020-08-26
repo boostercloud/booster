@@ -5,7 +5,7 @@ import { Code, Function } from '@aws-cdk/aws-lambda'
 import * as params from '../params'
 import { APIs } from '../params'
 import { Effect, IRole, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam'
-import { AwsIntegration, PassthroughBehavior } from '@aws-cdk/aws-apigateway'
+import { AwsIntegration, Cors, CorsOptions, MethodOptions, PassthroughBehavior } from '@aws-cdk/aws-apigateway'
 import { CognitoTemplates } from './api-stack-velocity-templates'
 
 export class AuthStack {
@@ -100,20 +100,36 @@ export class AuthStack {
     const cognitoIntegrationRole = this.buildCognitoIntegrationRole(userPool)
 
     const authResource = this.apis.restAPI.root.addResource('auth')
-    const methodOptions = {
+    const methodOptions: MethodOptions = {
       methodResponses: [
         {
           statusCode: '200',
+          responseParameters: {
+            'method.response.header.Access-Control-Allow-Origin': true,
+          },
         },
         {
           statusCode: '400',
+          responseParameters: {
+            'method.response.header.Access-Control-Allow-Origin': true,
+          },
         },
         {
           statusCode: '500',
+          responseParameters: {
+            'method.response.header.Access-Control-Allow-Origin': true,
+          },
         },
       ],
     }
-    const signUpResource = authResource.addResource('sign-up')
+    const defaultCorsPreflightOptions: CorsOptions = {
+      allowHeaders: ['*'],
+      allowOrigins: Cors.ALL_ORIGINS,
+      allowMethods: ['POST', 'OPTIONS'],
+    }
+    const signUpResource = authResource.addResource('sign-up', {
+      defaultCorsPreflightOptions: defaultCorsPreflightOptions,
+    })
     signUpResource.addMethod('POST', this.buildSignUpIntegration(cognitoIntegrationRole), methodOptions)
     signUpResource
       .addResource('confirm')
@@ -216,14 +232,23 @@ export class AuthStack {
           {
             selectionPattern: '5\\d\\d',
             statusCode: '500',
+            responseParameters: {
+              ['method.response.header.Access-Control-Allow-Origin']: '\'*\'',
+            },
           },
           {
             selectionPattern: '4\\d\\d',
             statusCode: '400',
+            responseParameters: {
+              ['method.response.header.Access-Control-Allow-Origin']: '\'*\'',
+            },
           },
           {
             selectionPattern: '2\\d\\d',
             statusCode: '200',
+            responseParameters: {
+              ['method.response.header.Access-Control-Allow-Origin']: '\'*\'',
+            },
             responseTemplates: {
               'application/json': templates.responseTemplate,
             },
