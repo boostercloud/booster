@@ -100,25 +100,22 @@ export class AuthStack {
     const cognitoIntegrationRole = this.buildCognitoIntegrationRole(userPool)
 
     const authResource = this.apis.restAPI.root.addResource('auth')
+    const allowedOriginHeaderForCors = {
+      'method.response.header.Access-Control-Allow-Origin': true,
+    }
     const methodOptions: MethodOptions = {
       methodResponses: [
         {
           statusCode: '200',
-          responseParameters: {
-            'method.response.header.Access-Control-Allow-Origin': true,
-          },
+          responseParameters: allowedOriginHeaderForCors,
         },
         {
           statusCode: '400',
-          responseParameters: {
-            'method.response.header.Access-Control-Allow-Origin': true,
-          },
+          responseParameters: allowedOriginHeaderForCors,
         },
         {
           statusCode: '500',
-          responseParameters: {
-            'method.response.header.Access-Control-Allow-Origin': true,
-          },
+          responseParameters: allowedOriginHeaderForCors,
         },
       ],
     }
@@ -127,21 +124,19 @@ export class AuthStack {
       allowOrigins: Cors.ALL_ORIGINS,
       allowMethods: ['POST', 'OPTIONS'],
     }
-    const signUpResource = authResource.addResource('sign-up', {
-      defaultCorsPreflightOptions: defaultCorsPreflightOptions,
-    })
+    const signUpResource = authResource.addResource('sign-up', { defaultCorsPreflightOptions })
     signUpResource.addMethod('POST', this.buildSignUpIntegration(cognitoIntegrationRole), methodOptions)
     signUpResource
       .addResource('confirm')
       .addMethod('POST', this.buildConfirmSignUpIntegration(cognitoIntegrationRole), methodOptions)
     authResource
-      .addResource('sign-in')
+      .addResource('sign-in', { defaultCorsPreflightOptions })
       .addMethod('POST', this.buildSignInIntegration(cognitoIntegrationRole), methodOptions)
     authResource
       .addResource('refresh-token')
       .addMethod('POST', this.buildRefreshTokenIntegration(cognitoIntegrationRole), methodOptions)
     authResource
-      .addResource('sign-out')
+      .addResource('sign-out', { defaultCorsPreflightOptions })
       .addMethod('POST', this.buildSignOutIntegration(cognitoIntegrationRole), methodOptions)
   }
 
@@ -233,21 +228,21 @@ export class AuthStack {
             selectionPattern: '5\\d\\d',
             statusCode: '500',
             responseParameters: {
-              ['method.response.header.Access-Control-Allow-Origin']: '\'*\'',
+              ['method.response.header.Access-Control-Allow-Origin']: "'*'",
             },
           },
           {
             selectionPattern: '4\\d\\d',
             statusCode: '400',
             responseParameters: {
-              ['method.response.header.Access-Control-Allow-Origin']: '\'*\'',
+              ['method.response.header.Access-Control-Allow-Origin']: "'*'",
             },
           },
           {
             selectionPattern: '2\\d\\d',
             statusCode: '200',
             responseParameters: {
-              ['method.response.header.Access-Control-Allow-Origin']: '\'*\'',
+              ['method.response.header.Access-Control-Allow-Origin']: "'*'",
             },
             responseTemplates: {
               'application/json': templates.responseTemplate,
