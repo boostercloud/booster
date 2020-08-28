@@ -216,6 +216,9 @@ export class AuthStack {
     withRole: IRole,
     templates: { requestTemplate: string; responseTemplate: string }
   ): AwsIntegration {
+    const responseParameters = {
+      ['method.response.header.Access-Control-Allow-Origin']: "'*'",
+    }
     return new AwsIntegration({
       service: 'cognito-idp',
       action: forAction,
@@ -227,23 +230,17 @@ export class AuthStack {
           {
             selectionPattern: '5\\d\\d',
             statusCode: '500',
-            responseParameters: {
-              ['method.response.header.Access-Control-Allow-Origin']: "'*'",
-            },
+            responseParameters,
           },
           {
             selectionPattern: '4\\d\\d',
             statusCode: '400',
-            responseParameters: {
-              ['method.response.header.Access-Control-Allow-Origin']: "'*'",
-            },
+            responseParameters,
           },
           {
             selectionPattern: '2\\d\\d',
             statusCode: '200',
-            responseParameters: {
-              ['method.response.header.Access-Control-Allow-Origin']: "'*'",
-            },
+            responseParameters,
             responseTemplates: {
               'application/json': templates.responseTemplate,
             },
