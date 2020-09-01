@@ -1384,7 +1384,7 @@ Read Model classes can also be created by hand and there are no restrictions. Th
 #### The projection function
 A `Projection` is a method decorated with the `@Projects` decorator that, given a new entity value and (optionally) the current read model state, generate a new read model value.
 
-Read models can be projected from multiple [entities](#4-entities-and-reducers) as soon as they share some common key called `joinKey`. The `joinKey` is an entity field used to join data for projections. Read models can be considered as reactive join operations that can listen to different entities that has common fields between them. Let's see an example:
+Read models can be projected from one or more [entities](#4-entities-and-reducers) as soon as all the entities involved have one field with the same semantics that can be used as a join key (usually an identifier or a reference to other entity). A join key in Booster is similar to join keys in relational databases, so you could see Read Models as reactive join operations that you can use to build data aggregates. When an entity is updated, Booster uses the join key to find the right read model instance, so all entities that share the same join key value will trigger the projections of the same read model. When defining a projection with the `@Projects` decorator, it's required to set the field name of the join key in each entity. Let's see an example:
 ```typescript
 @ReadModel
 export class UserReadModel {
@@ -1397,15 +1397,15 @@ export class UserReadModel {
   public static projectUserPost(entity: Post, current?: UserReadModel) { //Here we can adapt the read model to show specific user information related with the Post entity}
 }
 ```
-In the previous example we are projecting the `User` entity using the user `id` and also we are projecting the `User` entity based on the `ownerId` of the `Post` entity
+In the previous example we are projecting the `User` entity using the user `id` and also we are projecting the `User` entity based on the `ownerId` of the `Post` entity. Notice that both join keys are references to the `User` identifier, but it's not required that the join key is an identifier.
 
 #### Authorizing read models
 
-Read models are part of the public API of a Booster application, so you can define who is authorized to query them. The Booster authorization feature is covered in [this](#authentication-and-authorization) section. So far, we have seen that you can make a read model publicly accessible by authorizing `'all'` to query it. You can also set specific roles providing the users role array in this way: `authorize: [Admin]`.
+Read models are the tool to build the public read API of a Booster application, so you can define who is authorized to query and subscribe to them. The Booster authorization feature is covered in [the auth section](#authentication-and-authorization). So far, we have seen that you can make a read model publicly accessible by authorizing `'all'` to query it or you can set specific roles providing an array of roles in this way: `authorize: [Admin]`.
 
 #### Querying a read model
 
-Read models are the read API for Booster applications and they can be accessed using the GraphQL queries. For every read model, Booster automatically creates all the necessary queries. For example, given this `CartReadModel` read model:
+For every read model, Booster automatically creates all the necessary queries and subscriptions. For example, given this `CartReadModel`:
 
 ```typescript
 @ReadModel({
