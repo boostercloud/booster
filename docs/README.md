@@ -1336,42 +1336,110 @@ Read Models are classes decorated with the `@ReadModel` decorator that have one 
 
 ```typescript
 @ReadModel
-export class CartReadModel {
+export class ReadModelName {
   public constructor(
-    readonly id: UUID,
-    readonly cartItems: Array<CartItem>,
-    public paid: boolean
+    readonly fieldA: SomeType,
+    readonly fieldB: SomeType,
+    /* as many fields as needed */
   ) {}
 
-  @Projects(Cart, 'id')
-  public static updateWithCart(cart: Cart, currentCartReadModel?: CartReadModel): CartReadModel {
-    return new CartReadModel(cart.id, cart.cartItems, cart.paid)
+  @Projects(SomeEntity, 'entityField')
+  public static projectionName(entity: SomeEntity, currentEntityReadModel?: ReadModelName): ReadModelName {
+    return new ReadModelName(/* initialize here your constructor properties */)
   }
+  
+  @Projects(SomeEntity, 'othetEntityField')
+  public static projectionName(entity: SomeEntity, currentEntityReadModel?: ReadModelName): ReadModelName {
+    return new ReadModelName(/* initialize here your constructor properties */)
+  }
+  /* as many projections as needed */
 }
 ```
 
 #### Read models naming convention
 
+As it has been previously commented, semantics plays an important role in designing a coherent system and your application should reflect your domain concepts, we recommend to chooose a representative domain name and use the `ReadModel` suffix in your read models name.
+
+Despite you can place your read models in any directory, we strongly recommend you to put them in `<project-root>/src/read-models`. Having all the read models in one place will help you to understand your application's capabilities at a glance.
+
+```text
+<project-root>
+├── src
+│   ├── commands 
+│   ├── common
+│   ├── config
+│   ├── entities
+│   ├── read-models  <------ put them here
+│   ├── events
+│   ├── index.ts
+│   └── read-models
+```
+
 #### Creating a read model
+
+The preferred way to create a read model is by using the generator, e.g.
+
 ```shell
 boost new:read-model CartReadModel --fields id:UUID cartItems:"Array<CartItem>" paid:boolean --projects Cart
 ```
 
-This will create a file in the read-models directory `<project-root>/src/read-models/CartReadModel.ts`.
+The generator will create a Typescript class under the read-models directory `<project-root>/src/read-models/CartReadModel.ts`.
 
-Read Model classes can also be created by hand and there are no restrictions regarding the place you put the files. The structure of the data is totally open and can be as complex as you can manage in your projection functions.
+Read Model classes can also be created by hand and there are no restrictions. The structure of the data is totally open and can be as complex as you can manage in your projection functions.
 
 #### The projection function
 A `Projection` is a method decorated with the `@Projects` decorator that, given a new entity value and (optionally) the current read model state, generate a new read model value.
 
-Read models can be projected from multiple [entities](#4-entities-and-reducers) as soon as they share some common key called `joinKey`.
+Read models can be projected from one or more [entities](#4-entities-and-reducers) as soon as all the entities involved have one field with the same semantics that can be used as a join key (usually an identifier or a reference to other entity). A join key in Booster is similar to join keys in relational databases, so you could see Read Models as reactive join operations that you can use to build data aggregates. When an entity is updated, Booster uses the join key to find the right read model instance, so all entities that share the same join key value will trigger the projections of the same read model. When defining a projection with the `@Projects` decorator, it's required to set the field name of the join key in each entity. Let's see an example:
+```typescript
+@ReadModel
+export class UserReadModel {
+  public constructor(readonly username: string, /* ...(other interesting fields from users)... */) {}
+  
+  @Projects(User, 'id')
+  public static projectUser(entity: User, current?: UserReadModel) { // Here we update the user fields}
+
+  @Projects(Post, 'ownerId')
+  public static projectUserPost(entity: Post, current?: UserReadModel) { //Here we can adapt the read model to show specific user information related with the Post entity}
+}
+```
+In the previous example we are projecting the `User` entity using the user `id` and also we are projecting the `User` entity based on the `ownerId` of the `Post` entity. Notice that both join keys are references to the `User` identifier, but it's not required that the join key is an identifier.
 
 #### Authorizing read models
 
+Read models are the tool to build the public read API of a Booster application, so you can define who is authorized to query and subscribe to them. The Booster authorization feature is covered in [the auth section](#authentication-and-authorization). So far, we have seen that you can make a read model publicly accessible by authorizing `'all'` to query it or you can set specific roles providing an array of roles in this way: `authorize: [Admin]`.
+
 #### Querying a read model
-You can use the GraphQL endpoint to query or subscribe to the read model records: [see the API documentation](#GraphQL-API).
+
+For every read model, Booster automatically creates all the necessary queries and subscriptions. For example, given this `CartReadModel`:
+
+```typescript
+@ReadModel({
+  authorize: 'all'
+})
+export class CartReadModel {
+  public constructor(
+    public id: UUID,
+    readonly items: Array<CartItem>,
+    ) {}
+
+  @Projects(Cart, "id")
+  public static projectCart(entity:Cart, currentReadModel: CartReadModel): CartReadModel {
+    return new CartReadModel(entity.id, entity.items)
+  }
+}
+```
+
+You will get the following GraphQL query:
+
+```graphQL
+query CartReadModel(id: ID!): CartReadModel
+```
+For more information about queries and how to use them, please check the [GraphQL API](#reading-read-models) section.
 
 #### Getting real-time updates for a read model
+
+Booster GraphQL API also provides support for real-time updates using subscriptions and websocket, to get more information about it go to the [GraphQL API](#subscribing-to-read-models) section.
 
 ## Features
 
@@ -1680,14 +1748,14 @@ This is the main API of your application, as it allows you to:
  - _Modify_ data by **sending commands**
  - _Read_ data by **querying read models**
  - _Receive data in real time_ by **subscribing to read models** 
- 
+
 All this is done through [GraphQL](https://graphql.org/), a query language for APIs that has useful advantages over simple REST APIs.
 
 If you are not familiar with GraphQL, then, first of all, don't worry! 
 _Using_ a GraphQL API is simple and straightforward.
 _Implementing it_ on the server side is the hardest part, as you need to define your schema, operation, resolvers, etc.
 Luckily, you can forget about that because it is already done by Booster.
- 
+
 The GraphQL API is fully **auto-generated** based on your _commands_ and _read models_.
 
 #### Relationship between GraphQL operations and commands and read models
@@ -1710,7 +1778,7 @@ GraphQL uses two existing protocols:
 
 The reason for the WebSocket protocol is that, in order for subscriptions to work, there must be a way for the server to send data
 to clients when it is changed. HTTP doesn't allow that, as it is the client the one which always initiates the request.
- 
+
 This is the reason why Booster provisions two main URLs: the **httpURL** and the **websocketURL** (you can see them after
 deploying your application). You need to use the "httpURL" to send GraphQL queries and mutations, and the "websocketURL"
 to send subscriptions.
@@ -2249,7 +2317,7 @@ The databases for the local provider are just json files in the `<project-root>/
 
 ## Frequently Asked Questions
 **1.- When deploying my application in AWS for the first time, I got an error saying _"StagingBucket <your app name>-toolkit-bucket already exists"_**
-  
+
 When you deploy a Booster application to AWS, an S3 bucket needs to be created to upload the application code. Booster names that bucket
 using your application name as a prefix. 
 In AWS, bucket names must be unique _globally_, so if there is another bucket in the world with exactly the same name as
