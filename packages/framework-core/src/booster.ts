@@ -12,9 +12,10 @@ import { Importer } from './importer'
 import { buildLogger } from './booster-logger'
 import { BoosterEventDispatcher } from './booster-event-dispatcher'
 import { BoosterAuth } from './booster-auth'
-import { fetchEntitySnapshot, destroyEntity } from './entity-snapshot-fetcher'
+import { fetchEntitySnapshot } from './entity-snapshot-fetcher'
 import { BoosterGraphQLDispatcher } from './booster-graphql-dispatcher'
 import { BoosterSubscribersNotifier } from './booster-subscribers-notifier'
+import { destroyEntity } from './entity-destroyer'
 
 /**
  * Main class to interact with Booster and configure it.
