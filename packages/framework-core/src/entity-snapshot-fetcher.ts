@@ -11,3 +11,13 @@ export async function fetchEntitySnapshot<TEntity extends EntityInterface>(
   const entitySnapshotEnvelope = await eventStore.fetchEntitySnapshot(entityClass.name, entityID)
   return entitySnapshotEnvelope?.value as TEntity
 }
+
+export async function destroyEntity<TEntity extends EntityInterface>(
+  config: BoosterConfig,
+  logger: Logger,
+  entityClass: Class<TEntity>,
+  entityID: UUID
+): Promise<void> {
+  const eventStore = new EventStore(config, logger)
+  return await eventStore.destroyEntity(entityClass.name, entityID)
+}

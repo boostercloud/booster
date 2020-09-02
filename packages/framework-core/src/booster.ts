@@ -11,7 +11,7 @@ import { Importer } from './importer'
 import { buildLogger } from './booster-logger'
 import { BoosterEventDispatcher } from './booster-event-dispatcher'
 import { BoosterAuth } from './booster-auth'
-import { fetchEntitySnapshot } from './entity-snapshot-fetcher'
+import { fetchEntitySnapshot, destroyEntity } from './entity-snapshot-fetcher'
 import { BoosterGraphQLDispatcher } from './booster-graphql-dispatcher'
 import { BoosterSubscribersNotifier } from './booster-subscribers-notifier'
 
@@ -100,6 +100,13 @@ export class Booster {
     entityID: UUID
   ): Promise<TEntity | undefined> {
     return fetchEntitySnapshot(this.config, this.logger, entityClass, entityID)
+  }
+
+  public static destroyEntity<TEntity extends EntityInterface>(
+    entityClass: Class<TEntity>,
+    entityID: UUID
+  ): Promise<void> {
+    return destroyEntity(this.config, this.logger, entityClass, entityID)
   }
 }
 

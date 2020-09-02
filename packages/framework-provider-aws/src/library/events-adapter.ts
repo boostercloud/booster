@@ -25,16 +25,18 @@ export async function readEntityEventsSince(
   logger: Logger,
   entityTypeName: string,
   entityID: UUID,
-  since?: string
+  since?: string,
+  kind?: EventEnvelope['kind']
 ): Promise<Array<EventEnvelope>> {
   const fromTime = since ? since : originOfTime
+  const eventKind = kind ? kind : 'event'
   const result = await dynamoDB
     .query({
       TableName: config.resourceNames.eventsStore,
       ConsistentRead: true,
       KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey AND ${eventsStoreAttributes.sortKey} > :fromTime`,
       ExpressionAttributeValues: {
-        ':partitionKey': partitionKeyForEvent(entityTypeName, entityID),
+        ':partitionKey': partitionKeyForEvent(entityTypeName, entityID, eventKind),
         ':fromTime': fromTime,
       },
       ScanIndexForward: true, // Ascending order (older timestamps first)
@@ -109,4 +111,56 @@ export async function storeEvents(
   }
   await dynamoDB.batchWrite(params).promise()
   logger.debug('[EventsAdapter#storeEvents] EventEnvelope stored')
+}
+
+export async function destroyEntity(
+  dynamoDB: DynamoDB.DocumentClient,
+  config: BoosterConfig,
+  logger: Logger,
+  entityTypeName: string,
+  entityID: UUID
+): Promise<void> {
+  logger.debug('[EventsAdapter#destroyEntity] Destroying entity')
+
+  // We need to fetch the entity events and snapshots
+  const events = await readEntityEventsSince(dynamoDB, config, logger, entityTypeName, entityID)
+  const snapshots = await readEntityEventsSince(
+    dynamoDB,
+    config,
+    logger,
+    entityTypeName,
+    entityID,
+    originOfTime,
+    'snapshot'
+  )
+
+  if (events) {
+    let eventsToDelete = [...events]
+    if (snapshots) {
+      eventsToDelete = [...eventsToDelete, ...snapshots]
+    } else {
+      logger.debug(`[EventsAdapter#destroyEntity] No snapshots found for entity ${entityTypeName} with id: ${entityID}`)
+    }
+
+    const params: DynamoDB.DocumentClient.BatchWriteItemInput = {
+      RequestItems: {
+        [config.resourceNames.eventsStore]: eventsToDelete.map((eventEnvelope) => ({
+          DeleteRequest: {
+            Key: {
+              [eventsStoreAttributes.partitionKey]: partitionKeyForEvent(
+                eventEnvelope.entityTypeName,
+                eventEnvelope.entityID,
+                eventEnvelope.kind
+              ),
+              [eventsStoreAttributes.sortKey]: eventEnvelope.createdAt,
+            },
+          },
+        })),
+      },
+    }
+    await dynamoDB.batchWrite(params).promise()
+    logger.debug('[EventsAdapter#destroyEntity] Entity destroyed')
+  } else {
+    logger.debug(`[EventsAdapter#destroyEntity] No events found for entity ${entityTypeName} with id: ${entityID}`)
+  }
 }

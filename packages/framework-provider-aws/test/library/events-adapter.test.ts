@@ -131,6 +131,28 @@ describe('the events-adapter', () => {
       )
     })
   })
+
+  describe('the `destroyEntity` method', () => {
+    it('deletes all entity events and snapshots', async () => {
+      const fakeDelete = fake.returns({
+        promise: fake.resolves(''),
+      })
+      const fakeQuery = fake.returns({
+        promise: fake.resolves({
+          Items: buildEventEnvelopes(),
+        }),
+      })
+      const fakeBatchWrite = fake.returns({
+        promise: fake.resolves(''),
+      })
+      const dynamoDB: DocumentClient = { delete: fakeDelete, query: fakeQuery, batchWrite: fakeBatchWrite } as any
+      const config = new BoosterConfig('test')
+      config.appName = 'nuke-button'
+
+      await Library.destroyEntity(dynamoDB, config, fakeLogger, 'SomeEntity', 'someSpecialID')
+      // TODO: Pending asserts
+    })
+  })
 })
 
 function buildEventEnvelopes(): Array<EventEnvelope> {

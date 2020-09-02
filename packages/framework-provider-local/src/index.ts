@@ -26,6 +26,7 @@ export const Provider: ProviderLibrary = {
     forEntitySince: readEntityEventsSince.bind(null, eventRegistry),
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, eventRegistry),
     store: storeEvents.bind(null, userApp, eventRegistry),
+    destroy: undefined as any,
   },
   // ProviderReadModelsLibrary
   readModels: {
