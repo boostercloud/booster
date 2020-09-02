@@ -56,7 +56,7 @@ export interface ProviderReadModelsLibrary {
     logger: Logger,
     readModelName: string,
     readModel: ReadModelInterface
-  ): Promise<void>
+  ): Promise<any>
   subscribe(config: BoosterConfig, logger: Logger, subscriptionEnvelope: SubscriptionEnvelope): Promise<void>
   fetchSubscriptions(
     config: BoosterConfig,

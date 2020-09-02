@@ -21,10 +21,9 @@ export class ProductReadModel {
   ) {}
 
   @Projects(Product, 'id')
-  public static updateWithProduct(product: Product): ProductReadModel {
+  public static updateWithProduct(product: Product): ProductReadModel | null {
     if (product.deleted) {
-      // TODO: Consider solutions to delete read models from the database (see BOOST-587)
-      return new ProductReadModel(product.id, '<DELETED>', '', '', 0, true)
+      return null
     } else {
       return new ProductReadModel(
         product.id,

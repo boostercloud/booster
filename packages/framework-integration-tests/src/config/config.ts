@@ -4,12 +4,12 @@ import * as AWS from '@boostercloud/framework-provider-aws'
 import * as Local from '@boostercloud/framework-provider-local'
 
 Booster.configure('local', (config: BoosterConfig): void => {
-  config.appName = 'my-store'
+  config.appName = 'my-store-jjo'
   config.provider = Local.Provider
 })
 
 Booster.configure('development', (config: BoosterConfig): void => {
-  config.appName = 'my-store'
+  config.appName = 'my-store-jjo'
   config.provider = AWS.Provider
 })
 
@@ -22,6 +22,6 @@ Booster.configure('production', (config: BoosterConfig): void => {
   // The app suffix must be copied to the test app lambdas
   config.env['BOOSTER_APP_SUFFIX'] = appNameSuffix
 
-  config.appName = 'my-store-' + appNameSuffix
+  config.appName = 'my-store-jjo' + appNameSuffix
   config.provider = AWS.Provider
 })

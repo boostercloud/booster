@@ -15,6 +15,7 @@ export const Provider: ProviderLibrary = {
     fetch: undefined as any,
     search: undefined as any,
     store: undefined as any,
+    deleteReadModel: undefined as any,
     subscribe: undefined as any,
     fetchSubscriptions: undefined as any,
     deleteSubscription: undefined as any,
