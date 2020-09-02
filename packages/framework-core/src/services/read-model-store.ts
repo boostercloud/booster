@@ -43,6 +43,11 @@ export class ReadModelStore {
           ' to build new state of read model ${readModelName} with ID ${readModelID}'
         )
         const newReadModel = this.reducerForProjection(projectionMetadata)(entitySnapshot, readModel)
+        // (WIP) I really don't think this is right
+        if (!newReadModel) {
+          await this.provider.readModels.deleteReadModel(this.config, this.provider, readModelName, readModel)
+          return
+        }
         this.logger.debug(
           `[ReadModelStore#project] Storing new version of read model ${readModelName} with ID ${readModelID}:`,
           newReadModel

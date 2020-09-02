@@ -51,6 +51,12 @@ export interface ProviderReadModelsLibrary {
     filters: Record<string, Filter<unknown>>
   ): Promise<Array<TReadModel>>
   store(config: BoosterConfig, logger: Logger, readModelName: string, readModel: ReadModelInterface): Promise<unknown>
+  deleteReadModel(
+    config: BoosterConfig,
+    logger: Logger,
+    readModelName: string,
+    readModel: ReadModelInterface
+  ): Promise<void>
   subscribe(config: BoosterConfig, logger: Logger, subscriptionEnvelope: SubscriptionEnvelope): Promise<void>
   fetchSubscriptions(
     config: BoosterConfig,
