@@ -4,6 +4,7 @@ import {
   storeEvents,
   readEntityLatestSnapshot,
   readEntityEventsSince,
+  destroyEntity,
 } from './library/events-adapter'
 import { fetchReadModel, storeReadModel, rawReadModelEventsToEnvelopes } from './library/read-model-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
@@ -30,6 +31,7 @@ export const Provider: ProviderLibrary = {
     forEntitySince: readEntityEventsSince.bind(null, dynamoDB),
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, dynamoDB),
     store: storeEvents.bind(null, dynamoDB),
+    destroy: destroyEntity.bind(null, dynamoDB),
   },
   // ProviderReadModelsLibrary
   readModels: {

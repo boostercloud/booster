@@ -12,4 +12,5 @@ export interface BoosterApp {
     entityName: Class<TEntity>,
     entityID: UUID
   ): Promise<TEntity | undefined>
+  destroyEntity<TEntity extends EntityInterface>(entityName: Class<TEntity>, entityID: UUID): Promise<void>
 }

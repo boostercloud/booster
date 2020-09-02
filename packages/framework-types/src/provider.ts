@@ -38,6 +38,7 @@ export interface ProviderEventsLibrary {
   ): Promise<EventEnvelope | null>
   /** Streams an event to the corresponding event handler */
   store(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig, logger: Logger): Promise<void>
+  destroy(config: BoosterConfig, logger: Logger, entityTypeName: string, entityID: UUID): Promise<void>
 }
 export interface ProviderReadModelsLibrary {
   rawToEnvelopes(config: BoosterConfig, logger: Logger, rawEvents: any): Promise<Array<ReadModelEnvelope>>
