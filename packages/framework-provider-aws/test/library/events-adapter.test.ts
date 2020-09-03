@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { expect } from '../expect'
 import * as Library from '../../src/library/events-adapter'
-import { restore, fake, match } from 'sinon'
+import { restore, fake, match, stub } from 'sinon'
 import { EventEnvelope, BoosterConfig, UUID, Logger } from '@boostercloud/framework-types'
 import { DynamoDBStreamEvent } from 'aws-lambda'
 import { createStubInstance } from 'sinon'
@@ -10,6 +10,7 @@ import { DynamoDB } from 'aws-sdk'
 import { eventsStoreAttributes } from '../../src'
 import { partitionKeyForEvent } from '../../src/library/partition-keys'
 import { DocumentClient, Converter } from 'aws-sdk/clients/dynamodb'
+import { random, date } from 'faker'
 
 const fakeLogger: Logger = {
   info: fake(),
@@ -134,14 +135,27 @@ describe('the events-adapter', () => {
 
   describe('the `destroyEntity` method', () => {
     it('deletes all entity events and snapshots', async () => {
+      const entityID = random.uuid()
+      const entityName = random.word()
+      const numberOfSnapshots = random.number({ min: 1, max: 10 })
+      const numberOfEvents = random.number({ min: 1, max: 10 })
       const fakeDelete = fake.returns({
         promise: fake.resolves(''),
       })
-      const fakeQuery = fake.returns({
+      const fakeQuery = stub()
+        .onFirstCall()
+        .returns({
+          promise: fake.resolves({
+            Items: buildRandomEventEnvelopesForEntity(numberOfEvents, entityName, 'event', entityID),
+          }),
+        })
+
+      fakeQuery.onSecondCall().returns({
         promise: fake.resolves({
-          Items: buildEventEnvelopes(),
+          Items: buildRandomEventEnvelopesForEntity(numberOfSnapshots, entityName, 'snapshot', entityID),
         }),
       })
+
       const fakeBatchWrite = fake.returns({
         promise: fake.resolves(''),
       })
@@ -149,11 +163,43 @@ describe('the events-adapter', () => {
       const config = new BoosterConfig('test')
       config.appName = 'nuke-button'
 
-      await Library.destroyEntity(dynamoDB, config, fakeLogger, 'SomeEntity', 'someSpecialID')
-      // TODO: Pending asserts
+      await Library.destroyEntity(dynamoDB, config, fakeLogger, entityName, entityID)
+
+      expect(fakeBatchWrite).to.be.calledWith(
+        match({
+          RequestItems: match.has(
+            config.resourceNames.eventsStore,
+            match.has('length', numberOfSnapshots + numberOfEvents)
+          ),
+        })
+      )
     })
   })
 })
+
+function buildRandomEventEnvelopesForEntity(
+  numberOfEvents: number,
+  entityName: string,
+  kind: 'event' | 'snapshot',
+  entityId: string
+): Array<EventEnvelope> {
+  const events = new Array<EventEnvelope>(numberOfEvents)
+  for (let i = 0; i < numberOfEvents; i++) {
+    events[i] = {
+      version: 1,
+      entityID: entityId,
+      kind: kind,
+      value: {
+        id: entityId,
+      },
+      typeName: random.word(),
+      entityTypeName: entityName,
+      requestID: random.uuid(),
+      createdAt: date.past().toISOString(),
+    }
+  }
+  return events
+}
 
 function buildEventEnvelopes(): Array<EventEnvelope> {
   return [

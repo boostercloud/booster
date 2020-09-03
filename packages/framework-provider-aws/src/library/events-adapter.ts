@@ -9,12 +9,10 @@ import { Converter } from 'aws-sdk/clients/dynamodb'
 const originOfTime = new Date(0).toISOString()
 
 export function rawEventsToEnvelopes(rawEvents: DynamoDBStreamEvent): Array<EventEnvelope> {
-  return rawEvents.Records.map(
+  return rawEvents.Records.filter((item: DynamoDBRecord) => item.dynamodb?.NewImage).map(
     (record: DynamoDBRecord): EventEnvelope => {
-      if (!record.dynamodb?.NewImage) {
-        throw new Error('Received a DynamoDB stream event without "NewImage" field. It is required')
-      }
-      return Converter.unmarshall(record.dynamodb?.NewImage) as EventEnvelope
+      // Here we are really sure that we've only new records to emit
+      return Converter.unmarshall(record.dynamodb?.NewImage!) as EventEnvelope
     }
   )
 }
