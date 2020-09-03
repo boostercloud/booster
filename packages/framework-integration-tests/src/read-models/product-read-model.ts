@@ -1,6 +1,6 @@
 import { ReadModel, Projects } from '@boostercloud/framework-core'
 import { UserWithEmail } from '../roles'
-import { UUID } from '@boostercloud/framework-types'
+import { deleteReadModel, ProjectionResult, UUID } from '@boostercloud/framework-types'
 import { Product } from '../entities/Product'
 import { SKU } from '../common/sku'
 import { Money } from '../common/money'
@@ -21,9 +21,9 @@ export class ProductReadModel {
   ) {}
 
   @Projects(Product, 'id')
-  public static updateWithProduct(product: Product): ProductReadModel | null {
+  public static updateWithProduct(product: Product): ProjectionResult<ProductReadModel> {
     if (product.deleted) {
-      return null
+      return deleteReadModel
     } else {
       return new ProductReadModel(
         product.id,
