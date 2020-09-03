@@ -182,10 +182,9 @@ function buildRandomEventEnvelopesForEntity(
   entityName: string,
   kind: 'event' | 'snapshot',
   entityId: string
-): Array<EventEnvelope> {
-  const events = new Array<EventEnvelope>(numberOfEvents)
-  for (let i = 0; i < numberOfEvents; i++) {
-    events[i] = {
+): Array<EventEnvelope | undefined> {
+  return new Array<EventEnvelope | undefined>(numberOfEvents).fill(undefined).map(() => {
+    return {
       version: 1,
       entityID: entityId,
       kind: kind,
@@ -197,8 +196,7 @@ function buildRandomEventEnvelopesForEntity(
       requestID: random.uuid(),
       createdAt: date.past().toISOString(),
     }
-  }
-  return events
+  })
 }
 
 function buildEventEnvelopes(): Array<EventEnvelope> {
