@@ -103,6 +103,12 @@ export class Booster {
     return fetchEntitySnapshot(this.config, this.logger, entityClass, entityID)
   }
 
+  /**
+   * Destroy all the entity events and snapshots. That action will cause the entity deletion, since
+   * we'll be not able to reduce its state based on its events and snapshots.
+   * @param entityName Name of the entity class
+   * @param entityID
+   */
   public static destroyEntity<TEntity extends EntityInterface>(
     entityClass: Class<TEntity>,
     entityID: UUID

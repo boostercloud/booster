@@ -11,7 +11,7 @@ const originOfTime = new Date(0).toISOString()
 export function rawEventsToEnvelopes(rawEvents: DynamoDBStreamEvent): Array<EventEnvelope> {
   return rawEvents.Records.filter((item: DynamoDBRecord) => item.dynamodb?.NewImage).map(
     (record: DynamoDBRecord): EventEnvelope => {
-      // Here we are really sure that we've only new records to emit
+      // Here we are really sure that we've got only new records to emit
       return Converter.unmarshall(record.dynamodb?.NewImage!) as EventEnvelope
     }
   )
@@ -26,8 +26,8 @@ export async function readEntityEventsSince(
   since?: string,
   kind?: EventEnvelope['kind']
 ): Promise<Array<EventEnvelope>> {
-  const fromTime = since ? since : originOfTime
-  const eventKind = kind ? kind : 'event'
+  const fromTime = since ?? originOfTime
+  const eventKind = kind ?? 'event'
   const result = await dynamoDB
     .query({
       TableName: config.resourceNames.eventsStore,
@@ -133,12 +133,11 @@ export async function destroyEntity(
   )
 
   if (events) {
-    let eventsToDelete = [...events]
-    if (snapshots) {
-      eventsToDelete = [...eventsToDelete, ...snapshots]
-    } else {
+    if (!snapshots) {
       logger.debug(`[EventsAdapter#destroyEntity] No snapshots found for entity ${entityTypeName} with id: ${entityID}`)
     }
+    const snapShotsToDelete = snapshots ?? []
+    const eventsToDelete = [...events, ...snapShotsToDelete]
 
     const params: DynamoDB.DocumentClient.BatchWriteItemInput = {
       RequestItems: {
@@ -156,6 +155,8 @@ export async function destroyEntity(
         })),
       },
     }
+    // TODO: For the future we should create chunks of 25 items to be processed.
+    // The db.batchWrite operation impose that limit.
     await dynamoDB.batchWrite(params).promise()
     logger.debug('[EventsAdapter#destroyEntity] Entity destroyed')
   } else {
