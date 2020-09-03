@@ -1,10 +1,10 @@
 import { Command } from '@boostercloud/framework-core'
 import { Register, UUID } from '@boostercloud/framework-types'
 import { ProductDeleted } from '../events/ProductDeleted'
-import { Admin } from '../roles'
+import { Admin, SuperUser } from '../roles'
 
 @Command({
-  authorize: [Admin],
+  authorize: [Admin, SuperUser],
 })
 export class DeleteProduct {
   public constructor(readonly productId: UUID) {}
