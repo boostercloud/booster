@@ -22,19 +22,16 @@ const testFiles: Array<string> = [
 
 const testFolders: Array<string> = [...CLI_PROJECT_INTEGRATION_TEST_FOLDERS]
 
-const removeGeneratedResources = () => {
+const removeGeneratedResources = (): Promise<void[]> => {
   return Promise.all([...removeFiles(testFiles), ...removeFolders(testFolders)])
 }
 
 before(async () => {
   const integrationTestsPackageRoot = path.dirname(__dirname)
-  process.chdir(integrationTestsPackageRoot)
 
-  await exec('lerna bootstrap')
-  await exec('lerna clean --yes')
-  await exec('lerna run clean --stream')
-
-  process.chdir('..')
+  await exec('lerna bootstrap', { cwd: integrationTestsPackageRoot })
+  await exec('lerna clean --yes', { cwd: integrationTestsPackageRoot })
+  await exec('lerna run clean --stream', { cwd: integrationTestsPackageRoot })
 
   try {
     await removeGeneratedResources()
