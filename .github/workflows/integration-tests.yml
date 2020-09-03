@@ -11,7 +11,7 @@ jobs:
         runs-on: [ubuntu-latest]
       fail-fast: false
 
-    runs-on: ${{ matrix.runs-on }}
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Fetch PR info
