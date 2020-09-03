@@ -3,7 +3,7 @@ import { SKU } from '../common/sku'
 import { ProductCreated } from '../events/ProductCreated'
 import { ProductUpdated } from '../events/ProductUpdated'
 import { ProductDeleted } from '../events/ProductDeleted'
-import { Money } from '../common/money'
+import { Money, emptyPrice } from '../common/money'
 import { UUID } from '@boostercloud/framework-types'
 import { Picture } from '../common/picture'
 import { ProductAvailabilityChanged } from '../events/ProductAvailabilityChanged'
@@ -35,11 +35,8 @@ export class Product {
   }
 
   @Reduces(ProductDeleted)
-  public static delete(_event: ProductDeleted, currentProduct: Product): Product {
-    if (currentProduct) {
-      currentProduct.deleted = true
-    }
-    return currentProduct
+  public static delete(event: ProductDeleted): Product {
+    return new Product(event.productId, '<DELETED>', '', '', emptyPrice, [], true)
   }
 
   @Reduces(ProductAvailabilityChanged)
