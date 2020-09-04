@@ -11,9 +11,9 @@ import { internet } from 'faker'
 import { sleep } from '../helpers'
 import { WebSocketLink } from 'apollo-link-ws'
 import { getMainDefinition } from 'apollo-utilities'
-import { split } from 'apollo-link'
+import { split, ApolloLink } from 'apollo-link'
 import * as WebSocket from 'ws'
-import { OperationOptions, SubscriptionClient } from 'subscriptions-transport-ws'
+import { SubscriptionClient } from 'subscriptions-transport-ws'
 import { ApolloClientOptions } from 'apollo-client/ApolloClient'
 
 const userPoolId = 'userpool'
@@ -256,10 +256,12 @@ export async function refreshTokenURL(): Promise<string> {
 
 // --- GraphQL helpers ---
 
-export async function graphQLClient(authToken?: string): Promise<ApolloClient<NormalizedCacheObject>> {
+type AuthToken = string | (() => string)
+
+export async function graphQLClient(authToken?: AuthToken): Promise<ApolloClient<NormalizedCacheObject>> {
   return new ApolloClient({
     cache: new InMemoryCache(),
-    link: await getApolloHTTPLink(authToken),
+    link: getAuthLink(authToken).concat(await getApolloHTTPLink()),
     defaultOptions: {
       query: {
         fetchPolicy: 'no-cache',
@@ -268,13 +270,21 @@ export async function graphQLClient(authToken?: string): Promise<ApolloClient<No
   })
 }
 
-async function getApolloHTTPLink(authToken?: string): Promise<HttpLink> {
+async function getApolloHTTPLink(): Promise<HttpLink> {
   const httpURL = await baseHTTPURL()
-  const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {}
   return new HttpLink({
     uri: new URL('graphql', httpURL).href,
-    headers,
     fetch,
+  })
+}
+
+function getAuthLink(authToken?: string | (() => string)): ApolloLink {
+  return new ApolloLink((operation, forward) => {
+    if (authToken) {
+      const token = typeof authToken == 'function' ? authToken() : authToken
+      operation.setContext({ headers: { Authorization: 'Bearer ' + token } })
+    }
+    return forward(operation)
   })
 }
 
@@ -286,15 +296,12 @@ export class DisconnectableApolloClient extends ApolloClient<NormalizedCacheObje
     super(options)
   }
 
-  public updateToken(token: string): void {
-    this.subscriptionClient.use([
-      {
-        applyMiddleware(options: OperationOptions, next: Function): void {
-          options.Authorization = token
-          next()
-        },
-      },
-    ])
+  public reconnect(): Promise<void> {
+    const reconnectPromise = new Promise<void>((resolve) => {
+      this.subscriptionClient.onReconnected(resolve)
+    })
+    this.subscriptionClient.close(false)
+    return reconnectPromise
   }
 
   public disconnect(): void {
@@ -309,28 +316,19 @@ export class DisconnectableApolloClient extends ApolloClient<NormalizedCacheObje
  * @param authToken
  * @param tokenInHeader
  */
-export async function graphQLClientWithSubscriptions(authToken?: string): Promise<DisconnectableApolloClient> {
-  const subscriptionClient: SubscriptionClient = await graphqlSubscriptionsClient()
-  if (authToken) {
-    subscriptionClient.use([
-      {
-        applyMiddleware(options: OperationOptions, next: Function): void {
-          options.Authorization = authToken
-          next()
-        },
-      },
-    ])
-  }
-
-  const websocketLink = new WebSocketLink(subscriptionClient)
+export async function graphQLClientWithSubscriptions(
+  authToken?: AuthToken,
+  onConnected?: (err?: string) => void
+): Promise<DisconnectableApolloClient> {
+  const subscriptionClient: SubscriptionClient = await graphqlSubscriptionsClient(authToken, onConnected)
 
   const link = split(
     ({ query }) => {
       const definition = getMainDefinition(query)
       return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
     },
-    websocketLink,
-    await getApolloHTTPLink(authToken)
+    new WebSocketLink(subscriptionClient),
+    getAuthLink(authToken).concat(await getApolloHTTPLink())
   )
 
   return new DisconnectableApolloClient(subscriptionClient, {
@@ -344,12 +342,29 @@ export async function graphQLClientWithSubscriptions(authToken?: string): Promis
   })
 }
 
-export async function graphqlSubscriptionsClient(): Promise<SubscriptionClient> {
+export async function graphqlSubscriptionsClient(
+  authToken?: AuthToken,
+  onConnected?: (err?: string) => void
+): Promise<SubscriptionClient> {
   return new SubscriptionClient(
     await baseWebsocketURL(),
     {
-      lazy: true,
       reconnect: true,
+      connectionParams: () => {
+        if (authToken) {
+          const token = typeof authToken == 'function' ? authToken() : authToken
+          return {
+            Authorization: 'Bearer ' + token,
+          }
+        }
+        return {}
+      },
+      connectionCallback: (err?: any) => {
+        if (onConnected) {
+          const errMessage = err ?? err.toString()
+          onConnected(errMessage)
+        }
+      },
     },
     class MyWebSocket extends WebSocket {
       public constructor(url: string, protocols?: string | string[]) {
@@ -400,16 +415,12 @@ export async function queryEvents(primaryKey: string, latestFirst = true): Promi
 }
 
 // --- Subscriptions store helpers ---
-export async function subscriptionsTableName(): Promise<string> {
-  const stackName = appStackName()
-
-  return `${stackName}-subscriptions-store`
+export async function countSubscriptionsItems(): Promise<number> {
+  return countTableItems(`${appStackName()}-subscriptions-store`)
 }
 
-export async function countSubscriptionsItems(): Promise<number> {
-  const tableName = await subscriptionsTableName()
-
-  return countTableItems(tableName)
+export async function countConnectionsItems(): Promise<number> {
+  return countTableItems(`${appStackName()}-connections-store`)
 }
 
 // --- Read models helpers ---
@@ -466,14 +477,16 @@ export async function countEventItems(): Promise<number> {
   return output.Count ?? -1
 }
 
-export async function countSnapshotItems(): Promise<number> {
-  const output: ScanOutput = await documentClient
-    .scan({
+export async function countSnapshotItems(entityTypeName: string, entityID: string): Promise<number> {
+  const output: QueryOutput = await documentClient
+    .query({
       TableName: await eventsStoreTableName(),
       Select: 'COUNT',
-      FilterExpression: '#k = :kind',
-      ExpressionAttributeNames: { '#k': 'kind' },
-      ExpressionAttributeValues: { ':kind': 'snapshot' },
+      ConsistentRead: true,
+      KeyConditionExpression: 'entityTypeName_entityID_kind = :partitionKey',
+      ExpressionAttributeValues: {
+        ':partitionKey': `${entityTypeName}-${entityID}-snapshot`,
+      },
     })
     .promise()
 
@@ -494,20 +507,13 @@ export async function getEventsByEntityId(entityID: string): Promise<any> {
   return output.Items
 }
 
-export async function clearSubscriptions(): Promise<any> {
-  await documentClient.scan({
-    TableName: await subscriptionsTableName(),
-    Select: 'ALL_ATTRIBUTES',
-  })
-}
-
 // --- Other helpers ---
 
 export async function waitForIt<TResult>(
   tryFunction: () => Promise<TResult>,
   checkResult: (result: TResult) => boolean,
   tryEveryMs = 1000,
-  timeoutMs = 60000
+  timeoutMs = 300000
 ): Promise<TResult> {
   const start = Date.now()
   return doWaitFor()

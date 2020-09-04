@@ -5,6 +5,7 @@ import {
   GraphQLRequestEnvelope,
   InvalidProtocolError,
   GraphQLOperation,
+  GraphQLRequestEnvelopeError,
 } from '@boostercloud/framework-types'
 import { GraphQLSchema, DocumentNode, ExecutionResult, GraphQLError } from 'graphql'
 import * as graphql from 'graphql'
@@ -28,36 +29,37 @@ export class BoosterGraphQLDispatcher {
 
     this.graphQLSchema = new GraphQLGenerator(config, commandDispatcher, this.readModelDispatcher).generateSchema()
     this.websocketHandler = new GraphQLWebsocketHandler(
+      config,
       logger,
-      this.config.provider.readModels.notifySubscription.bind(null, config),
+      this.config.provider.auth,
+      this.config.provider.connections,
       {
         onStartOperation: this.runGraphQLOperation.bind(this),
         onStopOperation: this.readModelDispatcher.unsubscribe.bind(this.readModelDispatcher),
-        onTerminateOperations: this.readModelDispatcher.unsubscribeAll.bind(this.readModelDispatcher),
+        onTerminate: this.handleDisconnect.bind(this),
       }
     )
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public async dispatch(request: any): Promise<any> {
-    const envelope = await this.config.provider.graphQL.rawToEnvelope(request, this.logger)
-    this.logger.debug('Received the following GraphQL envelope: ', envelope)
+  public async dispatch(request: unknown): Promise<unknown> {
+    const envelopeOrError = await this.config.provider.graphQL.rawToEnvelope(request, this.logger)
+    this.logger.debug('Received the following GraphQL envelope: ', envelopeOrError)
 
-    switch (envelope.eventType) {
+    switch (envelopeOrError.eventType) {
       case 'CONNECT':
         return this.config.provider.graphQL.handleResult(null, graphQLWebsocketSubprotocolHeaders)
       case 'MESSAGE':
-        return this.config.provider.graphQL.handleResult(await this.handleMessage(envelope))
+        return this.config.provider.graphQL.handleResult(await this.handleMessage(envelopeOrError))
       case 'DISCONNECT':
-        return this.config.provider.graphQL.handleResult(await this.handleDisconnect(envelope))
+        return this.config.provider.graphQL.handleResult(await this.handleDisconnect(envelopeOrError.connectionID))
       default:
         return this.config.provider.graphQL.handleResult({
-          errors: [new Error(`Unknown message type ${envelope.eventType}`)],
+          errors: [new Error(`Unknown message type ${envelopeOrError.eventType}`)],
         })
     }
   }
 
-  private async handleMessage(envelope: GraphQLRequestEnvelope): Promise<DispatchResult> {
+  private async handleMessage(envelope: GraphQLRequestEnvelope | GraphQLRequestEnvelopeError): Promise<DispatchResult> {
     this.logger.debug('Starting GraphQL operation')
     if (cameThroughSocket(envelope)) {
       return this.websocketHandler.handle(envelope)
@@ -66,9 +68,12 @@ export class BoosterGraphQLDispatcher {
   }
 
   private async runGraphQLOperation(
-    envelope: GraphQLRequestEnvelope
+    envelope: GraphQLRequestEnvelope | GraphQLRequestEnvelopeError
   ): Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult> {
     try {
+      if ('error' in envelope) {
+        throw envelope.error
+      }
       if (!envelope.value) {
         throw new InvalidParameterError('Received an empty GraphQL body')
       }
@@ -150,13 +155,15 @@ export class BoosterGraphQLDispatcher {
     return result
   }
 
-  private async handleDisconnect(envelope: GraphQLRequestEnvelope): Promise<void> {
-    if (!envelope.connectionID) {
+  private async handleDisconnect(connectionID?: string): Promise<void> {
+    if (!connectionID) {
       // This should be impossible, but just in case
-      this.logger.debug("Received a DISCONNECT message but field 'connectionID' is missing. Doing nothing")
+      this.logger.info("Received a DISCONNECT message but field 'connectionID' is missing. Doing nothing")
       return
     }
-    return this.readModelDispatcher.unsubscribeAll(envelope.connectionID)
+    this.logger.debug('Deleting all subscriptions and connection data')
+    await this.config.provider.connections.deleteData(this.config, connectionID)
+    await this.readModelDispatcher.unsubscribeAll(connectionID)
   }
 }
 

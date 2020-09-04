@@ -1,7 +1,7 @@
- {
+{
   "name": "@boostercloud/framework-integration-tests",
   "description": "Example project for Booster",
-  "version": "0.5.1",
+  "version": "0.7.0",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
   "private": true,
@@ -10,13 +10,13 @@
   },
   "bugs": "https://github.com/boostercloud/booster/issues",
   "dependencies": {
-    "@boostercloud/framework-core": "^0.5.1",
-    "@boostercloud/framework-provider-aws": "^0.5.1",
-    "@boostercloud/framework-provider-local": "^0.5.1"
+    "@boostercloud/framework-core": "^0.7.0",
+    "@boostercloud/framework-provider-aws": "^0.7.0",
+    "@boostercloud/framework-provider-local": "^0.7.0"
   },
   "devDependencies": {
-    "@boostercloud/framework-provider-aws-infrastructure": "^0.5.1",
-    "@boostercloud/framework-provider-local-infrastructure": "^0.5.1",
+    "@boostercloud/framework-provider-aws-infrastructure": "^0.7.0",
+    "@boostercloud/framework-provider-local-infrastructure": "^0.7.0",
     "@types/aws-lambda": "^8.10.48",
     "@types/faker": "^4.1.12",
     "@types/ws": "^7.2.4",
@@ -48,7 +48,7 @@
     "fix-lint": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
-    "integration": "FULL_INTEGRATION_TEST=true yarn integration/aws && yarn integration/local && yarn integration/cli && yarn integration/end-to-end",
+    "integration": "FULL_INTEGRATION_TEST=true yarn integration/local && yarn integration/cli && yarn integration/aws && yarn integration/end-to-end",
     "integration/aws": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"integration/providers/aws/.mocharc.yml\" \"integration/providers/aws/**/*.integration.ts\"",
     "integration/local": "BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/providers/local/.mocharc.yml\" \"integration/providers/local/**/*.integration.ts\"",
     "integration/cli": "mocha --forbid-only --exit --config \"integration/cli/.mocharc.yml\" \"integration/cli/**/*.integration.ts\"",

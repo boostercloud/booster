@@ -2,7 +2,7 @@ import { CosmosClient, SqlParameter, SqlQuerySpec } from '@azure/cosmos'
 import { BoosterConfig, Filter, Logger, InvalidParameterError } from '@boostercloud/framework-types'
 
 export async function searchReadModel(
-  cosmosDb: CosmosClient | any,
+  cosmosDb: CosmosClient,
   config: BoosterConfig,
   logger: Logger,
   readModelName: string,

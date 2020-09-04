@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BoosterConfig,
   Logger,
@@ -72,22 +71,22 @@ export class Booster {
   /**
    * Entry point to validate users upon sign up
    */
-  public static checkSignUp(signUpRequest: any): Promise<any> {
+  public static async checkSignUp(signUpRequest: unknown): Promise<unknown> {
     return BoosterAuth.checkSignUp(signUpRequest, this.config, this.logger)
   }
 
   /**
    * Dispatches event messages to your application.
    */
-  public static dispatchEvent(rawEvent: any): Promise<any> {
+  public static dispatchEvent(rawEvent: unknown): Promise<unknown> {
     return BoosterEventDispatcher.dispatch(rawEvent, this.config, this.logger)
   }
 
-  public static serveGraphQL(request: any): Promise<any> {
+  public static serveGraphQL(request: unknown): Promise<unknown> {
     return new BoosterGraphQLDispatcher(this.config, this.logger).dispatch(request)
   }
 
-  public static notifySubscribers(request: any): Promise<any> {
+  public static notifySubscribers(request: unknown): Promise<unknown> {
     return new BoosterSubscribersNotifier(this.config, this.logger).dispatch(request)
   }
 
@@ -114,18 +113,18 @@ function checkAndGetCurrentEnv(): string {
   return env
 }
 
-export async function boosterEventDispatcher(rawEvent: any): Promise<any> {
+export async function boosterEventDispatcher(rawEvent: unknown): Promise<unknown> {
   return Booster.dispatchEvent(rawEvent)
 }
 
-export async function boosterPreSignUpChecker(rawMessage: any): Promise<void> {
+export async function boosterPreSignUpChecker(rawMessage: unknown): Promise<unknown> {
   return Booster.checkSignUp(rawMessage)
 }
 
-export async function boosterServeGraphQL(rawRequest: any): Promise<void> {
+export async function boosterServeGraphQL(rawRequest: unknown): Promise<unknown> {
   return Booster.serveGraphQL(rawRequest)
 }
 
-export async function boosterNotifySubscribers(rawRequest: any): Promise<void> {
+export async function boosterNotifySubscribers(rawRequest: unknown): Promise<unknown> {
   return Booster.notifySubscribers(rawRequest)
 }

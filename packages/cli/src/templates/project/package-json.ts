@@ -1,15 +1,18 @@
+// New projects use the same Booster version as the installed CLI
+const VERSION = require('../../../package.json').version
+
 export const template = `{
   "name": "{{{projectName}}}",
   "description": "{{{description}}}",
   "version": "{{{version}}}",
   "author": "{{{author}}}",
   "dependencies": {
-    "@boostercloud/framework-core": "^{{{boosterVersion}}}",
-    "@boostercloud/framework-types": "^{{{boosterVersion}}}",
+    "@boostercloud/framework-core": "^${VERSION}",
+    "@boostercloud/framework-types": "^${VERSION}",
     "{{{providerPackageName}}}": "*"
   },
   "devDependencies": {
-    "@boostercloud/cli": "^{{{boosterVersion}}}",
+    "@boostercloud/cli": "^${VERSION}",
     "rimraf": "^3.0.1",
     "@typescript-eslint/eslint-plugin": "^2.18.0",
     "@typescript-eslint/parser": "^2.18.0",

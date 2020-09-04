@@ -63,6 +63,7 @@
     + [Application outputs](#application-outputs)
     + [Delete your cloud stack](#delete-your-cloud-stack)
 - [Going deeper with Booster](#going-deeper-with-booster)
+  * [Contributing](#contributing) 
   * [Framework Core](#framework-core)
   * [Framework Types](#framework-types)
   * [Framework integration tests](#framework-integration-tests)
@@ -94,7 +95,7 @@
 
 Booster is a new kind of framework to build scalable and reliable event-driven systems faster, reimagining the software development experience to maximize your team’s speed and reduce friction on every level.
 
-Booster follows a Domain-Driven Design approach in which you define your application in terms that are understandable by anyone in your company. From a bird’s eye view your project is organized into:
+Booster follows a Domain-Driven Design approach in which you define your application in terms that are understandable by anyone in your company. From a bird’s eye view, your project is organized into:
 
 - **Commands**: Define what a user can request from the system (i.e: Add an item to the cart)
 - **Events**: Simple records of facts (i.e: User X added item Y to the cart Z)
@@ -103,15 +104,16 @@ Booster follows a Domain-Driven Design approach in which you define your applica
 
 Events are the cornerstone of a Booster application, and that’s why we say that Booster is an event-driven framework. Events bring us many of the differentiating characteristics of Booster:
 
-- **Real-time**: Events can trigger other actions when they’re created, and updates can be pushed to the connected clients without extra requests.
+- **Real-time**: Events can trigger other actions when they’re created, and updates can be pushed to connected clients without extra requests.
 - **High data resiliency**: Events are stored by default in an append-only database, so the data is never lost and it’s possible to recover any previous state of the system.
-- **Decoupled by nature**: Dependencies only happen at data level, so it’s easier to evolve the code without affecting other parts of the system.
+- **Scalable by nature**: Dependencies only happen at data level, so Booster apps can ingest more data without waiting for other operatons to complete. Low coupling also makes it easier to evolve the code without affecting other parts of the system.
+- **Asynchronous**: Your users won't need to wait for your system to process the whole operation before continuing using it.
 
 Before Booster, building an event-driven system with the mentioned characteristics required huge investments in hiring engineers with the needed expertise. Booster packs this expertise, acquired from real-case scenarios in high-scale companies, into a very simple tool that handles with the hard parts for you, even provisioning the infrastructure!
 
 We have redesigned the whole developer experience from scratch, taking advantage of the advanced TypeScript type system and Serverless technologies to go from project generation to a production-ready real-time GraphQL API that can ingest thousands of concurrent users in a matter of minutes.
 
-Booster's ultimate goal is fulfilling the developer's dream of writing code at the application layer, in a domain-driven way that eases communications for the whole team, without caring about how anything else is done at the infrastructure level!
+Booster's ultimate goal is making developer's lives easier, fulfilling the dream of writing code in a domain-driven way that eases communications for the whole team, without caring about how anything else is done at the infrastructure level!
 
 ### Booster Principles
 
@@ -120,26 +122,20 @@ Booster takes a holistic and highly-opinionated approach at many levels:
 - **Focus on business value**: The only code that makes sense is the code that makes your application different from any other.
 - **Convention over configuration**: All the supporting code and configuration that is similar in all applications should be out of programmers’ sight.
 - **Serverless-less**: Why go Serverless to avoid managing infrastructure when you can implicitly infer your Serverless architecture from your code and not even deal with that?
-- **Scale smoothly**: A modern project shouldn't need to change their software architecture or rewrite their code in a different language just because they succeed and get a lot of users.
-- **Event-source and CQRS**: Our world is event-driven, businesses are event-driven, and modern software maps better to reality when it’s event-driven. We have enough MVC frameworks already!
+- **Scale smoothly**: The code you write to handle your first 100 users will still work to handle your first million. You won't need to rewrite your application when it succeeds.
+- **Event-source and CQRS**: Our world is event-driven, businesses are event-driven, and modern software maps better to reality when it’s event-driven.
 - **Principle of Abstraction**: Building an application is hard enough to have to deal with recurring low-level details like SQL, API design, or authentication mechanisms, so we tend to build more semantic abstractions on top of them.
 - **Real-time first**: Client applications must be able to react to events happening in the backend and notice data changes.
 
 ### Why use Booster
 
-Booster will fit like a glove in applications that are naturally event-driven like:
-
-- Commerce applications (retail, e-commerce, omnichannel applications, warehouse management, etc.)
-- Business management applications
-- Communication systems
-
-But it's a general-purpose framework that has several advantages over other solutions:
+Booster will fit like a glove in applications that are naturally event-driven like commerce applications (retail, e-commerce, omnichannel applications, warehouse management, etc.), business applications or communication systems, but it's a general-purpose framework that has several advantages over other solutions:
 
 - **Faster time-to-market**: Booster can deploy your application to a production-ready environment from minute one, without complicated configurations or needing to invest any effort to design it. In addition to that, it features a set of code generators to help developers build the project scaffolding faster and focus on actual business code in a matter of seconds instead of dealing with complicated framework folklore.
 - **Write less code**: Booster conventions and abstractions require less code to implement the same features. This not only speeds up development but combined with clear architecture guidelines also makes Booster projects easier to understand, iterate, and maintain.
 - **All the advantages of Microservices, none of its cons**: Microservices are a great way to deal with code complexity, at least on paper. Services are isolated and can scale independently, and different teams can work independently, but that usually comes with a con: interfaces between services introduce huge challenges like delays, hard to solve cyclic dependencies, or deployment errors. In Booster, every handler function works as an independent microservice, it scales separately in its own lambda function, and there are no direct dependencies between them, all communication happens asynchronously via events, and all the infrastructure is compiled, type-checked and deployed atomically to avoid issues.
 - **All the advantages of Serverless, without needing a degree in cloud technologies**: Serverless technologies are amazing and have made a project like Booster possible, but they're relatively new technologies, and while day after day new tools appear to make them easier, the learning curve is still quite steep. With Booster you'll take advantage of Serverless’ main selling points of high scalability and reduced hosting costs, without having to learn every detail from minute one.
-- **Event-sourcing by default**: Similarly to Git repositories, Booster keeps all data changes as events indefinitely. This means that any previous state of the system can be recreated and replayed at any moment. This enables a whole world of possibilities for troubleshooting and auditing your system, or syncing development or staging environments with the production data to perform tests and simulations.
+- **Event-sourcing by default**: Booster keeps all incremental data changes as events, indefinitely. This means that any previous state of the system can be recreated and replayed at any moment, enabling a whole world of possibilities for troubleshooting and auditing, syncing environments or performing tests and simulations.
 - **Booster makes it easy to build enterprise-grade applications**: Implementing an event-sourcing system from scratch is a challenging exercise that usually requires highly specialized experts. There are some technical challenges like eventual consistency, message ordering, and snapshot building. Booster takes care of all of that and more for you, lowering the curve for people that are starting and making expert lives easier.
 
 ## Getting started
@@ -1340,42 +1336,110 @@ Read Models are classes decorated with the `@ReadModel` decorator that have one 
 
 ```typescript
 @ReadModel
-export class CartReadModel {
+export class ReadModelName {
   public constructor(
-    readonly id: UUID,
-    readonly cartItems: Array<CartItem>,
-    public paid: boolean
+    readonly fieldA: SomeType,
+    readonly fieldB: SomeType,
+    /* as many fields as needed */
   ) {}
 
-  @Projects(Cart, 'id')
-  public static updateWithCart(cart: Cart, currentCartReadModel?: CartReadModel): CartReadModel {
-    return new CartReadModel(cart.id, cart.cartItems, cart.paid)
+  @Projects(SomeEntity, 'entityField')
+  public static projectionName(entity: SomeEntity, currentEntityReadModel?: ReadModelName): ReadModelName {
+    return new ReadModelName(/* initialize here your constructor properties */)
   }
+  
+  @Projects(SomeEntity, 'othetEntityField')
+  public static projectionName(entity: SomeEntity, currentEntityReadModel?: ReadModelName): ReadModelName {
+    return new ReadModelName(/* initialize here your constructor properties */)
+  }
+  /* as many projections as needed */
 }
 ```
 
 #### Read models naming convention
 
+As it has been previously commented, semantics plays an important role in designing a coherent system and your application should reflect your domain concepts, we recommend to chooose a representative domain name and use the `ReadModel` suffix in your read models name.
+
+Despite you can place your read models in any directory, we strongly recommend you to put them in `<project-root>/src/read-models`. Having all the read models in one place will help you to understand your application's capabilities at a glance.
+
+```text
+<project-root>
+├── src
+│   ├── commands 
+│   ├── common
+│   ├── config
+│   ├── entities
+│   ├── read-models  <------ put them here
+│   ├── events
+│   ├── index.ts
+│   └── read-models
+```
+
 #### Creating a read model
+
+The preferred way to create a read model is by using the generator, e.g.
+
 ```shell
 boost new:read-model CartReadModel --fields id:UUID cartItems:"Array<CartItem>" paid:boolean --projects Cart
 ```
 
-This will create a file in the read-models directory `<project-root>/src/read-models/CartReadModel.ts`.
+The generator will create a Typescript class under the read-models directory `<project-root>/src/read-models/CartReadModel.ts`.
 
-Read Model classes can also be created by hand and there are no restrictions regarding the place you put the files. The structure of the data is totally open and can be as complex as you can manage in your projection functions.
+Read Model classes can also be created by hand and there are no restrictions. The structure of the data is totally open and can be as complex as you can manage in your projection functions.
 
 #### The projection function
 A `Projection` is a method decorated with the `@Projects` decorator that, given a new entity value and (optionally) the current read model state, generate a new read model value.
 
-Read models can be projected from multiple [entities](#4-entities-and-reducers) as soon as they share some common key called `joinKey`.
+Read models can be projected from one or more [entities](#4-entities-and-reducers) as soon as all the entities involved have one field with the same semantics that can be used as a join key (usually an identifier or a reference to other entity). A join key in Booster is similar to join keys in relational databases, so you could see Read Models as reactive join operations that you can use to build data aggregates. When an entity is updated, Booster uses the join key to find the right read model instance, so all entities that share the same join key value will trigger the projections of the same read model. When defining a projection with the `@Projects` decorator, it's required to set the field name of the join key in each entity. Let's see an example:
+```typescript
+@ReadModel
+export class UserReadModel {
+  public constructor(readonly username: string, /* ...(other interesting fields from users)... */) {}
+  
+  @Projects(User, 'id')
+  public static projectUser(entity: User, current?: UserReadModel) { // Here we update the user fields}
+
+  @Projects(Post, 'ownerId')
+  public static projectUserPost(entity: Post, current?: UserReadModel) { //Here we can adapt the read model to show specific user information related with the Post entity}
+}
+```
+In the previous example we are projecting the `User` entity using the user `id` and also we are projecting the `User` entity based on the `ownerId` of the `Post` entity. Notice that both join keys are references to the `User` identifier, but it's not required that the join key is an identifier.
 
 #### Authorizing read models
 
+Read models are the tool to build the public read API of a Booster application, so you can define who is authorized to query and subscribe to them. The Booster authorization feature is covered in [the auth section](#authentication-and-authorization). So far, we have seen that you can make a read model publicly accessible by authorizing `'all'` to query it or you can set specific roles providing an array of roles in this way: `authorize: [Admin]`.
+
 #### Querying a read model
-You can use the GraphQL endpoint to query or subscribe to the read model records: [see the API documentation](#GraphQL-API).
+
+For every read model, Booster automatically creates all the necessary queries and subscriptions. For example, given this `CartReadModel`:
+
+```typescript
+@ReadModel({
+  authorize: 'all'
+})
+export class CartReadModel {
+  public constructor(
+    public id: UUID,
+    readonly items: Array<CartItem>,
+    ) {}
+
+  @Projects(Cart, "id")
+  public static projectCart(entity:Cart, currentReadModel: CartReadModel): CartReadModel {
+    return new CartReadModel(entity.id, entity.items)
+  }
+}
+```
+
+You will get the following GraphQL query:
+
+```graphQL
+query CartReadModel(id: ID!): CartReadModel
+```
+For more information about queries and how to use them, please check the [GraphQL API](#reading-read-models) section.
 
 #### Getting real-time updates for a read model
+
+Booster GraphQL API also provides support for real-time updates using subscriptions and websocket, to get more information about it go to the [GraphQL API](#subscribing-to-read-models) section.
 
 ## Features
 
@@ -1437,15 +1501,30 @@ export class User {}
 @Role({
   auth: {
     signUpMethods: ['email', 'phone'],
+    skipConfirmation: false
   },
 })
 export class SuperUser {}
+
+@Role({
+  auth: {
+    signUpMethods: ['email', 'phone'],
+    skipConfirmation: true
+  },
+})
+export class SuperUserWithoutConfirmation {}
 ```
 
-Here, we have defined the `Admin`, `User` and `SuperUser` roles. They all contain an `auth` attribute. This one contains a `signUpMethods` attribute. When this value is empty (`Admin` role) a user can't use this role to sign up.
+Here, we have defined the `Admin`, `User`, `SuperUser` and `SuperUserWithoutConfirmation` roles. They all contain an `auth` attribute which contains a `signUpMethods` and `skipConfirmation` attributes.
 
-`signUpMethods` is an array with limited possible values: `email` or `phone` or a combination of both.
+When `signUpMethods` is empty (`Admin` role) or is not specified, a user can't use this role to sign up.
+`signUpMethods` is an array with limited possible values: `email`, `phone` or a combination of both.
 Users with the `User` role will only be able to sign up with their emails, whereas the ones with the `SuperUser` role will be able to sign up with either their email or their phone number.
+
+When `skipConfirmation` is false or not specified, a confirmation is required for the chosen sign up method.
+Users that sign up with their emails will receive a confirmation link in their inbox. They just need to click it to confirm their registration.
+Users that sign up with their phones will receive a confirmation code as an SMS message. That code needs to be sent back using the [confirmation endpoint](#sign-up/confirm)
+If `skipConfirmation` is set to true, users can sign in without confirmation after signing up.
 
 If your Booster application has roles defined, an [authentication API](#authentication-api) will be provisioned. It will allow your users to gain
 access to your resources.
@@ -1463,10 +1542,6 @@ The base URL of all these endpoints is the `httpURL` output of your application.
 
 ##### Sign-up
 Users can use this endpoint to register in your application and get a role assigned to them.
-Only roles that filled `signUpMethods` with valid entries can be used upon sign-up. After calling this endpoint, the
-registration isn't completed yet. 
-Users that sign up with their emails will receive a confirmation link in their inbox. They just need to click it to confirm their registration.
-Users that sign up with their phones will receive a confirmation code as an SMS message. That code needs to be sent back using the [confirmation endpoint](#sign-up/confirm)
 
 ![confirmation email](./img/sign-up-verificaiton-email.png)
 ![email confirmed](./img/sign-up-confirmed.png)
@@ -1675,14 +1750,14 @@ This is the main API of your application, as it allows you to:
  - _Modify_ data by **sending commands**
  - _Read_ data by **querying read models**
  - _Receive data in real time_ by **subscribing to read models** 
- 
+
 All this is done through [GraphQL](https://graphql.org/), a query language for APIs that has useful advantages over simple REST APIs.
 
 If you are not familiar with GraphQL, then, first of all, don't worry! 
 _Using_ a GraphQL API is simple and straightforward.
 _Implementing it_ on the server side is usually the hard part, as you need to define your schema, operations, resolvers, etc.
 Luckily, you can forget about that because Booster does all the work for you!
- 
+
 The GraphQL API is fully **auto-generated** based on your _commands_ and _read models_.
 
 #### Relationship between GraphQL operations and commands and read models
@@ -1698,9 +1773,17 @@ Knowing this, you can infer the relationship between those operations and your B
 - You _subscribe_ to a **read model** using a **subscription** 
 
 #### How to send GraphQL request
-GraphQL uses two existing protocols _HTTP_ and _WebSocket_. HTTP is for regular [Queries and Mutations](https://graphql.org/learn/queries/). On the other hand, the WebSocket protocol is what makes [Subscriptions](https://graphql.org/blog/subscriptions-in-graphql-and-relay/) possible. This protocol allows the server to send data to clients when there is a change on the server's side.
- 
-This is the reason why Booster provisions two main URLs: the **httpURL** and the **websocketURL** (they are listed in the [application outputs](#application-outputs)). You use the "httpURL" to send GraphQL queries and mutations, and the "websocketURL" to send subscriptions.
+GraphQL uses two existing protocols: 
+
+- _HTTP_ for `mutation` and `query` operations
+- _WebSocket_ for `subscription` operations
+
+The reason for the WebSocket protocol is that, in order for subscriptions to work, there must be a way for the server to send data
+to clients when it is changed. HTTP doesn't allow that, as it is the client the one which always initiates the request.
+
+This is the reason why Booster provisions two main URLs: the **httpURL** and the **websocketURL** (you can see them after
+deploying your application). You need to use the "httpURL" to send GraphQL queries and mutations, and the "websocketURL"
+to send subscriptions.
 
 Therefore:
 
@@ -2242,6 +2325,10 @@ boost nuke -e <environment name>
 
 ## Going deeper with Booster
 
+### Contributing
+
+If you want to start making contributions to Booster, we strongly recommend that you read our [contributing guide](https://github.com/boostercloud/booster/blob/master/CONTRIBUTING.md).
+
 ### Framework Core
 
 ### Framework Types
@@ -2448,7 +2535,7 @@ The databases for the local provider are just json files in the `<project-root>/
 
 ## Frequently Asked Questions
 **1.- When deploying my application in AWS for the first time, I got an error saying _"StagingBucket <your app name>-toolkit-bucket already exists"_**
-  
+
 When you deploy a Booster application to AWS, an S3 bucket needs to be created to upload the application code. Booster names that bucket
 using your application name as a prefix. 
 In AWS, bucket names must be unique _globally_, so if there is another bucket in the world with exactly the same name as

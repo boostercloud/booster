@@ -13,12 +13,15 @@ import {
   countSubscriptionsItems,
   UserAuthInformation,
   refreshUserAuthInformation,
+  graphQLClient,
 } from './utils'
 import gql from 'graphql-tag'
 import { expect } from 'chai'
 import * as chai from 'chai'
 import { random, internet, finance, lorem, phone } from 'faker'
 import fetch from 'cross-fetch'
+import { ApolloClient } from 'apollo-client'
+import { NormalizedCacheObject } from 'apollo-cache-inmemory'
 
 chai.use(require('chai-as-promised'))
 
@@ -369,16 +372,16 @@ describe('With the auth API', () => {
     })
   })
 
-  // The UserWithEmail role is configured in the test project to allow sign ups
   context('someone with a user with email account', () => {
     let userEmail: string
+    let anotherUserEmail: string
     let userPassword: string
 
     before(async () => {
       userEmail = internet.email()
       userPassword = createPassword()
 
-      // Create user
+      // Create user with confirmation
       const url = await signUpURL()
       const clientId = await authClientID()
 
@@ -397,15 +400,35 @@ describe('With the auth API', () => {
         },
       })
 
-      // Confirm user
-      await confirmUser(userEmail)
+      // Create user without confirmation
+      anotherUserEmail = internet.email()
+      const urlNoConfirmation = await signUpURL()
+      const clientIdNoConfirmation = await authClientID()
+
+      await fetch(urlNoConfirmation, {
+        method: 'POST',
+        body: JSON.stringify({
+          clientId: clientIdNoConfirmation,
+          username: anotherUserEmail,
+          password: userPassword,
+          userAttributes: {
+            role: 'SuperUserNoConfirmation',
+          },
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
     })
 
     after(async () => {
       await deleteUser(userEmail)
     })
 
-    it('can sign in their account and get a valid token', async () => {
+    it('can sign in their account when skipConfirmation is false and user is manually confirmed. User will get a valid token.', async () => {
+      // Manually confirming user
+      await confirmUser(userEmail)
+
       const url = await signInURL()
       const clientId = await authClientID()
 
@@ -428,13 +451,93 @@ describe('With the auth API', () => {
       expect(message.accessToken).not.to.be.empty
     })
 
+    it('can sign in their account without manually confirming user when skipConfirmation is true. User will get a valid token.', async () => {
+      const url = await signInURL()
+      const clientId = await authClientID()
+
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          clientId: clientId,
+          username: userEmail,
+          password: userPassword,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      expect(response.status).to.equal(200)
+
+      const message = await response.json()
+      expect(message).not.to.be.empty
+      expect(message.accessToken).not.to.be.empty
+    })
+
+    context('with a wrong token', () => {
+      context('using a client without involving sockets (no subscriptions)', () => {
+        let client: ApolloClient<NormalizedCacheObject>
+
+        before(async () => {
+          client = await graphQLClient('ABC')
+        })
+
+        it('gets the expected error when submitting a command', async () => {
+          const mutationPromise = client.mutate({
+            variables: {
+              productSKU: random.word(),
+            },
+            mutation: gql`
+              mutation CreateProduct($productSKU: String) {
+                CreateProduct(input: { sku: $productSKU })
+              }
+            `,
+          })
+
+          await expect(mutationPromise).to.eventually.be.rejectedWith(/Invalid Access Token/)
+        })
+
+        it('gets the expected error when querying a read model', async () => {
+          const queryPromise = client.query({
+            variables: {
+              productId: mockProductId,
+            },
+            query: gql`
+              query ProductUpdatesReadModel($productId: ID!) {
+                ProductUpdatesReadModel(id: $productId) {
+                  id
+                }
+              }
+            `,
+          })
+
+          await expect(queryPromise).to.eventually.be.rejectedWith(/Invalid Access Token/)
+        })
+      })
+
+      it('when using a client with subscriptions, it gets the expected error on connect', async () => {
+        const connectionPromise = new Promise(async (resolve, reject) => {
+          await graphQLClientWithSubscriptions('ABC', (err) => {
+            if (err) {
+              reject(err)
+            } else {
+              resolve()
+            }
+          })
+        })
+        await expect(connectionPromise).to.eventually.be.rejectedWith(/Invalid Access Token/)
+      })
+    })
+
     context('with a signed-in user', () => {
       let userAuthInformation: UserAuthInformation
+      let authToken: string
       let client: DisconnectableApolloClient
 
       before(async () => {
         userAuthInformation = await getUserAuthInformation(userEmail, userPassword)
-        client = await graphQLClientWithSubscriptions(userAuthInformation.accessToken)
+        authToken = userAuthInformation.accessToken
+        client = await graphQLClientWithSubscriptions(() => authToken)
       })
 
       after(() => {
@@ -656,9 +759,9 @@ describe('With the auth API', () => {
 
         before(async () => {
           refreshedUserAuthInformation = await refreshUserAuthInformation(userAuthInformation.refreshToken)
-
-          // Update access token in client
-          client.updateToken(refreshedUserAuthInformation.accessToken)
+          // Update access token that's being used by the Apollo client
+          authToken = refreshedUserAuthInformation.accessToken
+          await client.reconnect()
         })
 
         it('should return a new access token', () => {
@@ -830,16 +933,16 @@ describe('With the auth API', () => {
     })
   })
 
-  // The UserWithPhone role is configured in the test project to allow sign ups
   context('someone with a user with phone number account', () => {
     let userPhoneNumber: string
+    let userPhoneNumberNoConfirmation: string
     let userPassword: string
 
     before(async () => {
       userPhoneNumber = phone.phoneNumber('+1##########')
       userPassword = createPassword()
 
-      // Create user
+      // Create user with confirmation required
       const url = await signUpURL()
       const clientId = await authClientID()
 
@@ -858,15 +961,36 @@ describe('With the auth API', () => {
         },
       })
 
-      // Confirm user
-      await confirmUser(userPhoneNumber)
+      // Create user with confirmation required
+      userPhoneNumberNoConfirmation = phone.phoneNumber('+1##########')
+
+      const urlNoConfirmation = await signUpURL()
+      const clientIdNoConfirmation = await authClientID()
+
+      await fetch(urlNoConfirmation, {
+        method: 'POST',
+        body: JSON.stringify({
+          clientId: clientIdNoConfirmation,
+          username: userPhoneNumberNoConfirmation,
+          password: userPassword,
+          userAttributes: {
+            role: 'SuperUserNoConfirmation',
+          },
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
     })
 
     after(async () => {
       await deleteUser(userPhoneNumber)
     })
 
-    it('can sign in their account and get a valid token', async () => {
+    it('can sign in their account when skipConfirmation is false and user is manually confirmed. User will get a valid token.', async () => {
+      // Manually confirming user
+      await confirmUser(userPhoneNumber)
+
       const url = await signInURL()
       const clientId = await authClientID()
 
@@ -875,6 +999,29 @@ describe('With the auth API', () => {
         body: JSON.stringify({
           clientId: clientId,
           username: userPhoneNumber,
+          password: userPassword,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      expect(response.status).to.equal(200)
+
+      const message = await response.json()
+      expect(message).not.to.be.empty
+      expect(message.accessToken).not.to.be.empty
+    })
+
+    it('can sign in their account without manually confirming user when skipConfirmation is true. User will get a valid token.', async () => {
+      const url = await signInURL()
+      const clientId = await authClientID()
+
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          clientId: clientId,
+          username: userPhoneNumberNoConfirmation,
           password: userPassword,
         }),
         headers: {
@@ -932,11 +1079,13 @@ describe('With the auth API', () => {
 
     context('with a signed-in admin user', () => {
       let adminUserAuthInformation: UserAuthInformation
+      let authToken: string
       let client: DisconnectableApolloClient
 
       before(async () => {
         adminUserAuthInformation = await getUserAuthInformation(adminEmail, adminPassword)
-        client = await graphQLClientWithSubscriptions(adminUserAuthInformation.accessToken)
+        authToken = adminUserAuthInformation.accessToken
+        client = await graphQLClientWithSubscriptions(() => authToken)
       })
 
       after(() => {
@@ -1029,9 +1178,9 @@ describe('With the auth API', () => {
 
         before(async () => {
           refreshedUserAuthInformation = await refreshUserAuthInformation(adminUserAuthInformation.refreshToken)
-
-          // Update access token in client
-          client.updateToken(refreshedUserAuthInformation.accessToken)
+          // Update access token that's being used by the Apollo client
+          authToken = refreshedUserAuthInformation.accessToken
+          await client.reconnect()
         })
 
         it('should return a new access token', () => {

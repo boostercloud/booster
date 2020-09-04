@@ -28,15 +28,7 @@ export class ApplicationStackBuilder {
     const eventsStack = new EventsStack(this.config, stack, apis).build()
     new StaticWebsiteStack(this.config, stack).build()
 
-    setupPermissions(
-      readModelTables,
-      graphQLStack.graphQLLambda,
-      graphQLStack.subscriptionDispatcherLambda,
-      graphQLStack.subscriptionsTable,
-      websocketAPI,
-      eventsStack.eventsStore,
-      eventsStack.eventsLambda
-    )
+    setupPermissions(graphQLStack, eventsStack, readModelTables, websocketAPI)
   }
 
   private buildRootRESTAPI(stack: Stack): RestApi {

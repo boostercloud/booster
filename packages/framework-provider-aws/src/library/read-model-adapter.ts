@@ -20,9 +20,10 @@ export async function fetchReadModel(
   readModelName: string,
   readModelID: UUID
 ): Promise<ReadModelInterface> {
-  const params = {
+  const params: DynamoDB.DocumentClient.GetItemInput = {
     TableName: config.resourceNames.forReadModel(readModelName),
     Key: { id: readModelID },
+    ConsistentRead: true,
   }
   const response = await db.get(params).promise()
   logger.debug(

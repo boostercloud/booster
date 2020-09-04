@@ -11,8 +11,7 @@ import {
 import * as validator from 'validator'
 
 export class BoosterAuth {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public static checkSignUp(rawMessage: any, config: BoosterConfig, logger: Logger): any {
+  public static checkSignUp(rawMessage: unknown, config: BoosterConfig, logger: Logger): unknown {
     const userEnvelope = config.provider.auth.rawToEnvelope(rawMessage)
     logger.info('User envelope: ', userEnvelope)
 
@@ -46,7 +45,7 @@ export class BoosterAuth {
       }
     }
 
-    return rawMessage
+    return config.provider.auth.handleSignUpResult(config, rawMessage, userEnvelope)
   }
 
   public static isUserAuthorized(authorizedRoles: RoleAccess['authorize'], user?: UserEnvelope): boolean {

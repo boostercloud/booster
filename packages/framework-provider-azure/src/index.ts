@@ -12,15 +12,11 @@ import { CosmosClient } from '@azure/cosmos'
 import { environmentVarNames } from './constants'
 import { fetchReadModel, storeReadModel } from './library/read-model-adapter'
 import { searchReadModel } from './library/searcher-adapter'
-import { notifySubscription } from './library/subscription-adapter'
 
-let cosmosClient: CosmosClient | undefined
-if (process.env[environmentVarNames.cosmosDbConnectionString]) {
-  // @ts-ignore
-  cosmosClient = new CosmosClient(process.env[environmentVarNames.cosmosDbConnectionString])
-} else {
-  cosmosClient = undefined
+if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefined') {
+  throw new Error('No Cosmos DB connection string has been found')
 }
+const cosmosClient = new CosmosClient(process.env[environmentVarNames.cosmosDbConnectionString] as string)
 
 export const Provider: ProviderLibrary = {
   // ProviderEventsLibrary
@@ -37,7 +33,6 @@ export const Provider: ProviderLibrary = {
     subscribe: undefined as any,
     rawToEnvelopes: undefined as any,
     fetchSubscriptions: undefined as any,
-    notifySubscription,
     store: storeReadModel.bind(null, cosmosClient),
     deleteSubscription: undefined as any,
     deleteAllSubscriptions: undefined as any,
@@ -50,15 +45,25 @@ export const Provider: ProviderLibrary = {
   // ProviderAuthLibrary
   auth: {
     rawToEnvelope: undefined as any,
+    fromAuthToken: undefined as any,
+    handleSignUpResult: (() => {}) as any,
   },
   // ProviderAPIHandling
   api: {
     requestSucceeded,
     requestFailed,
   },
+  connections: {
+    storeData: notImplemented as any,
+    fetchData: notImplemented as any,
+    deleteData: notImplemented as any,
+    sendMessage: notImplemented as any,
+  },
   // ProviderInfrastructureGetter
   infrastructure: () =>
     require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
 }
+
+function notImplemented(): void {}
 
 export * from './constants'

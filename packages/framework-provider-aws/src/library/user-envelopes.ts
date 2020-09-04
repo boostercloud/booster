@@ -1,6 +1,5 @@
 import { AttributeListType, AttributeMappingType } from 'aws-sdk/clients/cognitoidentityserviceprovider'
 import { UserEnvelope } from '@boostercloud/framework-types'
-import { CognitoIdentityServiceProvider } from 'aws-sdk'
 
 export class UserEnvelopeBuilder {
   public static fromAttributeMap(attributes: AttributeMappingType): UserEnvelope {
@@ -28,22 +27,4 @@ export class UserEnvelopeBuilder {
     })
     return attributeMap
   }
-}
-
-type CouldHaveHeaders = { headers: { [name: string]: string } | null }
-export async function fetchUserFromRequest(
-  userPool: CognitoIdentityServiceProvider,
-  request: CouldHaveHeaders,
-  graphQLValueAuthorization?: string,
-): Promise<UserEnvelope | undefined> {
-  const accessToken = getTokenFromRequest(request) ?? graphQLValueAuthorization
-  if (!accessToken) {
-    return undefined
-  }
-  const currentUserData = await userPool.getUser({ AccessToken: accessToken }).promise()
-  return UserEnvelopeBuilder.fromAttributeList(currentUserData.UserAttributes)
-}
-
-function getTokenFromRequest(request: CouldHaveHeaders): string | undefined {
-  return request.headers?.['Authorization']?.replace('Bearer ', '') // Remove the "Bearer" prefix
 }

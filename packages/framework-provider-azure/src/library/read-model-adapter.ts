@@ -2,7 +2,7 @@ import { CosmosClient } from '@azure/cosmos'
 import { BoosterConfig, Logger, ReadModelInterface, UUID } from '@boostercloud/framework-types'
 
 export async function fetchReadModel(
-  db: CosmosClient | any,
+  db: CosmosClient,
   config: BoosterConfig,
   logger: Logger,
   readModelName: string,
@@ -11,7 +11,7 @@ export async function fetchReadModel(
   const { resource } = await db
     .database(config.resourceNames.applicationStack)
     .container(config.resourceNames.forReadModel(readModelName))
-    .item(readModelID, readModelID)
+    .item(readModelID as string, readModelID)
     .read()
 
   logger.debug(
@@ -22,7 +22,7 @@ export async function fetchReadModel(
 }
 
 export async function storeReadModel(
-  db: CosmosClient | any,
+  db: CosmosClient,
   config: BoosterConfig,
   logger: Logger,
   readModelName: string,

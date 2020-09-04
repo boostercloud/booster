@@ -100,6 +100,10 @@ Bear in mind that if you have added a new section, or changed an existing one yo
 ```sh
 yarn update-tocs
 ```
+### Create your very first GitHub issue
+
+[Click here](https://github.com/boostercloud/booster/issues/new) to start making contributions to Booster.
+
 
 ## Your First Code Contribution
 

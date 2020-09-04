@@ -28,16 +28,16 @@ export default class EventHandler extends Oclif.Command {
   public static args = [{ name: 'eventHandlerName' }]
 
   public async run(): Promise<void> {
-    return this.runWithErrors().catch(console.error)
-  }
-
-  private async runWithErrors(): Promise<void> {
     const { args, flags } = this.parse(EventHandler)
-    const event = flags.event
-    if (!args.eventHandlerName)
-      return Promise.reject("You haven't provided an event handler name, but it is required, run with --help for usage")
-    if (!event) return Promise.reject("You haven't provided an event, but it is required, run with --help for usage")
-    return run(args.eventHandlerName, event)
+    try {
+      const event = flags.event
+      if (!args.eventHandlerName)
+        throw "You haven't provided an event handler name, but it is required, run with --help for usage"
+      if (!event) throw "You haven't provided an event, but it is required, run with --help for usage"
+      return run(args.eventHandlerName, event)
+    } catch (error) {
+      console.error(error)
+    }
   }
 }
 

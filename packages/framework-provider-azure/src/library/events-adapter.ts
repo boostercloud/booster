@@ -13,7 +13,7 @@ export function rawEventsToEnvelopes(context: Context): Array<EventEnvelope> {
 }
 
 export async function readEntityEventsSince(
-  cosmosDb: CosmosClient | any,
+  cosmosDb: CosmosClient,
   config: BoosterConfig,
   logger: Logger,
   entityTypeName: string,
@@ -22,7 +22,9 @@ export async function readEntityEventsSince(
 ): Promise<Array<EventEnvelope>> {
   const fromTime = since ? since : originOfTime
   const querySpec: SqlQuerySpec = {
-    query: `SELECT * FROM c WHERE c["${eventsStoreAttributes.partitionKey}"] = @partitionKey AND c["${eventsStoreAttributes.sortKey}"] > @fromTime ORDER BY c["${eventsStoreAttributes.sortKey}"] DESC`,
+    query:
+      `SELECT * FROM c WHERE c["${eventsStoreAttributes.partitionKey}"] = @partitionKey ` +
+      `AND c["${eventsStoreAttributes.sortKey}"] > @fromTime ORDER BY c["${eventsStoreAttributes.sortKey}"] DESC`,
     parameters: [
       {
         name: '@partitionKey',
@@ -43,7 +45,7 @@ export async function readEntityEventsSince(
 }
 
 export async function readEntityLatestSnapshot(
-  cosmosDb: CosmosClient | any,
+  cosmosDb: CosmosClient,
   config: BoosterConfig,
   logger: Logger,
   entityTypeName: string,
@@ -53,7 +55,9 @@ export async function readEntityLatestSnapshot(
     .database(config.resourceNames.applicationStack)
     .container(config.resourceNames.eventsStore)
     .items.query({
-      query: `SELECT * FROM c WHERE c["${eventsStoreAttributes.partitionKey}"] = @partitionKey ORDER BY c["${eventsStoreAttributes.sortKey}"] DESC OFFSET 0 LIMIT 1`,
+      query:
+        `SELECT * FROM c WHERE c["${eventsStoreAttributes.partitionKey}"] = @partitionKey ` +
+        `ORDER BY c["${eventsStoreAttributes.sortKey}"] DESC OFFSET 0 LIMIT 1`,
       parameters: [
         {
           name: '@partitionKey',
@@ -79,7 +83,7 @@ export async function readEntityLatestSnapshot(
 }
 
 export async function storeEvents(
-  cosmosDb: CosmosClient | any,
+  cosmosDb: CosmosClient,
   eventEnvelopes: Array<EventEnvelope>,
   config: BoosterConfig,
   logger: Logger

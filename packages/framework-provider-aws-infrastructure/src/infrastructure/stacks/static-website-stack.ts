@@ -1,34 +1,31 @@
-import {CfnOutput, RemovalPolicy, Stack} from '@aws-cdk/core'
-import {Bucket} from '@aws-cdk/aws-s3'
-import {BucketDeployment, Source} from '@aws-cdk/aws-s3-deployment'
+import { CfnOutput, RemovalPolicy, Stack } from '@aws-cdk/core'
+import { Bucket } from '@aws-cdk/aws-s3'
+import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment'
 import {
   CloudFrontWebDistribution,
   OriginAccessIdentity,
   ViewerCertificate,
   ViewerProtocolPolicy,
 } from '@aws-cdk/aws-cloudfront'
-import {BoosterConfig} from '@boostercloud/framework-types'
-import {existsSync} from "fs";
+import { BoosterConfig } from '@boostercloud/framework-types'
+import { existsSync } from 'fs'
 
 const publicPath = './public'
 const indexHTML = 'index.html'
 
 export default class StaticWebsiteStack {
-  public constructor(
-    private readonly config: BoosterConfig,
-    private readonly stack: Stack
-  ) {}
+  public constructor(private readonly config: BoosterConfig, private readonly stack: Stack) {}
 
   public build(): void {
     if (existsSync(publicPath)) {
       const staticWebsiteOIA = new OriginAccessIdentity(this.stack, 'staticWebsiteOIA', {
-        comment: "Allows static site to be reached only via CloudFront"
+        comment: 'Allows static site to be reached only via CloudFront',
       })
       const staticSiteBucket = new Bucket(this.stack, 'staticWebsiteBucket', {
         websiteIndexDocument: indexHTML,
         websiteErrorDocument: indexHTML,
         bucketName: this.config.resourceNames.staticWebsite,
-        removalPolicy: RemovalPolicy.DESTROY
+        removalPolicy: RemovalPolicy.DESTROY,
       })
 
       staticSiteBucket.grantRead(staticWebsiteOIA)
@@ -41,7 +38,7 @@ export default class StaticWebsiteStack {
           {
             s3OriginSource: {
               s3BucketSource: staticSiteBucket,
-              originAccessIdentity: staticWebsiteOIA
+              originAccessIdentity: staticWebsiteOIA,
             },
             behaviors: [{ isDefaultBehavior: true }],
           },
@@ -51,7 +48,7 @@ export default class StaticWebsiteStack {
       new BucketDeployment(this.stack, 'staticWebsiteDeployment', {
         sources: [Source.asset(publicPath)],
         destinationBucket: staticSiteBucket,
-        distribution: cloudFrontDistribution
+        distribution: cloudFrontDistribution,
       })
 
       new CfnOutput(this.stack, 'staticWebsiteURL', {

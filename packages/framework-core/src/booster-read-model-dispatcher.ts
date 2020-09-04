@@ -13,9 +13,6 @@ import {
 import { BoosterAuth } from './booster-auth'
 import { Booster } from './booster'
 
-// TODO: Think if this should be configurable
-const subscriptionDurationSeconds = 24 * 60 * 60 // 24 hours
-
 export class BoosterReadModelDispatcher {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
 
@@ -28,7 +25,7 @@ export class BoosterReadModelDispatcher {
     connectionID: string,
     readModelRequest: ReadModelRequestEnvelope,
     operation: GraphQLOperation
-  ): Promise<any> {
+  ): Promise<unknown> {
     this.validateRequest(readModelRequest)
     return this.processSubscription(connectionID, readModelRequest, operation)
   }
@@ -83,7 +80,7 @@ export class BoosterReadModelDispatcher {
     const nowEpoch = Math.floor(new Date().getTime() / 1000)
     const subscription: SubscriptionEnvelope = {
       ...readModelRequest,
-      expirationTime: nowEpoch + subscriptionDurationSeconds,
+      expirationTime: nowEpoch + this.config.subscriptions.maxDurationInSeconds,
       connectionID,
       operation,
     }
