@@ -1698,8 +1698,7 @@ Knowing this, you can infer the relationship between those operations and your B
 - You _subscribe_ to a **read model** using a **subscription** 
 
 #### How to send GraphQL request
-GraphQL uses two existing protocols _HTTP_ and _WebSocket_. The reason for the WebSocket protocol is that, in order for subscriptions to work, there must be a way for the server to send data
-to clients when there is a change in a subscription. HTTP doesn't allow that, as it is always the client the one who initiates the request.
+GraphQL uses two existing protocols _HTTP_ and _WebSocket_. HTTP is for regular [Queries and Mutations](https://graphql.org/learn/queries/). On the other hand, the WebSocket protocol is what makes [Subscriptions](https://graphql.org/blog/subscriptions-in-graphql-and-relay/) possible. This protocol allows the server to send data to clients when there is a change on the server's side.
  
 This is the reason why Booster provisions two main URLs: the **httpURL** and the **websocketURL** (they are listed in the [application outputs](#application-outputs)). You use the "httpURL" to send GraphQL queries and mutations, and the "websocketURL" to send subscriptions.
 
@@ -1773,7 +1772,7 @@ And this would be the response:
 }
 ```
 
-> **Note**: Remember that, in case you want to send a command that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
+> **Note**: Remember to set the proper **access token** for secured commands, check ["Authorizing operations"](#authorizing-operations).
 
 #### Reading read models
 
@@ -1837,7 +1836,7 @@ And we would get the following as response:
 }
 ```
 
->**Note**: Remember that, in case you want to query a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
+>**Note**: Remember to set the proper **access token** for secured read models, check ["Authorizing operations"](#authorizing-operations).
 
 #### Subscribing to read models
 
