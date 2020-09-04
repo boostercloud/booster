@@ -34,6 +34,7 @@ describe('EventStore', () => {
       store: () => {},
       latestEntitySnapshot: () => {},
       forEntitySince: () => {},
+      destroy: () => {},
     },
   } as any) as ProviderLibrary
   config.entities['ImportantConcept'] = { class: ImportantConcept }
@@ -418,6 +419,20 @@ describe('EventStore', () => {
 
           expect(entity).to.be.null
         })
+      })
+    })
+
+    describe('destroyEntity', () => {
+      it('destroy an entity deleting all events and snapshots', async () => {
+        replace(config.provider.events, 'destroy', fake())
+
+        const eventStore = new EventStore(config, logger) as any
+        const entityTypeName = 'ImportantConcept'
+        const entityID = 42
+
+        await eventStore.destroyEntity(entityTypeName, entityID)
+
+        expect(config.provider.events.destroy).to.have.been.calledOnceWith(config, logger, entityTypeName, entityID)
       })
     })
   })

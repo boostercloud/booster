@@ -6,6 +6,7 @@ import { replace, fake, restore, match, replaceGetter } from 'sinon'
 import { Importer } from '../src/importer'
 import * as EntitySnapshotFetcher from '../src/entity-snapshot-fetcher'
 import { UUID } from '@boostercloud/framework-types'
+import { EventStore } from '../src/services/event-store'
 
 describe('the `Booster` class', () => {
   afterEach(() => {
@@ -122,5 +123,19 @@ describe('the public static function `boosterServeGraphQL`', () => {
     await boosterServeGraphQL(message)
 
     expect(Booster.serveGraphQL).to.have.been.calledOnceWith(message)
+  })
+})
+
+describe('the public static `destroyEntity` method', () => {
+  it('calls the event store `destroyEntity` method passing the `entityName` and `entityID` parameters', async () => {
+    replace(EventStore.prototype, 'destroyEntity', fake())
+    class SomeEntity {
+      public constructor(readonly id: UUID) {}
+    }
+
+    const entityID = UUID.generate()
+    await Booster.destroyEntity(SomeEntity, entityID)
+
+    expect(EventStore.prototype.destroyEntity).to.have.been.calledOnceWith(SomeEntity.name, entityID)
   })
 })

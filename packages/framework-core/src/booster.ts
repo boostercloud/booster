@@ -15,7 +15,7 @@ import { BoosterAuth } from './booster-auth'
 import { fetchEntitySnapshot } from './entity-snapshot-fetcher'
 import { BoosterGraphQLDispatcher } from './booster-graphql-dispatcher'
 import { BoosterSubscribersNotifier } from './booster-subscribers-notifier'
-import { destroyEntity } from './entity-destroyer'
+import { EventStore } from './services/event-store'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -27,6 +27,7 @@ import { destroyEntity } from './entity-destroyer'
 export class Booster {
   private static logger: Logger
   private static readonly config = new BoosterConfig(checkAndGetCurrentEnv())
+  private static eventStore: EventStore
   /**
    * Avoid creating instances of this class
    */
@@ -56,6 +57,7 @@ export class Booster {
     this.logger = buildLogger(this.config.logLevel)
     Importer.importUserProjectFiles()
     this.config.validate()
+    this.eventStore = new EventStore(this.config, this.logger)
   }
 
   /**
@@ -114,7 +116,7 @@ export class Booster {
     entityClass: Class<TEntity>,
     entityID: UUID
   ): Promise<void> {
-    return destroyEntity(this.config, this.logger, entityClass, entityID)
+    return this.eventStore.destroyEntity(entityClass.name, entityID)
   }
 }
 
