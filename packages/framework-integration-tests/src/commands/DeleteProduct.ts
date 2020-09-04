@@ -9,7 +9,7 @@ import { Admin } from '../roles'
 export class DeleteProduct {
   public constructor(readonly productId: UUID) {}
 
-  public async handle(register: Register): Promise<void> {
-    register.events(new ProductDeleted(this.productId))
+  public static async handle(command: DeleteProduct, register: Register): Promise<void> {
+    register.events(new ProductDeleted(command.productId))
   }
 }

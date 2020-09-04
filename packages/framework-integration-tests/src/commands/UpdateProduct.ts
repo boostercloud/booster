@@ -22,17 +22,17 @@ export class UpdateProduct {
     readonly reason: ProductUpdateReason = ProductUpdateReason.CatalogChange
   ) {}
 
-  public async handle(register: Register): Promise<void> {
+  public static async handle(command: UpdateProduct, register: Register): Promise<void> {
     register.events(
       new ProductUpdated(
-        this.id,
-        this.sku,
-        this.name,
-        `${this.shortDescription}\n${this.longDescription}`,
-        this.price,
-        this.pictures,
-        this.deleted,
-        this.reason
+        command.id,
+        command.sku,
+        command.name,
+        `${command.shortDescription}\n${command.longDescription}`,
+        command.price,
+        command.pictures,
+        command.deleted,
+        command.reason
       )
     )
   }

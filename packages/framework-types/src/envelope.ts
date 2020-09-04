@@ -1,4 +1,4 @@
-import { CommandInterface, EntityInterface, EventInterface, ReadModelInterface, UUID } from './concepts'
+import { EntityInterface, EventInterface, ReadModelInterface, UUID } from './concepts'
 import { GraphQLClientMessage } from './graphql-websocket-messages'
 
 /**
@@ -14,7 +14,7 @@ export interface Envelope {
 export interface CommandEnvelope extends Envelope {
   typeName: string
   version: number
-  value: CommandInterface
+  value: unknown
 }
 
 export interface EventEnvelope extends Envelope {

@@ -416,7 +416,7 @@ export class CreatePost {
     readonly author: string
   ) {}
 
-  public handle(register: Register): void {
+  public static async handle(command: CreatePost, register: Register): Promise<void> {
     register.events(/* YOUR EVENT HERE */)
   }
 }
@@ -471,8 +471,8 @@ the command's `handle` method to look like this:
 
 ```typescript
 // src/commands/CreatePost.ts::handle
-public handle(register: Register): void {
-  register.events(new PostCreated(this.postId, this.title, this.content, this.author))
+public static async handle(command: CreatePost, register: Register): Promise<void> {
+  register.events(new PostCreated(command.postId, command.title, command.content, command.author))
 }
 ```
 
@@ -789,7 +789,7 @@ export class CommandName {
     /* as many fields as needed */
   ) {}
 
-  public async handle(register: Register): Promise<void> {
+  public static async handle(command: CommandName, register: Register): Promise<void> {
     // Validate inputs
     // Run domain logic
     // register.events([event1,...])
@@ -862,7 +862,7 @@ export class CreateProduct {
     readonly price: number
   ) {}
 
-  public async handle(register: Register): Promise<void> {
+  public static async handle(command: CreateProduct, register: Register): Promise<void> {
     const priceLimit = 10
     if (this.price >= priceLimit) {
       throw new Error(`price must be below ${priceLimit}, and it was ${this.price}`)
@@ -920,9 +920,9 @@ export class MoveStock {
     readonly quantity: number
   ) {}
 
-  public async handle(register: Register): Promise<void> {
-    if (!this.enoughStock(this.productID, this.origin, this.quantity)) {
-      register.events(new ErrorEvent(`There is not enough stock for ${this.productID} at ${this.origin}`))
+  public static async handle(command: MoveStock, register: Register): Promise<void> {
+    if (!command.enoughStock(command.productID, command.origin, command.quantity)) {
+      register.events(new ErrorEvent(`There is not enough stock for ${command.productID} at ${command.origin}`))
     } else {
       register.events(new StockMoved(/*...*/))
     }
@@ -952,10 +952,10 @@ export class MoveStock {
     readonly quantity: number
   ) {}
 
-  public async handle(register: Register): Promise<void> {
-    const stock = await Booster.fetchEntitySnapshot(Stock, this.productID)
-    if (!this.enoughStock(this.origin, this.quantity, stock)) {
-      register.events(new ErrorEvent(`There is not enough stock for ${this.productID} at ${this.origin}`))
+  public static async handle(command: MoveStock, register: Register): Promise<void> {
+    const stock = await Booster.fetchEntitySnapshot(Stock, command.productID)
+    if (!command.enoughStock(command.origin, command.quantity, stock)) {
+      register.events(new ErrorEvent(`There is not enough stock for ${command.productID} at ${command.origin}`))
     }
   }
 
@@ -991,7 +991,7 @@ export class CreateProduct {
     readonly price: number
   ) {}
 
-  public async handle(register: Register): Promise<void> {
+  public static async handle(command: CreateProduct, register: Register): Promise<void> {
     register.events(/* YOUR EVENT HERE */)
   }
 }
@@ -1111,9 +1111,9 @@ export class MoveStock {
     readonly quantity: number
   ) {}
 
-  public async handle(register: Register): Promise<void> {
-    if (!this.enoughStock(this.origin, this.quantity, this.productID)) {
-      register.events(new ErrorEvent(`There is not enough stock for ${this.productID} at ${this.origin}`))
+  public static async handle(command: MoveStock, register: Register): Promise<void> {
+    if (!command.enoughStock(command.origin, command.quantity, command.productID)) {
+      register.events(new ErrorEvent(`There is not enough stock for ${command.productID} at ${command.origin}`))
     }
   }
 }

@@ -56,7 +56,7 @@ export class Migrator {
     this.logger.debug('Envelope before migration:\n', oldConceptEnvelope)
 
     const migrations = this.config.migrations[oldConceptEnvelope.typeName]
-    let migratedConceptValue = oldConceptEnvelope.value
+    let migratedConceptValue = oldConceptEnvelope.value as MigrableValue
     for (let toVersion = oldVersion + 1; toVersion <= currentVersion; toVersion++) {
       migratedConceptValue = this.applyMigration(migratedConceptValue, migrations.get(toVersion))
     }
