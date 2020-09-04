@@ -3,7 +3,7 @@ import { {{commaSeparatedComponents}} } from '{{{packagePath}}}'
 {{/imports}}
 
 @Command({
-  authorize: // Specify authorized roles here. Use 'all' to authorize anyone 
+  authorize: // Specify authorized roles here. Use 'all' to authorize anyone
 })
 export class {{{ name }}} {
   public constructor(
