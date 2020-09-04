@@ -1454,7 +1454,7 @@ Once a user has an access token, it can be included in any request made to your 
 _Bearer_ token. It will be used to get the user information and
 authorize them to access protected resources.
 
-To know how to include the access token in your requests, check the section [Authorizing operations](#authorizing-operations)
+To learn how to include the access token in your requests, check the section [Authorizing operations](#authorizing-operations)
 
 #### Authentication API
 The authentication API consists of several endpoints that allow you to manage user registrations, sessions, tokens and more.
@@ -1680,8 +1680,8 @@ All this is done through [GraphQL](https://graphql.org/), a query language for A
 
 If you are not familiar with GraphQL, then, first of all, don't worry! 
 _Using_ a GraphQL API is simple and straightforward.
-_Implementing it_ on the server side is the hardest part, as you need to define your schema, operations, resolvers, etc.
-Luckily, you can forget about that because it is already done by Booster.
+_Implementing it_ on the server side is usually the hard part, as you need to define your schema, operations, resolvers, etc.
+Luckily, you can forget about that because Booster does all the work for you!
  
 The GraphQL API is fully **auto-generated** based on your _commands_ and _read models_.
 
