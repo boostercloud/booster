@@ -1533,6 +1533,8 @@ Once a user has an access token, it can be included in any request made to your 
 _Bearer_ token. It will be used to get the user information and
 authorize them to access protected resources.
 
+To learn how to include the access token in your requests, check the section [Authorizing operations](#authorizing-operations)
+
 #### Authentication API
 The authentication API consists of several endpoints that allow you to manage user registrations, sessions, tokens and more.
 
@@ -1753,8 +1755,8 @@ All this is done through [GraphQL](https://graphql.org/), a query language for A
 
 If you are not familiar with GraphQL, then, first of all, don't worry! 
 _Using_ a GraphQL API is simple and straightforward.
-_Implementing it_ on the server side is the hardest part, as you need to define your schema, operation, resolvers, etc.
-Luckily, you can forget about that because it is already done by Booster.
+_Implementing it_ on the server side is usually the hard part, as you need to define your schema, operations, resolvers, etc.
+Luckily, you can forget about that because Booster does all the work for you!
 
 The GraphQL API is fully **auto-generated** based on your _commands_ and _read models_.
 
@@ -1785,14 +1787,16 @@ to send subscriptions.
 
 Therefore:
 
-- To send a GraphQL mutation/query, you send an HTTP request to _"<httpURL>/graphql"_, with _method POST_, and a _JSON-encoded body_ with the mutation/query deatils.
-- To send a GraphQL subscription, you first connect to the _websocketURL_, and then send a _JSON-encoded message_ with the subscription details.
+- To send a GraphQL mutation/query, you send an HTTP request to _"&lt;httpURL&gt;/graphql"_, with _method POST_, and a _JSON-encoded body_ with the mutation/query details.
+- To send a GraphQL subscription, you first connect to the _"&lt;websocketURL&gt;"_, and then send a _JSON-encoded message_ with the subscription details, _following [the "GraphQL over WebSocket" protocol](#the-graphql-over-websocket-protocol)_.
 
-Check the following section for details and examples.
+> Note: you can also **send queries and mutations through the WebSocket** if that's convenient to you. See ["The GraphQL over WebSocket protocol"](#the-graphql-over-websocket-protocol) to know more.
 
-You normally don't need to deal with this low-level details. There are plenty of GraphQL clients for sending request manually
-(like [Postwoman](https://postwoman.io/)) or libraries you can use in the client-side of your application
-(like [Apollo](https://www.apollographql.com/))
+While it is OK to know how to manually send GraphQL request, you normally don't need to deal with this low-level details, especially with the WebSocket stuff.
+
+To have a great developer experience, we **strongly recommend** to use a GraphQL client for your platform of choice. Here are some great ones:
+- **[Postwoman](https://postwoman.io/)**: Ideal for testing sending manual requests, getting the schema, etc.
+- **Apollo clients**: These are the "go-to" SDKs to interact with a GraphQL API from your clients. It is very likely that there is a version for your client programming language. Check the ["Using Apollo Client"](#using-apollo-client) section to know more about this.
 
 #### Sending commands
 
@@ -1809,17 +1813,12 @@ mutation {
 
 Where:
 - _**command_name**_ is the name of the class corresponding to the command you want to send
-- _**field_list**_ is list of pairs in the form of `fieldName: fieldValue` containing the data of your command. The field names
+- _**field_list**_ is a list of pairs in the form of `fieldName: fieldValue` containing the data of your command. The field names
 correspond to the names of the properties you defined in the command class. 
 
-Check the examples where we send a command named "ChangeCart" that will add/remove an item to/from a shopping cart. The 
+In the following example we send a command named "ChangeCart" that will add/remove an item to/from a shopping cart. The 
 command requires the ID of the cart (`cartId`), the item identifier (`sku`) and the quantity of units we are adding/removing
 (`quantity`).
-
-Remember that in case you want to send a command that is restricted to a specific set of roles, you must send the **access token**
-in the **"Authorization"** header: *"Authorization: Bearer &lt;token retrieved upon sign-in&gt;"*
-
-> Using a GraphQL-specific client:
 
 ```
 URL: "<httpURL>/graphql"
@@ -1834,7 +1833,7 @@ mutation {
 }
 ```
 
-> Equivalent bare HTTP request:
+In case we are not using any GraphQL client, this would be the equivalent bare HTTP request:
 
 ```
 URL: "<httpURL>/graphql"
@@ -1846,7 +1845,8 @@ METHOD: "POST"
 }
 ```
 
-> Response:
+And this would be the response:
+
 ```json
 {
   "data": {
@@ -1854,6 +1854,8 @@ METHOD: "POST"
   }
 }
 ```
+
+> **Note**: Remember to set the proper **access token** for secured commands, check ["Authorizing operations"](#authorizing-operations).
 
 #### Reading read models
 
@@ -1873,13 +1875,7 @@ Where:
 - _&lt;id of the read model&gt;_ is the ID of the specific read model instance you are interested in.
 - _selection_field_list_ is a list with the names of the specific read model fields you want to get as response.
 
-Check the examples where we send a query to read a read model named "CartReadModel" whose ID is "demo" and we get back as
-response its `id` and the list of cart `items`
-
-Remember that in case you want to query a read model that is restricted to a specific set of roles, you must send the **access token**
-in the **"Authorization"** header: *"Authorization: Bearer &lt;token retrieved upon sign-in&gt;"*
-
-> Using a GraphQL-specific client:
+In the following example we send a query to read a read model named `CartReadModel` whose ID is `demo`. We get back its `id` and the list of cart `items` as response.
 
 ```
 URL: "<httpURL>/graphql"
@@ -1893,7 +1889,7 @@ query {
 }
 ```
 
-> Equivalent bare HTTP request:
+In case we are not using any GraphQL client, this would be the equivalent bare HTTP request:
 
 ```
 URL: "<httpURL>/graphql"
@@ -1905,7 +1901,7 @@ METHOD: "POST"
 }
 ```
 
-> Response
+And we would get the following as response:
 
 ```json
 {
@@ -1923,14 +1919,17 @@ METHOD: "POST"
 }
 ```
 
+>**Note**: Remember to set the proper **access token** for secured read models, check ["Authorizing operations"](#authorizing-operations).
+
 #### Subscribing to read models
 
-To subscribe to a specific read model, we need to use a "subscription" operation, and it must be _sent through the **websocketURL**_.
+To subscribe to a specific read model, we need to use a subscription operation, and it must be _sent through the **websocketURL**_ using the [_GraphQL over WebSocket_ protocol](#the-graphql-over-websocket-protocol).
 
+Doing this process manually is a bit cumbersome. _You will probably never need to do this_, as GraphQL clients like [Apollo](#using-apollo-client) abstract this process away. However, we will explain how to do it for learning purposes. 
 
-Before sending any subscription, you need to _connect_ to the web socket to open the two-way communication channel. This connection
+Before sending any subscription, you need to _connect_ to the WebSocket to open the two-way communication channel. This connection
 is done differently depending on the client/library you use to manage web sockets. In this section, we will show examples 
-using the ["wscat"](https://github.com/websockets/wscat) command line program. 
+using the [`wscat`](https://github.com/websockets/wscat) command line program. You can also use the online tool [Postwoman](https://postwoman.io/)
 
 Once you have connected successfully, you can use this channel to:
 - Send the subscription messages
@@ -1951,36 +1950,38 @@ Where:
 - _&lt;id of the read model&gt;_ is the ID of the specific read model instance you are interested in.
 - _selection_field_list_ is a list with the names of the specific read model fields you want to get when data is sent back to you.
 
-In the following examples we use ["wscat"](https://github.com/websockets/wscat) to connect to the web socket and send a subscription
-to the read model `CartReadModel` with ID "demo"
+In the following examples we use [`wscat`](https://github.com/websockets/wscat) to connect to the web socket. After that, we send the required messages to conform the [_GraphQL over WebSocket_ protocol](#the-graphql-over-websocket-protocol), including the subscription operation
+to the read model `CartReadModel` with ID `demo`.
 
-Remember that in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send, 
-in the *connection operation*, the **access token** in the **"Authorization"** header: 
-*"Authorization: Bearer &lt;token retrieved upon sign-in&gt;"*
-
-> Connecting to the web socket:
-
+1. Connect to the web socket:
 ```sh
  wscat -c <websocketURL> -s graphql-ws
 ```
+> **Note:** You should specify the `graphql-ws` subprotocol when connecting with your client via the `Sec-WebSocket-Protocol` header (in this case, `wscat` does that when you use the `-s` option).
 
-**Note:** You should specify the `graphql-ws` subprotocol to your clients via the `Sec-WebSocket-Protocol` header.
-
-> Sending a message with the subscription
-
+Now we can start sending messages just by writing them and hitting the <kbd>Enter</kbd> key.
+2. Initiate the protocol connection :
 ```json
-{"query": "subscription { CartReadModel(id:\"demo\") { id items } }" }
+{ "type": "connection_init" }
+```
+In case you want to authorize the connection, you need to send the authorization token in the `payload.Authorization` field:
+ ```json
+ { "type": "connection_init", "payload": { "Authorization": "<your token>" } }
+ ```
+3. Send a message with the subscription. We need to provide an ID for the operation. When the server sends us data back, it will include this same ID so that we know which subscription the received data belongs to (again, this is just for learning, [GraphQL clients](#using-apollo-client) manages this for you)
+```json
+{ "id": "1", "type": "start", "payload": { "query": "subscription { CartReadModel(id:\"demo\") { id items } }" } }
 ```
 
 After a successful subscription, you won't receive anything in return. Now, every time the read model you subscribed to
 is modified, a new incoming message will appear in the socket with the updated version of the read model. This message
 will have exactly the same format as if you were done a query with the same parameters.
 
-Following the previous example, we now send a command (using a "mutation" operation) that adds
+Following with the previous example, we now send a command (using a mutation operation) that adds
 a new item with sku "ABC_02" to the `CartReadModel`. After it has been added, we receive the updated version of the read model through the
 socket.
 
-> Send the Command
+1. Send the following command (this time using an HTTP request):
 
 ```
 URL: "<httpURL>/graphql"
@@ -1995,59 +1996,276 @@ mutation {
 }
 ```
 
-> The following message appears in the socket
-
+2. The following message (after formatting it) appears through the socket connection we had opened:
 ```json
 {
-  "data": {
-    "CartReadModel": {
-      "id": "demo",
-      "items": [
-        {
-          "sku": "ABC_01",
-          "quantity": 2
-        },
-        {
-          "sku": "ABC_02",
-          "quantity": 3
-        }
-      ]
+  "id": "1",
+  "type": "data",
+  "payload": {
+    "data": {
+      "CartReadModel": {
+        "id": "demo",
+        "items": [
+          {
+            "sku": "ABC_01",
+            "quantity": 2
+          },
+          {
+            "sku": "ABC_02",
+            "quantity": 3
+          }
+        ]
+      }
     }
   }
 }
 ```
 
-It is also possible to use a GraphQL client to subscribe to changes in the application. However, it might be necessary to include an access token, provided when the user signs-in, in the request if the operation requires authorization. This token should be added to the GraphQL client as an operation option through a middleware. An example can be seen below:
+>**Note**: Remember that, in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
 
+#### Using Apollo Client
+One of the best clients to connect to a GraphQL API is the [Apollo](https://www.apollographql.com/) client.
+There will probably be a version for your client technology of choice. These are the main ones:
+- [For Javascript/Typescript](https://www.apollographql.com/docs/react/) ([Github](https://github.com/apollographql/apollo-client))
+- [For iOS](https://www.apollographql.com/docs/ios/) ([Github)](https://github.com/apollographql/apollo-ios))
+- [For Java/Kotlin/Android](https://www.apollographql.com/docs/android/) ([Github](https://github.com/apollographql/apollo-android))
+
+We recommend referring to the documentation of those clients to know how to 
+use them. Here is an example of how to fully instantiate the Javascript client so that it works for queries, mutations and subscriptions:
 ```typescript
-client.use([
-  {
-    applyMiddleware(options: OperationOptions, next: Function): void {
-      options.Authorization = <access-token>
-      next()
-    },
-  },
-])
+import { split, HttpLink } from '@apollo/client';
+import { getMainDefinition } from '@apollo/client/utilities';
+import { WebSocketLink } from '@apollo/client/link/ws';
+import { ApolloClient, InMemoryCache } from '@apollo/client';
+import { SubscriptionClient } from 'subscriptions-transport-ws'
+
+// Helper function that checks if a GraphQL operation is a subscription or not
+function isSubscriptionOperation({ query }) {
+  const definition = getMainDefinition(query);
+  return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
+}
+
+// Create an HTTP link for sending queries and mutations
+const httpLink = new HttpLink({
+  uri: '<httpURL>'
+});
+
+// Create a SusbscriptionClient and a WebSocket link for sending subscriptions
+const subscriptionClient = new SubscriptionClient('<websocketURL>', {
+  reconnect: true
+})
+const wsLink = new WebSocketLink(subscriptionClient);
+
+// Combine both links so that depending on the operation, it uses one or another
+const splitLink = split(isSubscriptionOperation, wsLink, httpLink);
+
+
+// Finally, create the client using the link created above
+const client = new ApolloClient({
+  link: splitLink,
+  cache: new InMemoryCache()
+});
 ```
 
-Once the client is setup, a subscription to read model GraphQL request through a GraphQL client could be:
+Now, we can send queries, mutations and subscriptions using the `client` instance:
 ```typescript
-await client.subscribe({
-    variables: {
-      productId: <some-product-id>,
-    },
-    query: gql`
-      subscription ProductUpdatesReadModel($productId: ID!) {
-        ProductUpdatesReadModel(id: $productId) {
-          id
-          availability
-          lastUpdate
-          previousUpdate
-        }
+import gql from 'graphql-tag'
+
+// Query the CartReadModel
+const readModelData = await client.query({
+  variables: {
+    cartID: "demo",
+  },
+  query: gql`
+    query QueryCart($cartID: ID!){
+      CartReadModel(id: $cartID) {
+        id
+        items
       }
-    `,
+    }
+  `,
+})
+
+// Send a command (mutation)
+const commandResult = await client.mutate({
+  variables: {
+    cartID: "demo",
+    sku: "ABC_02",
+  },
+  mutation: gql`
+    mutation AddOneItemToCart($cartID: ID!, $sku: string!) {
+      ChangeCart(input: { cartId: $cartID, sku: $sku, quantity: 1 })
+    }
+  `,
+})
+
+// Subscribe to changes in the CartReadModel
+const subscriptionOperation = client.subscribe({
+  variables: {
+    cartID: "demo",
+  },
+  query: gql`
+    subscription SubscribeToCart($cartID: ID!) {
+      CartReadModel(id: $cartID) {
+        id
+        cartItems
+      }
+    }
+  `,
+})
+
+subscriptionOperation.subscribe({
+  next: (cartReadModel) => {
+    // This function is called everytime the CartReadModel with ID="demo" is changed
+    // Parameter "cartReadModel" contains the latest version of the cart
+  }
 })
 ```
+
+#### Authorizing operations
+
+When you have a command or read model whose access is authorized to users with a specific set of roles (see [Authentication and Authorization](#authentication-and-authorization)), you need to use an authorization token when 
+sending queries, mutations or subscriptions to that command or read model. See the [Authentication API](#authentication-api) and, more especifically, the [Sign in](#sign-in) section to know how to get a token.
+
+Once you have a token, the way to send it varies depending on the protocol you are using to send GraphQL operations:
+- For **HTTP**, you need to send the HTTP header `Authorization` with the token, making sure you prefix it with `Bearer ` (the kind of token Booster uses). For example:
+```http request
+Authorization: Bearer <your token>
+```
+- For **WebSocket**, you need to adhere to the [GraphQL over WebSocket protocol](#the-graphql-over-websocket-protocol) to send authorization data. The way to do that is by sending the token in the payload of the first message you send when initializing the connection (see [Subscribing to read models](#subscribing-to-read-models)). For example:
+```json
+ { "type": "connection_init", "payload": { "Authorization": "<your token>" } }
+```
+
+You normally won't be sending tokens in such a low-level way. GraphQL clients have easier ways to send these tokens. See [Sending tokens with Apollo client](#sending-tokens-with-apollo-clients) 
+
+##### Sending tokens with Apollo clients
+
+We recommend going to the specific documentation of the specific Apollo client you are using to know how to send tokens. However, the basics remains the same. Here is an example of how you would configure the Javascript/Typescript Apollo client to send the authorization token. The example is exactly the same as the one shown in the [Using Apollo clients](#using-apollo-client) section but with the changes needed to send the token. Notice that the only things that change are the `HttpLink` and the `WebSocketLink`:
+```typescript
+import { split, HttpLink } from '@apollo/client';
+import { getMainDefinition } from '@apollo/client/utilities';
+import { WebSocketLink } from '@apollo/client/link/ws';
+import { ApolloClient, InMemoryCache } from '@apollo/client';
+
+function isSubscriptionOperation({ query }) {
+  const definition = getMainDefinition(query);
+  return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
+}
+
+const httpLink = new HttpLink({
+  uri: '<httpURL>',
+});
+
+// CHANGED: We create an "authLink" that modifies the operation by adding the token to the headers
+const authLink = new ApolloLink((operation, forward) => {
+  operation.setContext({ 
+    headers: { 
+      Authorization: 'Bearer <your token>'
+    }
+  })
+  return forward(operation)
+})
+
+// <-- CHANGED: Concatenate the links so that the "httpLink" receives the operation with the headers set by the "authLink"
+const httpLinkWithAuth = authLink.concat(httpLink) 
+
+const subscriptionClient = new SubscriptionClient('<websocketURL>', {
+  reconnect: true,
+  // CHANGED: added a "connectionParam" property with a function that returns the `Authorizaiton` header containing our token
+  connectionParams: () => {
+    return {
+      Authorization: 'Bearer <your token>'
+    }
+  }
+})
+const wsLink = new WebSocketLink(subscriptionClient);
+
+const splitLink = split(isSubscriptionOperation, wsLink, httpLinkWithAuth); // Note that we now are using "httpLinkWithAuth"
+
+const client = new ApolloClient({
+  link: splitLink,
+  cache: new InMemoryCache()
+});
+```
+
+##### Refreshing tokens with Apollo clients
+
+Authorization tokens expire after a certain amount of time. When a token is expired, you will get an error and you will need to call the [refresh the token](#refresh-token) endpoint to get a new token. After you have done so, you need to use the new token in your GraphQL operations.
+
+There are several ways to do this. Here we show the simplest one for learning purposes. 
+
+First, we modify the example shown in the section [Sending tokens with apollo clients](#sending-tokens-with-apollo-clients) so that the token is stored in a global variable and the Apollo links get the token from it. That variable will be updated when the user signs-in and the token is refreshed:
+
+```typescript
+import { split, HttpLink } from '@apollo/client';
+import { getMainDefinition } from '@apollo/client/utilities';
+import { WebSocketLink } from '@apollo/client/link/ws';
+import { ApolloClient, InMemoryCache } from '@apollo/client';
+
+let authToken = undefined // <-- CHANGED: This variable will hold the token and will be updated everytime the token is refreshed
+
+function isSubscriptionOperation({ query }) {
+  const definition = getMainDefinition(query);
+  return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
+}
+
+const httpLink = new HttpLink({
+  uri: '<httpURL>',
+});
+
+const authLink = new ApolloLink((operation, forward) => {
+  if (authToken) {
+      operation.setContext({ 
+        headers: { 
+          Authorization: `Bearer ${authToken}` // <-- CHANGED: We use the "authToken" global variable
+        }
+      })
+  }
+  return forward(operation)
+})
+
+const httpLinkWithAuth = authLink.concat(httpLink) 
+
+const subscriptionClient = new SubscriptionClient('<websocketURL>', {
+  reconnect: true,
+  // CHANGED: added a "connectionParam" property with a function that returns the `Authorizaiton` header containing our token
+  connectionParams: () => {
+    if (authToken) {
+      return {
+        Authorization: `Bearer ${authToken}` // <-- CHANGED: We use the "authToken" global variable
+      }
+    }
+    return {}
+  }
+})
+const wsLink = new WebSocketLink(subscriptionClient);
+
+const splitLink = split(isSubscriptionOperation, wsLink, httpLinkWithAuth);
+
+const client = new ApolloClient({
+  link: splitLink,
+  cache: new InMemoryCache()
+});
+```
+
+Now, _when the user signs-in_ or _when the token is refreshed_, we need to do two things:
+1. Update the global variable `authToken` with the new token.
+2. Reconnect the socket used by the subscription client by doing `subscriptionClient.close(false)`
+
+You might be wondering why we need to do the second step. The reason is that, with operations sent through HTTP, the token goes along with every operation, in the headers. However, with operations sent through WebSockets, like subscriptions, the token is only sent when the socket connection is established. For this reason, **everytime we update the token we need to reconnect the `SubscriptionClient`** so that it sends again the token (the updated one in this case).
+
+#### The GraphQL over WebSocket protocol
+
+Sockets are channels for two-way communication that doesn't follow the request-response cycle, a characteristic feature of the HTTP protocol. One part can send many messages and the other part could receive all of them but only answer to some specific ones. What is more, messages could come in any order. For example, one part can send two messages and receive the response of the second message before the response of the first message.
+
+For these reasons, in order to have an effective non-trivial communication through sockets, a sub-protocol is needed. It would be in charge of making both parts understand each other, share authentication tokens, matching response to the corresponding requests, etc.
+
+The Booster WebSocket communication uses the "GraphQL over WebSocket" protocol as subprotocol. It is in charge of all the low level stuff needed to properly send subscription operations to read models and receive the corresponding data.
+
+You don't need to know anything about this to develop usin Booster, neither in the backend side nor in the frontend side (as all the Apollo GraphQL clients uses this protocol), but it is good to know it is there to guarantee a proper communication. In case you are really curious, you can read about the protocol [here](https://github.com/apollographql/subscriptions-transport-ws/blob/master/PROTOCOL.md) 
+
+> **Note**: The WebSocket communication in Booster only supports this subprotocol, whose identifier is `graphql-ws`. For this reason, when you connect to the WebSocket provisioned by Booster, you must specify the `graphql-ws` subprotocol. If not, the connection won't succeed.
 
 ### Cloud native
 
