@@ -573,7 +573,7 @@ export class PostReadModel {
   public constructor(public id: UUID, readonly title: string, readonly author: string) {}
 
   @Projects(Post, 'postId')
-  public static projectPost(entity: Post, currentPostReadModel?: PostReadModel): PostReadModel {
+  public static projectPost(entity: Post, currentPostReadModel?: PostReadModel): ProjectionResult<PostReadModel> {
     return new PostReadModel(entity.id, entity.title, entity.author)
   }
 }
@@ -1349,12 +1349,12 @@ export class ReadModelName {
   ) {}
 
   @Projects(SomeEntity, 'entityField')
-  public static projectionName(entity: SomeEntity, currentEntityReadModel?: ReadModelName): ReadModelName {
+  public static projectionName(entity: SomeEntity, currentEntityReadModel?: ReadModelName): ProjectionResult<ReadModelName> {
     return new ReadModelName(/* initialize here your constructor properties */)
   }
   
   @Projects(SomeEntity, 'othetEntityField')
-  public static projectionName(entity: SomeEntity, currentEntityReadModel?: ReadModelName): ReadModelName {
+  public static projectionName(entity: SomeEntity, currentEntityReadModel?: ReadModelName): ProjectionResult<ReadModelName> {
     return new ReadModelName(/* initialize here your constructor properties */)
   }
   /* as many projections as needed */
@@ -1363,7 +1363,7 @@ export class ReadModelName {
 
 #### Read models naming convention
 
-As it has been previously commented, semantics plays an important role in designing a coherent system and your application should reflect your domain concepts, we recommend to chooose a representative domain name and use the `ReadModel` suffix in your read models name.
+As it has been previously commented, semantics plays an important role in designing a coherent system and your application should reflect your domain concepts, we recommend choosing a representative domain name and use the `ReadModel` suffix in your read models name.
 
 Despite you can place your read models in any directory, we strongly recommend you to put them in `<project-root>/src/read-models`. Having all the read models in one place will help you to understand your application's capabilities at a glance.
 
@@ -1402,13 +1402,32 @@ export class UserReadModel {
   public constructor(readonly username: string, /* ...(other interesting fields from users)... */) {}
   
   @Projects(User, 'id')
-  public static projectUser(entity: User, current?: UserReadModel) { // Here we update the user fields}
+  public static projectUser(entity: User, current?: UserReadModel): ProjectionResult<UserReadModel> { // Here we update the user fields}
 
   @Projects(Post, 'ownerId')
-  public static projectUserPost(entity: Post, current?: UserReadModel) { //Here we can adapt the read model to show specific user information related with the Post entity}
+  public static projectUserPost(entity: Post, current?: UserReadModel): ProjectionResult<UserReadModel> { //Here we can adapt the read model to show specific user information related with the Post entity}
 }
 ```
 In the previous example we are projecting the `User` entity using the user `id` and also we are projecting the `User` entity based on the `ownerId` of the `Post` entity. Notice that both join keys are references to the `User` identifier, but it's not required that the join key is an identifier.
+
+You can also delete read models by returning the `deleteReadModel` type, as shown in the following example:
+```
+@ReadModel
+export class UserReadModel {
+  public constructor(readonly username: string, /* ...(other interesting fields from users)... */) {}
+  
+  @Projects(User, 'id')
+  public static projectUser(entity: User, current?: UserReadModel): ProjectionResult<UserReadModel> {
+    if (isReadModelDeletable()) {
+        return deleteReadModel 
+    }
+    return new UserReadModel(...)
+  }
+
+  private isReadModelDeletable(): boolean {
+    ...
+  }
+```
 
 #### Authorizing read models
 
@@ -1429,7 +1448,7 @@ export class CartReadModel {
     ) {}
 
   @Projects(Cart, "id")
-  public static projectCart(entity:Cart, currentReadModel: CartReadModel): CartReadModel {
+  public static projectCart(entity:Cart, currentReadModel: CartReadModel): ProjectionResult<CartReadModel> {
     return new CartReadModel(entity.id, entity.items)
   }
 }

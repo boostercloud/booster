@@ -31,7 +31,6 @@ export class ReadModelStore {
       )
       return
     }
-
     await Promise.all(
       projections.map(async (projectionMetadata: ProjectionMetadata) => {
         const readModelName = projectionMetadata.class.name
@@ -45,7 +44,6 @@ export class ReadModelStore {
         )
         const newReadModel = this.reducerForProjection(projectionMetadata)(entitySnapshot, readModel)
 
-        // If the function marked with @Project returns the `deleteReadModel` type, we destroy the associated read model
         if (newReadModel === deleteReadModel) {
           return this.provider.readModels.deleteReadModel(this.config, this.logger, readModelName, readModel)
         }
@@ -75,7 +73,7 @@ export class ReadModelStore {
     return joinKey
   }
 
-  private reducerForProjection(projectionMetadata: ProjectionMetadata): Function {
+  public reducerForProjection(projectionMetadata: ProjectionMetadata): Function {
     try {
       return (projectionMetadata.class as any)[projectionMetadata.methodName]
     } catch {
