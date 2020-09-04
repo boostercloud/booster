@@ -9,7 +9,6 @@ import {
 import { requestSucceeded, requestFailed } from './library/api-adapter'
 import { EventRegistry } from './services'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
-import { notifySubscription } from './library/subscription-adapter'
 import { UserApp } from '@boostercloud/framework-types'
 import * as path from 'path'
 
@@ -43,7 +42,6 @@ export const Provider: ProviderLibrary = {
     subscribe: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fetchSubscriptions: undefined as any,
-    notifySubscription: notifySubscription,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     deleteSubscription: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,6 +55,7 @@ export const Provider: ProviderLibrary = {
   // ProviderAuthLibrary
   auth: {
     rawToEnvelope: rawSignUpDataToUserEnvelope,
+    fromAuthToken: undefined as any,
     handleSignUpResult: (() => {}) as any,
   },
   // ProviderAPIHandling
@@ -64,7 +63,15 @@ export const Provider: ProviderLibrary = {
     requestSucceeded,
     requestFailed,
   },
+  connections: {
+    storeData: notImplemented as any,
+    fetchData: notImplemented as any,
+    deleteData: notImplemented as any,
+    sendMessage: notImplemented as any,
+  },
   // ProviderInfrastructureGetter
   infrastructure: () =>
     require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
 }
+
+function notImplemented(): void {}

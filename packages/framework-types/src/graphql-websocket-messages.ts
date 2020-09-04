@@ -19,7 +19,9 @@ export enum MessageTypes {
 export type GraphQLClientMessage = GraphQLInit | GraphQLStart | GraphQLStop | GraphQLTerminate
 export interface GraphQLInit {
   type: MessageTypes.GQL_CONNECTION_INIT
-  payload: Record<string, unknown>
+  payload: {
+    Authorization?: string
+  }
 }
 export interface GraphQLStart {
   type: MessageTypes.GQL_START

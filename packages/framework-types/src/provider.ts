@@ -1,10 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   EventEnvelope,
   GraphQLRequestEnvelope,
   SubscriptionEnvelope,
   UserEnvelope,
   ReadModelEnvelope,
+  ConnectionDataEnvelope,
+  GraphQLRequestEnvelopeError,
 } from './envelope'
 import { BoosterConfig } from './config'
 import { Observable } from 'rxjs'
@@ -16,13 +17,14 @@ export interface ProviderLibrary {
   events: ProviderEventsLibrary
   readModels: ProviderReadModelsLibrary
   auth: ProviderAuthLibrary
-  api: ProviderAPIHandling
-  infrastructure: () => ProviderInfrastructure
   graphQL: ProviderGraphQLLibrary
+  api: ProviderAPIHandling
+  connections: ProviderConnectionsLibrary
+  infrastructure: () => ProviderInfrastructure
 }
 
 export interface ProviderEventsLibrary {
-  rawToEnvelopes(rawEvents: any): Array<EventEnvelope>
+  rawToEnvelopes(rawEvents: unknown): Array<EventEnvelope>
   forEntitySince(
     config: BoosterConfig,
     logger: Logger,
@@ -40,39 +42,49 @@ export interface ProviderEventsLibrary {
   store(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig, logger: Logger): Promise<void>
 }
 export interface ProviderReadModelsLibrary {
-  rawToEnvelopes(config: BoosterConfig, logger: Logger, rawEvents: any): Promise<Array<ReadModelEnvelope>>
+  rawToEnvelopes(config: BoosterConfig, logger: Logger, rawEvents: unknown): Promise<Array<ReadModelEnvelope>>
   fetch(config: BoosterConfig, logger: Logger, readModelName: string, readModelID: UUID): Promise<ReadModelInterface>
   search<TReadModel extends ReadModelInterface>(
     config: BoosterConfig,
     logger: Logger,
     entityTypeName: string,
-    filters: Record<string, Filter<any>>
+    filters: Record<string, Filter<unknown>>
   ): Promise<Array<TReadModel>>
-  store(config: BoosterConfig, logger: Logger, readModelName: string, readModel: ReadModelInterface): Promise<any>
+  store(config: BoosterConfig, logger: Logger, readModelName: string, readModel: ReadModelInterface): Promise<unknown>
   subscribe(config: BoosterConfig, logger: Logger, subscriptionEnvelope: SubscriptionEnvelope): Promise<void>
   fetchSubscriptions(
     config: BoosterConfig,
     logger: Logger,
     subscriptionName: string
   ): Promise<Array<SubscriptionEnvelope>>
-  notifySubscription(config: BoosterConfig, connectionID: string, data: Record<string, any>): Promise<void>
   deleteSubscription(config: BoosterConfig, logger: Logger, connectionID: string, subscriptionID: string): Promise<void>
   deleteAllSubscriptions(config: BoosterConfig, logger: Logger, connectionID: string): Promise<void>
 }
 
 export interface ProviderGraphQLLibrary {
-  rawToEnvelope(rawGraphQLRequest: any, logger: Logger): Promise<GraphQLRequestEnvelope>
-  handleResult(result?: any, headers?: Record<string, string>): Promise<any>
+  rawToEnvelope(
+    rawGraphQLRequest: unknown,
+    logger: Logger
+  ): Promise<GraphQLRequestEnvelope | GraphQLRequestEnvelopeError>
+  handleResult(result?: unknown, headers?: Record<string, string>): Promise<unknown>
+}
+
+export interface ProviderConnectionsLibrary {
+  storeData(config: BoosterConfig, connectionID: string, data: ConnectionDataEnvelope): Promise<void>
+  fetchData(config: BoosterConfig, connectionID: string): Promise<ConnectionDataEnvelope | undefined>
+  deleteData(config: BoosterConfig, connectionID: string): Promise<void>
+  sendMessage(config: BoosterConfig, connectionID: string, data: unknown): Promise<void>
 }
 
 export interface ProviderAuthLibrary {
-  rawToEnvelope(rawMessage: any): UserEnvelope
+  rawToEnvelope(rawMessage: unknown): UserEnvelope
+  fromAuthToken(token: string): Promise<UserEnvelope | undefined>
   handleSignUpResult(config: BoosterConfig, request: any, userEnvelope: UserEnvelope): any
 }
 
 export interface ProviderAPIHandling {
-  requestSucceeded(body?: any): Promise<any>
-  requestFailed(error: Error): Promise<any>
+  requestSucceeded(body?: unknown): Promise<unknown>
+  requestFailed(error: Error): Promise<unknown>
 }
 
 export interface ProviderInfrastructure {

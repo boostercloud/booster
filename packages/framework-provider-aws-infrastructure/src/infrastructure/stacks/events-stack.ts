@@ -8,7 +8,7 @@ import { DynamoEventSource } from '@aws-cdk/aws-lambda-event-sources'
 import { APIs } from '../params'
 import { Table, StreamViewType } from '@aws-cdk/aws-dynamodb'
 
-interface EventsStackMembers {
+export interface EventsStackMembers {
   eventsStore: dynamodb.Table
   eventsLambda: Function
 }

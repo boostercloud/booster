@@ -17,7 +17,6 @@ export const Provider: ProviderLibrary = {
     store: undefined as any,
     subscribe: undefined as any,
     fetchSubscriptions: undefined as any,
-    notifySubscription: undefined as any,
     deleteSubscription: undefined as any,
     deleteAllSubscriptions: undefined as any,
   },
@@ -29,6 +28,7 @@ export const Provider: ProviderLibrary = {
   // ProviderAuthLibrary
   auth: {
     rawToEnvelope: undefined as any,
+    fromAuthToken: undefined as any,
     handleSignUpResult: (() => {}) as any,
   },
   // ProviderAPIHandling
@@ -36,7 +36,15 @@ export const Provider: ProviderLibrary = {
     requestSucceeded: undefined as any,
     requestFailed: undefined as any,
   },
+  connections: {
+    storeData: notImplemented as any,
+    fetchData: notImplemented as any,
+    deleteData: notImplemented as any,
+    sendMessage: notImplemented as any,
+  },
   // ProviderInfrastructureGetter
   infrastructure: () =>
     require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
 }
+
+function notImplemented(): void {}

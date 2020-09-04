@@ -1,9 +1,16 @@
 import path = require('path')
 import util = require('util')
-import { expect } from 'chai'
+import * as chai from 'chai'
 import { readFileContent } from '../helper/fileHelper'
 import * as fs from 'fs'
 import { ChildProcess, ExecException } from 'child_process'
+// The Booster CLI version used should match the integration tests' version
+const BOOSTER_VERSION = require('../../package.json').version
+
+chai.use(require('sinon-chai'))
+chai.use(require('chai-as-promised'))
+
+const expect = chai.expect
 
 const exec = util.promisify(require('child_process').exec)
 
@@ -39,7 +46,7 @@ describe('Project', () => {
     /(.+) boost (.+)?new(.+)? (.+)\n- Creating project root\n(.+) Creating project root\n- Generating config files\n(.+) Generating config files\n- Installing dependencies\n(.+) Installing dependencies\n(.+) Project generated!\n/
   )
 
-  const sendToStdin = (childProcess: ChildProcess, promptAnswers: Array<string>, delay: number) => {
+  const sendToStdin = (childProcess: ChildProcess, promptAnswers: Array<string>, delay: number): void => {
     let currentRepetitions = 0
     const totalRepetitions = promptAnswers.length
     let answers: Array<string> = promptAnswers.slice()
@@ -54,11 +61,15 @@ describe('Project', () => {
     }, delay)
   }
 
-  const execNewProject = (projectName: string, promptAnswers: Array<string> = [], flags: Array<string> = []) => {
+  const execNewProject = (
+    projectName: string,
+    promptAnswers: Array<string> = [],
+    flags: Array<string> = []
+  ): Promise<string> => {
     return new Promise<string>((resolve): void => {
       const childProcess = require('child_process').exec(
         `${cliPath} new:project ${projectName} ${flags.join(' ')}`,
-        (error: ExecException | null, stdout: string, stderr: string) => {
+        (_error: ExecException | null, stdout: string) => {
           childProcess.stdin.end()
           resolve(stdout)
         }
@@ -75,11 +86,11 @@ describe('Project', () => {
     jsonContent: string,
     objectsToCompareJustKeys: Array<string>,
     checkKeysAndValues = true
-  ) => {
+  ): void => {
     const expectedJsonObj = JSON.parse(expectedJson)
     const jsonContentObj = JSON.parse(jsonContent)
 
-    Object.entries(expectedJsonObj).forEach(([key, value]) => {
+    Object.entries(expectedJsonObj).forEach(([key]) => {
       if (objectsToCompareJustKeys.includes(key)) {
         expect(Object.prototype.hasOwnProperty.call(jsonContentObj, key)).true
         return packageJsonAssertions(
@@ -96,7 +107,7 @@ describe('Project', () => {
     })
   }
 
-  const assertions = async (stdout: string, projectName: string) => {
+  const assertions = async (stdout: string, projectName: string): Promise<void> => {
     const CART_DEMO_CONFIG = `${projectName}/src/config/config.ts`
     const CART_DEMO_INDEX = `${projectName}/src/index.ts`
     const CART_DEMO_ESLINT_IGNORE = `${projectName}/.eslintignore`
@@ -117,52 +128,54 @@ describe('Project', () => {
     expect(fs.readdirSync(`${projectName}/src/entities`).length).equals(0)
     expect(fs.readdirSync(`${projectName}/src/events`).length).equals(0)
 
-    const expectedCartDemoConfig = await readFileContent('integration/fixtures/cart-demo/src/config/config.ts')
-    const cartDemoConfigContent = await readFileContent(CART_DEMO_CONFIG)
+    const expectedCartDemoConfig = readFileContent('integration/fixtures/cart-demo/src/config/config.ts')
+    const cartDemoConfigContent = readFileContent(CART_DEMO_CONFIG)
     expect(cartDemoConfigContent).to.equal(
       expectedCartDemoConfig.replace(PROJECT_NAME_FIXTURE_PLACEHOLDER, projectName)
     )
 
-    const expectedCartDemoIndex = await readFileContent('integration/fixtures/cart-demo/src/index.ts')
-    const cartDemoIndexContent = await readFileContent(CART_DEMO_INDEX)
+    const expectedCartDemoIndex = readFileContent('integration/fixtures/cart-demo/src/index.ts')
+    const cartDemoIndexContent = readFileContent(CART_DEMO_INDEX)
     expect(cartDemoIndexContent).to.equal(expectedCartDemoIndex)
 
-    const expectedCartDemoEslintIgnore = await readFileContent('integration/fixtures/cart-demo/.eslintignore')
-    const cartDemoEslintIgnoreContent = await readFileContent(CART_DEMO_ESLINT_IGNORE)
+    const expectedCartDemoEslintIgnore = readFileContent('integration/fixtures/cart-demo/.eslintignore')
+    const cartDemoEslintIgnoreContent = readFileContent(CART_DEMO_ESLINT_IGNORE)
     expect(cartDemoEslintIgnoreContent).to.equal(expectedCartDemoEslintIgnore)
 
-    const expectedCartDemoEslintRc = await readFileContent('integration/fixtures/cart-demo/.eslintrc.js')
-    const cartDemoEslintRcContent = await readFileContent(CART_DEMO_ESLINT_RC)
+    const expectedCartDemoEslintRc = readFileContent('integration/fixtures/cart-demo/.eslintrc.js')
+    const cartDemoEslintRcContent = readFileContent(CART_DEMO_ESLINT_RC)
     expect(cartDemoEslintRcContent).to.equal(expectedCartDemoEslintRc)
 
-    const expectedCartDemoGitIgnore = await readFileContent('integration/fixtures/cart-demo/.gitignore')
-    const cartDemoGitIgnoreContent = await readFileContent(CART_DEMO_GIT_IGNORE)
+    const expectedCartDemoGitIgnore = readFileContent('integration/fixtures/cart-demo/.gitignore')
+    const cartDemoGitIgnoreContent = readFileContent(CART_DEMO_GIT_IGNORE)
     expect(cartDemoGitIgnoreContent).to.equal(expectedCartDemoGitIgnore)
 
-    const expectedCartDemoPretierRc = await readFileContent('integration/fixtures/cart-demo/.prettierrc.yaml')
-    const cartDemoPretierRcContent = await readFileContent(CART_DEMO_PRETTIER_RC)
+    const expectedCartDemoPretierRc = readFileContent('integration/fixtures/cart-demo/.prettierrc.yaml')
+    const cartDemoPretierRcContent = readFileContent(CART_DEMO_PRETTIER_RC)
     expect(cartDemoPretierRcContent).to.equal(expectedCartDemoPretierRc)
 
-    const expectedCartDemoPackageJson = await readFileContent('integration/fixtures/cart-demo/package.json')
-    const cartDemoPackageJsonContent = await readFileContent(CART_DEMO_PACKAGE_JSON)
+    const expectedCartDemoPackageJson = readFileContent('integration/fixtures/cart-demo/package.json')
+    const cartDemoPackageJsonContent = readFileContent(CART_DEMO_PACKAGE_JSON)
     packageJsonAssertions(
       expectedCartDemoPackageJson.replace(PROJECT_NAME_FIXTURE_PLACEHOLDER, projectName),
       cartDemoPackageJsonContent,
       ['dependencies', 'devDependencies']
     )
+    const cartDemoPackageJsonObject = JSON.parse(cartDemoPackageJsonContent)
+    expect(cartDemoPackageJsonObject['dependencies']['@boostercloud/framework-core']).to.equal(`^${BOOSTER_VERSION}`)
+    expect(cartDemoPackageJsonObject['dependencies']['@boostercloud/framework-types']).to.equal(`^${BOOSTER_VERSION}`)
+    expect(cartDemoPackageJsonObject['devDependencies']['@boostercloud/cli']).to.equal(`^${BOOSTER_VERSION}`)
 
-    const expectedCartDemoTsConfigEslint = await readFileContent('integration/fixtures/cart-demo/tsconfig.eslint.json')
-    const cartDemoTsConfigEslintContent = await readFileContent(CART_DEMO_TS_CONFIG_ESLINT)
+    const expectedCartDemoTsConfigEslint = readFileContent('integration/fixtures/cart-demo/tsconfig.eslint.json')
+    const cartDemoTsConfigEslintContent = readFileContent(CART_DEMO_TS_CONFIG_ESLINT)
     expect(cartDemoTsConfigEslintContent).to.equal(expectedCartDemoTsConfigEslint)
 
-    const expectedCartDemoTsConfig = await readFileContent('integration/fixtures/cart-demo/tsconfig.json')
-    const cartDemoTsConfigContent = await readFileContent(CART_DEMO_TS_CONFIG)
+    const expectedCartDemoTsConfig = readFileContent('integration/fixtures/cart-demo/tsconfig.json')
+    const cartDemoTsConfigContent = readFileContent(CART_DEMO_TS_CONFIG)
     expect(cartDemoTsConfigContent).to.equal(expectedCartDemoTsConfig)
 
-    process.chdir(projectName)
-    await exec('npm run compile')
-    await exec('npm run lint:check')
-    process.chdir('..')
+    await expect(exec('npm run compile', { cwd: projectName })).to.be.eventually.fulfilled
+    await expect(exec('npm run lint:check', { cwd: projectName })).to.be.eventually.fulfilled
   }
 
   context('Valid project', () => {

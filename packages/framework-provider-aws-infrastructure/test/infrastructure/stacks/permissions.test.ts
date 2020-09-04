@@ -8,6 +8,8 @@ import { random } from 'faker'
 import * as policies from '../../../src/infrastructure/stacks/policies'
 import { PolicyStatement } from '@aws-cdk/aws-iam'
 import { Fn } from '@aws-cdk/core'
+import { GraphQLStackMembers } from '../../../src/infrastructure/stacks/graphql-stack'
+import { EventsStackMembers } from '../../../src/infrastructure/stacks/events-stack'
 
 describe('permissions', () => {
   beforeEach(() => {
@@ -15,7 +17,8 @@ describe('permissions', () => {
   })
 
   describe('setupPermissions', () => {
-    let mockSubscriptionsTableArn: string
+    let mockSubscriptionsStoreArn: string
+    let mockConnectionsStoreArn: string
     let mockReadModelTableArn: string
     let mockEventsStoreTableArn: string
     let mockWebSocketAPIRef: string
@@ -26,7 +29,8 @@ describe('permissions', () => {
     let mockGraphQLLambda: Function
     let mockSubscriptionDispatcherLambda: Function
     let mockEventsLambda: Function
-    let mockSubscriptionsTable: Table
+    let mockSubscriptionsStore: Table
+    let mockConnectionsStore: Table
     let mockEventsStoreTable: Table
     let mockReadModelTable: Table
     let mockReadModelTables: Array<Table>
@@ -41,7 +45,8 @@ describe('permissions', () => {
     let fnRefStub: SinonStub
 
     beforeEach(() => {
-      mockSubscriptionsTableArn = random.alphaNumeric(10)
+      mockSubscriptionsStoreArn = random.alphaNumeric(10)
+      mockConnectionsStoreArn = random.alphaNumeric(10)
       mockReadModelTableArn = random.alphaNumeric(10)
       mockEventsStoreTableArn = random.alphaNumeric(10)
       mockWebSocketAPIRef = random.alphaNumeric(10)
@@ -58,8 +63,11 @@ describe('permissions', () => {
       mockSubscriptionDispatcherLambda = {} as Function
       mockEventsLambda = {} as Function
 
-      mockSubscriptionsTable = {
-        tableArn: mockSubscriptionsTableArn,
+      mockSubscriptionsStore = {
+        tableArn: mockSubscriptionsStoreArn,
+      } as Table
+      mockConnectionsStore = {
+        tableArn: mockConnectionsStoreArn,
       } as Table
       mockEventsStoreTable = {
         tableArn: mockEventsStoreTableArn,
@@ -80,20 +88,23 @@ describe('permissions', () => {
       fnJoinStub = stub(Fn, 'join').returns(mockFnJoin)
       fnRefStub = stub(Fn, 'ref').returns(mockFnRef)
 
-      setupPermissions(
-        mockReadModelTables,
-        mockGraphQLLambda,
-        mockSubscriptionDispatcherLambda,
-        mockSubscriptionsTable,
-        mockWebsocketAPI,
-        mockEventsStoreTable,
-        mockEventsLambda
-      )
+      const graphQLStackMembers: GraphQLStackMembers = {
+        subscriptionDispatcherLambda: mockSubscriptionDispatcherLambda,
+        subscriptionsStore: mockSubscriptionsStore,
+        graphQLLambda: mockGraphQLLambda,
+        connectionsStore: mockConnectionsStore,
+      }
+      const eventsStackMembers: EventsStackMembers = {
+        eventsStore: mockEventsStoreTable,
+        eventsLambda: mockEventsLambda,
+      }
+
+      setupPermissions(graphQLStackMembers, eventsStackMembers, mockReadModelTables, mockWebsocketAPI)
     })
 
     describe('GraphQL Lambda', () => {
       it('should call addToRolePolicy', () => {
-        expect(graphQLAddToRolePolicyStub).to.has.callCount(4)
+        expect(graphQLAddToRolePolicyStub).to.has.callCount(5)
 
         expect(graphQLAddToRolePolicyStub).calledWithExactly(mockPolicyStatement)
       })
@@ -108,8 +119,15 @@ describe('permissions', () => {
 
         it('should create subscriptions table permissions', () => {
           expect(createPolicyStatementStub).calledWithExactly(
-            [mockSubscriptionsTableArn + '*'],
+            [mockSubscriptionsStoreArn + '*'],
             ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:DeleteItem', 'dynamodb:BatchWriteItem']
+          )
+        })
+
+        it('should create connections table permissions', () => {
+          expect(createPolicyStatementStub).calledWithExactly(
+            [mockConnectionsStoreArn],
+            ['dynamodb:GetItem', 'dynamodb:PutItem', 'dynamodb:DeleteItem']
           )
         })
 
@@ -130,7 +148,7 @@ describe('permissions', () => {
 
       describe('policy statements', () => {
         it('should create subscriptions table permissions', () => {
-          expect(createPolicyStatementStub).to.be.calledWithExactly([mockSubscriptionsTableArn], ['dynamodb:Query*'])
+          expect(createPolicyStatementStub).to.be.calledWithExactly([mockSubscriptionsStoreArn], ['dynamodb:Query*'])
         })
 
         describe('web socket API', () => {

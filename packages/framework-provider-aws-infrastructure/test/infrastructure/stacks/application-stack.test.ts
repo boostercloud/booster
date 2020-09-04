@@ -47,6 +47,8 @@ describe('the application stack builder', () => {
     const eventsLambda = 'events-main'
     const graphQLLambda = 'graphql-handler'
     const subscriptionsNotifierLambda = 'subscriptions-notifier'
+    const subscriptionsStore = appStackName + '-subscriptions-store'
+    const connectionsStore = appStackName + '-connections-store'
     const websocketRoutes = ['route-$connect', 'route-$disconnect', 'route-$default']
 
     const restAPI = appStack.tryFindChild(restAPIName) as RestApi
@@ -61,12 +63,16 @@ describe('the application stack builder', () => {
     expect(websocketAPI).not.to.be.undefined
     expect(websocketAPI.protocolType).to.be.eq('WEBSOCKET')
     websocketRoutes.forEach((route) => expect(appStack.tryFindChild(route)).not.to.be.undefined)
-    // Lambdas
+
     expect(numberOfLambdas).to.equal(3)
-    expect(appStack.tryFindChild(eventsLambda)).not.to.be.undefined
+
+    // GraphQL related
     expect(appStack.tryFindChild(graphQLLambda)).not.to.be.undefined
     expect(appStack.tryFindChild(subscriptionsNotifierLambda)).not.to.be.undefined
+    expect(appStack.tryFindChild(subscriptionsStore)).not.to.be.undefined
+    expect(appStack.tryFindChild(connectionsStore)).not.to.be.undefined
     // Events-related
+    expect(appStack.tryFindChild(eventsLambda)).not.to.be.undefined
     expect(appStack.tryFindChild(eventsStore)).not.to.be.undefined
     // ReadModels
     readModels.forEach(({ name }) => expect(appStack.tryFindChild(name)).not.to.be.undefined)

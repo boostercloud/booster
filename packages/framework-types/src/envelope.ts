@@ -49,6 +49,9 @@ export interface GraphQLRequestEnvelope extends Envelope {
   connectionID?: string
   value?: GraphQLOperation | GraphQLClientMessage
 }
+export type GraphQLRequestEnvelopeError = Pick<GraphQLRequestEnvelope, 'eventType' | 'connectionID' | 'requestID'> & {
+  error: Error
+}
 
 export interface SubscriptionEnvelope extends ReadModelRequestEnvelope {
   expirationTime: number // In Epoch format
@@ -62,6 +65,11 @@ export interface GraphQLOperation {
   operationName?: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   variables?: Record<string, any>
+}
+
+export interface ConnectionDataEnvelope {
+  expirationTime: number // In Epoch format
+  user?: UserEnvelope
 }
 
 export interface UserEnvelope {

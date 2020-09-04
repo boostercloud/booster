@@ -14,6 +14,11 @@ export const subscriptionsStoreAttributes = {
   indexByConnectionIDName: (config: BoosterConfig) => config.resourceNames.subscriptionsStore + '-index-by-connection',
 } as const
 
+export const connectionsStoreAttributes = {
+  partitionKey: 'connectionID',
+  ttl: 'expirationTime',
+} as const
+
 export const environmentVarNames = {
   restAPIURL: 'BOOSTER_REST_API_URL',
   websocketAPIURL: 'BOOSTER_WEBSOCKET_API_URL',

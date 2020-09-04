@@ -20,7 +20,10 @@ export class BoosterConfig {
   private readonly _configuredEnvironments: Set<string> = new Set<string>()
   private _provider?: ProviderLibrary
   public appName = 'new-booster-app'
-  public region = 'eu-west-1'
+  public readonly subscriptions = {
+    maxConnectionDurationInSeconds: 7 * 24 * 60 * 60, // 7 days
+    maxDurationInSeconds: 2 * 24 * 60 * 60, // 2 days
+  }
   public readonly userProjectRootPath: string = process.cwd()
   public readonly eventDispatcherHandler: string = 'dist/index.boosterEventDispatcher'
   public readonly preSignUpHandler: string = 'dist/index.boosterPreSignUpChecker'
@@ -48,6 +51,7 @@ export class BoosterConfig {
       applicationStack: applicationStackName,
       eventsStore: applicationStackName + '-events-store',
       subscriptionsStore: applicationStackName + '-subscriptions-store',
+      connectionsStore: applicationStackName + '-connections-store',
       staticWebsite: applicationStackName + '-static-site',
       forReadModel(readModelName: string): string {
         return applicationStackName + '-' + readModelName
@@ -136,6 +140,7 @@ interface ResourceNames {
   applicationStack: string
   eventsStore: string
   subscriptionsStore: string
+  connectionsStore: string
   staticWebsite: string
   forReadModel(entityName: string): string
 }

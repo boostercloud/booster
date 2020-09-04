@@ -1,10 +1,8 @@
 import { restore, SinonStub, stub } from 'sinon'
 import * as projectChecker from '../../src/services/project-checker'
-import * as executorService from '../../src/services/executor-service'
 import { compileProjectAndLoadConfig } from '../../src/services/config-service'
 import { BoosterApp, BoosterConfig } from '@boostercloud/framework-types'
 import { expect } from '../expect'
-import sinon = require('sinon')
 
 describe('configService', () => {
   beforeEach(() => {
@@ -28,11 +26,9 @@ describe('configService', () => {
 
   describe('compileProjectAndLoadConfig', () => {
     let checkItIsABoosterProject: SinonStub
-    let withinWorkingDirectory: SinonStub
 
     beforeEach(() => {
       checkItIsABoosterProject = stub(projectChecker, 'checkItIsABoosterProject').resolves()
-      withinWorkingDirectory = stub(executorService, 'withinWorkingDirectory').resolves()
     })
 
     it('loads the config when the selected environment exists', async () => {
@@ -44,7 +40,6 @@ describe('configService', () => {
 
       await expect(compileProjectAndLoadConfig()).to.eventually.become(config)
       expect(checkItIsABoosterProject).to.have.been.calledOnceWithExactly()
-      expect(withinWorkingDirectory).to.have.been.calledOnceWithExactly(sinon.match.string, sinon.match.func)
     })
 
     it('throws the right error when there are not configured environments', async () => {
@@ -57,7 +52,6 @@ describe('configService', () => {
         /You haven't configured any environment/
       )
       expect(checkItIsABoosterProject).to.have.been.calledOnceWithExactly()
-      expect(withinWorkingDirectory).to.have.been.calledOnceWithExactly(sinon.match.string, sinon.match.func)
     })
 
     it('throws the right error when the environment does not exist', async () => {
@@ -71,7 +65,6 @@ describe('configService', () => {
         /The environment 'test' does not match any of the environments/
       )
       expect(checkItIsABoosterProject).to.have.been.calledOnceWithExactly()
-      expect(withinWorkingDirectory).to.have.been.calledOnceWithExactly(sinon.match.string, sinon.match.func)
     })
   })
 })

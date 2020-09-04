@@ -13,12 +13,15 @@ import {
   countSubscriptionsItems,
   UserAuthInformation,
   refreshUserAuthInformation,
+  graphQLClient,
 } from './utils'
 import gql from 'graphql-tag'
 import { expect } from 'chai'
 import * as chai from 'chai'
 import { random, internet, finance, lorem, phone } from 'faker'
 import fetch from 'cross-fetch'
+import { ApolloClient } from 'apollo-client'
+import { NormalizedCacheObject } from 'apollo-cache-inmemory'
 
 chai.use(require('chai-as-promised'))
 
@@ -471,13 +474,70 @@ describe('With the auth API', () => {
       expect(message.accessToken).not.to.be.empty
     })
 
+    context('with a wrong token', () => {
+      context('using a client without involving sockets (no subscriptions)', () => {
+        let client: ApolloClient<NormalizedCacheObject>
+
+        before(async () => {
+          client = await graphQLClient('ABC')
+        })
+
+        it('gets the expected error when submitting a command', async () => {
+          const mutationPromise = client.mutate({
+            variables: {
+              productSKU: random.word(),
+            },
+            mutation: gql`
+              mutation CreateProduct($productSKU: String) {
+                CreateProduct(input: { sku: $productSKU })
+              }
+            `,
+          })
+
+          await expect(mutationPromise).to.eventually.be.rejectedWith(/Invalid Access Token/)
+        })
+
+        it('gets the expected error when querying a read model', async () => {
+          const queryPromise = client.query({
+            variables: {
+              productId: mockProductId,
+            },
+            query: gql`
+              query ProductUpdatesReadModel($productId: ID!) {
+                ProductUpdatesReadModel(id: $productId) {
+                  id
+                }
+              }
+            `,
+          })
+
+          await expect(queryPromise).to.eventually.be.rejectedWith(/Invalid Access Token/)
+        })
+      })
+
+      it('when using a client with subscriptions, it gets the expected error on connect', async () => {
+        const connectionPromise = new Promise(async (resolve, reject) => {
+          await graphQLClientWithSubscriptions('ABC', (err) => {
+            if (err) {
+              reject(err)
+            } else {
+              resolve()
+            }
+          })
+        })
+        await expect(connectionPromise).to.eventually.be.rejectedWith(/Invalid Access Token/)
+      })
+    })
+
     context('with a signed-in user', () => {
       let userAuthInformation: UserAuthInformation
+      let authToken: string
       let client: DisconnectableApolloClient
 
       before(async () => {
         userAuthInformation = await getUserAuthInformation(userEmail, userPassword)
-        client = await graphQLClientWithSubscriptions(userAuthInformation.accessToken)
+        authToken = userAuthInformation.accessToken
+        client = await graphQLClientWithSubscriptions(() => authToken)
       })
 
       after(() => {
@@ -699,9 +759,9 @@ describe('With the auth API', () => {
 
         before(async () => {
           refreshedUserAuthInformation = await refreshUserAuthInformation(userAuthInformation.refreshToken)
-
-          // Update access token in client
-          client.updateToken(refreshedUserAuthInformation.accessToken)
+          // Update access token that's being used by the Apollo client
+          authToken = refreshedUserAuthInformation.accessToken
+          await client.reconnect()
         })
 
         it('should return a new access token', () => {
@@ -1019,11 +1079,13 @@ describe('With the auth API', () => {
 
     context('with a signed-in admin user', () => {
       let adminUserAuthInformation: UserAuthInformation
+      let authToken: string
       let client: DisconnectableApolloClient
 
       before(async () => {
         adminUserAuthInformation = await getUserAuthInformation(adminEmail, adminPassword)
-        client = await graphQLClientWithSubscriptions(adminUserAuthInformation.accessToken)
+        authToken = adminUserAuthInformation.accessToken
+        client = await graphQLClientWithSubscriptions(() => authToken)
       })
 
       after(() => {
@@ -1116,9 +1178,9 @@ describe('With the auth API', () => {
 
         before(async () => {
           refreshedUserAuthInformation = await refreshUserAuthInformation(adminUserAuthInformation.refreshToken)
-
-          // Update access token in client
-          client.updateToken(refreshedUserAuthInformation.accessToken)
+          // Update access token that's being used by the Apollo client
+          authToken = refreshedUserAuthInformation.accessToken
+          await client.reconnect()
         })
 
         it('should return a new access token', () => {

@@ -1,9 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { fake, match, replace, restore, spy } from 'sinon'
-import { random } from 'faker'
+import { random, lorem } from 'faker'
 import { expect } from './expect'
-import { BoosterConfig, Logger, GraphQLRequestEnvelope } from '@boostercloud/framework-types'
+import {
+  BoosterConfig,
+  Logger,
+  GraphQLRequestEnvelope,
+  GraphQLRequestEnvelopeError,
+} from '@boostercloud/framework-types'
 import { BoosterGraphQLDispatcher } from '../src/booster-graphql-dispatcher'
 import * as gqlParser from 'graphql/language/parser'
 import * as gqlValidator from 'graphql/validation/validate'
@@ -39,7 +44,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
     })
 
     context('on DISCONNECT message', () => {
-      it('does not call the provider.deleteAllSubscriptions method of the read model dispatcher when there is no connection ID', async () => {
+      it('does does not delete connection or subscription data when there is no connection ID', async () => {
         const config = mockConfigForGraphQLEnvelope({
           requestID: random.uuid(),
           eventType: 'DISCONNECT',
@@ -49,10 +54,11 @@ describe('the `BoosterGraphQLDispatcher`', () => {
         await dispatcher.dispatch({})
 
         expect(config.provider.readModels.deleteAllSubscriptions).not.to.have.been.called
+        expect(config.provider.connections.deleteData).not.to.have.been.called
         expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly(undefined)
       })
 
-      it('calls the provider.deleteAllSubscriptions method of the read model dispatcher', async () => {
+      it('calls deletes connection and subscription data', async () => {
         const mockConnectionID = random.uuid()
         const config = mockConfigForGraphQLEnvelope({
           requestID: random.uuid(),
@@ -62,6 +68,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
         const dispatcher = new BoosterGraphQLDispatcher(config, logger)
         await dispatcher.dispatch({})
 
+        expect(config.provider.connections.deleteData).to.have.been.calledOnceWithExactly(config, mockConnectionID)
         expect(config.provider.readModels.deleteAllSubscriptions).to.have.been.calledOnceWithExactly(
           config,
           logger,
@@ -105,6 +112,24 @@ describe('the `BoosterGraphQLDispatcher`', () => {
           await dispatcher.dispatch({})
 
           expect(fakeWebsocketHandleMethod).not.to.be.called
+        })
+
+        it('calls the provider "handleGraphQLResult" when the envelope contains errors', async () => {
+          const errorMessage = lorem.sentences(1)
+          const config = mockConfigForGraphQLEnvelope({
+            requestID: random.uuid(),
+            eventType: 'MESSAGE',
+            error: new Error(errorMessage),
+          })
+          const dispatcher = new BoosterGraphQLDispatcher(config, logger)
+
+          await dispatcher.dispatch({})
+
+          expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly(
+            match((result) => {
+              return result.errors[0].message == errorMessage
+            })
+          )
         })
 
         it('calls the provider "handleGraphQLResult" with an error when there is an empty query', async () => {
@@ -254,7 +279,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
   })
 })
 
-function mockConfigForGraphQLEnvelope(envelope: GraphQLRequestEnvelope): BoosterConfig {
+function mockConfigForGraphQLEnvelope(envelope: GraphQLRequestEnvelope | GraphQLRequestEnvelopeError): BoosterConfig {
   const config = new BoosterConfig('test')
   config.provider = {
     graphQL: {
@@ -264,6 +289,12 @@ function mockConfigForGraphQLEnvelope(envelope: GraphQLRequestEnvelope): Booster
     readModels: {
       notifySubscription: fake(),
       deleteAllSubscriptions: fake(),
+    },
+    connections: {
+      storeData: fake(),
+      fetchData: fake(),
+      deleteData: fake(),
+      sendMessage: fake(),
     },
   } as any
   return config
