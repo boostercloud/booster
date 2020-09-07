@@ -16,10 +16,10 @@ jobs:
   lint:
     strategy:
       matrix:
-        runs-on: [ubuntu-latest]
+        os: [ubuntu-latest]
       fail-fast: false
 
-    runs-on: ${{ matrix.runs-on }}
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout
