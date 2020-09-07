@@ -31,7 +31,7 @@ export const Provider: ProviderLibrary = {
     fetch: fetchReadModel.bind(null, cosmosClient),
     search: searchReadModel.bind(null, cosmosClient),
     subscribe: undefined as any,
-    deleteReadModel: undefined as any,
+    delete: undefined as any,
     rawToEnvelopes: undefined as any,
     fetchSubscriptions: undefined as any,
     store: storeReadModel.bind(null, cosmosClient),

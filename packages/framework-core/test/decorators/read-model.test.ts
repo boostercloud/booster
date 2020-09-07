@@ -2,7 +2,7 @@
 import { expect } from '../expect'
 import { describe } from 'mocha'
 import { ReadModel, Booster, Entity, Projects } from '../../src/index'
-import { ProjectionResult, UUID } from '@boostercloud/framework-types'
+import { UUID } from '@boostercloud/framework-types'
 
 describe('the `ReadModel` decorator', () => {
   afterEach(() => {
@@ -71,7 +71,7 @@ describe('the `Projection` decorator', () => {
       public constructor(readonly id: UUID) {}
 
       @Projects(SomeEntity, 'id')
-      public static observeSomeEntity(entity: SomeEntity): ProjectionResult<SomeReadModel> {
+      public static observeSomeEntity(entity: SomeEntity): SomeReadModel | null {
         throw new Error(`not implemented for ${entity}`)
       }
     }

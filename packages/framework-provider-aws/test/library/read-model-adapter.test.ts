@@ -5,7 +5,7 @@ import {
   fetchReadModel,
   storeReadModel,
   rawReadModelEventsToEnvelopes,
-  deleteReadModel
+  deleteReadModel,
 } from '../../src/library/read-model-adapter'
 import { DynamoDB } from 'aws-sdk'
 import { BoosterConfig, Logger, ReadModelEnvelope } from '@boostercloud/framework-types'

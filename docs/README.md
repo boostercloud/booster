@@ -573,7 +573,7 @@ export class PostReadModel {
   public constructor(public id: UUID, readonly title: string, readonly author: string) {}
 
   @Projects(Post, 'postId')
-  public static projectPost(entity: Post, currentPostReadModel?: PostReadModel): ProjectionResult<PostReadModel> {
+  public static projectPost(entity: Post, currentPostReadModel?: PostReadModel): PostReadModel | null {
     return new PostReadModel(entity.id, entity.title, entity.author)
   }
 }
@@ -1349,12 +1349,12 @@ export class ReadModelName {
   ) {}
 
   @Projects(SomeEntity, 'entityField')
-  public static projectionName(entity: SomeEntity, currentEntityReadModel?: ReadModelName): ProjectionResult<ReadModelName> {
+  public static projectionName(entity: SomeEntity, currentEntityReadModel?: ReadModelName): ReadModelName | null {
     return new ReadModelName(/* initialize here your constructor properties */)
   }
   
   @Projects(SomeEntity, 'othetEntityField')
-  public static projectionName(entity: SomeEntity, currentEntityReadModel?: ReadModelName): ProjectionResult<ReadModelName> {
+  public static projectionName(entity: SomeEntity, currentEntityReadModel?: ReadModelName): ReadModelName | null {
     return new ReadModelName(/* initialize here your constructor properties */)
   }
   /* as many projections as needed */
@@ -1402,30 +1402,26 @@ export class UserReadModel {
   public constructor(readonly username: string, /* ...(other interesting fields from users)... */) {}
   
   @Projects(User, 'id')
-  public static projectUser(entity: User, current?: UserReadModel): ProjectionResult<UserReadModel> { // Here we update the user fields}
+  public static projectUser(entity: User, current?: UserReadModel): UserReadModel | null { // Here we update the user fields}
 
   @Projects(Post, 'ownerId')
-  public static projectUserPost(entity: Post, current?: UserReadModel): ProjectionResult<UserReadModel> { //Here we can adapt the read model to show specific user information related with the Post entity}
+  public static projectUserPost(entity: Post, current?: UserReadModel): UserReadModel | null { //Here we can adapt the read model to show specific user information related with the Post entity}
 }
 ```
 In the previous example we are projecting the `User` entity using the user `id` and also we are projecting the `User` entity based on the `ownerId` of the `Post` entity. Notice that both join keys are references to the `User` identifier, but it's not required that the join key is an identifier.
 
-You can also delete read models by returning the `deleteReadModel` type, as shown in the following example:
+You can also delete read models by returning null, as shown in the following example:
 ```
 @ReadModel
 export class UserReadModel {
   public constructor(readonly username: string, /* ...(other interesting fields from users)... */) {}
   
   @Projects(User, 'id')
-  public static projectUser(entity: User, current?: UserReadModel): ProjectionResult<UserReadModel> {
-    if (isReadModelDeletable()) {
-        return deleteReadModel 
+  public static projectUser(entity: User, current?: UserReadModel): UserReadModel | null {
+    if (current?.deleted) {
+        return null
     }
     return new UserReadModel(...)
-  }
-
-  private isReadModelDeletable(): boolean {
-    ...
   }
 ```
 
@@ -1448,7 +1444,7 @@ export class CartReadModel {
     ) {}
 
   @Projects(Cart, "id")
-  public static projectCart(entity:Cart, currentReadModel: CartReadModel): ProjectionResult<CartReadModel> {
+  public static projectCart(entity:Cart, currentReadModel: CartReadModel): CartReadModel | null {
     return new CartReadModel(entity.id, entity.items)
   }
 }

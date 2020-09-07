@@ -23,7 +23,7 @@ describe('new', (): void => {
       restore()
     })
     context('projections', () => {
-      it('returns ProjectionResult', async () => {
+      it('renders according to the template', async () => {
         stub(ProjectChecker, 'checkItIsABoosterProject').returnsThis()
         await new ReadModel([readModel, '--fields', 'title:string', '--projects', 'Post:id'], {} as IConfig).run()
         const readModelFileContent = fs.readFileSync(readModelPath).toString()
@@ -35,7 +35,7 @@ describe('new', (): void => {
             },
             {
               packagePath: '@boostercloud/framework-types',
-              commaSeparatedComponents: 'ProjectionResult, UUID',
+              commaSeparatedComponents: 'UUID',
             },
             {
               packagePath: '../entities/Post',

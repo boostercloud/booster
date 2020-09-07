@@ -47,7 +47,7 @@ export const Provider: ProviderLibrary = {
     fetch: fetchReadModel.bind(null, dynamoDB),
     search: searchReadModel.bind(null, dynamoDB),
     store: storeReadModel.bind(null, dynamoDB),
-    deleteReadModel: deleteReadModel.bind(null, dynamoDB),
+    delete: deleteReadModel.bind(null, dynamoDB),
     subscribe: subscribeToReadModel.bind(null, dynamoDB),
     fetchSubscriptions: fetchSubscriptions.bind(null, dynamoDB),
     deleteSubscription: deleteSubscription.bind(null, dynamoDB),

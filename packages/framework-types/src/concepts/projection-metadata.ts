@@ -6,7 +6,3 @@ export interface ProjectionMetadata {
   methodName: string
   joinKey: string
 }
-
-export type ProjectionResult<TResult> = TResult | typeof deleteReadModel
-
-export const deleteReadModel = { _tag: 'ProjectionResult', value: 'deleteReadModel' }

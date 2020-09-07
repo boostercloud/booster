@@ -38,7 +38,7 @@ export const Provider: ProviderLibrary = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     store: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    deleteReadModel: undefined as any,
+    delete: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     subscribe: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,5 +1,5 @@
 import { Booster } from '../booster'
-import { Class, EntityInterface, ProjectionMetadata, ProjectionResult } from '@boostercloud/framework-types'
+import { Class, EntityInterface, ProjectionMetadata } from '@boostercloud/framework-types'
 
 /**
  * Decorator to register a read model method as a projection
@@ -36,5 +36,5 @@ function registerProjection(originName: string, projectionMetadata: ProjectionMe
 }
 
 type ProjectionMethod<TEntity, TReadModel> = TypedPropertyDescriptor<
-  (_: TEntity, readModel?: TReadModel) => ProjectionResult<TReadModel>
+  (_: TEntity, readModel?: TReadModel) => TReadModel | null
 >

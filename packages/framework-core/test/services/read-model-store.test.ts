@@ -3,14 +3,7 @@ import { describe } from 'mocha'
 import { restore, fake, replace, spy } from 'sinon'
 import { ReadModelStore } from '../../src/services/read-model-store'
 import { buildLogger } from '../../src/booster-logger'
-import {
-  Level,
-  BoosterConfig,
-  EventEnvelope,
-  UUID,
-  ProviderLibrary,
-  deleteReadModel,
-} from '@boostercloud/framework-types'
+import { Level, BoosterConfig, EventEnvelope, UUID, ProviderLibrary } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 
 describe('ReadModelStore', () => {
@@ -42,7 +35,7 @@ describe('ReadModelStore', () => {
   config.provider = ({
     readModels: {
       store: () => {},
-      deleteReadModel: () => {},
+      delete: () => {},
       fetch: () => {},
     },
   } as unknown) as ProviderLibrary
@@ -97,20 +90,20 @@ describe('ReadModelStore', () => {
       })
     })
 
-    context('when the new read model returns the deleteReadModel type', () => {
+    context('when the new read model returns null', () => {
       it('deletes the associated read model', async () => {
         replace(config.provider.readModels, 'store', fake())
-        replace(config.provider.readModels, 'deleteReadModel', fake())
+        replace(config.provider.readModels, 'delete', fake())
         replace(
           ReadModelStore.prototype,
           'reducerForProjection',
-          fake.returns(() => deleteReadModel)
+          fake.returns(() => null)
         )
         const readModelStore = new ReadModelStore(config, logger)
 
         await readModelStore.project(anEntitySnapshot)
         expect(config.provider.readModels.store).not.to.have.been.called
-        expect(config.provider.readModels.deleteReadModel).to.have.been.calledTwice
+        expect(config.provider.readModels.delete).to.have.been.calledTwice
       })
     })
 
