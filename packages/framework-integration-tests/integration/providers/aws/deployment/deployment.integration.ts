@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { appStack } from './utils'
+import { appStack } from '../utils'
 
 describe('After deployment', () => {
   describe('the stack', () => {

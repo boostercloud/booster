@@ -15,11 +15,57 @@ import { split, ApolloLink } from 'apollo-link'
 import * as WebSocket from 'ws'
 import { SubscriptionClient } from 'subscriptions-transport-ws'
 import { ApolloClientOptions } from 'apollo-client/ApolloClient'
+import { config } from 'aws-sdk'
+import util = require('util')
+const exec = util.promisify(require('child_process').exec)
 
 const userPoolId = 'userpool'
 const cloudFormation = new CloudFormation()
 const cognitoIdentityServiceProvider = new CognitoIdentityServiceProvider()
 const documentClient = new DynamoDB.DocumentClient()
+
+// Environment helpers
+export async function setEnv(): Promise<void> {
+  if (!process.env.BOOSTER_APP_SUFFIX) {
+    // If the user doesn't set an app name suffix, use the current git commit hash
+    // to build a unique suffix for the application name in AWS to avoid collisions
+    // between tests from different branches.
+    const { stdout } = await exec('git rev-parse HEAD')
+    process.env['BOOSTER_APP_SUFFIX'] = stdout.trim().substring(0, 6)
+    console.log('setting BOOSTER_APP_SUFFIX=' + process.env.BOOSTER_APP_SUFFIX)
+  }
+  // The following variable is set to make AWS SDK try to load the region config from
+  // `~/.aws/config` if it fails reading it from `/.aws/credentials`. Loading the region doesn't seem
+  // to be a very reliable process, so in some cases we'll need to set the environment variable
+  // AWS_REGION to our chosen region to make this thing work...
+  process.env['AWS_SDK_LOAD_CONFIG'] = 'true'
+  console.log('setting AWS_SDK_LOAD_CONFIG=' + process.env.AWS_SDK_LOAD_CONFIG)
+}
+
+export async function checkConfigAnd(action: () => Promise<void>): Promise<void> {
+  console.log('Checking AWS configuration...')
+  if (!config.credentials?.accessKeyId || !config.credentials?.secretAccessKey) {
+    throw new Error(
+      "AWS credentials were not properly loaded by the AWS SDK and are required to run the integration tests. Check that you've set them in your `~/.aws/credentials` file or environment variables. Refer to AWS documentation for more details https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-credentials-node.html"
+    )
+  }
+  if (!config.region) {
+    throw new Error(
+      "AWS region was not properly loaded by the AWS SDK and is required to run the integration tests. Check that you've set it in your `~/.aws/config` file or AWS_REGION environment variable. Refer to AWS documentation for more details https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-region.html#setting-region-order-of-precedence"
+    )
+  } else {
+    console.log('AWS Region set to ' + config.region)
+  }
+  await action()
+}
+
+export async function hopeTheBest(): Promise<void> {
+  const stack = await appStack() // This function already throws when the stack is not found
+  const validStatuses = ['CREATE_COMPLETE', 'UPDATE_COMPLETE']
+  if (!validStatuses.includes(stack?.StackStatus)) {
+    throw new Error(`The stack '${appStackName()}' status is ${stack?.StackStatus} and tests can't run.`)
+  }
+}
 
 // --- Stack Helpers ---
 
