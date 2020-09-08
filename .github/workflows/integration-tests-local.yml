@@ -1,0 +1,85 @@
+name: Integration
+on:
+  issue_comment:
+    types: [created, edited]
+
+jobs:
+  local-integration-tests:
+    name: Local Environment Integration Tests
+    if: "github.event.comment.body == 'integration: local' || github.event.comment.body == 'integration: all'"
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+      fail-fast: true
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Fetch PR info
+        uses: octokit/request-action@v2.x
+        id: pull_request_info
+        with:
+          route: GET ${{ github.event.issue.pull_request.url }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create a check for integration tests
+        uses: octokit/request-action@v2.x
+        id: create_local_integration_check_step
+        with:
+          route: POST /repos/${{ github.repository }}/check-runs
+          mediaType: '{"previews": ["antiope"]}'
+          name: "Local Environment Integration"
+          head_sha: ${{ fromJson(steps.pull_request_info.outputs.data).head.sha }}
+          status: 'in_progress'
+          output: '{"title":"Local Environment Integration Tests", "summary":"Local Environment integration tests are running, you will see the result logs here whey they are finished. If you want to see them now, to the the Actions tab"}'
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Print integration tests check data (useful for debuging)
+        run: echo "$DATA"
+        env:
+          DATA: ${{ toJson(fromJson(steps.create_local_integration_check_step.outputs.data)) }}
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ fromJson(steps.pull_request_info.outputs.data).head.repo.full_name }}
+          ref: ${{ fromJson(steps.pull_request_info.outputs.data).head.ref }}
+
+      - name: Set Node.js 12.x
+        uses: actions/setup-node@master
+        with:
+          node-version: 12.x
+
+      - name: Get yarn cache
+        id: yarn-cache
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - uses: actions/cache@v1
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Bootstrap the project
+        run: npx lerna bootstrap
+
+      - name: Run integration tests
+        continue-on-error: false
+        id: integration_tests_run
+        run: npx lerna run integration/local --stream
+
+      - name: Update integration tests check status
+        uses: octokit/request-action@v2.x
+        with:
+          route: PATCH /repos/:repository/check-runs/:check_run_id
+          repository: ${{ github.repository }}
+          mediaType: '{"previews": ["antiope"]}'
+          check_run_id: ${{ fromJson(steps.create_local_integration_check_step.outputs.data).id }}
+          conclusion: ${{ steps.integration_tests_run.outcome }}
+          output: '{"title":"Local Environment Integration Tests", "summary":"Integration tests finished. Here you can take a look at the logs", "text":"```console\n${{ steps.integration_tests_run.outputs.data }}\n``"}'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
