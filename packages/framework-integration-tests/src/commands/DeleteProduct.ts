@@ -10,8 +10,8 @@ import { ProductDeleted } from '../events/ProductDeleted'
 export class DeleteProduct {
   public constructor(readonly productId: UUID) {}
 
-  public async handle(register: Register): Promise<void> {
-    await Booster.destroyEntity(Product, this.productId)
-    register.events(new ProductDeleted(this.productId))
+  public static async handle(command: DeleteProduct, register: Register): Promise<void> {
+    await Booster.destroyEntity(Product, command.productId)
+    register.events(new ProductDeleted(command.productId))
   }
 }
