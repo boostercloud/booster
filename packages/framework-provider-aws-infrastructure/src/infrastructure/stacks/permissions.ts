@@ -28,7 +28,10 @@ export const setupPermissions = (
   const { graphQLLambda, subscriptionsStore, subscriptionDispatcherLambda, connectionsStore } = graphQLStack
   const { eventsLambda, eventsStore } = eventsStack
   graphQLLambda.addToRolePolicy(
-    createPolicyStatement([eventsStore.tableArn], ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchWriteItem'])
+    createPolicyStatement(
+      [eventsStore.tableArn],
+      ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchWriteItem', 'dynamodb:Scan*']
+    )
   )
   graphQLLambda.addToRolePolicy(
     createPolicyStatement(

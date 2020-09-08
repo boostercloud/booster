@@ -113,7 +113,7 @@ describe('permissions', () => {
         it('should add events store permissions', () => {
           expect(createPolicyStatementStub).calledWithExactly(
             [mockEventsStoreTableArn],
-            ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchWriteItem']
+            ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchWriteItem', 'dynamodb:Scan*']
           )
         })
 
