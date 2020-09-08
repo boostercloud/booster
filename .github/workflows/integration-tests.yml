@@ -5,7 +5,7 @@ on:
 
 jobs:
   aws-deploy-integration-tests:
-    if: "github.event.comment.body == 'integration: aws-deploy' || github.event.comment.body == 'integration: aws' || github.event.comment.body == 'integration: all'"
+    if: "github.event.comment.body == 'integration: aws-deploy' || github.event.comment.body == 'integration: aws' || github.event.comment.body == 'integration: all'  || github.event.comment.body == 'bot: integration'"
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -88,7 +88,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   aws-func-integration-tests:
-    if: "github.event.comment.body == 'integration: aws-func' || github.event.comment.body == 'integration: aws' || github.event.comment.body == 'integration: all'"
+    if: "github.event.comment.body == 'integration: aws-func' || github.event.comment.body == 'integration: aws' || github.event.comment.body == 'integration: all'  || github.event.comment.body == 'bot: integration'"
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -174,7 +174,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   end-to-end-tests:
-    if: "github.event.comment.body == 'integration: aws-end-to-end' || github.event.comment.body == 'integration: all'"
+    if: "github.event.comment.body == 'integration: aws-end-to-end' || github.event.comment.body == 'integration: all'  || github.event.comment.body == 'bot: integration'"
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -260,7 +260,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   aws-nuke-integration-tests:
-    if: "github.event.comment.body == 'integration: aws-nuke' || github.event.comment.body == 'integration: aws' || github.event.comment.body == 'integration: all'"
+    if: "github.event.comment.body == 'integration: aws-nuke' || github.event.comment.body == 'integration: aws' || github.event.comment.body == 'integration: all'  || github.event.comment.body == 'bot: integration'"
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -348,7 +348,7 @@ jobs:
 
   cli-integration-tests:
     name: CLI Integration Tests
-    if: "github.event.comment.body == 'integration: cli' || github.event.comment.body == 'integration: all'"
+    if: "github.event.comment.body == 'integration: cli' || github.event.comment.body == 'integration: all'  || github.event.comment.body == 'bot: integration'"
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -428,7 +428,7 @@ jobs:
 
   local-integration-tests:
     name: Local Environment Integration Tests
-    if: "github.event.comment.body == 'integration: local' || github.event.comment.body == 'integration: all'"
+    if: "github.event.comment.body == 'integration: local' || github.event.comment.body == 'integration: all'  || github.event.comment.body == 'bot: integration'"
     strategy:
       matrix:
         os: [ubuntu-latest]
