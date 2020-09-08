@@ -325,6 +325,175 @@ describe('Cart end-to-end tests', () => {
         expect(productData).to.be.deep.equal(expectedResult)
       })
     })
+
+    context('Deletions', () => {
+      let mockSku: string
+      let mockDisplayName: string
+      let mockDescription: string
+      let mockPriceInCents: number
+      let mockCurrency: string
+
+      let productId: string
+
+      beforeEach(async () => {
+        mockSku = random.uuid()
+        mockDisplayName = commerce.productName()
+        mockDescription = lorem.paragraph()
+        mockPriceInCents = random.number({ min: 1 })
+        mockCurrency = finance.currencyCode()
+
+        await client.mutate({
+          variables: {
+            sku: mockSku,
+            displayName: mockDisplayName,
+            description: mockDescription,
+            priceInCents: mockPriceInCents,
+            currency: mockCurrency,
+          },
+          mutation: gql`
+            mutation CreateProduct(
+              $sku: String!
+              $displayName: String
+              $description: String
+              $priceInCents: Float
+              $currency: String
+            ) {
+              CreateProduct(
+                input: {
+                  sku: $sku
+                  displayName: $displayName
+                  description: $description
+                  priceInCents: $priceInCents
+                  currency: $currency
+                }
+              )
+            }
+          `,
+        })
+
+        // Check that latest update product is available in read model
+        const products = await waitForIt(
+          () => {
+            return client.query({
+              query: gql`
+                query {
+                  ProductReadModels {
+                    id
+                    sku
+                    displayName
+                    description
+                    price
+                    availability
+                    deleted
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ProductReadModels?.some((product: any) => product.sku === mockSku)
+        )
+
+        const product = products.data.ProductReadModels.find((product: any) => product.sku === mockSku)
+        productId = product.id
+      })
+
+      it('should delete the entity as expected', async () => {
+        const MAX_UPDATES = 100
+        const adminEmail: string = internet.email()
+        await createUser(adminEmail, mockPassword, 'Admin')
+        const adminUserAuthInformation = await getUserAuthInformation(adminEmail, mockPassword)
+        const adminClient = await graphQLClient(adminUserAuthInformation.accessToken)
+
+        // Let's create a lot of updates
+        for (let index = 1; index <= MAX_UPDATES; index++) {
+          await adminClient.mutate({
+            variables: {
+              id: productId,
+              sku: mockSku + `-update-${index}`,
+            },
+            mutation: gql`
+              mutation UpdateProduct($id: ID!, $sku: String) {
+                UpdateProduct(input: { id: $id, sku: $sku })
+              }
+            `,
+          })
+        }
+
+        // Wait till the latest update will be available
+        await waitForIt(
+          () => {
+            return client.query({
+              query: gql`
+                query {
+                  ProductReadModels {
+                    id
+                    sku
+                    displayName
+                    description
+                    price
+                    availability
+                    deleted
+                  }
+                }
+              `,
+            })
+          },
+          (result) =>
+            result?.data?.ProductReadModels?.some((product: any) => product.sku === mockSku + `-update-${MAX_UPDATES}`)
+        )
+
+        // Delete the product given an id, it will delete all the events and snapshots
+        await adminClient.mutate({
+          variables: {
+            productId: productId,
+          },
+          mutation: gql`
+            mutation DeleteProduct($productId: ID!) {
+              DeleteProduct(input: { productId: $productId })
+            }
+          `,
+        })
+
+        // Retrieve deleted entity
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                productId: productId,
+              },
+              query: gql`
+                query ProductReadModel($productId: ID!) {
+                  ProductReadModel(id: $productId) {
+                    id
+                    sku
+                    displayName
+                    description
+                    price
+                    availability
+                    deleted
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ProductReadModel?.deleted && result?.data?.ProductReadModel?.id === productId
+        )
+
+        const productData = queryResult.data.ProductReadModel
+        const expectedResult = {
+          __typename: 'ProductReadModel',
+          id: productId,
+          sku: '<DELETED>',
+          displayName: '',
+          description: '',
+          price: null,
+          availability: 0,
+          deleted: true,
+        }
+
+        expect(productData).to.be.deep.equal(expectedResult)
+      })
+    })
   })
 
   describe('Read models', () => {

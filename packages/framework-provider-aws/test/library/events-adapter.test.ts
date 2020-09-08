@@ -137,29 +137,20 @@ describe('the events-adapter', () => {
     it('deletes all entity events and snapshots', async () => {
       const entityID = random.uuid()
       const entityName = random.word()
-      const numberOfSnapshots = random.number({ min: 1, max: 10 })
       const numberOfEvents = random.number({ min: 1, max: 10 })
       const fakeDelete = fake.returns({
         promise: fake.resolves(''),
       })
-      const fakeQuery = stub()
-        .onFirstCall()
-        .returns({
-          promise: fake.resolves({
-            Items: buildRandomEventEnvelopesForEntity(numberOfEvents, entityName, 'event', entityID),
-          }),
-        })
-
-      fakeQuery.onSecondCall().returns({
+      const fakeScan = stub().returns({
         promise: fake.resolves({
-          Items: buildRandomEventEnvelopesForEntity(numberOfSnapshots, entityName, 'snapshot', entityID),
+          Items: buildRandomEventEnvelopesForEntity(numberOfEvents, entityName, 'event', entityID),
         }),
       })
 
       const fakeBatchWrite = fake.returns({
         promise: fake.resolves(''),
       })
-      const dynamoDB: DocumentClient = { delete: fakeDelete, query: fakeQuery, batchWrite: fakeBatchWrite } as any
+      const dynamoDB: DocumentClient = { delete: fakeDelete, scan: fakeScan, batchWrite: fakeBatchWrite } as any
       const config = new BoosterConfig('test')
       config.appName = 'nuke-button'
 
@@ -167,10 +158,7 @@ describe('the events-adapter', () => {
 
       expect(fakeBatchWrite).to.be.calledWith(
         match({
-          RequestItems: match.has(
-            config.resourceNames.eventsStore,
-            match.has('length', numberOfSnapshots + numberOfEvents)
-          ),
+          RequestItems: match.has(config.resourceNames.eventsStore, match.has('length', numberOfEvents)),
         })
       )
     })

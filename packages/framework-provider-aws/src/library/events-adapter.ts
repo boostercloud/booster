@@ -3,7 +3,7 @@ import { BoosterConfig, EventEnvelope, Logger, UUID } from '@boostercloud/framew
 import { DynamoDB } from 'aws-sdk'
 import { eventsStoreAttributes } from '../constants'
 import { partitionKeyForEvent } from './partition-keys'
-import { Converter } from 'aws-sdk/clients/dynamodb'
+import { Converter, DocumentClient } from 'aws-sdk/clients/dynamodb'
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const originOfTime = new Date(0).toISOString()
@@ -23,18 +23,16 @@ export async function readEntityEventsSince(
   logger: Logger,
   entityTypeName: string,
   entityID: UUID,
-  since?: string,
-  kind?: EventEnvelope['kind']
+  since?: string
 ): Promise<Array<EventEnvelope>> {
-  const fromTime = since ?? originOfTime
-  const eventKind = kind ?? 'event'
+  const fromTime = since ? since : originOfTime
   const result = await dynamoDB
     .query({
       TableName: config.resourceNames.eventsStore,
       ConsistentRead: true,
       KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey AND ${eventsStoreAttributes.sortKey} > :fromTime`,
       ExpressionAttributeValues: {
-        ':partitionKey': partitionKeyForEvent(entityTypeName, entityID, eventKind),
+        ':partitionKey': partitionKeyForEvent(entityTypeName, entityID),
         ':fromTime': fromTime,
       },
       ScanIndexForward: true, // Ascending order (older timestamps first)
@@ -119,47 +117,48 @@ export async function destroyEntity(
   entityID: UUID
 ): Promise<void> {
   logger.debug('[EventsAdapter#destroyEntity] Destroying entity')
+  // BatchWrite limitation, in the future we should move this value to BoosterConfig. We are assuming that this process will be
+  // fit into lambda memory and time execution limits.
+  const MAX_EVENTS_TO_DELETE = 25
+  let nextKey: DocumentClient.Key | undefined = undefined
+  let result = null
+  do {
+    result = await dynamoDB
+      .scan({
+        TableName: config.resourceNames.eventsStore,
+        ConsistentRead: true,
+        FilterExpression: 'entityTypeName = :entityTypeName AND entityID = :entityID',
+        ExpressionAttributeValues: {
+          ':entityTypeName': entityTypeName,
+          ':entityID': entityID,
+        },
+        Limit: MAX_EVENTS_TO_DELETE,
+        ExclusiveStartKey: nextKey,
+      })
+      .promise()
 
-  // We need to fetch the entity events and snapshots
-  const events = await readEntityEventsSince(dynamoDB, config, logger, entityTypeName, entityID)
-  const snapshots = await readEntityEventsSince(
-    dynamoDB,
-    config,
-    logger,
-    entityTypeName,
-    entityID,
-    originOfTime,
-    'snapshot'
-  )
+    if (result?.Items) {
+      const events = result?.Items as Array<EventEnvelope>
 
-  if (events) {
-    if (!snapshots) {
-      logger.debug(`[EventsAdapter#destroyEntity] No snapshots found for entity ${entityTypeName} with id: ${entityID}`)
-    }
-    const snapShotsToDelete = snapshots ?? []
-    const eventsToDelete = [...events, ...snapShotsToDelete]
-
-    const params: DynamoDB.DocumentClient.BatchWriteItemInput = {
-      RequestItems: {
-        [config.resourceNames.eventsStore]: eventsToDelete.map((eventEnvelope) => ({
-          DeleteRequest: {
-            Key: {
-              [eventsStoreAttributes.partitionKey]: partitionKeyForEvent(
-                eventEnvelope.entityTypeName,
-                eventEnvelope.entityID,
-                eventEnvelope.kind
-              ),
-              [eventsStoreAttributes.sortKey]: eventEnvelope.createdAt,
+      const params: DynamoDB.DocumentClient.BatchWriteItemInput = {
+        RequestItems: {
+          [config.resourceNames.eventsStore]: events.map((eventEnvelope) => ({
+            DeleteRequest: {
+              Key: {
+                [eventsStoreAttributes.partitionKey]: partitionKeyForEvent(
+                  eventEnvelope.entityTypeName,
+                  eventEnvelope.entityID,
+                  eventEnvelope.kind
+                ),
+                [eventsStoreAttributes.sortKey]: eventEnvelope.createdAt,
+              },
             },
-          },
-        })),
-      },
+          })),
+        },
+      }
+      await dynamoDB.batchWrite(params).promise()
     }
-    // TODO: For the future we should create chunks of 25 items to be processed.
-    // The db.batchWrite operation impose that limit.
-    await dynamoDB.batchWrite(params).promise()
-    logger.debug('[EventsAdapter#destroyEntity] Entity destroyed')
-  } else {
-    logger.debug(`[EventsAdapter#destroyEntity] No events found for entity ${entityTypeName} with id: ${entityID}`)
-  }
+    nextKey = result?.LastEvaluatedKey
+  } while (nextKey)
+  logger.debug('[EventsAdapter#destroyEntity] Entity destroyed')
 }

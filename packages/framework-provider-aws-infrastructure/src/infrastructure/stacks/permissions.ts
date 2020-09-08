@@ -27,7 +27,10 @@ export const setupPermissions = (
     ['execute-api:ManageConnections']
   )
   graphQLLambda.addToRolePolicy(
-    createPolicyStatement([eventsStore.tableArn], ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchWriteItem'])
+    createPolicyStatement(
+      [eventsStore.tableArn],
+      ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchWriteItem', 'dynamodb:Scan*']
+    )
   )
   graphQLLambda.addToRolePolicy(
     createPolicyStatement(
