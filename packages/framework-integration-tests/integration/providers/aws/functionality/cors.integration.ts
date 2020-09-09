@@ -1,4 +1,4 @@
-import { authClientID, createPassword, signInURL, signOutURL, signUpURL } from './utils'
+import { authClientID, createPassword, signInURL, signOutURL, signUpURL } from '../utils'
 import { internet } from 'faker'
 import fetch from 'cross-fetch'
 import { expect } from '@boostercloud/framework-provider-aws/test/expect'
