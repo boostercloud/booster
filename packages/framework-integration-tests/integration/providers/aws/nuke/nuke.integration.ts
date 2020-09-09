@@ -1,13 +1,16 @@
-import { expect } from 'chai'
-import { appStack } from '../utils'
+import * as chai from 'chai'
+
+chai.use(require('sinon-chai'))
+chai.use(require('chai-as-promised'))
+
+export const expect = chai.expect
+
+import { appStack, appStackName } from '../utils'
 
 describe('After nuke', () => {
   describe('the stack', () => {
     it('is deleted successfully', async () => {
-      const stack = await appStack()
-
-      expect(stack).not.to.be.null
-      expect(stack?.StackStatus).to.be.equal('DELETE_COMPLETE')
+      await expect(appStack()).to.be.eventually.rejectedWith(`Stack with id ${appStackName()} does not exist`)
     })
   })
 })

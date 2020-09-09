@@ -76,6 +76,10 @@ export async function deploy(environmentName = 'production'): Promise<void> {
 export async function nuke(environmentName = 'production'): Promise<void> {
   await setEnv()
 
+  // It looks like when the project is not pre-compiled the nuke command fails
+  await run('lerna run clean --stream')
+  await run('lerna run compile --stream')
+
   // Nuke works in the cloud exclusively, no need for preparation
   await run(`${cliBinaryPath} nuke -e ${environmentName} --force`)
 }

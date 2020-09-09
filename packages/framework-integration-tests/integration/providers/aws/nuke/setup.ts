@@ -5,9 +5,3 @@ before(async () => {
   await setEnv()
   await checkConfigAnd(nuke)
 })
-
-after(async () => {
-  if (!process.env['FULL_INTEGRATION_TEST']) {
-    await checkConfigAnd(nuke)
-  }
-})

@@ -14,7 +14,7 @@ import {
   UserAuthInformation,
   refreshUserAuthInformation,
   graphQLClient,
-} from './utils'
+} from '../utils'
 import gql from 'graphql-tag'
 import { expect } from 'chai'
 import * as chai from 'chai'

@@ -69,7 +69,7 @@ export async function hopeTheBest(): Promise<void> {
 
 // --- Stack Helpers ---
 
-function appStackName(): string {
+export function appStackName(): string {
   return `my-store-${process.env.BOOSTER_APP_SUFFIX}-app`
 }
 
@@ -83,7 +83,7 @@ export async function appStack(): Promise<Stack> {
   if (Stacks?.[0]) {
     return Stacks[0]
   } else {
-    throw `No stack found with name "${appStackName}"`
+    throw `No stack found with name "${appStackName}". Try running 'integration/aws-deploy' first to make sure that the AWS environment is properly set.`
   }
 }
 
@@ -568,8 +568,7 @@ export async function waitForIt<TResult>(
     console.debug('[waitForIt] Executing function')
     const res = await tryFunction()
     console.debug('[waitForIt] Checking result')
-    const expectedResult = checkResult(res)
-    if (expectedResult) {
+    if (checkResult(res)) {
       console.debug('[waitForIt] Result is expected. Wait finished.')
       return res
     }

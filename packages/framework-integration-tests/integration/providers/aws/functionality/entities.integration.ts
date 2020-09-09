@@ -1,4 +1,4 @@
-import { countReadModelItems, graphQLClient, queryReadModels, waitForIt } from './utils'
+import { countReadModelItems, graphQLClient, queryReadModels, waitForIt } from '../utils'
 import { expect } from 'chai'
 import gql from 'graphql-tag'
 import { ApolloClient } from 'apollo-client'
@@ -39,9 +39,7 @@ describe('entities', async () => {
     await waitForIt(
       () => queryReadModels(mockCartId, CART_READ_MODEL_NAME),
       (readModel) =>
-        readModel &&
-        readModel[0]?.id === mockCartId &&
-        readModel[0]?.cartItems[0]?.productId === mockProductId
+        readModel && readModel[0]?.id === mockCartId && readModel[0]?.cartItems[0]?.productId === mockProductId
     )
 
     const ConfirmPaymentResponse = await client.mutate({
@@ -56,7 +54,7 @@ describe('entities', async () => {
         }
       `,
     })
-  
+
     expect(ConfirmPaymentResponse).not.to.be.null
     expect(ConfirmPaymentResponse?.data?.ConfirmPayment).to.be.true
 

@@ -1,4 +1,4 @@
-import { countEventItems, countSnapshotItems, queryEvents, graphQLClient, waitForIt } from './utils'
+import { countEventItems, countSnapshotItems, queryEvents, graphQLClient, waitForIt } from '../utils'
 import { expect } from 'chai'
 import gql from 'graphql-tag'
 import { ApolloClient } from 'apollo-client'
@@ -64,36 +64,29 @@ describe('events', async () => {
     const snapshotsCount = await countSnapshotItems('Cart', mockCartId)
     expect(snapshotsCount).to.be.equal(0)
 
-    const commandsPromises: Promise<any>[] = []
     for (let i = 0; i < 5; i++) {
-      commandsPromises.push(
-        client.mutate({
-          variables: {
-            cartId: mockCartId,
-            productId: mockProductId,
-            quantity: i,
-          },
-          mutation: gql`
-            mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
-              ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
-            }
-          `,
-        })
-      )
-    }
+      const response = await client.mutate({
+        variables: {
+          cartId: mockCartId,
+          productId: mockProductId,
+          quantity: i,
+        },
+        mutation: gql`
+          mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+            ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+          }
+        `,
+      })
 
-    const changeCartItemResults = await Promise.all(commandsPromises)
-
-    changeCartItemResults.forEach((response: any) => {
       expect(response).not.to.be.null
       expect(response?.data?.ChangeCartItem).to.be.true
-    })
+    }
 
-    const expectedSnapshotItemsCount = snapshotsCount + 1
+    const minSnapshotItemsCount = 1
     const newSnapshotItemsCount = await waitForIt(
       () => countSnapshotItems('Cart', mockCartId),
-      (newSnapshotsCount) => newSnapshotsCount === expectedSnapshotItemsCount
+      (newSnapshotsCount) => newSnapshotsCount >= minSnapshotItemsCount
     )
-    expect(newSnapshotItemsCount).to.be.equal(expectedSnapshotItemsCount)
+    expect(newSnapshotItemsCount).to.be.equal(minSnapshotItemsCount)
   })
 })
