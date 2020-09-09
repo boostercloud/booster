@@ -151,14 +151,48 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "AWS Integration Tests",
+      "name": "AWS Deploy Integration Tests",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [
         "--colors",
         "--forbid-only",
         "--config",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/providers/aws/.mocharc.yml",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/providers/aws/**/*.integration.ts"
+        "${workspaceFolder}/packages/framework-integration-tests/integration/providers/aws/deployment/.mocharc.yml",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/providers/aws/deployment/**/*.integration.ts"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "AWS Functionality Integration Tests",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--colors",
+        "--forbid-only",
+        "--config",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/providers/aws/functionality/.mocharc.yml",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/providers/aws/functionality/**/*.integration.ts"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "AWS Nuke Integration Tests",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--colors",
+        "--forbid-only",
+        "--config",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/providers/aws/nuke/.mocharc.yml",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/providers/aws/nuke/**/*.integration.ts"
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",

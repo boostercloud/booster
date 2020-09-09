@@ -4,7 +4,7 @@ import {
   DisconnectableApolloClient,
   graphQLClientWithSubscriptions,
   waitForIt,
-} from './utils'
+} from '../utils'
 import { random } from 'faker'
 import gql from 'graphql-tag'
 import { expect } from 'chai'

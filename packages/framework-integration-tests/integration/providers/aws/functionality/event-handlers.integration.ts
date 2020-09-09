@@ -8,7 +8,7 @@ import {
   graphQLClient,
   waitForIt,
   UserAuthInformation,
-} from './utils'
+} from '../utils'
 import { random, address, internet } from 'faker'
 import { expect } from 'chai'
 
