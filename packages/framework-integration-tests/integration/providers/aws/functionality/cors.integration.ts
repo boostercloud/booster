@@ -159,7 +159,7 @@ describe('Given the Authentication API', () => {
             'Access-Control-Request-Headers': 'X-any-header',
             Origin: internet.url(),
           },
-        }),
+        })
       )
     }
 
@@ -167,7 +167,7 @@ describe('Given the Authentication API', () => {
       return (options: RequestInit) => fetch(url, options)
     }
 
-    function assertResponseContainsPreflightHeaders(response: Response) {
+    function assertResponseContainsPreflightHeaders(response: Response): void {
       expect(response.status).to.be.eq(204)
       expect(response.headers.get('Access-Control-Allow-Origin')).to.be.eq('*')
       expect(response.headers.get('Access-Control-Allow-Headers')).to.be.eq('*')
@@ -176,7 +176,13 @@ describe('Given the Authentication API', () => {
         .and.to.include('POST')
     }
 
-    async function verifyResponseAndAllowedOriginHeader(response: Response, expectedHttpStatus: number, expectedAllowedOrigin: string, jsonBody: any) {
+    async function verifyResponseAndAllowedOriginHeader(
+      response: Response,
+      expectedHttpStatus: number,
+      expectedAllowedOrigin: string,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      jsonBody: any
+    ): Promise<void> {
       expect(response.status).to.be.eq(expectedHttpStatus, `Response body was: ${JSON.stringify(jsonBody)}`)
       expect(response.headers.get('Access-Control-Allow-Origin')).to.be.eq(expectedAllowedOrigin)
     }
