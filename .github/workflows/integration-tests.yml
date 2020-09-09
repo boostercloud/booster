@@ -493,6 +493,13 @@ jobs:
       - name: Bootstrap the project
         run: npx lerna bootstrap
 
+        # For some reason, local tests were failing with syntax errors if we don't recompile the project
+      - name: Clean the project
+        run: npx lerna clean
+
+      - name: Compile the project
+        run: npx lerna compile
+
       - name: Run integration tests
         continue-on-error: false
         id: integration_tests_run
