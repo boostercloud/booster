@@ -32,8 +32,8 @@ describe('new', (): void => {
         author: 'superAuthor',
         homepage: '',
         license: 'MIT',
-        repository: '@boostercloud/framework-provider-aws (AWS)',
-        providerPackageName: '',
+        repository: '',
+        providerPackageName: '@boostercloud/framework-provider-aws',
         boosterVersion: '0.5.1',
       } as ProjectInitializerConfig
 
