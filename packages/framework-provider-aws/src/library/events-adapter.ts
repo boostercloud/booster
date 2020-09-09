@@ -120,8 +120,8 @@ export async function destroyEntity(
   // BatchWrite limitation, in the future we should move this value to BoosterConfig. We are assuming that this process will be
   // fit into lambda memory and time execution limits.
   const MAX_EVENTS_TO_DELETE = 25
-  let nextKey: DocumentClient.Key | undefined = undefined
-  let result = null
+  let nextKey: DocumentClient.Key | undefined
+  let result
   do {
     result = await dynamoDB
       .scan({

@@ -327,28 +327,27 @@ describe('Cart end-to-end tests', () => {
     })
 
     context('Deletions', () => {
-      let mockSku: string
-      let mockDisplayName: string
-      let mockDescription: string
-      let mockPriceInCents: number
-      let mockCurrency: string
-
-      let productId: string
+      let mockProduct: {
+        id?: string
+        sku: string
+        displayName: string
+        description: string
+        priceInCents: number
+        currency: string
+      }
 
       beforeEach(async () => {
-        mockSku = random.uuid()
-        mockDisplayName = commerce.productName()
-        mockDescription = lorem.paragraph()
-        mockPriceInCents = random.number({ min: 1 })
-        mockCurrency = finance.currencyCode()
+        mockProduct = {
+          sku: random.uuid(),
+          displayName: commerce.productName(),
+          description: lorem.paragraph(),
+          priceInCents: random.number({ min: 1 }),
+          currency: finance.currencyCode(),
+        }
 
         await client.mutate({
           variables: {
-            sku: mockSku,
-            displayName: mockDisplayName,
-            description: mockDescription,
-            priceInCents: mockPriceInCents,
-            currency: mockCurrency,
+            ...mockProduct,
           },
           mutation: gql`
             mutation CreateProduct(
@@ -390,16 +389,16 @@ describe('Cart end-to-end tests', () => {
               `,
             })
           },
-          (result) => result?.data?.ProductReadModels?.some((product: any) => product.sku === mockSku)
+          (result) => result?.data?.ProductReadModels?.some((product: any) => product.sku === mockProduct.sku)
         )
 
-        const product = products.data.ProductReadModels.find((product: any) => product.sku === mockSku)
-        productId = product.id
+        const product = products.data.ProductReadModels.find((product: any) => product.sku === mockProduct.sku)
+        mockProduct.id = product.id
       })
 
       it('should delete the entity as expected', async () => {
         const MAX_UPDATES = 100
-        const adminEmail: string = internet.email()
+        const adminEmail = internet.email()
         await createUser(adminEmail, mockPassword, 'Admin')
         const adminUserAuthInformation = await getUserAuthInformation(adminEmail, mockPassword)
         const adminClient = await graphQLClient(adminUserAuthInformation.accessToken)
@@ -408,8 +407,8 @@ describe('Cart end-to-end tests', () => {
         for (let index = 1; index <= MAX_UPDATES; index++) {
           await adminClient.mutate({
             variables: {
-              id: productId,
-              sku: mockSku + `-update-${index}`,
+              id: mockProduct.id,
+              sku: mockProduct.sku + `-update-${index}`,
             },
             mutation: gql`
               mutation UpdateProduct($id: ID!, $sku: String) {
@@ -439,13 +438,15 @@ describe('Cart end-to-end tests', () => {
             })
           },
           (result) =>
-            result?.data?.ProductReadModels?.some((product: any) => product.sku === mockSku + `-update-${MAX_UPDATES}`)
+            result?.data?.ProductReadModels?.some(
+              (product: any) => product.sku === mockProduct.sku + `-update-${MAX_UPDATES}`
+            )
         )
 
         // Delete the product given an id, it will delete all the events and snapshots
         await adminClient.mutate({
           variables: {
-            productId: productId,
+            productId: mockProduct.id,
           },
           mutation: gql`
             mutation DeleteProduct($productId: ID!) {
@@ -459,7 +460,7 @@ describe('Cart end-to-end tests', () => {
           () => {
             return client.query({
               variables: {
-                productId: productId,
+                productId: mockProduct.id,
               },
               query: gql`
                 query ProductReadModel($productId: ID!) {
@@ -476,13 +477,13 @@ describe('Cart end-to-end tests', () => {
               `,
             })
           },
-          (result) => result?.data?.ProductReadModel?.deleted && result?.data?.ProductReadModel?.id === productId
+          (result) => result?.data?.ProductReadModel?.deleted && result?.data?.ProductReadModel?.id === mockProduct.id
         )
 
         const productData = queryResult.data.ProductReadModel
         const expectedResult = {
           __typename: 'ProductReadModel',
-          id: productId,
+          id: mockProduct.id,
           sku: '<DELETED>',
           displayName: '',
           description: '',
