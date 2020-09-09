@@ -5,6 +5,7 @@ on:
 
 jobs:
   aws-deploy-integration-tests:
+    name: AWS Deployment Integration
     if: "github.event.comment.body == 'integration: aws-deploy' || github.event.comment.body == 'integration: aws' || github.event.comment.body == 'integration: all'  || github.event.comment.body == 'bot: integration'"
     strategy:
       matrix:
@@ -88,6 +89,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   aws-func-integration-tests:
+    name: AWS Functionality Integration Tests
     if: "github.event.comment.body == 'integration: aws-func' || github.event.comment.body == 'integration: aws' || github.event.comment.body == 'integration: all'  || github.event.comment.body == 'bot: integration'"
     strategy:
       matrix:
@@ -174,7 +176,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   end-to-end-tests:
-    if: "github.event.comment.body == 'integration: aws-end-to-end' || github.event.comment.body == 'integration: all'  || github.event.comment.body == 'bot: integration'"
+    name: End-to-end Tests
+    if: "github.event.comment.body == 'integration: aws-end-to-end' || github.event.comment.body == 'integration: aws' || github.event.comment.body == 'integration: all'  || github.event.comment.body == 'bot: integration'"
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -260,6 +263,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   aws-nuke-integration-tests:
+    name: AWS Nuke Integration Tests
     if: "github.event.comment.body == 'integration: aws-nuke' || github.event.comment.body == 'integration: aws' || github.event.comment.body == 'integration: all'  || github.event.comment.body == 'bot: integration'"
     strategy:
       matrix:
