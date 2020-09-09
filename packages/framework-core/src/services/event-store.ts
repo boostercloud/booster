@@ -50,7 +50,7 @@ export class EventStore {
     }
   }
 
-  public async destroyEntity(entityName: string, entityID: UUID): Promise<void> {
+  public destroyEntity(entityName: string, entityID: UUID): Promise<void> {
     this.logger.debug(`[EventStore#destroyEntity] Destroying entity ${entityName} with ID ${entityID}`)
     return this.provider.events.destroy(this.config, this.logger, entityName, entityID)
   }

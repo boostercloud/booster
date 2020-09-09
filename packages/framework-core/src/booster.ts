@@ -108,7 +108,7 @@ export class Booster {
   /**
    * Destroy all the entity events and snapshots. That action will cause the entity deletion, since
    * we'll be not able to reduce its state based on its events and snapshots.
-   * @param entityName Name of the entity class
+   * @param entityClass Entity class
    * @param entityID
    */
   public static destroyEntity<TEntity extends EntityInterface>(
