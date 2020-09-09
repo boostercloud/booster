@@ -495,10 +495,10 @@ jobs:
 
         # For some reason, local tests were failing with syntax errors if we don't recompile the project
       - name: Clean the project
-        run: npx lerna clean
+        run: npx lerna run clean
 
       - name: Compile the project
-        run: npx lerna compile
+        run: npx lerna run compile
 
       - name: Run integration tests
         continue-on-error: false
