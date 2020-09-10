@@ -47,7 +47,7 @@ export default class Project extends Command {
     default: flags.boolean({
       char: 'd',
       description: 'generates the project with default parameters (i.e. --license=MIT)',
-      default: true,
+      default: false,
     }),
   }
 
