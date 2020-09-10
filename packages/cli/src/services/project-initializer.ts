@@ -33,6 +33,8 @@ export async function generateRootDirectory(config: ProjectInitializerConfig): P
     [srcDir, 'config'],
     [srcDir, 'entities'],
     [srcDir, 'events'],
+    [srcDir, 'event-handlers'],
+    [srcDir, 'read-models'],
   ]
   await Promise.all(dirs.map(createDirectory))
 }

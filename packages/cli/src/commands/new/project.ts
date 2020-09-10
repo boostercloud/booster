@@ -102,7 +102,7 @@ const getProviderPackageName = async (prompter: Prompter, providerPackageName?: 
   }
 }
 
-const parseConfig = async (
+export const parseConfig = async (
   prompter: Prompter,
   flags: Partial<ProjectInitializerConfig>,
   boosterVersion: string

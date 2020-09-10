@@ -358,6 +358,8 @@ There you should have these files and directories already generated:
 boosted-blog
 ├── .eslintignore
 ├── .gitignore
+├── .eslintrc.js
+├── .prettierrc.yaml
 ├── package-lock.json
 ├── package.json
 ├── src
@@ -367,7 +369,10 @@ boosted-blog
 │   │   └── config.ts
 │   ├── entities
 │   ├── events
+│   ├── event-handlers
+│   ├── read-models
 │   └── index.ts
+├── tsconfig.eslint.json
 └── tsconfig.json
 ```
 
