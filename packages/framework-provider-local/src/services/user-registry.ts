@@ -67,11 +67,11 @@ export class UserRegistry {
   }
 
   private async getRegisteredUsersByEmail(username: string): Promise<Array<RegisteredUser>> {
-    return new Promise((resolve, reject) => {
-      this.registeredUsers.find({ username }, (err, docs) => {
-        err ? reject(err) : resolve(docs)
+    return new Promise((resolve, reject) =>
+      this.registeredUsers.find({ username }).exec((err, documents) => {
+        err ? reject(err) : resolve(documents)
       })
-    })
+    )
   }
 
   private async getUserByCredentials(user: LoginCredentials): Promise<RegisteredUser | undefined> {
