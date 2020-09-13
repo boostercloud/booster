@@ -56,7 +56,7 @@ describe('the deployment process', () => {
         error: fake(),
       } as unknown) as Logger
 
-      await expect(Infrastructure.deploy(config, logger)).not.to.eventually.be.rejected
+      await expect(Infrastructure.deploy([], config, logger)).not.to.eventually.be.rejected
       // It receives the thrown Error object, not just the message
       expect(logger.error).to.have.been.calledWithMatch({ message: errorMessage })
     })
@@ -90,7 +90,7 @@ describe('the deployment process', () => {
         info: fake(),
       } as unknown) as Logger
 
-      await Infrastructure.deploy(config, logger)
+      await Infrastructure.deploy([], config, logger)
 
       expect(fakeBootstrapEnvironment).to.have.been.calledOnce
       expect(fakeBootstrapEnvironment).to.be.calledWith(match(testEnvironment))
@@ -112,7 +112,7 @@ describe('the deployment process', () => {
         info: fake(),
       } as unknown) as Logger
 
-      await Infrastructure.deploy(config, logger)
+      await Infrastructure.deploy([], config, logger)
 
       const appNamePrefixRegExp = new RegExp('^' + testAppName + '-')
       expect(fakeBootstrapEnvironment).to.have.been.calledOnce
@@ -141,7 +141,7 @@ describe('the deployment process', () => {
       // Just checks that the assemble method does not fail,
       // meaning that the stack is build correctly according to the
       // AWS validations
-      expect(() => privateAssemble(config)).not.to.throw()
+      expect(() => privateAssemble(config, [])).not.to.throw()
     })
   })
 
@@ -172,7 +172,7 @@ describe('the deployment process', () => {
       authorizedRoles: 'all',
       properties: [],
     }
-    const cloudAssembly = privateAssemble(config)
+    const cloudAssembly = privateAssemble(config, [])
 
     it('generates cloudformation for a DynamoDB table to store its state', () => {
       const stackResources = cloudAssembly.getStackByName('testing-app-app').template['Resources']

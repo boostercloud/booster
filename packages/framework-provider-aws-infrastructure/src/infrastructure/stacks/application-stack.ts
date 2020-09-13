@@ -9,10 +9,14 @@ import { RestApi } from '@aws-cdk/aws-apigateway'
 import { CfnApi, CfnStage } from '@aws-cdk/aws-apigatewayv2'
 import { baseURLForAPI } from '../params'
 import { setupPermissions } from './permissions'
-import StaticWebsiteStack from './static-website-stack'
+import { InfrastructurePlugin } from '../../infraestructure-plugin'
 
 export class ApplicationStackBuilder {
-  public constructor(readonly config: BoosterConfig, readonly props?: StackProps) {}
+  public constructor(
+    readonly config: BoosterConfig,
+    readonly plugins: InfrastructurePlugin[],
+    readonly props?: StackProps
+  ) {}
 
   public buildOn(app: App): void {
     const stack = new Stack(app, this.config.resourceNames.applicationStack, this.props)
@@ -28,9 +32,11 @@ export class ApplicationStackBuilder {
     const graphQLStack = new GraphQLStack(this.config, stack, apis, readModelTables).build()
     const scheduledCommandStack = new ScheduledCommandStack(this.config, stack, apis).build()
     const eventsStack = new EventsStack(this.config, stack, apis).build()
-    new StaticWebsiteStack(this.config, stack).build()
 
     setupPermissions(graphQLStack, eventsStack, readModelTables, websocketAPI, scheduledCommandStack)
+
+    // Load plugins
+    this.plugins.forEach((plugin) => plugin.mountStack(this.config, stack))
   }
 
   private buildRootRESTAPI(stack: Stack): RestApi {

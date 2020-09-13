@@ -10,6 +10,7 @@ import { CloudFormationDeploymentTarget } from 'aws-cdk/lib/api/deployment-targe
 import { RequireApproval } from 'aws-cdk/lib/diff'
 import * as colors from 'colors'
 import { emptyS3Bucket } from './s3utils'
+import { InfrastructurePlugin } from '../infraestructure-plugin'
 
 interface StackServiceConfiguration {
   aws: SDK
@@ -43,7 +44,7 @@ function bootstrapResultToMessage(result: DeployStackResult): string {
   return `Environment ${result.stackArn} bootstrapped${result.noOp ? ' (no changes).' : '.'}`
 }
 
-async function bootstrap(logger: Logger, config: BoosterConfig, appStacks: AppStacks, aws: SDK): Promise<string> {
+async function bootstrap(logger: Logger, config: BoosterConfig, aws: SDK): Promise<string> {
   const toolkitStackName: string = config.appName + '-toolkit'
 
   const env: Environment = await getEnvironment(aws)
@@ -55,9 +56,10 @@ async function bootstrap(logger: Logger, config: BoosterConfig, appStacks: AppSt
   return toolkitStackName
 }
 
-function assemble(config: BoosterConfig): CloudAssembly {
+// Exported for testing
+export function assemble(config: BoosterConfig, plugins: InfrastructurePlugin[]): CloudAssembly {
   const boosterApp = new App()
-  new ApplicationStackBuilder(config).buildOn(boosterApp)
+  new ApplicationStackBuilder(config, plugins).buildOn(boosterApp)
   // Here we could add other optional stacks like one with a lot of dashboards for analytics, etc.
 
   return boosterApp.synth()
@@ -66,10 +68,14 @@ function assemble(config: BoosterConfig): CloudAssembly {
 /**
  * Deploys the application using the credentials located in ~/.aws
  */
-async function deployApp(logger: Logger, config: BoosterConfig): Promise<void> {
-  const { aws, appStacks, cdkToolkit } = await getStackServiceConfiguration(config)
+async function deployApp(
+  logger: Logger,
+  config: BoosterConfig,
+  plugins: InfrastructurePlugin[]
+): Promise<void> {
+  const { aws, appStacks, cdkToolkit } = await getStackServiceConfiguration(config, plugins)
 
-  const toolkitStackName = await bootstrap(logger, config, appStacks, aws)
+  const toolkitStackName = await bootstrap(logger, config, aws)
 
   return cdkToolkit.deploy({
     toolkitStackName: toolkitStackName,
@@ -81,13 +87,16 @@ async function deployApp(logger: Logger, config: BoosterConfig): Promise<void> {
 
 // Configure the SDK and the "AppStacks" that contains all the information
 // about the application we want to deploy
-async function getStackServiceConfiguration(config: BoosterConfig): Promise<StackServiceConfiguration> {
+async function getStackServiceConfiguration(
+  config: BoosterConfig,
+  plugins: InfrastructurePlugin[]
+): Promise<StackServiceConfiguration> {
   const aws = new SDK()
   const configuration = await new Configuration().load()
   const appStacks = new AppStacks({
     configuration,
     aws,
-    synthesizer: (): Promise<CloudAssembly> => Promise.resolve(assemble(config)),
+    synthesizer: async (): Promise<CloudAssembly> => assemble(config, plugins),
   })
   const cdkToolkit = new CdkToolkit({
     appStacks,
@@ -104,7 +113,7 @@ async function getStackServiceConfiguration(config: BoosterConfig): Promise<Stac
  * Nuke all the resources used in the "AppStacks"
  */
 async function nukeApp(logger: Logger, config: BoosterConfig): Promise<void> {
-  const { aws, appStacks, cdkToolkit } = await getStackServiceConfiguration(config)
+  const { aws, appStacks, cdkToolkit } = await getStackServiceConfiguration(config, [])
   const toolkit = nukeToolkit(logger, config, aws)
   const app = cdkToolkit.destroy({
     stackNames: (await appStacks.listStacks()).map((s): string => s.stackName),
@@ -132,8 +141,9 @@ async function nukeToolkit(logger: Logger, config: BoosterConfig, aws: SDK): Pro
   logger.info('✅  ' + colors.blue(stackName) + colors.red(': DESTROYED'))
 }
 
-export const deploy = (config: BoosterConfig, logger: Logger): Promise<void> =>
-  deployApp(logger, config).catch(logger.error)
+export const deploy = (plugins: InfrastructurePlugin[], config: BoosterConfig, logger: Logger): Promise<void> =>
+  deployApp(logger, config, plugins).catch(logger.error)
+}
 
 export const nuke = (config: BoosterConfig, logger: Logger): Promise<void> =>
   nukeApp(logger, config).catch(logger.error)

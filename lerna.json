@@ -11,7 +11,8 @@
     "packages/framework-provider-kubernetes-infrastructure",
     "packages/framework-core",
     "packages/cli",
-    "packages/framework-integration-tests"
+    "packages/framework-integration-tests",
+    "packages/plugin-aws-static-sites"
   ],
   "version": "0.8.2",
   "npmClient": "yarn",

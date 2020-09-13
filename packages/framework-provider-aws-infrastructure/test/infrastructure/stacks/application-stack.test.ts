@@ -7,8 +7,6 @@ import { Function } from '@aws-cdk/aws-lambda'
 import { CfnUserPool, CfnUserPoolDomain, UserPoolClient } from '@aws-cdk/aws-cognito'
 import { RestApi } from '@aws-cdk/aws-apigateway'
 import { CfnApi } from '@aws-cdk/aws-apigatewayv2'
-import StaticWebsiteStack from '../../../src/infrastructure/stacks/static-website-stack'
-import { stub } from 'sinon'
 
 describe('the application stack builder', () => {
   class TestReadModel1 {
@@ -34,9 +32,7 @@ describe('the application stack builder', () => {
   it('builds the application stack of a simple app correctly', () => {
     const boosterApp = new App()
 
-    const staticWebsiteBuilder = stub(StaticWebsiteStack.prototype, 'build')
-
-    new ApplicationStackBuilder(config).buildOn(boosterApp)
+    new ApplicationStackBuilder(config, []).buildOn(boosterApp)
 
     const appStackName = config.resourceNames.applicationStack
     const appStack = boosterApp.node.findChild(appStackName).node
@@ -76,8 +72,6 @@ describe('the application stack builder', () => {
     expect(appStack.tryFindChild(eventsStore)).not.to.be.undefined
     // ReadModels
     readModels.forEach(({ name }) => expect(appStack.tryFindChild(name)).not.to.be.undefined)
-    // Static website deployer related
-    expect(staticWebsiteBuilder).calledOnce
 
     // Now, check all the construct that must NOT be created (related to roles)
     expect(restAPI.root.getResource('auth')).to.be.undefined
@@ -95,7 +89,7 @@ describe('the application stack builder', () => {
     }
 
     const boosterApp = new App()
-    new ApplicationStackBuilder(config).buildOn(boosterApp)
+    new ApplicationStackBuilder(config, []).buildOn(boosterApp)
     const appStackName = config.resourceNames.applicationStack
     const appStack = boosterApp.node.findChild(appStackName).node
 
@@ -116,6 +110,7 @@ describe('the application stack builder', () => {
     // Lambdas
     expect(numberOfLambdas).to.equal(5)
     expect(appStack.tryFindChild(preSignUpValidator)).not.to.be.undefined
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     lambdas.forEach((lambda: any) => {
       expect(lambda.environment.BOOSTER_ENV).to.equal('test')
       expect(lambda.environment.A_CUSTOM_ENV_VARIABLE).to.equal('important-value')
