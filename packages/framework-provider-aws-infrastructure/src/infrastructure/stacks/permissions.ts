@@ -3,13 +3,15 @@ import { CfnApi } from '@aws-cdk/aws-apigatewayv2'
 import { Fn } from '@aws-cdk/core'
 import { createPolicyStatement } from './policies'
 import { GraphQLStackMembers } from './graphql-stack'
+import { ScheduledTaskStackMembers } from './scheduled-tasks-stack'
 import { EventsStackMembers } from './events-stack'
 
 export const setupPermissions = (
   graphQLStack: GraphQLStackMembers,
   eventsStack: EventsStackMembers,
   readModelTables: Array<Table>,
-  websocketAPI: CfnApi
+  websocketAPI: CfnApi,
+  scheduledTaskStack?: ScheduledTaskStackMembers
 ): void => {
   const websocketManageConnectionsPolicy = createPolicyStatement(
     [
@@ -49,6 +51,13 @@ export const setupPermissions = (
   eventsLambda.addToRolePolicy(
     createPolicyStatement([eventsStore.tableArn], ['dynamodb:BatchWriteItem', 'dynamodb:Query*', 'dynamodb:Put*'])
   )
+
+  if (scheduledTaskStack) {
+    const { scheduledLambda } = scheduledTaskStack
+    scheduledLambda.addToRolePolicy(
+      createPolicyStatement([eventsStore.tableArn], ['dynamodb:BatchWriteItem', 'dynamodb:Query*', 'dynamodb:Put*'])
+    )
+  }
 
   const tableArns = readModelTables.map((table): string => table.tableArn)
   if (tableArns.length > 0) {
