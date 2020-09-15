@@ -6,6 +6,7 @@ import {
   ReadModelEnvelope,
   ConnectionDataEnvelope,
   GraphQLRequestEnvelopeError,
+  ScheduledCommandEnvelope,
 } from './envelope'
 import { BoosterConfig } from './config'
 import { Observable } from 'rxjs'
@@ -20,6 +21,7 @@ export interface ProviderLibrary {
   graphQL: ProviderGraphQLLibrary
   api: ProviderAPIHandling
   connections: ProviderConnectionsLibrary
+  scheduled: ScheduledCommandsLibrary
   infrastructure: () => ProviderInfrastructure
 }
 
@@ -91,4 +93,8 @@ export interface ProviderInfrastructure {
   deploy?: (configuration: BoosterConfig) => Observable<string>
   nuke?: (configuration: BoosterConfig) => Observable<string>
   start?: (configuration: BoosterConfig, port: number) => Promise<void>
+}
+
+export interface ScheduledCommandsLibrary {
+  rawToEnvelope(rawMessage: unknown, logger: Logger): Promise<ScheduledCommandEnvelope>
 }
