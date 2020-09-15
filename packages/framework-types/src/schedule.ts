@@ -1,8 +1,8 @@
 export interface ScheduleInterface {
-  readonly minute?: number
-  readonly hour?: number | '*'
-  readonly day?: number | '*'
-  readonly month?: number | '*'
-  readonly weekDay?: string | '?'
-  readonly year?: number | '*'
+  readonly minute?: string
+  readonly hour?: string
+  readonly day?: string
+  readonly month?: string
+  readonly weekDay?: string
+  readonly year?: string
 }

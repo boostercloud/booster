@@ -7,5 +7,5 @@ export interface ScheduledCommandInterface extends AnyClass {
 
 export interface ScheduledCommandMetadata {
   readonly class: ScheduledCommandInterface
-  readonly scheduledOn?: ScheduleInterface
+  readonly scheduledOn: ScheduleInterface
 }
