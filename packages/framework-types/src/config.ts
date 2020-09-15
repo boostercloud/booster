@@ -7,6 +7,7 @@ import {
   ProjectionMetadata,
   ReadModelMetadata,
   EventHandlerInterface,
+  ScheduledCommandMetadata,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
@@ -28,6 +29,7 @@ export class BoosterConfig {
   public readonly eventDispatcherHandler: string = 'dist/index.boosterEventDispatcher'
   public readonly preSignUpHandler: string = 'dist/index.boosterPreSignUpChecker'
   public readonly serveGraphQLHandler: string = 'dist/index.boosterServeGraphQL'
+  public readonly scheduledTaskHandler: string = 'dist/index.boosterScheduleTask'
   public readonly notifySubscribersHandler: string = 'dist/index.boosterNotifySubscribers'
 
   public readonly entities: Record<EntityName, EntityMetadata> = {}
@@ -38,6 +40,7 @@ export class BoosterConfig {
   public readonly projections: Record<EntityName, Array<ProjectionMetadata>> = {}
   public readonly roles: Record<RoleName, RoleMetadata> = {}
   public readonly migrations: Record<ConceptName, Map<Version, MigrationMetadata>> = {}
+  public readonly scheduledCommandHandlers: Record<ScheduledCommandName, ScheduledCommandMetadata> = {}
 
   /** Environment variables set at deployment time on the target lambda functions */
   public readonly env: Record<string, string> = {}
@@ -152,3 +155,4 @@ type ReadModelName = string
 type RoleName = string
 type ConceptName = string
 type Version = number
+type ScheduledCommandName = string
