@@ -64,7 +64,7 @@ describe('the application stack builder', () => {
     expect(websocketAPI.protocolType).to.be.eq('WEBSOCKET')
     websocketRoutes.forEach((route) => expect(appStack.tryFindChild(route)).not.to.be.undefined)
 
-    expect(numberOfLambdas).to.equal(3)
+    expect(numberOfLambdas).to.equal(4)
 
     // GraphQL related
     expect(appStack.tryFindChild(graphQLLambda)).not.to.be.undefined
@@ -91,7 +91,7 @@ describe('the application stack builder', () => {
     config.roles['Admin'] = {
       auth: {
         signUpMethods: [],
-      }
+      },
     }
 
     const boosterApp = new App()
@@ -114,7 +114,7 @@ describe('the application stack builder', () => {
     expect(api).not.to.be.undefined
     expect(api.root.getResource('auth')).not.to.be.undefined
     // Lambdas
-    expect(numberOfLambdas).to.equal(4)
+    expect(numberOfLambdas).to.equal(5)
     expect(appStack.tryFindChild(preSignUpValidator)).not.to.be.undefined
     lambdas.forEach((lambda: any) => {
       expect(lambda.environment.BOOSTER_ENV).to.equal('test')

@@ -2,7 +2,7 @@ import * as Oclif from '@oclif/command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
 import { generate } from '../../services/generator'
-import { HasName, joinParsers, parseName, parseFields, ImportDeclaration } from '../../services/generator/target'
+import { HasName, joinParsers, parseName, ImportDeclaration } from '../../services/generator/target'
 import * as path from 'path'
 import { templates } from '../../templates'
 import { checkItIsABoosterProject } from '../../services/project-checker'
@@ -13,20 +13,19 @@ export default class ScheduledCommand extends Oclif.Command {
     help: Oclif.flags.help({ char: 'h' }),
     fields: Oclif.flags.string({
       char: 'f',
-      description: 'field that this command will contain',
+      description: 'field that this scheduled command will contain',
       multiple: true,
     }),
   }
 
-  public static args = [{ name: 'commandName' }]
+  public static args = [{ name: 'scheduledCommandName' }]
 
   public async run(): Promise<void> {
-    const { args, flags } = this.parse(ScheduledCommand)
+    const { args } = this.parse(ScheduledCommand)
     try {
-      const fields = flags.fields || []
-      if (!args.commandName)
+      if (!args.scheduledCommandName)
         throw "You haven't provided a scheduled command name, but it is required, run with --help for usage"
-      return run(args.commandName, fields)
+      return run(args.scheduledCommandName)
     } catch (error) {
       console.error(error)
     }
@@ -35,11 +34,8 @@ export default class ScheduledCommand extends Oclif.Command {
 
 type ScheduledCommandInfo = HasName
 
-const run = async (name: string, rawFields: Array<string>): Promise<void> =>
-  Script.init(
-    `boost ${Brand.energize('new:scheduled-command')} 🚧`,
-    joinParsers(parseName(name), parseFields(rawFields))
-  )
+const run = async (name: string): Promise<void> =>
+  Script.init(`boost ${Brand.energize('new:scheduled-command')} 🚧`, joinParsers(parseName(name)))
     .step('Verifying project', checkItIsABoosterProject)
     .step('Creating new scheduled command', generateScheduledCommand)
     .info('Scheduled command generated!')
