@@ -334,8 +334,13 @@ configured [here](#set-up-an-aws-account).
 ℹ Project generated!
 ```
 
-**Note:** If you prefer to create the project with default parameters (i.e. --license='MIT'), you can run the command as `boost new:project booster-blog --default`. Keep
-in mind that the default cloud provider is AWS!
+**Note:** If you prefer to create the project with default parameters, you can run the command as `boost new:project booster-blog --default`. The default
+parameters are as follows:
+- Project name: The one provided when running the command, in this case "booster-blog"
+- Provider: AWS
+- Description, author, homepage and repository: ""
+- License: MIT
+- Version: 0.1.0
 
 > Booster CLI commands follow this structure: `boost <subcommand> [<flags>] [<parameters>]`. 
 > Let's break down the command we have just executed:
