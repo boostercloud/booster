@@ -5,6 +5,7 @@ export {
   boosterPreSignUpChecker,
   boosterServeGraphQL,
   boosterNotifySubscribers,
+  boosterScheduleTask,
 } from '@boostercloud/framework-core'
 
 Booster.start()
