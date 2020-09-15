@@ -25,6 +25,7 @@
     "@aws-cdk/aws-cloudfront": "1.26.0",
     "@aws-cdk/aws-cognito": "1.26.0",
     "@aws-cdk/aws-dynamodb": "1.26.0",
+    "@aws-cdk/aws-events-targets": "1.26.0",
     "@aws-cdk/aws-iam": "1.26.0",
     "@aws-cdk/aws-lambda": "1.26.0",
     "@aws-cdk/aws-lambda-event-sources": "1.26.0",
