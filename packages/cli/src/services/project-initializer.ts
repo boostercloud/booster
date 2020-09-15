@@ -35,6 +35,7 @@ export async function generateRootDirectory(config: ProjectInitializerConfig): P
     [srcDir, 'events'],
     [srcDir, 'event-handlers'],
     [srcDir, 'read-models'],
+    [srcDir, 'scheduled-commands'],
   ]
   await Promise.all(dirs.map(createDirectory))
 }
