@@ -9,6 +9,7 @@
 
 ## Disclaimer
 
+
 Booster is a pre-release framework under heavy development, so non-backward-compatible changes might be introduced until we reach v1.0.0.
 
 Refer to [Release Notes](https://github.com/boostercloud/booster/releases) for more specific information about changes of each iteration.
