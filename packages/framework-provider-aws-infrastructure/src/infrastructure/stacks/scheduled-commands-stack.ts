@@ -3,21 +3,21 @@ import { Stack } from '@aws-cdk/core'
 import { Rule, Schedule, RuleTargetInput } from '@aws-cdk/aws-events'
 import { LambdaFunction } from '@aws-cdk/aws-events-targets'
 import { Code, Function, IEventSource } from '@aws-cdk/aws-lambda'
-import * as params from '../params'
-import { APIs } from '../params'
+import * as params from '@boostercloud/framework-provider-aws-infrastructure/src/infrastructure/params'
+import { APIs } from '@boostercloud/framework-provider-aws-infrastructure/src/infrastructure/params'
 
-export interface ScheduledTaskStackMembers {
+export interface ScheduledCommandStackMembers {
   scheduledLambda: Function
 }
 
-export class ScheduledTaskStack {
+export class ScheduledCommandStack {
   public constructor(
     private readonly config: BoosterConfig,
     private readonly stack: Stack,
     private readonly apis: APIs
   ) {}
 
-  public build(): ScheduledTaskStackMembers {
+  public build(): ScheduledCommandStackMembers {
     const scheduledLambda = this.buildLambda('scheduled-task', this.config.scheduledTaskHandler)
     this.scheduleLambda(scheduledLambda)
 

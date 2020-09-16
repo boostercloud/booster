@@ -4,7 +4,7 @@ import { AuthStack } from './auth-stack'
 import { EventsStack } from './events-stack'
 import { ReadModelsStack } from './read-models-stack'
 import { GraphQLStack } from './graphql-stack'
-import { ScheduledTaskStack } from './scheduled-tasks-stack'
+import { ScheduledCommandStack } from '@boostercloud/framework-provider-aws-infrastructure/src/infrastructure/stacks/scheduled-commands-stack'
 import { RestApi } from '@aws-cdk/aws-apigateway'
 import { CfnApi, CfnStage } from '@aws-cdk/aws-apigatewayv2'
 import { baseURLForAPI } from '../params'
@@ -26,11 +26,11 @@ export class ApplicationStackBuilder {
     new AuthStack(this.config, stack, apis).build()
     const readModelTables = new ReadModelsStack(this.config, stack).build()
     const graphQLStack = new GraphQLStack(this.config, stack, apis, readModelTables).build()
-    const scheduledTaskStack = new ScheduledTaskStack(this.config, stack, apis).build()
+    const scheduledCommandStack = new ScheduledCommandStack(this.config, stack, apis).build()
     const eventsStack = new EventsStack(this.config, stack, apis).build()
     new StaticWebsiteStack(this.config, stack).build()
 
-    setupPermissions(graphQLStack, eventsStack, readModelTables, websocketAPI, scheduledTaskStack)
+    setupPermissions(graphQLStack, eventsStack, readModelTables, websocketAPI, scheduledCommandStack)
   }
 
   private buildRootRESTAPI(stack: Stack): RestApi {
