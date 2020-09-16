@@ -13,7 +13,7 @@ export default class ScheduledCommand extends Oclif.Command {
     help: Oclif.flags.help({ char: 'h' }),
     fields: Oclif.flags.string({
       char: 'f',
-      description: 'field that this scheduled command will contain',
+      description: 'fields that this scheduled command will contain',
       multiple: true,
     }),
   }
