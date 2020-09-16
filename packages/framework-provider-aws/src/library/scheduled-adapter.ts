@@ -7,7 +7,10 @@ export async function rawScheduledInputToEnvelope(
 ): Promise<ScheduledCommandEnvelope> {
   logger.debug('Received ScheduledCommand request: ', input)
 
-  if (!input.typeName) throw new Error('TypeName is not defined')
+  if (!input.typeName)
+    throw new Error(
+      `TypeName is not defined, scheduled command envelope should have the structure {typeName: string}, but you gave ${input}`
+    )
 
   return {
     requestID: UUID.generate(),
