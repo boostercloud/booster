@@ -87,7 +87,7 @@ export class Booster {
     return new BoosterGraphQLDispatcher(this.config, this.logger).dispatch(request)
   }
 
-  public static scheduleTask(request: unknown): Promise<unknown> {
+  public static triggerScheduledCommand(request: unknown): Promise<unknown> {
     return new BoosterScheduledCommandDispatcher(this.config, this.logger).dispatch(request)
   }
 
@@ -130,8 +130,8 @@ export async function boosterServeGraphQL(rawRequest: unknown): Promise<unknown>
   return Booster.serveGraphQL(rawRequest)
 }
 
-export async function boosterScheduleTask(rawRequest: unknown): Promise<unknown> {
-  return Booster.scheduleTask(rawRequest)
+export async function boosterTriggerScheduledCommand(rawRequest: unknown): Promise<unknown> {
+  return Booster.triggerScheduledCommand(rawRequest)
 }
 
 export async function boosterNotifySubscribers(rawRequest: unknown): Promise<unknown> {

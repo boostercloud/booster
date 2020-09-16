@@ -29,7 +29,7 @@ export class BoosterConfig {
   public readonly eventDispatcherHandler: string = 'dist/index.boosterEventDispatcher'
   public readonly preSignUpHandler: string = 'dist/index.boosterPreSignUpChecker'
   public readonly serveGraphQLHandler: string = 'dist/index.boosterServeGraphQL'
-  public readonly scheduledTaskHandler: string = 'dist/index.boosterScheduleTask'
+  public readonly scheduledTaskHandler: string = 'dist/index.boosterTriggerScheduledCommand'
   public readonly notifySubscribersHandler: string = 'dist/index.boosterNotifySubscribers'
 
   public readonly entities: Record<EntityName, EntityMetadata> = {}
