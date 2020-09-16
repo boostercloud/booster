@@ -12,7 +12,7 @@ export class BoosterScheduledCommandDispatcher {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
 
   public async dispatchCommand(commandEnvelope: ScheduledCommandEnvelope): Promise<void> {
-    this.logger.debug('Dispatching the following command envelope: ', commandEnvelope)
+    this.logger.debug('Dispatching the following scheduled command envelope: ', commandEnvelope)
 
     const commandMetadata = this.config.scheduledCommandHandlers[commandEnvelope.typeName]
     if (!commandMetadata) {
