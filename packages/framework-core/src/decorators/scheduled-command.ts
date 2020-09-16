@@ -2,7 +2,7 @@ import { Booster } from '../booster'
 import { ScheduledCommandInterface, ScheduleInterface } from '@boostercloud/framework-types'
 
 /**
- * Annotation to tell Booster which classes are your entities
+ * Annotation to tell Booster which classes are scheduled commands
  * @param attributes
  * @constructor
  */
