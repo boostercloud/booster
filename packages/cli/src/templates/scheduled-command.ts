@@ -3,7 +3,7 @@ import { {{commaSeparatedComponents}} } from '{{{packagePath}}}'
 {{/imports}}
 
 @ScheduledCommand({
-  // Specify cron scheduled params here. By default scheduledCommand will be triggered every 30 minutes
+  // Specify schedule settings here. By default, {{{ name }}} will be triggered every 30 minutes
   minute: '0/30',
 })
 export class {{{ name }}} {
