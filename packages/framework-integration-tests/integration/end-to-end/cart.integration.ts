@@ -311,8 +311,6 @@ describe('Cart end-to-end tests', () => {
         )
 
         const productData = queryResult.data.ProductReadModel
-        console.log("lalalalalala")
-        console.log(productData)
         expect(productData).to.be.null
       })
     })

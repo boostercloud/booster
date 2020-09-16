@@ -6,3 +6,7 @@ export interface ProjectionMetadata {
   methodName: string
   joinKey: string
 }
+
+export enum ReadModelAction {
+  DELETE,
+}

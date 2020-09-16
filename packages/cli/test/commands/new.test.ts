@@ -35,7 +35,7 @@ describe('new', (): void => {
             },
             {
               packagePath: '@boostercloud/framework-types',
-              commaSeparatedComponents: 'UUID',
+              commaSeparatedComponents: 'UUID, ReadModelAction',
             },
             {
               packagePath: '../entities/Post',

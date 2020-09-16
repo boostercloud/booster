@@ -1,6 +1,6 @@
 import { ReadModel, Projects } from '@boostercloud/framework-core'
 import { Admin } from '../roles'
-import { UUID } from '@boostercloud/framework-types'
+import { UUID, ReadModelAction } from '@boostercloud/framework-types'
 import { Product } from '../entities/Product'
 
 // This is an example read model for a possible admin-exclusive report to show last and previous updates to products
@@ -19,7 +19,7 @@ export class ProductUpdatesReadModel {
   public static updateWithProduct(
     product: Product,
     previous?: ProductUpdatesReadModel
-  ): ProductUpdatesReadModel | null {
+  ): ProductUpdatesReadModel | ReadModelAction {
     return new ProductUpdatesReadModel(product.id, product.availability, new Date(), previous?.lastUpdate)
   }
 }

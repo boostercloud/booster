@@ -1,7 +1,6 @@
 import { ReadModel, Projects } from '@boostercloud/framework-core'
-import { UUID } from '@boostercloud/framework-types'
+import { UUID, ReadModelAction } from '@boostercloud/framework-types'
 import { Cart } from '../entities/Cart'
-import { CartItem } from "../common/CartItem";
 
 @ReadModel({
   authorize: // Specify authorized roles here. Use 'all' to authorize anyone
@@ -13,7 +12,7 @@ export class CartWithProjectionReadModel {
   ) {}
 
   @Projects(Cart, "id")
-  public static projectCart(entity: Cart, currentCartWithProjectionReadModel?: CartWithProjectionReadModel): CartWithProjectionReadModel {
+  public static projectCart(entity: Cart, currentCartWithProjectionReadModel?: CartWithProjectionReadModel): CartWithProjectionReadModel | ReadModelAction {
     return /* NEW CartWithProjectionReadModel HERE */
   }
 

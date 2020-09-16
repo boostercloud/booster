@@ -9,6 +9,7 @@ import {
   UUID,
   EntityInterface,
   InvalidParameterError,
+  ReadModelAction,
 } from '@boostercloud/framework-types'
 
 export class ReadModelStore {
@@ -43,7 +44,7 @@ export class ReadModelStore {
         )
         const newReadModel = this.reducerForProjection(projectionMetadata)(entitySnapshot, readModel)
 
-        if (newReadModel === null) {
+        if (newReadModel === ReadModelAction.DELETE) {
           this.logger.debug(
             `[ReadModelDelete#project] Deleting read model ${readModelName} with ID ${readModelID}:`,
             readModel

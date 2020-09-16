@@ -3,7 +3,14 @@ import { describe } from 'mocha'
 import { restore, fake, replace, spy } from 'sinon'
 import { ReadModelStore } from '../../src/services/read-model-store'
 import { buildLogger } from '../../src/booster-logger'
-import { Level, BoosterConfig, EventEnvelope, UUID, ProviderLibrary } from '@boostercloud/framework-types'
+import {
+  Level,
+  BoosterConfig,
+  EventEnvelope,
+  UUID,
+  ProviderLibrary,
+  ReadModelAction,
+} from '@boostercloud/framework-types'
 import { expect } from '../expect'
 
 describe('ReadModelStore', () => {
@@ -90,14 +97,14 @@ describe('ReadModelStore', () => {
       })
     })
 
-    context('when the new read model returns null', () => {
+    context('when the new read model returns ReadModelAction.DELETE', () => {
       it('deletes the associated read model', async () => {
         replace(config.provider.readModels, 'store', fake())
         replace(config.provider.readModels, 'delete', fake())
         replace(
           ReadModelStore.prototype,
           'reducerForProjection',
-          fake.returns(() => null)
+          fake.returns(() => ReadModelAction.DELETE)
         )
         const readModelStore = new ReadModelStore(config, logger)
 
