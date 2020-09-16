@@ -22,8 +22,6 @@ export class BoosterScheduledCommandDispatcher {
     const commandClass = commandMetadata.class
     this.logger.debug('Found the following command:', commandClass.name)
     const command = commandClass as ScheduledCommandInterface
-    // TODO: Here we could call "command.validate()" so that the user can prevalidate
-    // the command inputted by the user.
     const register = new Register(commandEnvelope.requestID)
     this.logger.debug('Calling "handle" method on command: ', command)
     await command.handle()
