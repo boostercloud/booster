@@ -1019,6 +1019,32 @@ where the schema for `CreateProductInput` is
 }
 ```
 
+#### Scheduling a command
+
+Scheduled commands are the way to add automated tasks to your application, like checking an e-commerce abandoned carts every two hours to send notifications to the customer to come back and complete the checkout. Booster scheduled commands are TypeScript classes decorated with `@ScheduledCommand`, and the generated method handle but without parameters, unlike the conventional commands.
+
+In Booster, a scheduled command looks like this:
+
+```typescript
+@ScheduledCommand({
+  minute: '0/5', // runs every 5 minutes
+})
+export class CheckCartCount {
+  public static async handle(): Promise<void> {
+    /* YOUR CODE HERE */
+  }
+}
+```
+
+Notice that you can pass as parameters `minute`, `hour`, `day`, `month`, `weekDay` and `year` to set up a cron expression. By default, if no paramateres are passed, the scheduled command will not be triggered.
+
+Creating a scheduled command
+The preferred way to create a scheduled command is by using the generator, e.g.
+
+```shell
+boost new:scheduled-command CheckCartCount
+```
+
 ### 2. Events
 
 Events are **immutable records of facts** within your application's domain. They are the cornerstone of Booster because of its event-driven and event-sourced nature. Booster events are TypeScript classes decorated with `@Event`. An event class may look like this:
