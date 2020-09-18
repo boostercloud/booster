@@ -9,7 +9,7 @@ export function loadPlugin(pluginDescriptor: PluginDescriptor): InfrastructurePl
   const pluginBuilder = require(pluginDescriptor.packageName)
   if (!pluginBuilder)
     throw new Error(
-      `Could not load the plugin package ${pluginDescriptor.packageName}. Make sure you installed it in your project devDependencies.`
+      `Could not load the plugin package ${pluginDescriptor.packageName}. Make sure you've installed it in your project devDependencies.`
     )
   const plugin = pluginBuilder(pluginDescriptor.parameters)
   if (!plugin?.mountStack)
