@@ -8,7 +8,7 @@ import { templates } from '../../templates'
 import { checkItIsABoosterProject } from '../../services/project-checker'
 
 export default class ScheduledCommand extends Oclif.Command {
-  public static description = "generate new scheduled command, write 'boost new:command -h' to see options"
+  public static description = "generate new scheduled command, write 'boost new:scheduled-command -h' to see options"
   public static flags = {
     help: Oclif.flags.help({ char: 'h' }),
     fields: Oclif.flags.string({

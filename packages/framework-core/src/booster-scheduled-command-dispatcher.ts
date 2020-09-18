@@ -30,8 +30,7 @@ export class BoosterScheduledCommandDispatcher {
   }
   /**
    * Entry point to dispatch events coming from the cloud provider.
-   * @param rawEvents List of RAW events from the cloud provider
-   * @param config
+   * @param request request from the cloud provider
    * @param logger
    */
   public async dispatch(request: unknown): Promise<void> {

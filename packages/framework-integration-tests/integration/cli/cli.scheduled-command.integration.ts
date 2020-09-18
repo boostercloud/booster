@@ -5,21 +5,21 @@ import { readFileContent } from '../helper/fileHelper'
 
 const exec = util.promisify(require('child_process').exec)
 
-const TEST_SCHEDULED_COMMAND_PATH = path.join('src','scheduled-commands','CheckCart.ts')
+const TEST_SCHEDULED_COMMAND_PATH = path.join('src', 'scheduled-commands', 'CheckCart.ts')
 
-export const CLI_SCHEDULED_COMMAND_INTEGRATION_TEST_FILES: Array<string> = [FILE_CHECK_CART_SCHEDULED_COMMAND]
+export const CLI_SCHEDULED_COMMAND_INTEGRATION_TEST_FILES: Array<string> = [TEST_SCHEDULED_COMMAND_PATH]
 
-describe('ScheduledCommand', () => {
+describe('Scheduled Command', () => {
   const cliPath = path.join('..', 'cli', 'bin', 'run')
 
-  context('Valid command', () => {
+  context('Valid scheduled command', () => {
     it('should create a new scheduled command', async () => {
       const expectedOutputRegex = new RegExp(
         [
           '.*boost.*new:scheduled-command',
           'Verifying project',
           'Creating new scheduled command',
-          'Scheduled command generated!.*'
+          'Scheduled command generated!.*',
         ].join('.*')
       )
 
@@ -27,7 +27,7 @@ describe('ScheduledCommand', () => {
       expect(stdout).to.match(expectedOutputRegex)
 
       const expectedCommandContent = await readFileContent('integration/fixtures/scheduled-commands/CheckCart.ts')
-      const commandContent = await readFileContent(FILE_CHECK_CART_SCHEDULED_COMMAND)
+      const commandContent = await readFileContent(TEST_SCHEDULED_COMMAND_PATH)
       expect(commandContent).to.equal(expectedCommandContent)
     })
   })

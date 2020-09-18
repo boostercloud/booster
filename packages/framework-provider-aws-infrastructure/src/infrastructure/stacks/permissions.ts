@@ -3,7 +3,7 @@ import { CfnApi } from '@aws-cdk/aws-apigatewayv2'
 import { Fn } from '@aws-cdk/core'
 import { createPolicyStatement } from './policies'
 import { GraphQLStackMembers } from './graphql-stack'
-import { ScheduledCommandStackMembers } from '@boostercloud/framework-provider-aws-infrastructure/src/infrastructure/stacks/scheduled-commands-stack'
+import { ScheduledCommandStackMembers } from './scheduled-commands-stack'
 import { EventsStackMembers } from './events-stack'
 
 export const setupPermissions = (
