@@ -25,7 +25,7 @@ describe('the user registry', () => {
         password: faker.internet.password(),
       }
 
-      userRegistry.registeredUsers.find = stub().yields(null, [])
+      userRegistry.registeredUsers.find = stub().returns({ exec: stub().yields(null, []) })
       userRegistry.registeredUsers.insert = stub().yields(null, user)
 
       await userRegistry.signUp(user)
@@ -45,8 +45,8 @@ describe('the user registry', () => {
 
       const error = new Error(faker.lorem.words())
 
-      userRegistry.registeredUsers.find = stub().yields(null, [])
-      userRegistry.registeredUsers.insert = stub().yields(error, user)
+      userRegistry.registeredUsers.find = stub().returns({ exec: stub().yields(error, []) })
+      userRegistry.registeredUsers.insert = stub().yields(null, user)
 
       return expect(userRegistry.signUp(user)).to.have.been.rejectedWith(error)
     })
@@ -64,8 +64,8 @@ describe('the user registry', () => {
 
       const error = new Error(faker.lorem.words())
 
-      userRegistry.registeredUsers.find = stub().yields(error, [])
-      userRegistry.registeredUsers.insert = stub().yields(null, user)
+      userRegistry.registeredUsers.find = stub().returns({ exec: stub().yields(null, []) })
+      userRegistry.registeredUsers.insert = stub().yields(error, null)
 
       return expect(userRegistry.signUp(user)).to.have.been.rejectedWith(error)
     })
@@ -204,7 +204,7 @@ describe('the user registry', () => {
       const userRegistry = new UserRegistry()
       const username = faker.internet.email()
       const error = new Error(faker.lorem.words())
-      userRegistry.registeredUsers.find = stub().yields(null, [username])
+      userRegistry.registeredUsers.find = stub().returns({ exec: stub().yields(null, [username]) })
       userRegistry.registeredUsers.update = stub().yields(error, null)
       return expect(userRegistry.confirmUser(username)).to.have.be.rejectedWith(error)
     })
@@ -212,14 +212,14 @@ describe('the user registry', () => {
     it('should fail if user does not exist', () => {
       const userRegistry = new UserRegistry()
       const username = faker.internet.email()
-      userRegistry.registeredUsers.find = stub().yields(null, [])
+      userRegistry.registeredUsers.find = stub().returns({ exec: stub().yields(null, []) })
       return expect(userRegistry.confirmUser(username)).to.have.been.rejectedWith(`Incorrect username ${username}`)
     })
 
     it('should call the update method of the database', async () => {
       const userRegistry = new UserRegistry()
       const username = faker.internet.email()
-      userRegistry.registeredUsers.find = stub().yields(null, [username])
+      userRegistry.registeredUsers.find = stub().returns({ exec: stub().yields(null, [username]) })
       userRegistry.registeredUsers.update = stub().yields(null, [])
       await userRegistry.confirmUser(username)
       return expect(userRegistry.registeredUsers.update).to.have.been.called

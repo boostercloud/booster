@@ -10,7 +10,10 @@ export class EventRegistry {
 
   public async query(query: object): Promise<Array<EventEnvelope>> {
     const queryPromise = new Promise((resolve, reject) =>
-      this.events.find(query, (err, docs) => err ? reject(err) : resolve(docs))
+      this.events.find(query).exec((err, docs) => {
+        if (err) reject(err)
+        else resolve(docs)
+      })
     )
 
     return (await queryPromise) as Array<EventEnvelope>
@@ -21,7 +24,10 @@ export class EventRegistry {
       this.events
         .find(query)
         .sort({ createdAt: -1 }) // Sort in descending order
-        .exec((err, docs) => (err ? reject(err) : resolve(docs)))
+        .exec((err, docs) => {
+          if (err) reject(err)
+          else resolve(docs)
+        })
     )
 
     const events = (await queryPromise) as Array<EventEnvelope>
@@ -39,7 +45,10 @@ export class EventRegistry {
 
   public async deleteAll(): Promise<number> {
     const deletePromise = new Promise((resolve, reject) =>
-      this.events.remove({}, { multi: true }, (err, numRemoved: number) => err ? reject(err) : resolve(numRemoved))
+      this.events.remove({}, { multi: true }, (err, numRemoved: number) => {
+        if (err) reject(err)
+        else resolve(numRemoved)
+      })
     )
 
     return (await deletePromise) as number
