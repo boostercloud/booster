@@ -1,8 +1,13 @@
 import { start } from '../../../src/deploy'
-import { ChildProcess } from 'child_process'
+import { ChildProcess, execSync } from 'child_process'
 import { sleep } from '../helpers'
 
 let serverProcess: ChildProcess
+
+execSync('lerna bootstrap')
+execSync('lerna clean --yes')
+execSync('lerna run clean --stream', { stdio: 'pipe' })
+execSync('lerna run compile --stream', { stdio: 'pipe' })
 
 before(async () => {
   console.log('starting local server')
