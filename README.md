@@ -9,12 +9,9 @@
 
 ## Disclaimer
 
-Current published versions of Booster are pre-release versions under heavy development. This means that a good chunk of the most
-basic functionality that you’d expect in a production-ready framework might be missing or in a very buggy state and the documentation
-might not be totally accurate. It’s also very likely that non-backward-compatible changes will be introduced on new releases until
-the project reaches a stable version.
+Booster is a pre-release framework under heavy development, so non-backward-compatible changes might be introduced until we reach v1.0.0.
 
-Refer to [Release Notes](https://github.com/boostercloud/booster/releases) for more specific information about what's supported on each iteration.
+Refer to [Release Notes](https://github.com/boostercloud/booster/releases) for more specific information about changes of each iteration.
 
 ## Overview
 
