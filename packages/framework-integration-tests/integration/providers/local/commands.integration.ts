@@ -12,6 +12,9 @@ import util = require('util')
 
 describe('commands', () => {
   const events: DataStore<EventEnvelope> = new DataStore(eventsDatabase)
+  const countEvents = util.promisify((query: any, callback: (err: Error | null, n: number) => void) => {
+    return events.count(query, callback)
+  })
 
   let client: ApolloClient<NormalizedCacheObject>
 
@@ -74,6 +77,9 @@ describe('commands', () => {
     })
 
     it('should create a snapshot after 5 events', async () => {
+      const countSnapshotsQuery = { kind: 'snapshot', entityID: mockCartId, entityTypeName: 'Cart', typeName: 'Cart' }
+      const currentSnapshotCount = await countEvents(countSnapshotsQuery)
+
       let mockQuantity: number
       let expectedSnapshotQuantity = 0
 
@@ -101,8 +107,7 @@ describe('commands', () => {
             )
       )
 
-      const countPromise = util.promisify((query: any, callback: any) => events.count(query, callback))
-      expect(await countPromise({ kind: 'snapshot', entityID: mockCartId, entityTypeName: 'Cart' })).to.be.equal(1)
+      expect(await countEvents(countSnapshotsQuery)).to.be.equal(currentSnapshotCount + 1)
     })
   })
 })

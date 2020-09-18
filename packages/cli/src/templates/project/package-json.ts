@@ -9,7 +9,7 @@ export const template = `{
   "dependencies": {
     "@boostercloud/framework-core": "^${VERSION}",
     "@boostercloud/framework-types": "^${VERSION}",
-    "{{{providerPackageName}}}": "^${VERSION}"
+    "{{{providerPackageName}}}": "*"
   },
   "devDependencies": {
     "@boostercloud/cli": "^${VERSION}",
