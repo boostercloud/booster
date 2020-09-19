@@ -9,12 +9,12 @@ import { RestApi } from '@aws-cdk/aws-apigateway'
 import { CfnApi, CfnStage } from '@aws-cdk/aws-apigatewayv2'
 import { baseURLForAPI } from '../params'
 import { setupPermissions } from './permissions'
-import { InfrastructurePlugin } from '../../infraestructure-plugin'
+import { InfrastructurePlugin } from '@boostercloud/framework-provider-aws-infrastructure/src/infrastructure-plugin'
 
 export class ApplicationStackBuilder {
   public constructor(
     readonly config: BoosterConfig,
-    readonly plugins: InfrastructurePlugin[],
+    readonly plugins?: InfrastructurePlugin[],
     readonly props?: StackProps
   ) {}
 
@@ -36,7 +36,7 @@ export class ApplicationStackBuilder {
     setupPermissions(graphQLStack, eventsStack, readModelTables, websocketAPI, scheduledCommandStack)
 
     // Load plugins
-    this.plugins.forEach((plugin) => plugin.mountStack(this.config, stack))
+    this.plugins?.forEach((plugin) => plugin.mountStack(this.config, stack))
   }
 
   private buildRootRESTAPI(stack: Stack): RestApi {

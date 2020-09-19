@@ -40,7 +40,7 @@ const userPool = new CognitoIdentityServiceProvider()
  * The plugin names are passed to the infrastructure package, which loads them dynamically
  * to extend the AWS functionality. Plugins are typically distributed in separate npm packages.
  */
-export const AWSProvider = (plugins: string[]): ProviderLibrary => {
+export const AWSProvider = (plugins?: string[]): ProviderLibrary => {
   return {
     // ProviderEventsLibrary
     events: {

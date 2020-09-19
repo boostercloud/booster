@@ -10,7 +10,7 @@ import { CloudFormationDeploymentTarget } from 'aws-cdk/lib/api/deployment-targe
 import { RequireApproval } from 'aws-cdk/lib/diff'
 import * as colors from 'colors'
 import { emptyS3Bucket } from './s3utils'
-import { InfrastructurePlugin } from '../infraestructure-plugin'
+import { InfrastructurePlugin } from '@boostercloud/framework-provider-aws-infrastructure/src/infrastructure-plugin'
 
 interface StackServiceConfiguration {
   aws: SDK
@@ -57,7 +57,7 @@ async function bootstrap(logger: Logger, config: BoosterConfig, aws: SDK): Promi
 }
 
 // Exported for testing
-export function assemble(config: BoosterConfig, plugins: InfrastructurePlugin[]): CloudAssembly {
+export function assemble(config: BoosterConfig, plugins?: InfrastructurePlugin[]): CloudAssembly {
   const boosterApp = new App()
   new ApplicationStackBuilder(config, plugins).buildOn(boosterApp)
   // Here we could add other optional stacks like one with a lot of dashboards for analytics, etc.
@@ -68,11 +68,7 @@ export function assemble(config: BoosterConfig, plugins: InfrastructurePlugin[])
 /**
  * Deploys the application using the credentials located in ~/.aws
  */
-async function deployApp(
-  logger: Logger,
-  config: BoosterConfig,
-  plugins: InfrastructurePlugin[]
-): Promise<void> {
+async function deployApp(logger: Logger, config: BoosterConfig, plugins?: InfrastructurePlugin[]): Promise<void> {
   const { aws, appStacks, cdkToolkit } = await getStackServiceConfiguration(config, plugins)
 
   const toolkitStackName = await bootstrap(logger, config, aws)
@@ -89,7 +85,7 @@ async function deployApp(
 // about the application we want to deploy
 async function getStackServiceConfiguration(
   config: BoosterConfig,
-  plugins: InfrastructurePlugin[]
+  plugins?: InfrastructurePlugin[]
 ): Promise<StackServiceConfiguration> {
   const aws = new SDK()
   const configuration = await new Configuration().load()
@@ -141,9 +137,8 @@ async function nukeToolkit(logger: Logger, config: BoosterConfig, aws: SDK): Pro
   logger.info('✅  ' + colors.blue(stackName) + colors.red(': DESTROYED'))
 }
 
-export const deploy = (plugins: InfrastructurePlugin[], config: BoosterConfig, logger: Logger): Promise<void> =>
+export const deploy = (config: BoosterConfig, logger: Logger, plugins?: InfrastructurePlugin[]): Promise<void> =>
   deployApp(logger, config, plugins).catch(logger.error)
-}
 
 export const nuke = (config: BoosterConfig, logger: Logger): Promise<void> =>
   nukeApp(logger, config).catch(logger.error)
