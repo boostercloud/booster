@@ -6,7 +6,7 @@ export { InfrastructurePlugin } from '@boostercloud/framework-provider-aws-infra
 export const Infrastructure = (pluginDescriptors?: PluginDescriptor[]): ProviderInfrastructure => ({
   deploy: (config: BoosterConfig) => {
     const plugins = pluginDescriptors?.map(loadPlugin)
-    deploy(config, plugins)
+    return deploy(config, plugins)
   },
   nuke,
 })

@@ -13,7 +13,7 @@ import {
 } from './library/read-model-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import { DynamoDB, CognitoIdentityServiceProvider } from 'aws-sdk'
-import { ProviderInfrastructure, ProviderLibrary } from '@boostercloud/framework-types'
+import { ProviderInfrastructure, ProviderLibrary, PluginDescriptor } from '@boostercloud/framework-types'
 import { requestFailed, requestSucceeded } from './library/api-gateway-io'
 import { searchReadModel } from './library/searcher-adapter'
 import {
@@ -34,13 +34,21 @@ import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
 const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
 const userPool = new CognitoIdentityServiceProvider()
 
+/* We load the infrastructure package dinamically here to avoid including it in the
+ * dependences that are deployed in the lambda functions. The infrastructure
+ * package is only used during the deploy.
+ */
+function loadInfrastructurePackage(): { Infrastructure: (plugins?: PluginDescriptor[]) => ProviderInfrastructure } {
+  return require(require('../package.json').name + '-infrastructure')
+}
+
 /**
  * `AWSProvider` is a function that accepts a list of plugin names and returns an
  * object compatible with the `ProviderLibrary` defined in the `framework-types` package.
  * The plugin names are passed to the infrastructure package, which loads them dynamically
  * to extend the AWS functionality. Plugins are typically distributed in separate npm packages.
  */
-export const AWSProvider = (plugins?: string[]): ProviderLibrary => {
+export const AWSProvider = (plugins?: PluginDescriptor[]): ProviderLibrary => {
   return {
     // ProviderEventsLibrary
     events: {
@@ -88,8 +96,7 @@ export const AWSProvider = (plugins?: string[]): ProviderLibrary => {
       rawToEnvelope: rawScheduledInputToEnvelope,
     },
     // ProviderInfrastructureGetter
-    infrastructure: () =>
-      require(require('../package.json').name + '-infrastructure').Infrastructure(plugins) as ProviderInfrastructure,
+    infrastructure: () => loadInfrastructurePackage().Infrastructure(plugins),
   }
 }
 
