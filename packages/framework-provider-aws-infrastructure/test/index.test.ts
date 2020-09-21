@@ -26,8 +26,9 @@ describe('the `framework-provider-aws-infrastructure` package', () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const fakeConfig = { fake: 'config' } as any
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ;(providerInfrastructure as any).deploy(fakeConfig)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const providerInfrastructureAlias = providerInfrastructure as any
+          providerInfrastructureAlias.deploy(fakeConfig)
 
           expect(infrastructureFunctions.deploy).to.have.been.calledWith(fakeConfig)
         })
@@ -59,8 +60,9 @@ describe('the `framework-provider-aws-infrastructure` package', () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const fakeConfig = { fake: 'config' } as any
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ;(providerInfrastructure as any).deploy(fakeConfig)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const providerInfrastructureAlias = providerInfrastructure as any
+          providerInfrastructureAlias.deploy(fakeConfig)
 
           expect(pluginLoader.loadPlugin).to.have.been.calledOnceWith(fakePackageList[0])
           expect(infrastructureFunctions.deploy).to.have.been.calledWith(fakeConfig, [fakeLoadedPlugin])
