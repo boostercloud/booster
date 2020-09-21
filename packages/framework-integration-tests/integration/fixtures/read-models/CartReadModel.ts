@@ -1,5 +1,5 @@
 import { ReadModel } from '@boostercloud/framework-core'
-import { UUID, ReadModelAction } from '@boostercloud/framework-types'
+import { UUID, ProjectionResult } from '@boostercloud/framework-types'
 
 @ReadModel({
   authorize: // Specify authorized roles here. Use 'all' to authorize anyone

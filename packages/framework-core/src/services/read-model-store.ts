@@ -44,12 +44,18 @@ export class ReadModelStore {
         )
         const newReadModel = this.reducerForProjection(projectionMetadata)(entitySnapshot, readModel)
 
-        if (newReadModel === ReadModelAction.DELETE) {
+        if (newReadModel === ReadModelAction.Delete) {
           this.logger.debug(
             `[ReadModelDelete#project] Deleting read model ${readModelName} with ID ${readModelID}:`,
             readModel
           )
           return this.provider.readModels.delete(this.config, this.logger, readModelName, readModel)
+        } else if (newReadModel === ReadModelAction.Nothing) {
+          this.logger.debug(
+            `[ReadModelStore#project] Skipping actions for ${readModelName} with ID ${readModelID}:`,
+            newReadModel
+          )
+          return
         }
         this.logger.debug(
           `[ReadModelStore#project] Storing new version of read model ${readModelName} with ID ${readModelID}:`,

@@ -1,5 +1,5 @@
 import { ReadModel, Projects } from '@boostercloud/framework-core'
-import { UUID, ReadModelAction } from '@boostercloud/framework-types'
+import { UUID, ProjectionResult } from '@boostercloud/framework-types'
 import { CartItem } from '../common/cart-item'
 import { Address } from '../common/address'
 import { Cart } from '../entities/Cart'
@@ -17,7 +17,7 @@ export class CartReadModel {
   ) {}
 
   @Projects(Cart, 'id')
-  public static updateWithCart(cart: Cart, oldCartReadModel?: CartReadModel): CartReadModel | ReadModelAction {
+  public static updateWithCart(cart: Cart, oldCartReadModel?: CartReadModel): ProjectionResult<CartReadModel> {
     return new CartReadModel(cart.id, cart.cartItems, cart.shippingAddress, oldCartReadModel?.payment)
   }
 
@@ -25,7 +25,7 @@ export class CartReadModel {
   public static updateCartPaymentStatus(
     payment: Payment,
     oldCartReadModel?: CartReadModel
-  ): CartReadModel | ReadModelAction {
+  ): ProjectionResult<CartReadModel> {
     if (!oldCartReadModel) {
       return new CartReadModel(payment.cartId, [], undefined, payment)
     }

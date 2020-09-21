@@ -7,6 +7,9 @@ export interface ProjectionMetadata {
   joinKey: string
 }
 
+export type ProjectionResult<TReadModel> = TReadModel | ReadModelAction
+
 export enum ReadModelAction {
-  DELETE,
+  Delete,
+  Nothing,
 }
