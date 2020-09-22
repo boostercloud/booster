@@ -192,7 +192,7 @@ describe('permissions', () => {
         it('should create read model permissions', () => {
           expect(createPolicyStatementStub).calledWithExactly(
             [mockReadModelTableArn],
-            ['dynamodb:Get*', 'dynamodb:Put*']
+            ['dynamodb:Get*', 'dynamodb:Put*', 'dynamodb:DeleteItem*']
           )
         })
       })

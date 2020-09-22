@@ -7,8 +7,8 @@ export async function rawGraphQLRequestToEnvelope(
 ): Promise<GraphQLRequestEnvelope | GraphQLRequestEnvelopeError> {
   logger.debug('Received GraphQL request: \n- Headers: ', request.headers, '\n- Body: ', request.body)
   const requestID = UUID.generate() // TODO: Retrieve request ID from request
-  const eventType = 'MESSAGE' // TODO: (request.requestContext?.eventType as GraphQLRequestEnvelope['eventType']) ?? 'MESSAGE',
-  const connectionID = undefined // TODO: Retrieve connectionId if available,
+  const eventType = 'MESSAGE' // TODO: (request.requestContext?.eventType as GraphQLRequestEnvelope['eventType']) ?? 'MESSAGE'
+  const connectionID = undefined // TODO: Retrieve connectionId if available
   try {
     return {
       requestID,
