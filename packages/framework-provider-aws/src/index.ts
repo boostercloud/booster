@@ -5,12 +5,7 @@ import {
   readEntityLatestSnapshot,
   readEntityEventsSince,
 } from './library/events-adapter'
-import {
-  fetchReadModel,
-  storeReadModel,
-  rawReadModelEventsToEnvelopes,
-  deleteReadModel,
-} from './library/read-model-adapter'
+import { fetchReadModel, storeReadModel, rawReadModelEventsToEnvelopes } from './library/read-model-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import { DynamoDB, CognitoIdentityServiceProvider } from 'aws-sdk'
 import { ProviderInfrastructure, ProviderLibrary } from '@boostercloud/framework-types'
@@ -47,7 +42,6 @@ export const Provider: ProviderLibrary = {
     fetch: fetchReadModel.bind(null, dynamoDB),
     search: searchReadModel.bind(null, dynamoDB),
     store: storeReadModel.bind(null, dynamoDB),
-    delete: deleteReadModel.bind(null, dynamoDB),
     subscribe: subscribeToReadModel.bind(null, dynamoDB),
     fetchSubscriptions: fetchSubscriptions.bind(null, dynamoDB),
     deleteSubscription: deleteSubscription.bind(null, dynamoDB),

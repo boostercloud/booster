@@ -49,22 +49,6 @@ export async function storeReadModel(
   logger.debug('[ReadModelAdapter#storeReadModel] Read model stored')
 }
 
-export async function deleteReadModel(
-  db: DynamoDB.DocumentClient,
-  config: BoosterConfig,
-  logger: Logger,
-  readModelName: string,
-  readModel: ReadModelInterface
-): Promise<void> {
-  await db
-    .delete({
-      TableName: config.resourceNames.forReadModel(readModelName),
-      Key: { id: readModel.id },
-    })
-    .promise()
-  logger.debug('[ReadModelAdapter#deleteReadModel] Read model deleted')
-}
-
 function toReadModelEnvelope(config: BoosterConfig, record: DynamoDBRecord): ReadModelEnvelope {
   if (!record.dynamodb?.NewImage || !record.eventSourceARN) {
     throw new Error('Received a DynamoDB stream event without "eventSourceARN" or "NewImage" field. They are required')
