@@ -1413,7 +1413,7 @@ In the previous example we are projecting the `User` entity using the user `id` 
 As you may have notice from the `ProjectionResult` type, projections can also return `ReadModelAction`, which includes:
 
 1. Deletion of read models by returning the `ReadModelAction.Delete` value
-2. You can also use `ReadModelAction.Nothing` to keep the read model as it is too!
+2. You can also return `ReadModelAction.Nothing` to keep the read model untouched
 
 ```
 @ReadModel
