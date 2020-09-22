@@ -6,10 +6,3 @@ export interface ProjectionMetadata {
   methodName: string
   joinKey: string
 }
-
-export type ProjectionResult<TReadModel> = TReadModel | ReadModelAction
-
-export enum ReadModelAction {
-  Delete,
-  Nothing,
-}

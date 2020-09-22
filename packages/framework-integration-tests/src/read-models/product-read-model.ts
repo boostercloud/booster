@@ -1,13 +1,13 @@
 import { ReadModel, Projects } from '@boostercloud/framework-core'
-import { Admin, UserWithEmail } from '../roles'
-import { UUID, ProjectionResult, ReadModelAction } from '@boostercloud/framework-types'
+import { UserWithEmail } from '../roles'
+import { UUID } from '@boostercloud/framework-types'
 import { Product } from '../entities/Product'
 import { SKU } from '../common/sku'
 import { Money } from '../common/money'
 
 // This is an example read model for a possible admin-exclusive report to show last and previous updates to products
 @ReadModel({
-  authorize: [UserWithEmail, Admin],
+  authorize: [UserWithEmail],
 })
 export class ProductReadModel {
   public constructor(
@@ -21,9 +21,10 @@ export class ProductReadModel {
   ) {}
 
   @Projects(Product, 'id')
-  public static updateWithProduct(product: Product): ProjectionResult<ProductReadModel> {
+  public static updateWithProduct(product: Product): ProductReadModel {
     if (product.deleted) {
-      return ReadModelAction.Delete
+      // TODO: Consider solutions to delete read models from the database (see BOOST-587)
+      return new ProductReadModel(product.id, '<DELETED>', '', '', 0, true)
     } else {
       return new ProductReadModel(
         product.id,
