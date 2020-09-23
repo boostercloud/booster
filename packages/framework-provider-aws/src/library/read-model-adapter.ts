@@ -62,7 +62,7 @@ export async function deleteReadModel(
       Key: { id: readModel.id },
     })
     .promise()
-  logger.debug('[ReadModelAdapter#deleteReadModel] Read model deleted')
+  logger.debug(`[ReadModelAdapter#deleteReadModel] Read model deleted. ID = ${readModel.id}`)
 }
 
 function toReadModelEnvelope(config: BoosterConfig, record: DynamoDBRecord): ReadModelEnvelope {

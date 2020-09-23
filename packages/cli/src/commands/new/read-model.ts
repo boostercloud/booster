@@ -78,7 +78,7 @@ function generateImports(info: ReadModelInfo): Array<ImportDeclaration> {
     },
     {
       packagePath: '@boostercloud/framework-types',
-      commaSeparatedComponents: 'UUID, ProjectionResult',
+      commaSeparatedComponents: info.projections.length > 0 ? 'UUID, ProjectionResult' : 'UUID',
     },
     ...eventsImports,
   ]

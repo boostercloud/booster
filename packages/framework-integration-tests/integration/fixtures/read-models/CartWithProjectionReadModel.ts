@@ -1,5 +1,5 @@
 import { ReadModel, Projects } from '@boostercloud/framework-core'
-import { ProjectionResult, UUID } from '@boostercloud/framework-types'
+import { UUID, ProjectionResult } from '@boostercloud/framework-types'
 import { Cart } from '../entities/Cart'
 
 @ReadModel({
