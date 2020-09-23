@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
 import { replace, fake } from 'sinon'
-import { fetchReadModel, storeReadModel, rawReadModelEventsToEnvelopes } from '../../src/library/read-model-adapter'
+import {
+  fetchReadModel,
+  storeReadModel,
+  rawReadModelEventsToEnvelopes,
+  deleteReadModel,
+} from '../../src/library/read-model-adapter'
 import { DynamoDB } from 'aws-sdk'
 import { BoosterConfig, Logger, ReadModelEnvelope } from '@boostercloud/framework-types'
 import { DynamoDBStreamEvent } from 'aws-lambda'
@@ -166,6 +171,29 @@ describe('the "storeReadModel" method', () => {
       Item: { id: 777, some: 'object' },
     })
     expect(something).not.to.be.null
+  })
+})
+
+describe('the "deleteReadModel"', () => {
+  it('deletes an existing read model', async () => {
+    const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
+    const config = new BoosterConfig('test')
+    replace(
+      db,
+      'delete',
+      fake.returns({
+        promise: fake.resolves({
+          $response: {},
+        }),
+      })
+    )
+
+    await deleteReadModel(db, config, logger, 'SomeReadModel', { id: 777, some: 'object' } as any)
+
+    expect(db.delete).to.have.been.calledOnceWithExactly({
+      TableName: 'new-booster-app-app-SomeReadModel',
+      Key: { id: 777 },
+    })
   })
 })
 

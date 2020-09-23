@@ -307,22 +307,12 @@ describe('Cart end-to-end tests', () => {
               `,
             })
           },
-          (result) => result?.data?.ProductReadModel?.deleted && result?.data?.ProductReadModel?.id === productId
+          () => true
         )
 
         const productData = queryResult.data.ProductReadModel
-        const expectedResult = {
-          __typename: 'ProductReadModel',
-          id: productId,
-          sku: '<DELETED>',
-          displayName: '',
-          description: '',
-          price: null,
-          availability: 0,
-          deleted: true,
-        }
 
-        expect(productData).to.be.deep.equal(expectedResult)
+        expect(productData).to.be.null
       })
     })
   })
