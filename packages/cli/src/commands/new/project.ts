@@ -44,6 +44,11 @@ export default class Project extends Command {
       description:
         'package name implementing the cloud provider integration where the application will be deployed (i.e: "@boostercloud/framework-provider-aws"',
     }),
+    default: flags.boolean({
+      char: 'd',
+      description: 'generates the project with default parameters (i.e. --license=MIT)',
+      default: false,
+    }),
   }
 
   public static args = [{ name: 'projectName' }]
@@ -107,6 +112,21 @@ export const parseConfig = async (
   flags: Partial<ProjectInitializerConfig>,
   boosterVersion: string
 ): Promise<ProjectInitializerConfig> => {
+  if (flags.default) {
+    return Promise.resolve({
+      projectName: flags.projectName as string,
+      providerPackageName: '@boostercloud/framework-provider-aws',
+      description: '',
+      version: '0.1.0',
+      author: '',
+      homepage: '',
+      license: 'MIT',
+      repository: '',
+      boosterVersion,
+      default: flags.default,
+    })
+  }
+
   const description = await prompter.defaultOrPrompt(
     flags.description,
     'What\'s your project description? (default: "")'
@@ -136,5 +156,6 @@ export const parseConfig = async (
     license,
     repository,
     boosterVersion,
+    default: false,
   })
 }
