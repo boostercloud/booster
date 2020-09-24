@@ -4,7 +4,6 @@ import { describe, it, afterEach } from 'mocha'
 import { stub, replace, restore, fake } from 'sinon'
 import { Script } from '../../src/common/script'
 import { expect } from '../expect'
-import { logger } from '../../src/services/logger'
 
 interface TestContext {
   ctxParam: 'value'
@@ -14,19 +13,15 @@ const testContext: TestContext = {
   ctxParam: 'value',
 }
 
-function replaceLogger(scriptClass: any) {
-  const fakeLogger = logger
-  const loggerInfo = fake()
-  const loggerFail = fake()
-  const loggerStart = fake()
-  const loggerSucceed = fake()
-
-  replace(fakeLogger, 'info', loggerInfo)
-  replace(fakeLogger, 'fail', loggerFail)
-  replace(fakeLogger, 'start', loggerStart)
-  replace(fakeLogger, 'succeed', loggerSucceed)
-  replace(scriptClass, 'logger', fakeLogger)
-  return { loggerInfo, loggerFail, loggerStart, loggerSucceed }
+function replaceLogger() {
+  const fakeLogger = {
+    info: fake(),
+    fail: fake(),
+    start: fake(),
+    succeed: fake(),
+  }
+  replace(Script as any, 'logger', fakeLogger)
+  return fakeLogger
 }
 
 describe('The Script class', () => {
@@ -36,6 +31,8 @@ describe('The Script class', () => {
 
   describe('init', () => {
     it('runs a sequence of successful actions chaining context and return values', async () => {
+      replaceLogger()
+
       const fakeAction1 = stub().resolves()
       const fakeAction2 = stub().resolves()
       const fakeAction3 = stub().resolves()
@@ -59,16 +56,20 @@ describe('The Script class', () => {
     })
 
     it('runs a sequence of successful actions and stops on failure', async () => {
+      replaceLogger()
+
       const errorMsg = 'some error'
       const fakeAction1 = stub().resolves()
       const fakeAction2 = stub().rejects(errorMsg)
       const fakeAction3 = stub().resolves()
 
-      await expect(Script.init('initializing test', Promise.resolve(testContext))
-        .step('step', fakeAction1)
-        .step('step', fakeAction2)
-        .step('step', fakeAction3)
-        .done()).to.eventually.be.rejectedWith(errorMsg)
+      await expect(
+        Script.init('initializing test', Promise.resolve(testContext))
+          .step('step', fakeAction1)
+          .step('step', fakeAction2)
+          .step('step', fakeAction3)
+          .done()
+      ).to.eventually.be.rejectedWith(errorMsg)
 
       expect(fakeAction1).to.have.been.calledOnce
       // @ts-ignore
@@ -85,14 +86,16 @@ describe('The Script class', () => {
 
     it('prints the provided message', async () => {
       const msg = 'initializing'
-      const { loggerInfo } = replaceLogger(Script)
+      const logger = replaceLogger()
 
       await Script.init(msg, Promise.resolve(testContext)).done()
 
-      expect(loggerInfo).to.have.been.calledOnceWith(msg)
+      expect(logger.info).to.have.been.calledOnceWith(msg)
     })
 
     it('fails gracefully in case of initializer failure', async () => {
+      replaceLogger()
+
       const msg = 'initializing'
       const errorMessage = 'some error'
       const err = new Error(errorMessage)
@@ -106,13 +109,13 @@ describe('The Script class', () => {
     it('prints the provided message', async () => {
       const initMsg = 'initializing test'
       const msg = 'yo!'
-      const { loggerInfo } = replaceLogger(Script)
+      const logger = replaceLogger()
 
       await Script.init(initMsg, Promise.resolve(testContext))
         .info(msg)
         .done()
 
-      expect(loggerInfo).to.have.been.calledWith(msg)
+      expect(logger.info).to.have.been.calledWith(msg)
     })
   })
 
@@ -121,14 +124,14 @@ describe('The Script class', () => {
       const msg = 'That is one small step for a man'
       const val = 'one giant leap for mankind'
       const stepFn = stub().resolves(val)
-      const { loggerStart, loggerSucceed } = replaceLogger(Script)
+      const logger = replaceLogger()
 
       await Script.init('initializing', Promise.resolve(testContext))
         .step(msg, stepFn)
         .done()
 
-      expect(loggerStart).to.have.been.calledOnceWith(msg)
-      expect(loggerSucceed).to.have.been.called
+      expect(logger.start).to.have.been.calledOnceWith(msg)
+      expect(logger.succeed).to.have.been.called
       expect(stepFn).to.have.been.calledOnceWith(testContext)
     })
 
@@ -137,34 +140,43 @@ describe('The Script class', () => {
       const err = new Error(errorMsg)
       const msg = 'That is no step for anyone'
       const stepFn = stub().rejects(err)
-      const { loggerStart, loggerSucceed} = replaceLogger(Script)
+      const logger = replaceLogger()
 
-      await expect(Script.init('initializing', Promise.resolve(testContext))
-        .step(msg, stepFn)
-        .done()).to.eventually.be.rejectedWith(errorMsg)
-      expect(loggerStart).to.have.been.calledOnceWith(msg)
-      expect(loggerSucceed).not.to.have.been.called
+      await expect(
+        Script.init('initializing', Promise.resolve(testContext))
+          .step(msg, stepFn)
+          .done()
+      ).to.eventually.be.rejectedWith(errorMsg)
+
+      expect(logger.start).to.have.been.calledOnceWith(msg)
+      expect(logger.succeed).not.to.have.been.called
       expect(stepFn).to.have.been.calledOnceWith(testContext)
     })
   })
 
   describe('catch', () => {
     it('prints a custom error message for specified error types', async () => {
+      replaceLogger()
       const err = new SyntaxError('other message')
       const msg = 'much nicer message'
 
-      await expect(Script.init('initializing', Promise.reject(err))
-        .catch('SyntaxError', () => msg)
-        .done()).to.eventually.be.rejectedWith(msg)
+      await expect(
+        Script.init('initializing', Promise.reject(err))
+          .catch('SyntaxError', () => msg)
+          .done()
+      ).to.eventually.be.rejectedWith(msg)
     })
 
     it('prints the error message for non specified error types', async () => {
+      replaceLogger()
       const msg = 'some message'
       const err = new Error(msg)
 
-      await expect(Script.init('initializing', Promise.reject(err))
-        .catch('SyntaxError', () => msg)
-        .done()).to.eventually.be.rejectedWith(msg)
+      await expect(
+        Script.init('initializing', Promise.reject(err))
+          .catch('SyntaxError', () => msg)
+          .done()
+      ).to.eventually.be.rejectedWith(msg)
     })
   })
 })

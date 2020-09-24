@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { mockReq } from 'sinon-express-mock'
 import { SinonStub, stub, replace, restore } from 'sinon'
 import { rawGraphQLRequestToEnvelope } from '../../src/library/graphql-adapter'
@@ -37,12 +38,6 @@ describe('Local provider graphql-adapter', () => {
 
     afterEach(() => {
       restore()
-    })
-
-    it('should call logger.debug', async () => {
-      await rawGraphQLRequestToEnvelope(mockRequest, logger)
-
-      expect(debugStub).to.have.been.calledOnceWith('Received GraphQL request: ', mockRequest)
     })
 
     it('should generate expected envelop', async () => {

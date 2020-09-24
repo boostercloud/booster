@@ -31,7 +31,6 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "dependencies": {
-    "rxjs": "^6.5.3",
     "uuid": "^3.3.3"
   },
   "devDependencies": {

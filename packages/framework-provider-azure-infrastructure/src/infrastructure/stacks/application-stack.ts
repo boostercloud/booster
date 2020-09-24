@@ -1,5 +1,4 @@
-import { Subscriber } from 'rxjs'
-import { BoosterConfig } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger } from '@boostercloud/framework-types'
 import ResourceManagementClient from 'azure-arm-resource/lib/resource/resourceManagementClient'
 import webSiteManagement from 'azure-arm-website'
 import { buildResource, packageAzureFunction, deployFunctionPackage } from '../utils'
@@ -13,12 +12,12 @@ export class ApplicationStackBuilder {
   public constructor(readonly config: BoosterConfig) {}
 
   public async buildOn(
-    observer: Subscriber<string>,
+    logger: Logger,
     resourceManagementClient: ResourceManagementClient,
     webSiteManagementClient: webSiteManagement,
     resourceGroupName: string
   ): Promise<void> {
-    observer.next('Creating Storage and Cosmos DB accounts...')
+    logger.info('Creating Storage and Cosmos DB accounts...')
     const accountCreationResults: Array<DeploymentExtended> = await Promise.all([
       buildResource(resourceManagementClient, resourceGroupName, {}, armTemplates.storageAccount),
       buildResource(
@@ -34,7 +33,7 @@ export class ApplicationStackBuilder {
     const storageAccountName = accountCreationResults[0].properties?.outputs.storageAccountName.value
     const cosmosDbConnectionString = accountCreationResults[1].properties?.outputs.connectionString.value
 
-    observer.next('Creating Function App...')
+    logger.info('Creating Function App...')
     const functionAppDeployment = await buildResource(
       resourceManagementClient,
       resourceGroupName,
@@ -55,8 +54,8 @@ export class ApplicationStackBuilder {
     const eventsStack = new EventsStack(this.config, cosmosDbConnectionString)
     const readModelsStack = new ReadModelsStack(this.config, cosmosDbConnectionString)
 
-    observer.next('Creating API Management Service and Cosmos DB containers...')
-    const buildResults: Array<any> = await Promise.all([
+    logger.info('Creating API Management Service and Cosmos DB containers...')
+    const buildResults = await Promise.all([
       apiStack.build(),
       eventsStack.build(),
       readModelsStack.build(),
@@ -92,7 +91,7 @@ export class ApplicationStackBuilder {
       }
     )
 
-    observer.next('Packaging Booster project for deployment...')
+    logger.info('Packaging Booster project for deployment...')
     const zipPath = await packageAzureFunction([
       {
         name: 'graphql',
@@ -136,15 +135,15 @@ export class ApplicationStackBuilder {
       },
     ])
 
-    observer.next('Deploying Zip...')
+    logger.info('Deploying Zip...')
     await deployFunctionPackage(
       zipPath,
       credentials.publishingUserName,
-      credentials.publishingPassword,
-      credentials.name
+      credentials.publishingPassword ?? '',
+      credentials.name ?? ''
     )
 
-    observer.next(`Deployed environment: ${appSettings.properties.BOOSTER_ENV}`)
-    observer.next(`REST API base URL: ${appSettings.properties.BOOSTER_REST_API_URL}`)
+    logger.info(`Deployed environment: ${appSettings.properties.BOOSTER_ENV}`)
+    logger.info(`REST API base URL: ${appSettings.properties.BOOSTER_REST_API_URL}`)
   }
 }
