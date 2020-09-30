@@ -1,9 +1,15 @@
-import { ProviderInfrastructure } from '@boostercloud/framework-types'
+import { Logger, ProviderInfrastructure } from '@boostercloud/framework-types'
 import { fake, replace, restore } from 'sinon'
 import { Infrastructure } from '../src/index'
 import * as infrastructureFunctions from '../src/infrastructure/'
 import * as pluginLoader from '../src/infrastructure-plugin'
 import { expect } from './expect'
+
+const logger = {
+  info: fake(),
+  debug: fake(),
+  error: fake(),
+} as Logger
 
 describe('the `framework-provider-aws-infrastructure` package', () => {
   afterEach(() => {
@@ -28,9 +34,9 @@ describe('the `framework-provider-aws-infrastructure` package', () => {
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const providerInfrastructureAlias = providerInfrastructure as any
-          providerInfrastructureAlias.deploy(fakeConfig)
+          providerInfrastructureAlias.deploy(fakeConfig, logger)
 
-          expect(infrastructureFunctions.deploy).to.have.been.calledWith(fakeConfig)
+          expect(infrastructureFunctions.deploy).to.have.been.calledWith(fakeConfig, logger)
         })
       })
     })
@@ -53,7 +59,7 @@ describe('the `framework-provider-aws-infrastructure` package', () => {
       })
 
       describe('deploy', () => {
-        it('is called with no plugins', () => {
+        it('is called with plugins', () => {
           const fakeLoadedPlugin = { thisIs: 'aPlugin' }
           replace(infrastructureFunctions, 'deploy', fake())
           replace(pluginLoader, 'loadPlugin', fake.returns(fakeLoadedPlugin))
@@ -62,10 +68,10 @@ describe('the `framework-provider-aws-infrastructure` package', () => {
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const providerInfrastructureAlias = providerInfrastructure as any
-          providerInfrastructureAlias.deploy(fakeConfig)
+          providerInfrastructureAlias.deploy(fakeConfig, logger)
 
           expect(pluginLoader.loadPlugin).to.have.been.calledOnceWith(fakePackageList[0])
-          expect(infrastructureFunctions.deploy).to.have.been.calledWith(fakeConfig, [fakeLoadedPlugin])
+          expect(infrastructureFunctions.deploy).to.have.been.calledWith(fakeConfig, logger, [fakeLoadedPlugin])
         })
       })
     })

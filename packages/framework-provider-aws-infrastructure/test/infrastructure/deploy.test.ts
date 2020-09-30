@@ -51,12 +51,13 @@ describe('the deployment process', () => {
       replace(CDK, 'bootstrapEnvironment', fakeBootstrapEnvironment)
       replace(CdkToolkit.prototype, 'deploy', fakeCdkDeployThatThrows)
 
-      const logger = ({
+      const logger: Logger = {
         info: fake(),
         error: fake(),
-      } as unknown) as Logger
+        debug: fake(),
+      }
 
-      await expect(Infrastructure.deploy([], config, logger)).not.to.eventually.be.rejected
+      await expect(Infrastructure.deploy(config, logger)).not.to.eventually.be.rejected
       // It receives the thrown Error object, not just the message
       expect(logger.error).to.have.been.calledWithMatch({ message: errorMessage })
     })
@@ -90,7 +91,7 @@ describe('the deployment process', () => {
         info: fake(),
       } as unknown) as Logger
 
-      await Infrastructure.deploy([], config, logger)
+      await Infrastructure.deploy(config, logger)
 
       expect(fakeBootstrapEnvironment).to.have.been.calledOnce
       expect(fakeBootstrapEnvironment).to.be.calledWith(match(testEnvironment))
@@ -112,7 +113,7 @@ describe('the deployment process', () => {
         info: fake(),
       } as unknown) as Logger
 
-      await Infrastructure.deploy([], config, logger)
+      await Infrastructure.deploy(config, logger)
 
       const appNamePrefixRegExp = new RegExp('^' + testAppName + '-')
       expect(fakeBootstrapEnvironment).to.have.been.calledOnce

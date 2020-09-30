@@ -68,7 +68,7 @@ export function assemble(config: BoosterConfig, plugins?: InfrastructurePlugin[]
 /**
  * Deploys the application using the credentials located in ~/.aws
  */
-async function deployApp(logger: Logger, config: BoosterConfig, plugins?: InfrastructurePlugin[]): Promise<void> {
+async function deployApp(config: BoosterConfig, logger: Logger, plugins?: InfrastructurePlugin[]): Promise<void> {
   const { aws, appStacks, cdkToolkit } = await getStackServiceConfiguration(config, plugins)
 
   const toolkitStackName = await bootstrap(logger, config, aws)
@@ -108,9 +108,9 @@ async function getStackServiceConfiguration(
 /**
  * Nuke all the resources used in the "AppStacks"
  */
-async function nukeApp(logger: Logger, config: BoosterConfig): Promise<void> {
+async function nukeApp(config: BoosterConfig, logger: Logger): Promise<void> {
   const { aws, appStacks, cdkToolkit } = await getStackServiceConfiguration(config, [])
-  const toolkit = nukeToolkit(logger, config, aws)
+  const toolkit = nukeToolkit(config, logger, aws)
   const app = cdkToolkit.destroy({
     stackNames: (await appStacks.listStacks()).map((s): string => s.stackName),
     exclusively: false,
@@ -123,7 +123,7 @@ async function nukeApp(logger: Logger, config: BoosterConfig): Promise<void> {
 /**
  * Nuke all the resources used in the "Toolkit Stack"
  */
-async function nukeToolkit(logger: Logger, config: BoosterConfig, aws: SDK): Promise<void> {
+async function nukeToolkit(config: BoosterConfig, logger: Logger, aws: SDK): Promise<void> {
   const stackName = config.appName + '-toolkit'
   logger.info(colors.blue(stackName) + colors.yellow(': destroying...'))
   await emptyS3Bucket(logger, config.appName + '-toolkit-bucket', aws)
@@ -138,7 +138,7 @@ async function nukeToolkit(logger: Logger, config: BoosterConfig, aws: SDK): Pro
 }
 
 export const deploy = (config: BoosterConfig, logger: Logger, plugins?: InfrastructurePlugin[]): Promise<void> =>
-  deployApp(logger, config, plugins).catch(logger.error)
+  deployApp(config, logger, plugins).catch(logger.error)
 
 export const nuke = (config: BoosterConfig, logger: Logger): Promise<void> =>
-  nukeApp(logger, config).catch(logger.error)
+  nukeApp(config, logger).catch(logger.error)

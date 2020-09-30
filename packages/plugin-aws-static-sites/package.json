@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/plugin-aws-static-sites",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Plugin to add support for deploying static sites to Booster applications.",
   "keywords": [
     "Booster",
@@ -41,7 +41,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@boostercloud/framework-provider-aws-infrastructure": "0.7.0",
+    "@boostercloud/framework-provider-aws-infrastructure": "0.7.1",
     "@types/faker": "^4.1.11",
     "faker": "^4.1.0",
     "velocityjs": "^2.0.0"
