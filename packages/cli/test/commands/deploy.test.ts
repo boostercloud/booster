@@ -2,12 +2,11 @@
 import { expect } from '../expect'
 import { fancy } from 'fancy-test'
 import { restore, fake } from 'sinon'
-import { Observable, Observer } from 'rxjs'
-import rewire = require('rewire')
-import { ProviderLibrary } from '@boostercloud/framework-types'
+import { ProviderLibrary, Logger } from '@boostercloud/framework-types'
 import { test } from '@oclif/test'
 
 // With this trick we can test non exported symbols
+const rewire = require('rewire')
 const deploy = rewire('../../src/commands/deploy')
 const runTasks = deploy.__get__('runTasks')
 
@@ -21,7 +20,7 @@ describe('deploy', () => {
 
   describe('runTasks function', () => {
     context('when an unexpected problem happens', () => {
-      fancy.stdout().it('fails gracefully showing the error message', async (ctx) => {
+      fancy.stdout().it('fails gracefully showing the error message', async () => {
         const msg = 'weird exception'
         const fakeLoader = Promise.reject(new Error(msg))
         const fakeDeployer = fake()
@@ -32,7 +31,7 @@ describe('deploy', () => {
     })
 
     context('when index.ts structure is not correct', () => {
-      fancy.stdout().it('fails gracefully', async (ctx) => {
+      fancy.stdout().it('fails gracefully', async () => {
         const msg = 'An error when loading project'
         const fakeLoader = Promise.reject(new Error(msg))
         const fakeDeployer = fake()
@@ -53,12 +52,9 @@ describe('deploy', () => {
           entities: {},
         })
 
-        const fakeDeployer = fake.returns(
-          Observable.create((obs: Observer<string>) => {
-            obs.next('this is a progress update')
-            obs.complete()
-          })
-        )
+        const fakeDeployer = fake((_config: unknown, logger: Logger) => {
+          logger.info('this is a progress update')
+        })
 
         await runTasks('test-env', fakeLoader, fakeDeployer)
 

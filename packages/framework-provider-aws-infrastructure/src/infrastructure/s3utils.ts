@@ -1,10 +1,10 @@
-import { Subscriber } from 'rxjs'
 import { Mode, SDK } from 'aws-cdk'
 import { ObjectIdentifier, ObjectIdentifierList } from 'aws-sdk/clients/s3'
 import * as AWS from 'aws-sdk'
+import { Logger } from '@boostercloud/framework-types'
 
-export async function emptyS3Bucket(observer: Subscriber<string>, bucketName: string, aws: SDK): Promise<void> {
-  observer.next(bucketName + ': DELETE_IN_PROGRESS')
+export async function emptyS3Bucket(logger: Logger, bucketName: string, aws: SDK): Promise<void> {
+  logger.info(bucketName + ': DELETE_IN_PROGRESS')
   const s3: AWS.S3 = await aws.s3(await aws.defaultAccount(), await aws.defaultRegion(), Mode.ForWriting)
 
   if (await s3BucketExists(bucketName, s3)) {
@@ -16,14 +16,14 @@ export async function emptyS3Bucket(observer: Subscriber<string>, bucketName: st
           ({
             Key: record.Key,
             VersionId: record.VersionId,
-          } as ObjectIdentifier),
+          } as ObjectIdentifier)
       )
       await s3.deleteObjects({ Bucket: bucketName, Delete: { Objects: records } }).promise()
-      if (listedObjects.IsTruncated) await emptyS3Bucket(observer, bucketName, aws)
+      if (listedObjects.IsTruncated) await emptyS3Bucket(logger, bucketName, aws)
     }
-    observer.next(bucketName + ': DELETE_COMPLETE')
+    logger.info(bucketName + ': DELETE_COMPLETE')
   } else {
-    observer.next(bucketName + ': BUCKET_NOT_FOUND : SKIPPING_DELETION')
+    logger.info(bucketName + ': BUCKET_NOT_FOUND : SKIPPING_DELETION')
   }
 }
 

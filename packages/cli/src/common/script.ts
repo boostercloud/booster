@@ -3,7 +3,7 @@ import { pipe } from 'fp-ts/lib/pipeable'
 import { fold } from 'fp-ts/lib/Either'
 import { tryCatch } from 'fp-ts/lib/TaskEither'
 import { constVoid } from 'fp-ts/lib/function'
-import * as loggerService from '../services/logger'
+import { oraLogger } from '../services/logger'
 
 /**
  * A Script represents some steps in a booster command, it stores the initial context
@@ -113,5 +113,5 @@ export class Script<TContext> {
     }
   }
 
-  private static logger = loggerService.logger
+  private static logger = oraLogger
 }
