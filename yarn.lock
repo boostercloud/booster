@@ -2170,9 +2170,9 @@
     "@types/sinon" "*"
 
 "@types/sinon-express-mock@^1.3.7":
-  version "1.3.8"
-  resolved "https://registry.yarnpkg.com/@types/sinon-express-mock/-/sinon-express-mock-1.3.8.tgz#4db9fca024b5355ef5cbee48e1068ed3831e55ef"
-  integrity sha512-aYu0PMH/VLpl5GMqnhYRuosC4KY0d3gi/Jn7k8G+rJIniryPxCweYyUFvZSs12ee0zlyiWvWyGgv+CaKW5DusQ==
+  version "1.3.9"
+  resolved "https://registry.yarnpkg.com/@types/sinon-express-mock/-/sinon-express-mock-1.3.9.tgz#22f9130ce1fcd0c81bb42e1ffb4daceafb2426d1"
+  integrity sha512-wHtSYqZ/c1FytL4qEMVb3tp8UZk1EnUq6Qc4jQv5eJ9N2QtFdS4WU3Wijqzeu5r3/DfZqpvzkxbbZLa0+9F9sA==
   dependencies:
     "@types/express" "*"
     "@types/sinon" "*"
