@@ -11,6 +11,7 @@ import { random, commerce, finance, lorem, internet } from 'faker'
 import { expect } from 'chai'
 import gql from 'graphql-tag'
 import { CartItem } from '../../src/common/cart-item'
+import { sleep } from '../../integration/providers/helpers'
 
 describe('Cart end-to-end tests', () => {
   let client: ApolloClient<NormalizedCacheObject>
@@ -283,6 +284,9 @@ describe('Cart end-to-end tests', () => {
             }
           `,
         })
+
+        console.log('Waiting 1 second for deletion to complete...')
+        await sleep(1000)
 
         client = await graphQLClient(userAuthInformation.accessToken)
         // Retrieve updated entity
