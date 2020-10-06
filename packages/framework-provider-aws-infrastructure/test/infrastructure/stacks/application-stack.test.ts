@@ -7,6 +7,8 @@ import { Function } from '@aws-cdk/aws-lambda'
 import { CfnUserPool, CfnUserPoolDomain, UserPoolClient } from '@aws-cdk/aws-cognito'
 import { RestApi } from '@aws-cdk/aws-apigateway'
 import { CfnApi } from '@aws-cdk/aws-apigatewayv2'
+import { InfrastructurePlugin } from '../../../src/infrastructure-plugin'
+import { fake } from 'sinon'
 
 describe('the application stack builder', () => {
   class TestReadModel1 {
@@ -32,7 +34,7 @@ describe('the application stack builder', () => {
   it('builds the application stack of a simple app correctly', () => {
     const boosterApp = new App()
 
-    new ApplicationStackBuilder(config, []).buildOn(boosterApp)
+    new ApplicationStackBuilder(config).buildOn(boosterApp)
 
     const appStackName = config.resourceNames.applicationStack
     const appStack = boosterApp.node.findChild(appStackName).node
@@ -89,7 +91,7 @@ describe('the application stack builder', () => {
     }
 
     const boosterApp = new App()
-    new ApplicationStackBuilder(config, []).buildOn(boosterApp)
+    new ApplicationStackBuilder(config).buildOn(boosterApp)
     const appStackName = config.resourceNames.applicationStack
     const appStack = boosterApp.node.findChild(appStackName).node
 
@@ -115,6 +117,7 @@ describe('the application stack builder', () => {
       expect(lambda.environment.BOOSTER_ENV).to.equal('test')
       expect(lambda.environment.A_CUSTOM_ENV_VARIABLE).to.equal('important-value')
     })
+
     // UserPool-related
     expect(appStack.tryFindChild(userPool)).not.to.be.undefined
     expect(appStack.tryFindChild(userPoolDomain)).not.to.be.undefined
@@ -122,5 +125,17 @@ describe('the application stack builder', () => {
     expect(appStack.tryFindChild(clientID)).not.to.be.undefined
     // Check all read models
     readModels.forEach(({ name }) => expect(appStack.tryFindChild(name)).not.to.be.undefined)
+  })
+
+  it('allow plugins to extend the stack', () => {
+    const boosterApp = new App()
+
+    const fakePlugin: InfrastructurePlugin = {
+      mountStack: fake(),
+    }
+
+    new ApplicationStackBuilder(config).buildOn(boosterApp, [fakePlugin])
+
+    expect(fakePlugin.mountStack).to.have.been.calledWithMatch(config, {})
   })
 })

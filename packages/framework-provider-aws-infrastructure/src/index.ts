@@ -5,9 +5,19 @@ import { deploy, nuke } from './infrastructure'
 export { InfrastructurePlugin } from './infrastructure-plugin'
 
 export const Infrastructure = (pluginDescriptors?: PluginDescriptor[]): ProviderInfrastructure => ({
-  deploy: (config: BoosterConfig, logger: Logger) => {
+  deploy: async (config: BoosterConfig, logger: Logger) => {
     const plugins = pluginDescriptors?.map(loadPlugin)
-    return deploy(config, logger, plugins)
+    try {
+      await deploy(config, logger, plugins)
+    } catch (error) {
+      logger.error(error)
+    }
   },
-  nuke,
+  nuke: async (config: BoosterConfig, logger: Logger) => {
+    try {
+      await nuke(config, logger).catch(logger.error)
+    } catch (error) {
+      logger.error(error)
+    }
+  },
 })

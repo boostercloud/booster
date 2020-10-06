@@ -51,7 +51,7 @@
     "packages/framework-core",
     "packages/cli",
     "packages/framework-integration-tests",
-    "packages/plugin-aws-static-sites"
+    "packages/rocket-static-sites-aws-infrastructure"
   ],
   "license": "Apache-2.0"
 }

@@ -1,7 +1,7 @@
 {
-  "name": "@boostercloud/plugin-aws-static-sites",
+  "name": "@boostercloud/rocket-static-sites-aws-infrastructure",
   "version": "0.7.1",
-  "description": "Plugin to add support for deploying static sites to Booster applications.",
+  "description": "Booster rocket to deploy static sites to Booster applications in AWS.",
   "keywords": [
     "Booster",
     "plugin",
