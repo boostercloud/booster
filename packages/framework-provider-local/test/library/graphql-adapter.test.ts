@@ -40,6 +40,17 @@ describe('Local provider graphql-adapter', () => {
       restore()
     })
 
+    it('should call logger.debug', async () => {
+      await rawGraphQLRequestToEnvelope(mockRequest, logger)
+
+      expect(debugStub).to.have.been.calledOnceWith(
+        'Received GraphQL request: \n- Headers: ',
+        mockRequest.headers,
+        '\n- Body: ',
+        mockRequest.body
+      )
+    })
+
     it('should generate expected envelop', async () => {
       const result = await rawGraphQLRequestToEnvelope(mockRequest, logger)
 
