@@ -18,6 +18,7 @@ import { RawEventsParser } from '../src/services/raw-events-parser'
 import { ReadModelStore } from '../src/services/read-model-store'
 import { EventStore } from '../src/services/event-store'
 import { RegisterHandler } from '../src/booster-register-handler'
+import { random } from 'faker'
 
 const someEvent: EventEnvelope = {
   version: 1,
@@ -175,7 +176,7 @@ describe('BoosterEventDispatcher', () => {
         expect(fakeHandler2).to.have.been.calledOnceWith(someEvent.value)
       })
 
-      it('calls the register handler for all the submitted commands and published events', async () => {
+      it('calls the register handler for all the published events', async () => {
         let capturedRegister1: Register = {} as any
         let capturedRegister2: Register = {} as any
         const fakeHandler1 = fake((event: EventInterface, register: Register) => {
@@ -194,6 +195,24 @@ describe('BoosterEventDispatcher', () => {
         expect(RegisterHandler.handle).to.have.been.calledTwice
         expect(RegisterHandler.handle).to.have.been.calledWith(config, logger, capturedRegister1)
         expect(RegisterHandler.handle).to.have.been.calledWith(config, logger, capturedRegister2)
+      })
+
+      it('waits for async event handlers to finish', async () => {
+        let capturedRegister: Register = new Register(random.uuid())
+        const fakeHandler = fake(async (event: EventInterface, register: Register) => {
+          await new Promise((resolve) => setTimeout(resolve, 100))
+          register.events(someEvent.value as EventInterface)
+          capturedRegister = register
+        })
+        config.eventHandlers['SomeEvent'] = [{ handle: fakeHandler }]
+
+        replace(RegisterHandler, 'handle', fake())
+
+        const boosterEventDispatcher = BoosterEventDispatcher as any
+        await boosterEventDispatcher.handleEvent(someEvent, config, logger)
+
+        expect(RegisterHandler.handle).to.have.been.calledWith(config, logger, capturedRegister)
+        expect(capturedRegister.eventList[0]).to.be.deep.equal(someEvent.value)
       })
     })
   })

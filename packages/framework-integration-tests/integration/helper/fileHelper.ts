@@ -6,7 +6,7 @@ const rmdir = util.promisify(require('fs').rmdir)
 
 export const readFileContent = (filePath: string): string => fs.readFileSync(filePath, 'utf-8')
 
-export const writeFileContent = (filePath: string, data: unknown): void => fs.writeFileSync(filePath, data)
+export const writeFileContent = (filePath: string, data: string): void => fs.writeFileSync(filePath, data)
 
 export const removeFiles = (filePaths: Array<string>): Array<Promise<void>> =>
   filePaths.map((file: string) => unlink(file))

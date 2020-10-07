@@ -43,7 +43,7 @@ export class ReadModelStore {
           entitySnapshotEnvelope,
           ' to build new state of read model ${readModelName} with ID ${readModelID}'
         )
-        const newReadModel = this.reducerForProjection(projectionMetadata)(entitySnapshot, readModel)
+        const newReadModel = this.projectionFunction(projectionMetadata)(entitySnapshot, readModel)
 
         if (newReadModel === ReadModelAction.Delete) {
           this.logger.debug(
@@ -58,7 +58,6 @@ export class ReadModelStore {
           )
           return
         }
-
         this.logger.debug(
           `[ReadModelStore#project] Storing new version of read model ${readModelName} with ID ${readModelID}:`,
           newReadModel
@@ -85,7 +84,7 @@ export class ReadModelStore {
     return joinKey
   }
 
-  public reducerForProjection(projectionMetadata: ProjectionMetadata): Function {
+  public projectionFunction(projectionMetadata: ProjectionMetadata): Function {
     try {
       return (projectionMetadata.class as any)[projectionMetadata.methodName]
     } catch {
