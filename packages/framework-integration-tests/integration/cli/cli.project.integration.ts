@@ -66,11 +66,15 @@ describe('Project', () => {
     promptAnswers: Array<string> = [],
     flags: Array<string> = []
   ): Promise<string> => {
-    return new Promise<string>((resolve): void => {
+    return new Promise<string>((resolve, reject): void => {
       const childProcess = require('child_process').exec(
         `${cliPath} new:project ${projectName} ${flags.join(' ')}`,
-        (_error: ExecException | null, stdout: string) => {
+        (error: ExecException | null, stdout: string) => {
           childProcess.stdin.end()
+          if (error) {
+            reject(error)
+            return
+          }
           resolve(stdout)
         }
       )
