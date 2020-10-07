@@ -1,4 +1,4 @@
-import { BoosterConfig } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger } from '@boostercloud/framework-types'
 import { ApplicationStackBuilder } from './stacks/application-stack'
 import { App } from '@aws-cdk/core'
 import { CloudAssembly, Environment } from '@aws-cdk/cx-api'
@@ -7,7 +7,6 @@ import { Configuration } from 'aws-cdk/lib/settings'
 import { bootstrapEnvironment, DeployStackResult, Mode, SDK } from 'aws-cdk'
 import { CdkToolkit } from 'aws-cdk/lib/cdk-toolkit'
 import { CloudFormationDeploymentTarget } from 'aws-cdk/lib/api/deployment-target'
-import { Observable, Subscriber } from 'rxjs'
 import { RequireApproval } from 'aws-cdk/lib/diff'
 import * as colors from 'colors'
 import { emptyS3Bucket } from './s3utils'
@@ -44,25 +43,19 @@ function bootstrapResultToMessage(result: DeployStackResult): string {
   return `Environment ${result.stackArn} bootstrapped${result.noOp ? ' (no changes).' : '.'}`
 }
 
-async function bootstrap(
-  observer: Subscriber<string>,
-  config: BoosterConfig,
-  appStacks: AppStacks,
-  aws: SDK
-): Promise<string> {
+async function bootstrap(logger: Logger, config: BoosterConfig, appStacks: AppStacks, aws: SDK): Promise<string> {
   const toolkitStackName: string = config.appName + '-toolkit'
 
   const env: Environment = await getEnvironment(aws)
-  observer.next('Bootstraping the following environment: ' + JSON.stringify(env))
+  logger.info('Bootstraping the following environment: ' + JSON.stringify(env))
   const result = await bootstrapEnvironment(env, aws, toolkitStackName, undefined, {
     bucketName: config.appName + '-toolkit-bucket',
   })
-  observer.next(bootstrapResultToMessage(result))
+  logger.info(bootstrapResultToMessage(result))
   return toolkitStackName
 }
 
-// Exported for testing
-export function assemble(config: BoosterConfig): CloudAssembly {
+function assemble(config: BoosterConfig): CloudAssembly {
   const boosterApp = new App()
   new ApplicationStackBuilder(config).buildOn(boosterApp)
   // Here we could add other optional stacks like one with a lot of dashboards for analytics, etc.
@@ -73,10 +66,10 @@ export function assemble(config: BoosterConfig): CloudAssembly {
 /**
  * Deploys the application using the credentials located in ~/.aws
  */
-async function deployApp(observer: Subscriber<string>, config: BoosterConfig): Promise<void> {
+async function deployApp(logger: Logger, config: BoosterConfig): Promise<void> {
   const { aws, appStacks, cdkToolkit } = await getStackServiceConfiguration(config)
 
-  const toolkitStackName = await bootstrap(observer, config, appStacks, aws)
+  const toolkitStackName = await bootstrap(logger, config, appStacks, aws)
 
   return cdkToolkit.deploy({
     toolkitStackName: toolkitStackName,
@@ -110,49 +103,37 @@ async function getStackServiceConfiguration(config: BoosterConfig): Promise<Stac
 /**
  * Nuke all the resources used in the "AppStacks"
  */
-async function nukeApp(observer: Subscriber<string>, config: BoosterConfig): Promise<[ void, void ]> {
-  const {aws, appStacks, cdkToolkit} = await getStackServiceConfiguration(config)
-  const toolkit = nukeToolkit(observer, config, aws)
+async function nukeApp(logger: Logger, config: BoosterConfig): Promise<void> {
+  const { aws, appStacks, cdkToolkit } = await getStackServiceConfiguration(config)
+  const toolkit = nukeToolkit(logger, config, aws)
   const app = cdkToolkit.destroy({
     stackNames: (await appStacks.listStacks()).map((s): string => s.stackName),
     exclusively: false,
     force: true,
     sdk: aws,
   })
-  return Promise.all([ toolkit, app ])
+  await Promise.all([toolkit, app])
 }
 
 /**
  * Nuke all the resources used in the "Toolkit Stack"
  */
-async function nukeToolkit(observer: Subscriber<string>, config: BoosterConfig, aws: SDK): Promise<void> {
+async function nukeToolkit(logger: Logger, config: BoosterConfig, aws: SDK): Promise<void> {
   const stackName = config.appName + '-toolkit'
-  observer.next(colors.blue(stackName) + colors.yellow(': destroying...'))
-  await emptyS3Bucket(observer, config.appName + '-toolkit-bucket', aws)
-  await emptyS3Bucket(observer, config.resourceNames.staticWebsite, aws)
+  logger.info(colors.blue(stackName) + colors.yellow(': destroying...'))
+  await emptyS3Bucket(logger, config.appName + '-toolkit-bucket', aws)
+  await emptyS3Bucket(logger, config.resourceNames.staticWebsite, aws)
   const cloudFormation = await aws.cloudFormation(
     await aws.defaultAccount(),
     await aws.defaultRegion(),
     Mode.ForWriting
   )
-  await cloudFormation.deleteStack({StackName: stackName}).promise()
-  observer.next('✅  ' + colors.blue(stackName) + colors.red(': DESTROYED'))
+  await cloudFormation.deleteStack({ StackName: stackName }).promise()
+  logger.info('✅  ' + colors.blue(stackName) + colors.red(': DESTROYED'))
 }
 
-export function deploy(configuration: BoosterConfig): Observable<string> {
-  return new Observable((observer): void => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    deployApp(observer, configuration)
-      .catch((error): void => observer.error(error))
-      .then((): void => observer.complete())
-  })
-}
+export const deploy = (config: BoosterConfig, logger: Logger): Promise<void> =>
+  deployApp(logger, config).catch(logger.error)
 
-export function nuke(configuration: BoosterConfig): Observable<string> {
-  return new Observable((observer): void => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    nukeApp(observer, configuration)
-      .catch((error): void => observer.error(error))
-      .then((): void => observer.complete())
-  })
-}
+export const nuke = (config: BoosterConfig, logger: Logger): Promise<void> =>
+  nukeApp(logger, config).catch(logger.error)

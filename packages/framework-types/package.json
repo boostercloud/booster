@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-types",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "description": "Contains Booster types related to the information extracted from the user project",
   "keywords": [
     "framework-types"
@@ -31,7 +31,6 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "dependencies": {
-    "rxjs": "^6.5.3",
     "uuid": "^3.3.3"
   },
   "devDependencies": {

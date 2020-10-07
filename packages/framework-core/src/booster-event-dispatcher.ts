@@ -78,10 +78,10 @@ export class BoosterEventDispatcher {
       return
     }
     await Promise.all(
-      eventHandlers.map((eventHandler: EventHandlerInterface) => {
+      eventHandlers.map(async (eventHandler: EventHandlerInterface) => {
         const register = new Register(eventEnvelope.requestID, eventEnvelope.currentUser)
         logger.debug('Calling "handle" method on event handler: ', eventHandler)
-        eventHandler.handle(eventEnvelope.value as EventInterface, register)
+        await eventHandler.handle(eventEnvelope.value as EventInterface, register)
         return RegisterHandler.handle(config, logger, register)
       })
     )

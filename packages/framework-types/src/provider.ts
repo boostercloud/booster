@@ -9,7 +9,6 @@ import {
   ScheduledCommandEnvelope,
 } from './envelope'
 import { BoosterConfig } from './config'
-import { Observable } from 'rxjs'
 import { Logger } from './logger'
 import { ReadModelInterface, UUID } from './concepts'
 import { Filter } from './searcher'
@@ -53,6 +52,7 @@ export interface ProviderReadModelsLibrary {
     filters: Record<string, Filter<unknown>>
   ): Promise<Array<TReadModel>>
   store(config: BoosterConfig, logger: Logger, readModelName: string, readModel: ReadModelInterface): Promise<unknown>
+  delete(config: BoosterConfig, logger: Logger, readModelName: string, readModel: ReadModelInterface): Promise<any>
   subscribe(config: BoosterConfig, logger: Logger, subscriptionEnvelope: SubscriptionEnvelope): Promise<void>
   fetchSubscriptions(
     config: BoosterConfig,
@@ -81,6 +81,7 @@ export interface ProviderConnectionsLibrary {
 export interface ProviderAuthLibrary {
   rawToEnvelope(rawMessage: unknown): UserEnvelope
   fromAuthToken(token: string): Promise<UserEnvelope | undefined>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleSignUpResult(config: BoosterConfig, request: any, userEnvelope: UserEnvelope): any
 }
 
@@ -90,8 +91,8 @@ export interface ProviderAPIHandling {
 }
 
 export interface ProviderInfrastructure {
-  deploy?: (configuration: BoosterConfig) => Observable<string>
-  nuke?: (configuration: BoosterConfig) => Observable<string>
+  deploy?: (configuration: BoosterConfig, logger: Logger) => Promise<void>
+  nuke?: (configuration: BoosterConfig, logger: Logger) => Promise<void>
   start?: (configuration: BoosterConfig, port: number) => Promise<void>
 }
 

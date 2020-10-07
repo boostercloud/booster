@@ -2,12 +2,15 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { expect } from '../expect'
-import * as Infrastructure from '../../src/infrastructure/index'
 import { replace, restore, fake, match } from 'sinon'
-import { BoosterConfig, UUID } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, UUID } from '@boostercloud/framework-types'
 import * as CDK from 'aws-cdk'
 import { CdkToolkit } from 'aws-cdk/lib/cdk-toolkit'
 import { StreamViewType } from '@aws-cdk/aws-dynamodb'
+
+const rewire = require('rewire')
+const Infrastructure = rewire('../../src/infrastructure/index')
+const privateAssemble = Infrastructure.__get__('assemble')
 
 const testEnvironment = {
   account: 'testAccount',
@@ -25,43 +28,56 @@ describe('the deployment process', () => {
   })
 
   describe('the `deploy` method', () => {
-    /* FIXME: This test tends to fail because the `deploy` dependencies are not properly mocked,
-     * the deployment code is being run and the process is truncated because of a timeout before
-     * being able to emit the first log message.
-     */
-    it(
-      'notifies about progress through the observer'
-    ) /*, async () => {
+    it('logs progress through the passed logger', async () => {
       const config = new BoosterConfig('test')
       const fakeBootstrapEnvironment = fake.returns({ noOp: true })
       replace(CDK, 'bootstrapEnvironment', fakeBootstrapEnvironment)
       replace(CdkToolkit.prototype, 'deploy', fake())
 
-      const observable = Infrastructure.deploy(config)
+      const logger = ({
+        info: fake(),
+      } as unknown) as Logger
 
-      let progressMessage = ''
-      observable.subscribe((message) => {
-        progressMessage = message
-      })
+      await Infrastructure.deploy(config, logger)
 
-      await observable.toPromise()
-
-      expect(progressMessage).not.to.be.empty
+      expect(logger.info).to.have.been.called
     })
-    */
 
-    it('notifies about an error through the observer when an error is thrown', async () => {
+    it('logs an error through the passed logger when an error is thrown', async () => {
       const config = new BoosterConfig('test')
       const fakeBootstrapEnvironment = fake.returns({ noOp: true })
-      const fakeCdkDeployThatThrows = fake.throws(new Error('Testing error'))
-
+      const errorMessage = 'Testing error'
+      const fakeCdkDeployThatThrows = fake.throws(errorMessage)
       replace(CDK, 'bootstrapEnvironment', fakeBootstrapEnvironment)
       replace(CdkToolkit.prototype, 'deploy', fakeCdkDeployThatThrows)
 
-      return expect(Infrastructure.deploy(config).toPromise()).to.eventually.be.rejected
+      const logger = ({
+        info: fake(),
+        error: fake(),
+      } as unknown) as Logger
+
+      await expect(Infrastructure.deploy(config, logger)).not.to.eventually.be.rejected
+      // It receives the thrown Error object, not just the message
+      expect(logger.error).to.have.been.calledWithMatch({ message: errorMessage })
     })
 
-    it('builds the AppStack calling to the `getStackServiceConfiguration`') // TODO
+    it('builds the AppStack calling to the `getStackServiceConfiguration`', async () => {
+      const config = new BoosterConfig('test')
+      const fakeBootstrapEnvironment = fake.returns({ noOp: true })
+      replace(CDK, 'bootstrapEnvironment', fakeBootstrapEnvironment)
+      replace(CdkToolkit.prototype, 'deploy', fake())
+      // Monkey patching this private function to be able to spy it
+      const fakeGetStackServiceConfiguration = fake(Infrastructure.__get__('getStackServiceConfiguration'))
+      Infrastructure.__set__('getStackServiceConfiguration', fakeGetStackServiceConfiguration)
+
+      const logger = ({
+        info: fake(),
+      } as unknown) as Logger
+
+      await Infrastructure.deploy(config, logger)
+
+      expect(fakeGetStackServiceConfiguration).to.have.been.calledOnceWith(config)
+    })
 
     it('calls the CDK bootstrap with the default environment parameters', async () => {
       const config = new BoosterConfig('test')
@@ -70,8 +86,11 @@ describe('the deployment process', () => {
       replace(CDK, 'bootstrapEnvironment', fakeBootstrapEnvironment)
       replace(CdkToolkit.prototype, 'deploy', fake())
 
-      const observable = Infrastructure.deploy(config)
-      await observable.toPromise()
+      const logger = ({
+        info: fake(),
+      } as unknown) as Logger
+
+      await Infrastructure.deploy(config, logger)
 
       expect(fakeBootstrapEnvironment).to.have.been.calledOnce
       expect(fakeBootstrapEnvironment).to.be.calledWith(match(testEnvironment))
@@ -89,8 +108,11 @@ describe('the deployment process', () => {
       replace(CDK, 'bootstrapEnvironment', fakeBootstrapEnvironment)
       replace(CdkToolkit.prototype, 'deploy', fake())
 
-      const observable = Infrastructure.deploy(config)
-      await observable.toPromise()
+      const logger = ({
+        info: fake(),
+      } as unknown) as Logger
+
+      await Infrastructure.deploy(config, logger)
 
       const appNamePrefixRegExp = new RegExp('^' + testAppName + '-')
       expect(fakeBootstrapEnvironment).to.have.been.calledOnce
@@ -116,9 +138,10 @@ describe('the deployment process', () => {
         class: EmptyEntity,
       }
 
-      // Just checks that the assemble method does not fail, meaning that the stack is build correctly according to the
+      // Just checks that the assemble method does not fail,
+      // meaning that the stack is build correctly according to the
       // AWS validations
-      expect(() => Infrastructure.assemble(config)).not.to.throw()
+      expect(() => privateAssemble(config)).not.to.throw()
     })
   })
 
@@ -149,7 +172,7 @@ describe('the deployment process', () => {
       authorizedRoles: 'all',
       properties: [],
     }
-    const cloudAssembly = Infrastructure.assemble(config)
+    const cloudAssembly = privateAssemble(config)
 
     it('generates cloudformation for a DynamoDB table to store its state', () => {
       const stackResources = cloudAssembly.getStackByName('testing-app-app').template['Resources']

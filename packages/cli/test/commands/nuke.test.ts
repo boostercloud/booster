@@ -2,12 +2,11 @@
 import { expect } from '../expect'
 import { fancy } from 'fancy-test'
 import { restore, replace, fake } from 'sinon'
-import { Observable, Observer } from 'rxjs'
-import rewire = require('rewire')
 import Prompter from '../../src/services/user-prompt'
-import { ProviderLibrary } from '@boostercloud/framework-types'
+import { ProviderLibrary, Logger } from '@boostercloud/framework-types'
 import { test } from '@oclif/test'
 
+const rewire = require('rewire')
 const nuke = rewire('../../src/commands/nuke')
 const runTasks = nuke.__get__('runTasks')
 const loader = nuke.__get__('askToConfirmRemoval')
@@ -19,7 +18,7 @@ describe('nuke', () => {
 
   describe('runTasks function', () => {
     context('when an unexpected problem happens', () => {
-      fancy.stdout().it('fails gracefully showing the error message', async (ctx) => {
+      fancy.stdout().it('fails gracefully showing the error message', async () => {
         const msg = 'weird exception'
         const fakeLoader = Promise.reject(new Error(msg))
         const fakeNuke = fake()
@@ -30,7 +29,7 @@ describe('nuke', () => {
     })
 
     context('when a wrong application name is provided', () => {
-      fancy.stdout().it('fails gracefully showing the error message', async (ctx) => {
+      fancy.stdout().it('fails gracefully showing the error message', async () => {
         const fakeProvider = {} as ProviderLibrary
 
         const fakeConfig = Promise.resolve({
@@ -46,14 +45,15 @@ describe('nuke', () => {
         const fakeNuke = fake()
         const errorMsg = 'Wrong app name, stopping nuke!'
 
-        await expect(runTasks('test-env', loader(prompter, false, fakeConfig), fakeNuke))
-          .to.eventually.be.rejectedWith(errorMsg)
+        await expect(runTasks('test-env', loader(prompter, false, fakeConfig), fakeNuke)).to.eventually.be.rejectedWith(
+          errorMsg
+        )
         expect(fakeNuke).not.to.have.been.called
       })
     })
 
     context('when the --force flag is provided', () => {
-      fancy.stdout().it('continues without asking for the application name', async (ctx) => {
+      fancy.stdout().it('continues without asking for the application name', async () => {
         const fakeProvider = {} as ProviderLibrary
 
         const fakeConfig = Promise.resolve({
@@ -67,9 +67,8 @@ describe('nuke', () => {
         const fakePrompter = fake.resolves('fake app 2') // The user entered wrong app name
         replace(prompter, 'defaultOrPrompt', fakePrompter)
         const fakeNuke = fake()
-        const errorMsg = 'Cannot read property'
 
-        await expect(runTasks('test-env', loader(prompter, true, fakeConfig), fakeNuke)).to.eventually.be.rejectedWith(errorMsg)
+        await expect(runTasks('test-env', loader(prompter, true, fakeConfig), fakeNuke)).to.eventually.be.fulfilled
         expect(prompter.defaultOrPrompt).not.to.have.been.called
         expect(fakeNuke).to.have.been.calledOnce
       })
@@ -89,17 +88,13 @@ describe('nuke', () => {
         const prompter = new Prompter()
         const fakePrompter = fake.resolves('fake app')
         replace(prompter, 'defaultOrPrompt', fakePrompter)
-        const fakeNuke = fake.returns(
-          Observable.create((obs: Observer<string>) => {
-            obs.next('this is a progress update')
-            obs.complete()
-          })
-        )
+        const fakeNuke = fake((_config: unknown, logger: Logger) => {
+          logger.info('this is a progress update')
+        })
 
         await runTasks('test-env', loader(prompter, false, fakeConfig), fakeNuke)
 
         expect(ctx.stdout).to.include('Removal complete!')
-
         expect(fakeNuke).to.have.been.calledOnce
       })
     })

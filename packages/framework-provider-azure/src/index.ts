@@ -34,6 +34,7 @@ export const Provider: ProviderLibrary = {
     rawToEnvelopes: undefined as any,
     fetchSubscriptions: undefined as any,
     store: storeReadModel.bind(null, cosmosClient),
+    delete: undefined as any,
     deleteSubscription: undefined as any,
     deleteAllSubscriptions: undefined as any,
   },

@@ -1,5 +1,5 @@
 import { ReadModel, Projects } from '@boostercloud/framework-core'
-import { UUID } from '@boostercloud/framework-types'
+import { UUID, ProjectionResult } from '@boostercloud/framework-types'
 import { Cart } from '../entities/Cart'
 
 @ReadModel({
@@ -12,7 +12,7 @@ export class CartWithProjectionReadModel {
   ) {}
 
   @Projects(Cart, "id")
-  public static projectCart(entity: Cart, currentCartWithProjectionReadModel?: CartWithProjectionReadModel): CartWithProjectionReadModel {
+  public static projectCart(entity: Cart, currentCartWithProjectionReadModel?: CartWithProjectionReadModel): ProjectionResult<CartWithProjectionReadModel> {
     return /* NEW CartWithProjectionReadModel HERE */
   }
 

@@ -1,6 +1,6 @@
-import { ReadModel, Projects } from '@boostercloud/framework-core'
+import { Projects, ReadModel } from '@boostercloud/framework-core'
 import { UserWithEmail } from '../roles'
-import { UUID } from '@boostercloud/framework-types'
+import { ProjectionResult, ReadModelAction, UUID } from '@boostercloud/framework-types'
 import { Product } from '../entities/Product'
 import { SKU } from '../common/sku'
 import { Money } from '../common/money'
@@ -21,10 +21,9 @@ export class ProductReadModel {
   ) {}
 
   @Projects(Product, 'id')
-  public static updateWithProduct(product: Product): ProductReadModel {
+  public static updateWithProduct(product: Product): ProjectionResult<ProductReadModel> {
     if (product.deleted) {
-      // TODO: Consider solutions to delete read models from the database (see BOOST-587)
-      return new ProductReadModel(product.id, '<DELETED>', '', '', 0, true)
+      return ReadModelAction.Delete
     } else {
       return new ProductReadModel(
         product.id,

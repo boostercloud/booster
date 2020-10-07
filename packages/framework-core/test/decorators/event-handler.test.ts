@@ -25,7 +25,9 @@ describe('the `EventHandler` decorator', () => {
 
     @EventHandler(SomeEvent)
     class SomeEventHandler {
-      public static handle(_event: SomeEvent, _register: Register): void {}
+      public static handle(_event: SomeEvent, _register: Register): Promise<void> {
+        return Promise.resolve()
+      }
     }
 
     const booster = Booster as any
