@@ -103,7 +103,7 @@ describe('ReadModelStore', () => {
         replace(config.provider.readModels, 'delete', fake())
         replace(
           ReadModelStore.prototype,
-          'reducerForProjection',
+          'projectionFunction',
           fake.returns(() => ReadModelAction.Delete)
         )
         const readModelStore = new ReadModelStore(config, logger)
@@ -120,7 +120,7 @@ describe('ReadModelStore', () => {
         replace(config.provider.readModels, 'delete', fake())
         replace(
           ReadModelStore.prototype,
-          'reducerForProjection',
+          'projectionFunction',
           fake.returns(() => ReadModelAction.Nothing)
         )
         const readModelStore = new ReadModelStore(config, logger)
