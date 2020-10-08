@@ -48,7 +48,9 @@ export class ScheduledCommandStack {
   }
 
   private createCronExpression(scheduledCommandMetadata: ScheduleInterface): Schedule {
-    const { minute = '0', hour = '5', day = '31', month = '2', weekDay = '?', year = '*' } = scheduledCommandMetadata
-    return Schedule.expression(`cron(${minute} ${hour} ${day} ${month} ${weekDay} ${year})`)
+    const { minute = '*', hour = '*', day = '*', month = '*', weekDay = '?', year = '*' } = scheduledCommandMetadata
+    const expression = `${minute} ${hour} ${day} ${month} ${weekDay} ${year}`
+    const neverRunByDefault = '0 5 31 2 ? *'
+    return Schedule.expression(`cron(${expression !== '* * * ? * *' ? expression : neverRunByDefault})`)
   }
 }
