@@ -435,4 +435,36 @@ describe('Cart end-to-end tests', () => {
       })
     })
   })
+
+  describe('Scheduled commands', () => {
+    it('scheduled command ran and created a product', async () => {
+      const scheduledProductSku = 'scheduled-product-created'
+
+      // Check that scheduled command created the new product
+      const products = await waitForIt(
+        () => {
+          return client.query({
+            query: gql`
+              query {
+                ProductReadModels {
+                  id
+                  sku
+                  displayName
+                  description
+                  price
+                  availability
+                  deleted
+                }
+              }
+            `,
+          })
+        },
+        (result) => result?.data?.ProductReadModels?.some((product: any) => product.sku === scheduledProductSku)
+      )
+
+      const product = products.data.ProductReadModels.find((product: any) => product.sku === scheduledProductSku)
+      console.log({ product })
+      expect(product).not.to.be.null
+    })
+  })
 })
