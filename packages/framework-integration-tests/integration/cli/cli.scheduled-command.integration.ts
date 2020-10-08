@@ -15,12 +15,7 @@ describe('Scheduled Command', () => {
   context('Valid scheduled command', () => {
     it('should create a new scheduled command', async () => {
       const expectedOutputRegex = new RegExp(
-        [
-          '.*boost.*new:scheduled-command',
-          'Verifying project',
-          'Creating new scheduled command',
-          'Scheduled command generated!.*',
-        ].join('.*')
+        /(.+) boost (.+)?new:scheduled-command(.+)? (.+)\n- Verifying project\n(.+) Verifying project\n- Creating new scheduled command\n(.+) Creating new scheduled command\n(.+) Scheduled command generated!\n/
       )
 
       const { stdout } = await exec(`${cliPath} new:scheduled-command CheckCart`)
