@@ -42,10 +42,15 @@ const run = async (name: string): Promise<void> =>
     .done()
 
 function generateImports(): Array<ImportDeclaration> {
+  const componentsFromBoosterTypes = ['Register']
   return [
     {
       packagePath: '@boostercloud/framework-core',
       commaSeparatedComponents: 'ScheduledCommand',
+    },
+    {
+      packagePath: '@boostercloud/framework-types',
+      commaSeparatedComponents: componentsFromBoosterTypes.join(', '),
     },
   ]
 }

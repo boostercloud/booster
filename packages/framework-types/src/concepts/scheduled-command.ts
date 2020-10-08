@@ -1,8 +1,9 @@
 import { AnyClass } from '../typelevel'
 import { ScheduleInterface } from '../schedule'
+import { Register } from './register'
 
 export interface ScheduledCommandInterface extends AnyClass {
-  handle(): Promise<void>
+  handle(register: Register): Promise<void>
 }
 
 export interface ScheduledCommandMetadata {

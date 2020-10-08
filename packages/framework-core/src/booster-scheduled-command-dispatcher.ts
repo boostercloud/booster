@@ -24,7 +24,7 @@ export class BoosterScheduledCommandDispatcher {
     const command = commandClass as ScheduledCommandInterface
     const register = new Register(commandEnvelope.requestID)
     this.logger.debug('Calling "handle" method on command: ', command)
-    await command.handle()
+    await command.handle(register)
     this.logger.debug('Command dispatched with register: ', register)
     await RegisterHandler.handle(this.config, this.logger, register)
   }
