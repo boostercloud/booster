@@ -296,6 +296,10 @@ export async function signInURL(): Promise<string> {
   return new URL('auth/sign-in', await baseHTTPURL()).href
 }
 
+export async function signOutURL(): Promise<string> {
+  return new URL('auth/sign-out', await baseHTTPURL()).href
+}
+
 export async function refreshTokenURL(): Promise<string> {
   return new URL('auth/refresh-token', await baseHTTPURL()).href
 }
