@@ -73,7 +73,17 @@ describe('new', (): void => {
           'tsconfig.eslint.json',
           'tsconfig.json',
         ],
-        src: ['commands', 'events', 'event-handlers', 'entities', 'read-models', 'config', 'common', 'index.ts'],
+        src: [
+          'commands',
+          'events',
+          'event-handlers',
+          'entities',
+          'read-models',
+          'scheduled-commands',
+          'config',
+          'common',
+          'index.ts',
+        ],
       }
       const defaultProjectInitializerConfig = {
         projectName: projectName,

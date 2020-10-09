@@ -70,6 +70,10 @@ export const Provider: ProviderLibrary = {
     deleteData: notImplemented as any,
     sendMessage: notImplemented as any,
   },
+  // ScheduledCommandsLibrary
+  scheduled: {
+    rawToEnvelope: undefined as any,
+  },
   // ProviderInfrastructureGetter
   infrastructure: () =>
     require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,

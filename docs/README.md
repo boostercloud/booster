@@ -3,86 +3,86 @@
 <!-- toc -->
 
 - [Introduction](#introduction)
-  * [What is Booster?](#what-is-booster)
-  * [Booster Principles](#booster-principles)
-  * [Why use Booster](#why-use-booster)
+  - [What is Booster?](#what-is-booster)
+  - [Booster Principles](#booster-principles)
+  - [Why use Booster](#why-use-booster)
 - [Getting started](#getting-started)
-  * [Installing Booster](#installing-booster)
-    + [Prerequisites](#prerequisites)
-    + [Installing the Booster CLI](#installing-the-booster-cli)
-  * [Your first Booster app in 10 minutes](#your-first-booster-app-in-10-minutes)
-    + [1. Create the project](#1-create-the-project)
-    + [2. First command](#2-first-command)
-    + [3. First event](#3-first-event)
-    + [4. First entity](#4-first-entity)
-    + [5. First read model](#5-first-read-model)
-    + [6. Deployment](#6-deployment)
-    + [7. Testing](#7-testing)
-    + [8. Removing the stack](#8-removing-the-stack)
-    + [9. More functionalities](#9-more-functionalities)
+  - [Installing Booster](#installing-booster)
+    - [Prerequisites](#prerequisites)
+    - [Installing the Booster CLI](#installing-the-booster-cli)
+  - [Your first Booster app in 10 minutes](#your-first-booster-app-in-10-minutes)
+    - [1. Create the project](#1-create-the-project)
+    - [2. First command](#2-first-command)
+    - [3. First event](#3-first-event)
+    - [4. First entity](#4-first-entity)
+    - [5. First read model](#5-first-read-model)
+    - [6. Deployment](#6-deployment)
+    - [7. Testing](#7-testing)
+    - [8. Removing the stack](#8-removing-the-stack)
+    - [9. More functionalities](#9-more-functionalities)
 - [Booster architecture](#booster-architecture)
-  * [1. Command and command handlers](#1-command-and-command-handlers)
-    + [Commands naming convention](#commands-naming-convention)
-    + [Creating a command](#creating-a-command)
-    + [The command handler function](#the-command-handler-function)
-    + [Authorizing a command](#authorizing-a-command)
-    + [Submitting a command](#submitting-a-command)
-  * [2. Events](#2-events)
-    + [Events naming convention](#events-naming-convention)
-    + [Creating events](#creating-events)
-    + [Registering events in the event store](#registering-events-in-the-event-store)
-    + [Events ordering](#events-ordering)
-  * [3. Event handlers](#3-event-handlers)
-    + [Creating an event handler](#creating-an-event-handler)
-    + [Registering events from an event handler](#registering-events-from-an-event-handler)
-    + [Reading entities from event handlers](#reading-entities-from-event-handlers)
-  * [4. Entities and reducers](#4-entities-and-reducers)
-    + [Entities naming convention](#entities-naming-convention)
-    + [Creating entities](#creating-entities)
-    + [The reducer function](#the-reducer-function)
-    + [Eventual consistency](#eventual-consistency)
-  * [5. Read models and projections](#5-read-models-and-projections)
-    + [Read models naming convention](#read-models-naming-convention)
-    + [Creating a read model](#creating-a-read-model)
-    + [The projection function](#the-projection-function)
-    + [Authorizing read models](#authorizing-read-models)
-    + [Querying a read model](#querying-a-read-model)
-    + [Getting real-time updates for a read model](#getting-real-time-updates-for-a-read-model)
+  - [1. Command and command handlers](#1-command-and-command-handlers)
+    - [Commands naming convention](#commands-naming-convention)
+    - [Creating a command](#creating-a-command)
+    - [The command handler function](#the-command-handler-function)
+    - [Authorizing a command](#authorizing-a-command)
+    - [Submitting a command](#submitting-a-command)
+  - [2. Events](#2-events)
+    - [Events naming convention](#events-naming-convention)
+    - [Creating events](#creating-events)
+    - [Registering events in the event store](#registering-events-in-the-event-store)
+    - [Events ordering](#events-ordering)
+  - [3. Event handlers](#3-event-handlers)
+    - [Creating an event handler](#creating-an-event-handler)
+    - [Registering events from an event handler](#registering-events-from-an-event-handler)
+    - [Reading entities from event handlers](#reading-entities-from-event-handlers)
+  - [4. Entities and reducers](#4-entities-and-reducers)
+    - [Entities naming convention](#entities-naming-convention)
+    - [Creating entities](#creating-entities)
+    - [The reducer function](#the-reducer-function)
+    - [Eventual consistency](#eventual-consistency)
+  - [5. Read models and projections](#5-read-models-and-projections)
+    - [Read models naming convention](#read-models-naming-convention)
+    - [Creating a read model](#creating-a-read-model)
+    - [The projection function](#the-projection-function)
+    - [Authorizing read models](#authorizing-read-models)
+    - [Querying a read model](#querying-a-read-model)
+    - [Getting real-time updates for a read model](#getting-real-time-updates-for-a-read-model)
 - [Features](#features)
-  * [Authentication and Authorization](#authentication-and-authorization)
-    + [Authentication API](#authentication-api)
-  * [GraphQL API](#graphql-api)
-    + [Relationship between GraphQL operations and commands and read models](#relationship-between-graphql-operations-and-commands-and-read-models)
-    + [How to send GraphQL request](#how-to-send-graphql-request)
-    + [Sending commands](#sending-commands)
-    + [Reading read models](#reading-read-models)
-    + [Subscribing to read models](#subscribing-to-read-models)
-  * [Cloud native](#cloud-native)
-    + [Configure your provider credentials](#configure-your-provider-credentials)
-    + [Deploy your project](#deploy-your-project)
-    + [Application outputs](#application-outputs)
-    + [Delete your cloud stack](#delete-your-cloud-stack)
+  - [Authentication and Authorization](#authentication-and-authorization)
+    - [Authentication API](#authentication-api)
+  - [GraphQL API](#graphql-api)
+    - [Relationship between GraphQL operations and commands and read models](#relationship-between-graphql-operations-and-commands-and-read-models)
+    - [How to send GraphQL request](#how-to-send-graphql-request)
+    - [Sending commands](#sending-commands)
+    - [Reading read models](#reading-read-models)
+    - [Subscribing to read models](#subscribing-to-read-models)
+  - [Cloud native](#cloud-native)
+    - [Configure your provider credentials](#configure-your-provider-credentials)
+    - [Deploy your project](#deploy-your-project)
+    - [Application outputs](#application-outputs)
+    - [Delete your cloud stack](#delete-your-cloud-stack)
 - [Going deeper with Booster](#going-deeper-with-booster)
-  * [Contributing](#contributing) 
-  * [Framework Core](#framework-core)
-  * [Framework Types](#framework-types)
-  * [Framework integration tests](#framework-integration-tests)
-  * [Providers](#providers)
-    + [framework-provider-aws-*](#framework-provider-aws-)
-    + [framework-provider-local-*](#framework-provider-local-)
-    + [framework-provider-kubernetes-*](#framework-provider-kubernetes-)
-    + [framework-provider-azure-*](#framework-provider-azure-)
-  * [Configuration and environments](#configuration-and-environments)
-    + [Booster configuration](#booster-configuration)
-    + [Environments](#environments)
+  - [Contributing](#contributing)
+  - [Framework Core](#framework-core)
+  - [Framework Types](#framework-types)
+  - [Framework integration tests](#framework-integration-tests)
+  - [Providers](#providers)
+    - [framework-provider-aws-\*](#framework-provider-aws-)
+    - [framework-provider-local-\*](#framework-provider-local-)
+    - [framework-provider-kubernetes-\*](#framework-provider-kubernetes-)
+    - [framework-provider-azure-\*](#framework-provider-azure-)
+  - [Configuration and environments](#configuration-and-environments)
+    - [Booster configuration](#booster-configuration)
+    - [Environments](#environments)
 - [Debugging and testing Booster applications](#debugging-and-testing-booster-applications)
-  * [Running Booster applications locally](#running-booster-applications-locally)
-    + [Prerequisites](#prerequisites-1)
-    + [Starting your application](#starting-your-application)
-    + [Performing Auth requests](#performing-auth-requests)
-    + [Performing GraphQL requests](#performing-graphql-requests)
-    + [Inspect Database information](#inspect-database-information)
-  * [Booster examples](#booster-examples)
+  - [Running Booster applications locally](#running-booster-applications-locally)
+    - [Prerequisites](#prerequisites-1)
+    - [Starting your application](#starting-your-application)
+    - [Performing Auth requests](#performing-auth-requests)
+    - [Performing GraphQL requests](#performing-graphql-requests)
+    - [Inspect Database information](#inspect-database-information)
+  - [Booster examples](#booster-examples)
 - [Frequently Asked Questions](#frequently-asked-questions)
 
 <!-- tocstop -->
@@ -245,7 +245,8 @@ aws_secret_access_key = <YOUR SECRET ACCESS KEY>
 If you are using multiple AWS accounts and don't want to use the default profile,
 you will need to set a `region` option to let the AWS SDK know which region you want your application to be deployed to.
 To do so, we have two possible solutions:
-* Add the region to the profile of your choice in your `~/.aws/credentials` file
+
+- Add the region to the profile of your choice in your `~/.aws/credentials` file
 
 ```ini
 # ~/.aws/credentials
@@ -259,7 +260,9 @@ aws_access_key_id = <YOUR ACCESS KEY ID>
 aws_secret_access_key = <YOUR SECRET ACCESS KEY>
 region=<REGION FOR YOUR BOOSTER APP>
 ```
-* Or creating a `~/.aws/config` file
+
+- Or creating a `~/.aws/config` file
+
 ```ini
 # ~/.aws/config
 [default]
@@ -336,22 +339,23 @@ configured [here](#set-up-an-aws-account).
 
 **Note:** If you prefer to create the project with default parameters, you can run the command as `boost new:project booster-blog --default`. The default
 parameters are as follows:
+
 - Project name: The one provided when running the command, in this case "booster-blog"
 - Provider: AWS
 - Description, author, homepage and repository: ""
 - License: MIT
 - Version: 0.1.0
 
-> Booster CLI commands follow this structure: `boost <subcommand> [<flags>] [<parameters>]`. 
+> Booster CLI commands follow this structure: `boost <subcommand> [<flags>] [<parameters>]`.
 > Let's break down the command we have just executed:
 >
 > - `boost` is the Booster CLI executable
-> - `new:project` is the "subcommand" part. In this case, it is composed of two parts separated by a colon. 
-> The first part, `new`, means that we want to generate a new resource. The second part, `project`, indicates which
-> kind of resource we are interested in. Other examples are `new:command`, `new:event`, etc. We'll see a bunch of them later.
+> - `new:project` is the "subcommand" part. In this case, it is composed of two parts separated by a colon.
+>   The first part, `new`, means that we want to generate a new resource. The second part, `project`, indicates which
+>   kind of resource we are interested in. Other examples are `new:command`, `new:event`, etc. We'll see a bunch of them later.
 > - `boosted-blog` is a "parameter" for the subcommand `new:project`. Flags and parameters are optional and
-> their meaning and shape depend on the subcommand you used. In this case, we are specifying the name of the project
-> we are creating.
+>   their meaning and shape depend on the subcommand you used. In this case, we are specifying the name of the project
+>   we are creating.
 
 When finished, you'll see some scaffolding that has been generated. The project name will be the
 project's root so `cd` into it:
@@ -513,7 +517,7 @@ You should see now a new file called `Post.ts` in the `src/entities` directory.
 This time, besides using the `--fields` flag, we use the `--reduces` flag to specify the events the entity will reduce and, this way, produce the Post current state. The generator will create one _reducer function_ for each event we have specified (only one in this case).
 Reducer functions in Booster work similarly to the `reduce` callbacks in Javascript: they receive an event
 and the current state of the entity, and returns the next version of the same entity.
-In this case, when we receive a `PostCreated` event, we can just return a new `Post` entity copying the fields 
+In this case, when we receive a `PostCreated` event, we can just return a new `Post` entity copying the fields
 from the event. There is no previous state of the Post as we are creating it for the first time:
 
 ```typescript
@@ -537,9 +541,9 @@ event handlers to make business decisions or enforcing business rules.
 In a real application, we rarely want to make public our entire domain model (entities)
 including all their fields. What is more, different users may have different views of the data depending
 on their permissions. That's the goal of `ReadModels`. Client applications can query or
-subscribe to them. 
+subscribe to them.
 
-Read models are _projections_ of one or more entities into a new object that is reachable through the query and subscriptions APIs. Let's generate a `PostReadModel` that projects our 
+Read models are _projections_ of one or more entities into a new object that is reachable through the query and subscriptions APIs. Let's generate a `PostReadModel` that projects our
 `Post` entity:
 
 ```bash
@@ -548,7 +552,7 @@ boost new:read-model PostReadModel --fields title:string author:string --project
 
 We have used a new flag, `--projects`, that allow us to specify the entities (can be many) the read model will
 watch for changes. You might be wondering what is the `:id` after the entity name. That's the [joinKey](#the-projection-function),
-but you can forget about it now. 
+but you can forget about it now.
 
 As you might guess, the read-model generator will create a file called
 `PostReadModel.ts` under `src/read-models`:
@@ -567,7 +571,7 @@ There are two things to do when creating a read model:
 
 While commands define the input to our system, read models define the output, and together they compound
 the public API of a Booster application. Let's do the same we did in the command and authorize `all` to
-query/subscribe the `PostReadModel`. Also, and for learning purposes, we will exclude the `content` field 
+query/subscribe the `PostReadModel`. Also, and for learning purposes, we will exclude the `content` field
 from the `Post` entity, so it won't be returned when users request the read model.
 
 Edit the `PostReadModel.ts` file to look like this:
@@ -609,7 +613,7 @@ boost deploy -e production
 > With `-e production` we are specifying which environment we want to deploy. We'll talk about them later.
 
 It will take a couple of minutes to deploy all the resources. Once finished, you will see
-information about your application endpoints and other outputs. For this example, we will 
+information about your application endpoints and other outputs. For this example, we will
 only need to pick the output ending in `httpURL`, e.g.:
 
 ```text
@@ -625,9 +629,9 @@ Let's get started testing the project. We will perform three actions:
 - Retrieve a specific post
 
 Booster applications provide you with a GraphQL API out of the box. You send commands using
-_mutations_ and get read models data using _queries_ or _subscriptions_. 
+_mutations_ and get read models data using _queries_ or _subscriptions_.
 
-In this section, we will be sending requests by hand using the online tool [Postwoman](https://postwoman.io/graphql), 
+In this section, we will be sending requests by hand using the online tool [Postwoman](https://postwoman.io/graphql),
 which is free and includes great support for GraphQL. However, you can use any client you want. Your endpoint URL should look like this:
 
 ```text
@@ -789,7 +793,7 @@ In this chapter you'll walk through these concepts and its details.
 
 Booster is different than MVC frameworks in which you typically implement controller classes with CRUD methods. Instead of that, you define commands, which are the user actions when interacting with an application. This approach fits very well with Domain-Driven Design. Depending on your application's domain, some examples of commands would be: `RemoveItemFromCart`, `RatePhoto`, `AddCommentToPost`, etc. Although, you can still have `Create*`, `Delete*`, or `Update*` commands when they make sense.
 
-There is an architectural split between commands and command handlers though they *live* in the same file. The command is the class with the `@Command` decorator, and the generated method called `handle` is the command handler. That is because Booster adopts several concepts from functional programming; the separation between data structures and data transformations is one of them. In Booster, a command looks like this:
+There is an architectural split between commands and command handlers though they _live_ in the same file. The command is the class with the `@Command` decorator, and the generated method called `handle` is the command handler. That is because Booster adopts several concepts from functional programming; the separation between data structures and data transformations is one of them. In Booster, a command looks like this:
 
 ```typescript
 @Command({
@@ -846,9 +850,10 @@ The preferred way to create a command is by using the generator, e.g.
 boost new:command CreateProduct --fields sku:SKU displayName:string description:string price:Money
 ```
 
-The generator will automatically create a file called `CreateProduct.ts` with a TypeScript class of the same name under the `commands` directory. You can still create (or modify) the command manually. Since the generator is not doing any *magic*, all you need is a class decorated as `@Command`. Anyway, we recommend you always to use the generator, because it handles the boilerplate code for you.
+The generator will automatically create a file called `CreateProduct.ts` with a TypeScript class of the same name under the `commands` directory. You can still create (or modify) the command manually. Since the generator is not doing any _magic_, all you need is a class decorated as `@Command`. Anyway, we recommend you always to use the generator, because it handles the boilerplate code for you.
 
 Note:
+
 > Generating a command with the same name as an already existing one will override its content. Soon, we will display a warning before overwriting anything.
 
 #### The command handler function
@@ -870,10 +875,7 @@ Given this command:
   authorize: 'all',
 })
 export class CreateProduct {
-  public constructor(
-    readonly sku: string,
-    readonly price: number
-  ) {}
+  public constructor(readonly sku: string, readonly price: number) {}
 
   public static async handle(command: CreateProduct, register: Register): Promise<void> {
     const priceLimit = 10
@@ -882,7 +884,6 @@ export class CreateProduct {
     }
   }
 }
-
 ```
 
 And this mutation:
@@ -917,7 +918,7 @@ You'll get something like this response:
 }
 ```
 
-###### Register error events 
+###### Register error events
 
 There could be situations in which you want to register an event representing an error. For example, when moving items with insufficient stock from one location to another:
 
@@ -975,7 +976,8 @@ export class MoveStock {
   private enoughStock(origin: string, quantity: number, stock?: Stock): boolean {
     const count = stock?.countByLocation[origin]
     return !!count && count >= quantity
-  }}
+  }
+}
 ```
 
 ##### Registering events
@@ -1016,7 +1018,7 @@ Booster generates this GraphQL mutation:
 mutation CreateProduct($input: CreateProductInput!): Boolean
 ```
 
-where the schema for `CreateProductInput` is 
+where the schema for `CreateProductInput` is
 
 ```text
 {
@@ -1027,6 +1029,33 @@ where the schema for `CreateProductInput` is
 }
 ```
 
+#### Scheduling a command
+
+Scheduled commands are the way to add automated tasks to your application, like checking an e-commerce abandoned carts every two hours to send notifications to the customer to come back and complete the checkout. Booster scheduled commands are TypeScript classes decorated with `@ScheduledCommand`, and unlike conventional commands, their handle function doesn't have any parameters.
+
+In Booster, a scheduled command looks like this:
+
+```typescript
+@ScheduledCommand({
+  minute: '0/5', // runs every 5 minutes
+})
+export class CheckCartCount {
+  public static async handle(): Promise<void> {
+    /* YOUR CODE HERE */
+  }
+}
+```
+
+Notice that you can pass as parameters `minute`, `hour`, `day`, `month`, `weekDay` and `year` to set up a cron expression. By default, if no paramateres are passed, the scheduled command will not be triggered.
+
+#### Creating a scheduled command
+
+The preferred way to create a scheduled command is by using the generator, e.g.
+
+```shell
+boost new:scheduled-command CheckCartCount
+```
+
 ### 2. Events
 
 Events are **immutable records of facts** within your application's domain. They are the cornerstone of Booster because of its event-driven and event-sourced nature. Booster events are TypeScript classes decorated with `@Event`. An event class may look like this:
@@ -1034,8 +1063,7 @@ Events are **immutable records of facts** within your application's domain. They
 ```typescript
 @Event
 export class EventName {
-  public constructor(readonly field1: SomeType,
-                     readonly field2: SomeOtherType) {}
+  public constructor(readonly field1: SomeType, readonly field2: SomeOtherType) {}
 
   public entityID(): UUID {
     return /* the associated entity ID */
@@ -1048,9 +1076,7 @@ Events and [entities](#4-entities-and-reducers) are intimately related. Each eve
 ```typescript
 @Event
 export class CartPaid {
-  public constructor(
-    readonly cartID: UUID,
-    readonly paymentID: UUID) {}
+  public constructor(readonly cartID: UUID, readonly paymentID: UUID) {}
 
   public entityID(): UUID {
     // returns cartID because we want to associate it with
@@ -1233,7 +1259,7 @@ automatic snapshots for each entity so that the reduction process is efficient.
 
 An entity is defined as a class with the `@Entity` decorator. Inside of it, you can write one or more static methods (called "reducers") with
 the `@Reduces` decorator specifying the event they reduce. The reducer method will be called with two arguments: the event
-and the current state of the entity. Booster expects you to return a new entity with the changes implied by the event applied to the current one. 
+and the current state of the entity. Booster expects you to return a new entity with the changes implied by the event applied to the current one.
 
 An entity class looks like this:
 
@@ -1343,26 +1369,28 @@ extreme situations, where other systems might simply fail.
 
 ### 5. Read models and projections
 
-Read Models are cached data optimized for read operations. They're updated reactively when [Entities](#4-entities-and-reducers) are updated after reducing [events](#2-events). They also define the *Read API*.
+Read Models are cached data optimized for read operations. They're updated reactively when [Entities](#4-entities-and-reducers) are updated after reducing [events](#2-events). They also define the _Read API_.
 
 Read Models are classes decorated with the `@ReadModel` decorator that have one or more projection methods.
 
 ```typescript
 @ReadModel
 export class ReadModelName {
-  public constructor(
-    readonly fieldA: SomeType,
-    readonly fieldB: SomeType,
-    /* as many fields as needed */
-  ) {}
+  public constructor(readonly fieldA: SomeType, readonly fieldB: SomeType /* as many fields as needed */) {}
 
   @Projects(SomeEntity, 'entityField')
-  public static projectionName(entity: SomeEntity, currentEntityReadModel?: ReadModelName): ProjectionResult<ReadModelName> {
+  public static projectionName(
+    entity: SomeEntity,
+    currentEntityReadModel?: ReadModelName
+  ): ProjectionResult<ReadModelName> {
     return new ReadModelName(/* initialize here your constructor properties */)
   }
-  
+
   @Projects(SomeEntity, 'othetEntityField')
-  public static projectionName(entity: SomeEntity, currentEntityReadModel?: ReadModelName): ProjectionResult<ReadModelName> {
+  public static projectionName(
+    entity: SomeEntity,
+    currentEntityReadModel?: ReadModelName
+  ): ProjectionResult<ReadModelName> {
     return new ReadModelName(/* initialize here your constructor properties */)
   }
   /* as many projections as needed */
@@ -1378,7 +1406,7 @@ Despite you can place your read models in any directory, we strongly recommend y
 ```text
 <project-root>
 ├── src
-│   ├── commands 
+│   ├── commands
 │   ├── common
 │   ├── config
 │   ├── entities
@@ -1401,14 +1429,16 @@ The generator will create a Typescript class under the read-models directory `<p
 Read Model classes can also be created by hand and there are no restrictions. The structure of the data is totally open and can be as complex as you can manage in your projection functions.
 
 #### The projection function
+
 A `Projection` is a method decorated with the `@Projects` decorator that, given a new entity value and (optionally) the current read model state, generate a new read model value.
 
 Read models can be projected from one or more [entities](#4-entities-and-reducers) as soon as all the entities involved have one field with the same semantics that can be used as a join key (usually an identifier or a reference to other entity). A join key in Booster is similar to join keys in relational databases, so you could see Read Models as reactive join operations that you can use to build data aggregates. When an entity is updated, Booster uses the join key to find the right read model instance, so all entities that share the same join key value will trigger the projections of the same read model. When defining a projection with the `@Projects` decorator, it's required to set the field name of the join key in each entity. Let's see an example:
+
 ```typescript
 @ReadModel
 export class UserReadModel {
   public constructor(readonly username: string, /* ...(other interesting fields from users)... */) {}
-  
+
   @Projects(User, 'id')
   public static projectUser(entity: User, current?: ProjectionResult<UserReadModel>) { // Here we update the user fields}
 
@@ -1416,16 +1446,19 @@ export class UserReadModel {
   public static projectUserPost(entity: Post, current?: ProjectionResult<UserReadModel>) { //Here we can adapt the read model to show specific user information related with the Post entity}
 }
 ```
+
 In the previous example we are projecting the `User` entity using the user `id` and also we are projecting the `User` entity based on the `ownerId` of the `Post` entity. Notice that both join keys are references to the `User` identifier, but it's not required that the join key is an identifier.
 
 As you may have notice from the `ProjectionResult` type, projections can also return `ReadModelAction`, which includes:
+
 1. Deletion of read models by returning the `ReadModelAction.Delete` value
 2. You can also return `ReadModelAction.Nothing` to keep the read model untouched
+
 ```
 @ReadModel
 export class UserReadModel {
   public constructor(readonly username: string, /* ...(other interesting fields from users)... */) {}
-  
+
   @Projects(User, 'id')
   public static projectUser(entity: User, current?: UserReadModel): ProjectionResult<UserReadModel>  {
     if (current?.deleted) {
@@ -1447,16 +1480,13 @@ For every read model, Booster automatically creates all the necessary queries an
 
 ```typescript
 @ReadModel({
-  authorize: 'all'
+  authorize: 'all',
 })
 export class CartReadModel {
-  public constructor(
-    public id: UUID,
-    readonly items: Array<CartItem>,
-    ) {}
+  public constructor(public id: UUID, readonly items: Array<CartItem>) {}
 
-  @Projects(Cart, "id")
-  public static projectCart(entity:Cart, currentReadModel: CartReadModel): ProjectionResult<CartReadModel> {
+  @Projects(Cart, 'id')
+  public static projectCart(entity: Cart, currentReadModel: CartReadModel): ProjectionResult<CartReadModel> {
     return new CartReadModel(entity.id, entity.items)
   }
 }
@@ -1467,6 +1497,7 @@ You will get the following GraphQL query:
 ```graphQL
 query CartReadModel(id: ID!): CartReadModel
 ```
+
 For more information about queries and how to use them, please check the [GraphQL API](#reading-read-models) section.
 
 #### Getting real-time updates for a read model
@@ -1476,6 +1507,7 @@ Booster GraphQL API also provides support for real-time updates using subscripti
 ## Features
 
 ### Authentication and Authorization
+
 Authorization in Booster is done through roles. Every Command and ReadModel has an `authorize` policy that
 tells Booster who can execute or access it. It consists of one of the following two values:
 
@@ -1518,7 +1550,7 @@ In the following example we define two roles, `Admin` and `User`:
   auth: {
     // Do not specify (or use an empty array) if you don't want to allow sign-ups
     signUpMethods: [],
-  }
+  },
 })
 export class Admin {}
 
@@ -1533,7 +1565,7 @@ export class User {}
 @Role({
   auth: {
     signUpMethods: ['email', 'phone'],
-    skipConfirmation: false
+    skipConfirmation: false,
   },
 })
 export class SuperUser {}
@@ -1541,7 +1573,7 @@ export class SuperUser {}
 @Role({
   auth: {
     signUpMethods: ['email', 'phone'],
-    skipConfirmation: true
+    skipConfirmation: true,
   },
 })
 export class SuperUserWithoutConfirmation {}
@@ -1568,44 +1600,50 @@ authorize them to access protected resources.
 To learn how to include the access token in your requests, check the section [Authorizing operations](#authorizing-operations)
 
 #### Authentication API
+
 The authentication API consists of several endpoints that allow you to manage user registrations, sessions, tokens and more.
 
 The base URL of all these endpoints is the `httpURL` output of your application. See the ["Application Outputs"](#application-outputs) section to know more.
 
 ##### Sign-up
+
 Users can use this endpoint to register in your application and get a role assigned to them.
 
 ![confirmation email](./img/sign-up-verificaiton-email.png)
 ![email confirmed](./img/sign-up-confirmed.png)
 
 ###### Endpoint
+
 ```http request
 POST https://<httpURL>/auth/sign-up
 ```
+
 ###### Request body
+
 ```json
 {
   "clientId": "string",
   "username": "string",
   "password": "string",
   "userAttributes": {
-   	"role": "string"
+    "role": "string"
   }
 }
 ```
 
-Parameter | Description
---------- | -----------
-_clientId_ | The application client Id that you got as an output when the application was deployed.
-_username_ | The username of the user you want to register. It **must be an email**.
-_password_ | The password the user will use to later login into your application and get access tokens.
-_userAttributes_ | Here you can specify the attributes of your user. These are: <br/> -_**role**_:  A unique role this user will have. You can only specify here a role where the `signUpOptions` property is not empty.
-
+| Parameter        | Description                                                                                                                                                                                          |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _clientId_       | The application client Id that you got as an output when the application was deployed.                                                                                                               |
+| _username_       | The username of the user you want to register. It **must be an email**.                                                                                                                              |
+| _password_       | The password the user will use to later login into your application and get access tokens.                                                                                                           |
+| _userAttributes_ | Here you can specify the attributes of your user. These are: <br/> -_**role**_: A unique role this user will have. You can only specify here a role where the `signUpOptions` property is not empty. |
 
 ###### Response
+
 An Empty Body
 
 ###### Errors
+
 You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
 
 Example: The `username` is not an email or a phone number:
@@ -1622,14 +1660,16 @@ You will get an HTTP status code different from 2XX and a body with a message te
 ##### Confirm-sign-up
 
 Whenever a User signs up with their phone number, an SMS message will be sent with a confirmation code.
-They will need to provide this code to confirm registation by calling the`sign-up/confirm` endpoint 
+They will need to provide this code to confirm registation by calling the`sign-up/confirm` endpoint
 
 ###### Endpoint
+
 ```http request
 POST https://<httpURL>/auth/sign-up/confirm
 ```
 
 ###### Request body
+
 ```json
 {
   "clientId": "string",
@@ -1638,13 +1678,14 @@ POST https://<httpURL>/auth/sign-up/confirm
 }
 ```
 
-Parameter | Description
---------- | -----------
-_clientId_ | The application client Id that you got as an output when the application was deployed.
-_confirmationCode_ | The confirmation code received in the SMS message.
-_username_ | The username of the user you want to sign in. They must have previously signed up.
+| Parameter          | Description                                                                            |
+| ------------------ | -------------------------------------------------------------------------------------- |
+| _clientId_         | The application client Id that you got as an output when the application was deployed. |
+| _confirmationCode_ | The confirmation code received in the SMS message.                                     |
+| _username_         | The username of the user you want to sign in. They must have previously signed up.     |
 
 ###### Response
+
 An Empty Body
 
 ###### Errors
@@ -1653,14 +1694,18 @@ You will get an HTTP status code different from 2XX and a body with a message te
 Common errors would be like submitting an expired confirmation code or a non valid one.
 
 ##### Sign-in
+
 This endpoint creates a session for an already registered user, returning an access token that can be used
 to access role-protected resources
 
 ###### Endpoint
+
 ```http request
 POST https://<httpURL>/auth/sign-in
 ```
+
 ###### Request body
+
 ```json
 {
   "clientId": "string",
@@ -1668,13 +1713,15 @@ POST https://<httpURL>/auth/sign-in
   "password": "string"
 }
 ```
-Parameter | Description
---------- | -----------
-_clientId_ | The application client Id that you got as an output when the application was deployed.
-_username_ | The username of the user you want to sign in. They must have previously signed up.
-_password_ | The password used to sign up the user.
+
+| Parameter  | Description                                                                            |
+| ---------- | -------------------------------------------------------------------------------------- |
+| _clientId_ | The application client Id that you got as an output when the application was deployed. |
+| _username_ | The username of the user you want to sign in. They must have previously signed up.     |
+| _password_ | The password used to sign up the user.                                                 |
 
 ###### Response
+
 ```json
 {
   "accessToken": "string",
@@ -1684,14 +1731,15 @@ _password_ | The password used to sign up the user.
 }
 ```
 
-Parameter | Description
---------- | -----------
-_accessToken_ | The token you can use to access restricted resources. It must be sent in the `Authorization` header (prefixed with the `tokenType`).
-_expiresIn_ | The period of time, in seconds, after which the token will expire.
-_refreshToken_ | The token you can use to get a new access token after it has expired.
-_tokenType_ | The type of token used. It is always `Bearer`.
+| Parameter      | Description                                                                                                                          |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| _accessToken_  | The token you can use to access restricted resources. It must be sent in the `Authorization` header (prefixed with the `tokenType`). |
+| _expiresIn_    | The period of time, in seconds, after which the token will expire.                                                                   |
+| _refreshToken_ | The token you can use to get a new access token after it has expired.                                                                |
+| _tokenType_    | The type of token used. It is always `Bearer`.                                                                                       |
 
 ###### Errors
+
 You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
 
 Example: Login of a user that has not been confirmed
@@ -1704,30 +1752,37 @@ Example: Login of a user that has not been confirmed
 ```
 
 ##### Sign-out
+
 Users can call this endpoint to finish the session.
 
 ###### Endpoint
+
 ```http request
 POST https://<httpURL>/auth/sign-out
 ```
+
 ###### Request body
+
 ```json
 {
   "accessToken": "string"
 }
 ```
 
-Parameter | Description
---------- | -----------
-_accessToken_ | The access token you get in the sign-in call.
+| Parameter     | Description                                   |
+| ------------- | --------------------------------------------- |
+| _accessToken_ | The access token you get in the sign-in call. |
 
 ###### Response
+
 An empty body
 
 ###### Errors
+
 You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
 
 Example: Invalid access token specified
+
 ```json
 {
   "__type": "NotAuthorizedException",
@@ -1736,14 +1791,19 @@ Example: Invalid access token specified
 ```
 
 ##### Refresh token
+
 Users can call this endpoint to refresh the access token.
 
 ###### Endpoint
+
 ```http request
 POST https://<httpURL>/auth/refresh-token
 ```
+
 ###### Request body
+
 > Refresh-token request body
+
 ```json
 {
   "clientId": "string",
@@ -1751,12 +1811,13 @@ POST https://<httpURL>/auth/refresh-token
 }
 ```
 
-Parameter | Description
---------- | -----------
-_clientId_ | The application client Id that you got as an output when the application was deployed.
-_refreshToken_ | The token you can use to get a new access token after it has expired.
+| Parameter      | Description                                                                            |
+| -------------- | -------------------------------------------------------------------------------------- |
+| _clientId_     | The application client Id that you got as an output when the application was deployed. |
+| _refreshToken_ | The token you can use to get a new access token after it has expired.                  |
 
 ###### Response
+
 ```json
 {
   "accessToken": "string",
@@ -1767,25 +1828,29 @@ _refreshToken_ | The token you can use to get a new access token after it has ex
 ```
 
 ###### Errors
+
 > Refresh token error response body example: Invalid refresh token specified
+
 ```json
 {
   "__type": "NotAuthorizedException",
   "message": "Invalid Refresh Token"
 }
 ```
+
 You will get a HTTP status code different from 2XX and a body with a message telling you the reason of the error.
 
 ### GraphQL API
+
 This is the main API of your application, as it allows you to:
 
- - _Modify_ data by **sending commands**
- - _Read_ data by **querying read models**
- - _Receive data in real time_ by **subscribing to read models** 
+- _Modify_ data by **sending commands**
+- _Read_ data by **querying read models**
+- _Receive data in real time_ by **subscribing to read models**
 
 All this is done through [GraphQL](https://graphql.org/), a query language for APIs that has useful advantages over simple REST APIs.
 
-If you are not familiar with GraphQL, then, first of all, don't worry! 
+If you are not familiar with GraphQL, then, first of all, don't worry!
 _Using_ a GraphQL API is simple and straightforward.
 _Implementing it_ on the server side is usually the hard part, as you need to define your schema, operations, resolvers, etc.
 Luckily, you can forget about that because Booster does all the work for you!
@@ -1793,7 +1858,8 @@ Luckily, you can forget about that because Booster does all the work for you!
 The GraphQL API is fully **auto-generated** based on your _commands_ and _read models_.
 
 #### Relationship between GraphQL operations and commands and read models
-GraphQL defines three kinds of operations that you can use: _mutations_, _queries_, and _subscriptions_. 
+
+GraphQL defines three kinds of operations that you can use: _mutations_, _queries_, and _subscriptions_.
 
 The names are pretty meaningful, but we can say that you use a `mutation` when you want to change data, a `query` when you want to get
 data on-demand, and a `subscription` when you want to receive data at the moment it is updated.
@@ -1802,10 +1868,11 @@ Knowing this, you can infer the relationship between those operations and your B
 
 - You _send_ a **command** using a **mutation**
 - You _read_ a **read model** using a **query**
-- You _subscribe_ to a **read model** using a **subscription** 
+- You _subscribe_ to a **read model** using a **subscription**
 
 #### How to send GraphQL request
-GraphQL uses two existing protocols: 
+
+GraphQL uses two existing protocols:
 
 - _HTTP_ for `mutation` and `query` operations
 - _WebSocket_ for `subscription` operations
@@ -1827,6 +1894,7 @@ Therefore:
 While it is OK to know how to manually send GraphQL request, you normally don't need to deal with this low-level details, especially with the WebSocket stuff.
 
 To have a great developer experience, we **strongly recommend** to use a GraphQL client for your platform of choice. Here are some great ones:
+
 - **[Postwoman](https://postwoman.io/)**: Ideal for testing sending manual requests, getting the schema, etc.
 - **Apollo clients**: These are the "go-to" SDKs to interact with a GraphQL API from your clients. It is very likely that there is a version for your client programming language. Check the ["Using Apollo Client"](#using-apollo-client) section to know more about this.
 
@@ -1844,24 +1912,22 @@ mutation {
 ```
 
 Where:
+
 - _**command_name**_ is the name of the class corresponding to the command you want to send
 - _**field_list**_ is a list of pairs in the form of `fieldName: fieldValue` containing the data of your command. The field names
-correspond to the names of the properties you defined in the command class. 
+  correspond to the names of the properties you defined in the command class.
 
-In the following example we send a command named "ChangeCart" that will add/remove an item to/from a shopping cart. The 
+In the following example we send a command named "ChangeCart" that will add/remove an item to/from a shopping cart. The
 command requires the ID of the cart (`cartId`), the item identifier (`sku`) and the quantity of units we are adding/removing
 (`quantity`).
 
 ```
 URL: "<httpURL>/graphql"
 ```
+
 ```graphql
 mutation {
-  ChangeCart(input: {
-    cartId: "demo"
-    sku: "ABC_01"
-    quantity: 2
-  })
+  ChangeCart(input: { cartId: "demo", sku: "ABC_01", quantity: 2 })
 }
 ```
 
@@ -1871,9 +1937,10 @@ In case we are not using any GraphQL client, this would be the equivalent bare H
 URL: "<httpURL>/graphql"
 METHOD: "POST"
 ```
+
 ```json
 {
-  "query":"mutation { ChangeCart(input: { cartId: \"demo\" sku: \"ABC_01\" quantity: 2 }) }"
+  "query": "mutation { ChangeCart(input: { cartId: \"demo\" sku: \"ABC_01\" quantity: 2 }) }"
 }
 ```
 
@@ -1903,6 +1970,7 @@ query {
 ```
 
 Where:
+
 - _read_model_name_ is the name of the class corresponding to the read model you want to retrieve.
 - _&lt;id of the read model&gt;_ is the ID of the specific read model instance you are interested in.
 - _selection_field_list_ is a list with the names of the specific read model fields you want to get as response.
@@ -1912,6 +1980,7 @@ In the following example we send a query to read a read model named `CartReadMod
 ```
 URL: "<httpURL>/graphql"
 ```
+
 ```graphql
 query {
   CartReadModel(id: "demo") {
@@ -1927,9 +1996,10 @@ In case we are not using any GraphQL client, this would be the equivalent bare H
 URL: "<httpURL>/graphql"
 METHOD: "POST"
 ```
+
 ```json
 {
-  "query":"query { CartReadModel(id: \"demo\") { id items } }"
+  "query": "query { CartReadModel(id: \"demo\") { id items } }"
 }
 ```
 
@@ -1951,21 +2021,22 @@ And we would get the following as response:
 }
 ```
 
->**Note**: Remember to set the proper **access token** for secured read models, check ["Authorizing operations"](#authorizing-operations).
+> **Note**: Remember to set the proper **access token** for secured read models, check ["Authorizing operations"](#authorizing-operations).
 
 #### Subscribing to read models
 
 To subscribe to a specific read model, we need to use a subscription operation, and it must be _sent through the **websocketURL**_ using the [_GraphQL over WebSocket_ protocol](#the-graphql-over-websocket-protocol).
 
-Doing this process manually is a bit cumbersome. _You will probably never need to do this_, as GraphQL clients like [Apollo](#using-apollo-client) abstract this process away. However, we will explain how to do it for learning purposes. 
+Doing this process manually is a bit cumbersome. _You will probably never need to do this_, as GraphQL clients like [Apollo](#using-apollo-client) abstract this process away. However, we will explain how to do it for learning purposes.
 
 Before sending any subscription, you need to _connect_ to the WebSocket to open the two-way communication channel. This connection
-is done differently depending on the client/library you use to manage web sockets. In this section, we will show examples 
+is done differently depending on the client/library you use to manage web sockets. In this section, we will show examples
 using the [`wscat`](https://github.com/websockets/wscat) command line program. You can also use the online tool [Postwoman](https://postwoman.io/)
 
 Once you have connected successfully, you can use this channel to:
+
 - Send the subscription messages
-- Listen for messages sent by the server with data corresponding to your active subscriptions. 
+- Listen for messages sent by the server with data corresponding to your active subscriptions.
 
 The structure of the "subscription" (the body of the message) is exactly the same as the "query" operation:
 
@@ -1978,6 +2049,7 @@ subscription {
 ```
 
 Where:
+
 - _read_model_name_ is the name of the class corresponding to the read model you want to subscribe to.
 - _&lt;id of the read model&gt;_ is the ID of the specific read model instance you are interested in.
 - _selection_field_list_ is a list with the names of the specific read model fields you want to get when data is sent back to you.
@@ -1986,21 +2058,29 @@ In the following examples we use [`wscat`](https://github.com/websockets/wscat) 
 to the read model `CartReadModel` with ID `demo`.
 
 1. Connect to the web socket:
+
 ```sh
  wscat -c <websocketURL> -s graphql-ws
 ```
+
 > **Note:** You should specify the `graphql-ws` subprotocol when connecting with your client via the `Sec-WebSocket-Protocol` header (in this case, `wscat` does that when you use the `-s` option).
 
 Now we can start sending messages just by writing them and hitting the <kbd>Enter</kbd> key.
+
 2. Initiate the protocol connection :
+
 ```json
 { "type": "connection_init" }
 ```
+
 In case you want to authorize the connection, you need to send the authorization token in the `payload.Authorization` field:
- ```json
- { "type": "connection_init", "payload": { "Authorization": "<your token>" } }
- ```
+
+```json
+{ "type": "connection_init", "payload": { "Authorization": "<your token>" } }
+```
+
 3. Send a message with the subscription. We need to provide an ID for the operation. When the server sends us data back, it will include this same ID so that we know which subscription the received data belongs to (again, this is just for learning, [GraphQL clients](#using-apollo-client) manages this for you)
+
 ```json
 { "id": "1", "type": "start", "payload": { "query": "subscription { CartReadModel(id:\"demo\") { id items } }" } }
 ```
@@ -2018,17 +2098,15 @@ socket.
 ```
 URL: "<httpURL>/graphql"
 ```
+
 ```graphql
 mutation {
-  ChangeCart(input: {
-    cartId: "demo"
-    sku: "ABC_02"
-    quantity: 3
-  })
+  ChangeCart(input: { cartId: "demo", sku: "ABC_02", quantity: 3 })
 }
 ```
 
 2. The following message (after formatting it) appears through the socket connection we had opened:
+
 ```json
 {
   "id": "1",
@@ -2053,63 +2131,66 @@ mutation {
 }
 ```
 
->**Note**: Remember that, in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
+> **Note**: Remember that, in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
 
 #### Using Apollo Client
+
 One of the best clients to connect to a GraphQL API is the [Apollo](https://www.apollographql.com/) client.
 There will probably be a version for your client technology of choice. These are the main ones:
+
 - [For Javascript/Typescript](https://www.apollographql.com/docs/react/) ([Github](https://github.com/apollographql/apollo-client))
 - [For iOS](https://www.apollographql.com/docs/ios/) ([Github)](https://github.com/apollographql/apollo-ios))
 - [For Java/Kotlin/Android](https://www.apollographql.com/docs/android/) ([Github](https://github.com/apollographql/apollo-android))
 
-We recommend referring to the documentation of those clients to know how to 
+We recommend referring to the documentation of those clients to know how to
 use them. Here is an example of how to fully instantiate the Javascript client so that it works for queries, mutations and subscriptions:
+
 ```typescript
-import { split, HttpLink } from '@apollo/client';
-import { getMainDefinition } from '@apollo/client/utilities';
-import { WebSocketLink } from '@apollo/client/link/ws';
-import { ApolloClient, InMemoryCache } from '@apollo/client';
+import { split, HttpLink } from '@apollo/client'
+import { getMainDefinition } from '@apollo/client/utilities'
+import { WebSocketLink } from '@apollo/client/link/ws'
+import { ApolloClient, InMemoryCache } from '@apollo/client'
 import { SubscriptionClient } from 'subscriptions-transport-ws'
 
 // Helper function that checks if a GraphQL operation is a subscription or not
 function isSubscriptionOperation({ query }) {
-  const definition = getMainDefinition(query);
+  const definition = getMainDefinition(query)
   return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
 }
 
 // Create an HTTP link for sending queries and mutations
 const httpLink = new HttpLink({
-  uri: '<httpURL>'
-});
+  uri: '<httpURL>',
+})
 
 // Create a SusbscriptionClient and a WebSocket link for sending subscriptions
 const subscriptionClient = new SubscriptionClient('<websocketURL>', {
-  reconnect: true
+  reconnect: true,
 })
-const wsLink = new WebSocketLink(subscriptionClient);
+const wsLink = new WebSocketLink(subscriptionClient)
 
 // Combine both links so that depending on the operation, it uses one or another
-const splitLink = split(isSubscriptionOperation, wsLink, httpLink);
-
+const splitLink = split(isSubscriptionOperation, wsLink, httpLink)
 
 // Finally, create the client using the link created above
 const client = new ApolloClient({
   link: splitLink,
-  cache: new InMemoryCache()
-});
+  cache: new InMemoryCache(),
+})
 ```
 
 Now, we can send queries, mutations and subscriptions using the `client` instance:
+
 ```typescript
 import gql from 'graphql-tag'
 
 // Query the CartReadModel
 const readModelData = await client.query({
   variables: {
-    cartID: "demo",
+    cartID: 'demo',
   },
   query: gql`
-    query QueryCart($cartID: ID!){
+    query QueryCart($cartID: ID!) {
       CartReadModel(id: $cartID) {
         id
         items
@@ -2121,8 +2202,8 @@ const readModelData = await client.query({
 // Send a command (mutation)
 const commandResult = await client.mutate({
   variables: {
-    cartID: "demo",
-    sku: "ABC_02",
+    cartID: 'demo',
+    sku: 'ABC_02',
   },
   mutation: gql`
     mutation AddOneItemToCart($cartID: ID!, $sku: string!) {
@@ -2134,7 +2215,7 @@ const commandResult = await client.mutate({
 // Subscribe to changes in the CartReadModel
 const subscriptionOperation = client.subscribe({
   variables: {
-    cartID: "demo",
+    cartID: 'demo',
   },
   query: gql`
     subscription SubscribeToCart($cartID: ID!) {
@@ -2150,114 +2231,119 @@ subscriptionOperation.subscribe({
   next: (cartReadModel) => {
     // This function is called everytime the CartReadModel with ID="demo" is changed
     // Parameter "cartReadModel" contains the latest version of the cart
-  }
+  },
 })
 ```
 
 #### Authorizing operations
 
-When you have a command or read model whose access is authorized to users with a specific set of roles (see [Authentication and Authorization](#authentication-and-authorization)), you need to use an authorization token when 
+When you have a command or read model whose access is authorized to users with a specific set of roles (see [Authentication and Authorization](#authentication-and-authorization)), you need to use an authorization token when
 sending queries, mutations or subscriptions to that command or read model. See the [Authentication API](#authentication-api) and, more especifically, the [Sign in](#sign-in) section to know how to get a token.
 
 Once you have a token, the way to send it varies depending on the protocol you are using to send GraphQL operations:
-- For **HTTP**, you need to send the HTTP header `Authorization` with the token, making sure you prefix it with `Bearer ` (the kind of token Booster uses). For example:
+
+- For **HTTP**, you need to send the HTTP header `Authorization` with the token, making sure you prefix it with `Bearer` (the kind of token Booster uses). For example:
+
 ```http request
 Authorization: Bearer <your token>
 ```
+
 - For **WebSocket**, you need to adhere to the [GraphQL over WebSocket protocol](#the-graphql-over-websocket-protocol) to send authorization data. The way to do that is by sending the token in the payload of the first message you send when initializing the connection (see [Subscribing to read models](#subscribing-to-read-models)). For example:
+
 ```json
- { "type": "connection_init", "payload": { "Authorization": "<your token>" } }
+{ "type": "connection_init", "payload": { "Authorization": "<your token>" } }
 ```
 
-You normally won't be sending tokens in such a low-level way. GraphQL clients have easier ways to send these tokens. See [Sending tokens with Apollo client](#sending-tokens-with-apollo-clients) 
+You normally won't be sending tokens in such a low-level way. GraphQL clients have easier ways to send these tokens. See [Sending tokens with Apollo client](#sending-tokens-with-apollo-clients)
 
 ##### Sending tokens with Apollo clients
 
 We recommend going to the specific documentation of the specific Apollo client you are using to know how to send tokens. However, the basics remains the same. Here is an example of how you would configure the Javascript/Typescript Apollo client to send the authorization token. The example is exactly the same as the one shown in the [Using Apollo clients](#using-apollo-client) section but with the changes needed to send the token. Notice that the only things that change are the `HttpLink` and the `WebSocketLink`:
+
 ```typescript
-import { split, HttpLink } from '@apollo/client';
-import { getMainDefinition } from '@apollo/client/utilities';
-import { WebSocketLink } from '@apollo/client/link/ws';
-import { ApolloClient, InMemoryCache } from '@apollo/client';
+import { split, HttpLink } from '@apollo/client'
+import { getMainDefinition } from '@apollo/client/utilities'
+import { WebSocketLink } from '@apollo/client/link/ws'
+import { ApolloClient, InMemoryCache } from '@apollo/client'
 
 function isSubscriptionOperation({ query }) {
-  const definition = getMainDefinition(query);
+  const definition = getMainDefinition(query)
   return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
 }
 
 const httpLink = new HttpLink({
   uri: '<httpURL>',
-});
+})
 
 // CHANGED: We create an "authLink" that modifies the operation by adding the token to the headers
 const authLink = new ApolloLink((operation, forward) => {
-  operation.setContext({ 
-    headers: { 
-      Authorization: 'Bearer <your token>'
-    }
+  operation.setContext({
+    headers: {
+      Authorization: 'Bearer <your token>',
+    },
   })
   return forward(operation)
 })
 
 // <-- CHANGED: Concatenate the links so that the "httpLink" receives the operation with the headers set by the "authLink"
-const httpLinkWithAuth = authLink.concat(httpLink) 
+const httpLinkWithAuth = authLink.concat(httpLink)
 
 const subscriptionClient = new SubscriptionClient('<websocketURL>', {
   reconnect: true,
   // CHANGED: added a "connectionParam" property with a function that returns the `Authorizaiton` header containing our token
   connectionParams: () => {
     return {
-      Authorization: 'Bearer <your token>'
+      Authorization: 'Bearer <your token>',
     }
-  }
+  },
 })
-const wsLink = new WebSocketLink(subscriptionClient);
+const wsLink = new WebSocketLink(subscriptionClient)
 
-const splitLink = split(isSubscriptionOperation, wsLink, httpLinkWithAuth); // Note that we now are using "httpLinkWithAuth"
+const splitLink = split(isSubscriptionOperation, wsLink, httpLinkWithAuth) // Note that we now are using "httpLinkWithAuth"
 
 const client = new ApolloClient({
   link: splitLink,
-  cache: new InMemoryCache()
-});
+  cache: new InMemoryCache(),
+})
 ```
 
 ##### Refreshing tokens with Apollo clients
 
 Authorization tokens expire after a certain amount of time. When a token is expired, you will get an error and you will need to call the [refresh the token](#refresh-token) endpoint to get a new token. After you have done so, you need to use the new token in your GraphQL operations.
 
-There are several ways to do this. Here we show the simplest one for learning purposes. 
+There are several ways to do this. Here we show the simplest one for learning purposes.
 
 First, we modify the example shown in the section [Sending tokens with apollo clients](#sending-tokens-with-apollo-clients) so that the token is stored in a global variable and the Apollo links get the token from it. That variable will be updated when the user signs-in and the token is refreshed:
 
 ```typescript
-import { split, HttpLink } from '@apollo/client';
-import { getMainDefinition } from '@apollo/client/utilities';
-import { WebSocketLink } from '@apollo/client/link/ws';
-import { ApolloClient, InMemoryCache } from '@apollo/client';
+import { split, HttpLink } from '@apollo/client'
+import { getMainDefinition } from '@apollo/client/utilities'
+import { WebSocketLink } from '@apollo/client/link/ws'
+import { ApolloClient, InMemoryCache } from '@apollo/client'
 
 let authToken = undefined // <-- CHANGED: This variable will hold the token and will be updated everytime the token is refreshed
 
 function isSubscriptionOperation({ query }) {
-  const definition = getMainDefinition(query);
+  const definition = getMainDefinition(query)
   return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
 }
 
 const httpLink = new HttpLink({
   uri: '<httpURL>',
-});
+})
 
 const authLink = new ApolloLink((operation, forward) => {
   if (authToken) {
-      operation.setContext({ 
-        headers: { 
-          Authorization: `Bearer ${authToken}` // <-- CHANGED: We use the "authToken" global variable
-        }
-      })
+    operation.setContext({
+      headers: {
+        Authorization: `Bearer ${authToken}`, // <-- CHANGED: We use the "authToken" global variable
+      },
+    })
   }
   return forward(operation)
 })
 
-const httpLinkWithAuth = authLink.concat(httpLink) 
+const httpLinkWithAuth = authLink.concat(httpLink)
 
 const subscriptionClient = new SubscriptionClient('<websocketURL>', {
   reconnect: true,
@@ -2265,23 +2351,24 @@ const subscriptionClient = new SubscriptionClient('<websocketURL>', {
   connectionParams: () => {
     if (authToken) {
       return {
-        Authorization: `Bearer ${authToken}` // <-- CHANGED: We use the "authToken" global variable
+        Authorization: `Bearer ${authToken}`, // <-- CHANGED: We use the "authToken" global variable
       }
     }
     return {}
-  }
+  },
 })
-const wsLink = new WebSocketLink(subscriptionClient);
+const wsLink = new WebSocketLink(subscriptionClient)
 
-const splitLink = split(isSubscriptionOperation, wsLink, httpLinkWithAuth);
+const splitLink = split(isSubscriptionOperation, wsLink, httpLinkWithAuth)
 
 const client = new ApolloClient({
   link: splitLink,
-  cache: new InMemoryCache()
-});
+  cache: new InMemoryCache(),
+})
 ```
 
 Now, _when the user signs-in_ or _when the token is refreshed_, we need to do two things:
+
 1. Update the global variable `authToken` with the new token.
 2. Reconnect the socket used by the subscription client by doing `subscriptionClient.close(false)`
 
@@ -2295,7 +2382,7 @@ For these reasons, in order to have an effective non-trivial communication throu
 
 The Booster WebSocket communication uses the "GraphQL over WebSocket" protocol as subprotocol. It is in charge of all the low level stuff needed to properly send subscription operations to read models and receive the corresponding data.
 
-You don't need to know anything about this to develop usin Booster, neither in the backend side nor in the frontend side (as all the Apollo GraphQL clients uses this protocol), but it is good to know it is there to guarantee a proper communication. In case you are really curious, you can read about the protocol [here](https://github.com/apollographql/subscriptions-transport-ws/blob/master/PROTOCOL.md) 
+You don't need to know anything about this to develop usin Booster, neither in the backend side nor in the frontend side (as all the Apollo GraphQL clients uses this protocol), but it is good to know it is there to guarantee a proper communication. In case you are really curious, you can read about the protocol [here](https://github.com/apollographql/subscriptions-transport-ws/blob/master/PROTOCOL.md)
 
 > **Note**: The WebSocket communication in Booster only supports this subprotocol, whose identifier is `graphql-ws`. For this reason, when you connect to the WebSocket provisioned by Booster, you must specify the `graphql-ws` subprotocol. If not, the connection won't succeed.
 
@@ -2309,7 +2396,8 @@ all cloud providers. (**Contributions are welcome!** 😜)
 #### Configure your provider credentials
 
 ##### AWS provider
-In AWS, it is required that your `~/.aws/credentials` file is properly setup, and a `region` attribute is specified. If you have the [AWS CLI installed](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html), you can create the config file by running the command `aws configure`, but that is completely optional, **AWS CLI is not required to run booster**. 
+
+In AWS, it is required that your `~/.aws/credentials` file is properly setup, and a `region` attribute is specified. If you have the [AWS CLI installed](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html), you can create the config file by running the command `aws configure`, but that is completely optional, **AWS CLI is not required to run booster**.
 
 This is an example of the minimal content your `~/.aws/credentials` file should have:
 
@@ -2339,11 +2427,11 @@ If you make changes to your code, you can run `boost deploy -e <environment name
 
 After any deployment, an "Outputs" section will be printed to the console with useful information needed to interact with your application. The meaning of those outputs are:
 
-- **httpURL**: This is the base HTTP URL of your application. You will need it to interact with the 
-authentication/authorization API and the GraphQL API.
+- **httpURL**: This is the base HTTP URL of your application. You will need it to interact with the
+  authentication/authorization API and the GraphQL API.
 - **websocketURL**: This is the WebSocket URL you need to use to send GraphQL subscriptions.
-- **clientID**: This parameter is _specific for the AWS provider_ (only shown if used AWS when deployint) and is 
-needed only for the `auth/sign-up` and `auth/sign-in` endpoints.
+- **clientID**: This parameter is _specific for the AWS provider_ (only shown if used AWS when deployint) and is
+  needed only for the `auth/sign-up` and `auth/sign-in` endpoints.
 
 #### Delete your cloud stack
 
@@ -2372,6 +2460,7 @@ Booster framework integration tests package is used to test the Booster project 
 Some integration tests highly depend on the provider chosen for the project, and the infrastructure is normally deployed locally or in the cloud right before the tests run. Once tests are completed, the application is teared down.
 
 There are several types of integration tests in this package:
+
 - Tests to ensure that different packages integrate as expected with each other
 - Tests to ensure that a Booster application behaves as expected when it is hit by a client (a GraphQL client)
 - Tests to ensure that the application behaves in the same way no matter what provider is selected
@@ -2380,19 +2469,19 @@ If you are curious about the framework providers, you will be able to read more 
 
 ### Providers
 
-The providers are different implementations of the Booster runtime to allow Booster applications run on different cloud providers or services. They all implement the same interface, and the main idea behind the providers is that no matter what the developer chooses as backend, they won't need to know anything about the underlying infrastructure.  
+The providers are different implementations of the Booster runtime to allow Booster applications run on different cloud providers or services. They all implement the same interface, and the main idea behind the providers is that no matter what the developer chooses as backend, they won't need to know anything about the underlying infrastructure.
 
-#### framework-provider-aws-*
+#### framework-provider-aws-\*
 
-#### framework-provider-local-*
+#### framework-provider-local-\*
 
 The Booster framework local provider combines in-memory databases with a GraphQL API served through a Node.js Express Server.
 
 The local runtime is a convenient and fast way to deploy and test your code in a local development environment. From the API and semantic perspectives, there are no differences from using a real cloud provider, it just runs locally!
 
-#### framework-provider-kubernetes-*
+#### framework-provider-kubernetes-\*
 
-#### framework-provider-azure-*
+#### framework-provider-azure-\*
 
 ### Configuration and environments
 
@@ -2403,6 +2492,7 @@ Booster uses sensible defaults, convention over configuration, and code inferenc
 You configure your application by calling the `Booster.configure()` method. There are no restrictions about where you should do this call, but the convention is to do it in your configuration files located in the `src/config` folder. This folder will get automatically generated for you after running the `boost new:project <project-name>` CLI command.
 
 This is an example of a possible configuration:
+
 ```typescript
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
@@ -2415,9 +2505,10 @@ Booster.configure('pre-production', (config: BoosterConfig): void => {
 ```
 
 The following is the list of the fields you can configure:
+
 - **appName:** This is the name that identifies your application. It will be used for many things, such us prefixing the resources created by the provider. There are certain restrictions regarding the characters you can use: all of them must be lower-cased and can't contain spaces. Two apps with different names are completely independent.
 
-- **provider:** This field contains the provider library instance that Booster will use when deploying or running your application. 
+- **provider:** This field contains the provider library instance that Booster will use when deploying or running your application.
 
 _**Note:** So far, there is only one provider fully supported in Booster yet, @boostercloud/framework-provider-aws, and it is probably the one you have already set if you used the generator to create your project. The team is currently working on providers for local development, Azure, and Kubernetes._
 
@@ -2432,7 +2523,7 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 // A provider that deploys your app to AWS:
 import * as AWS from '@boostercloud/framework-provider-aws'
 // A provider that deploys your app locally:
-import * as Local from '@boostercloud/framework-provider-local' 
+import * as Local from '@boostercloud/framework-provider-local'
 
 Booster.configure('dev', (config: BoosterConfig): void => {
   config.appName = 'fruit-store-dev'
@@ -2475,7 +2566,6 @@ The only thing you need to do to deploy a whole new completely-independent copy 
 
 ## Debugging and testing Booster applications
 
-
 ### Running Booster applications locally
 
 While Booster is designed to deploy your applications to a cloud provider, having the ability to run your code locally speeds-up dramatically the feedback loop and allows developers to view application logs in the terminal.
@@ -2493,8 +2583,8 @@ First of all, we will have to install the local provider package as a new applic
 Once the local provider is installed, we will need to create a new config file or update the existing one (usually `src/config/config.ts`). Then you'll have to load and initialize your environment as follows:
 
     import { BoosterConfig } from '@boostercloud/framework-types'
-    import * as Local from '@boostercloud/framework-provider-local' 
-    
+    import * as Local from '@boostercloud/framework-provider-local'
+
     Booster.configure('local', (config: BoosterConfig): void => {
        config.appName = 'fruit-store-local'
        config.provider = Local.Provider
@@ -2519,21 +2609,23 @@ boost start -e local -p 3333
 After a few seconds, the Booster application should be ready at `http://localhost:<port-number>`
 
 There will be two different endpoints available for our application:
+
 - `/auth`
 - `/graphql`
 
 #### Performing Auth requests
+
 Booster also provides you with user management for free, allowing you to sign-up, confirm and sign-in users. An example of a sign up would be as follow:
 
 `POST http://localhost:3000/auth/sign-up`
 
 ```json
 {
-	"username": "user@test.com",
-	"password": "passw0rd!",
-	"userAttributes": {
-		"role": "User"
-	}
+  "username": "user@test.com",
+  "password": "passw0rd!",
+  "userAttributes": {
+    "role": "User"
+  }
 }
 ```
 
@@ -2544,18 +2636,20 @@ We should now be able to perform queries and mutations to our GraphQL endpoint `
 `POST http://localhost:3000/graphql`
 
 Query
+
 ```graphql
 mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
-    ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+  ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
 }
 ```
 
 Variables
+
 ```json
 {
-    "cartId": "e46d1d0e-5e7f-4934-850c-9559dc55af79",
-    "productId": "9214d0a9-0915-417d-852b-de79e54d8e95",
-    "quantity": 10
+  "cartId": "e46d1d0e-5e7f-4934-850c-9559dc55af79",
+  "productId": "9214d0a9-0915-417d-852b-de79e54d8e95",
+  "quantity": 10
 }
 ```
 
@@ -2566,11 +2660,12 @@ The databases for the local provider are just json files in the `<project-root>/
 ### Booster examples
 
 ## Frequently Asked Questions
+
 **1.- When deploying my application in AWS for the first time, I got an error saying _"StagingBucket <your app name>-toolkit-bucket already exists"_**
 
 When you deploy a Booster application to AWS, an S3 bucket needs to be created to upload the application code. Booster names that bucket
-using your application name as a prefix. 
+using your application name as a prefix.
 In AWS, bucket names must be unique _globally_, so if there is another bucket in the world with exactly the same name as
-the one generated for your application, you will get this error.  
+the one generated for your application, you will get this error.
 
 The solution is to change your application name in the configuration file so that the bucket name is unique.

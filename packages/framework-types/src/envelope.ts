@@ -17,6 +17,10 @@ export interface CommandEnvelope extends Envelope {
   value: unknown
 }
 
+export interface ScheduledCommandEnvelope extends Envelope {
+  typeName: string
+}
+
 export interface EventEnvelope extends Envelope {
   typeName: string
   version: number

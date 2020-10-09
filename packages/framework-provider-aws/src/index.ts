@@ -29,6 +29,7 @@ import {
   sendMessageToConnection,
   storeConnectionData,
 } from './library/connections-adapter'
+import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
 
 const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
 const userPool = new CognitoIdentityServiceProvider()
@@ -74,6 +75,10 @@ export const Provider: ProviderLibrary = {
     fetchData: fetchConnectionData.bind(null, dynamoDB),
     deleteData: deleteConnectionData.bind(null, dynamoDB),
     sendMessage: sendMessageToConnection,
+  },
+  // ScheduledCommandsLibrary
+  scheduled: {
+    rawToEnvelope: rawScheduledInputToEnvelope,
   },
   // ProviderInfrastructureGetter
   infrastructure: () =>

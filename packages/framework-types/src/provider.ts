@@ -6,6 +6,7 @@ import {
   ReadModelEnvelope,
   ConnectionDataEnvelope,
   GraphQLRequestEnvelopeError,
+  ScheduledCommandEnvelope,
 } from './envelope'
 import { BoosterConfig } from './config'
 import { Logger } from './logger'
@@ -19,6 +20,7 @@ export interface ProviderLibrary {
   graphQL: ProviderGraphQLLibrary
   api: ProviderAPIHandling
   connections: ProviderConnectionsLibrary
+  scheduled: ScheduledCommandsLibrary
   infrastructure: () => ProviderInfrastructure
 }
 
@@ -92,4 +94,8 @@ export interface ProviderInfrastructure {
   deploy?: (configuration: BoosterConfig, logger: Logger) => Promise<void>
   nuke?: (configuration: BoosterConfig, logger: Logger) => Promise<void>
   start?: (configuration: BoosterConfig, port: number) => Promise<void>
+}
+
+export interface ScheduledCommandsLibrary {
+  rawToEnvelope(rawMessage: unknown, logger: Logger): Promise<ScheduledCommandEnvelope>
 }
