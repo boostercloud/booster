@@ -463,7 +463,6 @@ describe('Cart end-to-end tests', () => {
       )
 
       const product = products.data.ProductReadModels.find((product: any) => product.sku === scheduledProductSku)
-      console.log({ product })
       expect(product).not.to.be.null
     })
   })

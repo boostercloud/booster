@@ -7,7 +7,6 @@ import { ProductCreated } from '../events/ProductCreated'
 })
 export class CheckCartCount {
   public static async handle(register: Register): Promise<void> {
-    console.log('This is a ScheduledCommand running', register)
     register.events(
       new ProductCreated(UUID.generate(), 'scheduled-product-created', 'scheduledProduct', 'A scheduled product', {
         cents: 1000,
