@@ -1,4 +1,4 @@
-export type PluginDescriptor = {
+export type RocketDescriptor = {
   packageName: string
   parameters: unknown
 }

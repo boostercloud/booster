@@ -35,7 +35,12 @@ describe('Static website creation', () => {
           } as SourceConfig),
       })
 
-      StaticWebsiteStack.mountStack({}, config, appStack)
+      StaticWebsiteStack.mountStack(
+        {
+          bucketName: 'test-bucket-name',
+        },
+        appStack
+      )
 
       expect(fakeExistsAsync).to.have.been.calledWith('./public')
 
@@ -67,8 +72,12 @@ describe('Static website creation', () => {
       })
 
       StaticWebsiteStack.mountStack(
-        { localDistPath: './frontend/dist', indexFile: 'main.html', errorFile: 'error.html' },
-        config,
+        {
+          bucketName: 'test-bucket-name',
+          localDistPath: './frontend/dist',
+          indexFile: 'main.html',
+          errorFile: 'error.html',
+        },
         appStack
       )
 

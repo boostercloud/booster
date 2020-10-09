@@ -3,13 +3,13 @@ import { bootstrapEnvironment, SDK, DeployStackResult } from 'aws-cdk'
 import { BoosterConfig, Logger } from '@boostercloud/framework-types'
 import { Environment } from '@aws-cdk/cx-api'
 import { getStackServiceConfiguration } from './stack-service-configuration'
-import { InfrastructurePlugin } from '../../src/infrastructure-plugin'
+import { InfrastructureRocket } from '../rockets/infrastructure-rocket'
 
 /**
  * Deploys the application using the credentials located in ~/.aws
  */
-export async function deploy(config: BoosterConfig, logger: Logger, plugins?: InfrastructurePlugin[]): Promise<void> {
-  const { aws, appStacks, cdkToolkit } = await getStackServiceConfiguration(config, plugins)
+export async function deploy(config: BoosterConfig, logger: Logger, rockets?: InfrastructureRocket[]): Promise<void> {
+  const { aws, appStacks, cdkToolkit } = await getStackServiceConfiguration(config, rockets)
 
   const toolkitStackName = await bootstrap(logger, config, aws)
 

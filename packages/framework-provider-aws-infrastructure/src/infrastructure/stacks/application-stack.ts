@@ -9,13 +9,18 @@ import { RestApi } from '@aws-cdk/aws-apigateway'
 import { CfnApi, CfnStage } from '@aws-cdk/aws-apigatewayv2'
 import { baseURLForAPI } from '../params'
 import { setupPermissions } from './permissions'
-import { InfrastructurePlugin } from '@boostercloud/framework-provider-aws-infrastructure/src/infrastructure-plugin'
+import { InfrastructureRocket } from '../../rockets/infrastructure-rocket'
+
+// Extracted this here to be able to mock it, it's surprisingly hard to mock a constructor!
+function buildStack(app: App, applicationStack: string, props?: StackProps): Stack {
+  return new Stack(app, applicationStack, props)
+}
 
 export class ApplicationStackBuilder {
   public constructor(readonly config: BoosterConfig, readonly props?: StackProps) {}
 
-  public buildOn(app: App, plugins?: InfrastructurePlugin[]): void {
-    const stack = new Stack(app, this.config.resourceNames.applicationStack, this.props)
+  public buildOn(app: App, rockets?: InfrastructureRocket[]): void {
+    const stack = buildStack(app, this.config.resourceNames.applicationStack, this.props)
     const restAPI = this.buildRootRESTAPI(stack)
     const websocketAPI = this.buildRootWebSocketAPI(stack)
     const apis = {
@@ -31,8 +36,8 @@ export class ApplicationStackBuilder {
 
     setupPermissions(graphQLStack, eventsStack, readModelTables, websocketAPI, scheduledCommandStack)
 
-    // Load plugins
-    plugins?.forEach((plugin) => plugin.mountStack(this.config, stack))
+    // Load rockets
+    rockets?.forEach((rocket) => rocket.mountStack(stack))
   }
 
   private buildRootRESTAPI(stack: Stack): RestApi {

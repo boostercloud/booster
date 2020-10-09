@@ -1,5 +1,5 @@
 import { StreamViewType } from '@aws-cdk/aws-dynamodb'
-import { InfrastructurePlugin } from '../../src/infrastructure-plugin'
+import { InfrastructureRocket } from '../../src/rockets/infrastructure-rocket'
 import { BoosterConfig, UUID } from '@boostercloud/framework-types'
 import { fake, restore, spy } from 'sinon'
 import { expect } from '../expect'
@@ -29,25 +29,26 @@ describe('the `stack-service-configuration` module', () => {
       revertRewire()
     })
 
-    context('with plugins', () => {
-      it('forwards the plugin list to the `assemble` method for initialization', async () => {
+    context('with rockets', () => {
+      it('forwards the rocket list to the `assemble` method for initialization', async () => {
         const fakeAssemble = fake()
         const revertRewire = stackServiceConfigurationModule.__set__('assemble', fakeAssemble)
 
         const config = {} as BoosterConfig
 
-        const fakePlugin: InfrastructurePlugin = {
+        const fakeRocket: InfrastructureRocket = {
           mountStack: fake(),
+          unmountStack: fake(),
         }
 
         const stackConfig = (await stackServiceConfigurationModule.getStackServiceConfiguration(config, [
-          fakePlugin,
+          fakeRocket,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ])) as any
         const appStacks = stackConfig.appStacks.props
         await appStacks.synthesizer(appStacks.aws, appStacks.configuration)
 
-        expect(fakeAssemble).to.have.been.calledWithMatch(config, [fakePlugin])
+        expect(fakeAssemble).to.have.been.calledWithMatch(config, [fakeRocket])
         revertRewire()
       })
     })
@@ -144,8 +145,8 @@ describe('the `stack-service-configuration` module', () => {
       })
     })
 
-    context('with plugins', () => {
-      it('initializes the `ApplicationStackBuilder` with the list of plugins', async () => {
+    context('with rockets', () => {
+      it('initializes the `ApplicationStackBuilder` with the list of rockets', async () => {
         spy(ApplicationStackBuilder.prototype, 'buildOn')
 
         class EmptyEntity {
@@ -158,13 +159,14 @@ describe('the `stack-service-configuration` module', () => {
           class: EmptyEntity,
         }
 
-        const fakePlugin: InfrastructurePlugin = {
+        const fakeRocket: InfrastructureRocket = {
           mountStack: fake(),
+          unmountStack: fake(),
         }
 
-        assemble(config, [fakePlugin])
+        assemble(config, [fakeRocket])
 
-        expect(ApplicationStackBuilder.prototype.buildOn).to.have.been.calledWithMatch({}, [fakePlugin])
+        expect(ApplicationStackBuilder.prototype.buildOn).to.have.been.calledWithMatch({}, [fakeRocket])
       })
     })
   })

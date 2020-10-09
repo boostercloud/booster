@@ -7,17 +7,18 @@ import {
   ViewerCertificate,
   ViewerProtocolPolicy,
 } from '@aws-cdk/aws-cloudfront'
-import { BoosterConfig } from '@boostercloud/framework-types'
 import { existsSync } from 'fs'
+import { RocketUtils } from '@boostercloud/framework-provider-aws-infrastructure'
 
 export type AWSStaticSiteParams = {
   localDistPath?: string
   indexFile?: string
   errorFile?: string
+  bucketName: string
 }
 
 export class StaticWebsiteStack {
-  public static mountStack(params: AWSStaticSiteParams, config: BoosterConfig, stack: Stack): void {
+  public static mountStack(params: AWSStaticSiteParams, stack: Stack): void {
     const localDistPath = params.localDistPath ?? './public'
     const indexFile = params.indexFile ?? 'index.html'
     const errorFile = params.errorFile ?? '404.html'
@@ -28,7 +29,7 @@ export class StaticWebsiteStack {
       const staticSiteBucket = new Bucket(stack, 'staticWebsiteBucket', {
         websiteIndexDocument: indexFile,
         websiteErrorDocument: errorFile,
-        bucketName: config.resourceNames.staticWebsite,
+        bucketName: params.bucketName,
         removalPolicy: RemovalPolicy.DESTROY,
       })
 
@@ -61,10 +62,15 @@ export class StaticWebsiteStack {
       })
     } else {
       throw new Error(
-        `The plugin '${
+        `The rocket '${
           require('package.json').name
-        }' tried to deploy a static site from local folder ${localDistPath}, but couldn't find it. Please review the configuration and parameters for this plugin.`
+        }' tried to deploy a static site from local folder ${localDistPath}, but couldn't find it. Please review the configuration and parameters for this rocket.`
       )
     }
+  }
+
+  public static async unmountStack(params: AWSStaticSiteParams, utils: RocketUtils): Promise<void> {
+    // The bucket must be empty for the stack deletion to succeed
+    await utils.s3.emptyBucket(params.bucketName)
   }
 }

@@ -11,7 +11,7 @@ providerPackage.__set__('loadInfrastructurePackage', () => ({
 
 describe('the `framework-provider-aws` package', () => {
   describe('the `AWSProvider` function', () => {
-    context('with no plugins', () => {
+    context('with no rockets', () => {
       const providerLibrary: ProviderLibrary = providerPackage.AWSProvider()
 
       it('returns a `ProviderLibrary` object', () => {
@@ -34,8 +34,8 @@ describe('the `framework-provider-aws` package', () => {
       })
     })
 
-    context('with a list of plugins', () => {
-      const listOfPlugins = [
+    context('with a list of rockets', () => {
+      const rockets = [
         {
           packageName: 'some-package-name',
           parameters: {
@@ -44,7 +44,7 @@ describe('the `framework-provider-aws` package', () => {
         },
       ]
 
-      const providerLibrary: ProviderLibrary = providerPackage.AWSProvider(listOfPlugins)
+      const providerLibrary: ProviderLibrary = providerPackage.AWSProvider(rockets)
 
       it('returns a `ProviderLibrary` object', () => {
         expect(providerLibrary).to.be.an('object')
@@ -58,10 +58,10 @@ describe('the `framework-provider-aws` package', () => {
       })
 
       describe('infrastructure', () => {
-        it('is loaded with a list of plugins', () => {
+        it('is loaded with a list of rockets', () => {
           providerLibrary.infrastructure()
 
-          expect(fakeInfrastructure).to.have.been.calledWith(listOfPlugins)
+          expect(fakeInfrastructure).to.have.been.calledWith(rockets)
         })
       })
     })

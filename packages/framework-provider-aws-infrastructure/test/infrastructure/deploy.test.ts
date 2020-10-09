@@ -7,7 +7,7 @@ import * as CDK from 'aws-cdk'
 import { CdkToolkit } from 'aws-cdk/lib/cdk-toolkit'
 import { deploy } from '../../src/infrastructure/deploy'
 import * as StackServiceConfiguration from '../../src/infrastructure/stack-service-configuration'
-import { InfrastructurePlugin } from '../../src/infrastructure-plugin'
+import { InfrastructureRocket } from '../../src/rockets/infrastructure-rocket'
 
 const testEnvironment = {
   account: 'testAccount',
@@ -102,8 +102,8 @@ describe('the deployment module', () => {
       )
     })
 
-    context('with plugins', () => {
-      it('forwards the plugins to the `getStackServiceConfiguration` method for initialization', async () => {
+    context('with rockets', () => {
+      it('forwards the rockets to the `getStackServiceConfiguration` method for initialization', async () => {
         const config = new BoosterConfig('test')
         const fakeBootstrapEnvironment = fake.returns({ noOp: true })
         replace(CDK, 'bootstrapEnvironment', fakeBootstrapEnvironment)
@@ -114,13 +114,14 @@ describe('the deployment module', () => {
           info: fake(),
         } as unknown) as Logger
 
-        const fakePlugin: InfrastructurePlugin = {
+        const fakeRocket: InfrastructureRocket = {
           mountStack: fake(),
+          unmountStack: fake(),
         }
 
-        await deploy(config, logger, [fakePlugin])
+        await deploy(config, logger, [fakeRocket])
 
-        expect(StackServiceConfiguration.getStackServiceConfiguration).to.have.been.calledOnceWith(config, [fakePlugin])
+        expect(StackServiceConfiguration.getStackServiceConfiguration).to.have.been.calledOnceWith(config, [fakeRocket])
       })
     })
   })
