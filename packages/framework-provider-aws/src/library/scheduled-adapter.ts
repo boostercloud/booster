@@ -1,5 +1,4 @@
-import { ScheduledCommandEnvelope, UUID } from '@boostercloud/framework-types'
-import { Logger } from '@boostercloud/framework-types'
+import { ScheduledCommandEnvelope, UUID, Logger } from '@boostercloud/framework-types'
 
 export async function rawScheduledInputToEnvelope(
   input: Partial<ScheduledCommandEnvelope>,
