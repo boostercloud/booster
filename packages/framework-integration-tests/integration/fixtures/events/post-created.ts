@@ -3,11 +3,7 @@ import { UUID } from '@boostercloud/framework-types'
 
 @Event
 export class PostCreated {
-  public constructor(
-    readonly postId: UUID,
-    readonly title: string,
-    readonly body: string,
-  ) {}
+  public constructor(readonly postId: UUID, readonly title: string, readonly body: string) {}
 
   public entityID(): UUID {
     return /* the associated entity ID */
