@@ -8,10 +8,10 @@ import path = require('path')
 const EVENT_ENTITY_ID_PLACEHOLDER = '/* the associated entity ID */'
 const ENTITY_REDUCER_PLACEHOLDER = '/* NEW PostWithReducer HERE */'
 
-const FILE_POST_ENTITY = 'src/entities/Post.ts'
-const FILE_POST_WITH_FIELDS_ENTITY = 'src/entities/PostWithFields.ts'
-const FILE_POST_WITH_REDUCER_ENTITY = 'src/entities/PostWithReducer.ts'
-const FILE_POST_CREATED_EVENT = 'src/events/PostCreated.ts'
+const FILE_POST_ENTITY = 'src/entities/post.ts'
+const FILE_POST_WITH_FIELDS_ENTITY = 'src/entities/post-with-fields.ts'
+const FILE_POST_WITH_REDUCER_ENTITY = 'src/entities/post-with-reducer.ts'
+const FILE_POST_CREATED_EVENT = 'src/events/post-created.ts'
 
 export const CLI_ENTITY_INTEGRATION_TEST_FILES: Array<string> = [
   FILE_POST_ENTITY,
@@ -32,7 +32,7 @@ describe('Entity', () => {
         const { stdout } = await exec(`${cliPath} new:entity Post`)
         expect(stdout).to.match(expectedOutputRegex)
 
-        const expectedEntityContent = await readFileContent('integration/fixtures/entities/Post.ts')
+        const expectedEntityContent = await readFileContent('integration/fixtures/entities/post.ts')
         const entityContent = await readFileContent(FILE_POST_ENTITY)
         expect(entityContent).to.equal(expectedEntityContent)
       })
@@ -46,7 +46,7 @@ describe('Entity', () => {
         const { stdout } = await exec(`${cliPath} new:entity PostWithFields --fields title:string body:string`)
         expect(stdout).to.match(expectedOutputRegex)
 
-        const expectedEntityContent = await readFileContent('integration/fixtures/entities/PostWithFields.ts')
+        const expectedEntityContent = await readFileContent('integration/fixtures/entities/post-with-fields.ts')
         const entityContent = await readFileContent(FILE_POST_WITH_FIELDS_ENTITY)
         expect(entityContent).to.equal(expectedEntityContent)
       })
@@ -56,7 +56,7 @@ describe('Entity', () => {
       it('should create new entity with reducer', async () => {
         // Create event
         await exec(`${cliPath} new:event PostCreated --fields postId:UUID title:string body:string`)
-        const expectedEventContent = readFileContent('integration/fixtures/events/PostCreated.ts')
+        const expectedEventContent = readFileContent('integration/fixtures/events/post-created.ts')
         const eventContent = readFileContent(FILE_POST_CREATED_EVENT)
         expect(eventContent).to.equal(expectedEventContent)
 
@@ -67,7 +67,7 @@ describe('Entity', () => {
 
         // Create entity
         await exec(`${cliPath} new:entity PostWithReducer --fields title:string body:string --reduces PostCreated`)
-        const expectedEntityContent = readFileContent('integration/fixtures/entities/PostWithReducer.ts')
+        const expectedEntityContent = readFileContent('integration/fixtures/entities/post-with-reducer.ts')
         const entityContent = readFileContent(FILE_POST_WITH_REDUCER_ENTITY)
         expect(entityContent).to.equal(expectedEntityContent)
 
