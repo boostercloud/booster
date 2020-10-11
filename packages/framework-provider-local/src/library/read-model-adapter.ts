@@ -52,27 +52,12 @@ export async function searchReadModel(
   _config: BoosterConfig,
   logger: Logger,
   readModelName: string,
-  filters: Record<string, Filter<any>>
+  filters: Record<string, Filter<unknown>>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<Array<any>> {
-  logger.debug('FILTERS, FILTERS, GET THEM HOT: ', filters)
+  logger.debug('[ReadModelAdapter#searchReadModel] Arrived these filters: ', filters)
   const query = { typeName: readModelName }
-  // let params: DocumentClient.ScanInput = {
-  //   TableName: config.resourceNames.forReadModel(readModelName),
-  //   ConsistentRead: true,
-  // }
-  // if (filters && Object.keys(filters).length > 0) {
-  //   params = {
-  //     ...params,
-  //     FilterExpression: buildFilterExpression(filters),
-  //     ExpressionAttributeNames: buildExpressionAttributeNames(filters),
-  //     ExpressionAttributeValues: buildExpressionAttributeValues(filters),
-  //   }
-  // }
-  // logger.debug('Running search with the following params: \n', params)
-
   const result = await db.query(query)
-
-  logger.debug('Search result: ', result)
-
+  logger.debug('[ReadModelAdapter#searchReadModel] Search result: ', result)
   return result.map((envelope) => envelope.value) ?? []
 }
