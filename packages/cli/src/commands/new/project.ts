@@ -49,7 +49,7 @@ export default class Project extends Command {
       description: 'generates the project with default parameters (i.e. --license=MIT)',
       default: false,
     }),
-    'skip-install': flags.boolean({
+    skipInstall: flags.boolean({
       description: 'skip dependencies installation',
       default: false,
     }),
@@ -78,7 +78,7 @@ const run = async (flags: Partial<ProjectInitializerConfig>, boosterVersion: str
     .step('Creating project root', generateRootDirectory)
     .step('Generating config files', generateConfigFiles)
 
-  if (flags['skip-install']) {
+  if (flags.skipInstall) {
     return boostScript.info('Project generated!').done()
   }
 
@@ -135,7 +135,7 @@ export const parseConfig = async (
       repository: '',
       boosterVersion,
       default: flags.default,
-      'skip-install': false,
+      skipInstall: false,
     })
   }
 
@@ -169,6 +169,6 @@ export const parseConfig = async (
     repository,
     boosterVersion,
     default: false,
-    'skip-install': false,
+    skipInstall: false,
   })
 }

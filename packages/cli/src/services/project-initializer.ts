@@ -51,7 +51,7 @@ export interface ProjectInitializerConfig {
   providerPackageName: string
   boosterVersion: string
   default: boolean
-  'skip-install': boolean
+  skipInstall: boolean
 }
 
 function renderToFile(templateData: ProjectInitializerConfig): (_: [Array<string>, string]) => Promise<void> {
