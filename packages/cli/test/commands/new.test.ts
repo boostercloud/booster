@@ -96,6 +96,7 @@ describe('new', (): void => {
         providerPackageName: defaultProvider,
         boosterVersion: '0.5.1',
         default: true,
+        'skip-install': false,
       } as ProjectInitializerConfig
 
       afterEach(() => {
