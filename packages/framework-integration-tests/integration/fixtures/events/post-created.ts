@@ -6,7 +6,7 @@ export class PostCreated {
   public constructor(
     readonly postId: UUID,
     readonly title: string,
-    readonly body: string
+    readonly body: string,
   ) {}
 
   public entityID(): UUID {
