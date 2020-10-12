@@ -7,7 +7,7 @@ export class PostWithReducer {
   public constructor(
     public id: UUID,
     readonly title: string,
-    readonly body: string
+    readonly body: string,
   ) {}
 
   @Reduces(PostCreated)
