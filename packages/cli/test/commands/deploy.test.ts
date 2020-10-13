@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from '../expect'
 import { fancy } from 'fancy-test'
-import { restore, fake, replace } from 'sinon'
+import { restore, fake, replace, spy } from 'sinon'
 import { ProviderLibrary, Logger } from '@boostercloud/framework-types'
 import { test } from '@oclif/test'
 import * as environment from '../../src/common/environment'
@@ -41,6 +41,33 @@ describe('deploy', () => {
 
         await expect(runTasks(fakeLoader, fakeDeployer)).to.eventually.be.rejectedWith(msg)
         expect(fakeDeployer).not.to.have.been.called
+      })
+    })
+
+    context('when it prunes dev dependencies', () => {
+      fancy.stdout().it('calls pruneDependencies function', async (ctx) => {
+        fancy.stdout().it('pruned', async () => {
+          const fakeProvider = {} as ProviderLibrary
+
+        const fakeLoader = fake.resolves({
+          provider: fakeProvider,
+          appName: 'fake app',
+          region: 'tunte',
+          entities: {},
+        })
+
+        const fakeDeployer = fake((_config: unknown, logger: Logger) => {
+          logger.info('this is a progress update')
+        })
+
+        const pruneDependenciesSpy = spy(deploy, deploy.pruneDependencies)
+        await runTasks('test-env', fakeLoader, fakeDeployer)
+        
+        expect(pruneDependenciesSpy).to.have.been.calledOnce
+
+        expect(ctx.stdout).to.include('Deployment complete')
+        expect(fakeDeployer).to.have.been.calledOnce
+      })
       })
     })
 
