@@ -43,7 +43,7 @@ export const CLI_PROJECT_INTEGRATION_TEST_FOLDERS: Array<string> = [
 describe('Project', () => {
   const cliPath = path.join('..', 'cli', 'bin', 'run')
   const expectedOutputRegex = new RegExp(
-    /(.+) boost (.+)?new(.+)? (.+)\n- Creating project root\n(.+) Creating project root\n- Generating config files\n(.+) Generating config files\n- Installing dependencies\n(.+) Installing dependencies\n(.+) Project generated!\n/
+    /(.+) boost (.+)?new(.+)? (.+)\n- Creating project root\n(.+) Creating project root\n- Generating config files\n(.+) Generating config files\n- Installing dependencies\n(.+) Installing dependencies\n(.+) Initializing git repository\n(.+) Initializing git repository\n(.+) Project generated!\n/
   )
 
   const sendToStdin = (childProcess: ChildProcess, promptAnswers: Array<string>, delay: number): void => {
@@ -126,6 +126,7 @@ describe('Project', () => {
 
     expect(fs.existsSync(`${projectName}/node_modules`)).true
     expect(fs.existsSync(`${projectName}/package-lock.json`)).true
+    expect(fs.existsSync(`${projectName}/.git`)).true
     expect(fs.readdirSync(`${projectName}/src/commands`).length).equals(0)
     expect(fs.readdirSync(`${projectName}/src/common`).length).equals(0)
     expect(fs.readdirSync(`${projectName}/src/config`).length).equals(1)
