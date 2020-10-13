@@ -6,6 +6,17 @@ import { Script } from '../common/script'
 import Brand from '../common/brand'
 import { logger } from '../services/logger'
 import { currentEnvironment, initializeEnvironment } from '../common/environment'
+import { exec } from 'child-process-promise'
+import { wrapExecError } from '../common/errors'
+import * as path from 'path'
+
+async function pruneDependencies(config: BoosterConfig): Promise<void> {
+  try {
+    await exec('npm prune --production', { cwd: projectDir(config) })
+  } catch (e) {
+    throw wrapExecError(e, 'Could not prune dev dependencies')
+  }
+}
 
 // TODO: Before loading, we should check:
 //    * we're in a booster project
@@ -16,6 +27,7 @@ const runTasks = async (
 ): Promise<void> =>
   Script.init(`boost ${Brand.dangerize('deploy')} [${currentEnvironment()}] 🚀`, loader)
     //TODO: We should install dependencies in production mode before deploying
+    .step('Removing dev dependencies', pruneDependencies)
     .step('Deploying', (config) => deployer(config, logger))
     .info('Deployment complete!')
     .done()
@@ -37,4 +49,8 @@ export default class Deploy extends Command {
       await runTasks(compileProjectAndLoadConfig(), deployToCloudProvider)
     }
   }
+}
+
+function projectDir(config: BoosterConfig): string {
+  return path.join(process.cwd());
 }
