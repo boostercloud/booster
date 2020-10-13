@@ -36,7 +36,7 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.48",
     "@types/faker": "^4.1.12",
-    "aws-sdk": "^2.656.0",
+    "aws-sdk": "^2.771.0",
     "faker": "^4.1.0",
     "velocityjs": "^2.0.0"
   },

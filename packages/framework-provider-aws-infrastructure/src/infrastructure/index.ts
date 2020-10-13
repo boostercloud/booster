@@ -1,25 +1,37 @@
 import { BoosterConfig, Logger } from '@boostercloud/framework-types'
 import { ApplicationStackBuilder } from './stacks/application-stack'
 import { App } from '@aws-cdk/core'
-import { CloudAssembly, Environment } from '@aws-cdk/cx-api'
-import { AppStacks } from 'aws-cdk/lib/api/cxapp/stacks'
+import { CloudAssembly, Environment, EnvironmentUtils } from '@aws-cdk/cx-api'
 import { Configuration } from 'aws-cdk/lib/settings'
-import { bootstrapEnvironment, DeployStackResult, Mode, SDK } from 'aws-cdk'
+import { Bootstrapper, ISDK, Mode, SdkProvider } from 'aws-cdk'
 import { CdkToolkit } from 'aws-cdk/lib/cdk-toolkit'
-import { CloudFormationDeploymentTarget } from 'aws-cdk/lib/api/deployment-target'
 import { RequireApproval } from 'aws-cdk/lib/diff'
 import * as colors from 'colors'
 import { emptyS3Bucket } from './s3utils'
+import { CloudExecutable } from 'aws-cdk/lib/api/cxapp/cloud-executable'
+import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments'
 
 interface StackServiceConfiguration {
-  aws: SDK
-  appStacks: AppStacks
+  sdk: ISDK
+  environment: Environment
   cdkToolkit: CdkToolkit
 }
 
-async function getEnvironment(aws: SDK): Promise<Environment> {
-  const account = await aws.defaultAccount()
-  const region = await aws.defaultRegion()
+function getStackNames(config: BoosterConfig): Array<string> {
+  return [config.resourceNames.applicationStack]
+}
+
+function getStackToolkitName(config: BoosterConfig): string {
+  return config.appName + '-toolkit'
+}
+
+function getStackToolkitBucketName(config: BoosterConfig): string {
+  return config.appName + '-toolkit-bucket'
+}
+
+async function getEnvironment(sdkProvider: SdkProvider): Promise<Environment> {
+  const account = await sdkProvider.defaultAccount()
+  const region = sdkProvider.defaultRegion
 
   if (!account) {
     throw new Error(
@@ -34,25 +46,9 @@ async function getEnvironment(aws: SDK): Promise<Environment> {
 
   return {
     name: 'Default environment',
-    account,
+    account: account.accountId,
     region,
   }
-}
-
-function bootstrapResultToMessage(result: DeployStackResult): string {
-  return `Environment ${result.stackArn} bootstrapped${result.noOp ? ' (no changes).' : '.'}`
-}
-
-async function bootstrap(logger: Logger, config: BoosterConfig, appStacks: AppStacks, aws: SDK): Promise<string> {
-  const toolkitStackName: string = config.appName + '-toolkit'
-
-  const env: Environment = await getEnvironment(aws)
-  logger.info('Bootstraping the following environment: ' + JSON.stringify(env))
-  const result = await bootstrapEnvironment(env, aws, toolkitStackName, undefined, {
-    bucketName: config.appName + '-toolkit-bucket',
-  })
-  logger.info(bootstrapResultToMessage(result))
-  return toolkitStackName
 }
 
 function assemble(config: BoosterConfig): CloudAssembly {
@@ -67,35 +63,47 @@ function assemble(config: BoosterConfig): CloudAssembly {
  * Deploys the application using the credentials located in ~/.aws
  */
 async function deployApp(logger: Logger, config: BoosterConfig): Promise<void> {
-  const { aws, appStacks, cdkToolkit } = await getStackServiceConfiguration(config)
-
-  const toolkitStackName = await bootstrap(logger, config, appStacks, aws)
+  const { environment: env, cdkToolkit } = await getStackServiceConfiguration(config)
+  const toolkitStackName = getStackToolkitName(config)
+  await cdkToolkit.bootstrap(
+    [EnvironmentUtils.format(env.account, env.region)],
+    new Bootstrapper({ source: 'legacy' }),
+    {
+      toolkitStackName,
+      parameters: {
+        bucketName: getStackToolkitBucketName(config),
+      },
+    }
+  )
 
   return cdkToolkit.deploy({
-    toolkitStackName: toolkitStackName,
-    stackNames: (await appStacks.listStacks()).map((s): string => s.stackName),
+    toolkitStackName,
+    stackNames: getStackNames(config),
     requireApproval: RequireApproval.Never,
-    sdk: aws,
   })
 }
 
-// Configure the SDK and the "AppStacks" that contains all the information
+// Configure the SDK and CDKToolkit that contains all the information
 // about the application we want to deploy
 async function getStackServiceConfiguration(config: BoosterConfig): Promise<StackServiceConfiguration> {
-  const aws = new SDK()
+  const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults()
+  const environment = await getEnvironment(sdkProvider)
+  const sdk = await sdkProvider.forEnvironment(environment, Mode.ForWriting)
   const configuration = await new Configuration().load()
-  const appStacks = new AppStacks({
+  const cloudExecutable = new CloudExecutable({
     configuration,
-    aws,
+    sdkProvider,
     synthesizer: (): Promise<CloudAssembly> => Promise.resolve(assemble(config)),
   })
   const cdkToolkit = new CdkToolkit({
-    appStacks,
-    provisioner: new CloudFormationDeploymentTarget({ aws }),
+    sdkProvider,
+    cloudExecutable,
+    cloudFormation: new CloudFormationDeployments({ sdkProvider }),
+    configuration,
   })
   return {
-    aws,
-    appStacks,
+    sdk,
+    environment,
     cdkToolkit,
   }
 }
@@ -104,13 +112,12 @@ async function getStackServiceConfiguration(config: BoosterConfig): Promise<Stac
  * Nuke all the resources used in the "AppStacks"
  */
 async function nukeApp(logger: Logger, config: BoosterConfig): Promise<void> {
-  const { aws, appStacks, cdkToolkit } = await getStackServiceConfiguration(config)
-  const toolkit = nukeToolkit(logger, config, aws)
+  const { sdk, cdkToolkit } = await getStackServiceConfiguration(config)
+  const toolkit = nukeToolkit(logger, config, cdkToolkit, sdk)
   const app = cdkToolkit.destroy({
-    stackNames: (await appStacks.listStacks()).map((s): string => s.stackName),
+    stackNames: getStackNames(config),
     exclusively: false,
     force: true,
-    sdk: aws,
   })
   await Promise.all([toolkit, app])
 }
@@ -118,17 +125,17 @@ async function nukeApp(logger: Logger, config: BoosterConfig): Promise<void> {
 /**
  * Nuke all the resources used in the "Toolkit Stack"
  */
-async function nukeToolkit(logger: Logger, config: BoosterConfig, aws: SDK): Promise<void> {
-  const stackName = config.appName + '-toolkit'
+async function nukeToolkit(logger: Logger, config: BoosterConfig, cdkToolkit: CdkToolkit, sdk: ISDK): Promise<void> {
+  const stackName = getStackToolkitName(config)
   logger.info(colors.blue(stackName) + colors.yellow(': destroying...'))
-  await emptyS3Bucket(logger, config.appName + '-toolkit-bucket', aws)
-  await emptyS3Bucket(logger, config.resourceNames.staticWebsite, aws)
-  const cloudFormation = await aws.cloudFormation(
-    await aws.defaultAccount(),
-    await aws.defaultRegion(),
-    Mode.ForWriting
-  )
-  await cloudFormation.deleteStack({ StackName: stackName }).promise()
+  await emptyS3Bucket(logger, getStackToolkitBucketName(config), sdk)
+  await emptyS3Bucket(logger, config.resourceNames.staticWebsite, sdk)
+
+  await cdkToolkit.destroy({
+    stackNames: [stackName],
+    exclusively: false,
+    force: true,
+  })
   logger.info('✅  ' + colors.blue(stackName) + colors.red(': DESTROYED'))
 }
 
