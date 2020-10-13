@@ -4,6 +4,7 @@ import Brand from '../../common/brand'
 import {
   generateConfigFiles,
   generateRootDirectory,
+  initializeGit,
   installDependencies,
   ProjectInitializerConfig,
 } from '../../services/project-initializer'
@@ -49,6 +50,11 @@ export default class Project extends Command {
       description: 'generates the project with default parameters (i.e. --license=MIT)',
       default: false,
     }),
+    skipGit: flags.boolean({
+      char: 's',
+      description: 'skip git initialization',
+      default: false,
+    }),
   }
 
   public static args = [{ name: 'projectName' }]
@@ -74,6 +80,7 @@ const run = async (flags: Partial<ProjectInitializerConfig>, boosterVersion: str
     .step('Creating project root', generateRootDirectory)
     .step('Generating config files', generateConfigFiles)
     .step('Installing dependencies', installDependencies)
+    .optionalStep(Boolean(flags.skipGit), 'Initializing git repository', initializeGit)
     .info('Project generated!')
     .done()
 
@@ -124,6 +131,7 @@ export const parseConfig = async (
       repository: '',
       boosterVersion,
       default: flags.default,
+      skipGit: false,
     })
   }
 
@@ -157,5 +165,6 @@ export const parseConfig = async (
     repository,
     boosterVersion,
     default: false,
+    skipGit: false,
   })
 }
