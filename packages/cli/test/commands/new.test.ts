@@ -38,7 +38,7 @@ describe('new', (): void => {
               commaSeparatedComponents: 'UUID, ProjectionResult',
             },
             {
-              packagePath: '../entities/Post',
+              packagePath: '../entities/post',
               commaSeparatedComponents: 'Post',
             },
           ],
