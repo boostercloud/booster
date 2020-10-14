@@ -68,7 +68,7 @@ function renderToFile(templateData: ProjectInitializerConfig): (_: [Array<string
   }
 }
 
-function projectDir(config: ProjectInitializerConfig): string {
+export function projectDir(config: ProjectInitializerConfig): string {
   return path.join(process.cwd(), config.projectName)
 }
 
