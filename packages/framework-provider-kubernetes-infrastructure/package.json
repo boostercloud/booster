@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-kubernetes-infrastructure",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "Handle Booster's integration with Kubernetes",
   "keywords": [
     "framework-provider-kubernetes-infrastructure"
@@ -38,7 +38,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@boostercloud/framework-types": "^0.8.1",
+    "@boostercloud/framework-types": "^0.8.2",
     "@kubernetes/client-node": "^0.12.0",
     "@types/archiver": "^3.1.0",
     "@types/cors": "^2.8.7",
