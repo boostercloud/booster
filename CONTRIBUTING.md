@@ -16,6 +16,7 @@ Remember that if something here doesn't make sense, you can also propose a chang
   * [Reporting Bugs](#reporting-bugs)
   * [Suggesting Enhancements](#suggesting-enhancements)
   * [Improving documentation](#improving-documentation)
+  * [Create your very first GitHub issue](#create-your-very-first-github-issue)
 - [Your First Code Contribution](#your-first-code-contribution)
   * [Github flow](#github-flow)
   * [Test-driven approach](#test-driven-approach)
@@ -39,16 +40,16 @@ Go ahead and [create a new issue](https://github.com/boostercloud/booster/issues
 
 Booster is divided in many different packages. The criteria to split the code in packages is that each package meets at least one of the following conditions:
 * They must be run separately, for instance, the CLI is run locally, while the support code for the project is run on the cloud.
-* They contain code that is used by at least two of the other pachages.
+* They contain code that is used by at least two of the other packages.
 * They're a vendor-specific specialization of some abstract part of the framework (for instance, all the code that is required by AWS is in separate packages). 
 
 The packages are managed using [Lerna](https://lerna.js.org), if you run `lerna run compile`, it will run `npm run compile` in all the package folders.
 
 The packages are published to `npm` under the prefix `@boostercloud/`, their purpose is as follows:
 
-- `cli` - You guessed it! This package is the `boost` command-line tool, it interacts only with the core package in order to load the project configuration. The specific provider packages to interact with the cloud providers are loaded dinamically from the project config.
-- `framework-core` - This one contains all the framework runtime vendor-independent logic. Stuff like the generation of the config or the commands and events handling happens here. The specific provider packages to interact with the cloud providers are loaded dinamically from the project config.
-- `framework-integration-tests` - Implements integration tests for all supported vendors. Tests are run on real infraestructure using the same mechanisms than a production application. This package `src` folder includes a synthetic Booster application that can be deployed to a real provider for testing purposes.
+- `cli` - You guessed it! This package is the `boost` command-line tool, it interacts only with the core package in order to load the project configuration. The specific provider packages to interact with the cloud providers are loaded dynamically from the project config.
+- `framework-core` - This one contains all the framework runtime vendor-independent logic. Stuff like the generation of the config or the commands and events handling happens here. The specific provider packages to interact with the cloud providers are loaded dynamically from the project config.
+- `framework-integration-tests` - Implements integration tests for all supported vendors. Tests are run on real infrastructure using the same mechanisms than a production application. This package `src` folder includes a synthetic Booster application that can be deployed to a real provider for testing purposes.
 - `framework-provider-aws` - Implements all the required adapters to make the booster core run on top of AWS technologies like Lambda and DynamoDB using the AWS SDK under the hoods.
 - `framework-provider-aws-infrastructure` - Implements all the required adapters to allow Booster applications to be deployed to AWS using the AWS CDK under the hoods.
 - `framework-provider-local` - Implements all the required adapters to run the Booster application on a local express server to be able to debug your code before deploying it to a real cloud provider.
@@ -118,7 +119,7 @@ Make sure that you assign the chosen issue to yourself to communicate your inten
 
 ### Github flow
 
-The prefered way of accepting contributions is following the [Github flow](https://guides.github.com/introduction/flow/), that is, you fork the project and work in your own branch until you're happy with the work, and then submit a PR in Github.
+The preferred way of accepting contributions is following the [Github flow](https://guides.github.com/introduction/flow/), that is, you fork the project and work in your own branch until you're happy with the work, and then submit a PR in Github.
 
 ### Test-driven approach
 
@@ -158,7 +159,7 @@ Make sure that you describe your change thoroughly in the PR body, adding refere
 
 When you submit a PR to the Booster repository:
 * _Unit tests_ will be automatically run. PRs with non-passing tests can't be merged.
-* If tests pass, your code will be reviewed by at least two people from the core team. Clarifications or improvements might be asked, and they reserve the right to close any PR that do not meet the project quality standards, goals or philosophy, so it's always a good idea to discuss your plans in an issue or the Spectrum channel before commiting to significant changes.
+* If tests pass, your code will be reviewed by at least two people from the core team. Clarifications or improvements might be asked, and they reserve the right to close any PR that do not meet the project quality standards, goals or philosophy, so it's always a good idea to discuss your plans in an issue or the Spectrum channel before committing to significant changes.
 * Code must be mergeable and all conflicts solved before merging it.
 * Once the review process is done, unit tests pass and conflicts are fixed, you still need to make the _Integration tests check_ to pass. In order to do that, you need to **post a comment** in the pull request with the content "**bot: integration**". The _integration tests_ will run and a new check will appear with an "In progress" status. After some time, if everything went well, the status check will become green and your PR is now ready to merge. One of the contributors with write permissions will merge it as soon as possible. 
 

@@ -3,7 +3,7 @@
  *     package. Run it with npx from the project root as follows:
  *
  *      npx ./scripts/deploy-example-project-to-aws.js
- * 
+ *  
  */
 async function main(argv) {
   const exec = require('child-process-promise').exec

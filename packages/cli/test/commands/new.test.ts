@@ -97,6 +97,7 @@ describe('new', (): void => {
         providerPackageName: defaultProvider,
         boosterVersion: '0.5.1',
         default: true,
+        skipInstall: false,
         skipGit: false,
       } as ProjectInitializerConfig
 
@@ -113,6 +114,19 @@ describe('new', (): void => {
         await new Project.default([projectName], {} as IConfig).run()
 
         expect(fs.existsSync(projectDirectory)).to.be.true
+        expect(fs.readdirSync(projectDirectory)).to.have.all.members(expectedDirectoryContent.rootPath)
+        expect(fs.readdirSync(`${projectDirectory}/src`)).to.have.all.members(expectedDirectoryContent.src)
+      })
+
+      it('generates all required files and folders without installing dependencies', async () => {
+        replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
+        const installDependenciesSpy = spy(ProjectInitializer, 'installDependencies')
+        expect(fs.existsSync(projectDirectory)).to.be.false
+
+        await new Project.default([projectName, '--skipInstall'], {} as IConfig).run()
+
+        expect(fs.existsSync(projectDirectory)).to.be.true
+        expect(installDependenciesSpy).to.have.not.been.calledOnce
         expect(fs.readdirSync(projectDirectory)).to.have.all.members(expectedDirectoryContent.rootPath)
         expect(fs.readdirSync(`${projectDirectory}/src`)).to.have.all.members(expectedDirectoryContent.src)
       })

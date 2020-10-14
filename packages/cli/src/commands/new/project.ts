@@ -50,6 +50,10 @@ export default class Project extends Command {
       description: 'generates the project with default parameters (i.e. --license=MIT)',
       default: false,
     }),
+    skipInstall: flags.boolean({
+      description: 'skip dependencies installation',
+      default: false,
+    }),
     skipGit: flags.boolean({
       char: 's',
       description: 'skip git initialization',
@@ -79,7 +83,7 @@ const run = async (flags: Partial<ProjectInitializerConfig>, boosterVersion: str
   Script.init(`boost ${Brand.energize('new')} 🚧`, parseConfig(new Prompter(), flags, boosterVersion))
     .step('Creating project root', generateRootDirectory)
     .step('Generating config files', generateConfigFiles)
-    .step('Installing dependencies', installDependencies)
+    .optionalStep(Boolean(flags.skipInstall), 'Installing dependencies', installDependencies)
     .optionalStep(Boolean(flags.skipGit), 'Initializing git repository', initializeGit)
     .info('Project generated!')
     .done()
@@ -131,6 +135,7 @@ export const parseConfig = async (
       repository: '',
       boosterVersion,
       default: flags.default,
+      skipInstall: false,
       skipGit: false,
     })
   }
@@ -165,6 +170,7 @@ export const parseConfig = async (
     repository,
     boosterVersion,
     default: false,
+    skipInstall: false,
     skipGit: false,
   })
 }

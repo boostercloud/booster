@@ -60,6 +60,7 @@ export interface ProjectInitializerConfig {
   providerPackageName: string
   boosterVersion: string
   default: boolean
+  skipInstall: boolean
   skipGit: boolean
 }
 
