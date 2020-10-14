@@ -13,7 +13,7 @@ import { checkItIsABoosterProject } from '../../services/project-checker'
 import { generate } from '../../services/generator'
 import * as path from 'path'
 import { templates } from '../../templates'
-import { classNameToFileName } from 'cli/src/common/filenames'
+import { classNameToFileName } from '../../common/filenames'
 
 export default class EventHandler extends Oclif.Command {
   public static description = 'create a new event handler'
