@@ -49,6 +49,10 @@ export default class Project extends Command {
       description: 'generates the project with default parameters (i.e. --license=MIT)',
       default: false,
     }),
+    skipInstall: flags.boolean({
+      description: 'skip dependencies installation',
+      default: false,
+    }),
   }
 
   public static args = [{ name: 'projectName' }]
@@ -69,13 +73,20 @@ export default class Project extends Command {
   }
 }
 
-const run = async (flags: Partial<ProjectInitializerConfig>, boosterVersion: string): Promise<void> =>
-  Script.init(`boost ${Brand.energize('new')} 🚧`, parseConfig(new Prompter(), flags, boosterVersion))
+const run = async (flags: Partial<ProjectInitializerConfig>, boosterVersion: string): Promise<void> => {
+  const boostScript = Script.init(`boost ${Brand.energize('new')} 🚧`, parseConfig(new Prompter(), flags, boosterVersion))
     .step('Creating project root', generateRootDirectory)
     .step('Generating config files', generateConfigFiles)
+
+  if (flags.skipInstall) {
+    return boostScript.info('Project generated!').done()
+  }
+
+  return boostScript
     .step('Installing dependencies', installDependencies)
     .info('Project generated!')
     .done()
+}
 
 const getSelectedProviderPackage = (provider: Provider): string => {
   switch (provider) {
@@ -124,6 +135,7 @@ export const parseConfig = async (
       repository: '',
       boosterVersion,
       default: flags.default,
+      skipInstall: false,
     })
   }
 
@@ -157,5 +169,6 @@ export const parseConfig = async (
     repository,
     boosterVersion,
     default: false,
+    skipInstall: false,
   })
 }
