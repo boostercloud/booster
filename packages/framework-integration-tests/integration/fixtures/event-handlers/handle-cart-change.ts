@@ -1,4 +1,4 @@
-import { CartItemChanged } from '../events/CartItemChanged'
+import { CartItemChanged } from '../events/cart-item-changed'
 import { EventHandler } from '@boostercloud/framework-core'
 import { Register } from '@boostercloud/framework-types'
 

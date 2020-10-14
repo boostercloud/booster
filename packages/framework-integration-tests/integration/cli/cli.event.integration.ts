@@ -7,12 +7,12 @@ const exec = util.promisify(require('child_process').exec)
 
 const EVENT_ENTITY_ID_PLACEHOLDER = '/* the associated entity ID */'
 
-const FILE_CART_CHANGED_EVENT = 'src/events/CartChanged.ts'
-const FILE_CART_CHANGED_WITH_FIELDS_EVENT = 'src/events/CartChangedWithFields.ts'
+const FILE_CART_CHANGED_EVENT = 'src/events/cart-changed.ts'
+const FILE_CART_CHANGED_WITH_FIELDS_EVENT = 'src/events/cart-changed-with-fields.ts'
 
 export const CLI_EVENTS_INTEGRATION_TEST_FILES: Array<string> = [
   FILE_CART_CHANGED_EVENT,
-  FILE_CART_CHANGED_WITH_FIELDS_EVENT
+  FILE_CART_CHANGED_WITH_FIELDS_EVENT,
 ]
 
 describe('Event', () => {
@@ -21,7 +21,7 @@ describe('Event', () => {
   context('Valid event', () => {
     it('should create new event', async () => {
       const expectedOutputRegex = new RegExp(
-        /(.+) boost (.+)?new:event(.+)? (.+)\n- Verifying project\n(.+) Verifying project\n- Creating new event\n(.+) Creating new event\n(.+) Event generated!\n/,
+        /(.+) boost (.+)?new:event(.+)? (.+)\n- Verifying project\n(.+) Verifying project\n- Creating new event\n(.+) Creating new event\n(.+) Event generated!\n/
       )
 
       const { stdout } = await exec(`${cliPath} new:event CartChanged`)
@@ -32,12 +32,12 @@ describe('Event', () => {
       it('should create new event', async () => {
         await exec(`${cliPath} new:event CartChanged`)
 
-        const expectedEventContent = await readFileContent('integration/fixtures/events/CartChanged.ts')
+        const expectedEventContent = await readFileContent('integration/fixtures/events/cart-changed.ts')
         const eventContent = await readFileContent(FILE_CART_CHANGED_EVENT)
         expect(eventContent).to.equal(expectedEventContent)
 
         // Set event entity ID
-        const updatedEventContent = eventContent.replace(EVENT_ENTITY_ID_PLACEHOLDER, '\'some-id\'')
+        const updatedEventContent = eventContent.replace(EVENT_ENTITY_ID_PLACEHOLDER, "'some-id'")
 
         writeFileContent(FILE_CART_CHANGED_EVENT, updatedEventContent)
       })
@@ -47,7 +47,7 @@ describe('Event', () => {
       it('should create new event', async () => {
         await exec(`${cliPath} new:event CartChangedWithFields --fields cartId:UUID sku:string quantity:number`)
 
-        const expectedEventContent = await readFileContent('integration/fixtures/events/CartChangedWithFields.ts')
+        const expectedEventContent = await readFileContent('integration/fixtures/events/cart-changed-with-fields.ts')
         const eventContent = await readFileContent(FILE_CART_CHANGED_WITH_FIELDS_EVENT)
         expect(eventContent).to.equal(expectedEventContent)
 
@@ -64,7 +64,7 @@ describe('Event', () => {
       it('should fail', async () => {
         const { stderr } = await exec(`${cliPath} new:event`)
 
-        expect(stderr).to.equal('You haven\'t provided an event name, but it is required, run with --help for usage\n')
+        expect(stderr).to.equal("You haven't provided an event name, but it is required, run with --help for usage\n")
       })
     })
   })
