@@ -12,7 +12,7 @@ import {
 } from 'graphql'
 import { GraphQLNonInputType, ResolverBuilder, TargetTypeMetadata, TargetTypesMap } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
-import * as inflection from 'inflection'
+import * as inflected from 'inflected'
 import { GraphQLJSONObject } from 'graphql-type-json'
 import {
   AnyClass,
@@ -67,7 +67,7 @@ export class GraphQLQueryGenerator {
     for (const name in this.targetTypes) {
       const type = this.targetTypes[name]
       const graphQLType = this.typeInformer.getGraphQLTypeFor(type.class)
-      queries[inflection.pluralize(name)] = {
+      queries[inflected.pluralize(name)] = {
         type: new GraphQLList(graphQLType),
         args: this.generateFilterArguments(type),
         resolve: this.filterResolverBuilder(type.class),

@@ -13,7 +13,7 @@
     "packages/cli",
     "packages/framework-integration-tests"
   ],
-  "version": "0.8.1",
+  "version": "0.8.2",
   "npmClient": "yarn",
   "useWorkspaces": true
 }
