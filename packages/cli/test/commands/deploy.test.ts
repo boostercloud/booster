@@ -44,31 +44,27 @@ describe('deploy', () => {
       })
     })
 
-    context('when it prunes dev dependencies', () => {
-      fancy.stdout().it('calls pruneDependencies function', async (ctx) => {
-        fancy.stdout().it('pruned', async () => {
-          const fakeProvider = {} as ProviderLibrary
+    fancy.stdout().it('calls pruneDependencies function', async (ctx) => {
+      const fakeProvider = {} as ProviderLibrary
 
-        const fakeLoader = fake.resolves({
-          provider: fakeProvider,
-          appName: 'fake app',
-          region: 'tunte',
-          entities: {},
-        })
+      const fakeLoader = fake.resolves({
+        provider: fakeProvider,
+        appName: 'fake app',
+        region: 'tunte',
+        entities: {},
+      })
 
-        const fakeDeployer = fake((_config: unknown, logger: Logger) => {
-          logger.info('this is a progress update')
-        })
+      const fakeDeployer = fake((_config: unknown, logger: Logger) => {
+        logger.info('this is a progress update')
+      })
 
-        const pruneDependenciesSpy = spy(deploy, deploy.pruneDependencies)
-        await runTasks('test-env', fakeLoader, fakeDeployer)
+      const pruneDependenciesSpy = spy(deploy, deploy.pruneDependencies)
+      await runTasks('test-env', fakeLoader, fakeDeployer)
         
-        expect(pruneDependenciesSpy).to.have.been.calledOnce
+      expect(pruneDependenciesSpy).to.have.been.calledOnce
 
-        expect(ctx.stdout).to.include('Deployment complete')
-        expect(fakeDeployer).to.have.been.calledOnce
-      })
-      })
+      expect(ctx.stdout).to.include('Deployment complete')
+      expect(fakeDeployer).to.have.been.calledOnce
     })
 
     context('when there is a valid index.ts', () => {
