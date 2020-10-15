@@ -1,4 +1,4 @@
-export interface CartItemWithFields {
+export interface ItemWithFields {
   sku: string
   quantity: number
 }

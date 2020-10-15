@@ -19,19 +19,19 @@ describe('Type', () => {
         /(.+) boost (.+)?new:type(.+)? (.+)\n- Verifying project\n(.+) Verifying project\n- Creating new type\n(.+) Creating new type\n(.+) Type generated!\n/
       )
 
-      const { stdout } = await exec(`${cliPath} new:type CartItem`)
+      const { stdout } = await exec(`${cliPath} new:type Item`)
       expect(stdout).to.match(expectedOutputRegex)
 
-      const expectedTypeContent = await readFileContent('integration/fixtures/common/cart-item.ts')
+      const expectedTypeContent = await readFileContent('integration/fixtures/common/item.ts')
       const typeContent = await readFileContent(FILE_CART_ITEM_TYPE)
       expect(typeContent).to.equal(expectedTypeContent)
     })
 
     describe('with fields', () => {
       it('should create a new type with fields', async () => {
-        await exec(`${cliPath} new:type CartItemWithFields --fields sku:string quantity:number`)
+        await exec(`${cliPath} new:type ItemWithFields --fields sku:string quantity:number`)
 
-        const expectedTypeContent = await readFileContent('integration/fixtures/common/cart-item-with-fields.ts')
+        const expectedTypeContent = await readFileContent('integration/fixtures/common/item-with-fields.ts')
         const typeContent = await readFileContent(FILE_CART_ITEM_WITH_FIELDS_TYPE)
         expect(typeContent).to.equal(expectedTypeContent)
       })

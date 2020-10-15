@@ -1,2 +1,1 @@
-export interface CartItem {
-}
+export interface Item {}
