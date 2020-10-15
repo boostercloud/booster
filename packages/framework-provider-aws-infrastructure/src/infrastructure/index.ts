@@ -73,6 +73,7 @@ async function deployApp(logger: Logger, config: BoosterConfig): Promise<void> {
       parameters: {
         bucketName: getStackToolkitBucketName(config),
       },
+      terminationProtection: false,
     }
   )
 
@@ -126,17 +127,16 @@ async function nukeApp(logger: Logger, config: BoosterConfig): Promise<void> {
  * Nuke all the resources used in the "Toolkit Stack"
  */
 async function nukeToolkit(logger: Logger, config: BoosterConfig, cdkToolkit: CdkToolkit, sdk: ISDK): Promise<void> {
-  const stackName = getStackToolkitName(config)
-  logger.info(colors.blue(stackName) + colors.yellow(': destroying...'))
+  const stackToolkitName = getStackToolkitName(config)
+  logger.info(colors.blue(stackToolkitName) + colors.yellow(': destroying...'))
   await emptyS3Bucket(logger, getStackToolkitBucketName(config), sdk)
   await emptyS3Bucket(logger, config.resourceNames.staticWebsite, sdk)
 
-  await cdkToolkit.destroy({
-    stackNames: [stackName],
-    exclusively: false,
-    force: true,
-  })
-  logger.info('✅  ' + colors.blue(stackName) + colors.red(': DESTROYED'))
+  await sdk
+    .cloudFormation()
+    .deleteStack({ StackName: stackToolkitName })
+    .promise()
+  logger.info('✅  ' + colors.blue(stackToolkitName) + colors.red(': DESTROYED'))
 }
 
 export const deploy = (config: BoosterConfig, logger: Logger): Promise<void> =>
