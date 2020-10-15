@@ -2569,6 +2569,94 @@ Booster environments are extremely flexible. As shown in the first example, your
 
 The only thing you need to do to deploy a whole new completely-independent copy of your application is to use a different name. Also, Booster uses the credentials available in the machine (`~/.aws/credentials` in AWS) that performs the deployment process, so developers can even work on separate accounts than production or staging environments.
 
+### Extending Booster with Rockets!
+
+You can extend Booster creating rockets. A rocket is just a npm package that implements the public Booster rocket interfaces. You can use them for many things:
+
+1. Extend your infrastructure (Currently, only in AWS): You can write a rocket that adds provider resources to your application stack.
+2. Runtime extensions (Not yet implemented): Add new annotations and interfaces, that combined with infrastructure extensions, could implement new abstractions on top of highly requested use cases.
+3. Deploy and init hooks (Not yet implemented): Run custom scripts before or after deployment, or before a Booster application is loaded.
+
+This extension mechanism is very new, but we're planning to port most of the functionality as rockets. This has two benefits:
+
+- Composability: You can use the default rockets or configure your application to fit your needs without adding anything extra.
+- Easier to manage feature sets in different providers: It would be really hard for the core team and contributors to implement and test every new feature in every supported provider, so providing the functionality as rockets, you'll have access to the most advanced features for your provider faster, and the rockets library can be built on-demand for each provider.
+
+#### Naming recommendations
+
+There are no restrictions on how you name your rocket packages, but we propose the following name convention to make it easier to find your extensions in the vast npm library and find related packages (code and infrastructure extensions cant be distributed in the same package).
+
+- `rocket-{rocket-name}-{provider}`: A rocket that adds runtime functionality or init scripts. This code will be deployed along with your application code to the lambdas.
+- `rocket-{rocket-name}-{provider}-infrastructure`: A rocket that provides infrastructure extensions or implements deploy hooks. This code will only be used in developer's or CI/CD machines and won't be deployed to lambda with the rest of the application code.
+
+Notice that some functionalities, for instance an S3 uploader, might require both runtime and infrastructure extensions. In these cases, the convention is to use the same name `rocket-name` and add the suffix `-infrastructure` to the infrastructure rocket. It's recommended, but not required to manage these dependant packages in a monorepo and make sure that versions match on every release.
+
+If you want to support the same functionality in several providers, it could be handy to also have a package named `rocket-{rocket-name}-{provider}-core` where you can have cross-provider code that you can use from all the provider-specific implementations. For instance, a file uploader rocket that supports both AWS and Azure could have an structure like this:
+
+- `rocket-file-uploader-core`: Defines abstract decorators and interfaces to handle uploaded files.
+- `rocket-file-uploader-aws`: Implements the API calls to S3 to get the uploaded files.
+- `rocket-file-uploader-aws-infrastructure`: Adds a dedicated S3 bucket.
+- `rocket-file-uploader-azure`: Implements the API calls to Azure Storage to get the uploaded files.
+- `rocket-file-uploader-azure-infrastructure`: Configures file storage.
+
+#### 1. Infrastructure extensions
+
+> Currently only available in AWS
+
+Infrastructure rocket interfaces are provider-dependant, so infrastructure rockets must import the corresponding booster infrastructure package for their choosen provider. For AWS, that's `@boostercloud/framework-provider-aws-infrastructure`. Notice that as the only thing we use of that package is the `InfrastructureRocket` interface, you can import it as a dev dependency to avoid including that big package in your deployed lambdas. So you can start by creating a new package and adding this dependency:
+
+```sh
+    mkdir rocket-your-rocket-name-aws-infrastructure
+    cd rocket-your-rocket-name-aws-infrastructure
+    npm init
+    ...
+    npm install -D @boostercloud/framework-provider-aws-infrastructure
+```
+
+The implementation of `InfrastructureRocket` might vary from one provider to the other, but in AWS it only requires two functions:
+
+```typescript
+export interface InfrastructureRocket {
+  mountStack: (stack: Stack) => void
+  unmountStack: (utils: RocketUtils) => void
+}
+```
+
+You'll have to implement a default exported function that accepts a parameters object and returns an initialized `InfrastructureRocket` object:
+
+```typescript
+const YourRocketInitializator = (params: YourRocketParams): InfrastructureRocket => ({
+  mountStack: SomePrivateObject.mountStack.bind(null, params),
+  unmountStack: SomePrivateObject.unmountStack.bind(null, params),
+})
+
+export default YourRocketInitializator
+```
+
+In `mountStack` you will receive an initialized AWS CDK stack that you can use to append new resources. Check out [the Stack API in the official CDK documentation](https://docs.aws.amazon.com/cdk/latest/guide/stacks.html#stack_api). This is the same stack instance that Booster uses to deploy its resources, so your resources will be deployed automatically along with the Booster's ones in the same stack.
+
+The application stack, including the resources added by your rocket are automatically nuked along with the application stack, but there are some situations on which it's convenient to delete or move the contents of the resources created by you. In the appl `unmountStack` you'll have the opportunity to run any code before deleting the stack. This function receives an `utils` object with the same tools that Booster uses to perform common actions like emptying the contents of an S3 bucket (Non-empty buckets are kept by default when a stack is deleted).
+
+Notice that infrastructure rockets should not be included from application code to avoid including the CDK and other code that is not used to lambda, as there are some hard restrictions on code size in most platforms. That's why infrastructure rockets are loaded dynamically by Booster passing the packet names as strings in the application config file:
+
+_src/config/production.ts:_
+
+```typescript
+Booster.configure('development', (config: BoosterConfig): void => {
+  config.appName = 'my-store'
+  config.provider = AWSProvider([{
+    packageName: 'rocket-your-rocket-name-aws-infrastructure', // The name of your infrastructure rocket package
+    parameters: { // An arbitrary object with the parameters required by your infrastructure rocket initializator
+      hello: 'world'
+    }
+  }])
+})
+```
+
+#### 2. Runtime extensions (Not yet implemented)
+
+#### 3. Deploy and init hooks (Not yet implemented)
+
 ## Debugging and testing Booster applications
 
 ### Running Booster applications locally
