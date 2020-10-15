@@ -5,7 +5,7 @@ import { readFileContent } from '../helper/fileHelper'
 
 const exec = util.promisify(require('child_process').exec)
 
-const TEST_SCHEDULED_COMMAND_PATH = path.join('src', 'scheduled-commands', 'CheckCart.ts')
+const TEST_SCHEDULED_COMMAND_PATH = path.join('src', 'scheduled-commands', 'check-cart.ts')
 
 export const CLI_SCHEDULED_COMMAND_INTEGRATION_TEST_FILES: Array<string> = [TEST_SCHEDULED_COMMAND_PATH]
 
@@ -21,7 +21,7 @@ describe('Scheduled Command', () => {
       const { stdout } = await exec(`${cliPath} new:scheduled-command CheckCart`)
       expect(stdout).to.match(expectedOutputRegex)
 
-      const expectedCommandContent = await readFileContent('integration/fixtures/scheduled-commands/CheckCart.ts')
+      const expectedCommandContent = await readFileContent('integration/fixtures/scheduled-commands/check-cart.ts')
       const commandContent = await readFileContent(TEST_SCHEDULED_COMMAND_PATH)
       expect(commandContent).to.equal(expectedCommandContent)
     })

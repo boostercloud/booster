@@ -1,7 +1,7 @@
 import { Command } from '@boostercloud/framework-core'
 import { Address } from '../common/address'
 import { UUID, Register } from '@boostercloud/framework-types'
-import { ShippingAddressUpdated } from '../events/ShippingAddressUpdated'
+import { ShippingAddressUpdated } from '../events/shipping-address-updated'
 
 @Command({
   authorize: 'all',

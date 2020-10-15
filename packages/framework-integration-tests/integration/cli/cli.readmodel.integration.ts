@@ -8,9 +8,9 @@ const exec = util.promisify(require('child_process').exec)
 const READ_MODEL_AUTH_PLACEHOLDER = "// Specify authorized roles here. Use 'all' to authorize anyone"
 const READ_MODEL_PROJECTION_PLACEHOLDER = '/* NEW CartWithProjectionReadModel HERE */'
 
-const FILE_CART_READ_MODEL = 'src/read-models/CartReadModel.ts'
-const FILE_CART_WITH_FIELDS_READ_MODEL = 'src/read-models/CartWithFieldsReadModel.ts'
-const FILE_CART_WITH_PROJECTION_READ_MODEL = 'src/read-models/CartWithProjectionReadModel.ts'
+const FILE_CART_READ_MODEL = 'src/read-models/cart-read-model.ts'
+const FILE_CART_WITH_FIELDS_READ_MODEL = 'src/read-models/cart-with-fields-read-model.ts'
+const FILE_CART_WITH_PROJECTION_READ_MODEL = 'src/read-models/cart-with-projection-read-model.ts'
 
 export const CLI_READ_MODEL_INTEGRATION_TEST_FILES: Array<string> = [
   FILE_CART_READ_MODEL,
@@ -29,7 +29,7 @@ describe('Read model', () => {
         const { stdout } = await exec(`${cliPath} new:read-model CartReadModel`)
         expect(stdout).to.match(EXPECTED_OUTPUT_REGEX)
 
-        const expectedEntityContent = await readFileContent('integration/fixtures/read-models/CartReadModel.ts')
+        const expectedEntityContent = await readFileContent('integration/fixtures/read-models/cart-read-model.ts')
         const entityContent = await readFileContent(FILE_CART_READ_MODEL)
         expect(entityContent).to.equal(expectedEntityContent)
 
@@ -42,13 +42,11 @@ describe('Read model', () => {
 
     describe('with fields', () => {
       it('should create new read model', async () => {
-        const { stdout } = await exec(
-          cliPath + " new:read-model CartWithFieldsReadModel --fields 'items:Array<CartItem>'"
-        )
+        const { stdout } = await exec(cliPath + " new:read-model CartWithFieldsReadModel --fields 'items:Array<Item>'")
         expect(stdout).to.match(EXPECTED_OUTPUT_REGEX)
 
         const expectedEntityContent = await readFileContent(
-          'integration/fixtures/read-models/CartWithFieldsReadModel.ts'
+          'integration/fixtures/read-models/cart-with-fields-read-model.ts'
         )
         const entityContent = await readFileContent(FILE_CART_WITH_FIELDS_READ_MODEL)
         expect(entityContent).to.equal(expectedEntityContent)
@@ -56,8 +54,8 @@ describe('Read model', () => {
         // set Auth
         let updatedReadModelContent = entityContent.replace(READ_MODEL_AUTH_PLACEHOLDER, "'all'")
 
-        // Add CartItem import
-        updatedReadModelContent = `import { CartItem } from '../common/cart-item'\n${updatedReadModelContent}`
+        // Add Item import
+        updatedReadModelContent = `import { Item } from '../common/item'\n${updatedReadModelContent}`
 
         writeFileContent(FILE_CART_WITH_FIELDS_READ_MODEL, updatedReadModelContent)
       })
@@ -66,12 +64,12 @@ describe('Read model', () => {
     describe('with projection', () => {
       it('should create new read model', async () => {
         const { stdout } = await exec(
-          cliPath + " new:read-model CartWithProjectionReadModel --fields 'items:Array<CartItem>' --projects Cart:id"
+          cliPath + " new:read-model CartWithProjectionReadModel --fields 'items:Array<Item>' --projects Cart:id"
         )
         expect(stdout).to.match(EXPECTED_OUTPUT_REGEX)
 
         const expectedEntityContent = await readFileContent(
-          'integration/fixtures/read-models/CartWithProjectionReadModel.ts'
+          'integration/fixtures/read-models/cart-with-projection-read-model.ts'
         )
         const entityContent = await readFileContent(FILE_CART_WITH_PROJECTION_READ_MODEL)
         expect(entityContent).to.equal(expectedEntityContent)
@@ -85,8 +83,8 @@ describe('Read model', () => {
           'new CartWithProjectionReadModel(entity.id, entity.cartItems)'
         )
 
-        // Add CartItem import
-        updatedReadModelContent = `import { CartItem } from '../common/cart-item'\n${updatedReadModelContent}`
+        // Add Item import
+        updatedReadModelContent = `import { Item } from '../common/item'\n${updatedReadModelContent}`
 
         writeFileContent(FILE_CART_WITH_PROJECTION_READ_MODEL, updatedReadModelContent)
       })

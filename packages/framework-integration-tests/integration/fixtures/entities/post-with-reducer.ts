@@ -1,6 +1,6 @@
 import { Entity, Reduces } from '@boostercloud/framework-core'
 import { UUID } from '@boostercloud/framework-types'
-import { PostCreated } from '../events/PostCreated'
+import { PostCreated } from '../events/post-created'
 
 @Entity
 export class PostWithReducer {

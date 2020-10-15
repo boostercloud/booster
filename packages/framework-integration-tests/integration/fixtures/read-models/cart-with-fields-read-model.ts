@@ -7,7 +7,7 @@ import { UUID } from '@boostercloud/framework-types'
 export class CartWithFieldsReadModel {
   public constructor(
     public id: UUID,
-    readonly items: Array<CartItem>,
+    readonly items: Array<Item>,
   ) {}
 
 }

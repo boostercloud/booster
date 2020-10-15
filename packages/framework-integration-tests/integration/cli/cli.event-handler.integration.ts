@@ -5,7 +5,7 @@ import { readFileContent } from '../helper/fileHelper'
 
 const exec = util.promisify(require('child_process').exec)
 
-const FILE_HANDLE_CART_CHANGED_EVENT_HANDLER = 'src/event-handlers/HandleCartChange.ts'
+const FILE_HANDLE_CART_CHANGED_EVENT_HANDLER = 'src/event-handlers/handle-cart-change.ts'
 
 export const CLI_EVENT_HANDLERS_INTEGRATION_TEST_FILES: Array<string> = [FILE_HANDLE_CART_CHANGED_EVENT_HANDLER]
 
@@ -21,7 +21,7 @@ describe('Event handler', () => {
       const { stdout } = await exec(`${cliPath} new:event-handler HandleCartChange -e CartItemChanged`)
       expect(stdout).to.match(expectedOutputRegex)
 
-      const expectedEventContent = await readFileContent('integration/fixtures/event-handlers/HandleCartChange.ts')
+      const expectedEventContent = await readFileContent('integration/fixtures/event-handlers/handle-cart-change.ts')
       const eventContent = await readFileContent(FILE_HANDLE_CART_CHANGED_EVENT_HANDLER)
 
       expect(eventContent).to.equal(expectedEventContent)

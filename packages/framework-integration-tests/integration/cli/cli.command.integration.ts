@@ -7,8 +7,8 @@ const exec = util.promisify(require('child_process').exec)
 
 const COMMAND_AUTH_PLACEHOLDER = "// Specify authorized roles here. Use 'all' to authorize anyone"
 
-const FILE_CHANGE_CART_COMMAND = 'src/commands/ChangeCart.ts'
-const FILE_CHANGE_CART_WITH_FIELDS_COMMAND = 'src/commands/ChangeCartWithFields.ts'
+const FILE_CHANGE_CART_COMMAND = 'src/commands/change-cart.ts'
+const FILE_CHANGE_CART_WITH_FIELDS_COMMAND = 'src/commands/change-cart-with-fields.ts'
 
 export const CLI_COMMAND_INTEGRATION_TEST_FILES: Array<string> = [
   FILE_CHANGE_CART_COMMAND,
@@ -27,7 +27,7 @@ describe('Command', () => {
       const { stdout } = await exec(`${cliPath} new:command ChangeCart`)
       expect(stdout).to.match(expectedOutputRegex)
 
-      const expectedCommandContent = await readFileContent('integration/fixtures/commands/ChangeCart.ts')
+      const expectedCommandContent = await readFileContent('integration/fixtures/commands/change-cart.ts')
       const commandContent = await readFileContent(FILE_CHANGE_CART_COMMAND)
       expect(commandContent).to.equal(expectedCommandContent)
 
@@ -41,7 +41,7 @@ describe('Command', () => {
       it('should create a new command with fields', async () => {
         await exec(`${cliPath} new:command ChangeCartWithFields --fields cartId:UUID sku:string quantity:number`)
 
-        const expectedCommandContent = await readFileContent('integration/fixtures/commands/ChangeCartWithFields.ts')
+        const expectedCommandContent = await readFileContent('integration/fixtures/commands/change-cart-with-fields.ts')
         const commandContent = await readFileContent(FILE_CHANGE_CART_WITH_FIELDS_COMMAND)
         expect(commandContent).to.equal(expectedCommandContent)
 

@@ -1,6 +1,6 @@
 import { Command } from '@boostercloud/framework-core'
 import { Register, UUID } from '@boostercloud/framework-types'
-import { CartPaid } from '../events/CartPaid'
+import { CartPaid } from '../events/cart-paid'
 
 /**
  * Most payment platforms like PayPal have callbacks to confirm payment.
