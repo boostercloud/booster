@@ -1,5 +1,5 @@
 import { Command } from '@boostercloud/framework-core'
-import { ProductCreated } from '../events/ProductCreated'
+import { ProductCreated } from '../events/product-created'
 import { Register, UUID } from '@boostercloud/framework-types'
 import { UserWithEmail, Admin } from '../roles'
 import { SKU } from '../common/sku'

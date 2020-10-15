@@ -1,6 +1,6 @@
 import { Entity, Reduces } from '@boostercloud/framework-core'
 import { UUID } from '@boostercloud/framework-types'
-import { StockMoved } from '../events/StockMoved'
+import { StockMoved } from '../events/stock-moved'
 
 @Entity
 export class Stock {

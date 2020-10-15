@@ -1,10 +1,10 @@
 import { Entity, Reduces } from '@boostercloud/framework-core'
 import { Money } from '../common/money'
-import { Product } from './Product'
-import { OrderCreated } from '../events/OrderCreated'
+import { Product } from './product'
+import { OrderCreated } from '../events/order-created'
 import { Address } from '../common/address'
 import { UUID } from '@boostercloud/framework-types'
-import { Cart } from './Cart'
+import { Cart } from './cart'
 
 /**
  * We need the unitPrice parameter here to keep a record of the price of the product when this item was sold in case that the original product price changes

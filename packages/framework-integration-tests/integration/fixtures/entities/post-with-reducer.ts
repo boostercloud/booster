@@ -14,4 +14,5 @@ export class PostWithReducer {
   public static reducePostCreated(event: PostCreated, currentPostWithReducer?: PostWithReducer): PostWithReducer {
     return /* NEW PostWithReducer HERE */
   }
+
 }

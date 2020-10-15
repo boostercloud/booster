@@ -1,6 +1,6 @@
 import { ScheduledCommand } from '@boostercloud/framework-core'
 import { Register, UUID } from '@boostercloud/framework-types'
-import { ProductCreated } from '../events/ProductCreated'
+import { ProductCreated } from '../events/product-created'
 
 @ScheduledCommand({
   minute: '0/5',

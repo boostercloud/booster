@@ -1,8 +1,8 @@
 import '../common/address'
 import { Entity, Reduces } from '@boostercloud/framework-core'
 import { UUID } from '@boostercloud/framework-types'
-import { CartItemChanged } from '../events/CartItemChanged'
-import { ShippingAddressUpdated as UpdatedCartShippingAddress } from '../events/ShippingAddressUpdated'
+import { CartItemChanged } from '../events/cart-item-changed'
+import { ShippingAddressUpdated as UpdatedCartShippingAddress } from '../events/shipping-address-updated'
 import { Address } from '../common/address'
 import { CartItem } from '../common/cart-item'
 
