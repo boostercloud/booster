@@ -1,4 +1,4 @@
-import { ProductUpdated, ProductUpdateReason } from '../../../events/ProductUpdated'
+import { ProductUpdated, ProductUpdateReason } from '../../../events/product-updated'
 import { ProductUpdatedV1, ProductUpdatedV2, ProductUpdatedV3, ProductUpdatedV4 } from './schema-versions'
 import { Migrates, ToVersion } from '@boostercloud/framework-core'
 

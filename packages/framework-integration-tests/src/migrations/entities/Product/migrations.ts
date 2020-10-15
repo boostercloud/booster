@@ -1,5 +1,5 @@
 import { Migrates, ToVersion } from '@boostercloud/framework-core'
-import { Product } from '../../../entities/Product'
+import { Product } from '../../../entities/product'
 import { ProductV1, ProductV2 } from './schema-versions'
 
 @Migrates(Product)
