@@ -2,11 +2,12 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { expect } from '../expect'
-import { replace, restore, fake, match } from 'sinon'
+import { replace, restore, fake, match, mock } from 'sinon'
 import { BoosterConfig, Logger, UUID } from '@boostercloud/framework-types'
-import * as CDK from 'aws-cdk'
 import { CdkToolkit } from 'aws-cdk/lib/cdk-toolkit'
 import { StreamViewType } from '@aws-cdk/aws-dynamodb'
+import { SdkProvider } from 'aws-cdk'
+import { EnvironmentUtils } from '@aws-cdk/cx-api'
 
 const rewire = require('rewire')
 const Infrastructure = rewire('../../src/infrastructure/index')
@@ -19,8 +20,8 @@ const testEnvironment = {
 
 describe('the deployment process', () => {
   beforeEach(() => {
-    replace(CDK.SDK.prototype, 'defaultAccount', fake.returns(testEnvironment.account))
-    replace(CDK.SDK.prototype, 'defaultRegion', fake.returns(testEnvironment.region))
+    Infrastructure.__set__('getEnvironment', fake.returns(Promise.resolve(testEnvironment)))
+    replace(SdkProvider.prototype, 'forEnvironment', fake.returns(mock()))
   })
 
   afterEach(() => {
@@ -28,27 +29,12 @@ describe('the deployment process', () => {
   })
 
   describe('the `deploy` method', () => {
-    it('logs progress through the passed logger', async () => {
-      const config = new BoosterConfig('test')
-      const fakeBootstrapEnvironment = fake.returns({ noOp: true })
-      replace(CDK, 'bootstrapEnvironment', fakeBootstrapEnvironment)
-      replace(CdkToolkit.prototype, 'deploy', fake())
-
-      const logger = ({
-        info: fake(),
-      } as unknown) as Logger
-
-      await Infrastructure.deploy(config, logger)
-
-      expect(logger.info).to.have.been.called
-    })
-
     it('logs an error through the passed logger when an error is thrown', async () => {
       const config = new BoosterConfig('test')
-      const fakeBootstrapEnvironment = fake.returns({ noOp: true })
+      const fakeBootstrapEnvironment = fake()
       const errorMessage = 'Testing error'
       const fakeCdkDeployThatThrows = fake.throws(errorMessage)
-      replace(CDK, 'bootstrapEnvironment', fakeBootstrapEnvironment)
+      replace(CdkToolkit.prototype, 'bootstrap', fakeBootstrapEnvironment)
       replace(CdkToolkit.prototype, 'deploy', fakeCdkDeployThatThrows)
 
       const logger = ({
@@ -63,8 +49,8 @@ describe('the deployment process', () => {
 
     it('builds the AppStack calling to the `getStackServiceConfiguration`', async () => {
       const config = new BoosterConfig('test')
-      const fakeBootstrapEnvironment = fake.returns({ noOp: true })
-      replace(CDK, 'bootstrapEnvironment', fakeBootstrapEnvironment)
+      const fakeBootstrapEnvironment = fake()
+      replace(CdkToolkit.prototype, 'bootstrap', fakeBootstrapEnvironment)
       replace(CdkToolkit.prototype, 'deploy', fake())
       // Monkey patching this private function to be able to spy it
       const fakeGetStackServiceConfiguration = fake(Infrastructure.__get__('getStackServiceConfiguration'))
@@ -81,9 +67,9 @@ describe('the deployment process', () => {
 
     it('calls the CDK bootstrap with the default environment parameters', async () => {
       const config = new BoosterConfig('test')
-      const fakeBootstrapEnvironment = fake.returns({ noOp: true })
+      const fakeBootstrapEnvironment = fake()
 
-      replace(CDK, 'bootstrapEnvironment', fakeBootstrapEnvironment)
+      replace(CdkToolkit.prototype, 'bootstrap', fakeBootstrapEnvironment)
       replace(CdkToolkit.prototype, 'deploy', fake())
 
       const logger = ({
@@ -93,7 +79,9 @@ describe('the deployment process', () => {
       await Infrastructure.deploy(config, logger)
 
       expect(fakeBootstrapEnvironment).to.have.been.calledOnce
-      expect(fakeBootstrapEnvironment).to.be.calledWith(match(testEnvironment))
+      expect(fakeBootstrapEnvironment).to.be.calledWith(
+        match([EnvironmentUtils.format(testEnvironment.account, testEnvironment.region)])
+      )
     })
 
     it('calls the CDK bootstrap with the environment parameters overridden by the configuration') //TODO
@@ -103,9 +91,9 @@ describe('the deployment process', () => {
       const testAppName = 'testing'
       config.appName = testAppName
 
-      const fakeBootstrapEnvironment = fake.returns({ noOp: true })
+      const fakeBootstrapEnvironment = fake()
 
-      replace(CDK, 'bootstrapEnvironment', fakeBootstrapEnvironment)
+      replace(CdkToolkit.prototype, 'bootstrap', fakeBootstrapEnvironment)
       replace(CdkToolkit.prototype, 'deploy', fake())
 
       const logger = ({
@@ -119,9 +107,12 @@ describe('the deployment process', () => {
       expect(fakeBootstrapEnvironment).to.be.calledWith(
         match.any,
         match.any,
-        match(appNamePrefixRegExp),
-        match.any,
-        match.has('bucketName', match(appNamePrefixRegExp))
+        match({
+          toolkitStackName: match(appNamePrefixRegExp),
+          parameters: {
+            bucketName: match(appNamePrefixRegExp),
+          },
+        })
       )
     })
   })
