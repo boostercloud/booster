@@ -5,8 +5,8 @@ import { readFileContent } from '../helper/fileHelper'
 
 const exec = util.promisify(require('child_process').exec)
 
-const FILE_CART_ITEM_TYPE = 'src/common/cart-item.ts'
-const FILE_CART_ITEM_WITH_FIELDS_TYPE = 'src/common/cart-item-with-fields.ts'
+const FILE_CART_ITEM_TYPE = 'src/common/item.ts'
+const FILE_CART_ITEM_WITH_FIELDS_TYPE = 'src/common/item-with-fields.ts'
 
 export const CLI_TYPE_INTEGRATION_TEST_FILES: Array<string> = [FILE_CART_ITEM_TYPE, FILE_CART_ITEM_WITH_FIELDS_TYPE]
 
