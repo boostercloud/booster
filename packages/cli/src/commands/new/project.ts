@@ -55,7 +55,6 @@ export default class Project extends Command {
       default: false,
     }),
     skipGit: flags.boolean({
-      char: 's',
       description: 'skip git initialization',
       default: false,
     }),
