@@ -43,7 +43,7 @@ export const CLI_PROJECT_INTEGRATION_TEST_FOLDERS: Array<string> = [
 describe('Project', () => {
   const cliPath = path.join('..', 'cli', 'bin', 'run')
   const expectedOutputRegex = new RegExp(
-    /(.+) boost (.+)?new(.+)? (.+)\n- Creating project root\n(.+) Creating project root\n- Generating config files\n(.+) Generating config files\n- Installing dependencies\n(.+) Installing dependencies\n(.+) Initializing git repository\n(.+) Initializing git repository\n(.+) Project generated!\n/
+    /(.+) boost (.+)?new(.+)? (.+)\n- Creating project root\n(.+) Creating project root\n- Generating config files\n(.+) Generating config files\n- Installing dependencies\n(.+) Installing dependencies\n(.+) Initializing git repository\n(.+) Project generated!\n/
   )
 
   const sendToStdin = (childProcess: ChildProcess, promptAnswers: Array<string>, delay: number): void => {
@@ -283,7 +283,7 @@ describe('Project', () => {
     describe('using an invalid provider', () => {
       it('should fail', async () => {
         const expectedOutputRegex = new RegExp(
-          /(.+) boost (.+)?new(.+)? (.+)\n- Creating project root\n(.+) Creating project root\n- Generating config files\n(.+) Generating config files\n- Installing dependencies\n/
+          /(.+) boost (.+)?new(.+)? (.+)\n- Creating project root\n(.+) Creating project root\n- Generating config files\n(.+) Generating config files\n- Installing dependencies\n(.+) Initializing git repository\n/
         )
         const flags = [
           `--author "${AUTHOR}"`,
