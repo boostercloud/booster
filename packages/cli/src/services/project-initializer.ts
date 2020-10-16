@@ -40,6 +40,14 @@ export async function generateRootDirectory(config: ProjectInitializerConfig): P
   await Promise.all(dirs.map(createDirectory))
 }
 
+export async function initializeGit(config: ProjectInitializerConfig): Promise<void> {
+  try {
+    await exec('git init && git add -A && git commit -m "Initial commit"', { cwd: projectDir(config) })
+  } catch (e) {
+    throw wrapExecError(e, 'Could not initialize git repository')
+  }
+}
+
 export interface ProjectInitializerConfig {
   projectName: string
   description: string
@@ -52,6 +60,7 @@ export interface ProjectInitializerConfig {
   boosterVersion: string
   default: boolean
   skipInstall: boolean
+  skipGit: boolean
 }
 
 function renderToFile(templateData: ProjectInitializerConfig): (_: [Array<string>, string]) => Promise<void> {
