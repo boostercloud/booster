@@ -42,9 +42,7 @@ describe('Read model', () => {
 
     describe('with fields', () => {
       it('should create new read model', async () => {
-        const { stdout } = await exec(
-          cliPath + " new:read-model CartWithFieldsReadModel --fields 'items:Array<CartItem>'"
-        )
+        const { stdout } = await exec(cliPath + " new:read-model CartWithFieldsReadModel --fields 'items:Array<Item>'")
         expect(stdout).to.match(EXPECTED_OUTPUT_REGEX)
 
         const expectedEntityContent = await readFileContent(
@@ -56,8 +54,8 @@ describe('Read model', () => {
         // set Auth
         let updatedReadModelContent = entityContent.replace(READ_MODEL_AUTH_PLACEHOLDER, "'all'")
 
-        // Add CartItem import
-        updatedReadModelContent = `import { CartItem } from '../common/cart-item'\n${updatedReadModelContent}`
+        // Add Item import
+        updatedReadModelContent = `import { Item } from '../common/item'\n${updatedReadModelContent}`
 
         writeFileContent(FILE_CART_WITH_FIELDS_READ_MODEL, updatedReadModelContent)
       })
@@ -66,7 +64,7 @@ describe('Read model', () => {
     describe('with projection', () => {
       it('should create new read model', async () => {
         const { stdout } = await exec(
-          cliPath + " new:read-model CartWithProjectionReadModel --fields 'items:Array<CartItem>' --projects Cart:id"
+          cliPath + " new:read-model CartWithProjectionReadModel --fields 'items:Array<Item>' --projects Cart:id"
         )
         expect(stdout).to.match(EXPECTED_OUTPUT_REGEX)
 
@@ -85,8 +83,8 @@ describe('Read model', () => {
           'new CartWithProjectionReadModel(entity.id, entity.cartItems)'
         )
 
-        // Add CartItem import
-        updatedReadModelContent = `import { CartItem } from '../common/cart-item'\n${updatedReadModelContent}`
+        // Add Item import
+        updatedReadModelContent = `import { Item } from '../common/item'\n${updatedReadModelContent}`
 
         writeFileContent(FILE_CART_WITH_PROJECTION_READ_MODEL, updatedReadModelContent)
       })

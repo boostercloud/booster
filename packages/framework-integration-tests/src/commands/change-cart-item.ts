@@ -1,6 +1,6 @@
 import { Command } from '@boostercloud/framework-core'
 import { Register, UUID } from '@boostercloud/framework-types'
-import { CartItemChanged } from '../events/CartItemChanged'
+import { CartItemChanged } from '../events/cart-item-changed'
 
 @Command({
   authorize: 'all',

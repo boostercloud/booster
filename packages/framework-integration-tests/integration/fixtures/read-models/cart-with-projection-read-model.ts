@@ -8,7 +8,7 @@ import { Cart } from '../entities/cart'
 export class CartWithProjectionReadModel {
   public constructor(
     public id: UUID,
-    readonly items: Array<CartItem>,
+    readonly items: Array<Item>,
   ) {}
 
   @Projects(Cart, "id")

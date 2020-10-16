@@ -63,7 +63,7 @@ describe('Entity', () => {
         // Set event entity ID
         const updatedEventContent = eventContent.replace(EVENT_ENTITY_ID_PLACEHOLDER, 'this.postId')
 
-        writeFileContent('src/events/PostCreated.ts', updatedEventContent)
+        writeFileContent('src/events/post-created.ts', updatedEventContent)
 
         // Create entity
         await exec(`${cliPath} new:entity PostWithReducer --fields title:string body:string --reduces PostCreated`)
