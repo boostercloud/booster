@@ -117,8 +117,8 @@ describe('the application stack builder', () => {
     expect(numberOfLambdas).to.equal(4)
     expect(appStack.tryFindChild(preSignUpValidator)).not.to.be.undefined
     lambdas.forEach((lambda: any) => {
-      expect(lambda.environment.BOOSTER_ENV).to.equal('test')
-      expect(lambda.environment.A_CUSTOM_ENV_VARIABLE).to.equal('important-value')
+      expect(lambda.environment.BOOSTER_ENV.value).to.equal('test')
+      expect(lambda.environment.A_CUSTOM_ENV_VARIABLE.value).to.equal('important-value')
     })
     // UserPool-related
     expect(appStack.tryFindChild(userPool)).not.to.be.undefined

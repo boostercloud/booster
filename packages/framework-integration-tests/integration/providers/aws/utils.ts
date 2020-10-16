@@ -1,5 +1,5 @@
 import { CloudFormation, CognitoIdentityServiceProvider, DynamoDB } from 'aws-sdk'
-import { Stack, StackResourceDetail } from 'aws-sdk/clients/cloudformation'
+import { Stack, StackResourceDetail, StackResourceSummary } from 'aws-sdk/clients/cloudformation'
 import { ApolloClient } from 'apollo-client'
 import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { HttpLink } from 'apollo-link-http'
@@ -19,7 +19,6 @@ import { config } from 'aws-sdk'
 import util = require('util')
 const exec = util.promisify(require('child_process').exec)
 
-const userPoolId = 'userpool'
 const cloudFormation = new CloudFormation()
 const cognitoIdentityServiceProvider = new CognitoIdentityServiceProvider()
 const documentClient = new DynamoDB.DocumentClient()
@@ -87,6 +86,16 @@ export async function appStack(): Promise<Stack> {
   }
 }
 
+export async function stackResourcesByType(resourceType: string): Promise<Array<StackResourceSummary>> {
+  const resources = await cloudFormation
+    .listStackResources({
+      StackName: appStackName(),
+    })
+    .promise()
+  return resources.StackResourceSummaries?.filter((resource) => resource.ResourceType == resourceType) ?? []
+}
+
+// --- Auth helpers ---
 export async function authClientID(): Promise<string> {
   const { Outputs } = await appStack()
   const clientId = Outputs?.find((output) => {
@@ -100,7 +109,6 @@ export async function authClientID(): Promise<string> {
   }
 }
 
-// --- Auth helpers ---
 export interface UserAuthInformation {
   accessToken: string
   refreshToken: string
@@ -109,19 +117,12 @@ export interface UserAuthInformation {
 }
 
 export async function userPool(): Promise<StackResourceDetail> {
-  const stackName = appStackName()
+  const resources = await stackResourcesByType('AWS::Cognito::UserPool')
 
-  const userPoolDescription = await cloudFormation
-    .describeStackResource({
-      LogicalResourceId: userPoolId,
-      StackName: stackName,
-    })
-    .promise()
-
-  if (userPoolDescription?.StackResourceDetail) {
-    return userPoolDescription.StackResourceDetail
+  if (resources.length == 1) {
+    return resources[0]
   } else {
-    throw `No user pool details found in stack ${stackName} with resource Id ${userPoolId}`
+    throw 'No user pool (or more than one) found in stack'
   }
 }
 
@@ -563,7 +564,7 @@ export async function waitForIt<TResult>(
   tryFunction: () => Promise<TResult>,
   checkResult: (result: TResult) => boolean,
   tryEveryMs = 1000,
-  timeoutMs = 300000
+  timeoutMs = 60000
 ): Promise<TResult> {
   const start = Date.now()
   return doWaitFor()
