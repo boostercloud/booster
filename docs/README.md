@@ -2425,7 +2425,6 @@ boost deploy -e <environment name>
 
 **Note**: All you have in your project root will deploy on the server so if you have a front, you should put it on another site because the server has a limited capacity.
 
-
 The `<environment name>` parameter is the name of the [environment](#environments) you want to deploy.
 It will take a while, but you should have your project deployed to your cloud provider.
 
