@@ -124,7 +124,7 @@ To start contributing to the project you would need to set up the project in you
 
 - Install Yarn: `npm install -g yarn`
 
-- Install Lerna with npm `install -g lerna`
+- Install Lerna: `npm install -g lerna`
 
 - Clone the repo and get into the directory of the project: `git clone <WRITE REPO URL HERE> && cd booster`
 
