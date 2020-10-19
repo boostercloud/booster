@@ -120,21 +120,25 @@ Make sure that you assign the chosen issue to yourself to communicate your inten
 
 ### Getting the code
 
-To start contributing to the project you must first follow these steps in your terminal.
+To start contributing to the project you would need to set up the project in your system, to do so, you must first follow these steps in your terminal.
 
-- Install Yarn with npm `install -g yarn`
+- Install Yarn: `npm install -g yarn`
 
 - Install Lerna with npm `install -g lerna`
 
-- Clone the repo and cd to the project
+- Clone the repo and get into the directory of the project: `git clone <WRITE REPO URL HERE> && cd booster`
 
-- Write `lerna bootstrap`
+- Install project dependencies: `lerna bootstrap`
 
-- Write `lerna run compile`
+- Compile the project `lerna run compile`
 
-- Now you can write your contribution and to make sure everything works you whould write lerna run test
+- Add your contribution
+  
+- Make sure everything works by executing the unit tests: `lerna run test`
 
-- Before make a PR you should execute `./scripts/check-all-the-things.sh` on Linux and MacOs, but if you are in Windows you should execute `.\scripts\check-all-the-things.ps1`
+- Before making a PR you should run the `check-all-the-things` script:
+  - `./scripts/check-all-the-things.sh` on Linux and MacOS
+  - `.\scripts\check-all-the-things.ps1` on Windows
 
 ### Github flow
 
