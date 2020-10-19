@@ -18,6 +18,7 @@ Remember that if something here doesn't make sense, you can also propose a chang
   * [Improving documentation](#improving-documentation)
   * [Create your very first GitHub issue](#create-your-very-first-github-issue)
 - [Your First Code Contribution](#your-first-code-contribution)
+  * [Getting the code](#getting-the-code)
   * [Github flow](#github-flow)
   * [Test-driven approach](#test-driven-approach)
   * [Publishing your Pull Request](#publishing-your-pull-request)
@@ -116,6 +117,24 @@ Unsure where to begin contributing to Booster? You can start by looking through 
 Both issue lists are sorted by the total number of comments. While not perfect, number of comments is a reasonable proxy for impact a given change will have.
 
 Make sure that you assign the chosen issue to yourself to communicate your intention to work on it and reduce the possibilities of other people taking the same assignment.
+
+### Getting the code
+
+To start contributing to the project you must first follow these steps in your terminal.
+
+- Install Yarn with npm `install -g yarn`
+
+- Install Lerna with npm `install -g lerna`
+
+- Clone the repo and cd to the project
+
+- Write `lerna bootstrap`
+
+- Write `lerna run compile`
+
+- Now you can write your contribution and to make sure everything works you whould write lerna run test
+
+- Before make a PR you should execute `./scripts/check-all-the-things.sh` on Linux and MacOs, but if you are in Windows you should execute `.\scripts\check-all-the-things.ps1`
 
 ### Github flow
 
