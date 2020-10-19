@@ -66,7 +66,7 @@ describe('the application stack builder', () => {
     expect(websocketAPI.protocolType).to.be.eq('WEBSOCKET')
     websocketRoutes.forEach((route) => expect(appStack.tryFindChild(route)).not.to.be.undefined)
 
-    expect(numberOfLambdas).to.equal(4)
+    expect(numberOfLambdas).to.equal(3)
 
     // GraphQL related
     expect(appStack.tryFindChild(graphQLLambda)).not.to.be.undefined
@@ -114,12 +114,12 @@ describe('the application stack builder', () => {
     expect(api).not.to.be.undefined
     expect(api.root.getResource('auth')).not.to.be.undefined
     // Lambdas
-    expect(numberOfLambdas).to.equal(5)
+    expect(numberOfLambdas).to.equal(4)
     expect(appStack.tryFindChild(preSignUpValidator)).not.to.be.undefined
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     lambdas.forEach((lambda: any) => {
-      expect(lambda.environment.BOOSTER_ENV).to.equal('test')
-      expect(lambda.environment.A_CUSTOM_ENV_VARIABLE).to.equal('important-value')
+      expect(lambda.environment.BOOSTER_ENV.value).to.equal('test')
+      expect(lambda.environment.A_CUSTOM_ENV_VARIABLE.value).to.equal('important-value')
     })
 
     // UserPool-related

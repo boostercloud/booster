@@ -4,6 +4,7 @@ import Brand from '../../common/brand'
 import {
   generateConfigFiles,
   generateRootDirectory,
+  initializeGit,
   installDependencies,
   ProjectInitializerConfig,
 } from '../../services/project-initializer'
@@ -53,6 +54,10 @@ export default class Project extends Command {
       description: 'skip dependencies installation',
       default: false,
     }),
+    skipGit: flags.boolean({
+      description: 'skip git initialization',
+      default: false,
+    }),
   }
 
   public static args = [{ name: 'projectName' }]
@@ -73,20 +78,14 @@ export default class Project extends Command {
   }
 }
 
-const run = async (flags: Partial<ProjectInitializerConfig>, boosterVersion: string): Promise<void> => {
-  const boostScript = Script.init(`boost ${Brand.energize('new')} 🚧`, parseConfig(new Prompter(), flags, boosterVersion))
+const run = async (flags: Partial<ProjectInitializerConfig>, boosterVersion: string): Promise<void> =>
+  Script.init(`boost ${Brand.energize('new')} 🚧`, parseConfig(new Prompter(), flags, boosterVersion))
     .step('Creating project root', generateRootDirectory)
     .step('Generating config files', generateConfigFiles)
-
-  if (flags.skipInstall) {
-    return boostScript.info('Project generated!').done()
-  }
-
-  return boostScript
-    .step('Installing dependencies', installDependencies)
+    .optionalStep(Boolean(flags.skipInstall), 'Installing dependencies', installDependencies)
+    .optionalStep(Boolean(flags.skipGit), 'Initializing git repository', initializeGit)
     .info('Project generated!')
     .done()
-}
 
 const getSelectedProviderPackage = (provider: Provider): string => {
   switch (provider) {
@@ -136,6 +135,7 @@ export const parseConfig = async (
       boosterVersion,
       default: flags.default,
       skipInstall: false,
+      skipGit: false,
     })
   }
 
@@ -170,5 +170,6 @@ export const parseConfig = async (
     boosterVersion,
     default: false,
     skipInstall: false,
+    skipGit: false,
   })
 }

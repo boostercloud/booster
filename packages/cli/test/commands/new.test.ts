@@ -64,6 +64,7 @@ describe('new', (): void => {
 
       const expectedDirectoryContent = {
         rootPath: [
+          '.git',
           '.eslintignore',
           '.eslintrc.js',
           '.gitignore',
@@ -97,6 +98,7 @@ describe('new', (): void => {
         boosterVersion: '0.5.1',
         default: true,
         skipInstall: false,
+        skipGit: false,
       } as ProjectInitializerConfig
 
       afterEach(() => {
@@ -151,6 +153,30 @@ describe('new', (): void => {
         expect(packageJson.homepage).to.be.equal('')
         expect(packageJson.license).to.be.equal('MIT')
         expect(packageJson.repository).to.be.equal('')
+      })
+
+      it('initializes git repository', async () => {
+        replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
+        replace(ProjectInitializer, 'installDependencies', fake.returns({}))
+        const initializeGitSpy = spy(ProjectInitializer, 'initializeGit')
+
+        await new Project.default([projectName], {} as IConfig).run()
+
+        expect(initializeGitSpy).to.have.been.calledOnce
+        expect(fs.readdirSync(projectDirectory)).to.have.all.members(expectedDirectoryContent.rootPath)
+        expect(fs.readdirSync(`${projectDirectory}/src`)).to.have.all.members(expectedDirectoryContent.src)
+      })
+
+      it('skips git repository initialization', async () => {
+        replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
+        replace(ProjectInitializer, 'installDependencies', fake.returns({}))
+        const initializeGitSpy = spy(ProjectInitializer, 'initializeGit')
+
+        await new Project.default([projectName, '--skipGit'], {} as IConfig).run()
+
+        expect(initializeGitSpy).to.not.have.been.calledOnce
+        expect(fs.existsSync('.git')).to.be.false
+        expect(fs.existsSync(projectDirectory)).to.be.true
       })
     })
   })

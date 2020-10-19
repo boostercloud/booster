@@ -23,11 +23,11 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@aws-cdk/aws-cloudfront": "1.26.0",
-    "@aws-cdk/aws-s3": "1.26.0",
-    "@aws-cdk/aws-s3-deployment": "1.26.0",
+    "@aws-cdk/aws-cloudfront": "1.67.0",
+    "@aws-cdk/aws-s3": "1.67.0",
+    "@aws-cdk/aws-s3-deployment": "1.67.0",
     "@boostercloud/framework-types": "^0.8.2",
-    "aws-cdk": "1.26.0"
+    "aws-cdk": "1.67.0"
   },
   "scripts": {
     "lint": "eslint --ext '.js,.ts' **/*.ts",

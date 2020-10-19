@@ -11,11 +11,6 @@ export default class ScheduledCommand extends Oclif.Command {
   public static description = "generate new scheduled command, write 'boost new:scheduled-command -h' to see options"
   public static flags = {
     help: Oclif.flags.help({ char: 'h' }),
-    fields: Oclif.flags.string({
-      char: 'f',
-      description: 'fields that this scheduled command will contain',
-      multiple: true,
-    }),
   }
 
   public static args = [{ name: 'scheduledCommandName' }]

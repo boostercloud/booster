@@ -1,38 +1,53 @@
 import { StreamViewType } from '@aws-cdk/aws-dynamodb'
 import { InfrastructureRocket } from '../../src/rockets/infrastructure-rocket'
 import { BoosterConfig, UUID } from '@boostercloud/framework-types'
-import { fake, restore, spy } from 'sinon'
+import { fake, replace, restore, spy } from 'sinon'
 import { expect } from '../expect'
 import { ApplicationStackBuilder } from '../../src/infrastructure/stacks/application-stack'
+import { SdkProvider } from 'aws-cdk'
 
 const rewire = require('rewire')
-const stackServiceConfigurationModule = rewire('../../src/infrastructure/stack-service-configuration')
+const StackTools = rewire('../../src/infrastructure/stack-tools')
 
-describe('the `stack-service-configuration` module', () => {
+const testEnvironment = {
+  account: 'testAccount',
+  region: 'testRegion',
+}
+
+describe('the `stack-tools` module', () => {
   afterEach(() => {
     restore()
   })
 
   describe('the `getStackServiceConfiguration` method', () => {
     it('builds the configuration using the `assemble` method', async () => {
+      replace(SdkProvider.prototype, 'forEnvironment', fake())
       const fakeAssemble = fake()
-      const revertRewire = stackServiceConfigurationModule.__set__('assemble', fakeAssemble)
+      const revertAssemble = StackTools.__set__('assemble', fakeAssemble)
+      const revertGetEnvironment = StackTools.__set__('getEnvironment', fake.returns(Promise.resolve(testEnvironment)))
 
       const config = {} as BoosterConfig
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const stackConfig = (await stackServiceConfigurationModule.getStackServiceConfiguration(config)) as any
-      const appStacks = stackConfig.appStacks.props
-      await appStacks.synthesizer(appStacks.aws, appStacks.configuration)
+      const { cdkToolkit } = (await StackTools.getStackServiceConfiguration(config)) as any
+      // We're hacking the CDK to make it believe it's deploying the app
+      cdkToolkit.props.cloudExecutable.props.synthesizer()
 
+      // Even with no parameters, `assemble` should receive the config via closure
       expect(fakeAssemble).to.have.been.calledWithMatch(config)
-      revertRewire()
+      revertAssemble()
+      revertGetEnvironment()
     })
 
     context('with rockets', () => {
       it('forwards the rocket list to the `assemble` method for initialization', async () => {
+        replace(SdkProvider.prototype, 'forEnvironment', fake())
         const fakeAssemble = fake()
-        const revertRewire = stackServiceConfigurationModule.__set__('assemble', fakeAssemble)
+        const revertRewire = StackTools.__set__('assemble', fakeAssemble)
+        const revertGetEnvironment = StackTools.__set__(
+          'getEnvironment',
+          fake.returns(Promise.resolve(testEnvironment))
+        )
 
         const config = {} as BoosterConfig
 
@@ -41,21 +56,22 @@ describe('the `stack-service-configuration` module', () => {
           unmountStack: fake(),
         }
 
-        const stackConfig = (await stackServiceConfigurationModule.getStackServiceConfiguration(config, [
+        const { cdkToolkit } = (await StackTools.getStackServiceConfiguration(config, [
           fakeRocket,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ])) as any
-        const appStacks = stackConfig.appStacks.props
-        await appStacks.synthesizer(appStacks.aws, appStacks.configuration)
+        // We're hacking the CDK to make it believe it's deploying the app
+        cdkToolkit.props.cloudExecutable.props.synthesizer()
 
         expect(fakeAssemble).to.have.been.calledWithMatch(config, [fakeRocket])
         revertRewire()
+        revertGetEnvironment()
       })
     })
   })
 
   describe('the `assemble` method', () => {
-    const assemble = stackServiceConfigurationModule.__get__('assemble')
+    const assemble = StackTools.__get__('assemble')
 
     it('generates the CloudAssembly correctly for a simple configuration', () => {
       class EmptyEntity {
@@ -168,6 +184,86 @@ describe('the `stack-service-configuration` module', () => {
 
         expect(ApplicationStackBuilder.prototype.buildOn).to.have.been.calledWithMatch({}, [fakeRocket])
       })
+    })
+  })
+
+  describe('the `getStackNames` method', () => {
+    const fakeGetStackNames = fake(StackTools.__get__('getStackNames'))
+
+    const config = {
+      resourceNames: {
+        applicationStack: 'fake-stack',
+      },
+    }
+
+    fakeGetStackNames(config)
+
+    expect(fakeGetStackNames).to.have.returned([config.resourceNames.applicationStack])
+  })
+
+  describe('the `getStackToolkitName` method', () => {
+    const fakeGetStackToolkitName = fake(StackTools.__get__('getStackToolkitName'))
+
+    const config = {
+      appName: 'fake-app-name',
+    }
+
+    fakeGetStackToolkitName(config)
+
+    expect(fakeGetStackToolkitName).to.have.returned(config.appName + '-toolkit')
+  })
+
+  describe('the `getStackToolkitBucketName` method', () => {
+    const fakeGetStackToolkitBucketName = fake(StackTools.__get__('getStackToolkitBucketName'))
+
+    const config = {
+      appName: 'fake-app-name',
+    }
+
+    fakeGetStackToolkitBucketName(config)
+
+    expect(fakeGetStackToolkitBucketName).to.have.returned(config.appName + '-toolkit-bucket')
+  })
+
+  describe('the `getEnvironments` method', () => {
+    it('returns default account and region', async () => {
+      const fakeGetEnvironment = fake(StackTools.__get__('getEnvironment'))
+
+      const fakeSDKProvider = {
+        defaultAccount: fake.resolves({ accountId: 'default-account' }),
+        defaultRegion: 'default-region',
+      }
+
+      await expect(fakeGetEnvironment(fakeSDKProvider)).to.eventually.become({
+        name: 'Default environment',
+        account: 'default-account',
+        region: 'default-region',
+      })
+    })
+
+    it("throws an error if it can't load the default account", async () => {
+      const fakeGetEnvironment = fake(StackTools.__get__('getEnvironment'))
+
+      const fakeSDKProvider = {
+        defaultAccount: fake.resolves(undefined),
+        defaultRegion: 'default-region',
+      }
+
+      await expect(fakeGetEnvironment(fakeSDKProvider)).to.eventually.be.rejectedWith(
+        /Unable to load default AWS account/
+      )
+    })
+
+    it("throws an error if it can't load the default region", async () => {
+      const fakeGetEnvironment = fake(StackTools.__get__('getEnvironment'))
+
+      const fakeSDKProvider = {
+        defaultAccount: fake.resolves({ accountId: 'default-accoung' }),
+      }
+
+      await expect(fakeGetEnvironment(fakeSDKProvider)).to.eventually.be.rejectedWith(
+        /Unable to determine default region/
+      )
     })
   })
 })

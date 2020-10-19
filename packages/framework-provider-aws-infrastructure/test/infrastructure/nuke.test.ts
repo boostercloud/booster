@@ -2,9 +2,8 @@ import { expect } from '../expect'
 import { BoosterConfig, Logger } from '@boostercloud/framework-types'
 import { CdkToolkit } from 'aws-cdk/lib/cdk-toolkit'
 import { fake, replace, restore } from 'sinon'
-import * as StackServiceConfiguration from '../../src/infrastructure/stack-service-configuration'
+import * as StackServiceConfiguration from '../../src/infrastructure/stack-tools'
 import * as S3Tools from '../../src/infrastructure/s3utils'
-import { Mode } from 'aws-cdk'
 import * as rocketUtils from '../../src/rockets/rocket-utils'
 
 const rewire = require('rewire')
@@ -44,7 +43,7 @@ describe('the nuke module', () => {
       const fakeNukeToolkit = fake()
       const revertNukeToolkit = nukeModule.__set__('nukeToolkit', fakeNukeToolkit)
       const revertNukeApp = nukeModule.__set__('nukeApplication', fake())
-      const fakeStackServiceConfiguration = { aws: 'here goes the SDK', appStacks: '', cdkToolkit: '' }
+      const fakeStackServiceConfiguration = { sdk: 'here goes the SDK', appStacks: '', cdkToolkit: '' }
       replace(StackServiceConfiguration, 'getStackServiceConfiguration', fake.resolves(fakeStackServiceConfiguration))
 
       const config = ({ hello: 'world' } as unknown) as BoosterConfig
@@ -54,7 +53,7 @@ describe('the nuke module', () => {
 
       await nukeModule.nuke(config, logger)
 
-      expect(fakeNukeToolkit).to.have.been.calledWithMatch(fakeStackServiceConfiguration.aws, config, logger)
+      expect(fakeNukeToolkit).to.have.been.calledWithMatch(logger, config, fakeStackServiceConfiguration.sdk)
 
       revertNukeToolkit()
       revertNukeApp()
@@ -65,8 +64,6 @@ describe('the nuke module', () => {
       const revertNukeToolkit = nukeModule.__set__('nukeToolkit', fake())
       const revertNukeApp = nukeModule.__set__('nukeApplication', fakeNukeApplication)
       const fakeStackServiceConfiguration = {
-        aws: 'here goes the SDK',
-        appStacks: 'and here the appStacks',
         cdkToolkit: 'and here the cdkToolkit',
       }
       replace(StackServiceConfiguration, 'getStackServiceConfiguration', fake.resolves(fakeStackServiceConfiguration))
@@ -78,12 +75,7 @@ describe('the nuke module', () => {
 
       await nukeModule.nuke(config, logger)
 
-      expect(fakeNukeApplication).to.have.been.calledWithMatch(
-        fakeStackServiceConfiguration.aws,
-        fakeStackServiceConfiguration.appStacks,
-        fakeStackServiceConfiguration.cdkToolkit,
-        logger
-      )
+      expect(fakeNukeApplication).to.have.been.calledWithMatch(logger, config, fakeStackServiceConfiguration.cdkToolkit)
 
       revertNukeToolkit()
       revertNukeApp()
@@ -186,7 +178,7 @@ describe('the nuke module', () => {
         const revertNukeApp = nukeModule.__set__('nukeApplication', fake())
         const revertNukeRockets = nukeModule.__set__('nukeRockets', fakeNukeRockets)
         const fakeStackServiceConfiguration = {
-          aws: 'here goes the SDK',
+          sdk: 'here goes the SDK',
           appStacks: 'and here the appStacks',
           cdkToolkit: 'and here the cdkToolkit',
         }
@@ -206,7 +198,7 @@ describe('the nuke module', () => {
 
         await nukeModule.nuke(config, logger, fakeRockets)
 
-        expect(fakeNukeRockets).to.have.been.calledWithMatch({}, fakeRockets, logger)
+        expect(fakeNukeRockets).to.have.been.calledWithMatch(logger, fakeStackServiceConfiguration.sdk, fakeRockets)
 
         revertNukeToolkit()
         revertNukeApp()
@@ -225,16 +217,14 @@ describe('the nuke module', () => {
         info: fake(),
       } as unknown) as Logger
 
-      const fakeCloudformation = { deleteStack: fake.returns({ promise: fake() }) }
-      const fakeAWS = {
-        cloudFormation: fake.resolves(fakeCloudformation),
-        defaultAccount: fake.resolves('default-account'),
-        defaultRegion: fake.resolves('default-region'),
+      const fakeCloudformation = { deleteStack: fake.returns({ promise: fake.resolves(true) }) }
+      const fakeSDK = {
+        cloudFormation: fake.returns(fakeCloudformation),
       }
 
-      await nukeToolkit(fakeAWS, config, logger)
+      await nukeToolkit(logger, config, fakeSDK)
 
-      expect(S3Tools.emptyS3Bucket).to.have.been.calledWithMatch(fakeAWS, logger, 'test-app-toolkit-bucket')
+      expect(S3Tools.emptyS3Bucket).to.have.been.calledWithMatch(fakeSDK, logger, 'test-app-toolkit-bucket')
     })
 
     it('deletes the toolkit stack', async () => {
@@ -246,16 +236,14 @@ describe('the nuke module', () => {
         info: fake(),
       } as unknown) as Logger
 
-      const fakeCloudformation = { deleteStack: fake.returns({ promise: fake() }) }
-      const fakeAWS = {
-        cloudFormation: fake.resolves(fakeCloudformation),
-        defaultAccount: fake.resolves('default-account'),
-        defaultRegion: fake.resolves('default-region'),
+      const fakeCloudformation = { deleteStack: fake.returns({ promise: fake.resolves(true) }) }
+      const fakeSDK = {
+        cloudFormation: fake.returns(fakeCloudformation),
       }
 
-      await nukeToolkit(fakeAWS, config, logger)
+      await nukeToolkit(logger, config, fakeSDK)
 
-      expect(fakeAWS.cloudFormation).to.have.been.calledWithMatch('default-account', 'default-region', Mode.ForWriting)
+      expect(fakeSDK.cloudFormation).to.have.been.called
       expect(fakeCloudformation.deleteStack).to.have.been.calledWithMatch({
         StackName: 'test-app-toolkit',
       })
@@ -274,7 +262,7 @@ describe('the nuke module', () => {
         info: fake(),
       } as unknown) as Logger
 
-      const fakeAWS = { fake: 'aws' }
+      const fakeSDK = { fake: 'aws' }
 
       const fakeUnmountStack = fake()
       const fakeRockets = [
@@ -283,9 +271,9 @@ describe('the nuke module', () => {
         },
       ]
 
-      await nukeRockets(fakeAWS, fakeRockets, logger)
+      await nukeRockets(logger, fakeSDK, fakeRockets)
 
-      expect(fakeBuildRocketUtils).to.have.been.calledWithMatch(fakeAWS, logger)
+      expect(fakeBuildRocketUtils).to.have.been.calledWithMatch(fakeSDK, logger)
       expect(fakeUnmountStack).to.have.been.calledWithMatch(fakeRocketUtils)
     })
   })
@@ -294,11 +282,12 @@ describe('the nuke module', () => {
     it('destroys the application stack', async () => {
       const nukeApplication = nukeModule.__get__('nukeApplication')
 
-      const fakeAWS = { fake: 'aws' }
-
-      const appStacks = {
-        listStacks: fake.resolves([{ stackName: 'stack-name' }]),
-      }
+      const config = ({
+        appName: 'test-app',
+        resourceNames: {
+          applicationStack: 'stack-name',
+        },
+      } as unknown) as BoosterConfig
 
       const cdkToolkit = {
         destroy: fake(),
@@ -308,13 +297,12 @@ describe('the nuke module', () => {
         info: fake(),
       } as unknown) as Logger
 
-      await nukeApplication(fakeAWS, appStacks, cdkToolkit, logger)
+      await nukeApplication(logger, config, cdkToolkit)
 
       expect(cdkToolkit.destroy).to.have.been.calledWithMatch({
         stackNames: ['stack-name'],
         exclusively: false,
         force: true,
-        sdk: fakeAWS,
       })
     })
   })

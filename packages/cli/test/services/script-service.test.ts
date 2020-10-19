@@ -4,6 +4,7 @@ import { describe, it, afterEach } from 'mocha'
 import { stub, replace, restore, fake } from 'sinon'
 import { Script } from '../../src/common/script'
 import { expect } from '../expect'
+import Brand from '../../src/common/brand'
 
 interface TestContext {
   ctxParam: 'value'
@@ -177,6 +178,40 @@ describe('The Script class', () => {
           .catch('SyntaxError', () => msg)
           .done()
       ).to.eventually.be.rejectedWith(msg)
+    })
+  })
+
+  describe('optionalStep', () => {
+    it('should skip optional step and log info', async () => {
+      const initMessage = 'Initializing test'
+      const message = 'Hello World!'
+      const stepFn = stub().resolves(message)
+      const logger = replaceLogger()
+      const willSkip = true
+
+      await Script.init(initMessage, Promise.resolve(testContext))
+        .optionalStep(willSkip, message, stepFn)
+        .done()
+
+      expect(logger.start).to.not.have.been.calledOnce
+      expect(logger.succeed).to.not.have.been.calledOnce
+      expect(logger.info).to.have.been.calledWith(Brand.mellancholize(`Skipping: ${message}`))
+    })
+
+    it('should not skip optional step and call passed action', async () => {
+      const initMessage = 'Initializing test'
+      const message = 'Hello World!'
+      const stepFn = stub().resolves(message)
+      const logger = replaceLogger()
+      const willSkip = false
+
+      await Script.init(initMessage, Promise.resolve(testContext))
+        .optionalStep(willSkip, message, stepFn)
+        .done()
+
+      expect(logger.start).to.have.been.calledOnceWith(message)
+      expect(logger.succeed).to.have.been.called
+      expect(logger.info).to.not.have.been.calledWith(Brand.mellancholize(`Skipping: ${message}`))
     })
   })
 })
