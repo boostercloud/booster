@@ -283,7 +283,7 @@ describe('Project', () => {
     describe('using an invalid provider', () => {
       it('should fail', async () => {
         const expectedOutputRegex = new RegExp(
-          /(.+) boost (.+)?new(.+)? (.+)\n- Creating project root\n(.+) Creating project root\n- Generating config files\n(.+) Generating config files\n- Installing dependencies\n(.+) Initializing git repository\n/
+          /(.+) boost (.+)?new(.+)? (.+)\n- Creating project root\n(.+) Creating project root\n- Generating config files\n(.+) Generating config files\n- Installing dependencies\n/
         )
         const flags = [
           `--author "${AUTHOR}"`,
