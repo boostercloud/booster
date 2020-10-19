@@ -43,8 +43,8 @@ export const CLI_PROJECT_INTEGRATION_TEST_FOLDERS: Array<string> = [
 describe('Project', () => {
   // Required by Github actions CI/CD, because it doesn't have git configured
   before(async () => {
-    await exec('git config --global || git config --global user.name "Booster Test"')
-    await exec('git config --global || git config --global user.email "test@booster.cloud"')
+    await exec('git config --global user.name || git config --global user.name "Booster Test"')
+    await exec('git config --global user.email || git config --global user.email "test@booster.cloud"')
   })
   const cliPath = path.join('..', 'cli', 'bin', 'run')
   const expectedOutputRegex = new RegExp(
