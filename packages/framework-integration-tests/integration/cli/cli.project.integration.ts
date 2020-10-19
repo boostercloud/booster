@@ -41,6 +41,11 @@ export const CLI_PROJECT_INTEGRATION_TEST_FOLDERS: Array<string> = [
 ]
 
 describe('Project', () => {
+  // Required by Github actions CI/CD, because it doesn't have git configured
+  before(async () => {
+    await exec('git config --global user.name || git config --global user.name "Booster Test"')
+    await exec('git config --global user.email || git config --global user.email "test@booster.cloud"')
+  })
   const cliPath = path.join('..', 'cli', 'bin', 'run')
   const expectedOutputRegex = new RegExp(
     /(.+) boost (.+)?new(.+)? (.+)\n- Creating project root\n(.+) Creating project root\n- Generating config files\n(.+) Generating config files\n- Installing dependencies\n(.+) Installing dependencies\n(.+) Initializing git repository\n(.+) Initializing git repository\n(.+) Project generated!\n/
