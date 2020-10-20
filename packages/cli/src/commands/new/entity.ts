@@ -15,7 +15,7 @@ import * as path from 'path'
 import { generate } from '../../services/generator'
 import { templates } from '../../templates'
 import { checkItIsABoosterProject } from '../../services/project-checker'
-import * as inflected from 'inflected'
+import { classNameToFileName } from '../../common/filenames'
 
 export default class Entity extends Oclif.Command {
   public static description = 'create a new entity'
@@ -62,7 +62,7 @@ const run = async (name: string, rawFields: Array<string>, rawEvents: Array<stri
 
 function generateImports(info: EntityInfo): Array<ImportDeclaration> {
   const eventsImports: Array<ImportDeclaration> = info.events.map((eventData) => {
-    const fileName = inflected.dasherize(inflected.underscore(eventData.eventName))
+    const fileName = classNameToFileName(eventData.eventName)
     return {
       packagePath: `../events/${fileName}`,
       commaSeparatedComponents: eventData.eventName,
