@@ -202,7 +202,7 @@ versions:
 - [`nvm-windows`](https://github.com/coreybutler/nvm-windows) - Works with native Windows
 
 ##### Install Git
-To initialize this project in your machine you need to install git 
+Booster will initialize a Git repository when you create a new project, so it is required that you have it already installed it in your system.
 
 ###### Ubuntu
 
