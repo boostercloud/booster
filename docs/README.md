@@ -201,6 +201,27 @@ versions:
   for Linux
 - [`nvm-windows`](https://github.com/coreybutler/nvm-windows) - Works with native Windows
 
+##### Install Git
+To initialize this project in your machine you need to install git 
+
+###### Ubuntu
+
+```shell
+sudo apt install git-all
+```
+
+###### macOS
+
+```shell
+brew install git
+```
+
+###### Windows
+
+```shell
+choco install git
+```
+
 ##### Set up an AWS account
 
 This step is optional; Booster is a cloud-native framework, meaning that your application
