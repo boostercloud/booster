@@ -5,7 +5,7 @@ import { generate } from '../../services/generator'
 import { HasName, joinParsers, parseName, ImportDeclaration } from '../../services/generator/target'
 import * as path from 'path'
 import { templates } from '../../templates'
-import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
+import { checkCurrentDirIsABoosterProject, checkResourceExists } from '../../services/project-checker'
 
 export default class ScheduledCommand extends Oclif.Command {
   public static description = "generate new scheduled command, write 'boost new:scheduled-command -h' to see options"
@@ -20,6 +20,7 @@ export default class ScheduledCommand extends Oclif.Command {
     try {
       if (!args.scheduledCommandName)
         throw "You haven't provided a scheduled command name, but it is required, run with --help for usage"
+      await checkResourceExists(args.scheduledCommandName, 'scheduled-commands', '.ts')
       return run(args.scheduledCommandName)
     } catch (error) {
       console.error(error)

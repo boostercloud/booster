@@ -12,7 +12,7 @@ import {
 import { generate } from '../../services/generator'
 import * as path from 'path'
 import { templates } from '../../templates'
-import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
+import { checkCurrentDirIsABoosterProject, checkResourceExists } from '../../services/project-checker'
 
 export default class Event extends Oclif.Command {
   public static description = 'create a new event'
@@ -32,6 +32,7 @@ export default class Event extends Oclif.Command {
     try {
       const fields = flags.fields || []
       if (!args.eventName) throw "You haven't provided an event name, but it is required, run with --help for usage"
+      await checkResourceExists(args.eventName, 'events', '.ts')
       return run(args.eventName, fields)
     } catch (error) {
       console.error(error)

@@ -14,7 +14,7 @@ import {
 import * as path from 'path'
 import { generate } from '../../services/generator'
 import { templates } from '../../templates'
-import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
+import { checkCurrentDirIsABoosterProject, checkResourceExists } from '../../services/project-checker'
 import { classNameToFileName } from '../../common/filenames'
 
 export default class ReadModel extends Oclif.Command {
@@ -42,6 +42,7 @@ export default class ReadModel extends Oclif.Command {
       const projections = flags.projects ?? []
       if (!args.readModelName)
         throw "You haven't provided a read model name, but it is required, run with --help for usage"
+      await checkResourceExists(args.readModelName, 'read-models', '.ts')
       return run(args.readModelName, fields, projections)
     } catch (error) {
       console.error(error)

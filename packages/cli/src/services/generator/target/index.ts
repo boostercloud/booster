@@ -8,3 +8,5 @@ export interface Target<TInfo> {
   template: string
   info: TInfo
 }
+
+export type FileDir<TInfo> = Pick<Target<TInfo>, 'placementDir' | 'name' | 'extension'>
