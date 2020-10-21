@@ -14,7 +14,7 @@ import {
 import * as path from 'path'
 import { generate } from '../../services/generator'
 import { templates } from '../../templates'
-import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
+import { checkCurrentDirIsABoosterProject, checkResourceExists } from '../../services/project-checker'
 import { classNameToFileName } from '../../common/filenames'
 
 export default class Entity extends Oclif.Command {
@@ -41,6 +41,7 @@ export default class Entity extends Oclif.Command {
       const fields = flags.fields || []
       const events = flags.reduces || []
       if (!args.entityName) throw "You haven't provided an entity name, but it is required, run with --help for usage"
+      await checkResourceExists(args.entityName, 'entities', '.ts')
       return run(args.entityName, fields, events)
     } catch (error) {
       console.error(error)

@@ -12,7 +12,7 @@ import {
 } from '../../services/generator/target'
 import * as path from 'path'
 import { templates } from '../../templates'
-import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
+import { checkCurrentDirIsABoosterProject, checkResourceExists } from '../../services/project-checker'
 
 export default class Command extends Oclif.Command {
   public static description = "generate new resource, write 'boost new' to see options"
@@ -32,6 +32,7 @@ export default class Command extends Oclif.Command {
     try {
       const fields = flags.fields || []
       if (!args.commandName) throw "You haven't provided a command name, but it is required, run with --help for usage"
+      await checkResourceExists(args.commandName, 'commands', '.ts')
       return run(args.commandName, fields)
     } catch (error) {
       console.error(error)
