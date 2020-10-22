@@ -222,8 +222,30 @@ brew install git
 choco install git
 ```
 
+###### Git configuration variables
 After installing git in your machine, you need to take a look in the global variables `user.name` and `user.email`, that should be properly configured globally.
 you can can check this page to [Git configuration variables](https://git-scm.com/docs/git-config)
+
+###### Ubuntu
+
+```shell
+git config --global user.name "Your Name Here"
+git config --global user.email "your_email@youremail.com"
+```
+
+###### macOS
+
+```shell
+git config --global user.name "Your Name Here"
+git config --global user.email "your_email@youremail.com"
+```
+
+###### Windows
+
+```shell
+git config --global user.name "Your Name Here"
+git config --global user.email "your_email@youremail.com"
+```
 
 ##### Set up an AWS account
 
