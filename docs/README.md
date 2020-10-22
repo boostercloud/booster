@@ -223,7 +223,7 @@ choco install git
 ```
 
 ###### Git configuration variables
-After installing git in your machine, you need to take a look in the global variables `user.name` and `user.email`, that should be properly configured globally.
+After installing git in your machine, make sure that `user.name` and `user.email` are properly configured.
 you can can check this page for more informations: [Git configuration variables](https://git-scm.com/docs/git-config) and below you can configure the variables
 
 ###### Ubuntu
