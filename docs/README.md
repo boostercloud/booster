@@ -228,22 +228,6 @@ Take a look at the [Git configuration page](https://git-scm.com/docs/git-config)
 
 To configure them, run in your terminal:
 
-###### Ubuntu
-
-```shell
-git config --global user.name "Your Name Here"
-git config --global user.email "your_email@youremail.com"
-```
-
-###### macOS
-
-```shell
-git config --global user.name "Your Name Here"
-git config --global user.email "your_email@youremail.com"
-```
-
-###### Windows
-
 ```shell
 git config --global user.name "Your Name Here"
 git config --global user.email "your_email@youremail.com"
