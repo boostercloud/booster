@@ -26,7 +26,7 @@ export async function fetchReadModel(
   const response = await db.query({ typeName: readModelName, value: { id: readModelID } })
   const item = response[0]
   if (!item) {
-    console.log(`[ReadModelAdapter#fetchReadModel] Failed to fetch read model ${readModelName} with ID ${readModelID}`)
+    console.log(`[ReadModelAdapter#fetchReadModel] Read model ${readModelName} with ID ${readModelID} not found`)
   } else {
     logger.debug(
       `[ReadModelAdapter#fetchReadModel] Loaded read model ${readModelName} with ID ${readModelID} with result:`,
