@@ -223,7 +223,7 @@ choco install git
 ```
 
 After installing git in your machine, you need to take a look in the global variables `user.name` and `user.email`, that should be properly configured globally.
-you can can check this page to [config your global variables](https://git-scm.com/docs/git-config)
+you can can check this page to [Git configuration variables](https://git-scm.com/docs/git-config)
 
 ##### Set up an AWS account
 
