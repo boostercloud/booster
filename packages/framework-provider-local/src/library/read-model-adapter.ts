@@ -13,7 +13,7 @@ export async function rawReadModelEventsToEnvelopes(
   logger: Logger,
   rawEvents: Array<unknown>
 ): Promise<Array<ReadModelEnvelope>> {
-  return rawEvents.map((event) => event as ReadModelEnvelope)
+  return rawEvents as Array<ReadModelEnvelope>
 }
 
 export async function fetchReadModel(
