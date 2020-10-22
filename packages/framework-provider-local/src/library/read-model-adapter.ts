@@ -59,5 +59,5 @@ export async function searchReadModel(
   const query = { typeName: readModelName }
   const result = await db.query(query)
   logger.debug('[ReadModelAdapter#searchReadModel] Search result: ', result)
-  return result.map((envelope) => envelope.value) ?? []
+  return result?.map((envelope) => envelope.value) ?? []
 }
