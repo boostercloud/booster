@@ -202,7 +202,7 @@ versions:
 - [`nvm-windows`](https://github.com/coreybutler/nvm-windows) - Works with native Windows
 
 ##### Install Git
-Booster will initialize a Git repository when you create a new project, so it is required that you have it already installed it in your system.
+Booster will initialize a Git repository when you create a new project (unless you use the `--skipGit` flag), so it is required that you have it already installed in your system.
 
 ###### Ubuntu
 
