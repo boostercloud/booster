@@ -55,7 +55,9 @@ export async function searchReadModel(
   filters: Record<string, Filter<unknown>>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<Array<any>> {
-  logger.debug('[ReadModelAdapter#searchReadModel] Arrived these filters: ', filters)
+  if (Object.keys(filters).length != 0) {
+    throw Error('Filters not supported yet by local provider, but got:' + JSON.stringify(filters))
+  }
   const query = { typeName: readModelName }
   const result = await db.query(query)
   logger.debug('[ReadModelAdapter#searchReadModel] Search result: ', result)
