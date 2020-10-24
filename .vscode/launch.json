@@ -151,6 +151,23 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "CLI Integration Tests",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--colors",
+        "--forbid-only",
+        "--config",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/cli/.mocharc.yml",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/cli/**/*.integration.ts"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "AWS Deploy Integration Tests",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [

@@ -58,7 +58,7 @@ describe('Command', () => {
       it('should fail', async () => {
         const { stderr } = await exec(`${cliPath} new:command`)
 
-        expect(stderr).to.equal("You haven't provided a command name, but it is required, run with --help for usage\n")
+        expect(stderr).to.match(/You haven't provided a command name, but it is required, run with --help for usage/)
       })
     })
   })

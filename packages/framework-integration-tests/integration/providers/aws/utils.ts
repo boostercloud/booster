@@ -8,7 +8,7 @@ import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
 import ScanOutput = DocumentClient.ScanOutput
 import QueryOutput = DocumentClient.QueryOutput
 import { internet } from 'faker'
-import { sleep } from '../helpers'
+import { sleep } from '../../helper/sleep'
 import { WebSocketLink } from 'apollo-link-ws'
 import { getMainDefinition } from 'apollo-utilities'
 import { split, ApolloLink } from 'apollo-link'

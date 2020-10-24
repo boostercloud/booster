@@ -64,7 +64,7 @@ describe('Event', () => {
       it('should fail', async () => {
         const { stderr } = await exec(`${cliPath} new:event`)
 
-        expect(stderr).to.equal("You haven't provided an event name, but it is required, run with --help for usage\n")
+        expect(stderr).to.match(/You haven't provided an event name, but it is required, run with --help for usage/)
       })
     })
   })

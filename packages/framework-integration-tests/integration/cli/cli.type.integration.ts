@@ -43,7 +43,7 @@ describe('Type', () => {
       it('should fail', async () => {
         const { stderr } = await exec(`${cliPath} new:type`)
 
-        expect(stderr).to.equal("You haven't provided a type name, but it is required, run with --help for usage\n")
+        expect(stderr).to.match(/You haven't provided a type name, but it is required, run with --help for usage/)
       })
     })
   })

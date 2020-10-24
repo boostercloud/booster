@@ -96,9 +96,7 @@ describe('Read model', () => {
       it('should fail', async () => {
         const { stderr } = await exec(`${cliPath} new:read-model`)
 
-        expect(stderr).to.equal(
-          "You haven't provided a read model name, but it is required, run with --help for usage\n"
-        )
+        expect(stderr).to.match(/You haven't provided a read model name, but it is required, run with --help for usage/)
       })
     })
   })

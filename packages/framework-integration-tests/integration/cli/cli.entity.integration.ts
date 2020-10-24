@@ -2,7 +2,7 @@ import util = require('util')
 
 const exec = util.promisify(require('child_process').exec)
 import { expect } from 'chai'
-import { readFileContent, writeFileContent } from '../helper/fileHelper'
+import { readFileContent, writeFileContent, loadFixture } from '../helper/fileHelper'
 import path = require('path')
 
 const EVENT_ENTITY_ID_PLACEHOLDER = '/* the associated entity ID */'
@@ -27,13 +27,14 @@ describe('Entity', () => {
     describe('without fields', () => {
       it('should create new entity', async () => {
         const expectedOutputRegex = new RegExp(
-          /(.+) boost (.+)?new:entity(.+)? (.+)\n- Verifying project\n(.+) Verifying project\n- Creating new entity\n(.+) Creating new entity\n(.+) Entity generated!\n/
+          ['boost new:entity', 'Verifying project', 'Creating new entity', 'Entity generated'].join('(.|\n)*'),
+          'm'
         )
         const { stdout } = await exec(`${cliPath} new:entity Post`)
         expect(stdout).to.match(expectedOutputRegex)
 
-        const expectedEntityContent = await readFileContent('integration/fixtures/entities/post.ts')
-        const entityContent = await readFileContent(FILE_POST_ENTITY)
+        const expectedEntityContent = readFileContent('integration/fixtures/entities/post.ts')
+        const entityContent = readFileContent(FILE_POST_ENTITY)
         expect(entityContent).to.equal(expectedEntityContent)
       })
     })
@@ -41,13 +42,14 @@ describe('Entity', () => {
     describe('with fields', () => {
       it('should create new entity with expected fields', async () => {
         const expectedOutputRegex = new RegExp(
-          /(.+) boost (.+)?new:entity(.+)? (.+)\n- Verifying project\n(.+) Verifying project\n- Creating new entity\n(.+) Creating new entity\n(.+) Entity generated!\n/
+          ['boost new:entity', 'Verifying project', 'Creating new entity', 'Entity generated'].join('(.|\n)*'),
+          'm'
         )
         const { stdout } = await exec(`${cliPath} new:entity PostWithFields --fields title:string body:string`)
         expect(stdout).to.match(expectedOutputRegex)
 
-        const expectedEntityContent = await readFileContent('integration/fixtures/entities/post-with-fields.ts')
-        const entityContent = await readFileContent(FILE_POST_WITH_FIELDS_ENTITY)
+        const expectedEntityContent = readFileContent('integration/fixtures/entities/post-with-fields.ts')
+        const entityContent = readFileContent(FILE_POST_WITH_FIELDS_ENTITY)
         expect(entityContent).to.equal(expectedEntityContent)
       })
     })
@@ -56,7 +58,8 @@ describe('Entity', () => {
       it('should create new entity with reducer', async () => {
         // Create event
         await exec(`${cliPath} new:event PostCreated --fields postId:UUID title:string body:string`)
-        const expectedEventContent = readFileContent('integration/fixtures/events/post-created.ts')
+
+        const expectedEventContent = loadFixture('events/post-created.ts')
         const eventContent = readFileContent(FILE_POST_CREATED_EVENT)
         expect(eventContent).to.equal(expectedEventContent)
 
@@ -67,7 +70,7 @@ describe('Entity', () => {
 
         // Create entity
         await exec(`${cliPath} new:entity PostWithReducer --fields title:string body:string --reduces PostCreated`)
-        const expectedEntityContent = readFileContent('integration/fixtures/entities/post-with-reducer.ts')
+        const expectedEntityContent = loadFixture('entities/post-with-reducer.ts')
         const entityContent = readFileContent(FILE_POST_WITH_REDUCER_ENTITY)
         expect(entityContent).to.equal(expectedEntityContent)
 
@@ -87,7 +90,7 @@ describe('Entity', () => {
       it('should fail', async () => {
         const { stderr } = await exec(`${cliPath} new:entity`)
 
-        expect(stderr).to.equal("You haven't provided an entity name, but it is required, run with --help for usage\n")
+        expect(stderr).to.match(/You haven't provided an entity name, but it is required, run with --help for usage/m)
       })
     })
   })
