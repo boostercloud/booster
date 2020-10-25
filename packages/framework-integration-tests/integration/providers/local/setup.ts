@@ -1,6 +1,6 @@
 import { start } from '../../../src/deploy'
 import { ChildProcess, execSync } from 'child_process'
-import { sleep } from '../helpers'
+import { sleep } from '../../helper/sleep'
 
 let serverProcess: ChildProcess
 

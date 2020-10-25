@@ -11,7 +11,7 @@ import { random, commerce, finance, lorem, internet } from 'faker'
 import { expect } from 'chai'
 import gql from 'graphql-tag'
 import { CartItem } from '../../src/common/cart-item'
-import { sleep } from '../../integration/providers/helpers'
+import { sleep } from '../helper/sleep'
 
 describe('Cart end-to-end tests', () => {
   let client: ApolloClient<NormalizedCacheObject>
