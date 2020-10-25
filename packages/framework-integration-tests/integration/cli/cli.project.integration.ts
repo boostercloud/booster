@@ -29,18 +29,18 @@ const REPO_URL = 'https://github.com/boostercloud/booster/'
 const PROVIDER = '@boostercloud/framework-provider-aws'
 
 describe('Project', () => {
-  const TEMP_INTEGRATION_DIR = 'temp-integration'
+  const SANDBOX_INTEGRATION_DIR = 'new-project-integration-sandbox'
 
   before(async () => {
     // Required by Github actions CI/CD, because it doesn't have git configured
     await exec('git config --global user.name || git config --global user.name "Booster Test"')
     await exec('git config --global user.email || git config --global user.email "test@booster.cloud"')
 
-    createFolder(TEMP_INTEGRATION_DIR)
+    createFolder(SANDBOX_INTEGRATION_DIR)
   })
 
   after(() => {
-    removeFolders([TEMP_INTEGRATION_DIR])
+    removeFolders([SANDBOX_INTEGRATION_DIR])
   })
 
   const cliPath = path.join('..', '..', 'cli', 'bin', 'run')
@@ -116,7 +116,9 @@ describe('Project', () => {
     flags: Array<string> = [],
     promptAnswers?: PromptAnswers
   ): Promise<string> => {
-    const cliProcess = exec(`${cliPath} new:project ${projectName} ${flags.join(' ')}`, { cwd: TEMP_INTEGRATION_DIR })
+    const cliProcess = exec(`${cliPath} new:project ${projectName} ${flags.join(' ')}`, {
+      cwd: SANDBOX_INTEGRATION_DIR,
+    })
 
     if (promptAnswers) {
       await handlePrompt(cliProcess.childProcess, promptAnswers)
@@ -152,7 +154,7 @@ describe('Project', () => {
   }
 
   const projectPath = (projectName: string, fileName = ''): string =>
-    path.join(TEMP_INTEGRATION_DIR, projectName, fileName)
+    path.join(SANDBOX_INTEGRATION_DIR, projectName, fileName)
 
   const projectFileExists = (projectName: string, fileName: string): boolean =>
     fileExists(projectPath(projectName, fileName))
@@ -371,7 +373,7 @@ describe('Project', () => {
   context('Invalid project', () => {
     describe('missing project name', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:project`, { cwd: TEMP_INTEGRATION_DIR })
+        const { stderr } = await exec(`${cliPath} new:project`, { cwd: SANDBOX_INTEGRATION_DIR })
 
         expect(stderr).to.match(/You haven't provided a project name, but it is required, run with --help for usage/)
       })

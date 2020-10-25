@@ -1,4 +1,14 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmdirSync, unlinkSync, writeFileSync } from 'fs'
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmdirSync,
+  unlinkSync,
+  writeFileSync,
+  copyFileSync,
+} from 'fs'
+import path = require('path')
 
 export const loadFixture = (fixturePath: string, replacements?: Array<Array<string>>): string => {
   const template = readFileContent(`integration/fixtures/${fixturePath}`)
@@ -36,3 +46,24 @@ export const removeFolders = (paths: Array<string>): void => {
 
 export const fileExists = existsSync
 export const dirContents = readdirSync
+
+const copyFolder = (origin: string, destiny: string): void => {
+  readdirSync(origin, { withFileTypes: true }).forEach((dirEnt) => {
+    if (dirEnt.isFile()) {
+      copyFileSync(path.join(origin, dirEnt.name), path.join(destiny, dirEnt.name))
+    }
+    if (dirEnt.isDirectory()) {
+      mkdirSync(path.join(destiny, dirEnt.name), { recursive: true })
+      copyFolder(path.join(origin, dirEnt.name), path.join(destiny, dirEnt.name))
+    }
+  })
+}
+
+export const createSandboxProject = (sandboxPath: string): void => {
+  rmdirSync(sandboxPath, { recursive: true })
+  mkdirSync(sandboxPath, { recursive: true })
+  copyFolder('src', path.join(sandboxPath, 'src'))
+
+  const projectFiles = ['.eslintignore', 'package.json', 'tsconfig.eslint.json', 'tsconfig.json']
+  projectFiles.forEach((file: string) => copyFileSync(file, path.join(sandboxPath, file)))
+}
