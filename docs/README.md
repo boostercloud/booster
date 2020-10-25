@@ -201,6 +201,38 @@ versions:
   for Linux
 - [`nvm-windows`](https://github.com/coreybutler/nvm-windows) - Works with native Windows
 
+##### Install Git
+Booster will initialize a Git repository when you create a new project (unless you use the `--skipGit` flag), so it is required that you have it already installed in your system.
+
+###### Ubuntu
+
+```shell
+sudo apt install git-all
+```
+
+###### macOS
+
+```shell
+brew install git
+```
+
+###### Windows
+
+```shell
+choco install git
+```
+
+###### Git configuration variables
+After installing git in your machine, make sure that `user.name` and `user.email` are properly configured.
+Take a look at the [Git configuration page](https://git-scm.com/docs/git-config) for more info.
+
+To configure them, run in your terminal:
+
+```shell
+git config --global user.name "Your Name Here"
+git config --global user.email "your_email@youremail.com"
+```
+
 ##### Set up an AWS account
 
 This step is optional; Booster is a cloud-native framework, meaning that your application
