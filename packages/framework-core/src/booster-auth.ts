@@ -101,7 +101,7 @@ export class BoosterAuth {
         })
       }
 
-      jwt.verify(token, getKey, verifyOptions, (err:any, decoded: any) => {
+      jwt.verify(token, getKey, verifyOptions, (err: any, decoded: any) => {
         if (err) {
           reject(err)
           return

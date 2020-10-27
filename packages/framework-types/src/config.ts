@@ -45,7 +45,7 @@ export class BoosterConfig {
   /** Environment variables set at deployment time on the target lambda functions */
   public readonly env: Record<string, string> = {}
 
-  private _tokenVerifier?: { issuer: string; jwksUri: string } 
+  private _tokenVerifier?: { issuer: string; jwksUri: string }
 
   public constructor(public readonly environmentName: string) {}
 
