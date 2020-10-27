@@ -105,5 +105,38 @@ describe('AWS Provider graphql-adapter', () => {
         expect(gotOutput).to.be.deep.equal(expectedOutput)
       })
     })
+
+    it('should never call userEnvelopeFromAuthToken when tokenVerifier is used', async () => {
+      const config = new BoosterConfig('test')
+      config.tokenVerifier = {
+        issuer: random.word(), 
+        jwksUri: internet.url(),
+      }
+      await rawGraphQLRequestToEnvelope(userPoolStub as any, request, console, config)
+      expect(userEnvelopeFromAuthToken).to.callCount(0)
+    })
+
+    it('generates an envelope with a token and empty user from an AWS event when tokenVerifier is used', async () => {
+      const config = new BoosterConfig('test')
+      config.tokenVerifier = {
+        issuer: random.word(), 
+        jwksUri: internet.url(),
+      }
+      const expectedOutput: GraphQLRequestEnvelope = {
+        requestID: mockRequestId,
+        eventType: 'CONNECT',
+        connectionID: mockConnectionId,
+        currentUser: undefined,
+        token: mockToken,
+        value: {
+          query: expectedQuery,
+          variables: expectedVariables,
+        },
+      }
+
+      userEnvelopeFromAuthToken.resolves(expectedUser)
+      const gotOutput = await rawGraphQLRequestToEnvelope(userPoolStub as any, request, console, config)
+      expect(gotOutput).to.be.deep.equal(expectedOutput)
+    })
   })
 })
