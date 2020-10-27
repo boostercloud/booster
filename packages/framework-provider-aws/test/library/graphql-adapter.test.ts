@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
-import { GraphQLRequestEnvelope, GraphQLRequestEnvelopeError, UserEnvelope } from '@boostercloud/framework-types'
+import { BoosterConfig, GraphQLRequestEnvelope, GraphQLRequestEnvelopeError, UserEnvelope } from '@boostercloud/framework-types'
 import { rawGraphQLRequestToEnvelope } from '../../src/library/graphql-adapter'
 import { SinonStub, stub, restore } from 'sinon'
 import * as authAdapter from '../../src/library/auth-adapter'
@@ -9,6 +9,7 @@ import { APIGatewayProxyEvent } from 'aws-lambda'
 
 describe('AWS Provider graphql-adapter', () => {
   let userPoolStub: SinonStub
+  const config = new BoosterConfig('test')
   let userEnvelopeFromAuthToken: SinonStub
 
   beforeEach(() => {
@@ -61,7 +62,7 @@ describe('AWS Provider graphql-adapter', () => {
     })
 
     it('should call userEnvelopeFromAuthToken with expected arguments', async () => {
-      await rawGraphQLRequestToEnvelope(userPoolStub as any, request, console)
+      await rawGraphQLRequestToEnvelope(userPoolStub as any, request, console, config)
       expect(userEnvelopeFromAuthToken).to.have.been.calledOnceWithExactly(userPoolStub, mockToken)
     })
 
@@ -71,6 +72,7 @@ describe('AWS Provider graphql-adapter', () => {
         eventType: 'CONNECT',
         connectionID: mockConnectionId,
         currentUser: expectedUser,
+        token: undefined,
         value: {
           query: expectedQuery,
           variables: expectedVariables,
@@ -79,7 +81,7 @@ describe('AWS Provider graphql-adapter', () => {
 
       userEnvelopeFromAuthToken.resolves(expectedUser)
 
-      const gotOutput = await rawGraphQLRequestToEnvelope(userPoolStub as any, request, console)
+      const gotOutput = await rawGraphQLRequestToEnvelope(userPoolStub as any, request, console, config)
 
       expect(gotOutput).to.be.deep.equal(expectedOutput)
     })
@@ -98,7 +100,7 @@ describe('AWS Provider graphql-adapter', () => {
           error: mockError,
         }
 
-        const gotOutput = await rawGraphQLRequestToEnvelope(userPoolStub as any, request, console)
+        const gotOutput = await rawGraphQLRequestToEnvelope(userPoolStub as any, request, console, config)
 
         expect(gotOutput).to.be.deep.equal(expectedOutput)
       })
