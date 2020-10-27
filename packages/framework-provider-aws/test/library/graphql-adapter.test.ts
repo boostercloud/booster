@@ -30,6 +30,7 @@ describe('AWS Provider graphql-adapter', () => {
     let expectedQuery: string
     let expectedVariables: object
     let request: APIGatewayProxyEvent
+    let expectedOutput: GraphQLRequestEnvelope
 
     beforeEach(() => {
       mockRequestId = random.number().toString()
@@ -59,15 +60,8 @@ describe('AWS Provider graphql-adapter', () => {
           variables: expectedVariables,
         }),
       } as any
-    })
 
-    it('should call userEnvelopeFromAuthToken with expected arguments', async () => {
-      await rawGraphQLRequestToEnvelope(userPoolStub as any, request, console, config)
-      expect(userEnvelopeFromAuthToken).to.have.been.calledOnceWithExactly(userPoolStub, mockToken)
-    })
-
-    it('generates an envelope correctly from an AWS event', async () => {
-      const expectedOutput: GraphQLRequestEnvelope = {
+      expectedOutput = {
         requestID: mockRequestId,
         eventType: 'CONNECT',
         connectionID: mockConnectionId,
@@ -78,12 +72,17 @@ describe('AWS Provider graphql-adapter', () => {
           variables: expectedVariables,
         },
       }
+    })
 
+    it('should call userEnvelopeFromAuthToken with expected arguments', async () => {
+      await rawGraphQLRequestToEnvelope(userPoolStub as any, request, console, config)
+      expect(userEnvelopeFromAuthToken).to.have.been.calledOnceWithExactly(userPoolStub, mockToken)
+    })
+
+    it('generates an envelope correctly from an AWS event', async () => {
       userEnvelopeFromAuthToken.resolves(expectedUser)
-
       const gotOutput = await rawGraphQLRequestToEnvelope(userPoolStub as any, request, console, config)
-
-      expect(gotOutput).to.be.deep.equal(expectedOutput)
+      expect(gotOutput).to.be.deep.equal({...expectedOutput, currentUser: expectedUser, token: undefined})
     })
 
     context('when there is an error retrieving the user', () => {
@@ -122,21 +121,9 @@ describe('AWS Provider graphql-adapter', () => {
         issuer: random.word(), 
         jwksUri: internet.url(),
       }
-      const expectedOutput: GraphQLRequestEnvelope = {
-        requestID: mockRequestId,
-        eventType: 'CONNECT',
-        connectionID: mockConnectionId,
-        currentUser: undefined,
-        token: mockToken,
-        value: {
-          query: expectedQuery,
-          variables: expectedVariables,
-        },
-      }
-
       userEnvelopeFromAuthToken.resolves(expectedUser)
       const gotOutput = await rawGraphQLRequestToEnvelope(userPoolStub as any, request, console, config)
-      expect(gotOutput).to.be.deep.equal(expectedOutput)
+      expect(gotOutput).to.be.deep.equal({...expectedOutput, currentUser: undefined, token: mockToken })
     })
   })
 })
