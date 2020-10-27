@@ -1,4 +1,4 @@
-import { ReadModelEnvelope } from '@boostercloud/framework-types'
+import { ReadModelEnvelope, UUID } from '@boostercloud/framework-types'
 import * as DataStore from 'nedb'
 import { readModelsDatabase } from '../paths'
 
@@ -27,9 +27,9 @@ export class ReadModelRegistry {
     })
   }
 
-  public async deleteAll(): Promise<number> {
+  public async deleteById(id: UUID): Promise<number> {
     const deletePromise = new Promise((resolve, reject) =>
-      this.readModels.remove({}, { multi: true }, (err, numRemoved: number) => {
+      this.readModels.remove({ value: { id } }, { multi: true }, (err, numRemoved: number) => {
         if (err) reject(err)
         else resolve(numRemoved)
       })

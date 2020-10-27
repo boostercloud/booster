@@ -18,7 +18,7 @@ describe('the read model registry', () => {
     readModelRegistry = new ReadModelRegistry()
 
     // Clear all read models
-    await readModelRegistry.deleteAll()
+    readModelRegistry.readModels.remove({}, { multi: true })
   })
 
   afterEach(() => {
@@ -50,15 +50,13 @@ describe('the read model registry', () => {
     })
   })
 
-  describe('delete all', () => {
-    beforeEach(async () => {
+  describe('delete by id', () => {
+    it('should delete read models by id', async () => {
       const mockEvent: ReadModelEnvelope = createMockReadModelEnvelope()
+      const id = '1'
+      mockEvent.value.id = id
       await readModelRegistry.store(mockEvent)
-    })
-
-    it('should clear all read models', async () => {
-      const numberOfDeletedEvents = await readModelRegistry.deleteAll()
-
+      const numberOfDeletedEvents = await readModelRegistry.deleteById(id)
       expect(numberOfDeletedEvents).to.be.equal(1)
       expect(await readModelRegistry.query({})).to.be.deep.equal([])
     })
