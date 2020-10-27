@@ -19,7 +19,6 @@ export async function rawGraphQLRequestToEnvelope(
       graphQLValue = JSON.parse(request.body)
     }
 
-    // Backward compatibility with current integrated cognito Auth
     let currentUser = undefined
     let token = undefined
     if (!config.tokenVerifier) {
