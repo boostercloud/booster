@@ -45,6 +45,8 @@ export class BoosterConfig {
   /** Environment variables set at deployment time on the target lambda functions */
   public readonly env: Record<string, string> = {}
 
+  private _tokenVerifier?: { issuer: string; jwksUri: string } 
+
   public constructor(public readonly environmentName: string) {}
 
   public get resourceNames(): ResourceNames {
@@ -117,6 +119,14 @@ export class BoosterConfig {
 
   public get configuredEnvironments(): Set<string> {
     return this._configuredEnvironments
+  }
+
+  public get tokenVerifier(): { issuer: string; jwksUri: string } | undefined {
+    return this._tokenVerifier
+  }
+
+  public set tokenVerifier(tokenVerifier: { issuer: string; jwksUri: string } | undefined) {
+    this._tokenVerifier = tokenVerifier
   }
 
   private validateAllMigrations(): void {

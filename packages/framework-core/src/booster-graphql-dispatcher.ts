@@ -15,6 +15,7 @@ import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
 import { GraphQLResolverContext, graphQLWebsocketSubprotocolHeaders } from './services/graphql/common'
 import { NoopReadModelPubSub } from './services/pub-sub/noop-read-model-pub-sub'
 import { GraphQLWebsocketHandler } from './services/graphql/websocket-protocol/graphql-websocket-protocol'
+import { BoosterAuth } from './booster-auth'
 
 type DispatchResult = AsyncIterableIterator<ExecutionResult> | ExecutionResult | void
 
@@ -42,7 +43,7 @@ export class BoosterGraphQLDispatcher {
   }
 
   public async dispatch(request: unknown): Promise<unknown> {
-    const envelopeOrError = await this.config.provider.graphQL.rawToEnvelope(request, this.logger)
+    const envelopeOrError = await this.config.provider.graphQL.rawToEnvelope(request, this.logger, this.config)
     this.logger.debug('Received the following GraphQL envelope: ', envelopeOrError)
 
     switch (envelopeOrError.eventType) {
@@ -61,6 +62,12 @@ export class BoosterGraphQLDispatcher {
 
   private async handleMessage(envelope: GraphQLRequestEnvelope | GraphQLRequestEnvelopeError): Promise<DispatchResult> {
     this.logger.debug('Starting GraphQL operation')
+    
+    if ('token' in envelope && envelope.token) {
+      this.logger.debug('Decoding current user from auth token')
+      envelope.currentUser = await BoosterAuth.verifyToken(this.config, envelope.token)
+    }
+
     if (cameThroughSocket(envelope)) {
       return this.websocketHandler.handle(envelope)
     }

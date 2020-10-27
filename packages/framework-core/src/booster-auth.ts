@@ -8,6 +8,8 @@ import {
   InvalidParameterError,
 } from '@boostercloud/framework-types'
 
+import * as jwksRSA from 'jwks-rsa'
+import * as jwt from 'jsonwebtoken'
 import * as validator from 'validator'
 
 export class BoosterAuth {
@@ -61,6 +63,66 @@ export class BoosterAuth {
     // Okay, user is signed-in and this is private access.
     // Check the roles then
     return userHasSomeRole(user, authorizedRoles)
+  }
+
+  public static async verifyToken(config: BoosterConfig, token?: string): Promise<UserEnvelope> {
+    if (!config.tokenVerifier) {
+      return Promise.reject('Token verifier not configured')
+    }
+    if (!token) {
+      return Promise.reject('Empty token')
+    }
+
+    const { issuer, jwksUri } = config.tokenVerifier
+
+    const client = new jwksRSA.JwksClient({
+      jwksUri,
+    })
+
+    const verifyOptions: jwt.VerifyOptions = {
+      algorithms: ['RS256'],
+      issuer,
+    }
+
+    return new Promise((resolve, reject) => {
+      const getKey = (header: jwt.JwtHeader, callback: jwt.SigningKeyCallback): void => {
+        if (!header.kid) {
+          callback(new Error('JWT kid not found.'))
+          return
+        }
+
+        client.getSigningKey(header.kid, function(err: any, key: jwksRSA.SigningKey) {
+          if (err) {
+            callback(err, '')
+            return
+          }
+          const signingKey = key.getPublicKey()
+          callback(null, signingKey)
+        })
+      }
+
+      jwt.verify(token, getKey, verifyOptions, (err:any, decoded: any) => {
+        if (err) {
+          reject(err)
+          return
+        }
+        try {
+          resolve(BoosterAuth.tokenToUserEnvelope(decoded))
+        } catch (err) {
+          reject(err)
+        }
+      })
+    })
+  }
+
+  private static tokenToUserEnvelope(decodedToken: any): UserEnvelope {
+    const { phone_number, email, 'custom:role': role } = decodedToken
+    const username = email ? email : phone_number
+
+    return {
+      username,
+      role: role?.trim() ?? '',
+    }
   }
 }
 
