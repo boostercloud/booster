@@ -46,7 +46,9 @@
     "@types/inflected": "^1.1.29",
     "@types/jsonwebtoken": "^8.5.0",
     "@types/validator": "^13.1.0",
-    "faker": "^4.1.0"
+    "faker": "^4.1.0",
+    "mock-jwks": "^0.3.1",
+    "nock": "^13.0.4"
   },
   "gitHead": "121816dbe55d57df5860b54a871c06dcda761101"
 }

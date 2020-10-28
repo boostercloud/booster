@@ -76,7 +76,7 @@ export class BoosterAuth {
 
     const { issuer, jwksUri } = config.tokenVerifier
 
-    const client = new jwksRSA.JwksClient({
+    const client = jwksRSA({
       jwksUri,
     })
 
