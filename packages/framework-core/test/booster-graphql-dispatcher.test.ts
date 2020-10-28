@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { fake, match, replace, restore, spy } from 'sinon'
 import { random, lorem, internet } from 'faker'
@@ -245,7 +244,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
               variables: graphQLVariables,
             },
             currentUser: undefined,
-            token: random.uuid()
+            token: random.uuid(),
           }
           const resolverContext: GraphQLResolverContext = {
             requestID: graphQLEnvelope.requestID,
@@ -256,10 +255,10 @@ describe('the `BoosterGraphQLDispatcher`', () => {
             pubSub: new NoopReadModelPubSub(),
             storeSubscriptions: true,
           }
-    
+
           const currentUser: UserEnvelope = {
-            username: internet.email(), 
-            role: random.word()
+            username: internet.email(),
+            role: random.word(),
           }
 
           const config = mockConfigForGraphQLEnvelope(graphQLEnvelope)
@@ -269,7 +268,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
           replace(gqlParser, 'parse', parseSpy)
           replace(gqlValidator, 'validate', fake.returns([]))
           replace(gqlExecutor, 'execute', executeFake)
-          
+
           const fakeVerifier = fake.returns(currentUser)
           replace(BoosterAuth, 'verifyToken', fakeVerifier)
           resolverContext.user = currentUser
