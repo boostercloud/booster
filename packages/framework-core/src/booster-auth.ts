@@ -105,7 +105,6 @@ export class BoosterAuth {
       jwt.verify(token, getKey, verifyOptions, (err: any, decoded: any) => {
         if (err) {
           reject(err)
-          return
         }
         try {
           resolve(BoosterAuth.tokenToUserEnvelope(decoded))
