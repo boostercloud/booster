@@ -10,11 +10,24 @@ import { exec } from 'child-process-promise'
 import { wrapExecError } from '../common/errors'
 import * as path from 'path'
 
+
+let skipRestoreDependencies = false;
+
 async function pruneDependencies(config: BoosterConfig): Promise<void> {
   try {
-    await exec('npm prune --production', { cwd: projectDir(config) })
+    await exec('npm install --production', { cwd: projectDir(config) })
   } catch (e) {
     throw wrapExecError(e, 'Could not prune dev dependencies')
+  }
+}
+
+async function reinstallDependencies(config: BoosterConfig): Promise<void> {
+  try {
+    if(skipRestoreDependencies === false){
+      await exec('npm install', { cwd: projectDir(config) })
+    }
+  } catch (e) {
+    throw wrapExecError(e, 'Could not reinstall dependencies')
   }
 }
 
@@ -29,6 +42,7 @@ const runTasks = async (
     //TODO: We should install dependencies in production mode before deploying
     .step('Removing dev dependencies', pruneDependencies)
     .step('Deploying', (config) => deployer(config, logger))
+    .step('Reinstalling dependencies', reinstallDependencies)
     .info('Deployment complete!')
     .done()
 
@@ -41,10 +55,19 @@ export default class Deploy extends Command {
       char: 'e',
       description: 'environment configuration to run',
     }),
+    skipRestoreDependencies: flags.boolean({
+      char: 's',
+      description: 'skips restoring dependencies after deployment'
+    })
   }
 
   public async run(): Promise<void> {
     const { flags } = this.parse(Deploy)
+    
+    if(flags.skipRestoreDependencies){
+      skipRestoreDependencies = true;
+    }
+
     if (initializeEnvironment(logger, flags.environment)) {
       await runTasks(compileProjectAndLoadConfig(), deployToCloudProvider)
     }

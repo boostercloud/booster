@@ -10,6 +10,8 @@ import * as environment from '../../src/common/environment'
 const rewire = require('rewire')
 const deploy = rewire('../../src/commands/deploy')
 const runTasks = deploy.__get__('runTasks')
+const pruneDependencies = deploy.__get__('pruneDependencies')
+const reinstallDependencies = deploy.__get__('reinstallDependencies')
 
 describe('deploy', () => {
   afterEach(() => {
@@ -58,10 +60,35 @@ describe('deploy', () => {
         logger.info('this is a progress update')
       })
 
-      const pruneDependenciesSpy = spy(deploy, deploy.pruneDependencies)
+      const pruneDependenciesSpy = spy(pruneDependencies)
+      deploy.__set__('pruneDependencies', pruneDependenciesSpy)
       await runTasks('test-env', fakeLoader, fakeDeployer)
         
       expect(pruneDependenciesSpy).to.have.been.calledOnce
+
+      expect(ctx.stdout).to.include('Deployment complete')
+      expect(fakeDeployer).to.have.been.calledOnce
+    })
+
+    fancy.stdout().it('calls reinstallDependencies function', async (ctx) => {
+      const fakeProvider = {} as ProviderLibrary
+
+      const fakeLoader = fake.resolves({
+        provider: fakeProvider,
+        appName: 'fake app',
+        region: 'tunte',
+        entities: {},
+      })
+
+      const fakeDeployer = fake((_config: unknown, logger: Logger) => {
+        logger.info('this is a progress update')
+      })
+
+      const reinstallDependenciesSpy = spy(reinstallDependencies)
+      deploy.__set__('reinstallDependencies', reinstallDependenciesSpy)
+      await runTasks('test-env', fakeLoader, fakeDeployer)
+        
+      expect(reinstallDependenciesSpy).to.have.been.calledOnce
 
       expect(ctx.stdout).to.include('Deployment complete')
       expect(fakeDeployer).to.have.been.calledOnce
