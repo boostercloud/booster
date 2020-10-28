@@ -1,9 +1,9 @@
 import { readFileSync, existsSync, removeSync } from 'fs-extra'
-import inquirer = require('inquirer')
 import * as path from 'path'
 import { projectDir, ProjectInitializerConfig } from './project-initializer'
 import Brand from '../common/brand'
 import { filePath } from './generator'
+import Prompter from './user-prompt'
 
 function checkIndexFileIsBooster(indexFilePath: string): void {
   const contents = readFileSync(indexFilePath)
@@ -38,7 +38,7 @@ export async function checkProjectAlreadyExists(name: string): Promise<void> {
   const projectDirectoryExists = existsSync(projectDirectoryPath)
 
   if (projectDirectoryExists) {
-    await confirmPrompt({
+    await Prompter.confirmPrompt({
       message: Brand.dangerize(`Project folder "${name}" already exists. Do you want to overwrite it?`),
     }).then((confirm) => {
       if (!confirm) throw new Error("The folder you're trying to use already exists. Please use another project name")
@@ -53,7 +53,7 @@ export async function checkResourceExists(name: string, resourceType: string, ex
   const resourceExists = existsSync(resourcePath)
 
   if (resourceExists) {
-    await confirmPrompt({
+    await Prompter.confirmPrompt({
       message: Brand.dangerize(`Resource: "${name}${extension}" already exists. Do you want to overwrite it?`),
     }).then((confirm) => {
       if (!confirm)
@@ -63,17 +63,4 @@ export async function checkResourceExists(name: string, resourceType: string, ex
       removeSync(resourcePath)
     })
   }
-}
-
-async function confirmPrompt(promptParams: object): Promise<boolean> {
-  return await inquirer
-    .prompt([
-      {
-        name: 'confirm',
-        type: 'confirm',
-        default: false,
-        ...promptParams,
-      },
-    ])
-    .then(({ confirm }) => confirm)
 }
