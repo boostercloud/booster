@@ -1,11 +1,6 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { CfnOutput, Stack } from '@aws-cdk/core'
-import {
-  StringAttribute,
-  UserPool,
-  UserPoolClient, UserPoolDomain,
-  VerificationEmailStyle
-} from '@aws-cdk/aws-cognito'
+import { StringAttribute, UserPool, UserPoolClient, UserPoolDomain, VerificationEmailStyle } from '@aws-cdk/aws-cognito'
 import { Code, Function } from '@aws-cdk/aws-lambda'
 import * as params from '../params'
 import { APIs } from '../params'
@@ -20,12 +15,14 @@ export class AuthStack {
     private readonly apis: APIs
   ) {}
 
-  public build(): void {
+  public build(): UserPool | undefined {
     if (this.config.thereAreRoles) {
       const userPool = this.buildUserPool()
       this.buildUserPoolClient(userPool)
       this.buildAuthAPI(userPool)
+      return userPool
     }
+    return undefined
   }
 
   private buildUserPool(): UserPool {

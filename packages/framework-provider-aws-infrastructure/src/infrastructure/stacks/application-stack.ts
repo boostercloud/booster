@@ -23,9 +23,9 @@ export class ApplicationStackBuilder {
       websocketAPI,
     }
 
-    new AuthStack(this.config, stack, apis).build()
+    const userPool = new AuthStack(this.config, stack, apis).build()
     const readModelTables = new ReadModelsStack(this.config, stack).build()
-    const graphQLStack = new GraphQLStack(this.config, stack, apis, readModelTables).build()
+    const graphQLStack = new GraphQLStack(this.config, stack, apis, readModelTables, userPool).build()
     const scheduledCommandStack = new ScheduledCommandStack(this.config, stack, apis).build()
     const eventsStack = new EventsStack(this.config, stack, apis).build()
     new StaticWebsiteStack(this.config, stack).build()

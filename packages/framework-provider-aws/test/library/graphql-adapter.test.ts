@@ -1,22 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
-import { BoosterConfig, GraphQLRequestEnvelope, GraphQLRequestEnvelopeError, UserEnvelope } from '@boostercloud/framework-types'
+import { GraphQLRequestEnvelope } from '@boostercloud/framework-types'
 import { rawGraphQLRequestToEnvelope } from '../../src/library/graphql-adapter'
-import { SinonStub, stub, restore } from 'sinon'
-import * as authAdapter from '../../src/library/auth-adapter'
-import { internet, random } from 'faker'
+import { restore } from 'sinon'
+import { random } from 'faker'
 import { APIGatewayProxyEvent } from 'aws-lambda'
 
 describe('AWS Provider graphql-adapter', () => {
-  let userPoolStub: SinonStub
-  const config = new BoosterConfig('test')
-  let userEnvelopeFromAuthToken: SinonStub
-
-  beforeEach(() => {
-    userPoolStub = stub()
-    userEnvelopeFromAuthToken = stub(authAdapter, 'userEnvelopeFromAuthToken')
-  })
-
   afterEach(() => {
     restore()
   })
@@ -26,7 +16,6 @@ describe('AWS Provider graphql-adapter', () => {
     let mockConnectionId: string
     let mockToken: string
 
-    let expectedUser: UserEnvelope
     let expectedQuery: string
     let expectedVariables: object
     let request: APIGatewayProxyEvent
@@ -36,11 +25,6 @@ describe('AWS Provider graphql-adapter', () => {
       mockRequestId = random.number().toString()
       mockConnectionId = random.uuid()
       mockToken = random.uuid()
-
-      expectedUser = {
-        username: internet.email(),
-        role: 'Admin',
-      }
       expectedQuery = 'GraphQL query'
       expectedVariables = {
         varOne: random.number(),
@@ -65,8 +49,7 @@ describe('AWS Provider graphql-adapter', () => {
         requestID: mockRequestId,
         eventType: 'CONNECT',
         connectionID: mockConnectionId,
-        currentUser: expectedUser,
-        token: undefined,
+        token: mockToken,
         value: {
           query: expectedQuery,
           variables: expectedVariables,
@@ -74,56 +57,9 @@ describe('AWS Provider graphql-adapter', () => {
       }
     })
 
-    it('should call userEnvelopeFromAuthToken with expected arguments', async () => {
-      await rawGraphQLRequestToEnvelope(userPoolStub as any, request, console, config)
-      expect(userEnvelopeFromAuthToken).to.have.been.calledOnceWithExactly(userPoolStub, mockToken)
-    })
-
     it('generates an envelope correctly from an AWS event', async () => {
-      userEnvelopeFromAuthToken.resolves(expectedUser)
-      const gotOutput = await rawGraphQLRequestToEnvelope(userPoolStub as any, request, console, config)
-      expect(gotOutput).to.be.deep.equal({...expectedOutput, currentUser: expectedUser, token: undefined})
-    })
-
-    context('when there is an error retrieving the user', () => {
-      const mockError = new Error('fake error')
-      beforeEach(() => {
-        userEnvelopeFromAuthToken.throws(mockError)
-      })
-
-      it('generates an envelope with the error', async () => {
-        const expectedOutput: GraphQLRequestEnvelopeError = {
-          requestID: mockRequestId,
-          eventType: 'CONNECT',
-          connectionID: mockConnectionId,
-          error: mockError,
-        }
-
-        const gotOutput = await rawGraphQLRequestToEnvelope(userPoolStub as any, request, console, config)
-
-        expect(gotOutput).to.be.deep.equal(expectedOutput)
-      })
-    })
-
-    it('should never call userEnvelopeFromAuthToken when tokenVerifier is used', async () => {
-      const config = new BoosterConfig('test')
-      config.tokenVerifier = {
-        issuer: random.word(), 
-        jwksUri: internet.url(),
-      }
-      await rawGraphQLRequestToEnvelope(userPoolStub as any, request, console, config)
-      expect(userEnvelopeFromAuthToken).to.callCount(0)
-    })
-
-    it('generates an envelope with a token and empty user from an AWS event when tokenVerifier is used', async () => {
-      const config = new BoosterConfig('test')
-      config.tokenVerifier = {
-        issuer: random.word(), 
-        jwksUri: internet.url(),
-      }
-      userEnvelopeFromAuthToken.resolves(expectedUser)
-      const gotOutput = await rawGraphQLRequestToEnvelope(userPoolStub as any, request, console, config)
-      expect(gotOutput).to.be.deep.equal({...expectedOutput, currentUser: undefined, token: mockToken })
+      const gotOutput = await rawGraphQLRequestToEnvelope(request, console)
+      expect(gotOutput).to.be.deep.equal(expectedOutput)
     })
   })
 })

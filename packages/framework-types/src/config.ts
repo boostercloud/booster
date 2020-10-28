@@ -122,7 +122,14 @@ export class BoosterConfig {
   }
 
   public get tokenVerifier(): { issuer: string; jwksUri: string } | undefined {
-    return this._tokenVerifier
+    if (this._tokenVerifier) return this._tokenVerifier
+    if (process.env['BOOSTER_JWT_ISSUER'] && process.env['BOOSTER_JWKS_URI']) {
+      return {
+        issuer: process.env['BOOSTER_JWT_ISSUER'],
+        jwksUri: process.env['BOOSTER_JWKS_URI'],
+      }
+    }
+    return undefined
   }
 
   public set tokenVerifier(tokenVerifier: { issuer: string; jwksUri: string } | undefined) {

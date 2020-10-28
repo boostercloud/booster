@@ -66,14 +66,10 @@ export class BoosterAuth {
     return userHasSomeRole(user, authorizedRoles)
   }
 
-  public static async verifyToken(config: BoosterConfig, token?: string): Promise<UserEnvelope> {
+  public static async verifyToken(config: BoosterConfig, token: string): Promise<UserEnvelope> {
     if (!config.tokenVerifier) {
       return Promise.reject('Token verifier not configured')
     }
-    if (!token) {
-      return Promise.reject('Empty token')
-    }
-
     const { issuer, jwksUri } = config.tokenVerifier
 
     const client = jwksRSA({
@@ -92,7 +88,7 @@ export class BoosterAuth {
           return
         }
 
-        client.getSigningKey(header.kid, function(err: any, key: jwksRSA.SigningKey) {
+        client.getSigningKey(header.kid, function(err: Error | null, key: jwksRSA.SigningKey) {
           if (err) {
             callback(err, '')
             return
@@ -102,7 +98,7 @@ export class BoosterAuth {
         })
       }
 
-      jwt.verify(token, getKey, verifyOptions, (err: any, decoded: any) => {
+      jwt.verify(token, getKey, verifyOptions, (err: Error | null, decoded: object | undefined) => {
         if (err) {
           reject(err)
         }

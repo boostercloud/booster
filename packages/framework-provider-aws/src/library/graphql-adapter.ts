@@ -1,13 +1,9 @@
 import { APIGatewayProxyEvent } from 'aws-lambda'
-import { BoosterConfig, GraphQLRequestEnvelope, GraphQLRequestEnvelopeError, Logger } from '@boostercloud/framework-types'
-import { CognitoIdentityServiceProvider } from 'aws-sdk'
-import { userEnvelopeFromAuthToken } from './auth-adapter'
+import { GraphQLRequestEnvelope, GraphQLRequestEnvelopeError, Logger } from '@boostercloud/framework-types'
 
 export async function rawGraphQLRequestToEnvelope(
-  userPool: CognitoIdentityServiceProvider,
   request: APIGatewayProxyEvent,
-  logger: Logger,
-  config: BoosterConfig
+  logger: Logger
 ): Promise<GraphQLRequestEnvelope | GraphQLRequestEnvelopeError> {
   logger.debug('Received GraphQL request: ', request)
   const requestID = request.requestContext.requestId
@@ -19,20 +15,11 @@ export async function rawGraphQLRequestToEnvelope(
       graphQLValue = JSON.parse(request.body)
     }
 
-    let currentUser = undefined
-    let token = undefined
-    if (!config.tokenVerifier) {
-      currentUser = await userEnvelopeFromAuthToken(userPool, request.headers?.Authorization)
-    } else {
-      token = request.headers?.Authorization
-    }
-
     return {
       requestID,
       eventType,
       connectionID,
-      currentUser,
-      token,
+      token: request.headers?.Authorization,
       value: graphQLValue,
     }
   } catch (e) {

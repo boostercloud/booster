@@ -22,4 +22,6 @@ export const connectionsStoreAttributes = {
 export const environmentVarNames = {
   restAPIURL: 'BOOSTER_REST_API_URL',
   websocketAPIURL: 'BOOSTER_WEBSOCKET_API_URL',
+  jwtIssuer: 'BOOSTER_JWT_ISSUER',
+  jwksUri: 'BOOSTER_JWKS_URI',
 } as const
