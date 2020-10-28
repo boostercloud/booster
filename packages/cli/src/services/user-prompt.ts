@@ -24,15 +24,10 @@ export default class Prompter {
   }
 
   public static async confirmPrompt(promptParams: object): Promise<boolean> {
-    return await inquirer
-      .prompt([
-        {
-          name: 'confirm',
-          type: 'confirm',
-          default: false,
-          ...promptParams,
-        },
-      ])
+    const confirm = await inquirer
+      .prompt([{ name: 'confirm', type: 'confirm', default: false, ...promptParams }])
       .then(({ confirm }) => confirm)
+
+    return Promise.resolve(confirm)
   }
 }

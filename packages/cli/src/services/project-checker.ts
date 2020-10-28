@@ -2,8 +2,10 @@ import { readFileSync, existsSync, removeSync } from 'fs-extra'
 import * as path from 'path'
 import { projectDir, ProjectInitializerConfig } from './project-initializer'
 import Brand from '../common/brand'
-import { filePath } from './generator'
+import { filePath, getResourceType } from './generator'
+import { classNameToFileName } from '../common/filenames'
 import Prompter from './user-prompt'
+import { oraLogger } from './logger'
 
 function checkIndexFileIsBooster(indexFilePath: string): void {
   const contents = readFileSync(indexFilePath)
@@ -47,18 +49,21 @@ export async function checkProjectAlreadyExists(name: string): Promise<void> {
   }
 }
 
-export async function checkResourceExists(name: string, resourceType: string, extension: string): Promise<void> {
-  const placementDir = path.join('src', resourceType)
+export async function checkResourceExists(name: string, placementDir: string, extension: string): Promise<void> {
   const resourcePath = filePath({ name, placementDir, extension })
   const resourceExists = existsSync(resourcePath)
+  const resourceName = classNameToFileName(name)
+  const resourceType = getResourceType(placementDir)
+
+  oraLogger.info(Brand.mellancholize('Checking if resource already exists...'))
 
   if (resourceExists) {
     await Prompter.confirmPrompt({
-      message: Brand.dangerize(`Resource: "${name}${extension}" already exists. Do you want to overwrite it?`),
+      message: Brand.dangerize(`Resource: "${resourceName}${extension}" already exists. Do you want to overwrite it?`),
     }).then((confirm) => {
       if (!confirm)
         throw new Error(
-          `The '${resourceType}' resource "${name}${extension}" already exists. Please use another resource name`
+          `The '${resourceType}' resource "${resourceName}${extension}" already exists. Please use another resource name`
         )
       removeSync(resourcePath)
     })
