@@ -64,8 +64,9 @@ export class BoosterGraphQLDispatcher {
     this.logger.debug('Starting GraphQL operation')
 
     if ('token' in envelope && envelope.token) {
-      this.logger.debug('Decoding current user from auth token')
+      this.logger.debug(`Decoding current user from auth token: ${envelope.token}`)
       envelope.currentUser = await BoosterAuth.verifyToken(this.config, envelope.token)
+      this.logger.debug(`Current User: ${envelope.currentUser.username}, Role: ${envelope.currentUser.role}`)
     }
 
     if (cameThroughSocket(envelope)) {

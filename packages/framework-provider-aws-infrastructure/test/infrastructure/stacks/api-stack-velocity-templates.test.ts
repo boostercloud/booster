@@ -151,6 +151,7 @@ describe('CognitoTemplates', () => {
       it('returns the Booster expected output', () => {
         const input = {
           AuthenticationResult: {
+            AccessToken: 'access-token',
             IdToken: 'id-token',
             ExpiresIn: '123456',
             RefreshToken: 'refresh-token',
@@ -158,7 +159,8 @@ describe('CognitoTemplates', () => {
           },
         }
         const expectedOutput = {
-          accessToken: input.AuthenticationResult.IdToken,
+          accessToken: input.AuthenticationResult.AccessToken,
+          idToken: input.AuthenticationResult.IdToken,
           expiresIn: input.AuthenticationResult.ExpiresIn,
           refreshToken: input.AuthenticationResult.RefreshToken,
           tokenType: input.AuthenticationResult.TokenType,
@@ -176,7 +178,7 @@ describe('CognitoTemplates', () => {
     describe('request', () => {
       it('returns the Cognito expected input', () => {
         const input = {
-          accessToken: 'id-token',
+          accessToken: 'access-token',
         }
         const expectedOutput = {
           AccessToken: input.accessToken,
@@ -231,6 +233,7 @@ describe('CognitoTemplates', () => {
       it('returns the Booster expected output', () => {
         const input = {
           AuthenticationResult: {
+            AccessToken: 'access-token',
             IdToken: 'id-token',
             ExpiresIn: '123456',
             RefreshToken: 'refresh-token',
@@ -238,7 +241,8 @@ describe('CognitoTemplates', () => {
           },
         }
         const expectedOutput = {
-          accessToken: input.AuthenticationResult.IdToken,
+          accessToken: input.AuthenticationResult.AccessToken,
+          idToken: input.AuthenticationResult.IdToken,
           expiresIn: input.AuthenticationResult.ExpiresIn,
           refreshToken: input.AuthenticationResult.RefreshToken,
           tokenType: input.AuthenticationResult.TokenType,
