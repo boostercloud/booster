@@ -61,12 +61,16 @@ export class BoosterGraphQLDispatcher {
   }
 
   private async handleMessage(envelope: GraphQLRequestEnvelope | GraphQLRequestEnvelopeError): Promise<DispatchResult> {
-    this.logger.debug('Starting GraphQL operation')
+    this.logger.debug(`Starting GraphQL operation: ${JSON.stringify(envelope)}`)
 
     if ('token' in envelope && envelope.token) {
-      this.logger.debug(`Decoding current user from auth token: ${envelope.token}`)
-      envelope.currentUser = await BoosterAuth.verifyToken(this.config, envelope.token)
-      this.logger.debug(`Current User: ${envelope.currentUser.username}, Role: ${envelope.currentUser.role}`)
+      try {
+        this.logger.debug(`Decoding current user from auth token: ${envelope.token}`)
+        envelope.currentUser = await BoosterAuth.verifyToken(this.config, envelope.token)
+        this.logger.debug(`Current User: ${envelope.currentUser.username}, Role: ${envelope.currentUser.role}`)
+      } catch (e) {
+        this.logger.debug('Unable to decode auth token')
+      }
     }
 
     if (cameThroughSocket(envelope)) {

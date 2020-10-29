@@ -111,6 +111,7 @@ export async function authClientID(): Promise<string> {
 
 export interface UserAuthInformation {
   accessToken: string
+  idToken: string
   refreshToken: string
   expiresIn?: number
   tokenType?: string
