@@ -5,6 +5,7 @@ import { restore, replace, fake } from 'sinon'
 import Prompter from '../../src/services/user-prompt'
 import { ProviderLibrary, Logger } from '@boostercloud/framework-types'
 import { test } from '@oclif/test'
+import * as environment from '../../src/common/environment'
 
 const rewire = require('rewire')
 const nuke = rewire('../../src/commands/nuke')
@@ -22,8 +23,9 @@ describe('nuke', () => {
         const msg = 'weird exception'
         const fakeLoader = Promise.reject(new Error(msg))
         const fakeNuke = fake()
+        replace(environment, 'currentEnvironment', fake.returns('test-env'))
 
-        await expect(runTasks('test-env', fakeLoader, fakeNuke)).to.eventually.be.rejectedWith(msg)
+        await expect(runTasks(fakeLoader, fakeNuke)).to.eventually.be.rejectedWith(msg)
         expect(fakeNuke).not.to.have.been.called
       })
     })
@@ -45,9 +47,9 @@ describe('nuke', () => {
         const fakeNuke = fake()
         const errorMsg = 'Wrong app name, stopping nuke!'
 
-        await expect(runTasks('test-env', loader(prompter, false, fakeConfig), fakeNuke)).to.eventually.be.rejectedWith(
-          errorMsg
-        )
+        replace(environment, 'currentEnvironment', fake.returns('test-env'))
+
+        await expect(runTasks(loader(prompter, false, fakeConfig), fakeNuke)).to.eventually.be.rejectedWith(errorMsg)
         expect(fakeNuke).not.to.have.been.called
       })
     })
@@ -68,7 +70,9 @@ describe('nuke', () => {
         replace(prompter, 'defaultOrPrompt', fakePrompter)
         const fakeNuke = fake()
 
-        await expect(runTasks('test-env', loader(prompter, true, fakeConfig), fakeNuke)).to.eventually.be.fulfilled
+        replace(environment, 'currentEnvironment', fake.returns('test-env'))
+
+        await expect(runTasks(loader(prompter, true, fakeConfig), fakeNuke)).to.eventually.be.fulfilled
         expect(prompter.defaultOrPrompt).not.to.have.been.called
         expect(fakeNuke).to.have.been.calledOnce
       })
@@ -92,7 +96,9 @@ describe('nuke', () => {
           logger.info('this is a progress update')
         })
 
-        await runTasks('test-env', loader(prompter, false, fakeConfig), fakeNuke)
+        replace(environment, 'currentEnvironment', fake.returns('test-env'))
+
+        await runTasks(loader(prompter, false, fakeConfig), fakeNuke)
 
         expect(ctx.stdout).to.include('Removal complete!')
         expect(fakeNuke).to.have.been.calledOnce
@@ -106,7 +112,7 @@ describe('nuke', () => {
         .stdout()
         .command(['nuke'])
         .it('shows no environment provided error', (ctx) => {
-          expect(ctx.stdout).to.equal('Error: no environment name provided. Usage: `boost nuke -e <environment>`.\n')
+          expect(ctx.stdout).to.match(/No environment set/)
         })
     })
   })
