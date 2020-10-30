@@ -1,10 +1,6 @@
 import { APIGatewayProxyEvent } from 'aws-lambda'
 import { GraphQLRequestEnvelope, GraphQLRequestEnvelopeError, Logger } from '@boostercloud/framework-types'
 
-export function parseToken(token?: string): string | undefined {
-  return token?.replace('Bearer ', '')
-}
-
 export async function rawGraphQLRequestToEnvelope(
   request: APIGatewayProxyEvent,
   logger: Logger
@@ -23,7 +19,7 @@ export async function rawGraphQLRequestToEnvelope(
       requestID,
       eventType,
       connectionID,
-      token: parseToken(request.headers?.Authorization),
+      token: request.headers?.Authorization,
       value: graphQLValue,
     }
   } catch (e) {

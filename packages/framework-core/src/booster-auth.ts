@@ -98,6 +98,7 @@ export class BoosterAuth {
         })
       }
 
+      token = BoosterAuth.sanitizeToken(token)
       jwt.verify(token, getKey, verifyOptions, (err: Error | null, decoded: object | undefined) => {
         if (err) {
           reject(err)
@@ -118,6 +119,10 @@ export class BoosterAuth {
       username,
       role: role?.trim() ?? '',
     }
+  }
+
+  private static sanitizeToken(token: string): string {
+    return token.replace('Bearer ', '')
   }
 }
 

@@ -20,7 +20,6 @@ import { BoosterAuth } from '../../../../src/booster-auth'
 describe('the `GraphQLWebsocketHandler`', () => {
   let config: BoosterConfig
   let websocketHandler: GraphQLWebsocketHandler
-  // let authManager: ProviderAuthLibrary
   let connectionsManager: ProviderConnectionsLibrary
   let onStartCallback: (
     envelope: GraphQLRequestEnvelope

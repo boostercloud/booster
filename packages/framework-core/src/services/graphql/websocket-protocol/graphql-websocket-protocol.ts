@@ -77,8 +77,7 @@ export class GraphQLWebsocketHandler {
   private async handleInit(connectionID: string, clientMessage: GraphQLInit): Promise<void> {
     let userEnvelope: UserEnvelope | undefined
     if (clientMessage.payload?.Authorization) {
-      const token = clientMessage.payload.Authorization.replace('Bearer ', '')
-      userEnvelope = await BoosterAuth.verifyToken(this.config, token)
+      userEnvelope = await BoosterAuth.verifyToken(this.config, clientMessage.payload.Authorization)
     }
     const nowEpoch = Math.floor(new Date().getTime() / 1000)
     const connectionData: ConnectionDataEnvelope = {

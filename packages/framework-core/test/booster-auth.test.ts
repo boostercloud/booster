@@ -297,7 +297,7 @@ describe('the "verifyToken" method', () => {
       iss: 'firebase',
     })
 
-    await expect(BoosterAuth.verifyToken(config, token)).to.eventually.to.be.rejected
+    await expect(BoosterAuth.verifyToken(config, token)).to.eventually.be.rejected
   })
 
   it('fails if a token has expired', async () => {
@@ -310,6 +310,6 @@ describe('the "verifyToken" method', () => {
       exp: 0,
     })
 
-    await expect(BoosterAuth.verifyToken(config, token)).to.eventually.to.be.rejected
+    await expect(BoosterAuth.verifyToken(config, token)).to.eventually.be.rejected
   })
 })
