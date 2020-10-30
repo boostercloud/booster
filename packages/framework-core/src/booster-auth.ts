@@ -90,6 +90,7 @@ export class BoosterAuth {
 
         client.getSigningKey(header.kid, function(err: Error | null, key: jwksRSA.SigningKey) {
           if (err) {
+            // This callback doesn't accept null so an empty string is enough here
             callback(err, '')
             return
           }
@@ -113,7 +114,7 @@ export class BoosterAuth {
   }
 
   private static tokenToUserEnvelope(decodedToken: any): UserEnvelope {
-    const username = decodedToken.email ? decodedToken.email : decodedToken.phone_number
+    const username = decodedToken.email ?? decodedToken.phone_number
     const role = decodedToken['custom:role']
     return {
       username,

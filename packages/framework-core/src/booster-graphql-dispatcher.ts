@@ -57,7 +57,7 @@ export class BoosterGraphQLDispatcher {
   private async verifyTokenFromEnvelop(
     envelope: GraphQLRequestEnvelope
   ): Promise<GraphQLRequestEnvelope | GraphQLRequestEnvelopeError> {
-    if ('token' in envelope && envelope.token) {
+    if (envelope.token) {
       try {
         this.logger.debug(`Decoding current user from auth token: ${envelope.token}`)
         envelope.currentUser = await BoosterAuth.verifyToken(this.config, envelope.token)
