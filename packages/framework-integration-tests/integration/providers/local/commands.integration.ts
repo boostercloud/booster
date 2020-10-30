@@ -1,7 +1,6 @@
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
-import { graphQLClient } from './utils'
-import gql from 'graphql-tag'
+import { changeCartItem, graphQLClient } from './utils'
 import { random } from 'faker'
 import { expect } from 'chai'
 import * as DataStore from 'nedb'
@@ -108,24 +107,3 @@ describe('commands', () => {
     })
   })
 })
-
-async function changeCartItem(
-  client: ApolloClient<NormalizedCacheObject>,
-  cartId: string,
-  productId: string,
-  quantity: number
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<any> {
-  return client.mutate({
-    variables: {
-      cartId: cartId,
-      productId: productId,
-      quantity: quantity,
-    },
-    mutation: gql`
-      mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
-        ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
-      }
-    `,
-  })
-}
