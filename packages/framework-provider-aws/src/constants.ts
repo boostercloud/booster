@@ -1,4 +1,4 @@
-import { BoosterConfig } from '@boostercloud/framework-types'
+import { BoosterConfig, JWT_ENV_VARS } from '@boostercloud/framework-types'
 
 export const eventsStoreAttributes = {
   partitionKey: 'entityTypeName_entityID_kind',
@@ -22,6 +22,6 @@ export const connectionsStoreAttributes = {
 export const environmentVarNames = {
   restAPIURL: 'BOOSTER_REST_API_URL',
   websocketAPIURL: 'BOOSTER_WEBSOCKET_API_URL',
-  jwtIssuer: 'BOOSTER_JWT_ISSUER',
-  jwksUri: 'BOOSTER_JWKS_URI',
+  jwtIssuer: JWT_ENV_VARS.BOOSTER_JWT_ISSUER,
+  jwksUri: JWT_ENV_VARS.BOOSTER_JWKS_URI,
 } as const

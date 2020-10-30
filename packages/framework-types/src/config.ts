@@ -123,10 +123,10 @@ export class BoosterConfig {
 
   public get tokenVerifier(): { issuer: string; jwksUri: string } | undefined {
     if (this._tokenVerifier) return this._tokenVerifier
-    if (process.env['BOOSTER_JWT_ISSUER'] && process.env['BOOSTER_JWKS_URI']) {
+    if (process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER] && process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI]) {
       return {
-        issuer: process.env['BOOSTER_JWT_ISSUER'],
-        jwksUri: process.env['BOOSTER_JWKS_URI'],
+        issuer: process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER] as string,
+        jwksUri: process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI] as string,
       }
     }
     return undefined
@@ -154,6 +154,11 @@ export class BoosterConfig {
       }
     }
   }
+}
+
+export const JWT_ENV_VARS = {
+  BOOSTER_JWT_ISSUER: 'BOOSTER_JWT_ISSUER',
+  BOOSTER_JWKS_URI: 'BOOSTER_JWKS_URI',
 }
 
 interface ResourceNames {
