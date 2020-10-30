@@ -29,17 +29,11 @@ export class BoosterGraphQLDispatcher {
     const commandDispatcher = new BoosterCommandDispatcher(config, logger)
 
     this.graphQLSchema = new GraphQLGenerator(config, commandDispatcher, this.readModelDispatcher).generateSchema()
-    this.websocketHandler = new GraphQLWebsocketHandler(
-      config,
-      logger,
-      this.config.provider.auth,
-      this.config.provider.connections,
-      {
-        onStartOperation: this.runGraphQLOperation.bind(this),
-        onStopOperation: this.readModelDispatcher.unsubscribe.bind(this.readModelDispatcher),
-        onTerminate: this.handleDisconnect.bind(this),
-      }
-    )
+    this.websocketHandler = new GraphQLWebsocketHandler(config, logger, this.config.provider.connections, {
+      onStartOperation: this.runGraphQLOperation.bind(this),
+      onStopOperation: this.readModelDispatcher.unsubscribe.bind(this.readModelDispatcher),
+      onTerminate: this.handleDisconnect.bind(this),
+    })
   }
 
   public async dispatch(request: unknown): Promise<unknown> {
@@ -60,23 +54,33 @@ export class BoosterGraphQLDispatcher {
     }
   }
 
-  private async handleMessage(envelope: GraphQLRequestEnvelope | GraphQLRequestEnvelopeError): Promise<DispatchResult> {
-    this.logger.debug(`Starting GraphQL operation: ${JSON.stringify(envelope)}`)
-
+  private async verifyTokenFromEnvelop(
+    envelope: GraphQLRequestEnvelope
+  ): Promise<GraphQLRequestEnvelope | GraphQLRequestEnvelopeError> {
     if ('token' in envelope && envelope.token) {
       try {
         this.logger.debug(`Decoding current user from auth token: ${envelope.token}`)
         envelope.currentUser = await BoosterAuth.verifyToken(this.config, envelope.token)
-        this.logger.debug(`Current User: ${envelope.currentUser.username}, Role: ${envelope.currentUser.role}`)
       } catch (e) {
+        envelope = {
+          ...envelope,
+          error: new InvalidParameterError(e),
+        } as GraphQLRequestEnvelopeError
         this.logger.debug('Unable to decode auth token')
       }
     }
+    return envelope
+  }
 
-    if (cameThroughSocket(envelope)) {
-      return this.websocketHandler.handle(envelope)
+  private async handleMessage(envelope: GraphQLRequestEnvelope | GraphQLRequestEnvelopeError): Promise<DispatchResult> {
+    this.logger.debug(`Starting GraphQL operation: ${JSON.stringify(envelope)}`)
+
+    const envelopeOrError = await this.verifyTokenFromEnvelop(envelope)
+
+    if (cameThroughSocket(envelopeOrError)) {
+      return this.websocketHandler.handle(envelopeOrError)
     }
-    return this.runGraphQLOperation(envelope)
+    return this.runGraphQLOperation(envelopeOrError)
   }
 
   private async runGraphQLOperation(

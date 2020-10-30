@@ -12,7 +12,7 @@ import {
   DisconnectableApolloClient,
   countSubscriptionsItems,
   UserAuthInformation,
-  //refreshUserAuthInformation,
+  refreshUserAuthInformation,
   graphQLClient,
 } from '../utils'
 import gql from 'graphql-tag'
@@ -448,7 +448,7 @@ describe('With the auth API', () => {
 
       const message = await response.json()
       expect(message).not.to.be.empty
-      expect(message.idToken).not.to.be.empty
+      expect(message.accessToken).not.to.be.empty
     })
 
     it('can sign in their account without manually confirming user when skipConfirmation is true. User will get a valid token.', async () => {
@@ -471,7 +471,7 @@ describe('With the auth API', () => {
 
       const message = await response.json()
       expect(message).not.to.be.empty
-      expect(message.idToken).not.to.be.empty
+      expect(message.accessToken).not.to.be.empty
     })
 
     context('with a wrong token', () => {
@@ -494,7 +494,7 @@ describe('With the auth API', () => {
             `,
           })
 
-          await expect(mutationPromise).to.eventually.be.rejectedWith(/Invalid Access Token/)
+          await expect(mutationPromise).to.eventually.be.rejectedWith(/jwt malformed/)
         })
 
         it('gets the expected error when querying a read model', async () => {
@@ -511,7 +511,7 @@ describe('With the auth API', () => {
             `,
           })
 
-          await expect(queryPromise).to.eventually.be.rejectedWith(/Invalid Access Token/)
+          await expect(queryPromise).to.eventually.be.rejectedWith(/jwt malformed/)
         })
       })
 
@@ -525,7 +525,7 @@ describe('With the auth API', () => {
             }
           })
         })
-        await expect(connectionPromise).to.eventually.be.rejectedWith(/Invalid Access Token/)
+        await expect(connectionPromise).to.eventually.be.rejectedWith(/jwt malformed/)
       })
     })
 
@@ -754,21 +754,18 @@ describe('With the auth API', () => {
         )
       })
 
-      /*
       describe('after refreshing the token', () => {
         let refreshedUserAuthInformation: UserAuthInformation
 
         before(async () => {
-          refreshedUserAuthInformation = await refreshUserAuthInformation(userAuthInformation.idToken)
+          refreshedUserAuthInformation = await refreshUserAuthInformation(userAuthInformation.refreshToken)
           // Update access token that's being used by the Apollo client
           authToken = refreshedUserAuthInformation.idToken
-          console.log('Before reconnect', authToken)
           await client.reconnect()
-          console.log('After reconnect')
         })
 
         it('should return a new access token', () => {
-          expect(userAuthInformation.idToken).not.to.be.equal(refreshedUserAuthInformation.idToken)
+          expect(userAuthInformation.accessToken).not.to.be.equal(refreshedUserAuthInformation.accessToken)
         })
 
         it('should have a token that expires in 3600 seconds', () => {
@@ -932,7 +929,7 @@ describe('With the auth API', () => {
 
           await expect(subscriptionPromise).to.eventually.be.fulfilled
         })
-      })*/
+      })
     })
   })
 
@@ -1013,7 +1010,7 @@ describe('With the auth API', () => {
 
       const message = await response.json()
       expect(message).not.to.be.empty
-      expect(message.idToken).not.to.be.empty
+      expect(message.accessToken).not.to.be.empty
     })
 
     it('can sign in their account without manually confirming user when skipConfirmation is true. User will get a valid token.', async () => {
@@ -1036,7 +1033,7 @@ describe('With the auth API', () => {
 
       const message = await response.json()
       expect(message).not.to.be.empty
-      expect(message.idToken).not.to.be.empty
+      expect(message.accessToken).not.to.be.empty
     })
   })
 
@@ -1077,7 +1074,7 @@ describe('With the auth API', () => {
 
       const message = await response.json()
       expect(message).not.to.be.empty
-      expect(message.idToken).not.to.be.empty
+      expect(message.accessToken).not.to.be.empty
     })
 
     context('with a signed-in admin user', () => {
@@ -1176,7 +1173,6 @@ describe('With the auth API', () => {
         await expect(subscriptionPromise).to.eventually.be.fulfilled
       })
 
-      /*
       describe('after refreshing the token', () => {
         let refreshedUserAuthInformation: UserAuthInformation
 
@@ -1188,7 +1184,7 @@ describe('With the auth API', () => {
         })
 
         it('should return a new access token', () => {
-          expect(adminUserAuthInformation.idToken).not.to.be.equal(refreshedUserAuthInformation.idToken)
+          expect(adminUserAuthInformation.accessToken).not.to.be.equal(refreshedUserAuthInformation.accessToken)
         })
 
         it('should have a token that expires in 3600 seconds', () => {
@@ -1283,7 +1279,7 @@ describe('With the auth API', () => {
 
           await expect(subscriptionPromise).to.eventually.be.fulfilled
         })
-      })*/
+      })
     })
   })
 })
