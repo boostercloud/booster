@@ -10,9 +10,6 @@ import { exec } from 'child-process-promise'
 import { wrapExecError } from '../common/errors'
 import * as path from 'path'
 
-
-let skipRestoreDependencies = false;
-
 async function pruneDependencies(config: BoosterConfig): Promise<void> {
   try {
     await exec('npm install --production', { cwd: projectDir(config) })
@@ -21,7 +18,7 @@ async function pruneDependencies(config: BoosterConfig): Promise<void> {
   }
 }
 
-async function reinstallDependencies(config: BoosterConfig): Promise<void> {
+async function reinstallDependencies(skipRestoreDependencies: boolean, config: BoosterConfig): Promise<void> {
   try {
     if(skipRestoreDependencies === false){
       await exec('npm install', { cwd: projectDir(config) })
@@ -35,6 +32,7 @@ async function reinstallDependencies(config: BoosterConfig): Promise<void> {
 //    * we're in a booster project
 //    * run the compiler to be sure that we're deploying the last version and stop the process if it fails
 const runTasks = async (
+  skipRestoreDependencies: boolean,
   loader: Promise<BoosterConfig>,
   deployer: (config: BoosterConfig, logger: Logger) => Promise<void>
 ): Promise<void> =>
@@ -42,7 +40,7 @@ const runTasks = async (
     //TODO: We should install dependencies in production mode before deploying
     .step('Removing dev dependencies', pruneDependencies)
     .step('Deploying', (config) => deployer(config, logger))
-    .step('Reinstalling dependencies', reinstallDependencies)
+    .step('Reinstalling dependencies', reinstallDependencies.bind(null, skipRestoreDependencies))
     .info('Deployment complete!')
     .done()
 
@@ -63,13 +61,9 @@ export default class Deploy extends Command {
 
   public async run(): Promise<void> {
     const { flags } = this.parse(Deploy)
-    
-    if(flags.skipRestoreDependencies){
-      skipRestoreDependencies = true;
-    }
 
     if (initializeEnvironment(logger, flags.environment)) {
-      await runTasks(compileProjectAndLoadConfig(), deployToCloudProvider)
+      await runTasks(flags.skipRestoreDependencies, compileProjectAndLoadConfig(), deployToCloudProvider)
     }
   }
 }

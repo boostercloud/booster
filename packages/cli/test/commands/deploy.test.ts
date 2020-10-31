@@ -29,7 +29,7 @@ describe('deploy', () => {
         const fakeDeployer = fake()
         replace(environment, 'currentEnvironment', fake.returns('test-env'))
 
-        await expect(runTasks(fakeLoader, fakeDeployer)).to.eventually.be.rejectedWith(msg)
+        await expect(runTasks(false, fakeLoader, fakeDeployer)).to.eventually.be.rejectedWith(msg)
         expect(fakeDeployer).not.to.have.been.called
       })
     })
@@ -41,7 +41,7 @@ describe('deploy', () => {
         const fakeDeployer = fake()
         replace(environment, 'currentEnvironment', fake.returns('test-env'))
 
-        await expect(runTasks(fakeLoader, fakeDeployer)).to.eventually.be.rejectedWith(msg)
+        await expect(runTasks(false, fakeLoader, fakeDeployer)).to.eventually.be.rejectedWith(msg)
         expect(fakeDeployer).not.to.have.been.called
       })
     })
@@ -62,7 +62,7 @@ describe('deploy', () => {
 
       const pruneDependenciesSpy = spy(pruneDependencies)
       deploy.__set__('pruneDependencies', pruneDependenciesSpy)
-      await runTasks('test-env', fakeLoader, fakeDeployer)
+      await runTasks(false, 'test-env', fakeLoader, fakeDeployer)
         
       expect(pruneDependenciesSpy).to.have.been.calledOnce
 
@@ -86,7 +86,7 @@ describe('deploy', () => {
 
       const reinstallDependenciesSpy = spy(reinstallDependencies)
       deploy.__set__('reinstallDependencies', reinstallDependenciesSpy)
-      await runTasks('test-env', fakeLoader, fakeDeployer)
+      await runTasks(false, 'test-env', fakeLoader, fakeDeployer)
         
       expect(reinstallDependenciesSpy).to.have.been.calledOnce
 
@@ -111,7 +111,7 @@ describe('deploy', () => {
 
         replace(environment, 'currentEnvironment', fake.returns('test-env'))
 
-        await runTasks(fakeLoader, fakeDeployer)
+        await runTasks(false, fakeLoader, fakeDeployer)
 
         expect(ctx.stdout).to.include('Deployment complete')
 
