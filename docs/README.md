@@ -2642,14 +2642,14 @@ If you want to support the same functionality in several providers, it could be 
 
 > Currently only available in AWS
 
-Infrastructure rocket interfaces are provider-dependant, so infrastructure rockets must import the corresponding booster infrastructure package for their choosen provider. For AWS, that's `@boostercloud/framework-provider-aws-infrastructure`. Notice that as the only thing we use of that package is the `InfrastructureRocket` interface, you can import it as a dev dependency to avoid including that big package in your deployed lambdas. So you can start by creating a new package and adding this dependency:
+Infrastructure rocket interfaces are provider-dependant, so infrastructure rockets must import the corresponding booster infrastructure package for their choosen provider. For AWS, that's `@boostercloud/framework-provider-aws-infrastructure`. Notice that, as the only thing we use of that package is the `InfrastructureRocket` interface, you can import it as a dev dependency to avoid including that big package in your deployed lambdas. So you can start by creating a new package and adding this dependency:
 
 ```sh
-    mkdir rocket-your-rocket-name-aws-infrastructure
-    cd rocket-your-rocket-name-aws-infrastructure
-    npm init
-    ...
-    npm install -D @boostercloud/framework-provider-aws-infrastructure
+mkdir rocket-your-rocket-name-aws-infrastructure
+cd rocket-your-rocket-name-aws-infrastructure
+npm init
+...
+npm install -D @boostercloud/framework-provider-aws-infrastructure
 ```
 
 The implementation of `InfrastructureRocket` might vary from one provider to the other, but in AWS it only requires two functions:
@@ -2676,7 +2676,7 @@ In `mountStack` you will receive an initialized AWS CDK stack that you can use t
 
 The application stack, including the resources added by your rocket are automatically nuked along with the application stack, but there are some situations on which it's convenient to delete or move the contents of the resources created by you. In the appl `unmountStack` you'll have the opportunity to run any code before deleting the stack. This function receives an `utils` object with the same tools that Booster uses to perform common actions like emptying the contents of an S3 bucket (Non-empty buckets are kept by default when a stack is deleted).
 
-Notice that infrastructure rockets should not be included from application code to avoid including the CDK and other code that is not used to lambda, as there are some hard restrictions on code size in most platforms. That's why infrastructure rockets are loaded dynamically by Booster passing the packet names as strings in the application config file:
+Notice that infrastructure rockets should not be included from within the application code to avoid including the CDK and other non-used dependencies in the lambdas, as there are some hard restrictions on code size in most platforms. That's why infrastructure rockets are loaded dynamically by Booster passing the packet names as strings in the application config file:
 
 _src/config/production.ts:_
 
