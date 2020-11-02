@@ -46,7 +46,7 @@ async function nukeToolkit(logger: Logger, config: BoosterConfig, sdk: ISDK): Pr
 async function nukeRockets(logger: Logger, sdk: ISDK, rockets: InfrastructureRocket[]): Promise<void> {
   logger.info('Deleting rockets resources...')
   const rocketUtils = buildRocketUtils(sdk, logger)
-  rockets.forEach((rocket) => rocket.unmountStack(rocketUtils))
+  rockets.forEach((rocket) => rocket.unmountStack?.(rocketUtils))
 }
 
 /**

@@ -4,7 +4,7 @@ import { RocketUtils } from './rocket-utils'
 
 export interface InfrastructureRocket {
   mountStack: (stack: Stack) => void
-  unmountStack: (utils: RocketUtils) => void
+  unmountStack?: (utils: RocketUtils) => void
 }
 
 // Separate function to make it easier to mock in tests
