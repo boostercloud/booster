@@ -34,7 +34,7 @@ import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
 const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
 const userPool = new CognitoIdentityServiceProvider()
 
-/* We load the infrastructure package dinamically here to avoid including it in the
+/* We load the infrastructure package dynamically here to avoid including it in the
  * dependences that are deployed in the lambda functions. The infrastructure
  * package is only used during the deploy.
  */
