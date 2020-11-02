@@ -1,518 +1,94 @@
 name: Integration
 on:
-  issue_comment:
-    types: [created, edited]
+  pull_request:
+    types: [locked] # All integration tests are run every time the PR is locked
 
 jobs:
   aws-deploy-integration-tests:
-    name: AWS Deployment Integration
-    if: "github.event.comment.body == 'integration: aws-deploy' || github.event.comment.body == 'integration: aws' || github.event.comment.body == 'integration: all'  || github.event.comment.body == 'bot: integration'"
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-      fail-fast: false
-
-    runs-on: ${{ matrix.os }}
-
+    name: AWS Deployment Integration Tests
+    runs-on: ubuntu-latest
     steps:
-      - name: Fetch PR info
-        uses: octokit/request-action@v2.x
-        id: pull_request_info
-        with:
-          route: GET ${{ github.event.issue.pull_request.url }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create a check for integration tests
-        uses: octokit/request-action@v2.x
-        id: create_check_run
-        with:
-          route: POST /repos/${{ github.repository }}/check-runs
-          mediaType: '{"previews": ["antiope"]}'
-          name: "AWS Deployment Integration"
-          head_sha: ${{ fromJson(steps.pull_request_info.outputs.data).head.sha }}
-          status: 'in_progress'
-          output: '{"title":"AWS Deployment Integration Tests", "summary":"AWS Deployment Integration Tests are running, you will see the result logs here whey they are finished. If you want to see them now, to the the Actions tab"}'
-
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Print integration tests check data (useful for debuging)
-        run: echo "$DATA"
-        env:
-          DATA: ${{ toJson(fromJson(steps.create_check_run.outputs.data)) }}
-
-      - name: Checkout PR branch
-        uses: actions/checkout@v2
-        with:
-          repository: ${{ fromJson(steps.pull_request_info.outputs.data).head.repo.full_name }}
-          ref: ${{ fromJson(steps.pull_request_info.outputs.data).head.ref }}
-
-      - name: Set Node.js 12.x
-        uses: actions/setup-node@master
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
         with:
           node-version: 12.x
-
-      - name: Get yarn cache
-        id: yarn-cache
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-
-      - uses: actions/cache@v1
-        with:
-          path: ${{ steps.yarn-cache.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      - name: Bootstrap the project
-        run: npx lerna bootstrap
-
-      - name: Run integration tests
-        continue-on-error: true
-        id: aws_deploy_integration_tests_run
+      - run: npx lerna bootstrap
+      - run: npx lerna run integration/aws-deploy --stream
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
-        run: npx lerna run integration/aws-deploy --stream
-
-      - name: Update integration tests check status
-        uses: octokit/request-action@v2.x
-        with:
-          route: PATCH /repos/:repository/check-runs/:check_run_id
-          repository: ${{ github.repository }}
-          mediaType: '{"previews": ["antiope"]}'
-          check_run_id: ${{ fromJson(steps.create_check_run.outputs.data).id }}
-          conclusion: ${{ steps.aws_deploy_integration_tests_run.outcome }}
-          output: '{"title":"AWS Deploy Integration Tests", "summary":"AWS Deploy Integration Tests finished. Here you can take a look at the logs", "text":"```console\n${{ steps.aws_deploy_integration_tests_run.outputs.data }}\n``"}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   aws-func-integration-tests:
     name: AWS Functionality Integration Tests
-    if: "github.event.comment.body == 'integration: aws-func' || github.event.comment.body == 'integration: aws' || github.event.comment.body == 'integration: all'  || github.event.comment.body == 'bot: integration'"
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-      fail-fast: false
-
     needs:
       - aws-deploy-integration-tests
-
-    runs-on: ${{ matrix.os }}
-
+    runs-on: ubuntu-latest
     steps:
-      - name: Fetch PR info
-        uses: octokit/request-action@v2.x
-        id: pull_request_info
-        with:
-          route: GET ${{ github.event.issue.pull_request.url }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create a check for integration tests
-        uses: octokit/request-action@v2.x
-        id: create_check_run
-        with:
-          route: POST /repos/${{ github.repository }}/check-runs
-          mediaType: '{"previews": ["antiope"]}'
-          name: "AWS Functionality Integration"
-          head_sha: ${{ fromJson(steps.pull_request_info.outputs.data).head.sha }}
-          status: 'in_progress'
-          output: '{"title":"AWS Functionality Integration Tests", "summary":"AWS Functionality Integration Tests are running, you will see the result logs here whey they are finished. If you want to see them now, to the the Actions tab"}'
-
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Print integration tests check data (useful for debuging)
-        run: echo "$DATA"
-        env:
-          DATA: ${{ toJson(fromJson(steps.create_check_run.outputs.data)) }}
-
-      - name: Checkout PR branch
-        uses: actions/checkout@v2
-        with:
-          repository: ${{ fromJson(steps.pull_request_info.outputs.data).head.repo.full_name }}
-          ref: ${{ fromJson(steps.pull_request_info.outputs.data).head.ref }}
-
-      - name: Set Node.js 12.x
-        uses: actions/setup-node@master
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
         with:
           node-version: 12.x
-
-      - name: Get yarn cache
-        id: yarn-cache
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-
-      - uses: actions/cache@v1
-        with:
-          path: ${{ steps.yarn-cache.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      - name: Bootstrap the project
-        run: npx lerna bootstrap
-
-      - name: Run integration tests
-        continue-on-error: true
-        id: aws_func_integration_tests_run
+      - run: npx lerna bootstrap
+      - run: npx lerna run integration/aws-func --stream
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
-        run: npx lerna run integration/aws-func --stream
-
-      - name: Update integration tests check status
-        uses: octokit/request-action@v2.x
-        with:
-          route: PATCH /repos/:repository/check-runs/:check_run_id
-          repository: ${{ github.repository }}
-          mediaType: '{"previews": ["antiope"]}'
-          check_run_id: ${{ fromJson(steps.create_check_run.outputs.data).id }}
-          conclusion: ${{ steps.aws_func_integration_tests_run.outcome }}
-          output: '{"title":"AWS Functionality Integration Tests", "summary":"AWS Functionality Integration Tests finished. Here you can take a look at the logs", "text":"```console\n${{ steps.aws_func_integration_tests_run.outputs.data }}\n``"}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   end-to-end-tests:
     name: End-to-end Tests
-    if: "github.event.comment.body == 'integration: aws-end-to-end' || github.event.comment.body == 'integration: aws' || github.event.comment.body == 'integration: all'  || github.event.comment.body == 'bot: integration'"
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-      fail-fast: false
-
     needs:
       - aws-deploy-integration-tests
-
-    runs-on: ${{ matrix.os }}
-
+    runs-on: ubuntu-latest
     steps:
-      - name: Fetch PR info
-        uses: octokit/request-action@v2.x
-        id: pull_request_info
-        with:
-          route: GET ${{ github.event.issue.pull_request.url }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create a check for integration tests
-        uses: octokit/request-action@v2.x
-        id: create_check_run
-        with:
-          route: POST /repos/${{ github.repository }}/check-runs
-          mediaType: '{"previews": ["antiope"]}'
-          name: "End-to-end Integration"
-          head_sha: ${{ fromJson(steps.pull_request_info.outputs.data).head.sha }}
-          status: 'in_progress'
-          output: '{"title":"End-to-end Tests", "summary":"End-to-end Tests are running, you will see the result logs here whey they are finished. If you want to see them now, to the the Actions tab"}'
-
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Print integration tests check data (useful for debuging)
-        run: echo "$DATA"
-        env:
-          DATA: ${{ toJson(fromJson(steps.create_check_run.outputs.data)) }}
-
-      - name: Checkout PR branch
-        uses: actions/checkout@v2
-        with:
-          repository: ${{ fromJson(steps.pull_request_info.outputs.data).head.repo.full_name }}
-          ref: ${{ fromJson(steps.pull_request_info.outputs.data).head.ref }}
-
-      - name: Set Node.js 12.x
-        uses: actions/setup-node@master
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
         with:
           node-version: 12.x
-
-      - name: Get yarn cache
-        id: yarn-cache
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-
-      - uses: actions/cache@v1
-        with:
-          path: ${{ steps.yarn-cache.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      - name: Bootstrap the project
-        run: npx lerna bootstrap
-
-      - name: Run integration tests
-        continue-on-error: true
-        id: end_to_end_tests_run
+      - run: npx lerna bootstrap
+      - run: npx lerna run integration/end-to-end --stream
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
-        run: npx lerna run integration/end-to-end --stream
-
-      - name: Update integration tests check status
-        uses: octokit/request-action@v2.x
-        with:
-          route: PATCH /repos/:repository/check-runs/:check_run_id
-          repository: ${{ github.repository }}
-          mediaType: '{"previews": ["antiope"]}'
-          check_run_id: ${{ fromJson(steps.create_check_run.outputs.data).id }}
-          conclusion: ${{ steps.end_to_end_tests_run.outcome }}
-          output: '{"title":"End-to-end Tests", "summary":"End-to-end Tests finished. Here you can take a look at the logs", "text":"```console\n${{ steps.end_to_end_tests_run.outputs.data }}\n``"}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   aws-nuke-integration-tests:
     name: AWS Nuke Integration Tests
-    if: "github.event.comment.body == 'integration: aws-nuke' || github.event.comment.body == 'integration: aws' || github.event.comment.body == 'integration: all'  || github.event.comment.body == 'bot: integration'"
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-      fail-fast: false
-
     needs:
       - aws-func-integration-tests
       - end-to-end-tests
-
-    runs-on: ${{ matrix.os }}
-
+    runs-on: ubuntu-latest
     steps:
-      - name: Fetch PR info
-        uses: octokit/request-action@v2.x
-        id: pull_request_info
-        with:
-          route: GET ${{ github.event.issue.pull_request.url }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create a check for integration tests
-        uses: octokit/request-action@v2.x
-        id: create_check_run
-        with:
-          route: POST /repos/${{ github.repository }}/check-runs
-          mediaType: '{"previews": ["antiope"]}'
-          name: "AWS Nuke Integration"
-          head_sha: ${{ fromJson(steps.pull_request_info.outputs.data).head.sha }}
-          status: 'in_progress'
-          output: '{"title":"AWS Nuke Integration Tests", "summary":"AWS Nuke Integration Tests are running, you will see the result logs here whey they are finished. If you want to see them now, to the the Actions tab"}'
-
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Print integration tests check data (useful for debuging)
-        run: echo "$DATA"
-        env:
-          DATA: ${{ toJson(fromJson(steps.create_check_run.outputs.data)) }}
-
-      - name: Checkout PR branch
-        uses: actions/checkout@v2
-        with:
-          repository: ${{ fromJson(steps.pull_request_info.outputs.data).head.repo.full_name }}
-          ref: ${{ fromJson(steps.pull_request_info.outputs.data).head.ref }}
-
-      - name: Set Node.js 12.x
-        uses: actions/setup-node@master
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
         with:
           node-version: 12.x
-
-      - name: Get yarn cache
-        id: yarn-cache
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-
-      - uses: actions/cache@v1
-        with:
-          path: ${{ steps.yarn-cache.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      - name: Bootstrap the project
-        run: npx lerna bootstrap
-
-      - name: Run integration tests
-        continue-on-error: true
-        id: aws_nuke_integration_tests
+      - run: npx lerna bootstrap
+      - run: npx lerna run integration/aws-nuke --stream
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
-        run: npx lerna run integration/aws-nuke --stream
-
-      - name: Update integration tests check status
-        uses: octokit/request-action@v2.x
-        with:
-          route: PATCH /repos/:repository/check-runs/:check_run_id
-          repository: ${{ github.repository }}
-          mediaType: '{"previews": ["antiope"]}'
-          check_run_id: ${{ fromJson(steps.create_check_run.outputs.data).id }}
-          conclusion: ${{ steps.aws_nuke_integration_tests.outcome }}
-          output: '{"title":"AWS Nuke Integration Tests", "summary":"AWS Nuke Integration Tests finished. Here you can take a look at the logs", "text":"```console\n${{ steps.aws_nuke_integration_tests.outputs.data }}\n``"}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   cli-integration-tests:
     name: CLI Integration Tests
-    if: "github.event.comment.body == 'integration: cli' || github.event.comment.body == 'integration: all'  || github.event.comment.body == 'bot: integration'"
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-      fail-fast: true
-
-    runs-on: ${{ matrix.os }}
-
+    runs-on: ubuntu-latest
     steps:
-      - name: Fetch PR info
-        uses: octokit/request-action@v2.x
-        id: pull_request_info
-        with:
-          route: GET ${{ github.event.issue.pull_request.url }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create a check for integration tests
-        uses: octokit/request-action@v2.x
-        id: create_cli_integration_check_step
-        with:
-          route: POST /repos/${{ github.repository }}/check-runs
-          mediaType: '{"previews": ["antiope"]}'
-          name: "CLI Integration"
-          head_sha: ${{ fromJson(steps.pull_request_info.outputs.data).head.sha }}
-          status: 'in_progress'
-          output: '{"title":"CLI Integration Tests", "summary":"CLI integration tests are running, you will see the result logs here whey they are finished. If you want to see them now, to the the Actions tab"}'
-
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Print integration tests check data (useful for debuging)
-        run: echo "$DATA"
-        env:
-          DATA: ${{ toJson(fromJson(steps.create_cli_integration_check_step.outputs.data)) }}
-
-      - name: Checkout PR branch
-        uses: actions/checkout@v2
-        with:
-          repository: ${{ fromJson(steps.pull_request_info.outputs.data).head.repo.full_name }}
-          ref: ${{ fromJson(steps.pull_request_info.outputs.data).head.ref }}
-
-      - name: Set Node.js 12.x
-        uses: actions/setup-node@master
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
         with:
           node-version: 12.x
-
-      - name: Get yarn cache
-        id: yarn-cache
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-
-      - uses: actions/cache@v1
-        with:
-          path: ${{ steps.yarn-cache.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      - name: Bootstrap the project
-        run: npx lerna bootstrap
-
-      - name: Run integration tests
-        continue-on-error: false
-        id: integration_tests_run
-        run: npx lerna run integration/cli --stream
-
-      - name: Update integration tests check status
-        uses: octokit/request-action@v2.x
-        with:
-          route: PATCH /repos/:repository/check-runs/:check_run_id
-          repository: ${{ github.repository }}
-          mediaType: '{"previews": ["antiope"]}'
-          check_run_id: ${{ fromJson(steps.create_cli_integration_check_step.outputs.data).id }}
-          conclusion: ${{ steps.integration_tests_run.outcome }}
-          output: '{"title":"CLI Integration Tests", "summary":"Integration tests finished. Here you can take a look at the logs", "text":"```console\n${{ steps.integration_tests_run.outputs.data }}\n``"}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npx lerna bootstrap
+      - run: npx lerna run integration/cli --stream
 
   local-integration-tests:
     name: Local Environment Integration Tests
-    if: "github.event.comment.body == 'integration: local' || github.event.comment.body == 'integration: all'  || github.event.comment.body == 'bot: integration'"
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-      fail-fast: true
-
-    runs-on: ${{ matrix.os }}
-
+    runs-on: ubuntu-latest
     steps:
-      - name: Fetch PR info
-        uses: octokit/request-action@v2.x
-        id: pull_request_info
-        with:
-          route: GET ${{ github.event.issue.pull_request.url }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create a check for integration tests
-        uses: octokit/request-action@v2.x
-        id: create_local_integration_check_step
-        with:
-          route: POST /repos/${{ github.repository }}/check-runs
-          mediaType: '{"previews": ["antiope"]}'
-          name: "Local Environment Integration"
-          head_sha: ${{ fromJson(steps.pull_request_info.outputs.data).head.sha }}
-          status: 'in_progress'
-          output: '{"title":"Local Environment Integration Tests", "summary":"Local Environment integration tests are running, you will see the result logs here whey they are finished. If you want to see them now, to the the Actions tab"}'
-
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Print integration tests check data (useful for debuging)
-        run: echo "$DATA"
-        env:
-          DATA: ${{ toJson(fromJson(steps.create_local_integration_check_step.outputs.data)) }}
-
-      - name: Checkout PR branch
-        uses: actions/checkout@v2
-        with:
-          repository: ${{ fromJson(steps.pull_request_info.outputs.data).head.repo.full_name }}
-          ref: ${{ fromJson(steps.pull_request_info.outputs.data).head.ref }}
-
-      - name: Set Node.js 12.x
-        uses: actions/setup-node@master
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
         with:
           node-version: 12.x
-
-      - name: Get yarn cache
-        id: yarn-cache
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-
-      - uses: actions/cache@v1
-        with:
-          path: ${{ steps.yarn-cache.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      - name: Bootstrap the project
-        run: npx lerna bootstrap
-
-        # For some reason, local tests were failing with syntax errors if we don't recompile the project
-      - name: Clean the project
-        run: npx lerna run clean
-
-      - name: Compile the project
-        run: npx lerna run compile
-
-      - name: Run integration tests
-        continue-on-error: false
-        id: integration_tests_run
-        run: npx lerna run integration/local --stream
-
-      - name: Update integration tests check status
-        uses: octokit/request-action@v2.x
-        with:
-          route: PATCH /repos/:repository/check-runs/:check_run_id
-          repository: ${{ github.repository }}
-          mediaType: '{"previews": ["antiope"]}'
-          check_run_id: ${{ fromJson(steps.create_local_integration_check_step.outputs.data).id }}
-          conclusion: ${{ steps.integration_tests_run.outcome }}
-          output: '{"title":"Local Environment Integration Tests", "summary":"Integration tests finished. Here you can take a look at the logs", "text":"```console\n${{ steps.integration_tests_run.outputs.data }}\n``"}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npx lerna bootstrap
+      - run: npx lerna run integration/local --stream

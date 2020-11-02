@@ -13,7 +13,7 @@ import { checkItIsABoosterProject } from '../../services/project-checker'
 import { generate } from '../../services/generator'
 import * as path from 'path'
 import { templates } from '../../templates'
-import * as inflected from 'inflected'
+import { classNameToFileName } from '../../common/filenames'
 
 export default class EventHandler extends Oclif.Command {
   public static description = 'create a new event handler'
@@ -52,7 +52,7 @@ const run = async (name: string, eventName: string): Promise<void> =>
     .done()
 
 function generateImports(info: EventHandlerInfo): Array<ImportDeclaration> {
-  const fileName = inflected.dasherize(inflected.underscore(info.event))
+  const fileName = classNameToFileName(info.event)
   return [
     {
       packagePath: `../events/${fileName}`,

@@ -45,8 +45,8 @@
   "main": "dist/index.js",
   "repository": "boostercloud/booster",
   "scripts": {
-    "lint": "eslint --ext '.js,.ts' **/*.ts",
-    "fix-lint": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
+    "lint:check": "eslint --ext '.js,.ts' **/*.ts",
+    "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "integration": "yarn integration/cli && yarn integration/local && yarn integration/aws-deploy && yarn integration/aws-func && yarn integration/end-to-end && yarn integration/aws-nuke",
