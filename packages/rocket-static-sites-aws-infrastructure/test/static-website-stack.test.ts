@@ -74,7 +74,7 @@ describe('Static website creation', () => {
       StaticWebsiteStack.mountStack(
         {
           bucketName: 'test-bucket-name',
-          localDistPath: './frontend/dist',
+          rootPath: './frontend/dist',
           indexFile: 'main.html',
           errorFile: 'error.html',
         },
