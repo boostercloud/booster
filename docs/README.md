@@ -80,6 +80,11 @@
   * [Configuration and environments](#configuration-and-environments)
     + [Booster configuration](#booster-configuration)
     + [Environments](#environments)
+  * [Extending Booster with Rockets!](#extending-booster-with-rockets)
+    + [Naming recommendations](#naming-recommendations)
+    + [Infrastructure extensions](#infrastructure-extensions)
+    + [Runtime extensions (Not yet implemented)](#runtime-extensions-not-yet-implemented)
+    + [Deploy and init hooks (Not yet implemented)](#deploy-and-init-hooks-not-yet-implemented)
 - [Debugging and testing Booster applications](#debugging-and-testing-booster-applications)
   * [Running Booster applications locally](#running-booster-applications-locally)
     + [Prerequisites](#prerequisites-1)
@@ -2605,7 +2610,7 @@ The only thing you need to do to deploy a whole new completely-independent copy 
 
 ### Extending Booster with Rockets!
 
-You can extend Booster creating rockets. A rocket is just a npm package that implements the public Booster rocket interfaces. You can use them for many things:
+You can extend Booster creating rockets. A rocket is just an npm package that implements the public Booster rocket interfaces. You can use them for many things:
 
 1. Extend your infrastructure (Currently, only in AWS): You can write a rocket that adds provider resources to your application stack.
 2. Runtime extensions (Not yet implemented): Add new annotations and interfaces, that combined with infrastructure extensions, could implement new abstractions on top of highly requested use cases.
@@ -2633,7 +2638,7 @@ If you want to support the same functionality in several providers, it could be 
 - `rocket-file-uploader-azure`: Implements the API calls to Azure Storage to get the uploaded files.
 - `rocket-file-uploader-azure-infrastructure`: Configures file storage.
 
-#### 1. Infrastructure extensions
+#### Infrastructure extensions
 
 > Currently only available in AWS
 
@@ -2687,9 +2692,9 @@ Booster.configure('development', (config: BoosterConfig): void => {
 })
 ```
 
-#### 2. Runtime extensions (Not yet implemented)
+#### Runtime extensions (Not yet implemented)
 
-#### 3. Deploy and init hooks (Not yet implemented)
+#### Deploy and init hooks (Not yet implemented)
 
 ## Debugging and testing Booster applications
 
