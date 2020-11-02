@@ -11,7 +11,7 @@ import { existsSync } from 'fs'
 import { RocketUtils } from '@boostercloud/framework-provider-aws-infrastructure'
 
 export type AWSStaticSiteParams = {
-  localDistPath?: string
+  rootPath?: string
   indexFile?: string
   errorFile?: string
   bucketName: string
@@ -19,10 +19,10 @@ export type AWSStaticSiteParams = {
 
 export class StaticWebsiteStack {
   public static mountStack(params: AWSStaticSiteParams, stack: Stack): void {
-    const localDistPath = params.localDistPath ?? './public'
+    const rootPath = params.rootPath ?? './public'
     const indexFile = params.indexFile ?? 'index.html'
     const errorFile = params.errorFile ?? '404.html'
-    if (existsSync(localDistPath)) {
+    if (existsSync(rootPath)) {
       const staticWebsiteOIA = new OriginAccessIdentity(stack, 'staticWebsiteOIA', {
         comment: 'Allows static site to be reached only via CloudFront',
       })
@@ -51,20 +51,20 @@ export class StaticWebsiteStack {
       })
 
       new BucketDeployment(stack, 'staticWebsiteDeployment', {
-        sources: [Source.asset(localDistPath)],
+        sources: [Source.asset(rootPath)],
         destinationBucket: staticSiteBucket,
         distribution: cloudFrontDistribution,
       })
 
       new CfnOutput(stack, 'staticWebsiteURL', {
-        value: `https://${cloudFrontDistribution.domainName}`,
-        description: `The URL for the static website generated from ${localDistPath} directory`,
+        value: `https://${cloudFrontDistribution.distributionDomainName}`,
+        description: `The URL for the static website generated from ${rootPath} directory`,
       })
     } else {
       throw new Error(
         `The rocket '${
           require('package.json').name
-        }' tried to deploy a static site from local folder ${localDistPath}, but couldn't find it. Please review the configuration and parameters for this rocket.`
+        }' tried to deploy a static site from local folder ${rootPath}, but couldn't find it. Please review the configuration and parameters for this rocket.`
       )
     }
   }
