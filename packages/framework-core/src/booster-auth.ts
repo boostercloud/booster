@@ -68,7 +68,7 @@ export class BoosterAuth {
 
   public static async verifyToken(config: BoosterConfig, token: string): Promise<UserEnvelope> {
     if (!config.tokenVerifier) {
-      return Promise.reject('Token verifier not configured')
+      throw new Error('Token verifier not configured')
     }
     const { issuer, jwksUri } = config.tokenVerifier
 
@@ -102,13 +102,9 @@ export class BoosterAuth {
       token = BoosterAuth.sanitizeToken(token)
       jwt.verify(token, getKey, verifyOptions, (err: Error | null, decoded: object | undefined) => {
         if (err) {
-          reject(err)
+          return reject(err)
         }
-        try {
-          resolve(BoosterAuth.tokenToUserEnvelope(decoded))
-        } catch (err) {
-          reject(err)
-        }
+        return resolve(BoosterAuth.tokenToUserEnvelope(decoded))
       })
     })
   }
