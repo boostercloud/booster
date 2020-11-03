@@ -1,17 +1,14 @@
 import { ScheduledCommand } from '@boostercloud/framework-core'
-import { Register, UUID } from '@boostercloud/framework-types'
-import { ProductCreated } from '../events/product-created'
+import { Register } from '@boostercloud/framework-types'
+import { CartChecked } from '../events/cart-checked'
 
 @ScheduledCommand({
-  minute: '0/5',
+  minute: '0/1',
 })
 export class CheckCartCount {
   public static async handle(register: Register): Promise<void> {
-    register.events(
-      new ProductCreated(UUID.generate(), 'scheduled-product-created', 'scheduledProduct', 'A scheduled product', {
-        cents: 1000,
-        currency: 'EUR',
-      })
-    )
+    // We would normally generate a UUID here, but using a static ID
+    // simplifies the query in the integration tests.
+    register.events(new CartChecked('the-checked-cart'))
   }
 }

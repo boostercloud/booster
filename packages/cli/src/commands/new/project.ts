@@ -46,7 +46,6 @@ export default class Project extends Command {
         'package name implementing the cloud provider integration where the application will be deployed (i.e: "@boostercloud/framework-provider-aws"',
     }),
     default: flags.boolean({
-      char: 'd',
       description: 'generates the project with default parameters (i.e. --license=MIT)',
       default: false,
     }),
@@ -134,8 +133,8 @@ export const parseConfig = async (
       repository: '',
       boosterVersion,
       default: flags.default,
-      skipInstall: false,
-      skipGit: false,
+      skipInstall: flags.skipInstall || false,
+      skipGit: flags.skipGit || false,
     })
   }
 
@@ -169,7 +168,7 @@ export const parseConfig = async (
     repository,
     boosterVersion,
     default: false,
-    skipInstall: false,
-    skipGit: false,
+    skipInstall: flags.skipInstall || false,
+    skipGit: flags.skipGit || false,
   })
 }
