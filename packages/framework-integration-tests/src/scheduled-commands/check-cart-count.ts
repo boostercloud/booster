@@ -3,7 +3,7 @@ import { Register } from '@boostercloud/framework-types'
 import { CartChecked } from '../events/cart-checked'
 
 @ScheduledCommand({
-  minute: '0/5',
+  minute: '0/1',
 })
 export class CheckCartCount {
   public static async handle(register: Register): Promise<void> {
