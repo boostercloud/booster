@@ -422,22 +422,22 @@ export async function graphqlSubscriptionsClient(
         super(url, protocols)
 
         this.addListener('open', (): void => {
-          console.log('[GraphQL socket] on open')
+          console.debug('[GraphQL socket] on open')
         })
         this.addListener('ping', (): void => {
-          console.log('[GraphQL socket] on "ping"')
+          console.debug('[GraphQL socket] on "ping"')
         })
         this.addListener('pong', (): void => {
-          console.log('[GraphQL socket] on "pong"')
+          console.debug('[GraphQL socket] on "pong"')
         })
         this.addListener('message', (data: WebSocket.Data): void => {
-          console.log('[GraphQL socket] on message: ', data)
+          console.debug('[GraphQL socket] on message: ', data)
         })
         this.addListener('close', (code: number, message: string): void => {
-          console.log('[GraphQL socket] on close: ', code, message)
+          console.debug('[GraphQL socket] on close: ', code, message)
         })
         this.addListener('error', (err: Error): void => {
-          console.log('[GraphQL socket] on error: ', err.message)
+          console.debug('[GraphQL socket] on error: ', err.message)
         })
       }
     }
@@ -563,7 +563,7 @@ export async function getEventsByEntityId(entityID: string): Promise<any> {
 export async function waitForIt<TResult>(
   tryFunction: () => Promise<TResult>,
   checkResult: (result: TResult) => boolean,
-  tryEveryMs = 1000,
+  trialDelayMs = 1000,
   timeoutMs = 60000
 ): Promise<TResult> {
   console.debug('[waitForIt] start')
@@ -583,8 +583,7 @@ export async function waitForIt<TResult>(
       throw new Error('[waitForIt] Timeout reached')
     }
 
-    const nextExecutionDelay = (timeoutMs - elapsed) % tryEveryMs
-    await sleep(nextExecutionDelay)
+    await sleep(trialDelayMs)
     return doWaitFor()
   }
 }
