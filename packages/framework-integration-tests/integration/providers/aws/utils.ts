@@ -566,27 +566,24 @@ export async function waitForIt<TResult>(
   tryEveryMs = 1000,
   timeoutMs = 60000
 ): Promise<TResult> {
+  console.debug('[waitForIt] start')
   const start = Date.now()
   return doWaitFor()
 
   async function doWaitFor(): Promise<TResult> {
-    console.debug('[waitForIt] Executing function')
+    console.debug('.')
     const res = await tryFunction()
-    console.debug('[waitForIt] Checking result')
     if (checkResult(res)) {
-      console.debug('[waitForIt] Result is expected. Wait finished.')
+      console.debug('[waitForIt] match!')
       return res
     }
-    console.debug('[waitForIt] Result is not expected. Keep trying...')
     const elapsed = Date.now() - start
-    console.debug('[waitForIt] Time elapsed (ms): ' + elapsed)
 
     if (elapsed > timeoutMs) {
-      throw new Error('[waitForIt] Timeout reached waiting for a successful execution')
+      throw new Error('[waitForIt] Timeout reached')
     }
 
     const nextExecutionDelay = (timeoutMs - elapsed) % tryEveryMs
-    console.debug('[waitForIt] Trying again in ' + nextExecutionDelay)
     await sleep(nextExecutionDelay)
     return doWaitFor()
   }
