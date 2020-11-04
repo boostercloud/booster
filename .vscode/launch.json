@@ -4,6 +4,7 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
+
     {
       "type": "node",
       "request": "launch",
@@ -151,6 +152,23 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "CLI Integration Tests",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--colors",
+        "--forbid-only",
+        "--config",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/cli/.mocharc.yml",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/cli/**/*.integration.ts"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "AWS Deploy Integration Tests",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [
@@ -176,6 +194,23 @@
         "--config",
         "${workspaceFolder}/packages/framework-integration-tests/integration/providers/aws/functionality/.mocharc.yml",
         "${workspaceFolder}/packages/framework-integration-tests/integration/providers/aws/functionality/**/*.integration.ts"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "End-to-end Integration Tests",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--colors",
+        "--forbid-only",
+        "--config",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/end-to-end/.mocharc.yml",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/end-to-end/**/*.integration.ts"
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",

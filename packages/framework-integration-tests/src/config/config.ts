@@ -1,16 +1,16 @@
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { AWSProvider } from '@boostercloud/framework-provider-aws'
+import * as AWS from '@boostercloud/framework-provider-aws'
 import * as Local from '@boostercloud/framework-provider-local'
 
 Booster.configure('local', (config: BoosterConfig): void => {
   config.appName = 'my-store'
-  config.provider = Local.Provider
+  config.provider = Local.Provider()
 })
 
 Booster.configure('development', (config: BoosterConfig): void => {
   config.appName = 'my-store'
-  config.provider = AWSProvider()
+  config.provider = AWS.Provider()
 })
 
 Booster.configure('production', (config: BoosterConfig): void => {
@@ -23,5 +23,5 @@ Booster.configure('production', (config: BoosterConfig): void => {
   config.env['BOOSTER_APP_SUFFIX'] = appNameSuffix
 
   config.appName = 'my-store-' + appNameSuffix
-  config.provider = AWSProvider()
+  config.provider = AWS.Provider()
 })

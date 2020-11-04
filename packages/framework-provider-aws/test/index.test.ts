@@ -10,9 +10,9 @@ providerPackage.__set__('loadInfrastructurePackage', () => ({
 }))
 
 describe('the `framework-provider-aws` package', () => {
-  describe('the `AWSProvider` function', () => {
+  describe('the `Provider` function', () => {
     context('with no rockets', () => {
-      const providerLibrary: ProviderLibrary = providerPackage.AWSProvider()
+      const providerLibrary: ProviderLibrary = providerPackage.Provider()
 
       it('returns a `ProviderLibrary` object', () => {
         expect(providerLibrary).to.be.an('object')
@@ -44,7 +44,7 @@ describe('the `framework-provider-aws` package', () => {
         },
       ]
 
-      const providerLibrary: ProviderLibrary = providerPackage.AWSProvider(rockets)
+      const providerLibrary: ProviderLibrary = providerPackage.Provider(rockets)
 
       it('returns a `ProviderLibrary` object', () => {
         expect(providerLibrary).to.be.an('object')

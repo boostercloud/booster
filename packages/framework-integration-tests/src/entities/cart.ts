@@ -5,13 +5,19 @@ import { CartItemChanged } from '../events/cart-item-changed'
 import { ShippingAddressUpdated as UpdatedCartShippingAddress } from '../events/shipping-address-updated'
 import { Address } from '../common/address'
 import { CartItem } from '../common/cart-item'
+import { CartChecked } from '../events/cart-checked'
 
 /**
  * A cart is a temporary object where users accumulate all the items they want to buy
  */
 @Entity
 export class Cart {
-  public constructor(readonly id: UUID, readonly cartItems: Array<CartItem>, public shippingAddress?: Address) {}
+  public constructor(
+    readonly id: UUID,
+    readonly cartItems: Array<CartItem>,
+    public shippingAddress?: Address,
+    public checks = 0
+  ) {}
 
   @Reduces(CartItemChanged)
   public static changeItem(event: CartItemChanged, currentCart: Cart): Cart {
@@ -39,6 +45,16 @@ export class Cart {
     }
 
     currentCart.shippingAddress = event.address
+    return currentCart
+  }
+
+  @Reduces(CartChecked)
+  public static checkCart(event: CartChecked, currentCart: Cart): Cart {
+    if (currentCart == null) {
+      currentCart = new Cart(event.cartId, [])
+    }
+
+    currentCart.checks += 1
     return currentCart
   }
 }
