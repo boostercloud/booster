@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Class } from './typelevel'
 
-export type SearcherFunction<TObject> = (className: string, filters: Record<string, Filter<any>>) => Promise<Array<any>>
+export type SearcherFunction<TObject> = (
+  className: string,
+  filters: Record<string, FilterOld<any>>
+) => Promise<Array<any>>
 
 /**
  * This class represents a search intended to be run by any search provider. They way you use it
@@ -11,7 +14,9 @@ export type SearcherFunction<TObject> = (className: string, filters: Record<stri
 export class Searcher<TObject> {
   // private offset?: number
   // private limit?: number
-  readonly filters: Record<string, Filter<any>> = {}
+  private filters: FilterFor<TObject> = {}
+  /** @deprecated */
+  readonly filtersOld: Record<string, FilterOld<any>> = {}
 
   /**
    * @param objectClass The class of the object you want to run the search for.
@@ -21,6 +26,11 @@ export class Searcher<TObject> {
     private readonly objectClass: Class<TObject>,
     private readonly searcherFunction: SearcherFunction<TObject>
   ) {}
+
+  public filter(filters: FilterFor<TObject>): this {
+    this.filters = filters
+    return this
+  }
 
   /**
    * Adds a filter for the search. For example: If you want to search for people whose age is greater than 30
@@ -33,13 +43,14 @@ export class Searcher<TObject> {
    * @param property The property the filter will act upon
    * @param operation The filter operation.
    * @param values The values for the filter. Depending on the operation, you can specify here one or many values
+   * @deprecated Use "filter" instead
    */
-  public filter<TPropName extends keyof TObject, TPropType extends TObject[TPropName]>(
+  public filterOld<TPropName extends keyof TObject, TPropType extends TObject[TPropName]>(
     property: TPropName,
-    operation: Operation<TPropType>,
+    operation: OperationOld<TPropType>,
     ...values: Array<TPropType>
   ): this {
-    this.filters[property as string] = {
+    this.filtersOld[property as string] = {
       operation,
       values,
     }
@@ -56,13 +67,15 @@ export class Searcher<TObject> {
    * Do the actual search by sending all the configured filters to the provided search function
    */
   public async search(): Promise<Array<TObject>> {
-    const searchResult = await this.searcherFunction(this.objectClass.name, this.filters)
+    console.log(this.filters)
+    const searchResult = await this.searcherFunction(this.objectClass.name, this.filtersOld)
     return searchResult as Array<TObject>
   }
 }
 
-export interface Filter<TType> {
-  operation: Operation<TType>
+// ---------------- DEPRECATED ----------------------
+export interface FilterOld<TType> {
+  operation: OperationOld<TType>
   values: Array<TType>
 }
 
@@ -96,7 +109,95 @@ export enum BooleanOperations {
   '!=' = 'not_equal',
 }
 
+// eslint-disable-next-line prettier/prettier
+type OperationOld<TType> =
+  TType extends number ? EnumToUnion<typeof NumberOperations> :
+  TType extends string ? EnumToUnion<typeof StringOperations> :
+  TType extends boolean ? EnumToUnion<typeof BooleanOperations> : never
+
 type EnumToUnion<TEnum> = keyof TEnum
 
-// eslint-disable-next-line prettier/prettier
-type Operation<TType> = TType extends number ? EnumToUnion<typeof NumberOperations> : TType extends string ? EnumToUnion<typeof StringOperations> : TType extends boolean ? EnumToUnion<typeof BooleanOperations> : never
+// ----------------------------------------------------------------------------------------------------
+
+type FilterFor<TType> = {
+  [TProp in keyof TType]?: Operation<TType[TProp]>
+} &
+  FilterCombinators<TType>
+
+interface FilterCombinators<TType> {
+  and?: Array<FilterFor<TType>>
+  or?: Array<FilterFor<TType>>
+  not?: FilterFor<TType>
+}
+
+type Operation<TType> =
+  TType extends Array<infer TElementType> ? ArrayOperators<TElementType>
+  : TType extends string ? StringOperators<TType>
+  : TType extends number ? ScalarOperators<TType>
+  : TType extends boolean ? BooleanOperators<TType>
+  : TType extends Record<string, any> ? FilterFor<TType>
+  : never
+
+interface BooleanOperators<TType> {
+  eq?: TType
+  ne?: TType
+}
+interface ScalarOperators<TType> extends BooleanOperators<TType> {
+  gt?: TType
+  gte?: TType
+  lt?: TType
+  lte?: TType
+  in?: TType
+}
+
+interface StringOperators<TType> extends ScalarOperators<TType> {
+  beginsWith?: TType
+  contains?: TType
+}
+
+interface ArrayOperators<TElementType> {
+  includes?: TElementType extends string | number | boolean ? Array<TElementType>
+           : TElementType extends Array<infer TElementTypeElement> ? Array<ArrayOperators<TElementTypeElement>>
+           : TElementType extends Record<string, any> ? Array<FilterFor<TElementType>>
+           : never
+}
+
+// ----------------------------
+
+class Money {
+  constructor(public cents: number, public currency: string) {}
+}
+
+class Item {
+  constructor(public sku: string, public price: Money) {}
+}
+
+class Product {
+  constructor(
+    readonly id: string,
+    readonly stock: number,
+    public mainItem: Item,
+    public items: Array<Item>,
+    public buyers: Array<string>,
+    public days: Array<number>,
+    public pairs: Array<Array<number>>
+  ) {}
+}
+
+const filter: FilterFor<Product> = {
+  id: { beginsWith: 'pepe' },
+  stock: { lte: 90 },
+  mainItem: { price: { cents: { eq: 4 } } },
+  buyers: { includes: ['123'] },
+  days: { includes: [34, 4] },
+  items: { includes: [{ sku: { eq: '2' } }] },
+  pairs: {
+    includes: [
+      {
+        includes: [8],
+      },
+    ],
+  },
+}
+
+console.log(filter)

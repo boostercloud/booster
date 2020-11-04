@@ -1,4 +1,4 @@
-import { Filter, BoosterConfig, Logger, InvalidParameterError } from '@boostercloud/framework-types'
+import { FilterOld, BoosterConfig, Logger, InvalidParameterError } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
 import ExpressionAttributeValueMap = DocumentClient.ExpressionAttributeValueMap
@@ -9,7 +9,7 @@ export async function searchReadModel(
   config: BoosterConfig,
   logger: Logger,
   readModelName: string,
-  filters: Record<string, Filter<any>>
+  filters: Record<string, FilterOld<any>>
 ): Promise<Array<any>> {
   let params: DocumentClient.ScanInput = {
     TableName: config.resourceNames.forReadModel(readModelName),
@@ -32,13 +32,13 @@ export async function searchReadModel(
   return result.Items ?? []
 }
 
-function buildFilterExpression(filters: Record<string, Filter<any>>): string {
+function buildFilterExpression(filters: Record<string, FilterOld<any>>): string {
   return Object.entries(filters)
     .map(([propName, filter]) => buildOperation(propName, filter))
     .join(' AND ')
 }
 
-function buildOperation(propName: string, filter: Filter<any>): string {
+function buildOperation(propName: string, filter: FilterOld<any>): string {
   const holder = placeholderBuilderFor(propName)
   switch (filter.operation) {
     case '=':
@@ -72,7 +72,7 @@ function placeholderBuilderFor(propName: string): (valueIndex: number) => string
   return (valueIndex: number) => `:${propName}_${valueIndex}`
 }
 
-function buildExpressionAttributeNames(filters: Record<string, Filter<any>>): ExpressionAttributeNameMap {
+function buildExpressionAttributeNames(filters: Record<string, FilterOld<any>>): ExpressionAttributeNameMap {
   const attributeNames: ExpressionAttributeNameMap = {}
   for (const propName in filters) {
     attributeNames[`#${propName}`] = propName
@@ -80,7 +80,7 @@ function buildExpressionAttributeNames(filters: Record<string, Filter<any>>): Ex
   return attributeNames
 }
 
-function buildExpressionAttributeValues(filters: Record<string, Filter<any>>): ExpressionAttributeValueMap {
+function buildExpressionAttributeValues(filters: Record<string, FilterOld<any>>): ExpressionAttributeValueMap {
   const attributeValues: ExpressionAttributeValueMap = {}
   for (const propName in filters) {
     const filter = filters[propName]
