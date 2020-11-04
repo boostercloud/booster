@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from '../expect'
 import { fancy } from 'fancy-test'
-import { restore, fake } from 'sinon'
+import { restore, fake, replace } from 'sinon'
 import { ProviderLibrary, Logger } from '@boostercloud/framework-types'
 import { test } from '@oclif/test'
+import * as environment from '../../src/common/environment'
 
 // With this trick we can test non exported symbols
 const rewire = require('rewire')
@@ -24,8 +25,9 @@ describe('deploy', () => {
         const msg = 'weird exception'
         const fakeLoader = Promise.reject(new Error(msg))
         const fakeDeployer = fake()
+        replace(environment, 'currentEnvironment', fake.returns('test-env'))
 
-        await expect(runTasks('test-env', fakeLoader, fakeDeployer)).to.eventually.be.rejectedWith(msg)
+        await expect(runTasks(fakeLoader, fakeDeployer)).to.eventually.be.rejectedWith(msg)
         expect(fakeDeployer).not.to.have.been.called
       })
     })
@@ -35,8 +37,9 @@ describe('deploy', () => {
         const msg = 'An error when loading project'
         const fakeLoader = Promise.reject(new Error(msg))
         const fakeDeployer = fake()
+        replace(environment, 'currentEnvironment', fake.returns('test-env'))
 
-        await expect(runTasks('test-env', fakeLoader, fakeDeployer)).to.eventually.be.rejectedWith(msg)
+        await expect(runTasks(fakeLoader, fakeDeployer)).to.eventually.be.rejectedWith(msg)
         expect(fakeDeployer).not.to.have.been.called
       })
     })
@@ -56,7 +59,9 @@ describe('deploy', () => {
           logger.info('this is a progress update')
         })
 
-        await runTasks('test-env', fakeLoader, fakeDeployer)
+        replace(environment, 'currentEnvironment', fake.returns('test-env'))
+
+        await runTasks(fakeLoader, fakeDeployer)
 
         expect(ctx.stdout).to.include('Deployment complete')
 
@@ -71,7 +76,7 @@ describe('deploy', () => {
         .stdout()
         .command(['deploy'])
         .it('shows no environment provided error', (ctx) => {
-          expect(ctx.stdout).to.equal('Error: no environment name provided. Usage: `boost deploy -e <environment>`.\n')
+          expect(ctx.stdout).to.match(/No environment set/)
         })
     })
   })

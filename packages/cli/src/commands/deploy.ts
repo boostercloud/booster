@@ -5,16 +5,16 @@ import { BoosterConfig, Logger } from '@boostercloud/framework-types'
 import { Script } from '../common/script'
 import Brand from '../common/brand'
 import { logger } from '../services/logger'
+import { currentEnvironment, initializeEnvironment } from '../common/environment'
 
 // TODO: Before loading, we should check:
 //    * we're in a booster project
 //    * run the compiler to be sure that we're deploying the last version and stop the process if it fails
 const runTasks = async (
-  environment: string,
   loader: Promise<BoosterConfig>,
   deployer: (config: BoosterConfig, logger: Logger) => Promise<void>
 ): Promise<void> =>
-  Script.init(`boost ${Brand.dangerize('deploy')} [${environment}] 🚀`, loader)
+  Script.init(`boost ${Brand.dangerize('deploy')} [${currentEnvironment()}] 🚀`, loader)
     //TODO: We should install dependencies in production mode before deploying
     .step('Deploying', (config) => deployer(config, logger))
     .info('Deployment complete!')
@@ -33,11 +33,8 @@ export default class Deploy extends Command {
 
   public async run(): Promise<void> {
     const { flags } = this.parse(Deploy)
-    if (!flags.environment) {
-      console.log('Error: no environment name provided. Usage: `boost deploy -e <environment>`.')
-      return
+    if (initializeEnvironment(logger, flags.environment)) {
+      await runTasks(compileProjectAndLoadConfig(), deployToCloudProvider)
     }
-    process.env.BOOSTER_ENV = flags.environment
-    await runTasks(flags.environment, compileProjectAndLoadConfig(), deployToCloudProvider)
   }
 }

@@ -12,4 +12,5 @@ export interface BoosterApp {
     entityName: Class<TEntity>,
     entityID: UUID
   ): Promise<TEntity | undefined>
+  configuredEnvironments: Set<string>
 }
