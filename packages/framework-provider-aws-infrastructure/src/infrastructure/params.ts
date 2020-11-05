@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { Duration, Stack } from '@aws-cdk/core'
 import { FunctionProps, Runtime, StartingPosition } from '@aws-cdk/aws-lambda'
-import { BoosterConfig } from '@boostercloud/framework-types'
+import { BoosterConfig, JWT_ENV_VARS } from '@boostercloud/framework-types'
 import { RestApi } from '@aws-cdk/aws-apigateway'
 import { CfnApi } from '@aws-cdk/aws-apigatewayv2'
 import { environmentVarNames } from '@boostercloud/framework-provider-aws'
@@ -28,8 +28,8 @@ export function lambda(
       ...config.env, // Adds custom environment variables set by the user in the config file
       [environmentVarNames.restAPIURL]: baseURLForAPI(config, stack, apis.restAPI.restApiId),
       [environmentVarNames.websocketAPIURL]: baseURLForAPI(config, stack, apis.websocketAPI.ref),
-      [environmentVarNames.jwtIssuer]: userPool ? issuer(stack, userPool?.userPoolId) : '',
-      [environmentVarNames.jwksUri]: userPool ? jwksUri(stack, userPool?.userPoolId) : '',
+      [JWT_ENV_VARS.BOOSTER_JWT_ISSUER]: userPool ? issuer(stack, userPool.userPoolId) : '',
+      [JWT_ENV_VARS.BOOSTER_JWKS_URI]: userPool ? jwksUri(stack, userPool.userPoolId) : '',
     },
   }
 }

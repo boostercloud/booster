@@ -111,8 +111,10 @@ export class BoosterAuth {
 
   private static tokenToUserEnvelope(decodedToken: any): UserEnvelope {
     const username = decodedToken.email ?? decodedToken.phone_number
+    const id = decodedToken.sub
     const role = decodedToken['custom:role']
     return {
+      id,
       username,
       role: role?.trim() ?? '',
     }

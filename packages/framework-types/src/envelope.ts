@@ -78,6 +78,7 @@ export interface ConnectionDataEnvelope {
 }
 
 export interface UserEnvelope {
+  id?: string
   username: string
   role: string
 }

@@ -285,6 +285,7 @@ describe('the "verifyToken" method', () => {
     })
 
     const expectedUser: UserEnvelope = {
+      id: userId,
       username: email,
       role: 'User',
     }
