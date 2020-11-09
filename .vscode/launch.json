@@ -21,7 +21,8 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -39,7 +40,8 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -57,7 +59,8 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -75,7 +78,8 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -93,7 +97,8 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -111,7 +116,8 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -129,7 +135,8 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -147,7 +154,8 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -164,7 +172,26 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
-      "cwd": "${workspaceFolder}/packages/framework-integration-tests"
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+      "runtimeArgs": ["--preserve-symlinks"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Project Generator CLI Integration Tests",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--colors",
+        "--forbid-only",
+        "--config",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/cli/.mocharc.yml",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/cli/cli.project.integration.ts"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -181,7 +208,8 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
-      "cwd": "${workspaceFolder}/packages/framework-integration-tests"
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -198,7 +226,8 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
-      "cwd": "${workspaceFolder}/packages/framework-integration-tests"
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -215,7 +244,8 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
-      "cwd": "${workspaceFolder}/packages/framework-integration-tests"
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -232,7 +262,8 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
-      "cwd": "${workspaceFolder}/packages/framework-integration-tests"
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -249,7 +280,11 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
-      "cwd": "${workspaceFolder}/packages/framework-integration-tests"
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+      "runtimeArgs": ["--preserve-symlinks"],
+      "env": {
+        "BOOSTER_ENV": "local"
+      }
     },
     {
       "type": "node",
@@ -267,7 +302,8 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -285,7 +321,8 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"]
     }
   ]
 }

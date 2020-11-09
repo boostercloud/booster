@@ -2,7 +2,7 @@ import { confirmUser, confirmUserURL, createUser, signOutURL, signUpURL } from '
 import { expect } from 'chai'
 import fetch from 'cross-fetch'
 import { internet, random } from 'faker'
-import { signInURL } from '../local/utils'
+import { signInURL } from './utils'
 
 describe('With the auth API', () => {
   describe('sign-up', () => {
