@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-azure",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "Handle Booster's integration with Azure",
   "keywords": [
     "framework-provider-azure"
@@ -22,11 +22,11 @@
   "dependencies": {
     "@azure/cosmos": "^3.7.2",
     "@azure/functions": "^1.2.2",
-    "@boostercloud/framework-types": "^0.8.1"
+    "@boostercloud/framework-types": "^0.8.2"
   },
   "scripts": {
-    "lint": "eslint --ext '.js,.ts' **/*.ts",
-    "fix-lint": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
+    "lint:check": "eslint --ext '.js,.ts' **/*.ts",
+    "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",

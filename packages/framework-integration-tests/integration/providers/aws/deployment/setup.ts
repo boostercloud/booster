@@ -1,5 +1,5 @@
 import { deploy } from '../../../../src/deploy'
-import { sleep } from '../../helpers'
+import { sleep } from '../../../helper/sleep'
 import { setEnv, checkConfigAnd } from '../utils'
 
 before(async () => {

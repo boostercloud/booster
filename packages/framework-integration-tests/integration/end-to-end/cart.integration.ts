@@ -11,7 +11,7 @@ import { random, commerce, finance, lorem, internet } from 'faker'
 import { expect } from 'chai'
 import gql from 'graphql-tag'
 import { CartItem } from '../../src/common/cart-item'
-import { sleep } from '../../integration/providers/helpers'
+import { sleep } from '../helper/sleep'
 
 describe('Cart end-to-end tests', () => {
   let client: ApolloClient<NormalizedCacheObject>
@@ -100,7 +100,7 @@ describe('Cart end-to-end tests', () => {
         beforeEach(async () => {
           mockCartId = random.uuid()
           mockCartItemsCount = random.number({ min: 2, max: 5 })
-          const changeCartPromises: Array<Promise<any>> = []
+          const changeCartPromises: Array<Promise<unknown>> = []
 
           for (let i = 0; i < mockCartItemsCount; i++) {
             const mockProductId: string = random.uuid()
@@ -433,37 +433,6 @@ describe('Cart end-to-end tests', () => {
 
         expect(updatedCartData).to.be.deep.equal(expectedUpdatedResult)
       })
-    })
-  })
-
-  describe('Scheduled commands', () => {
-    it('scheduled command ran and created a product', async () => {
-      const scheduledProductSku = 'scheduled-product-created'
-
-      // Check that scheduled command created the new product
-      const products = await waitForIt(
-        () => {
-          return client.query({
-            query: gql`
-              query {
-                ProductReadModels {
-                  id
-                  sku
-                  displayName
-                  description
-                  price
-                  availability
-                  deleted
-                }
-              }
-            `,
-          })
-        },
-        (result) => result?.data?.ProductReadModels?.some((product: any) => product.sku === scheduledProductSku)
-      )
-
-      const product = products.data.ProductReadModels.find((product: any) => product.sku === scheduledProductSku)
-      expect(product).not.to.be.null
     })
   })
 })

@@ -11,9 +11,10 @@
     "packages/framework-provider-kubernetes-infrastructure",
     "packages/framework-core",
     "packages/cli",
-    "packages/framework-integration-tests"
+    "packages/framework-integration-tests",
+    "packages/rocket-static-sites-aws-infrastructure"
   ],
-  "version": "0.8.1",
+  "version": "0.8.2",
   "npmClient": "yarn",
   "useWorkspaces": true
 }

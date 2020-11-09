@@ -4,6 +4,7 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
+
     {
       "type": "node",
       "request": "launch",
@@ -20,7 +21,8 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -38,7 +40,8 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -56,7 +59,8 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -74,7 +78,8 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -92,7 +97,8 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -110,7 +116,8 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -128,7 +135,8 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -146,7 +154,44 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "CLI Integration Tests",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--colors",
+        "--forbid-only",
+        "--config",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/cli/.mocharc.yml",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/cli/**/*.integration.ts"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+      "runtimeArgs": ["--preserve-symlinks"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Project Generator CLI Integration Tests",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--colors",
+        "--forbid-only",
+        "--config",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/cli/.mocharc.yml",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/cli/cli.project.integration.ts"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -163,7 +208,8 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
-      "cwd": "${workspaceFolder}/packages/framework-integration-tests"
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -180,7 +226,26 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
-      "cwd": "${workspaceFolder}/packages/framework-integration-tests"
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+      "runtimeArgs": ["--preserve-symlinks"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "End-to-end Integration Tests",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--colors",
+        "--forbid-only",
+        "--config",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/end-to-end/.mocharc.yml",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/end-to-end/**/*.integration.ts"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -197,7 +262,8 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
-      "cwd": "${workspaceFolder}/packages/framework-integration-tests"
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -214,7 +280,11 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
-      "cwd": "${workspaceFolder}/packages/framework-integration-tests"
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+      "runtimeArgs": ["--preserve-symlinks"],
+      "env": {
+        "BOOSTER_ENV": "local"
+      }
     },
     {
       "type": "node",
@@ -232,7 +302,8 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"]
     },
     {
       "type": "node",
@@ -250,7 +321,8 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"]
     }
   ]
 }

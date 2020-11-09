@@ -15,6 +15,7 @@ import * as path from 'path'
 import { generate } from '../../services/generator'
 import { templates } from '../../templates'
 import { checkItIsABoosterProject } from '../../services/project-checker'
+import { classNameToFileName } from '../../common/filenames'
 
 export default class ReadModel extends Oclif.Command {
   public static description = 'create a new read model'
@@ -61,10 +62,13 @@ const run = async (name: string, rawFields: Array<string>, rawProjections: Array
     .done()
 
 function generateImports(info: ReadModelInfo): Array<ImportDeclaration> {
-  const eventsImports: Array<ImportDeclaration> = info.projections.map((projection) => ({
-    packagePath: `../entities/${projection.entityName}`,
-    commaSeparatedComponents: projection.entityName,
-  }))
+  const eventsImports: Array<ImportDeclaration> = info.projections.map((projection) => {
+    const fileName = classNameToFileName(projection.entityName)
+    return {
+      packagePath: `../entities/${fileName}`,
+      commaSeparatedComponents: projection.entityName,
+    }
+  })
 
   const coreComponents = ['ReadModel']
   if (info.projections.length > 0) {
