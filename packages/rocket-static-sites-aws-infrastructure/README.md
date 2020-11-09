@@ -2,7 +2,7 @@
 
 This package is a configurable Booster rocket to add static site deployment to your Booster applications. It uploads your root 
 
-## Usage
+## Usage
 
 Install this package as a dev dependency (It's a dev dependency because it's only used during deployment, but we don't want this code to be uploaded to the project lambdas)
 
