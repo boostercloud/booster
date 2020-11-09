@@ -6,7 +6,7 @@ import {
   createSandboxProject,
   removeFolders,
 } from '../helper/fileHelper'
-import path = require('path')
+import * as path from 'path'
 import { exec } from 'child-process-promise'
 
 const EVENT_ENTITY_ID_PLACEHOLDER = '/* the associated entity ID */'

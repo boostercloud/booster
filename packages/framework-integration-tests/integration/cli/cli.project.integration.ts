@@ -1,4 +1,4 @@
-import path = require('path')
+import * as path from 'path'
 import { exec } from 'child-process-promise'
 import * as chai from 'chai'
 import {
@@ -10,6 +10,7 @@ import {
   removeFolders,
 } from '../helper/fileHelper'
 import { ChildProcess } from 'child_process'
+import { forceLernaRebuild, symLinkBoosterDependencies } from '../helper/depsHelper'
 
 // The Booster CLI version used should match the integration tests' version
 const BOOSTER_VERSION = require('../../package.json').version
@@ -297,20 +298,11 @@ describe('Project', () => {
         }).timeout(TEST_TIMEOUT)
 
         it('compiles', async () => {
-          // To compile the project with the current version we need to replace all Booster dependencies
-          // by the versions under development.
-          for (const packageName of ['framework-core', 'framework-types', 'framework-provider-aws']) {
-            await exec(`npm install ../../../${packageName}`, { cwd: projectPath(projectName) })
-          }
-
-          for (const packageName of ['cli', 'framework-provider-aws-infrastructure']) {
-            await exec(`npm install -D ../../../${packageName}`, { cwd: projectPath(projectName) })
-          }
-
-          await exec('npm install', { cwd: projectPath(projectName) })
+          // Rewrite dependencies to use local versions
+          await symLinkBoosterDependencies(projectPath(projectName))
           // For some reason, the project doesn't compile if we don't re-compile the modules.
           // Maybe rewriting the dependencies messes up lerna's tricks ¯\_(ツ)_/¯
-          await exec('lerna clean --yes && lerna bootstrap && lerna run clean && lerna run compile')
+          await forceLernaRebuild()
 
           await expect(exec('npm run compile', { cwd: projectPath(projectName) })).to.be.eventually.fulfilled
         })

@@ -8,7 +8,7 @@ import {
   writeFileSync,
   copyFileSync,
 } from 'fs'
-import path = require('path')
+import * as path from 'path'
 
 export const loadFixture = (fixturePath: string, replacements?: Array<Array<string>>): string => {
   const template = readFileContent(`integration/fixtures/${fixturePath}`)

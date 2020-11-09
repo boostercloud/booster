@@ -1,12 +1,5 @@
-import * as path from 'path'
-import util = require('util')
-
-const exec = util.promisify(require('child_process').exec)
-
-const integrationTestsPackageRoot = path.dirname(__dirname)
+import { forceLernaRebuild } from '../helper/depsHelper'
 
 before(async () => {
-  await exec('lerna clean --yes && lerna bootstrap && lerna run clean && lerna run compile', {
-    cwd: integrationTestsPackageRoot,
-  })
+  await forceLernaRebuild()
 })

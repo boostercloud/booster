@@ -5,17 +5,18 @@ import gql from 'graphql-tag'
 import { random } from 'faker'
 import { expect } from 'chai'
 import * as DataStore from 'nedb'
-import { eventsDatabase } from '@boostercloud/framework-provider-local'
-import { EventEnvelope } from '@boostercloud/framework-types'
 import { waitForIt } from '../aws/utils'
+import { sandboxPath } from './constants'
 import util = require('util')
+import * as path from 'path'
 
 describe('commands', () => {
-  const events: DataStore<EventEnvelope> = new DataStore(eventsDatabase)
+  let events: DataStore<unknown>
 
   let client: ApolloClient<NormalizedCacheObject>
 
   before(async () => {
+    events = new DataStore(path.join(sandboxPath, '.booster', 'events.json'))
     client = await graphQLClient()
   })
 
