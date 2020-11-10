@@ -156,10 +156,7 @@ interface StringOperators<TType> extends ScalarOperators<TType> {
 }
 
 interface ArrayOperators<TElementType> {
-  includes?: TElementType extends string | number | boolean ? Array<TElementType>
-           : TElementType extends Array<infer TElementTypeElement> ? Array<ArrayOperators<TElementTypeElement>>
-           : TElementType extends Record<string, any> ? Array<FilterFor<TElementType>>
-           : never
+  includes?: TElementType
 }
 
 // ----------------------------
@@ -188,15 +185,11 @@ const filter: FilterFor<Product> = {
   id: { beginsWith: 'pepe' },
   stock: { lte: 90 },
   mainItem: { price: { cents: { eq: 4 } } },
-  buyers: { includes: ['123'] },
-  days: { includes: [34, 4] },
-  items: { includes: [{ sku: { eq: '2' } }] },
+  buyers: { includes: '123' },
+  days: { includes: 34 },
+  items: { includes: { sku: '2', price: { cents: 8, currency: 'EUR' } } },
   pairs: {
-    includes: [
-      {
-        includes: [8],
-      },
-    ],
+    includes: [8],
   },
 }
 
