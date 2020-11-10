@@ -16,7 +16,7 @@ export class ReadModelRegistry {
       })
     )
 
-    return (await queryPromise) as Array<ReadModelEnvelope>
+    return queryPromise as Promise<Array<ReadModelEnvelope>>
   }
 
   public async store(readModel: ReadModelEnvelope): Promise<void> {
@@ -35,6 +35,6 @@ export class ReadModelRegistry {
       })
     )
 
-    return (await deletePromise) as number
+    return deletePromise as Promise<number>
   }
 }
