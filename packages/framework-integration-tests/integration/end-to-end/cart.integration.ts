@@ -174,7 +174,7 @@ describe('Cart end-to-end tests', () => {
       // TODO: Make retrieval of auth token cloud agnostic
       await createUser(userEmail, mockPassword, 'UserWithEmail')
       userAuthInformation = await getUserAuthInformation(userEmail, mockPassword)
-      client = await graphQLClient(userAuthInformation.accessToken)
+      client = await graphQLClient(userAuthInformation.idToken)
     })
 
     context('Reducers', () => {
@@ -271,7 +271,7 @@ describe('Cart end-to-end tests', () => {
         const adminEmail: string = internet.email()
         await createUser(adminEmail, mockPassword, 'Admin')
         const adminUserAuthInformation = await getUserAuthInformation(adminEmail, mockPassword)
-        client = await graphQLClient(adminUserAuthInformation.accessToken)
+        client = await graphQLClient(adminUserAuthInformation.idToken)
 
         // Delete a product given an id
         await client.mutate({
@@ -288,7 +288,7 @@ describe('Cart end-to-end tests', () => {
         console.log('Waiting 1 second for deletion to complete...')
         await sleep(1000)
 
-        client = await graphQLClient(userAuthInformation.accessToken)
+        client = await graphQLClient(userAuthInformation.idToken)
         // Retrieve updated entity
         const queryResult = await waitForIt(
           () => {

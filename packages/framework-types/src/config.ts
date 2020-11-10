@@ -44,6 +44,8 @@ export class BoosterConfig {
   /** Environment variables set at deployment time on the target lambda functions */
   public readonly env: Record<string, string> = {}
 
+  private _tokenVerifier?: { issuer: string; jwksUri: string }
+
   public constructor(public readonly environmentName: string) {}
 
   public get resourceNames(): ResourceNames {
@@ -109,6 +111,21 @@ export class BoosterConfig {
     return value
   }
 
+  public get tokenVerifier(): { issuer: string; jwksUri: string } | undefined {
+    if (this._tokenVerifier) return this._tokenVerifier
+    if (process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER] && process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI]) {
+      return {
+        issuer: process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER] as string,
+        jwksUri: process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI] as string,
+      }
+    }
+    return undefined
+  }
+
+  public set tokenVerifier(tokenVerifier: { issuer: string; jwksUri: string } | undefined) {
+    this._tokenVerifier = tokenVerifier
+  }
+
   private validateAllMigrations(): void {
     for (const conceptName in this.migrations) {
       this.validateConceptMigrations(conceptName, this.migrations[conceptName])
@@ -127,6 +144,11 @@ export class BoosterConfig {
       }
     }
   }
+}
+
+export const JWT_ENV_VARS = {
+  BOOSTER_JWT_ISSUER: 'BOOSTER_JWT_ISSUER',
+  BOOSTER_JWKS_URI: 'BOOSTER_JWKS_URI',
 }
 
 interface ResourceNames {

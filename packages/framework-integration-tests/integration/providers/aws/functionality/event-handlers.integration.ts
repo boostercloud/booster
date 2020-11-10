@@ -24,7 +24,7 @@ describe('Event handlers', () => {
     await createUser(adminEmail, adminPassword, 'Admin')
     userAuthInformation = await getUserAuthInformation(adminEmail, adminPassword)
 
-    client = await graphQLClient(userAuthInformation.accessToken)
+    client = await graphQLClient(userAuthInformation.idToken)
   })
 
   context('move product', () => {

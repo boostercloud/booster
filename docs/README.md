@@ -53,6 +53,8 @@
 - [Features](#features)
   * [Authentication and Authorization](#authentication-and-authorization)
     + [Authentication API](#authentication-api)
+  * [Custom Authentication](#custom-authentication)
+    + [JWT Configuration](#jwt-configuration)
   * [GraphQL API](#graphql-api)
     + [Relationship between GraphQL operations and commands and read models](#relationship-between-graphql-operations-and-commands-and-read-models)
     + [How to send GraphQL request](#how-to-send-graphql-request)
@@ -1881,6 +1883,72 @@ POST https://<httpURL>/auth/refresh-token
 ```
 
 You will get a HTTP status code different from 2XX and a body with a message telling you the reason of the error.
+
+### Custom Authentication
+
+You can use the **JWT authorization mode** to authorize all incoming Booster requests. Your auth server will return JWT tokens
+wich will be decoded internally by Booster, after that, the required roles will be matched with the contained claims
+inside that token.
+
+In that way, you can use different auth providers, like Auth0, Firebase, Cognito, or simply create your own.
+
+#### JWT Configuration
+
+In order to use the JWT authorization you will need to set a `tokenVerifier` property which contains the following properties:
+
+- jwksUri: Public uri with the public keys the auth server used to sign in the JWT tokens, commonly known as a key sets.
+- issuer: Identifies the principal that issued the JWT tokens.
+
+Auth sample configuration:
+
+```typescript
+import { Booster } from '@boostercloud/framework-core'
+import { BoosterConfig } from '@boostercloud/framework-types'
+import * as AWS from '@boostercloud/framework-provider-aws'
+
+Booster.configure('production', (config: BoosterConfig): void => {
+  config.appName = 'demoapp'
+  config.provider = AWS.Provider
+  config.tokenVerifier = {
+    jwksUri: 'https://demoapp.auth0.com/.well-known/jwks.json',
+    issuer: 'auth0'
+  }
+})
+```
+
+In addition to that, you will need to configure your JWT tokens to include the custom claims required in your Booster app, i.e. if your command is declared in this way:
+
+```typescript
+@Command({
+  authorize: [Admin, User],
+})
+export class UpdateUser {
+  ...
+}
+```
+
+Your token should include a property `custom:role` with the value `Admin` or `User`. Here is an example of a Firebase token:
+
+```json
+{
+  'custom:role': 'User',
+  iss: 'https://securetoken.google.com/demoapp',
+  aud: 'demoapp',
+  auth_time: 1604676721,
+  user_id: 'xJY5Y6fTbVggNtDjaNh7cNSBd7q1',
+  sub: 'xJY5Y6fTbVggNtDjaNh7cNSBd7q1',
+  iat: 1604676721,
+  exp: 1604680321,
+  phone_number: '+999999999',
+  firebase: { ... }
+}
+```
+
+Once you have the token with the auth provider of choice, simply pass it in the requests through the header:
+
+```http request
+Authorization: Bearer <your JWT token>
+```
 
 ### GraphQL API
 

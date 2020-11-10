@@ -71,7 +71,7 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
     },
     // ProviderGraphQLLibrary
     graphQL: {
-      rawToEnvelope: rawGraphQLRequestToEnvelope.bind(null, userPool),
+      rawToEnvelope: rawGraphQLRequestToEnvelope,
       handleResult: requestSucceeded,
     },
     // ProviderAuthLibrary
