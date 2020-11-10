@@ -77,7 +77,7 @@ describe('Event handlers', () => {
         },
       }
       const stockMovedEvent = events.find((event) => event.typeName === 'StockMoved')
-      expect(stockMovedEvent).to.deep.contain(expectedStockMovedEvent)
+      expect(stockMovedEvent.value).to.deep.contain(expectedStockMovedEvent.value)
 
       const expectedProductAvailabilityChangedEvent = {
         // eslint-disable-next-line @typescript-eslint/camelcase
@@ -97,7 +97,7 @@ describe('Event handlers', () => {
         },
       }
       const productAvailabilityChangedEvent = events.find((event) => event.typeName === 'ProductAvailabilityChanged')
-      expect(productAvailabilityChangedEvent).to.deep.contain(expectedProductAvailabilityChangedEvent)
+      expect(productAvailabilityChangedEvent.value).to.deep.contain(expectedProductAvailabilityChangedEvent.value)
     })
   })
 })
