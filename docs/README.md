@@ -1886,7 +1886,7 @@ You will get a HTTP status code different from 2XX and a body with a message tel
 ### Custom Authentication
 
 You can use the **JWT authorization mode** to authorize all incoming Booster requests. Your auth server will return JWT tokens
-wich will be decoded internally by Booster, after decoding, the required roles will be matched with the contained claims
+wich will be decoded internally by Booster, after that, the required roles will be matched with the contained claims
 inside that token.
 
 In that way, you can use different auth providers, like Auth0, Firebase, Cognito, or simply create your own.
