@@ -19,7 +19,7 @@ export * from './services'
 const eventRegistry = new EventRegistry()
 const userApp: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
 
-export const Provider: ProviderLibrary = {
+export const Provider = (): ProviderLibrary => ({
   // ProviderEventsLibrary
   events: {
     rawToEnvelopes: rawEventsToEnvelopes,
@@ -77,6 +77,6 @@ export const Provider: ProviderLibrary = {
   // ProviderInfrastructureGetter
   infrastructure: () =>
     require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
-}
+})
 
 function notImplemented(): void {}

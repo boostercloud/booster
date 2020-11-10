@@ -8,7 +8,7 @@ import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
 import ScanOutput = DocumentClient.ScanOutput
 import QueryOutput = DocumentClient.QueryOutput
 import { internet } from 'faker'
-import { sleep } from '../helpers'
+import { sleep } from '../../helper/sleep'
 import { WebSocketLink } from 'apollo-link-ws'
 import { getMainDefinition } from 'apollo-utilities'
 import { split, ApolloLink } from 'apollo-link'
@@ -423,22 +423,22 @@ export async function graphqlSubscriptionsClient(
         super(url, protocols)
 
         this.addListener('open', (): void => {
-          console.log('[GraphQL socket] on open')
+          console.debug('[GraphQL socket] on open')
         })
         this.addListener('ping', (): void => {
-          console.log('[GraphQL socket] on "ping"')
+          console.debug('[GraphQL socket] on "ping"')
         })
         this.addListener('pong', (): void => {
-          console.log('[GraphQL socket] on "pong"')
+          console.debug('[GraphQL socket] on "pong"')
         })
         this.addListener('message', (data: WebSocket.Data): void => {
-          console.log('[GraphQL socket] on message: ', data)
+          console.debug('[GraphQL socket] on message: ', data)
         })
         this.addListener('close', (code: number, message: string): void => {
-          console.log('[GraphQL socket] on close: ', code, message)
+          console.debug('[GraphQL socket] on close: ', code, message)
         })
         this.addListener('error', (err: Error): void => {
-          console.log('[GraphQL socket] on error: ', err.message)
+          console.debug('[GraphQL socket] on error: ', err.message)
         })
       }
     }
@@ -564,31 +564,27 @@ export async function getEventsByEntityId(entityID: string): Promise<any> {
 export async function waitForIt<TResult>(
   tryFunction: () => Promise<TResult>,
   checkResult: (result: TResult) => boolean,
-  tryEveryMs = 1000,
+  trialDelayMs = 1000,
   timeoutMs = 60000
 ): Promise<TResult> {
+  console.debug('[waitForIt] start')
   const start = Date.now()
   return doWaitFor()
 
   async function doWaitFor(): Promise<TResult> {
-    console.debug('[waitForIt] Executing function')
+    console.debug('.')
     const res = await tryFunction()
-    console.debug('[waitForIt] Checking result')
     if (checkResult(res)) {
-      console.debug('[waitForIt] Result is expected. Wait finished.')
+      console.debug('[waitForIt] match!')
       return res
     }
-    console.debug('[waitForIt] Result is not expected. Keep trying...')
     const elapsed = Date.now() - start
-    console.debug('[waitForIt] Time elapsed (ms): ' + elapsed)
 
     if (elapsed > timeoutMs) {
-      throw new Error('[waitForIt] Timeout reached waiting for a successful execution')
+      throw new Error('[waitForIt] Timeout reached')
     }
 
-    const nextExecutionDelay = (timeoutMs - elapsed) % tryEveryMs
-    console.debug('[waitForIt] Trying again in ' + nextExecutionDelay)
-    await sleep(nextExecutionDelay)
+    await sleep(trialDelayMs)
     return doWaitFor()
   }
 }

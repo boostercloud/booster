@@ -3,7 +3,6 @@ export const template = `*-debug.log
 .nyc_output
 dist/
 lib/
-package-lock.json
 tmp/
 node_modules
 *.tsbuildinfo

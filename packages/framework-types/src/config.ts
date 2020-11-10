@@ -18,7 +18,6 @@ import { Level } from './logger'
  */
 export class BoosterConfig {
   public logLevel: Level = Level.debug
-  private readonly _configuredEnvironments: Set<string> = new Set<string>()
   private _provider?: ProviderLibrary
   public appName = 'new-booster-app'
   public readonly subscriptions = {
@@ -57,7 +56,6 @@ export class BoosterConfig {
       eventsStore: applicationStackName + '-events-store',
       subscriptionsStore: applicationStackName + '-subscriptions-store',
       connectionsStore: applicationStackName + '-connections-store',
-      staticWebsite: applicationStackName + '-static-site',
       forReadModel(readModelName: string): string {
         return applicationStackName + '-' + readModelName
       },
@@ -113,14 +111,6 @@ export class BoosterConfig {
     return value
   }
 
-  public addConfiguredEnvironment(environmentName: string): void {
-    this._configuredEnvironments.add(environmentName)
-  }
-
-  public get configuredEnvironments(): Set<string> {
-    return this._configuredEnvironments
-  }
-
   public get tokenVerifier(): { issuer: string; jwksUri: string } | undefined {
     if (this._tokenVerifier) return this._tokenVerifier
     if (process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER] && process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI]) {
@@ -166,7 +156,6 @@ interface ResourceNames {
   eventsStore: string
   subscriptionsStore: string
   connectionsStore: string
-  staticWebsite: string
   forReadModel(entityName: string): string
 }
 

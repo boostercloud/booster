@@ -1,14 +1,18 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from '../../expect'
 import { BoosterConfig, UUID } from '@boostercloud/framework-types'
-import { ApplicationStackBuilder } from '../../../src/infrastructure/stacks/application-stack'
 import { App } from '@aws-cdk/core'
 import { Function } from '@aws-cdk/aws-lambda'
 import { CfnUserPool, CfnUserPoolDomain, UserPoolClient } from '@aws-cdk/aws-cognito'
 import { RestApi } from '@aws-cdk/aws-apigateway'
 import { CfnApi } from '@aws-cdk/aws-apigatewayv2'
-import StaticWebsiteStack from '../../../src/infrastructure/stacks/static-website-stack'
-import { stub } from 'sinon'
+import { InfrastructureRocket } from '../../../src/rockets/infrastructure-rocket'
+import { fake } from 'sinon'
+import { StackProps } from '@aws-cdk/core'
+import { Stack } from '@aws-cdk/core'
+
+const rewire = require('rewire')
+const applicationStack = rewire('../../../src/infrastructure/stacks/application-stack')
 
 describe('the application stack builder', () => {
   class TestReadModel1 {
@@ -34,9 +38,7 @@ describe('the application stack builder', () => {
   it('builds the application stack of a simple app correctly', () => {
     const boosterApp = new App()
 
-    const staticWebsiteBuilder = stub(StaticWebsiteStack.prototype, 'build')
-
-    new ApplicationStackBuilder(config).buildOn(boosterApp)
+    new applicationStack.ApplicationStackBuilder(config).buildOn(boosterApp)
 
     const appStackName = config.resourceNames.applicationStack
     const appStack = boosterApp.node.findChild(appStackName).node
@@ -76,8 +78,6 @@ describe('the application stack builder', () => {
     expect(appStack.tryFindChild(eventsStore)).not.to.be.undefined
     // ReadModels
     readModels.forEach(({ name }) => expect(appStack.tryFindChild(name)).not.to.be.undefined)
-    // Static website deployer related
-    expect(staticWebsiteBuilder).calledOnce
 
     // Now, check all the construct that must NOT be created (related to roles)
     expect(restAPI.root.getResource('auth')).to.be.undefined
@@ -95,7 +95,7 @@ describe('the application stack builder', () => {
     }
 
     const boosterApp = new App()
-    new ApplicationStackBuilder(config).buildOn(boosterApp)
+    new applicationStack.ApplicationStackBuilder(config).buildOn(boosterApp)
     const appStackName = config.resourceNames.applicationStack
     const appStack = boosterApp.node.findChild(appStackName).node
 
@@ -116,10 +116,12 @@ describe('the application stack builder', () => {
     // Lambdas
     expect(numberOfLambdas).to.equal(4)
     expect(appStack.tryFindChild(preSignUpValidator)).not.to.be.undefined
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     lambdas.forEach((lambda: any) => {
       expect(lambda.environment.BOOSTER_ENV.value).to.equal('test')
       expect(lambda.environment.A_CUSTOM_ENV_VARIABLE.value).to.equal('important-value')
     })
+
     // UserPool-related
     expect(appStack.tryFindChild(userPool)).not.to.be.undefined
     expect(appStack.tryFindChild(userPoolDomain)).not.to.be.undefined
@@ -127,5 +129,29 @@ describe('the application stack builder', () => {
     expect(appStack.tryFindChild(clientID)).not.to.be.undefined
     // Check all read models
     readModels.forEach(({ name }) => expect(appStack.tryFindChild(name)).not.to.be.undefined)
+  })
+
+  it('allows rockets to extend the stack', () => {
+    const boosterApp = new App()
+
+    const fakeBuildStack = fake(
+      (app: App, applicationStack: string, props?: StackProps): Stack => new Stack(app, applicationStack, props)
+    )
+
+    const restoreBuildStack = applicationStack.__set__('buildStack', fakeBuildStack)
+
+    const fakeRocket: InfrastructureRocket = {
+      mountStack: fake(),
+      unmountStack: fake(),
+    }
+
+    new applicationStack.ApplicationStackBuilder(config).buildOn(boosterApp, [fakeRocket])
+
+    const stack = fakeBuildStack.returnValues[0]
+
+    console.log(stack)
+
+    expect(fakeRocket.mountStack).to.have.been.calledWith(stack)
+    restoreBuildStack()
   })
 })

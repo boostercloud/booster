@@ -3,6 +3,7 @@ import * as path from 'path'
 import { exec } from 'child-process-promise'
 import { wrapExecError } from '../common/errors'
 import { checkItIsABoosterProject } from './project-checker'
+import { currentEnvironment } from '../common/environment'
 
 export async function compileProjectAndLoadConfig(): Promise<BoosterConfig> {
   const userProjectPath = process.cwd()
@@ -21,24 +22,32 @@ async function compileProject(projectPath: string): Promise<void> {
 
 function readProjectConfig(userProjectPath: string): Promise<BoosterConfig> {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const userProject = require(path.join(userProjectPath, 'dist', 'index.js'))
+  const userProject = loadUserProject(userProjectPath)
   return new Promise((resolve): void => {
-    const projectBooster: BoosterApp = userProject.Booster
-    projectBooster.configureCurrentEnv((config: BoosterConfig): void => {
-      checkEnvironmentWasConfigured(config)
+    const app: BoosterApp = userProject.Booster
+    app.configureCurrentEnv((config: BoosterConfig): void => {
+      checkEnvironmentWasConfigured(app)
       resolve(config)
     })
   })
 }
 
-function checkEnvironmentWasConfigured(config: BoosterConfig): void {
-  if (!config.configuredEnvironments.has(config.environmentName)) {
-    const errorMessage = config.configuredEnvironments.size
-      ? `The environment '${config.environmentName}' does not match any of the environments` +
-        ` you used to configure your Booster project, which are: '${Array.from(config.configuredEnvironments).join(
-          ', '
-        )}'`
-      : "You haven't configured any environment. Please make sure you have at least one environment configured by calling 'Booster.configure' method (normally done inside the folder 'src/config')"
-    throw new Error(errorMessage)
+function loadUserProject(userProjectPath: string): { Booster: BoosterApp } {
+  return require(path.join(userProjectPath, 'dist', 'index.js'))
+}
+
+function checkEnvironmentWasConfigured(app: BoosterApp): void {
+  const currentEnv = currentEnvironment()
+  if (!currentEnv) {
+    throw new Error(
+      "You haven't configured any environment. Please make sure you have at least one environment configured by calling 'Booster.configure' method (normally done inside the folder 'src/config')"
+    )
+  }
+  if (!app.configuredEnvironments.has(currentEnv)) {
+    throw new Error(
+      `The environment '${currentEnv}' does not match any of the environments you used to configure your Booster project, which are: '${Array.from(
+        app.configuredEnvironments
+      ).join(', ')}'`
+    )
   }
 }

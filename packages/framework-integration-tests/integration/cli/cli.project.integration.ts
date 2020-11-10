@@ -1,9 +1,17 @@
-import path = require('path')
-import util = require('util')
+import * as path from 'path'
+import { exec } from 'child-process-promise'
 import * as chai from 'chai'
-import { readFileContent } from '../helper/fileHelper'
-import * as fs from 'fs'
-import { ChildProcess, ExecException } from 'child_process'
+import {
+  createFolder,
+  dirContents,
+  fileExists,
+  loadFixture,
+  readFileContent,
+  removeFolders,
+} from '../helper/fileHelper'
+import { ChildProcess } from 'child_process'
+import { forceLernaRebuild, symLinkBoosterDependencies } from '../helper/depsHelper'
+
 // The Booster CLI version used should match the integration tests' version
 const BOOSTER_VERSION = require('../../package.json').version
 
@@ -12,82 +20,112 @@ chai.use(require('chai-as-promised'))
 
 const expect = chai.expect
 
-const exec = util.promisify(require('child_process').exec)
-
-const PROJECT_NAME_FIXTURE_PLACEHOLDER = 'project_name_fixture_placeholder'
 const TEST_TIMEOUT = 80000
-const DOWN_KEY = '\u001b[B'
 const DESCRIPTION = 'cart-demo'
 const VERSION = '1.0.0'
 const AUTHOR = 'The Agile Monkeys'
 const HOMEPAGE = 'https://www.booster.cloud/'
-const LICENSE = 'MIT'
+const LICENSE = 'Apache'
 const REPO_URL = 'https://github.com/boostercloud/booster/'
 const PROVIDER = '@boostercloud/framework-provider-aws'
-const CART_DEMO_SHORT_FLAGS = 'cart-demo-short-flags'
-const CART_DEMO_LONG_FLAGS = 'cart-demo-long-flags'
-const CART_DEMO_COMMAND_PROMPT = 'cart-demo-command-prompt'
-const CART_DEMO_INVALID_PROVIDER = 'cart-demo-invalid-provider'
-const CART_DEMO_CUSTOM_PROVIDER = 'cart-demo-custom-provider'
-const CART_DEMO_FLAGS_AND_COMMAND_PROMPT = 'cart-demo-flags-and-command-prompt'
-
-export const CLI_PROJECT_INTEGRATION_TEST_FOLDERS: Array<string> = [
-  CART_DEMO_SHORT_FLAGS,
-  CART_DEMO_LONG_FLAGS,
-  CART_DEMO_COMMAND_PROMPT,
-  CART_DEMO_INVALID_PROVIDER,
-  CART_DEMO_CUSTOM_PROVIDER,
-  CART_DEMO_FLAGS_AND_COMMAND_PROMPT,
-]
 
 describe('Project', () => {
-  // Required by Github actions CI/CD, because it doesn't have git configured
+  const SANDBOX_INTEGRATION_DIR = 'new-project-integration-sandbox'
+
   before(async () => {
+    // Required by Github actions CI/CD, because it doesn't have git configured
     await exec('git config --global user.name || git config --global user.name "Booster Test"')
     await exec('git config --global user.email || git config --global user.email "test@booster.cloud"')
+
+    createFolder(SANDBOX_INTEGRATION_DIR)
   })
-  const cliPath = path.join('..', 'cli', 'bin', 'run')
+
+  after(() => {
+    removeFolders([SANDBOX_INTEGRATION_DIR])
+  })
+
+  const cliPath = path.join('..', '..', 'cli', 'bin', 'run')
   const expectedOutputRegex = new RegExp(
-    /(.+) boost (.+)?new(.+)? (.+)\n- Creating project root\n(.+) Creating project root\n- Generating config files\n(.+) Generating config files\n- Installing dependencies\n(.+) Installing dependencies\n(.+) Initializing git repository\n(.+) Initializing git repository\n(.+) Project generated!\n/
+    [
+      'boost new',
+      'Creating project root',
+      'Generating config files',
+      'Installing dependencies',
+      'Initializing git repository',
+      'Project generated',
+    ].join('(.|\n)*'),
+    'm'
   )
 
-  const sendToStdin = (childProcess: ChildProcess, promptAnswers: Array<string>, delay: number): void => {
-    let currentRepetitions = 0
-    const totalRepetitions = promptAnswers.length
-    let answers: Array<string> = promptAnswers.slice()
-
-    const intervalID = setInterval(() => {
-      childProcess.stdin?.write(answers[0])
-      answers = answers.slice(1)
-
-      if (++currentRepetitions === totalRepetitions) {
-        clearInterval(intervalID)
-      }
-    }, delay)
+  interface PromptAnswers {
+    description?: string
+    version?: string
+    author?: string
+    website?: string
+    license?: string
+    repository?: string
+    provider?: 'default' | string
   }
 
-  const execNewProject = (
-    projectName: string,
-    promptAnswers: Array<string> = [],
-    flags: Array<string> = []
-  ): Promise<string> => {
-    return new Promise<string>((resolve, reject): void => {
-      const childProcess = require('child_process').exec(
-        `${cliPath} new:project ${projectName} ${flags.join(' ')}`,
-        (error: ExecException | null, stdout: string) => {
-          childProcess.stdin.end()
-          if (error) {
-            reject(error)
-            return
-          }
-          resolve(stdout)
-        }
-      )
+  const DOWN_KEY = '\u001b[B'
+  const INTRO = '\r\n'
 
-      if (promptAnswers.length > 0) {
-        sendToStdin(childProcess, promptAnswers, 1000)
+  const handlePrompt = async (cliProcess: ChildProcess, answers: PromptAnswers): Promise<void> => {
+    const writtenAnswers: string[] = []
+    return new Promise((resolve, reject) => {
+      if (cliProcess.stdout) {
+        cliProcess.stdout.on('data', (data) => {
+          for (const prompt in answers) {
+            if (!writtenAnswers.includes(prompt) && new RegExp(prompt).test(data)) {
+              // We need to handle the provider selector
+              if (prompt == 'provider') {
+                if (answers[prompt as keyof PromptAnswers] == 'default') {
+                  // Just "hit intro" to select the first option
+                  cliProcess.stdin?.write(INTRO)
+                  break
+                } else {
+                  // "Push" the "down arrow" to show the prompt
+                  cliProcess.stdin?.write(DOWN_KEY)
+                  cliProcess.stdin?.write(answers[prompt as keyof PromptAnswers] + INTRO)
+                }
+              } else {
+                cliProcess.stdin?.write(answers[prompt as keyof PromptAnswers] + INTRO)
+              }
+              writtenAnswers.push(prompt)
+              break
+            }
+          }
+        })
+
+        cliProcess.stdout.on('end', () => {
+          cliProcess.stdin?.end()
+          resolve()
+        })
+
+        cliProcess.stdout.on('error', () => {
+          cliProcess.stdin?.end()
+          reject()
+        })
+      } else {
+        reject('Unable to read CLI prompt.')
       }
     })
+  }
+
+  const execNewProject = async (
+    projectName: string,
+    flags: Array<string> = [],
+    promptAnswers?: PromptAnswers
+  ): Promise<string> => {
+    const cliProcess = exec(`${cliPath} new:project ${projectName} ${flags.join(' ')}`, {
+      cwd: SANDBOX_INTEGRATION_DIR,
+    })
+
+    if (promptAnswers) {
+      await handlePrompt(cliProcess.childProcess, promptAnswers)
+    }
+
+    return (await cliProcess).stdout
   }
 
   const packageJsonAssertions = (
@@ -116,82 +154,86 @@ describe('Project', () => {
     })
   }
 
-  const assertions = async (stdout: string, projectName: string): Promise<void> => {
-    const CART_DEMO_CONFIG = `${projectName}/src/config/config.ts`
-    const CART_DEMO_INDEX = `${projectName}/src/index.ts`
-    const CART_DEMO_ESLINT_IGNORE = `${projectName}/.eslintignore`
-    const CART_DEMO_ESLINT_RC = `${projectName}/.eslintrc.js`
-    const CART_DEMO_GIT_IGNORE = `${projectName}/.gitignore`
-    const CART_DEMO_PRETTIER_RC = `${projectName}/.prettierrc.yaml`
-    const CART_DEMO_PACKAGE_JSON = `${projectName}/package.json`
-    const CART_DEMO_TS_CONFIG_ESLINT = `${projectName}/tsconfig.eslint.json`
-    const CART_DEMO_TS_CONFIG = `${projectName}/tsconfig.json`
+  const projectPath = (projectName: string, fileName = ''): string =>
+    path.join(SANDBOX_INTEGRATION_DIR, projectName, fileName)
+
+  const projectFileExists = (projectName: string, fileName: string): boolean =>
+    fileExists(projectPath(projectName, fileName))
+
+  const projectFileContents = (projectName: string, fileName: string): string =>
+    readFileContent(projectPath(projectName, fileName))
+
+  const projectDirContents = (projectName: string, dirName: string): Array<string> =>
+    dirContents(projectPath(projectName, dirName))
+
+  const assertions = async (stdout: string, projectName: string, flags?: string[]): Promise<void> => {
+    const fileContents = projectFileContents.bind(null, projectName)
+    const dirContents = projectDirContents.bind(null, projectName)
 
     expect(stdout).to.match(expectedOutputRegex)
 
-    expect(fs.existsSync(`${projectName}/node_modules`)).true
-    expect(fs.existsSync(`${projectName}/package-lock.json`)).true
-    expect(fs.existsSync(`${projectName}/.git`)).true
-    expect(fs.readdirSync(`${projectName}/src/commands`).length).equals(0)
-    expect(fs.readdirSync(`${projectName}/src/common`).length).equals(0)
-    expect(fs.readdirSync(`${projectName}/src/config`).length).equals(1)
-    expect(fs.readdirSync(`${projectName}/src/entities`).length).equals(0)
-    expect(fs.readdirSync(`${projectName}/src/events`).length).equals(0)
+    expect(dirContents('/src/commands')).is.empty
+    expect(dirContents('/src/common')).is.empty
+    expect(dirContents('/src/config').length).equals(1)
+    expect(dirContents('/src/entities')).is.empty
+    expect(dirContents('/src/events')).is.empty
 
-    const expectedCartDemoConfig = readFileContent('integration/fixtures/cart-demo/src/config/config.ts')
-    const cartDemoConfigContent = readFileContent(CART_DEMO_CONFIG)
-    expect(cartDemoConfigContent).to.equal(
-      expectedCartDemoConfig.replace(PROJECT_NAME_FIXTURE_PLACEHOLDER, projectName)
-    )
+    const expectedCartDemoConfig = loadFixture('cart-demo/src/config/config.ts', [
+      ['project_name_placeholder', projectName],
+    ])
+    const cartDemoConfigContent = fileContents('src/config/config.ts')
+    expect(cartDemoConfigContent).to.equal(expectedCartDemoConfig)
 
-    const expectedCartDemoIndex = readFileContent('integration/fixtures/cart-demo/src/index.ts')
-    const cartDemoIndexContent = readFileContent(CART_DEMO_INDEX)
+    const expectedCartDemoIndex = loadFixture('cart-demo/src/index.ts')
+    const cartDemoIndexContent = fileContents('src/index.ts')
     expect(cartDemoIndexContent).to.equal(expectedCartDemoIndex)
 
-    const expectedCartDemoEslintIgnore = readFileContent('integration/fixtures/cart-demo/.eslintignore')
-    const cartDemoEslintIgnoreContent = readFileContent(CART_DEMO_ESLINT_IGNORE)
+    const expectedCartDemoEslintIgnore = loadFixture('cart-demo/.eslintignore')
+    const cartDemoEslintIgnoreContent = fileContents('.eslintignore')
     expect(cartDemoEslintIgnoreContent).to.equal(expectedCartDemoEslintIgnore)
 
-    const expectedCartDemoEslintRc = readFileContent('integration/fixtures/cart-demo/.eslintrc.js')
-    const cartDemoEslintRcContent = readFileContent(CART_DEMO_ESLINT_RC)
+    const expectedCartDemoEslintRc = loadFixture('cart-demo/.eslintrc.js')
+    const cartDemoEslintRcContent = fileContents('.eslintrc.js')
     expect(cartDemoEslintRcContent).to.equal(expectedCartDemoEslintRc)
 
-    const expectedCartDemoGitIgnore = readFileContent('integration/fixtures/cart-demo/.gitignore')
-    const cartDemoGitIgnoreContent = readFileContent(CART_DEMO_GIT_IGNORE)
+    const expectedCartDemoGitIgnore = loadFixture('cart-demo/.gitignore')
+    const cartDemoGitIgnoreContent = fileContents('.gitignore')
     expect(cartDemoGitIgnoreContent).to.equal(expectedCartDemoGitIgnore)
 
-    const expectedCartDemoPretierRc = readFileContent('integration/fixtures/cart-demo/.prettierrc.yaml')
-    const cartDemoPretierRcContent = readFileContent(CART_DEMO_PRETTIER_RC)
+    const expectedCartDemoPretierRc = loadFixture('cart-demo/.prettierrc.yaml')
+    const cartDemoPretierRcContent = fileContents('.prettierrc.yaml')
     expect(cartDemoPretierRcContent).to.equal(expectedCartDemoPretierRc)
 
-    const expectedCartDemoPackageJson = readFileContent('integration/fixtures/cart-demo/package.json')
-    const cartDemoPackageJsonContent = readFileContent(CART_DEMO_PACKAGE_JSON)
-    packageJsonAssertions(
-      expectedCartDemoPackageJson.replace(PROJECT_NAME_FIXTURE_PLACEHOLDER, projectName),
-      cartDemoPackageJsonContent,
-      ['dependencies', 'devDependencies']
-    )
+    const defaults = flags?.includes('--default')
+    const expectedCartDemoPackageJson = loadFixture('cart-demo/package.json', [
+      ['project_name_placeholder', projectName],
+      ['description_placeholder', defaults ? '' : DESCRIPTION],
+      ['version_placeholder', defaults ? '0.1.0' : VERSION],
+      ['author_placeholder', defaults ? '' : AUTHOR],
+      ['homepage_placeholder', defaults ? '' : HOMEPAGE],
+      ['license_placeholder', defaults ? 'MIT' : LICENSE],
+      ['repository_placeholder', defaults ? '' : REPO_URL],
+    ])
+    const cartDemoPackageJsonContent = fileContents('package.json')
+    packageJsonAssertions(expectedCartDemoPackageJson, cartDemoPackageJsonContent, ['dependencies', 'devDependencies'])
     const cartDemoPackageJsonObject = JSON.parse(cartDemoPackageJsonContent)
     expect(cartDemoPackageJsonObject['dependencies']['@boostercloud/framework-core']).to.equal(`^${BOOSTER_VERSION}`)
     expect(cartDemoPackageJsonObject['dependencies']['@boostercloud/framework-types']).to.equal(`^${BOOSTER_VERSION}`)
     expect(cartDemoPackageJsonObject['devDependencies']['@boostercloud/cli']).to.equal(`^${BOOSTER_VERSION}`)
 
-    const expectedCartDemoTsConfigEslint = readFileContent('integration/fixtures/cart-demo/tsconfig.eslint.json')
-    const cartDemoTsConfigEslintContent = readFileContent(CART_DEMO_TS_CONFIG_ESLINT)
+    const expectedCartDemoTsConfigEslint = loadFixture('cart-demo/tsconfig.eslint.json')
+    const cartDemoTsConfigEslintContent = fileContents('tsconfig.eslint.json')
     expect(cartDemoTsConfigEslintContent).to.equal(expectedCartDemoTsConfigEslint)
 
-    const expectedCartDemoTsConfig = readFileContent('integration/fixtures/cart-demo/tsconfig.json')
-    const cartDemoTsConfigContent = readFileContent(CART_DEMO_TS_CONFIG)
+    const expectedCartDemoTsConfig = loadFixture('cart-demo/tsconfig.json')
+    const cartDemoTsConfigContent = fileContents('tsconfig.json')
     expect(cartDemoTsConfigContent).to.equal(expectedCartDemoTsConfig)
-
-    await expect(exec('npm run compile', { cwd: projectName })).to.be.eventually.fulfilled
-    await expect(exec('npm run lint:check', { cwd: projectName })).to.be.eventually.fulfilled
   }
 
   context('Valid project', () => {
     describe('using flags', () => {
-      it('should create a new project using short flags to configure it, and the project compiles', async () => {
-        const projectName = CART_DEMO_SHORT_FLAGS
+      it('should create a new project using short flags to configure it', async () => {
+        const projectName = 'cart_demo_short_flags'
         const flags = [
           `-a "${AUTHOR}"`,
           `-d "${DESCRIPTION}"`,
@@ -200,14 +242,17 @@ describe('Project', () => {
           `-p "${PROVIDER}"`,
           `-r "${REPO_URL}"`,
           `-v "${VERSION}"`,
+          // We skip dependencies and git installation to make this test faster
+          '--skipInstall',
+          '--skipGit',
         ]
-        const stdout = await execNewProject(projectName, [], flags)
+        const stdout = await execNewProject(projectName, flags)
 
         await assertions(stdout, projectName)
       }).timeout(TEST_TIMEOUT)
 
-      it('should create a new project using long flags to configure it, and the project compiles', async () => {
-        const projectName = CART_DEMO_LONG_FLAGS
+      it('should create a new project using long flags to configure it', async () => {
+        const projectName = 'cart_demo_long_flags'
         const flags = [
           `--author "${AUTHOR}"`,
           `--description "${DESCRIPTION}"`,
@@ -216,60 +261,116 @@ describe('Project', () => {
           `--providerPackageName "${PROVIDER}"`,
           `--repository "${REPO_URL}"`,
           `--version "${VERSION}"`,
+          // We skip dependencies and git installation to make this test faster
+          '--skipInstall',
+          '--skipGit',
         ]
-        const stdout = await execNewProject(projectName, [], flags)
+        const stdout = await execNewProject(projectName, flags)
 
         await assertions(stdout, projectName)
+      }).timeout(TEST_TIMEOUT)
+
+      context('with default parameters', async () => {
+        const projectName = 'cart-demo-default'
+        const flags = ['--default']
+        let stdout: string
+
+        before(async () => {
+          stdout = await execNewProject(projectName, flags)
+        })
+
+        it('generates the expected project', async () => {
+          await assertions(stdout, projectName, flags)
+        })
+
+        it('installs dependencies', () => {
+          expect(projectFileExists(projectName, 'node_modules')).to.be.true
+          expect(projectDirContents(projectName, 'node_modules')).not.to.be.empty
+          expect(projectFileExists(projectName, 'package-lock.json')).to.be.true
+        })
+
+        it('initializes git', () => {
+          expect(projectFileExists(projectName, '.git')).to.be.true
+        })
+
+        it('passes linter', async () => {
+          await expect(exec('npm run lint:check', { cwd: projectPath(projectName) })).to.be.eventually.fulfilled
+        }).timeout(TEST_TIMEOUT)
+
+        it('compiles', async () => {
+          // Rewrite dependencies to use local versions
+          await symLinkBoosterDependencies(projectPath(projectName))
+          // For some reason, the project doesn't compile if we don't re-compile the modules.
+          // Maybe rewriting the dependencies messes up lerna's tricks ¯\_(ツ)_/¯
+          await forceLernaRebuild()
+
+          await expect(exec('npm run compile', { cwd: projectPath(projectName) })).to.be.eventually.fulfilled
+        })
+      })
+
+      it('initializes a git repo', async () => {
+        const projectName = 'cart-demo-with-git'
+        // We skip dependencies installation to make the test faster
+        const flags = ['--default', '--skipInstall']
+
+        await execNewProject(projectName, flags)
       }).timeout(TEST_TIMEOUT)
     })
 
     describe('using command prompt', () => {
-      it('should create a new project, and the project compiles', async () => {
-        const projectName = CART_DEMO_COMMAND_PROMPT
-        const promptAnswers = [
-          `${DESCRIPTION}\r\n'`,
-          `${VERSION}\r\n`,
-          `${AUTHOR}\r\n`,
-          `${HOMEPAGE}\r\n`,
-          `${LICENSE}\r\n`,
-          `${REPO_URL}\r\n`,
-          '\r\n',
-        ]
-        const stdout = await execNewProject(projectName, promptAnswers)
+      it('should create a new project', async () => {
+        const projectName = 'cart_demo_command_prompt'
+        const promptAnswers = {
+          description: DESCRIPTION,
+          version: VERSION,
+          author: AUTHOR,
+          website: HOMEPAGE,
+          license: LICENSE,
+          repository: REPO_URL,
+          provider: 'default', // Just "hit enter" to choose the default one
+        }
+        // We skip dependencies and git installation to make this test faster
+        const stdout = await execNewProject(projectName, ['--skipInstall', '--skipGit'], promptAnswers)
 
         await assertions(stdout, projectName)
       }).timeout(TEST_TIMEOUT)
 
-      it('should create a new project using a custom provider, and the project compiles', async () => {
-        const projectName = CART_DEMO_CUSTOM_PROVIDER
-        const promptAnswers = [
-          `${DESCRIPTION}\r\n'`,
-          `${VERSION}\r\n`,
-          `${AUTHOR}\r\n`,
-          `${HOMEPAGE}\r\n`,
-          `${LICENSE}\r\n`,
-          `${REPO_URL}\r\n`,
-          `${DOWN_KEY}\r\n`,
-          `${PROVIDER}\r\n`,
-        ]
-        const stdout = await execNewProject(projectName, promptAnswers)
+      it('should create a new project using a custom provider', async () => {
+        const projectName = 'cart_demo_custom_provider'
+        const promptAnswers = {
+          description: DESCRIPTION,
+          version: VERSION,
+          author: AUTHOR,
+          website: HOMEPAGE,
+          license: LICENSE,
+          repository: REPO_URL,
+          provider: PROVIDER,
+        }
+        // We skip dependencies and git installation to make this test faster
+        const stdout = await execNewProject(projectName, ['--skipInstall', '--skipGit'], promptAnswers)
 
         await assertions(stdout, projectName)
       }).timeout(TEST_TIMEOUT)
     })
 
     describe('using flags and command prompt', () => {
-      it('should create a new project, and the project compiles', async () => {
-        const projectName = CART_DEMO_FLAGS_AND_COMMAND_PROMPT
-        const promptAnswers = [
-          `${DESCRIPTION}\r\n'`,
-          `${VERSION}\r\n`,
-          `${AUTHOR}\r\n`,
-          `${HOMEPAGE}\r\n`,
-          `${LICENSE}\r\n`,
+      it('should create a new project', async () => {
+        const projectName = 'cart_demo_flags_and_command_prompt'
+        const promptAnswers = {
+          description: DESCRIPTION,
+          version: VERSION,
+          author: AUTHOR,
+          website: HOMEPAGE,
+          license: LICENSE,
+        }
+        const flags = [
+          `--providerPackageName "${PROVIDER}"`,
+          `--repository "${REPO_URL}"`,
+          // We skip dependencies and git installation to make this test faster
+          '--skipInstall',
+          '--skipGit',
         ]
-        const flags = [`--providerPackageName "${PROVIDER}"`, `--repository "${REPO_URL}"`]
-        const stdout = await execNewProject(projectName, promptAnswers, flags)
+        const stdout = await execNewProject(projectName, flags, promptAnswers)
 
         await assertions(stdout, projectName)
       }).timeout(TEST_TIMEOUT)
@@ -279,17 +380,18 @@ describe('Project', () => {
   context('Invalid project', () => {
     describe('missing project name', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:project`)
+        const { stderr } = await exec(`${cliPath} new:project`, { cwd: SANDBOX_INTEGRATION_DIR })
 
-        expect(stderr).to.equal("You haven't provided a project name, but it is required, run with --help for usage\n")
+        expect(stderr).to.match(/You haven't provided a project name, but it is required, run with --help for usage/)
       })
     })
 
     describe('using an invalid provider', () => {
       it('should fail', async () => {
         const expectedOutputRegex = new RegExp(
-          /(.+) boost (.+)?new(.+)? (.+)\n- Creating project root\n(.+) Creating project root\n- Generating config files\n(.+) Generating config files\n- Installing dependencies\n/
+          ['boost new', 'Creating project root', 'Generating config files', 'Installing dependencies'].join('(.|\n)*')
         )
+
         const flags = [
           `--author "${AUTHOR}"`,
           `--description "${DESCRIPTION}"`,
@@ -298,8 +400,11 @@ describe('Project', () => {
           '--providerPackageName "invalid-provider"',
           `--repository "${REPO_URL}"`,
           `--version "${VERSION}"`,
+          // We skip dependencies and git installation to make this test faster
+          '--skipInstall',
+          '--skipGit',
         ]
-        const stdout = await execNewProject(CART_DEMO_INVALID_PROVIDER, [], flags)
+        const stdout = await execNewProject('cart_demo_invalid_provider', flags)
 
         expect(stdout).to.match(expectedOutputRegex)
       }).timeout(TEST_TIMEOUT)
