@@ -54,6 +54,7 @@
   * [Authentication and Authorization](#authentication-and-authorization)
     + [Authentication API](#authentication-api)
   * [Custom Authentication](#custom-authentication)
+    + [JWT Configuration](#jwt-configuration)
   * [GraphQL API](#graphql-api)
     + [Relationship between GraphQL operations and commands and read models](#relationship-between-graphql-operations-and-commands-and-read-models)
     + [How to send GraphQL request](#how-to-send-graphql-request)
