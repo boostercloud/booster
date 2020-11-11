@@ -15,22 +15,19 @@ Booster is a pre-release framework under heavy development, so non-backward-comp
 
 Refer to [Release Notes](https://github.com/boostercloud/booster/releases) for more specific information about changes of each iteration.
 
-## Overview
+## The "Booster Way"
 
-Booster is a high-level framework for _TypeScript_ to build _Serverless_ applications with built-in business-logic-level abstractions.
+Booster is a highly opinionated true-serverless framework based on the following principles:
 
-Serverless architectures have great advantages (especially regarding scalability) useful for any production-grade application, but they also
-present some important challenges (mainly related to complexity).
-
-If a genie gave us three Serverless wishes, we would ask for:
-
-- Smoother learning curves beyond the getting-started guide.
-- Easy-to-use conventions and standards for common recurrent problems.
-- Higher-level abstractions that make it easier to represent business rules in the cloud.
-
-Booster provides a set of highly opinionated conventions and sensible defaults to automatically build and provision the
-cloud architecture needed to run your projects without asking you to write any configuration at all.
-In fact, the configuration is inferred _automatically_ from the code you write.
+* *Play nicely*: Booster is not here to replace your toolkit, but to expand it. Booster's goal is to come along well together with your existing auth, queues, databases and services, providing a modern and swift tool to build new functionality that really squeezes the cloud.
+* *DDD:* Software should be designed around business-level concepts to ease team's communication. All code in Booster is defined on terms of Commands, Events, Handlers and Entities, limiting the need of artificial developers-only constructs.
+* *CQRS and Event-Sourcing:* Booster is designed around the concepts of CQRS and Event-Sourcing. This design has many advantages regarding scalability and data management. It even allows you to travel back in time!
+* *The cloud is the machine:* We believe that infrastructure should be created transparently in the same way that a compiler hides the details of the target processor. We often think about Booster as the "TypeScript-to-Cloud compiler".
+* *True Serverless*: Serverless is about stop caring about your servers, but many implementations still require long YAML files to describe your infrastructure, and you really need to know what you're doing. True Serverless means that you don't even care about cloud configuration, Booster will figure it out for you based on the code you write.
+* *Convention over Configuration:* We prefer to provide  standardized highly-opinionated modules than highly-configurable ones. This helps us to keep your code small and follow the best security and structure practices when deploying your applications to the cloud. High consistency in your project and code structure also helps to abstract out most of the boilerplate.
+* *Don't Repeat Yourself (Extreme edition):* /The only code that matters is the one that makes your application different/. We push TypeScript structure and type system to the limit to avoid the need of writing repetitive code, like object-to-JSON serializations, API or database schemas or redundant architecture layers. 
+* *Self-documenting APIs* We adopted GraphQL because it's a self-documenting standard. You can grab ApolloClient and start using a Booster backend in a minute. We try to be as close as that with any other integration.
+* *Developer's productivity:* Software development is fun, and a modern tool should make it even funnier, reducing the effort needed for mundane tasks. Booster provides code generators to help you quick start new projects and objects, and the framework types and APIs are hand-crafted to help your IDE to help you.
 
 ## Documentation
 
@@ -42,8 +39,8 @@ Find step-by-step guides and example apps in the [Examples](docs/examples) secti
 
 ## Ask the community
 
-If you have any question that's not covered by the documentation and examples, go ahead and ask the community in
-this repo [issues](https://github.com/boostercloud/booster/issues).
+If you have any question that's not covered by the documentation and examples, go ahead and ask the community in [Discord](https://discord.gg/k7b4B8CDtT)
+or go ahead and [create a new issue](https://github.com/boostercloud/booster/issues/new).
 
 ## Contributing
 
