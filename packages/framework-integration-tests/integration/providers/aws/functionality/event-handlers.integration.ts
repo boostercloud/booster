@@ -14,6 +14,7 @@ import { expect } from 'chai'
 
 describe('Event handlers', () => {
   let adminEmail: string
+  let userId: string | undefined
   const adminPassword = 'Enable_G0d_Mode3e!'
 
   let userAuthInformation: UserAuthInformation
@@ -23,7 +24,7 @@ describe('Event handlers', () => {
     adminEmail = internet.email()
     await createUser(adminEmail, adminPassword, 'Admin')
     userAuthInformation = await getUserAuthInformation(adminEmail, adminPassword)
-
+    userId = userAuthInformation.id
     client = await graphQLClient(userAuthInformation.idToken)
   })
 
@@ -74,10 +75,11 @@ describe('Event handlers', () => {
         currentUser: {
           username: adminEmail,
           role: 'Admin',
+          id: userId,
         },
       }
       const stockMovedEvent = events.find((event) => event.typeName === 'StockMoved')
-      expect(stockMovedEvent.value).to.deep.contain(expectedStockMovedEvent.value)
+      expect(stockMovedEvent).to.deep.contain(expectedStockMovedEvent)
 
       const expectedProductAvailabilityChangedEvent = {
         // eslint-disable-next-line @typescript-eslint/camelcase
@@ -94,10 +96,11 @@ describe('Event handlers', () => {
         currentUser: {
           username: adminEmail,
           role: 'Admin',
+          id: userId,
         },
       }
       const productAvailabilityChangedEvent = events.find((event) => event.typeName === 'ProductAvailabilityChanged')
-      expect(productAvailabilityChangedEvent.value).to.deep.contain(expectedProductAvailabilityChangedEvent.value)
+      expect(productAvailabilityChangedEvent).to.deep.contain(expectedProductAvailabilityChangedEvent)
     })
   })
 })
