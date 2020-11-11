@@ -115,6 +115,7 @@ export interface UserAuthInformation {
   refreshToken: string
   expiresIn?: number
   tokenType?: string
+  id?: string
 }
 
 export async function userPool(): Promise<StackResourceDetail> {
@@ -239,7 +240,15 @@ export const getUserAuthInformation = async (email: string, password: string): P
     },
   })
 
-  return await response.json()
+  const userAuthInformation = await response.json()
+  userAuthInformation.id = await getCognitoUserId(userAuthInformation.accessToken)
+  return userAuthInformation
+}
+
+const getCognitoUserId = async (accessToken: string): Promise<string> => {
+  const cognitoUser = await cognitoIdentityServiceProvider.getUser({ AccessToken: accessToken }).promise()
+  // The username in Cognito references is a UUID
+  return cognitoUser.Username
 }
 
 export const refreshUserAuthInformation = async (refreshToken: string): Promise<UserAuthInformation> => {
