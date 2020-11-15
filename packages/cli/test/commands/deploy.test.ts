@@ -62,7 +62,7 @@ describe('deploy', () => {
 
       const pruneDependenciesSpy = spy(pruneDependencies)
       deploy.__set__('pruneDependencies', pruneDependenciesSpy)
-      await runTasks(false, 'test-env', fakeLoader, fakeDeployer)
+      await runTasks(false, fakeLoader, fakeDeployer)
         
       expect(pruneDependenciesSpy).to.have.been.calledOnce
 
@@ -86,7 +86,7 @@ describe('deploy', () => {
 
       const reinstallDependenciesSpy = spy(reinstallDependencies)
       deploy.__set__('reinstallDependencies', reinstallDependenciesSpy)
-      await runTasks(false, 'test-env', fakeLoader, fakeDeployer)
+      await runTasks(false, fakeLoader, fakeDeployer)
         
       expect(reinstallDependenciesSpy).to.have.been.calledOnce
 
