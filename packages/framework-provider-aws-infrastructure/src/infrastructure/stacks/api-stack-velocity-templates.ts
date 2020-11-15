@@ -45,6 +45,7 @@ export const CognitoTemplates = {
     response: `#set($root = $input.path('$'))
                {
                    "accessToken": "$root.AuthenticationResult.AccessToken",
+                   "idToken": "$root.AuthenticationResult.IdToken",
                    "expiresIn": "$root.AuthenticationResult.ExpiresIn",
                    "refreshToken": "$root.AuthenticationResult.RefreshToken",
                    "tokenType": "$root.AuthenticationResult.TokenType"
@@ -61,7 +62,8 @@ export const CognitoTemplates = {
               }`,
     response: `#set($root = $input.path('$'))
                {
-                   "accessToken": "$root.AuthenticationResult.AccessToken",
+                  "accessToken": "$root.AuthenticationResult.AccessToken",
+                  "idToken": "$root.AuthenticationResult.IdToken",
                    "expiresIn": "$root.AuthenticationResult.ExpiresIn",
                    "refreshToken": "$root.AuthenticationResult.RefreshToken",
                    "tokenType": "$root.AuthenticationResult.TokenType"

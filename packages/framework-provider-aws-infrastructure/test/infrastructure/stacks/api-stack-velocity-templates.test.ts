@@ -152,6 +152,7 @@ describe('CognitoTemplates', () => {
         const input = {
           AuthenticationResult: {
             AccessToken: 'access-token',
+            IdToken: 'id-token',
             ExpiresIn: '123456',
             RefreshToken: 'refresh-token',
             TokenType: 'Bearer',
@@ -159,6 +160,7 @@ describe('CognitoTemplates', () => {
         }
         const expectedOutput = {
           accessToken: input.AuthenticationResult.AccessToken,
+          idToken: input.AuthenticationResult.IdToken,
           expiresIn: input.AuthenticationResult.ExpiresIn,
           refreshToken: input.AuthenticationResult.RefreshToken,
           tokenType: input.AuthenticationResult.TokenType,
@@ -232,6 +234,7 @@ describe('CognitoTemplates', () => {
         const input = {
           AuthenticationResult: {
             AccessToken: 'access-token',
+            IdToken: 'id-token',
             ExpiresIn: '123456',
             RefreshToken: 'refresh-token',
             TokenType: 'Bearer',
@@ -239,6 +242,7 @@ describe('CognitoTemplates', () => {
         }
         const expectedOutput = {
           accessToken: input.AuthenticationResult.AccessToken,
+          idToken: input.AuthenticationResult.IdToken,
           expiresIn: input.AuthenticationResult.ExpiresIn,
           refreshToken: input.AuthenticationResult.RefreshToken,
           tokenType: input.AuthenticationResult.TokenType,

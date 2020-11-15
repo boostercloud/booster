@@ -1,12 +1,10 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from '../expect'
 import { fancy } from 'fancy-test'
-import { restore, fake, spy } from 'sinon'
-// import { restore, fake } from 'sinon'
-
+import { restore, fake, spy, replace } from 'sinon'
 import { ProviderLibrary, Logger } from '@boostercloud/framework-types'
 import { test } from '@oclif/test'
-// import * as deploy from '../../src/commands/deploy'
+import * as environment from '../../src/common/environment'
 
 // With this trick we can test non exported symbols
 const rewire = require('rewire')
@@ -29,8 +27,13 @@ describe('deploy', () => {
         const msg = 'weird exception'
         const fakeLoader = Promise.reject(new Error(msg))
         const fakeDeployer = fake()
+        replace(environment, 'currentEnvironment', fake.returns('test-env'))
 
-        await expect(runTasks(false, 'test-env', fakeLoader, fakeDeployer)).to.eventually.be.rejectedWith(msg)
+// <<<<<<< HEAD
+//         await expect(runTasks(false, 'test-env', fakeLoader, fakeDeployer)).to.eventually.be.rejectedWith(msg)
+// =======
+        await expect(runTasks(false, fakeLoader, fakeDeployer)).to.eventually.be.rejectedWith(msg)
+// >>>>>>> master
         expect(fakeDeployer).not.to.have.been.called
       })
     })
@@ -40,8 +43,13 @@ describe('deploy', () => {
         const msg = 'An error when loading project'
         const fakeLoader = Promise.reject(new Error(msg))
         const fakeDeployer = fake()
+        replace(environment, 'currentEnvironment', fake.returns('test-env'))
 
-        await expect(runTasks(false, 'test-env', fakeLoader, fakeDeployer)).to.eventually.be.rejectedWith(msg)
+// <<<<<<< HEAD
+//         await expect(runTasks(false, 'test-env', fakeLoader, fakeDeployer)).to.eventually.be.rejectedWith(msg)
+// =======
+        await expect(runTasks(false, fakeLoader, fakeDeployer)).to.eventually.be.rejectedWith(msg)
+// >>>>>>> master
         expect(fakeDeployer).not.to.have.been.called
       })
     })
@@ -62,7 +70,7 @@ describe('deploy', () => {
 
       const pruneDependenciesSpy = spy(pruneDependencies)
       deploy.__set__('pruneDependencies', pruneDependenciesSpy)
-      await runTasks(false, 'test-env', fakeLoader, fakeDeployer)
+      await runTasks(false, fakeLoader, fakeDeployer)
         
       expect(pruneDependenciesSpy).to.have.been.calledOnce
 
@@ -86,7 +94,7 @@ describe('deploy', () => {
 
       const reinstallDependenciesSpy = spy(reinstallDependencies)
       deploy.__set__('reinstallDependencies', reinstallDependenciesSpy)
-      await runTasks(false, 'test-env', fakeLoader, fakeDeployer)
+      await runTasks(false, fakeLoader, fakeDeployer)
         
       expect(reinstallDependenciesSpy).to.have.been.calledOnce
 
@@ -109,7 +117,13 @@ describe('deploy', () => {
           logger.info('this is a progress update')
         })
 
-        await runTasks(false, 'test-env', fakeLoader, fakeDeployer)
+// <<<<<<< HEAD
+        // await runTasks(false, 'test-env', fakeLoader, fakeDeployer)
+// =======
+        replace(environment, 'currentEnvironment', fake.returns('test-env'))
+
+        await runTasks(false, fakeLoader, fakeDeployer)
+// >>>>>>> master
 
         expect(ctx.stdout).to.include('Deployment complete')
 
@@ -124,7 +138,7 @@ describe('deploy', () => {
         .stdout()
         .command(['deploy'])
         .it('shows no environment provided error', (ctx) => {
-          expect(ctx.stdout).to.equal('Error: no environment name provided. Usage: `boost deploy -e <environment>`.\n')
+          expect(ctx.stdout).to.match(/No environment set/)
         })
     })
   })

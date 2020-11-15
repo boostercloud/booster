@@ -15,10 +15,10 @@ import {
   GraphQLStop,
   Logger,
   MessageTypes,
-  ProviderAuthLibrary,
   ProviderConnectionsLibrary,
   UserEnvelope,
 } from '@boostercloud/framework-types'
+import { BoosterAuth } from '../../../booster-auth'
 
 export interface GraphQLWebsocketHandlerCallbacks {
   onStartOperation: (
@@ -32,7 +32,6 @@ export class GraphQLWebsocketHandler {
   public constructor(
     private readonly config: BoosterConfig,
     private readonly logger: Logger,
-    private readonly authManager: ProviderAuthLibrary,
     private readonly connectionManager: ProviderConnectionsLibrary,
     private readonly callbacks: GraphQLWebsocketHandlerCallbacks
   ) {}
@@ -78,7 +77,7 @@ export class GraphQLWebsocketHandler {
   private async handleInit(connectionID: string, clientMessage: GraphQLInit): Promise<void> {
     let userEnvelope: UserEnvelope | undefined
     if (clientMessage.payload?.Authorization) {
-      userEnvelope = await this.authManager.fromAuthToken(clientMessage.payload.Authorization)
+      userEnvelope = await BoosterAuth.verifyToken(this.config, clientMessage.payload.Authorization)
     }
     const nowEpoch = Math.floor(new Date().getTime() / 1000)
     const connectionData: ConnectionDataEnvelope = {

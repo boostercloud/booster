@@ -60,8 +60,8 @@ jobs:
           AWS_REGION: us-east-1
         run: npx lerna run integration --stream
 
-      - name: Restore yarn.lock after integration tests
-        run: git restore yarn.lock
+      - name: Discard all the changes after integration tests
+        run: git stash
 
       - uses: theam/actions/lerna-semantic-publish@master
         env:

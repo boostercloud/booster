@@ -1,7 +1,7 @@
 {
   "name": "@boostercloud/cli",
   "description": "CLI of the Booster Cloud Framework, the next level of abstraction for cloud-native applications",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
   "publishConfig": {
@@ -12,8 +12,8 @@
   },
   "bugs": "https://github.com/boostercloud/booster/issues",
   "dependencies": {
-    "@boostercloud/framework-core": "^0.8.1",
-    "@boostercloud/framework-types": "^0.8.1",
+    "@boostercloud/framework-core": "^0.9.0",
+    "@boostercloud/framework-types": "^0.9.0",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^2",
@@ -23,6 +23,7 @@
     "fp-ts": "^2.0.3",
     "fs-extra": "^8.1.0",
     "globby": "^8",
+    "inflected": "^2.1.0",
     "inquirer": "^7.0.0",
     "mustache": "^3.0.1",
     "ora": "^3.4.0",
@@ -34,6 +35,7 @@
     "@types/child-process-promise": "^2.2.1",
     "@types/faker": "^4.1.11",
     "@types/fs-extra": "^8.0.0",
+    "@types/inflected": "^1.1.29",
     "@types/inquirer": "^6.5.0",
     "@types/mustache": "^0.8.32",
     "@types/rewire": "^2.5.28",
@@ -63,8 +65,8 @@
   },
   "repository": "boostercloud/booster",
   "scripts": {
-    "lint": "eslint --ext '.js,.ts' **/*.ts",
-    "fix-lint": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
+    "lint:check": "eslint --ext '.js,.ts' **/*.ts",
+    "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",

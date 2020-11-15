@@ -2,7 +2,7 @@ import { GraphQLFieldConfigMap, GraphQLID, GraphQLNonNull, GraphQLObjectType } f
 import { ResolverBuilder, TargetTypesMap } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
 import { GraphQLQueryGenerator } from './graphql-query-generator'
-import * as inflection from 'inflection'
+import * as inflected from 'inflected'
 
 export class GraphQLSubscriptionGenerator {
   public constructor(
@@ -47,7 +47,7 @@ export class GraphQLSubscriptionGenerator {
     for (const name in this.targetTypes) {
       const type = this.targetTypes[name]
       const graphQLType = this.typeInformer.getGraphQLTypeFor(type.class)
-      subscriptions[inflection.pluralize(name)] = {
+      subscriptions[inflected.pluralize(name)] = {
         type: graphQLType,
         args: this.queryGenerator.generateFilterArguments(type),
         resolve: (source) => source,
