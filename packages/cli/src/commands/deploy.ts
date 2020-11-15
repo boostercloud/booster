@@ -8,6 +8,7 @@ import { logger } from '../services/logger'
 import { exec } from 'child-process-promise'
 import { wrapExecError } from '../common/errors'
 import * as path from 'path'
+import { currentEnvironment, initializeEnvironment } from '../common/environment'
 
 async function pruneDependencies(config: BoosterConfig): Promise<void> {
   try {
@@ -32,11 +33,10 @@ async function reinstallDependencies(skipRestoreDependencies: boolean, config: B
 //    * run the compiler to be sure that we're deploying the last version and stop the process if it fails
 const runTasks = async (
   skipRestoreDependencies: boolean,
-  environment: string,
   loader: Promise<BoosterConfig>,
   deployer: (config: BoosterConfig, logger: Logger) => Promise<void>
 ): Promise<void> =>
-  Script.init(`boost ${Brand.dangerize('deploy')} [${environment}] 🚀`, loader)
+  Script.init(`boost ${Brand.dangerize('deploy')} [${currentEnvironment()}] 🚀`, loader)
     //TODO: We should install dependencies in production mode before deploying
     .step('Removing dev dependencies', pruneDependencies)
     .step('Deploying', (config) => deployer(config, logger))
@@ -61,13 +61,12 @@ export default class Deploy extends Command {
 
   public async run(): Promise<void> {
     const { flags } = this.parse(Deploy)
-    if (!flags.environment) {
-      console.log('Error: no environment name provided. Usage: `boost deploy -e <environment>`.')
-      return
+    if (initializeEnvironment(logger, flags.environment)) {
+      await runTasks(false, compileProjectAndLoadConfig(), deployToCloudProvider)
     }
 
     process.env.BOOSTER_ENV = flags.environment
-    await runTasks(flags.skipRestoreDependencies, flags.environment, compileProjectAndLoadConfig(), deployToCloudProvider)
+    await runTasks(flags.skipRestoreDependencies, compileProjectAndLoadConfig(), deployToCloudProvider)
 
   }
 }

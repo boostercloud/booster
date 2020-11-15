@@ -1,6 +1,6 @@
 import { UUID } from '@boostercloud/framework-types'
-import { ProductUpdated } from '../../../events/ProductUpdated'
-import { ProductUpdateReason } from '../../../events/ProductUpdated'
+import { ProductUpdated } from '../../../events/product-updated'
+import { ProductUpdateReason } from '../../../events/product-updated'
 import { SKU } from '../../../common/sku'
 import { Money } from '../../../common/money'
 import { Picture } from '../../../common/picture'

@@ -1,8 +1,9 @@
 import { expect } from '../expect'
-import { restore, fake } from 'sinon'
+import { restore, fake, replace } from 'sinon'
 import rewire = require('rewire')
 import { ProviderLibrary } from '@boostercloud/framework-types'
 import { test } from '@oclif/test'
+import * as environment from '../../src/common/environment'
 
 const start = rewire('../../src/commands/start')
 const runTasks = start.__get__('runTasks')
@@ -22,8 +23,9 @@ describe('start', () => {
 
       const fakeLoader = fake.resolves(fakeConfig)
       const fakeRunner = fake()
+      replace(environment, 'currentEnvironment', fake.returns('test-env'))
 
-      await runTasks('test-env', 3000, fakeLoader, fakeRunner)
+      await runTasks(3000, fakeLoader, fakeRunner)
 
       expect(fakeRunner).to.have.been.calledOnce
     })
@@ -35,7 +37,7 @@ describe('start', () => {
         .stdout()
         .command(['start'])
         .it('shows no environment provided error', (ctx) => {
-          expect(ctx.stdout).to.equal('Error: no environment name provided. Usage: `boost start -e <environment>`.\n')
+          expect(ctx.stdout).to.match(/No environment set/)
         })
     })
   })

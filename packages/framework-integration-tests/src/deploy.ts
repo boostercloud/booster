@@ -1,7 +1,6 @@
-import util = require('util')
-import path = require('path')
-import { ChildProcess, spawn } from 'child_process'
-const exec = util.promisify(require('child_process').exec)
+import * as path from 'path'
+import { ChildProcess } from 'child_process'
+import { exec, ChildProcessPromise, PromiseResult } from 'child-process-promise'
 const fs = require('fs')
 
 /*
@@ -16,15 +15,15 @@ const fs = require('fs')
 const integrationTestsPackageRoot = path.dirname(__dirname)
 const cliBinaryPath = path.join('..', 'cli', 'bin', 'run')
 
-async function run(command: string): Promise<void> {
+function run(command: string, path?: string): ChildProcessPromise<PromiseResult<string>> {
   const subprocess = exec(command, {
-    cwd: integrationTestsPackageRoot, // Commands are run in the integration tests package root
+    cwd: path ?? integrationTestsPackageRoot, // Commands are run in the integration tests package root
   })
 
-  if (subprocess.child && process) {
+  if (subprocess.childProcess && process) {
     // Redirect process chatter to make it look like it's doing something
-    subprocess.child.stdout.pipe(process.stdout)
-    subprocess.child.stderr.pipe(process.stderr)
+    subprocess.childProcess?.stdout?.pipe(process.stdout)
+    subprocess.childProcess?.stderr?.pipe(process.stderr)
   }
 
   return subprocess
@@ -84,18 +83,6 @@ export async function nuke(environmentName = 'production'): Promise<void> {
   await run(`${cliBinaryPath} nuke -e ${environmentName} --force`)
 }
 
-export function start(environmentName = 'local'): ChildProcess {
-  const serverProcess = spawn(cliBinaryPath, ['start', '-e', environmentName], {
-    cwd: integrationTestsPackageRoot,
-  })
-
-  serverProcess.stdout?.on('data', (data) => {
-    process.stdout.write(data)
-  })
-
-  serverProcess.stderr?.on('data', (data) => {
-    process.stderr.write(data)
-  })
-
-  return serverProcess
+export function start(environmentName = 'local', path?: string): ChildProcess {
+  return run(`../${cliBinaryPath} start -e ${environmentName}`, path).childProcess
 }
