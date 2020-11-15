@@ -33,6 +33,10 @@ async function reinstallDependencies(skipRestoreDependencies: boolean, config: B
 //    * run the compiler to be sure that we're deploying the last version and stop the process if it fails
 const runTasks = async (
   skipRestoreDependencies: boolean,
+<<<<<<< HEAD
+=======
+  environment: string,
+>>>>>>> d1a405b9c00f4e9bfd7b2d3feaae3f27fff70861
   loader: Promise<BoosterConfig>,
   deployer: (config: BoosterConfig, logger: Logger) => Promise<void>
 ): Promise<void> =>
@@ -62,12 +66,17 @@ export default class Deploy extends Command {
   public async run(): Promise<void> {
     const { flags } = this.parse(Deploy)
     if (initializeEnvironment(logger, flags.environment)) {
+<<<<<<< HEAD
       await runTasks(false, compileProjectAndLoadConfig(), deployToCloudProvider)
     }
 
     process.env.BOOSTER_ENV = flags.environment
     await runTasks(flags.skipRestoreDependencies, compileProjectAndLoadConfig(), deployToCloudProvider)
 
+=======
+      await runTasks(flags.skipRestoreDependencies, flags.environment, compileProjectAndLoadConfig(), deployToCloudProvider)
+    }
+>>>>>>> d1a405b9c00f4e9bfd7b2d3feaae3f27fff70861
   }
 }
 
