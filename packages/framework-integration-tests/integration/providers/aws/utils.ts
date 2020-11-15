@@ -1,5 +1,5 @@
 import { CloudFormation, CognitoIdentityServiceProvider, DynamoDB } from 'aws-sdk'
-import { Stack, StackResourceDetail, StackResourceSummary } from 'aws-sdk/clients/cloudformation'
+import { Stack, StackResourceDetail } from 'aws-sdk/clients/cloudformation'
 import { ApolloClient } from 'apollo-client'
 import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { HttpLink } from 'apollo-link-http'
@@ -8,7 +8,7 @@ import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
 import ScanOutput = DocumentClient.ScanOutput
 import QueryOutput = DocumentClient.QueryOutput
 import { internet } from 'faker'
-import { sleep } from '../../helper/sleep'
+import { sleep } from '../helpers'
 import { WebSocketLink } from 'apollo-link-ws'
 import { getMainDefinition } from 'apollo-utilities'
 import { split, ApolloLink } from 'apollo-link'
@@ -19,6 +19,7 @@ import { config } from 'aws-sdk'
 import util = require('util')
 const exec = util.promisify(require('child_process').exec)
 
+const userPoolId = 'userpool'
 const cloudFormation = new CloudFormation()
 const cognitoIdentityServiceProvider = new CognitoIdentityServiceProvider()
 const documentClient = new DynamoDB.DocumentClient()
@@ -86,16 +87,6 @@ export async function appStack(): Promise<Stack> {
   }
 }
 
-export async function stackResourcesByType(resourceType: string): Promise<Array<StackResourceSummary>> {
-  const resources = await cloudFormation
-    .listStackResources({
-      StackName: appStackName(),
-    })
-    .promise()
-  return resources.StackResourceSummaries?.filter((resource) => resource.ResourceType == resourceType) ?? []
-}
-
-// --- Auth helpers ---
 export async function authClientID(): Promise<string> {
   const { Outputs } = await appStack()
   const clientId = Outputs?.find((output) => {
@@ -109,22 +100,28 @@ export async function authClientID(): Promise<string> {
   }
 }
 
+// --- Auth helpers ---
 export interface UserAuthInformation {
   accessToken: string
-  idToken: string
   refreshToken: string
   expiresIn?: number
   tokenType?: string
-  id?: string
 }
 
 export async function userPool(): Promise<StackResourceDetail> {
-  const resources = await stackResourcesByType('AWS::Cognito::UserPool')
+  const stackName = appStackName()
 
-  if (resources.length == 1) {
-    return resources[0]
+  const userPoolDescription = await cloudFormation
+    .describeStackResource({
+      LogicalResourceId: userPoolId,
+      StackName: stackName,
+    })
+    .promise()
+
+  if (userPoolDescription?.StackResourceDetail) {
+    return userPoolDescription.StackResourceDetail
   } else {
-    throw 'No user pool (or more than one) found in stack'
+    throw `No user pool details found in stack ${stackName} with resource Id ${userPoolId}`
   }
 }
 
@@ -240,15 +237,7 @@ export const getUserAuthInformation = async (email: string, password: string): P
     },
   })
 
-  const userAuthInformation = await response.json()
-  userAuthInformation.id = await getCognitoUserId(userAuthInformation.accessToken)
-  return userAuthInformation
-}
-
-const getCognitoUserId = async (accessToken: string): Promise<string> => {
-  const cognitoUser = await cognitoIdentityServiceProvider.getUser({ AccessToken: accessToken }).promise()
-  // The username in Cognito references is a UUID
-  return cognitoUser.Username
+  return await response.json()
 }
 
 export const refreshUserAuthInformation = async (refreshToken: string): Promise<UserAuthInformation> => {
@@ -432,22 +421,22 @@ export async function graphqlSubscriptionsClient(
         super(url, protocols)
 
         this.addListener('open', (): void => {
-          console.debug('[GraphQL socket] on open')
+          console.log('[GraphQL socket] on open')
         })
         this.addListener('ping', (): void => {
-          console.debug('[GraphQL socket] on "ping"')
+          console.log('[GraphQL socket] on "ping"')
         })
         this.addListener('pong', (): void => {
-          console.debug('[GraphQL socket] on "pong"')
+          console.log('[GraphQL socket] on "pong"')
         })
         this.addListener('message', (data: WebSocket.Data): void => {
-          console.debug('[GraphQL socket] on message: ', data)
+          console.log('[GraphQL socket] on message: ', data)
         })
         this.addListener('close', (code: number, message: string): void => {
-          console.debug('[GraphQL socket] on close: ', code, message)
+          console.log('[GraphQL socket] on close: ', code, message)
         })
         this.addListener('error', (err: Error): void => {
-          console.debug('[GraphQL socket] on error: ', err.message)
+          console.log('[GraphQL socket] on error: ', err.message)
         })
       }
     }
@@ -573,27 +562,31 @@ export async function getEventsByEntityId(entityID: string): Promise<any> {
 export async function waitForIt<TResult>(
   tryFunction: () => Promise<TResult>,
   checkResult: (result: TResult) => boolean,
-  trialDelayMs = 1000,
-  timeoutMs = 60000
+  tryEveryMs = 1000,
+  timeoutMs = 300000
 ): Promise<TResult> {
-  console.debug('[waitForIt] start')
   const start = Date.now()
   return doWaitFor()
 
   async function doWaitFor(): Promise<TResult> {
-    console.debug('.')
+    console.debug('[waitForIt] Executing function')
     const res = await tryFunction()
+    console.debug('[waitForIt] Checking result')
     if (checkResult(res)) {
-      console.debug('[waitForIt] match!')
+      console.debug('[waitForIt] Result is expected. Wait finished.')
       return res
     }
+    console.debug('[waitForIt] Result is not expected. Keep trying...')
     const elapsed = Date.now() - start
+    console.debug('[waitForIt] Time elapsed (ms): ' + elapsed)
 
     if (elapsed > timeoutMs) {
-      throw new Error('[waitForIt] Timeout reached')
+      throw new Error('[waitForIt] Timeout reached waiting for a successful execution')
     }
 
-    await sleep(trialDelayMs)
+    const nextExecutionDelay = (timeoutMs - elapsed) % tryEveryMs
+    console.debug('[waitForIt] Trying again in ' + nextExecutionDelay)
+    await sleep(nextExecutionDelay)
     return doWaitFor()
   }
 }

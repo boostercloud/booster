@@ -2,7 +2,7 @@ import * as express from 'express'
 import { GraphQLService, UserRegistry } from '@boostercloud/framework-provider-local'
 import { AuthController } from './controllers/auth'
 import { BoosterConfig } from '@boostercloud/framework-types'
-import * as path from 'path'
+import path = require('path')
 import { requestFailed } from './http'
 import { GraphQLController } from './controllers/graphql'
 import { UserApp } from '@boostercloud/framework-types'

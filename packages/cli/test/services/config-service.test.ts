@@ -1,16 +1,28 @@
-import { fake, replace, restore, SinonStub, stub } from 'sinon'
+import { restore, SinonStub, stub } from 'sinon'
 import * as projectChecker from '../../src/services/project-checker'
-import { BoosterConfig } from '@boostercloud/framework-types'
+import { compileProjectAndLoadConfig } from '../../src/services/config-service'
+import { BoosterApp, BoosterConfig } from '@boostercloud/framework-types'
 import { expect } from '../expect'
-import * as environment from '../../src/common/environment'
-
-const rewire = require('rewire')
-const configService = rewire('../../src/services/config-service')
 
 describe('configService', () => {
   beforeEach(() => {
     restore()
   })
+
+  const Module = require('module')
+
+  class BoosterMock {
+    constructor(public readonly config: BoosterConfig) {}
+    public configureCurrentEnv(configurator: (config: BoosterConfig) => void): void {
+      configurator(this.config)
+    }
+  }
+
+  class BoosterAppMock {
+    constructor(public readonly config: BoosterConfig) {}
+    // @ts-ignore
+    Booster: BoosterApp = new BoosterMock(this.config)
+  }
 
   describe('compileProjectAndLoadConfig', () => {
     let checkItIsABoosterProject: SinonStub
@@ -21,79 +33,38 @@ describe('configService', () => {
 
     it('loads the config when the selected environment exists', async () => {
       const config = new BoosterConfig('test')
+      config.addConfiguredEnvironment('test')
+      Module.prototype.require = function() {
+        return new BoosterAppMock(config)
+      }
 
-      const rewires = [
-        configService.__set__('compileProject', fake()),
-        configService.__set__(
-          'loadUserProject',
-          fake.returns({
-            Booster: {
-              config: config,
-              configuredEnvironments: new Set(['test']),
-              configureCurrentEnv: fake.yields(config),
-            },
-          })
-        ),
-      ]
-
-      replace(environment, 'currentEnvironment', fake.returns('test'))
-
-      await expect(configService.compileProjectAndLoadConfig()).to.eventually.become(config)
+      await expect(compileProjectAndLoadConfig()).to.eventually.become(config)
       expect(checkItIsABoosterProject).to.have.been.calledOnceWithExactly()
-
-      rewires.forEach((fn) => fn())
     })
 
     it('throws the right error when there are not configured environments', async () => {
       const config = new BoosterConfig('test')
+      Module.prototype.require = function() {
+        return new BoosterAppMock(config)
+      }
 
-      const rewires = [
-        configService.__set__('compileProject', fake()),
-        configService.__set__(
-          'loadUserProject',
-          fake.returns({
-            Booster: {
-              config: config,
-              configuredEnvironments: new Set([]),
-              configureCurrentEnv: fake.yields(config),
-            },
-          })
-        ),
-      ]
-
-      await expect(configService.compileProjectAndLoadConfig()).to.eventually.be.rejectedWith(
+      await expect(compileProjectAndLoadConfig()).to.eventually.be.rejectedWith(
         /You haven't configured any environment/
       )
       expect(checkItIsABoosterProject).to.have.been.calledOnceWithExactly()
-
-      rewires.forEach((fn) => fn())
     })
 
     it('throws the right error when the environment does not exist', async () => {
       const config = new BoosterConfig('test')
+      config.addConfiguredEnvironment('stage')
+      Module.prototype.require = function() {
+        return new BoosterAppMock(config)
+      }
 
-      const rewires = [
-        configService.__set__('compileProject', fake()),
-        configService.__set__(
-          'loadUserProject',
-          fake.returns({
-            Booster: {
-              config: config,
-              configuredEnvironments: new Set(['another']),
-              configureCurrentEnv: fake.yields(config),
-            },
-          })
-        ),
-      ]
-
-      replace(environment, 'currentEnvironment', fake.returns('test'))
-
-      await expect(configService.compileProjectAndLoadConfig()).to.eventually.be.rejectedWith(
+      await expect(compileProjectAndLoadConfig()).to.eventually.be.rejectedWith(
         /The environment 'test' does not match any of the environments/
       )
       expect(checkItIsABoosterProject).to.have.been.calledOnceWithExactly()
-
-      rewires.forEach((fn) => fn())
     })
   })
 })

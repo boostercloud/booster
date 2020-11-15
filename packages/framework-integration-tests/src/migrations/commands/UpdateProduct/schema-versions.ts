@@ -1,5 +1,5 @@
-import { ProductUpdateReason } from '../../../events/product-updated'
-import { UpdateProduct } from '../../../commands/update-product'
+import { ProductUpdateReason } from '../../../events/ProductUpdated'
+import { UpdateProduct } from '../../../commands/UpdateProduct'
 import { SKU } from '../../../common/sku'
 import { Money } from '../../../common/money'
 import { Picture } from '../../../common/picture'

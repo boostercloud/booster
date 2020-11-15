@@ -1,4 +1,4 @@
-import { stub, match, SinonStub, fake, replace } from 'sinon'
+import { stub, match, SinonStub } from 'sinon'
 import { random, lorem, internet } from 'faker'
 import {
   Logger,
@@ -8,18 +8,19 @@ import {
   MessageTypes,
   BoosterConfig,
   ProviderConnectionsLibrary,
+  ProviderAuthLibrary,
   GraphQLRequestEnvelopeError,
   UserEnvelope,
-  ConnectionDataEnvelope,
+  ConnectionDataEnvelope, GraphQLInit,
 } from '@boostercloud/framework-types'
 import { GraphQLWebsocketHandler } from '../../../../src/services/graphql/websocket-protocol/graphql-websocket-protocol'
 import { ExecutionResult } from 'graphql'
 import { expect } from '../../../expect'
-import { BoosterAuth } from '../../../../src/booster-auth'
 
 describe('the `GraphQLWebsocketHandler`', () => {
   let config: BoosterConfig
   let websocketHandler: GraphQLWebsocketHandler
+  let authManager: ProviderAuthLibrary
   let connectionsManager: ProviderConnectionsLibrary
   let onStartCallback: (
     envelope: GraphQLRequestEnvelope
@@ -31,6 +32,11 @@ describe('the `GraphQLWebsocketHandler`', () => {
 
   beforeEach(() => {
     config = new BoosterConfig('test')
+    authManager = {
+      fromAuthToken: stub(),
+      rawToEnvelope: stub(),
+      handleSignUpResult: stub(),
+    }
     connectionsManager = {
       sendMessage: stub(),
       deleteData: stub(),
@@ -41,7 +47,7 @@ describe('the `GraphQLWebsocketHandler`', () => {
     onStopCallback = stub()
     onTerminateCallback = stub()
     logger = console
-    websocketHandler = new GraphQLWebsocketHandler(config, logger, connectionsManager, {
+    websocketHandler = new GraphQLWebsocketHandler(config, logger, authManager, connectionsManager, {
       onStartOperation: onStartCallback,
       onStopOperation: onStopCallback,
       onTerminate: onTerminateCallback,
@@ -169,13 +175,13 @@ describe('the `GraphQLWebsocketHandler`', () => {
           })
 
           it('stores connection data including the user', async () => {
+            const message = envelope.value as GraphQLInit
             const expectedUser: UserEnvelope = {
               username: internet.email(),
               role: lorem.word(),
             }
-
-            const fakeVerifier = fake.returns(expectedUser)
-            replace(BoosterAuth, 'verifyToken', fakeVerifier)
+            const fromAuthTokenFake: SinonStub = authManager.fromAuthToken as any
+            fromAuthTokenFake.withArgs(message.payload.Authorization).returns(expectedUser)
 
             resultPromise = websocketHandler.handle(envelope)
             await resultPromise
@@ -286,7 +292,7 @@ describe('the `GraphQLWebsocketHandler`', () => {
         context('when "onStartOperation" returns the result of a subscription', () => {
           beforeEach(() => {
             onStartCallback = stub().returns({ next: () => {} })
-            websocketHandler = new GraphQLWebsocketHandler(config, logger, connectionsManager, {
+            websocketHandler = new GraphQLWebsocketHandler(config, logger, authManager, connectionsManager, {
               onStartOperation: onStartCallback,
               onStopOperation: undefined as any,
               onTerminate: undefined as any,
@@ -306,7 +312,7 @@ describe('the `GraphQLWebsocketHandler`', () => {
           }
           beforeEach(() => {
             onStartCallback = stub().returns(result)
-            websocketHandler = new GraphQLWebsocketHandler(config, logger, connectionsManager, {
+            websocketHandler = new GraphQLWebsocketHandler(config, logger, authManager, connectionsManager, {
               onStartOperation: onStartCallback,
               onStopOperation: undefined as any,
               onTerminate: undefined as any,

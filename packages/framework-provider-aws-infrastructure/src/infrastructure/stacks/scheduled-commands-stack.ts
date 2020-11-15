@@ -16,13 +16,11 @@ export class ScheduledCommandStack {
     private readonly apis: APIs
   ) {}
 
-  public build(): ScheduledCommandStackMembers | undefined {
-    if (Object.keys(this.config.scheduledCommandHandlers).length) {
-      const scheduledLambda = this.buildLambda('scheduled-task', this.config.scheduledTaskHandler)
-      this.scheduleLambda(scheduledLambda)
-      return { scheduledLambda }
-    }
-    return undefined
+  public build(): ScheduledCommandStackMembers {
+    const scheduledLambda = this.buildLambda('scheduled-task', this.config.scheduledTaskHandler)
+    this.scheduleLambda(scheduledLambda)
+
+    return { scheduledLambda }
   }
 
   private buildLambda(name: string, handler: string, eventSources?: Array<IEventSource>): Function {

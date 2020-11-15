@@ -4,15 +4,14 @@ import { compileProjectAndLoadConfig } from '../services/config-service'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { Script } from '../common/script'
 import Brand from '../common/brand'
-import { logger } from '../services/logger'
-import { currentEnvironment, initializeEnvironment } from '../common/environment'
 
 const runTasks = async (
+  environment: string,
   port: number,
   loader: Promise<BoosterConfig>,
   runner: (config: BoosterConfig) => Promise<void>
 ): Promise<void> =>
-  Script.init(`boost ${Brand.canarize('debug')} [${currentEnvironment()}] 🐛`, loader)
+  Script.init(`boost ${Brand.canarize('debug')} [${environment}] 🐛`, loader)
     .step(`Starting debug server on port ${port}`, runner)
     .done()
 
@@ -34,8 +33,11 @@ export default class Start extends Command {
 
   public async run(): Promise<void> {
     const { flags } = this.parse(Start)
-    if (initializeEnvironment(logger, flags.environment)) {
-      await runTasks(flags.port, compileProjectAndLoadConfig(), startProvider.bind(null, flags.port))
+    if (!flags.environment) {
+      console.log('Error: no environment name provided. Usage: `boost start -e <environment>`.')
+      return
     }
+    process.env.BOOSTER_ENV = flags.environment
+    await runTasks(flags.environment, flags.port, compileProjectAndLoadConfig(), startProvider.bind(null, flags.port))
   }
 }

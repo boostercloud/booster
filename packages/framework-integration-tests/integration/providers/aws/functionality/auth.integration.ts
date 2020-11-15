@@ -494,7 +494,7 @@ describe('With the auth API', () => {
             `,
           })
 
-          await expect(mutationPromise).to.eventually.be.rejectedWith(/jwt malformed/)
+          await expect(mutationPromise).to.eventually.be.rejectedWith(/Invalid Access Token/)
         })
 
         it('gets the expected error when querying a read model', async () => {
@@ -511,7 +511,7 @@ describe('With the auth API', () => {
             `,
           })
 
-          await expect(queryPromise).to.eventually.be.rejectedWith(/jwt malformed/)
+          await expect(queryPromise).to.eventually.be.rejectedWith(/Invalid Access Token/)
         })
       })
 
@@ -525,7 +525,7 @@ describe('With the auth API', () => {
             }
           })
         })
-        await expect(connectionPromise).to.eventually.be.rejectedWith(/jwt malformed/)
+        await expect(connectionPromise).to.eventually.be.rejectedWith(/Invalid Access Token/)
       })
     })
 
@@ -536,7 +536,7 @@ describe('With the auth API', () => {
 
       before(async () => {
         userAuthInformation = await getUserAuthInformation(userEmail, userPassword)
-        authToken = userAuthInformation.idToken
+        authToken = userAuthInformation.accessToken
         client = await graphQLClientWithSubscriptions(() => authToken)
       })
 
@@ -760,7 +760,7 @@ describe('With the auth API', () => {
         before(async () => {
           refreshedUserAuthInformation = await refreshUserAuthInformation(userAuthInformation.refreshToken)
           // Update access token that's being used by the Apollo client
-          authToken = refreshedUserAuthInformation.idToken
+          authToken = refreshedUserAuthInformation.accessToken
           await client.reconnect()
         })
 
@@ -1084,7 +1084,7 @@ describe('With the auth API', () => {
 
       before(async () => {
         adminUserAuthInformation = await getUserAuthInformation(adminEmail, adminPassword)
-        authToken = adminUserAuthInformation.idToken
+        authToken = adminUserAuthInformation.accessToken
         client = await graphQLClientWithSubscriptions(() => authToken)
       })
 
@@ -1179,7 +1179,7 @@ describe('With the auth API', () => {
         before(async () => {
           refreshedUserAuthInformation = await refreshUserAuthInformation(adminUserAuthInformation.refreshToken)
           // Update access token that's being used by the Apollo client
-          authToken = refreshedUserAuthInformation.idToken
+          authToken = refreshedUserAuthInformation.accessToken
           await client.reconnect()
         })
 

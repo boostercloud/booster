@@ -1,6 +1,6 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { CfnOutput, Stack } from '@aws-cdk/core'
-import { StringAttribute, UserPool, UserPoolClient, UserPoolDomain, VerificationEmailStyle } from '@aws-cdk/aws-cognito'
+import { CfnOutput, RemovalPolicy, Stack } from '@aws-cdk/core'
+import { AuthFlow, CfnUserPool, CfnUserPoolDomain, UserPoolAttribute, UserPoolClient } from '@aws-cdk/aws-cognito'
 import { Code, Function } from '@aws-cdk/aws-lambda'
 import * as params from '../params'
 import { APIs } from '../params'
@@ -15,17 +15,15 @@ export class AuthStack {
     private readonly apis: APIs
   ) {}
 
-  public build(): UserPool | undefined {
+  public build(): void {
     if (this.config.thereAreRoles) {
       const userPool = this.buildUserPool()
       this.buildUserPoolClient(userPool)
       this.buildAuthAPI(userPool)
-      return userPool
     }
-    return undefined
   }
 
-  private buildUserPool(): UserPool {
+  private buildUserPool(): CfnUserPool {
     const localPreSignUpID = 'pre-sign-up-validator'
     const preSignUpLambda = new Function(this.stack, localPreSignUpID, {
       ...params.lambda(this.config, this.stack, this.apis),
@@ -35,40 +33,61 @@ export class AuthStack {
     })
 
     const localUserPoolID = 'user-pool'
-    const userPool = new UserPool(this.stack, localUserPoolID, {
+    const externalId = 'external'
+    const cognitoSNSMessageRole = this.buildCognitoRoleToSendSNSMessages()
+
+    const userPool = new CfnUserPool(this.stack, localUserPoolID, {
       userPoolName: this.config.resourceNames.applicationStack + '-' + localUserPoolID,
-      autoVerify: { email: true, phone: true },
-      signInAliases: { email: true, phone: true },
-      customAttributes: {
-        role: new StringAttribute({ mutable: true }),
+      autoVerifiedAttributes: [UserPoolAttribute.EMAIL, UserPoolAttribute.PHONE_NUMBER],
+      schema: [
+        {
+          attributeDataType: 'String',
+          mutable: true,
+          name: 'role',
+        },
+      ],
+      usernameAttributes: [UserPoolAttribute.EMAIL, UserPoolAttribute.PHONE_NUMBER],
+      verificationMessageTemplate: {
+        defaultEmailOption: 'CONFIRM_WITH_LINK',
       },
-      selfSignUpEnabled: true,
-      userVerification: {
-        emailStyle: VerificationEmailStyle.LINK,
-        smsMessage: 'The verification code to your new account is {####}',
+      smsConfiguration: {
+        externalId: this.config.resourceNames.applicationStack + '-' + externalId,
+        snsCallerArn: cognitoSNSMessageRole.roleArn,
       },
-      lambdaTriggers: {
-        preSignUp: preSignUpLambda,
+      lambdaConfig: {
+        preSignUp: preSignUpLambda.functionArn,
       },
     })
 
-    const localUserPoolDomainID = 'user-pool-domain'
-    new UserPoolDomain(this.stack, localUserPoolDomainID, {
-      userPool,
-      cognitoDomain: { domainPrefix: this.config.resourceNames.applicationStack },
+    preSignUpLambda.addPermission(localPreSignUpID + '-user-pool-permission', {
+      principal: new ServicePrincipal('cognito-idp.amazonaws.com'),
+      sourceArn: userPool.attrArn,
     })
+
+    const localUserPoolDomainID = 'user-pool-domain'
+    new CfnUserPoolDomain(this.stack, localUserPoolDomainID, {
+      userPoolId: userPool.ref,
+      domain: this.config.resourceNames.applicationStack,
+    }).applyRemovalPolicy(RemovalPolicy.DESTROY)
 
     return userPool
   }
 
-  private buildUserPoolClient(userPool: UserPool): void {
+  private buildUserPoolClient(userPool: CfnUserPool): void {
     // Usually, you have multiple clients: one for your WebApp, another for your MobileApp, etc.
     // We could allow defining how many clients the user wants. So far we just create one.
     const localUserPoolClientID = 'user-pool-client'
     const userPoolClient = new UserPoolClient(this.stack, localUserPoolClientID, {
       userPoolClientName: this.config.resourceNames.applicationStack + '-' + localUserPoolClientID,
-      userPool,
-      authFlows: { userPassword: true },
+      userPool: {
+        node: userPool.node,
+        stack: this.stack,
+        userPoolArn: userPool.attrArn,
+        userPoolId: userPool.ref,
+        userPoolProviderName: userPool.attrProviderName,
+        userPoolProviderUrl: userPool.attrProviderUrl,
+      },
+      enabledAuthFlows: [AuthFlow.USER_PASSWORD],
     })
 
     new CfnOutput(this.stack, 'clientID', {
@@ -77,7 +96,7 @@ export class AuthStack {
     })
   }
 
-  private buildAuthAPI(userPool: UserPool): void {
+  private buildAuthAPI(userPool: CfnUserPool): void {
     const cognitoIntegrationRole = this.buildCognitoIntegrationRole(userPool)
 
     const authResource = this.apis.restAPI.root.addResource('auth')
@@ -121,7 +140,7 @@ export class AuthStack {
       .addMethod('POST', this.buildSignOutIntegration(cognitoIntegrationRole), methodOptions)
   }
 
-  private buildCognitoIntegrationRole(userPool: UserPool): Role {
+  private buildCognitoIntegrationRole(userPool: CfnUserPool): Role {
     return new Role(this.stack, 'cognito-integration-role', {
       assumedBy: new ServicePrincipal('apigateway.amazonaws.com'),
       inlinePolicies: {
@@ -130,7 +149,26 @@ export class AuthStack {
             new PolicyStatement({
               effect: Effect.ALLOW,
               actions: ['cognito-idp:SignUp', 'cognito-idp:InitiateAuth', 'cognito-idp:GlobalSignOut'],
-              resources: [userPool.userPoolArn],
+              resources: [userPool.attrArn],
+            }),
+          ],
+        }),
+      },
+    })
+  }
+
+  private buildCognitoRoleToSendSNSMessages(): Role {
+    return new Role(this.stack, 'cognito-sns-messages-role', {
+      assumedBy: new ServicePrincipal('cognito-idp.amazonaws.com'),
+      description:
+        'An IAM Role to allow Cognito to send SNS messages in order for users to be register themselves through their phones',
+      inlinePolicies: {
+        'cognito-sns-managed-policy': new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              effect: Effect.ALLOW,
+              actions: ['sns:publish'],
+              resources: ['*'],
             }),
           ],
         }),

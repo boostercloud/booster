@@ -1,7 +1,7 @@
 import { Projects, ReadModel } from '@boostercloud/framework-core'
 import { UserWithEmail } from '../roles'
 import { ProjectionResult, ReadModelAction, UUID } from '@boostercloud/framework-types'
-import { Product } from '../entities/product'
+import { Product } from '../entities/Product'
 import { SKU } from '../common/sku'
 import { Money } from '../common/money'
 

@@ -42,7 +42,7 @@ describe('subscriptions', () => {
   })
 
   describe('the "terminate" operation', () => {
-    it('should delete all subscription of the connectionID when socket is disconnected', async () => {
+    it('should delete al subscription of the connectionID when socket is disconnected', async () => {
       const clientA = await graphQLClientWithSubscriptions()
       const clientB = await graphQLClientWithSubscriptions()
       try {
@@ -110,6 +110,7 @@ describe('subscriptions', () => {
 
       // Now reconnect and see if we keep the having the same subscription and receive data
       await client.reconnect()
+      await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount + 2)
       await cartMutation(client, cartID)
       await expect(Promise.all([promisify(observableOne), promisify(observableTwo)])).to.eventually.be.fulfilled
     })

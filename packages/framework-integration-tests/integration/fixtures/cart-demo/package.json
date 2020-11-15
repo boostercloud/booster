@@ -1,8 +1,8 @@
 {
-  "name": "project_name_placeholder",
-  "description": "description_placeholder",
-  "version": "version_placeholder",
-  "author": "author_placeholder",
+  "name": "project_name_fixture_placeholder",
+  "description": "cart-demo",
+  "version": "1.0.0",
+  "author": "The Agile Monkeys",
   "dependencies": {
     "@boostercloud/framework-core": "whatever",
     "@boostercloud/framework-types": "whatever",
@@ -27,10 +27,10 @@
   "engines": {
     "node": ">=8.0.0"
   },
-  "homepage": "homepage_placeholder",
-  "license": "license_placeholder",
+  "homepage": "https://www.booster.cloud/",
+  "license": "MIT",
   "main": "dist/index.js",
-  "repository": "repository_placeholder",
+  "repository": "https://github.com/boostercloud/booster/",
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",

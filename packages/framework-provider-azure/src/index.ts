@@ -18,7 +18,7 @@ if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefi
 }
 const cosmosClient = new CosmosClient(process.env[environmentVarNames.cosmosDbConnectionString] as string)
 
-export const Provider = (): ProviderLibrary => ({
+export const Provider: ProviderLibrary = {
   // ProviderEventsLibrary
   events: {
     rawToEnvelopes: rawEventsToEnvelopes,
@@ -67,7 +67,7 @@ export const Provider = (): ProviderLibrary => ({
   // ProviderInfrastructureGetter
   infrastructure: () =>
     require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
-})
+}
 
 function notImplemented(): void {}
 

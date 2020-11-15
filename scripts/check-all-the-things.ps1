@@ -6,6 +6,6 @@ lerna clean --yes
 lerna run clean --stream
 if ($?) { lerna bootstrap }
 if ($?) { lerna run compile --stream }
-if ($?) { lerna run lint:fix --stream }
-if ($?) { lerna run lint:check --stream }
+if ($?) { lerna run fix-lint --stream }
+if ($?) { lerna run lint --stream }
 if ($?) { lerna run test --stream }

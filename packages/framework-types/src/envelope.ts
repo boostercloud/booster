@@ -52,7 +52,6 @@ export interface GraphQLRequestEnvelope extends Envelope {
   eventType: 'CONNECT' | 'MESSAGE' | 'DISCONNECT'
   connectionID?: string
   value?: GraphQLOperation | GraphQLClientMessage
-  token?: string
 }
 export type GraphQLRequestEnvelopeError = Pick<GraphQLRequestEnvelope, 'eventType' | 'connectionID' | 'requestID'> & {
   error: Error
@@ -78,7 +77,6 @@ export interface ConnectionDataEnvelope {
 }
 
 export interface UserEnvelope {
-  id?: string
   username: string
   role: string
 }

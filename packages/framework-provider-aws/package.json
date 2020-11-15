@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-aws",
-  "version": "0.9.0",
+  "version": "0.8.1",
   "description": "Handle Booster's integration with AWS",
   "keywords": [
     "framework-provider-aws"
@@ -20,11 +20,11 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@boostercloud/framework-types": "^0.9.0"
+    "@boostercloud/framework-types": "^0.8.1"
   },
   "scripts": {
-    "lint:check": "eslint --ext '.js,.ts' **/*.ts",
-    "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
+    "lint": "eslint --ext '.js,.ts' **/*.ts",
+    "fix-lint": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",
@@ -36,7 +36,7 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.48",
     "@types/faker": "^4.1.12",
-    "aws-sdk": "^2.771.0",
+    "aws-sdk": "^2.656.0",
     "faker": "^4.1.0",
     "velocityjs": "^2.0.0"
   },

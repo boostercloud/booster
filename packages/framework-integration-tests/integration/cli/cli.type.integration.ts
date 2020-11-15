@@ -1,45 +1,38 @@
-import * as path from 'path'
+import path = require('path')
+import util = require('util')
 import { expect } from 'chai'
-import { createSandboxProject, loadFixture, readFileContent, removeFolders } from '../helper/fileHelper'
-import { exec } from 'child-process-promise'
+import { readFileContent } from '../helper/fileHelper'
+
+const exec = util.promisify(require('child_process').exec)
+
+const FILE_CART_ITEM_TYPE = 'src/common/CartItem.ts'
+const FILE_CART_ITEM_WITH_FIELDS_TYPE = 'src/common/CartItemWithFields.ts'
+
+export const CLI_TYPE_INTEGRATION_TEST_FILES: Array<string> = [FILE_CART_ITEM_TYPE, FILE_CART_ITEM_WITH_FIELDS_TYPE]
 
 describe('Type', () => {
-  const SANDBOX_INTEGRATION_DIR = 'type-integration-sandbox'
-  const FILE_CART_ITEM_TYPE = `${SANDBOX_INTEGRATION_DIR}/src/common/item.ts`
-  const FILE_CART_ITEM_WITH_FIELDS_TYPE = `${SANDBOX_INTEGRATION_DIR}/src/common/item-with-fields.ts`
-
-  before(async () => {
-    createSandboxProject(SANDBOX_INTEGRATION_DIR)
-  })
-
-  after(() => {
-    removeFolders([SANDBOX_INTEGRATION_DIR])
-  })
-
-  const cliPath = path.join('..', '..', 'cli', 'bin', 'run')
+  const cliPath = path.join('..', 'cli', 'bin', 'run')
 
   context('Valid type', () => {
     it('should create a new type', async () => {
       const expectedOutputRegex = new RegExp(
-        ['boost new:type', 'Verifying project', 'Creating new type', 'Type generated'].join('(.|\n)*')
+        /(.+) boost (.+)?new:type(.+)? (.+)\n- Verifying project\n(.+) Verifying project\n- Creating new type\n(.+) Creating new type\n(.+) Type generated!\n/
       )
 
-      const { stdout } = await exec(`${cliPath} new:type Item`, { cwd: SANDBOX_INTEGRATION_DIR })
+      const { stdout } = await exec(`${cliPath} new:type CartItem`)
       expect(stdout).to.match(expectedOutputRegex)
 
-      const expectedTypeContent = loadFixture('common/item.ts')
-      const typeContent = readFileContent(FILE_CART_ITEM_TYPE)
+      const expectedTypeContent = await readFileContent('integration/fixtures/common/CartItem.ts')
+      const typeContent = await readFileContent(FILE_CART_ITEM_TYPE)
       expect(typeContent).to.equal(expectedTypeContent)
     })
 
     describe('with fields', () => {
       it('should create a new type with fields', async () => {
-        await exec(`${cliPath} new:type ItemWithFields --fields sku:string quantity:number`, {
-          cwd: SANDBOX_INTEGRATION_DIR,
-        })
+        await exec(`${cliPath} new:type CartItemWithFields --fields sku:string quantity:number`)
 
-        const expectedTypeContent = loadFixture('common/item-with-fields.ts')
-        const typeContent = readFileContent(FILE_CART_ITEM_WITH_FIELDS_TYPE)
+        const expectedTypeContent = await readFileContent('integration/fixtures/common/CartItemWithFields.ts')
+        const typeContent = await readFileContent(FILE_CART_ITEM_WITH_FIELDS_TYPE)
         expect(typeContent).to.equal(expectedTypeContent)
       })
     })
@@ -48,9 +41,9 @@ describe('Type', () => {
   context('Invalid type', () => {
     describe('missing type name', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:type`, { cwd: SANDBOX_INTEGRATION_DIR })
+        const { stderr } = await exec(`${cliPath} new:type`)
 
-        expect(stderr).to.match(/You haven't provided a type name, but it is required, run with --help for usage/)
+        expect(stderr).to.equal("You haven't provided a type name, but it is required, run with --help for usage\n")
       })
     })
   })

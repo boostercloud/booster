@@ -4,7 +4,6 @@ import Brand from '../../common/brand'
 import {
   generateConfigFiles,
   generateRootDirectory,
-  initializeGit,
   installDependencies,
   ProjectInitializerConfig,
 } from '../../services/project-initializer'
@@ -46,15 +45,8 @@ export default class Project extends Command {
         'package name implementing the cloud provider integration where the application will be deployed (i.e: "@boostercloud/framework-provider-aws"',
     }),
     default: flags.boolean({
+      char: 'd',
       description: 'generates the project with default parameters (i.e. --license=MIT)',
-      default: false,
-    }),
-    skipInstall: flags.boolean({
-      description: 'skip dependencies installation',
-      default: false,
-    }),
-    skipGit: flags.boolean({
-      description: 'skip git initialization',
       default: false,
     }),
   }
@@ -81,8 +73,7 @@ const run = async (flags: Partial<ProjectInitializerConfig>, boosterVersion: str
   Script.init(`boost ${Brand.energize('new')} 🚧`, parseConfig(new Prompter(), flags, boosterVersion))
     .step('Creating project root', generateRootDirectory)
     .step('Generating config files', generateConfigFiles)
-    .optionalStep(Boolean(flags.skipInstall), 'Installing dependencies', installDependencies)
-    .optionalStep(Boolean(flags.skipGit), 'Initializing git repository', initializeGit)
+    .step('Installing dependencies', installDependencies)
     .info('Project generated!')
     .done()
 
@@ -133,8 +124,6 @@ export const parseConfig = async (
       repository: '',
       boosterVersion,
       default: flags.default,
-      skipInstall: flags.skipInstall || false,
-      skipGit: flags.skipGit || false,
     })
   }
 
@@ -168,7 +157,5 @@ export const parseConfig = async (
     repository,
     boosterVersion,
     default: false,
-    skipInstall: flags.skipInstall || false,
-    skipGit: flags.skipGit || false,
   })
 }

@@ -24,7 +24,6 @@ import { BoosterScheduledCommandDispatcher } from './booster-scheduled-command-d
  * - `region`: 'eu-west-1'
  */
 export class Booster {
-  public static readonly configuredEnvironments: Set<string> = new Set<string>()
   private static logger: Logger
   private static readonly config = new BoosterConfig(checkAndGetCurrentEnv())
   /**
@@ -43,7 +42,7 @@ export class Booster {
    * @param configurator A function that receives the configuration object to set the values
    */
   public static configure(environment: string, configurator: (config: BoosterConfig) => void): void {
-    this.configuredEnvironments.add(environment)
+    this.config.addConfiguredEnvironment(environment)
     if (this.config.environmentName === environment) {
       configurator(this.config)
     }

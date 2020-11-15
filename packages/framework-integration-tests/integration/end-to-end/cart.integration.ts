@@ -11,7 +11,7 @@ import { random, commerce, finance, lorem, internet } from 'faker'
 import { expect } from 'chai'
 import gql from 'graphql-tag'
 import { CartItem } from '../../src/common/cart-item'
-import { sleep } from '../helper/sleep'
+import { sleep } from '../../integration/providers/helpers'
 
 describe('Cart end-to-end tests', () => {
   let client: ApolloClient<NormalizedCacheObject>
@@ -100,7 +100,7 @@ describe('Cart end-to-end tests', () => {
         beforeEach(async () => {
           mockCartId = random.uuid()
           mockCartItemsCount = random.number({ min: 2, max: 5 })
-          const changeCartPromises: Array<Promise<unknown>> = []
+          const changeCartPromises: Array<Promise<any>> = []
 
           for (let i = 0; i < mockCartItemsCount; i++) {
             const mockProductId: string = random.uuid()
@@ -174,7 +174,7 @@ describe('Cart end-to-end tests', () => {
       // TODO: Make retrieval of auth token cloud agnostic
       await createUser(userEmail, mockPassword, 'UserWithEmail')
       userAuthInformation = await getUserAuthInformation(userEmail, mockPassword)
-      client = await graphQLClient(userAuthInformation.idToken)
+      client = await graphQLClient(userAuthInformation.accessToken)
     })
 
     context('Reducers', () => {
@@ -271,7 +271,7 @@ describe('Cart end-to-end tests', () => {
         const adminEmail: string = internet.email()
         await createUser(adminEmail, mockPassword, 'Admin')
         const adminUserAuthInformation = await getUserAuthInformation(adminEmail, mockPassword)
-        client = await graphQLClient(adminUserAuthInformation.idToken)
+        client = await graphQLClient(adminUserAuthInformation.accessToken)
 
         // Delete a product given an id
         await client.mutate({
@@ -288,7 +288,7 @@ describe('Cart end-to-end tests', () => {
         console.log('Waiting 1 second for deletion to complete...')
         await sleep(1000)
 
-        client = await graphQLClient(userAuthInformation.idToken)
+        client = await graphQLClient(userAuthInformation.accessToken)
         // Retrieve updated entity
         const queryResult = await waitForIt(
           () => {
@@ -433,6 +433,37 @@ describe('Cart end-to-end tests', () => {
 
         expect(updatedCartData).to.be.deep.equal(expectedUpdatedResult)
       })
+    })
+  })
+
+  describe('Scheduled commands', () => {
+    it('scheduled command ran and created a product', async () => {
+      const scheduledProductSku = 'scheduled-product-created'
+
+      // Check that scheduled command created the new product
+      const products = await waitForIt(
+        () => {
+          return client.query({
+            query: gql`
+              query {
+                ProductReadModels {
+                  id
+                  sku
+                  displayName
+                  description
+                  price
+                  availability
+                  deleted
+                }
+              }
+            `,
+          })
+        },
+        (result) => result?.data?.ProductReadModels?.some((product: any) => product.sku === scheduledProductSku)
+      )
+
+      const product = products.data.ProductReadModels.find((product: any) => product.sku === scheduledProductSku)
+      expect(product).not.to.be.null
     })
   })
 })

@@ -50,8 +50,7 @@
     "packages/framework-provider-kubernetes-infrastructure",
     "packages/framework-core",
     "packages/cli",
-    "packages/framework-integration-tests",
-    "packages/rocket-static-sites-aws-infrastructure"
+    "packages/framework-integration-tests"
   ],
   "license": "Apache-2.0"
 }

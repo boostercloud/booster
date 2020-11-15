@@ -53,8 +53,6 @@
 - [Features](#features)
   * [Authentication and Authorization](#authentication-and-authorization)
     + [Authentication API](#authentication-api)
-  * [Custom Authentication](#custom-authentication)
-    + [JWT Configuration](#jwt-configuration)
   * [GraphQL API](#graphql-api)
     + [Relationship between GraphQL operations and commands and read models](#relationship-between-graphql-operations-and-commands-and-read-models)
     + [How to send GraphQL request](#how-to-send-graphql-request)
@@ -82,11 +80,6 @@
   * [Configuration and environments](#configuration-and-environments)
     + [Booster configuration](#booster-configuration)
     + [Environments](#environments)
-  * [Extending Booster with Rockets!](#extending-booster-with-rockets)
-    + [Naming recommendations](#naming-recommendations)
-    + [Infrastructure extensions](#infrastructure-extensions)
-    + [Runtime extensions (Not yet implemented)](#runtime-extensions-not-yet-implemented)
-    + [Deploy and init hooks (Not yet implemented)](#deploy-and-init-hooks-not-yet-implemented)
 - [Debugging and testing Booster applications](#debugging-and-testing-booster-applications)
   * [Running Booster applications locally](#running-booster-applications-locally)
     + [Prerequisites](#prerequisites-1)
@@ -207,38 +200,6 @@ versions:
 - [`nvm`](https://github.com/nvm-sh/nvm) - Works with macOS, Linux, and Windows Subsystem
   for Linux
 - [`nvm-windows`](https://github.com/coreybutler/nvm-windows) - Works with native Windows
-
-##### Install Git
-Booster will initialize a Git repository when you create a new project (unless you use the `--skipGit` flag), so it is required that you have it already installed in your system.
-
-###### Ubuntu
-
-```shell
-sudo apt install git-all
-```
-
-###### macOS
-
-```shell
-brew install git
-```
-
-###### Windows
-
-```shell
-choco install git
-```
-
-###### Git configuration variables
-After installing git in your machine, make sure that `user.name` and `user.email` are properly configured.
-Take a look at the [Git configuration page](https://git-scm.com/docs/git-config) for more info.
-
-To configure them, run in your terminal:
-
-```shell
-git config --global user.name "Your Name Here"
-git config --global user.email "your_email@youremail.com"
-```
 
 ##### Set up an AWS account
 
@@ -1884,72 +1845,6 @@ POST https://<httpURL>/auth/refresh-token
 
 You will get a HTTP status code different from 2XX and a body with a message telling you the reason of the error.
 
-### Custom Authentication
-
-You can use the **JWT authorization mode** to authorize all incoming Booster requests. Your auth server will return JWT tokens
-wich will be decoded internally by Booster, after that, the required roles will be matched with the contained claims
-inside that token.
-
-In that way, you can use different auth providers, like Auth0, Firebase, Cognito, or simply create your own.
-
-#### JWT Configuration
-
-In order to use the JWT authorization you will need to set a `tokenVerifier` property which contains the following properties:
-
-- jwksUri: Public uri with the public keys the auth server used to sign in the JWT tokens, commonly known as a key sets.
-- issuer: Identifies the principal that issued the JWT tokens.
-
-Auth sample configuration:
-
-```typescript
-import { Booster } from '@boostercloud/framework-core'
-import { BoosterConfig } from '@boostercloud/framework-types'
-import * as AWS from '@boostercloud/framework-provider-aws'
-
-Booster.configure('production', (config: BoosterConfig): void => {
-  config.appName = 'demoapp'
-  config.provider = AWS.Provider
-  config.tokenVerifier = {
-    jwksUri: 'https://demoapp.auth0.com/.well-known/jwks.json',
-    issuer: 'auth0'
-  }
-})
-```
-
-In addition to that, you will need to configure your JWT tokens to include the custom claims required in your Booster app, i.e. if your command is declared in this way:
-
-```typescript
-@Command({
-  authorize: [Admin, User],
-})
-export class UpdateUser {
-  ...
-}
-```
-
-Your token should include a property `custom:role` with the value `Admin` or `User`. Here is an example of a Firebase token:
-
-```json
-{
-  'custom:role': 'User',
-  iss: 'https://securetoken.google.com/demoapp',
-  aud: 'demoapp',
-  auth_time: 1604676721,
-  user_id: 'xJY5Y6fTbVggNtDjaNh7cNSBd7q1',
-  sub: 'xJY5Y6fTbVggNtDjaNh7cNSBd7q1',
-  iat: 1604676721,
-  exp: 1604680321,
-  phone_number: '+999999999',
-  firebase: { ... }
-}
-```
-
-Once you have the token with the auth provider of choice, simply pass it in the requests through the header:
-
-```http request
-Authorization: Bearer <your JWT token>
-```
-
 ### GraphQL API
 
 This is the main API of your application, as it allows you to:
@@ -2528,8 +2423,6 @@ To deploy your Booster project, run the following command:
 boost deploy -e <environment name>
 ```
 
-**Note**: All you have in your project root will be deployed to the cloud provider, so if for example you have an additional frontend project, you should move it to another place because the cloud providers usually have a limited capacity for only code.
-
 The `<environment name>` parameter is the name of the [environment](#environments) you want to deploy.
 It will take a while, but you should have your project deployed to your cloud provider.
 
@@ -2675,94 +2568,6 @@ This way, you can have different configurations depending on your needs.
 Booster environments are extremely flexible. As shown in the first example, your 'fruit-store' app can have three team-wide environments: 'dev', 'stage', and 'prod', each of them with different app names or providers, that are deployed by your CI/CD processes. Developers, like "John" in the second example, can create their own private environments in separate config files to test their changes in realistic environments before committing them. Likewise, CI/CD processes could generate separate production-like environments to test different branches to perform QA in separate environments without interferences from other features under test.
 
 The only thing you need to do to deploy a whole new completely-independent copy of your application is to use a different name. Also, Booster uses the credentials available in the machine (`~/.aws/credentials` in AWS) that performs the deployment process, so developers can even work on separate accounts than production or staging environments.
-
-### Extending Booster with Rockets!
-
-You can extend Booster creating rockets. A rocket is just an npm package that implements the public Booster rocket interfaces. You can use them for many things:
-
-1. Extend your infrastructure (Currently, only in AWS): You can write a rocket that adds provider resources to your application stack.
-2. Runtime extensions (Not yet implemented): Add new annotations and interfaces, that combined with infrastructure extensions, could implement new abstractions on top of highly requested use cases.
-3. Deploy and init hooks (Not yet implemented): Run custom scripts before or after deployment, or before a Booster application is loaded.
-
-This extension mechanism is very new, but we're planning to port most of the functionality as rockets. This has two benefits:
-
-- Composability: You can use the default rockets or configure your application to fit your needs without adding anything extra.
-- Easier to manage feature sets in different providers: It would be really hard for the core team and contributors to implement and test every new feature in every supported provider, so providing the functionality as rockets, you'll have access to the most advanced features for your provider faster, and the rockets library can be built on-demand for each provider.
-
-#### Naming recommendations
-
-There are no restrictions on how you name your rocket packages, but we propose the following name convention to make it easier to find your extensions in the vast npm library and find related packages (code and infrastructure extensions cant be distributed in the same package).
-
-- `rocket-{rocket-name}-{provider}`: A rocket that adds runtime functionality or init scripts. This code will be deployed along with your application code to the lambdas.
-- `rocket-{rocket-name}-{provider}-infrastructure`: A rocket that provides infrastructure extensions or implements deploy hooks. This code will only be used in developer's or CI/CD machines and won't be deployed to lambda with the rest of the application code.
-
-Notice that some functionalities, for instance an S3 uploader, might require both runtime and infrastructure extensions. In these cases, the convention is to use the same name `rocket-name` and add the suffix `-infrastructure` to the infrastructure rocket. It's recommended, but not required to manage these dependant packages in a monorepo and make sure that versions match on every release.
-
-If you want to support the same functionality in several providers, it could be handy to also have a package named `rocket-{rocket-name}-{provider}-core` where you can have cross-provider code that you can use from all the provider-specific implementations. For instance, a file uploader rocket that supports both AWS and Azure could have an structure like this:
-
-- `rocket-file-uploader-core`: Defines abstract decorators and interfaces to handle uploaded files.
-- `rocket-file-uploader-aws`: Implements the API calls to S3 to get the uploaded files.
-- `rocket-file-uploader-aws-infrastructure`: Adds a dedicated S3 bucket.
-- `rocket-file-uploader-azure`: Implements the API calls to Azure Storage to get the uploaded files.
-- `rocket-file-uploader-azure-infrastructure`: Configures file storage.
-
-#### Infrastructure extensions
-
-> Currently only available in AWS
-
-Infrastructure rocket interfaces are provider-dependant, so infrastructure rockets must import the corresponding booster infrastructure package for their choosen provider. For AWS, that's `@boostercloud/framework-provider-aws-infrastructure`. Notice that, as the only thing we use of that package is the `InfrastructureRocket` interface, you can import it as a dev dependency to avoid including that big package in your deployed lambdas. So you can start by creating a new package and adding this dependency:
-
-```sh
-mkdir rocket-your-rocket-name-aws-infrastructure
-cd rocket-your-rocket-name-aws-infrastructure
-npm init
-...
-npm install -D @boostercloud/framework-provider-aws-infrastructure
-```
-
-The implementation of `InfrastructureRocket` might vary from one provider to the other, but in AWS it only requires two functions:
-
-```typescript
-export interface InfrastructureRocket {
-  mountStack: (stack: Stack) => void
-  unmountStack?: (utils: RocketUtils) => void
-}
-```
-
-You'll have to implement a default exported function that accepts a parameters object and returns an initialized `InfrastructureRocket` object:
-
-```typescript
-const YourRocketInitializator = (params: YourRocketParams): InfrastructureRocket => ({
-  mountStack: SomePrivateObject.mountStack.bind(null, params),
-  unmountStack: SomePrivateObject.unmountStack.bind(null, params),
-})
-
-export default YourRocketInitializator
-```
-
-In `mountStack` you will receive an initialized AWS CDK stack that you can use to append new resources. Check out [the Stack API in the official CDK documentation](https://docs.aws.amazon.com/cdk/latest/guide/stacks.html#stack_api). This is the same stack instance that Booster uses to deploy its resources, so your resources will be deployed automatically along with the Booster's ones in the same stack.
-
-The application stack, including the resources added by your rocket are automatically nuked along with the application stack, but there are some situations on which it's convenient to delete or move the contents of the resources created by you. In the appl `unmountStack` you'll have the opportunity to run any code before deleting the stack. This function receives an `utils` object with the same tools that Booster uses to perform common actions like emptying the contents of an S3 bucket (Non-empty buckets are kept by default when a stack is deleted).
-
-Notice that infrastructure rockets should not be included from within the application code to avoid including the CDK and other non-used dependencies in the lambdas, as there are some hard restrictions on code size in most platforms. That's why infrastructure rockets are loaded dynamically by Booster passing the packet names as strings in the application config file:
-
-_src/config/production.ts:_
-
-```typescript
-Booster.configure('development', (config: BoosterConfig): void => {
-  config.appName = 'my-store'
-  config.provider = AWSProvider([{
-    packageName: 'rocket-your-rocket-name-aws-infrastructure', // The name of your infrastructure rocket package
-    parameters: { // An arbitrary object with the parameters required by your infrastructure rocket initializator
-      hello: 'world'
-    }
-  }])
-})
-```
-
-#### Runtime extensions (Not yet implemented)
-
-#### Deploy and init hooks (Not yet implemented)
 
 ## Debugging and testing Booster applications
 

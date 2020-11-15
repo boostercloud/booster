@@ -30,8 +30,8 @@ describe('the `Booster` class', () => {
         config.appName = 'this-shouldnt-be-set'
       })
 
-      expect(booster.configuredEnvironments).to.have.lengthOf(2)
-      expect(booster.configuredEnvironments).to.include.keys(['test', 'another-environment'])
+      expect(booster.config.configuredEnvironments).to.have.lengthOf(2)
+      expect(booster.config.configuredEnvironments).to.include.keys(['test', 'another-environment'])
       expect(booster.config.appName).to.equal('test-app-name')
     })
   })

@@ -1,13 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { fake, match, replace, restore, spy } from 'sinon'
-import { random, lorem, internet } from 'faker'
+import { random, lorem } from 'faker'
 import { expect } from './expect'
 import {
   BoosterConfig,
   Logger,
   GraphQLRequestEnvelope,
   GraphQLRequestEnvelopeError,
-  UserEnvelope,
 } from '@boostercloud/framework-types'
 import { BoosterGraphQLDispatcher } from '../src/booster-graphql-dispatcher'
 import * as gqlParser from 'graphql/language/parser'
@@ -19,7 +19,6 @@ import { NoopReadModelPubSub } from '../src/services/pub-sub/noop-read-model-pub
 import { GraphQLWebsocketHandler } from '../src/services/graphql/websocket-protocol/graphql-websocket-protocol'
 import { ExecutionResult } from 'graphql/execution/execute'
 import { GraphQLError } from 'graphql'
-import { BoosterAuth } from '../src/booster-auth'
 
 const logger: Logger = console
 
@@ -221,61 +220,6 @@ describe('the `BoosterGraphQLDispatcher`', () => {
 
           await dispatcher.dispatch({})
 
-          expect(parseSpy).to.have.been.calledWithExactly(graphQLBody)
-          expect(executeFake).to.have.been.calledWithExactly({
-            schema: match.any,
-            document: match.any,
-            contextValue: match(resolverContext),
-            variableValues: match(graphQLVariables),
-            operationName: match.any,
-          })
-          expect(config.provider.graphQL.handleResult).to.have.been.calledWithExactly(graphQLResult)
-        })
-
-        it('calls the the GraphQL engine with the passed envelope with an authorization token and handles the result', async () => {
-          const graphQLBody = 'query { a { x }}'
-          const graphQLResult = { data: 'the result' }
-          const graphQLVariables = { productId: 'productId' }
-          const graphQLEnvelope: GraphQLRequestEnvelope = {
-            requestID: random.uuid(),
-            eventType: 'MESSAGE',
-            value: {
-              query: graphQLBody,
-              variables: graphQLVariables,
-            },
-            currentUser: undefined,
-            token: random.uuid(),
-          }
-          const resolverContext: GraphQLResolverContext = {
-            requestID: graphQLEnvelope.requestID,
-            operation: {
-              query: graphQLBody,
-              variables: graphQLVariables,
-            },
-            pubSub: new NoopReadModelPubSub(),
-            storeSubscriptions: true,
-          }
-
-          const currentUser: UserEnvelope = {
-            username: internet.email(),
-            role: random.word(),
-          }
-
-          const config = mockConfigForGraphQLEnvelope(graphQLEnvelope)
-          const dispatcher = new BoosterGraphQLDispatcher(config, logger)
-          const executeFake = fake.returns(graphQLResult)
-          const parseSpy = spy(gqlParser.parse)
-          replace(gqlParser, 'parse', parseSpy)
-          replace(gqlValidator, 'validate', fake.returns([]))
-          replace(gqlExecutor, 'execute', executeFake)
-
-          const fakeVerifier = fake.returns(currentUser)
-          replace(BoosterAuth, 'verifyToken', fakeVerifier)
-          resolverContext.user = currentUser
-
-          await dispatcher.dispatch({})
-
-          expect(fakeVerifier).to.have.been.calledWithExactly(config, graphQLEnvelope.token)
           expect(parseSpy).to.have.been.calledWithExactly(graphQLBody)
           expect(executeFake).to.have.been.calledWithExactly({
             schema: match.any,

@@ -1,4 +1,4 @@
-import { BoosterConfig, UUID, EntityInterface, Class, ReadModelInterface, Searcher } from '.'
+import { BoosterConfig, UUID, EntityInterface, Class } from '.'
 
 /**
  * `BoosterApp` is the interface of the user-facing functions that
@@ -12,6 +12,4 @@ export interface BoosterApp {
     entityName: Class<TEntity>,
     entityID: UUID
   ): Promise<TEntity | undefined>
-  readModel<TReadModel extends ReadModelInterface>(readModelClass: Class<TReadModel>): Searcher<TReadModel>
-  configuredEnvironments: Set<string>
 }

@@ -14,11 +14,35 @@ on:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Set Node.js 12.x
+        uses: actions/setup-node@master
         with:
           node-version: 12.x
-      - run: npx lerna bootstrap
-      - run: npx lerna run lint:check --stream
+
+      - name: Get yarn cache
+        id: yarn-cache
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - uses: actions/cache@v1
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Bootstrap the project
+        run: npx lerna bootstrap
+
+      - name: Lint
+        run: npx lerna run lint --stream

@@ -6,13 +6,13 @@ import { Script } from '../common/script'
 import Brand from '../common/brand'
 import Prompter from '../services/user-prompt'
 import { logger } from '../services/logger'
-import { currentEnvironment, initializeEnvironment } from '../common/environment'
 
 const runTasks = async (
+  environment: string,
   loader: Promise<BoosterConfig>,
   nuke: (config: BoosterConfig, logger: Logger) => Promise<void>
 ): Promise<void> =>
-  Script.init(`boost ${Brand.dangerize('nuke')} [${currentEnvironment()}] 🧨`, loader)
+  Script.init(`boost ${Brand.dangerize('nuke')} [${environment}] 🧨`, loader)
     .step('Removing', (config) => nuke(config, logger))
     .info('Removal complete!')
     .done()
@@ -54,11 +54,15 @@ export default class Nuke extends Command {
 
   public async run(): Promise<void> {
     const { flags } = this.parse(Nuke)
-    if (initializeEnvironment(logger, flags.environment)) {
-      await runTasks(
-        askToConfirmRemoval(new Prompter(), flags.force, compileProjectAndLoadConfig()),
-        nukeCloudProviderResources
-      )
+    if (!flags.environment) {
+      console.log('Error: no environment name provided. Usage: `boost nuke -e <environment>`.')
+      return
     }
+    process.env.BOOSTER_ENV = flags.environment
+    await runTasks(
+      flags.environment,
+      askToConfirmRemoval(new Prompter(), flags.force, compileProjectAndLoadConfig()),
+      nukeCloudProviderResources
+    )
   }
 }

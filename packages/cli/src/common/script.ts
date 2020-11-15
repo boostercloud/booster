@@ -4,7 +4,6 @@ import { fold } from 'fp-ts/lib/Either'
 import { tryCatch } from 'fp-ts/lib/TaskEither'
 import { constVoid } from 'fp-ts/lib/function'
 import { oraLogger } from '../services/logger'
-import Brand from './brand'
 
 /**
  * A Script represents some steps in a booster command, it stores the initial context
@@ -31,7 +30,6 @@ export class Script<TContext> {
         Script.logger.info(initialMessage)
       })
     )
-
   /**
    * Method that eases the creation of steps. It accepts a message to be shown in the spinner and a
    * function that receives the context and the input from the previous step.
@@ -61,24 +59,6 @@ export class Script<TContext> {
         )
       )
     )
-
-  /**
-   * Function to determine next action depending on passed boolean condition
-   * If condition is true, step will be skipped and info action will be called.
-   * Otherwise, step method will be called as usual.
-   *
-   * @param condition Boolean value to determine if step should be performed or skipped
-   * @param message Message to initialize the spinner
-   * @param action Function that receives the config object and performs an action
-   */
-  public optionalStep = (
-    condition: boolean,
-    message: string,
-    action: (ctx: TContext) => Promise<void>
-  ): Script<TContext> => {
-    if (condition) return this.info(Brand.mellancholize(`Skipping: ${message}`))
-    return this.step(message, action)
-  }
 
   /**
    * Convenience method to generate a step that just prints a message with a small blue `i` character in front of it.

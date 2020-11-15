@@ -66,8 +66,7 @@ export interface ProviderReadModelsLibrary {
 export interface ProviderGraphQLLibrary {
   rawToEnvelope(
     rawGraphQLRequest: unknown,
-    logger: Logger,
-    config: BoosterConfig
+    logger: Logger
   ): Promise<GraphQLRequestEnvelope | GraphQLRequestEnvelopeError>
   handleResult(result?: unknown, headers?: Record<string, string>): Promise<unknown>
 }

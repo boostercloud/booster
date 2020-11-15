@@ -1,22 +1,26 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { expect } from '../expect'
-import { replace, restore, fake, mock, match } from 'sinon'
-import { BoosterConfig, Logger } from '@boostercloud/framework-types'
-import { deploy } from '../../src/infrastructure/deploy'
-import { InfrastructureRocket } from '../../src/rockets/infrastructure-rocket'
-import { EnvironmentUtils } from '@aws-cdk/cx-api'
-import { SdkProvider } from 'aws-cdk'
-import * as StackTools from '../../src/infrastructure/stack-tools'
+import { replace, restore, fake, match } from 'sinon'
+import { BoosterConfig, Logger, UUID } from '@boostercloud/framework-types'
+import * as CDK from 'aws-cdk'
+import { CdkToolkit } from 'aws-cdk/lib/cdk-toolkit'
+import { StreamViewType } from '@aws-cdk/aws-dynamodb'
+
+const rewire = require('rewire')
+const Infrastructure = rewire('../../src/infrastructure/index')
+const privateAssemble = Infrastructure.__get__('assemble')
 
 const testEnvironment = {
   account: 'testAccount',
   region: 'testRegion',
 }
 
-describe('the deployment module', () => {
+describe('the deployment process', () => {
   beforeEach(() => {
-    replace(SdkProvider.prototype, 'forEnvironment', fake.returns(mock()))
+    replace(CDK.SDK.prototype, 'defaultAccount', fake.returns(testEnvironment.account))
+    replace(CDK.SDK.prototype, 'defaultRegion', fake.returns(testEnvironment.region))
   })
 
   afterEach(() => {
@@ -26,169 +30,187 @@ describe('the deployment module', () => {
   describe('the `deploy` method', () => {
     it('logs progress through the passed logger', async () => {
       const config = new BoosterConfig('test')
+      const fakeBootstrapEnvironment = fake.returns({ noOp: true })
+      replace(CDK, 'bootstrapEnvironment', fakeBootstrapEnvironment)
+      replace(CdkToolkit.prototype, 'deploy', fake())
 
-      replace(
-        StackTools,
-        'getStackServiceConfiguration',
-        fake.returns({
-          environment: testEnvironment,
-          cdkToolkit: {
-            bootstrap: fake(),
-            deploy: fake(),
-          },
-        })
-      )
       const logger = ({
         info: fake(),
       } as unknown) as Logger
 
-      await deploy(config, logger)
+      await Infrastructure.deploy(config, logger)
 
       expect(logger.info).to.have.been.called
     })
 
-    it('throws errors', async () => {
+    it('logs an error through the passed logger when an error is thrown', async () => {
       const config = new BoosterConfig('test')
+      const fakeBootstrapEnvironment = fake.returns({ noOp: true })
       const errorMessage = 'Testing error'
-
-      replace(
-        StackTools,
-        'getStackServiceConfiguration',
-        fake.returns({
-          environment: testEnvironment,
-          cdkToolkit: {
-            bootstrap: fake(),
-            deploy: fake.throws(errorMessage),
-          },
-        })
-      )
+      const fakeCdkDeployThatThrows = fake.throws(errorMessage)
+      replace(CDK, 'bootstrapEnvironment', fakeBootstrapEnvironment)
+      replace(CdkToolkit.prototype, 'deploy', fakeCdkDeployThatThrows)
 
       const logger = ({
         info: fake(),
         error: fake(),
       } as unknown) as Logger
 
-      await expect(deploy(config, logger)).to.eventually.be.rejectedWith(errorMessage)
+      await expect(Infrastructure.deploy(config, logger)).not.to.eventually.be.rejected
+      // It receives the thrown Error object, not just the message
+      expect(logger.error).to.have.been.calledWithMatch({ message: errorMessage })
     })
 
     it('builds the AppStack calling to the `getStackServiceConfiguration`', async () => {
       const config = new BoosterConfig('test')
-
-      replace(
-        StackTools,
-        'getStackServiceConfiguration',
-        fake.returns({
-          environment: testEnvironment,
-          cdkToolkit: {
-            bootstrap: fake(),
-            deploy: fake(),
-          },
-        })
-      )
+      const fakeBootstrapEnvironment = fake.returns({ noOp: true })
+      replace(CDK, 'bootstrapEnvironment', fakeBootstrapEnvironment)
+      replace(CdkToolkit.prototype, 'deploy', fake())
+      // Monkey patching this private function to be able to spy it
+      const fakeGetStackServiceConfiguration = fake(Infrastructure.__get__('getStackServiceConfiguration'))
+      Infrastructure.__set__('getStackServiceConfiguration', fakeGetStackServiceConfiguration)
 
       const logger = ({
         info: fake(),
       } as unknown) as Logger
 
-      await deploy(config, logger)
+      await Infrastructure.deploy(config, logger)
 
-      expect(StackTools.getStackServiceConfiguration).to.have.been.calledOnceWith(config)
+      expect(fakeGetStackServiceConfiguration).to.have.been.calledOnceWith(config)
     })
 
     it('calls the CDK bootstrap with the default environment parameters', async () => {
       const config = new BoosterConfig('test')
-      const fakeBootstrap = fake()
+      const fakeBootstrapEnvironment = fake.returns({ noOp: true })
 
-      replace(
-        StackTools,
-        'getStackServiceConfiguration',
-        fake.returns({
-          environment: testEnvironment,
-          cdkToolkit: {
-            bootstrap: fakeBootstrap,
-            deploy: fake(),
-          },
-        })
-      )
+      replace(CDK, 'bootstrapEnvironment', fakeBootstrapEnvironment)
+      replace(CdkToolkit.prototype, 'deploy', fake())
 
       const logger = ({
         info: fake(),
       } as unknown) as Logger
 
-      await deploy(config, logger)
+      await Infrastructure.deploy(config, logger)
 
-      expect(fakeBootstrap).to.be.calledOnceWith(
-        match([EnvironmentUtils.format(testEnvironment.account, testEnvironment.region)])
-      )
+      expect(fakeBootstrapEnvironment).to.have.been.calledOnce
+      expect(fakeBootstrapEnvironment).to.be.calledWith(match(testEnvironment))
     })
+
+    it('calls the CDK bootstrap with the environment parameters overridden by the configuration') //TODO
 
     it('calls the CDK bootstrap with the right config parameters', async () => {
       const config = new BoosterConfig('test')
       const testAppName = 'testing'
       config.appName = testAppName
-      const fakeBootstrap = fake()
 
-      replace(
-        StackTools,
-        'getStackServiceConfiguration',
-        fake.returns({
-          environment: testEnvironment,
-          cdkToolkit: {
-            bootstrap: fakeBootstrap,
-            deploy: fake(),
-          },
-        })
-      )
+      const fakeBootstrapEnvironment = fake.returns({ noOp: true })
+
+      replace(CDK, 'bootstrapEnvironment', fakeBootstrapEnvironment)
+      replace(CdkToolkit.prototype, 'deploy', fake())
 
       const logger = ({
         info: fake(),
       } as unknown) as Logger
 
-      await deploy(config, logger)
+      await Infrastructure.deploy(config, logger)
 
       const appNamePrefixRegExp = new RegExp('^' + testAppName + '-')
-      expect(fakeBootstrap).to.have.been.calledOnce
-      expect(fakeBootstrap).to.be.calledWith(
+      expect(fakeBootstrapEnvironment).to.have.been.calledOnce
+      expect(fakeBootstrapEnvironment).to.be.calledWith(
         match.any,
         match.any,
-        match({
-          toolkitStackName: match(appNamePrefixRegExp),
-          parameters: {
-            bucketName: match(appNamePrefixRegExp),
-          },
-        })
+        match(appNamePrefixRegExp),
+        match.any,
+        match.has('bucketName', match(appNamePrefixRegExp))
       )
     })
+  })
 
-    context('with rockets', () => {
-      it('forwards the rockets to the `getStackServiceConfiguration` method for initialization', async () => {
-        const config = new BoosterConfig('test')
+  describe('the `assemble` method', () => {
+    it('generates the CloudAssembly correctly for a simple configuration', () => {
+      class EmptyEntity {
+        public id: UUID = ''
+      }
 
-        replace(
-          StackTools,
-          'getStackServiceConfiguration',
-          fake.returns({
-            environment: testEnvironment,
-            cdkToolkit: {
-              bootstrap: fake(),
-              deploy: fake(),
-            },
-          })
-        )
+      const config = new BoosterConfig('test')
+      config.appName = 'testing-app'
+      config.entities[EmptyEntity.name] = {
+        class: EmptyEntity,
+      }
 
-        const logger = ({
-          info: fake(),
-        } as unknown) as Logger
+      // Just checks that the assemble method does not fail,
+      // meaning that the stack is build correctly according to the
+      // AWS validations
+      expect(() => privateAssemble(config)).not.to.throw()
+    })
+  })
 
-        const fakeRocket: InfrastructureRocket = {
-          mountStack: fake(),
-          unmountStack: fake(),
-        }
+  context('when roles and permissions have been defined', () => {
+    it('generates the auth endpoints') // TODO
+    it('generates a lambda to check authorization') // TODO
+  })
 
-        await deploy(config, logger, [fakeRocket])
+  context('when there is a configured command', () => {
+    it('generates an API endpoint to submit it') // TODO
+    it('generates a lambda to dispatch the commands') // TODO
+  })
 
-        expect(StackTools.getStackServiceConfiguration).to.have.been.calledOnceWith(config, [fakeRocket])
+  context('when there is a configured event', () => {
+    it('generates a DynamoDB table to store the events') // TODO
+    it('generates a lambda to dispatch the events') // TODO
+  })
+
+  context('for a configured read model', () => {
+    class SomeReadModel {
+      public id: UUID = ''
+    }
+
+    const config = new BoosterConfig('test')
+    config.appName = 'testing-app'
+    config.readModels[SomeReadModel.name] = {
+      class: SomeReadModel,
+      authorizedRoles: 'all',
+      properties: [],
+    }
+    const cloudAssembly = privateAssemble(config)
+
+    it('generates cloudformation for a DynamoDB table to store its state', () => {
+      const stackResources = cloudAssembly.getStackByName('testing-app-app').template['Resources']
+      const table = Object.values(stackResources).find((obj: any) => {
+        return obj.Properties.TableName == 'testing-app-app-SomeReadModel'
       })
+      expect(table).to.deep.equal({
+        DeletionPolicy: 'Delete',
+        Properties: {
+          AttributeDefinitions: [
+            {
+              AttributeName: 'id',
+              AttributeType: 'S',
+            },
+          ],
+          BillingMode: 'PAY_PER_REQUEST',
+          KeySchema: [
+            {
+              AttributeName: 'id',
+              KeyType: 'HASH',
+            },
+          ],
+          StreamSpecification: {
+            StreamViewType: StreamViewType.NEW_IMAGE,
+          },
+          TableName: 'testing-app-app-SomeReadModel',
+        },
+        Type: 'AWS::DynamoDB::Table',
+        UpdateReplacePolicy: 'Delete',
+      })
+    })
+
+    it('generates cloudformation for an API endpoint for graphQL', () => {
+      const stackResources = cloudAssembly.getStackByName('testing-app-app').template['Resources']
+      const fun: any = Object.values(stackResources).find((obj: any) => {
+        return obj.Properties.FunctionName == 'testing-app-app-graphql-handler'
+      })
+      expect(fun.Properties.Handler).to.equal('dist/index.boosterServeGraphQL')
     })
   })
 })

@@ -4,6 +4,6 @@ import { Provider } from '{{{providerPackageName}}}'
 
 Booster.configure('production', (config: BoosterConfig): void => {
   config.appName = '{{{ projectName }}}'
-  config.provider = Provider()
+  config.provider = Provider
 })
 `

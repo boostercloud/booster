@@ -5,18 +5,17 @@ import gql from 'graphql-tag'
 import { random } from 'faker'
 import { expect } from 'chai'
 import * as DataStore from 'nedb'
+import { eventsDatabase } from '@boostercloud/framework-provider-local'
+import { EventEnvelope } from '@boostercloud/framework-types'
 import { waitForIt } from '../aws/utils'
-import { sandboxPath } from './constants'
 import util = require('util')
-import * as path from 'path'
 
 describe('commands', () => {
-  let events: DataStore<unknown>
+  const events: DataStore<EventEnvelope> = new DataStore(eventsDatabase)
 
   let client: ApolloClient<NormalizedCacheObject>
 
   before(async () => {
-    events = new DataStore(path.join(sandboxPath, '.booster', 'events.json'))
     client = await graphQLClient()
   })
 
@@ -44,7 +43,7 @@ describe('commands', () => {
       // Wait until event is stored in database
       await waitForIt(
         async () => events.loadDatabase(),
-        () => events.getAllData().some((value) => value.entityID === mockCartId)
+        (_) => events.getAllData().some((value) => value.entityID === mockCartId)
       )
 
       // Verify the event content
@@ -90,7 +89,7 @@ describe('commands', () => {
 
       await waitForIt(
         async () => events.loadDatabase(),
-        () =>
+        (_) =>
           events
             .getAllData()
             .some(
@@ -102,7 +101,6 @@ describe('commands', () => {
             )
       )
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const countPromise = util.promisify((query: any, callback: any) => events.count(query, callback))
       expect(await countPromise({ kind: 'snapshot', entityID: mockCartId, entityTypeName: 'Cart' })).to.be.gte(1)
     })
@@ -114,7 +112,6 @@ async function changeCartItem(
   cartId: string,
   productId: string,
   quantity: number
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
   return client.mutate({
     variables: {
