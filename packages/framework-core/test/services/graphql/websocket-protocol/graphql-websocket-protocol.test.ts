@@ -15,7 +15,7 @@ import {
 import { GraphQLWebsocketHandler } from '../../../../src/services/graphql/websocket-protocol/graphql-websocket-protocol'
 import { ExecutionResult } from 'graphql'
 import { expect } from '../../../expect'
-import { BoosterAuth } from '../../../../src/booster-auth'
+import { BoosterTokenVerifier } from '../../../../src/booster-token-verifier'
 
 describe('the `GraphQLWebsocketHandler`', () => {
   let config: BoosterConfig
@@ -28,9 +28,11 @@ describe('the `GraphQLWebsocketHandler`', () => {
   let onTerminateCallback: (connectionID: string) => Promise<void>
   let logger: Logger
   let envelope: GraphQLRequestEnvelope
+  let boosterTokenVerifier: BoosterTokenVerifier
 
   beforeEach(() => {
     config = new BoosterConfig('test')
+    boosterTokenVerifier = new BoosterTokenVerifier(config)
     connectionsManager = {
       sendMessage: stub(),
       deleteData: stub(),
@@ -41,11 +43,18 @@ describe('the `GraphQLWebsocketHandler`', () => {
     onStopCallback = stub()
     onTerminateCallback = stub()
     logger = console
-    websocketHandler = new GraphQLWebsocketHandler(config, logger, connectionsManager, {
-      onStartOperation: onStartCallback,
-      onStopOperation: onStopCallback,
-      onTerminate: onTerminateCallback,
-    })
+
+    websocketHandler = new GraphQLWebsocketHandler(
+      config,
+      logger,
+      connectionsManager,
+      {
+        onStartOperation: onStartCallback,
+        onStopOperation: onStopCallback,
+        onTerminate: onTerminateCallback,
+      },
+      boosterTokenVerifier
+    )
     envelope = {
       currentUser: undefined,
       eventType: 'MESSAGE',
@@ -175,7 +184,7 @@ describe('the `GraphQLWebsocketHandler`', () => {
             }
 
             const fakeVerifier = fake.returns(expectedUser)
-            replace(BoosterAuth, 'verifyToken', fakeVerifier)
+            replace(boosterTokenVerifier, 'verify', fakeVerifier)
 
             resultPromise = websocketHandler.handle(envelope)
             await resultPromise
@@ -286,11 +295,17 @@ describe('the `GraphQLWebsocketHandler`', () => {
         context('when "onStartOperation" returns the result of a subscription', () => {
           beforeEach(() => {
             onStartCallback = stub().returns({ next: () => {} })
-            websocketHandler = new GraphQLWebsocketHandler(config, logger, connectionsManager, {
-              onStartOperation: onStartCallback,
-              onStopOperation: undefined as any,
-              onTerminate: undefined as any,
-            })
+            websocketHandler = new GraphQLWebsocketHandler(
+              config,
+              logger,
+              connectionsManager,
+              {
+                onStartOperation: onStartCallback,
+                onStopOperation: undefined as any,
+                onTerminate: undefined as any,
+              },
+              boosterTokenVerifier
+            )
           })
 
           it('does not send anything back', async () => {
@@ -306,11 +321,17 @@ describe('the `GraphQLWebsocketHandler`', () => {
           }
           beforeEach(() => {
             onStartCallback = stub().returns(result)
-            websocketHandler = new GraphQLWebsocketHandler(config, logger, connectionsManager, {
-              onStartOperation: onStartCallback,
-              onStopOperation: undefined as any,
-              onTerminate: undefined as any,
-            })
+            websocketHandler = new GraphQLWebsocketHandler(
+              config,
+              logger,
+              connectionsManager,
+              {
+                onStartOperation: onStartCallback,
+                onStopOperation: undefined as any,
+                onTerminate: undefined as any,
+              },
+              boosterTokenVerifier
+            )
           })
 
           it('sends back the expected messages', async () => {

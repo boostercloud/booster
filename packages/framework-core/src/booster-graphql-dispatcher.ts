@@ -15,7 +15,7 @@ import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
 import { GraphQLResolverContext, graphQLWebsocketSubprotocolHeaders } from './services/graphql/common'
 import { NoopReadModelPubSub } from './services/pub-sub/noop-read-model-pub-sub'
 import { GraphQLWebsocketHandler } from './services/graphql/websocket-protocol/graphql-websocket-protocol'
-import { BoosterAuth } from './booster-auth'
+import { BoosterTokenVerifier } from './booster-token-verifier'
 
 type DispatchResult = AsyncIterableIterator<ExecutionResult> | ExecutionResult | void
 
@@ -23,17 +23,25 @@ export class BoosterGraphQLDispatcher {
   private readonly graphQLSchema: GraphQLSchema
   private readonly websocketHandler: GraphQLWebsocketHandler
   private readonly readModelDispatcher: BoosterReadModelDispatcher
+  private readonly boosterTokenVerifier: BoosterTokenVerifier
 
   public constructor(private config: BoosterConfig, private logger: Logger) {
     this.readModelDispatcher = new BoosterReadModelDispatcher(config, logger)
     const commandDispatcher = new BoosterCommandDispatcher(config, logger)
 
     this.graphQLSchema = new GraphQLGenerator(config, commandDispatcher, this.readModelDispatcher).generateSchema()
-    this.websocketHandler = new GraphQLWebsocketHandler(config, logger, this.config.provider.connections, {
-      onStartOperation: this.runGraphQLOperation.bind(this),
-      onStopOperation: this.readModelDispatcher.unsubscribe.bind(this.readModelDispatcher),
-      onTerminate: this.handleDisconnect.bind(this),
-    })
+    this.boosterTokenVerifier = new BoosterTokenVerifier(config)
+    this.websocketHandler = new GraphQLWebsocketHandler(
+      config,
+      logger,
+      this.config.provider.connections,
+      {
+        onStartOperation: this.runGraphQLOperation.bind(this),
+        onStopOperation: this.readModelDispatcher.unsubscribe.bind(this.readModelDispatcher),
+        onTerminate: this.handleDisconnect.bind(this),
+      },
+      this.boosterTokenVerifier
+    )
   }
 
   public async dispatch(request: unknown): Promise<unknown> {
@@ -60,7 +68,7 @@ export class BoosterGraphQLDispatcher {
     if (envelope.token) {
       try {
         this.logger.debug(`Decoding current user from auth token: ${envelope.token}`)
-        envelope.currentUser = await BoosterAuth.verifyToken(this.config, envelope.token)
+        envelope.currentUser = await this.boosterTokenVerifier.verify(envelope.token)
       } catch (e) {
         envelope = {
           ...envelope,
