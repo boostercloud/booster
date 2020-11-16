@@ -21,7 +21,7 @@ export class BoosterTokenVerifier {
       })
 
       this.options = {
-        algorithms: ['RS256', 'RS512'],
+        algorithms: ['RS256'],
         issuer,
       }
     }
