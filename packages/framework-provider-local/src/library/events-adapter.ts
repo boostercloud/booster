@@ -6,7 +6,7 @@ import { UserApp } from '@boostercloud/framework-types/dist'
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const originOfTime = new Date(0).toISOString()
 
-export function rawEventsToEnvelopes(rawEvents: Array<any>): Array<EventEnvelope> {
+export function rawEventsToEnvelopes(rawEvents: Array<unknown>): Array<EventEnvelope> {
   return rawEvents.map((event) => event as EventEnvelope)
 }
 

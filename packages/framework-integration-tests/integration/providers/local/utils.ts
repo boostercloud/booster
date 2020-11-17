@@ -3,6 +3,7 @@ import { ApolloClient } from 'apollo-client'
 import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { HttpLink } from 'apollo-link-http'
 import { LOCAL_PROVIDER_HOST } from './constants'
+import gql from 'graphql-tag'
 
 // --- Auth helpers ---
 
@@ -80,5 +81,25 @@ export async function graphQLClient(authToken?: string): Promise<ApolloClient<No
         fetchPolicy: 'no-cache',
       },
     },
+  })
+}
+
+export async function changeCartItem(
+  client: ApolloClient<NormalizedCacheObject>,
+  cartId: string,
+  productId: string,
+  quantity: number
+): Promise<any> {
+  return client.mutate({
+    variables: {
+      cartId: cartId,
+      productId: productId,
+      quantity: quantity,
+    },
+    mutation: gql`
+      mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+        ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+      }
+    `,
   })
 }
