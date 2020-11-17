@@ -5,19 +5,16 @@ import * as jwksRSA from 'jwks-rsa'
 import * as jwt from 'jsonwebtoken'
 
 export class BoosterTokenVerifier {
-  private config: BoosterConfig
   private client?: jwksRSA.JwksClient
   private options?: jwt.VerifyOptions
 
-  public constructor(config: BoosterConfig) {
-    this.config = config
-
+  public constructor(private config: BoosterConfig) {
     if (this.config.tokenVerifier) {
       const { issuer, jwksUri } = this.config.tokenVerifier
       this.client = jwksRSA({
         jwksUri,
         cache: true,
-        cacheMaxAge: 900000, // 15 Minutes, at least to be equal to AWS max lambda runtime
+        cacheMaxAge: 900000, // 15 Minutes, at least to be equal to AWS max lambda limit runtime
       })
 
       this.options = {
