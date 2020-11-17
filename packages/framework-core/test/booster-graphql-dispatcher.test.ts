@@ -19,7 +19,7 @@ import { NoopReadModelPubSub } from '../src/services/pub-sub/noop-read-model-pub
 import { GraphQLWebsocketHandler } from '../src/services/graphql/websocket-protocol/graphql-websocket-protocol'
 import { ExecutionResult } from 'graphql/execution/execute'
 import { GraphQLError } from 'graphql'
-import { BoosterAuth } from '../src/booster-auth'
+import { BoosterTokenVerifier } from '../src/booster-token-verifier'
 
 const logger: Logger = console
 
@@ -270,12 +270,12 @@ describe('the `BoosterGraphQLDispatcher`', () => {
           replace(gqlExecutor, 'execute', executeFake)
 
           const fakeVerifier = fake.returns(currentUser)
-          replace(BoosterAuth, 'verifyToken', fakeVerifier)
+          replace(BoosterTokenVerifier.prototype, 'verify', fakeVerifier)
           resolverContext.user = currentUser
 
           await dispatcher.dispatch({})
 
-          expect(fakeVerifier).to.have.been.calledWithExactly(config, graphQLEnvelope.token)
+          expect(fakeVerifier).to.have.been.calledWithExactly(graphQLEnvelope.token)
           expect(parseSpy).to.have.been.calledWithExactly(graphQLBody)
           expect(executeFake).to.have.been.calledWithExactly({
             schema: match.any,

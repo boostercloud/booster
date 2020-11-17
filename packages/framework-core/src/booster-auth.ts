@@ -9,8 +9,6 @@ import {
   InvalidParameterError,
 } from '@boostercloud/framework-types'
 
-import * as jwksRSA from 'jwks-rsa'
-import * as jwt from 'jsonwebtoken'
 import * as validator from 'validator'
 
 export class BoosterAuth {
@@ -64,64 +62,6 @@ export class BoosterAuth {
     // Okay, user is signed-in and this is private access.
     // Check the roles then
     return userHasSomeRole(user, authorizedRoles)
-  }
-
-  public static async verifyToken(config: BoosterConfig, token: string): Promise<UserEnvelope> {
-    if (!config.tokenVerifier) {
-      throw new Error('Token verifier not configured')
-    }
-    const { issuer, jwksUri } = config.tokenVerifier
-
-    const client = jwksRSA({
-      jwksUri,
-    })
-
-    const verifyOptions: jwt.VerifyOptions = {
-      algorithms: ['RS256'],
-      issuer,
-    }
-
-    return new Promise((resolve, reject) => {
-      const getKey = (header: jwt.JwtHeader, callback: jwt.SigningKeyCallback): void => {
-        if (!header.kid) {
-          callback(new Error('JWT kid not found.'))
-          return
-        }
-
-        client.getSigningKey(header.kid, function(err: Error | null, key: jwksRSA.SigningKey) {
-          if (err) {
-            // This callback doesn't accept null so an empty string is enough here
-            callback(err, '')
-            return
-          }
-          const signingKey = key.getPublicKey()
-          callback(null, signingKey)
-        })
-      }
-
-      token = BoosterAuth.sanitizeToken(token)
-      jwt.verify(token, getKey, verifyOptions, (err: Error | null, decoded: object | undefined) => {
-        if (err) {
-          return reject(err)
-        }
-        return resolve(BoosterAuth.tokenToUserEnvelope(decoded))
-      })
-    })
-  }
-
-  private static tokenToUserEnvelope(decodedToken: any): UserEnvelope {
-    const username = decodedToken.email ?? decodedToken.phone_number
-    const id = decodedToken.sub
-    const role = decodedToken['custom:role']
-    return {
-      id,
-      username,
-      role: role?.trim() ?? '',
-    }
-  }
-
-  private static sanitizeToken(token: string): string {
-    return token.replace('Bearer ', '')
   }
 }
 
