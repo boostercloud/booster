@@ -1,4 +1,4 @@
-import uuid = require('uuid/v4')
+import { v4 as uuid } from 'uuid'
 /**
  * `UUID` type to work globally as a identifier for Entities,
  * Commands, Events or any other booster artifact.

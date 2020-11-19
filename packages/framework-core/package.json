@@ -28,7 +28,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "dependencies": {
-    "@boostercloud/framework-types": "^0.9.1",
+    "@boostercloud/framework-types": "file:../framework-types",
     "fp-ts": "^2.0.3",
     "graphql": "^15.0.0",
     "graphql-subscriptions": "^1.1.0",
@@ -39,16 +39,6 @@
     "jwks-rsa": "^1.11.0",
     "reflect-metadata": "^0.1",
     "validator": "^13.1.1"
-  },
-  "devDependencies": {
-    "@types/faker": "^4.1.12",
-    "@types/graphql-type-json": "^0.3.2",
-    "@types/inflected": "^1.1.29",
-    "@types/jsonwebtoken": "^8.5.0",
-    "@types/validator": "^13.1.0",
-    "faker": "^4.1.0",
-    "mock-jwks": "^0.3.1",
-    "nock": "^13.0.4"
   },
   "gitHead": "121816dbe55d57df5860b54a871c06dcda761101"
 }

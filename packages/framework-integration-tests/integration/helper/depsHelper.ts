@@ -25,5 +25,7 @@ export async function symLinkBoosterDependencies(projectPath: string): Promise<v
 }
 
 export async function forceLernaRebuild(): Promise<void> {
-  await exec('lerna clean --yes && lerna bootstrap && lerna run clean && lerna run compile')
+  await exec(
+    'lerna clean --yes && lerna bootstrap && npm i packages/* && npm i && lerna run clean && lerna run compile'
+  )
 }

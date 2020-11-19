@@ -20,6 +20,6 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - run: npx lerna bootstrap
+      - run: npx lerna bootstrap && npm install packages/* && npm install
       - run: npx lerna run compile --stream
       - run: npx lerna run test --stream

@@ -42,7 +42,7 @@ Go ahead and [create a new issue](https://github.com/boostercloud/booster/issues
 Booster is divided in many different packages. The criteria to split the code in packages is that each package meets at least one of the following conditions:
 * They must be run separately, for instance, the CLI is run locally, while the support code for the project is run on the cloud.
 * They contain code that is used by at least two of the other packages.
-* They're a vendor-specific specialization of some abstract part of the framework (for instance, all the code that is required by AWS is in separate packages). 
+* They're a vendor-specific specialization of some abstract part of the framework (for instance, all the code that is required by AWS is in separate packages).
 
 The packages are managed using [Lerna](https://lerna.js.org), if you run `lerna run compile`, it will run `npm run compile` in all the package folders.
 
@@ -100,12 +100,12 @@ Booster documentation, located at `/docs/README.md`, is treated as a live docume
 Bear in mind that if you have added a new section, or changed an existing one you will need to update the table of content. This can be easily done with the following command:
 
 ```sh
-yarn update-tocs
+npm run update-tocs
 ```
+
 ### Create your very first GitHub issue
 
 [Click here](https://github.com/boostercloud/booster/issues/new) to start making contributions to Booster.
-
 
 ## Your First Code Contribution
 
@@ -122,23 +122,33 @@ Make sure that you assign the chosen issue to yourself to communicate your inten
 
 To start contributing to the project you would need to set up the project in your system, to do so, you must first follow these steps in your terminal.
 
-- Install Yarn: `npm install -g yarn`
-
 - Install Lerna: `npm install -g lerna`
 
 - Clone the repo and get into the directory of the project: `git clone <WRITE REPO URL HERE> && cd booster`
 
-- Install project dependencies: `lerna bootstrap`
+- Install project dependencies: `npm install && npm install packages/*`
 
 - Compile the project `lerna run compile`
 
 - Add your contribution
-  
+
 - Make sure everything works by executing the unit tests: `lerna run test`
 
 - Before making a PR you should run the `check-all-the-things` script:
   - `./scripts/check-all-the-things.sh` on Linux and MacOS
   - `.\scripts\check-all-the-things.ps1` on Windows
+
+- Integration tests are run automatically in Github Actions when a PR is locked, but it would be recommendable to run them locally before submitting a PR for review. You can find several scripts in `packages/framework-integration-tests/package.json` to run different test suites. You can run them using lerna too:
+
+- `lerna run integration`: Run all the integration test suites in the right order.
+- `integration/aws-deploy`: This test just checks that the sample project in `packages/framework-integration-tests/src` can be successfully deployed to AWS. The deployment process takes several minutes and this project is used by all the other AWS integration tests, so it's a requirement to run this test before.
+- `integration/aws-func`: AWS functional integration tests. They stress the deployed app write API and checks that the results are the expected ones both in the databases and the read APIs.
+- `integration/end-to-end`: Runs complete and realistic use cases on several cloud providers. This tests are intended to verify that a single project can be deployed to different cloud providers. Currently, only AWS is implemented though.
+- `integration/aws-nuke`: This test checks that the application deployed to AWS can be properly nuked. This test should be the last one after other test suites related to AWS have finished.
+- `integration/local`: Checks that the test application can be launched locally and that the APIs and the databases behave as expected.
+- `integration/cli`: Checks cli commands and check that they produce the expected results.
+
+AWS integration tests are run in real AWS resources, so you'll need to have your AWS credentials properly set in your development machine. By default, the sample project will be deployed to your default account. Basically, if you can deploy a Booster project to AWS, you should be good to go ([See more details about setting up an AWS account in the docs](https://github.com/boostercloud/booster/tree/master/docs#set-up-an-aws-account)). Notice that while all resources used by Booster are included in the AWS free tier, running these tests in your own AWS account could incur in some expenses.
 
 ### Github flow
 
@@ -154,13 +164,13 @@ You can run all packages tests with Lerna:
 ~/booster:$ lerna run test
 ```
 
-Or in a specific package with yarn:
+Or in a specific package with npm:
 
 ```bash
-~/booster/packages/cli:$ yarn test
+~/booster/packages/cli:$ npm run test
 ```
 
-Once all your unit tests are passing and your code looks great, if your code changes any behavior in the cloud provider, it's important to update the integration test suite and iterate your code until it passes. Notice that in the `framework-integration-tests` there's an `integration` folder with subfolders for each supported provider (including the local provider). Integration tests require real deployments, so they'll last a while and you must have your provider credentials properly set. The test suite will fail with (hopefully) useful error messages with guidance when some parameter is missed. You can run the integration tests using lerna from any package or the project root, or yarn from within the integration tests package:
+Once all your unit tests are passing and your code looks great, if your code changes any behavior in the cloud provider, it's important to update the integration test suite and iterate your code until it passes. Notice that in the `framework-integration-tests` there's an `integration` folder with subfolders for each supported provider (including the local provider). Integration tests require real deployments, so they'll last a while and you must have your provider credentials properly set. The test suite will fail with (hopefully) useful error messages with guidance when some parameter is missed. You can run the integration tests using lerna from any package or the project root, or `npm run` from within the integration tests package:
 
 ```bash
 ~/booster:$ lerna run integration --stream
@@ -178,13 +188,13 @@ You can run only the tests for a specific provider using the more specific scope
 
 ### Publishing your Pull Request
 
-Make sure that you describe your change thoroughly in the PR body, adding references for any related issues and links to any resource that helps clarifying the intent and goals of the change. 
+Make sure that you describe your change thoroughly in the PR body, adding references for any related issues and links to any resource that helps clarifying the intent and goals of the change.
 
 When you submit a PR to the Booster repository:
 * _Unit tests_ will be automatically run. PRs with non-passing tests can't be merged.
 * If tests pass, your code will be reviewed by at least two people from the core team. Clarifications or improvements might be asked, and they reserve the right to close any PR that do not meet the project quality standards, goals or philosophy, so it's always a good idea to discuss your plans in an issue or the Spectrum channel before committing to significant changes.
 * Code must be mergeable and all conflicts solved before merging it.
-* Once the review process is done, unit tests pass and conflicts are fixed, you still need to make the _Integration tests check_ to pass. In order to do that, you need to **post a comment** in the pull request with the content "**bot: integration**". The _integration tests_ will run and a new check will appear with an "In progress" status. After some time, if everything went well, the status check will become green and your PR is now ready to merge. One of the contributors with write permissions will merge it as soon as possible. 
+* Once the review process is done, unit tests pass and conflicts are fixed, you still need to make the _Integration tests check_ to pass. In order to do that, you need to **post a comment** in the pull request with the content "**bot: integration**". The _integration tests_ will run and a new check will appear with an "In progress" status. After some time, if everything went well, the status check will become green and your PR is now ready to merge. One of the contributors with write permissions will merge it as soon as possible.
 
 ### Commit message guidelines
 
@@ -208,7 +218,7 @@ The most important kind of commits are the ones that trigger version bumps and t
 
 Apart from those previously mentioned, there are more commit types:
 
-- **build**: Changes that affect the build system or external dependencies (example scopes: lerna, tsconfig, yarn)
+- **build**: Changes that affect the build system or external dependencies (example scopes: lerna, tsconfig, npm)
 - **ci**: Changes to our CI configuration files and scripts
 - **docs**: Documentation only changes
 - **feat**: A new feature

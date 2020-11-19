@@ -5,6 +5,8 @@
 lerna clean --yes
 lerna run clean --stream
 if ($?) { lerna bootstrap }
+if ($?) { npm install packages/* }
+if ($?) { npm install }
 if ($?) { lerna run compile --stream }
 if ($?) { lerna run lint:fix --stream }
 if ($?) { lerna run lint:check --stream }

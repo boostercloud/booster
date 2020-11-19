@@ -20,7 +20,7 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@boostercloud/framework-types": "^0.9.1"
+    "@boostercloud/framework-types": "file:../framework-types"
   },
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",

@@ -12,8 +12,8 @@
   },
   "bugs": "https://github.com/boostercloud/booster/issues",
   "dependencies": {
-    "@boostercloud/framework-core": "^0.9.1",
-    "@boostercloud/framework-types": "^0.9.1",
+    "@boostercloud/framework-core": "file:../framework-core",
+    "@boostercloud/framework-types": "file:../framework-types",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^2",
@@ -28,19 +28,6 @@
     "mustache": "^3.0.1",
     "ora": "^3.4.0",
     "tslib": "^1"
-  },
-  "devDependencies": {
-    "@oclif/dev-cli": "^1",
-    "@oclif/test": "^1",
-    "@types/child-process-promise": "^2.2.1",
-    "@types/faker": "^4.1.11",
-    "@types/fs-extra": "^8.0.0",
-    "@types/inflected": "^1.1.29",
-    "@types/inquirer": "^6.5.0",
-    "@types/mustache": "^0.8.32",
-    "@types/rewire": "^2.5.28",
-    "faker": "^4.1.0",
-    "rewire": "^4.0.1"
   },
   "engines": {
     "node": ">=8.0.0"

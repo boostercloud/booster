@@ -15,6 +15,5 @@
     "packages/rocket-static-sites-aws-infrastructure"
   ],
   "version": "0.9.1",
-  "npmClient": "yarn",
   "useWorkspaces": true
 }

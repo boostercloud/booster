@@ -43,7 +43,7 @@ jobs:
           node-version: 12
           registry-url: https://registry.npmjs.org/
 
-      - run: npx lerna bootstrap
+      - run: npx lerna bootstrap && npm install packages/* && npm install
 
       # Discard all changes that might have occurred after bootstrap
       - run: git stash

@@ -12,7 +12,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - run: npx lerna bootstrap
+      - run: npx lerna bootstrap && npm install packages/* && npm install
       - run: npx lerna run integration/aws-deploy --stream
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
@@ -29,7 +29,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - run: npx lerna bootstrap
+      - run: npx lerna bootstrap && npm install packages/* && npm install
       - run: npx lerna run integration/aws-func --stream
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
@@ -46,7 +46,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - run: npx lerna bootstrap
+      - run: npx lerna bootstrap && npm install packages/* && npm install
       - run: npx lerna run integration/end-to-end --stream
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
@@ -64,7 +64,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - run: npx lerna bootstrap
+      - run: npx lerna bootstrap && npm install packages/* && npm install
       - run: npx lerna run integration/aws-nuke --stream
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
@@ -79,7 +79,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - run: npx lerna bootstrap
+      - run: npx lerna bootstrap && npm install packages/* && npm install
       - run: npx lerna run integration/cli --stream
 
   local-integration-tests:
@@ -90,5 +90,5 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - run: npx lerna bootstrap
+      - run: npx lerna bootstrap && npm install packages/* && npm install
       - run: npx lerna run integration/local --stream
