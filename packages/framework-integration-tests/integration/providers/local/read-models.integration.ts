@@ -4,19 +4,18 @@ import { changeCartItem, graphQLClient } from './utils'
 import { random } from 'faker'
 import { expect } from 'chai'
 import * as DataStore from 'nedb'
-import { readModelsDatabase } from '@boostercloud/framework-provider-local'
-import { ReadModelEnvelope } from '@boostercloud/framework-types'
 import { waitForIt } from '../aws/utils'
-import * as fs from 'fs'
+import { sandboxPath } from './constants'
+import * as path from 'path'
 
 describe('read-models', () => {
-  const readModels: DataStore<ReadModelEnvelope> = new DataStore(readModelsDatabase)
+  let readModels: DataStore<unknown>
 
   let client: ApolloClient<NormalizedCacheObject>
 
   before(async () => {
+    readModels = new DataStore(path.join(sandboxPath, '.booster', 'read_models.json'))
     client = await graphQLClient()
-    fs.unlinkSync(readModelsDatabase)
   })
 
   context('valid command', () => {
@@ -36,7 +35,7 @@ describe('read-models', () => {
       // Wait until event is stored in database
       await waitForIt(
         async () => readModels.loadDatabase(),
-        () => readModels.getAllData().some((readModel: ReadModelEnvelope) => readModel.value.id === mockCartId)
+        () => readModels.getAllData().some((readModel) => readModel.value.id === mockCartId)
       )
 
       // Verify the event content
@@ -51,6 +50,7 @@ describe('read-models', () => {
         value: {
           id: mockCartId,
           cartItems: [{ productId: mockProductId, quantity: mockQuantity }],
+          checks: 0,
         },
       }
 
