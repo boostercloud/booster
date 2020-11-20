@@ -45,6 +45,7 @@
   "main": "dist/index.js",
   "repository": "boostercloud/booster",
   "scripts": {
+    "watch:local": "nodemon --watch ../framework-provider-local/dist --watch ../framework-provider-local-infrastructure --watch dist --exec \"../cli/bin/run start -e local\"",
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
