@@ -68,15 +68,18 @@ const queryOperatorTable: Record<string, (values: Array<QueryValue>) => QueryOpe
  * Builds a regex out of string GraphQL queries
  */
 function buildRegexQuery(operation: string, values: Array<QueryValue>): QueryOperation<QueryValue> {
-  let matcher = values[0]
+  const matcher = values[0]
   if (typeof matcher != 'string') {
     throw new Error(`Attempted to perform a ${operation} operation on a non-string`)
   }
   if (operation === 'not-contains') {
-    throw new Error('not-contains not implemented yet')
+    // Matching on a string not containing something by using
+    // negative lookahead, which JS' regexes support.
+    // Check: https://stackoverflow.com/a/406408/3847023
+    return { $regex: new RegExp(`^((?!${matcher}).)*$`, 'gm') }
   }
   if (operation === 'begins-with') {
-    matcher = `^${matcher}`
+    return { $regex: new RegExp(`^${matcher}`) }
   }
   return { $regex: new RegExp(matcher) }
 }
