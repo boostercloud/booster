@@ -1,42 +1,74 @@
 import { Filter } from '@boostercloud/framework-types'
 
 /**
+ * Creates a query record out of the read mode name and
+ * the GraphQL filters, ready to be passed into the `query`
+ * method of the read model registry.
+ */
+export function queryRecordFor(
+  readModelName: string,
+  filters: Record<string, Filter<QueryValue>>
+): Record<string, QueryOperation<QueryValue>> {
+  const queryFromFilters: Record<string, object> = {}
+  if (Object.keys(filters).length != 0) {
+    for (const key in filters) {
+      queryFromFilters[`value.${key}`] = filterToQuery(filters[key]) as object
+    }
+  }
+  return { ...queryFromFilters, typeName: readModelName }
+}
+
+/**
  * Transforms a GraphQL Booster filter into an neDB query
  */
-export function filterToQuery(filter: Filter<QueryValue>): QueryOperation<QueryValue> {
+function filterToQuery(filter: Filter<QueryValue>): QueryOperation<QueryValue> {
   const query = queryOperatorTable[filter.operation]
   return query(filter.values)
 }
 
 export type QueryValue = number | string | boolean
 type QueryOperation<TValue> =
+  // In the case that the operation is `eq`, NeDB matches directly
   | TValue
+  // For these, the value must be single as a result
   | {
       [TKey in '$lt' | '$lte' | '$gt' | '$gte' | '$ne']?: TValue
     }
+  // `in` operators must have an array as a result
   | {
       [TKey in '$in' | '$nin']?: Array<TValue>
     }
+  // `regex` must have a RegExp as a result
   | {
       [TKey in '$regex' | '$nin']?: RegExp
     }
 
-const queryOperatorTable: Record<string, (vals: Array<QueryValue>) => QueryOperation<QueryValue>> = {
-  '=': (val) => val[0],
-  '!=': (val) => ({ $ne: val[0] }),
-  '<': (val) => ({ $lt: val[0] }),
-  '>': (val) => ({ $gt: val[0] }),
-  '<=': (val) => ({ $lte: val[0] }),
-  '>=': (val) => ({ $gte: val[0] }),
-  in: (val) => ({ $in: val }),
-  between: (val) => ({ $gt: val[0], $lte: val[1] }),
+/**
+ * Table of equivalences between a GraphQL operation and the NeDB
+ * query operator.
+ *
+ * It is needed that we pass the values, because of the special case
+ * of `=`, in which the operator is the value itself.
+ */
+const queryOperatorTable: Record<string, (values: Array<QueryValue>) => QueryOperation<QueryValue>> = {
+  '=': (values) => values[0],
+  '!=': (values) => ({ $ne: values[0] }),
+  '<': (values) => ({ $lt: values[0] }),
+  '>': (values) => ({ $gt: values[0] }),
+  '<=': (values) => ({ $lte: values[0] }),
+  '>=': (values) => ({ $gte: values[0] }),
+  in: (values) => ({ $in: values }),
+  between: (values) => ({ $gt: values[0], $lte: values[1] }),
   contains: buildRegexQuery.bind(null, 'contains'),
   'not-contains': buildRegexQuery.bind(null, 'not-contains'),
   'begins-with': buildRegexQuery.bind(null, 'begins-with'),
 }
 
-function buildRegexQuery(operation: string, vals: Array<QueryValue>): QueryOperation<QueryValue> {
-  let matcher = vals[0]
+/**
+ * Builds a regex out of string GraphQL queries
+ */
+function buildRegexQuery(operation: string, values: Array<QueryValue>): QueryOperation<QueryValue> {
+  let matcher = values[0]
   if (typeof matcher != 'string') {
     throw new Error(`Attempted to perform a ${operation} operation on a non-string`)
   }
