@@ -21,4 +21,4 @@ jobs:
         with:
           node-version: 12.x
       - run: npx lerna bootstrap && npm install packages/* && npm install
-      - run: npx lerna run lint:check --stream
+      - run: npx lerna run lint:check

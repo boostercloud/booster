@@ -1,7 +1,7 @@
 import * as path from 'path'
 import { ChildProcess } from 'child_process'
 import { exec, ChildProcessPromise, PromiseResult } from 'child-process-promise'
-const fs = require('fs')
+// const fs = require('fs')
 
 /*
  * The example application in the `framework-integration-tests` package is part of the package source.
@@ -44,29 +44,28 @@ export async function deploy(environmentName = 'production'): Promise<void> {
 
   process.chdir(integrationTestsPackageRoot)
 
-  // First, we ensure that the project is bootstrapped, and all the dependencies are installed (node_modules is placed at the project root)
-  await run('lerna clean --yes')
-  await run('lerna bootstrap && npm install packages && npm install')
+  // First, we ensure that all the dependencies are installed (node_modules is placed at the project root)
+  // await run('lerna clean --yes && lerna bootstrap')
 
   // We are about to install the dependencies for production changing the location of the node_modules, so we first
   // rename the `node_modules` from the project root.
-  fs.renameSync('../../node_modules', '../../node_modules_dev')
+  // fs.renameSync('../../node_modules', '../../node_modules_dev')
 
   // Install the dependencies in production mode (inside the example application directory)
-  await run('npm run install --production --no-bin-links --modules-folder ./node_modules')
+  await run('npm install --production --no-bin-links')
 
   // Now we undo the name change of the root node_modules. This is needed to compile the project, as:
   // * All the other packages don't see the node_modules inside the example app
   // * We need the dev dependencies that were not installed in the previous command
-  fs.renameSync('../../node_modules_dev', '../../node_modules')
+  // fs.renameSync('../../node_modules_dev', '../../node_modules')
 
   // Compile the project
-  await run('lerna run clean --stream')
-  await run('lerna run compile --stream')
+  await run('lerna run clean')
+  await run('lerna run compile')
 
   // Remove non-needed packages (lerna adds them as dependencies)
-  fs.unlinkSync('./node_modules/@boostercloud/framework-integration-tests')
-  fs.unlinkSync('./node_modules/@boostercloud/cli')
+  // fs.unlinkSync('./node_modules/@boostercloud/framework-integration-tests')
+  // fs.unlinkSync('./node_modules/@boostercloud/cli')
 
   // Finally invoke the "boost deploy" command using the compiled cli.
   await run(`${cliBinaryPath} deploy -e ${environmentName}`)
@@ -76,8 +75,8 @@ export async function nuke(environmentName = 'production'): Promise<void> {
   await setEnv()
 
   // It looks like when the project is not pre-compiled the nuke command fails
-  await run('lerna run clean --stream')
-  await run('lerna run compile --stream')
+  await run('lerna run clean')
+  await run('lerna run compile')
 
   // Nuke works in the cloud exclusively, no need for preparation
   await run(`${cliBinaryPath} nuke -e ${environmentName} --force`)

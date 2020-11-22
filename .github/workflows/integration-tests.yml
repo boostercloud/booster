@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: 12.x
       - run: npx lerna bootstrap && npm install packages/* && npm install
-      - run: npx lerna run integration/aws-deploy --stream
+      - run: npx lerna run integration/aws-deploy
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
@@ -30,7 +30,7 @@ jobs:
         with:
           node-version: 12.x
       - run: npx lerna bootstrap && npm install packages/* && npm install
-      - run: npx lerna run integration/aws-func --stream
+      - run: npx lerna run integration/aws-func
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
@@ -47,7 +47,7 @@ jobs:
         with:
           node-version: 12.x
       - run: npx lerna bootstrap && npm install packages/* && npm install
-      - run: npx lerna run integration/end-to-end --stream
+      - run: npx lerna run integration/end-to-end
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
@@ -65,7 +65,7 @@ jobs:
         with:
           node-version: 12.x
       - run: npx lerna bootstrap && npm install packages/* && npm install
-      - run: npx lerna run integration/aws-nuke --stream
+      - run: npx lerna run integration/aws-nuke
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
@@ -80,7 +80,7 @@ jobs:
         with:
           node-version: 12.x
       - run: npx lerna bootstrap && npm install packages/* && npm install
-      - run: npx lerna run integration/cli --stream
+      - run: npx lerna run integration/cli
 
   local-integration-tests:
     name: Local Environment Integration Tests
@@ -91,4 +91,4 @@ jobs:
         with:
           node-version: 12.x
       - run: npx lerna bootstrap && npm install packages/* && npm install
-      - run: npx lerna run integration/local --stream
+      - run: npx lerna run integration/local

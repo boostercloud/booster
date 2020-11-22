@@ -15,10 +15,6 @@
     "@boostercloud/framework-provider-local": "file:../framework-provider-local",
     "@boostercloud/framework-types": "file:../framework-types"
   },
-  "devDependencies": {
-    "@boostercloud/framework-provider-aws-infrastructure": "file:../framework-provider-aws-infrastructure",
-    "@boostercloud/framework-provider-local-infrastructure": "file:../framework-provider-local-infrastructure"
-  },
   "engines": {
     "node": ">=8.0.0"
   },
@@ -29,7 +25,7 @@
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
-    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "clean": "npx rimraf ./dist tsconfig.tsbuildinfo",
     "integration": "npm run integration/cli && npm run integration/local && npm run integration/aws-deploy && npm run integration/aws-func && npm run integration/end-to-end && npm run integration/aws-nuke",
     "integration/aws-deploy": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"integration/providers/aws/deployment/.mocharc.yml\" \"integration/providers/aws/deployment/**/*.integration.ts\"",
     "integration/aws-func": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"integration/providers/aws/functionality/.mocharc.yml\" \"integration/providers/aws/functionality/**/*.integration.ts\"",

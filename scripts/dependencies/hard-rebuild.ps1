@@ -2,8 +2,9 @@
 # but in order to maintain backwards compatibility
 # with Powershell <7.0 (what most Windows users have preinstalled)
 # we write it in the old-school style
-lerna run clean --stream
-if ($?) { lerna run compile --stream }
-if ($?) { lerna run lint:fix --stream }
-if ($?) { lerna run lint:check --stream }
-if ($?) { lerna run test --stream }
+lerna clean --yes
+if ($?) { rm -f packages/**/package-lock.json }
+if ($?) { rm -rf node_modules }
+if ($?) { rm package-lock.json }
+if ($?) { lerna bootstrap }
+if ($?) { npm install }
