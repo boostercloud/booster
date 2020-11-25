@@ -90,7 +90,7 @@
     + [Deploy and init hooks (Not yet implemented)](#deploy-and-init-hooks-not-yet-implemented)
 - [Debugging and testing Booster applications](#debugging-and-testing-booster-applications)
   * [Running Booster applications locally](#running-booster-applications-locally)
-    + [Prerequisites](#prerequisites-1)
+    + [Local development prerequisites](#local-development-prerequisites)
     + [Starting your application](#starting-your-application)
     + [Performing Auth requests](#performing-auth-requests)
     + [Performing GraphQL requests](#performing-graphql-requests)
