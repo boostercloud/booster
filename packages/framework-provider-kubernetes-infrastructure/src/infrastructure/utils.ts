@@ -63,11 +63,11 @@ export async function createProjectZipFile(): Promise<string> {
     })
 
     output.on('end', () => {
-      resolve()
+      resolve(output.path.toString())
     })
 
     archive.on('warning', (err: any) => {
-      err.code === 'ENOENT' ? resolve() : reject(err)
+      err.code === 'ENOENT' ? resolve(output.path.toString()) : reject(err)
     })
 
     archive.on('error', (err: any) => {

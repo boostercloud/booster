@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
 import { DynamoDB } from 'aws-sdk'
 import { fake, createStubInstance, stub, restore, SinonStub } from 'sinon'
@@ -23,7 +24,8 @@ const config = new BoosterConfig('test')
 
 describe('The "subscribeToReadModel" method', () => {
   let db: DynamoDB.DocumentClient
-  let envelope: SubscriptionEnvelope
+  let envelope: any // Not using the actual type to allow the `delete` operators remove non-optional properties in the tests. TypeScript 4.x.x thows a compile error in these cases.
+
   beforeEach(() => {
     db = createStubInstance(DynamoDB.DocumentClient)
     envelope = {
