@@ -65,12 +65,12 @@ export async function packageAzureFunction(functionDefinitions: Array<FunctionDe
     })
 
     output.on('end', () => {
-      resolve()
+      resolve(output.path)
     })
 
     archive.on('warning', (err: any) => {
       if (err.code === 'ENOENT') {
-        resolve()
+        resolve(output.path)
       } else {
         reject(err)
       }
