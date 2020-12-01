@@ -13,18 +13,14 @@ const EVENT_ENTITY_ID_PLACEHOLDER = '/* the associated entity ID */'
 const ENTITY_REDUCER_PLACEHOLDER = '/* NEW PostWithReducer HERE */'
 
 describe('Entity', () => {
-  const SANDBOX_INTEGRATION_DIR = 'entity-integration-sandbox'
-  const FILE_POST_ENTITY = `${SANDBOX_INTEGRATION_DIR}/src/entities/post.ts`
-  const FILE_POST_WITH_FIELDS_ENTITY = `${SANDBOX_INTEGRATION_DIR}/src/entities/post-with-fields.ts`
-  const FILE_POST_WITH_REDUCER_ENTITY = `${SANDBOX_INTEGRATION_DIR}/src/entities/post-with-reducer.ts`
-  const FILE_POST_CREATED_EVENT = `${SANDBOX_INTEGRATION_DIR}/src/events/post-created.ts`
+  let entitySandboxDir: string
 
   before(async () => {
-    createSandboxProject(SANDBOX_INTEGRATION_DIR)
+    entitySandboxDir = createSandboxProject('entity')
   })
 
   after(() => {
-    removeFolders([SANDBOX_INTEGRATION_DIR])
+    removeFolders([entitySandboxDir])
   })
 
   const cliPath = path.join('..', '..', 'cli', 'bin', 'run')
@@ -36,11 +32,11 @@ describe('Entity', () => {
           ['boost new:entity', 'Verifying project', 'Creating new entity', 'Entity generated'].join('(.|\n)*'),
           'm'
         )
-        const { stdout } = await exec(`${cliPath} new:entity Post`, { cwd: SANDBOX_INTEGRATION_DIR })
+        const { stdout } = await exec(`${cliPath} new:entity Post`, { cwd: entitySandboxDir })
         expect(stdout).to.match(expectedOutputRegex)
 
         const expectedEntityContent = readFileContent('integration/fixtures/entities/post.ts')
-        const entityContent = readFileContent(FILE_POST_ENTITY)
+        const entityContent = readFileContent(`${entitySandboxDir}/src/entities/post.ts`)
         expect(entityContent).to.equal(expectedEntityContent)
       })
     })
@@ -52,21 +48,24 @@ describe('Entity', () => {
           'm'
         )
         const { stdout } = await exec(`${cliPath} new:entity PostWithFields --fields title:string body:string`, {
-          cwd: SANDBOX_INTEGRATION_DIR,
+          cwd: entitySandboxDir,
         })
         expect(stdout).to.match(expectedOutputRegex)
 
         const expectedEntityContent = readFileContent('integration/fixtures/entities/post-with-fields.ts')
-        const entityContent = readFileContent(FILE_POST_WITH_FIELDS_ENTITY)
+        const entityContent = readFileContent(`${entitySandboxDir}/src/entities/post-with-fields.ts`)
         expect(entityContent).to.equal(expectedEntityContent)
       })
     })
 
     describe('with reducer', () => {
       it('should create new entity with reducer', async () => {
+        const FILE_POST_WITH_REDUCER_ENTITY = `${entitySandboxDir}/src/entities/post-with-reducer.ts`
+        const FILE_POST_CREATED_EVENT = `${entitySandboxDir}/src/events/post-created.ts`
+
         // Create event
         await exec(`${cliPath} new:event PostCreated --fields postId:UUID title:string body:string`, {
-          cwd: SANDBOX_INTEGRATION_DIR,
+          cwd: entitySandboxDir,
         })
 
         const expectedEventContent = loadFixture('events/post-created.ts')
@@ -80,7 +79,7 @@ describe('Entity', () => {
 
         // Create entity
         await exec(`${cliPath} new:entity PostWithReducer --fields title:string body:string --reduces PostCreated`, {
-          cwd: SANDBOX_INTEGRATION_DIR,
+          cwd: entitySandboxDir,
         })
         const expectedEntityContent = loadFixture('entities/post-with-reducer.ts')
         const entityContent = readFileContent(FILE_POST_WITH_REDUCER_ENTITY)
@@ -100,7 +99,7 @@ describe('Entity', () => {
   context('invalid entity', () => {
     describe('missing entity name', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:entity`, { cwd: SANDBOX_INTEGRATION_DIR })
+        const { stderr } = await exec(`${cliPath} new:entity`, { cwd: entitySandboxDir })
 
         expect(stderr).to.match(/You haven't provided an entity name, but it is required, run with --help for usage/m)
       })

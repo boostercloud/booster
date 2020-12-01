@@ -12,16 +12,14 @@ import { exec } from 'child-process-promise'
 const EVENT_ENTITY_ID_PLACEHOLDER = '/* the associated entity ID */'
 
 describe('Event', () => {
-  const SANDBOX_INTEGRATION_DIR = 'event-integration-sandbox'
-  const FILE_CART_CHANGED_EVENT = `${SANDBOX_INTEGRATION_DIR}/src/events/cart-changed.ts`
-  const FILE_CART_CHANGED_WITH_FIELDS_EVENT = `${SANDBOX_INTEGRATION_DIR}/src/events/cart-changed-with-fields.ts`
+  let eventSandboxDir: string
 
   before(async () => {
-    createSandboxProject(SANDBOX_INTEGRATION_DIR)
+    eventSandboxDir = createSandboxProject('event')
   })
 
   after(() => {
-    removeFolders([SANDBOX_INTEGRATION_DIR])
+    removeFolders([eventSandboxDir])
   })
 
   const cliPath = path.join('..', '..', 'cli', 'bin', 'run')
@@ -32,13 +30,15 @@ describe('Event', () => {
         ['boost new:event', 'Verifying project', 'Creating new event', 'Event generated'].join('(.|\n)*')
       )
 
-      const { stdout } = await exec(`${cliPath} new:event CartChanged`, { cwd: SANDBOX_INTEGRATION_DIR })
+      const { stdout } = await exec(`${cliPath} new:event CartChanged`, { cwd: eventSandboxDir })
       expect(stdout).to.match(expectedOutputRegex)
     })
 
     describe('without fields', () => {
       it('should create new event', async () => {
-        await exec(`${cliPath} new:event CartChanged`, { cwd: SANDBOX_INTEGRATION_DIR })
+        const FILE_CART_CHANGED_EVENT = `${eventSandboxDir}/src/events/cart-changed.ts`
+
+        await exec(`${cliPath} new:event CartChanged`, { cwd: eventSandboxDir })
 
         const expectedEventContent = loadFixture('events/cart-changed.ts')
         const eventContent = readFileContent(FILE_CART_CHANGED_EVENT)
@@ -53,8 +53,10 @@ describe('Event', () => {
 
     describe('with fields', () => {
       it('should create new event', async () => {
+        const FILE_CART_CHANGED_WITH_FIELDS_EVENT = `${eventSandboxDir}/src/events/cart-changed-with-fields.ts`
+
         await exec(`${cliPath} new:event CartChangedWithFields --fields cartId:UUID sku:string quantity:number`, {
-          cwd: SANDBOX_INTEGRATION_DIR,
+          cwd: eventSandboxDir,
         })
 
         const expectedEventContent = loadFixture('events/cart-changed-with-fields.ts')
@@ -72,7 +74,7 @@ describe('Event', () => {
   context('Invalid event', () => {
     describe('missing event name', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:event`, { cwd: SANDBOX_INTEGRATION_DIR })
+        const { stderr } = await exec(`${cliPath} new:event`, { cwd: eventSandboxDir })
 
         expect(stderr).to.match(/You haven't provided an event name, but it is required, run with --help for usage/)
       })

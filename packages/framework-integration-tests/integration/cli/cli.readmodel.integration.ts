@@ -13,17 +13,14 @@ const READ_MODEL_AUTH_PLACEHOLDER = "// Specify authorized roles here. Use 'all'
 const READ_MODEL_PROJECTION_PLACEHOLDER = '/* NEW CartWithProjectionReadModel HERE */'
 
 describe('Read model', () => {
-  const SANDBOX_INTEGRATION_DIR = 'read-model-integration-sandbox'
-  const FILE_CART_READ_MODEL = `${SANDBOX_INTEGRATION_DIR}/src/read-models/cart-read-model.ts`
-  const FILE_CART_WITH_FIELDS_READ_MODEL = `${SANDBOX_INTEGRATION_DIR}/src/read-models/cart-with-fields-read-model.ts`
-  const FILE_CART_WITH_PROJECTION_READ_MODEL = `${SANDBOX_INTEGRATION_DIR}/src/read-models/cart-with-projection-read-model.ts`
+  let readModelSandboxDir: string
 
   before(async () => {
-    createSandboxProject(SANDBOX_INTEGRATION_DIR)
+    readModelSandboxDir = createSandboxProject('read-model')
   })
 
   after(() => {
-    removeFolders([SANDBOX_INTEGRATION_DIR])
+    removeFolders([readModelSandboxDir])
   })
 
   const cliPath = path.join('..', '..', 'cli', 'bin', 'run')
@@ -34,7 +31,9 @@ describe('Read model', () => {
   context('valid read model', () => {
     describe('without fields', () => {
       it('should create new read model', async () => {
-        const { stdout } = await exec(`${cliPath} new:read-model CartReadModel`, { cwd: SANDBOX_INTEGRATION_DIR })
+        const FILE_CART_READ_MODEL = `${readModelSandboxDir}/src/read-models/cart-read-model.ts`
+
+        const { stdout } = await exec(`${cliPath} new:read-model CartReadModel`, { cwd: readModelSandboxDir })
         expect(stdout).to.match(EXPECTED_OUTPUT_REGEX)
 
         const expectedEntityContent = loadFixture('read-models/cart-read-model.ts')
@@ -50,9 +49,11 @@ describe('Read model', () => {
 
     describe('with fields', () => {
       it('should create new read model', async () => {
+        const FILE_CART_WITH_FIELDS_READ_MODEL = `${readModelSandboxDir}/src/read-models/cart-with-fields-read-model.ts`
+
         const { stdout } = await exec(
           cliPath + " new:read-model CartWithFieldsReadModel --fields 'items:Array<Item>'",
-          { cwd: SANDBOX_INTEGRATION_DIR }
+          { cwd: readModelSandboxDir }
         )
         expect(stdout).to.match(EXPECTED_OUTPUT_REGEX)
 
@@ -72,9 +73,11 @@ describe('Read model', () => {
 
     describe('with projection', () => {
       it('should create new read model', async () => {
+        const FILE_CART_WITH_PROJECTION_READ_MODEL = `${readModelSandboxDir}/src/read-models/cart-with-projection-read-model.ts`
+
         const { stdout } = await exec(
           cliPath + " new:read-model CartWithProjectionReadModel --fields 'items:Array<Item>' --projects Cart:id",
-          { cwd: SANDBOX_INTEGRATION_DIR }
+          { cwd: readModelSandboxDir }
         )
         expect(stdout).to.match(EXPECTED_OUTPUT_REGEX)
 
@@ -102,7 +105,7 @@ describe('Read model', () => {
   context('invalid read model', () => {
     describe('missing read model name', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:read-model`, { cwd: SANDBOX_INTEGRATION_DIR })
+        const { stderr } = await exec(`${cliPath} new:read-model`, { cwd: readModelSandboxDir })
 
         expect(stderr).to.match(/You haven't provided a read model name, but it is required, run with --help for usage/)
       })

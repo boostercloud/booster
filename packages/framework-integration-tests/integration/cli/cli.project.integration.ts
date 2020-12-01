@@ -286,7 +286,7 @@ describe('Project', () => {
         it('installs dependencies', () => {
           expect(projectFileExists(projectName, 'node_modules')).to.be.true
           expect(projectDirContents(projectName, 'node_modules')).not.to.be.empty
-          expect(projectFileExists(projectName, 'package-lock.json')).to.be.true
+          expect(projectFileExists(projectName, 'yarn.lock')).to.be.true
         })
 
         it('initializes git', () => {
