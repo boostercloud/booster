@@ -1,17 +1,16 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from '../expect'
 import { fancy } from 'fancy-test'
-import { restore, fake, replace, spy } from 'sinon'
+import { restore, fake, replace } from 'sinon'
 import { ProviderLibrary, Logger } from '@boostercloud/framework-types'
 import { test } from '@oclif/test'
-import * as environment from '../../src/common/environment'
+import * as environment from '../../src/services/environment'
+import * as dependencies from '../../src/services/dependencies'
 
 // With this trick we can test non exported symbols
 const rewire = require('rewire')
 const deploy = rewire('../../src/commands/deploy')
 const runTasks = deploy.__get__('runTasks')
-const pruneDependencies = deploy.__get__('pruneDependencies')
-const reinstallDependencies = deploy.__get__('reinstallDependencies')
 
 describe('deploy', () => {
   afterEach(() => {
@@ -46,56 +45,75 @@ describe('deploy', () => {
       })
     })
 
-    fancy.stdout().it('calls pruneDependencies function', async (ctx) => {
-      const fakeProvider = {} as ProviderLibrary
+    context('when the `skipRestoreDependencies` flag is set to "false"', () => {
+      fancy.stdout().it('prunes dependencies and reinstall them later', async (ctx) => {
+        const fakePruneDevDependencies = fake()
+        replace(dependencies, 'pruneDevDependencies', fakePruneDevDependencies)
+        const fakeReinstallDependencies = fake()
+        replace(dependencies, 'reinstallDependencies', fakeReinstallDependencies)
 
-      const fakeLoader = fake.resolves({
-        provider: fakeProvider,
-        appName: 'fake app',
-        region: 'tunte',
-        entities: {},
+        const fakeProvider = {} as ProviderLibrary
+
+        const fakeLoader = fake.resolves({
+          provider: fakeProvider,
+          appName: 'fake app',
+          region: 'tunte',
+          entities: {},
+        })
+
+        const fakeDeployer = fake((_config: unknown, logger: Logger) => {
+          logger.info('this is a progress update')
+        })
+
+        replace(environment, 'currentEnvironment', fake.returns('test-env'))
+
+        await runTasks(false, fakeLoader, fakeDeployer)
+
+        expect(fakePruneDevDependencies).to.have.been.calledOnce
+        expect(fakeReinstallDependencies).to.have.been.calledOnceWith(false)
+
+        expect(ctx.stdout).to.include('Deployment complete')
+        expect(fakeDeployer).to.have.been.calledOnce
       })
-
-      const fakeDeployer = fake((_config: unknown, logger: Logger) => {
-        logger.info('this is a progress update')
-      })
-
-      const pruneDependenciesSpy = spy(pruneDependencies)
-      deploy.__set__('pruneDependencies', pruneDependenciesSpy)
-      await runTasks(false, 'test-env', fakeLoader, fakeDeployer)
-        
-      expect(pruneDependenciesSpy).to.have.been.calledOnce
-
-      expect(ctx.stdout).to.include('Deployment complete')
-      expect(fakeDeployer).to.have.been.calledOnce
     })
 
-    fancy.stdout().it('calls reinstallDependencies function', async (ctx) => {
-      const fakeProvider = {} as ProviderLibrary
+    context('when `skipRestoreDependencies` flag is set to "true"', () => {
+      fancy.stdout().it('prues dependencies but do not reinstall them later', async (ctx) => {
+        const fakePruneDevDependencies = fake()
+        replace(dependencies, 'pruneDevDependencies', fakePruneDevDependencies)
+        const fakeReinstallDependencies = fake()
+        replace(dependencies, 'reinstallDependencies', fakeReinstallDependencies)
 
-      const fakeLoader = fake.resolves({
-        provider: fakeProvider,
-        appName: 'fake app',
-        region: 'tunte',
-        entities: {},
+        const fakeProvider = {} as ProviderLibrary
+
+        const fakeLoader = fake.resolves({
+          provider: fakeProvider,
+          appName: 'fake app',
+          region: 'tunte',
+          entities: {},
+        })
+
+        const fakeDeployer = fake((_config: unknown, logger: Logger) => {
+          logger.info('this is a progress update')
+        })
+
+        replace(environment, 'currentEnvironment', fake.returns('test-env'))
+
+        await runTasks(true, fakeLoader, fakeDeployer)
+
+        expect(fakePruneDevDependencies).to.have.been.calledOnce
+        expect(fakeReinstallDependencies).to.have.been.calledOnceWith(true)
+
+        expect(ctx.stdout).to.include('Deployment complete')
+        expect(fakeDeployer).to.have.been.calledOnce
       })
-
-      const fakeDeployer = fake((_config: unknown, logger: Logger) => {
-        logger.info('this is a progress update')
-      })
-
-      const reinstallDependenciesSpy = spy(reinstallDependencies)
-      deploy.__set__('reinstallDependencies', reinstallDependenciesSpy)
-      await runTasks(false, 'test-env', fakeLoader, fakeDeployer)
-        
-      expect(reinstallDependenciesSpy).to.have.been.calledOnce
-
-      expect(ctx.stdout).to.include('Deployment complete')
-      expect(fakeDeployer).to.have.been.calledOnce
     })
 
     context('when there is a valid index.ts', () => {
       fancy.stdout().it('Starts deployment', async (ctx) => {
+        replace(dependencies, 'pruneDevDependencies', fake())
+        replace(dependencies, 'reinstallDependencies', fake())
+
         const fakeProvider = {} as ProviderLibrary
 
         const fakeLoader = fake.resolves({

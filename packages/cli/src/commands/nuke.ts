@@ -6,7 +6,7 @@ import { Script } from '../common/script'
 import Brand from '../common/brand'
 import Prompter from '../services/user-prompt'
 import { logger } from '../services/logger'
-import { currentEnvironment, initializeEnvironment } from '../common/environment'
+import { currentEnvironment, initializeEnvironment } from '../services/environment'
 
 const runTasks = async (
   loader: Promise<BoosterConfig>,

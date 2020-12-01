@@ -2,7 +2,7 @@ import { fake, replace, restore, SinonStub, stub } from 'sinon'
 import * as projectChecker from '../../src/services/project-checker'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { expect } from '../expect'
-import * as environment from '../../src/common/environment'
+import * as environment from '../../src/services/environment'
 
 const rewire = require('rewire')
 const configService = rewire('../../src/services/config-service')
