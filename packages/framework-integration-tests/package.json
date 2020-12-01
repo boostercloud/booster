@@ -58,6 +58,5 @@
     "integration/cli": "mocha --forbid-only --exit --config \"integration/cli/.mocharc.yml\" \"integration/cli/**/*.integration.ts\"",
     "integration/end-to-end": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"integration/end-to-end/.mocharc.yml\" \"integration/end-to-end/**/*.integration.ts\""
   },
-  "types": "dist/index.d.ts",
-  "gitHead": "121816dbe55d57df5860b54a871c06dcda761101"
+  "types": "dist/index.d.ts"
 }

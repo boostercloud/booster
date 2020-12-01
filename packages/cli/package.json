@@ -72,6 +72,5 @@
     "prepack": "tsc -b tsconfig.json",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
   },
-  "types": "lib/index.d.ts",
-  "gitHead": "121816dbe55d57df5860b54a871c06dcda761101"
+  "types": "lib/index.d.ts"
 }
