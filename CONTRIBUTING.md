@@ -44,7 +44,7 @@ Booster is divided in many different packages. The criteria to split the code in
 * They contain code that is used by at least two of the other packages.
 * They're a vendor-specific specialization of some abstract part of the framework (for instance, all the code that is required by AWS is in separate packages). 
 
-The packages are managed using [Lerna](https://lerna.js.org), if you run `lerna run compile`, it will run `npm run compile` in all the package folders.
+The packages are managed using [Lerna](https://lerna.js.org) and [Yarn](https://yarnpkg.com), if you run `lerna run compile`, it will run `yarn compile` in all the package folders.
 
 The packages are published to `npm` under the prefix `@boostercloud/`, their purpose is as follows:
 

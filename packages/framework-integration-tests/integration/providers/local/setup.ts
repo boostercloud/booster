@@ -13,7 +13,7 @@ before(async () => {
   createSandboxProject(sandboxPath)
 
   console.log('installing dependencies...')
-  await exec('npm install', { cwd: sandboxPath })
+  await exec('npx yarn install', { cwd: sandboxPath })
 
   console.log('symlinking booster dependencies...')
   await symLinkBoosterDependencies(sandboxPath)

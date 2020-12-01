@@ -3,7 +3,7 @@ import * as path from 'path'
 import { exec } from 'child-process-promise'
 import { wrapExecError } from '../common/errors'
 import { checkItIsABoosterProject } from './project-checker'
-import { currentEnvironment } from '../common/environment'
+import { currentEnvironment } from './environment'
 
 export async function compileProjectAndLoadConfig(): Promise<BoosterConfig> {
   const userProjectPath = process.cwd()
@@ -14,7 +14,7 @@ export async function compileProjectAndLoadConfig(): Promise<BoosterConfig> {
 
 async function compileProject(projectPath: string): Promise<void> {
   try {
-    await exec('npm run compile', { cwd: projectPath })
+    await exec('yarn compile', { cwd: projectPath })
   } catch (e) {
     throw wrapExecError(e, 'Project contains compilation errors')
   }

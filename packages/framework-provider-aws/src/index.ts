@@ -46,7 +46,7 @@ function loadInfrastructurePackage(): { Infrastructure: (rockets?: RocketDescrip
  * `Provider` is a function that accepts a list of rocket names and returns an
  * object compatible with the `ProviderLibrary` defined in the `framework-types` package.
  * The rocket names are passed to the infrastructure package, which loads them dynamically
- * to extend the AWS functionality. Rockets are typically distributed in separate npm packages.
+ * to extend the AWS functionality. Rockets are typically distributed in separate node packages.
  */
 export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
   return {

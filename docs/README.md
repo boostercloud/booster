@@ -2668,7 +2668,9 @@ Booster.configure('john', (config: BoosterConfig): void => {
 
 The environment name will be required by any command from the Booster CLI that depends on the provider. For instance, when you deploy your application, you'll need to specify on which environment you want to deploy it:
 
-    $ boost deploy -e prod
+```sh
+boost deploy -e prod
+```
 
 This way, you can have different configurations depending on your needs.
 
@@ -2678,7 +2680,7 @@ The only thing you need to do to deploy a whole new completely-independent copy 
 
 ### Extending Booster with Rockets!
 
-You can extend Booster creating rockets. A rocket is just an npm package that implements the public Booster rocket interfaces. You can use them for many things:
+You can extend Booster creating rockets. A rocket is just an node package that implements the public Booster rocket interfaces. You can use them for many things:
 
 1. Extend your infrastructure (Currently, only in AWS): You can write a rocket that adds provider resources to your application stack.
 2. Runtime extensions (Not yet implemented): Add new annotations and interfaces, that combined with infrastructure extensions, could implement new abstractions on top of highly requested use cases.
@@ -2715,9 +2717,9 @@ Infrastructure rocket interfaces are provider-dependant, so infrastructure rocke
 ```sh
 mkdir rocket-your-rocket-name-aws-infrastructure
 cd rocket-your-rocket-name-aws-infrastructure
-npm init
+yarn init
 ...
-npm install -D @boostercloud/framework-provider-aws-infrastructure
+yarn add --dev @boostercloud/framework-provider-aws-infrastructure
 ```
 
 The implementation of `InfrastructureRocket` might vary from one provider to the other, but in AWS it only requires two functions:
@@ -2778,7 +2780,7 @@ In order to run locally, it is necessary to add the `framework-provider-local` p
 
 First of all, we will have to install the local provider package as a new application dependency
 
-`npm install --save-dev @boostercloud/framework-provider-local`
+`yarn add --dev @boostercloud/framework-provider-local`
 
 Once the local provider is installed, we will need to create a new config file or update the existing one (usually `src/config/config.ts`). Then you'll have to load and initialize your environment as follows:
 

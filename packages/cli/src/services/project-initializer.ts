@@ -19,7 +19,7 @@ export async function generateConfigFiles(config: ProjectInitializerConfig): Pro
 
 export async function installDependencies(config: ProjectInitializerConfig): Promise<void> {
   try {
-    await exec('npm install', { cwd: projectDir(config) })
+    await exec('npx yarn install', { cwd: projectDir(config) })
   } catch (e) {
     throw wrapExecError(e, 'Could not install dependencies')
   }
