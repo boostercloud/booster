@@ -3,7 +3,7 @@ import { queryRecordFor } from '../../src/library/searcher-adapter'
 
 describe('searcher-adapter', () => {
   const typeName = 'SomeReadModel'
-  describe('filter conversion for keys to NeDB queries', () => {
+  describe('converts simple operators', () => {
     it('converts the "=" operator', () => {
       const result = queryRecordFor(typeName, { field: { operation: '=', values: ['one'] } })
       expect(result).to.deep.equal({ 'value.field': 'one', typeName })
@@ -42,6 +42,22 @@ describe('searcher-adapter', () => {
     it('converts the "between" operator', () => {
       const result = queryRecordFor(typeName, { field: { operation: 'between', values: ['one', 'two'] } })
       expect(result).to.deep.equal({ 'value.field': { $gt: 'one', $lte: 'two' }, typeName })
+    })
+  })
+  describe('converts operators that rely on regexes', () => {
+    it('converts the "contains" operator', () => {
+      const result = queryRecordFor(typeName, { field: { operation: 'contains', values: ['one'] } })
+      expect(result).to.deep.equal({ 'value.field': { $regex: new RegExp('one') }, typeName })
+    })
+
+    it('converts the "not-contains" operator', () => {
+      const result = queryRecordFor(typeName, { field: { operation: 'not-contains', values: ['one'] } })
+      expect(result).to.deep.equal({ 'value.field': { $regex: new RegExp('^((?!one).)*$', 'gm') }, typeName })
+    })
+
+    it('converts the "begins-with" operator', () => {
+      const result = queryRecordFor(typeName, { field: { operation: 'begins-with', values: ['one'] } })
+      expect(result).to.deep.equal({ 'value.field': { $regex: new RegExp('^one') }, typeName })
     })
   })
 })
