@@ -1,29 +1,27 @@
-import { start } from '../../../src/deploy'
+import { start } from './utils'
 import { sleep } from '../../helper/sleep'
-import { exec } from 'child-process-promise'
 import { ChildProcess } from 'child_process'
 import { createSandboxProject, removeFolders } from '../../helper/fileHelper'
-import { forceLernaRebuild, symLinkBoosterDependencies } from '../../helper/depsHelper'
-import { sandboxPath } from './constants'
+import { symLinkBoosterDependencies } from '../../helper/depsHelper'
+import { sandboxName } from './constants'
+import { runCommand } from '../../helper/runCommand'
 
 let serverProcess: ChildProcess
+let sandboxPath: string
 
 before(async () => {
   console.log('preparing sandboxed project...')
-  createSandboxProject(sandboxPath)
+  sandboxPath = createSandboxProject(sandboxName)
 
   console.log('installing dependencies...')
-  await exec('npx yarn install', { cwd: sandboxPath })
+  await runCommand(sandboxPath, 'npx yarn install')
 
   console.log('symlinking booster dependencies...')
   await symLinkBoosterDependencies(sandboxPath)
 
-  console.log('rebuilding framework...')
-  await forceLernaRebuild()
-
   console.log(`starting local server in ${sandboxPath}...`)
   serverProcess = start('local', sandboxPath)
-  await sleep(10000) // TODO: We need some time for the server to start, but maybe we can do this faster using the `waitForIt` method developed for waiting for AWS resources.
+  await sleep(10000) // TODO: We need some time for the server to start, but maybe we could do this faster using the `waitForIt` method
 })
 
 after(async () => {

@@ -9,7 +9,8 @@ export const template = `{
   "dependencies": {
     "@boostercloud/framework-core": "^${VERSION}",
     "@boostercloud/framework-types": "^${VERSION}",
-    "{{{providerPackageName}}}": "*"
+    "{{{providerPackageName}}}": "*",
+    "tslib": "^2.0.3"
   },
   "devDependencies": {
     "@boostercloud/cli": "^${VERSION}",
@@ -22,7 +23,7 @@ export const template = `{
     "mocha": "^7.0.1",
     "nyc": "^15.0.0",
     "prettier": "^1.19.1",
-    "typescript": "^3.7.5",
+    "typescript": "^3.9.3",
     "ts-node": "^8.6.2",
     "@types/node": "^13.5.1",
     "{{{providerPackageName}}}-infrastructure": "*"
