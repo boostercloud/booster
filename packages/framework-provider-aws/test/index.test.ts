@@ -1,6 +1,7 @@
 import { ProviderLibrary } from '@boostercloud/framework-types'
 import { expect } from '@boostercloud/framework-provider-aws-infrastructure/test/expect'
-import { fake } from 'sinon'
+import { fake, replace, restore } from 'sinon'
+import * as GetInstalledPath from 'get-installed-path'
 
 const rewire = require('rewire')
 const providerPackage = rewire('../src/index')
@@ -10,11 +11,17 @@ providerPackage.__set__('loadInfrastructurePackage', () => ({
 }))
 
 describe('the `framework-provider-aws` package', () => {
+  afterEach(() => {
+    restore()
+  })
+
   describe('the `Provider` function', () => {
     context('with no rockets', () => {
       const providerLibrary: ProviderLibrary = providerPackage.Provider()
 
       it('returns a `ProviderLibrary` object', () => {
+        replace(GetInstalledPath, 'getInstalledPathSync', fake.returns(''))
+
         expect(providerLibrary).to.be.an('object')
         expect(providerLibrary.api).to.be.an('object')
         expect(providerLibrary.auth).to.be.an('object')
@@ -27,9 +34,19 @@ describe('the `framework-provider-aws` package', () => {
 
       describe('infrastructure', () => {
         it('is loaded with no parameters', () => {
+          replace(GetInstalledPath, 'getInstalledPathSync', fake.returns(''))
+
           providerLibrary.infrastructure()
 
           expect(fakeInfrastructure).to.have.been.calledWith()
+        })
+
+        context('when the infrastructure package is not installed', () => {
+          it('throws an error', () => {
+            replace(GetInstalledPath, 'getInstalledPathSync', fake.throws('Not good...'))
+
+            expect(providerLibrary.infrastructure).to.throw(/infrastructure package must be installed/)
+          })
         })
       })
     })
@@ -47,6 +64,8 @@ describe('the `framework-provider-aws` package', () => {
       const providerLibrary: ProviderLibrary = providerPackage.Provider(rockets)
 
       it('returns a `ProviderLibrary` object', () => {
+        replace(GetInstalledPath, 'getInstalledPathSync', fake.returns(''))
+
         expect(providerLibrary).to.be.an('object')
         expect(providerLibrary.api).to.be.an('object')
         expect(providerLibrary.auth).to.be.an('object')
@@ -59,6 +78,8 @@ describe('the `framework-provider-aws` package', () => {
 
       describe('infrastructure', () => {
         it('is loaded with a list of rockets', () => {
+          replace(GetInstalledPath, 'getInstalledPathSync', fake.returns(''))
+
           providerLibrary.infrastructure()
 
           expect(fakeInfrastructure).to.have.been.calledWith(rockets)

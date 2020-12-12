@@ -30,6 +30,7 @@ import {
   storeConnectionData,
 } from './library/connections-adapter'
 import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
+import { getInstalledPathSync } from 'get-installed-path'
 
 const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
 const userPool = new CognitoIdentityServiceProvider()
@@ -37,9 +38,12 @@ const userPool = new CognitoIdentityServiceProvider()
 /* We load the infrastructure package dynamically here to avoid including it in the
  * dependences that are deployed in the lambda functions. The infrastructure
  * package is only used during the deploy.
+ * Notice that this is done in a separate function to ease testing
  */
-function loadInfrastructurePackage(): { Infrastructure: (rockets?: RocketDescriptor[]) => ProviderInfrastructure } {
-  return require(require('../package.json').name + '-infrastructure')
+function loadInfrastructurePackage(
+  packageName: string
+): { Infrastructure: (rockets?: RocketDescriptor[]) => ProviderInfrastructure } {
+  return require(packageName)
 }
 
 /**
@@ -96,7 +100,17 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
       rawToEnvelope: rawScheduledInputToEnvelope,
     },
     // ProviderInfrastructureGetter
-    infrastructure: () => loadInfrastructurePackage().Infrastructure(rockets),
+    infrastructure: () => {
+      const infrastructurePackageName = require('../package.json').name + '-infrastructure'
+      try {
+        getInstalledPathSync(infrastructurePackageName)
+      } catch (e) {
+        throw new Error(
+          `The AWS infrastructure package must be installed to perform this operation, please install it globally running 'npm install -g ${infrastructurePackageName}'`
+        )
+      }
+      return loadInfrastructurePackage(infrastructurePackageName).Infrastructure(rockets)
+    },
   }
 }
 
