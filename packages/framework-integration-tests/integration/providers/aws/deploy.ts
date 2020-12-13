@@ -4,8 +4,8 @@ import { runCommand } from '../../helper/runCommand'
 // Path to the CLI binary compiled by lerna
 const cliBinaryPath = path.join('..', '..', 'cli', 'bin', 'run')
 
-async function runInfrastructureCommand(command: string): Promise<void> {
-  const runInProject = runCommand.bind(null, path)
+async function runInfrastructureCommand(projectPath: string, command: string): Promise<void> {
+  const runInProject = runCommand.bind(null, projectPath)
 
   // Install dependencies
   await runInProject('yarn install')
@@ -15,16 +15,16 @@ async function runInfrastructureCommand(command: string): Promise<void> {
 
   // Install the aws integration package in the general registry to make sure that
   // the CLI can reach it after prunning devDependencies
-  await runCommand('.', 'npm install -g packages/framework-provider-aws-infrastructure')
+  await runCommand(path.join('..', '..'), 'npm install -g packages/framework-provider-aws-infrastructure')
 
   // Invoke the command
   await runInProject(command)
 }
 
-export async function deploy(path: string, environmentName = 'production'): Promise<void> {
-  await runInfrastructureCommand(`${cliBinaryPath} deploy -e ${environmentName}`)
+export async function deploy(projectPath: string, environmentName = 'production'): Promise<void> {
+  await runInfrastructureCommand(projectPath, `${cliBinaryPath} deploy -e ${environmentName}`)
 }
 
-export async function nuke(path: string, environmentName = 'production'): Promise<void> {
-  await runInfrastructureCommand(`${cliBinaryPath} nuke -e ${environmentName} --force`)
+export async function nuke(projectPath: string, environmentName = 'production'): Promise<void> {
+  await runInfrastructureCommand(projectPath, `${cliBinaryPath} nuke -e ${environmentName} --force`)
 }
