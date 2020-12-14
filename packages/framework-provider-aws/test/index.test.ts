@@ -1,5 +1,5 @@
 import { ProviderLibrary } from '@boostercloud/framework-types'
-import { expect } from '@boostercloud/framework-provider-aws-infrastructure/test/expect'
+import { expect } from '../test/expect'
 import { fake, replace, restore } from 'sinon'
 import * as GetInstalledPath from 'get-installed-path'
 

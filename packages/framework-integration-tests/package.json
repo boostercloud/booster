@@ -49,7 +49,7 @@
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
-    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "clean": "npx rimraf ./dist tsconfig.tsbuildinfo",
     "integration": "yarn integration/cli && yarn integration/local && yarn integration/aws-deploy && yarn integration/aws-func && yarn integration/end-to-end && yarn integration/aws-nuke",
     "integration/aws-deploy": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"integration/providers/aws/deployment/.mocharc.yml\" \"integration/providers/aws/deployment/**/*.integration.ts\"",
     "integration/aws-func": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"integration/providers/aws/functionality/.mocharc.yml\" \"integration/providers/aws/functionality/**/*.integration.ts\"",

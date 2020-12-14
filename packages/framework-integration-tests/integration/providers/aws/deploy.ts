@@ -7,15 +7,15 @@ const cliBinaryPath = path.join('..', '..', 'cli', 'bin', 'run')
 async function runInfrastructureCommand(projectPath: string, command: string): Promise<void> {
   const runInProject = runCommand.bind(null, projectPath)
 
-  // Install dependencies
+  // Install project dependencies
   await runInProject('yarn install')
 
   // Clean & compile the project
   await runInProject('yarn clean && yarn compile')
 
-  // Install the aws integration package in the general registry to make sure that
-  // the CLI can reach it after prunning devDependencies
-  await runCommand(path.join('..', '..'), 'npm install -g packages/framework-provider-aws-infrastructure')
+  // Link the aws integration package in the general registry to allow
+  // the CLI reach it after prunning devDependencies
+  // await runCommand(path.join('..', '..', 'packages', 'framework-provider-aws-infrastructure'), 'npm link')
 
   // Invoke the command
   await runInProject(command)
