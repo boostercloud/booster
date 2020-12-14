@@ -46,11 +46,9 @@ describe('deploy', () => {
     })
 
     context('when the `skipRestoreDependencies` flag is set to "false"', () => {
-      fancy.stdout().it('prunes dependencies and reinstall them later', async (ctx) => {
-        const fakePruneDevDependencies = fake()
-        replace(dependencies, 'pruneDevDependencies', fakePruneDevDependencies)
+      fancy.stdout().it('reinstalls dev dependencies after deploy', async (ctx) => {
         const fakeReinstallDependencies = fake()
-        replace(dependencies, 'reinstallDependencies', fakeReinstallDependencies)
+        replace(dependencies, 'installAllDependencies', fakeReinstallDependencies)
 
         const fakeProvider = {} as ProviderLibrary
 
@@ -69,8 +67,7 @@ describe('deploy', () => {
 
         await runTasks(false, fakeLoader, fakeDeployer)
 
-        expect(fakePruneDevDependencies).to.have.been.calledOnce
-        expect(fakeReinstallDependencies).to.have.been.calledOnceWith(false)
+        expect(fakeReinstallDependencies).to.have.been.called
 
         expect(ctx.stdout).to.include('Deployment complete')
         expect(fakeDeployer).to.have.been.calledOnce
@@ -78,11 +75,9 @@ describe('deploy', () => {
     })
 
     context('when `skipRestoreDependencies` flag is set to "true"', () => {
-      fancy.stdout().it('prues dependencies but do not reinstall them later', async (ctx) => {
-        const fakePruneDevDependencies = fake()
-        replace(dependencies, 'pruneDevDependencies', fakePruneDevDependencies)
+      fancy.stdout().it('does not reinstall dependencies after deployment', async (ctx) => {
         const fakeReinstallDependencies = fake()
-        replace(dependencies, 'reinstallDependencies', fakeReinstallDependencies)
+        replace(dependencies, 'installAllDependencies', fakeReinstallDependencies)
 
         const fakeProvider = {} as ProviderLibrary
 
@@ -101,8 +96,7 @@ describe('deploy', () => {
 
         await runTasks(true, fakeLoader, fakeDeployer)
 
-        expect(fakePruneDevDependencies).to.have.been.calledOnce
-        expect(fakeReinstallDependencies).to.have.been.calledOnceWith(true)
+        expect(fakeReinstallDependencies).not.to.have.been.called
 
         expect(ctx.stdout).to.include('Deployment complete')
         expect(fakeDeployer).to.have.been.calledOnce
@@ -111,8 +105,7 @@ describe('deploy', () => {
 
     context('when there is a valid index.ts', () => {
       fancy.stdout().it('Starts deployment', async (ctx) => {
-        replace(dependencies, 'pruneDevDependencies', fake())
-        replace(dependencies, 'reinstallDependencies', fake())
+        replace(dependencies, 'installAllDependencies', fake())
 
         const fakeProvider = {} as ProviderLibrary
 

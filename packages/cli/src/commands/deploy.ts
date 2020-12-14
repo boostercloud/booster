@@ -6,21 +6,16 @@ import { Script } from '../common/script'
 import Brand from '../common/brand'
 import { logger } from '../services/logger'
 import { currentEnvironment, initializeEnvironment } from '../services/environment'
-import { pruneDevDependencies, reinstallDependencies } from '../services/dependencies'
+import { installAllDependencies } from '../services/dependencies'
 
-// TODO: Before loading, we should check:
-//    * we're in a booster project
-//    * run the compiler to be sure that we're deploying the last version and stop the process if it fails
 const runTasks = async (
   skipRestoreDependencies: boolean,
-  loader: Promise<BoosterConfig>,
+  compileAndLoad: Promise<BoosterConfig>,
   deployer: (config: BoosterConfig, logger: Logger) => Promise<void>
 ): Promise<void> =>
-  Script.init(`boost ${Brand.dangerize('deploy')} [${currentEnvironment()}] 🚀`, loader)
-    //TODO: We should install dependencies in production mode before deploying
-    .step('Removing dev dependencies', pruneDevDependencies)
+  Script.init(`boost ${Brand.dangerize('deploy')} [${currentEnvironment()}] 🚀`, compileAndLoad)
     .step('Deploying', (config) => deployer(config, logger))
-    .step('Reinstalling dependencies', reinstallDependencies.bind(null, skipRestoreDependencies))
+    .optionalStep(skipRestoreDependencies, 'Reinstalling dev dependencies', async () => await installAllDependencies())
     .info('Deployment complete!')
     .done()
 
@@ -43,7 +38,11 @@ export default class Deploy extends Command {
     const { flags } = this.parse(Deploy)
 
     if (initializeEnvironment(logger, flags.environment)) {
-      await runTasks(flags.skipRestoreDependencies, compileProjectAndLoadConfig(), deployToCloudProvider)
+      await runTasks(
+        flags.skipRestoreDependencies,
+        compileProjectAndLoadConfig({ production: true }),
+        deployToCloudProvider
+      )
     }
   }
 }

@@ -12,7 +12,7 @@ import { GraphQLStackMembers } from '../../../src/infrastructure/stacks/graphql-
 import { EventsStackMembers } from '../../../src/infrastructure/stacks/events-stack'
 
 describe('permissions', () => {
-  beforeEach(() => {
+  afterEach(() => {
     restore()
   })
 

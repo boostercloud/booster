@@ -1,25 +1,18 @@
 import { exec } from 'child-process-promise'
 import { wrapExecError } from '../common/errors'
-import * as path from 'path'
 
 export async function pruneDevDependencies(): Promise<void> {
   try {
-    await exec('npx yarn install --production --no-bin-links', { cwd: projectDir() })
+    await exec('npx yarn install --production --no-bin-links')
   } catch (e) {
     throw wrapExecError(e, 'Could not prune dev dependencies')
   }
 }
 
-export async function reinstallDependencies(skipRestoreDependencies: boolean): Promise<void> {
+export async function installAllDependencies(path?: string): Promise<void> {
   try {
-    if (!skipRestoreDependencies) {
-      await exec('npx yarn install', { cwd: projectDir() })
-    }
+    await exec('npx yarn install', { cwd: path ?? process.cwd() })
   } catch (e) {
-    throw wrapExecError(e, 'Could not reinstall dependencies')
+    throw wrapExecError(e, 'Could not install dependencies')
   }
-}
-
-function projectDir(): string {
-  return path.join(process.cwd())
 }

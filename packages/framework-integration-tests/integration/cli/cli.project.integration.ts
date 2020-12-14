@@ -294,7 +294,7 @@ describe('Project', () => {
         })
 
         it('passes linter', async () => {
-          await expect(exec('yarn lint:check', { cwd: projectPath(projectName) })).to.be.eventually.fulfilled
+          await expect(exec('npx yarn lint:check', { cwd: projectPath(projectName) })).to.be.eventually.fulfilled
         }).timeout(TEST_TIMEOUT)
 
         it('compiles', async () => {
@@ -304,7 +304,7 @@ describe('Project', () => {
           // Maybe rewriting the dependencies messes up lerna's tricks ¯\_(ツ)_/¯
           await forceLernaRebuild()
 
-          await expect(exec('yarn compile', { cwd: projectPath(projectName) })).to.be.eventually.fulfilled
+          await expect(exec('npx yarn compile', { cwd: projectPath(projectName) })).to.be.eventually.fulfilled
         })
       })
 
