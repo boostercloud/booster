@@ -76,16 +76,18 @@ describe('read-models-adapter', () => {
   })
 
   describe('searchReadModel', () => {
-    let mockReadModel: ReadModelEnvelope
-
-    beforeEach(async () => {
-      mockReadModel = createMockReadModelEnvelope()
-
+    it('should call read model registry store', async () => {
+      const mockReadModel = createMockReadModelEnvelope()
       await searchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel.typeName, {})
+      expect(queryStub).to.have.been.calledWithExactly({ typeName: mockReadModel.typeName })
     })
 
-    it('should call read model registry store', () => {
-      expect(queryStub).to.have.been.calledWithExactly({ typeName: mockReadModel.typeName })
+    it('should call read model registry store with the appropriate operation converted', async () => {
+      const mockReadModel = createMockReadModelEnvelope()
+      await searchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel.typeName, {
+        foo: { operation: '>', values: [1] },
+      })
+      expect(queryStub).to.have.been.calledWithExactly({ typeName: mockReadModel.typeName, 'value.foo': { $gt: 1 } })
     })
   })
 })

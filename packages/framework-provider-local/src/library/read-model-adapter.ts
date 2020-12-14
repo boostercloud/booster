@@ -7,6 +7,7 @@ import {
   UUID,
 } from '@boostercloud/framework-types'
 import { ReadModelRegistry } from '../services/read-model-registry'
+import { queryRecordFor, QueryValue } from './searcher-adapter'
 
 export async function rawReadModelEventsToEnvelopes(
   config: BoosterConfig,
@@ -52,13 +53,12 @@ export async function searchReadModel(
   _config: BoosterConfig,
   logger: Logger,
   readModelName: string,
-  filters: Record<string, Filter<unknown>>
+  filters: Record<string, Filter<QueryValue>>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<Array<any>> {
-  if (Object.keys(filters).length != 0) {
-    throw Error('Filters not supported yet by local provider, but got:' + JSON.stringify(filters))
-  }
-  const query = { typeName: readModelName }
+  logger.info('Converting filter to query')
+  const query = queryRecordFor(readModelName, filters)
+  logger.info('Got query ', query)
   const result = await db.query(query)
   logger.debug('[ReadModelAdapter#searchReadModel] Search result: ', result)
   return result?.map((envelope) => envelope.value) ?? []
