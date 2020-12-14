@@ -6,7 +6,7 @@ This package is a configurable Booster rocket to add static site deployment to y
 
 Install this package as a dev dependency (It's a dev dependency because it's only used during deployment, but we don't want this code to be uploaded to the project lambdas)
 
-    npm install -d rocket-static-sites-aws-infrastructure
+    yarn add --dev @boostercloud/rocket-static-sites-aws-infrastructure
 
 In your Booster config file, pass a `RocketDescriptor` array to the AWS' `Provider` initializer configuring the static site rocket:
 
@@ -18,7 +18,7 @@ import * as AWS from '@boostercloud/framework-provider-aws'
 Booster.configure('development', (config: BoosterConfig): void => {
   config.appName = 'my-store'
   config.provider = Provider([{
-    packageName: 'rocket-static-sites-aws-infrastructure', 
+    packageName: '@boostercloud/rocket-static-sites-aws-infrastructure', 
     parameters: {
       bucketName: 'test-bucket-name', // Required
       rootPath: './frontend/dist', // Defaults to ./public
