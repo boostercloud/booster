@@ -59,7 +59,7 @@ const copyFolder = (origin: string, destiny: string): void => {
   })
 }
 
-export const sandboxPathFor = (sandboxName: string): string => sandboxName + '-integration-sandbox' // Add the suffix to make sure this folder is gitignored
+const sandboxPathFor = (sandboxName: string): string => sandboxName + '-integration-sandbox' // Add the suffix to make sure this folder is gitignored
 
 export const createSandboxProject = (sandboxName: string): string => {
   const sandboxPath = sandboxPathFor(sandboxName)
