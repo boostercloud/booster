@@ -1,12 +1,16 @@
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import * as AWS from '@boostercloud/framework-provider-aws'
-import * as Local from '@boostercloud/framework-provider-local'
 
-Booster.configure('local', (config: BoosterConfig): void => {
-  config.appName = 'my-store'
-  config.provider = Local.Provider()
-})
+// TODO: After prunning `devDependencies` to deploy the project to lambda, we cannot import the local provider anymore. We should look for a better solution than this, maybe loading a different config file depending on the configured environment in BOOSTER_ENV
+if (process.env.BOOSTER_ENV === 'local') {
+  const Local = require('@boostercloud/framework-provider-local')
+
+  Booster.configure('local', (config: BoosterConfig): void => {
+    config.appName = 'my-store'
+    config.provider = Local.Provider()
+  })
+}
 
 Booster.configure('development', (config: BoosterConfig): void => {
   config.appName = 'my-store'

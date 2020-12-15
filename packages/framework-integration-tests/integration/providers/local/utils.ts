@@ -4,6 +4,15 @@ import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { HttpLink } from 'apollo-link-http'
 import { LOCAL_PROVIDER_HOST } from './constants'
 import gql from 'graphql-tag'
+import { runCommand } from '../../helper/runCommand'
+import path = require('path')
+import { ChildProcess } from 'child_process'
+
+const cliBinaryPath = path.join('..', 'cli', 'bin', 'run')
+
+export function start(environmentName = 'local', path: string): ChildProcess {
+  return runCommand(path, `../${cliBinaryPath} start -e ${environmentName}`).childProcess
+}
 
 // --- Auth helpers ---
 
@@ -89,6 +98,7 @@ export async function changeCartItem(
   cartId: string,
   productId: string,
   quantity: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
   return client.mutate({
     variables: {

@@ -12,53 +12,55 @@ import { exec } from 'child-process-promise'
 const COMMAND_AUTH_PLACEHOLDER = "// Specify authorized roles here. Use 'all' to authorize anyone"
 
 describe('Command', () => {
-  const SANDBOX_INTEGRATION_DIR = 'command-integration-sandbox'
-  const FILE_CHANGE_CART_COMMAND = `${SANDBOX_INTEGRATION_DIR}/src/commands/change-cart.ts`
-  const FILE_CHANGE_CART_WITH_FIELDS_COMMAND = `${SANDBOX_INTEGRATION_DIR}/src/commands/change-cart-with-fields.ts`
+  let commandSandboxDir: string
 
   before(async () => {
-    createSandboxProject(SANDBOX_INTEGRATION_DIR)
+    commandSandboxDir = createSandboxProject('command')
   })
 
   after(() => {
-    removeFolders([SANDBOX_INTEGRATION_DIR])
+    removeFolders([commandSandboxDir])
   })
 
   const cliPath = path.join('..', '..', 'cli', 'bin', 'run')
 
   context('Valid command', () => {
     it('should create a new command', async () => {
+      const changeCartCommandPath = `${commandSandboxDir}/src/commands/change-cart.ts`
+
       const expectedOutputRegex = new RegExp(
         ['boost new:command', 'Verifying project', 'Creating new command', 'Command generated'].join('(.|\n)*')
       )
 
-      const { stdout } = await exec(`${cliPath} new:command ChangeCart`, { cwd: SANDBOX_INTEGRATION_DIR })
+      const { stdout } = await exec(`${cliPath} new:command ChangeCart`, { cwd: commandSandboxDir })
       expect(stdout).to.match(expectedOutputRegex)
 
       const expectedCommandContent = loadFixture('commands/change-cart.ts')
-      const commandContent = readFileContent(FILE_CHANGE_CART_COMMAND)
+      const commandContent = readFileContent(changeCartCommandPath)
       expect(commandContent).to.equal(expectedCommandContent)
 
       // Set command auth
       const updatedCommandContent = commandContent.replace(COMMAND_AUTH_PLACEHOLDER, "'all'")
 
-      writeFileContent(FILE_CHANGE_CART_COMMAND, updatedCommandContent)
+      writeFileContent(changeCartCommandPath, updatedCommandContent)
     })
 
     describe('with fields', () => {
       it('should create a new command with fields', async () => {
+        const changeCartWithFieldsCommandPath = `${commandSandboxDir}/src/commands/change-cart-with-fields.ts`
+
         await exec(`${cliPath} new:command ChangeCartWithFields --fields cartId:UUID sku:string quantity:number`, {
-          cwd: SANDBOX_INTEGRATION_DIR,
+          cwd: commandSandboxDir,
         })
 
         const expectedCommandContent = loadFixture('commands/change-cart-with-fields.ts')
-        const commandContent = readFileContent(FILE_CHANGE_CART_WITH_FIELDS_COMMAND)
+        const commandContent = readFileContent(changeCartWithFieldsCommandPath)
         expect(commandContent).to.equal(expectedCommandContent)
 
         // Set command auth
         const updatedCommandContent = commandContent.replace(COMMAND_AUTH_PLACEHOLDER, "'all'")
 
-        writeFileContent(FILE_CHANGE_CART_WITH_FIELDS_COMMAND, updatedCommandContent)
+        writeFileContent(changeCartWithFieldsCommandPath, updatedCommandContent)
       })
     })
   })
@@ -66,7 +68,7 @@ describe('Command', () => {
   context('Invalid command', () => {
     describe('missing command name', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:command`, { cwd: SANDBOX_INTEGRATION_DIR })
+        const { stderr } = await exec(`${cliPath} new:command`, { cwd: commandSandboxDir })
 
         expect(stderr).to.match(/You haven't provided a command name, but it is required, run with --help for usage/)
       })

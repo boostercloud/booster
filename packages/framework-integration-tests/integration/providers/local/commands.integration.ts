@@ -30,14 +30,14 @@ describe('commands', () => {
       mockQuantity = random.number({ min: 1 })
     })
 
-    it('should successfully process a command', async () => {
+    xit('should successfully process a command', async () => {
       const mutationResult = await changeCartItem(client, mockCartId, mockProductId, mockQuantity)
 
       expect(mutationResult).not.to.be.null
       expect(mutationResult.data.ChangeCartItem).to.be.true
     })
 
-    it('should store event in the database', async () => {
+    xit('should store event in the database', async () => {
       await changeCartItem(client, mockCartId, mockProductId, mockQuantity)
 
       // Wait until event is stored in database
@@ -73,7 +73,7 @@ describe('commands', () => {
       expect(result).to.deep.include(expectedResult)
     })
 
-    it('should create a snapshot after 5 events', async () => {
+    xit('should create a snapshot after 5 events', async () => {
       let mockQuantity: number
       let expectedSnapshotQuantity = 0
 

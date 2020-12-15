@@ -6,7 +6,7 @@ import { stub, restore } from 'sinon'
 import { UserRegistry } from '../../src/services'
 
 describe('the user registry', () => {
-  beforeEach(() => {
+  afterEach(() => {
     restore()
   })
   const provider = {} as ProviderLibrary

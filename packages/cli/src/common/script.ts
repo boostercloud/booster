@@ -67,16 +67,16 @@ export class Script<TContext> {
    * If condition is true, step will be skipped and info action will be called.
    * Otherwise, step method will be called as usual.
    *
-   * @param condition Boolean value to determine if step should be performed or skipped
+   * @param skipCondition When true, the action is skipped
    * @param message Message to initialize the spinner
    * @param action Function that receives the config object and performs an action
    */
   public optionalStep = (
-    condition: boolean,
+    skipCondition: boolean,
     message: string,
     action: (ctx: TContext) => Promise<void>
   ): Script<TContext> => {
-    if (condition) return this.info(Brand.mellancholize(`Skipping: ${message}`))
+    if (skipCondition) return this.info(Brand.mellancholize(`Skipping: ${message}`))
     return this.step(message, action)
   }
 

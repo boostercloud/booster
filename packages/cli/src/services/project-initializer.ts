@@ -12,17 +12,14 @@ import * as configTs from '../templates/project/config-ts'
 import * as indexTs from '../templates/project/index-ts'
 import * as prettierRc from '../templates/project/prettierrc-yaml'
 import { wrapExecError } from '../common/errors'
+import { installAllDependencies } from './dependencies'
 
 export async function generateConfigFiles(config: ProjectInitializerConfig): Promise<void> {
   await Promise.all(filesToGenerate.map(renderToFile(config)))
 }
 
 export async function installDependencies(config: ProjectInitializerConfig): Promise<void> {
-  try {
-    await exec('npm install', { cwd: projectDir(config) })
-  } catch (e) {
-    throw wrapExecError(e, 'Could not install dependencies')
-  }
+  return installAllDependencies(projectDir(config))
 }
 
 export async function generateRootDirectory(config: ProjectInitializerConfig): Promise<void> {
