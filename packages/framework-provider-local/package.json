@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-local",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "description": "Debug your Booster projects locally",
   "keywords": [
     "framework-provider-aws"
@@ -20,8 +20,8 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@boostercloud/framework-core": "^0.9.2",
-    "@boostercloud/framework-types": "^0.9.2"
+    "@boostercloud/framework-core": "^0.9.3",
+    "@boostercloud/framework-types": "^0.9.3"
   },
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
@@ -34,7 +34,6 @@
   "bugs": {
     "url": "https://github.com/boostercloud/booster/issues"
   },
-  "gitHead": "121816dbe55d57df5860b54a871c06dcda761101",
   "devDependencies": {
     "@types/faker": "^4.1.12",
     "faker": "^4.1.0"

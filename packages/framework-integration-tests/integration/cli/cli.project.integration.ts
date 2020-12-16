@@ -286,7 +286,7 @@ describe('Project', () => {
         it('installs dependencies', () => {
           expect(projectFileExists(projectName, 'node_modules')).to.be.true
           expect(projectDirContents(projectName, 'node_modules')).not.to.be.empty
-          expect(projectFileExists(projectName, 'package-lock.json')).to.be.true
+          expect(projectFileExists(projectName, 'yarn.lock')).to.be.true
         })
 
         it('initializes git', () => {
@@ -294,7 +294,7 @@ describe('Project', () => {
         })
 
         it('passes linter', async () => {
-          await expect(exec('npm run lint:check', { cwd: projectPath(projectName) })).to.be.eventually.fulfilled
+          await expect(exec('npx yarn lint:check', { cwd: projectPath(projectName) })).to.be.eventually.fulfilled
         }).timeout(TEST_TIMEOUT)
 
         it('compiles', async () => {
@@ -304,7 +304,7 @@ describe('Project', () => {
           // Maybe rewriting the dependencies messes up lerna's tricks ¯\_(ツ)_/¯
           await forceLernaRebuild()
 
-          await expect(exec('npm run compile', { cwd: projectPath(projectName) })).to.be.eventually.fulfilled
+          await expect(exec('npx yarn compile', { cwd: projectPath(projectName) })).to.be.eventually.fulfilled
         })
       })
 

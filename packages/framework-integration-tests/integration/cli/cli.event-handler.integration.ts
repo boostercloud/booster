@@ -4,15 +4,14 @@ import { createSandboxProject, loadFixture, readFileContent, removeFolders } fro
 import { exec } from 'child-process-promise'
 
 describe('Event handler', () => {
-  const SANDBOX_INTEGRATION_DIR = 'event-handler-integration-sandbox'
-  const FILE_HANDLE_CART_CHANGED_EVENT_HANDLER = `${SANDBOX_INTEGRATION_DIR}/src/event-handlers/handle-cart-change.ts`
+  let eventHandlerSandboxDir: string
 
   before(async () => {
-    createSandboxProject(SANDBOX_INTEGRATION_DIR)
+    eventHandlerSandboxDir = createSandboxProject('event-handler')
   })
 
   after(() => {
-    removeFolders([SANDBOX_INTEGRATION_DIR])
+    removeFolders([eventHandlerSandboxDir])
   })
 
   const cliPath = path.join('..', '..', 'cli', 'bin', 'run')
@@ -26,12 +25,12 @@ describe('Event handler', () => {
       )
 
       const { stdout } = await exec(`${cliPath} new:event-handler HandleCartChange -e CartItemChanged`, {
-        cwd: SANDBOX_INTEGRATION_DIR,
+        cwd: eventHandlerSandboxDir,
       })
       expect(stdout).to.match(expectedOutputRegex)
 
       const expectedEventContent = loadFixture('event-handlers/handle-cart-change.ts')
-      const eventContent = readFileContent(FILE_HANDLE_CART_CHANGED_EVENT_HANDLER)
+      const eventContent = readFileContent(`${eventHandlerSandboxDir}/src/event-handlers/handle-cart-change.ts`)
 
       expect(eventContent).to.equal(expectedEventContent)
     })
@@ -40,7 +39,7 @@ describe('Event handler', () => {
   describe('Invalid event handler', () => {
     context('without name and event', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:event-handler`, { cwd: SANDBOX_INTEGRATION_DIR })
+        const { stderr } = await exec(`${cliPath} new:event-handler`, { cwd: eventHandlerSandboxDir })
 
         expect(stderr).to.match(
           /You haven't provided an event handler name, but it is required, run with --help for usage/
@@ -50,7 +49,7 @@ describe('Event handler', () => {
 
     context('Without name', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:event-handler -e CartPaid`, { cwd: SANDBOX_INTEGRATION_DIR })
+        const { stderr } = await exec(`${cliPath} new:event-handler -e CartPaid`, { cwd: eventHandlerSandboxDir })
 
         expect(stderr).to.match(
           /You haven't provided an event handler name, but it is required, run with --help for usage/
@@ -60,7 +59,7 @@ describe('Event handler', () => {
 
     context('Without event', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:event-handler CartPaid`, { cwd: SANDBOX_INTEGRATION_DIR })
+        const { stderr } = await exec(`${cliPath} new:event-handler CartPaid`, { cwd: eventHandlerSandboxDir })
 
         expect(stderr).to.match(/You haven't provided an event, but it is required, run with --help for usage/)
       })

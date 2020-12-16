@@ -8,7 +8,7 @@ import { expect } from '../expect'
 import { UserApp } from '@boostercloud/framework-types'
 
 describe('the auth controller', () => {
-  beforeEach(() => {
+  afterEach(() => {
     restore()
   })
   const userApp = ({ boosterPreSignUpChecker: stub().resolves() } as unknown) as UserApp

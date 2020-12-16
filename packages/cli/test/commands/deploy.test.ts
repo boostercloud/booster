@@ -4,7 +4,8 @@ import { fancy } from 'fancy-test'
 import { restore, fake, replace } from 'sinon'
 import { ProviderLibrary, Logger } from '@boostercloud/framework-types'
 import { test } from '@oclif/test'
-import * as environment from '../../src/common/environment'
+import * as environment from '../../src/services/environment'
+import * as dependencies from '../../src/services/dependencies'
 
 // With this trick we can test non exported symbols
 const rewire = require('rewire')
@@ -27,7 +28,7 @@ describe('deploy', () => {
         const fakeDeployer = fake()
         replace(environment, 'currentEnvironment', fake.returns('test-env'))
 
-        await expect(runTasks(fakeLoader, fakeDeployer)).to.eventually.be.rejectedWith(msg)
+        await expect(runTasks(false, fakeLoader, fakeDeployer)).to.eventually.be.rejectedWith(msg)
         expect(fakeDeployer).not.to.have.been.called
       })
     })
@@ -39,13 +40,16 @@ describe('deploy', () => {
         const fakeDeployer = fake()
         replace(environment, 'currentEnvironment', fake.returns('test-env'))
 
-        await expect(runTasks(fakeLoader, fakeDeployer)).to.eventually.be.rejectedWith(msg)
+        await expect(runTasks(false, fakeLoader, fakeDeployer)).to.eventually.be.rejectedWith(msg)
         expect(fakeDeployer).not.to.have.been.called
       })
     })
 
-    context('when there is a valid index.ts', () => {
-      fancy.stdout().it('Starts deployment', async (ctx) => {
+    context('when the `skipRestoreDependencies` flag is set to "false"', () => {
+      fancy.stdout().it('reinstalls dev dependencies after deploy', async (ctx) => {
+        const fakeReinstallDependencies = fake()
+        replace(dependencies, 'installAllDependencies', fakeReinstallDependencies)
+
         const fakeProvider = {} as ProviderLibrary
 
         const fakeLoader = fake.resolves({
@@ -61,7 +65,64 @@ describe('deploy', () => {
 
         replace(environment, 'currentEnvironment', fake.returns('test-env'))
 
-        await runTasks(fakeLoader, fakeDeployer)
+        await runTasks(false, fakeLoader, fakeDeployer)
+
+        expect(fakeReinstallDependencies).to.have.been.called
+
+        expect(ctx.stdout).to.include('Deployment complete')
+        expect(fakeDeployer).to.have.been.calledOnce
+      })
+    })
+
+    context('when `skipRestoreDependencies` flag is set to "true"', () => {
+      fancy.stdout().it('does not reinstall dependencies after deployment', async (ctx) => {
+        const fakeReinstallDependencies = fake()
+        replace(dependencies, 'installAllDependencies', fakeReinstallDependencies)
+
+        const fakeProvider = {} as ProviderLibrary
+
+        const fakeLoader = fake.resolves({
+          provider: fakeProvider,
+          appName: 'fake app',
+          region: 'tunte',
+          entities: {},
+        })
+
+        const fakeDeployer = fake((_config: unknown, logger: Logger) => {
+          logger.info('this is a progress update')
+        })
+
+        replace(environment, 'currentEnvironment', fake.returns('test-env'))
+
+        await runTasks(true, fakeLoader, fakeDeployer)
+
+        expect(fakeReinstallDependencies).not.to.have.been.called
+
+        expect(ctx.stdout).to.include('Deployment complete')
+        expect(fakeDeployer).to.have.been.calledOnce
+      })
+    })
+
+    context('when there is a valid index.ts', () => {
+      fancy.stdout().it('Starts deployment', async (ctx) => {
+        replace(dependencies, 'installAllDependencies', fake())
+
+        const fakeProvider = {} as ProviderLibrary
+
+        const fakeLoader = fake.resolves({
+          provider: fakeProvider,
+          appName: 'fake app',
+          region: 'tunte',
+          entities: {},
+        })
+
+        const fakeDeployer = fake((_config: unknown, logger: Logger) => {
+          logger.info('this is a progress update')
+        })
+
+        replace(environment, 'currentEnvironment', fake.returns('test-env'))
+
+        await runTasks(false, fakeLoader, fakeDeployer)
 
         expect(ctx.stdout).to.include('Deployment complete')
 

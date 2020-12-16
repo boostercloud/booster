@@ -4,16 +4,14 @@ import { createSandboxProject, loadFixture, readFileContent, removeFolders } fro
 import { exec } from 'child-process-promise'
 
 describe('Type', () => {
-  const SANDBOX_INTEGRATION_DIR = 'type-integration-sandbox'
-  const FILE_CART_ITEM_TYPE = `${SANDBOX_INTEGRATION_DIR}/src/common/item.ts`
-  const FILE_CART_ITEM_WITH_FIELDS_TYPE = `${SANDBOX_INTEGRATION_DIR}/src/common/item-with-fields.ts`
+  let typeSandboxDir: string
 
   before(async () => {
-    createSandboxProject(SANDBOX_INTEGRATION_DIR)
+    typeSandboxDir = createSandboxProject('type')
   })
 
   after(() => {
-    removeFolders([SANDBOX_INTEGRATION_DIR])
+    removeFolders([typeSandboxDir])
   })
 
   const cliPath = path.join('..', '..', 'cli', 'bin', 'run')
@@ -24,22 +22,22 @@ describe('Type', () => {
         ['boost new:type', 'Verifying project', 'Creating new type', 'Type generated'].join('(.|\n)*')
       )
 
-      const { stdout } = await exec(`${cliPath} new:type Item`, { cwd: SANDBOX_INTEGRATION_DIR })
+      const { stdout } = await exec(`${cliPath} new:type Item`, { cwd: typeSandboxDir })
       expect(stdout).to.match(expectedOutputRegex)
 
       const expectedTypeContent = loadFixture('common/item.ts')
-      const typeContent = readFileContent(FILE_CART_ITEM_TYPE)
+      const typeContent = readFileContent(`${typeSandboxDir}/src/common/item.ts`)
       expect(typeContent).to.equal(expectedTypeContent)
     })
 
     describe('with fields', () => {
       it('should create a new type with fields', async () => {
         await exec(`${cliPath} new:type ItemWithFields --fields sku:string quantity:number`, {
-          cwd: SANDBOX_INTEGRATION_DIR,
+          cwd: typeSandboxDir,
         })
 
         const expectedTypeContent = loadFixture('common/item-with-fields.ts')
-        const typeContent = readFileContent(FILE_CART_ITEM_WITH_FIELDS_TYPE)
+        const typeContent = readFileContent(`${typeSandboxDir}/src/common/item-with-fields.ts`)
         expect(typeContent).to.equal(expectedTypeContent)
       })
     })
@@ -48,7 +46,7 @@ describe('Type', () => {
   context('Invalid type', () => {
     describe('missing type name', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:type`, { cwd: SANDBOX_INTEGRATION_DIR })
+        const { stderr } = await exec(`${cliPath} new:type`, { cwd: typeSandboxDir })
 
         expect(stderr).to.match(/You haven't provided a type name, but it is required, run with --help for usage/)
       })

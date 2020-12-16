@@ -3,7 +3,7 @@ import { restore, fake, replace } from 'sinon'
 import rewire = require('rewire')
 import { ProviderLibrary } from '@boostercloud/framework-types'
 import { test } from '@oclif/test'
-import * as environment from '../../src/common/environment'
+import * as environment from '../../src/services/environment'
 
 const start = rewire('../../src/commands/start')
 const runTasks = start.__get__('runTasks')

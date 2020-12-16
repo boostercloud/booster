@@ -3,18 +3,26 @@ import * as path from 'path'
 import { exec } from 'child-process-promise'
 import { wrapExecError } from '../common/errors'
 import { checkItIsABoosterProject } from './project-checker'
-import { currentEnvironment } from '../common/environment'
+import { currentEnvironment } from './environment'
+import { pruneDevDependencies } from './dependencies'
 
-export async function compileProjectAndLoadConfig(): Promise<BoosterConfig> {
+type CompileAndLoadOptions = {
+  production: boolean
+}
+
+export async function compileProjectAndLoadConfig(opts?: CompileAndLoadOptions): Promise<BoosterConfig> {
   const userProjectPath = process.cwd()
   await checkItIsABoosterProject()
+  if (opts?.production) {
+    await pruneDevDependencies()
+  }
   await compileProject(userProjectPath)
   return readProjectConfig(userProjectPath)
 }
 
 async function compileProject(projectPath: string): Promise<void> {
   try {
-    await exec('npm run compile', { cwd: projectPath })
+    await exec('npx yarn clean && npx yarn compile', { cwd: projectPath })
   } catch (e) {
     throw wrapExecError(e, 'Project contains compilation errors')
   }

@@ -5,7 +5,7 @@ import { restore, replace, fake } from 'sinon'
 import Prompter from '../../src/services/user-prompt'
 import { ProviderLibrary, Logger } from '@boostercloud/framework-types'
 import { test } from '@oclif/test'
-import * as environment from '../../src/common/environment'
+import * as environment from '../../src/services/environment'
 
 const rewire = require('rewire')
 const nuke = rewire('../../src/commands/nuke')

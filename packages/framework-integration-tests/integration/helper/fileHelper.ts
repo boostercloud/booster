@@ -59,11 +59,22 @@ const copyFolder = (origin: string, destiny: string): void => {
   })
 }
 
-export const createSandboxProject = (sandboxPath: string): void => {
+const sandboxPathFor = (sandboxName: string): string => sandboxName + '-integration-sandbox' // Add the suffix to make sure this folder is gitignored
+
+export const createSandboxProject = (sandboxName: string): string => {
+  const sandboxPath = sandboxPathFor(sandboxName)
+
   rmdirSync(sandboxPath, { recursive: true })
   mkdirSync(sandboxPath, { recursive: true })
   copyFolder('src', path.join(sandboxPath, 'src'))
 
   const projectFiles = ['.eslintignore', 'package.json', 'tsconfig.eslint.json', 'tsconfig.json']
   projectFiles.forEach((file: string) => copyFileSync(file, path.join(sandboxPath, file)))
+
+  return sandboxPath
+}
+
+export const removeSandboxProject = (sandboxName: string): void => {
+  const sandboxPath = sandboxPathFor(sandboxName)
+  rmdirSync(sandboxPath, { recursive: true })
 }

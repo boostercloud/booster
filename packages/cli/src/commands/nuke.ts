@@ -6,13 +6,13 @@ import { Script } from '../common/script'
 import Brand from '../common/brand'
 import Prompter from '../services/user-prompt'
 import { logger } from '../services/logger'
-import { currentEnvironment, initializeEnvironment } from '../common/environment'
+import { currentEnvironment, initializeEnvironment } from '../services/environment'
 
 const runTasks = async (
-  loader: Promise<BoosterConfig>,
+  compileAndLoad: Promise<BoosterConfig>,
   nuke: (config: BoosterConfig, logger: Logger) => Promise<void>
 ): Promise<void> =>
-  Script.init(`boost ${Brand.dangerize('nuke')} [${currentEnvironment()}] 🧨`, loader)
+  Script.init(`boost ${Brand.dangerize('nuke')} [${currentEnvironment()}] 🧨`, compileAndLoad)
     .step('Removing', (config) => nuke(config, logger))
     .info('Removal complete!')
     .done()
