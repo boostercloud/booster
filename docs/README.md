@@ -1585,6 +1585,8 @@ By default, a Booster application has no roles defined, so the only allowed valu
 If you want to add user authorization, you first need to create the roles that are suitable for your application.
 Roles are classes annotated with the `@Role` decorator, where you can specify some attributes. We recommend that you define your roles in the file `src/roles.ts` or, if you have too many roles, put them in several files under the `src/roles` folder.
 
+_Note: There is not `Admin` user by default. In order to register one you need specify a sign-up method on `src/roles.ts`._
+
 In the following example we define two roles, `Admin` and `User`:
 
 ```typescript
