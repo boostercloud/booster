@@ -1931,15 +1931,15 @@ Your token should include a property `custom:role` with the value `Admin` or `Us
 
 ```json
 {
-  'custom:role': 'User',
-  iss: 'https://securetoken.google.com/demoapp',
-  aud: 'demoapp',
+  "custom:role": "User",
+  iss: "https://securetoken.google.com/demoapp",
+  aud: "demoapp",
   auth_time: 1604676721,
-  user_id: 'xJY5Y6fTbVggNtDjaNh7cNSBd7q1',
-  sub: 'xJY5Y6fTbVggNtDjaNh7cNSBd7q1',
+  user_id: "xJY5Y6fTbVggNtDjaNh7cNSBd7q1",
+  sub: "xJY5Y6fTbVggNtDjaNh7cNSBd7q1",
   iat: 1604676721,
   exp: 1604680321,
-  phone_number: '+999999999',
+  phone_number: "+999999999",
   firebase: { ... }
 }
 ```

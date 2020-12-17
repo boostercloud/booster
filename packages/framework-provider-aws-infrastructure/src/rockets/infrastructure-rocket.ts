@@ -9,7 +9,7 @@ export interface InfrastructureRocket {
 
 // Separate function to make it easier to mock in tests
 function requireRocket(rocketPackageName: string): (params: unknown) => InfrastructureRocket {
-  return require(rocketPackageName)
+  return require(rocketPackageName).default
 }
 
 export function loadRocket(rocketDescriptor: RocketDescriptor): InfrastructureRocket {
