@@ -77,7 +77,7 @@ export class BoosterEventDispatcher {
       )
       return
     }
-    await Promise.all(
+    const results = await Promise.allSettled(
       eventHandlers.map(async (eventHandler: EventHandlerInterface) => {
         const register = new Register(eventEnvelope.requestID, eventEnvelope.currentUser)
         logger.debug('Calling "handle" method on event handler: ', eventHandler)
@@ -85,5 +85,8 @@ export class BoosterEventDispatcher {
         return RegisterHandler.handle(config, logger, register)
       })
     )
+    results
+      .filter((result) => result.status === 'rejected')
+      .forEach((result) => logger.debug(`Event handlere execution failed: ${(result as PromiseRejectedResult).reason}`))
   }
 }
