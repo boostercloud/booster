@@ -10,7 +10,7 @@ describe('After deployment', () => {
       const stack = await appStack()
 
       expect(stack).not.to.be.null
-      expect(stack?.StackStatus).to.be.equal('CREATE_COMPLETE')
+      expect(stack?.StackStatus).to.be.oneOf(['CREATE_COMPLETE', 'UPDATE_COMPLETE'])
     })
   })
 })
