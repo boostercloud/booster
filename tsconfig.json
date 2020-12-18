@@ -12,6 +12,10 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "lib": [
+      "ES2019",
+      "ES2020"
+    ]
   }
 }
