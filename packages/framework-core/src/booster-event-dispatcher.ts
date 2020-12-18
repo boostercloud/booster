@@ -87,6 +87,6 @@ export class BoosterEventDispatcher {
     )
     results
       .filter((result) => result.status === 'rejected')
-      .forEach((result) => logger.debug(`Event handlere execution failed: ${(result as PromiseRejectedResult).reason}`))
+      .forEach((result) => logger.debug(`Event handler execution failed: ${(result as PromiseRejectedResult).reason}`))
   }
 }
