@@ -37,7 +37,7 @@ export class BoosterEventDispatcher {
         case 'event':
           logger.debug('[BoosterEventDispatcher#eventProcessor]: Started processing workflow for event:', eventEnvelope)
           // TODO: Separate into two independent processes the snapshotting/read-model generation process from the event handling process
-          await Promise.allSettled([
+          await Promise.all([
             BoosterEventDispatcher.snapshotAndUpdateReadModels(eventEnvelope, eventStore, readModelStore, logger),
             BoosterEventDispatcher.handleEvent(eventEnvelope, config, logger),
           ])
@@ -87,6 +87,6 @@ export class BoosterEventDispatcher {
     )
     results
       .filter((result) => result.status === 'rejected')
-      .forEach((result) => logger.debug(`Event handler execution failed: ${(result as PromiseRejectedResult).reason}`))
+      .forEach((result) => logger.debug(`Event handlere execution failed: ${(result as PromiseRejectedResult).reason}`))
   }
 }
