@@ -22,6 +22,7 @@ Remember that if something here doesn't make sense, you can also propose a chang
   * [Github flow](#github-flow)
   * [Test-driven approach](#test-driven-approach)
   * [Publishing your Pull Request](#publishing-your-pull-request)
+  * [Branch naming conventions](#branch-naming-conventions)
   * [Commit message guidelines](#commit-message-guidelines)
 
 <!-- tocstop -->
@@ -185,6 +186,21 @@ When you submit a PR to the Booster repository:
 * If tests pass, your code will be reviewed by at least two people from the core team. Clarifications or improvements might be asked, and they reserve the right to close any PR that do not meet the project quality standards, goals or philosophy, so it's always a good idea to discuss your plans in an issue or the Spectrum channel before committing to significant changes.
 * Code must be mergeable and all conflicts solved before merging it.
 * Once the review process is done, unit tests pass and conflicts are fixed, you still need to make the _Integration tests check_ to pass. In order to do that, you need to **post a comment** in the pull request with the content "**bot: integration**". The _integration tests_ will run and a new check will appear with an "In progress" status. After some time, if everything went well, the status check will become green and your PR is now ready to merge. One of the contributors with write permissions will merge it as soon as possible. 
+
+### Branch naming conventions
+
+In order to create a PR, you must create a branch from `master`. You should follow the GitFlow naming conventions, as detailed below:
+
+- `feature/*` - PR that implements a new feature
+- `fix/*` - PR that fixes a bug
+- `doc/*` - PR that enhances the documentation
+
+In the right side of the branch name you can include the GitHub issue number. An example of doing this could be:
+
+```bash
+git checkout -b feature/XXX_add-an-awesome-new-feature
+```
+(where `XXX` is the issue number)
 
 ### Commit message guidelines
 
