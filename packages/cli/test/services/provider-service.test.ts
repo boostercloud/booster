@@ -4,6 +4,15 @@ import * as providerService from '../../src/services/provider-service'
 import { restore, fake } from 'sinon'
 import { expect } from '../expect'
 import { lorem, random } from 'faker'
+import * as dynamicLoader from '../../src/services/dynamic-loader'
+import { replace } from 'sinon'
+import { Logger } from '@boostercloud/framework-types'
+
+const logger: Logger = {
+  debug: fake(),
+  info: fake(),
+  error: fake(),
+}
 
 describe('providerService', () => {
   afterEach(() => {
@@ -39,17 +48,249 @@ describe('providerService', () => {
     })
   })
 
-  describe.skip('deployToCloudProvider', () => {})
+  describe('deployToCloudProvider', () => {
+    context('when the configured provider implements the `deploy` function', () => {
+      context('with no rockets', () => {
+        it('loads and initializes the infrastructure module and calls the `deploy` method', async () => {
+          const fakeProviderDescription = {
+            name: 'some-provider-package',
+            version: '3.14.16',
+          }
+          const fakeDeploy = fake()
 
-  describe('startProvider', () => {
-    context('when the configured provider implements the run function', () => {
-      it('calls the provider start method', async () => {
-        const fakeInfrastructure = {
-          start: fake(),
+          const fakeInfrastructure = {
+            Infrastructure: fake.returns({ deploy: fakeDeploy }),
+          }
+
+          replace(dynamicLoader, 'dynamicLoad', fake.returns(fakeInfrastructure))
+
+          const fakeProvider = {
+            packageDescription: fake.returns(fakeProviderDescription),
+          }
+
+          const fakeConfig = {
+            appName: 'lolapp',
+            provider: fakeProvider,
+            rockets: [],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any
+
+          await providerService.deployToCloudProvider(fakeConfig, logger)
+
+          expect(fakeProvider.packageDescription).to.have.been.calledOnce
+          expect(dynamicLoader.dynamicLoad).to.have.been.calledWith('some-provider-package-infrastructure')
+          expect(fakeInfrastructure.Infrastructure).to.have.been.calledWith([])
+          expect(fakeDeploy).to.have.been.calledOnceWith(fakeConfig, logger)
+        })
+      })
+
+      context('with rockets', () => {
+        it('loads and initializes the infrastructure module with the rockets and calls the `deploy` method', async () => {
+          const fakeProviderDescription = {
+            name: 'some-provider-package',
+            version: '3.14.16',
+          }
+          const fakeDeploy = fake()
+
+          const fakeInfrastructure = {
+            Infrastructure: fake.returns({ deploy: fakeDeploy }),
+          }
+
+          replace(dynamicLoader, 'dynamicLoad', fake.returns(fakeInfrastructure))
+
+          const fakeProvider = {
+            packageDescription: fake.returns(fakeProviderDescription),
+          }
+
+          const fakeRockets = [
+            {
+              packageName: 'rocket-package',
+              parameters: { some: 'parameter' },
+            },
+          ]
+
+          const fakeConfig = {
+            appName: 'lolapp',
+            provider: fakeProvider,
+            rockets: fakeRockets,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any
+
+          await providerService.deployToCloudProvider(fakeConfig, logger)
+
+          expect(fakeProvider.packageDescription).to.have.been.calledOnce
+          expect(dynamicLoader.dynamicLoad).to.have.been.calledWith('some-provider-package-infrastructure')
+          expect(fakeInfrastructure.Infrastructure).to.have.been.calledWith(fakeRockets)
+          expect(fakeDeploy).to.have.been.calledOnceWith(fakeConfig, logger)
+        })
+      })
+    })
+
+    context('when the configured provider does not implement the `deploy` function', () => {
+      it('throws an error', async () => {
+        const fakeProviderDescription = {
+          name: 'some-provider-package',
+          version: '3.14.16',
         }
 
+        const fakeInfrastructure = {
+          Infrastructure: fake.returns({}),
+        }
+
+        replace(dynamicLoader, 'dynamicLoad', fake.returns(fakeInfrastructure))
+
         const fakeProvider = {
-          infrastructure: fake.returns(fakeInfrastructure),
+          packageDescription: fake.returns(fakeProviderDescription),
+        }
+
+        const fakeConfig = {
+          appName: 'lolapp',
+          provider: fakeProvider,
+          rockets: [],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any
+
+        await expect(providerService.deployToCloudProvider(fakeConfig, logger)).to.eventually.be.rejectedWith(
+          "Attempted to perform the 'deploy' operation with a provider that does not support this feature, please check your environment configuration."
+        )
+
+        expect(fakeProvider.packageDescription).to.have.been.calledOnce
+        expect(dynamicLoader.dynamicLoad).to.have.been.calledWith('some-provider-package-infrastructure')
+        expect(fakeInfrastructure.Infrastructure).to.have.been.calledWith([])
+      })
+    })
+  })
+
+  describe('nukeCloudProviderResources', () => {
+    context('when the configured provider implements the `nuke` function', () => {
+      context('with no rockets', () => {
+        it('loads and initializes the infrastructure module and calls the `nuke` method', async () => {
+          const fakeProviderDescription = {
+            name: 'some-provider-package',
+            version: '3.14.16',
+          }
+          const fakeNuke = fake()
+
+          const fakeInfrastructure = {
+            Infrastructure: fake.returns({ nuke: fakeNuke }),
+          }
+
+          replace(dynamicLoader, 'dynamicLoad', fake.returns(fakeInfrastructure))
+
+          const fakeProvider = {
+            packageDescription: fake.returns(fakeProviderDescription),
+          }
+
+          const fakeConfig = {
+            appName: 'lolapp',
+            provider: fakeProvider,
+            rockets: [],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any
+
+          await providerService.nukeCloudProviderResources(fakeConfig, logger)
+
+          expect(fakeProvider.packageDescription).to.have.been.calledOnce
+          expect(dynamicLoader.dynamicLoad).to.have.been.calledWith('some-provider-package-infrastructure')
+          expect(fakeInfrastructure.Infrastructure).to.have.been.calledWith([])
+          expect(fakeNuke).to.have.been.calledOnceWith(fakeConfig, logger)
+        })
+      })
+
+      context('with rockets', () => {
+        it('loads and initializes the infrastructure module with the rockets and calls the `nuke` method', async () => {
+          const fakeProviderDescription = {
+            name: 'some-provider-package',
+            version: '3.14.16',
+          }
+          const fakeNuke = fake()
+
+          const fakeInfrastructure = {
+            Infrastructure: fake.returns({ nuke: fakeNuke }),
+          }
+
+          replace(dynamicLoader, 'dynamicLoad', fake.returns(fakeInfrastructure))
+
+          const fakeProvider = {
+            packageDescription: fake.returns(fakeProviderDescription),
+          }
+
+          const fakeRockets = [
+            {
+              packageName: 'rocket-package',
+              parameters: { some: 'parameter' },
+            },
+          ]
+
+          const fakeConfig = {
+            appName: 'lolapp',
+            provider: fakeProvider,
+            rockets: fakeRockets,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any
+
+          await providerService.nukeCloudProviderResources(fakeConfig, logger)
+
+          expect(fakeProvider.packageDescription).to.have.been.calledOnce
+          expect(dynamicLoader.dynamicLoad).to.have.been.calledWith('some-provider-package-infrastructure')
+          expect(fakeInfrastructure.Infrastructure).to.have.been.calledWith(fakeRockets)
+          expect(fakeNuke).to.have.been.calledOnceWith(fakeConfig, logger)
+        })
+      })
+    })
+
+    context('when the configured provider does not implement the `nuke` function', () => {
+      it('throws an error', async () => {
+        const fakeProviderDescription = {
+          name: 'some-provider-package',
+          version: '3.14.16',
+        }
+
+        const fakeInfrastructure = {
+          Infrastructure: fake.returns({}),
+        }
+
+        replace(dynamicLoader, 'dynamicLoad', fake.returns(fakeInfrastructure))
+
+        const fakeProvider = {
+          packageDescription: fake.returns(fakeProviderDescription),
+        }
+
+        const fakeConfig = {
+          appName: 'lolapp',
+          provider: fakeProvider,
+          rockets: [],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any
+
+        await expect(providerService.nukeCloudProviderResources(fakeConfig, logger)).to.be.eventually.rejectedWith(
+          "Attempted to perform the 'nuke' operation with a provider that does not support this feature, please check your environment configuration."
+        )
+
+        expect(fakeProvider.packageDescription).to.have.been.calledOnce
+        expect(dynamicLoader.dynamicLoad).to.have.been.calledWith('some-provider-package-infrastructure')
+        expect(fakeInfrastructure.Infrastructure).to.have.been.calledWith([])
+      })
+    })
+  })
+
+  describe('startProvider', () => {
+    context('when the configured provider implements the `start` function', () => {
+      it('calls the provider start method', async () => {
+        const fakeProviderDescription = {
+          name: 'some-provider-package',
+          version: '3.14.16',
+        }
+        const fakeStart = fake()
+
+        const fakeInfrastructure = {
+          Infrastructure: fake.returns({ start: fakeStart }),
+        }
+
+        replace(dynamicLoader, 'dynamicLoad', fake.returns(fakeInfrastructure))
+
+        const fakeProvider = {
+          packageDescription: fake.returns(fakeProviderDescription),
         }
 
         const fakeConfig = {
@@ -60,14 +301,27 @@ describe('providerService', () => {
 
         await providerService.startProvider(3000, fakeConfig)
 
-        expect(fakeInfrastructure.start).to.have.been.calledOnceWith(fakeConfig)
+        expect(fakeProvider.packageDescription).to.have.been.calledOnce
+        expect(dynamicLoader.dynamicLoad).to.have.been.calledWith('some-provider-package-infrastructure')
+        expect(fakeStart).to.have.been.calledOnceWith(fakeConfig, 3000)
       })
     })
 
-    context('when the configured provider does not implement the start function', () => {
+    context('when the configured provider does not implement the `start` function', () => {
       it('throws an error', async () => {
+        const fakeProviderDescription = {
+          name: 'some-provider-package',
+          version: '3.14.16',
+        }
+
+        const fakeInfrastructure = {
+          Infrastructure: fake.returns({}),
+        }
+
+        replace(dynamicLoader, 'dynamicLoad', fake.returns(fakeInfrastructure))
+
         const fakeProvider = {
-          infrastructure: fake.returns({}),
+          packageDescription: fake.returns(fakeProviderDescription),
         }
 
         const fakeConfig = {
@@ -76,12 +330,13 @@ describe('providerService', () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any
 
-        await expect(providerService.startProvider(3000, fakeConfig)).to.eventually.be.rejectedWith(
-          `Attempted to perform the 'start' operation with a provider that does not support this feature, please check your environment configuration.`
+        await expect(providerService.startProvider(3000, fakeConfig)).to.be.eventually.rejectedWith(
+          "Attempted to perform the 'start' operation with a provider that does not support this feature, please check your environment configuration."
         )
+
+        expect(fakeProvider.packageDescription).to.have.been.calledOnce
+        expect(dynamicLoader.dynamicLoad).to.have.been.calledWith('some-provider-package-infrastructure')
       })
     })
   })
-
-  describe.skip('nukeCloudProviderResources', () => {})
 })

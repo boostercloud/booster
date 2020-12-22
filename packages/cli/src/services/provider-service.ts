@@ -1,4 +1,5 @@
-import { BoosterConfig, Logger } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, ProviderInfrastructure } from '@boostercloud/framework-types'
+import { dynamicLoad } from './dynamic-loader'
 
 export function assertNameIsCorrect(name: string): void {
   // Current characters max length: 37
@@ -23,10 +24,28 @@ export function assertNameIsCorrect(name: string): void {
     Found: '${name}'`)
 }
 
+/* We load the infrastructure package dynamically here as a cli plugin to avoid
+ * including it among the dependences that are deployed in the lambda functions.
+ * The infrastructure package is only used during the deploy.
+ */
+function loadInfrastructurePackageWithRockets(config: BoosterConfig): ProviderInfrastructure {
+  const packageDescription = config.provider.packageDescription()
+  // TODO: Check that the package is installed and that the version matches
+  // try {
+  //   getInstalledPathSync(infrastructurePackageName)
+  // } catch (e) {
+  //   throw new Error(
+  //     `The AWS infrastructure package must be installed to perform this operation, please install it globally running 'npm install -g ${infrastructurePackageName}'`
+  //   )
+  // }
+  return dynamicLoad(packageDescription.name + '-infrastructure').Infrastructure(config.rockets)
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function supportedInfrastructureMethodOrDie(methodName: 'deploy' | 'nuke' | 'start', config: BoosterConfig): any {
   assertNameIsCorrect(config.appName)
-  const method = config.provider.infrastructure()[methodName]
+  const infrastructure = loadInfrastructurePackageWithRockets(config)
+  const method = infrastructure[methodName]
   if (!method) {
     throw new Error(
       `Attempted to perform the '${methodName}' operation with a provider that does not support this feature, please check your environment configuration.`
@@ -35,14 +54,14 @@ function supportedInfrastructureMethodOrDie(methodName: 'deploy' | 'nuke' | 'sta
   return method
 }
 
-export function deployToCloudProvider(config: BoosterConfig, logger: Logger): Promise<void> {
-  return supportedInfrastructureMethodOrDie('deploy', config)(config, logger)
+export async function deployToCloudProvider(config: BoosterConfig, logger: Logger): Promise<void> {
+  return await supportedInfrastructureMethodOrDie('deploy', config)(config, logger)
 }
 
-export function nukeCloudProviderResources(config: BoosterConfig, logger: Logger): Promise<void> {
-  return supportedInfrastructureMethodOrDie('nuke', config)(config, logger)
+export async function nukeCloudProviderResources(config: BoosterConfig, logger: Logger): Promise<void> {
+  return await supportedInfrastructureMethodOrDie('nuke', config)(config, logger)
 }
 
 export async function startProvider(port: number, config: BoosterConfig): Promise<void> {
-  return supportedInfrastructureMethodOrDie('start', config)(config, port)
+  return await supportedInfrastructureMethodOrDie('start', config)(config, port)
 }

@@ -2748,19 +2748,20 @@ In `mountStack` you will receive an initialized AWS CDK stack that you can use t
 
 The application stack, including the resources added by your rocket are automatically nuked along with the application stack, but there are some situations on which it's convenient to delete or move the contents of the resources created by you. In the appl `unmountStack` you'll have the opportunity to run any code before deleting the stack. This function receives an `utils` object with the same tools that Booster uses to perform common actions like emptying the contents of an S3 bucket (Non-empty buckets are kept by default when a stack is deleted).
 
-Notice that infrastructure rockets should not be included from within the application code to avoid including the CDK and other non-used dependencies in the lambdas, as there are some hard restrictions on code size in most platforms. That's why infrastructure rockets are loaded dynamically by Booster passing the packet names as strings in the application config file:
+Notice that infrastructure rockets should not be included among the application dependencies, because they're plugins for the CLI that are only used during the deploy process. Booster will check that the rockets are installed and load them dynamically during infrastructure operations. You'll need to set the package names and their configuration in the application config as follows:
 
 _src/config/production.ts:_
 
 ```typescript
 Booster.configure('development', (config: BoosterConfig): void => {
   config.appName = 'my-store'
-  config.provider = AWSProvider([{
+  config.provider = AWSProvider
+  config.rockets = [{
     packageName: 'rocket-your-rocket-name-aws-infrastructure', // The name of your infrastructure rocket package
     parameters: { // An arbitrary object with the parameters required by your infrastructure rocket initializator
       hello: 'world'
     }
-  }])
+  }]
 })
 ```
 

@@ -13,6 +13,11 @@ import { Logger } from './logger'
 import { ReadModelInterface, UUID } from './concepts'
 import { Filter } from './searcher'
 
+type ProviderPackageDescription = {
+  name: string
+  version: string
+}
+
 export interface ProviderLibrary {
   events: ProviderEventsLibrary
   readModels: ProviderReadModelsLibrary
@@ -21,7 +26,7 @@ export interface ProviderLibrary {
   api: ProviderAPIHandling
   connections: ProviderConnectionsLibrary
   scheduled: ScheduledCommandsLibrary
-  infrastructure: () => ProviderInfrastructure
+  packageDescription: () => ProviderPackageDescription
 }
 
 export interface ProviderEventsLibrary {
@@ -91,12 +96,12 @@ export interface ProviderAPIHandling {
   requestFailed(error: Error): Promise<unknown>
 }
 
+export interface ScheduledCommandsLibrary {
+  rawToEnvelope(rawMessage: unknown, logger: Logger): Promise<ScheduledCommandEnvelope>
+}
+
 export interface ProviderInfrastructure {
   deploy?: (configuration: BoosterConfig, logger: Logger) => Promise<void>
   nuke?: (configuration: BoosterConfig, logger: Logger) => Promise<void>
   start?: (configuration: BoosterConfig, port: number) => Promise<void>
-}
-
-export interface ScheduledCommandsLibrary {
-  rawToEnvelope(rawMessage: unknown, logger: Logger): Promise<ScheduledCommandEnvelope>
 }

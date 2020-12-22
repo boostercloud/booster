@@ -11,6 +11,7 @@ import {
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
+import { RocketDescriptor } from './rocket-descriptor'
 
 /**
  * Class used by external packages that needs to get a representation of
@@ -40,6 +41,9 @@ export class BoosterConfig {
   public readonly roles: Record<RoleName, RoleMetadata> = {}
   public readonly migrations: Record<ConceptName, Map<Version, MigrationMetadata>> = {}
   public readonly scheduledCommandHandlers: Record<ScheduledCommandName, ScheduledCommandMetadata> = {}
+
+  /** List of rockets to be used in the project */
+  public readonly rockets: RocketDescriptor[] = []
 
   /** Environment variables set at deployment time on the target lambda functions */
   public readonly env: Record<string, string> = {}
