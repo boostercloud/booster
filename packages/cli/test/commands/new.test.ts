@@ -5,7 +5,9 @@ import { ProjectInitializerConfig } from '../../src/services/project-initializer
 import ReadModel from '../../src/commands/new/read-model'
 import { templates } from '../../src/templates'
 import Mustache = require('mustache')
-import * as fs from 'fs'
+import * as fs_simple from 'fs'
+import * as fs from 'fs-extra'
+import * as childProcessPromise from 'child-process-promise'
 import { IConfig } from '@oclif/config'
 import { expect } from '../expect'
 import * as Project from '../../src/commands/new/project'
@@ -18,7 +20,7 @@ describe('new', (): void => {
     const readModelPath = `${readModelsRoot}${readModel}.ts`
     afterEach(() => {
       if (fs.existsSync(readModelPath)) {
-        fs.rmdir(readModelsRoot, { recursive: true }, (err: ErrnoException | null) => console.log(err))
+        fs_simple.rmdir(readModelsRoot, { recursive: true }, (err: ErrnoException | null) => console.log(err))
       }
       restore()
     })
@@ -102,20 +104,39 @@ describe('new', (): void => {
       } as ProjectInitializerConfig
 
       afterEach(() => {
-        fs.rmdirSync(projectDirectory, { recursive: true })
+        if (fs.existsSync(projectDirectory)) {
+          fs.rmdirSync(projectDirectory, { recursive: true })
+        }
         restore()
       })
 
       it('generates all required files and folders', async () => {
         replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
         replace(ProjectInitializer, 'installDependencies', fake.returns({}))
-        expect(fs.existsSync(projectDirectory)).to.be.false
+        replace(fs,'mkdirs', fake.resolves({}))
+        replace(fs,'outputFile', fake.resolves({}))
+        replace(childProcessPromise, 'exec', fake.resolves({}))
 
         await new Project.default([projectName], {} as IConfig).run()
 
-        expect(fs.existsSync(projectDirectory)).to.be.true
-        expect(fs.readdirSync(projectDirectory)).to.have.all.members(expectedDirectoryContent.rootPath)
-        expect(fs.readdirSync(`${projectDirectory}/src`)).to.have.all.members(expectedDirectoryContent.src)
+        expect(childProcessPromise.exec).to.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/commands`)
+        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/events`)
+        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/entities`)
+        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/read-models`)
+        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/config`)
+        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/common`)
+        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/event-handlers`)
+        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/scheduled-commands`)
+        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.eslintignore`)
+        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.eslintrc.js`)
+        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.gitignore`)
+        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`)
+        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/tsconfig.json`)
+        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/tsconfig.eslint.json`)
+        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.prettierrc.yaml`)
+        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/src/config/config.ts`)
+        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/src/index.ts`)
       })
 
       it('generates all required files and folders without installing dependencies', async () => {
