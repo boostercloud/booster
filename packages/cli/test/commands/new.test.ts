@@ -61,7 +61,6 @@ describe('new', (): void => {
   describe('project', () => {
     context('file generation', () => {
       const projectName = 'test-project'
-      const projectDirectory = `./${projectName}`
       const defaultProvider = '@boostercloud/framework-provider-aws'
 
       const expectFilesAndDirectoriesCreated = (projectName: string) => {
@@ -99,19 +98,19 @@ describe('new', (): void => {
         skipGit: false,
       } as ProjectInitializerConfig
 
+      beforeEach(() => {
+        replace(fs,'mkdirs', fake.resolves({}))
+        replace(fs,'outputFile', fake.resolves({}))
+        replace(childProcessPromise, 'exec', fake.resolves({}))
+      })
+
       afterEach(() => {
-        if (fs.existsSync(projectDirectory)) {
-          fs.rmdirSync(projectDirectory, { recursive: true })
-        }
         restore()
       })
 
       it('generates all required files and folders', async () => {
         replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
         replace(ProjectInitializer, 'installDependencies', fake.returns({}))
-        replace(fs,'mkdirs', fake.resolves({}))
-        replace(fs,'outputFile', fake.resolves({}))
-        replace(childProcessPromise, 'exec', fake.resolves({}))
 
         await new Project.default([projectName], {} as IConfig).run()
 
@@ -123,9 +122,6 @@ describe('new', (): void => {
       it('generates all required files and folders without installing dependencies', async () => {
         replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
         const installDependenciesSpy = spy(ProjectInitializer, 'installDependencies')
-        replace(fs,'mkdirs', fake.resolves({}))
-        replace(fs,'outputFile', fake.resolves({}))
-        replace(childProcessPromise, 'exec', fake.resolves({}))
 
         await new Project.default([projectName, '--skipInstall'], {} as IConfig).run()
 
@@ -138,10 +134,7 @@ describe('new', (): void => {
       it('generates project with default parameters when using --default flag', async () => {
         const parseConfigSpy = spy(Project, 'parseConfig')
         replace(ProjectInitializer, 'installDependencies', fake.returns({}))
-        replace(fs,'mkdirs', fake.resolves({}))
-        replace(fs,'outputFile', fake.resolves({}))
-        replace(childProcessPromise, 'exec', fake.resolves({}))
-        
+
         await new Project.default([projectName, '--default'], { version: '0.5.1' } as IConfig).run()
 
         expectFilesAndDirectoriesCreated(projectName)
@@ -158,9 +151,6 @@ describe('new', (): void => {
         replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
         replace(ProjectInitializer, 'installDependencies', fake.returns({}))
         const initializeGitSpy = spy(ProjectInitializer, 'initializeGit')
-        replace(fs,'mkdirs', fake.resolves({}))
-        replace(fs,'outputFile', fake.resolves({}))
-        replace(childProcessPromise, 'exec', fake.resolves({}))
 
         await new Project.default([projectName], {} as IConfig).run()
 
@@ -173,9 +163,6 @@ describe('new', (): void => {
         replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
         replace(ProjectInitializer, 'installDependencies', fake.returns({}))
         const initializeGitSpy = spy(ProjectInitializer, 'initializeGit')
-        replace(fs,'mkdirs', fake.resolves({}))
-        replace(fs,'outputFile', fake.resolves({}))
-        replace(childProcessPromise, 'exec', fake.resolves({}))
 
         await new Project.default([projectName, '--skipGit'], {} as IConfig).run()
 
