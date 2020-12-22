@@ -1,11 +1,9 @@
 import * as ProjectChecker from '../../src/services/project-checker'
 import { restore, replace, fake, stub, spy } from 'sinon'
-import ErrnoException = NodeJS.ErrnoException
 import { ProjectInitializerConfig } from '../../src/services/project-initializer'
 import ReadModel from '../../src/commands/new/read-model'
 import { templates } from '../../src/templates'
 import Mustache = require('mustache')
-import * as fs_simple from 'fs'
 import * as fs from 'fs-extra'
 import * as childProcessPromise from 'child-process-promise'
 import { IConfig } from '@oclif/config'
@@ -16,19 +14,21 @@ import * as ProjectInitializer from '../../src/services/project-initializer'
 describe('new', (): void => {
   describe('Read model', () => {
     const readModel = 'example-read-model'
-    const readModelsRoot = './src/read-models/'
+    const readModelsRoot = 'src/read-models/'
     const readModelPath = `${readModelsRoot}${readModel}.ts`
+    
     afterEach(() => {
-      if (fs.existsSync(readModelPath)) {
-        fs_simple.rmdir(readModelsRoot, { recursive: true }, (err: ErrnoException | null) => console.log(err))
-      }
       restore()
     })
+    
     context('projections', () => {
       it('renders according to the template', async () => {
         stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
+        stub(ProjectChecker, 'checkItIsABoosterProject').returnsThis()
+        replace(fs,'outputFile', fake.resolves({}))
+
         await new ReadModel([readModel, '--fields', 'title:string', '--projects', 'Post:id'], {} as IConfig).run()
-        const readModelFileContent = fs.readFileSync(readModelPath).toString()
+        
         const renderedReadModel = Mustache.render(templates.readModel, {
           imports: [
             {
@@ -54,13 +54,14 @@ describe('new', (): void => {
           ],
         })
 
-        expect(readModelFileContent).to.be.equal(renderedReadModel)
+        expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath,renderedReadModel)
       })
     })
   })
+  
   describe('project', () => {
     context('file generation', () => {
-      const projectName = 'test-project'
+      const projectName = 'test-project'  
       const defaultProvider = '@boostercloud/framework-provider-aws'
 
       const expectFilesAndDirectoriesCreated = (projectName: string) => {
