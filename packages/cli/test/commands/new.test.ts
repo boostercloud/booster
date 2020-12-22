@@ -88,6 +88,7 @@ describe('new', (): void => {
           'index.ts',
         ],
       }
+      
       const expectFilesAndDirectoriesCreated = (projectName: string) => {
         expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/commands`)
         expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/events`)
@@ -162,25 +163,20 @@ describe('new', (): void => {
       it('generates project with default parameters when using --default flag', async () => {
         const parseConfigSpy = spy(Project, 'parseConfig')
         replace(ProjectInitializer, 'installDependencies', fake.returns({}))
-        expect(fs.existsSync(projectDirectory)).to.be.false
-
+        replace(fs,'mkdirs', fake.resolves({}))
+        replace(fs,'outputFile', fake.resolves({}))
+        replace(childProcessPromise, 'exec', fake.resolves({}))
+        
         await new Project.default([projectName, '--default'], { version: '0.5.1' } as IConfig).run()
 
-        expect(fs.existsSync(projectDirectory)).to.be.true
+        expectFilesAndDirectoriesCreated(projectName)
         expect(parseConfigSpy).to.have.been.calledOnce
         expect(await parseConfigSpy.firstCall.returnValue).to.be.deep.equal(
           defaultProjectInitializerConfig as ProjectInitializerConfig
         )
-
-        const packageJson = JSON.parse(fs.readFileSync(`${projectDirectory}/package.json`).toString())
-        expect(packageJson.name).to.be.equal(projectName)
-        expect(packageJson.dependencies[defaultProvider]).to.be.equal('*')
-        expect(packageJson.description).to.be.equal('')
-        expect(packageJson.version).to.be.equal('0.1.0')
-        expect(packageJson.author).to.be.equal('')
-        expect(packageJson.homepage).to.be.equal('')
-        expect(packageJson.license).to.be.equal('MIT')
-        expect(packageJson.repository).to.be.equal('')
+  
+        const expectedPackageJson = fs.readFileSync('./resources/commands/new_package.json').toString() 
+        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,expectedPackageJson)
       })
 
       it('initializes git repository', async () => {
