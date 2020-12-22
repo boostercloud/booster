@@ -64,31 +64,6 @@ describe('new', (): void => {
       const projectDirectory = `./${projectName}`
       const defaultProvider = '@boostercloud/framework-provider-aws'
 
-      const expectedDirectoryContent = {
-        rootPath: [
-          '.git',
-          '.eslintignore',
-          '.eslintrc.js',
-          '.gitignore',
-          '.prettierrc.yaml',
-          'package.json',
-          'src',
-          'tsconfig.eslint.json',
-          'tsconfig.json',
-        ],
-        src: [
-          'commands',
-          'events',
-          'event-handlers',
-          'entities',
-          'read-models',
-          'scheduled-commands',
-          'config',
-          'common',
-          'index.ts',
-        ],
-      }
-      
       const expectFilesAndDirectoriesCreated = (projectName: string) => {
         expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/commands`)
         expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/events`)
@@ -183,24 +158,30 @@ describe('new', (): void => {
         replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
         replace(ProjectInitializer, 'installDependencies', fake.returns({}))
         const initializeGitSpy = spy(ProjectInitializer, 'initializeGit')
+        replace(fs,'mkdirs', fake.resolves({}))
+        replace(fs,'outputFile', fake.resolves({}))
+        replace(childProcessPromise, 'exec', fake.resolves({}))
 
         await new Project.default([projectName], {} as IConfig).run()
 
         expect(initializeGitSpy).to.have.been.calledOnce
-        expect(fs.readdirSync(projectDirectory)).to.have.all.members(expectedDirectoryContent.rootPath)
-        expect(fs.readdirSync(`${projectDirectory}/src`)).to.have.all.members(expectedDirectoryContent.src)
+        expect(childProcessPromise.exec).to.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+        expectFilesAndDirectoriesCreated(projectName)
       })
 
       it('skips git repository initialization', async () => {
         replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
         replace(ProjectInitializer, 'installDependencies', fake.returns({}))
         const initializeGitSpy = spy(ProjectInitializer, 'initializeGit')
+        replace(fs,'mkdirs', fake.resolves({}))
+        replace(fs,'outputFile', fake.resolves({}))
+        replace(childProcessPromise, 'exec', fake.resolves({}))
 
         await new Project.default([projectName, '--skipGit'], {} as IConfig).run()
 
         expect(initializeGitSpy).to.not.have.been.calledOnce
-        expect(fs.existsSync('.git')).to.be.false
-        expect(fs.existsSync(projectDirectory)).to.be.true
+        expect(childProcessPromise.exec).to.not.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+        expectFilesAndDirectoriesCreated(projectName)
       })
     })
   })
