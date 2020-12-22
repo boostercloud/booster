@@ -88,6 +88,26 @@ describe('new', (): void => {
           'index.ts',
         ],
       }
+      const expectFilesAndDirectoriesCreated = (projectName: string) => {
+        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/commands`)
+        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/events`)
+        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/entities`)
+        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/read-models`)
+        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/config`)
+        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/common`)
+        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/event-handlers`)
+        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/scheduled-commands`)
+        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.eslintignore`)
+        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.eslintrc.js`)
+        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.gitignore`)
+        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`)
+        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/tsconfig.json`)
+        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/tsconfig.eslint.json`)
+        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.prettierrc.yaml`)
+        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/src/config/config.ts`)
+        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/src/index.ts`)
+      }
+
       const defaultProjectInitializerConfig = {
         projectName: projectName,
         description: '',
@@ -120,36 +140,23 @@ describe('new', (): void => {
         await new Project.default([projectName], {} as IConfig).run()
 
         expect(childProcessPromise.exec).to.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
-        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/commands`)
-        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/events`)
-        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/entities`)
-        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/read-models`)
-        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/config`)
-        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/common`)
-        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/event-handlers`)
-        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/scheduled-commands`)
-        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.eslintignore`)
-        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.eslintrc.js`)
-        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.gitignore`)
-        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`)
-        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/tsconfig.json`)
-        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/tsconfig.eslint.json`)
-        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.prettierrc.yaml`)
-        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/src/config/config.ts`)
-        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/src/index.ts`)
+        //expect(childProcessPromise.exec).to.have.been.calledWithMatch('npx yarn install')
+        expectFilesAndDirectoriesCreated(projectName)
       })
 
       it('generates all required files and folders without installing dependencies', async () => {
         replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
         const installDependenciesSpy = spy(ProjectInitializer, 'installDependencies')
-        expect(fs.existsSync(projectDirectory)).to.be.false
+        replace(fs,'mkdirs', fake.resolves({}))
+        replace(fs,'outputFile', fake.resolves({}))
+        replace(childProcessPromise, 'exec', fake.resolves({}))
 
         await new Project.default([projectName, '--skipInstall'], {} as IConfig).run()
 
-        expect(fs.existsSync(projectDirectory)).to.be.true
         expect(installDependenciesSpy).to.have.not.been.calledOnce
-        expect(fs.readdirSync(projectDirectory)).to.have.all.members(expectedDirectoryContent.rootPath)
-        expect(fs.readdirSync(`${projectDirectory}/src`)).to.have.all.members(expectedDirectoryContent.src)
+        expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npx yarn install')
+        expect(childProcessPromise.exec).to.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+        expectFilesAndDirectoriesCreated(projectName)
       })
 
       it('generates project with default parameters when using --default flag', async () => {
