@@ -24,44 +24,61 @@ export function assertNameIsCorrect(name: string): void {
     Found: '${name}'`)
 }
 
-/* We load the infrastructure package dynamically here as a cli plugin to avoid
- * including it among the dependences that are deployed in the lambda functions.
- * The infrastructure package is only used during the deploy.
+function validateConfig(config: BoosterConfig): void {
+  assertNameIsCorrect(config.appName)
+}
+
+/**
+ * We load the infrastructure package dynamically here as a cli plugin to avoid
+ * including it among the user project's dependences.
  */
-function loadInfrastructurePackageWithRockets(config: BoosterConfig): ProviderInfrastructure {
+function loadInfrastructure(config: BoosterConfig): ProviderInfrastructure {
   const packageDescription = config.provider.packageDescription()
   // TODO: Check that the package is installed and that the version matches
   // try {
   //   getInstalledPathSync(infrastructurePackageName)
   // } catch (e) {
   //   throw new Error(
-  //     `The AWS infrastructure package must be installed to perform this operation, please install it globally running 'npm install -g ${infrastructurePackageName}'`
+  //     `The AWS infrastructure package must be installed to perform this operation, please install it globally running 'yarn global add ${infrastructurePackageName}'`
   //   )
   // }
   return dynamicLoad(packageDescription.name + '-infrastructure').Infrastructure(config.rockets)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function supportedInfrastructureMethodOrDie(methodName: 'deploy' | 'nuke' | 'start', config: BoosterConfig): any {
-  assertNameIsCorrect(config.appName)
-  const infrastructure = loadInfrastructurePackageWithRockets(config)
-  const method = infrastructure[methodName]
-  if (!method) {
-    throw new Error(
-      `Attempted to perform the '${methodName}' operation with a provider that does not support this feature, please check your environment configuration.`
-    )
-  }
-  return method
-}
-
 export async function deployToCloudProvider(config: BoosterConfig, logger: Logger): Promise<void> {
-  return await supportedInfrastructureMethodOrDie('deploy', config)(config, logger)
+  validateConfig(config)
+  const infrastructure = loadInfrastructure(config)
+  if (infrastructure.deploy) {
+    await infrastructure.deploy(config, logger)
+  } else {
+    throw new NonSupportedInfrastructureOperationError('deploy')
+  }
 }
 
 export async function nukeCloudProviderResources(config: BoosterConfig, logger: Logger): Promise<void> {
-  return await supportedInfrastructureMethodOrDie('nuke', config)(config, logger)
+  validateConfig(config)
+  const infrastructure = loadInfrastructure(config)
+  if (infrastructure.nuke) {
+    await infrastructure.nuke(config, logger)
+  } else {
+    throw new NonSupportedInfrastructureOperationError('nuke')
+  }
 }
 
 export async function startProvider(port: number, config: BoosterConfig): Promise<void> {
-  return await supportedInfrastructureMethodOrDie('start', config)(config, port)
+  validateConfig(config)
+  const infrastructure = loadInfrastructure(config)
+  if (infrastructure.start) {
+    await infrastructure.start(config, port)
+  } else {
+    throw new NonSupportedInfrastructureOperationError('start')
+  }
+}
+
+class NonSupportedInfrastructureOperationError extends Error {
+  constructor(methodName: 'deploy' | 'nuke' | 'start') {
+    super(
+      `Attempted to perform the '${methodName}' operation with a provider that does not support this feature, please check your environment configuration.`
+    )
+  }
 }
