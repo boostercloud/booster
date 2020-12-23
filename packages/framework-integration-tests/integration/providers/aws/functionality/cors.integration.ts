@@ -1,7 +1,7 @@
 import { authClientID, createPassword, signInURL, signOutURL, signUpURL } from '../utils'
 import { internet } from 'faker'
 import fetch from 'cross-fetch'
-import { expect } from '@boostercloud/framework-provider-aws/test/expect'
+import { expect } from '../../../expect'
 
 describe('Given the Authentication API', () => {
   let clientId: string
@@ -84,7 +84,6 @@ describe('Given the Authentication API', () => {
       })
 
       context('POST', () => {
-
         it('should return the Access-Control-Allow-Origin header for 200 responses', async () => {
           const response = await fetch(signInUrl, {
             method: 'POST',

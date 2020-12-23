@@ -9,11 +9,9 @@ export const template = `{
   "dependencies": {
     "@boostercloud/framework-core": "^${VERSION}",
     "@boostercloud/framework-types": "^${VERSION}",
-    "{{{providerPackageName}}}": "*",
-    "tslib": "^2.0.3"
+    "{{{providerPackageName}}}": "*"
   },
   "devDependencies": {
-    "@boostercloud/cli": "^${VERSION}",
     "rimraf": "^3.0.1",
     "@typescript-eslint/eslint-plugin": "^2.18.0",
     "@typescript-eslint/parser": "^2.18.0",

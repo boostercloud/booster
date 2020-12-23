@@ -9,7 +9,6 @@
     "@boostercloud/framework-provider-aws": "whatever"
   },
   "devDependencies": {
-    "@boostercloud/cli": "whatever",
     "rimraf": "whatever",
     "@typescript-eslint/eslint-plugin": "whatever",
     "@typescript-eslint/parser": "whatever",

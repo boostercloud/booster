@@ -219,7 +219,6 @@ describe('Project', () => {
     const cartDemoPackageJsonObject = JSON.parse(cartDemoPackageJsonContent)
     expect(cartDemoPackageJsonObject['dependencies']['@boostercloud/framework-core']).to.equal(`^${BOOSTER_VERSION}`)
     expect(cartDemoPackageJsonObject['dependencies']['@boostercloud/framework-types']).to.equal(`^${BOOSTER_VERSION}`)
-    expect(cartDemoPackageJsonObject['devDependencies']['@boostercloud/cli']).to.equal(`^${BOOSTER_VERSION}`)
 
     const expectedCartDemoTsConfigEslint = loadFixture('cart-demo/tsconfig.eslint.json')
     const cartDemoTsConfigEslintContent = fileContents('tsconfig.eslint.json')

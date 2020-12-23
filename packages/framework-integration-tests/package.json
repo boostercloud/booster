@@ -13,8 +13,7 @@
     "@boostercloud/framework-core": "^0.9.3",
     "@boostercloud/framework-provider-aws": "^0.9.3",
     "@boostercloud/framework-provider-local": "^0.9.3",
-    "@boostercloud/framework-types": "^0.9.3",
-    "tslib": "^2.0.3"
+    "@boostercloud/framework-types": "^0.9.3"
   },
   "devDependencies": {
     "@boostercloud/framework-provider-aws-infrastructure": "^0.9.3",

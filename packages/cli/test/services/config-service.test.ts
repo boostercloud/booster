@@ -3,7 +3,6 @@ import * as projectChecker from '../../src/services/project-checker'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 import * as environment from '../../src/services/environment'
-import * as dependencies from '../../src/services/dependencies'
 
 const rewire = require('rewire')
 const configService = rewire('../../src/services/config-service')
@@ -38,71 +37,11 @@ describe('configService', () => {
       ]
 
       replace(environment, 'currentEnvironment', fake.returns('test'))
-      replace(dependencies, 'pruneDevDependencies', fake())
 
       await expect(configService.compileProjectAndLoadConfig()).to.eventually.become(config)
-      expect(checkItIsABoosterProject).to.have.been.calledOnceWithExactly()
-      expect(dependencies.pruneDevDependencies).not.to.have.been.called
+      expect(checkItIsABoosterProject).to.have.been.calledOnce
 
       rewires.forEach((fn) => fn())
-    })
-
-    context('when the production option is set to `false`', () => {
-      it('does not prune devDependencies', async () => {
-        const config = new BoosterConfig('test')
-
-        const rewires = [
-          configService.__set__('compileProject', fake()),
-          configService.__set__(
-            'loadUserProject',
-            fake.returns({
-              Booster: {
-                config: config,
-                configuredEnvironments: new Set(['test']),
-                configureCurrentEnv: fake.yields(config),
-              },
-            })
-          ),
-        ]
-
-        replace(environment, 'currentEnvironment', fake.returns('test'))
-        replace(dependencies, 'pruneDevDependencies', fake())
-
-        await expect(configService.compileProjectAndLoadConfig({ prduction: true })).to.eventually.become(config)
-
-        expect(dependencies.pruneDevDependencies).not.to.have.been.called
-
-        rewires.forEach((fn) => fn())
-      })
-    })
-
-    context('when the production option is set to `true`', () => {
-      it('prunes devDependencies', async () => {
-        const config = new BoosterConfig('test')
-
-        const rewires = [
-          configService.__set__('compileProject', fake()),
-          configService.__set__(
-            'loadUserProject',
-            fake.returns({
-              Booster: {
-                config: config,
-                configuredEnvironments: new Set(['test']),
-                configureCurrentEnv: fake.yields(config),
-              },
-            })
-          ),
-        ]
-
-        replace(environment, 'currentEnvironment', fake.returns('test'))
-        replace(dependencies, 'pruneDevDependencies', fake())
-
-        await expect(configService.compileProjectAndLoadConfig({ production: true })).to.eventually.become(config)
-
-        expect(dependencies.pruneDevDependencies).to.have.been.calledOnce
-
-        rewires.forEach((fn) => fn())
-      })
     })
 
     it('throws the right error when there are not configured environments', async () => {

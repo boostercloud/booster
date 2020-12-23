@@ -4,18 +4,10 @@ import { exec } from 'child-process-promise'
 import { wrapExecError } from '../common/errors'
 import { checkItIsABoosterProject } from './project-checker'
 import { currentEnvironment } from './environment'
-import { pruneDevDependencies } from './dependencies'
 
-type CompileAndLoadOptions = {
-  production: boolean
-}
-
-export async function compileProjectAndLoadConfig(opts?: CompileAndLoadOptions): Promise<BoosterConfig> {
+export async function compileProjectAndLoadConfig(): Promise<BoosterConfig> {
   const userProjectPath = process.cwd()
   await checkItIsABoosterProject()
-  if (opts?.production) {
-    await pruneDevDependencies()
-  }
   await compileProject(userProjectPath)
   return readProjectConfig(userProjectPath)
 }

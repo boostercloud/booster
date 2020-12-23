@@ -5,12 +5,12 @@ import {
   generateConfigFiles,
   generateRootDirectory,
   initializeGit,
-  installDependencies,
   ProjectInitializerConfig,
 } from '../../services/project-initializer'
 import Prompter from '../../services/user-prompt'
 import { assertNameIsCorrect } from '../../services/provider-service'
 import { Provider } from '../../common/provider'
+import { installDependencies } from '../../services/dependencies'
 
 export default class Project extends Command {
   public static description = 'create a new project from scratch'
@@ -81,7 +81,9 @@ const run = async (flags: Partial<ProjectInitializerConfig>, boosterVersion: str
   Script.init(`boost ${Brand.energize('new')} 🚧`, parseConfig(new Prompter(), flags, boosterVersion))
     .step('Creating project root', generateRootDirectory)
     .step('Generating config files', generateConfigFiles)
-    .optionalStep(Boolean(flags.skipInstall), 'Installing dependencies', installDependencies)
+    .optionalStep(Boolean(flags.skipInstall), 'Installing dependencies', (config) =>
+      installDependencies(config.projectName)
+    )
     .optionalStep(Boolean(flags.skipGit), 'Initializing git repository', initializeGit)
     .info('Project generated!')
     .done()

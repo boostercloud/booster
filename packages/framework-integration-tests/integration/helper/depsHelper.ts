@@ -12,13 +12,13 @@ export async function symLinkBoosterDependencies(projectPath: string): Promise<v
   // by the versions under development.
   for (const packageName in packageJSON.dependencies) {
     if (/@boostercloud/.test(packageName)) {
-      await exec(`npx yarn add link:${deBoosterize(packageName, projectPath)}`, { cwd: projectPath })
+      await exec(`npx yarn add file:${deBoosterize(packageName, projectPath)}`, { cwd: projectPath })
     }
   }
 
   for (const packageName in packageJSON.devDependencies) {
     if (/@boostercloud/.test(packageName)) {
-      await exec(`npx yarn add link:${deBoosterize(packageName, projectPath)}`, {
+      await exec(`npx yarn add file:${deBoosterize(packageName, projectPath)}`, {
         cwd: projectPath,
       })
     }
