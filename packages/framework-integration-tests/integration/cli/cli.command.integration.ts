@@ -15,7 +15,7 @@ describe('Command', () => {
   let commandSandboxDir: string
 
   before(async () => {
-    commandSandboxDir = createSandboxProject('command')
+    commandSandboxDir = await createSandboxProject('command')
   })
 
   after(() => {

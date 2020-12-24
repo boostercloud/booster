@@ -7,7 +7,7 @@ describe('Type', () => {
   let typeSandboxDir: string
 
   before(async () => {
-    typeSandboxDir = createSandboxProject('type')
+    typeSandboxDir = await createSandboxProject('type')
   })
 
   after(() => {

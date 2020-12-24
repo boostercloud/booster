@@ -1,5 +1,6 @@
 import { exec } from 'child-process-promise'
 import * as path from 'path'
+import { runCommand } from './runCommand'
 
 function deBoosterize(packageName: string, projectPath: string): string {
   const folderName = packageName.replace('@boostercloud/', '')
@@ -27,4 +28,8 @@ export async function symLinkBoosterDependencies(projectPath: string): Promise<v
 
 export async function forceLernaRebuild(): Promise<void> {
   await exec('lerna clean --yes && lerna bootstrap && lerna run clean && lerna run compile')
+}
+
+export async function installBoosterPackage(packageName: string): Promise<void> {
+  await runCommand(path.join('..', packageName), 'npx yarn global add file:$PWD')
 }

@@ -7,7 +7,7 @@ describe('Scheduled Command', () => {
   let scheduledCommandSandboxDir: string
 
   before(async () => {
-    scheduledCommandSandboxDir = createSandboxProject('scheduled-command')
+    scheduledCommandSandboxDir = await createSandboxProject('scheduled-command')
   })
 
   after(() => {

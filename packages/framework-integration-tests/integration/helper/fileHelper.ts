@@ -9,6 +9,7 @@ import {
   copyFileSync,
 } from 'fs'
 import * as path from 'path'
+import { symLinkBoosterDependencies } from './depsHelper'
 
 export const loadFixture = (fixturePath: string, replacements?: Array<Array<string>>): string => {
   const template = readFileContent(`integration/fixtures/${fixturePath}`)
@@ -61,7 +62,7 @@ const copyFolder = (origin: string, destiny: string): void => {
 
 const sandboxPathFor = (sandboxName: string): string => sandboxName + '-integration-sandbox' // Add the suffix to make sure this folder is gitignored
 
-export const createSandboxProject = (sandboxName: string): string => {
+export const createSandboxProject = async (sandboxName: string): Promise<string> => {
   const sandboxPath = sandboxPathFor(sandboxName)
 
   rmdirSync(sandboxPath, { recursive: true })
@@ -70,6 +71,11 @@ export const createSandboxProject = (sandboxName: string): string => {
 
   const projectFiles = ['.eslintignore', 'package.json', 'tsconfig.eslint.json', 'tsconfig.json']
   projectFiles.forEach((file: string) => copyFileSync(file, path.join(sandboxPath, file)))
+
+  copyFileSync(path.join('..', '..', 'yarn.lock'), path.join(sandboxPath, 'yarn.lock'))
+
+  // Make sure all booster dependencies come from the versions under development
+  await symLinkBoosterDependencies(sandboxPath)
 
   return sandboxPath
 }

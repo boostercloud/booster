@@ -16,7 +16,7 @@ describe('Entity', () => {
   let entitySandboxDir: string
 
   before(async () => {
-    entitySandboxDir = createSandboxProject('entity')
+    entitySandboxDir = await createSandboxProject('entity')
   })
 
   after(() => {

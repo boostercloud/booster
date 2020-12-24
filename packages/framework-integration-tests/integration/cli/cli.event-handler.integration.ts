@@ -7,7 +7,7 @@ describe('Event handler', () => {
   let eventHandlerSandboxDir: string
 
   before(async () => {
-    eventHandlerSandboxDir = createSandboxProject('event-handler')
+    eventHandlerSandboxDir = await createSandboxProject('event-handler')
   })
 
   after(() => {

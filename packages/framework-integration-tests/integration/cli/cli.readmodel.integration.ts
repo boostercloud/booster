@@ -16,7 +16,7 @@ describe('Read model', () => {
   let readModelSandboxDir: string
 
   before(async () => {
-    readModelSandboxDir = createSandboxProject('read-model')
+    readModelSandboxDir = await createSandboxProject('read-model')
   })
 
   after(() => {

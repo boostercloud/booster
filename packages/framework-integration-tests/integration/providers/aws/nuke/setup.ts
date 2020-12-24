@@ -4,7 +4,7 @@ import { setEnv, checkConfigAnd } from '../utils'
 
 before(async () => {
   await setEnv()
-  const sandboxedProject = createSandboxProject('deploy')
+  const sandboxedProject = await createSandboxProject('deploy')
   await checkConfigAnd(nuke.bind(null, sandboxedProject))
   removeSandboxProject('deploy')
 })

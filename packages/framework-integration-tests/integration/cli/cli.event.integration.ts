@@ -15,7 +15,7 @@ describe('Event', () => {
   let eventSandboxDir: string
 
   before(async () => {
-    eventSandboxDir = createSandboxProject('event')
+    eventSandboxDir = await createSandboxProject('event')
   })
 
   after(() => {
