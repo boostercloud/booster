@@ -40,7 +40,7 @@ export class BoosterSubscribersNotifier {
       )
 
       const pubSub = this.getPubSub(readModelEnvelopes)
-      await Promise.all(subscriptions.map(this.runSubscriptionAndNotify.bind(this, pubSub)))
+      await Promise.allSettled(subscriptions.map(this.runSubscriptionAndNotify.bind(this, pubSub)))
     } catch (e) {
       this.logger.error(e)
     }
