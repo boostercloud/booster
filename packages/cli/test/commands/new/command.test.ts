@@ -115,6 +115,19 @@ describe('new', (): void => {
                 expect(exceptionThrown).to.be.equal(true)
                 expect(exceptionMessage).to.be.equal('Flag --fields expects a value')
             })
+
+            it('with field with no type', async () => {
+                let exceptionThrown = false
+                let exceptionMessage = ''
+                try {
+                    await new Command([command, '--fields','title'], {} as IConfig).run()
+                } catch(e) {
+                    exceptionThrown = true
+                    exceptionMessage = e.message
+                }
+                expect(exceptionThrown).to.be.equal(true)
+                expect(exceptionMessage).to.contain('Error: Error parsing field title. Fields must be in the form of <field name>:<field type>')
+            })
         })
 
         describe('should display an error but is not currently being validated', () => { 
@@ -135,6 +148,16 @@ describe('new', (): void => {
                     imports: defaultCommandImports,
                     name: command,
                     fields: [{ name: 'title', type: 'unimplemented_type' }]
+                })
+                expect(fs.outputFile).to.have.been.calledWithMatch(commandPath,renderedCommand)
+            })
+
+            it('with no field type after :', async () => {
+                await new Command([command, '--fields', 'title:'], {} as IConfig).run()
+                const renderedCommand = Mustache.render(templates.command, {
+                    imports: defaultCommandImports,
+                    name: command,
+                    fields: [{ name: 'title', type: '' }]
                 })
                 expect(fs.outputFile).to.have.been.calledWithMatch(commandPath,renderedCommand)
             })
