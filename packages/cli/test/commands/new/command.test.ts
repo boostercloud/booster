@@ -22,6 +22,16 @@ describe('new', (): void => {
               commaSeparatedComponents: 'Register',
             }
         ]
+        const uuidCommandImports = [
+            {
+              packagePath: '@boostercloud/framework-core',
+              commaSeparatedComponents: 'Command',
+            },
+            {
+              packagePath: '@boostercloud/framework-types',
+              commaSeparatedComponents: 'Register, UUID',
+            }
+        ]
 
         beforeEach(() => {
             stub(ProjectChecker, 'checkItIsABoosterProject').returnsThis()
@@ -64,21 +74,21 @@ describe('new', (): void => {
             })
     
             it('creates command with UUID field', async () => {
-                await new Command([command, '--fields', 'identifier:uuid'], {} as IConfig).run()
+                await new Command([command, '--fields', 'identifier:UUID'], {} as IConfig).run()
                 const renderedCommand = Mustache.render(templates.command, {
-                    imports: defaultCommandImports,
+                    imports: uuidCommandImports,
                     name: command,
-                    fields: [{ name: 'identifier', type: 'uuid' }]
+                    fields: [{ name: 'identifier', type: 'UUID' }]
                 })
                 expect(fs.outputFile).to.have.been.calledWithMatch(commandPath,renderedCommand)
             })
     
             it('creates command with multiple fields', async () => {
-                await new Command([command, '--fields', 'title:string','quantity:number','identifier:uuid'], {} as IConfig).run()
+                await new Command([command, '--fields', 'title:string','quantity:number','identifier:UUID'], {} as IConfig).run()
                 const renderedCommand = Mustache.render(templates.command, {
-                    imports: defaultCommandImports,
+                    imports: uuidCommandImports,
                     name: command,
-                    fields: [{ name: 'title', type: 'string' },{ name: 'quantity', type: 'number' },{ name: 'identifier', type: 'uuid' }]
+                    fields: [{ name: 'title', type: 'string' },{ name: 'quantity', type: 'number' },{ name: 'identifier', type: 'UUID' }]
                 })
                 expect(fs.outputFile).to.have.been.calledWithMatch(commandPath,renderedCommand)
             })
