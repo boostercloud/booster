@@ -140,7 +140,7 @@ describe('new', (): void => {
       })
     })
 
-    describe('should display an error but is not currently being validated', () => {
+    xdescribe('should display an error but is not currently being validated', () => {
       it('with repeated fields', async () => {
         await new Type([typeName, '--fields', 'title:string', 'title:string', 'quantity:number'], {} as IConfig).run()
         const renderedType = Mustache.render(templates.type, {
