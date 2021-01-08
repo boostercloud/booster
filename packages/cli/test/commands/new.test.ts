@@ -1,9 +1,5 @@
-import * as ProjectChecker from '../../src/services/project-checker'
-import { restore, replace, fake, stub, spy } from 'sinon'
+import { restore, replace, fake, spy } from 'sinon'
 import { ProjectInitializerConfig } from '../../src/services/project-initializer'
-import ReadModel from '../../src/commands/new/read-model'
-import { templates } from '../../src/templates'
-import Mustache = require('mustache')
 import * as fs from 'fs-extra'
 import * as childProcessPromise from 'child-process-promise'
 import { IConfig } from '@oclif/config'
@@ -12,53 +8,6 @@ import * as Project from '../../src/commands/new/project'
 import * as ProjectInitializer from '../../src/services/project-initializer'
 
 describe('new', (): void => {
-  describe('Read model', () => {
-    const readModel = 'example-read-model'
-    const readModelsRoot = 'src/read-models/'
-    const readModelPath = `${readModelsRoot}${readModel}.ts`
-    
-    afterEach(() => {
-      restore()
-    })
-    
-    context('projections', () => {
-      it('renders according to the template', async () => {
-        stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
-        stub(ProjectChecker, 'checkItIsABoosterProject').returnsThis()
-        replace(fs,'outputFile', fake.resolves({}))
-
-        await new ReadModel([readModel, '--fields', 'title:string', '--projects', 'Post:id'], {} as IConfig).run()
-        
-        const renderedReadModel = Mustache.render(templates.readModel, {
-          imports: [
-            {
-              packagePath: '@boostercloud/framework-core',
-              commaSeparatedComponents: 'ReadModel, Projects',
-            },
-            {
-              packagePath: '@boostercloud/framework-types',
-              commaSeparatedComponents: 'UUID, ProjectionResult',
-            },
-            {
-              packagePath: '../entities/post',
-              commaSeparatedComponents: 'Post',
-            },
-          ],
-          name: readModel,
-          fields: [{ name: 'title', type: 'string' }],
-          projections: [
-            {
-              entityName: 'Post',
-              entityId: 'id',
-            },
-          ],
-        })
-
-        expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath,renderedReadModel)
-      })
-    })
-  })
-  
   describe('project', () => {
     context('file generation', () => {
       const projectName = 'test-project'  
