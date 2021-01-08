@@ -285,6 +285,46 @@ describe('new', (): void => {
             expectFilesAndDirectoriesCreated(projectName)
           })
         })
+
+        describe('define multiple flags', () => { 
+            it('with all options (long flags)', async () => {
+              await new Project.default([projectName,
+                '--version','1.0.0',
+                '--author',"'John Doe'",
+                '--description',"'a new description'",
+                '--homepage','booster.cloud',
+                '--repository','github.com/boostercloud/booster.git',
+                '--license','GPL',
+                '--providerPackageName',defaultProvider,
+                '--skipInstall',
+                '--skipGit'
+              ], {} as IConfig).run()
+  
+              expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+              expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npx yarn install')
+              expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
+              expectFilesAndDirectoriesCreated(projectName)
+            })
+
+            it('with all options (short flags)', async () => {
+                await new Project.default([projectName,
+                  '-v','1.0.0',
+                  '-a',"'John Doe'",
+                  '-d',"'a new description'",
+                  '-H','booster.cloud',
+                  '-r','github.com/boostercloud/booster.git',
+                  '-l','GPL',
+                  '-p',defaultProvider,
+                  '--skipInstall',
+                  '--skipGit'
+                ], {} as IConfig).run()
+    
+                expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+                expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npx yarn install')
+                expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
+                expectFilesAndDirectoriesCreated(projectName)
+            })
+        })
       })
 
       describe('displays an error', () => {
@@ -294,6 +334,21 @@ describe('new', (): void => {
           expect(fs.mkdirs).to.have.not.been.calledWithMatch(`${projectName}/src`)
           expect(console.error).to.have.been.calledWith("You haven't provided a project name, but it is required, run with --help for usage")
           expect(oraLogger.info).to.have.not.been.calledWithMatch('Project generated!')
+        })
+
+        it('with nonexisting option', async () => {
+            let exceptionThrown = false
+            let exceptionMessage = ''
+            try {
+              await new Project.default([projectName,'--nonexistingoption'], {} as IConfig).run()
+            } catch(e) {
+              exceptionThrown = true
+              exceptionMessage = e.message
+            }
+            expect(exceptionThrown).to.be.equal(true)
+            expect(exceptionMessage).to.contain('Unexpected argument: --nonexistingoption')
+            expect(oraLogger.info).to.have.not.been.calledWithMatch('Project generated!')
+            expect(fs.mkdirs).to.have.not.been.calledWithMatch(`${projectName}/src`)
         })
 
         describe('define homepage badly', () => {
