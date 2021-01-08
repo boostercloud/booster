@@ -193,7 +193,7 @@ describe('new', (): void => {
                 expect(exceptionMessage).to.be.equal('Flag --fields expects a value')
             })
 
-            it('with empty reduces', async () => {
+            it('with empty projection', async () => {
                 let exceptionThrown = false
                 let exceptionMessage = ''
                 try {
@@ -206,7 +206,7 @@ describe('new', (): void => {
                 expect(exceptionMessage).to.be.equal('Flag --projects expects a value')
             })
 
-            it('with empty fields and reduces', async () => {
+            it('with empty fields and projection', async () => {
                 let exceptionThrown = false
                 let exceptionMessage = ''
                 try {
@@ -230,6 +230,19 @@ describe('new', (): void => {
                 }
                 expect(exceptionThrown).to.be.equal(true)
                 expect(exceptionMessage).to.contain('Error: Error parsing field title. Fields must be in the form of <field name>:<field type>')
+            })
+
+            it('with projection with no entity id', async () => {
+                let exceptionThrown = false
+                let exceptionMessage = ''
+                try {
+                    await new ReadModel([readModelName, '--fields','title:string','--projects','Post'], {} as IConfig).run()
+                } catch(e) {
+                    exceptionThrown = true
+                    exceptionMessage = e.message
+                }
+                expect(exceptionThrown).to.be.equal(true)
+                expect(exceptionMessage).to.contain('Error parsing projection Post. Projections must be in the form of <entity name>:<entity id>')
             })
 
         })
@@ -262,6 +275,17 @@ describe('new', (): void => {
                     imports: defaultReadModelImports,
                     name: readModelName,
                     fields: [{ name: 'title', type: '' }]
+                })
+                expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath,renderedReadModel)
+            })
+
+            it('with no entity id after :', async () => {
+                await new ReadModel([readModelName, '--fields','title:string','--projects','Post:'], {} as IConfig).run()
+                const renderedReadModel = Mustache.render(templates.readModel, {
+                    imports: projectingReadModelImports,
+                    name: readModelName,
+                    fields: [{ name: 'title', type: 'string' }],
+                    projections: [{entityName: 'Post', entityId: ''}]
                 })
                 expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath,renderedReadModel)
             })
