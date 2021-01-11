@@ -1,6 +1,18 @@
 import * as Velocity from 'velocityjs'
-import { CognitoTemplates } from '../../../src/infrastructure/stacks/api-stack-velocity-templates'
-import { expect } from '../../expect'
+import {
+  signInTemplate,
+  signOutTemplate,
+  refreshTokenTemplate,
+  signUpTemplate,
+  confirmSignUpTemplate,
+} from '../src/auth-stack-templates'
+
+import * as chai from 'chai'
+
+chai.use(require('sinon-chai'))
+chai.use(require('chai-as-promised'))
+
+const expect = chai.expect
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function buildAwsTemplateContext(withData: Record<string, any>): Record<string, any> {
@@ -28,7 +40,7 @@ describe('CognitoTemplates', () => {
         }
 
         const context = buildAwsTemplateContext(input)
-        const gotOutputJSON = JSON.parse(Velocity.render(CognitoTemplates.signUp.request, context))
+        const gotOutputJSON = JSON.parse(Velocity.render(signUpTemplate(input.clientId).request, context))
 
         expect(gotOutputJSON).to.be.deep.equal(expectedOutput)
       })
@@ -65,7 +77,7 @@ describe('CognitoTemplates', () => {
         }
 
         const context = buildAwsTemplateContext(input)
-        const gotOutputJSON = JSON.parse(Velocity.render(CognitoTemplates.signUp.request, context))
+        const gotOutputJSON = JSON.parse(Velocity.render(signUpTemplate(input.clientId).request, context))
 
         expect(gotOutputJSON).to.be.deep.equal(expectedOutput)
       })
@@ -74,13 +86,14 @@ describe('CognitoTemplates', () => {
     describe('response', () => {
       it('returns an empty json object', () => {
         const input = {
+          clientId: 'a-client-id',
           any: 'field',
           other: 'value',
         }
         const expectedOutput = {}
 
         const context = buildAwsTemplateContext(input)
-        const gotOutputJSON = JSON.parse(Velocity.render(CognitoTemplates.signUp.response, context))
+        const gotOutputJSON = JSON.parse(Velocity.render(signUpTemplate(input.clientId).response, context))
 
         expect(gotOutputJSON).to.be.deep.equal(expectedOutput)
       })
@@ -102,7 +115,7 @@ describe('CognitoTemplates', () => {
         }
 
         const context = buildAwsTemplateContext(input)
-        const gotOutputJSON = JSON.parse(Velocity.render(CognitoTemplates.confirmSignUp.request, context))
+        const gotOutputJSON = JSON.parse(Velocity.render(confirmSignUpTemplate(input.clientId).request, context))
 
         expect(gotOutputJSON).to.be.deep.equal(expectedOutput)
       })
@@ -110,13 +123,14 @@ describe('CognitoTemplates', () => {
     describe('response', () => {
       it('returns an empty json object', () => {
         const input = {
+          clientId: 'a-client-id',
           any: 'field',
           other: 'value',
         }
         const expectedOutput = {}
 
         const context = buildAwsTemplateContext(input)
-        const gotOutputJSON = JSON.parse(Velocity.render(CognitoTemplates.confirmSignUp.response, context))
+        const gotOutputJSON = JSON.parse(Velocity.render(confirmSignUpTemplate(input.clientId).response, context))
 
         expect(gotOutputJSON).to.be.deep.equal(expectedOutput)
       })
@@ -141,7 +155,7 @@ describe('CognitoTemplates', () => {
         }
 
         const context = buildAwsTemplateContext(input)
-        const gotOutputJSON = JSON.parse(Velocity.render(CognitoTemplates.signIn.request, context))
+        const gotOutputJSON = JSON.parse(Velocity.render(signInTemplate(input.clientId).request, context))
 
         expect(gotOutputJSON).to.be.deep.equal(expectedOutput)
       })
@@ -150,6 +164,7 @@ describe('CognitoTemplates', () => {
     describe('response', () => {
       it('returns the Booster expected output', () => {
         const input = {
+          clientId: 'a-client-id',
           AuthenticationResult: {
             AccessToken: 'access-token',
             IdToken: 'id-token',
@@ -167,7 +182,7 @@ describe('CognitoTemplates', () => {
         }
 
         const context = buildAwsTemplateContext(input)
-        const gotOutputJSON = JSON.parse(Velocity.render(CognitoTemplates.signIn.response, context))
+        const gotOutputJSON = JSON.parse(Velocity.render(signInTemplate(input.clientId).response, context))
 
         expect(gotOutputJSON).to.be.deep.equal(expectedOutput)
       })
@@ -185,7 +200,7 @@ describe('CognitoTemplates', () => {
         }
 
         const context = buildAwsTemplateContext(input)
-        const gotOutputJSON = JSON.parse(Velocity.render(CognitoTemplates.signOut.request, context))
+        const gotOutputJSON = JSON.parse(Velocity.render(signOutTemplate().request, context))
 
         expect(gotOutputJSON).to.be.deep.equal(expectedOutput)
       })
@@ -200,7 +215,7 @@ describe('CognitoTemplates', () => {
         const expectedOutput = {}
 
         const context = buildAwsTemplateContext(input)
-        const gotOutputJSON = JSON.parse(Velocity.render(CognitoTemplates.signOut.response, context))
+        const gotOutputJSON = JSON.parse(Velocity.render(signOutTemplate().response, context))
 
         expect(gotOutputJSON).to.be.deep.equal(expectedOutput)
       })
@@ -223,7 +238,7 @@ describe('CognitoTemplates', () => {
         }
 
         const context = buildAwsTemplateContext(input)
-        const gotOutputJSON = JSON.parse(Velocity.render(CognitoTemplates.refreshToken.request, context))
+        const gotOutputJSON = JSON.parse(Velocity.render(refreshTokenTemplate(input.clientId).request, context))
 
         expect(gotOutputJSON).to.be.deep.equal(expectedOutput)
       })
@@ -232,6 +247,7 @@ describe('CognitoTemplates', () => {
     describe('response', () => {
       it('returns the Booster expected output', () => {
         const input = {
+          clientId: 'a-client-id',
           AuthenticationResult: {
             AccessToken: 'access-token',
             IdToken: 'id-token',
@@ -249,7 +265,7 @@ describe('CognitoTemplates', () => {
         }
 
         const context = buildAwsTemplateContext(input)
-        const gotOutputJSON = JSON.parse(Velocity.render(CognitoTemplates.refreshToken.response, context))
+        const gotOutputJSON = JSON.parse(Velocity.render(refreshTokenTemplate(input.clientId).response, context))
 
         expect(gotOutputJSON).to.be.deep.equal(expectedOutput)
       })

@@ -39,7 +39,6 @@
     "@types/faker": "^4.1.12",
     "@types/get-installed-path": "^4.0.0",
     "aws-sdk": "^2.771.0",
-    "faker": "^4.1.0",
-    "velocityjs": "^2.0.0"
+    "faker": "^4.1.0"
   }
 }

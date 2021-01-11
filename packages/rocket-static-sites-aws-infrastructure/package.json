@@ -43,7 +43,6 @@
   "devDependencies": {
     "@boostercloud/framework-provider-aws-infrastructure": "^0.9.3",
     "@types/faker": "^4.1.11",
-    "faker": "^4.1.0",
-    "velocityjs": "^2.0.0"
+    "faker": "^4.1.0"
   }
 }
