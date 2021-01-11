@@ -43,7 +43,7 @@ export class AuthStack {
     const userPool = AuthStack.buildUserPool(params, stack)
     const userPoolClient = AuthStack.buildUserPoolClient(params, stack, userPool)
     const authApi = AuthStack.buildAuthAPI(params, stack, userPool, userPoolClient.userPoolClientId)
-    AuthStack.printOutput(stack, authApi)
+    AuthStack.printOutput(stack, userPool.userPoolId, authApi)
   }
 
   public static unmountStack?(): void {}
@@ -249,10 +249,22 @@ export class AuthStack {
     })
   }
 
-  private static printOutput(stack: Stack, authApi: RestApi): void {
+  private static printOutput(stack: Stack, userPoolId: string, authApi: RestApi): void {
     new CfnOutput(stack, 'AuthApiEndpoint', {
       value: authApi.url + 'auth',
       description: 'Auth api endpoint',
+    })
+
+    const issuer = `https://cognito-idp.${stack.region}.${stack.urlSuffix}/${userPoolId}`
+
+    new CfnOutput(stack, 'AuthApiIssuer', {
+      value: issuer,
+      description: 'Auth api JWT issuer',
+    })
+
+    new CfnOutput(stack, 'AuthApiJwksUri', {
+      value: issuer + '/.well-known/jwks.json',
+      description: 'Auth api JKWS uri',
     })
   }
 }
