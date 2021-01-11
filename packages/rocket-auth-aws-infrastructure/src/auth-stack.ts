@@ -4,13 +4,21 @@ import { Effect, IRole, PolicyDocument, PolicyStatement, Role, ServicePrincipal 
 import { AwsIntegration, Cors, CorsOptions, MethodOptions, PassthroughBehavior, RestApi } from '@aws-cdk/aws-apigateway'
 import {
   CognitoAuthTemplate,
+  confirmForgotPasswordTemplate,
+  forgotPasswordTemplate,
   refreshTokenTemplate,
   signInTemplate,
   signOutTemplate,
   signUpTemplate,
 } from './auth-stack-templates'
 
-type CognitoAuthActions = 'InitiateAuth' | 'SignUp' | 'ConfirmSignUp' | 'GlobalSignOut'
+type CognitoAuthActions =
+  | 'InitiateAuth'
+  | 'SignUp'
+  | 'ConfirmSignUp'
+  | 'GlobalSignOut'
+  | 'ForgotPassword'
+  | 'ConfirmForgotPassword'
 
 export interface AWSAuthRocketParams {
   appName: string
@@ -151,6 +159,16 @@ export class AuthStack {
         action: 'GlobalSignOut',
         template: signOutTemplate(),
       },
+      {
+        endpoint: 'forgot-password',
+        action: 'ForgotPassword',
+        template: forgotPasswordTemplate(userPoolClientId),
+      },
+      {
+        endpoint: 'confirm-forgot-password',
+        action: 'ConfirmForgotPassword',
+        template: confirmForgotPasswordTemplate(userPoolClientId),
+      },
     ]
 
     endpointIntegrations.map((item) => {
@@ -174,7 +192,13 @@ export class AuthStack {
           statements: [
             new PolicyStatement({
               effect: Effect.ALLOW,
-              actions: ['cognito-idp:SignUp', 'cognito-idp:InitiateAuth', 'cognito-idp:GlobalSignOut'],
+              actions: [
+                'cognito-idp:SignUp',
+                'cognito-idp:InitiateAuth',
+                'cognito-idp:GlobalSignOut',
+                'cognito-idp:ForgotPassword',
+                'cognito-idp:ConfirmForgotPassword',
+              ],
               resources: [userPool.userPoolArn],
             }),
           ],
@@ -227,7 +251,7 @@ export class AuthStack {
 
   private static printOutput(stack: Stack, authApi: RestApi): void {
     new CfnOutput(stack, 'AuthApiEndpoint', {
-      value: authApi.url + '/auth',
+      value: authApi.url + 'auth',
       description: 'Auth api endpoint',
     })
   }

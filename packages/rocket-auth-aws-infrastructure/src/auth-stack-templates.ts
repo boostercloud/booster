@@ -94,3 +94,27 @@ export const signOutTemplate = (): CognitoAuthTemplate => {
     response: '{}',
   }
 }
+
+export const forgotPasswordTemplate = (clientId: string): CognitoAuthTemplate => {
+  return {
+    request: `#set($root = $input.path('$'))
+    {
+      "ClientId": "${clientId}",
+      "Username": "$root.username"
+    }`,
+    response: '{}',
+  }
+}
+
+export const confirmForgotPasswordTemplate = (clientId: string): CognitoAuthTemplate => {
+  return {
+    request: `#set($root = $input.path('$'))
+    {
+      "ClientId": "${clientId}",
+      "Username": "$root.username",
+      "ConfirmationCode": "$root.confirmationCode",
+      "Password": "$root.newPassword"
+    }`,
+    response: '{}',
+  }
+}
