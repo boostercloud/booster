@@ -1,5 +1,4 @@
 import { ProviderLibrary, ProviderInfrastructure } from '@boostercloud/framework-types'
-import { rawSignUpDataToUserEnvelope } from './library/auth-adapter'
 import {
   rawEventsToEnvelopes,
   readEntityEventsSince,
@@ -52,14 +51,6 @@ export const Provider = (): ProviderLibrary => ({
   graphQL: {
     rawToEnvelope: rawGraphQLRequestToEnvelope,
     handleResult: requestSucceeded,
-  },
-  // ProviderAuthLibrary
-  auth: {
-    rawToEnvelope: rawSignUpDataToUserEnvelope,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fromAuthToken: undefined as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    handleSignUpResult: (() => {}) as any,
   },
   // ProviderAPIHandling
   api: {

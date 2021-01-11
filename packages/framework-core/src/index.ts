@@ -3,7 +3,6 @@ import { BoosterApp } from '@boostercloud/framework-types'
 export * from './decorators'
 export {
   boosterEventDispatcher,
-  boosterPreSignUpChecker,
   boosterServeGraphQL,
   boosterNotifySubscribers,
   boosterTriggerScheduledCommand,

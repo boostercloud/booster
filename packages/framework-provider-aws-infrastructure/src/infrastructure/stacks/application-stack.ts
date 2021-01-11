@@ -1,6 +1,5 @@
 import { App, CfnOutput, Stack, StackProps } from '@aws-cdk/core'
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { AuthStack } from './auth-stack'
 import { EventsStack } from './events-stack'
 import { ReadModelsStack } from './read-models-stack'
 import { GraphQLStack } from './graphql-stack'
@@ -28,9 +27,8 @@ export class ApplicationStackBuilder {
       websocketAPI,
     }
 
-    const userPool = new AuthStack(this.config, stack, apis).build()
     const readModelTables = new ReadModelsStack(this.config, stack).build()
-    const graphQLStack = new GraphQLStack(this.config, stack, apis, readModelTables, userPool).build()
+    const graphQLStack = new GraphQLStack(this.config, stack, apis, readModelTables).build()
     const scheduledCommandStack = new ScheduledCommandStack(this.config, stack, apis).build()
     const eventsStack = new EventsStack(this.config, stack, apis).build()
 

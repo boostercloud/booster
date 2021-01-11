@@ -1,0 +1,1 @@
+describe('Auth api creation', () => {})

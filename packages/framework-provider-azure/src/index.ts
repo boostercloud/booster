@@ -43,12 +43,6 @@ export const Provider = (): ProviderLibrary => ({
     rawToEnvelope: rawGraphQLRequestToEnvelope,
     handleResult: requestSucceeded,
   },
-  // ProviderAuthLibrary
-  auth: {
-    rawToEnvelope: undefined as any,
-    fromAuthToken: undefined as any,
-    handleSignUpResult: (() => {}) as any,
-  },
   // ProviderAPIHandling
   api: {
     requestSucceeded,

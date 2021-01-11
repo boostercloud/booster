@@ -12,7 +12,7 @@ import {
   deleteReadModel,
 } from './library/read-model-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
-import { DynamoDB, CognitoIdentityServiceProvider } from 'aws-sdk'
+import { DynamoDB } from 'aws-sdk'
 import { ProviderInfrastructure, ProviderLibrary, RocketDescriptor } from '@boostercloud/framework-types'
 import { requestFailed, requestSucceeded } from './library/api-gateway-io'
 import { searchReadModel } from './library/searcher-adapter'
@@ -22,7 +22,6 @@ import {
   fetchSubscriptions,
   subscribeToReadModel,
 } from './library/subscription-adapter'
-import { handleSignUpResult, rawSignUpDataToUserEnvelope, userEnvelopeFromAuthToken } from './library/auth-adapter'
 import {
   deleteConnectionData,
   fetchConnectionData,
@@ -33,7 +32,6 @@ import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
 import { getInstalledPathSync } from 'get-installed-path'
 
 const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
-const userPool = new CognitoIdentityServiceProvider()
 
 /* We load the infrastructure package dynamically here to avoid including it in the
  * dependences that are deployed in the lambda functions. The infrastructure
@@ -77,12 +75,6 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
     graphQL: {
       rawToEnvelope: rawGraphQLRequestToEnvelope,
       handleResult: requestSucceeded,
-    },
-    // ProviderAuthLibrary
-    auth: {
-      rawToEnvelope: rawSignUpDataToUserEnvelope,
-      fromAuthToken: userEnvelopeFromAuthToken.bind(null, userPool),
-      handleSignUpResult: handleSignUpResult,
     },
     // ProviderAPIHandling
     api: {

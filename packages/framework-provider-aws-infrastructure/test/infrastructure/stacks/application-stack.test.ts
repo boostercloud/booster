@@ -100,11 +100,6 @@ describe('the application stack builder', () => {
     const appStack = boosterApp.node.findChild(appStackName).node
 
     const apiName = appStackName + '-rest-api'
-    const preSignUpValidator = 'pre-sign-up-validator'
-    const userPool = 'user-pool'
-    const userPoolDomain = 'user-pool-domain'
-    const userPoolClient = 'user-pool-client'
-    const clientID = 'clientID'
     const api = appStack.tryFindChild(apiName) as RestApi
     const lambdas = appStack.children.filter((child) => child instanceof Function)
     const numberOfLambdas = lambdas.length
@@ -112,21 +107,14 @@ describe('the application stack builder', () => {
     // Just check for all the EXTRA constructs that must be created to support roles
     // API-related
     expect(api).not.to.be.undefined
-    expect(api.root.getResource('auth')).not.to.be.undefined
     // Lambdas
-    expect(numberOfLambdas).to.equal(4)
-    expect(appStack.tryFindChild(preSignUpValidator)).not.to.be.undefined
+    expect(numberOfLambdas).to.equal(3)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     lambdas.forEach((lambda: any) => {
       expect(lambda.environment.BOOSTER_ENV.value).to.equal('test')
       expect(lambda.environment.A_CUSTOM_ENV_VARIABLE.value).to.equal('important-value')
     })
 
-    // UserPool-related
-    expect(appStack.tryFindChild(userPool)).not.to.be.undefined
-    expect(appStack.tryFindChild(userPoolDomain)).not.to.be.undefined
-    expect(appStack.tryFindChild(userPoolClient)).not.to.be.undefined
-    expect(appStack.tryFindChild(clientID)).not.to.be.undefined
     // Check all read models
     readModels.forEach(({ name }) => expect(appStack.tryFindChild(name)).not.to.be.undefined)
   })

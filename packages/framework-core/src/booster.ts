@@ -10,7 +10,6 @@ import {
 import { Importer } from './importer'
 import { buildLogger } from './booster-logger'
 import { BoosterEventDispatcher } from './booster-event-dispatcher'
-import { BoosterAuth } from './booster-auth'
 import { fetchEntitySnapshot } from './entity-snapshot-fetcher'
 import { BoosterGraphQLDispatcher } from './booster-graphql-dispatcher'
 import { BoosterSubscribersNotifier } from './booster-subscribers-notifier'
@@ -71,13 +70,6 @@ export class Booster {
   }
 
   /**
-   * Entry point to validate users upon sign up
-   */
-  public static async checkSignUp(signUpRequest: unknown): Promise<unknown> {
-    return BoosterAuth.checkSignUp(signUpRequest, this.config, this.logger)
-  }
-
-  /**
    * Dispatches event messages to your application.
    */
   public static dispatchEvent(rawEvent: unknown): Promise<unknown> {
@@ -121,10 +113,6 @@ function checkAndGetCurrentEnv(): string {
 
 export async function boosterEventDispatcher(rawEvent: unknown): Promise<unknown> {
   return Booster.dispatchEvent(rawEvent)
-}
-
-export async function boosterPreSignUpChecker(rawMessage: unknown): Promise<unknown> {
-  return Booster.checkSignUp(rawMessage)
 }
 
 export async function boosterServeGraphQL(rawRequest: unknown): Promise<unknown> {
