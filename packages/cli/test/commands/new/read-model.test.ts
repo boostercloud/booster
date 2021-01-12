@@ -309,16 +309,6 @@ describe('new', (): void => {
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
       })
 
-      it('with invalid field type', async () => {
-        await new ReadModel([readModelName, '--fields', 'title:unimplemented_type'], {} as IConfig).run()
-        const renderedReadModel = Mustache.render(templates.readModel, {
-          imports: defaultReadModelImports,
-          name: readModelName,
-          fields: [{ name: 'title', type: 'unimplemented_type' }],
-        })
-        expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
-      })
-
       it('with no field type after :', async () => {
         await new ReadModel([readModelName, '--fields', 'title:'], {} as IConfig).run()
         const renderedReadModel = Mustache.render(templates.readModel, {

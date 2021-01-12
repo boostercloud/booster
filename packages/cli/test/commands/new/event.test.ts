@@ -130,16 +130,6 @@ describe('new', (): void => {
         expect(fs.outputFile).to.have.been.calledWithMatch(eventPath,renderedEvent)
       })
 
-      it('with invalid field type', async () => {
-        await new Event([eventName, '--fields', 'title:unimplemented_type'], {} as IConfig).run()
-        const renderedEvent = Mustache.render(templates.event, {
-          imports: defaultEventImports,
-          name: eventName,
-          fields: [{ name: 'title', type: 'unimplemented_type' }]
-        })
-        expect(fs.outputFile).to.have.been.calledWithMatch(eventPath,renderedEvent)
-      })
-
       it('with no field type after :', async () => {
         await new Event([eventName, '--fields', 'title:'], {} as IConfig).run()
         const renderedEvent = Mustache.render(templates.event, {
