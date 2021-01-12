@@ -238,6 +238,22 @@ describe('nuke', () => {
         expect(oraLogger.info).to.have.not.been.calledWithMatch('Removal complete!')
       })
 
+      it('entering correct environment and nonexisting flag', async () => {
+        let exceptionThrown = false
+        let exceptionMessage = ''
+        try {
+          await new Nuke.default(['-e','fake_environment','--nonexistingoption'], {} as IConfig).run()
+        } catch(e) {
+          exceptionThrown = true
+          exceptionMessage = e.message
+        }
+        expect(exceptionThrown).to.be.equal(true)
+        expect(exceptionMessage).to.contain('Unexpected argument: --nonexistingoption')
+        expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npx yarn clean && npx yarn compile')
+        expect(providerService.nukeCloudProviderResources).to.have.not.been.calledWith()
+        expect(oraLogger.info).to.have.not.been.calledWithMatch('Removal complete!')
+      })
+
       it('entering nonexisting environment', async () => {
         let exceptionThrown = false
         let exceptionMessage = ''
