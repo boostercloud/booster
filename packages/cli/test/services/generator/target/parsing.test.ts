@@ -1,4 +1,4 @@
-import { parseFields } from '../../../../src/services/generator/target/parsing'
+import { parseFields, parseProjections } from '../../../../src/services/generator/target/parsing'
 import { expect } from '../../../expect'
 
 describe('parsing',() => {
@@ -114,4 +114,113 @@ describe('parsing',() => {
         })
     })
 
+    describe('parseProjections', () => {
+
+        it('one correct entity and id', async () => {
+            const projections = await parseProjections(['Post:id'])
+            expect(projections.projections).to.have.lengthOf(1)
+            expect(projections.projections[0].entityName).to.equal('Post')
+            expect(projections.projections[0].entityId).to.equal('id')
+        })
+
+        it('many correct entities and ids', async () => {
+            const projections = await parseProjections(['Post:id','Comment:id'])
+            expect(projections.projections).to.have.lengthOf(2)
+            expect(projections.projections[0].entityName).to.equal('Post')
+            expect(projections.projections[0].entityId).to.equal('id')
+            expect(projections.projections[1].entityName).to.equal('Comment')
+            expect(projections.projections[1].entityId).to.equal('id')
+        })
+
+        it('one entity without id', async () => {
+            let exceptionThrown = false
+            let exceptionMessage = ''
+            try {
+                await parseProjections(['Post'])
+            } catch (e) {
+                exceptionThrown = true
+                exceptionMessage = e.message
+            }
+            expect(exceptionThrown).to.be.equal(true)
+            expect(exceptionMessage).to.contain(
+                'Error parsing projection Post. Projections must be in the form of <entity name>:<entity id>'
+            )
+        })
+
+        it('many entities without id', async () => {
+            let exceptionThrown = false
+            let exceptionMessage = ''
+            try {
+                await parseProjections(['Post:id','Comment'])
+            } catch (e) {
+                exceptionThrown = true
+                exceptionMessage = e.message
+            }
+            expect(exceptionThrown).to.be.equal(true)
+            expect(exceptionMessage).to.contain(
+                'Error parsing projection Comment. Projections must be in the form of <entity name>:<entity id>'
+            )
+        })
+
+        it('one entity with empty id', async () => {
+            let exceptionThrown = false
+            let exceptionMessage = ''
+            try {
+                await parseProjections(['Post:'])
+            } catch (e) {
+                exceptionThrown = true
+                exceptionMessage = e.message
+            }
+            expect(exceptionThrown).to.be.equal(true)
+            expect(exceptionMessage).to.contain(
+                'Error parsing projection Post:. Projections must be in the form of <entity name>:<entity id>'
+            )
+        })
+
+        it('many entities with empty id', async () => {
+            let exceptionThrown = false
+            let exceptionMessage = ''
+            try {
+                await parseProjections(['Post:id','Comment:'])
+            } catch (e) {
+                exceptionThrown = true
+                exceptionMessage = e.message
+            }
+            expect(exceptionThrown).to.be.equal(true)
+            expect(exceptionMessage).to.contain(
+                'Error parsing projection Comment:. Projections must be in the form of <entity name>:<entity id>'
+            )
+        })
+        
+        it('one entity with empty name', async () => {
+            let exceptionThrown = false
+            let exceptionMessage = ''
+            try {
+                await parseProjections([':id'])
+            } catch (e) {
+                exceptionThrown = true
+                exceptionMessage = e.message
+            }
+            expect(exceptionThrown).to.be.equal(true)
+            expect(exceptionMessage).to.contain(
+                'Error parsing projection :id. Projections must be in the form of <entity name>:<entity id>'
+            )
+        })
+
+        it('many entities with empty name', async () => {
+            let exceptionThrown = false
+            let exceptionMessage = ''
+            try {
+                await parseProjections(['Post:id',':id'])
+            } catch (e) {
+                exceptionThrown = true
+                exceptionMessage = e.message
+            }
+            expect(exceptionThrown).to.be.equal(true)
+            expect(exceptionMessage).to.contain(
+                'Error parsing projection :id. Projections must be in the form of <entity name>:<entity id>'
+            )
+        })
+
+    })
 })

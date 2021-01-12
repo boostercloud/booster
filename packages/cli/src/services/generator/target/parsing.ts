@@ -27,7 +27,7 @@ export const parseProjections = (fields: Array<string>): Promise<HasProjections>
 
 async function parseProjection(rawProjection: string): Promise<Projection> {
   const splitInput = rawProjection.split(':')
-  if (splitInput.length != 2) {
+  if (splitInput.length != 2 || splitInput[0].length === 0 || splitInput[1].length === 0) {
     throw projectionParsingError(rawProjection)
   } else {
     return {
