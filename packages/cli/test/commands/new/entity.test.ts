@@ -281,26 +281,23 @@ describe('new', (): void => {
         expect(fs.outputFile).to.have.not.been.calledWithMatch(entityPath)
       })
 
-    })
-
-    xdescribe('should display an error but is not currently being validated', () => {
       it('with repeated fields', async () => {
-        await new Entity(
-          [entityName, '--fields', 'title:string', 'title:string', 'quantity:number'],
-          {} as IConfig
-        ).run()
-        const renderedEntity = Mustache.render(templates.entity, {
-          imports: defaultEntityImports,
-          name: entityName,
-          fields: [
-            { name: 'title', type: 'string' },
-            { name: 'title', type: 'string' },
-            { name: 'quantity', type: 'number' },
-          ],
-        })
-        expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
+        let exceptionThrown = false
+        let exceptionMessage = ''
+        try {
+          await new Entity(
+            [entityName, '--fields', 'title:string', 'title:string', 'quantity:number'],
+            {} as IConfig
+          ).run()
+        } catch(e) {
+          exceptionThrown = true
+          exceptionMessage = e.message
+        }
+        expect(exceptionThrown).to.be.equal(true)
+        expect(exceptionMessage).to.contain('Error: Error parsing field title. Fields cannot be duplicated')
+        expect(fs.outputFile).to.have.not.been.calledWithMatch(entityPath)
       })
-
     })
+
   })
 })
