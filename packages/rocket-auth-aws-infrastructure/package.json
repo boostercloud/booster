@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/rocket-auth-aws-infrastructure",
-  "version": "0.9.13",
+  "version": "0.9.14",
   "description": "Booster rocket to deploy an auth api using AWS Cognito",
   "keywords": [
     "Booster",
@@ -24,11 +24,13 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@aws-cdk/aws-apigateway": "^1.67.0",
-    "@aws-cdk/aws-cognito": "^1.67.0",
-    "@aws-cdk/aws-iam": "^1.67.0",
+    "@aws-cdk/aws-apigateway": "1.67.0",
+    "@aws-cdk/aws-cognito": "1.67.0",
+    "@aws-cdk/aws-iam": "1.67.0",
+    "@aws-cdk/aws-lambda": "1.67.0",
     "@aws-cdk/core": "1.67.0",
-    "@boostercloud/framework-types": "^0.9.3"
+    "@boostercloud/framework-types": "^0.9.3",
+    "crypto-secure-random-digit": "^1.0.9"
   },
   "scripts": {
     "lint": "eslint --ext '.js,.ts' **/*.ts",
@@ -43,6 +45,7 @@
   },
   "devDependencies": {
     "@boostercloud/framework-provider-aws-infrastructure": "^0.9.3",
+    "aws-sdk": "^2.825.0",
     "velocityjs": "^2.0.0"
   }
 }
