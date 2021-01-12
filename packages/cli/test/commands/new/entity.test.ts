@@ -266,7 +266,23 @@ describe('new', (): void => {
           'Error: Error parsing field title. Fields must be in the form of <field name>:<field type>'
         )
       })
+
+      it('with no field type after :', async () => {
+        let exceptionThrown = false
+        let exceptionMessage = ''
+        try {
+          await new Entity([entityName, '--fields', 'title:'], {} as IConfig).run()
+        } catch(e) {
+          exceptionThrown = true
+          exceptionMessage = e.message
+        }
+        expect(exceptionThrown).to.be.equal(true)
+        expect(exceptionMessage).to.contain('Error: Error parsing field title:. Fields must be in the form of <field name>:<field type>')
+        expect(fs.outputFile).to.have.not.been.calledWithMatch(entityPath)
+      })
+
     })
+
     xdescribe('should display an error but is not currently being validated', () => {
       it('with repeated fields', async () => {
         await new Entity(
@@ -285,15 +301,6 @@ describe('new', (): void => {
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
 
-      it('with no field type after :', async () => {
-        await new Entity([entityName, '--fields', 'title:'], {} as IConfig).run()
-        const renderedEntity = Mustache.render(templates.entity, {
-          imports: defaultEntityImports,
-          name: entityName,
-          fields: [{ name: 'title', type: '' }],
-        })
-        expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
-      })
     })
   })
 })

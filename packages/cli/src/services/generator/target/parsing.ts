@@ -12,7 +12,7 @@ export const parseFields = (fields: Array<string>): Promise<HasFields> =>
 
 function parseField(rawField: string): Promise<Field> {
   const splitInput = rawField.split(':')
-  if (splitInput.length != 2) {
+  if (splitInput.length != 2 || splitInput[0].length === 0 || splitInput[1].length === 0) {
     return Promise.reject(fieldParsingError(rawField))
   } else {
     return Promise.resolve({

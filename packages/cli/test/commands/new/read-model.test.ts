@@ -276,6 +276,20 @@ describe('new', (): void => {
         )
       })
 
+      it('with no field type after :', async () => {
+        let exceptionThrown = false
+        let exceptionMessage = ''
+        try {
+          await new ReadModel([readModelName, '--fields', 'title:'], {} as IConfig).run()
+        } catch(e) {
+          exceptionThrown = true
+          exceptionMessage = e.message
+        }
+        expect(exceptionThrown).to.be.equal(true)
+        expect(exceptionMessage).to.contain('Error: Error parsing field title:. Fields must be in the form of <field name>:<field type>')
+        expect(fs.outputFile).to.have.not.been.calledWithMatch(readModelPath)
+      })
+
       it('with projection with no entity id', async () => {
         let exceptionThrown = false
         let exceptionMessage = ''
@@ -305,16 +319,6 @@ describe('new', (): void => {
             { name: 'title', type: 'string' },
             { name: 'quantity', type: 'number' },
           ],
-        })
-        expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
-      })
-
-      it('with no field type after :', async () => {
-        await new ReadModel([readModelName, '--fields', 'title:'], {} as IConfig).run()
-        const renderedReadModel = Mustache.render(templates.readModel, {
-          imports: defaultReadModelImports,
-          name: readModelName,
-          fields: [{ name: 'title', type: '' }],
         })
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
       })
