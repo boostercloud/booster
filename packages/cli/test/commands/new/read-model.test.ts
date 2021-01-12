@@ -355,6 +355,5 @@ describe('new', (): void => {
         expect(fs.outputFile).to.have.not.been.calledWithMatch(readModelPath)
       })
     })
-
   })
 })
