@@ -7,8 +7,22 @@ export const parseName = (name: string): Promise<HasName> => Promise.resolve({ n
 
 export const parseEvent = (event: string): Promise<HasEvent> => Promise.resolve({ event })
 
-export const parseFields = (fields: Array<string>): Promise<HasFields> =>
-  Promise.all(fields.map(parseField)).then((fields) => ({ fields }))
+export const parseFields = (fields: Array<string>): Promise<HasFields> => {
+  return Promise.all(fields.map(parseField)).then((fields) => {
+    let usedFieldNames: string[] = []
+    let duplicated: string | undefined = undefined
+    fields.forEach((field) => {
+      if (usedFieldNames.includes(field.name) && duplicated === undefined) {
+        duplicated = field.name
+      }
+      usedFieldNames.push(field.name)
+    })
+    if (duplicated !== undefined) {
+      return Promise.reject(fieldDuplicatedError(duplicated))
+    }
+    return { fields }
+  })
+}
 
 function parseField(rawField: string): Promise<Field> {
   const splitInput = rawField.split(':')
@@ -46,6 +60,9 @@ const parseReactionEvent = (eventName: string): Promise<ReactionEvent> => Promis
 
 const fieldParsingError = (field: string): Error =>
   new Error(`Error parsing field ${field}. Fields must be in the form of <field name>:<field type>`)
+
+const fieldDuplicatedError = (field: string): Error =>
+  new Error(`Error parsing field ${field}. Fields cannot be duplicated`)
 
 const projectionParsingError = (projection: string): Error =>
   new Error(`Error parsing projection ${projection}. Projections must be in the form of <entity name>:<entity id>`)

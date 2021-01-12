@@ -337,26 +337,24 @@ describe('new', (): void => {
         )
         expect(fs.outputFile).to.have.not.been.calledWithMatch(readModelPath)
       })
-    })
 
-    xdescribe('should display an error but is not currently being validated', () => {
       it('with repeated fields', async () => {
-        await new ReadModel(
-          [readModelName, '--fields', 'title:string', 'title:string', 'quantity:number'],
-          {} as IConfig
-        ).run()
-        const renderedReadModel = Mustache.render(templates.readModel, {
-          imports: defaultReadModelImports,
-          name: readModelName,
-          fields: [
-            { name: 'title', type: 'string' },
-            { name: 'title', type: 'string' },
-            { name: 'quantity', type: 'number' },
-          ],
-        })
-        expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
+        let exceptionThrown = false
+        let exceptionMessage = ''
+        try {
+          await new ReadModel(
+            [readModelName, '--fields', 'title:string', 'title:string', 'quantity:number'],
+            {} as IConfig
+          ).run()
+        } catch(e) {
+          exceptionThrown = true
+          exceptionMessage = e.message
+        }
+        expect(exceptionThrown).to.be.equal(true)
+        expect(exceptionMessage).to.contain('Error: Error parsing field title. Fields cannot be duplicated')
+        expect(fs.outputFile).to.have.not.been.calledWithMatch(readModelPath)
       })
-
     })
+
   })
 })

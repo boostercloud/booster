@@ -112,6 +112,51 @@ describe('parsing',() => {
                 'Error parsing field :string. Fields must be in the form of <field name>:<field type>'
             )
         })
+
+        it('duplicated fields', async () => {
+            let exceptionThrown = false
+            let exceptionMessage = ''
+            try {
+                await parseFields(['title:string','content:string','title:number'])
+            } catch (e) {
+                exceptionThrown = true
+                exceptionMessage = e.message
+            }
+            expect(exceptionThrown).to.be.equal(true)
+            expect(exceptionMessage).to.contain(
+                'Error parsing field title. Fields cannot be duplicated'
+            )
+        })
+
+        it('field without type and duplicated fields', async () => {
+            let exceptionThrown = false
+            let exceptionMessage = ''
+            try {
+                await parseFields(['title:string','content','title:number'])
+            } catch (e) {
+                exceptionThrown = true
+                exceptionMessage = e.message
+            }
+            expect(exceptionThrown).to.be.equal(true)
+            expect(exceptionMessage).to.contain(
+                'Error parsing field content. Fields must be in the form of <field name>:<field type>'
+            )
+        })
+
+        it('duplicated fields and a field without type', async () => {
+            let exceptionThrown = false
+            let exceptionMessage = ''
+            try {
+                await parseFields(['title:string','content:string','title:number','category'])
+            } catch (e) {
+                exceptionThrown = true
+                exceptionMessage = e.message
+            }
+            expect(exceptionThrown).to.be.equal(true)
+            expect(exceptionMessage).to.contain(
+                'Error parsing field category. Fields must be in the form of <field name>:<field type>'
+            )
+        })
     })
 
     describe('parseProjections', () => {
