@@ -26,9 +26,8 @@ describe('the `Command` decorator', () => {
       }
     }
 
-    // Make Booster be of any type to access private members
-    const booster = Booster as any
-
-    expect(booster.config.commandHandlers[PostComment.constructor.name]).to.contain(PostComment)
+    Booster.configureCurrentEnv((config) => {
+      expect(config.commandHandlers[PostComment.constructor.name]).to.contain(PostComment)
+    })
   })
 })

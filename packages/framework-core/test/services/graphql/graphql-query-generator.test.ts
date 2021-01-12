@@ -1,8 +1,7 @@
 import { GraphQLQueryGenerator } from '../../../src/services/graphql/graphql-query-generator'
-import { SinonStub, stub, replace, SinonStubbedInstance, restore } from 'sinon'
+import { SinonStub, stub, replace, SinonStubbedInstance, restore, createStubInstance } from 'sinon'
 import { expect } from '../../expect'
 import { GraphQLTypeInformer } from '../../../src/services/graphql/graphql-type-informer'
-import sinon = require('sinon')
 import { TargetTypesMap } from '../../../src/services/graphql/common'
 import { GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql'
 import { random } from 'faker'
@@ -31,7 +30,7 @@ describe('GraphQLQueryGenerator', () => {
       GraphQLJSON,
     ])
 
-    mockTypeInformer = sinon.createStubInstance(GraphQLTypeInformer)
+    mockTypeInformer = createStubInstance(GraphQLTypeInformer)
     mockByIdResolverBuilder = stub()
     mockFilterResolverBuilder = stub()
 

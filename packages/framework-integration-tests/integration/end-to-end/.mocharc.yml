@@ -9,4 +9,4 @@ timeout: 600000
 file:
   - './integration/end-to-end/setup.ts'
 full-trace: true
-# bail: true -- This option makes the test suite stop after the first failure. Might make sense to enable once tests are stable
+bail: true
