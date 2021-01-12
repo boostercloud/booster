@@ -155,16 +155,6 @@ describe('new', (): void => {
         expect(fs.outputFile).to.have.been.calledWithMatch(typePath, renderedType)
       })
 
-      it('with invalid field type', async () => {
-        await new Type([typeName, '--fields', 'title:unimplemented_type'], {} as IConfig).run()
-        const renderedType = Mustache.render(templates.type, {
-          imports: defaultTypeImports,
-          name: typeName,
-          fields: [{ name: 'title', type: 'unimplemented_type' }],
-        })
-        expect(fs.outputFile).to.have.been.calledWithMatch(typePath, renderedType)
-      })
-
       it('with no field type after :', async () => {
         await new Type([typeName, '--fields', 'title:'], {} as IConfig).run()
         const renderedType = Mustache.render(templates.type, {

@@ -155,16 +155,6 @@ describe('new', (): void => {
         expect(fs.outputFile).to.have.been.calledWithMatch(commandPath, renderedCommand)
       })
 
-      it('with invalid field type', async () => {
-        await new Command([command, '--fields', 'title:unimplemented_type'], {} as IConfig).run()
-        const renderedCommand = Mustache.render(templates.command, {
-          imports: defaultCommandImports,
-          name: command,
-          fields: [{ name: 'title', type: 'unimplemented_type' }],
-        })
-        expect(fs.outputFile).to.have.been.calledWithMatch(commandPath, renderedCommand)
-      })
-
       it('with no field type after :', async () => {
         await new Command([command, '--fields', 'title:'], {} as IConfig).run()
         const renderedCommand = Mustache.render(templates.command, {
