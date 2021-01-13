@@ -34,6 +34,7 @@
     "@boostercloud/framework-provider-aws": "^0.9.3",
     "@boostercloud/framework-types": "^0.9.3",
     "aws-cdk": "1.67.0",
+    "aws-sdk": "2.764.0",
     "colors": "^1.4.0"
   },
   "scripts": {
@@ -50,6 +51,7 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.31",
     "@types/faker": "^4.1.11",
+    "@types/aws-sdk": "^2.7.0",
     "faker": "^4.1.0",
     "velocityjs": "^2.0.0"
   }

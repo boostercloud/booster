@@ -1,20 +1,7 @@
 {
   "packages": [
-    "packages/framework-types",
-    "packages/framework-provider-aws",
-    "packages/framework-provider-aws-infrastructure",
-    "packages/framework-provider-azure",
-    "packages/framework-provider-azure-infrastructure",
-    "packages/framework-provider-local",
-    "packages/framework-provider-local-infrastructure",
-    "packages/framework-provider-kubernetes",
-    "packages/framework-provider-kubernetes-infrastructure",
-    "packages/framework-core",
-    "packages/cli",
-    "packages/framework-integration-tests",
-    "packages/rocket-static-sites-aws-infrastructure"
+    "packages/*"
   ],
   "version": "0.9.3",
-  "npmClient": "yarn",
-  "useWorkspaces": true
+  "npmClient": "npm"
 }
