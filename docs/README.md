@@ -58,6 +58,7 @@
   * [GraphQL API](#graphql-api)
     + [Relationship between GraphQL operations and commands and read models](#relationship-between-graphql-operations-and-commands-and-read-models)
     + [How to send GraphQL request](#how-to-send-graphql-request)
+    + [Get GraphQL schema from deployed application](#get-graphql-schema-from-deployed-application)
     + [Sending commands](#sending-commands)
     + [Reading read models](#reading-read-models)
     + [Subscribing to read models](#subscribing-to-read-models)
@@ -675,7 +676,7 @@ Let's get started testing the project. We will perform three actions:
 Booster applications provide you with a GraphQL API out of the box. You send commands using
 _mutations_ and get read models data using _queries_ or _subscriptions_.
 
-In this section, we will be sending requests by hand using the online tool [Hoppscotch](https://hoppscotch.io/graphql),
+In this section, we will be sending requests by hand using the online tool [Hoppscotch (formerly Postwoman)](https://hoppscotch.io/graphql),
 which is free and includes great support for GraphQL. However, you can use any client you want. Your endpoint URL should look like this:
 
 ```text
@@ -2007,8 +2008,14 @@ While it is OK to know how to manually send GraphQL request, you normally don't 
 
 To have a great developer experience, we **strongly recommend** to use a GraphQL client for your platform of choice. Here are some great ones:
 
-- **[Postwoman](https://postwoman.io/)**: Ideal for testing sending manual requests, getting the schema, etc.
+- **[Hoppscotch (formerly Postwoman)](https://hoppscotch.io/)**: Ideal for testing sending manual requests, getting the schema, etc.
 - **Apollo clients**: These are the "go-to" SDKs to interact with a GraphQL API from your clients. It is very likely that there is a version for your client programming language. Check the ["Using Apollo Client"](#using-apollo-client) section to know more about this.
+
+#### Get GraphQL schema from deployed application
+
+After deploying your application with the command `boost deploy -e development`, you can get your GraphQL schema by using a tool like **[Hoppscotch (formerly Postwoman)](https://hoppscotch.io/)**. The previous command displays the deployment URL with the pattern `https://<base_url>/<environment>/graphql`. By entering this url in Hoppscotch, the schema can be displayed as shown in the screenshot:
+
+![hoppscotch screenshot](./img/postwoman-screenshot.png)
 
 #### Sending commands
 
@@ -2143,7 +2150,7 @@ Doing this process manually is a bit cumbersome. _You will probably never need t
 
 Before sending any subscription, you need to _connect_ to the WebSocket to open the two-way communication channel. This connection
 is done differently depending on the client/library you use to manage web sockets. In this section, we will show examples
-using the [`wscat`](https://github.com/websockets/wscat) command line program. You can also use the online tool [Postwoman](https://postwoman.io/)
+using the [`wscat`](https://github.com/websockets/wscat) command line program. You can also use the online tool [Hoppscotch (formerly Postwoman)](https://hoppscotch.io/)
 
 Once you have connected successfully, you can use this channel to:
 
@@ -2835,7 +2842,7 @@ Booster also provides you with user management for free, allowing you to sign-up
 
 #### Performing GraphQL requests
 
-We should now be able to perform queries and mutations to our GraphQL endpoint `http://localhost:<port-number>/graphql` with a client or tool, for example, a React App, [Postwoman](https://postwoman.io), or [Postman](https://www.postman.com).
+We should now be able to perform queries and mutations to our GraphQL endpoint `http://localhost:<port-number>/graphql` with a client or tool, for example, a React App, [Hoppscotch (formerly Postwoman)](https://hoppscotch.io), or [Postman](https://www.postman.com).
 
 `POST http://localhost:3000/graphql`
 
