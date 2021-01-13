@@ -11,7 +11,7 @@ import {
 import { BoosterConfig } from './config'
 import { Logger } from './logger'
 import { ReadModelInterface, UUID } from './concepts'
-import { FilterOld } from './searcher'
+import { FilterFor } from './searcher'
 
 export interface ProviderLibrary {
   events: ProviderEventsLibrary
@@ -49,7 +49,7 @@ export interface ProviderReadModelsLibrary {
     config: BoosterConfig,
     logger: Logger,
     entityTypeName: string,
-    filters: Record<string, FilterOld<unknown>>
+    filters: FilterFor<unknown>
   ): Promise<Array<TReadModel>>
   store(config: BoosterConfig, logger: Logger, readModelName: string, readModel: ReadModelInterface): Promise<unknown>
   delete(config: BoosterConfig, logger: Logger, readModelName: string, readModel: ReadModelInterface): Promise<any>
