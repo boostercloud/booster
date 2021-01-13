@@ -8,7 +8,8 @@
     "access": "public"
   },
   "bin": {
-    "boost": "./bin/run"
+    "boost": "./bin/run",
+    "rimraf": "./node_modules/rimraf/bin.js"
   },
   "bugs": "https://github.com/boostercloud/booster/issues",
   "dependencies": {
