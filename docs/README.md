@@ -445,13 +445,13 @@ directory, as follows:
 boost new:command CreatePost --fields postId:UUID title:string content:string author:string
 ```
 
-The `new:command` generator creates a `CreatePost.ts` file in the `commands` folder:
+The `new:command` generator creates a `create-post.ts` file in the `commands` folder:
 
 ```text
 boosted-blog
 └── src
     └── commands
-        └── CreatePost.ts
+        └── create-post.ts
 ```
 
 As we mentioned before, commands are the input of our system. They're sent
@@ -532,7 +532,7 @@ Now that we have an event, we can edit the `CreatePost` command to emit it. Let'
 the command's `handle` method to look like this:
 
 ```typescript
-// src/commands/CreatePost.ts::handle
+// src/commands/create-post.ts::handle
 public static async handle(command: CreatePost, register: Register): Promise<void> {
   register.events(new PostCreated(command.postId, command.title, command.content, command.author))
 }
