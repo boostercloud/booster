@@ -2013,7 +2013,11 @@ To have a great developer experience, we **strongly recommend** to use a GraphQL
 
 #### Get GraphQL schema from deployed application
 
-After deploying your application with the command `boost deploy -e development`, you can get your GraphQL schema by using a tool like **[Hoppscotch (formerly Postwoman)](https://hoppscotch.io/)**. The previous command displays the deployment URL with the pattern `https://<base_url>/<environment>/graphql`. By entering this url in Hoppscotch, the schema can be displayed as shown in the screenshot:
+After deploying your application with the command `boost deploy -e development`, you can get your GraphQL schema by using a tool like **[Hoppscotch (formerly Postwoman)](https://hoppscotch.io/)**. The previous command displays the deployment URL with the pattern: 
+
+`https://<base_url>/<environment>/graphql`
+
+By entering this url in Hoppscotch, the schema can be displayed as shown in the screenshot:
 
 ![hoppscotch screenshot](./img/postwoman-screenshot.png)
 
