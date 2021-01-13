@@ -157,15 +157,19 @@ Finally, **always use exact numbers for dependency versions**. This means that i
 
 ### Running integration tests
 
-- Integration tests are run automatically in Github Actions when a PR is locked, but it would be recommendable to run them locally before submitting a PR for review. You can find several scripts in `packages/framework-integration-tests/package.json` to run different test suites. You can run them using lerna too:
+Integration tests are run automatically in Github Actions when a PR is locked, but it would be recommendable to run them locally before submitting a PR for review. You can find several scripts in `packages/framework-integration-tests/package.json` to run different test suites. You can run them using lerna tool:
 
-- `lerna run integration`: Run all the integration test suites in the right order.
-- `integration/aws-deploy`: This test just checks that the sample project in `packages/framework-integration-tests/src` can be successfully deployed to AWS. The deployment process takes several minutes and this project is used by all the other AWS integration tests, so it's a requirement to run this test before.
-- `integration/aws-func`: AWS functional integration tests. They stress the deployed app write API and checks that the results are the expected ones both in the databases and the read APIs.
-- `integration/end-to-end`: Runs complete and realistic use cases on several cloud providers. This tests are intended to verify that a single project can be deployed to different cloud providers. Currently, only AWS is implemented though.
-- `integration/aws-nuke`: This test checks that the application deployed to AWS can be properly nuked. This test should be the last one after other test suites related to AWS have finished.
-- `integration/local`: Checks that the test application can be launched locally and that the APIs and the databases behave as expected.
-- `integration/cli`: Checks cli commands and check that they produce the expected results.
+`lerna run <script name> --stream`
+
+These are the available scripts to run integration tests:
+
+- `lerna run integration --stream`: Run all the integration test suites in the right order.
+- `lerna run integration/aws-deploy --stream`: This test just checks that the sample project in `packages/framework-integration-tests/src` can be successfully deployed to AWS. The deployment process takes several minutes and this project is used by all the other AWS integration tests, so it's a requirement to run this test before.
+- `lerna run integration/aws-func --stream`: AWS functional integration tests. They stress the deployed app write API and checks that the results are the expected ones both in the databases and the read APIs.
+- `lerna run integration/end-to-end --stream`: Runs complete and realistic use cases on several cloud providers. This tests are intended to verify that a single project can be deployed to different cloud providers. Currently, only AWS is implemented though.
+- `lerna run integration/aws-nuke --stream`: This test checks that the application deployed to AWS can be properly nuked. This test should be the last one after other test suites related to AWS have finished.
+- `lerna run integration/local --stream`: Checks that the test application can be launched locally and that the APIs and the databases behave as expected.
+- `lerna run integration/cli --stream`: Checks cli commands and check that they produce the expected results.
 
 AWS integration tests are run in real AWS resources, so you'll need to have your AWS credentials properly set in your development machine. By default, the sample project will be deployed to your default account. Basically, if you can deploy a Booster project to AWS, you should be good to go ([See more details about setting up an AWS account in the docs](https://github.com/boostercloud/booster/tree/master/docs#set-up-an-aws-account)). Notice that while all resources used by Booster are included in the AWS free tier, running these tests in your own AWS account could incur in some expenses.
 
