@@ -9,7 +9,7 @@ export async function pruneDevDependencies(): Promise<void> {
   }
 }
 
-export async function installAllDependencies(path?: string): Promise<void> {
+export async function installDependencies(path?: string): Promise<void> {
   try {
     await exec('npm install', { cwd: path ?? process.cwd() })
   } catch (e) {

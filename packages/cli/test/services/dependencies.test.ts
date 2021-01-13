@@ -1,6 +1,6 @@
 import * as childProcessPromise from 'child-process-promise'
 import { fake, replace, restore } from 'sinon'
-import { installAllDependencies, pruneDevDependencies } from '../../src/services/dependencies'
+import { installDependencies, pruneDevDependencies } from '../../src/services/dependencies'
 import { expect } from '../expect'
 
 describe('dependencies service', () => {
@@ -25,13 +25,12 @@ describe('dependencies service', () => {
       await expect(pruneDevDependencies()).to.eventually.be.rejectedWith(/Could not prune dev dependencies/)
     })
   })
-
-  describe('installAllDependencies', () => {
+  describe('installDependencies', () => {
     context('without passing a path', () => {
       it('installs dependencies in dev mode in the current directory', async () => {
         replace(childProcessPromise, 'exec', fake.resolves({}))
 
-        await expect(installAllDependencies()).to.eventually.be.fulfilled
+        await expect(installDependencies()).to.eventually.be.fulfilled
 
         expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install', { cwd: process.cwd() })
       })
@@ -41,7 +40,7 @@ describe('dependencies service', () => {
       it('installs dependencies in dev mode in the passed path', async () => {
         replace(childProcessPromise, 'exec', fake.resolves({}))
 
-        await expect(installAllDependencies('somewhere')).to.eventually.be.fulfilled
+        await expect(installDependencies('somewhere')).to.eventually.be.fulfilled
 
         expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install', { cwd: 'somewhere' })
       })
@@ -52,7 +51,7 @@ describe('dependencies service', () => {
 
       replace(childProcessPromise, 'exec', fake.rejects(error))
 
-      await expect(installAllDependencies()).to.eventually.be.rejectedWith(/Could not install dependencies/)
+      await expect(installDependencies()).to.eventually.be.rejectedWith(/Could not install dependencies/)
     })
   })
 })

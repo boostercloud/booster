@@ -10,6 +10,7 @@ import { IConfig } from '@oclif/config'
 import { expect } from '../expect'
 import * as Project from '../../src/commands/new/project'
 import * as ProjectInitializer from '../../src/services/project-initializer'
+import * as dependencies from '../../src/services/dependencies'
 
 describe('new', (): void => {
   describe('Read model', () => {
@@ -108,7 +109,7 @@ describe('new', (): void => {
 
       it('generates all required files and folders', async () => {
         replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
-        replace(ProjectInitializer, 'installDependencies', fake.returns({}))
+        replace(dependencies, 'installDependencies', fake.returns({}))
         expect(fs.existsSync(projectDirectory)).to.be.false
 
         await new Project.default([projectName], {} as IConfig).run()
@@ -120,7 +121,7 @@ describe('new', (): void => {
 
       it('generates all required files and folders without installing dependencies', async () => {
         replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
-        const installDependenciesSpy = spy(ProjectInitializer, 'installDependencies')
+        const installDependenciesSpy = spy(dependencies, 'installDependencies')
         expect(fs.existsSync(projectDirectory)).to.be.false
 
         await new Project.default([projectName, '--skipInstall'], {} as IConfig).run()
@@ -133,7 +134,7 @@ describe('new', (): void => {
 
       it('generates project with default parameters when using --default flag', async () => {
         const parseConfigSpy = spy(Project, 'parseConfig')
-        replace(ProjectInitializer, 'installDependencies', fake.returns({}))
+        replace(dependencies, 'installDependencies', fake.returns({}))
         expect(fs.existsSync(projectDirectory)).to.be.false
 
         await new Project.default([projectName, '--default'], { version: '0.5.1' } as IConfig).run()
@@ -157,7 +158,7 @@ describe('new', (): void => {
 
       it('initializes git repository', async () => {
         replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
-        replace(ProjectInitializer, 'installDependencies', fake.returns({}))
+        replace(dependencies, 'installDependencies', fake.returns({}))
         const initializeGitSpy = spy(ProjectInitializer, 'initializeGit')
 
         await new Project.default([projectName], {} as IConfig).run()
@@ -169,7 +170,7 @@ describe('new', (): void => {
 
       it('skips git repository initialization', async () => {
         replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
-        replace(ProjectInitializer, 'installDependencies', fake.returns({}))
+        replace(dependencies, 'installDependencies', fake.returns({}))
         const initializeGitSpy = spy(ProjectInitializer, 'initializeGit')
 
         await new Project.default([projectName, '--skipGit'], {} as IConfig).run()

@@ -16,14 +16,11 @@ import {
   graphQLClient,
 } from '../utils'
 import gql from 'graphql-tag'
-import { expect } from 'chai'
-import * as chai from 'chai'
+import { expect } from '../../../expect'
 import { random, internet, finance, lorem, phone } from 'faker'
 import fetch from 'cross-fetch'
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
-
-chai.use(require('chai-as-promised'))
 
 describe('With the auth API', () => {
   let mockProductId: string
@@ -39,11 +36,11 @@ describe('With the auth API', () => {
   context('an internet rando', () => {
     let client: DisconnectableApolloClient
 
-    before(async () => {
+    beforeEach(async () => {
       client = await graphQLClientWithSubscriptions()
     })
 
-    after(() => {
+    afterEach(() => {
       client.disconnect()
     })
 
