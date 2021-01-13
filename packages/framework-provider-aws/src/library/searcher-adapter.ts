@@ -1,4 +1,4 @@
-import { FilterOld, BoosterConfig, Logger, InvalidParameterError } from '@boostercloud/framework-types'
+import { Operation, FilterFor, BoosterConfig, Logger, InvalidParameterError } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
 import ExpressionAttributeValueMap = DocumentClient.ExpressionAttributeValueMap
@@ -9,7 +9,7 @@ export async function searchReadModel(
   config: BoosterConfig,
   logger: Logger,
   readModelName: string,
-  filters: Record<string, FilterOld<any>>
+  filters: FilterFor<any>
 ): Promise<Array<any>> {
   let params: DocumentClient.ScanInput = {
     TableName: config.resourceNames.forReadModel(readModelName),
@@ -32,47 +32,50 @@ export async function searchReadModel(
   return result.Items ?? []
 }
 
-function buildFilterExpression(filters: Record<string, FilterOld<any>>): string {
+function buildFilterExpression(filters: FilterFor<any>): string {
   return Object.entries(filters)
     .map(([propName, filter]) => buildOperation(propName, filter))
     .join(' AND ')
 }
 
-function buildOperation(propName: string, filter: FilterOld<any>): string {
+function buildOperation(propName: string, filter: Operation<any> = {}): string {
   const holder = placeholderBuilderFor(propName)
-  switch (filter.operation) {
-    case '=':
-      return `#${propName} = ${holder(0)}`
-    case '!=':
-      return `#${propName} <> ${holder(0)}`
-    case '<':
-      return `#${propName} < ${holder(0)}`
-    case '>':
-      return `#${propName} > ${holder(0)}`
-    case '>=':
-      return `#${propName} >= ${holder(0)}`
-    case '<=':
-      return `#${propName} <= ${holder(0)}`
+  return Object.entries(filter)
+    .map(([operation, filter], index) => {
+      switch (operation) {
+        case 'eq':
+          return `#${propName} = ${holder(index)}`
+        case 'ne':
+          return `#${propName} <> ${holder(index)}`
+        case 'lt':
+          return `#${propName} < ${holder(index)}`
+        case 'gt':
+          return `#${propName} > ${holder(index)}`
+        case 'gte':
+          return `#${propName} >= ${holder(index)}`
+        case 'lte':
+          return `#${propName} <= ${holder(index)}`
     case 'in':
-      return `#${propName} IN (${filter.values.map((value, index) => holder(index)).join(',')})`
+          return `#${propName} IN (${filter.map((value: any, subIndex: number) => holder(index, subIndex)).join(',')})`
     case 'between':
-      return `#${propName} BETWEEN ${holder(0)} AND ${holder(1)}`
+          return `#${propName} BETWEEN ${holder(index)} AND ${holder(index + 1)}`
     case 'contains':
-      return `contains(#${propName}, ${holder(0)})`
-    case 'not-contains':
-      return `NOT contains(#${propName}, ${holder(0)})`
-    case 'begins-with':
-      return `begins_with(#${propName}, ${holder(0)})`
+          return `contains(#${propName}, ${holder(index)})`
+        case 'beginsWith':
+          return `begins_with(#${propName}, ${holder(index)})`
     default:
-      throw new InvalidParameterError(`Operator "${filter.operation}" is not supported`)
+          throw new InvalidParameterError(`Operator "${operation}" is not supported`)
   }
+    })
+    .join(' AND ')
 }
 
-function placeholderBuilderFor(propName: string): (valueIndex: number) => string {
-  return (valueIndex: number) => `:${propName}_${valueIndex}`
+function placeholderBuilderFor(propName: string): (valueIndex: number, valueSubIndex?: number) => string {
+  return (valueIndex: number, valueSubIndex?: number) =>
+    `:${propName}_${valueIndex}` + (valueSubIndex ? `_${valueSubIndex}` : '')
 }
 
-function buildExpressionAttributeNames(filters: Record<string, FilterOld<any>>): ExpressionAttributeNameMap {
+function buildExpressionAttributeNames(filters: FilterFor<any>): ExpressionAttributeNameMap {
   const attributeNames: ExpressionAttributeNameMap = {}
   for (const propName in filters) {
     attributeNames[`#${propName}`] = propName
@@ -83,10 +86,16 @@ function buildExpressionAttributeNames(filters: Record<string, FilterOld<any>>):
 function buildExpressionAttributeValues(filters: Record<string, FilterOld<any>>): ExpressionAttributeValueMap {
   const attributeValues: ExpressionAttributeValueMap = {}
   for (const propName in filters) {
-    const filter = filters[propName]
-    const holder = placeholderBuilderFor(propName)
-    filter.values.forEach((value, index) => {
+      const filter = filters[propName] || {}
+      const holder = placeholderBuilderFor(propName)
+      Object.values(filter).forEach((value, index) => {
+        if (Array.isArray(value)) {
+          value.forEach((element, elementIndex) => {
+            attributeValues[holder(index, elementIndex)] = element
+          })
+        } else {
       attributeValues[holder(index)] = value
+        }
     })
   }
   return attributeValues
