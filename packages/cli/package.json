@@ -27,6 +27,7 @@
     "inquirer": "^7.0.0",
     "mustache": "^3.0.1",
     "ora": "^3.4.0",
+    "rimraf": "^3.0.2",
     "tslib": "^1"
   },
   "devDependencies": {
