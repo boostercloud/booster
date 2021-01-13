@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/rocket-auth-aws-infrastructure",
-  "version": "0.9.19",
+  "version": "0.9.20",
   "description": "Booster rocket to deploy an auth api using AWS Cognito",
   "keywords": [
     "Booster",
