@@ -2761,7 +2761,7 @@ The implementation of `InfrastructureRocket` might vary from one provider to the
 
 ```typescript
 export interface InfrastructureRocket {
-  mountStack: (stack: Stack) => void
+  mountStack: (stack: Stack, config: BoosterConfig) => void
   unmountStack?: (utils: RocketUtils) => void
 }
 ```
