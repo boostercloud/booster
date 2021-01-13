@@ -32,7 +32,8 @@
     "copyfiles": "^2.3.0",
     "ms-rest-azure": "^3.0.0",
     "mustache": "^4.0.1",
-    "needle": "^2.5.0"
+    "needle": "^2.5.0",
+    "uuid": "^8.3.2"
   },
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
@@ -47,6 +48,8 @@
   },
   "devDependencies": {
     "@types/faker": "^4.1.11",
+    "@types/uuid": "^8.3.0",
+    "@types/mustache": "^4.1.0",
     "faker": "^4.1.0"
   }
 }
