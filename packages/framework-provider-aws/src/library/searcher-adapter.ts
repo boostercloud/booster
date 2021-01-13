@@ -34,7 +34,10 @@ export async function searchReadModel(
 
 function buildFilterExpression(filters: FilterFor<any>): string {
   return Object.entries(filters)
-    .map(([propName, filter]) => buildOperation(propName, filter))
+    .map(([propName, filter]) => {
+      if (propName.toUpperCase() === 'NOT') return `NOT (${buildFilterExpression(filter as FilterFor<any>)})`
+      return buildOperation(propName, filter, depth)
+    })
     .join(' AND ')
 }
 
@@ -78,7 +81,11 @@ function placeholderBuilderFor(propName: string): (valueIndex: number, valueSubI
 function buildExpressionAttributeNames(filters: FilterFor<any>): ExpressionAttributeNameMap {
   const attributeNames: ExpressionAttributeNameMap = {}
   for (const propName in filters) {
+    if (propName.toUpperCase() === 'NOT') {
+      Object.assign(attributeNames, buildExpressionAttributeNames(filters[propName] as FilterFor<any>))
+    } else {
     attributeNames[`#${propName}`] = propName
+  }
   }
   return attributeNames
 }
@@ -86,6 +93,9 @@ function buildExpressionAttributeNames(filters: FilterFor<any>): ExpressionAttri
 function buildExpressionAttributeValues(filters: Record<string, FilterOld<any>>): ExpressionAttributeValueMap {
   const attributeValues: ExpressionAttributeValueMap = {}
   for (const propName in filters) {
+    if (propName.toUpperCase() === 'NOT') {
+      Object.assign(attributeValues, buildExpressionAttributeValues(filters[propName] as FilterFor<any>))
+    } else {
       const filter = filters[propName] || {}
       const holder = placeholderBuilderFor(propName)
       Object.values(filter).forEach((value, index) => {
@@ -97,6 +107,7 @@ function buildExpressionAttributeValues(filters: Record<string, FilterOld<any>>)
       attributeValues[holder(index)] = value
         }
     })
+  }
   }
   return attributeValues
 }
