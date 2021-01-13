@@ -2017,7 +2017,7 @@ After deploying your application with the command `boost deploy -e development`,
 
 `https://<base_url>/<environment>/graphql`
 
-By entering this url in Hoppscotch, the schema can be displayed as shown in the screenshot:
+By entering this url in Hoppscotch, the schema can be displayed as shown in the screenshot (You need to select GraphQL mode in the left bar of the tool, fill in the URL and press the button):
 
 ![hoppscotch screenshot](./img/postwoman-screenshot.png)
 
