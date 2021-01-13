@@ -501,17 +501,17 @@ The name of the file is the name of the event:
 boosted-blog
 └── src
     └── events
-        └── PostCreated.ts
+        └── post-created.ts
 ```
 
 All events in Booster must target an entity, so we need to implement an `entityID`
 method. From there, we'll return the identifier of the post created, the field
 `postID`. This identifier will be used later by Booster to build the final state
-of the `Post` automatically. Edit the `entityID` method in `events/PostCreated.ts`
+of the `Post` automatically. Edit the `entityID` method in `events/post-created.ts`
 to return our `postID`:
 
 ```typescript
-// src/events/PostCreated.ts
+// src/events/post-created.ts
 
 @Event
 export class PostCreated {
@@ -541,7 +541,7 @@ public static async handle(command: CreatePost, register: Register): Promise<voi
 Remember to import the event class correctly on the top of the file:
 
 ```typescript
-import { PostCreated } from '../events/PostCreated'
+import { PostCreated } from '../events/post-created'
 ```
 
 We can do any validation in the command handler before storing the event, for our
@@ -557,7 +557,7 @@ with the same `entityID`. Let's generate our `Post` entity:
 boost new:entity Post --fields title:string content:string author:string --reduces PostCreated
 ```
 
-You should see now a new file called `Post.ts` in the `src/entities` directory.
+You should see now a new file called `post.ts` in the `src/entities` directory.
 
 This time, besides using the `--fields` flag, we use the `--reduces` flag to specify the events the entity will reduce and, this way, produce the Post current state. The generator will create one _reducer function_ for each event we have specified (only one in this case).
 Reducer functions in Booster work similarly to the `reduce` callbacks in Javascript: they receive an event
@@ -566,7 +566,7 @@ In this case, when we receive a `PostCreated` event, we can just return a new `P
 from the event. There is no previous state of the Post as we are creating it for the first time:
 
 ```typescript
-// src/entities/Posts.ts
+// src/entities/post.ts
 @Entity
 export class Post {
   public constructor(public id: UUID, readonly title: string, readonly content: string, readonly author: string) {}
@@ -600,13 +600,13 @@ watch for changes. You might be wondering what is the `:id` after the entity nam
 but you can forget about it now.
 
 As you might guess, the read-model generator will create a file called
-`PostReadModel.ts` under `src/read-models`:
+`post-read-model.ts` under `src/read-models`:
 
 ```text
 boosted-blog
 └── src
     └── read-models
-        └── PostReadModel.ts
+        └── post-read-model.ts
 ```
 
 There are two things to do when creating a read model:
@@ -619,10 +619,10 @@ the public API of a Booster application. Let's do the same we did in the command
 query/subscribe the `PostReadModel`. Also, and for learning purposes, we will exclude the `content` field
 from the `Post` entity, so it won't be returned when users request the read model.
 
-Edit the `PostReadModel.ts` file to look like this:
+Edit the `post-read-model.ts` file to look like this:
 
 ```typescript
-// src/read-models/PostReadModel.ts
+// src/read-models/post-read-model.ts
 @ReadModel({
   authorize: 'all', // Specify authorized roles here. Use 'all' to authorize anyone
 })
@@ -895,7 +895,7 @@ The preferred way to create a command is by using the generator, e.g.
 boost new:command CreateProduct --fields sku:SKU displayName:string description:string price:Money
 ```
 
-The generator will automatically create a file called `CreateProduct.ts` with a TypeScript class of the same name under the `commands` directory. You can still create (or modify) the command manually. Since the generator is not doing any _magic_, all you need is a class decorated as `@Command`. Anyway, we recommend you always to use the generator, because it handles the boilerplate code for you.
+The generator will automatically create a file called `create-product.ts` with a TypeScript class of the same name under the `commands` directory. You can still create (or modify) the command manually. Since the generator is not doing any _magic_, all you need is a class decorated as `@Command`. Anyway, we recommend you always to use the generator, because it handles the boilerplate code for you.
 
 Note:
 
@@ -1169,7 +1169,7 @@ The preferred way to create event files is the `new:event` generator, e.g.
 boost new:event StockMoved --fields productID:string origin:string destination:string quantity:number
 ```
 
-That will generate a file called `StockMoved.ts` under the proper `<project-root>/src/events` directory. You can also create the file manually, but we recommend using the generator and avoid dealing manually with boilerplate code.
+That will generate a file called `stock-moved.ts` under the proper `<project-root>/src/events` directory. You can also create the file manually, but we recommend using the generator and avoid dealing manually with boilerplate code.
 
 Note:
 
@@ -1254,7 +1254,7 @@ Event handlers can be easily created using the Booster CLI command `boost new:ev
 boost new:event-handler HandleAvailability --event StockMoved
 ```
 
-Once the creation is completed, there will be a new file in the event handlers directory `<project-root>/src/event-handlers/HandleAvailability.ts`.
+Once the creation is completed, there will be a new file in the event handlers directory `<project-root>/src/event-handlers/handle-availability.ts`.
 
 ```text
 <project-root>
@@ -1359,7 +1359,7 @@ The preferred way to create an entity is by using the generator, e.g.
 boost new:entity Product --fields displayName:string description:string price:Money
 ```
 
-The generator will automatically create a file called `Product.ts` with a TypeScript class of the same name under the `entities` directory. You can still create the entity manually, writing a class decorated with `@Entity`. Anyway, we recommend you always to use the generator because it handles the boilerplate code for you.
+The generator will automatically create a file called `product.ts` with a TypeScript class of the same name under the `entities` directory. You can still create the entity manually, writing a class decorated with `@Entity`. Anyway, we recommend you always to use the generator because it handles the boilerplate code for you.
 
 Note:
 
@@ -1469,7 +1469,7 @@ The preferred way to create a read model is by using the generator, e.g.
 boost new:read-model CartReadModel --fields id:UUID cartItems:"Array<CartItem>" paid:boolean --projects Cart
 ```
 
-The generator will create a Typescript class under the read-models directory `<project-root>/src/read-models/CartReadModel.ts`.
+The generator will create a Typescript class under the read-models directory `<project-root>/src/read-models/cart-read-model.ts`.
 
 Read Model classes can also be created by hand and there are no restrictions. The structure of the data is totally open and can be as complex as you can manage in your projection functions.
 
