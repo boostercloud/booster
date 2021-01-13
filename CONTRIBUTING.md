@@ -140,9 +140,13 @@ To start contributing to the project you would need to set up the project in you
   - `./scripts/check-all-the-things.sh` on Linux and MacOS
   - `.\scripts\check-all-the-things.ps1` on Windows
 
-- Integration tests are run automatically in Github Actions when a PR is locked, but it would be recommendable to run them locally before submitting a PR for review. You can find several scripts in `packages/framework-integration-tests/package.json` to run different test suites. You can run them using lerna too:
+Integration tests are run automatically in Github Actions when a PR is locked, but it would be recommendable to run them locally before submitting a PR for review. You can find several scripts in `packages/framework-integration-tests/package.json` to run different test suites. You can run them using lerna tool:
 
-- `lerna run integration`: Run all the integration test suites in the right order.
+`lerna run <script name> --stream`
+
+These are the available scripts to run integration tests:
+
+- `integration`: Run all the integration test suites in the right order.
 - `integration/aws-deploy`: This test just checks that the sample project in `packages/framework-integration-tests/src` can be successfully deployed to AWS. The deployment process takes several minutes and this project is used by all the other AWS integration tests, so it's a requirement to run this test before.
 - `integration/aws-func`: AWS functional integration tests. They stress the deployed app write API and checks that the results are the expected ones both in the databases and the read APIs.
 - `integration/end-to-end`: Runs complete and realistic use cases on several cloud providers. This tests are intended to verify that a single project can be deployed to different cloud providers. Currently, only AWS is implemented though.
