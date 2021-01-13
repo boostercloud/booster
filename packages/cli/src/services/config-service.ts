@@ -22,7 +22,7 @@ export async function compileProjectAndLoadConfig(opts?: CompileAndLoadOptions):
 
 async function compileProject(projectPath: string): Promise<void> {
   try {
-    await exec('npx yarn clean && npx yarn compile', { cwd: projectPath })
+    await exec('npm run clean && npm run compile', { cwd: projectPath })
   } catch (e) {
     throw wrapExecError(e, 'Project contains compilation errors')
   }
