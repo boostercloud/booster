@@ -33,7 +33,6 @@ describe('the `BoosterCommandsDispatcher`', () => {
         value: { comment: 'This comment is pointless' },
       }
       Booster.configure('test', async (config) => {
-        // We use `bind` to generate a thunk that chai will then call, checking that it throws
         await expect(
           new BoosterCommandDispatcher(config, logger).dispatchCommand(command as any)
         ).to.be.eventually.rejectedWith('The required command "version" was not present')
@@ -47,7 +46,6 @@ describe('the `BoosterCommandsDispatcher`', () => {
         value: { comment: 'This comment is pointless' },
       }
       Booster.configure('test', async (config) => {
-        // We use `bind` to generate a thunk that chai will then call, checking that it throws
         await expect(
           new BoosterCommandDispatcher(config, logger).dispatchCommand(command as any)
         ).to.be.eventually.rejectedWith('Could not find a proper handler for PostComment')
