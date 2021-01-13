@@ -32,17 +32,22 @@ export async function searchReadModel(
   return result.Items ?? []
 }
 
-function buildFilterExpression(filters: FilterFor<any>): string {
+function buildFilterExpression(filters: FilterFor<any>, depth?: number): string {
   return Object.entries(filters)
     .map(([propName, filter]) => {
       if (propName.toUpperCase() === 'NOT') return `NOT (${buildFilterExpression(filter as FilterFor<any>)})`
+      if (['AND', 'OR'].includes(propName.toUpperCase()) && Array.isArray(filter)) {
+        return `(${filter
+          .map((arrayFilter, index) => buildFilterExpression(arrayFilter, index))
+          .join(` ${propName} `)})`
+      }
       return buildOperation(propName, filter, depth)
     })
     .join(' AND ')
 }
 
-function buildOperation(propName: string, filter: Operation<any> = {}): string {
-  const holder = placeholderBuilderFor(propName)
+function buildOperation(propName: string, filter: Operation<any> = {}, depth?: number): string {
+  const holder = placeholderBuilderFor(`${propName}${depth ? `_${depth}` : ''}`)
   return Object.entries(filter)
     .map(([operation, filter], index) => {
       switch (operation) {
@@ -58,17 +63,17 @@ function buildOperation(propName: string, filter: Operation<any> = {}): string {
           return `#${propName} >= ${holder(index)}`
         case 'lte':
           return `#${propName} <= ${holder(index)}`
-    case 'in':
+        case 'in':
           return `#${propName} IN (${filter.map((value: any, subIndex: number) => holder(index, subIndex)).join(',')})`
-    case 'between':
+        case 'between':
           return `#${propName} BETWEEN ${holder(index)} AND ${holder(index + 1)}`
-    case 'contains':
+        case 'contains':
           return `contains(#${propName}, ${holder(index)})`
         case 'beginsWith':
           return `begins_with(#${propName}, ${holder(index)})`
-    default:
+        default:
           throw new InvalidParameterError(`Operator "${operation}" is not supported`)
-  }
+      }
     })
     .join(' AND ')
 }
@@ -83,31 +88,39 @@ function buildExpressionAttributeNames(filters: FilterFor<any>): ExpressionAttri
   for (const propName in filters) {
     if (propName.toUpperCase() === 'NOT') {
       Object.assign(attributeNames, buildExpressionAttributeNames(filters[propName] as FilterFor<any>))
+    } else if (['AND', 'OR'].includes(propName.toUpperCase())) {
+      for (const filter of filters[propName] as Array<FilterFor<any>>) {
+        Object.assign(attributeNames, buildExpressionAttributeNames(filter as FilterFor<any>))
+      }
     } else {
-    attributeNames[`#${propName}`] = propName
-  }
+      attributeNames[`#${propName}`] = propName
+    }
   }
   return attributeNames
 }
 
-function buildExpressionAttributeValues(filters: Record<string, FilterOld<any>>): ExpressionAttributeValueMap {
+function buildExpressionAttributeValues(filters: FilterFor<any>, depth?: number): ExpressionAttributeValueMap {
   const attributeValues: ExpressionAttributeValueMap = {}
   for (const propName in filters) {
     if (propName.toUpperCase() === 'NOT') {
       Object.assign(attributeValues, buildExpressionAttributeValues(filters[propName] as FilterFor<any>))
+    } else if (['AND', 'OR'].includes(propName.toUpperCase())) {
+      for (const [index, filter] of (filters[propName] as Array<FilterFor<any>>).entries()) {
+        Object.assign(attributeValues, buildExpressionAttributeValues(filter as FilterFor<any>, index))
+      }
     } else {
       const filter = filters[propName] || {}
-      const holder = placeholderBuilderFor(propName)
+      const holder = placeholderBuilderFor(`${propName}${depth ? `_${depth}` : ''}`)
       Object.values(filter).forEach((value, index) => {
         if (Array.isArray(value)) {
           value.forEach((element, elementIndex) => {
             attributeValues[holder(index, elementIndex)] = element
           })
         } else {
-      attributeValues[holder(index)] = value
+          attributeValues[holder(index)] = value
         }
-    })
-  }
+      })
+    }
   }
   return attributeValues
 }
