@@ -403,7 +403,7 @@ If you prefer to specify each parameter without following the instructions, you 
 | `--repository`         | `-r`          | The URL of the repository |
 | `--version`            | `-v`          | The initial version |
 
-Additionally, you can use the flag `--skipInstall` if you want to skip installing dependencies and the `--skipGit` flag in case you want to skip git initialization.
+Additionally, you can use the `--skipInstall` flag if you want to skip installing dependencies and the `--skipGit` flag in case you want to skip git initialization.
 
 > Booster CLI commands follow this structure: `boost <subcommand> [<flags>] [<parameters>]`.
 > Let's break down the command we have just executed:
