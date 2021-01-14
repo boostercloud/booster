@@ -6,7 +6,6 @@ export const createLamba = (
   stack: Stack,
   name: string,
   handler: string,
-  baseDir: string,
   environment?: Record<string, string>
 ): lambda.Function => {
   return new lambda.Function(stack, name, {
@@ -15,7 +14,7 @@ export const createLamba = (
     memorySize: 1024,
     handler: handler,
     functionName: name,
-    code: lambda.Code.fromAsset(path.join(__dirname, baseDir)),
+    code: lambda.Code.fromAsset(path.join(__dirname, 'lambdas')),
     environment,
   })
 }

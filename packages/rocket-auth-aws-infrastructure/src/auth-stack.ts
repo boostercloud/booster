@@ -40,8 +40,9 @@ export class AuthStack {
   private static buildUserPool(params: AWSAuthRocketParams, stack: Stack): UserPool {
     const userPoolID = `${AuthStack.rocketArtifactsPrefix(params)}-user-pool`
 
-    const lambdaTriggers = AuthStack.buildLambdaTriggers(params, stack)
     const useEmail = params.mode === 'UserPassword'
+    const lambdaTriggers = useEmail ? undefined : AuthStack.buildLambdaTriggers(params, stack)
+
     const userPool = new UserPool(stack, userPoolID, {
       userPoolName: userPoolID,
       signInAliases: {
@@ -76,8 +77,7 @@ export class AuthStack {
     const createAuthChallenge = createLamba(
       stack,
       `${AuthStack.rocketArtifactsPrefix(params)}-create-auth-challenge`,
-      'create.handler',
-      'lambdas/challenge'
+      'challenge-create.handler'
     )
 
     createAuthChallenge.addToRolePolicy(
@@ -91,15 +91,13 @@ export class AuthStack {
     const defineAuthChallenge = createLamba(
       stack,
       `${AuthStack.rocketArtifactsPrefix(params)}-define-auth-challenge`,
-      'define.handler',
-      'lambdas/challenge'
+      'challenge-define.handler'
     )
 
     const verifyAuthChallengeResponse = createLamba(
       stack,
       `${AuthStack.rocketArtifactsPrefix(params)}-verify-auth-challenge`,
-      'verify.handler',
-      'lambdas/challenge'
+      'challenge-verify.handler'
     )
 
     return {
@@ -158,71 +156,66 @@ export class AuthStack {
       allowMethods: ['POST', 'OPTIONS'],
     }
 
-    const isUserPasswordMode = params.mode === 'UserPassword'
-
     const endpointIntegrations = [
       {
         endpoint: 'sign-in',
         handler: 'sign-in.handler',
-        path: 'lambdas/common',
         actions: ['cognito-idp:InitiateAuth'],
         included: true,
       },
       {
         endpoint: 'sign-up',
         handler: 'sign-up.handler',
-        path: 'lambdas/common',
         actions: ['cognito-idp:SignUp'],
         included: true,
       },
       {
-        endpoint: 'verify-code',
-        handler: 'answer.handler',
-        path: 'lambdas/challenge',
-        actions: ['cognito-idp:InitiateAuth', 'cognito-idp:RespondToAuthChallenge'],
-        included: true,
-      },
-      {
-        endpoint: 'confirm-sign-up',
-        handler: 'confirm.handler',
-        path: 'lambdas/common',
+        endpoint: 'confirm',
+        handler: 'sign-up-confirm.handler',
         actions: ['cognito-idp:ConfirmSignUp'],
         included: true,
+        parent: 'sign-up',
       },
       {
-        endpoint: 'resend-confirmation-code',
-        handler: 'resend.handler',
-        path: 'lambdas/common',
+        endpoint: 'resend-code',
+        handler: 'resend-confirmation-code.handler',
         actions: ['cognito-idp:ResendConfirmationCode'],
         included: true,
+        parent: 'sign-up',
       },
       {
-        endpoint: 'refresh-token',
-        handler: 'refresh.handler',
-        path: 'lambdas/common',
+        endpoint: 'token',
+        handler: 'challenge-answer.handler',
+        actions: ['cognito-idp:InitiateAuth', 'cognito-idp:RespondToAuthChallenge'],
+        included: params.mode === 'Passwordless',
+      },
+      {
+        endpoint: 'refresh',
+        handler: 'refresh-token.handler',
         actions: ['cognito-idp:InitiateAuth'],
         included: true,
+        parent: 'token',
       },
       {
-        endpoint: 'forgot-password',
-        handler: 'forgot.handler',
-        path: 'lambdas/forgot',
-        actions: ['cognito-idp:ForgotPassword'],
-        included: isUserPasswordMode,
-      },
-      {
-        endpoint: 'confirm-forgot-password',
-        handler: 'confirm.handler',
-        path: 'lambdas/forgot',
-        actions: ['cognito-idp:ConfirmForgotPassword'],
-        included: isUserPasswordMode,
-      },
-      {
-        endpoint: 'sign-out',
+        endpoint: 'token/revoke',
         handler: 'sign-out.handler',
-        path: 'lambdas/common',
         actions: ['cognito-idp:GlobalSignOut'],
         included: true,
+        parent: 'token',
+      },
+      {
+        endpoint: 'forgot',
+        handler: 'forgot-password.handler',
+        actions: ['cognito-idp:ForgotPassword'],
+        included: params.mode === 'UserPassword',
+        parent: 'password',
+      },
+      {
+        endpoint: 'confirm',
+        handler: 'confirm-forgot-password.handler',
+        actions: ['cognito-idp:ConfirmForgotPassword'],
+        included: params.mode === 'UserPassword',
+        parent: 'password',
       },
     ]
 
@@ -233,14 +226,18 @@ export class AuthStack {
           stack,
           `${AuthStack.rocketArtifactsPrefix(params)}-${item.endpoint}`,
           item.handler,
-          item.path,
           {
             userPoolId: userPool.userPoolId,
             userPoolClientId: userPoolClientId,
             mode: params.mode,
           }
         )
-        authResource
+
+        let resource = authResource
+        if (item.parent) {
+          resource = authResource.resourceForPath(item.parent)
+        }
+        resource
           .addResource(item.endpoint, { defaultCorsPreflightOptions })
           .addMethod('POST', new LambdaIntegration(authLambda), methodOptions)
 
