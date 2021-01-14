@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@azure/arm-appservice": "^6.0.0",
-    "@azure/cosmos": "^3.7.3",
+    "@azure/cosmos": "3.7.3",
     "@boostercloud/framework-provider-azure": "^0.9.3",
     "@boostercloud/framework-types": "^0.9.3",
     "@types/archiver": "^3.1.0",
@@ -31,9 +31,9 @@
     "azure-arm-website": "^5.7.0",
     "copyfiles": "^2.3.0",
     "ms-rest-azure": "^3.0.0",
-    "mustache": "^4.0.1",
+    "mustache": "4.1.0",
     "needle": "^2.5.0",
-    "uuid": "^8.3.2"
+    "uuid": "8.3.2"
   },
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
@@ -47,9 +47,9 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@types/faker": "^4.1.11",
-    "@types/uuid": "^8.3.0",
-    "@types/mustache": "^4.1.0",
-    "faker": "^4.1.0"
+    "@types/faker": "5.1.5",
+    "@types/uuid": "8.3.0",
+    "@types/mustache": "4.1.0",
+    "faker": "5.1.0"
   }
 }

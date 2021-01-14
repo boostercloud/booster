@@ -43,12 +43,12 @@
   },
   "devDependencies": {
     "@boostercloud/framework-provider-aws-infrastructure": "^0.9.3",
-    "@types/faker": "^4.1.11",
-    "faker": "^4.1.0",
+    "@types/faker": "5.1.5",
+    "faker": "5.1.0",
     "velocityjs": "^2.0.0",
-    "chai": "^4.2.0",
-    "chai-as-promised": "^7.1.1",
-    "sinon-chai": "^3.5.0",
+    "chai": "4.2.0",
+    "chai-as-promised": "7.1.1",
+    "sinon-chai": "3.5.0",
     "sinon": "9.2.3"
   }
 }

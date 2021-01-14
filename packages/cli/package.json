@@ -25,25 +25,24 @@
     "globby": "^8",
     "inflected": "^2.1.0",
     "inquirer": "^7.0.0",
-    "mustache": "^3.0.1",
-    "ora": "^3.4.0",
-    "tslib": "^1"
+    "mustache": "4.1.0",
+    "ora": "^3.4.0"
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1",
     "@oclif/test": "^1",
     "@types/child-process-promise": "^2.2.1",
-    "@types/faker": "^4.1.11",
+    "@types/faker": "5.1.5",
     "@types/fs-extra": "^8.0.0",
     "@types/inflected": "^1.1.29",
     "@types/inquirer": "^6.5.0",
-    "@types/mustache": "^0.8.32",
+    "@types/mustache": "4.1.0",
     "@types/rewire": "^2.5.28",
-    "faker": "^4.1.0",
-    "rewire": "^4.0.1",
-    "chai": "^4.2.0",
-    "chai-as-promised": "^7.1.1",
-    "sinon-chai": "^3.5.0"
+    "faker": "5.1.0",
+    "rewire": "5.0.0",
+    "chai": "4.2.0",
+    "chai-as-promised": "7.1.1",
+    "sinon-chai": "3.5.0"
   },
   "engines": {
     "node": ">=8.0.0"
