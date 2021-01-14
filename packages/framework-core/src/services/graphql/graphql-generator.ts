@@ -1,5 +1,6 @@
 import {
   AnyClass,
+  Logger,
   BoosterConfig,
   CommandEnvelope,
   ReadModelPropertyFilter,
@@ -19,6 +20,19 @@ export class GraphQLGenerator {
   private readonly mutationGenerator: GraphQLMutationGenerator
   private readonly subscriptionGenerator: GraphQLSubscriptionGenerator
   private readonly typeInformer: GraphQLTypeInformer
+
+  private static singleton: GraphQLGenerator | undefined = undefined
+
+  public static getInstance(config: BoosterConfig, logger: Logger): GraphQLGenerator {
+    if (this.singleton === undefined) {
+      this.singleton = new GraphQLGenerator(
+        config,
+        new BoosterCommandDispatcher(config, logger),
+        new BoosterReadModelDispatcher(config, logger)
+      )
+    }
+    return this.singleton;
+  }
 
   public constructor(
     config: BoosterConfig,
