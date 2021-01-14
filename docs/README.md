@@ -675,7 +675,7 @@ Let's get started testing the project. We will perform three actions:
 Booster applications provide you with a GraphQL API out of the box. You send commands using
 _mutations_ and get read models data using _queries_ or _subscriptions_.
 
-In this section, we will be sending requests by hand using the online tool [Postwoman](https://postwoman.io/graphql),
+In this section, we will be sending requests by hand using the online tool [Hoppscotch](https://hoppscotch.io/graphql),
 which is free and includes great support for GraphQL. However, you can use any client you want. Your endpoint URL should look like this:
 
 ```text
