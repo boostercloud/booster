@@ -1,24 +1,15 @@
 import { CfnOutput, Stack } from '@aws-cdk/core'
-import { StringAttribute, UserPool, UserPoolClient, VerificationEmailStyle, UserPoolDomain } from '@aws-cdk/aws-cognito'
-import { Effect, IRole, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam'
-import { AwsIntegration, Cors, CorsOptions, MethodOptions, PassthroughBehavior, RestApi } from '@aws-cdk/aws-apigateway'
 import {
-  CognitoAuthTemplate,
-  confirmForgotPasswordTemplate,
-  forgotPasswordTemplate,
-  refreshTokenTemplate,
-  signInTemplate,
-  signOutTemplate,
-  signUpTemplate,
-} from './auth-stack-templates'
-
-type CognitoAuthActions =
-  | 'InitiateAuth'
-  | 'SignUp'
-  | 'ConfirmSignUp'
-  | 'GlobalSignOut'
-  | 'ForgotPassword'
-  | 'ConfirmForgotPassword'
+  StringAttribute,
+  UserPool,
+  UserPoolClient,
+  VerificationEmailStyle,
+  UserPoolDomain,
+  UserPoolTriggers,
+} from '@aws-cdk/aws-cognito'
+import { Effect, PolicyStatement } from '@aws-cdk/aws-iam'
+import { Cors, CorsOptions, LambdaIntegration, MethodOptions, RestApi } from '@aws-cdk/aws-apigateway'
+import { createLamba } from './utils'
 
 export interface AWSAuthRocketParams {
   appName: string
@@ -29,13 +20,7 @@ export interface AWSAuthRocketParams {
     requireSymbols: boolean
     requireUppercase: boolean
   }
-  usePhone: boolean
-  useEmail: boolean
-  autoVerifyEmail: boolean
-  autoVerifyPhone: boolean
-  emailConfirmationSubject?: string
-  emailConfirmationBody?: string
-  smsConfirmationMessage?: string
+  mode: 'Passwordless' | 'UserPassword'
 }
 
 export class AuthStack {
@@ -54,15 +39,18 @@ export class AuthStack {
 
   private static buildUserPool(params: AWSAuthRocketParams, stack: Stack): UserPool {
     const userPoolID = `${AuthStack.rocketArtifactsPrefix(params)}-user-pool`
+
+    const lambdaTriggers = AuthStack.buildLambdaTriggers(params, stack)
+    const useEmail = params.mode === 'UserPassword'
     const userPool = new UserPool(stack, userPoolID, {
       userPoolName: userPoolID,
       signInAliases: {
-        email: params.useEmail,
-        phone: params.usePhone,
+        email: useEmail,
+        phone: !useEmail,
       },
       autoVerify: {
-        email: params.autoVerifyEmail,
-        phone: params.autoVerifyPhone,
+        email: useEmail,
+        phone: !useEmail,
       },
       customAttributes: {
         role: new StringAttribute({ mutable: true }),
@@ -71,10 +59,8 @@ export class AuthStack {
       passwordPolicy: params.passwordPolicy,
       userVerification: {
         emailStyle: VerificationEmailStyle.LINK,
-        emailSubject: params.emailConfirmationSubject,
-        emailBody: params.emailConfirmationBody,
-        smsMessage: params.smsConfirmationMessage,
       },
+      lambdaTriggers,
     })
 
     const localUserPoolDomainID = `${AuthStack.rocketArtifactsPrefix(params)}-user-pool-domain`
@@ -86,12 +72,52 @@ export class AuthStack {
     return userPool
   }
 
+  private static buildLambdaTriggers(params: AWSAuthRocketParams, stack: Stack): UserPoolTriggers {
+    const createAuthChallenge = createLamba(
+      stack,
+      `${AuthStack.rocketArtifactsPrefix(params)}-create-auth-challenge`,
+      'create.handler',
+      'lambdas/challenge'
+    )
+
+    createAuthChallenge.addToRolePolicy(
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: ['sns:Publish'],
+        resources: ['*'],
+      })
+    )
+
+    const defineAuthChallenge = createLamba(
+      stack,
+      `${AuthStack.rocketArtifactsPrefix(params)}-define-auth-challenge`,
+      'define.handler',
+      'lambdas/challenge'
+    )
+
+    const verifyAuthChallengeResponse = createLamba(
+      stack,
+      `${AuthStack.rocketArtifactsPrefix(params)}-verify-auth-challenge`,
+      'verify.handler',
+      'lambdas/challenge'
+    )
+
+    return {
+      createAuthChallenge,
+      defineAuthChallenge,
+      verifyAuthChallengeResponse,
+    }
+  }
+
   private static buildUserPoolClient(params: AWSAuthRocketParams, stack: Stack, userPool: UserPool): UserPoolClient {
     const userPoolClientID = `${AuthStack.rocketArtifactsPrefix(params)}-user-pool-client`
+
+    const isPasswordless = params.mode == 'Passwordless'
+
     return new UserPoolClient(stack, userPoolClientID, {
       userPoolClientName: userPoolClientID,
       userPool,
-      authFlows: { userPassword: true },
+      authFlows: { userPassword: !isPasswordless, custom: isPasswordless },
     })
   }
 
@@ -101,8 +127,6 @@ export class AuthStack {
     userPool: UserPool,
     userPoolClientId: string
   ): RestApi {
-    const cognitoIntegrationRole = AuthStack.buildCognitoIntegrationRole(stack, userPool)
-
     const rootAuthAPI = new RestApi(stack, `${AuthStack.rocketArtifactsPrefix(params)}-api`, {
       deployOptions: { stageName: params.environmentName },
     })
@@ -134,119 +158,102 @@ export class AuthStack {
       allowMethods: ['POST', 'OPTIONS'],
     }
 
-    const endpointIntegrations: Array<{
-      endpoint: string
-      action: CognitoAuthActions
-      template: CognitoAuthTemplate
-    }> = [
-      {
-        endpoint: 'sign-up',
-        action: 'SignUp',
-        template: signUpTemplate(userPoolClientId),
-      },
+    const isUserPasswordMode = params.mode === 'UserPassword'
+
+    const endpointIntegrations = [
       {
         endpoint: 'sign-in',
-        action: 'InitiateAuth',
-        template: signInTemplate(userPoolClientId),
+        handler: 'sign-in.handler',
+        path: 'lambdas/common',
+        actions: ['cognito-idp:InitiateAuth'],
+        included: true,
+      },
+      {
+        endpoint: 'sign-up',
+        handler: 'sign-up.handler',
+        path: 'lambdas/common',
+        actions: ['cognito-idp:SignUp'],
+        included: true,
+      },
+      {
+        endpoint: 'verify-code',
+        handler: 'answer.handler',
+        path: 'lambdas/challenge',
+        actions: ['cognito-idp:InitiateAuth', 'cognito-idp:RespondToAuthChallenge'],
+        included: true,
+      },
+      {
+        endpoint: 'confirm-sign-up',
+        handler: 'confirm.handler',
+        path: 'lambdas/common',
+        actions: ['cognito-idp:ConfirmSignUp'],
+        included: true,
+      },
+      {
+        endpoint: 'resend-confirmation-code',
+        handler: 'resend.handler',
+        path: 'lambdas/common',
+        actions: ['cognito-idp:ResendConfirmationCode'],
+        included: true,
       },
       {
         endpoint: 'refresh-token',
-        action: 'InitiateAuth',
-        template: refreshTokenTemplate(userPoolClientId),
-      },
-      {
-        endpoint: 'sign-out',
-        action: 'GlobalSignOut',
-        template: signOutTemplate(),
+        handler: 'refresh.handler',
+        path: 'lambdas/common',
+        actions: ['cognito-idp:InitiateAuth'],
+        included: true,
       },
       {
         endpoint: 'forgot-password',
-        action: 'ForgotPassword',
-        template: forgotPasswordTemplate(userPoolClientId),
+        handler: 'forgot.handler',
+        path: 'lambdas/forgot',
+        actions: ['cognito-idp:ForgotPassword'],
+        included: isUserPasswordMode,
       },
       {
         endpoint: 'confirm-forgot-password',
-        action: 'ConfirmForgotPassword',
-        template: confirmForgotPasswordTemplate(userPoolClientId),
+        handler: 'confirm.handler',
+        path: 'lambdas/forgot',
+        actions: ['cognito-idp:ConfirmForgotPassword'],
+        included: isUserPasswordMode,
+      },
+      {
+        endpoint: 'sign-out',
+        handler: 'sign-out.handler',
+        path: 'lambdas/common',
+        actions: ['cognito-idp:GlobalSignOut'],
+        included: true,
       },
     ]
 
-    endpointIntegrations.map((item) => {
-      authResource
-        .addResource(item.endpoint, { defaultCorsPreflightOptions })
-        .addMethod(
-          'POST',
-          AuthStack.buildCognitoIntegration(item.action, cognitoIntegrationRole, item.template),
-          methodOptions
+    endpointIntegrations
+      .filter((item) => item.included)
+      .map((item) => {
+        const authLambda = createLamba(
+          stack,
+          `${AuthStack.rocketArtifactsPrefix(params)}-${item.endpoint}`,
+          item.handler,
+          item.path,
+          {
+            userPoolId: userPool.userPoolId,
+            userPoolClientId: userPoolClientId,
+            mode: params.mode,
+          }
         )
-    })
+        authResource
+          .addResource(item.endpoint, { defaultCorsPreflightOptions })
+          .addMethod('POST', new LambdaIntegration(authLambda), methodOptions)
+
+        authLambda.addToRolePolicy(
+          new PolicyStatement({
+            effect: Effect.ALLOW,
+            actions: item.actions,
+            resources: [userPool.userPoolArn],
+          })
+        )
+      })
 
     return rootAuthAPI
-  }
-
-  private static buildCognitoIntegrationRole(stack: Stack, userPool: UserPool): Role {
-    return new Role(stack, 'cognito-integration-role', {
-      assumedBy: new ServicePrincipal('apigateway.amazonaws.com'),
-      inlinePolicies: {
-        'cognito-sign': new PolicyDocument({
-          statements: [
-            new PolicyStatement({
-              effect: Effect.ALLOW,
-              actions: [
-                'cognito-idp:SignUp',
-                'cognito-idp:InitiateAuth',
-                'cognito-idp:GlobalSignOut',
-                'cognito-idp:ForgotPassword',
-                'cognito-idp:ConfirmForgotPassword',
-              ],
-              resources: [userPool.userPoolArn],
-            }),
-          ],
-        }),
-      },
-    })
-  }
-
-  private static buildCognitoIntegration(
-    forAction: CognitoAuthActions,
-    withRole: IRole,
-    template: { request: string; response: string }
-  ): AwsIntegration {
-    const responseParameters = {
-      ['method.response.header.Access-Control-Allow-Origin']: "'*'",
-    }
-    return new AwsIntegration({
-      service: 'cognito-idp',
-      action: forAction,
-      integrationHttpMethod: 'POST',
-      options: {
-        credentialsRole: withRole,
-        passthroughBehavior: PassthroughBehavior.NEVER,
-        integrationResponses: [
-          {
-            selectionPattern: '5\\d\\d',
-            statusCode: '500',
-            responseParameters,
-          },
-          {
-            selectionPattern: '4\\d\\d',
-            statusCode: '400',
-            responseParameters,
-          },
-          {
-            selectionPattern: '2\\d\\d',
-            statusCode: '200',
-            responseParameters,
-            responseTemplates: {
-              'application/json': template.response,
-            },
-          },
-        ],
-        requestTemplates: {
-          'application/json': template.request,
-        },
-      },
-    })
   }
 
   private static printOutput(stack: Stack, userPoolId: string, authApi: RestApi): void {
