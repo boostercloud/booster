@@ -52,6 +52,9 @@
     "faker": "^4.1.0",
     "js-yaml": "^3.14.0",
     "mustache": "^3.0.1",
-    "semver": "^7.3.2"
+    "semver": "^7.3.2",
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "sinon-chai": "^3.5.0"
   }
 }
