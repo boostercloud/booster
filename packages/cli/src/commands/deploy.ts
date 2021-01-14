@@ -6,7 +6,7 @@ import { Script } from '../common/script'
 import Brand from '../common/brand'
 import { logger } from '../services/logger'
 import { currentEnvironment, initializeEnvironment } from '../services/environment'
-import { installAllDependencies } from '../services/dependencies'
+import { installDependencies, pruneDevDependencies } from '../services/dependencies'
 
 const runTasks = async (
   skipRestoreDependencies: boolean,
@@ -14,8 +14,9 @@ const runTasks = async (
   deployer: (config: BoosterConfig, logger: Logger) => Promise<void>
 ): Promise<void> =>
   Script.init(`boost ${Brand.dangerize('deploy')} [${currentEnvironment()}] 🚀`, compileAndLoad)
+    .step('Pruning devDependencies', () => pruneDevDependencies())
     .step('Deploying', (config) => deployer(config, logger))
-    .optionalStep(skipRestoreDependencies, 'Reinstalling dev dependencies', async () => await installAllDependencies())
+    .optionalStep(skipRestoreDependencies, 'Reinstalling devDependencies', () => installDependencies())
     .info('Deployment complete!')
     .done()
 
@@ -38,11 +39,7 @@ export default class Deploy extends Command {
     const { flags } = this.parse(Deploy)
 
     if (initializeEnvironment(logger, flags.environment)) {
-      await runTasks(
-        flags.skipRestoreDependencies,
-        compileProjectAndLoadConfig({ production: true }),
-        deployToCloudProvider
-      )
+      await runTasks(flags.skipRestoreDependencies, compileProjectAndLoadConfig(), deployToCloudProvider)
     }
   }
 }

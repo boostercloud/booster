@@ -167,18 +167,6 @@ describe('new', (): void => {
         expect(fs.readdirSync(projectDirectory)).to.have.all.members(expectedDirectoryContent.rootPath)
         expect(fs.readdirSync(`${projectDirectory}/src`)).to.have.all.members(expectedDirectoryContent.src)
       })
-
-      it('skips git repository initialization', async () => {
-        replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
-        replace(dependencies, 'installDependencies', fake.returns({}))
-        const initializeGitSpy = spy(ProjectInitializer, 'initializeGit')
-
-        await new Project.default([projectName, '--skipGit'], {} as IConfig).run()
-
-        expect(initializeGitSpy).to.not.have.been.calledOnce
-        expect(fs.existsSync('.git')).to.be.false
-        expect(fs.existsSync(projectDirectory)).to.be.true
-      })
     })
   })
 })
