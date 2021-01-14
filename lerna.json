@@ -2,6 +2,11 @@
   "packages": [
     "packages/*"
   ],
+  "command": {
+    "add": {
+      "exact": true
+    }
+  },
   "version": "0.9.3",
   "npmClient": "npm",
   "hoist": true
