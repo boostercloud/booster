@@ -30,8 +30,8 @@
   "dependencies": {
     "@boostercloud/framework-types": "^0.9.3",
     "fp-ts": "^2.0.3",
-    "graphql": "^15.4.0",
-    "graphql-subscriptions": "^1.1.0",
+    "graphql": "15.4.0",
+    "graphql-subscriptions": "1.1.0",
     "graphql-type-json": "0.3.2",
     "inflected": "^2.1.0",
     "iterall": "^1.3.0",
@@ -41,18 +41,18 @@
     "validator": "^13.1.1"
   },
   "devDependencies": {
-    "@types/faker": "^4.1.12",
+    "@types/faker": "5.1.5",
     "@types/graphql-type-json": "^0.3.2",
     "@types/inflected": "^1.1.29",
     "@types/jsonwebtoken": "^8.5.0",
     "@types/validator": "^13.1.0",
-    "faker": "^4.1.0",
+    "faker": "5.1.0",
     "mock-jwks": "^0.3.1",
     "nock": "^13.0.4",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
-    "sinon-chai": "3.4.0",
-    "sinon": "8.1.1",
+    "sinon-chai": "3.5.0",
+    "sinon": "9.2.3",
     "mocha": "7.2.0"
   }
 }

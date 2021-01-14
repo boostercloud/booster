@@ -5,9 +5,12 @@
   "command": {
     "add": {
       "exact": true
+    },
+    "bootstrap": {
+      "hoist": true,
+      "strict": true
     }
   },
   "version": "0.9.3",
-  "npmClient": "npm",
-  "hoist": true
+  "npmClient": "npm"
 }
