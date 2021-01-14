@@ -35,7 +35,10 @@
   },
   "devDependencies": {
     "@types/uuid": "^3.4.5",
-    "@types/graphql": "^14.5.0",
-    "fast-check": "^1.18.1"
+    "graphql": "15.4.0",
+    "fast-check": "^1.18.1",
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "sinon-chai": "^3.4.0"
   }
 }
