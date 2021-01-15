@@ -35,6 +35,30 @@ describe('user prompt', () => {
         expect(value).to.equal('randomValue')
     })
 
+    it('defaultOrPrompt with provided value with single quotes', async () => {
+        const value = await new Prompter().defaultOrPrompt("'randomValue'","Enter a value")
+        expect(value).to.equal("'randomValue'")
+    })
+
+    it('defaultOrPrompt with provided value with double quotes', async () => {
+        const value = await new Prompter().defaultOrPrompt("\"randomValue\"","Enter a value")
+        expect(value).to.equal('\\\"randomValue\\\"')
+    })
+
+    it('defaultOrPrompt with undefined value entering double quotes', async () => {
+        const promptStub = stub(inquirer,'prompt')
+        promptStub.resolves({value: "\"mockedValue\""})
+        const value = await new Prompter().defaultOrPrompt(undefined,"Enter a value")
+        expect(value).to.equal('\\\"mockedValue\\\"')
+    })
+
+    it('defaultOrPrompt with undefined value entering single quotes', async () => {
+        const promptStub = stub(inquirer,'prompt')
+        promptStub.resolves({value: "'mockedValue'"})
+        const value = await new Prompter().defaultOrPrompt(undefined,"Enter a value")
+        expect(value).to.equal("'mockedValue'")
+    })
+
     it('defaultOrChoose with provided value', async () => {
         const value = await new Prompter().defaultOrChoose("value1","Choose a value",['value1','value2','value3'])
         expect(value).to.equal('value1')
