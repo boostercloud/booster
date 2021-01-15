@@ -23,6 +23,7 @@
     "@boostercloud/framework-provider-local": "^0.9.4",
     "@boostercloud/framework-types": "^0.9.4",
     "express": "^4.17.1",
+    "express-ws": "^4.0.0",
     "nedb": "^1.8.0"
   },
   "scripts": {

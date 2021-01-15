@@ -17,6 +17,7 @@ import { fetchReadModel, searchReadModel, storeReadModel } from './library/read-
 export { User, LoginCredentials, SignUpUser, RegisteredUser, AuthenticatedUser } from './library/auth-adapter'
 export * from './paths'
 export * from './services'
+export { GraphQLSocketMessage } from './library/graphql-adapter'
 
 const eventRegistry = new EventRegistry()
 const readModelRegistry = new ReadModelRegistry()
