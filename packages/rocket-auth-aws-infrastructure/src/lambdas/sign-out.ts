@@ -1,6 +1,6 @@
 import { CognitoIdentityServiceProvider } from 'aws-sdk'
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
-import { errorResponse, response } from './response'
+import { errorResponse, okResponse } from './response'
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
@@ -11,7 +11,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         AccessToken: params.accessToken,
       })
       .promise()
-    return response(200, {
+    return okResponse({
       message: 'Signed out',
     })
   } catch (e) {

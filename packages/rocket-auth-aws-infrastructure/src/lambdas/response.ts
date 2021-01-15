@@ -16,3 +16,7 @@ export const errorResponse = (e: AWSError): APIGatewayProxyResult => {
     },
   })
 }
+
+export const okResponse = (data: object): APIGatewayProxyResult => {
+  return response(200, data)
+}

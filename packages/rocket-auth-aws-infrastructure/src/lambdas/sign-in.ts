@@ -1,6 +1,6 @@
 import { CognitoIdentityServiceProvider } from 'aws-sdk'
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
-import { errorResponse, response } from './response'
+import { errorResponse, okResponse } from './response'
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
@@ -19,12 +19,12 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
       .promise()
 
     if (isCustom) {
-      return response(200, {
+      return okResponse({
         session: initAuthResponse.Session,
         message: 'Use the session and the code we have sent you via SMS to get your access tokens via POST /token.',
       })
     }
-    return response(200, {
+    return okResponse({
       accessToken: initAuthResponse.AuthenticationResult?.AccessToken,
       idToken: initAuthResponse.AuthenticationResult?.IdToken,
       expiresIn: initAuthResponse.AuthenticationResult?.ExpiresIn,

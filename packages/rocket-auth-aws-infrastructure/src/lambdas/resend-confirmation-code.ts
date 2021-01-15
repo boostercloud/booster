@@ -1,6 +1,6 @@
 import { CognitoIdentityServiceProvider } from 'aws-sdk'
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
-import { errorResponse, response } from './response'
+import { errorResponse, okResponse } from './response'
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
@@ -12,7 +12,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         Username: params.username,
       })
       .promise()
-    return response(200, {
+    return okResponse({
       message: `The confirmation code to activate your account has been sent to: ${params.username}.`,
     })
   } catch (e) {
