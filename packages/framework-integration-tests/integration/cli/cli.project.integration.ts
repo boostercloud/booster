@@ -10,7 +10,7 @@ import {
   removeFolders,
 } from '../helper/fileHelper'
 import { ChildProcess } from 'child_process'
-import { forceLernaRebuild, overrideWithBoosterLocalDependencies } from '../helper/depsHelper'
+import { overrideWithBoosterLocalDependencies } from '../helper/depsHelper'
 
 // The Booster CLI version used should match the integration tests' version
 const BOOSTER_VERSION = require('../../package.json').version
@@ -286,7 +286,7 @@ describe('Project', () => {
         it('installs dependencies', () => {
           expect(projectFileExists(projectName, 'node_modules')).to.be.true
           expect(projectDirContents(projectName, 'node_modules')).not.to.be.empty
-          expect(projectFileExists(projectName, 'yarn.lock')).to.be.true
+          expect(projectFileExists(projectName, 'package-lock.json')).to.be.true
         })
 
         it('initializes git', () => {
@@ -294,17 +294,16 @@ describe('Project', () => {
         })
 
         it('passes linter', async () => {
-          await expect(exec('npx yarn lint:check', { cwd: projectPath(projectName) })).to.be.eventually.fulfilled
+          await expect(exec('npm run lint:check', { cwd: projectPath(projectName) })).to.be.eventually.fulfilled
         }).timeout(TEST_TIMEOUT)
 
-        it('compiles', async () => {
+        it.only('compiles', async () => {
           // Rewrite dependencies to use local versions
           await overrideWithBoosterLocalDependencies(projectPath(projectName))
-          // For some reason, the project doesn't compile if we don't re-compile the modules.
-          // Maybe rewriting the dependencies messes up lerna's tricks ¯\_(ツ)_/¯
-          await forceLernaRebuild()
+          // Install those dependencies
+          await expect(exec('npm install --production --no-bin-links', { cwd: projectPath(projectName) }))
 
-          await expect(exec('npx yarn compile', { cwd: projectPath(projectName) })).to.be.eventually.fulfilled
+          await expect(exec('npm run compile', { cwd: projectPath(projectName) })).to.be.eventually.fulfilled
         })
       })
 
