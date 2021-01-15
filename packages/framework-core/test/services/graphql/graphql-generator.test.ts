@@ -3,16 +3,18 @@ import { BoosterCommandDispatcher } from '../../../src/booster-command-dispatche
 import sinon = require('sinon')
 import { BoosterReadModelDispatcher } from '../../../src/booster-read-model-dispatcher'
 import { GraphQLGenerator } from '../../../src/services/graphql/graphql-generator'
-import { BoosterConfig, ReadModelInterface } from '@boostercloud/framework-types/dist'
+import { BoosterConfig, ReadModelInterface, Logger, Level } from '@boostercloud/framework-types/dist'
 import { expect } from '../../expect'
 import { GraphQLQueryGenerator } from '../../../src/services/graphql/graphql-query-generator'
 import { GraphQLMutationGenerator } from '../../../src/services/graphql/graphql-mutation-generator'
 import { GraphQLSubscriptionGenerator } from '../../../src/services/graphql/graphql-subcriptions-generator'
 import { random, internet, lorem } from 'faker'
+import { buildLogger } from '../../../src/booster-logger';
 
 describe('GraphQL generator', () => {
   let mockEnvironmentName: string
   let mockConfig: BoosterConfig
+  let mockLogger: Logger
 
   let commandDispatcherStub: SinonStubbedInstance<BoosterCommandDispatcher>
   let readModelDispatcherStub: SinonStubbedInstance<BoosterReadModelDispatcher>
@@ -382,6 +384,31 @@ describe('GraphQL generator', () => {
 
         expect(result).to.be.equal(mockAsyncIteratorResult)
       })
+    })
+  })
+
+  describe('getInstance', () => {
+
+    before(() => {
+      mockLogger = buildLogger(Level.error)
+    })
+    
+    it('should create the instance', () => {
+      const instance = GraphQLGenerator.getInstance(mockConfig, mockLogger)
+
+      expect(instance).to.not.be.undefined
+      expect(instance).to.be.an.instanceOf(GraphQLGenerator)
+    })
+
+    it('should return always the same instance', () => {
+      const instance1 = GraphQLGenerator.getInstance(mockConfig, mockLogger)
+      const instance2 = GraphQLGenerator.getInstance(mockConfig, mockLogger)
+
+      expect(instance1).to.not.be.undefined
+      expect(instance1).to.be.an.instanceOf(GraphQLGenerator)
+      expect(instance2).to.not.be.undefined
+      expect(instance2).to.be.an.instanceOf(GraphQLGenerator)
+      expect(instance1).to.be.eq(instance2)
     })
   })
 })
