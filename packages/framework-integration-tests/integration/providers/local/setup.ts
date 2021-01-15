@@ -2,7 +2,7 @@ import { start } from './utils'
 import { sleep } from '../../helper/sleep'
 import { ChildProcess } from 'child_process'
 import { createSandboxProject, removeFolders } from '../../helper/fileHelper'
-import { symLinkBoosterDependencies } from '../../helper/depsHelper'
+import { overrideWithBoosterLocalDependencies } from '../../helper/depsHelper'
 import { sandboxName } from './constants'
 import { runCommand } from '../../helper/runCommand'
 
@@ -17,7 +17,7 @@ before(async () => {
   await runCommand(sandboxPath, 'npm install')
 
   console.log('symlinking booster dependencies...')
-  await symLinkBoosterDependencies(sandboxPath)
+  await overrideWithBoosterLocalDependencies(sandboxPath)
 
   console.log(`starting local server in ${sandboxPath}...`)
   serverProcess = start('local', sandboxPath)

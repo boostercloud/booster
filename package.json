@@ -32,7 +32,6 @@
     "rimraf": "^3.0.0",
     "ts-node": "^8.6.2",
     "typescript": "3.9.4",
-    "tslib": "^2.0.3",
     "yargs": "^15.1.0"
   },
   "license": "Apache-2.0"
