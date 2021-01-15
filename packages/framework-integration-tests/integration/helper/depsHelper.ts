@@ -1,30 +1,24 @@
 import { exec } from 'child-process-promise'
 import * as path from 'path'
+import * as fs from 'fs'
 
-function deBoosterize(packageName: string, projectPath: string): string {
-  const folderName = packageName.replace('@boostercloud/', '')
-  return path.relative(projectPath, path.join('..', folderName))
-}
-
-export async function symLinkBoosterDependencies(projectPath: string): Promise<void> {
-  const packageJSON = require(path.relative(__dirname, path.join(projectPath, 'package.json')))
+export async function overrideWithBoosterLocalDependencies(projectPath: string): Promise<void> {
+  const projectRelativePath = path.relative(__dirname, projectPath)
+  const packageJSON = require(path.join(projectRelativePath, 'package.json'))
   // To compile the project with the current version we need to replace all Booster dependencies
   // by the versions under development.
   for (const packageName in packageJSON.dependencies) {
     if (/@boostercloud/.test(packageName)) {
-      // TODO: This will change in upcoming PR to use NPM
-      await exec(`npx yarn add link:${deBoosterize(packageName, projectPath)}`, { cwd: projectPath })
+      const dependencyName = packageName.replace('@boostercloud/', '')
+      // Pack all booster dependencies in a temporal directory
+      await exec(`cd .booster && npm pack ${path.relative(projectPath, path.join('..', dependencyName))}`)
+      // Now override the pakcageJSON dependencies with the path to the packed dependency
+      packageJSON.dependencies[
+        packageName
+      ] = `file:../.booster/boostercloud-${dependencyName}-${packageJSON.version}.tgz`
     }
   }
-
-  for (const packageName in packageJSON.devDependencies) {
-    if (/@boostercloud/.test(packageName)) {
-      // TODO: This will change in upcoming PR to use NPM
-      await exec(`npx yarn add link:${deBoosterize(packageName, projectPath)}`, {
-        cwd: projectPath,
-      })
-    }
-  }
+  fs.writeFileSync(path.join(projectPath, 'package.json'), JSON.stringify(packageJSON, undefined, 2))
 }
 
 export async function forceLernaRebuild(): Promise<void> {
