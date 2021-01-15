@@ -297,13 +297,14 @@ describe('Project', () => {
           await expect(exec('npm run lint:check', { cwd: projectPath(projectName) })).to.be.eventually.fulfilled
         }).timeout(TEST_TIMEOUT)
 
-        it.only('compiles', async () => {
+        it('compiles', async () => {
+          const fullProjectPath = projectPath(projectName)
           // Rewrite dependencies to use local versions
-          await overrideWithBoosterLocalDependencies(projectPath(projectName))
+          await overrideWithBoosterLocalDependencies(fullProjectPath)
           // Install those dependencies
-          await expect(exec('npm install --production --no-bin-links', { cwd: projectPath(projectName) }))
+          await exec('npm install --production --no-bin-links', { cwd: fullProjectPath })
 
-          await expect(exec('npm run compile', { cwd: projectPath(projectName) })).to.be.eventually.fulfilled
+          await expect(exec('npm run compile', { cwd: fullProjectPath })).to.be.eventually.fulfilled
         })
       })
 

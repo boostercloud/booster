@@ -45,7 +45,7 @@ Booster is divided in many different packages. The criteria to split the code in
 * They contain code that is used by at least two of the other packages.
 * They're a vendor-specific specialization of some abstract part of the framework (for instance, all the code that is required by AWS is in separate packages). 
 
-The packages are managed using [Lerna](https://lerna.js.org) and [Yarn](https://yarnpkg.com), if you run `lerna run compile`, it will run `yarn compile` in all the package folders.
+The packages are managed using [Lerna](https://lerna.js.org) and [npm](https://npmjs.com), if you run `lerna run compile`, it will run `npm run compile` in all the package folders.
 
 The packages are published to `npm` under the prefix `@boostercloud/`, their purpose is as follows:
 
@@ -101,7 +101,7 @@ Booster documentation, located at `/docs/README.md`, is treated as a live docume
 Bear in mind that if you have added a new section, or changed an existing one you will need to update the table of content. This can be easily done with the following command:
 
 ```sh
-yarn update-tocs
+npm run update-tocs
 ```
 ### Create your very first GitHub issue
 
@@ -122,8 +122,6 @@ Make sure that you assign the chosen issue to yourself to communicate your inten
 ### Getting the code
 
 To start contributing to the project you would need to set up the project in your system, to do so, you must first follow these steps in your terminal.
-
-- Install Yarn: `npm install -g yarn`
 
 - Install Lerna: `npm install -g lerna`
 
@@ -155,13 +153,13 @@ You can run all packages tests with Lerna:
 ~/booster:$ lerna run test
 ```
 
-Or in a specific package with yarn:
+Or in a specific package with npm:
 
 ```bash
-~/booster/packages/cli:$ yarn test
+~/booster/packages/cli:$ npm run test
 ```
 
-Once all your unit tests are passing and your code looks great, if your code changes any behavior in the cloud provider, it's important to update the integration test suite and iterate your code until it passes. Notice that in the `framework-integration-tests` there's an `integration` folder with subfolders for each supported provider (including the local provider). Integration tests require real deployments, so they'll last a while and you must have your provider credentials properly set. The test suite will fail with (hopefully) useful error messages with guidance when some parameter is missed. You can run the integration tests using lerna from any package or the project root, or yarn from within the integration tests package:
+Once all your unit tests are passing and your code looks great, if your code changes any behavior in the cloud provider, it's important to update the integration test suite and iterate your code until it passes. Notice that in the `framework-integration-tests` there's an `integration` folder with subfolders for each supported provider (including the local provider). Integration tests require real deployments, so they'll last a while and you must have your provider credentials properly set. The test suite will fail with (hopefully) useful error messages with guidance when some parameter is missed. You can run the integration tests using `lerna` from any package or the project root, or `npm run` from within the integration tests package:
 
 ```bash
 ~/booster:$ lerna run integration --stream
@@ -224,7 +222,7 @@ The most important kind of commits are the ones that trigger version bumps and t
 
 Apart from those previously mentioned, there are more commit types:
 
-- **build**: Changes that affect the build system or external dependencies (example scopes: lerna, tsconfig, yarn)
+- **build**: Changes that affect the build system or external dependencies (example scopes: lerna, tsconfig, npm)
 - **ci**: Changes to our CI configuration files and scripts
 - **docs**: Documentation only changes
 - **feat**: A new feature

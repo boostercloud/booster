@@ -24,7 +24,7 @@ module.exports = {
     project: 'tsconfig.eslint.json',
   },
   rules: {
-    indent: ['error', 2, { SwitchCase: 1 }],
+    '@typescript-eslint/indent': ['error', 2, { SwitchCase: 1 }],
     'linebreak-style': ['error', 'unix'],
     quotes: ['error', 'single', { avoidEscape: true, allowTemplateLiterals: false }],
     semi: ['error', 'never'],
