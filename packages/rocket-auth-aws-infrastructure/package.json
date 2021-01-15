@@ -1,0 +1,51 @@
+{
+  "name": "@boostercloud/rocket-auth-aws-infrastructure",
+  "version": "0.9.56",
+  "description": "Booster rocket to deploy an auth api using AWS Cognito",
+  "keywords": [
+    "Booster",
+    "plugin",
+    "aws",
+    "auth",
+    "cognito"
+  ],
+  "author": "Booster Cloud",
+  "homepage": "https://booster.cloud",
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boostercloud/booster.git"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-apigateway": "1.67.0",
+    "@aws-cdk/aws-cognito": "1.67.0",
+    "@aws-cdk/aws-iam": "1.67.0",
+    "@aws-cdk/aws-lambda": "1.67.0",
+    "@aws-cdk/core": "1.67.0",
+    "@boostercloud/framework-provider-aws-infrastructure": "^0.9.3",
+    "@boostercloud/framework-types": "^0.9.3"
+  },
+  "scripts": {
+    "lint": "eslint --ext '.js,.ts' **/*.ts",
+    "fix-lint": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
+    "compile": "tsc -b tsconfig.json",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "prepack": "tsc -b tsconfig.json",
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+  },
+  "bugs": {
+    "url": "https://github.com/boostercloud/booster/issues"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.70",
+    "aws-sdk": "^2.825.0",
+    "velocityjs": "^2.0.0"
+  }
+}

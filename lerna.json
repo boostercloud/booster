@@ -12,7 +12,8 @@
     "packages/framework-core",
     "packages/cli",
     "packages/framework-integration-tests",
-    "packages/rocket-static-sites-aws-infrastructure"
+    "packages/rocket-static-sites-aws-infrastructure",
+    "packages/rocket-auth-aws-infrastructure"
   ],
   "version": "0.9.3",
   "npmClient": "yarn",
