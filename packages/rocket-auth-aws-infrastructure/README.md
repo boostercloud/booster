@@ -66,12 +66,6 @@ The auth rocket will expose the following base url outputs:
 | AuthApiIssuer      | The issuer who sign the JWT tokens.                                                     |
 | AuthApiJwksUri     | Uri with all the public keys used to sign the JWT tokens.                               |
 
-
-
-
-
-
-
 The `AuthApiIssuer` and `AuthApiJwksUri` must be used in the `tokenVerifier` Booster config. More information about JWT Configuration [here.](https://github.com/boostercloud/booster/blob/master/docs/README.md#jwt-configuration)
 
 ### Sign-up
@@ -131,7 +125,7 @@ Example of an account with the given username which already exists:
 
 You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
 
-### Confirm Sign Up
+### Confirm Sign-up
 
 Whenever a User signs up with their phone number in `Passwordless` mode, an SMS message will be sent with a confirmation code. If you're using a `UserPassword` mode an email with a confirmation link will be sent.
 They will need to provide this code to confirm registation by calling the`sign-up/confirm` endpoint
@@ -162,6 +156,7 @@ POST https://<httpURL>/auth/sign-up/confirm
 {
   "message": "The username: +34999999999 has been confirmed."
 }
+```
 
 #### Errors
 
@@ -179,9 +174,9 @@ Example of an invalid verification code:
 }
 ```
 
-### Resend Sing Up Confirmation Code
+### Resend Sign-up confirmation code
 
-If for whatever reason the confirmationCode never reach your email or phone you can ask the api to resend a new one.
+If for some reason the confirmationCode never reach your email or your phone via SMS you can ask the api to resend a new one.
 
 #### Endpoint
 
@@ -207,6 +202,7 @@ POST https://<httpURL>/auth/sign-up/resend-code
 {
   "message": "The confirmation code to activate your account has been sent to: +34999999999."
 }
+```
 
 #### Errors
 
@@ -218,13 +214,13 @@ Common errors would be like submitting an expired confirmation code or a non val
 
 This endpoint creates a session for an already registered user, returning an access token that can be used to access role-protected resources
 
-###### Endpoint
+#### Endpoint
 
 ```http request
 POST https://<httpURL>/auth/sign-in
 ```
 
-###### Request body
+#### Request body
 
 ```json
 {
@@ -236,9 +232,11 @@ POST https://<httpURL>/auth/sign-in
 | Parameter  | Description                                                                            |
 | ---------- | -------------------------------------------------------------------------------------- |
 | _username_ | The username of the user you want to sign in. They must have previously signed up.     |
-| _password_ | The password used to sign up the user.                                                 |
+| _password_ | The password used to sign up the user. **Only in UserPassword mode**                                                  |
 
-#### Response UserPassword mode
+#### Response
+
+UserPassword:
 
 ```json
 {
@@ -249,16 +247,6 @@ POST https://<httpURL>/auth/sign-in
 }
 ```
 
-#### Response PasswordLess mode
-
-```json
-{
-  "accessToken": "string",
-  "expiresIn": "string",
-  "refreshToken": "string",
-  "tokenType": "string" 
-}
-
 | Parameter      | Description                                                                                                                          |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | _accessToken_  | The token you can use to access restricted resources. It must be sent in the `Authorization` header (prefixed with the `tokenType`). |
@@ -266,7 +254,21 @@ POST https://<httpURL>/auth/sign-in
 | _refreshToken_ | The token you can use to get a new access token after it has expired.                                                                |
 | _tokenType_    | The type of token used. It is always `Bearer`.                                                                                       |
 
-###### Errors
+Passwordless:
+
+```json
+{
+  "session": "string",
+  "message": "string",
+}
+````
+
+| Parameter      | Description                                                                                                                          |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| session    | The type of token used. It is always `Bearer`.                                                                                       |
+| _message_    | Message with the next steps. It is always: `Use the session and the code we have sent you via SMS to get your access tokens via POST /token.`.  |                                                                                     |
+
+#### Errors
 
 You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
 
@@ -274,22 +276,24 @@ Example: Login of a user that has not been confirmed
 
 ```json
 {
-  "__type": "UserNotConfirmedException",
-  "message": "User is not confirmed."
+  "error": {
+    "type": "UserNotConfirmedException",
+    "message": "User is not confirmed.."
+  }
 }
 ```
 
-##### Sign-out
+##### Revoke token
 
 Users can call this endpoint to finish the session.
 
-###### Endpoint
+#### Endpoint
 
 ```http request
-POST https://<httpURL>/auth/sign-out
+POST https://<httpURL>/auth/token/revoke
 ```
 
-###### Request body
+#### Request body
 
 ```json
 {
@@ -299,13 +303,13 @@ POST https://<httpURL>/auth/sign-out
 
 | Parameter     | Description                                   |
 | ------------- | --------------------------------------------- |
-| _accessToken_ | The access token you get in the sign-in call. |
+| _accessToken_ | The access token you get in the sign-in process. |
 
-###### Response
+#### Response
 
 An empty body
 
-###### Errors
+#### Errors
 
 You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
 
@@ -313,22 +317,24 @@ Example: Invalid access token specified
 
 ```json
 {
-  "__type": "NotAuthorizedException",
-  "message": "Invalid Access Token"
+  "error": {
+    "type": "NotAuthorizedException",
+    "message": "Invalid Access Token"
+  }
 }
 ```
 
-##### Refresh token
+### Refresh token
 
 Users can call this endpoint to refresh the access token.
 
-###### Endpoint
+#### Endpoint
 
 ```http request
-POST https://<httpURL>/auth/refresh-token
+POST https://<httpURL>/auth/token/refresh
 ```
 
-###### Request body
+#### Request body
 
 > Refresh-token request body
 
@@ -344,7 +350,7 @@ POST https://<httpURL>/auth/refresh-token
 | _clientId_     | The application client Id that you got as an output when the application was deployed. |
 | _refreshToken_ | The token you can use to get a new access token after it has expired.                  |
 
-###### Response
+#### Response
 
 ```json
 {
@@ -355,14 +361,16 @@ POST https://<httpURL>/auth/refresh-token
 }
 ```
 
-###### Errors
+#### Errors
 
-> Refresh token error response body example: Invalid refresh token specified
+Refresh token error response body example: Invalid refresh token specified
 
 ```json
 {
-  "__type": "NotAuthorizedException",
-  "message": "Invalid Refresh Token"
+  "error": {
+    "type": "NotAuthorizedException",
+    "message": "Invalid Refresh Token"
+  }
 }
 ```
 
