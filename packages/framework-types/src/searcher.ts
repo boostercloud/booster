@@ -96,10 +96,7 @@ export enum BooleanOperations {
   '!=' = 'not_equal',
 }
 
-// eslint-disable-next-line prettier/prettier
-type Operation<TType> =
-  TType extends number ? EnumToUnion<typeof NumberOperations> :
-  TType extends string ? EnumToUnion<typeof StringOperations> :
-  TType extends boolean ? EnumToUnion<typeof BooleanOperations> : never
-
 type EnumToUnion<TEnum> = keyof TEnum
+
+// eslint-disable-next-line prettier/prettier
+type Operation<TType> = TType extends number ? EnumToUnion<typeof NumberOperations> : TType extends string ? EnumToUnion<typeof StringOperations> : TType extends boolean ? EnumToUnion<typeof BooleanOperations> : never
