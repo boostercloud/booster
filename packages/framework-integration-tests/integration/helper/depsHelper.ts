@@ -11,11 +11,14 @@ export async function overrideWithBoosterLocalDependencies(projectPath: string):
     if (/@boostercloud/.test(packageName)) {
       const dependencyName = packageName.replace('@boostercloud/', '')
       // Pack all booster dependencies in a temporal directory
-      await exec(`cd .booster && npm pack ${path.relative(projectPath, path.join('..', dependencyName))}`)
-      // Now override the pakcageJSON dependencies with the path to the packed dependency
-      packageJSON.dependencies[
-        packageName
-      ] = `file:../.booster/boostercloud-${dependencyName}-${packageJSON.version}.tgz`
+      const execution = await exec(`cd .booster && npm pack ${path.join('..', '..', dependencyName)}`)
+      const packedDependencyFileName = execution.stdout
+        .trim()
+        .split('\n')
+        .pop()!
+      const dotBoosterPath = path.relative(projectPath, '.booster')
+      // Now override the packageJSON dependencies with the path to the packed dependency
+      packageJSON.dependencies[packageName] = `file:${path.join(dotBoosterPath, packedDependencyFileName)}`
     }
   }
   fs.writeFileSync(path.join(projectPath, 'package.json'), JSON.stringify(packageJSON, undefined, 2))
