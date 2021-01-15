@@ -19,7 +19,7 @@ export class BoosterSubscribersNotifier {
   private readonly graphQLSchema: GraphQLSchema
 
   public constructor(private config: BoosterConfig, private logger: Logger) {
-    this.graphQLSchema = GraphQLGenerator.getInstance(config,logger).generateSchema()
+    this.graphQLSchema = GraphQLGenerator.getInstance(config, logger).generateSchema()
   }
 
   public async dispatch(request: unknown): Promise<void> {

@@ -22,7 +22,7 @@ export class GraphQLGenerator {
   private readonly typeInformer: GraphQLTypeInformer
 
   private static singleton: GraphQLGenerator | undefined = undefined
-
+  
   public static getInstance(config: BoosterConfig, logger: Logger): GraphQLGenerator {
     if (this.singleton === undefined) {
       this.singleton = new GraphQLGenerator(
