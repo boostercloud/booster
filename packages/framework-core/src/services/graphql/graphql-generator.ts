@@ -34,7 +34,7 @@ export class GraphQLGenerator {
     return this.singleton;
   }
 
-  public constructor(
+  private constructor(
     config: BoosterConfig,
     private commandsDispatcher: BoosterCommandDispatcher,
     private readModelsDispatcher: BoosterReadModelDispatcher
