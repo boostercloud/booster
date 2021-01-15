@@ -11,8 +11,8 @@ export const response = (statusCode: number, data: object): APIGatewayProxyResul
 export const errorResponse = (e: AWSError): APIGatewayProxyResult => {
   return response(e.statusCode || 500, {
     error: {
+      type: e.code,
       message: e.message,
-      code: e.code,
     },
   })
 }

@@ -13,7 +13,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
       })
       .promise()
     return response(200, {
-      message: `Confirmation code sent to ${params.username}`,
+      message: `The confirmation code to activate your account has been sent to: ${params.username}.`,
     })
   } catch (e) {
     return errorResponse(e)

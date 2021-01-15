@@ -15,6 +15,7 @@ export interface AWSAuthRocketParams {
   appName: string
   environmentName: string
   passwordPolicy?: {
+    minLength?: number
     requireDigits: boolean
     requireLowercase: boolean
     requireSymbols: boolean
@@ -57,7 +58,9 @@ export class AuthStack {
         role: new StringAttribute({ mutable: true }),
       },
       selfSignUpEnabled: true,
-      passwordPolicy: params.passwordPolicy,
+      passwordPolicy: useEmail
+        ? params.passwordPolicy
+        : { requireDigits: false, requireLowercase: false, requireUppercase: false, requireSymbols: false },
       userVerification: {
         emailStyle: VerificationEmailStyle.LINK,
       },

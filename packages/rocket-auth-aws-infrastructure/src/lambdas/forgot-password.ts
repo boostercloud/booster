@@ -13,7 +13,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
       })
       .promise()
     return response(200, {
-      message: "We have sen't you a confirmation code to change your password.",
+      message: `The confirmation code to change your password has been sent to: ${params.username}.`,
     })
   } catch (e) {
     return errorResponse(e)

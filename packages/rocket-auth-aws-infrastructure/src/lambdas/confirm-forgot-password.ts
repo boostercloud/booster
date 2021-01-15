@@ -10,12 +10,12 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
       .confirmForgotPassword({
         ClientId: process.env.userPoolClientId!,
         Username: params.username,
-        ConfirmationCode: params.code,
+        ConfirmationCode: params.confirmationCode,
         Password: params.password,
       })
       .promise()
     return response(200, {
-      message: 'Your password has been changed',
+      message: 'Your password has been successfully changed.',
     })
   } catch (e) {
     return errorResponse(e)

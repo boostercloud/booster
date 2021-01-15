@@ -10,11 +10,11 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
       .confirmSignUp({
         ClientId: process.env.userPoolClientId!,
         Username: params.username,
-        ConfirmationCode: params.code,
+        ConfirmationCode: params.confirmationCode,
       })
       .promise()
     return response(200, {
-      message: `Username: ${params.username} confirmed.`,
+      message: `The username: ${params.username} has been confirmed.`,
     })
   } catch (e) {
     return errorResponse(e)

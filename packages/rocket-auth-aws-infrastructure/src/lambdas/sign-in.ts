@@ -21,6 +21,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     if (isCustom) {
       return response(200, {
         session: initAuthResponse.Session,
+        message: 'Use the session and the code we have sent you via SMS to get your access tokens via POST /token.',
       })
     }
     return response(200, {

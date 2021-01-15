@@ -12,7 +12,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         ClientId: process.env.userPoolClientId!,
         ChallengeResponses: {
           USERNAME: params.username,
-          ANSWER: params.code,
+          ANSWER: params.confirmationCode,
         },
         Session: params.session,
       })
