@@ -138,6 +138,18 @@ To start contributing to the project you would need to set up the project in you
   - `./scripts/check-all-the-things.sh` on Linux and MacOS
   - `.\scripts\check-all-the-things.ps1` on Windows
 
+
+### Understanding the "lerna monorepo" approach and how dependencies are structured in the project
+The Booster Framework project is organized following the ["lerna monorepo"](https://lerna.js.org/) structure. There are several "package.json" files and each one has its purpose with regard to the dependencies you include on them:
+- The "package.json" located at the project root is _only_ intended for development tools that you use at project level, like the Typescript compiler, linter plugins, etc. You should never put there dependencies that you would use inside a package like `framework-core`, for example (there is a linter rule that will fail if you do this). 
+- The "package.json" files that are on each package root should contain the dependencies used by that specific package. Be sure to correctly differentiate which dependency is only for development and which one is for production.
+
+When you bootstrap your project with `lerna bootstrap`, all the needed dependencies will be installed. Lerna is configured to use a "hoisted" approach. This means that if there is the same dependency specified in several "package.json" files, it will be "hoisted": that dependency will be installed inside the `node_modules` located in the project root, and _not_ on the `node_modules` of each package. This saves space, makes the development speed faster and resolves some problems.
+
+There could be the situation in which two packages depends on the same dependency but with different versions. In that case you would get an error during `lerna bootstrap`, and that's good. Specify the same dependency version and it will be fixed.
+
+Finally, **always use exact numbers for dependency versions**. This means that if you want to add the dependency "aws-sdk" in version 1.2.3, you should add `"aws-sdk": "1.2.3"` to the corresponding "package.json" file, and never `"aws-sdk": "^1.2.3"` or `"aws-sdk": "~1.2.3"`. This restriction comes from hard problems we've had in the past
+
 ### Github flow
 
 The preferred way of accepting contributions is following the [Github flow](https://guides.github.com/introduction/flow/), that is, you fork the project and work in your own branch until you're happy with the work, and then submit a PR in Github.
