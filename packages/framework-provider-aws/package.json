@@ -20,8 +20,7 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@boostercloud/framework-types": "^0.9.3",
-    "get-installed-path": "^4.0.8"
+    "@boostercloud/framework-types": "^0.9.3"
   },
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
@@ -37,7 +36,6 @@
   "devDependencies": {
     "@types/aws-lambda": "8.10.48",
     "@types/faker": "5.1.5",
-    "@types/get-installed-path": "^4.0.0",
     "aws-sdk": "2.764.0",
     "faker": "5.1.0",
     "velocityjs": "^2.0.0",
