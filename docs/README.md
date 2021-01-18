@@ -390,6 +390,20 @@ parameters are as follows:
 - License: MIT
 - Version: 0.1.0
 
+If you prefer to specify each parameter without following the instructions, you can use the following flags with this structure `<flag>=<parameter>`.
+
+| Flag                   | Short version | Description |
+| :--------------------- | :------------ | :---------- |
+| `--homepage`           | `-H`          | the website of this project |
+| `--author`             | `-a`          | author of this project |
+| `--description`        | `-d`          | a short description |
+| `--license`            | `-l`          | license used in this project |
+| `--providerPackageName`| `-p`          | package name implementing the cloud provider integration where the application will be deployed |
+| `--repository`         | `-r`          | the URL of the repository |
+| `--version`            | `-v`          | the initial version |
+
+Additionally, you can use the flag `--skipInstall` if you want to skip installing dependencies and the flag `--skipGit ` in case you want to skip git initialization.
+
 > Booster CLI commands follow this structure: `boost <subcommand> [<flags>] [<parameters>]`.
 > Let's break down the command we have just executed:
 >
@@ -400,6 +414,8 @@ parameters are as follows:
 > - `boosted-blog` is a "parameter" for the subcommand `new:project`. Flags and parameters are optional and
 >   their meaning and shape depend on the subcommand you used. In this case, we are specifying the name of the project
 >   we are creating.
+
+**Note:** You can always use the flag `--help` for getting all the available options for each cli command.
 
 When finished, you'll see some scaffolding that has been generated. The project name will be the
 project's root so `cd` into it:
@@ -923,8 +939,8 @@ export class CreateProduct {
 
   public static async handle(command: CreateProduct, register: Register): Promise<void> {
     const priceLimit = 10
-    if (this.price >= priceLimit) {
-      throw new Error(`price must be below ${priceLimit}, and it was ${this.price}`)
+    if (command.price >= priceLimit) {
+      throw new Error(`price must be below ${priceLimit}, and it was ${command.price}`)
     }
   }
 }
@@ -2535,7 +2551,10 @@ boost deploy -e <environment name>
 The `<environment name>` parameter is the name of the [environment](#environments) you want to deploy.
 It will take a while, but you should have your project deployed to your cloud provider.
 
-If you make changes to your code, you can run `boost deploy -e <environment name>` again to update your project in the cloud.
+If you make changes to your code, you can run ``boost deploy -e` <environment name>` again to update your project in the cloud.
+
+
+To skip restoring dependencies after deployment you can run ``boost deploy -e` <environment name> -s`.
 
 #### Application outputs
 
@@ -2556,6 +2575,10 @@ boost nuke -e <environment name>
 ```
 
 **Note**: This will delete everything in your stack, including databases. This action is **not** reversible!
+
+For a force delete without asking for confirmation, you can run `boost nuke -e <environment name> -f`.
+
+**Note**: Be EXTRA CAUTIOUS with this option, all your application data will be irreversibly DELETED without confirmation.
 
 ## Going deeper with Booster
 
