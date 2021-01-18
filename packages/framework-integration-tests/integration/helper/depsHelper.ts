@@ -16,7 +16,7 @@ export async function overrideWithBoosterLocalDependencies(projectPath: string):
         fs.mkdirSync(dotBooster)
       }
 
-      const execution = await exec(`npm pack ${path.join('..', '..', dependencyName)}`, { cwd: projectPath })
+      const execution = await exec(`npm pack ${path.join('..', '..', dependencyName)}`)
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const packedDependencyFileName = execution.stdout
         ?.trim()
