@@ -107,6 +107,11 @@ export class BoosterGraphQLDispatcher {
       }
 
       const queryDocument = graphql.parse(operation.query)
+      this.logger.debug(
+        `Validating Query Document\n\n  Query Document: ${JSON.stringify(queryDocument)}\n\n  Schema: ${JSON.stringify(
+          this.graphQLSchema
+        )}`
+      )
       const errors = graphql.validate(this.graphQLSchema, queryDocument)
       if (errors.length > 0) {
         throw errors

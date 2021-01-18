@@ -1,6 +1,7 @@
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import * as AWS from '@boostercloud/framework-provider-aws'
+import { FakeProvider } from '../fake-provider/fake-provider'
 
 // TODO: After prunning `devDependencies` to deploy the project to lambda, we cannot import the local provider anymore. We should look for a better solution than this, maybe loading a different config file depending on the configured environment in BOOSTER_ENV
 if (process.env.BOOSTER_ENV === 'local') {
@@ -15,6 +16,11 @@ if (process.env.BOOSTER_ENV === 'local') {
 Booster.configure('development', (config: BoosterConfig): void => {
   config.appName = 'my-store'
   config.provider = AWS.Provider()
+})
+
+Booster.configure('fake', (config: BoosterConfig): void => {
+  config.appName = 'my-store'
+  config.provider = FakeProvider // For integration tests only
 })
 
 Booster.configure('production', (config: BoosterConfig): void => {

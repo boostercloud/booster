@@ -290,6 +290,27 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Fake Integration Tests",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--colors",
+        "--forbid-only",
+        "--config",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/providers/fake/.mocharc.yml",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/providers/fake/**/*.integration.ts"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+      "runtimeArgs": ["--preserve-symlinks"],
+      "env": {
+        "BOOSTER_ENV": "fake"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "framework-provider-kubernetes tests",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [

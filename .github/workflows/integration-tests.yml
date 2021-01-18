@@ -98,3 +98,15 @@ jobs:
       - run: npx lerna bootstrap
       - run: npx lerna run compile
       - run: npx lerna run integration/local --stream
+
+  fake-integration-tests:
+    name: Fake Environment Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - run: npx lerna bootstrap
+      - run: npx lerna run compile
+      - run: npx lerna run integration/fake --stream
