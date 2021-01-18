@@ -14,6 +14,11 @@ jobs:
           node-version: 12.x
       - run: npx lerna bootstrap
       - run: npx lerna run compile
+      - run: pwd
+      - run: ls -al ./node_modules
+      - run: ls -al ./node_modules/@boostercloud
+      - run: ls -al ../../
+      - run: ls -al ../../node_modules
       - run: npx lerna run integration/aws-deploy --stream
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
