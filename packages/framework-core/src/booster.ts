@@ -22,6 +22,7 @@ import { BoosterScheduledCommandDispatcher } from './booster-scheduled-command-d
  * - `provider`: `Provider.AWS`
  * - `appName`: `new-booster-app`
  * - `region`: 'eu-west-1'
+ *
  */
 export class Booster {
   public static readonly configuredEnvironments: Set<string> = new Set<string>()
