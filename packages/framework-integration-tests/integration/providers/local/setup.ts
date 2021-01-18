@@ -2,7 +2,7 @@ import { start } from './utils'
 import { sleep } from '../../helper/sleep'
 import { ChildProcess } from 'child_process'
 import { createSandboxProject, removeFolders } from '../../helper/fileHelper'
-import { forceLernaRebuild, overrideWithBoosterLocalDependencies } from '../../helper/depsHelper'
+import { overrideWithBoosterLocalDependencies } from '../../helper/depsHelper'
 import { sandboxName } from './constants'
 import { runCommand } from '../../helper/runCommand'
 
@@ -16,8 +16,7 @@ before(async () => {
   console.log('installing dependencies...')
   await runCommand(sandboxPath, 'npm install')
 
-  console.log('symlinking booster dependencies...')
-  await forceLernaRebuild()
+  console.log('overriding booster dependencies...')
   await overrideWithBoosterLocalDependencies(sandboxPath)
 
   console.log(`starting local server in ${sandboxPath}...`)

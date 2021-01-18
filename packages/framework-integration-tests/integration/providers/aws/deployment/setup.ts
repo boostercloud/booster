@@ -2,13 +2,12 @@ import { deploy } from '../deploy'
 import { sleep } from '../../../helper/sleep'
 import { setEnv, checkConfigAnd } from '../utils'
 import { createSandboxProject } from '../../../helper/fileHelper'
-import { forceLernaRebuild, overrideWithBoosterLocalDependencies } from '../../../helper/depsHelper'
+import { overrideWithBoosterLocalDependencies } from '../../../helper/depsHelper'
 
 before(async () => {
   await setEnv()
   const sandboxedProject = createSandboxProject('deploy')
 
-  await forceLernaRebuild()
   await overrideWithBoosterLocalDependencies(sandboxedProject)
 
   await checkConfigAnd(deploy.bind(null, sandboxedProject))
