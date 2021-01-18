@@ -2562,7 +2562,10 @@ boost deploy -e <environment name>
 The `<environment name>` parameter is the name of the [environment](#environments) you want to deploy.
 It will take a while, but you should have your project deployed to your cloud provider.
 
-If you make changes to your code, you can run `boost deploy -e <environment name>` again to update your project in the cloud.
+If you make changes to your code, you can run ``boost deploy -e` <environment name>` again to update your project in the cloud.
+
+
+To skip restoring dependencies after deployment you can run ``boost deploy -e` <environment name> -s`.
 
 To skip restoring dependencies after deployment you can run `boost deploy -e <environment name> -s`.
 
