@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Operation, FilterFor, BoosterConfig, Logger, InvalidParameterError } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
@@ -32,46 +33,56 @@ export async function searchReadModel(
   return result.Items ?? []
 }
 
-function buildFilterExpression(filters: FilterFor<any>, depth?: number): string {
+function buildFilterExpression(filters: FilterFor<any>, position?: number, depth?: number): string {
   return Object.entries(filters)
-    .map(([propName, filter]) => {
-      if (propName.toUpperCase() === 'NOT') return `NOT (${buildFilterExpression(filter as FilterFor<any>)})`
-      if (['AND', 'OR'].includes(propName.toUpperCase()) && Array.isArray(filter)) {
-        return `(${filter
-          .map((arrayFilter, index) => buildFilterExpression(arrayFilter, index))
-          .join(` ${propName} `)})`
+    .map(([propName, filter], propIndex) => {
+      const propNumber = position ? position : propIndex
+      switch (propName) {
+        case 'not':
+          return `NOT (${buildFilterExpression(filter as FilterFor<any>)})`
+        case 'and':
+        case 'or':
+          return `(${(filter as Array<FilterFor<any>>)
+            .map((arrayFilter, index) => buildFilterExpression(arrayFilter, propIndex, index))
+            .join(` ${propName} `)})`
+        default:
+          return buildOperation(propName, filter, propNumber, depth)
       }
-      return buildOperation(propName, filter, depth)
     })
     .join(' AND ')
 }
 
-function buildOperation(propName: string, filter: Operation<any> = {}, depth?: number): string {
-  const holder = placeholderBuilderFor(`${propName}${depth ? `_${depth}` : ''}`)
+function buildOperation(propName: string, filter: Operation<any> = {}, position = 0, depth = 0): string {
+  const holder = placeholderBuilderFor(propName)
   return Object.entries(filter)
-    .map(([operation, filter], index) => {
+    .map(([operation, value]) => {
       switch (operation) {
         case 'eq':
-          return `#${propName} = ${holder(index)}`
+          return `#${propName} = ${holder(position, depth)}`
         case 'ne':
-          return `#${propName} <> ${holder(index)}`
+          return `#${propName} <> ${holder(position, depth)}`
         case 'lt':
-          return `#${propName} < ${holder(index)}`
+          return `#${propName} < ${holder(position, depth)}`
         case 'gt':
-          return `#${propName} > ${holder(index)}`
+          return `#${propName} > ${holder(position, depth)}`
         case 'gte':
-          return `#${propName} >= ${holder(index)}`
+          return `#${propName} >= ${holder(position, depth)}`
         case 'lte':
-          return `#${propName} <= ${holder(index)}`
+          return `#${propName} <= ${holder(position, depth)}`
         case 'in':
-          return `#${propName} IN (${filter.map((value: any, subIndex: number) => holder(index, subIndex)).join(',')})`
+          return `#${propName} IN (${value
+            .map((value: any, subIndex: number) => `${holder(position, depth)}_${subIndex}`)
+            .join(',')})`
         case 'between':
-          return `#${propName} BETWEEN ${holder(index)} AND ${holder(index + 1)}`
+          return `#${propName} BETWEEN ${holder(position)} AND ${holder(position + 1)}`
         case 'contains':
-          return `contains(#${propName}, ${holder(index)})`
+          return `contains(#${propName}, ${holder(position, depth)})`
         case 'beginsWith':
-          return `begins_with(#${propName}, ${holder(index)})`
+          return `begins_with(#${propName}, ${holder(position)})`
         default:
+          if (typeof value === 'object') {
+            return `#${propName}.${buildOperation(operation, value, position)}`
+          }
           throw new InvalidParameterError(`Operator "${operation}" is not supported`)
       }
     })
@@ -86,41 +97,74 @@ function placeholderBuilderFor(propName: string): (valueIndex: number, valueSubI
 function buildExpressionAttributeNames(filters: FilterFor<any>): ExpressionAttributeNameMap {
   const attributeNames: ExpressionAttributeNameMap = {}
   for (const propName in filters) {
-    if (propName.toUpperCase() === 'NOT') {
-      Object.assign(attributeNames, buildExpressionAttributeNames(filters[propName] as FilterFor<any>))
-    } else if (['AND', 'OR'].includes(propName.toUpperCase())) {
-      for (const filter of filters[propName] as Array<FilterFor<any>>) {
-        Object.assign(attributeNames, buildExpressionAttributeNames(filter as FilterFor<any>))
-      }
-    } else {
-      attributeNames[`#${propName}`] = propName
+    switch (propName) {
+      case 'not':
+        Object.assign(attributeNames, buildExpressionAttributeNames(filters[propName] as FilterFor<any>))
+        break
+      case 'and':
+      case 'or':
+        for (const filter of filters[propName] as Array<FilterFor<any>>) {
+          Object.assign(attributeNames, buildExpressionAttributeNames(filter as FilterFor<any>))
+        }
+        break
+      default:
+        Object.entries(filters[propName] as FilterFor<any>).forEach(([prop, value]) => {
+          attributeNames[`#${propName}`] = propName
+          if (typeof value === 'object') {
+            Object.assign(attributeNames, buildExpressionAttributeNames({ [prop]: value }))
+          }
+        })
+        break
     }
   }
   return attributeNames
 }
 
-function buildExpressionAttributeValues(filters: FilterFor<any>, depth?: number): ExpressionAttributeValueMap {
+function buildExpressionAttributeValues(
+  filters: FilterFor<any>,
+  position?: number,
+  depth?: number
+): ExpressionAttributeValueMap {
   const attributeValues: ExpressionAttributeValueMap = {}
-  for (const propName in filters) {
-    if (propName.toUpperCase() === 'NOT') {
-      Object.assign(attributeValues, buildExpressionAttributeValues(filters[propName] as FilterFor<any>))
-    } else if (['AND', 'OR'].includes(propName.toUpperCase())) {
-      for (const [index, filter] of (filters[propName] as Array<FilterFor<any>>).entries()) {
-        Object.assign(attributeValues, buildExpressionAttributeValues(filter as FilterFor<any>, index))
-      }
-    } else {
-      const filter = filters[propName] || {}
-      const holder = placeholderBuilderFor(`${propName}${depth ? `_${depth}` : ''}`)
-      Object.values(filter).forEach((value, index) => {
-        if (Array.isArray(value)) {
-          value.forEach((element, elementIndex) => {
-            attributeValues[holder(index, elementIndex)] = element
-          })
-        } else {
-          attributeValues[holder(index)] = value
+  Object.entries(filters).forEach(([propName], propIndex) => {
+    const propNumber = position ? position : propIndex
+    switch (propName) {
+      case 'not':
+        Object.assign(attributeValues, buildExpressionAttributeValues(filters[propName] as FilterFor<any>))
+        break
+      case 'and':
+      case 'or':
+        for (const [index, filter] of (filters[propName] as Array<FilterFor<any>>).entries()) {
+          Object.assign(attributeValues, buildExpressionAttributeValues(filter as FilterFor<any>, propIndex, index))
         }
-      })
+        break
+      default:
+        Object.assign(attributeValues, buildAttributeValue(propName, filters[propName], propNumber, depth))
+        break
     }
-  }
+  })
+  return attributeValues
+}
+
+function buildAttributeValue(
+  propName: string,
+  filter: Operation<any> = {},
+  position = 0,
+  depth = 0
+): ExpressionAttributeValueMap {
+  const attributeValues: ExpressionAttributeValueMap = {}
+  const holder = placeholderBuilderFor(propName)
+
+  Object.entries(filter).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      value.forEach((element, elementIndex) => {
+        attributeValues[`${holder(position, depth)}_${elementIndex}`] = element
+      })
+    } else if (typeof value === 'object') {
+      Object.assign(attributeValues, buildExpressionAttributeValues({ [key]: value }, position))
+    } else {
+      attributeValues[holder(position, depth)] = value
+    }
+  })
   return attributeValues
 }
