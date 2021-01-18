@@ -24,11 +24,12 @@ export class GraphQLGenerator {
   private static singleton: GraphQLGenerator | undefined
   
   public static getInstance(config: BoosterConfig, logger: Logger): GraphQLGenerator {
-    return this.singleton ?? new GraphQLGenerator(
+    this.singleton = this.singleton ?? new GraphQLGenerator(
       config,
       new BoosterCommandDispatcher(config, logger),
       new BoosterReadModelDispatcher(config, logger)
     )
+    return this.singleton
   }
 
   private constructor(
