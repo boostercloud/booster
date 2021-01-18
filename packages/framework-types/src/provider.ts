@@ -12,6 +12,7 @@ import { BoosterConfig } from './config'
 import { Logger } from './logger'
 import { ReadModelInterface, UUID } from './concepts'
 import { Filter } from './searcher'
+import { ReadModelPubSub } from './graphql/read-model-pub-sub'
 
 export interface ProviderLibrary {
   events: ProviderEventsLibrary
@@ -70,6 +71,7 @@ export interface ProviderGraphQLLibrary {
     config: BoosterConfig
   ): Promise<GraphQLRequestEnvelope | GraphQLRequestEnvelopeError>
   handleResult(result?: unknown, headers?: Record<string, string>): Promise<unknown>
+  getPubSub(): ReadModelPubSub
 }
 
 export interface ProviderConnectionsLibrary {

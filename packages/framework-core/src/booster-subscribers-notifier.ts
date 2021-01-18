@@ -13,7 +13,7 @@ import * as graphql from 'graphql'
 import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { BoosterCommandDispatcher } from './booster-command-dispatcher'
 import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
-import { FilteredReadModelPubSub, ReadModelPubSub } from './services/pub-sub/read-model-pub-sub'
+import { FilteredReadModelPubSub, ReadModelPubSub } from './services/pub-sub/filtered-read-model-pub-sub'
 import { GraphQLResolverContext } from './services/graphql/common'
 import { ExecutionResult } from 'graphql/execution/execute'
 

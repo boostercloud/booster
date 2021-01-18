@@ -8,11 +8,13 @@ import {
 } from './library/events-adapter'
 import { requestSucceeded, requestFailed } from './library/api-adapter'
 import { EventRegistry } from './services'
-import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
+import { GraphQLAdapter } from './library/graphql-adapter'
 import { UserApp } from '@boostercloud/framework-types'
 import * as path from 'path'
 import { ReadModelRegistry } from './services/read-model-registry'
 import { fetchReadModel, searchReadModel, storeReadModel } from './library/read-model-adapter'
+import { SubscriptionsRegistry } from './services/subscriptions-registry'
+import { subscribe } from './library/subscriptions-adapter'
 
 export { User, LoginCredentials, SignUpUser, RegisteredUser, AuthenticatedUser } from './library/auth-adapter'
 export * from './paths'
@@ -21,6 +23,8 @@ export { GraphQLSocketMessage } from './library/graphql-adapter'
 
 const eventRegistry = new EventRegistry()
 const readModelRegistry = new ReadModelRegistry()
+const subscriptionsRegistry = new SubscriptionsRegistry()
+const graphQLAdapter = new GraphQLAdapter()
 const userApp: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
 
 export const Provider = (): ProviderLibrary => ({
@@ -40,8 +44,7 @@ export const Provider = (): ProviderLibrary => ({
     store: storeReadModel.bind(null, readModelRegistry),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete: undefined as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    subscribe: undefined as any,
+    subscribe: subscribe.bind(null, subscriptionsRegistry),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fetchSubscriptions: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -51,8 +54,9 @@ export const Provider = (): ProviderLibrary => ({
   },
   // ProviderGraphQLLibrary
   graphQL: {
-    rawToEnvelope: rawGraphQLRequestToEnvelope,
+    rawToEnvelope: graphQLAdapter.rawGraphQLRequestToEnvelope.bind(graphQLAdapter),
     handleResult: requestSucceeded,
+    getPubSub: graphQLAdapter.getPubSub.bind(graphQLAdapter),
   },
   // ProviderAuthLibrary
   auth: {
@@ -79,6 +83,7 @@ export const Provider = (): ProviderLibrary => ({
   },
   // ScheduledCommandsLibrary
   scheduled: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rawToEnvelope: undefined as any,
   },
   // ProviderInfrastructureGetter

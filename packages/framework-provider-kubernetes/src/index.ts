@@ -25,6 +25,7 @@ export const Provider = (): ProviderLibrary => ({
   graphQL: {
     rawToEnvelope: undefined as any,
     handleResult: undefined as any,
+    getPubSub: undefined as any,
   },
   // ProviderAuthLibrary
   auth: {

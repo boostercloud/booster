@@ -1,5 +1,10 @@
 import { APIGatewayProxyEvent } from 'aws-lambda'
-import { GraphQLRequestEnvelope, GraphQLRequestEnvelopeError, Logger } from '@boostercloud/framework-types'
+import {
+  GraphQLRequestEnvelope,
+  GraphQLRequestEnvelopeError,
+  Logger,
+  NoopReadModelPubSub,
+} from '@boostercloud/framework-types'
 
 export async function rawGraphQLRequestToEnvelope(
   request: APIGatewayProxyEvent,
@@ -30,4 +35,8 @@ export async function rawGraphQLRequestToEnvelope(
       eventType,
     }
   }
+}
+
+export function getPubSub() {
+  return new NoopReadModelPubSub()
 }

@@ -11,7 +11,7 @@ import {
   rawReadModelEventsToEnvelopes,
   deleteReadModel,
 } from './library/read-model-adapter'
-import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
+import { rawGraphQLRequestToEnvelope, getPubSub } from './library/graphql-adapter'
 import { DynamoDB, CognitoIdentityServiceProvider } from 'aws-sdk'
 import { ProviderInfrastructure, ProviderLibrary, RocketDescriptor } from '@boostercloud/framework-types'
 import { requestFailed, requestSucceeded } from './library/api-gateway-io'
@@ -76,6 +76,7 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
     graphQL: {
       rawToEnvelope: rawGraphQLRequestToEnvelope,
       handleResult: requestSucceeded,
+      getPubSub,
     },
     // ProviderAuthLibrary
     auth: {

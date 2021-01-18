@@ -42,6 +42,7 @@ export const Provider = (): ProviderLibrary => ({
   graphQL: {
     rawToEnvelope: rawGraphQLRequestToEnvelope,
     handleResult: requestSucceeded,
+    getPubSub: notImplemented as any,
   },
   // ProviderAuthLibrary
   auth: {

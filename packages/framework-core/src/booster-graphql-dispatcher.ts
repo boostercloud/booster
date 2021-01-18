@@ -13,7 +13,6 @@ import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { BoosterCommandDispatcher } from './booster-command-dispatcher'
 import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
 import { GraphQLResolverContext, graphQLWebsocketSubprotocolHeaders } from './services/graphql/common'
-import { NoopReadModelPubSub } from './services/pub-sub/noop-read-model-pub-sub'
 import { GraphQLWebsocketHandler } from './services/graphql/websocket-protocol/graphql-websocket-protocol'
 import { BoosterTokenVerifier } from './booster-token-verifier'
 
@@ -126,7 +125,7 @@ export class BoosterGraphQLDispatcher {
         operation: {
           ...operation,
         },
-        pubSub: new NoopReadModelPubSub(),
+        pubSub: this.config.provider.graphQL.getPubSub(),
         storeSubscriptions: true,
       }
 
