@@ -21,17 +21,14 @@ export class GraphQLGenerator {
   private readonly subscriptionGenerator: GraphQLSubscriptionGenerator
   private readonly typeInformer: GraphQLTypeInformer
 
-  private static singleton: GraphQLGenerator | undefined = undefined
+  private static singleton: GraphQLGenerator | undefined
   
   public static getInstance(config: BoosterConfig, logger: Logger): GraphQLGenerator {
-    if (this.singleton === undefined) {
-      this.singleton = new GraphQLGenerator(
-        config,
-        new BoosterCommandDispatcher(config, logger),
-        new BoosterReadModelDispatcher(config, logger)
-      )
-    }
-    return this.singleton;
+    return this.singleton ?? new GraphQLGenerator(
+      config,
+      new BoosterCommandDispatcher(config, logger),
+      new BoosterReadModelDispatcher(config, logger)
+    )
   }
 
   private constructor(
