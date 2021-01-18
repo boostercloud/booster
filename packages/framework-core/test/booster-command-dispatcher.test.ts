@@ -39,6 +39,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
 
         const fakeHandler = fake()
         const command = new PostComment('This test is good!')
+        replace(PostComment, 'handle', fakeHandler)
         replace(RegisterHandler, 'handle', fake())
 
         Booster.configure(

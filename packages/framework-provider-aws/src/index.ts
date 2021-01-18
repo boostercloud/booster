@@ -30,7 +30,6 @@ import {
   storeConnectionData,
 } from './library/connections-adapter'
 import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
-import { getInstalledPathSync } from 'get-installed-path'
 
 const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
 const userPool = new CognitoIdentityServiceProvider()
@@ -103,13 +102,14 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
     infrastructure: () => {
       const infrastructurePackageName = require('../package.json').name + '-infrastructure'
       try {
-        getInstalledPathSync(infrastructurePackageName)
+        return loadInfrastructurePackage(infrastructurePackageName).Infrastructure(rockets)
       } catch (e) {
         throw new Error(
-          `The AWS infrastructure package must be installed to perform this operation, please install it globally running 'npm install -g ${infrastructurePackageName}'`
+          'The AWS infrastructure package could not be loaded. Please ensure that one of the following actions has been done:\n' +
+            `  - It has been specified in your "devDependencies" section of your "package.json" file. You can do so by running 'npm install --save-dev ${infrastructurePackageName}'\n` +
+            `  - Or it has been installed globally. You can do so by running 'npm install -g ${infrastructurePackageName}'`
         )
       }
-      return loadInfrastructurePackage(infrastructurePackageName).Infrastructure(rockets)
     },
   }
 }
