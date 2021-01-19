@@ -10,10 +10,9 @@ import {
 import { Effect, PolicyStatement } from '@aws-cdk/aws-iam'
 import { Cors, CorsOptions, LambdaIntegration, MethodOptions, Resource, RestApi } from '@aws-cdk/aws-apigateway'
 import { createLamba } from './utils'
+import { BoosterConfig } from '@boostercloud/framework-types'
 
 export interface AWSAuthRocketParams {
-  appName: string
-  environmentName: string
   passwordPolicy?: {
     minLength?: number
     requireDigits: boolean
@@ -22,55 +21,69 @@ export interface AWSAuthRocketParams {
     requireUppercase: boolean
   }
   mode: 'Passwordless' | 'UserPassword'
+  config: BoosterConfig
 }
 
 export class AuthStack {
   public static mountStack(params: AWSAuthRocketParams, stack: Stack): void {
-    const userPool = AuthStack.buildUserPool(params, stack)
-    const userPoolClient = AuthStack.buildUserPoolClient(params, stack, userPool)
-    const authApi = AuthStack.buildAuthAPI(params, stack, userPool, userPoolClient.userPoolClientId)
-    AuthStack.printOutput(stack, userPool.userPoolId, authApi)
+    if (params.config.thereAreRoles) {
+      const userPool = AuthStack.buildUserPool(params, stack)
+      const userPoolClient = AuthStack.buildUserPoolClient(params, stack, userPool)
+      const authApi = AuthStack.buildAuthAPI(params, stack, userPool, userPoolClient.userPoolClientId)
+      AuthStack.printOutput(stack, userPool.userPoolId, authApi)
+    }
   }
 
   public static unmountStack?(): void {}
 
   private static rocketArtifactsPrefix(params: AWSAuthRocketParams): string {
-    return `${params.appName}-${params.environmentName}-rocket-auth`
+    return `${params.config.appName}-${params.config.environmentName}-rocket-auth`
   }
 
   private static buildUserPool(params: AWSAuthRocketParams, stack: Stack): UserPool {
     const userPoolID = `${AuthStack.rocketArtifactsPrefix(params)}-user-pool`
 
-    const useEmail = params.mode === 'UserPassword'
-    const lambdaTriggers = useEmail ? undefined : AuthStack.buildLambdaTriggers(params, stack)
+    const userPasswordMode = params.mode === 'UserPassword'
+    const lambdaTriggers = userPasswordMode ? undefined : AuthStack.buildLambdaTriggers(params, stack)
+    const preSignUpTrigger = createLamba(
+      stack,
+      `${AuthStack.rocketArtifactsPrefix(params)}-pre-sign-up`,
+      'pre-sign-up.handler',
+      {
+        rolesConfig: JSON.stringify(params.config.roles),
+      }
+    )
 
     const userPool = new UserPool(stack, userPoolID, {
       userPoolName: userPoolID,
       signInAliases: {
-        email: useEmail,
-        phone: !useEmail,
+        email: true,
+        phone: true,
       },
       autoVerify: {
-        email: useEmail,
-        phone: !useEmail,
+        email: true,
+        phone: true,
       },
       customAttributes: {
         role: new StringAttribute({ mutable: true }),
       },
       selfSignUpEnabled: true,
-      passwordPolicy: useEmail
+      passwordPolicy: userPasswordMode
         ? params.passwordPolicy
         : { requireDigits: false, requireLowercase: false, requireUppercase: false, requireSymbols: false },
       userVerification: {
         emailStyle: VerificationEmailStyle.LINK,
       },
-      lambdaTriggers,
+      lambdaTriggers: {
+        ...lambdaTriggers,
+        preSignUp: preSignUpTrigger,
+      },
     })
 
     const localUserPoolDomainID = `${AuthStack.rocketArtifactsPrefix(params)}-user-pool-domain`
     new UserPoolDomain(stack, localUserPoolDomainID, {
       userPool,
-      cognitoDomain: { domainPrefix: params.appName },
+      cognitoDomain: { domainPrefix: params.config.appName },
     })
 
     return userPool
@@ -129,7 +142,7 @@ export class AuthStack {
     userPoolClientId: string
   ): RestApi {
     const rootAuthAPI = new RestApi(stack, `${AuthStack.rocketArtifactsPrefix(params)}-api`, {
-      deployOptions: { stageName: params.environmentName },
+      deployOptions: { stageName: params.config.environmentName },
     })
 
     const authResource = rootAuthAPI.root.addResource('auth')
@@ -151,9 +164,17 @@ export class AuthStack {
     // sign-up/resend-code
 
     const signUpResource = authResource.addResource('sign-up', { defaultCorsPreflightOptions })
-    AuthStack.addIntegration('sign-up', stack, params, userPool, userPoolClientId, signUpResource, 'sign-up.handler', [
-      'cognito-idp:SignUp',
-    ])
+    AuthStack.addIntegration(
+      'sign-up',
+      stack,
+      params,
+      userPool,
+      userPoolClientId,
+      signUpResource,
+      'sign-up.handler',
+      ['cognito-idp:SignUp'],
+      { rolesConfig: JSON.stringify(params.config.roles) }
+    )
 
     let resource = signUpResource.addResource('confirm', { defaultCorsPreflightOptions })
     AuthStack.addIntegration(
@@ -253,7 +274,8 @@ export class AuthStack {
     userPoolClientId: string,
     resource: Resource,
     handler: string,
-    actions: string[]
+    actions: string[],
+    env?: Record<string, string>
   ): void {
     const allowedOriginHeaderForCors = {
       'method.response.header.Access-Control-Allow-Origin': true,
@@ -279,6 +301,7 @@ export class AuthStack {
       userPoolId: userPool.userPoolId,
       userPoolClientId: userPoolClientId,
       mode: params.mode,
+      ...env,
     })
 
     resource.addMethod('POST', new LambdaIntegration(authLambda), methodOptions)
