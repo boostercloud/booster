@@ -1,23 +1,21 @@
 import { Command, flags } from '@oclif/command'
 import { deployToCloudProvider } from '../services/provider-service'
-import {
-  cleanDeploymentSandbox,
-  compileProjectAndLoadConfig,
-  createDeploymentSandbox,
-} from '../services/config-service'
+import { compileProjectAndLoadConfig, DEPLOYMENT_SANDBOX } from '../services/config-service'
 import { BoosterConfig, Logger } from '@boostercloud/framework-types'
 import { Script } from '../common/script'
 import Brand from '../common/brand'
 import { logger } from '../services/logger'
 import { currentEnvironment, initializeEnvironment } from '../services/environment'
+import { removeSandboxProject } from '../common/sandbox'
 
 const runTasks = async (
+  skipRestoreDependencies: boolean,
   compileAndLoad: Promise<BoosterConfig>,
   deployer: (config: BoosterConfig, logger: Logger) => Promise<void>
 ): Promise<void> =>
   Script.init(`boost ${Brand.dangerize('deploy')} [${currentEnvironment()}] 🚀`, compileAndLoad)
     .step('Deploying', (config) => deployer(config, logger))
-    .step('Cleaning up deployment files', cleanDeploymentSandbox)
+    .step('Cleaning up deployment files', async () => removeSandboxProject(DEPLOYMENT_SANDBOX))
     .info('Deployment complete!')
     .done()
 
@@ -30,14 +28,17 @@ export default class Deploy extends Command {
       char: 'e',
       description: 'environment configuration to run',
     }),
+    skipRestoreDependencies: flags.boolean({
+      char: 's',
+      description: 'skips restoring dependencies after deployment',
+    }),
   }
 
   public async run(): Promise<void> {
     const { flags } = this.parse(Deploy)
 
     if (initializeEnvironment(logger, flags.environment)) {
-      const deploymentProjectPath = await createDeploymentSandbox()
-      await runTasks(compileProjectAndLoadConfig(deploymentProjectPath), deployToCloudProvider)
+      await runTasks(flags.skipRestoreDependencies, compileProjectAndLoadConfig(), deployToCloudProvider)
     }
   }
 }
