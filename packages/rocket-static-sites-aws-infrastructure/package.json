@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/rocket-static-sites-aws-infrastructure",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "Booster rocket to deploy static sites to Booster applications in AWS.",
   "keywords": [
     "Booster",
@@ -23,11 +23,11 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@aws-cdk/core": "1.67.0",
     "@aws-cdk/aws-cloudfront": "1.67.0",
     "@aws-cdk/aws-s3": "1.67.0",
     "@aws-cdk/aws-s3-deployment": "1.67.0",
-    "@boostercloud/framework-types": "^0.9.3",
+    "@aws-cdk/core": "1.67.0",
+    "@boostercloud/framework-types": "^0.9.4",
     "aws-cdk": "1.67.0"
   },
   "scripts": {
@@ -42,13 +42,13 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@boostercloud/framework-provider-aws-infrastructure": "^0.9.3",
+    "@boostercloud/framework-provider-aws-infrastructure": "^0.9.4",
     "@types/faker": "5.1.5",
-    "faker": "5.1.0",
-    "velocityjs": "^2.0.0",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
+    "faker": "5.1.0",
+    "sinon": "9.2.3",
     "sinon-chai": "3.5.0",
-    "sinon": "9.2.3"
+    "velocityjs": "^2.0.0"
   }
 }
