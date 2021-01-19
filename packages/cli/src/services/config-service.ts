@@ -4,18 +4,21 @@ import { exec } from 'child-process-promise'
 import { wrapExecError } from '../common/errors'
 import { checkItIsABoosterProject } from './project-checker'
 import { currentEnvironment } from './environment'
-import { pruneDevDependencies } from './dependencies'
+import { createSandboxProject } from '../common/sandbox'
+import { installProductionDependencies } from './dependencies'
+
+export const DEPLOYMENT_SANDBOX = '.deploy'
 
 type CompileAndLoadOptions = {
   production: boolean
 }
 
 export async function compileProjectAndLoadConfig(opts?: CompileAndLoadOptions): Promise<BoosterConfig> {
-  const userProjectPath = process.cwd()
   await checkItIsABoosterProject()
-  if (opts?.production) {
-    await pruneDevDependencies()
-  }
+  const sandboxRelativePath = createSandboxProject(DEPLOYMENT_SANDBOX)
+  process.chdir(sandboxRelativePath) // The booster application needs to bw in the current working directory
+  const userProjectPath = process.cwd()
+  await installProductionDependencies(userProjectPath)
   await compileProject(userProjectPath)
   return readProjectConfig(userProjectPath)
 }
