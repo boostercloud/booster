@@ -1,20 +1,15 @@
-import { fake, replace, restore, SinonSpy, SinonStub, stub } from 'sinon'
+import { fake, replace, restore, SinonStub, stub } from 'sinon'
 import * as projectChecker from '../../src/services/project-checker'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 import * as environment from '../../src/services/environment'
 import * as dependencies from '../../src/services/dependencies'
+import * as sandbox from '../../src/common/sandbox'
 
 const rewire = require('rewire')
 const configService = rewire('../../src/services/config-service')
 
 describe('configService', () => {
-  const userProjectPath = 'path/to/project'
-  let fakeInstallProductionDependencies: SinonSpy
-  beforeEach(() => {
-    fakeInstallProductionDependencies = fake()
-    replace(dependencies, 'installProductionDependencies', fakeInstallProductionDependencies)
-  })
   afterEach(() => {
     restore()
   })
@@ -24,6 +19,34 @@ describe('configService', () => {
 
     beforeEach(() => {
       checkItIsABoosterProject = stub(projectChecker, 'checkItIsABoosterProject').resolves()
+    })
+
+    it('creates a sandbox project', async () => {
+      const config = new BoosterConfig('test')
+
+      const rewires = [
+        configService.__set__('compileProject', fake()),
+        configService.__set__(
+          'loadUserProject',
+          fake.returns({
+            Booster: {
+              config: config,
+              configuredEnvironments: new Set(['test']),
+              configureCurrentEnv: fake.yields(config),
+            },
+          })
+        ),
+      ]
+
+      replace(environment, 'currentEnvironment', fake.returns('test'))
+      replace(dependencies, 'installProductionDependencies', fake())
+
+      const fakeCreateSandbox = fake()
+      replace(sandbox, 'createSandboxProject', fakeCreateSandbox)
+      await configService.compileProjectAndLoadConfig()
+      expect(fakeCreateSandbox).to.have.been.calledOnce
+
+      rewires.forEach((fn) => fn())
     })
 
     it('loads the config when the selected environment exists', async () => {
@@ -44,9 +67,11 @@ describe('configService', () => {
       ]
 
       replace(environment, 'currentEnvironment', fake.returns('test'))
+      replace(dependencies, 'installProductionDependencies', fake())
 
-      await expect(configService.compileProjectAndLoadConfig(userProjectPath)).to.eventually.become(config)
-      expect(checkItIsABoosterProject).to.have.been.calledOnceWithExactly(userProjectPath)
+      await expect(configService.compileProjectAndLoadConfig()).to.eventually.become(config)
+      expect(checkItIsABoosterProject).to.have.been.calledOnceWithExactly()
+      expect(dependencies.installProductionDependencies).not.to.have.been.called
 
       rewires.forEach((fn) => fn())
     })
@@ -68,10 +93,10 @@ describe('configService', () => {
         ),
       ]
 
-      await expect(configService.compileProjectAndLoadConfig(userProjectPath)).to.eventually.be.rejectedWith(
+      await expect(configService.compileProjectAndLoadConfig()).to.eventually.be.rejectedWith(
         /You haven't configured any environment/
       )
-      expect(checkItIsABoosterProject).to.have.been.calledOnceWithExactly(userProjectPath)
+      expect(checkItIsABoosterProject).to.have.been.calledOnceWithExactly()
 
       rewires.forEach((fn) => fn())
     })
@@ -95,10 +120,10 @@ describe('configService', () => {
 
       replace(environment, 'currentEnvironment', fake.returns('test'))
 
-      await expect(configService.compileProjectAndLoadConfig(userProjectPath)).to.eventually.be.rejectedWith(
+      await expect(configService.compileProjectAndLoadConfig()).to.eventually.be.rejectedWith(
         /The environment 'test' does not match any of the environments/
       )
-      expect(checkItIsABoosterProject).to.have.been.calledOnceWithExactly(userProjectPath)
+      expect(checkItIsABoosterProject).to.have.been.calledOnceWithExactly()
 
       rewires.forEach((fn) => fn())
     })

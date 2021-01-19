@@ -1,12 +1,11 @@
 import { Command, flags } from '@oclif/command'
 import { deployToCloudProvider } from '../services/provider-service'
-import { compileProjectAndLoadConfig, DEPLOYMENT_SANDBOX } from '../services/config-service'
+import { cleanProjectFiles, compileProjectAndLoadConfig } from '../services/config-service'
 import { BoosterConfig, Logger } from '@boostercloud/framework-types'
 import { Script } from '../common/script'
 import Brand from '../common/brand'
 import { logger } from '../services/logger'
 import { currentEnvironment, initializeEnvironment } from '../services/environment'
-import { removeSandboxProject } from '../common/sandbox'
 
 const runTasks = async (
   skipRestoreDependencies: boolean,
@@ -15,7 +14,7 @@ const runTasks = async (
 ): Promise<void> =>
   Script.init(`boost ${Brand.dangerize('deploy')} [${currentEnvironment()}] 🚀`, compileAndLoad)
     .step('Deploying', (config) => deployer(config, logger))
-    .step('Cleaning up deployment files', async () => removeSandboxProject(DEPLOYMENT_SANDBOX))
+    .step('Cleaning up deployment files', cleanProjectFiles)
     .info('Deployment complete!')
     .done()
 

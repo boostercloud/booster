@@ -39,6 +39,7 @@
     "@types/mustache": "4.1.0",
     "@types/rewire": "^2.5.28",
     "chai": "4.2.0",
+    "sinon":"9.2.3",
     "chai-as-promised": "7.1.1",
     "faker": "5.1.0",
     "fancy-test": "1.4.3",
