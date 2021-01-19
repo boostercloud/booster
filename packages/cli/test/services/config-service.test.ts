@@ -1,4 +1,4 @@
-import { fake, replace, restore, SinonStub, stub } from 'sinon'
+import { fake, replace, restore, SinonSpy, SinonStub, stub } from 'sinon'
 import * as projectChecker from '../../src/services/project-checker'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { expect } from '../expect'
@@ -10,6 +10,15 @@ const rewire = require('rewire')
 const configService = rewire('../../src/services/config-service')
 
 describe('configService', () => {
+  let fakeInstallProductionDependencies: SinonSpy
+  let fakeCreateSandboxProject: SinonSpy
+  beforeEach(() => {
+    fakeInstallProductionDependencies = fake()
+    fakeCreateSandboxProject = fake()
+    replace(dependencies, 'installProductionDependencies', fakeInstallProductionDependencies)
+    replace(sandbox, 'createSandboxProject', fakeCreateSandboxProject)
+    replace(process, 'chdir', fake())
+  })
   afterEach(() => {
     restore()
   })
@@ -39,12 +48,9 @@ describe('configService', () => {
       ]
 
       replace(environment, 'currentEnvironment', fake.returns('test'))
-      replace(dependencies, 'installProductionDependencies', fake())
 
-      const fakeCreateSandbox = fake()
-      replace(sandbox, 'createSandboxProject', fakeCreateSandbox)
       await configService.compileProjectAndLoadConfig()
-      expect(fakeCreateSandbox).to.have.been.calledOnce
+      expect(fakeCreateSandboxProject).to.have.been.calledOnce
 
       rewires.forEach((fn) => fn())
     })
@@ -67,11 +73,9 @@ describe('configService', () => {
       ]
 
       replace(environment, 'currentEnvironment', fake.returns('test'))
-      replace(dependencies, 'installProductionDependencies', fake())
 
       await expect(configService.compileProjectAndLoadConfig()).to.eventually.become(config)
       expect(checkItIsABoosterProject).to.have.been.calledOnceWithExactly()
-      expect(dependencies.installProductionDependencies).not.to.have.been.called
 
       rewires.forEach((fn) => fn())
     })

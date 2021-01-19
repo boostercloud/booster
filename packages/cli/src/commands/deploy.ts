@@ -8,7 +8,6 @@ import { logger } from '../services/logger'
 import { currentEnvironment, initializeEnvironment } from '../services/environment'
 
 const runTasks = async (
-  skipRestoreDependencies: boolean,
   compileAndLoad: Promise<BoosterConfig>,
   deployer: (config: BoosterConfig, logger: Logger) => Promise<void>
 ): Promise<void> =>
@@ -27,17 +26,13 @@ export default class Deploy extends Command {
       char: 'e',
       description: 'environment configuration to run',
     }),
-    skipRestoreDependencies: flags.boolean({
-      char: 's',
-      description: 'skips restoring dependencies after deployment',
-    }),
   }
 
   public async run(): Promise<void> {
     const { flags } = this.parse(Deploy)
 
     if (initializeEnvironment(logger, flags.environment)) {
-      await runTasks(flags.skipRestoreDependencies, compileProjectAndLoadConfig(), deployToCloudProvider)
+      await runTasks(compileProjectAndLoadConfig(), deployToCloudProvider)
     }
   }
 }
