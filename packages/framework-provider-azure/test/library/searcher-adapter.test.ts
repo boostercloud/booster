@@ -3,7 +3,7 @@ import { expect } from '../expect'
 import { searchReadModel } from '../../src/library/searcher-adapter'
 import { createStubInstance, fake, match, restore, stub, SinonStubbedInstance } from 'sinon'
 import { CosmosClient } from '@azure/cosmos'
-import { BoosterConfig, Filter, Logger } from '@boostercloud/framework-types'
+import { BoosterConfig, FilterOld, Logger } from '@boostercloud/framework-types'
 import { random } from 'faker'
 
 describe('Searcher adapter', () => {
@@ -60,7 +60,7 @@ describe('Searcher adapter', () => {
     })
 
     it('Executes a SQL query with filters in the read model table', async () => {
-      const filters: Record<string, Filter<any>> = {
+      const filters: Record<string, FilterOld<any>> = {
         propertyA: { operation: '=', values: [1] },
         propertyB: { operation: '!=', values: ['a'] },
         propertyC: { operation: 'between', values: [1, 100] },
@@ -105,7 +105,7 @@ describe('Searcher adapter', () => {
     })
 
     it('Supports comparison operators', async () => {
-      const filters: Record<string, Filter<any>> = {
+      const filters: Record<string, FilterOld<any>> = {
         propertyA: { operation: '<', values: [100] },
         propertyB: { operation: '>', values: [0] },
         propertyC: { operation: '>=', values: [0] },
@@ -148,7 +148,7 @@ describe('Searcher adapter', () => {
     })
 
     it('Supports other operators', async () => {
-      const filters: Record<string, Filter<any>> = {
+      const filters: Record<string, FilterOld<any>> = {
         propertyA: { operation: 'in', values: [1, 2] },
         propertyB: { operation: 'contains', values: ['a'] },
         propertyC: { operation: 'not-contains', values: ['x'] },

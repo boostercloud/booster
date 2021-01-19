@@ -1,6 +1,6 @@
 import {
   BoosterConfig,
-  Filter,
+  FilterOld,
   Logger,
   ReadModelEnvelope,
   ReadModelInterface,
@@ -53,7 +53,7 @@ export async function searchReadModel(
   _config: BoosterConfig,
   logger: Logger,
   readModelName: string,
-  filters: Record<string, Filter<QueryValue>>
+  filters: Record<string, FilterOld<QueryValue>>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<Array<any>> {
   logger.info('Converting filter to query')
