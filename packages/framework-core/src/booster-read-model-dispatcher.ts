@@ -58,9 +58,7 @@ export class BoosterReadModelDispatcher {
     const readModelMetadata = this.config.readModels[readModelRequest.typeName]
     const searcher = Booster.readModel(readModelMetadata.class)
     if (readModelRequest.filters) {
-      for (const propName in readModelRequest.filters) {
-        searcher.filter(propName as any)
-      }
+      searcher.filter(readModelRequest.filters)
     }
     return searcher.search()
   }

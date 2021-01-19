@@ -1,5 +1,6 @@
 import { EntityInterface, EventInterface, ReadModelInterface, UUID } from './concepts'
 import { GraphQLClientMessage } from './graphql-websocket-messages'
+import { FilterFor } from './searcher'
 
 /**
  * An `Envelope` carries a command/event body together with the name
@@ -42,11 +43,7 @@ export interface ReadModelRequestEnvelope extends Envelope {
   filters?: Record<string, ReadModelPropertyFilter>
 }
 
-export interface ReadModelPropertyFilter {
-  operation: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  values: Array<any>
-}
+export type ReadModelPropertyFilter = FilterFor<any>
 
 export interface GraphQLRequestEnvelope extends Envelope {
   eventType: 'CONNECT' | 'MESSAGE' | 'DISCONNECT'
