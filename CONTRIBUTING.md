@@ -45,7 +45,7 @@ Booster is divided in many different packages. The criteria to split the code in
 * They contain code that is used by at least two of the other packages.
 * They're a vendor-specific specialization of some abstract part of the framework (for instance, all the code that is required by AWS is in separate packages). 
 
-The packages are managed using [Lerna](https://lerna.js.org) and [Yarn](https://yarnpkg.com), if you run `lerna run compile`, it will run `yarn compile` in all the package folders.
+The packages are managed using [Lerna](https://lerna.js.org) and [npm](https://npmjs.com), if you run `lerna run compile`, it will run `npm run compile` in all the package folders.
 
 The packages are published to `npm` under the prefix `@boostercloud/`, their purpose is as follows:
 
@@ -101,7 +101,7 @@ Booster documentation, located at `/docs/README.md`, is treated as a live docume
 Bear in mind that if you have added a new section, or changed an existing one you will need to update the table of content. This can be easily done with the following command:
 
 ```sh
-yarn update-tocs
+npm run update-tocs
 ```
 ### Create your very first GitHub issue
 
@@ -123,8 +123,6 @@ Make sure that you assign the chosen issue to yourself to communicate your inten
 
 To start contributing to the project you would need to set up the project in your system, to do so, you must first follow these steps in your terminal.
 
-- Install Yarn: `npm install -g yarn`
-
 - Install Lerna: `npm install -g lerna`
 
 - Clone the repo and get into the directory of the project: `git clone <WRITE REPO URL HERE> && cd booster`
@@ -141,6 +139,18 @@ To start contributing to the project you would need to set up the project in you
   - `./scripts/check-all-the-things.sh` on Linux and MacOS
   - `.\scripts\check-all-the-things.ps1` on Windows
 
+
+### Understanding the "lerna monorepo" approach and how dependencies are structured in the project
+The Booster Framework project is organized following the ["lerna monorepo"](https://lerna.js.org/) structure. There are several "package.json" files and each one has its purpose with regard to the dependencies you include on them:
+- The "package.json" located at the project root is _only_ intended for development tools that you use at project level, like the Typescript compiler, linter plugins, etc. You should never put there dependencies that you would use inside a package like `framework-core`, for example (there is a linter rule that will fail if you do this). 
+- The "package.json" files that are on each package root should contain the dependencies used by that specific package. Be sure to correctly differentiate which dependency is only for development and which one is for production.
+
+When you bootstrap your project with `lerna bootstrap`, all the needed dependencies will be installed. Lerna is configured to use a "hoisted" approach. This means that if there is the same dependency specified in several "package.json" files, it will be "hoisted": that dependency will be installed inside the `node_modules` located in the project root, and _not_ on the `node_modules` of each package. This saves space, makes the development speed faster and resolves some problems.
+
+There could be the situation in which two packages depends on the same dependency but with different versions. In that case you would get an error during `lerna bootstrap`, and that's good. Specify the same dependency version and it will be fixed.
+
+Finally, **always use exact numbers for dependency versions**. This means that if you want to add the dependency "aws-sdk" in version 1.2.3, you should add `"aws-sdk": "1.2.3"` to the corresponding "package.json" file, and never `"aws-sdk": "^1.2.3"` or `"aws-sdk": "~1.2.3"`. This restriction comes from hard problems we've had in the past
+
 ### Github flow
 
 The preferred way of accepting contributions is following the [Github flow](https://guides.github.com/introduction/flow/), that is, you fork the project and work in your own branch until you're happy with the work, and then submit a PR in Github.
@@ -155,13 +165,13 @@ You can run all packages tests with Lerna:
 ~/booster:$ lerna run test
 ```
 
-Or in a specific package with yarn:
+Or in a specific package with npm:
 
 ```bash
-~/booster/packages/cli:$ yarn test
+~/booster/packages/cli:$ npm run test
 ```
 
-Once all your unit tests are passing and your code looks great, if your code changes any behavior in the cloud provider, it's important to update the integration test suite and iterate your code until it passes. Notice that in the `framework-integration-tests` there's an `integration` folder with subfolders for each supported provider (including the local provider). Integration tests require real deployments, so they'll last a while and you must have your provider credentials properly set. The test suite will fail with (hopefully) useful error messages with guidance when some parameter is missed. You can run the integration tests using lerna from any package or the project root, or yarn from within the integration tests package:
+Once all your unit tests are passing and your code looks great, if your code changes any behavior in the cloud provider, it's important to update the integration test suite and iterate your code until it passes. Notice that in the `framework-integration-tests` there's an `integration` folder with subfolders for each supported provider (including the local provider). Integration tests require real deployments, so they'll last a while and you must have your provider credentials properly set. The test suite will fail with (hopefully) useful error messages with guidance when some parameter is missed. You can run the integration tests using `lerna` from any package or the project root, or `npm run` from within the integration tests package:
 
 ```bash
 ~/booster:$ lerna run integration --stream
@@ -224,7 +234,7 @@ The most important kind of commits are the ones that trigger version bumps and t
 
 Apart from those previously mentioned, there are more commit types:
 
-- **build**: Changes that affect the build system or external dependencies (example scopes: lerna, tsconfig, yarn)
+- **build**: Changes that affect the build system or external dependencies (example scopes: lerna, tsconfig, npm)
 - **ci**: Changes to our CI configuration files and scripts
 - **docs**: Documentation only changes
 - **feat**: A new feature
