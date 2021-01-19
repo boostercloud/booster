@@ -1,5 +1,3 @@
-import { forceLernaRebuild } from '../helper/depsHelper'
-
 before(async () => {
-  await forceLernaRebuild()
+  // Nothing so far
 })

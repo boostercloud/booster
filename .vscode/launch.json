@@ -165,6 +165,7 @@
       "args": [
         "--colors",
         "--forbid-only",
+        "--full-stack",
         "--config",
         "${workspaceFolder}/packages/framework-integration-tests/integration/cli/.mocharc.yml",
         "${workspaceFolder}/packages/framework-integration-tests/integration/cli/**/*.integration.ts"

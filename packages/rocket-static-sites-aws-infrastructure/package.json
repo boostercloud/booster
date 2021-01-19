@@ -23,6 +23,7 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
+    "@aws-cdk/core": "1.67.0",
     "@aws-cdk/aws-cloudfront": "1.67.0",
     "@aws-cdk/aws-s3": "1.67.0",
     "@aws-cdk/aws-s3-deployment": "1.67.0",
@@ -30,8 +31,8 @@
     "aws-cdk": "1.67.0"
   },
   "scripts": {
-    "lint": "eslint --ext '.js,.ts' **/*.ts",
-    "fix-lint": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
+    "lint:check": "eslint --ext '.js,.ts' **/*.ts",
+    "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",
@@ -42,8 +43,12 @@
   },
   "devDependencies": {
     "@boostercloud/framework-provider-aws-infrastructure": "^0.9.3",
-    "@types/faker": "^4.1.11",
-    "faker": "^4.1.0",
-    "velocityjs": "^2.0.0"
+    "@types/faker": "5.1.5",
+    "faker": "5.1.0",
+    "velocityjs": "^2.0.0",
+    "chai": "4.2.0",
+    "chai-as-promised": "7.1.1",
+    "sinon-chai": "3.5.0",
+    "sinon": "9.2.3"
   }
 }

@@ -21,7 +21,8 @@
   },
   "dependencies": {
     "@boostercloud/framework-core": "^0.9.3",
-    "@boostercloud/framework-types": "^0.9.3"
+    "@boostercloud/framework-types": "^0.9.3",
+    "nedb": "^1.8.0"
   },
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
@@ -35,7 +36,12 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@types/faker": "^4.1.12",
-    "faker": "^4.1.0"
+    "@types/faker": "5.1.5",
+    "@types/nedb": "^1.8.11",
+    "@types/express": "4.17.2",
+    "faker": "5.1.0",
+    "chai": "4.2.0",
+    "chai-as-promised": "7.1.1",
+    "sinon-chai": "3.5.0"
   }
 }
