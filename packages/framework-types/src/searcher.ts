@@ -121,8 +121,9 @@ type EnumToUnion<TEnum> = keyof TEnum
 // ----------------------------------------------------------------------------------------------------
 
 export type FilterFor<TType> = {
-  [TProp in keyof TType]?: Operation<TType[TProp]> & FilterCombinators<TType>
-}
+  [TProp in keyof TType]?: Operation<TType[TProp]>
+} &
+  FilterCombinators<TType>
 
 interface FilterCombinators<TType> {
   and?: Array<FilterFor<TType>>
