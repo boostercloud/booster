@@ -4,16 +4,12 @@ import { exec } from 'child-process-promise'
 import { wrapExecError } from '../common/errors'
 import { checkItIsABoosterProject } from './project-checker'
 import { currentEnvironment } from './environment'
-import { createSandboxProject } from '../common/sandbox'
+import { createSandboxProject, removeSandboxProject } from '../common/sandbox'
 import { installProductionDependencies } from './dependencies'
 
 export const DEPLOYMENT_SANDBOX = '.deploy'
 
-type CompileAndLoadOptions = {
-  production: boolean
-}
-
-export async function compileProjectAndLoadConfig(opts?: CompileAndLoadOptions): Promise<BoosterConfig> {
+export async function compileProjectAndLoadConfig(): Promise<BoosterConfig> {
   await checkItIsABoosterProject()
   const sandboxRelativePath = createSandboxProject(DEPLOYMENT_SANDBOX)
   process.chdir(sandboxRelativePath) // The booster application needs to bw in the current working directory
@@ -61,4 +57,8 @@ function checkEnvironmentWasConfigured(app: BoosterApp): void {
       ).join(', ')}'`
     )
   }
+}
+
+export async function cleanProjectFiles(): Promise<void> {
+  removeSandboxProject(DEPLOYMENT_SANDBOX)
 }
