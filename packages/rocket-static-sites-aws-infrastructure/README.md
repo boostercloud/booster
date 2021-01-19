@@ -7,7 +7,7 @@ This package is a configurable Booster rocket to add static site deployment to y
 Install this package as a dev dependency in your Booster project (It's a dev dependency because it's only used during deployment, but we don't want this code to be uploaded to the project lambdas)
 
 ```sh
-yarn add --dev @boostercloud/rocket-static-sites-aws-infrastructure
+npm install --save-dev @boostercloud/rocket-static-sites-aws-infrastructure
 ```
 
 In your Booster config file, pass a `RocketDescriptor` array to the AWS' `Provider` initializer configuring the static site rocket:

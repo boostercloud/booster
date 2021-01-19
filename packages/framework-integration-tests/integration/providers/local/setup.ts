@@ -2,7 +2,7 @@ import { start } from './utils'
 import { sleep } from '../../helper/sleep'
 import { ChildProcess } from 'child_process'
 import { createSandboxProject, removeFolders } from '../../helper/fileHelper'
-import { symLinkBoosterDependencies } from '../../helper/depsHelper'
+import { overrideWithBoosterLocalDependencies } from '../../helper/depsHelper'
 import { sandboxName } from './constants'
 import { runCommand } from '../../helper/runCommand'
 
@@ -14,10 +14,10 @@ before(async () => {
   sandboxPath = createSandboxProject(sandboxName)
 
   console.log('installing dependencies...')
-  await runCommand(sandboxPath, 'npx yarn install')
+  await runCommand(sandboxPath, 'npm install')
 
-  console.log('symlinking booster dependencies...')
-  await symLinkBoosterDependencies(sandboxPath)
+  console.log('overriding booster dependencies...')
+  await overrideWithBoosterLocalDependencies(sandboxPath)
 
   console.log(`starting local server in ${sandboxPath}...`)
   serverProcess = start('local', sandboxPath)

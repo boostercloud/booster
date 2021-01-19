@@ -2752,9 +2752,9 @@ Infrastructure rocket interfaces are provider-dependant, so infrastructure rocke
 ```sh
 mkdir rocket-your-rocket-name-aws-infrastructure
 cd rocket-your-rocket-name-aws-infrastructure
-yarn init
+npm init
 ...
-yarn add --dev @boostercloud/framework-provider-aws-infrastructure
+npm install --save @boostercloud/framework-provider-aws-infrastructure
 ```
 
 The implementation of `InfrastructureRocket` might vary from one provider to the other, but in AWS it only requires two functions:
@@ -2809,23 +2809,28 @@ While Booster is designed to deploy your applications to a cloud provider, havin
 
 The Booster approach to run cloud applications locally is very different from the route taken by other major cloud frameworks, we don't try to replicate the cloud services in your machine, but simulate how the code runs in the cloud in a very light local environment based on node and express.js. This approach reduces dramatically the hardware requirements to develop Booster applications and increases the speed of development.
 
-#### Prerequisites
+#### Local development prerequisites
 
 In order to run locally, it is necessary to add the `framework-provider-local` package to the project, and also define a new configuration environment that you can call, for instance `local`.
 
-First of all, we will have to install the local provider package as a new application dependency
+First of all, we will have to install the local provider package and the corresponding infrastructure package as development dependencies:
 
-`yarn add --dev @boostercloud/framework-provider-local`
+```sh
+npm install --dev @boostercloud/framework-provider-local
+npm install --dev @boostercloud/framework-provider-local-infrastructure
+```
 
 Once the local provider is installed, we will need to create a new config file or update the existing one (usually `src/config/config.ts`). Then you'll have to load and initialize your environment as follows:
 
-    import { BoosterConfig } from '@boostercloud/framework-types'
-    import * as Local from '@boostercloud/framework-provider-local'
+```typescript
+import { BoosterConfig } from '@boostercloud/framework-types'
+import * as Local from '@boostercloud/framework-provider-local'
 
-    Booster.configure('local', (config: BoosterConfig): void => {
-       config.appName = 'fruit-store-local'
-       config.provider = Local.Provider
-    })
+Booster.configure('local', (config: BoosterConfig): void => {
+    config.appName = 'fruit-store-local'
+    config.provider = Local.Provider
+})
+```
 
 #### Starting your application
 

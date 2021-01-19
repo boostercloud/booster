@@ -1,4 +1,4 @@
-import uuid = require('uuid/v4')
+import { v4 } from 'uuid'
 /**
  * `UUID` type to work globally as a identifier for Entities,
  * Commands, Events or any other booster artifact.
@@ -7,6 +7,6 @@ import uuid = require('uuid/v4')
  */
 export class UUID extends String {
   public static generate(): UUID {
-    return uuid()
+    return v4()
   }
 }

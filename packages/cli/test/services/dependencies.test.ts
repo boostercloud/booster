@@ -14,7 +14,7 @@ describe('dependencies service', () => {
 
       await expect(pruneDevDependencies()).to.eventually.be.fulfilled
 
-      expect(childProcessPromise.exec).to.have.been.calledWithMatch('npx yarn install --production --no-bin-links')
+      expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install --production --no-bin-links')
     })
 
     it('wraps the exec error', async () => {
@@ -33,7 +33,7 @@ describe('dependencies service', () => {
 
         await expect(installAllDependencies()).to.eventually.be.fulfilled
 
-        expect(childProcessPromise.exec).to.have.been.calledWithMatch('npx yarn install', { cwd: process.cwd() })
+        expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install', { cwd: process.cwd() })
       })
     })
 
@@ -43,7 +43,7 @@ describe('dependencies service', () => {
 
         await expect(installAllDependencies('somewhere')).to.eventually.be.fulfilled
 
-        expect(childProcessPromise.exec).to.have.been.calledWithMatch('npx yarn install', { cwd: 'somewhere' })
+        expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install', { cwd: 'somewhere' })
       })
     })
 
