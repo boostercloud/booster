@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-aws-infrastructure",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "Handle the Booster deployment process to AWS",
   "keywords": [
     "framework-provider-aws-infrastructure"
@@ -31,8 +31,8 @@
     "@aws-cdk/aws-lambda-event-sources": "1.67.0",
     "@aws-cdk/aws-s3": "1.67.0",
     "@aws-cdk/aws-s3-deployment": "1.67.0",
-    "@boostercloud/framework-provider-aws": "^0.9.3",
-    "@boostercloud/framework-types": "^0.9.3",
+    "@boostercloud/framework-provider-aws": "^0.9.4",
+    "@boostercloud/framework-types": "^0.9.4",
     "aws-cdk": "1.67.0",
     "aws-sdk": "2.764.0",
     "colors": "^1.4.0"
@@ -50,14 +50,14 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "8.10.48",
-    "@types/faker": "5.1.5",
     "@types/aws-sdk": "2.7.0",
-    "faker": "5.1.0",
-    "velocityjs": "^2.0.0",
-    "sinon": "9.2.3",
-    "rewire": "5.0.0",
+    "@types/faker": "5.1.5",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
-    "sinon-chai": "3.5.0"
+    "faker": "5.1.0",
+    "rewire": "5.0.0",
+    "sinon": "9.2.3",
+    "sinon-chai": "3.5.0",
+    "velocityjs": "^2.0.0"
   }
 }
