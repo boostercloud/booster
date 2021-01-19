@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { UUID } from './concepts'
 import { Class } from './typelevel'
 
-export type SearcherFunction<TObject> = (
-  className: string,
-  filters: Record<string, FilterOld<any>>
-) => Promise<Array<any>>
+export type SearcherFunction<TObject> = (className: string, filters: FilterFor<TObject>) => Promise<Array<any>>
 
 /**
  * This class represents a search intended to be run by any search provider. They way you use it
@@ -68,7 +66,7 @@ export class Searcher<TObject> {
    */
   public async search(): Promise<Array<TObject>> {
     console.log(this.filters)
-    const searchResult = await this.searcherFunction(this.objectClass.name, this.filtersOld)
+    const searchResult = await this.searcherFunction(this.objectClass.name, this.filters)
     return searchResult as Array<TObject>
   }
 }
@@ -110,19 +108,21 @@ export enum BooleanOperations {
 }
 
 // eslint-disable-next-line prettier/prettier
-type OperationOld<TType> =
-  TType extends number ? EnumToUnion<typeof NumberOperations> :
-  TType extends string ? EnumToUnion<typeof StringOperations> :
-  TType extends boolean ? EnumToUnion<typeof BooleanOperations> : never
+type OperationOld<TType> = TType extends number
+  ? EnumToUnion<typeof NumberOperations>
+  : TType extends string
+  ? EnumToUnion<typeof StringOperations>
+  : TType extends boolean
+  ? EnumToUnion<typeof BooleanOperations>
+  : never
 
 type EnumToUnion<TEnum> = keyof TEnum
 
 // ----------------------------------------------------------------------------------------------------
 
-type FilterFor<TType> = {
-  [TProp in keyof TType]?: Operation<TType[TProp]>
-} &
-  FilterCombinators<TType>
+export type FilterFor<TType> = {
+  [TProp in keyof TType]?: Operation<TType[TProp]> & FilterCombinators<TType>
+}
 
 interface FilterCombinators<TType> {
   and?: Array<FilterFor<TType>>
@@ -130,12 +130,16 @@ interface FilterCombinators<TType> {
   not?: FilterFor<TType>
 }
 
-type Operation<TType> =
-  TType extends Array<infer TElementType> ? ArrayOperators<TElementType>
-  : TType extends string ? StringOperators<TType>
-  : TType extends number ? ScalarOperators<TType>
-  : TType extends boolean ? BooleanOperators<TType>
-  : TType extends Record<string, any> ? FilterFor<TType>
+export type Operation<TType> = TType extends Array<infer TElementType>
+  ? ArrayOperators<TElementType>
+  : TType extends string | UUID
+  ? StringOperators<TType>
+  : TType extends number
+  ? ScalarOperators<TType>
+  : TType extends boolean
+  ? BooleanOperators<TType>
+  : TType extends Record<string, any>
+  ? FilterFor<TType>
   : never
 
 interface BooleanOperators<TType> {
@@ -147,7 +151,7 @@ interface ScalarOperators<TType> extends BooleanOperators<TType> {
   gte?: TType
   lt?: TType
   lte?: TType
-  in?: TType
+  in?: Array<TType>
 }
 
 interface StringOperators<TType> extends ScalarOperators<TType> {
@@ -158,39 +162,3 @@ interface StringOperators<TType> extends ScalarOperators<TType> {
 interface ArrayOperators<TElementType> {
   includes?: TElementType
 }
-
-// ----------------------------
-
-class Money {
-  constructor(public cents: number, public currency: string) {}
-}
-
-class Item {
-  constructor(public sku: string, public price: Money) {}
-}
-
-class Product {
-  constructor(
-    readonly id: string,
-    readonly stock: number,
-    public mainItem: Item,
-    public items: Array<Item>,
-    public buyers: Array<string>,
-    public days: Array<number>,
-    public pairs: Array<Array<number>>
-  ) {}
-}
-
-const filter: FilterFor<Product> = {
-  id: { beginsWith: 'pepe' },
-  stock: { lte: 90 },
-  mainItem: { price: { cents: { eq: 4 } } },
-  buyers: { includes: '123' },
-  days: { includes: 34 },
-  items: { includes: { sku: '2', price: { cents: 8, currency: 'EUR' } } },
-  pairs: {
-    includes: [8],
-  },
-}
-
-console.log(filter)
