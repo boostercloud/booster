@@ -44,10 +44,15 @@ function loadUserProject(userProjectPath: string): { Booster: BoosterApp } {
 }
 
 function checkEnvironmentWasConfigured(app: BoosterApp): void {
+  if (app.configuredEnvironments.size == 0) {
+    throw new Error(
+      "You haven't configured any environment. Please make sure you have at least one environment configured by calling 'Booster.configure' method (normally done inside the folder 'src/config')"
+    )
+  }
   const currentEnv = currentEnvironment()
   if (!currentEnv) {
     throw new Error(
-      "You haven't configured any environment. Please make sure you have at least one environment configured by calling 'Booster.configure' method (normally done inside the folder 'src/config')"
+      "You haven't provided any environment. Please make sure you are using option '-e' with a valid environment name"
     )
   }
   if (!app.configuredEnvironments.has(currentEnv)) {
