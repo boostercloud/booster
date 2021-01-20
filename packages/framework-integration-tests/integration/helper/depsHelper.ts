@@ -22,9 +22,9 @@ export async function overrideWithBoosterLocalDependencies(projectPath: string):
         ?.trim()
         ?.split('\n')
         ?.pop()!
-      const dotBoosterRelativePath = path.relative(projectPath, dotBooster)
+      const dotBoosterAbsolutePath = path.resolve(dotBooster)
       // Now override the packageJSON dependencies with the path to the packed dependency
-      packageJSON.dependencies[packageName] = `file:${path.join(dotBoosterRelativePath, packedDependencyFileName)}`
+      packageJSON.dependencies[packageName] = `file:${path.join(dotBoosterAbsolutePath, packedDependencyFileName)}`
     }
   }
   fs.writeFileSync(path.join(projectPath, 'package.json'), JSON.stringify(packageJSON, undefined, 2))

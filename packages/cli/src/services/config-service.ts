@@ -9,12 +9,19 @@ import { installProductionDependencies } from './dependencies'
 
 export const DEPLOYMENT_SANDBOX = '.deploy'
 
+export async function createProductionSandbox(): Promise<string> {
+  const sandboxRelativePath = createSandboxProject(DEPLOYMENT_SANDBOX)
+  await installProductionDependencies(sandboxRelativePath)
+  return sandboxRelativePath
+}
+
+export async function cleanProductionSandbox(): Promise<void> {
+  removeSandboxProject(DEPLOYMENT_SANDBOX)
+}
+
 export async function compileProjectAndLoadConfig(): Promise<BoosterConfig> {
   await checkItIsABoosterProject()
-  const sandboxRelativePath = createSandboxProject(DEPLOYMENT_SANDBOX)
-  process.chdir(sandboxRelativePath) // The booster application needs to bw in the current working directory
   const userProjectPath = process.cwd()
-  await installProductionDependencies(userProjectPath)
   await compileProject(userProjectPath)
   return readProjectConfig(userProjectPath)
 }
@@ -62,8 +69,4 @@ function checkEnvironmentWasConfigured(app: BoosterApp): void {
       ).join(', ')}'`
     )
   }
-}
-
-export async function cleanProjectFiles(): Promise<void> {
-  removeSandboxProject(DEPLOYMENT_SANDBOX)
 }
