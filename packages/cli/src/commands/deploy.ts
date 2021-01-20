@@ -1,6 +1,10 @@
 import { Command, flags } from '@oclif/command'
 import { deployToCloudProvider } from '../services/provider-service'
-import { cleanProjectFiles, compileProjectAndLoadConfig } from '../services/config-service'
+import {
+  cleanProductionSandbox,
+  compileProjectAndLoadConfig,
+  createProductionSandbox,
+} from '../services/config-service'
 import { BoosterConfig, Logger } from '@boostercloud/framework-types'
 import { Script } from '../common/script'
 import Brand from '../common/brand'
@@ -13,7 +17,7 @@ const runTasks = async (
 ): Promise<void> =>
   Script.init(`boost ${Brand.dangerize('deploy')} [${currentEnvironment()}] 🚀`, compileAndLoad)
     .step('Deploying', (config) => deployer(config, logger))
-    .step('Cleaning up deployment files', cleanProjectFiles)
+    .step('Cleaning up deployment files', cleanProductionSandbox)
     .info('Deployment complete!')
     .done()
 
@@ -32,6 +36,8 @@ export default class Deploy extends Command {
     const { flags } = this.parse(Deploy)
 
     if (initializeEnvironment(logger, flags.environment)) {
+      const deploymentProjectPath = await createProductionSandbox()
+      process.chdir(deploymentProjectPath) // The deployment will work inside the production sandbox
       await runTasks(compileProjectAndLoadConfig(), deployToCloudProvider)
     }
   }
