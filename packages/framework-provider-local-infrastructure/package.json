@@ -24,7 +24,7 @@
     "@boostercloud/framework-types": "^0.9.4",
     "express": "^4.17.1",
     "express-ws": "^4.0.0",
-    "graphql": "^15.4.0",
+    "graphql": "15.4.0",
     "graphql-ws": "^4.1.1",
     "nedb": "^1.8.0"
   },

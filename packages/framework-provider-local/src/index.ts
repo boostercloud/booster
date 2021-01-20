@@ -1,4 +1,4 @@
-import { ProviderLibrary, ProviderInfrastructure } from '@boostercloud/framework-types'
+import { ProviderLibrary, ProviderInfrastructure, UserApp } from '@boostercloud/framework-types'
 import { rawSignUpDataToUserEnvelope } from './library/auth-adapter'
 import {
   rawEventsToEnvelopes,
@@ -9,7 +9,7 @@ import {
 import { requestSucceeded, requestFailed } from './library/api-adapter'
 import { EventRegistry } from './services'
 import { GraphQLAdapter } from './library/graphql-adapter'
-import { UserApp } from '@boostercloud/framework-types'
+
 import * as path from 'path'
 import { ReadModelRegistry } from './services/read-model-registry'
 import { fetchReadModel, searchReadModel, storeReadModel } from './library/read-model-adapter'
