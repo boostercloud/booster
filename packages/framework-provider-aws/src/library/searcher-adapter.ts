@@ -19,9 +19,7 @@ export async function searchReadModel(
   if (filters && Object.keys(filters).length > 0) {
     params = {
       ...params,
-      FilterExpression: buildFilterExpression(filters),
-      ExpressionAttributeNames: buildExpressionAttributeNames(filters),
-      ExpressionAttributeValues: buildExpressionAttributeValues(filters),
+      ...buildExpression(filters),
     }
   }
   logger.debug('Running search with the following params: \n', params)
@@ -33,55 +31,65 @@ export async function searchReadModel(
   return result.Items ?? []
 }
 
-function buildFilterExpression(filters: FilterFor<any>, position?: number, depth?: number): string {
+function buildExpression(filters: FilterFor<any>): any {
+  const expresion = buildFilterExpression(filters)
+  const names = buildExpressionAttributeNames(filters)
+  resetAttrCount()
+  const values = buildExpressionAttributeValues(filters)
+  resetAttrCount()
+  return {
+    FilterExpression: expresion,
+    ExpressionAttributeNames: names,
+    ExpressionAttributeValues: values,
+  }
+}
+
+function buildFilterExpression(filters: FilterFor<any>): string {
   return Object.entries(filters)
-    .map(([propName, filter], propIndex) => {
-      const propNumber = position ? position : propIndex
+    .map(([propName, filter]) => {
       switch (propName) {
         case 'not':
           return `NOT (${buildFilterExpression(filter as FilterFor<any>)})`
         case 'and':
         case 'or':
           return `(${(filter as Array<FilterFor<any>>)
-            .map((arrayFilter, index) => buildFilterExpression(arrayFilter, propIndex, index))
+            .map((arrayFilter) => buildFilterExpression(arrayFilter))
             .join(` ${propName} `)})`
         default:
-          return buildOperation(propName, filter, propNumber, depth)
+          return buildOperation(propName, filter)
       }
     })
     .join(' AND ')
 }
 
-function buildOperation(propName: string, filter: Operation<any> = {}, position = 0, depth = 0): string {
+function buildOperation(propName: string, filter: Operation<any> = {}): string {
   const holder = placeholderBuilderFor(propName)
   return Object.entries(filter)
-    .map(([operation, value]) => {
+    .map(([operation, value], index) => {
       switch (operation) {
         case 'eq':
-          return `#${propName} = ${holder(position, depth)}`
+          return `#${propName} = ${holder(index)}`
         case 'ne':
-          return `#${propName} <> ${holder(position, depth)}`
+          return `#${propName} <> ${holder(index)}`
         case 'lt':
-          return `#${propName} < ${holder(position, depth)}`
+          return `#${propName} < ${holder(index)}`
         case 'gt':
-          return `#${propName} > ${holder(position, depth)}`
+          return `#${propName} > ${holder(index)}`
         case 'gte':
-          return `#${propName} >= ${holder(position, depth)}`
+          return `#${propName} >= ${holder(index)}`
         case 'lte':
-          return `#${propName} <= ${holder(position, depth)}`
+          return `#${propName} <= ${holder(index)}`
         case 'in':
           return `#${propName} IN (${value
-            .map((value: any, subIndex: number) => `${holder(position, depth)}_${subIndex}`)
+            .map((value: any, subIndex: number) => `${holder(index, subIndex)}`)
             .join(',')})`
-        case 'between':
-          return `#${propName} BETWEEN ${holder(position)} AND ${holder(position + 1)}`
         case 'contains':
-          return `contains(#${propName}, ${holder(position, depth)})`
+          return `contains(#${propName}, ${holder(index)})`
         case 'beginsWith':
-          return `begins_with(#${propName}, ${holder(position)})`
+          return `begins_with(#${propName}, ${holder(index)})`
         default:
           if (typeof value === 'object') {
-            return `#${propName}.${buildOperation(operation, value, position)}`
+            return `#${propName}.${buildOperation(operation, value)}`
           }
           throw new InvalidParameterError(`Operator "${operation}" is not supported`)
       }
@@ -89,9 +97,17 @@ function buildOperation(propName: string, filter: Operation<any> = {}, position 
     .join(' AND ')
 }
 
+const attrCount: string[] = []
+function resetAttrCount(): void {
+  attrCount.length = 0
+}
 function placeholderBuilderFor(propName: string): (valueIndex: number, valueSubIndex?: number) => string {
-  return (valueIndex: number, valueSubIndex?: number) =>
-    `:${propName}_${valueIndex}` + (valueSubIndex ? `_${valueSubIndex}` : '')
+  return (valueIndex: number, valueSubIndex?: number) => {
+    const placeholder = `:${propName}_${valueIndex}` + (typeof valueSubIndex === 'number' ? `_${valueSubIndex}` : '')
+    if (attrCount.includes(placeholder)) return placeholderBuilderFor(propName)(valueIndex + 1)
+    attrCount.push(placeholder)
+    return placeholder
+  }
 }
 
 function buildExpressionAttributeNames(filters: FilterFor<any>): ExpressionAttributeNameMap {
@@ -120,50 +136,40 @@ function buildExpressionAttributeNames(filters: FilterFor<any>): ExpressionAttri
   return attributeNames
 }
 
-function buildExpressionAttributeValues(
-  filters: FilterFor<any>,
-  position?: number,
-  depth?: number
-): ExpressionAttributeValueMap {
+function buildExpressionAttributeValues(filters: FilterFor<any>): ExpressionAttributeValueMap {
   const attributeValues: ExpressionAttributeValueMap = {}
-  Object.entries(filters).forEach(([propName], propIndex) => {
-    const propNumber = position ? position : propIndex
+  Object.entries(filters).forEach(([propName]) => {
     switch (propName) {
       case 'not':
         Object.assign(attributeValues, buildExpressionAttributeValues(filters[propName] as FilterFor<any>))
         break
       case 'and':
       case 'or':
-        for (const [index, filter] of (filters[propName] as Array<FilterFor<any>>).entries()) {
-          Object.assign(attributeValues, buildExpressionAttributeValues(filter as FilterFor<any>, propIndex, index))
+        for (const filter of filters[propName] as Array<FilterFor<any>>) {
+          Object.assign(attributeValues, buildExpressionAttributeValues(filter as FilterFor<any>))
         }
         break
       default:
-        Object.assign(attributeValues, buildAttributeValue(propName, filters[propName], propNumber, depth))
+        Object.assign(attributeValues, buildAttributeValue(propName, filters[propName]))
         break
     }
   })
   return attributeValues
 }
 
-function buildAttributeValue(
-  propName: string,
-  filter: Operation<any> = {},
-  position = 0,
-  depth = 0
-): ExpressionAttributeValueMap {
+function buildAttributeValue(propName: string, filter: Operation<any> = {}): ExpressionAttributeValueMap {
   const attributeValues: ExpressionAttributeValueMap = {}
   const holder = placeholderBuilderFor(propName)
 
-  Object.entries(filter).forEach(([key, value]) => {
+  Object.entries(filter).forEach(([key, value], index) => {
     if (Array.isArray(value)) {
-      value.forEach((element, elementIndex) => {
-        attributeValues[`${holder(position, depth)}_${elementIndex}`] = element
+      value.forEach((element, subIndex) => {
+        attributeValues[holder(index, subIndex)] = element
       })
     } else if (typeof value === 'object') {
-      Object.assign(attributeValues, buildExpressionAttributeValues({ [key]: value }, position))
+      Object.assign(attributeValues, buildExpressionAttributeValues({ [key]: value }))
     } else {
-      attributeValues[holder(position, depth)] = value
+      attributeValues[holder(index)] = value
     }
   })
   return attributeValues
