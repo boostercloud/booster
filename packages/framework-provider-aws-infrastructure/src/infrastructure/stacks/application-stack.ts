@@ -50,6 +50,11 @@ export class ApplicationStackBuilder {
       description: 'The base URL for all the auth endpoints and for sending GraphQL mutations and queries',
     })
 
+    new CfnOutput(stack, 'graphQL', {
+      value: rootAPI.url + 'graphql',
+      description: 'The base URL for all the auth endpoints and for sending GraphQL mutations and queries',
+    })
+
     return rootAPI
   }
 
