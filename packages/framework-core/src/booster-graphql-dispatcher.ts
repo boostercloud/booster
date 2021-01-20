@@ -19,7 +19,7 @@ import { BoosterTokenVerifier } from './booster-token-verifier'
 type DispatchResult = AsyncIterableIterator<ExecutionResult> | ExecutionResult | void
 
 export class BoosterGraphQLDispatcher {
-  private readonly graphQLSchema: GraphQLSchema
+  public readonly graphQLSchema: GraphQLSchema
   private readonly websocketHandler: GraphQLWebsocketHandler
   private readonly readModelDispatcher: BoosterReadModelDispatcher
   private readonly boosterTokenVerifier: BoosterTokenVerifier

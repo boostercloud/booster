@@ -6,6 +6,7 @@ export {
   boosterServeGraphQL,
   boosterNotifySubscribers,
   boosterTriggerScheduledCommand,
+  boosterGetGraphQLSchema,
 } from '@boostercloud/framework-core'
 
 Booster.start()

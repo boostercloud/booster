@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { GraphQLSchema } from 'graphql'
 import { BoosterApp } from '.'
 
 /**
@@ -11,4 +12,5 @@ export interface UserApp {
   boosterPreSignUpChecker(_: any): Promise<any>
   boosterServeGraphQL(_: any): Promise<any>
   boosterNotifySubscribers(_: any): Promise<any>
+  boosterGetGraphQLSchema(): GraphQLSchema
 }

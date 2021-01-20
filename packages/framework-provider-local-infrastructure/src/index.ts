@@ -1,12 +1,13 @@
 import * as express from 'express'
-import { GraphQLSocketMessage, GraphQLService, UserRegistry } from '@boostercloud/framework-provider-local'
+import { GraphQLService, UserRegistry } from '@boostercloud/framework-provider-local'
 import { AuthController } from './controllers/auth'
-import { BoosterConfig, UUID } from '@boostercloud/framework-types'
+import { BoosterConfig, UserApp } from '@boostercloud/framework-types'
 import * as path from 'path'
 import { requestFailed } from './http'
 import { GraphQLController } from './controllers/graphql'
-import { UserApp } from '@boostercloud/framework-types'
-import * as ExpressWs from 'express-ws'
+import * as ExpressWS from 'express-ws'
+import { useServer } from 'graphql-ws/lib/use/ws'
+import { execute, subscribe } from 'graphql'
 
 /**
  * Default error handling middleware. Instead of performing a try/catch in all endpoints
@@ -36,7 +37,7 @@ export const Infrastructure = {
    */
   start: (config: BoosterConfig, port: number): void => {
     const expressApp = express()
-    const expressWsApp = ExpressWs(expressApp)
+    const expressWSApp = ExpressWS(expressApp)
     const router = express.Router()
     const userProject: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
     const userRegistry = new UserRegistry()
@@ -46,24 +47,16 @@ export const Infrastructure = {
     expressApp.use(express.json())
     expressApp.use(router)
     expressApp.use(defaultErrorHandler)
-    expressWsApp.app.ws('/graphql', function(ws) {
-      const connectionId = UUID.generate().toString()
-      ws.on('message', async (msg) => {
-        const request = parseWebsocketMessage(msg.toString())
-        request.connectionId = connectionId
-        console.log('MESSAGE =====')
-        console.log(request)
-        await userProject.boosterServeGraphQL(request)
-      })
-    })
     expressApp.listen(port)
+    const wsServer = expressWSApp.getWss()
+    useServer({ execute, subscribe, schema: userProject.boosterGetGraphQLSchema() }, wsServer)
   },
 }
 
-function parseWebsocketMessage(rawMessage: string): GraphQLSocketMessage {
-  const parsed = JSON.parse(rawMessage)
-  if (!parsed['type'] || !parsed['payload']) {
-    throw new Error('Error parsing GraphQLSocketMessage. Got ' + rawMessage)
-  }
-  return parsed as GraphQLSocketMessage
-}
+// function parseWebsocketMessage(rawMessage: string): GraphQLSocketMessage {
+//   const parsed = JSON.parse(rawMessage)
+//   if (!parsed['type'] || !parsed['payload']) {
+//     throw new Error('Error parsing GraphQLSocketMessage. Got ' + rawMessage)
+//   }
+//   return parsed as GraphQLSocketMessage
+// }

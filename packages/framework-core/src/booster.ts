@@ -15,6 +15,7 @@ import { fetchEntitySnapshot } from './entity-snapshot-fetcher'
 import { BoosterGraphQLDispatcher } from './booster-graphql-dispatcher'
 import { BoosterSubscribersNotifier } from './booster-subscribers-notifier'
 import { BoosterScheduledCommandDispatcher } from './booster-scheduled-command-dispatcher'
+import { GraphQLSchema } from 'graphql'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -28,6 +29,7 @@ export class Booster {
   public static readonly configuredEnvironments: Set<string> = new Set<string>()
   private static logger: Logger
   private static readonly config = new BoosterConfig(checkAndGetCurrentEnv())
+  private static graphQLDispatcher: BoosterGraphQLDispatcher
   /**
    * Avoid creating instances of this class
    */
@@ -86,7 +88,14 @@ export class Booster {
   }
 
   public static serveGraphQL(request: unknown): Promise<unknown> {
-    return new BoosterGraphQLDispatcher(this.config, this.logger).dispatch(request)
+    if (!this.graphQLDispatcher) {
+      Booster.initializeGraphQLDispatcher()
+    }
+    return this.graphQLDispatcher.dispatch(request)
+  }
+
+  private static initializeGraphQLDispatcher(): void {
+    this.graphQLDispatcher = new BoosterGraphQLDispatcher(this.config, this.logger)
   }
 
   public static triggerScheduledCommand(request: unknown): Promise<unknown> {
@@ -107,6 +116,13 @@ export class Booster {
     entityID: UUID
   ): Promise<TEntity | undefined> {
     return fetchEntitySnapshot(this.config, this.logger, entityClass, entityID)
+  }
+
+  public static getGraphQLSchema(): GraphQLSchema {
+    if (!this.graphQLDispatcher) {
+      Booster.initializeGraphQLDispatcher()
+    }
+    return this.graphQLDispatcher.graphQLSchema
   }
 }
 
@@ -138,4 +154,8 @@ export async function boosterTriggerScheduledCommand(rawRequest: unknown): Promi
 
 export async function boosterNotifySubscribers(rawRequest: unknown): Promise<unknown> {
   return Booster.notifySubscribers(rawRequest)
+}
+
+export function boosterGetGraphQLSchema(): GraphQLSchema {
+  return Booster.getGraphQLSchema()
 }
