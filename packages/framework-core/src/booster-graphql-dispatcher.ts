@@ -26,7 +26,7 @@ export class BoosterGraphQLDispatcher {
 
   public constructor(private config: BoosterConfig, private logger: Logger) {
     this.readModelDispatcher = new BoosterReadModelDispatcher(config, logger)
-    this.graphQLSchema = GraphQLGenerator.getInstance(config, logger).generateSchema()
+    this.graphQLSchema = GraphQLGenerator.build(config, logger).generateSchema()
     this.boosterTokenVerifier = new BoosterTokenVerifier(config)
     this.websocketHandler = new GraphQLWebsocketHandler(
       config,

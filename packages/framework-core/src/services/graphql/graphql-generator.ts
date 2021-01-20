@@ -23,7 +23,7 @@ export class GraphQLGenerator {
 
   private static singleton: GraphQLGenerator | undefined
   
-  public static getInstance(config: BoosterConfig, logger: Logger): GraphQLGenerator {
+  public static build(config: BoosterConfig, logger: Logger): GraphQLGenerator {
     this.singleton = this.singleton ?? new GraphQLGenerator(
       config,
       new BoosterCommandDispatcher(config, logger),
