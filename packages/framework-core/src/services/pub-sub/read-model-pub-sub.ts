@@ -4,6 +4,7 @@ import {
   ReadModelInterface,
   ReadModelPropertyFilter,
   Instance,
+  Operation,
 } from '@boostercloud/framework-types'
 
 export interface ReadModelPubSub {
@@ -27,43 +28,46 @@ function filterReadModel(readModel: Record<string, any>, filters?: Record<string
     return true
   }
   for (const filteredProp in filters) {
+    console.log('*** pub-sub', { filteredProp, filters })
     const readModelPropValue = readModel[filteredProp]
-    const { operation, values }: ReadModelPropertyFilter = filters[filteredProp]
-
-    switch (operation) {
-      case '=':
-        if (readModelPropValue !== values[0]) return false
-        break
-      case '!=':
-        if (readModelPropValue === values[0]) return false
-        break
-      case '<':
-        if (readModelPropValue >= values[0]) return false
-        break
-      case '>':
-        if (readModelPropValue <= values[0]) return false
-        break
-      case '>=':
-        if (readModelPropValue < values[0]) return false
-        break
-      case '<=':
-        if (readModelPropValue > values[0]) return false
-        break
-      case 'in':
-        if (!values.includes(readModelPropValue)) return false
-        break
-      case 'between':
-        if (readModelPropValue < values[0] || readModelPropValue > values[1]) return false
-        break
-      case 'contains':
-        if (!contains(readModelPropValue, values[0])) return false
-        break
-      case 'not-contains':
-        if (contains(readModelPropValue, values[0])) return false
-        break
-      case 'begins-with':
-        if (!beginWith(readModelPropValue, values[0] as string)) return false
-        break
+    // const operation: ReadModelPropertyFilter = filters[filteredProp]
+    for (const [operation, value] of Object.entries(filters[filteredProp] as Operation<any>)) {
+      console.log({ filters, filteredProp, operation, value })
+      switch (operation) {
+        case '=':
+          if (readModelPropValue !== value) return false
+          break
+        case '!=':
+          if (readModelPropValue === value) return false
+          break
+        case '<':
+          if (readModelPropValue >= value) return false
+          break
+        case '>':
+          if (readModelPropValue <= value) return false
+          break
+        case '>=':
+          if (readModelPropValue < value) return false
+          break
+        case '<=':
+          if (readModelPropValue > value) return false
+          break
+        case 'in':
+          // if (!values.includes(readModelPropValue)) return false
+          break
+        case 'between':
+          // if (readModelPropValue < value || readModelPropValue > values[1]) return false
+          break
+        case 'contains':
+          if (!contains(readModelPropValue, value)) return false
+          break
+        case 'not-contains':
+          if (contains(readModelPropValue, value)) return false
+          break
+        case 'begins-with':
+          if (!beginWith(readModelPropValue, value as string)) return false
+          break
+      }
     }
   }
   return true
