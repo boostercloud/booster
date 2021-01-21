@@ -24,8 +24,7 @@ Booster.configure('production', (config: BoosterConfig): void => {
     {
       packageName: '@boostercloud/rocket-auth-aws-infrastructure',
       parameters: {
-        appName: config.appName,                  
-        environmentName: config.environmentName,
+        config,                  
         mode: 'Passwordless',                     
       },
     },
@@ -37,8 +36,7 @@ Booster.configure('production', (config: BoosterConfig): void => {
 
 ```typescript
 {
-  appName: string                            // Required
-  environmentName: string                    // Required
+  config: BoosterConfig                      // Required
   passwordPolicy?: {                         // Optional, all values are set to true by default.
     minLength?: number                       // Minimum length, which must be at least 6 characters but fewer than 99 character
     requireDigits: boolean                   // Require numbers
@@ -307,7 +305,16 @@ POST https://<httpURL>/auth/token/revoke
 
 #### Response
 
-An empty body
+```json
+{
+  "message": "string"
+}
+```
+
+| Parameter     | Description                                   |
+| ------------- | --------------------------------------------- |
+| _message_ | Message with sign out confirmation. It is always: `Signed out` |
+
 
 #### Errors
 
@@ -340,14 +347,12 @@ POST https://<httpURL>/auth/token/refresh
 
 ```json
 {
-  "clientId": "string",
   "refreshToken": "string"
 }
 ```
 
 | Parameter      | Description                                                                            |
 | -------------- | -------------------------------------------------------------------------------------- |
-| _clientId_     | The application client Id that you got as an output when the application was deployed. |
 | _refreshToken_ | The token you can use to get a new access token after it has expired.                  |
 
 #### Response
