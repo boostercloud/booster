@@ -32,6 +32,7 @@
     "compile": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",
+    "test:provider-kubernetes-infrastructure": "npm run test",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
   },
   "bugs": {

@@ -24,6 +24,7 @@
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "test:types": "npm run test",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
     "prepack": "tsc -b tsconfig.json"
   },

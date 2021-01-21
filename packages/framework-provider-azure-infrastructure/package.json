@@ -41,6 +41,7 @@
     "compile": "tsc -b tsconfig.json && copyfiles -f src/infrastructure/templates/*.json  dist/infrastructure/templates",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",
+    "test:provider-azure-infrastructure": "npm run test",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
   },
   "bugs": {
