@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/indent */
 import { UUID } from './concepts'
 import { Class } from './typelevel'
 
