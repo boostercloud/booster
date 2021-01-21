@@ -87,6 +87,8 @@ function buildOperation(propName: string, filter: Operation<any> = {}): string {
           return `contains(#${propName}, ${holder(index)})`
         case 'beginsWith':
           return `begins_with(#${propName}, ${holder(index)})`
+        case 'includes':
+          return `contains(#${propName}, ${holder(index)})`
         default:
           if (typeof value === 'object') {
             return `#${propName}.${buildOperation(operation, value)}`
@@ -123,10 +125,12 @@ function buildExpressionAttributeNames(filters: FilterFor<any>): ExpressionAttri
           Object.assign(attributeNames, buildExpressionAttributeNames(filter as FilterFor<any>))
         }
         break
+      case 'includes':
+        break
       default:
         Object.entries(filters[propName] as FilterFor<any>).forEach(([prop, value]) => {
           attributeNames[`#${propName}`] = propName
-          if (typeof value === 'object') {
+          if (typeof value === 'object' && !Array.isArray(value)) {
             Object.assign(attributeNames, buildExpressionAttributeNames({ [prop]: value }))
           }
         })
@@ -166,7 +170,7 @@ function buildAttributeValue(propName: string, filter: Operation<any> = {}): Exp
       value.forEach((element, subIndex) => {
         attributeValues[holder(index, subIndex)] = element
       })
-    } else if (typeof value === 'object') {
+    } else if (typeof value === 'object' && key !== 'includes') {
       Object.assign(attributeValues, buildExpressionAttributeValues({ [key]: value }))
     } else {
       attributeValues[holder(index)] = value
