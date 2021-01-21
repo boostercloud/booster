@@ -39,8 +39,6 @@ export class GraphQLQueryGenerator {
     const byIDQueries = this.generateByIDQueries()
     const filterQueries = this.generateFilterQueries()
     const fields = {...byIDQueries, ...filterQueries}
-    console.debug('[Booster] ', byIDQueries)
-    console.debug('[Booster] ', filterQueries)
     if (Object.keys(fields).length === 0) {
       return new GraphQLObjectType({
         name: 'Query',

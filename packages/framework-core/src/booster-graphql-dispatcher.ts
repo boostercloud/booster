@@ -44,12 +44,6 @@ export class BoosterGraphQLDispatcher {
   public async dispatch(request: unknown): Promise<unknown> {
     const envelopeOrError = await this.config.provider.graphQL.rawToEnvelope(request, this.logger, this.config)
     this.logger.debug('Received the following GraphQL envelope: ', envelopeOrError)
-    this.logger.debug('config', this.config)
-    this.logger.debug('config stringified',JSON.stringify(this.config))
-    this.logger.debug('config readModels', this.config.readModels)
-    this.logger.debug('config commandHandlers',this.config.commandHandlers)
-    this.logger.debug('graphQL Schema', this.graphQLSchema)
-    this.logger.debug('graphQL Schema stringified', JSON.stringify(this.graphQLSchema))
 
     switch (envelopeOrError.eventType) {
       case 'CONNECT':
