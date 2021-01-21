@@ -36,7 +36,7 @@ export class AuthStack {
 
   public static unmountStack?(): void {}
 
-  private static rocketArtifactsPrefix(params: AWSAuthRocketParams): string {
+  public static rocketArtifactsPrefix(params: AWSAuthRocketParams): string {
     return `${params.config.appName}-${params.config.environmentName}-rocket-auth`
   }
 
@@ -89,7 +89,7 @@ export class AuthStack {
     return userPool
   }
 
-  private static buildLambdaTriggers(params: AWSAuthRocketParams, stack: Stack): UserPoolTriggers {
+  public static buildLambdaTriggers(params: AWSAuthRocketParams, stack: Stack): UserPoolTriggers {
     const createAuthChallenge = createLamba(
       stack,
       `${AuthStack.rocketArtifactsPrefix(params)}-create-auth-challenge`,
