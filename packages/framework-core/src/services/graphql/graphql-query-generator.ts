@@ -38,23 +38,20 @@ export class GraphQLQueryGenerator {
   public generate(): GraphQLObjectType {
     const byIDQueries = this.generateByIDQueries()
     const filterQueries = this.generateFilterQueries()
-    console.log(byIDQueries)
-    console.log(filterQueries)
+    const fields = {...byIDQueries, ...filterQueries}
+    console.debug('[Booster] ', byIDQueries)
+    console.debug('[Booster] ', filterQueries)
+    if (Object.keys(fields).length === 0) {
+      return new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          _dummy: { type: GraphQLString }
+        }
+      })
+    }
     return new GraphQLObjectType({
       name: 'Query',
-      fields: {
-        ...byIDQueries,
-        ...filterQueries,
-      },
-    })
-  }
-
-  public static generateEmpty(): GraphQLObjectType {
-    return new GraphQLObjectType({
-      name: 'Query',
-      fields: {
-        _dummy: { type: GraphQLString }
-      }
+      fields: fields,
     })
   }
 
