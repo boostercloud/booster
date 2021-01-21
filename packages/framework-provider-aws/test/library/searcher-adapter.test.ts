@@ -62,7 +62,7 @@ describe('Searcher adapter', () => {
       expect(result).to.be.deep.equal([])
     })
 
-    it('Executes query with simple filters', async () => {
+    it('Executes query simple filters', async () => {
       const expectedInput = {
         ...expectedParams,
         FilterExpression: [
@@ -71,7 +71,7 @@ describe('Searcher adapter', () => {
           'AND #stock > :stock_0',
           'AND #stock <= :stock_1',
         ].join(' '),
-        ExpressionAttributeNames: { '#id': 'id', '#in': 'in', '#stock': 'stock' },
+        ExpressionAttributeNames: { '#id': 'id', '#stock': 'stock' },
         ExpressionAttributeValues: {
           ':id_0': '3',
           ':id_1_0': 'test1',
@@ -84,8 +84,6 @@ describe('Searcher adapter', () => {
       const filters: FilterFor<Product> = {
         id: { contains: '3', in: ['test1', 'test2', 'test3'] },
         stock: { gt: 0, lte: 10 },
-        // days: { includes: 2 },
-        // items: { includes: { sku: '2', price: { cents: 8, currency: 'EUR' } } },
       }
 
       await searchReadModel(database, config, logger, readModelName, filters as FilterFor<any>)
@@ -93,7 +91,7 @@ describe('Searcher adapter', () => {
       expect(database.scan).to.have.been.calledWithExactly(expectedInput)
     })
 
-    it('Executes query with using NOT in filters', async () => {
+    it('Executes query using NOT in filters', async () => {
       const expectedInput = {
         ...expectedParams,
         FilterExpression: 'contains(#id, :id_0) AND NOT (#id = :id_1)',
@@ -113,7 +111,7 @@ describe('Searcher adapter', () => {
       expect(database.scan).to.have.been.calledWithExactly(expectedInput)
     })
 
-    it('Executes query with using AND & OR filters', async () => {
+    it('Executes query using AND & OR filters', async () => {
       const expectedInput = {
         ...expectedParams,
         FilterExpression: [
@@ -141,7 +139,7 @@ describe('Searcher adapter', () => {
       expect(database.scan).to.have.been.calledWithExactly(expectedInput)
     })
 
-    it('Executes query with using nested filters', async () => {
+    it('Executes query using nested filters', async () => {
       const expectedInput = {
         ...expectedParams,
         FilterExpression: '#mainItem.#sku = :sku_0 AND #mainItem.#price.#cents >= :cents_0 AND #cents < :cents_1',
