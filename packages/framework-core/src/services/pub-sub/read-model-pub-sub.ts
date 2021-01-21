@@ -29,39 +29,44 @@ function filterReadModel(readModel: Record<string, any>, filters?: Record<string
   }
   for (const filteredProp in filters) {
     const readModelPropValue = readModel[filteredProp]
-    for (const [operation, value] of Object.entries(filters[filteredProp] as Operation<any>)) {
-      switch (operation) {
-        case '=':
-          if (readModelPropValue !== value) return false
-          break
-        case '!=':
-          if (readModelPropValue === value) return false
-          break
-        case '<':
-          if (readModelPropValue >= value) return false
-          break
-        case '>':
-          if (readModelPropValue <= value) return false
-          break
-        case '>=':
-          if (readModelPropValue < value) return false
-          break
-        case '<=':
-          if (readModelPropValue > value) return false
-          break
-        case 'in':
-          if (!value.includes(readModelPropValue)) return false
-          break
-        case 'contains':
-          if (!contains(readModelPropValue, value)) return false
-          break
-        case 'not-contains':
-          if (contains(readModelPropValue, value)) return false
-          break
-        case 'begins-with':
-          if (!beginWith(readModelPropValue, value as string)) return false
-          break
-      }
+    return filterByOperation(filters[filteredProp], readModelPropValue)
+  }
+  return true
+}
+
+function filterByOperation(filter: ReadModelPropertyFilter, readModelPropValue: any): boolean {
+  for (const [operation, value] of Object.entries(filter as Operation<any>)) {
+    switch (operation) {
+      case '=':
+        if (readModelPropValue !== value) return false
+        break
+      case '!=':
+        if (readModelPropValue === value) return false
+        break
+      case '<':
+        if (readModelPropValue >= value) return false
+        break
+      case '>':
+        if (readModelPropValue <= value) return false
+        break
+      case '>=':
+        if (readModelPropValue < value) return false
+        break
+      case '<=':
+        if (readModelPropValue > value) return false
+        break
+      case 'in':
+        if (!value.includes(readModelPropValue)) return false
+        break
+      case 'contains':
+        if (!contains(readModelPropValue, value)) return false
+        break
+      case 'not-contains':
+        if (contains(readModelPropValue, value)) return false
+        break
+      case 'begins-with':
+        if (!beginWith(readModelPropValue, value as string)) return false
+        break
     }
   }
   return true
