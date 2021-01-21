@@ -16,9 +16,9 @@ import { BoosterReadModelDispatcher } from '../../booster-read-model-dispatcher'
 import { GraphQLResolverContext } from './common'
 
 export class GraphQLGenerator {
-  private readonly queryGenerator: GraphQLQueryGenerator
+  private readonly queryGenerator: GraphQLQueryGenerator | undefined
   private readonly mutationGenerator: GraphQLMutationGenerator
-  private readonly subscriptionGenerator: GraphQLSubscriptionGenerator
+  private readonly subscriptionGenerator: GraphQLSubscriptionGenerator | undefined
   private readonly typeInformer: GraphQLTypeInformer
 
   private static singleton: GraphQLGenerator | undefined
@@ -38,31 +38,33 @@ export class GraphQLGenerator {
     private readModelsDispatcher: BoosterReadModelDispatcher
   ) {
     this.typeInformer = new GraphQLTypeInformer({ ...config.readModels, ...config.commandHandlers })
-    this.queryGenerator = new GraphQLQueryGenerator(
-      config.readModels,
-      this.typeInformer,
-      this.readModelByIDResolverBuilder.bind(this),
-      this.readModelResolverBuilder.bind(this)
-    )
     this.mutationGenerator = new GraphQLMutationGenerator(
       config.commandHandlers,
       this.typeInformer,
       this.commandResolverBuilder.bind(this)
     )
-    this.subscriptionGenerator = new GraphQLSubscriptionGenerator(
-      config.readModels,
-      this.typeInformer,
-      this.queryGenerator,
-      this.subscriptionByIDResolverBuilder.bind(this),
-      this.subscriptionResolverBuilder.bind(this)
-    )
+    if (Object.keys(config.readModels).length !== 0) {
+      this.queryGenerator = new GraphQLQueryGenerator(
+        config.readModels,
+        this.typeInformer,
+        this.readModelByIDResolverBuilder.bind(this),
+        this.readModelResolverBuilder.bind(this)
+      )
+      this.subscriptionGenerator = new GraphQLSubscriptionGenerator(
+        config.readModels,
+        this.typeInformer,
+        this.queryGenerator,
+        this.subscriptionByIDResolverBuilder.bind(this),
+        this.subscriptionResolverBuilder.bind(this)
+      )
+    }
   }
 
   public generateSchema(): GraphQLSchema {
     return new GraphQLSchema({
-      query: this.queryGenerator.generate(),
+      query: (this.queryGenerator ? this.queryGenerator.generate() : GraphQLQueryGenerator.generateEmpty()),
       mutation: this.mutationGenerator.generate(),
-      subscription: this.subscriptionGenerator.generate(),
+      subscription: (this.subscriptionGenerator ? this.subscriptionGenerator.generate() : undefined),
     })
   }
 
