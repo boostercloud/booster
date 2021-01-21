@@ -165,6 +165,29 @@ describe('Searcher adapter', () => {
       expect(database.scan).to.have.been.calledWithExactly(expectedInput)
     })
 
+    it('Executes query using array includes filters', async () => {
+      const expectedInput = {
+        ...expectedParams,
+        FilterExpression: 'contains(#days, :days_0) AND contains(#items, :items_0)',
+        ExpressionAttributeNames: {
+          '#days': 'days',
+          '#items': 'items',
+        },
+        ExpressionAttributeValues: {
+          ':days_0': 2,
+          ':items_0': { sku: 'test', price: { cents: 1000, currency: 'EUR' } },
+        },
+      }
+      const filters: FilterFor<Product> = {
+        days: { includes: 2 },
+        items: { includes: { sku: 'test', price: { cents: 1000, currency: 'EUR' } } },
+      }
+
+      await searchReadModel(database, config, logger, readModelName, filters as FilterFor<any>)
+
+      expect(database.scan).to.have.been.calledWithExactly(expectedInput)
+    })
+
     it('Thorw an error with non supported filters', async () => {
       const unknownOperator = 'existsIn'
       const filters: FilterFor<any> = {
