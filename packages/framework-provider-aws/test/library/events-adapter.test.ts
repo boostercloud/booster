@@ -146,9 +146,7 @@ describe('the events-adapter', () => {
         requestID: 'requestID',
         createdAt: 'once',
       }
-      const eventEnvelopes = []
-      let numberEvents = 51
-      while (numberEvents--) eventEnvelopes.push(event)
+      const eventEnvelopes = Array.from({ length: 51 }, () => event)
 
       const fakeBatchWrite = fake.returns({
         promise: fake.resolves(''),

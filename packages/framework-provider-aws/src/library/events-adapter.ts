@@ -88,17 +88,29 @@ export async function storeEvents(
   config: BoosterConfig,
   logger: Logger
 ): Promise<void> {
-  const batchItemsNumbers = 25
+  const batchSize = 25
   let processedItems = 0
-  while (Math.floor((eventEnvelopes.length - processedItems) / batchItemsNumbers) != 0) {
-    const currentBatch = eventEnvelopes.slice(processedItems, processedItems + batchItemsNumbers)
+  let currentBatch = getBatchFromEnvelopes(eventEnvelopes, processedItems, batchSize)
+  while (currentBatch.length != 0) {
     await persistBatch(logger, currentBatch, config, dynamoDB)
-    processedItems += batchItemsNumbers
+    processedItems += currentBatch.length
+    currentBatch = getBatchFromEnvelopes(eventEnvelopes, processedItems, batchSize)
   }
-  if (processedItems < eventEnvelopes.length) {
-    const remindBatch = eventEnvelopes.slice(processedItems)
-    await persistBatch(logger, remindBatch, config, dynamoDB)
+}
+
+function validBatchSize(eventEnvelopes: EventEnvelope[], processedItems: number, batchSize: number): boolean {
+  return Math.floor((eventEnvelopes.length - processedItems) / batchSize) != 0
+}
+
+function getBatchFromEnvelopes(
+  eventEnvelopes: EventEnvelope[],
+  processedItems: number,
+  batchSize: number
+): EventEnvelope[] {
+  if (!validBatchSize(eventEnvelopes, processedItems, batchSize)) {
+    return eventEnvelopes.slice(processedItems)
   }
+  return eventEnvelopes.slice(processedItems, processedItems + batchSize)
 }
 
 async function persistBatch(
