@@ -1,6 +1,6 @@
-import { PreSignUpTriggerEvent } from 'aws-lambda'
+import { CognitoUserPoolEvent } from 'aws-lambda'
 
-export const handler = async (event: PreSignUpTriggerEvent): Promise<PreSignUpTriggerEvent> => {
+export const handler = async (event: CognitoUserPoolEvent): Promise<CognitoUserPoolEvent> => {
   const { 'custom:role': role } = event.request.userAttributes
   const rolesConfig = JSON.parse(process.env.rolesConfig!)
 

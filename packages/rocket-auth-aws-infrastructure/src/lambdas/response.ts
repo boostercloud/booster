@@ -1,5 +1,6 @@
 import { APIGatewayProxyResult } from 'aws-lambda'
 import { AWSError } from 'aws-sdk'
+import { httpStatusCodeFor } from '@boostercloud/framework-types'
 
 export const response = (statusCode: number, data: object): APIGatewayProxyResult => {
   return {
@@ -9,7 +10,7 @@ export const response = (statusCode: number, data: object): APIGatewayProxyResul
 }
 
 export const errorResponse = (e: AWSError): APIGatewayProxyResult => {
-  return response(e.statusCode || 500, {
+  return response(httpStatusCodeFor(e), {
     error: {
       type: e.code,
       message: e.message,

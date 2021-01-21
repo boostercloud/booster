@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/rocket-auth-aws-infrastructure",
-  "version": "0.9.63",
+  "version": "0.9.70",
   "description": "Booster rocket to deploy an auth api using AWS Cognito",
   "keywords": [
     "Booster",
@@ -28,13 +28,13 @@
     "@aws-cdk/aws-cognito": "1.67.0",
     "@aws-cdk/aws-iam": "1.67.0",
     "@aws-cdk/aws-lambda": "1.67.0",
-    "@aws-cdk/core": "1.67.0",
-    "validator": "^13.1.1"
+    "@aws-cdk/core": "1.67.0"
   },
   "scripts": {
     "lint": "eslint --ext '.js,.ts' **/*.ts",
     "fix-lint": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
+    "postinstall": "cd src/lambdas && npm install",
     "postcompile": "cp -R src/lambdas/node_modules dist/lambdas",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",
@@ -44,9 +44,9 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.70",
-    "aws-sdk": "^2.825.0",
-    "@boostercloud/framework-provider-aws-infrastructure": "^0.9.3",
-    "@boostercloud/framework-types": "^0.9.3"
+    "@types/aws-lambda": "8.10.48",
+    "aws-sdk": "2.764.0",
+    "@boostercloud/framework-provider-aws-infrastructure": "^0.9.4",
+    "@boostercloud/framework-types": "^0.9.4"
   }
 }
