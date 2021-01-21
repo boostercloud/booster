@@ -28,11 +28,8 @@ function filterReadModel(readModel: Record<string, any>, filters?: Record<string
     return true
   }
   for (const filteredProp in filters) {
-    console.log('*** pub-sub', { filteredProp, filters })
     const readModelPropValue = readModel[filteredProp]
-    // const operation: ReadModelPropertyFilter = filters[filteredProp]
     for (const [operation, value] of Object.entries(filters[filteredProp] as Operation<any>)) {
-      console.log({ filters, filteredProp, operation, value })
       switch (operation) {
         case '=':
           if (readModelPropValue !== value) return false
@@ -53,10 +50,7 @@ function filterReadModel(readModel: Record<string, any>, filters?: Record<string
           if (readModelPropValue > value) return false
           break
         case 'in':
-          // if (!values.includes(readModelPropValue)) return false
-          break
-        case 'between':
-          // if (readModelPropValue < value || readModelPropValue > values[1]) return false
+          if (!value.includes(readModelPropValue)) return false
           break
         case 'contains':
           if (!contains(readModelPropValue, value)) return false

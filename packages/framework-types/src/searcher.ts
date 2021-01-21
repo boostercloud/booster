@@ -65,7 +65,6 @@ export class Searcher<TObject> {
    * Do the actual search by sending all the configured filters to the provided search function
    */
   public async search(): Promise<Array<TObject>> {
-    console.log(this.filters)
     const searchResult = await this.searcherFunction(this.objectClass.name, this.filters)
     return searchResult as Array<TObject>
   }
