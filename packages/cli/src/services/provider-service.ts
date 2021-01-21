@@ -18,7 +18,7 @@ export function assertNameIsCorrect(name: string): void {
     Found: '${name}'`)
   
   if (name.includes('_'))
-    throw new Error(`Project name cannot contain underscore(_):
+    throw new Error(`Project name cannot contain underscore:
 
     Found: '${name}'`)
 
