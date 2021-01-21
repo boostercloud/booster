@@ -20,6 +20,7 @@ Remember that if something here doesn't make sense, you can also propose a chang
 - [Your First Code Contribution](#your-first-code-contribution)
   - [Getting the code](#getting-the-code)
   - [Understanding the "lerna monorepo" approach and how dependencies are structured in the project](#understanding-the-lerna-monorepo-approach-and-how-dependencies-are-structured-in-the-project)
+  - [Running unit tests](#running-unit-tests)
   - [Running integration tests](#running-integration-tests)
   - [Github flow](#github-flow)
   - [Test-driven approach](#test-driven-approach)
@@ -154,6 +155,22 @@ When you bootstrap your project with `lerna bootstrap`, all the needed dependenc
 There could be the situation in which two packages depends on the same dependency but with different versions. In that case you would get an error during `lerna bootstrap`, and that's good. Specify the same dependency version and it will be fixed.
 
 Finally, **always use exact numbers for dependency versions**. This means that if you want to add the dependency "aws-sdk" in version 1.2.3, you should add `"aws-sdk": "1.2.3"` to the corresponding "package.json" file, and never `"aws-sdk": "^1.2.3"` or `"aws-sdk": "~1.2.3"`. This restriction comes from hard problems we've had in the past.
+
+### Running unit tests
+
+Unit tests are executed when you type `lerna run test`. If you want to run the unit tests for an especific package, you should run one of the following commands:
+
+- `lerna run test:cli`: Run unit tests for the `cli` package.
+- `lerna run test:core`: Run unit tests for the `framework-core` package.
+- `lerna run test:provider-aws`: Run unit tests for the `framework-provider-aws` package.
+- `lerna run test:provider-aws-infrastructure`: Run unit tests for the `framework-provider-aws-infrastructure` package.
+- `lerna run test:provider-azure`: Run unit tests for the `framework-provider-azure` package.
+- `lerna run test:provider-azure-infrastructure`: Run unit tests for the `framework-provider-azure-infrastructure` package.
+- `lerna run test:provider-kubernetes`: Run unit tests for the `framework-provider-kubernetes` package.
+- `lerna run test:provider-kubernetes-infrastructure`: Run unit tests for the `framework-provider-kubernetes-infrastructure` package.
+- `lerna run test:provider-local`: Run unit tests for the `framework-provider-local` package.
+- `lerna run test:provider-local-infrastructure`: Run unit tests for the `framework-provider-local-infrastructure` package.
+- `lerna run test:types`: Run unit tests for the `framework-types` package.
 
 ### Running integration tests
 
