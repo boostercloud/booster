@@ -324,9 +324,10 @@ describe('GraphQLQueryGenerator', () => {
         expect(getGraphQLTypeForStub).to.not.be.called
       })
 
-      it('should return expected result', () => {
+      it('should return _dummy type to fulfil GraphQL Schema validations', () => {
         const result = sut.generate()
-
+        const dummyTypeName = '_dummy'
+        
         expect(result.name).to.be.equal('Query')
         expect(result.description).to.be.undefined
         expect(result.extensions).to.be.undefined
@@ -334,7 +335,14 @@ describe('GraphQLQueryGenerator', () => {
         expect(result.extensionASTNodes).to.be.undefined
 
         const config: any = result.toConfig()
-        expect(config.fields).to.be.deep.equal({})
+        expect(Object.keys(config.fields).length).to.eq(1)
+        expect(config.fields[dummyTypeName].description).to.be.undefined
+        expect(config.fields[dummyTypeName].type.toString()).to.be.equal(GraphQLString.toString())
+        expect(config.fields[dummyTypeName].resolve).to.be.undefined
+        expect(config.fields[dummyTypeName].subscribe).to.be.undefined
+        expect(config.fields[dummyTypeName].deprecationReason).to.be.undefined
+        expect(config.fields[dummyTypeName].extensions).to.be.undefined
+        expect(config.fields[dummyTypeName].astNode).to.be.undefined
       })
     })
   })
