@@ -130,6 +130,35 @@ describe('the events-adapter', () => {
         })
       )
     })
+
+    it('publishes the eventEnvelopes passed via parameter in batch of 25 elements', async () => {
+      const config = new BoosterConfig('test')
+      config.appName = 'test-app'
+      const event: EventEnvelope = {
+        version: 1,
+        entityID: 'id',
+        kind: 'event',
+        value: {
+          id: 'id',
+        },
+        typeName: 'EventName',
+        entityTypeName: 'EntityName',
+        requestID: 'requestID',
+        createdAt: 'once',
+      }
+      const eventEnvelopes = []
+      let numberEvents = 51
+      while (numberEvents--) eventEnvelopes.push(event)
+
+      const fakeBatchWrite = fake.returns({
+        promise: fake.resolves(''),
+      })
+      const fakeDynamo: DocumentClient = { batchWrite: fakeBatchWrite } as any
+
+      await Library.storeEvents(fakeDynamo, eventEnvelopes, config, fakeLogger)
+
+      expect(fakeBatchWrite).to.be.calledThrice
+    })
   })
 })
 

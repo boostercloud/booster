@@ -88,7 +88,25 @@ export async function storeEvents(
   config: BoosterConfig,
   logger: Logger
 ): Promise<void> {
-  // TODO: Manage query pagination and db.batchWrite limit of 25 operations at a time
+  const batchItemsNumbers = 25
+  let processedItems = 0
+  while (Math.floor((eventEnvelopes.length - processedItems) / batchItemsNumbers) != 0) {
+    const currentBatch = eventEnvelopes.slice(processedItems, processedItems + batchItemsNumbers)
+    await persistBatch(logger, currentBatch, config, dynamoDB)
+    processedItems += batchItemsNumbers
+  }
+  if (processedItems < eventEnvelopes.length) {
+    const remindBatch = eventEnvelopes.slice(processedItems)
+    await persistBatch(logger, remindBatch, config, dynamoDB)
+  }
+}
+
+async function persistBatch(
+  logger: Logger,
+  eventEnvelopes: EventEnvelope[],
+  config: BoosterConfig,
+  dynamoDB: DynamoDB.DocumentClient
+): Promise<void> {
   logger.debug('[EventsAdapter#storeEvents] Storing EventEnvelopes with eventEnvelopes:', eventEnvelopes)
   const params: DynamoDB.DocumentClient.BatchWriteItemInput = {
     RequestItems: {
