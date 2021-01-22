@@ -4,7 +4,6 @@
 import { restore, replace, stub, spy } from 'sinon'
 import * as fs from 'fs'
 import * as path from 'path'
-import * as process from 'process'
 import { Importer } from '../src/importer'
 import { expect } from './expect'
 
@@ -16,6 +15,7 @@ describe('the `importer` service', () => {
   // FIXME
   describe('the `importUserProjectFiles` function', () => {
     it('calls `require` for each import file', () => {
+      const codeRelativePath = 'dist'
       const fakeStatSync = (fileName: string) => ({
         isDirectory: () => !fileName.includes('.'),
       })
@@ -28,17 +28,14 @@ describe('the `importer` service', () => {
         .returns(['index.js', 'test.ts', 'types.d.ts', 'lol.js'])
       replace(fs, 'readdirSync', fakeReaddirSync as any)
 
-      const fakeCwd = stub().returns('')
-      replace(process, 'cwd', fakeCwd)
-
       const fakeImportWithoutExtension = spy()
       replace(Importer as any, 'importWithoutExtension', fakeImportWithoutExtension)
 
-      Importer.importUserProjectFiles()
+      Importer.importUserProjectFiles(codeRelativePath)
 
       expect(fakeImportWithoutExtension).to.have.been.calledTwice
-      expect(fakeImportWithoutExtension.firstCall).to.have.been.calledWith(path.join('dist', 'src', 'lol.js'))
-      expect(fakeImportWithoutExtension.secondCall).to.have.been.calledWith(path.join('dist', 'lol.js'))
+      expect(fakeImportWithoutExtension.firstCall).to.have.been.calledWith(path.join(codeRelativePath, 'src', 'lol.js'))
+      expect(fakeImportWithoutExtension.secondCall).to.have.been.calledWith(path.join(codeRelativePath, 'lol.js'))
     })
   })
 })
