@@ -19,9 +19,8 @@ export async function cleanProductionSandbox(): Promise<void> {
   removeSandboxProject(DEPLOYMENT_SANDBOX)
 }
 
-export async function compileProjectAndLoadConfig(): Promise<BoosterConfig> {
-  await checkItIsABoosterProject()
-  const userProjectPath = process.cwd()
+export async function compileProjectAndLoadConfig(userProjectPath: string): Promise<BoosterConfig> {
+  await checkItIsABoosterProject(userProjectPath)
   await compileProject(userProjectPath)
   return readProjectConfig(userProjectPath)
 }
@@ -47,7 +46,8 @@ function readProjectConfig(userProjectPath: string): Promise<BoosterConfig> {
 }
 
 function loadUserProject(userProjectPath: string): { Booster: BoosterApp } {
-  return require(path.join(userProjectPath, 'dist', 'index.js'))
+  const projectIndexJSPath = path.resolve(path.join(userProjectPath, 'dist', 'index.js'))
+  return require(projectIndexJSPath)
 }
 
 function checkEnvironmentWasConfigured(app: BoosterApp): void {
