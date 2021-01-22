@@ -15,7 +15,7 @@ export async function createDeploymentSandbox(): Promise<string> {
   return sandboxRelativePath
 }
 
-export async function cleanProductionSandbox(): Promise<void> {
+export async function cleanDeploymentSandbox(): Promise<void> {
   removeSandboxProject(DEPLOYMENT_SANDBOX)
 }
 

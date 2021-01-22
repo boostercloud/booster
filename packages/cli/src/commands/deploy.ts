@@ -1,7 +1,7 @@
 import { Command, flags } from '@oclif/command'
 import { deployToCloudProvider } from '../services/provider-service'
 import {
-  cleanProductionSandbox,
+  cleanDeploymentSandbox,
   compileProjectAndLoadConfig,
   createDeploymentSandbox,
 } from '../services/config-service'
@@ -17,7 +17,7 @@ const runTasks = async (
 ): Promise<void> =>
   Script.init(`boost ${Brand.dangerize('deploy')} [${currentEnvironment()}] 🚀`, compileAndLoad)
     .step('Deploying', (config) => deployer(config, logger))
-    .step('Cleaning up deployment files', cleanProductionSandbox)
+    .step('Cleaning up deployment files', cleanDeploymentSandbox)
     .info('Deployment complete!')
     .done()
 
