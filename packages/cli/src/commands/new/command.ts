@@ -12,7 +12,7 @@ import {
 } from '../../services/generator/target'
 import * as path from 'path'
 import { templates } from '../../templates'
-import { checkItIsABoosterProject } from '../../services/project-checker'
+import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 
 export default class Command extends Oclif.Command {
   public static description = "generate new resource, write 'boost new' to see options"
@@ -43,7 +43,7 @@ type CommandInfo = HasName & HasFields
 
 const run = async (name: string, rawFields: Array<string>): Promise<void> =>
   Script.init(`boost ${Brand.energize('new:command')} 🚧`, joinParsers(parseName(name), parseFields(rawFields)))
-    .step('Verifying project', checkItIsABoosterProject)
+    .step('Verifying project', checkCurrentDirIsABoosterProject)
     .step('Creating new command', generateCommand)
     .info('Command generated!')
     .done()

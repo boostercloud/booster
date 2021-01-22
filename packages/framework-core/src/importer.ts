@@ -2,16 +2,16 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 export class Importer {
-  public static importUserProjectFiles(): void {
-    Importer.getImportFiles().forEach(Importer.importWithoutExtension)
+  public static importUserProjectFiles(codeRootPath: string): void {
+    Importer.getImportFiles(codeRootPath).forEach(Importer.importWithoutExtension)
   }
 
   private static importWithoutExtension(file: string): void {
     require(Importer.removeDevExtension(file))
   }
 
-  private static getImportFiles(): Array<string> {
-    return Importer.walkDir(Importer.distFolder())
+  private static getImportFiles(codeRootPath: string): Array<string> {
+    return Importer.walkDir(codeRootPath)
       .filter(Importer.isJavaScriptFile)
       .filter(Importer.isNotIndexJs)
   }
@@ -28,10 +28,6 @@ export class Importer {
       }
     })
     return files
-  }
-
-  private static distFolder(): string {
-    return path.join(process.cwd(), 'dist')
   }
 
   private static isJavaScriptFile(file: string): boolean {

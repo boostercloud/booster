@@ -5,7 +5,7 @@ import { BoosterConfig, UUID, EntityInterface, Class, ReadModelInterface, Search
  * the framework provides.
  */
 export interface BoosterApp {
-  start(): void
+  start(projectPath: string): void
   configure(environment: string, configurator: (config: BoosterConfig) => void): void
   configureCurrentEnv(configurator: (config: BoosterConfig) => void): void
   fetchEntitySnapshot<TEntity extends EntityInterface>(
