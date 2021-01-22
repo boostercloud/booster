@@ -2,7 +2,7 @@ import ResourceManagementClient from 'azure-arm-resource/lib/resource/resourceMa
 import { configuration } from './params'
 import { ApplicationTokenCredentials, loginWithServicePrincipalSecret } from 'ms-rest-azure'
 import { ResourceGroup } from 'azure-arm-resource/lib/resource/models'
-import { BoosterConfig } from '@boostercloud/framework-types/dist'
+import { BoosterConfig } from '@boostercloud/framework-types'
 import WebSiteManagement from 'azure-arm-website'
 
 export async function createResourceManagementClient(
