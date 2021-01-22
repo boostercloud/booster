@@ -10,6 +10,7 @@ const rewire = require('rewire')
 const configService = rewire('../../src/services/config-service')
 
 describe('configService', () => {
+  const userProjectPath = 'path/to/project'
   let fakeInstallProductionDependencies: SinonSpy
   let fakeCreateSandboxProject: SinonSpy
   beforeEach(() => {
@@ -74,8 +75,8 @@ describe('configService', () => {
 
       replace(environment, 'currentEnvironment', fake.returns('test'))
 
-      await expect(configService.compileProjectAndLoadConfig()).to.eventually.become(config)
-      expect(checkItIsABoosterProject).to.have.been.calledOnceWithExactly()
+      await expect(configService.compileProjectAndLoadConfig(userProjectPath)).to.eventually.become(config)
+      expect(checkItIsABoosterProject).to.have.been.calledOnceWithExactly(userProjectPath)
 
       rewires.forEach((fn) => fn())
     })
@@ -97,10 +98,10 @@ describe('configService', () => {
         ),
       ]
 
-      await expect(configService.compileProjectAndLoadConfig()).to.eventually.be.rejectedWith(
+      await expect(configService.compileProjectAndLoadConfig(userProjectPath)).to.eventually.be.rejectedWith(
         /You haven't configured any environment/
       )
-      expect(checkItIsABoosterProject).to.have.been.calledOnceWithExactly()
+      expect(checkItIsABoosterProject).to.have.been.calledOnceWithExactly(userProjectPath)
 
       rewires.forEach((fn) => fn())
     })
@@ -124,10 +125,10 @@ describe('configService', () => {
 
       replace(environment, 'currentEnvironment', fake.returns('test'))
 
-      await expect(configService.compileProjectAndLoadConfig()).to.eventually.be.rejectedWith(
+      await expect(configService.compileProjectAndLoadConfig(userProjectPath)).to.eventually.be.rejectedWith(
         /The environment 'test' does not match any of the environments/
       )
-      expect(checkItIsABoosterProject).to.have.been.calledOnceWithExactly()
+      expect(checkItIsABoosterProject).to.have.been.calledOnceWithExactly(userProjectPath)
 
       rewires.forEach((fn) => fn())
     })
