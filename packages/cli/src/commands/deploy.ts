@@ -3,7 +3,7 @@ import { deployToCloudProvider } from '../services/provider-service'
 import {
   cleanProductionSandbox,
   compileProjectAndLoadConfig,
-  createProductionSandbox,
+  createDeploymentSandbox,
 } from '../services/config-service'
 import { BoosterConfig, Logger } from '@boostercloud/framework-types'
 import { Script } from '../common/script'
@@ -36,9 +36,8 @@ export default class Deploy extends Command {
     const { flags } = this.parse(Deploy)
 
     if (initializeEnvironment(logger, flags.environment)) {
-      const deploymentProjectPath = await createProductionSandbox()
-      process.chdir(deploymentProjectPath) // The deployment will work inside the production sandbox
-      await runTasks(compileProjectAndLoadConfig(), deployToCloudProvider)
+      const deploymentProjectPath = await createDeploymentSandbox()
+      await runTasks(compileProjectAndLoadConfig(deploymentProjectPath), deployToCloudProvider)
     }
   }
 }
