@@ -5,7 +5,7 @@ import { generate } from '../../services/generator'
 import { HasName, joinParsers, parseName, ImportDeclaration } from '../../services/generator/target'
 import * as path from 'path'
 import { templates } from '../../templates'
-import { checkItIsABoosterProject } from '../../services/project-checker'
+import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 
 export default class ScheduledCommand extends Oclif.Command {
   public static description = "generate new scheduled command, write 'boost new:scheduled-command -h' to see options"
@@ -31,7 +31,7 @@ type ScheduledCommandInfo = HasName
 
 const run = async (name: string): Promise<void> =>
   Script.init(`boost ${Brand.energize('new:scheduled-command')} 🚧`, joinParsers(parseName(name)))
-    .step('Verifying project', checkItIsABoosterProject)
+    .step('Verifying project', checkCurrentDirIsABoosterProject)
     .step('Creating new scheduled command', generateScheduledCommand)
     .info('Scheduled command generated!')
     .done()
