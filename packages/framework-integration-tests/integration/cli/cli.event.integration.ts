@@ -1,13 +1,10 @@
 import * as path from 'path'
 import { expect } from 'chai'
-import {
-  createSandboxProject,
-  loadFixture,
-  readFileContent,
-  removeFolders,
-  writeFileContent,
-} from '../helper/fileHelper'
+import { loadFixture, readFileContent, removeFolders, sandboxPathFor, writeFileContent } from '../helper/fileHelper'
 import { exec } from 'child-process-promise'
+// Imported from another package to avoid duplication
+// It is OK-ish, since integration tests are always run in the context of the whole monorepo
+import { createSandboxProject } from '../../../cli/src/common/sandbox'
 
 const EVENT_ENTITY_ID_PLACEHOLDER = '/* the associated entity ID */'
 
@@ -15,7 +12,7 @@ describe('Event', () => {
   let eventSandboxDir: string
 
   before(async () => {
-    eventSandboxDir = createSandboxProject('event')
+    eventSandboxDir = createSandboxProject(sandboxPathFor('event'))
   })
 
   after(() => {
