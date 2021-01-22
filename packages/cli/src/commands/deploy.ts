@@ -36,8 +36,7 @@ export default class Deploy extends Command {
     const { flags } = this.parse(Deploy)
 
     if (initializeEnvironment(logger, flags.environment)) {
-      const config = await compileProjectAndLoadConfig(process.cwd())
-      const deploymentProjectPath = await createDeploymentSandbox(config.resourceFolders)
+      const deploymentProjectPath = await createDeploymentSandbox()
       await runTasks(compileProjectAndLoadConfig(deploymentProjectPath), deployToCloudProvider)
     }
   }
