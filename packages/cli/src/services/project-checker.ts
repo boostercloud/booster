@@ -15,10 +15,11 @@ export async function checkCurrentDirIsABoosterProject(): Promise<void> {
 }
 
 export async function checkItIsABoosterProject(projectPath: string): Promise<void> {
+  const projectAbsolutePath = path.resolve(projectPath)
   try {
-    const tsConfigJsonContents = require(path.join(projectPath, 'tsconfig.json'))
+    const tsConfigJsonContents = require(path.join(projectAbsolutePath, 'tsconfig.json'))
     const indexFilePath = path.normalize(
-      path.join(projectPath, tsConfigJsonContents.compilerOptions.rootDir, 'index.ts')
+      path.join(projectAbsolutePath, tsConfigJsonContents.compilerOptions.rootDir, 'index.ts')
     )
     checkIndexFileIsBooster(indexFilePath)
   } catch (e) {
