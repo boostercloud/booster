@@ -11,7 +11,7 @@ export const DEPLOYMENT_SANDBOX = '.deploy'
 
 export async function createDeploymentSandbox(): Promise<string> {
   const config = await compileProjectAndLoadConfig(process.cwd())
-  const sandboxRelativePath = createSandboxProject(DEPLOYMENT_SANDBOX, config.staticResources)
+  const sandboxRelativePath = createSandboxProject(DEPLOYMENT_SANDBOX, config.staticResourceFolders)
   await installProductionDependencies(sandboxRelativePath)
   return sandboxRelativePath
 }
