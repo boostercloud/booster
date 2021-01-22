@@ -8,4 +8,4 @@ export {
   boosterTriggerScheduledCommand,
 } from '@boostercloud/framework-core'
 
-Booster.start()
+Booster.start(__dirname)
