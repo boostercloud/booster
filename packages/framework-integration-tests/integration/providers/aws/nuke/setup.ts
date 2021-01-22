@@ -1,14 +1,18 @@
 import { overrideWithBoosterLocalDependencies } from '../../../helper/depsHelper'
-import { createSandboxProject, removeSandboxProject } from '../../../helper/fileHelper'
 import { nuke } from '../deploy'
 import { setEnv, checkConfigAnd } from '../utils'
+// Imported from another package to avoid duplication
+// It is OK-ish, since integration tests are always run in the context of the whole monorepo
+import { createSandboxProject, removeSandboxProject } from '../../../cli/src/common/sandbox'
+import { sandboxPathFor } from '../../../helper/fileHelper'
 
 before(async () => {
   await setEnv()
-  const sandboxedProject = createSandboxProject('deploy')
+  const sandboxPath = sandboxPathFor('deploy')
+  const sandboxedProject = createSandboxProject(sandboxPath)
 
   await overrideWithBoosterLocalDependencies(sandboxedProject)
 
   await checkConfigAnd(nuke.bind(null, sandboxedProject))
-  removeSandboxProject('deploy')
+  removeSandboxProject(sandboxPath)
 })

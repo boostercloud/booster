@@ -47,34 +47,4 @@ export const removeFolders = (paths: Array<string>): void => {
 export const fileExists = existsSync
 export const dirContents = readdirSync
 
-const copyFolder = (origin: string, destiny: string): void => {
-  readdirSync(origin, { withFileTypes: true }).forEach((dirEnt) => {
-    if (dirEnt.isFile()) {
-      copyFileSync(path.join(origin, dirEnt.name), path.join(destiny, dirEnt.name))
-    }
-    if (dirEnt.isDirectory()) {
-      mkdirSync(path.join(destiny, dirEnt.name), { recursive: true })
-      copyFolder(path.join(origin, dirEnt.name), path.join(destiny, dirEnt.name))
-    }
-  })
-}
-
-const sandboxPathFor = (sandboxName: string): string => sandboxName + '-integration-sandbox' // Add the suffix to make sure this folder is gitignored
-
-export const createSandboxProject = (sandboxName: string): string => {
-  const sandboxPath = sandboxPathFor(sandboxName)
-
-  rmdirSync(sandboxPath, { recursive: true })
-  mkdirSync(sandboxPath, { recursive: true })
-  copyFolder('src', path.join(sandboxPath, 'src'))
-
-  const projectFiles = ['.eslintignore', 'package.json', 'tsconfig.eslint.json', 'tsconfig.json']
-  projectFiles.forEach((file: string) => copyFileSync(file, path.join(sandboxPath, file)))
-
-  return sandboxPath
-}
-
-export const removeSandboxProject = (sandboxName: string): void => {
-  const sandboxPath = sandboxPathFor(sandboxName)
-  rmdirSync(sandboxPath, { recursive: true })
-}
+export const sandboxPathFor = (sandboxName: string): string => sandboxName + '-integration-sandbox' // Add the suffix to make sure this folder is gitignored

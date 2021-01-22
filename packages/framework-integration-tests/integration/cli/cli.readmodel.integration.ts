@@ -1,13 +1,10 @@
 import { expect } from 'chai'
 import * as path from 'path'
-import {
-  createSandboxProject,
-  loadFixture,
-  readFileContent,
-  removeFolders,
-  writeFileContent,
-} from '../helper/fileHelper'
+import { loadFixture, readFileContent, removeFolders, sandboxPathFor, writeFileContent } from '../helper/fileHelper'
 import { exec } from 'child-process-promise'
+// Imported from another package to avoid duplication
+// It is OK-ish, since integration tests are always run in the context of the whole monorepo
+import { createSandboxProject } from '../../../cli/src/common/sandbox'
 
 const READ_MODEL_AUTH_PLACEHOLDER = "// Specify authorized roles here. Use 'all' to authorize anyone"
 const READ_MODEL_PROJECTION_PLACEHOLDER = '/* NEW CartWithProjectionReadModel HERE */'
@@ -16,7 +13,7 @@ describe('Read model', () => {
   let readModelSandboxDir: string
 
   before(async () => {
-    readModelSandboxDir = createSandboxProject('read-model')
+    readModelSandboxDir = createSandboxProject(sandboxPathFor('read-model'))
   })
 
   after(() => {

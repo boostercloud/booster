@@ -1,13 +1,16 @@
 import * as path from 'path'
 import { expect } from 'chai'
-import { createSandboxProject, loadFixture, readFileContent, removeFolders } from '../helper/fileHelper'
+import { loadFixture, readFileContent, removeFolders, sandboxPathFor } from '../helper/fileHelper'
 import { exec } from 'child-process-promise'
+// Imported from another package to avoid duplication
+// It is OK-ish, since integration tests are always run in the context of the whole monorepo
+import { createSandboxProject } from '../../../cli/src/common/sandbox'
 
 describe('Type', () => {
   let typeSandboxDir: string
 
   before(async () => {
-    typeSandboxDir = createSandboxProject('type')
+    typeSandboxDir = createSandboxProject(sandboxPathFor('type'))
   })
 
   after(() => {
