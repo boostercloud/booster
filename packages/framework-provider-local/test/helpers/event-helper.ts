@@ -1,4 +1,4 @@
-import { EventEnvelope } from '@boostercloud/framework-types/dist/envelope'
+import { EventEnvelope } from '@boostercloud/framework-types'
 import { random, date } from 'faker'
 
 export function createMockEventEnvelop(): EventEnvelope {
