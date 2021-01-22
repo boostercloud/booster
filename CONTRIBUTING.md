@@ -287,7 +287,7 @@ export const someConstantA = 42
 
 ```typescript
 // module-b.ts, grouping functions with a scope
-export const ModuleB {
+export const ModuleB = {
   functionB1: () => {...},
   functionB2: () => {...},
 }
@@ -312,7 +312,7 @@ const obj = new ObjectC(someConstantA)
 
 ### Use `const` and `let`
 
-Use `const` and immutable object when possible, otherwise, use `let`.
+Default to `const` and immutable objects when possible, otherwise, use `let`.
 
 ```typescript
 // Good
@@ -323,4 +323,3 @@ a = a + b
 // Less Good
 var c = 0
 let d = 3 // Never updated
-
