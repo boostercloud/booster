@@ -5,7 +5,7 @@ import { sandboxPathFor } from '../../../helper/fileHelper'
 import { overrideWithBoosterLocalDependencies } from '../../../helper/depsHelper'
 // Imported from another package to avoid duplication
 // It is OK-ish, since integration tests are always run in the context of the whole monorepo
-import { createSandboxProject } from '../../../../../cli/src/common/sandbox'
+import { createSandboxProject } from '../../../cli/src/common/sandbox'
 
 before(async () => {
   await setEnv()

@@ -1,6 +1,6 @@
 import * as path from 'path'
 import { expect } from 'chai'
-import { loadFixture, readFileContent, removeFolders, sandboxPathFor } from '../helper/fileHelper'
+import { createSandboxProject, loadFixture, readFileContent, removeFolders, sandboxPathFor } from '../helper/fileHelper'
 import { exec } from 'child-process-promise'
 // Imported from another package to avoid duplication
 // It is OK-ish, since integration tests are always run in the context of the whole monorepo
