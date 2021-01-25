@@ -13,5 +13,8 @@
   },
   "bundledDependencies": [
     "uuid"
-  ]
+  ],
+  "dependencies": {
+    "tslib": "2.1.0"
+  }
 }

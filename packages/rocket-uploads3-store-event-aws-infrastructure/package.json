@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/rocket-uploads3-store-event-aws-infrastructure",
-  "version": "0.9.5697",
+  "version": "0.9.5699",
   "description": "Booster rocket to upload file in S3 and store event in Event Store when it happens.",
   "keywords": [
     "Booster",
@@ -26,8 +26,8 @@
     "@aws-cdk/aws-dynamodb": "1.67.0",
     "@aws-cdk/aws-lambda": "1.67.0",
     "@aws-cdk/aws-lambda-event-sources": "1.67.0",
-    "@boostercloud/framework-types": "^0.9.3",
-    "aws-cdk": "1.67.0",
+    "@boostercloud/framework-types": "^0.10.0",
+    "@aws-cdk/core": "1.67.0",
     "aws-sdk": "2.764.0"
   },
   "scripts": {
@@ -44,6 +44,6 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@boostercloud/framework-provider-aws-infrastructure": "^0.9.3"
+    "@boostercloud/framework-provider-aws-infrastructure": "^0.10.0"
   }
 }

@@ -1,24 +1,24 @@
-import { AWSError } from 'aws-sdk'
+import { AWSError, DynamoDB } from 'aws-sdk'
 import { PutItemOutput } from 'aws-sdk/clients/dynamodb'
 
 export const handler = async (event: any): Promise<any> => {
+  const { v4: uuidv4 } = require('uuid')
+  const ddb = new DynamoDB.DocumentClient()
 
-  const AWS = require('aws-sdk')
-  const { v4: uuidv4 } = require('uuid');
-  const ddb = new AWS.DynamoDB.DocumentClient()
-
-  const bucketName = event.Records[0].s3.bucket.name
-  const objectKey = event.Records[0].s3.object.key
-  const fileSize = event.Records[0].s3.object.size
-  const s3uri = `s3://${bucketName}/${objectKey}`
+  const {
+    bucket: { name },
+    object: { key, size },
+  } = event.Records[0].s3
+  const fileSize = size
+  const s3uri = `s3://${name}/${key}`
 
   const boosterEvent = {
     s3uri: s3uri,
-    fileSize: fileSize
+    fileSize: fileSize,
   }
 
   const params = {
-    TableName: process.env.EVENT_STORE_NAME,
+    TableName: process.env.EVENT_STORE_NAME!,
     Item: {
       createdAt: new Date().toISOString(),
       entityID: s3uri,
