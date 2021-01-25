@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-types",
-  "version": "0.9.4",
+  "version": "0.10.0",
   "description": "Contains Booster types related to the information extracted from the user project",
   "keywords": [
     "framework-types"
@@ -32,8 +32,8 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "dependencies": {
-    "uuid": "8.3.2",
-    "@types/graphql": "14.5.0"
+    "@types/graphql": "14.5.0",
+    "uuid": "8.3.2"
   },
   "devDependencies": {
     "@types/uuid": "8.3.0",
