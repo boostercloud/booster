@@ -59,7 +59,7 @@ describe('project initializer', (): void => {
     
     it('install dependencies', async () => {
         await installDependencies(defaultProjectInitializerConfig)
-        expect(childProcessPromise.exec).to.have.been.calledWithMatch('npx yarn install', { cwd: path.join(process.cwd(),projectName) })
+        expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install', { cwd: path.join(process.cwd(),projectName) })
     })
 
     it('Generate config files', async () => {
