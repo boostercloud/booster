@@ -10,7 +10,7 @@ export async function searchReadModel(
   config: BoosterConfig,
   logger: Logger,
   readModelName: string,
-  filters: FilterFor<any>
+  filters: FilterFor<unknown>
 ): Promise<Array<any>> {
   let params: DocumentClient.ScanInput = {
     TableName: config.resourceNames.forReadModel(readModelName),
