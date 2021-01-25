@@ -12,4 +12,5 @@ coverage
 scripts/mirroring.js
 .docs
 .booster
+.deploy
 *-integration-sandbox

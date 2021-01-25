@@ -1,10 +1,8 @@
 import { createStubInstance, fake, SinonStub, SinonStubbedInstance, replace, stub } from 'sinon'
 import { EventRegistry } from '../../src/services'
 import { readEntityEventsSince, readEntityLatestSnapshot, storeEvents } from '../../src/library/events-adapter'
-import { BoosterConfig, Logger } from '@boostercloud/framework-types'
+import { UserApp, EventEnvelope, UUID, BoosterConfig, Logger } from '@boostercloud/framework-types'
 import { expect } from '../expect'
-import { UserApp } from '@boostercloud/framework-types'
-import { EventEnvelope, UUID } from '@boostercloud/framework-types/dist'
 import { createMockEventEnvelop, createMockSnapshot } from '../helpers/event-helper'
 import { random, date } from 'faker'
 

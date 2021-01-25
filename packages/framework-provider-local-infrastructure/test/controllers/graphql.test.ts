@@ -1,6 +1,6 @@
 import { mockRes, mockReq } from 'sinon-express-mock'
 import { restore, SinonStub, SinonStubbedInstance, createStubInstance, stub, replace } from 'sinon'
-import { GraphQLService } from '@boostercloud/framework-provider-local/dist'
+import { GraphQLService } from '@boostercloud/framework-provider-local'
 import { GraphQLController } from '../../src/controllers/graphql'
 import { Request, Response } from 'express'
 import { expect } from '../expect'

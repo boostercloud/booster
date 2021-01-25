@@ -1,13 +1,10 @@
 import * as path from 'path'
 import { expect } from 'chai'
-import {
-  createSandboxProject,
-  loadFixture,
-  readFileContent,
-  removeFolders,
-  writeFileContent,
-} from '../helper/fileHelper'
+import { loadFixture, readFileContent, removeFolders, sandboxPathFor, writeFileContent } from '../helper/fileHelper'
 import { exec } from 'child-process-promise'
+// Imported from another package to avoid duplication
+// It is OK-ish, since integration tests are always run in the context of the whole monorepo
+import { createSandboxProject } from '../../../cli/src/common/sandbox'
 
 const COMMAND_AUTH_PLACEHOLDER = "// Specify authorized roles here. Use 'all' to authorize anyone"
 
@@ -15,7 +12,7 @@ describe('Command', () => {
   let commandSandboxDir: string
 
   before(async () => {
-    commandSandboxDir = createSandboxProject('command')
+    commandSandboxDir = createSandboxProject(sandboxPathFor('command'))
   })
 
   after(() => {
