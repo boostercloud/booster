@@ -35,7 +35,7 @@
     "fix-lint": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
     "postcompile": "cp -R src/lambdas/node_modules dist/lambdas",
-    "postinstall": "yarn --cwd src/lambdas install",
+    "postinstall": "npm --prefix src/lambdas install",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
