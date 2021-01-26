@@ -9,13 +9,13 @@ import { installProductionDependencies } from './dependencies'
 
 export const DEPLOYMENT_SANDBOX = '.deploy'
 
-export async function createProductionSandbox(): Promise<string> {
+export async function createDeploymentSandbox(): Promise<string> {
   const sandboxRelativePath = createSandboxProject(DEPLOYMENT_SANDBOX)
   await installProductionDependencies(sandboxRelativePath)
   return sandboxRelativePath
 }
 
-export async function cleanProductionSandbox(): Promise<void> {
+export async function cleanDeploymentSandbox(): Promise<void> {
   removeSandboxProject(DEPLOYMENT_SANDBOX)
 }
 

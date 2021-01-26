@@ -4,7 +4,6 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 import * as environment from '../../src/services/environment'
 import * as dependencies from '../../src/services/dependencies'
-import * as sandbox from '../../src/common/sandbox'
 
 const rewire = require('rewire')
 const configService = rewire('../../src/services/config-service')
@@ -12,13 +11,9 @@ const configService = rewire('../../src/services/config-service')
 describe('configService', () => {
   const userProjectPath = 'path/to/project'
   let fakeInstallProductionDependencies: SinonSpy
-  let fakeCreateSandboxProject: SinonSpy
   beforeEach(() => {
     fakeInstallProductionDependencies = fake()
-    fakeCreateSandboxProject = fake()
     replace(dependencies, 'installProductionDependencies', fakeInstallProductionDependencies)
-    replace(sandbox, 'createSandboxProject', fakeCreateSandboxProject)
-    replace(process, 'chdir', fake())
   })
   afterEach(() => {
     restore()
@@ -29,31 +24,6 @@ describe('configService', () => {
 
     beforeEach(() => {
       checkItIsABoosterProject = stub(projectChecker, 'checkItIsABoosterProject').resolves()
-    })
-
-    it('creates a sandbox project', async () => {
-      const config = new BoosterConfig('test')
-
-      const rewires = [
-        configService.__set__('compileProject', fake()),
-        configService.__set__(
-          'loadUserProject',
-          fake.returns({
-            Booster: {
-              config: config,
-              configuredEnvironments: new Set(['test']),
-              configureCurrentEnv: fake.yields(config),
-            },
-          })
-        ),
-      ]
-
-      replace(environment, 'currentEnvironment', fake.returns('test'))
-
-      await configService.compileProjectAndLoadConfig()
-      expect(fakeCreateSandboxProject).to.have.been.calledOnce
-
-      rewires.forEach((fn) => fn())
     })
 
     it('loads the config when the selected environment exists', async () => {
