@@ -295,3 +295,71 @@ We're using the following scopes in the project:
 - **local**
 
 Apart of using conventional commits for triggering releases, we use them to build the project changelog.
+
+## Code Style Guidelines
+
+The Booster project comes with a nice set of ESLint config files to help you follow a consistent style, and we really encourage to use it in your editor. You can also run the `lerna run lint:fix` commands to try solving any linter problems automatically.
+
+For everything else, the rule of thumb is: Try to be consistent with the code around yours, and if you're not sure, ask :-)
+
+There are some things that the linter doesn't force but are prefered this way:
+
+### Importing other files and libraries
+
+Use `import` instead of `require` and import the objects individually when possible:
+
+```typescript
+import { Object, function } from 'some-package'
+```
+
+### Functional style
+
+We give priority to a functional style of programming, but always taking into account how the objects are used to make sure they form a nice DSL. Classes are allowed when there's an actual state to hold, and we usually avoid default exports:
+
+```typescript
+// module-a.ts, a conventional functional module
+export functionA() {
+  ...
+}
+
+export const someConstantA = 42
+```
+
+```typescript
+// module-b.ts, grouping functions with a scope
+export const ModuleB = {
+  functionB1: () => {...},
+  functionB2: () => {...},
+}
+```
+
+```typescript
+// object-c.ts, a class
+export class ObjectC {
+  constructor(readonly value: number) {}
+}
+```
+
+```typescript
+import { functionA, someConstantA } from 'module-a'
+import { ModuleB } from 'module-b'
+import { ObjectC } from 'object-c'
+
+functionA()
+ModuleB.functionB1()
+const obj = new ObjectC(someConstantA)
+```
+
+### Use `const` and `let`
+
+Default to `const` and immutable objects when possible, otherwise, use `let`.
+
+```typescript
+// Good
+let a = 0
+const b = 3
+a = a + b
+
+// Less Good
+var c = 0
+let d = 3 // Never updated
