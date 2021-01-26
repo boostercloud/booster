@@ -324,9 +324,9 @@ describe('GraphQLQueryGenerator', () => {
         expect(getGraphQLTypeForStub).to.not.be.called
       })
 
-      it('should return _dummy type to fulfil GraphQL Schema validations', () => {
+      it('should return NoQueriesDefined type to fulfil GraphQL Schema validations', () => {
         const result = sut.generate()
-        const dummyTypeName = '_dummy'
+        const dummyTypeName = 'NoQueriesDefined'
         
         expect(result.name).to.be.equal('Query')
         expect(result.description).to.be.undefined

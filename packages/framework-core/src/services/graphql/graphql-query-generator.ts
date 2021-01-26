@@ -43,7 +43,7 @@ export class GraphQLQueryGenerator {
       return new GraphQLObjectType({
         name: 'Query',
         fields: {
-          _dummy: { type: GraphQLString }
+          NoQueriesDefined: { type: GraphQLString }
         }
       })
     }
