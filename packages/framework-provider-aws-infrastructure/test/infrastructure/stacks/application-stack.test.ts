@@ -106,7 +106,6 @@ describe('the application stack builder', () => {
     // Just check for all the EXTRA constructs that must be created to support roles
     // API-related
     expect(api).not.to.be.undefined
-    expect(api.root.getResource('auth')).not.to.be.undefined
     // Lambdas
     expect(numberOfLambdas).to.equal(3)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
