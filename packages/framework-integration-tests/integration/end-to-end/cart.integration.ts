@@ -258,8 +258,8 @@ describe('Cart end-to-end tests', () => {
 
       it('should reduce the entity as expected', async () => {
         const adminEmail: string = internet.email()
-        authToken = await getTokenForUser(adminEmail, 'Admin')
-        client = await graphQLClient(authToken)
+        const adminAuthToken = await getTokenForUser(adminEmail, 'Admin')
+        client = await graphQLClient(adminAuthToken)
 
         // Delete a product given an id
         await client.mutate({
