@@ -13,6 +13,7 @@ describe('ReadModelsStack', () => {
       public constructor(readonly id: UUID) {}
     }
     const config = new BoosterConfig('test')
+    config.userProjectRootPath = '.'
     config.readModels['SomeReadModel'] = {
       class: SomeReadModel,
       authorizedRoles: 'all',

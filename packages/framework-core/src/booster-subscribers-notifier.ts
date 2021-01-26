@@ -11,8 +11,6 @@ import {
 import { GraphQLSchema, DocumentNode } from 'graphql'
 import * as graphql from 'graphql'
 import { GraphQLGenerator } from './services/graphql/graphql-generator'
-import { BoosterCommandDispatcher } from './booster-command-dispatcher'
-import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
 import { FilteredReadModelPubSub, ReadModelPubSub } from './services/pub-sub/read-model-pub-sub'
 import { GraphQLResolverContext } from './services/graphql/common'
 import { ExecutionResult } from 'graphql/execution/execute'
@@ -21,11 +19,7 @@ export class BoosterSubscribersNotifier {
   private readonly graphQLSchema: GraphQLSchema
 
   public constructor(private config: BoosterConfig, private logger: Logger) {
-    this.graphQLSchema = new GraphQLGenerator(
-      config,
-      new BoosterCommandDispatcher(config, logger),
-      new BoosterReadModelDispatcher(config, logger)
-    ).generateSchema()
+    this.graphQLSchema = GraphQLGenerator.build(config, logger).generateSchema()
   }
 
   public async dispatch(request: unknown): Promise<void> {
@@ -40,7 +34,7 @@ export class BoosterSubscribersNotifier {
       )
 
       const pubSub = this.getPubSub(readModelEnvelopes)
-      await Promise.all(subscriptions.map(this.runSubscriptionAndNotify.bind(this, pubSub)))
+      await Promise.allSettled(subscriptions.map(this.runSubscriptionAndNotify.bind(this, pubSub)))
     } catch (e) {
       this.logger.error(e)
     }

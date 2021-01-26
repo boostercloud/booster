@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-kubernetes-infrastructure",
-  "version": "0.9.4",
+  "version": "0.10.0",
   "description": "Handle Booster's integration with Kubernetes",
   "keywords": [
     "framework-provider-kubernetes-infrastructure"
@@ -32,19 +32,19 @@
     "compile": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",
+    "test:provider-kubernetes-infrastructure": "npm run test",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
   },
   "bugs": {
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@boostercloud/framework-types": "^0.9.4",
+    "@boostercloud/framework-types": "^0.10.0",
     "@kubernetes/client-node": "^0.12.0",
     "@types/archiver": "^3.1.0",
     "@types/cors": "^2.8.7",
     "@types/express": "4.17.2",
     "@types/faker": "5.1.5",
-    "@types/isomorphic-fetch": "0.0.35",
     "@types/mustache": "4.1.0",
     "@types/semver": "5.5.0",
     "archiver": "^4.0.1",

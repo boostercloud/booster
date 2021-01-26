@@ -1,7 +1,5 @@
-import { Logger, BoosterConfig, EventEnvelope } from '@boostercloud/framework-types'
+import { UUID, UserApp, Logger, BoosterConfig, EventEnvelope } from '@boostercloud/framework-types'
 import { EventRegistry } from '..'
-import { UUID } from '@boostercloud/framework-types'
-import { UserApp } from '@boostercloud/framework-types/dist'
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const originOfTime = new Date(0).toISOString()

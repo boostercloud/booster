@@ -24,7 +24,7 @@ describe('new', (): void => {
     })
     context('projections', () => {
       it('renders according to the template', async () => {
-        stub(ProjectChecker, 'checkItIsABoosterProject').returnsThis()
+        stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
         await new ReadModel([readModel, '--fields', 'title:string', '--projects', 'Post:id'], {} as IConfig).run()
         const readModelFileContent = fs.readFileSync(readModelPath).toString()
         const renderedReadModel = Mustache.render(templates.readModel, {

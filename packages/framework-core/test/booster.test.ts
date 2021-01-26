@@ -40,7 +40,7 @@ describe('the `Booster` class', () => {
     it('imports all the user files', () => {
       const fakeImporter = fake()
       replace(Importer, 'importUserProjectFiles', fakeImporter)
-      Booster.start()
+      Booster.start('path/to/code')
       expect(fakeImporter).to.have.been.calledOnce
     })
   })

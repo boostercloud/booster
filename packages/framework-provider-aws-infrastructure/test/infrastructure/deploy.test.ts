@@ -13,6 +13,8 @@ const testEnvironment = {
   account: 'testAccount',
   region: 'testRegion',
 }
+const config = new BoosterConfig('test')
+config.userProjectRootPath = '.'
 
 describe('the deployment module', () => {
   beforeEach(() => {
@@ -25,8 +27,6 @@ describe('the deployment module', () => {
 
   describe('the `deploy` method', () => {
     it('logs progress through the passed logger', async () => {
-      const config = new BoosterConfig('test')
-
       replace(
         StackTools,
         'getStackServiceConfiguration',
@@ -48,7 +48,6 @@ describe('the deployment module', () => {
     })
 
     it('throws errors', async () => {
-      const config = new BoosterConfig('test')
       const errorMessage = 'Testing error'
 
       replace(
@@ -72,8 +71,6 @@ describe('the deployment module', () => {
     })
 
     it('builds the AppStack calling to the `getStackServiceConfiguration`', async () => {
-      const config = new BoosterConfig('test')
-
       replace(
         StackTools,
         'getStackServiceConfiguration',
@@ -96,7 +93,6 @@ describe('the deployment module', () => {
     })
 
     it('calls the CDK bootstrap with the default environment parameters', async () => {
-      const config = new BoosterConfig('test')
       const fakeBootstrap = fake()
 
       replace(
@@ -123,7 +119,6 @@ describe('the deployment module', () => {
     })
 
     it('calls the CDK bootstrap with the right config parameters', async () => {
-      const config = new BoosterConfig('test')
       const testAppName = 'testing'
       config.appName = testAppName
       const fakeBootstrap = fake()
@@ -162,8 +157,6 @@ describe('the deployment module', () => {
 
     context('with rockets', () => {
       it('forwards the rockets to the `getStackServiceConfiguration` method for initialization', async () => {
-        const config = new BoosterConfig('test')
-
         replace(
           StackTools,
           'getStackServiceConfiguration',

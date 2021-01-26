@@ -11,6 +11,7 @@ import {
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
+import * as path from 'path'
 
 /**
  * Class used by external packages that needs to get a representation of
@@ -24,12 +25,16 @@ export class BoosterConfig {
     maxConnectionDurationInSeconds: 7 * 24 * 60 * 60, // 7 days
     maxDurationInSeconds: 2 * 24 * 60 * 60, // 2 days
   }
-  public readonly userProjectRootPath: string = process.cwd()
-  public readonly eventDispatcherHandler: string = 'dist/index.boosterEventDispatcher'
-  public readonly preSignUpHandler: string = 'dist/index.boosterPreSignUpChecker'
-  public readonly serveGraphQLHandler: string = 'dist/index.boosterServeGraphQL'
-  public readonly scheduledTaskHandler: string = 'dist/index.boosterTriggerScheduledCommand'
-  public readonly notifySubscribersHandler: string = 'dist/index.boosterNotifySubscribers'
+  private _userProjectRootPath?: string
+  public readonly codeRelativePath: string = 'dist'
+  public readonly eventDispatcherHandler: string = path.join(this.codeRelativePath, 'index.boosterEventDispatcher')
+  public readonly preSignUpHandler: string = path.join(this.codeRelativePath, 'index.boosterPreSignUpChecker')
+  public readonly serveGraphQLHandler: string = path.join(this.codeRelativePath, 'index.boosterServeGraphQL')
+  public readonly scheduledTaskHandler: string = path.join(
+    this.codeRelativePath,
+    'index.boosterTriggerScheduledCommand'
+  )
+  public readonly notifySubscribersHandler: string = path.join(this.codeRelativePath, 'index.boosterNotifySubscribers')
 
   public readonly entities: Record<EntityName, EntityMetadata> = {}
   public readonly reducers: Record<EventName, ReducerMetadata> = {}
@@ -101,6 +106,16 @@ export class BoosterConfig {
 
   public set provider(provider: ProviderLibrary) {
     this._provider = provider
+  }
+
+  public get userProjectRootPath(): string {
+    if (!this._userProjectRootPath)
+      throw new Error('Property "userProjectRootPath" is not set. Ensure you have called "Booster.start"')
+    return this._userProjectRootPath
+  }
+
+  public set userProjectRootPath(path: string) {
+    this._userProjectRootPath = path
   }
 
   public mustGetEnvironmentVar(varName: string): string {

@@ -1,5 +1,5 @@
 import { StreamViewType } from '@aws-cdk/aws-dynamodb'
-import { InfrastructureRocket } from '../../src/rockets/infrastructure-rocket'
+import { InfrastructureRocket } from '../../src'
 import { BoosterConfig, UUID } from '@boostercloud/framework-types'
 import { fake, replace, restore, spy } from 'sinon'
 import { expect } from '../expect'
@@ -79,6 +79,7 @@ describe('the `stack-tools` module', () => {
       }
 
       const config = new BoosterConfig('test')
+      config.userProjectRootPath = '.'
       config.appName = 'testing-app'
       config.entities[EmptyEntity.name] = {
         class: EmptyEntity,
@@ -111,6 +112,7 @@ describe('the `stack-tools` module', () => {
       }
 
       const config = new BoosterConfig('test')
+      config.userProjectRootPath = '.'
       config.appName = 'testing-app'
       config.readModels[SomeReadModel.name] = {
         class: SomeReadModel,
@@ -170,6 +172,7 @@ describe('the `stack-tools` module', () => {
         }
 
         const config = new BoosterConfig('test')
+        config.userProjectRootPath = '.'
         config.appName = 'testing-app'
         config.entities[EmptyEntity.name] = {
           class: EmptyEntity,

@@ -1,4 +1,4 @@
-import { BoosterConfig } from '@boostercloud/framework-types/dist'
+import { BoosterConfig } from '@boostercloud/framework-types'
 import { buildResource } from '../utils'
 import { configuration } from '../params'
 import ResourceManagementClient from 'azure-arm-resource/lib/resource/resourceManagementClient'
