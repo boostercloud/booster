@@ -1,31 +1,20 @@
 import gql from 'graphql-tag'
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
-import {
-  createUser,
-  getUserAuthInformation,
-  getEventsByEntityId,
-  graphQLClient,
-  waitForIt,
-  UserAuthInformation,
-} from '../utils'
+import { getEventsByEntityId, graphQLClient, waitForIt, getTokenForUser } from '../utils'
 import { random, address, internet } from 'faker'
 import { expect } from 'chai'
 
 describe('Event handlers', () => {
   let adminEmail: string
-  let userId: string | undefined
-  const adminPassword = 'Enable_G0d_Mode3e!'
 
-  let userAuthInformation: UserAuthInformation
+  let authToken: string
   let client: ApolloClient<NormalizedCacheObject>
 
   before(async () => {
     adminEmail = internet.email()
-    await createUser(adminEmail, adminPassword, 'Admin')
-    userAuthInformation = await getUserAuthInformation(adminEmail, adminPassword)
-    userId = userAuthInformation.id
-    client = await graphQLClient(userAuthInformation.idToken)
+    authToken = await getTokenForUser(adminEmail, 'Admin')
+    client = await graphQLClient(authToken)
   })
 
   context('move product', () => {
@@ -75,7 +64,7 @@ describe('Event handlers', () => {
         currentUser: {
           username: adminEmail,
           role: 'Admin',
-          id: userId,
+          id: adminEmail,
         },
       }
       const stockMovedEvent = events.find((event) => event.typeName === 'StockMoved')
@@ -96,7 +85,7 @@ describe('Event handlers', () => {
         currentUser: {
           username: adminEmail,
           role: 'Admin',
-          id: userId,
+          id: adminEmail,
         },
       }
       const productAvailabilityChangedEvent = events.find((event) => event.typeName === 'ProductAvailabilityChanged')

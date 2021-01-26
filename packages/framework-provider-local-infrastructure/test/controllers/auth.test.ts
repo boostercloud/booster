@@ -11,7 +11,7 @@ describe('the auth controller', () => {
   afterEach(() => {
     restore()
   })
-  const userApp = ({ boosterPreSignUpChecker: stub().resolves() } as unknown) as UserApp
+  const userApp = ({} as unknown) as UserApp
 
   describe('/sign-up', () => {
     it('should return status 200 if the request is correct', async () => {

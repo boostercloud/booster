@@ -1,5 +1,4 @@
-import { ProviderLibrary, ProviderInfrastructure } from '@boostercloud/framework-types'
-import { rawSignUpDataToUserEnvelope } from './library/auth-adapter'
+import { ProviderLibrary, ProviderInfrastructure, UserApp } from '@boostercloud/framework-types'
 import {
   rawEventsToEnvelopes,
   readEntityEventsSince,
@@ -9,7 +8,7 @@ import {
 import { requestSucceeded, requestFailed } from './library/api-adapter'
 import { EventRegistry } from './services'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
-import { UserApp } from '@boostercloud/framework-types'
+
 import * as path from 'path'
 import { ReadModelRegistry } from './services/read-model-registry'
 import { fetchReadModel, searchReadModel, storeReadModel } from './library/read-model-adapter'
@@ -52,14 +51,6 @@ export const Provider = (): ProviderLibrary => ({
   graphQL: {
     rawToEnvelope: rawGraphQLRequestToEnvelope,
     handleResult: requestSucceeded,
-  },
-  // ProviderAuthLibrary
-  auth: {
-    rawToEnvelope: rawSignUpDataToUserEnvelope,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fromAuthToken: undefined as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    handleSignUpResult: (() => {}) as any,
   },
   // ProviderAPIHandling
   api: {

@@ -1,15 +1,13 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from '../../expect'
 import { BoosterConfig, UUID } from '@boostercloud/framework-types'
-import { App } from '@aws-cdk/core'
+import { App, StackProps, Stack } from '@aws-cdk/core'
 import { Function } from '@aws-cdk/aws-lambda'
 import { CfnUserPool, CfnUserPoolDomain, UserPoolClient } from '@aws-cdk/aws-cognito'
 import { RestApi } from '@aws-cdk/aws-apigateway'
 import { CfnApi } from '@aws-cdk/aws-apigatewayv2'
 import { InfrastructureRocket } from '../../../src/rockets/infrastructure-rocket'
 import { fake } from 'sinon'
-import { StackProps } from '@aws-cdk/core'
-import { Stack } from '@aws-cdk/core'
 
 const rewire = require('rewire')
 const applicationStack = rewire('../../../src/infrastructure/stacks/application-stack')
@@ -100,11 +98,6 @@ describe('the application stack builder', () => {
     const appStack = boosterApp.node.findChild(appStackName).node
 
     const apiName = appStackName + '-rest-api'
-    const preSignUpValidator = 'pre-sign-up-validator'
-    const userPool = 'user-pool'
-    const userPoolDomain = 'user-pool-domain'
-    const userPoolClient = 'user-pool-client'
-    const clientID = 'clientID'
     const api = appStack.tryFindChild(apiName) as RestApi
     const lambdas = appStack.children.filter((child) => child instanceof Function)
     const numberOfLambdas = lambdas.length
@@ -114,19 +107,13 @@ describe('the application stack builder', () => {
     expect(api).not.to.be.undefined
     expect(api.root.getResource('auth')).not.to.be.undefined
     // Lambdas
-    expect(numberOfLambdas).to.equal(4)
-    expect(appStack.tryFindChild(preSignUpValidator)).not.to.be.undefined
+    expect(numberOfLambdas).to.equal(3)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     lambdas.forEach((lambda: any) => {
       expect(lambda.environment.BOOSTER_ENV.value).to.equal('test')
       expect(lambda.environment.A_CUSTOM_ENV_VARIABLE.value).to.equal('important-value')
     })
 
-    // UserPool-related
-    expect(appStack.tryFindChild(userPool)).not.to.be.undefined
-    expect(appStack.tryFindChild(userPoolDomain)).not.to.be.undefined
-    expect(appStack.tryFindChild(userPoolClient)).not.to.be.undefined
-    expect(appStack.tryFindChild(clientID)).not.to.be.undefined
     // Check all read models
     readModels.forEach(({ name }) => expect(appStack.tryFindChild(name)).not.to.be.undefined)
   })

@@ -28,4 +28,8 @@ Booster.configure('production', (config: BoosterConfig): void => {
 
   config.appName = 'my-store-' + appNameSuffix
   config.provider = AWS.Provider()
+  config.tokenVerifier = {
+    jwksUri: 'https://booster-integration-tests.s3.amazonaws.com/.well-known/jkws.json',
+    issuer: 'booster',
+  }
 })

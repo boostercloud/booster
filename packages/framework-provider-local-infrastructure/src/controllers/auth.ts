@@ -21,7 +21,6 @@ export class AuthController {
   public async signUp(req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> {
     try {
       if (req.body?.username && req.body?.userAttributes && req.body?.password) {
-        await this.userProject.boosterPreSignUpChecker(req.body)
         const user = await this.userRegistry.signUp(req.body)
         console.info(
           `To confirm the user, use the following link: http://localhost:${this.port}/auth/confirm/${user.username}`

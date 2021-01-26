@@ -26,7 +26,6 @@ export class BoosterConfig {
   }
   public readonly userProjectRootPath: string = process.cwd()
   public readonly eventDispatcherHandler: string = 'dist/index.boosterEventDispatcher'
-  public readonly preSignUpHandler: string = 'dist/index.boosterPreSignUpChecker'
   public readonly serveGraphQLHandler: string = 'dist/index.boosterServeGraphQL'
   public readonly scheduledTaskHandler: string = 'dist/index.boosterTriggerScheduledCommand'
   public readonly notifySubscribersHandler: string = 'dist/index.boosterNotifySubscribers'
@@ -112,14 +111,7 @@ export class BoosterConfig {
   }
 
   public get tokenVerifier(): { issuer: string; jwksUri: string } | undefined {
-    if (this._tokenVerifier) return this._tokenVerifier
-    if (process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER] && process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI]) {
-      return {
-        issuer: process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER] as string,
-        jwksUri: process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI] as string,
-      }
-    }
-    return undefined
+    return this._tokenVerifier
   }
 
   public set tokenVerifier(tokenVerifier: { issuer: string; jwksUri: string } | undefined) {
@@ -144,11 +136,6 @@ export class BoosterConfig {
       }
     }
   }
-}
-
-export const JWT_ENV_VARS = {
-  BOOSTER_JWT_ISSUER: 'BOOSTER_JWT_ISSUER',
-  BOOSTER_JWKS_URI: 'BOOSTER_JWKS_URI',
 }
 
 interface ResourceNames {

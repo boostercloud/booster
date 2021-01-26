@@ -8,7 +8,6 @@ import { BoosterApp } from '.'
 export interface UserApp {
   Booster: BoosterApp
   boosterEventDispatcher(_: any): Promise<any>
-  boosterPreSignUpChecker(_: any): Promise<any>
   boosterServeGraphQL(_: any): Promise<any>
   boosterNotifySubscribers(_: any): Promise<any>
 }

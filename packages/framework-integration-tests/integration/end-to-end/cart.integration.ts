@@ -1,12 +1,6 @@
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
-import {
-  createUser,
-  getUserAuthInformation,
-  graphQLClient,
-  UserAuthInformation,
-  waitForIt,
-} from '../providers/aws/utils'
+import { getTokenForUser, graphQLClient, waitForIt } from '../providers/aws/utils'
 import { random, commerce, finance, lorem, internet } from 'faker'
 import { expect } from 'chai'
 import gql from 'graphql-tag'
@@ -165,16 +159,13 @@ describe('Cart end-to-end tests', () => {
   })
 
   describe('Entities', () => {
-    let userAuthInformation: UserAuthInformation
     let userEmail: string
-    const mockPassword = 'Enable_G0d_Mode3e!'
+    let authToken: string
 
     before(async () => {
       userEmail = internet.email()
-      // TODO: Make retrieval of auth token cloud agnostic
-      await createUser(userEmail, mockPassword, 'UserWithEmail')
-      userAuthInformation = await getUserAuthInformation(userEmail, mockPassword)
-      client = await graphQLClient(userAuthInformation.idToken)
+      authToken = await getTokenForUser(userEmail, 'UserWithEmail')
+      client = await graphQLClient(authToken)
     })
 
     context('Reducers', () => {
@@ -266,12 +257,9 @@ describe('Cart end-to-end tests', () => {
       })
 
       it('should reduce the entity as expected', async () => {
-        // TODO: Make retrieval of auth token cloud agnostic
-        // provision admin user to delete a product
         const adminEmail: string = internet.email()
-        await createUser(adminEmail, mockPassword, 'Admin')
-        const adminUserAuthInformation = await getUserAuthInformation(adminEmail, mockPassword)
-        client = await graphQLClient(adminUserAuthInformation.idToken)
+        authToken = await getTokenForUser(adminEmail, 'Admin')
+        client = await graphQLClient(authToken)
 
         // Delete a product given an id
         await client.mutate({
@@ -288,7 +276,7 @@ describe('Cart end-to-end tests', () => {
         console.log('Waiting 1 second for deletion to complete...')
         await sleep(1000)
 
-        client = await graphQLClient(userAuthInformation.idToken)
+        client = await graphQLClient(authToken)
         // Retrieve updated entity
         const queryResult = await waitForIt(
           () => {

@@ -1,4 +1,4 @@
-import { CloudFormation, CognitoIdentityServiceProvider, DynamoDB } from 'aws-sdk'
+import { CloudFormation, CognitoIdentityServiceProvider, DynamoDB, config } from 'aws-sdk'
 import { Stack, StackResourceDetail, StackResourceSummary } from 'aws-sdk/clients/cloudformation'
 import { ApolloClient } from 'apollo-client'
 import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
@@ -15,7 +15,9 @@ import { split, ApolloLink } from 'apollo-link'
 import * as WebSocket from 'ws'
 import { SubscriptionClient } from 'subscriptions-transport-ws'
 import { ApolloClientOptions } from 'apollo-client/ApolloClient'
-import { config } from 'aws-sdk'
+import * as jwt from 'jsonwebtoken'
+import * as fs from 'fs'
+//const path = require('path')
 import util = require('util')
 const exec = util.promisify(require('child_process').exec)
 
@@ -596,4 +598,28 @@ export async function waitForIt<TResult>(
     await sleep(trialDelayMs)
     return doWaitFor()
   }
+}
+
+// This helper will create a valid token using a real private key for testing
+// the tokens will be validate against the public keyset uri
+// located in: https://booster-integration-tests.s3.amazonaws.com/.well-known/jkws.json
+export const getTokenForUser = (email: string, role: string): string => {
+  const privateKey = fs.readFileSync(__dirname + '/private.key')
+  const keyid = 'booster'
+  const issuer = 'booster'
+  const token = jwt.sign(
+    {
+      id: email,
+      'custom:role': role,
+      email,
+    },
+    privateKey,
+    {
+      algorithm: 'RS256',
+      subject: email,
+      issuer,
+      keyid,
+    }
+  )
+  return token
 }
