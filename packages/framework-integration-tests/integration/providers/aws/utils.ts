@@ -16,8 +16,6 @@ import * as WebSocket from 'ws'
 import { SubscriptionClient } from 'subscriptions-transport-ws'
 import { ApolloClientOptions } from 'apollo-client/ApolloClient'
 import * as jwt from 'jsonwebtoken'
-import * as fs from 'fs'
-//const path = require('path')
 import util = require('util')
 const exec = util.promisify(require('child_process').exec)
 
@@ -604,7 +602,6 @@ export async function waitForIt<TResult>(
 // the tokens will be validate against the public keyset uri
 // located in: https://booster-integration-tests.s3.amazonaws.com/.well-known/jkws.json
 export const getTokenForUser = (email: string, role: string): string => {
-  const privateKey = fs.readFileSync(__dirname + '/private.key')
   const keyid = 'booster'
   const issuer = 'booster'
   const token = jwt.sign(
@@ -613,7 +610,7 @@ export const getTokenForUser = (email: string, role: string): string => {
       'custom:role': role,
       email,
     },
-    privateKey,
+    process.env.BOOSTER_RSA_PRIVATE_KEY!,
     {
       algorithm: 'RS256',
       subject: email,
