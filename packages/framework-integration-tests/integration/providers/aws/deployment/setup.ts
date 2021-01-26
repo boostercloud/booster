@@ -9,8 +9,8 @@ import { createSandboxProject } from '../../../../../cli/src/common/sandbox'
 
 before(async () => {
   await setEnv()
-  const configuredStaticResources = ['public']
-  const sandboxedProject = createSandboxProject(sandboxPathFor('deploy'), configuredStaticResources)
+  const configuredAssets = ['assets', 'assetFile.txt']
+  const sandboxedProject = createSandboxProject(sandboxPathFor('deploy'), configuredAssets)
 
   await overrideWithBoosterLocalDependencies(sandboxedProject)
 
