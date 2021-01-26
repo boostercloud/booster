@@ -13,7 +13,6 @@ export const template = `{
     "tslib": "^2.0.3"
   },
   "devDependencies": {
-    "@boostercloud/cli": "^${VERSION}",
     "{{{providerPackageName}}}-infrastructure": "*",
     "rimraf": "^3.0.1",
     "@typescript-eslint/eslint-plugin": "^2.18.0",
