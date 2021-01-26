@@ -420,6 +420,8 @@ Additionally, you can use the `--skipInstall` flag if you want to skip installin
 
 **Note:** You can always use the `--help` flag to get all the available options for each cli command.
 
+**Note:** You can always use the `--help` flag to get all the available options for each cli command.
+
 When finished, you'll see some scaffolding that has been generated. The project name will be the
 project's root so `cd` into it:
 
