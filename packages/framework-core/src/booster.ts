@@ -52,9 +52,11 @@ export class Booster {
   /**
    * Initializes the Booster project
    */
-  public static start(): void {
+  public static start(codeRootPath: string): void {
+    const projectRootPath = codeRootPath.replace(new RegExp(this.config.codeRelativePath + '$'), '')
+    this.config.userProjectRootPath = projectRootPath
     this.logger = buildLogger(this.config.logLevel)
-    Importer.importUserProjectFiles()
+    Importer.importUserProjectFiles(codeRootPath)
     this.config.validate()
   }
 

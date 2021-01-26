@@ -23,6 +23,7 @@ describe('the application stack builder', () => {
 
   const config = new BoosterConfig('test')
   config.appName = 'testing-app'
+  config.userProjectRootPath = '.'
   // eslint-disable-next-line prettier/prettier
   readModels.forEach((readModel) => {
     config.readModels[readModel.name] = {

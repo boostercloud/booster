@@ -3,19 +3,23 @@ import * as path from 'path'
 
 function checkIndexFileIsBooster(indexFilePath: string): void {
   const contents = fs.readFileSync(indexFilePath)
-  if (!contents.includes('Booster.start()')) {
+  if (!contents.includes('Booster.start(')) {
     throw new Error(
       'The main application file does not start a Booster application. Verify you are in the right project'
     )
   }
 }
 
-export async function checkItIsABoosterProject(): Promise<void> {
-  const currentPath = process.cwd()
+export async function checkCurrentDirIsABoosterProject(): Promise<void> {
+  return checkItIsABoosterProject(process.cwd())
+}
+
+export async function checkItIsABoosterProject(projectPath: string): Promise<void> {
+  const projectAbsolutePath = path.resolve(projectPath)
   try {
-    const tsConfigJsonContents = require(path.join(currentPath, 'tsconfig.json'))
+    const tsConfigJsonContents = require(path.join(projectAbsolutePath, 'tsconfig.json'))
     const indexFilePath = path.normalize(
-      path.join(currentPath, tsConfigJsonContents.compilerOptions.rootDir, 'index.ts')
+      path.join(projectAbsolutePath, tsConfigJsonContents.compilerOptions.rootDir, 'index.ts')
     )
     checkIndexFileIsBooster(indexFilePath)
   } catch (e) {
