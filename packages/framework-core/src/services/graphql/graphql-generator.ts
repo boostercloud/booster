@@ -55,7 +55,7 @@ export class GraphQLGenerator {
       this.queryGenerator,
       this.subscriptionByIDResolverBuilder.bind(this),
       this.subscriptionResolverBuilder.bind(this)
-    )    
+    )
   }
 
   public generateSchema(): GraphQLSchema {
