@@ -395,15 +395,15 @@ If you prefer to specify each parameter without following the instructions, you 
 
 | Flag                   | Short version | Description |
 | :--------------------- | :------------ | :---------- |
-| `--homepage`           | `-H`          | the website of this project |
-| `--author`             | `-a`          | author of this project |
-| `--description`        | `-d`          | a short description |
-| `--license`            | `-l`          | license used in this project |
-| `--providerPackageName`| `-p`          | package name implementing the cloud provider integration where the application will be deployed |
-| `--repository`         | `-r`          | the URL of the repository |
-| `--version`            | `-v`          | the initial version |
+| `--homepage`           | `-H`          | The website of this project |
+| `--author`             | `-a`          | Author of this project |
+| `--description`        | `-d`          | A short description |
+| `--license`            | `-l`          | License used in this project |
+| `--providerPackageName`| `-p`          | Package name implementing the cloud provider integration where the application will be deployed |
+| `--repository`         | `-r`          | The URL of the repository |
+| `--version`            | `-v`          | The initial version |
 
-Additionally, you can use the flag `--skipInstall` if you want to skip installing dependencies and the flag `--skipGit ` in case you want to skip git initialization.
+Additionally, you can use the `--skipInstall` flag if you want to skip installing dependencies and the flag `--skipGit ` in case you want to skip git initialization.
 
 > Booster CLI commands follow this structure: `boost <subcommand> [<flags>] [<parameters>]`.
 > Let's break down the command we have just executed:
@@ -416,7 +416,7 @@ Additionally, you can use the flag `--skipInstall` if you want to skip installin
 >   their meaning and shape depend on the subcommand you used. In this case, we are specifying the name of the project
 >   we are creating.
 
-**Note:** You can always use the flag `--help` for getting all the available options for each cli command.
+**Note:** You can always use the `--help` flag to get all the available options for each cli command.
 
 When finished, you'll see some scaffolding that has been generated. The project name will be the
 project's root so `cd` into it:
