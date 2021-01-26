@@ -391,16 +391,32 @@ parameters are as follows:
 - License: MIT
 - Version: 0.1.0
 
+If you prefer to specify each parameter without following the instructions, you can use the following flags with this structure `<flag>=<parameter>`.
+
+| Flag                   | Short version | Description |
+| :--------------------- | :------------ | :---------- |
+| `--homepage`           | `-H`          | The website of this project |
+| `--author`             | `-a`          | Author of this project |
+| `--description`        | `-d`          | A short description |
+| `--license`            | `-l`          | License used in this project |
+| `--providerPackageName`| `-p`          | Package name implementing the cloud provider integration where the application will be deployed |
+| `--repository`         | `-r`          | The URL of the repository |
+| `--version`            | `-v`          | The initial version |
+
+Additionally, you can use the flag `--skipInstall` if you want to skip installing dependencies and the `--skipGit` flag in case you want to skip git initialization.
+
 > Booster CLI commands follow this structure: `boost <subcommand> [<flags>] [<parameters>]`.
 > Let's break down the command we have just executed:
 >
 > - `boost` is the Booster CLI executable
 > - `new:project` is the "subcommand" part. In this case, it is composed of two parts separated by a colon.
->   The first part, `new`, means that we want to generate a new resource. The second part, `project`, indicates which
->   kind of resource we are interested in. Other examples are `new:command`, `new:event`, etc. We'll see a bunch of them later.
+    >   The first part, `new`, means that we want to generate a new resource. The second part, `project`, indicates which
+    >   kind of resource we are interested in. Other examples are `new:command`, `new:event`, etc. We'll see a bunch of them later.
 > - `boosted-blog` is a "parameter" for the subcommand `new:project`. Flags and parameters are optional and
->   their meaning and shape depend on the subcommand you used. In this case, we are specifying the name of the project
->   we are creating.
+    >   their meaning and shape depend on the subcommand you used. In this case, we are specifying the name of the project
+    >   we are creating.
+
+**Note:** You can always use the `--help` flag to get all the available options for each cli command.
 
 When finished, you'll see some scaffolding that has been generated. The project name will be the
 project's root so `cd` into it:
@@ -924,8 +940,8 @@ export class CreateProduct {
 
   public static async handle(command: CreateProduct, register: Register): Promise<void> {
     const priceLimit = 10
-    if (this.price >= priceLimit) {
-      throw new Error(`price must be below ${priceLimit}, and it was ${this.price}`)
+    if (command.price >= priceLimit) {
+      throw new Error(`price must be below ${priceLimit}, and it was ${command.price}`)
     }
   }
 }
@@ -2013,7 +2029,7 @@ To have a great developer experience, we **strongly recommend** to use a GraphQL
 
 #### Get GraphQL schema from deployed application
 
-After deploying your application with the command `boost deploy -e development`, you can get your GraphQL schema by using a tool like **[Hoppscotch (formerly Postwoman)](https://hoppscotch.io/)**. The previous command displays the deployment URL with the pattern: 
+After deploying your application with the command `boost deploy -e development`, you can get your GraphQL schema by using a tool like **[Hoppscotch (formerly Postwoman)](https://hoppscotch.io/)**. The previous command displays the deployment URL with the pattern:
 
 `https://<base_url>/<environment>/graphql`
 
@@ -2548,6 +2564,8 @@ It will take a while, but you should have your project deployed to your cloud pr
 
 If you make changes to your code, you can run `boost deploy -e <environment name>` again to update your project in the cloud.
 
+To skip restoring dependencies after deployment you can run `boost deploy -e <environment name> -s`.
+
 #### Application outputs
 
 After any deployment, an "Outputs" section will be printed to the console with useful information needed to interact with your application. The meaning of those outputs are:
@@ -2567,6 +2585,10 @@ boost nuke -e <environment name>
 ```
 
 **Note**: This will delete everything in your stack, including databases. This action is **not** reversible!
+
+For a force delete without asking for confirmation, you can run `boost nuke -e <environment name> -f`.
+
+**Note**: Be EXTRA CAUTIOUS with this option, all your application data will be irreversibly DELETED without confirmation.
 
 ## Going deeper with Booster
 
@@ -2805,8 +2827,8 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import * as Local from '@boostercloud/framework-provider-local'
 
 Booster.configure('local', (config: BoosterConfig): void => {
-    config.appName = 'fruit-store-local'
-    config.provider = Local.Provider
+  config.appName = 'fruit-store-local'
+  config.provider = Local.Provider
 })
 ```
 
