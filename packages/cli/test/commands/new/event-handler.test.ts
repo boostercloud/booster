@@ -28,7 +28,7 @@ describe('new', (): void => {
     ]
 
     beforeEach(() => {
-      stub(ProjectChecker, 'checkItIsABoosterProject').returnsThis()
+      stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
       replace(fs,'outputFile', fake.resolves({}))
     })
 
