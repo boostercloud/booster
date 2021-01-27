@@ -13,15 +13,16 @@ export class GraphQLSubscriptionGenerator {
     private readonly filterResolverBuilder: ResolverBuilder
   ) {}
 
-  public generate(): GraphQLObjectType {
+  public generate(): GraphQLObjectType | undefined {
     const byIDSubscriptions = this.generateByIDSubscriptions()
     const filterSubscriptions = this.generateFilterSubscriptions()
+    const fields = {...byIDSubscriptions, ...filterSubscriptions}
+    if (Object.keys(fields).length === 0) {
+      return undefined
+    }
     return new GraphQLObjectType({
       name: 'Subscription',
-      fields: {
-        ...byIDSubscriptions,
-        ...filterSubscriptions,
-      },
+      fields: fields,
     })
   }
 

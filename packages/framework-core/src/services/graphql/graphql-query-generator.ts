@@ -9,6 +9,7 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLScalarType,
+  GraphQLString
 } from 'graphql'
 import { GraphQLNonInputType, ResolverBuilder, TargetTypeMetadata, TargetTypesMap } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
@@ -37,12 +38,18 @@ export class GraphQLQueryGenerator {
   public generate(): GraphQLObjectType {
     const byIDQueries = this.generateByIDQueries()
     const filterQueries = this.generateFilterQueries()
+    const fields = {...byIDQueries, ...filterQueries}
+    if (Object.keys(fields).length === 0) {
+      return new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          NoQueriesDefined: { type: GraphQLString }
+        }
+      })
+    }
     return new GraphQLObjectType({
       name: 'Query',
-      fields: {
-        ...byIDQueries,
-        ...filterQueries,
-      },
+      fields: fields,
     })
   }
 
