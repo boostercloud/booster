@@ -27,7 +27,7 @@ import { BoosterScheduledCommandDispatcher } from './booster-scheduled-command-d
 export class Booster {
   public static readonly configuredEnvironments: Set<string> = new Set<string>()
   private static logger: Logger
-  private static readonly config = new BoosterConfig(checkAndGetCurrentEnv())
+  public static readonly config = new BoosterConfig(checkAndGetCurrentEnv())
   /**
    * Avoid creating instances of this class
    */
@@ -35,10 +35,6 @@ export class Booster {
 
   public static configureCurrentEnv(configurator: (config: BoosterConfig) => void): void {
     configurator(this.config)
-  }
-
-  public static getConfiguration(): BoosterConfig {
-    return this.config
   }
 
   /**

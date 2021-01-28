@@ -5,7 +5,7 @@ import { Booster, boosterEventDispatcher, boosterPreSignUpChecker, boosterServeG
 import { replace, fake, restore, match, replaceGetter } from 'sinon'
 import { Importer } from '../src/importer'
 import * as EntitySnapshotFetcher from '../src/entity-snapshot-fetcher'
-import { BoosterConfig, UUID } from '@boostercloud/framework-types'
+import { UUID } from '@boostercloud/framework-types'
 
 describe('the `Booster` class', () => {
   afterEach(() => {
@@ -33,17 +33,6 @@ describe('the `Booster` class', () => {
       expect(booster.configuredEnvironments).to.have.lengthOf(2)
       expect(booster.configuredEnvironments).to.include.keys(['test', 'another-environment'])
       expect(booster.config.appName).to.equal('test-app-name')
-    })
-  })
-
-  describe('the getConfiguration method', () => {
-    it('retrieves the current configuration', () => {
-      const booster = Booster as any
-      Booster.configure('test', (config: BoosterConfig) => {
-        config.appName = 'test-app-name'
-      })
-
-      expect(booster.getConfiguration()).to.equal(booster.config)
     })
   })
 
