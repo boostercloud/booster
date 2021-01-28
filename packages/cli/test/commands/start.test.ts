@@ -66,7 +66,7 @@ describe('start', () => {
     it('without flags', async () => {
       await new Start.default([], {} as IConfig).run()
 
-      expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npx yarn clean && npx yarn compile')
+      expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm run clean && npm run compile')
       expect(providerService.startProvider).to.have.not.been.calledWith()
       expect(oraLogger.fail).to.have.been.calledWithMatch('Error: No environment set. Use the flag `-e` or set the environment variable BOOSTER_ENV to set it before running this command. Example usage: `boost deploy -e <environment>`.')
     })
@@ -82,7 +82,7 @@ describe('start', () => {
       }
       expect(exceptionThrown).to.be.equal(true)
       expect(exceptionMessage).to.be.equal('Flag --environment expects a value')
-      expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npx yarn clean && npx yarn compile')
+      expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm run clean && npm run compile')
       expect(providerService.startProvider).to.have.not.been.calledWith()
     })
 
@@ -97,7 +97,7 @@ describe('start', () => {
       }
       expect(exceptionThrown).to.be.equal(true)
       expect(exceptionMessage).to.be.equal('Flag --environment expects a value')
-      expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npx yarn clean && npx yarn compile')
+      expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm run clean && npm run compile')
       expect(providerService.startProvider).to.have.not.been.calledWith()
     })
 
@@ -112,7 +112,7 @@ describe('start', () => {
       }
       expect(exceptionThrown).to.be.equal(true)
       expect(exceptionMessage).to.contain('Error: There was an error when recognizing the application. Make sure you are in the root path of a Booster project')
-      expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npx yarn clean && npx yarn compile')
+      expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm run clean && npm run compile')
       expect(providerService.startProvider).to.have.not.been.calledWith()
     })
 
@@ -125,8 +125,8 @@ describe('start', () => {
       it('entering correct environment', async () => {
         await new Start.default(['-e','fake_environment'], {} as IConfig).run()
   
-        expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npx yarn install --production --no-bin-links')
-        expect(childProcessPromise.exec).to.have.been.calledWithMatch('npx yarn clean && npx yarn compile')
+        expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm install --production --no-bin-links')
+        expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm run clean && npm run compile')
         expect(providerService.startProvider).to.have.been.calledWith()
         expect(oraLogger.start).to.have.been.calledWithMatch('Starting debug server on port')
       })
@@ -134,8 +134,8 @@ describe('start', () => {
       it('entering correct environment and --port flag', async () => {
         await new Start.default(['-e','fake_environment','--port','5000'], {} as IConfig).run()
   
-        expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npx yarn install --production --no-bin-links')
-        expect(childProcessPromise.exec).to.have.been.calledWithMatch('npx yarn clean && npx yarn compile')
+        expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm install --production --no-bin-links')
+        expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm run clean && npm run compile')
         expect(providerService.startProvider).to.have.been.calledWith()
         expect(oraLogger.start).to.have.been.calledWithMatch('Starting debug server on port 5000')
       })
@@ -143,8 +143,8 @@ describe('start', () => {
       it('entering correct environment and -p flag', async () => {
         await new Start.default(['-e','fake_environment','-p','5000'], {} as IConfig).run()
   
-        expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npx yarn install --production --no-bin-links')
-        expect(childProcessPromise.exec).to.have.been.calledWithMatch('npx yarn clean && npx yarn compile')
+        expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm install --production --no-bin-links')
+        expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm run clean && npm run compile')
         expect(providerService.startProvider).to.have.been.calledWith()
         expect(oraLogger.start).to.have.been.calledWithMatch('Starting debug server on port 5000')
       })
@@ -160,8 +160,8 @@ describe('start', () => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('Unexpected argument: --nonexistingoption')
-        expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npx yarn install --production --no-bin-links')
-        expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npx yarn clean && npx yarn compile')
+        expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm install --production --no-bin-links')
+        expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm run clean && npm run compile')
         expect(providerService.startProvider).to.have.not.been.calledWith()
         expect(oraLogger.start).to.have.not.been.calledWithMatch('Starting debug server on port')
       })
@@ -177,7 +177,7 @@ describe('start', () => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('Flag --port expects a value')
-        expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npx yarn clean && npx yarn compile')
+        expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm run clean && npm run compile')
         expect(providerService.startProvider).to.have.not.been.calledWith()
         expect(oraLogger.start).to.have.not.been.calledWithMatch('Starting debug server on port')
       })
@@ -193,7 +193,7 @@ describe('start', () => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('Flag --port expects a value')
-        expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npx yarn clean && npx yarn compile')
+        expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm run clean && npm run compile')
         expect(providerService.startProvider).to.have.not.been.calledWith()
         expect(oraLogger.start).to.have.not.been.calledWithMatch('Starting debug server on port')
       })
@@ -209,7 +209,7 @@ describe('start', () => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('The environment \'nonexisting_environment\' does not match any of the environments you used to configure your Booster project')
-        expect(childProcessPromise.exec).to.have.been.calledWithMatch('npx yarn clean && npx yarn compile')
+        expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm run clean && npm run compile')
         expect(providerService.startProvider).to.have.not.been.calledWith()
         expect(oraLogger.start).to.have.not.been.calledWithMatch('Starting debug server on port')
       })
@@ -225,7 +225,7 @@ describe('start', () => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('The environment \'nonexisting_environment\' does not match any of the environments you used to configure your Booster project')
-        expect(childProcessPromise.exec).to.have.been.calledWithMatch('npx yarn clean && npx yarn compile')
+        expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm run clean && npm run compile')
         expect(providerService.startProvider).to.have.not.been.calledWith()
         expect(oraLogger.start).to.have.not.been.calledWithMatch('Starting debug server on port')
       })
@@ -233,7 +233,7 @@ describe('start', () => {
       it('without defining environment', async () => {
         await new Start.default([], {} as IConfig).run()
   
-        expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npx yarn clean && npx yarn compile')
+        expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm run clean && npm run compile')
         expect(providerService.startProvider).to.have.not.been.calledWith()
         expect(oraLogger.fail).to.have.been.calledWithMatch('Error: No environment set. Use the flag `-e` or set the environment variable BOOSTER_ENV to set it before running this command. Example usage: `boost deploy -e <environment>`.')
       })
@@ -241,7 +241,7 @@ describe('start', () => {
       it('without defining environment and -p', async () => {
         await new Start.default(['-p','5000'], {} as IConfig).run()
   
-        expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npx yarn clean && npx yarn compile')
+        expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm run clean && npm run compile')
         expect(providerService.startProvider).to.have.not.been.calledWith()
         expect(oraLogger.fail).to.have.been.calledWithMatch('Error: No environment set. Use the flag `-e` or set the environment variable BOOSTER_ENV to set it before running this command. Example usage: `boost deploy -e <environment>`.')
       })
