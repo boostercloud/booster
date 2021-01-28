@@ -37,6 +37,10 @@ export class Booster {
     configurator(this.config)
   }
 
+  public static getConfiguration(): BoosterConfig {
+    return this.config
+  }
+
   /**
    * Allows to configure the Booster project.
    *
