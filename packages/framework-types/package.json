@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-types",
-  "version": "0.9.4",
+  "version": "0.10.0",
   "description": "Contains Booster types related to the information extracted from the user project",
   "keywords": [
     "framework-types"
@@ -24,6 +24,7 @@
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "test:types": "npm run test",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
     "prepack": "tsc -b tsconfig.json"
   },
@@ -31,6 +32,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "dependencies": {
+    "@types/graphql": "14.5.0",
     "uuid": "8.3.2"
   },
   "devDependencies": {
@@ -38,7 +40,6 @@
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
     "fast-check": "^1.18.1",
-    "graphql": "15.4.0",
     "sinon-chai": "3.5.0"
   }
 }

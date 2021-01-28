@@ -1,4 +1,4 @@
-import { ReadModelEnvelope } from '@boostercloud/framework-types/dist/envelope'
+import { ReadModelEnvelope } from '@boostercloud/framework-types'
 import { random } from 'faker'
 
 export function createMockReadModelEnvelope(): ReadModelEnvelope {

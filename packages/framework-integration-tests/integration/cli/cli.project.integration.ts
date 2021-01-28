@@ -29,7 +29,7 @@ const LICENSE = 'Apache'
 const REPO_URL = 'https://github.com/boostercloud/booster/'
 const PROVIDER = '@boostercloud/framework-provider-aws'
 
-describe('Project', () => {
+describe.only('Project', () => {
   const SANDBOX_INTEGRATION_DIR = 'new-project-integration-sandbox'
 
   before(async () => {

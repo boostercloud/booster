@@ -14,6 +14,7 @@ export const template = `{
   },
   "devDependencies": {
     "@boostercloud/cli": "^${VERSION}",
+    "{{{providerPackageName}}}-infrastructure": "*",
     "rimraf": "^3.0.1",
     "@typescript-eslint/eslint-plugin": "^2.18.0",
     "@typescript-eslint/parser": "^2.18.0",
@@ -25,8 +26,7 @@ export const template = `{
     "prettier": "^1.19.1",
     "typescript": "^3.9.3",
     "ts-node": "^8.6.2",
-    "@types/node": "^13.5.1",
-    "{{{providerPackageName}}}-infrastructure": "*"
+    "@types/node": "^13.5.1"
   },
   "engines": {
     "node": ">=8.0.0"

@@ -1,6 +1,6 @@
 import * as childProcessPromise from 'child-process-promise'
 import { fake, replace, restore } from 'sinon'
-import { installAllDependencies, pruneDevDependencies } from '../../src/services/dependencies'
+import { installAllDependencies, installProductionDependencies } from '../../src/services/dependencies'
 import { expect } from '../expect'
 
 describe('dependencies service', () => {
@@ -8,21 +8,27 @@ describe('dependencies service', () => {
     restore()
   })
 
-  describe('pruneDevDependencies', () => {
+  describe('installProductionDependencies', () => {
     it('installs dependencies in production mode', async () => {
       replace(childProcessPromise, 'exec', fake.resolves({}))
+      const path = 'aPath'
 
-      await expect(pruneDevDependencies()).to.eventually.be.fulfilled
+      await expect(installProductionDependencies(path)).to.eventually.be.fulfilled
 
-      expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install --production --no-bin-links')
+      expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install --production --no-bin-links', {
+        cwd: path,
+      })
     })
 
     it('wraps the exec error', async () => {
       const error = new Error('something wrong happened')
+      const path = 'aPath'
 
       replace(childProcessPromise, 'exec', fake.rejects(error))
 
-      await expect(pruneDevDependencies()).to.eventually.be.rejectedWith(/Could not prune dev dependencies/)
+      await expect(installProductionDependencies(path)).to.eventually.be.rejectedWith(
+        /Could not install production dependencies/
+      )
     })
   })
 

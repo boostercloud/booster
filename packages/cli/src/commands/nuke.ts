@@ -56,7 +56,7 @@ export default class Nuke extends Command {
     const { flags } = this.parse(Nuke)
     if (initializeEnvironment(logger, flags.environment)) {
       await runTasks(
-        askToConfirmRemoval(new Prompter(), flags.force, compileProjectAndLoadConfig()),
+        askToConfirmRemoval(new Prompter(), flags.force, compileProjectAndLoadConfig(process.cwd())),
         nukeCloudProviderResources
       )
     }

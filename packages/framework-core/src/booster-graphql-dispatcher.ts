@@ -10,7 +10,6 @@ import {
 import { GraphQLSchema, DocumentNode, ExecutionResult, GraphQLError } from 'graphql'
 import * as graphql from 'graphql'
 import { GraphQLGenerator } from './services/graphql/graphql-generator'
-import { BoosterCommandDispatcher } from './booster-command-dispatcher'
 import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
 import { GraphQLResolverContext, graphQLWebsocketSubprotocolHeaders } from './services/graphql/common'
 import { NoopReadModelPubSub } from './services/pub-sub/noop-read-model-pub-sub'
@@ -27,9 +26,7 @@ export class BoosterGraphQLDispatcher {
 
   public constructor(private config: BoosterConfig, private logger: Logger) {
     this.readModelDispatcher = new BoosterReadModelDispatcher(config, logger)
-    const commandDispatcher = new BoosterCommandDispatcher(config, logger)
-
-    this.graphQLSchema = new GraphQLGenerator(config, commandDispatcher, this.readModelDispatcher).generateSchema()
+    this.graphQLSchema = GraphQLGenerator.build(config, logger).generateSchema()
     this.boosterTokenVerifier = new BoosterTokenVerifier(config)
     this.websocketHandler = new GraphQLWebsocketHandler(
       config,
