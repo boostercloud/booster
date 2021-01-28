@@ -12,6 +12,13 @@ import * as childProcessPromise from 'child-process-promise'
 import * as path from 'path'
 import * as environment from '../../src/services/environment'
 import * as dependencies from '../../src/services/dependencies'
+import * as sandbox from '../../src/common/sandbox'
+// import {
+//   cleanDeploymentSandbox,
+//   compileProjectAndLoadConfig,
+//   createDeploymentSandbox,
+// } from '../../src/services/config-service'
+import * as configService from '../../src/services/config-service'
 
 // With this trick we can test non exported symbols
 const rewire = require('rewire')
@@ -98,6 +105,8 @@ describe('deploy', () => {
     beforeEach(() => {
       replace(childProcessPromise, 'exec', fake.resolves({}))
       replace(providerService,'deployToCloudProvider', fake.resolves({}))
+      replace(sandbox,'createSandboxProject', fake.returns(configService.DEPLOYMENT_SANDBOX))
+      replace(configService,'cleanDeploymentSandbox', fake.resolves({}))
       replace(oraLogger,'fail', fake.resolves({}))
       replace(oraLogger, 'info', fake.resolves({}))
       replace(oraLogger, 'start', fake.resolves({}))
