@@ -4,8 +4,8 @@ export {
   boosterEventDispatcher,
   boosterPreSignUpChecker,
   boosterServeGraphQL,
-  boosterRequestAuthorizer,
   boosterNotifySubscribers,
+  boosterTriggerScheduledCommand,
 } from '@boostercloud/framework-core'
 
-Booster.start()
+Booster.start(__dirname)

@@ -6,6 +6,6 @@ Object.defineProperty(exports, "Booster", { enumerable: true, get: function () {
 Object.defineProperty(exports, "boosterEventDispatcher", { enumerable: true, get: function () { return framework_core_2.boosterEventDispatcher; } });
 Object.defineProperty(exports, "boosterPreSignUpChecker", { enumerable: true, get: function () { return framework_core_2.boosterPreSignUpChecker; } });
 Object.defineProperty(exports, "boosterServeGraphQL", { enumerable: true, get: function () { return framework_core_2.boosterServeGraphQL; } });
-Object.defineProperty(exports, "boosterRequestAuthorizer", { enumerable: true, get: function () { return framework_core_2.boosterRequestAuthorizer; } });
 Object.defineProperty(exports, "boosterNotifySubscribers", { enumerable: true, get: function () { return framework_core_2.boosterNotifySubscribers; } });
-framework_core_1.Booster.start();
+Object.defineProperty(exports, "boosterTriggerScheduledCommand", { enumerable: true, get: function () { return framework_core_2.boosterTriggerScheduledCommand; } });
+framework_core_1.Booster.start(__dirname);
