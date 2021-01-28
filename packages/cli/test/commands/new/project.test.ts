@@ -101,7 +101,7 @@ describe('new', (): void => {
             defaultProjectInitializerConfig as ProjectInitializerConfig
           )
 
-          const expectedPackageJson = fs.readFileSync('./resources/commands/new_package.json').toString() 
+          const expectedPackageJson = fs.readFileSync('./test/fixtures/commands/new_package.json').toString() 
           expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,expectedPackageJson)
         })
 

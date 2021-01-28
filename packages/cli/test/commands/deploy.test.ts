@@ -160,7 +160,7 @@ describe('deploy', () => {
     describe('inside a booster project', () => {
 
       beforeEach(() => {
-        replace(process,'cwd', fake.returns(path.join(process.cwd(),'resources', 'mock_project')))
+        replace(process,'cwd', fake.returns(path.join(process.cwd(),'test','fixtures', 'mock_project')))
       })
 
       it('entering correct environment', async () => {

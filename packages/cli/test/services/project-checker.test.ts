@@ -11,21 +11,21 @@ describe('project checker', (): void => {
 
     describe('checkCurrentDirIsABoosterProject', () => {
         it('is a Booster project', async () => {
-            replace(process,'cwd', fake.returns(path.join(process.cwd(),'resources', 'mock_project')))
+            replace(process,'cwd', fake.returns(path.join(process.cwd(),'test', 'fixtures', 'mock_project')))
             let exceptionThrown = false
             await checkCurrentDirIsABoosterProject().catch(() => exceptionThrown = true)
             expect(exceptionThrown).to.be.equal(false)
         })
     
         it('is a Booster project with bad index.ts', async () => {
-            replace(process,'cwd', fake.returns(path.join(process.cwd(),'resources', 'mock_project_bad_index')))
+            replace(process,'cwd', fake.returns(path.join(process.cwd(),'test', 'fixtures', 'mock_project_bad_index')))
             let exceptionThrown = false
             await checkCurrentDirIsABoosterProject().catch(() => exceptionThrown = true)
             expect(exceptionThrown).to.be.equal(true)
         })
     
         it('is not a Booster project', async () => {
-            replace(process,'cwd', fake.returns(path.join(process.cwd(),'resources')))
+            replace(process,'cwd', fake.returns(path.join(process.cwd(),'test', 'fixtures')))
             let exceptionThrown = false
             await checkCurrentDirIsABoosterProject().catch(() => exceptionThrown = true)
             expect(exceptionThrown).to.be.equal(true)
@@ -34,21 +34,21 @@ describe('project checker', (): void => {
 
     describe('checkItIsABoosterProject', (): void => {
         it('is a Booster project', async () => {
-            const projectPath = path.join(process.cwd(),'resources', 'mock_project')
+            const projectPath = path.join(process.cwd(),'test', 'fixtures', 'mock_project')
             let exceptionThrown = false
             await checkItIsABoosterProject(projectPath).catch(() => exceptionThrown = true)
             expect(exceptionThrown).to.be.equal(false)
         })
     
         it('is a Booster project with bad index.ts', async () => {
-            const projectPath = path.join(process.cwd(),'resources', 'mock_project_bad_index')
+            const projectPath = path.join(process.cwd(),'test', 'fixtures', 'mock_project_bad_index')
             let exceptionThrown = false
             await checkItIsABoosterProject(projectPath).catch(() => exceptionThrown = true)
             expect(exceptionThrown).to.be.equal(true)
         })
     
         it('is not a Booster project', async () => {
-            const projectPath = path.join(process.cwd(),'resources')
+            const projectPath = path.join(process.cwd(),'test', 'fixtures')
             let exceptionThrown = false
             await checkItIsABoosterProject(projectPath).catch(() => exceptionThrown = true)
             expect(exceptionThrown).to.be.equal(true)
