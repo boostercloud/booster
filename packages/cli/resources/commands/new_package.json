@@ -4,13 +4,14 @@
   "version": "0.1.0",
   "author": "",
   "dependencies": {
-    "@boostercloud/framework-core": "^0.9.3",
-    "@boostercloud/framework-types": "^0.9.3",
+    "@boostercloud/framework-core": "^0.10.0",
+    "@boostercloud/framework-types": "^0.10.0",
     "@boostercloud/framework-provider-aws": "*",
     "tslib": "^2.0.3"
   },
   "devDependencies": {
-    "@boostercloud/cli": "^0.9.3",
+    "@boostercloud/cli": "^0.10.0",
+    "@boostercloud/framework-provider-aws-infrastructure": "*",
     "rimraf": "^3.0.1",
     "@typescript-eslint/eslint-plugin": "^2.18.0",
     "@typescript-eslint/parser": "^2.18.0",
@@ -22,8 +23,7 @@
     "prettier": "^1.19.1",
     "typescript": "^3.9.3",
     "ts-node": "^8.6.2",
-    "@types/node": "^13.5.1",
-    "@boostercloud/framework-provider-aws-infrastructure": "*"
+    "@types/node": "^13.5.1"
   },
   "engines": {
     "node": ">=8.0.0"
