@@ -37,7 +37,7 @@ export class ApplicationStackBuilder {
     setupPermissions(graphQLStack, eventsStack, readModelTables, websocketAPI, scheduledCommandStack)
 
     // Load rockets
-    rockets?.forEach((rocket) => rocket.mountStack(stack))
+    rockets?.forEach((rocket) => rocket.mountStack(stack, this.config))
   }
 
   private buildRootRESTAPI(stack: Stack): RestApi {

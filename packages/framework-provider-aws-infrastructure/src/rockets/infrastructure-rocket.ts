@@ -1,9 +1,9 @@
-import { RocketDescriptor } from '@boostercloud/framework-types'
+import { BoosterConfig, RocketDescriptor } from '@boostercloud/framework-types'
 import { Stack } from '@aws-cdk/core'
 import { RocketUtils } from './rocket-utils'
 
 export interface InfrastructureRocket {
-  mountStack: (stack: Stack) => void
+  mountStack: (stack: Stack, config: BoosterConfig) => void
   unmountStack?: (utils: RocketUtils) => void
 }
 
