@@ -6,6 +6,7 @@ import { BoosterConfig, UUID, EntityInterface, Class, ReadModelInterface, Search
  */
 export interface BoosterApp {
   start(projectPath: string): void
+  config: BoosterConfig
   configure(environment: string, configurator: (config: BoosterConfig) => void): void
   configureCurrentEnv(configurator: (config: BoosterConfig) => void): void
   fetchEntitySnapshot<TEntity extends EntityInterface>(
