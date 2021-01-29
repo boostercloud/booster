@@ -1928,7 +1928,7 @@ import * as AWS from '@boostercloud/framework-provider-aws'
 Booster.configure('production', (config: BoosterConfig): void => {
   config.appName = 'demoapp'
   config.provider = AWS.Provider
-  config.tokenVerifier = {
+  config.tokenVerifier = { 
     jwksUri: 'https://demoapp.auth0.com/.well-known/jwks.json',
     issuer: 'auth0'
   }
