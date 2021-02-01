@@ -190,7 +190,7 @@ These are the available scripts to run integration tests:
 - `lerna run integration/local --stream`: Checks that the test application can be launched locally and that the APIs and the databases behave as expected.
 - `lerna run integration/cli --stream`: Checks cli commands and check that they produce the expected results.
 
-AWS integration tests are run in real AWS resources, so you'll need to have your AWS credentials properly set in your development machine. By default, the sample project will be deployed to your default account. Basically, if you can deploy a Booster project to AWS, you should be good to go ([See more details about setting up an AWS account in the docs](https://github.com/boostercloud/booster/tree/master/docs#set-up-an-aws-account)). Notice that while all resources used by Booster are included in the AWS free tier, running these tests in your own AWS account could incur in some expenses.
+AWS integration tests are run in real AWS resources, so you'll need to have your AWS credentials properly set in your development machine. By default, the sample project will be deployed to your default account. Basically, if you can deploy a Booster project to AWS, you should be good to go ([See more details about setting up an AWS account in the docs](https://github.com/boostercloud/booster/tree/main/docs#set-up-an-aws-account)). Notice that while all resources used by Booster are included in the AWS free tier, running these tests in your own AWS account could incur in some expenses.
 
 ### Github flow
 
@@ -241,7 +241,7 @@ When you submit a PR to the Booster repository:
 
 ### Branch naming conventions
 
-In order to create a PR, you must create a branch from `master`. You should follow the GitFlow naming conventions, as detailed below:
+In order to create a PR, you must create a branch from `main`. You should follow the GitFlow naming conventions, as detailed below:
 
 - `feature/*` - PR that implements a new feature
 - `fix/*` - PR that fixes a bug
