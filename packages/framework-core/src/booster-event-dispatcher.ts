@@ -1,9 +1,15 @@
-import { BoosterConfig, EventEnvelope, Logger, Register, EventInterface } from '@boostercloud/framework-types'
+import {
+  BoosterConfig,
+  EventEnvelope,
+  Logger,
+  Register,
+  EventInterface,
+  EventHandlerInterface,
+} from '@boostercloud/framework-types'
 import { EventStore } from './services/event-store'
 import { RawEventsParser } from './services/raw-events-parser'
 import { ReadModelStore } from './services/read-model-store'
 import { RegisterHandler } from './booster-register-handler'
-import { EventHandlerInterface } from '@boostercloud/framework-types'
 
 export class BoosterEventDispatcher {
   /**

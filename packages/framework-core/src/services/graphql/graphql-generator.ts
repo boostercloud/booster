@@ -5,14 +5,18 @@ import {
   CommandEnvelope,
   ReadModelPropertyFilter,
   ReadModelRequestEnvelope,
+  EventEnvelope,
+  EventRequestEnvelope,
+  EventsFilter,
 } from '@boostercloud/framework-types'
-import { GraphQLFieldResolver, GraphQLSchema } from 'graphql'
+import { GraphQLFieldResolver, GraphQLResolveInfo, GraphQLSchema } from 'graphql'
 import { GraphQLTypeInformer } from './graphql-type-informer'
 import { GraphQLQueryGenerator } from './graphql-query-generator'
 import { GraphQLMutationGenerator } from './graphql-mutation-generator'
 import { GraphQLSubscriptionGenerator } from './graphql-subcriptions-generator'
 import { BoosterCommandDispatcher } from '../../booster-command-dispatcher'
-import { BoosterReadModelDispatcher } from '../../booster-read-model-dispatcher'
+import { BoosterReadModelReader } from '../../booster-read-model-reader'
+import { BoosterEventReader } from '../../booster-event-reader'
 import { GraphQLResolverContext } from './common'
 
 export class GraphQLGenerator {
@@ -22,27 +26,32 @@ export class GraphQLGenerator {
   private readonly typeInformer: GraphQLTypeInformer
 
   private static singleton: GraphQLGenerator | undefined
-  
+
   public static build(config: BoosterConfig, logger: Logger): GraphQLGenerator {
-    this.singleton = this.singleton ?? new GraphQLGenerator(
-      config,
-      new BoosterCommandDispatcher(config, logger),
-      new BoosterReadModelDispatcher(config, logger)
-    )
+    this.singleton =
+      this.singleton ??
+      new GraphQLGenerator(
+        config,
+        new BoosterCommandDispatcher(config, logger),
+        new BoosterReadModelReader(config, logger),
+        new BoosterEventReader(config, logger)
+      )
     return this.singleton
   }
 
   private constructor(
     config: BoosterConfig,
     private commandsDispatcher: BoosterCommandDispatcher,
-    private readModelsDispatcher: BoosterReadModelDispatcher
+    private readModelsDispatcher: BoosterReadModelReader,
+    private eventsDispatcher: BoosterEventReader
   ) {
     this.typeInformer = new GraphQLTypeInformer({ ...config.readModels, ...config.commandHandlers })
     this.queryGenerator = new GraphQLQueryGenerator(
       config.readModels,
       this.typeInformer,
       this.readModelByIDResolverBuilder.bind(this),
-      this.readModelResolverBuilder.bind(this)
+      this.readModelResolverBuilder.bind(this),
+      this.eventResolver.bind(this)
     )
     this.mutationGenerator = new GraphQLMutationGenerator(
       config.commandHandlers,
@@ -77,12 +86,22 @@ export class GraphQLGenerator {
 
   public readModelByIDResolverBuilder(
     readModelClass: AnyClass
-  ): GraphQLFieldResolver<any, GraphQLResolverContext, Record<string, ReadModelPropertyFilter>> {
+  ): GraphQLFieldResolver<unknown, GraphQLResolverContext, Record<string, ReadModelPropertyFilter>> {
     return async (parent, args, context, info) => {
       const filterArgs = { id: { eq: args.id } }
       const result = await this.readModelResolverBuilder(readModelClass)(parent, filterArgs, context, info)
       return result[0]
     }
+  }
+
+  public eventResolver(
+    parent: unknown,
+    args: EventsFilter,
+    context: GraphQLResolverContext,
+    info: GraphQLResolveInfo
+  ): Promise<Array<EventEnvelope>> {
+    const eventsRequestEnvelope = toEventRequestEnvelope(args, context)
+    return this.eventsDispatcher.fetch(eventsRequestEnvelope)
   }
 
   public commandResolverBuilder(
@@ -133,6 +152,14 @@ function toReadModelRequestEnvelope(
     typeName: readModelName,
     filters: args,
     version: 1, // TODO: How to pass the version through GraphQL?
+  }
+}
+
+function toEventRequestEnvelope(args: EventsFilter, context: GraphQLResolverContext): EventRequestEnvelope {
+  return {
+    requestID: context.requestID,
+    currentUser: context.user,
+    filters: args,
   }
 }
 

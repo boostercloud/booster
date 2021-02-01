@@ -8,10 +8,12 @@ import {
   ReadModelMetadata,
   EventHandlerInterface,
   ScheduledCommandMetadata,
+  RoleInterface,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
 import * as path from 'path'
+import { Class } from './typelevel'
 
 /**
  * Class used by external packages that needs to get a representation of
@@ -22,6 +24,7 @@ export class BoosterConfig {
   private _provider?: ProviderLibrary
   public appName = 'new-booster-app'
   public assets?: Array<string>
+  public authorizeReadEvents: Array<Class<RoleInterface>> = []
   public readonly subscriptions = {
     maxConnectionDurationInSeconds: 7 * 24 * 60 * 60, // 7 days
     maxDurationInSeconds: 2 * 24 * 60 * 60, // 2 days

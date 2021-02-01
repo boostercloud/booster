@@ -10,7 +10,7 @@ import {
 import { GraphQLSchema, DocumentNode, ExecutionResult, GraphQLError } from 'graphql'
 import * as graphql from 'graphql'
 import { GraphQLGenerator } from './services/graphql/graphql-generator'
-import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
+import { BoosterReadModelReader } from './booster-read-model-reader'
 import { GraphQLResolverContext, graphQLWebsocketSubprotocolHeaders } from './services/graphql/common'
 import { NoopReadModelPubSub } from './services/pub-sub/noop-read-model-pub-sub'
 import { GraphQLWebsocketHandler } from './services/graphql/websocket-protocol/graphql-websocket-protocol'
@@ -21,11 +21,11 @@ type DispatchResult = AsyncIterableIterator<ExecutionResult> | ExecutionResult |
 export class BoosterGraphQLDispatcher {
   private readonly graphQLSchema: GraphQLSchema
   private readonly websocketHandler: GraphQLWebsocketHandler
-  private readonly readModelDispatcher: BoosterReadModelDispatcher
+  private readonly readModelDispatcher: BoosterReadModelReader
   private readonly boosterTokenVerifier: BoosterTokenVerifier
 
   public constructor(private config: BoosterConfig, private logger: Logger) {
-    this.readModelDispatcher = new BoosterReadModelDispatcher(config, logger)
+    this.readModelDispatcher = new BoosterReadModelReader(config, logger)
     this.graphQLSchema = GraphQLGenerator.build(config, logger).generateSchema()
     this.boosterTokenVerifier = new BoosterTokenVerifier(config)
     this.websocketHandler = new GraphQLWebsocketHandler(

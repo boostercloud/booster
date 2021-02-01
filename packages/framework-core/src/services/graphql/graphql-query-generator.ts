@@ -3,15 +3,23 @@ import {
   GraphQLEnumValueConfigMap,
   GraphQLFieldConfigArgumentMap,
   GraphQLFieldConfigMap,
+  GraphQLFieldResolver,
   GraphQLID,
   GraphQLInputObjectType,
+  GraphQLInputType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLScalarType,
-  GraphQLString
+  GraphQLString,
 } from 'graphql'
-import { GraphQLNonInputType, ResolverBuilder, TargetTypeMetadata, TargetTypesMap } from './common'
+import {
+  GraphQLNonInputType,
+  GraphQLResolverContext,
+  ResolverBuilder,
+  TargetTypeMetadata,
+  TargetTypesMap,
+} from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
 import * as inflected from 'inflected'
 import { GraphQLJSONObject } from 'graphql-type-json'
@@ -32,19 +40,21 @@ export class GraphQLQueryGenerator {
     private readonly targetTypes: TargetTypesMap,
     private readonly typeInformer: GraphQLTypeInformer,
     private readonly byIDResolverBuilder: ResolverBuilder,
-    private readonly filterResolverBuilder: ResolverBuilder
+    private readonly filterResolverBuilder: ResolverBuilder,
+    private readonly eventsResolver: GraphQLFieldResolver<unknown, GraphQLResolverContext, any>
   ) {}
 
   public generate(): GraphQLObjectType {
     const byIDQueries = this.generateByIDQueries()
     const filterQueries = this.generateFilterQueries()
-    const fields = {...byIDQueries, ...filterQueries}
+    const eventQueries = this.generateEventQueries()
+    const fields = { ...byIDQueries, ...filterQueries, ...eventQueries }
     if (Object.keys(fields).length === 0) {
       return new GraphQLObjectType({
         name: 'Query',
         fields: {
-          NoQueriesDefined: { type: GraphQLString }
-        }
+          NoQueriesDefined: { type: GraphQLString },
+        },
       })
     }
     return new GraphQLObjectType({
@@ -53,8 +63,8 @@ export class GraphQLQueryGenerator {
     })
   }
 
-  private generateByIDQueries(): GraphQLFieldConfigMap<any, any> {
-    const queries: GraphQLFieldConfigMap<any, any> = {}
+  private generateByIDQueries(): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {
+    const queries: GraphQLFieldConfigMap<unknown, GraphQLResolverContext> = {}
     for (const name in this.targetTypes) {
       const type = this.targetTypes[name]
       const graphQLType = this.typeInformer.getGraphQLTypeFor(type.class)
@@ -69,8 +79,8 @@ export class GraphQLQueryGenerator {
     return queries
   }
 
-  private generateFilterQueries(): GraphQLFieldConfigMap<any, any> {
-    const queries: GraphQLFieldConfigMap<any, any> = {}
+  private generateFilterQueries(): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {
+    const queries: GraphQLFieldConfigMap<unknown, GraphQLResolverContext> = {}
     for (const name in this.targetTypes) {
       const type = this.targetTypes[name]
       const graphQLType = this.typeInformer.getGraphQLTypeFor(type.class)
@@ -81,6 +91,36 @@ export class GraphQLQueryGenerator {
       }
     }
     return queries
+  }
+
+  private generateEventQueries(): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {
+    return {
+      events: {
+        type: GraphQLString, // TODO (a transformation between EventEnvelope and the exported type (EventResult) is needed
+        args: {
+          key: {
+            type: this.buildEventKeyType(),
+          },
+          types: { type: new GraphQLList(GraphQLString) },
+          from: { type: GraphQLString },
+          to: { type: GraphQLString },
+          requestID: { type: GraphQLString },
+        },
+        resolve: this.eventsResolver,
+      },
+    }
+  }
+
+  private buildEventKeyType(): GraphQLInputType {
+    const EntityEventKey = new GraphQLObjectType({
+      name: 'EntityEventKey',
+      fields: {
+        entity: { type: new GraphQLNonNull(GraphQLString) },
+        entityID: { type: new GraphQLNonNull(GraphQLID) },
+      },
+    })
+
+    return new GraphQLNonNull(EntityEventKey)
   }
 
   public generateFilterArguments(typeMetadata: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {

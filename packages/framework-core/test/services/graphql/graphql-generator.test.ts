@@ -1,6 +1,6 @@
 import { replace, restore, SinonStub, stub } from 'sinon'
 import { BoosterCommandDispatcher } from '../../../src/booster-command-dispatcher'
-import { BoosterReadModelDispatcher } from '../../../src/booster-read-model-dispatcher'
+import { BoosterReadModelReader } from '../../../src/booster-read-model-reader'
 import { GraphQLGenerator } from '../../../src/services/graphql/graphql-generator'
 import { BoosterConfig, ReadModelInterface, Logger, Level } from '@boostercloud/framework-types/dist'
 import { expect } from '../../expect'
@@ -147,7 +147,7 @@ describe('GraphQL generator', () => {
 
       beforeEach(() => {
         fetchStub = stub().resolves(mockFetchResult)
-        replace(BoosterReadModelDispatcher.prototype,'fetch',fetchStub)
+        replace(BoosterReadModelReader.prototype,'fetch',fetchStub)
         sut = GraphQLGenerator.build(mockConfig, mockLogger)
 
         returnedFunction = sut.readModelResolverBuilder(mockType)
@@ -325,7 +325,7 @@ describe('GraphQL generator', () => {
         subscribeStub = stub().resolves()
         asyncIteratorStub = stub().returns(mockAsyncIteratorResult)
 
-        replace(BoosterReadModelDispatcher.prototype,'subscribe', subscribeStub)
+        replace(BoosterReadModelReader.prototype,'subscribe', subscribeStub)
         sut = GraphQLGenerator.build(mockConfig, mockLogger)
 
         returnedFunction = sut.subscriptionResolverBuilder(mockType)
