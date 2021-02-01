@@ -53,7 +53,7 @@
     "integration/aws-func": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"integration/providers/aws/functionality/.mocharc.yml\" \"integration/providers/aws/functionality/**/*.integration.ts\"",
     "integration/aws-nuke": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"integration/providers/aws/nuke/.mocharc.yml\" \"integration/providers/aws/nuke/**/*.integration.ts\"",
     "integration/local": "BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/providers/local/.mocharc.yml\" \"integration/providers/local/**/*.integration.ts\"",
-    "integration/cli": "mocha --full-trace --exit --config \"integration/cli/.mocharc.yml\" \"integration/cli/**/*.integration.ts\"",
+    "integration/cli": "mocha --forbid-only --exit --config \"integration/cli/.mocharc.yml\" \"integration/cli/**/*.integration.ts\"",
     "integration/end-to-end": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"integration/end-to-end/.mocharc.yml\" \"integration/end-to-end/**/*.integration.ts\""
   },
   "types": "dist/index.d.ts"

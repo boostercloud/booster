@@ -15,6 +15,7 @@ if (process.env.BOOSTER_ENV === 'local') {
 Booster.configure('development', (config: BoosterConfig): void => {
   config.appName = 'my-store'
   config.provider = AWS.Provider()
+  config.assets = ['assets', 'assetFile.txt']
 })
 
 Booster.configure('production', (config: BoosterConfig): void => {
@@ -28,4 +29,5 @@ Booster.configure('production', (config: BoosterConfig): void => {
 
   config.appName = 'my-store-' + appNameSuffix
   config.provider = AWS.Provider()
+  config.assets = ['assets', 'assetFile.txt']
 })

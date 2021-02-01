@@ -10,7 +10,8 @@ import { installProductionDependencies } from './dependencies'
 export const DEPLOYMENT_SANDBOX = '.deploy'
 
 export async function createDeploymentSandbox(): Promise<string> {
-  const sandboxRelativePath = createSandboxProject(DEPLOYMENT_SANDBOX)
+  const config = await compileProjectAndLoadConfig(process.cwd())
+  const sandboxRelativePath = createSandboxProject(DEPLOYMENT_SANDBOX, config.assets)
   await installProductionDependencies(sandboxRelativePath)
   return sandboxRelativePath
 }
