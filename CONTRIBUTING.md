@@ -143,6 +143,8 @@ To start contributing to the project you would need to set up the project in you
   - `./scripts/check-all-the-things.sh` on Linux and MacOS
   - `.\scripts\check-all-the-things.ps1` on Windows
 
+**Important:** Node v12 is the minimum version required.
+
 ### Understanding the "lerna monorepo" approach and how dependencies are structured in the project
 
 The Booster Framework project is organized following the ["lerna monorepo"](https://lerna.js.org/) structure. There are several "package.json" files and each one has its purpose with regard to the dependencies you include on them:
