@@ -409,12 +409,8 @@ Additionally, you can use the `--skipInstall` flag if you want to skip installin
 > Let's break down the command we have just executed:
 >
 > - `boost` is the Booster CLI executable
-> - `new:project` is the "subcommand" part. In this case, it is composed of two parts separated by a colon.
-        >   The first part, `new`, means that we want to generate a new resource. The second part, `project`, indicates which
-        >   kind of resource we are interested in. Other examples are `new:command`, `new:event`, etc. We'll see a bunch of them later.
-> - `boosted-blog` is a "parameter" for the subcommand `new:project`. Flags and parameters are optional and
-        >   their meaning and shape depend on the subcommand you used. In this case, we are specifying the name of the project
-        >   we are creating.
+> - `new:project` is the "subcommand" part. In this case, it is composed of two parts separated by a colon. The first part, `new`, means that we want to generate a new resource. The second part, `project`, indicates which kind of resource we are interested in. Other examples are `new:command`, `new:event`, etc. We'll see a bunch of them later.
+> - `boosted-blog` is a "parameter" for the subcommand `new:project`. Flags and parameters are optional and their meaning and shape depend on the subcommand you used. In this case, we are specifying the name of the project we are creating.
 
 **Note:** You can always use the `--help` flag to get all the available options for each cli command.
 
