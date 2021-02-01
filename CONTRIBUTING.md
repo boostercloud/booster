@@ -37,7 +37,7 @@ If you see unacceptable behavior, please communicate so to `hello@booster.cloud`
 
 ## I don't want to read this whole thing, I just have a question!!!
 
-Go ahead and [create a new issue](https://github.com/boostercloud/booster/issues).
+Go ahead and ask the community in [Discord](https://discord.com/invite/bDY8MKx) or go ahead and [create a new issue](https://github.com/boostercloud/booster/issues).
 
 ## What should I know before I get started?
 
@@ -162,17 +162,17 @@ Finally, **always use exact numbers for dependency versions**. This means that i
 
 Unit tests are executed when you type `lerna run test`. If you want to run the unit tests for an especific package, you should run one of the following commands:
 
-- `lerna run test:cli`: Run unit tests for the `cli` package.
-- `lerna run test:core`: Run unit tests for the `framework-core` package.
-- `lerna run test:provider-aws`: Run unit tests for the `framework-provider-aws` package.
-- `lerna run test:provider-aws-infrastructure`: Run unit tests for the `framework-provider-aws-infrastructure` package.
-- `lerna run test:provider-azure`: Run unit tests for the `framework-provider-azure` package.
-- `lerna run test:provider-azure-infrastructure`: Run unit tests for the `framework-provider-azure-infrastructure` package.
-- `lerna run test:provider-kubernetes`: Run unit tests for the `framework-provider-kubernetes` package.
-- `lerna run test:provider-kubernetes-infrastructure`: Run unit tests for the `framework-provider-kubernetes-infrastructure` package.
-- `lerna run test:provider-local`: Run unit tests for the `framework-provider-local` package.
-- `lerna run test:provider-local-infrastructure`: Run unit tests for the `framework-provider-local-infrastructure` package.
-- `lerna run test:types`: Run unit tests for the `framework-types` package.
+- `lerna run test:cli --stream`: Run unit tests for the `cli` package.
+- `lerna run test:core --stream`: Run unit tests for the `framework-core` package.
+- `lerna run test:provider-aws --stream`: Run unit tests for the `framework-provider-aws` package.
+- `lerna run test:provider-aws-infrastructure --stream`: Run unit tests for the `framework-provider-aws-infrastructure` package.
+- `lerna run test:provider-azure --stream`: Run unit tests for the `framework-provider-azure` package.
+- `lerna run test:provider-azure-infrastructure --stream`: Run unit tests for the `framework-provider-azure-infrastructure` package.
+- `lerna run test:provider-kubernetes --stream`: Run unit tests for the `framework-provider-kubernetes` package.
+- `lerna run test:provider-kubernetes-infrastructure --stream`: Run unit tests for the `framework-provider-kubernetes-infrastructure` package.
+- `lerna run test:provider-local --stream`: Run unit tests for the `framework-provider-local` package.
+- `lerna run test:provider-local-infrastructure --stream`: Run unit tests for the `framework-provider-local-infrastructure` package.
+- `lerna run test:types --stream`: Run unit tests for the `framework-types` package.
 
 ### Running integration tests
 
@@ -196,38 +196,6 @@ AWS integration tests are run in real AWS resources, so you'll need to have your
 
 The preferred way of accepting contributions is following the [Github flow](https://guides.github.com/introduction/flow/), that is, you fork the project and work in your own branch until you're happy with the work, and then submit a PR in Github.
 
-### Test-driven approach
-
-Booster is a library, so we recommend that you take a test-driven approach, writing or changing the corresponding tests along with the code that you want to add, using the tests to debug it as you add more code and check when your work is complete. This approach not only helps you to design and debug your ongoing work, but also makes the code more robust. All packages have a `test` folder containing tests describing these package functionality, so tests are also a good way to understand how the code works.
-
-You can run all packages tests with Lerna:
-
-```bash
-~/booster:$ lerna run test
-```
-
-Or in a specific package with npm:
-
-```bash
-~/booster/packages/cli:$ npm run test
-```
-
-Once all your unit tests are passing and your code looks great, if your code changes any behavior in the cloud provider, it's important to update the integration test suite and iterate your code until it passes. Notice that in the `framework-integration-tests` there's an `integration` folder with subfolders for each supported provider (including the local provider). Integration tests require real deployments, so they'll last a while and you must have your provider credentials properly set. The test suite will fail with (hopefully) useful error messages with guidance when some parameter is missed. You can run the integration tests using `lerna` from any package or the project root, or `npm run` from within the integration tests package:
-
-```bash
-~/booster:$ lerna run integration --stream
-```
-
-You can run only the tests for a specific provider using the more specific scoped commands:
-
-```bash
-~/booster:$ lerna run integration/aws # runs AWS integration tests only
-
-...
-
-~/booster:$ lerna run integration/local # runs local integration tests only
-```
-
 ### Publishing your Pull Request
 
 Make sure that you describe your change thoroughly in the PR body, adding references for any related issues and links to any resource that helps clarifying the intent and goals of the change.
@@ -237,7 +205,7 @@ When you submit a PR to the Booster repository:
 - _Unit tests_ will be automatically run. PRs with non-passing tests can't be merged.
 - If tests pass, your code will be reviewed by at least two people from the core team. Clarifications or improvements might be asked, and they reserve the right to close any PR that do not meet the project quality standards, goals or philosophy, so it's always a good idea to discuss your plans in an issue or the Spectrum channel before committing to significant changes.
 - Code must be mergeable and all conflicts solved before merging it.
-- Once the review process is done, unit tests pass and conflicts are fixed, you still need to make the _Integration tests check_ to pass. In order to do that, you need to **post a comment** in the pull request with the content "**bot: integration**". The _integration tests_ will run and a new check will appear with an "In progress" status. After some time, if everything went well, the status check will become green and your PR is now ready to merge. One of the contributors with write permissions will merge it as soon as possible.
+- Once the review process is done, unit tests pass and conflicts are fixed, you still need to make the _Integration tests check_ to pass. In order to do that, you need to **Lock conversation** in the pull request. The _integration tests_ will run and a new check will appear with an "In progress" status. After some time, if everything went well, the status check will become green and your PR is now ready to merge.
 
 ### Branch naming conventions
 
