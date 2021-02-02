@@ -181,24 +181,6 @@ describe('deploy', () => {
         expect(oraLogger.info).to.have.been.calledWithMatch('Deployment complete!')
       })
 
-      xit('entering correct environment and --skipRestoreDependencies flag', async () => {
-        await new Deploy.default(['-e','fake_environment','--skipRestoreDependencies'], {} as IConfig).run()
-  
-        expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install --production --no-bin-links')
-        expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm run clean && npm run compile')
-        expect(providerService.deployToCloudProvider).to.have.been.calledWith()
-        expect(oraLogger.info).to.have.been.calledWithMatch('Deployment complete!')
-      })
-
-      xit('entering correct environment and -s flag', async () => {
-        await new Deploy.default(['-e','fake_environment','-s'], {} as IConfig).run()
-  
-        expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install --production --no-bin-links')
-        expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm run clean && npm run compile')
-        expect(providerService.deployToCloudProvider).to.have.been.calledWith()
-        expect(oraLogger.info).to.have.been.calledWithMatch('Deployment complete!')
-      })
-
       it('entering correct environment and nonexisting flag', async () => {
         let exceptionThrown = false
         let exceptionMessage = ''
@@ -232,22 +214,6 @@ describe('deploy', () => {
         expect(oraLogger.info).to.have.not.been.calledWithMatch('Deployment complete!')
       })
 
-      xit('entering nonexisting environment and -s flag', async () => {
-        let exceptionThrown = false
-        let exceptionMessage = ''
-        try {
-          await new Deploy.default(['-e','nonexisting_environment','-s'], {} as IConfig).run()
-        } catch(e) {
-          exceptionThrown = true
-          exceptionMessage = e.message
-        }
-        expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain('The environment \'nonexisting_environment\' does not match any of the environments you used to configure your Booster project')
-        expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm run clean && npm run compile')
-        expect(providerService.deployToCloudProvider).to.have.not.been.calledWith()
-        expect(oraLogger.info).to.have.not.been.calledWithMatch('Deployment complete!')
-      })
-
       it('without defining environment', async () => {
         await new Deploy.default([], {} as IConfig).run()
   
@@ -256,13 +222,6 @@ describe('deploy', () => {
         expect(oraLogger.fail).to.have.been.calledWithMatch('Error: No environment set. Use the flag `-e` or set the environment variable BOOSTER_ENV to set it before running this command. Example usage: `boost deploy -e <environment>`.')
       })
 
-      xit('without defining environment and -s', async () => {
-        await new Deploy.default(['-s'], {} as IConfig).run()
-  
-        expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm run clean && npm run compile')
-        expect(providerService.deployToCloudProvider).to.have.not.been.calledWith()
-        expect(oraLogger.fail).to.have.been.calledWithMatch('Error: No environment set. Use the flag `-e` or set the environment variable BOOSTER_ENV to set it before running this command. Example usage: `boost deploy -e <environment>`.')
-      })
     })
   })
 })
