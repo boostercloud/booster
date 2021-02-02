@@ -33,6 +33,14 @@ describe('new', (): void => {
       },
     ]
 
+    const renderType = (imports: any[], name: string, fields: any[]): string => {
+      return Mustache.render(templates.type, {
+        imports: imports,
+        name: name,
+        fields: fields,
+      })
+    }
+
     beforeEach(() => {
       stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
       replace(fs, 'outputFile', fake.resolves({}))
@@ -45,41 +53,25 @@ describe('new', (): void => {
     describe('Created correctly', () => {
       it('with no fields', async () => {
         await new Type([typeName], {} as IConfig).run()
-        const renderedType = Mustache.render(templates.type, {
-          imports: defaultTypeImports,
-          name: typeName,
-          fields: [],
-        })
+        const renderedType = renderType(defaultTypeImports, typeName, [])
         expect(fs.outputFile).to.have.been.calledWithMatch(typePath, renderedType)
       })
 
       it('creates Type with a string field', async () => {
         await new Type([typeName, '--fields', 'title:string'], {} as IConfig).run()
-        const renderedType = Mustache.render(templates.type, {
-          imports: defaultTypeImports,
-          name: typeName,
-          fields: [{ name: 'title', type: 'string' }],
-        })
+        const renderedType = renderType(defaultTypeImports, typeName, [{ name: 'title', type: 'string' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(typePath, renderedType)
       })
 
       it('creates Type with a number field', async () => {
         await new Type([typeName, '--fields', 'quantity:number'], {} as IConfig).run()
-        const renderedType = Mustache.render(templates.type, {
-          imports: defaultTypeImports,
-          name: typeName,
-          fields: [{ name: 'quantity', type: 'number' }],
-        })
+        const renderedType = renderType(defaultTypeImports, typeName, [{ name: 'quantity', type: 'number' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(typePath, renderedType)
       })
 
       it('creates Type with UUID field', async () => {
         await new Type([typeName, '--fields', 'identifier:UUID'], {} as IConfig).run()
-        const renderedType = Mustache.render(templates.type, {
-          imports: uuidTypeImports,
-          name: typeName,
-          fields: [{ name: 'identifier', type: 'UUID' }],
-        })
+        const renderedType = renderType(uuidTypeImports, typeName, [{ name: 'identifier', type: 'UUID' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(typePath, renderedType)
       })
 
@@ -88,15 +80,12 @@ describe('new', (): void => {
           [typeName, '--fields', 'title:string', 'quantity:number', 'identifier:UUID'],
           {} as IConfig
         ).run()
-        const renderedType = Mustache.render(templates.type, {
-          imports: uuidTypeImports,
-          name: typeName,
-          fields: [
-            { name: 'title', type: 'string' },
-            { name: 'quantity', type: 'number' },
-            { name: 'identifier', type: 'UUID' },
-          ],
-        })
+        const fields = [
+          { name: 'title', type: 'string' },
+          { name: 'quantity', type: 'number' },
+          { name: 'identifier', type: 'UUID' },
+        ]
+        const renderedType = renderType(uuidTypeImports, typeName, fields)
         expect(fs.outputFile).to.have.been.calledWithMatch(typePath, renderedType)
       })
     })
