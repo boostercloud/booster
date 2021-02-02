@@ -55,6 +55,15 @@ describe('new', (): void => {
       },
     ]
 
+    const renderEntity = (imports: any[], name: string, fields: any[], events: any[]): string => {
+      return Mustache.render(templates.entity, {
+        imports: imports,
+        name: name,
+        fields: fields,
+        events: events
+      })
+    }
+
     beforeEach(() => {
       stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
       replace(fs, 'outputFile', fake.resolves({}))
@@ -67,74 +76,43 @@ describe('new', (): void => {
     describe('Created correctly', () => {
       it('with no fields and no reduces', async () => {
         await new Entity([entityName], {} as IConfig).run()
-        const renderedEntity = Mustache.render(templates.entity, {
-          imports: defaultEntityImports,
-          name: entityName,
-          fields: [],
-        })
+        const renderedEntity = renderEntity(defaultEntityImports,entityName,[],[])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
 
       it('creates Entity with a string field', async () => {
         await new Entity([entityName, '--fields', 'title:string'], {} as IConfig).run()
-        const renderedEntity = Mustache.render(templates.entity, {
-          imports: defaultEntityImports,
-          name: entityName,
-          fields: [{ name: 'title', type: 'string' }],
-        })
+        const renderedEntity = renderEntity(defaultEntityImports,entityName,[{ name: 'title', type: 'string' }],[])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
 
       it('creates Entity with a string field reducing PostCreated', async () => {
         await new Entity([entityName, '--fields', 'title:string', '--reduces', 'PostCreated'], {} as IConfig).run()
-        const renderedEntity = Mustache.render(templates.entity, {
-          imports: reducingEntityImports,
-          name: entityName,
-          fields: [{ name: 'title', type: 'string' }],
-          events: [{ eventName: 'PostCreated' }],
-        })
+        const renderedEntity = renderEntity(reducingEntityImports,entityName,[{ name: 'title', type: 'string' }],[{ eventName: 'PostCreated' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
 
       it('creates Entity with a number field', async () => {
         await new Entity([entityName, '--fields', 'quantity:number'], {} as IConfig).run()
-        const renderedEntity = Mustache.render(templates.entity, {
-          imports: defaultEntityImports,
-          name: entityName,
-          fields: [{ name: 'quantity', type: 'number' }],
-        })
+        const renderedEntity = renderEntity(defaultEntityImports,entityName,[{ name: 'quantity', type: 'number' }],[])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
 
       it('creates Entity with a number field reducing PostCreated', async () => {
         await new Entity([entityName, '--fields', 'quantity:number', '--reduces', 'PostCreated'], {} as IConfig).run()
-        const renderedEntity = Mustache.render(templates.entity, {
-          imports: reducingEntityImports,
-          name: entityName,
-          fields: [{ name: 'quantity', type: 'number' }],
-          events: [{ eventName: 'PostCreated' }],
-        })
+        const renderedEntity = renderEntity(reducingEntityImports,entityName,[{ name: 'quantity', type: 'number' }],[{ eventName: 'PostCreated' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
 
       it('creates Entity with UUID field', async () => {
         await new Entity([entityName, '--fields', 'identifier:UUID'], {} as IConfig).run()
-        const renderedEntity = Mustache.render(templates.entity, {
-          imports: defaultEntityImports,
-          name: entityName,
-          fields: [{ name: 'identifier', type: 'UUID' }],
-        })
+        const renderedEntity = renderEntity(defaultEntityImports,entityName,[{ name: 'identifier', type: 'UUID' }],[])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
 
       it('creates Entity with UUID field reducing PostCreated', async () => {
         await new Entity([entityName, '--fields', 'identifier:UUID', '--reduces', 'PostCreated'], {} as IConfig).run()
-        const renderedEntity = Mustache.render(templates.entity, {
-          imports: reducingEntityImports,
-          name: entityName,
-          fields: [{ name: 'identifier', type: 'UUID' }],
-          events: [{ eventName: 'PostCreated' }],
-        })
+        const renderedEntity = renderEntity(reducingEntityImports,entityName,[{ name: 'identifier', type: 'UUID' }],[{ eventName: 'PostCreated' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
 
@@ -143,15 +121,12 @@ describe('new', (): void => {
           [entityName, '--fields', 'title:string', 'quantity:number', 'identifier:UUID'],
           {} as IConfig
         ).run()
-        const renderedEntity = Mustache.render(templates.entity, {
-          imports: defaultEntityImports,
-          name: entityName,
-          fields: [
-            { name: 'title', type: 'string' },
-            { name: 'quantity', type: 'number' },
-            { name: 'identifier', type: 'UUID' },
-          ],
-        })
+        const fields = [
+          { name: 'title', type: 'string' },
+          { name: 'quantity', type: 'number' },
+          { name: 'identifier', type: 'UUID' },
+        ]
+        const renderedEntity = renderEntity(defaultEntityImports,entityName,fields,[])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
 
@@ -160,16 +135,12 @@ describe('new', (): void => {
           [entityName, '--fields', 'title:string', 'quantity:number', 'identifier:UUID', '--reduces', 'PostCreated'],
           {} as IConfig
         ).run()
-        const renderedEntity = Mustache.render(templates.entity, {
-          imports: reducingEntityImports,
-          name: entityName,
-          fields: [
-            { name: 'title', type: 'string' },
-            { name: 'quantity', type: 'number' },
-            { name: 'identifier', type: 'UUID' },
-          ],
-          events: [{ eventName: 'PostCreated' }],
-        })
+        const fields = [
+          { name: 'title', type: 'string' },
+          { name: 'quantity', type: 'number' },
+          { name: 'identifier', type: 'UUID' },
+        ]
+        const renderedEntity = renderEntity(reducingEntityImports,entityName,fields,[{ eventName: 'PostCreated' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
 
@@ -187,16 +158,12 @@ describe('new', (): void => {
           ],
           {} as IConfig
         ).run()
-        const renderedEntity = Mustache.render(templates.entity, {
-          imports: reducingTwoEntityImports,
-          name: entityName,
-          fields: [
-            { name: 'title', type: 'string' },
-            { name: 'quantity', type: 'number' },
-            { name: 'identifier', type: 'UUID' },
-          ],
-          events: [{ eventName: 'PostCreated' }, { eventName: 'CommentCreated' }],
-        })
+        const fields = [
+          { name: 'title', type: 'string' },
+          { name: 'quantity', type: 'number' },
+          { name: 'identifier', type: 'UUID' },
+        ]
+        const renderedEntity = renderEntity(reducingTwoEntityImports,entityName,fields,[{ eventName: 'PostCreated' }, { eventName: 'CommentCreated' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
     })
