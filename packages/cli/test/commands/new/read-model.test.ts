@@ -55,6 +55,15 @@ describe('new', (): void => {
       },
     ]
 
+    const renderReadModel = (imports: any[], name: string, fields: any[], projections: any[]): string => {
+      return Mustache.render(templates.readModel, {
+        imports: imports,
+        name: name,
+        fields: fields,
+        projections: projections,
+      })
+    }
+
     beforeEach(() => {
       stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
       replace(fs, 'outputFile', fake.resolves({}))
@@ -67,42 +76,25 @@ describe('new', (): void => {
     describe('Created correctly', () => {
       it('with no fields and no projects', async () => {
         await new ReadModel([readModelName], {} as IConfig).run()
-        const renderedReadModel = Mustache.render(templates.readModel, {
-          imports: defaultReadModelImports,
-          name: readModelName,
-          fields: [],
-        })
+        const renderedReadModel = renderReadModel(defaultReadModelImports, readModelName, [], [])
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
       })
 
       it('creates ReadModel with a string field', async () => {
         await new ReadModel([readModelName, '--fields', 'title:string'], {} as IConfig).run()
-        const renderedReadModel = Mustache.render(templates.readModel, {
-          imports: defaultReadModelImports,
-          name: readModelName,
-          fields: [{ name: 'title', type: 'string' }],
-        })
+        const renderedReadModel = renderReadModel(defaultReadModelImports, readModelName, [{ name: 'title', type: 'string' }], [])
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
       })
 
       it('creates ReadModel with a string field projecting Post:id', async () => {
         await new ReadModel([readModelName, '--fields', 'title:string', '--projects', 'Post:id'], {} as IConfig).run()
-        const renderedReadModel = Mustache.render(templates.readModel, {
-          imports: projectingReadModelImports,
-          name: readModelName,
-          fields: [{ name: 'title', type: 'string' }],
-          projections: [{ entityName: 'Post', entityId: 'id' }],
-        })
+        const renderedReadModel = renderReadModel(projectingReadModelImports, readModelName, [{ name: 'title', type: 'string' }], [{ entityName: 'Post', entityId: 'id' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
       })
 
       it('creates ReadModel with a number field', async () => {
         await new ReadModel([readModelName, '--fields', 'quantity:number'], {} as IConfig).run()
-        const renderedReadModel = Mustache.render(templates.readModel, {
-          imports: defaultReadModelImports,
-          name: readModelName,
-          fields: [{ name: 'quantity', type: 'number' }],
-        })
+        const renderedReadModel = renderReadModel(defaultReadModelImports, readModelName, [{ name: 'quantity', type: 'number' }], [])
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
       })
 
@@ -111,22 +103,13 @@ describe('new', (): void => {
           [readModelName, '--fields', 'quantity:number', '--projects', 'Post:id'],
           {} as IConfig
         ).run()
-        const renderedReadModel = Mustache.render(templates.readModel, {
-          imports: projectingReadModelImports,
-          name: readModelName,
-          fields: [{ name: 'quantity', type: 'number' }],
-          projections: [{ entityName: 'Post', entityId: 'id' }],
-        })
+        const renderedReadModel = renderReadModel(projectingReadModelImports, readModelName, [{ name: 'quantity', type: 'number' }], [{ entityName: 'Post', entityId: 'id' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
       })
 
       it('creates ReadModel with UUID field', async () => {
         await new ReadModel([readModelName, '--fields', 'identifier:UUID'], {} as IConfig).run()
-        const renderedReadModel = Mustache.render(templates.readModel, {
-          imports: defaultReadModelImports,
-          name: readModelName,
-          fields: [{ name: 'identifier', type: 'UUID' }],
-        })
+        const renderedReadModel = renderReadModel(defaultReadModelImports, readModelName, [{ name: 'identifier', type: 'UUID' }], [])
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
       })
 
@@ -135,12 +118,7 @@ describe('new', (): void => {
           [readModelName, '--fields', 'identifier:UUID', '--projects', 'Post:id'],
           {} as IConfig
         ).run()
-        const renderedReadModel = Mustache.render(templates.readModel, {
-          imports: projectingReadModelImports,
-          name: readModelName,
-          fields: [{ name: 'identifier', type: 'UUID' }],
-          projections: [{ entityName: 'Post', entityId: 'id' }],
-        })
+        const renderedReadModel = renderReadModel(projectingReadModelImports, readModelName, [{ name: 'identifier', type: 'UUID' }], [{ entityName: 'Post', entityId: 'id' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
       })
 
@@ -149,15 +127,12 @@ describe('new', (): void => {
           [readModelName, '--fields', 'title:string', 'quantity:number', 'identifier:UUID'],
           {} as IConfig
         ).run()
-        const renderedReadModel = Mustache.render(templates.readModel, {
-          imports: defaultReadModelImports,
-          name: readModelName,
-          fields: [
-            { name: 'title', type: 'string' },
-            { name: 'quantity', type: 'number' },
-            { name: 'identifier', type: 'UUID' },
-          ],
-        })
+        const fields = [
+          { name: 'title', type: 'string' },
+          { name: 'quantity', type: 'number' },
+          { name: 'identifier', type: 'UUID' },
+        ]
+        const renderedReadModel = renderReadModel(defaultReadModelImports, readModelName, fields, [])
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
       })
 
@@ -166,16 +141,12 @@ describe('new', (): void => {
           [readModelName, '--fields', 'title:string', 'quantity:number', 'identifier:UUID', '--projects', 'Post:id'],
           {} as IConfig
         ).run()
-        const renderedReadModel = Mustache.render(templates.readModel, {
-          imports: projectingReadModelImports,
-          name: readModelName,
-          fields: [
-            { name: 'title', type: 'string' },
-            { name: 'quantity', type: 'number' },
-            { name: 'identifier', type: 'UUID' },
-          ],
-          projections: [{ entityName: 'Post', entityId: 'id' }],
-        })
+        const fields = [
+          { name: 'title', type: 'string' },
+          { name: 'quantity', type: 'number' },
+          { name: 'identifier', type: 'UUID' },
+        ]
+        const renderedReadModel = renderReadModel(projectingReadModelImports, readModelName, fields, [{ entityName: 'Post', entityId: 'id' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
       })
 
@@ -193,19 +164,16 @@ describe('new', (): void => {
           ],
           {} as IConfig
         ).run()
-        const renderedReadModel = Mustache.render(templates.readModel, {
-          imports: projectingTwoReadModelImports,
-          name: readModelName,
-          fields: [
-            { name: 'title', type: 'string' },
-            { name: 'quantity', type: 'number' },
-            { name: 'identifier', type: 'UUID' },
-          ],
-          projections: [
-            { entityName: 'Post', entityId: 'id' },
-            { entityName: 'Comment', entityId: 'id' },
-          ],
-        })
+        const fields = [
+          { name: 'title', type: 'string' },
+          { name: 'quantity', type: 'number' },
+          { name: 'identifier', type: 'UUID' },
+        ]
+        const projections = [
+          { entityName: 'Post', entityId: 'id' },
+          { entityName: 'Comment', entityId: 'id' },
+        ]
+        const renderedReadModel = renderReadModel(projectingTwoReadModelImports, readModelName, fields, projections)
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
       })
     })
