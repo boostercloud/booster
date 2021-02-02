@@ -117,7 +117,7 @@ describe('deploy', () => {
       await new Deploy.default([], {} as IConfig).run()
 
       expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npx yarn clean && npx yarn compile')
-      expect(providerService.deployToCloudProvider).to.have.not.been.calledWith()
+      expect(providerService.deployToCloudProvider).to.have.not.been.called
       expect(oraLogger.fail).to.have.been.calledWithMatch('Error: No environment set. Use the flag `-e` or set the environment variable BOOSTER_ENV to set it before running this command. Example usage: `boost deploy -e <environment>`.')
     })
 
@@ -133,7 +133,7 @@ describe('deploy', () => {
       expect(exceptionThrown).to.be.equal(true)
       expect(exceptionMessage).to.be.equal('Flag --environment expects a value')
       expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npx yarn clean && npx yarn compile')
-      expect(providerService.deployToCloudProvider).to.have.not.been.calledWith()
+      expect(providerService.deployToCloudProvider).to.have.not.been.called
     })
 
     it('with --environment flag incomplete', async () => {
@@ -148,7 +148,7 @@ describe('deploy', () => {
       expect(exceptionThrown).to.be.equal(true)
       expect(exceptionMessage).to.be.equal('Flag --environment expects a value')
       expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npx yarn clean && npx yarn compile')
-      expect(providerService.deployToCloudProvider).to.have.not.been.calledWith()
+      expect(providerService.deployToCloudProvider).to.have.not.been.called
     })
 
     it('outside a booster project', async () => {
@@ -163,7 +163,7 @@ describe('deploy', () => {
       expect(exceptionThrown).to.be.equal(true)
       expect(exceptionMessage).to.contain('There was an error when recognizing the application. Make sure you are in the root path of a Booster project')
       expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npx yarn clean && npx yarn compile')
-      expect(providerService.deployToCloudProvider).to.have.not.been.calledWith()
+      expect(providerService.deployToCloudProvider).to.have.not.been.called
     })
 
     describe('inside a booster project', () => {
@@ -177,7 +177,7 @@ describe('deploy', () => {
   
         expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install --production --no-bin-links')
         expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm run clean && npm run compile')
-        expect(providerService.deployToCloudProvider).to.have.been.calledWith()
+        expect(providerService.deployToCloudProvider).to.have.been.called
         expect(oraLogger.info).to.have.been.calledWithMatch('Deployment complete!')
       })
 
@@ -194,7 +194,7 @@ describe('deploy', () => {
         expect(exceptionMessage).to.contain('Unexpected argument: --nonexistingoption')
         expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm install --production --no-bin-links')
         expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm run clean && npm run compile')
-        expect(providerService.deployToCloudProvider).to.have.not.been.calledWith()
+        expect(providerService.deployToCloudProvider).to.have.not.been.called
         expect(oraLogger.info).to.have.not.been.calledWithMatch('Deployment complete!')
       })
 
@@ -210,7 +210,7 @@ describe('deploy', () => {
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('The environment \'nonexisting_environment\' does not match any of the environments you used to configure your Booster project')
         expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm run clean && npm run compile')
-        expect(providerService.deployToCloudProvider).to.have.not.been.calledWith()
+        expect(providerService.deployToCloudProvider).to.have.not.been.called
         expect(oraLogger.info).to.have.not.been.calledWithMatch('Deployment complete!')
       })
 
@@ -218,7 +218,7 @@ describe('deploy', () => {
         await new Deploy.default([], {} as IConfig).run()
   
         expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm run clean && npm run compile')
-        expect(providerService.deployToCloudProvider).to.have.not.been.calledWith()
+        expect(providerService.deployToCloudProvider).to.have.not.been.called
         expect(oraLogger.fail).to.have.been.calledWithMatch('Error: No environment set. Use the flag `-e` or set the environment variable BOOSTER_ENV to set it before running this command. Example usage: `boost deploy -e <environment>`.')
       })
 
