@@ -33,6 +33,14 @@ describe('new', (): void => {
       },
     ]
 
+    const renderCommand = (imports: any[], name: string, fields: any[]): string => {
+      return Mustache.render(templates.command, {
+        imports: imports,
+        name: name,
+        fields: fields,
+      })
+    }
+
     beforeEach(() => {
       stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
       replace(fs, 'outputFile', fake.resolves({}))
@@ -45,41 +53,25 @@ describe('new', (): void => {
     describe('Created correctly', () => {
       it('with no fields', async () => {
         await new Command([command], {} as IConfig).run()
-        const renderedCommand = Mustache.render(templates.command, {
-          imports: defaultCommandImports,
-          name: command,
-          fields: [],
-        })
+        const renderedCommand = renderCommand(defaultCommandImports, command, [])
         expect(fs.outputFile).to.have.been.calledWithMatch(commandPath, renderedCommand)
       })
 
       it('creates command with a string field', async () => {
         await new Command([command, '--fields', 'title:string'], {} as IConfig).run()
-        const renderedCommand = Mustache.render(templates.command, {
-          imports: defaultCommandImports,
-          name: command,
-          fields: [{ name: 'title', type: 'string' }],
-        })
+        const renderedCommand = renderCommand(defaultCommandImports, command, [{ name: 'title', type: 'string' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(commandPath, renderedCommand)
       })
 
       it('creates command with a number field', async () => {
         await new Command([command, '--fields', 'quantity:number'], {} as IConfig).run()
-        const renderedCommand = Mustache.render(templates.command, {
-          imports: defaultCommandImports,
-          name: command,
-          fields: [{ name: 'quantity', type: 'number' }],
-        })
+        const renderedCommand = renderCommand(defaultCommandImports, command, [{ name: 'quantity', type: 'number' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(commandPath, renderedCommand)
       })
 
       it('creates command with UUID field', async () => {
         await new Command([command, '--fields', 'identifier:UUID'], {} as IConfig).run()
-        const renderedCommand = Mustache.render(templates.command, {
-          imports: uuidCommandImports,
-          name: command,
-          fields: [{ name: 'identifier', type: 'UUID' }],
-        })
+        const renderedCommand = renderCommand(uuidCommandImports, command, [{ name: 'identifier', type: 'UUID' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(commandPath, renderedCommand)
       })
 
@@ -88,15 +80,12 @@ describe('new', (): void => {
           [command, '--fields', 'title:string', 'quantity:number', 'identifier:UUID'],
           {} as IConfig
         ).run()
-        const renderedCommand = Mustache.render(templates.command, {
-          imports: uuidCommandImports,
-          name: command,
-          fields: [
-            { name: 'title', type: 'string' },
-            { name: 'quantity', type: 'number' },
-            { name: 'identifier', type: 'UUID' },
-          ],
-        })
+        const fields = [
+          { name: 'title', type: 'string' },
+          { name: 'quantity', type: 'number' },
+          { name: 'identifier', type: 'UUID' },
+        ]
+        const renderedCommand = renderCommand(uuidCommandImports, command, fields)
         expect(fs.outputFile).to.have.been.calledWithMatch(commandPath, renderedCommand)
       })
     })
