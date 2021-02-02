@@ -52,6 +52,10 @@ describe('new', (): void => {
         skipGit: false,
       } as ProjectInitializerConfig
 
+      const renderPackageJson = (config: ProjectInitializerConfig): string => {
+        return Mustache.render(packageJson.template, config) 
+      }
+
       beforeEach(() => {
         replace(fs, 'mkdirs', fake.resolves({}))
         replace(fs, 'outputFile', fake.resolves({}))
@@ -103,7 +107,7 @@ describe('new', (): void => {
             defaultProjectInitializerConfig as ProjectInitializerConfig
           )
 
-          const expectedPackageJson = Mustache.render(packageJson.template, defaultProjectInitializerConfig) 
+          const expectedPackageJson = renderPackageJson(defaultProjectInitializerConfig) 
           expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,expectedPackageJson)
         })
 
@@ -117,11 +121,14 @@ describe('new', (): void => {
           expect(initializeGitSpy).to.not.have.been.calledOnce
           expect(childProcessPromise.exec).to.not.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
           expectFilesAndDirectoriesCreated(projectName)
+          const expectedPackageJson = renderPackageJson(defaultProjectInitializerConfig)
+          expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,expectedPackageJson)
         })
 
         describe('define homepage', () => { 
           it('with --homepage', async () => {
-            replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
+            const config = { ...defaultProjectInitializerConfig, homepage: 'booster.cloud' }
+            replace(Project, 'parseConfig', fake.returns(config))
 
             await new Project.default([projectName,'--homepage',"'booster.cloud'"], {} as IConfig).run()
 
@@ -129,10 +136,12 @@ describe('new', (): void => {
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
           })
 
           it('with -H', async () => {
-            replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
+            const config = { ...defaultProjectInitializerConfig, homepage: 'booster.cloud' }
+            replace(Project, 'parseConfig', fake.returns(config))
 
             await new Project.default([projectName,'-H',"'booster.cloud'"], {} as IConfig).run()
 
@@ -140,12 +149,14 @@ describe('new', (): void => {
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
           })
         })
 
         describe('define author', () => { 
           it('with --author', async () => {
-            replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
+            const config = { ...defaultProjectInitializerConfig, author: 'John Doe' }
+            replace(Project, 'parseConfig', fake.returns(config))
 
             await new Project.default([projectName,'--author',"'John Doe'"], {} as IConfig).run()
 
@@ -153,10 +164,12 @@ describe('new', (): void => {
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
           })
 
           it('with -a', async () => {
-            replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
+            const config = { ...defaultProjectInitializerConfig, author: 'John Doe' }
+            replace(Project, 'parseConfig', fake.returns(config))
 
             await new Project.default([projectName,'-a',"'John Doe'"], {} as IConfig).run()
 
@@ -164,12 +177,14 @@ describe('new', (): void => {
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
           })
         })
 
         describe('define description', () => { 
           it('with --description', async () => {
-            replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
+            const config = { ...defaultProjectInitializerConfig, description: 'a short description' }
+            replace(Project, 'parseConfig', fake.returns(config))
 
             await new Project.default([projectName,'--description',"'a short description'"], {} as IConfig).run()
 
@@ -177,10 +192,12 @@ describe('new', (): void => {
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
           })
 
           it('with -d', async () => {
-            replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
+            const config = { ...defaultProjectInitializerConfig, description: 'a short description' }
+            replace(Project, 'parseConfig', fake.returns(config))
 
             await new Project.default([projectName,'-d',"'a short description'"], {} as IConfig).run()
 
@@ -188,12 +205,14 @@ describe('new', (): void => {
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
           })
         })
 
         describe('define license', () => { 
           it('with --license', async () => {
-            replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
+            const config = { ...defaultProjectInitializerConfig, license: 'GPL' }
+            replace(Project, 'parseConfig', fake.returns(config))
 
             await new Project.default([projectName,'--license','GPL'], {} as IConfig).run()
 
@@ -201,10 +220,12 @@ describe('new', (): void => {
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
           })
 
           it('with -l', async () => {
-            replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
+            const config = { ...defaultProjectInitializerConfig, license: 'GPL' }
+            replace(Project, 'parseConfig', fake.returns(config))
 
             await new Project.default([projectName,'-l','GPL'], {} as IConfig).run()
 
@@ -212,6 +233,7 @@ describe('new', (): void => {
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
           })
         })
 
@@ -241,7 +263,8 @@ describe('new', (): void => {
 
         describe('define repository', () => { 
           it('with --repository', async () => {
-            replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
+            const config = { ...defaultProjectInitializerConfig, repository: defaultRepository }
+            replace(Project, 'parseConfig', fake.returns(config))
 
             await new Project.default([projectName,'--repository',defaultRepository], {} as IConfig).run()
 
@@ -249,10 +272,12 @@ describe('new', (): void => {
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
           })
 
           it('with -r', async () => {
-            replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
+            const config = { ...defaultProjectInitializerConfig, repository: defaultRepository }
+            replace(Project, 'parseConfig', fake.returns(config))
 
             await new Project.default([projectName,'-r',defaultRepository], {} as IConfig).run()
 
@@ -260,12 +285,14 @@ describe('new', (): void => {
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
           })
         })
 
         describe('define version', () => { 
           it('with --version', async () => {
-            replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
+            const config = { ...defaultProjectInitializerConfig, version: '1.0.0' }
+            replace(Project, 'parseConfig', fake.returns(config))
 
             await new Project.default([projectName,'--version','1.0.0'], {} as IConfig).run()
 
@@ -273,10 +300,12 @@ describe('new', (): void => {
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
           })
 
           it('with -v', async () => {
-            replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
+            const config = { ...defaultProjectInitializerConfig, version: '1.0.0' }
+            replace(Project, 'parseConfig', fake.returns(config))
 
             await new Project.default([projectName,'-v','1.0.0'], {} as IConfig).run()
 
@@ -285,6 +314,7 @@ describe('new', (): void => {
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
           })
         })
 
