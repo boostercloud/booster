@@ -7,6 +7,8 @@ import { IConfig } from '@oclif/config'
 import { expect } from '../../expect'
 import * as Project from '../../../src/commands/new/project'
 import * as ProjectInitializer from '../../../src/services/project-initializer'
+import * as packageJson from '../../../src/templates/project/package-json'
+import * as Mustache from 'mustache'
 
 describe('new', (): void => {
   describe('project', () => {
@@ -101,8 +103,8 @@ describe('new', (): void => {
             defaultProjectInitializerConfig as ProjectInitializerConfig
           )
 
-          //TODO const expectedPackageJson = fs.readFileSync('./test/fixtures/commands/new_package.json').toString() 
-          //expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,expectedPackageJson)
+          const expectedPackageJson = Mustache.render(packageJson.template, defaultProjectInitializerConfig) 
+          expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,expectedPackageJson)
         })
 
         it('skips git repository initialization with --skipGit', async () => {
