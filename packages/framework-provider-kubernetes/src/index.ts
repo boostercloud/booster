@@ -8,6 +8,7 @@ export const Provider = (): ProviderLibrary => ({
     store: undefined as any,
     forEntitySince: undefined as any,
     latestEntitySnapshot: undefined as any,
+    search: undefined as any,
   },
   // ProviderReadModelsLibrary
   readModels: {

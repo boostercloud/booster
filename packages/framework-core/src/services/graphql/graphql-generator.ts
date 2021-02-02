@@ -5,9 +5,9 @@ import {
   CommandEnvelope,
   ReadModelPropertyFilter,
   ReadModelRequestEnvelope,
-  EventEnvelope,
-  EventRequestEnvelope,
-  EventsFilter,
+  EventSearchRequest,
+  EventFilter,
+  EventSearchResponse,
 } from '@boostercloud/framework-types'
 import { GraphQLFieldResolver, GraphQLResolveInfo, GraphQLSchema } from 'graphql'
 import { GraphQLTypeInformer } from './graphql-type-informer'
@@ -42,8 +42,8 @@ export class GraphQLGenerator {
   private constructor(
     config: BoosterConfig,
     private commandsDispatcher: BoosterCommandDispatcher,
-    private readModelsDispatcher: BoosterReadModelReader,
-    private eventsDispatcher: BoosterEventReader
+    private readModelsReader: BoosterReadModelReader,
+    private eventsReader: BoosterEventReader
   ) {
     this.typeInformer = new GraphQLTypeInformer({ ...config.readModels, ...config.commandHandlers })
     this.queryGenerator = new GraphQLQueryGenerator(
@@ -80,7 +80,7 @@ export class GraphQLGenerator {
   ): GraphQLFieldResolver<any, GraphQLResolverContext, Record<string, ReadModelPropertyFilter>> {
     return (parent, args, context, info) => {
       const readModelEnvelope = toReadModelRequestEnvelope(readModelClass.name, args, context)
-      return this.readModelsDispatcher.fetch(readModelEnvelope)
+      return this.readModelsReader.fetch(readModelEnvelope)
     }
   }
 
@@ -96,12 +96,12 @@ export class GraphQLGenerator {
 
   public eventResolver(
     parent: unknown,
-    args: EventsFilter,
+    args: EventFilter,
     context: GraphQLResolverContext,
     info: GraphQLResolveInfo
-  ): Promise<Array<EventEnvelope>> {
-    const eventsRequestEnvelope = toEventRequestEnvelope(args, context)
-    return this.eventsDispatcher.fetch(eventsRequestEnvelope)
+  ): Promise<Array<EventSearchResponse>> {
+    const eventsRequestEnvelope = toEventSearchRequest(args, context)
+    return this.eventsReader.fetch(eventsRequestEnvelope)
   }
 
   public commandResolverBuilder(
@@ -133,7 +133,7 @@ export class GraphQLGenerator {
 
       const readModelRequestEnvelope = toReadModelRequestEnvelope(readModelClass.name, args, context)
       if (context.storeSubscriptions) {
-        await this.readModelsDispatcher.subscribe(context.connectionID, readModelRequestEnvelope, context.operation)
+        await this.readModelsReader.subscribe(context.connectionID, readModelRequestEnvelope, context.operation)
       }
 
       return context.pubSub.asyncIterator(readModelRequestEnvelope)
@@ -155,7 +155,9 @@ function toReadModelRequestEnvelope(
   }
 }
 
-function toEventRequestEnvelope(args: EventsFilter, context: GraphQLResolverContext): EventRequestEnvelope {
+function toEventSearchRequest(args: EventFilter, context: GraphQLResolverContext): EventSearchRequest {
+  console.log('PRINTING ARGS. PROBABLY THEY ARE MISSING "kind"', args)
+  args.kind = 'entity' in args ? 'entity' : 'type'
   return {
     requestID: context.requestID,
     currentUser: context.user,

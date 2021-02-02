@@ -1,9 +1,82 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Operation, FilterFor, BoosterConfig, Logger, InvalidParameterError } from '@boostercloud/framework-types'
+import {
+  Operation,
+  FilterFor,
+  BoosterConfig,
+  Logger,
+  InvalidParameterError,
+  EventFilter,
+  EventEnvelope,
+  EventSearchResponse,
+  EventInterface,
+} from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
 import ExpressionAttributeValueMap = DocumentClient.ExpressionAttributeValueMap
 import ExpressionAttributeNameMap = DocumentClient.ExpressionAttributeNameMap
+import { eventsStoreAttributes } from '../constants'
+import { partitionKeyForEvent } from './partition-keys'
+
+export async function searchEvents(
+  dynamoDB: DynamoDB.DocumentClient,
+  config: BoosterConfig,
+  logger: Logger,
+  filters: EventFilter
+): Promise<Array<EventSearchResponse>> {
+  if (!filters.kind) {
+    throw new Error('Missing field "kind" in EventsFilter when searching events')
+  }
+  let params: DocumentClient.QueryInput = {
+    TableName: config.resourceNames.eventsStore,
+    ConsistentRead: true,
+    ScanIndexForward: false, // Descending order (newer timestamps first)
+  }
+  let timeFilterQuery = ''
+  const timeFilterAttributeValues: Record<string, string> = {}
+  if (filters.from) {
+    timeFilterQuery = `${eventsStoreAttributes.sortKey} >= :fromTime`
+    timeFilterAttributeValues[':fromTime'] = filters.from
+  }
+  if (filters.to) {
+    if (timeFilterQuery.length > 0) timeFilterQuery += ' AND '
+    timeFilterQuery = `${eventsStoreAttributes.sortKey} <= :toTime`
+    timeFilterAttributeValues[':toTime'] = filters.to
+  }
+
+  switch (filters.kind) {
+    case 'entity':
+      params = {
+        ...params,
+        KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey AND ${timeFilterQuery}`,
+        ExpressionAttributeValues: {
+          ...timeFilterAttributeValues,
+          ':partitionKey': partitionKeyForEvent(filters.entity, filters.entityID),
+        },
+      }
+      break
+    case 'type':
+      break
+  }
+
+  logger.debug('Running events search with the following params: \n', params)
+
+  const result = await dynamoDB.query(params).promise()
+  const eventEnvelopes = (result.Items as Array<EventEnvelope>) ?? []
+
+  logger.debug('Events search result: ', eventEnvelopes)
+
+  const eventSearchResults: Array<EventSearchResponse> = eventEnvelopes.map((eventEnvelope) => {
+    return {
+      type: eventEnvelope.typeName,
+      entity: eventEnvelope.entityTypeName,
+      entityID: eventEnvelope.entityID,
+      requestID: eventEnvelope.requestID,
+      user: eventEnvelope.currentUser,
+      createdAt: eventEnvelope.createdAt,
+      value: eventEnvelope.value as EventInterface,
+    }
+  })
+  return eventSearchResults
+}
 
 export async function searchReadModel(
   dynamoDB: DynamoDB.DocumentClient,

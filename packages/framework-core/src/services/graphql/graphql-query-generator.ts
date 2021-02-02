@@ -12,6 +12,7 @@ import {
   GraphQLObjectType,
   GraphQLScalarType,
   GraphQLString,
+  GraphQLUnionType,
 } from 'graphql'
 import {
   GraphQLNonInputType,
@@ -98,29 +99,43 @@ export class GraphQLQueryGenerator {
       events: {
         type: GraphQLString, // TODO (a transformation between EventEnvelope and the exported type (EventResult) is needed
         args: {
-          key: {
-            type: this.buildEventKeyType(),
-          },
-          types: { type: new GraphQLList(GraphQLString) },
-          from: { type: GraphQLString },
-          to: { type: GraphQLString },
-          requestID: { type: GraphQLString },
+          filter: { type: this.buildEventQueryFilter() }
         },
         resolve: this.eventsResolver,
       },
     }
   }
 
-  private buildEventKeyType(): GraphQLInputType {
-    const EntityEventKey = new GraphQLObjectType({
-      name: 'EntityEventKey',
+  private buildEventQueryFilter(): GraphQLInputType {
+    const commonFields = {
+      from: { type: GraphQLString },
+      to: { type: GraphQLString },
+    }
+    const EventFilterByEntity = new GraphQLObjectType({
+      name: 'EventFilterByEntity',
       fields: {
+        ...commonFields,
         entity: { type: new GraphQLNonNull(GraphQLString) },
         entityID: { type: new GraphQLNonNull(GraphQLID) },
       },
     })
+    const EventFilterByType = new GraphQLObjectType({
+      name: 'EventFilterByType',
+      fields: {
+        ...commonFields,
+        type: { type: new GraphQLNonNull(GraphQLString) },
+      },
+    })
 
-    return new GraphQLNonNull(EntityEventKey)
+    return new GraphQLNonNull(
+      new GraphQLUnionType({
+        name: 'EventFilter',
+        types: [EventFilterByEntity, EventFilterByType],
+        resolveType: (value) => {
+          return 'entity' in value ? EventFilterByEntity : EventFilterByType
+        },
+      })
+    )
   }
 
   public generateFilterArguments(typeMetadata: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {

@@ -1,21 +1,22 @@
 import {
-  EventEnvelope,
-  EventRequestEnvelope,
+  EventSearchRequest,
   BoosterConfig,
   Logger,
   NotAuthorizedError,
+  EventSearchResponse,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
+import { Booster } from './booster'
 
 export class BoosterEventReader {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
 
-  public async fetch(eventRequest: EventRequestEnvelope): Promise<Array<EventEnvelope>> {
+  public async fetch(eventRequest: EventSearchRequest): Promise<Array<EventSearchResponse>> {
     this.validateRequest(eventRequest)
     return this.processFetch(eventRequest)
   }
 
-  private validateRequest(eventRequest: EventRequestEnvelope): void {
+  private validateRequest(eventRequest: EventSearchRequest): void {
     this.logger.debug('Validating the following event request: ', eventRequest)
 
     if (!BoosterAuth.isUserAuthorized(this.config.authorizeReadEvents, eventRequest.currentUser)) {
@@ -23,10 +24,7 @@ export class BoosterEventReader {
     }
   }
 
-  private async processFetch(eventRequest: EventRequestEnvelope): Promise<Array<EventEnvelope>> {
-    // TODO: Create the searcher and search for the events
-    // TODO: Create the conversion for the event envelope to EventResult
-    // TODO: Do the actual search in AWS
-    return []
+  private async processFetch(eventRequest: EventSearchRequest): Promise<Array<EventSearchResponse>> {
+    return Booster.events(eventRequest.filters)
   }
 }
