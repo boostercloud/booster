@@ -22,6 +22,14 @@ describe('new', (): void => {
         commaSeparatedComponents: 'UUID',
       }
     ]
+  
+    const renderEvent = (name: string, fields: any[]): string => {
+      return Mustache.render(templates.event, {
+        imports: defaultEventImports,
+        name: name,
+        fields: fields
+      })
+    }
 
     beforeEach(() => {
       stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
@@ -35,51 +43,32 @@ describe('new', (): void => {
     describe('Created correctly', () => { 
       it('with no fields', async () => {
         await new Event([eventName], {} as IConfig).run()
-        const renderedEvent = Mustache.render(templates.event, {
-          imports: defaultEventImports,
-          name: eventName,
-          fields: []
-        })
+        const renderedEvent = renderEvent(eventName, [])
         expect(fs.outputFile).to.have.been.calledWithMatch(eventPath,renderedEvent)
       })
 
       it('creates Event with a string field', async () => {
         await new Event([eventName, '--fields', 'title:string'], {} as IConfig).run()
-        const renderedEvent = Mustache.render(templates.event, {
-          imports: defaultEventImports,
-          name: eventName,
-          fields: [{ name: 'title', type: 'string' }]
-        })
+        const renderedEvent = renderEvent(eventName, [{ name: 'title', type: 'string' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(eventPath,renderedEvent)
       })
 
       it('creates Event with a number field', async () => {
         await new Event([eventName, '--fields', 'quantity:number'], {} as IConfig).run()
-        const renderedEvent = Mustache.render(templates.event, {
-          imports: defaultEventImports,
-          name: eventName,
-          fields: [{ name: 'quantity', type: 'number' }]
-        })
+        const renderedEvent = renderEvent(eventName, [{ name: 'quantity', type: 'number' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(eventPath,renderedEvent)
       })
 
       it('creates Event with UUID field', async () => {
         await new Event([eventName, '--fields', 'identifier:UUID'], {} as IConfig).run()
-        const renderedEvent = Mustache.render(templates.event, {
-          imports: defaultEventImports,
-          name: eventName,
-          fields: [{ name: 'identifier', type: 'UUID' }]
-        })
+        const renderedEvent = renderEvent(eventName, [{ name: 'identifier', type: 'UUID' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(eventPath,renderedEvent)
       })
 
       it('creates Event with multiple fields', async () => {
         await new Event([eventName, '--fields', 'title:string','quantity:number','identifier:UUID'], {} as IConfig).run()
-        const renderedEvent = Mustache.render(templates.event, {
-          imports: defaultEventImports,
-          name: eventName,
-          fields: [{ name: 'title', type: 'string' },{ name: 'quantity', type: 'number' },{ name: 'identifier', type: 'UUID' }]
-        })
+        const fields = [{ name: 'title', type: 'string' },{ name: 'quantity', type: 'number' },{ name: 'identifier', type: 'UUID' }]
+        const renderedEvent = renderEvent(eventName, fields)
         expect(fs.outputFile).to.have.been.calledWithMatch(eventPath,renderedEvent)
       })
     })
