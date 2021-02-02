@@ -161,7 +161,7 @@ describe('deploy', () => {
         exceptionMessage = e.message
       }
       expect(exceptionThrown).to.be.equal(true)
-      expect(exceptionMessage).to.contain('Error: There was an error when recognizing the application. Make sure you are in the root path of a Booster project')
+      expect(exceptionMessage).to.contain('There was an error when recognizing the application. Make sure you are in the root path of a Booster project')
       expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npx yarn clean && npx yarn compile')
       expect(providerService.deployToCloudProvider).to.have.not.been.calledWith()
     })
