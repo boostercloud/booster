@@ -178,10 +178,6 @@ describe('nuke', () => {
 
     describe('inside a booster project', () => {
     
-      beforeEach(() => {
-        
-      })
-
       it('entering correct environment and application name', async () => {
         replace(Prompter.prototype,'defaultOrPrompt', fake.resolves('new-booster-app'))
         await new Nuke.default(['-e','fake_environment'], {} as IConfig).run()
@@ -239,18 +235,11 @@ describe('nuke', () => {
         expect(oraLogger.info).to.have.not.been.calledWithMatch('Removal complete!')
       })
 
-      it('without defining environment', async () => {
-        await new Nuke.default([], {} as IConfig).run()
-  
-        expect(providerService.nukeCloudProviderResources).to.have.not.been.called
-        expect(oraLogger.fail).to.have.been.calledWithMatch('Error: No environment set. Use the flag `-e` or set the environment variable BOOSTER_ENV to set it before running this command. Example usage: `boost deploy -e <environment>`.')
-      })
-
       it('without defining environment and --force', async () => {
         await new Nuke.default(['--force'], {} as IConfig).run()
   
         expect(providerService.nukeCloudProviderResources).to.have.not.been.called
-        expect(oraLogger.fail).to.have.been.calledWithMatch('Error: No environment set. Use the flag `-e` or set the environment variable BOOSTER_ENV to set it before running this command. Example usage: `boost deploy -e <environment>`.')
+        expect(oraLogger.fail).to.have.been.calledWithMatch(/No environment set/)
       })
     })
   })
