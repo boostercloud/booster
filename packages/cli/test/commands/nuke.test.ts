@@ -8,7 +8,6 @@ import * as Nuke from '../../src/commands/nuke'
 import * as providerService from '../../src/services/provider-service'
 import { oraLogger } from '../../src/services/logger'
 import { IConfig } from '@oclif/config'
-import * as childProcessPromise from 'child-process-promise'
 import { test } from '@oclif/test'
 import * as environment from '../../src/services/environment'
 import * as configService from '../../src/services/config-service'
@@ -130,7 +129,8 @@ describe('nuke', () => {
   describe('command class', () => {
     
     beforeEach(() => {
-        replace(childProcessPromise, 'exec', fake.resolves({}))
+        const config = new BoosterConfig('fake_environment')
+        replace(configService,'compileProjectAndLoadConfig', fake.resolves(config))
         replace(providerService,'nukeCloudProviderResources', fake.resolves({}))
         replace(oraLogger,'fail', fake.resolves({}))
         replace(oraLogger, 'info', fake.resolves({}))
@@ -141,7 +141,7 @@ describe('nuke', () => {
     it('without flags', async () => {
       await new Nuke.default([], {} as IConfig).run()
 
-      expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm run clean && npm run compile')
+      expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
       expect(providerService.nukeCloudProviderResources).to.have.not.been.called
       expect(oraLogger.fail).to.have.been.calledWithMatch(/No environment set/)
     })
@@ -157,7 +157,7 @@ describe('nuke', () => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.be.equal('Flag --environment expects a value')
-        expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm run clean && npm run compile')
+        expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
         expect(providerService.nukeCloudProviderResources).to.have.not.been.called
     })
 
@@ -172,30 +172,14 @@ describe('nuke', () => {
       }
       expect(exceptionThrown).to.be.equal(true)
       expect(exceptionMessage).to.be.equal('Flag --environment expects a value')
-      expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm run clean && npm run compile')
-      expect(providerService.nukeCloudProviderResources).to.have.not.been.called
-    })
-
-    it('outside a booster project', async () => {
-      let exceptionThrown = false
-      let exceptionMessage = ''
-      try {
-        await new Nuke.default(['--environment','fake_environment'], {} as IConfig).run()
-      } catch (e) {
-        exceptionThrown = true
-        exceptionMessage = e.message
-      }
-      expect(exceptionThrown).to.be.equal(true)
-      expect(exceptionMessage).to.contain('Error: There was an error when recognizing the application. Make sure you are in the root path of a Booster project')
-      expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm run clean && npm run compile')
+      expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
       expect(providerService.nukeCloudProviderResources).to.have.not.been.called
     })
 
     describe('inside a booster project', () => {
     
       beforeEach(() => {
-        const config = new BoosterConfig('fake_environment')
-        replace(configService,'compileProjectAndLoadConfig', fake.resolves(config))
+        
       })
 
       it('entering correct environment and application name', async () => {
