@@ -395,28 +395,24 @@ If you prefer to specify each parameter without following the instructions, you 
 
 | Flag                   | Short version | Description |
 | :--------------------- | :------------ | :---------- |
-| `--homepage`           | `-H`          | the website of this project |
-| `--author`             | `-a`          | author of this project |
-| `--description`        | `-d`          | a short description |
-| `--license`            | `-l`          | license used in this project |
-| `--providerPackageName`| `-p`          | package name implementing the cloud provider integration where the application will be deployed |
-| `--repository`         | `-r`          | the URL of the repository |
-| `--version`            | `-v`          | the initial version |
+| `--homepage`           | `-H`          | The website of this project |
+| `--author`             | `-a`          | Author of this project |
+| `--description`        | `-d`          | A short description |
+| `--license`            | `-l`          | License used in this project |
+| `--providerPackageName`| `-p`          | Package name implementing the cloud provider integration where the application will be deployed |
+| `--repository`         | `-r`          | The URL of the repository |
+| `--version`            | `-v`          | The initial version |
 
-Additionally, you can use the flag `--skipInstall` if you want to skip installing dependencies and the flag `--skipGit ` in case you want to skip git initialization.
+Additionally, you can use the `--skipInstall` flag if you want to skip installing dependencies and the `--skipGit` flag in case you want to skip git initialization.
 
 > Booster CLI commands follow this structure: `boost <subcommand> [<flags>] [<parameters>]`.
 > Let's break down the command we have just executed:
 >
 > - `boost` is the Booster CLI executable
-> - `new:project` is the "subcommand" part. In this case, it is composed of two parts separated by a colon.
->   The first part, `new`, means that we want to generate a new resource. The second part, `project`, indicates which
->   kind of resource we are interested in. Other examples are `new:command`, `new:event`, etc. We'll see a bunch of them later.
-> - `boosted-blog` is a "parameter" for the subcommand `new:project`. Flags and parameters are optional and
->   their meaning and shape depend on the subcommand you used. In this case, we are specifying the name of the project
->   we are creating.
+> - `new:project` is the "subcommand" part. In this case, it is composed of two parts separated by a colon. The first part, `new`, means that we want to generate a new resource. The second part, `project`, indicates which kind of resource we are interested in. Other examples are `new:command`, `new:event`, etc. We'll see a bunch of them later.
+> - `boosted-blog` is a "parameter" for the subcommand `new:project`. Flags and parameters are optional and their meaning and shape depend on the subcommand you used. In this case, we are specifying the name of the project we are creating.
 
-**Note:** You can always use the flag `--help` for getting all the available options for each cli command.
+**Note:** You can always use the `--help` flag to get all the available options for each cli command.
 
 When finished, you'll see some scaffolding that has been generated. The project name will be the
 project's root so `cd` into it:
@@ -2029,7 +2025,7 @@ To have a great developer experience, we **strongly recommend** to use a GraphQL
 
 #### Get GraphQL schema from deployed application
 
-After deploying your application with the command `boost deploy -e development`, you can get your GraphQL schema by using a tool like **[Hoppscotch (formerly Postwoman)](https://hoppscotch.io/)**. The previous command displays the deployment URL with the pattern: 
+After deploying your application with the command `boost deploy -e development`, you can get your GraphQL schema by using a tool like **[Hoppscotch (formerly Postwoman)](https://hoppscotch.io/)**. The previous command displays the deployment URL with the pattern:
 
 `https://<base_url>/<environment>/graphql`
 
@@ -2594,7 +2590,7 @@ For a force delete without asking for confirmation, you can run `boost nuke -e <
 
 ### Contributing
 
-If you want to start making contributions to Booster, we strongly recommend that you read our [contributing guide](https://github.com/boostercloud/booster/blob/master/CONTRIBUTING.md).
+If you want to start making contributions to Booster, we strongly recommend that you read our [contributing guide](https://github.com/boostercloud/booster/blob/main/CONTRIBUTING.md).
 
 ### Framework Core
 
@@ -2602,7 +2598,7 @@ If you want to start making contributions to Booster, we strongly recommend that
 
 ### Framework integration tests
 
-Booster framework integration tests package is used to test the Booster project itself, but it is also an example of how a Booster application could be tested. We encourage developers to have a look at our [Booster project repository](https://github.com/boostercloud/booster/tree/master/packages/framework-integration-tests).
+Booster framework integration tests package is used to test the Booster project itself, but it is also an example of how a Booster application could be tested. We encourage developers to have a look at our [Booster project repository](https://github.com/boostercloud/booster/tree/main/packages/framework-integration-tests).
 
 Some integration tests highly depend on the provider chosen for the project, and the infrastructure is normally deployed locally or in the cloud right before the tests run. Once tests are completed, the application is teared down.
 
@@ -2658,6 +2654,13 @@ The following is the list of the fields you can configure:
 - **provider:** This field contains the provider library instance that Booster will use when deploying or running your application.
 
 _**Note:** So far, there is only one provider fully supported in Booster yet, @boostercloud/framework-provider-aws, and it is probably the one you have already set if you used the generator to create your project. The team is currently working on providers for local development, Azure, and Kubernetes._
+
+- **assets**: This is an array of _relative_ paths from the root of the project pointing to files and folders with static assets. They will be included among the deployed files to the cloud provider. 
+For example, imagine you are using the "dotenv" module so that all the environment variables you have in your `.env` files are loaded into memory in runtime. In order for this to work, you need to include your `.env` files as assets of your project, so that they are included when deploying. Assuming you only have a `.env` file in the root of your project, you should add the following to your configuration:
+  
+  ````typescript
+    config.assets = ['.env']
+  ````
 
 #### Environments
 
@@ -2761,7 +2764,7 @@ The implementation of `InfrastructureRocket` might vary from one provider to the
 
 ```typescript
 export interface InfrastructureRocket {
-  mountStack: (stack: Stack) => void
+  mountStack: (stack: Stack, config: BoosterConfig) => void
   unmountStack?: (utils: RocketUtils) => void
 }
 ```
@@ -2777,7 +2780,7 @@ const YourRocketInitializator = (params: YourRocketParams): InfrastructureRocket
 export default YourRocketInitializator
 ```
 
-In `mountStack` you will receive an initialized AWS CDK stack that you can use to append new resources. Check out [the Stack API in the official CDK documentation](https://docs.aws.amazon.com/cdk/latest/guide/stacks.html#stack_api). This is the same stack instance that Booster uses to deploy its resources, so your resources will be deployed automatically along with the Booster's ones in the same stack.
+In `mountStack` you will receive an initialized AWS CDK stack that you can use to append new resources. Check out [the Stack API in the official CDK documentation](https://docs.aws.amazon.com/cdk/latest/guide/stacks.html#stack_api). This is the same stack instance that Booster uses to deploy its resources, so your resources will be deployed automatically along with the Booster's ones in the same stack. Also you will receive the `config` object which includes properties of the Booster project that is about to be deployed.
 
 The application stack, including the resources added by your rocket are automatically nuked along with the application stack, but there are some situations on which it's convenient to delete or move the contents of the resources created by you. In the appl `unmountStack` you'll have the opportunity to run any code before deleting the stack. This function receives an `utils` object with the same tools that Booster uses to perform common actions like emptying the contents of an S3 bucket (Non-empty buckets are kept by default when a stack is deleted).
 
@@ -2827,8 +2830,8 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import * as Local from '@boostercloud/framework-provider-local'
 
 Booster.configure('local', (config: BoosterConfig): void => {
-    config.appName = 'fruit-store-local'
-    config.provider = Local.Provider
+  config.appName = 'fruit-store-local'
+  config.provider = Local.Provider
 })
 ```
 

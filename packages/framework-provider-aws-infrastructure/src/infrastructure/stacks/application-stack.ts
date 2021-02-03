@@ -37,7 +37,7 @@ export class ApplicationStackBuilder {
     setupPermissions(graphQLStack, eventsStack, readModelTables, websocketAPI, scheduledCommandStack)
 
     // Load rockets
-    rockets?.forEach((rocket) => rocket.mountStack(stack))
+    rockets?.forEach((rocket) => rocket.mountStack(stack, this.config))
   }
 
   private buildRootRESTAPI(stack: Stack): RestApi {
@@ -47,7 +47,12 @@ export class ApplicationStackBuilder {
 
     new CfnOutput(stack, 'httpURL', {
       value: rootAPI.url,
-      description: 'The base URL for all the auth endpoints and for sending GraphQL mutations and queries',
+      description: 'The base URL for all the auth endpoints',
+    })
+
+    new CfnOutput(stack, 'graphqlURL', {
+      value: rootAPI.url + 'graphqlURL',
+      description: 'The base URL for sending GraphQL mutations and queries',
     })
 
     return rootAPI

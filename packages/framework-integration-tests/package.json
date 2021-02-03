@@ -1,7 +1,7 @@
 {
   "name": "@boostercloud/framework-integration-tests",
   "description": "Example project for Booster",
-  "version": "0.10.0",
+  "version": "0.11.2",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
   "private": true,
@@ -10,14 +10,14 @@
   },
   "bugs": "https://github.com/boostercloud/booster/issues",
   "dependencies": {
-    "@boostercloud/framework-core": "^0.10.0",
-    "@boostercloud/framework-provider-aws": "^0.10.0",
-    "@boostercloud/framework-provider-local": "^0.10.0",
-    "@boostercloud/framework-types": "^0.10.0"
+    "@boostercloud/framework-core": "^0.11.2",
+    "@boostercloud/framework-provider-aws": "^0.11.2",
+    "@boostercloud/framework-provider-local": "^0.11.2",
+    "@boostercloud/framework-types": "^0.11.2"
   },
   "devDependencies": {
-    "@boostercloud/framework-provider-aws-infrastructure": "^0.10.0",
-    "@boostercloud/framework-provider-local-infrastructure": "^0.10.0",
+    "@boostercloud/framework-provider-aws-infrastructure": "^0.11.2",
+    "@boostercloud/framework-provider-local-infrastructure": "^0.11.2",
     "@types/aws-lambda": "8.10.48",
     "@types/faker": "5.1.5",
     "@types/ws": "^7.2.4",
@@ -53,7 +53,7 @@
     "integration/aws-func": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"integration/providers/aws/functionality/.mocharc.yml\" \"integration/providers/aws/functionality/**/*.integration.ts\"",
     "integration/aws-nuke": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"integration/providers/aws/nuke/.mocharc.yml\" \"integration/providers/aws/nuke/**/*.integration.ts\"",
     "integration/local": "BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/providers/local/.mocharc.yml\" \"integration/providers/local/**/*.integration.ts\"",
-    "integration/cli": "mocha --full-trace --exit --config \"integration/cli/.mocharc.yml\" \"integration/cli/**/*.integration.ts\"",
+    "integration/cli": "mocha --forbid-only --exit --config \"integration/cli/.mocharc.yml\" \"integration/cli/**/*.integration.ts\"",
     "integration/end-to-end": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"integration/end-to-end/.mocharc.yml\" \"integration/end-to-end/**/*.integration.ts\""
   },
   "types": "dist/index.d.ts"
