@@ -19,12 +19,11 @@ describe('Auth api creation', () => {
       config.appName = 'testing-app'
       const appStack = new Stack(new App(), config.resourceNames.applicationStack, {} as StackProps)
       const params: AWSAuthRocketParams = {
-        config,
         mode: 'UserPassword',
       }
-      const userPoolID = `${AuthStack.rocketArtifactsPrefix(params)}-user-pool`
+      const userPoolID = `${AuthStack.rocketArtifactsPrefix(config)}-user-pool`
 
-      AuthStack.mountStack(params, appStack)
+      AuthStack.mountStack(params, appStack, config)
 
       const userPool = appStack.node.tryFindChild(userPoolID) as UserPool
 
@@ -50,11 +49,10 @@ describe('Auth api creation', () => {
       }
       const appStack = new Stack(new App(), config.resourceNames.applicationStack, {} as StackProps)
       const params: AWSAuthRocketParams = {
-        config,
         mode,
       }
-      AuthStack.mountStack(params, appStack)
-      const basePrefix = AuthStack.rocketArtifactsPrefix(params)
+      AuthStack.mountStack(params, appStack, config)
+      const basePrefix = AuthStack.rocketArtifactsPrefix(config)
       return {
         appStack,
         basePrefix,
