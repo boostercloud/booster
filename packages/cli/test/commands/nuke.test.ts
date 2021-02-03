@@ -3,15 +3,16 @@ import { expect } from '../expect'
 import { fancy } from 'fancy-test'
 import { restore, replace, fake } from 'sinon'
 import Prompter from '../../src/services/user-prompt'
-import { ProviderLibrary, Logger } from '@boostercloud/framework-types'
+import { ProviderLibrary, Logger, BoosterConfig } from '@boostercloud/framework-types'
 import * as Nuke from '../../src/commands/nuke'
 import * as providerService from '../../src/services/provider-service'
+import * as projectChecker from '../../src/services/project-checker'
 import { oraLogger } from '../../src/services/logger'
 import { IConfig } from '@oclif/config'
 import * as childProcessPromise from 'child-process-promise'
-import * as path from 'path'
 import { test } from '@oclif/test'
 import * as environment from '../../src/services/environment'
+import * as loadService from '../../src/services/load-service'
 
 const rewire = require('rewire')
 const nuke = rewire('../../src/commands/nuke')
@@ -128,6 +129,7 @@ describe('nuke', () => {
   })
 
   describe('command class', () => {
+    
     beforeEach(() => {
         replace(childProcessPromise, 'exec', fake.resolves({}))
         replace(providerService,'nukeCloudProviderResources', fake.resolves({}))
@@ -142,7 +144,7 @@ describe('nuke', () => {
 
       expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm run clean && npm run compile')
       expect(providerService.nukeCloudProviderResources).to.have.not.been.called
-      expect(oraLogger.fail).to.have.been.calledWithMatch('Error: No environment set. Use the flag `-e` or set the environment variable BOOSTER_ENV to set it before running this command. Example usage: `boost deploy -e <environment>`.')
+      expect(oraLogger.fail).to.have.been.calledWithMatch(/No environment set/)
     })
 
     it('with -e flag incomplete', async () => {
@@ -191,16 +193,29 @@ describe('nuke', () => {
     })
 
     describe('inside a booster project', () => {
-
+    
       beforeEach(() => {
-        replace(process,'cwd', fake.returns(path.join(process.cwd(),'test','fixtures', 'mock_project')))
+        replace(projectChecker,'checkItIsABoosterProject', fake.resolves({}))
+        const config = new BoosterConfig('fake_environment')
+        replace(loadService, 'loadUserProject', fake.returns({
+          Booster: {
+            config: config,
+            configure: fake(),
+            configuredEnvironments: new Set(['fake_environment']),
+            configureCurrentEnv: fake.yields(config),
+            fetchEntitySnapshot: fake.resolves(undefined),
+            readModel: fake.returns(undefined),
+            start: fake.returns(undefined)
+          }
+        }))
       })
 
       it('entering correct environment and application name', async () => {
-        replace(Prompter.prototype,'defaultOrPrompt', fake.resolves('boosted-blog-fake'))
+        replace(Prompter.prototype,'defaultOrPrompt', fake.resolves('new-booster-app'))
         await new Nuke.default(['-e','fake_environment'], {} as IConfig).run()
   
         expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm run clean && npm run compile')
+        expect(loadService.loadUserProject).to.have.been.called
         expect(providerService.nukeCloudProviderResources).to.have.been.called
         expect(oraLogger.info).to.have.been.calledWithMatch('Removal complete!')
       })
@@ -209,6 +224,7 @@ describe('nuke', () => {
         await new Nuke.default(['-e','fake_environment','--force'], {} as IConfig).run()
   
         expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm run clean && npm run compile')
+        expect(loadService.loadUserProject).to.have.been.called
         expect(providerService.nukeCloudProviderResources).to.have.been.called
         expect(oraLogger.info).to.have.been.calledWithMatch('Removal complete!')
       })
@@ -217,6 +233,7 @@ describe('nuke', () => {
         await new Nuke.default(['-e','fake_environment','-f'], {} as IConfig).run()
   
         expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm run clean && npm run compile')
+        expect(loadService.loadUserProject).to.have.been.called
         expect(providerService.nukeCloudProviderResources).to.have.been.called
         expect(oraLogger.info).to.have.been.calledWithMatch('Removal complete!')
       })
@@ -234,6 +251,7 @@ describe('nuke', () => {
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('Wrong app name, stopping nuke!')
         expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm run clean && npm run compile')
+        expect(loadService.loadUserProject).to.have.been.called
         expect(providerService.nukeCloudProviderResources).to.have.not.been.called
         expect(oraLogger.info).to.have.not.been.calledWithMatch('Removal complete!')
       })
@@ -266,6 +284,7 @@ describe('nuke', () => {
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('The environment \'nonexisting_environment\' does not match any of the environments you used to configure your Booster project')
         expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm run clean && npm run compile')
+        expect(loadService.loadUserProject).to.have.been.called
         expect(providerService.nukeCloudProviderResources).to.have.not.been.called
         expect(oraLogger.info).to.have.not.been.calledWithMatch('Removal complete!')
       })

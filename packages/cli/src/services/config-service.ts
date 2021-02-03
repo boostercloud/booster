@@ -1,11 +1,11 @@
 import { BoosterApp, BoosterConfig } from '@boostercloud/framework-types'
-import * as path from 'path'
 import { exec } from 'child-process-promise'
 import { wrapExecError } from '../common/errors'
 import { checkItIsABoosterProject } from './project-checker'
 import { currentEnvironment } from './environment'
 import { createSandboxProject, removeSandboxProject } from '../common/sandbox'
 import { installProductionDependencies } from './dependencies'
+import { loadUserProject } from './load-service'
 
 export const DEPLOYMENT_SANDBOX = '.deploy'
 
@@ -44,11 +44,6 @@ function readProjectConfig(userProjectPath: string): Promise<BoosterConfig> {
       resolve(config)
     })
   })
-}
-
-function loadUserProject(userProjectPath: string): { Booster: BoosterApp } {
-  const projectIndexJSPath = path.resolve(path.join(userProjectPath, 'dist', 'index.js'))
-  return require(projectIndexJSPath)
 }
 
 function checkEnvironmentWasConfigured(app: BoosterApp): void {
