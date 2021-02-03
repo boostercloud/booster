@@ -23,8 +23,7 @@ Booster.configure('production', (config: BoosterConfig): void => {
   config.provider = Provider([
     {
       packageName: '@boostercloud/rocket-auth-aws-infrastructure',
-      parameters: {
-        config,                  
+      parameters: {         
         mode: 'Passwordless',                     
       },
     },
@@ -36,7 +35,6 @@ Booster.configure('production', (config: BoosterConfig): void => {
 
 ```typescript
 {
-  config: BoosterConfig                      // Required
   passwordPolicy?: {                         // Optional, all values are set to true by default.
     minLength?: number                       // Minimum length, which must be at least 6 characters but fewer than 99 character
     requireDigits: boolean                   // Require numbers

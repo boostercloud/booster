@@ -1,6 +1,7 @@
 import { CognitoUserPoolEvent } from 'aws-lambda'
 import { SNS } from 'aws-sdk'
 
+// It will create a 6 digit code to answer the challenge during the OTP flow
 const randomSecretCode = (min = 100000, max = 999999): string => {
   return Math.floor(Math.random() * (max - min + 1) + min).toString()
 }

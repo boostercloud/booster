@@ -198,20 +198,20 @@ export class AuthStack {
   // sign-up
   // sign-up/confirm
   // sign-up/resend-code
-  private static createSignUpResources(resourcesParams: ResourceParams): void {
-    const { rootResource, defaultCorsPreflightOptions, config } = resourcesParams
+  private static createSignUpResources(resourceParams: ResourceParams): void {
+    const { rootResource, defaultCorsPreflightOptions, config } = resourceParams
     const signUpResource = rootResource!.addResource('sign-up', { defaultCorsPreflightOptions })
-    AuthStack.addIntegration(resourcesParams, 'sign-up', signUpResource, 'sign-up.handler', ['cognito-idp:SignUp'], {
+    AuthStack.addIntegration(resourceParams, 'sign-up', signUpResource, 'sign-up.handler', ['cognito-idp:SignUp'], {
       rolesConfig: JSON.stringify(config.roles),
     })
 
     let resource = signUpResource.addResource('confirm', { defaultCorsPreflightOptions })
-    AuthStack.addIntegration(resourcesParams, 'sign-up-confirm', resource, 'sign-up-confirm.handler', [
+    AuthStack.addIntegration(resourceParams, 'sign-up-confirm', resource, 'sign-up-confirm.handler', [
       'cognito-idp:ConfirmSignUp',
     ])
 
     resource = signUpResource.addResource('resend-code', { defaultCorsPreflightOptions })
-    AuthStack.addIntegration(resourcesParams, 'sign-up-resend-code', resource, 'resend-confirmation-code.handler', [
+    AuthStack.addIntegration(resourceParams, 'sign-up-resend-code', resource, 'resend-confirmation-code.handler', [
       'cognito-idp:ResendConfirmationCode',
     ])
   }
@@ -219,44 +219,44 @@ export class AuthStack {
   // token
   // token/refresh
   // token/revoke
-  private static createTokenResources(resourcesParams: ResourceParams): void {
-    const { rootResource, defaultCorsPreflightOptions, params } = resourcesParams
+  private static createTokenResources(resourceParams: ResourceParams): void {
+    const { rootResource, defaultCorsPreflightOptions, params } = resourceParams
 
     const tokenResource = rootResource!.addResource('token', { defaultCorsPreflightOptions })
     // In passwordless mode we'll have an integration to get a valid token responding to a challenge
     if (params.mode === 'Passwordless') {
-      AuthStack.addIntegration(resourcesParams, 'token', tokenResource, 'challenge-answer.handler', [
+      AuthStack.addIntegration(resourceParams, 'token', tokenResource, 'challenge-answer.handler', [
         'cognito-idp:InitiateAuth',
         'cognito-idp:RespondToAuthChallenge',
       ])
     }
 
     let resource = tokenResource.addResource('refresh', { defaultCorsPreflightOptions })
-    AuthStack.addIntegration(resourcesParams, 'refresh-token', resource, 'refresh-token.handler', [
+    AuthStack.addIntegration(resourceParams, 'refresh-token', resource, 'refresh-token.handler', [
       'cognito-idp:InitiateAuth',
     ])
 
     resource = tokenResource.addResource('revoke', { defaultCorsPreflightOptions })
-    AuthStack.addIntegration(resourcesParams, 'revoke-token', resource, 'sign-out.handler', [
+    AuthStack.addIntegration(resourceParams, 'revoke-token', resource, 'sign-out.handler', [
       'cognito-idp:GlobalSignOut',
     ])
   }
 
   // password/forgot
   // password/change
-  private static createPasswordResources(resourcesParams: ResourceParams): void {
-    const { rootResource, defaultCorsPreflightOptions, params } = resourcesParams
+  private static createPasswordResources(resourceParams: ResourceParams): void {
+    const { rootResource, defaultCorsPreflightOptions, params } = resourceParams
     if (params.mode !== 'UserPassword') {
       return
     }
     const passwordResource = rootResource!.addResource('password', { defaultCorsPreflightOptions })
     let resource = passwordResource.addResource('forgot', { defaultCorsPreflightOptions })
-    AuthStack.addIntegration(resourcesParams, 'forgot-password', resource, 'forgot-password.handler', [
+    AuthStack.addIntegration(resourceParams, 'forgot-password', resource, 'forgot-password.handler', [
       'cognito-idp:ForgotPassword',
     ])
 
     resource = passwordResource.addResource('change', { defaultCorsPreflightOptions })
-    AuthStack.addIntegration(resourcesParams, 'change-password', resource, 'confirm-forgot-password.handler', [
+    AuthStack.addIntegration(resourceParams, 'change-password', resource, 'confirm-forgot-password.handler', [
       'cognito-idp:ConfirmForgotPassword',
     ])
   }
