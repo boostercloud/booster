@@ -2,7 +2,7 @@ import * as lambda from '@aws-cdk/aws-lambda'
 import { Duration, Stack } from '@aws-cdk/core'
 import * as path from 'path'
 
-export const createLamba = (
+export const createLambda = (
   stack: Stack,
   name: string,
   handler: string,

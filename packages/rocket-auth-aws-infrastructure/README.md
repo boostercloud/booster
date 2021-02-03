@@ -1,13 +1,13 @@
 # Authentication Booster Rocket for AWS
 
-This package is a configurable Booster rocket to add an authentication api based on Cognito to your Booster applications.
+This package is a configurable Booster rocket to add an authentication API based on Cognito to your Booster applications.
 
 ## Usage
 
-Install this package as a dev dependency in your Booster project (It's a dev dependency because it's only used during deployment, but we don't want this code to be uploaded to the project lambdas)
+Install this package as a `devDependency` in your Booster project (It's a `devDependency` because it's only used during deployment, so we don't want this code to be uploaded to the project lambdas)
 
 ```sh
-yarn add --dev @boostercloud/rocket-auth-aws-infrastructure
+npm install --save-dev @boostercloud/rocket-auth-aws-infrastructure
 ```
 
 In your Booster config file, pass a `RocketDescriptor` array to the `AWS Provider` initializer configuring the aws authentication rocket:
@@ -41,10 +41,10 @@ Booster.configure('production', (config: BoosterConfig): void => {
     minLength?: number                       // Minimum length, which must be at least 6 characters but fewer than 99 character
     requireDigits: boolean                   // Require numbers
     requireLowercase: boolean                // Require lowercase letters
-    requireSymbols: boolean                  // Require a special characters
+    requireSymbols: boolean                  // Require special characters
     requireUppercase: boolean                // Require uppercase letters
   }
-  mode: 'Passwordless' | 'UserPassword'      // One time password the user must be a phone number | User Password mode, the user must be a valid email.
+  mode: 'Passwordless' | 'UserPassword'      // If Passwordless, the user must be a phone number. If UserPassword, the user must be a valid email.
 }
 ```
 
@@ -174,7 +174,7 @@ Example of an invalid verification code:
 
 ### Resend Sign-up confirmation code
 
-If for some reason the confirmationCode never reach your email or your phone via SMS you can ask the api to resend a new one.
+If for some reason the confirmation code never reaches your email, or your phone via SMS, you can ask the API to resend a new one.
 
 #### Endpoint
 

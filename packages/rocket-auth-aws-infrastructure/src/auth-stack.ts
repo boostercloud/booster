@@ -9,7 +9,7 @@ import {
 } from '@aws-cdk/aws-cognito'
 import { Effect, PolicyStatement } from '@aws-cdk/aws-iam'
 import { Cors, CorsOptions, LambdaIntegration, MethodOptions, Resource, RestApi } from '@aws-cdk/aws-apigateway'
-import { createLamba } from './utils'
+import { createLambda } from './utils'
 import { BoosterConfig } from '@boostercloud/framework-types'
 
 export interface AWSAuthRocketParams {
@@ -29,7 +29,7 @@ export class AuthStack {
     if (params.config.thereAreRoles) {
       const userPool = AuthStack.buildUserPool(params, stack)
       const userPoolClient = AuthStack.buildUserPoolClient(params, stack, userPool)
-      const authApi = AuthStack.buildAuthAPI(params, stack, userPool, userPoolClient.userPoolClientId)
+      const authApi = AuthStack.createAuthResources(params, stack, userPool, userPoolClient.userPoolClientId)
       AuthStack.printOutput(stack, userPool.userPoolId, authApi)
     }
   }
@@ -45,7 +45,7 @@ export class AuthStack {
 
     const userPasswordMode = params.mode === 'UserPassword'
     const lambdaTriggers = userPasswordMode ? undefined : AuthStack.buildLambdaTriggers(params, stack)
-    const preSignUpTrigger = createLamba(
+    const preSignUpTrigger = createLambda(
       stack,
       `${AuthStack.rocketArtifactsPrefix(params)}-pre-sign-up`,
       'pre-sign-up.handler',
@@ -90,7 +90,7 @@ export class AuthStack {
   }
 
   public static buildLambdaTriggers(params: AWSAuthRocketParams, stack: Stack): UserPoolTriggers {
-    const createAuthChallenge = createLamba(
+    const createAuthChallenge = createLambda(
       stack,
       `${AuthStack.rocketArtifactsPrefix(params)}-create-auth-challenge`,
       'challenge-create.handler'
@@ -104,13 +104,13 @@ export class AuthStack {
       })
     )
 
-    const defineAuthChallenge = createLamba(
+    const defineAuthChallenge = createLambda(
       stack,
       `${AuthStack.rocketArtifactsPrefix(params)}-define-auth-challenge`,
       'challenge-define.handler'
     )
 
-    const verifyAuthChallengeResponse = createLamba(
+    const verifyAuthChallengeResponse = createLambda(
       stack,
       `${AuthStack.rocketArtifactsPrefix(params)}-verify-auth-challenge`,
       'challenge-verify.handler'
@@ -135,7 +135,7 @@ export class AuthStack {
     })
   }
 
-  private static buildAuthAPI(
+  private static createAuthResources(
     params: AWSAuthRocketParams,
     stack: Stack,
     userPool: UserPool,
@@ -153,17 +153,64 @@ export class AuthStack {
       allowMethods: ['POST', 'OPTIONS'],
     }
 
-    // sign-in
-    const signInResource = authResource.addResource('sign-in', { defaultCorsPreflightOptions })
+    AuthStack.createSignInResources(
+      params,
+      authResource,
+      stack,
+      userPool,
+      userPoolClientId,
+      defaultCorsPreflightOptions
+    )
+
+    AuthStack.createSignUpResources(
+      params,
+      authResource,
+      stack,
+      userPool,
+      userPoolClientId,
+      defaultCorsPreflightOptions
+    )
+
+    AuthStack.createTokenResources(params, authResource, stack, userPool, userPoolClientId, defaultCorsPreflightOptions)
+    AuthStack.createPasswordResources(
+      params,
+      authResource,
+      stack,
+      userPool,
+      userPoolClientId,
+      defaultCorsPreflightOptions
+    )
+
+    return rootAuthAPI
+  }
+
+  // sign-in
+  private static createSignInResources(
+    params: AWSAuthRocketParams,
+    rootResource: Resource,
+    stack: Stack,
+    userPool: UserPool,
+    userPoolClientId: string,
+    defaultCorsPreflightOptions: CorsOptions
+  ): void {
+    const signInResource = rootResource.addResource('sign-in', { defaultCorsPreflightOptions })
     AuthStack.addIntegration('sign-in', stack, params, userPool, userPoolClientId, signInResource, 'sign-in.handler', [
       'cognito-idp:InitiateAuth',
     ])
+  }
 
-    // sign-up
-    // sign-up/confirm
-    // sign-up/resend-code
-
-    const signUpResource = authResource.addResource('sign-up', { defaultCorsPreflightOptions })
+  // sign-up
+  // sign-up/confirm
+  // sign-up/resend-code
+  private static createSignUpResources(
+    params: AWSAuthRocketParams,
+    rootResource: Resource,
+    stack: Stack,
+    userPool: UserPool,
+    userPoolClientId: string,
+    defaultCorsPreflightOptions: CorsOptions
+  ): void {
+    const signUpResource = rootResource.addResource('sign-up', { defaultCorsPreflightOptions })
     AuthStack.addIntegration(
       'sign-up',
       stack,
@@ -199,11 +246,20 @@ export class AuthStack {
       'resend-confirmation-code.handler',
       ['cognito-idp:ResendConfirmationCode']
     )
+  }
 
-    // token
-    // token/refresh
-    // token/revoke
-    const tokenResource = authResource.addResource('token', { defaultCorsPreflightOptions })
+  // token
+  // token/refresh
+  // token/revoke
+  private static createTokenResources(
+    params: AWSAuthRocketParams,
+    rootResource: Resource,
+    stack: Stack,
+    userPool: UserPool,
+    userPoolClientId: string,
+    defaultCorsPreflightOptions: CorsOptions
+  ): void {
+    const tokenResource = rootResource.addResource('token', { defaultCorsPreflightOptions })
     // In passwordless mode we'll have an integration to get a valid token responding to a challenge
     if (params.mode === 'Passwordless') {
       AuthStack.addIntegration(
@@ -218,7 +274,7 @@ export class AuthStack {
       )
     }
 
-    resource = tokenResource.addResource('refresh', { defaultCorsPreflightOptions })
+    let resource = tokenResource.addResource('refresh', { defaultCorsPreflightOptions })
     AuthStack.addIntegration(
       'refresh-token',
       stack,
@@ -234,36 +290,45 @@ export class AuthStack {
     AuthStack.addIntegration('revoke-token', stack, params, userPool, userPoolClientId, resource, 'sign-out.handler', [
       'cognito-idp:GlobalSignOut',
     ])
+  }
 
-    // password/forgot
-    // password/change
-    if (params.mode === 'UserPassword') {
-      const passwordResource = authResource.addResource('password', { defaultCorsPreflightOptions })
-      resource = passwordResource.addResource('forgot', { defaultCorsPreflightOptions })
-      AuthStack.addIntegration(
-        'forgot-password',
-        stack,
-        params,
-        userPool,
-        userPoolClientId,
-        resource,
-        'forgot-password.handler',
-        ['cognito-idp:ForgotPassword']
-      )
-
-      resource = passwordResource.addResource('change', { defaultCorsPreflightOptions })
-      AuthStack.addIntegration(
-        'change-password',
-        stack,
-        params,
-        userPool,
-        userPoolClientId,
-        resource,
-        'confirm-forgot-password.handler',
-        ['cognito-idp:ConfirmForgotPassword']
-      )
+  // password/forgot
+  // password/change
+  private static createPasswordResources(
+    params: AWSAuthRocketParams,
+    rootResource: Resource,
+    stack: Stack,
+    userPool: UserPool,
+    userPoolClientId: string,
+    defaultCorsPreflightOptions: CorsOptions
+  ): void {
+    if (params.mode !== 'UserPassword') {
+      return
     }
-    return rootAuthAPI
+    const passwordResource = rootResource.addResource('password', { defaultCorsPreflightOptions })
+    let resource = passwordResource.addResource('forgot', { defaultCorsPreflightOptions })
+    AuthStack.addIntegration(
+      'forgot-password',
+      stack,
+      params,
+      userPool,
+      userPoolClientId,
+      resource,
+      'forgot-password.handler',
+      ['cognito-idp:ForgotPassword']
+    )
+
+    resource = passwordResource.addResource('change', { defaultCorsPreflightOptions })
+    AuthStack.addIntegration(
+      'change-password',
+      stack,
+      params,
+      userPool,
+      userPoolClientId,
+      resource,
+      'confirm-forgot-password.handler',
+      ['cognito-idp:ConfirmForgotPassword']
+    )
   }
 
   private static addIntegration(
@@ -297,7 +362,7 @@ export class AuthStack {
       ],
     }
 
-    const authLambda = createLamba(stack, `${AuthStack.rocketArtifactsPrefix(params)}-${name}`, handler, {
+    const authLambda = createLambda(stack, `${AuthStack.rocketArtifactsPrefix(params)}-${name}`, handler, {
       userPoolId: userPool.userPoolId,
       userPoolClientId: userPoolClientId,
       mode: params.mode,
@@ -318,19 +383,19 @@ export class AuthStack {
   private static printOutput(stack: Stack, userPoolId: string, authApi: RestApi): void {
     new CfnOutput(stack, 'AuthApiEndpoint', {
       value: authApi.url + 'auth',
-      description: 'Auth api endpoint',
+      description: 'Auth API endpoint',
     })
 
     const issuer = `https://cognito-idp.${stack.region}.${stack.urlSuffix}/${userPoolId}`
 
     new CfnOutput(stack, 'AuthApiIssuer', {
       value: issuer,
-      description: 'Auth api JWT issuer',
+      description: 'Auth API JWT issuer',
     })
 
     new CfnOutput(stack, 'AuthApiJwksUri', {
       value: issuer + '/.well-known/jwks.json',
-      description: 'Auth api JKWS uri',
+      description: 'Auth API JKWS URI',
     })
   }
 }
