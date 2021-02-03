@@ -5,7 +5,7 @@ import { checkItIsABoosterProject } from './project-checker'
 import { currentEnvironment } from './environment'
 import { createSandboxProject, removeSandboxProject } from '../common/sandbox'
 import { installProductionDependencies } from './dependencies'
-import { loadUserProject } from './load-service'
+import * as path from 'path'
 
 export const DEPLOYMENT_SANDBOX = '.deploy'
 
@@ -44,6 +44,12 @@ function readProjectConfig(userProjectPath: string): Promise<BoosterConfig> {
       resolve(config)
     })
   })
+}
+
+function loadUserProject(userProjectPath: string): { Booster: BoosterApp } {
+  const projectIndexJSPath = path.resolve(path.join(userProjectPath, 'dist', 'index.js'))
+  console.log("loadUserProject real function called")
+  return require(projectIndexJSPath)
 }
 
 function checkEnvironmentWasConfigured(app: BoosterApp): void {
