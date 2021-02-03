@@ -14,4 +14,3 @@ scripts/mirroring.js
 .booster
 .deploy
 *-integration-sandbox
-!/packages/cli/test/fixtures/**/*
