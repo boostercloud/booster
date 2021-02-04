@@ -1565,7 +1565,7 @@ Booster GraphQL API also provides support for real-time updates using subscripti
 
 #### Getting and filtering read models data at code level
 
-Booster allows you to get your read models data in your commands, handlers, etc. Using the `Booster.readModel` method.
+Booster allows you to get your read models data in your commands handlers and event handlers using the `Booster.readModel` method.
 
 For example, you can filter and get the total number of the products that meet your criteria in your commands like this:
 
