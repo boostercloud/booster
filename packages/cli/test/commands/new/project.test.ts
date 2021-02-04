@@ -60,6 +60,7 @@ describe('new', (): void => {
         replace(fs, 'mkdirs', fake.resolves({}))
         replace(fs, 'outputFile', fake.resolves({}))
         replace(childProcessPromise, 'exec', fake.resolves({}))
+        replace(ProjectInitializer, 'initializeGit', fake.resolves({}))
         replace(oraLogger, 'info', fake.resolves({}))
         replace(oraLogger, 'start', fake.resolves({}))
         replace(oraLogger, 'succeed', fake.resolves({}))
@@ -75,7 +76,7 @@ describe('new', (): void => {
 
           await new Project.default([projectName], {} as IConfig).run()
 
-          expect(childProcessPromise.exec).to.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+          expect(ProjectInitializer.initializeGit).to.have.been.called
           expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
           expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
           expectFilesAndDirectoriesCreated(projectName)
@@ -89,7 +90,7 @@ describe('new', (): void => {
 
           expect(installDependenciesSpy).to.have.not.been.calledOnce
           expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm install')
-          expect(childProcessPromise.exec).to.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+          expect(ProjectInitializer.initializeGit).to.have.been.called
           expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
           expectFilesAndDirectoriesCreated(projectName)
         })
@@ -113,13 +114,11 @@ describe('new', (): void => {
 
         it('skips git repository initialization with --skipGit', async () => {
           replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
-          const initializeGitSpy = spy(ProjectInitializer, 'initializeGit')
 
           await new Project.default([projectName, '--skipGit'], {} as IConfig).run()
 
           expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
-          expect(initializeGitSpy).to.not.have.been.calledOnce
-          expect(childProcessPromise.exec).to.not.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+          expect(ProjectInitializer.initializeGit).to.have.not.been.called
           expectFilesAndDirectoriesCreated(projectName)
           const expectedPackageJson = renderPackageJson(defaultProjectInitializerConfig)
           expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,expectedPackageJson)
@@ -132,7 +131,7 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'--homepage',"'booster.cloud'"], {} as IConfig).run()
 
-            expect(childProcessPromise.exec).to.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+            expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
@@ -145,7 +144,7 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'-H',"'booster.cloud'"], {} as IConfig).run()
 
-            expect(childProcessPromise.exec).to.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+            expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
@@ -160,7 +159,7 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'--author',"'John Doe'"], {} as IConfig).run()
 
-            expect(childProcessPromise.exec).to.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+            expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
@@ -173,7 +172,7 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'-a',"'John Doe'"], {} as IConfig).run()
 
-            expect(childProcessPromise.exec).to.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+            expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
@@ -188,7 +187,7 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'--description',"'a short description'"], {} as IConfig).run()
 
-            expect(childProcessPromise.exec).to.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+            expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
@@ -201,7 +200,7 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'-d',"'a short description'"], {} as IConfig).run()
 
-            expect(childProcessPromise.exec).to.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+            expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
@@ -216,7 +215,7 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'--license','GPL'], {} as IConfig).run()
 
-            expect(childProcessPromise.exec).to.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+            expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
@@ -229,7 +228,7 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'-l','GPL'], {} as IConfig).run()
 
-            expect(childProcessPromise.exec).to.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+            expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
@@ -243,7 +242,7 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'--providerPackageName',defaultProvider], {} as IConfig).run()
 
-            expect(childProcessPromise.exec).to.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+            expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
@@ -254,7 +253,7 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'-p',defaultProvider], {} as IConfig).run()
 
-            expect(childProcessPromise.exec).to.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+            expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
@@ -268,7 +267,7 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'--repository',defaultRepository], {} as IConfig).run()
 
-            expect(childProcessPromise.exec).to.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+            expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
@@ -281,7 +280,7 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'-r',defaultRepository], {} as IConfig).run()
 
-            expect(childProcessPromise.exec).to.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+            expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
@@ -296,7 +295,7 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'--version','1.0.0'], {} as IConfig).run()
 
-            expect(childProcessPromise.exec).to.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+            expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
@@ -309,8 +308,7 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'-v','1.0.0'], {} as IConfig).run()
 
-            expect(childProcessPromise.exec).to.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
-            
+            expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install')
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
@@ -332,7 +330,7 @@ describe('new', (): void => {
                 '--skipGit'
               ], {} as IConfig).run()
   
-              expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+              expect(ProjectInitializer.initializeGit).to.have.not.been.called
               expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm install')
               expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
               expectFilesAndDirectoriesCreated(projectName)
@@ -351,7 +349,7 @@ describe('new', (): void => {
                   '--skipGit'
                 ], {} as IConfig).run()
     
-                expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
+                expect(ProjectInitializer.initializeGit).to.have.not.been.called
                 expect(childProcessPromise.exec).to.have.not.been.calledWithMatch('npm install')
                 expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
                 expectFilesAndDirectoriesCreated(projectName)
