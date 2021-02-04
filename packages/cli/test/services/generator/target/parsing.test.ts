@@ -128,6 +128,21 @@ describe('parsing',() => {
             )
         })
 
+        it('many duplicated fields', async () => {
+            let exceptionThrown = false
+            let exceptionMessage = ''
+            try {
+                await parseFields(['title:string','content:string','title:number','content:string'])
+            } catch (e) {
+                exceptionThrown = true
+                exceptionMessage = e.message
+            }
+            expect(exceptionThrown).to.be.equal(true)
+            expect(exceptionMessage).to.contain(
+                'Error parsing field title, content. Fields cannot be duplicated'
+            )
+        })
+
         it('field without type and duplicated fields', async () => {
             let exceptionThrown = false
             let exceptionMessage = ''

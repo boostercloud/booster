@@ -7,23 +7,17 @@ export const parseName = (name: string): Promise<HasName> => Promise.resolve({ n
 
 export const parseEvent = (event: string): Promise<HasEvent> => Promise.resolve({ event })
 
-export const parseFields = (fields: Array<string>): Promise<HasFields> => {
-  return Promise.all(fields.map(parseField)).then((fields) => {
-    let usedFieldNames: string[] = []
-    let duplicated: string | undefined = undefined
-    fields.forEach((field) => {
-      if (usedFieldNames.includes(field.name) && duplicated === undefined) {
-        duplicated = field.name
-      }
-      usedFieldNames.push(field.name)
-    })
-    if (duplicated !== undefined) {
-      return Promise.reject(fieldDuplicatedError(duplicated))
-    }
-    return { fields }
-  })
+export const parseFields = async (fields: Array<string>): Promise<HasFields> => {
+  const parsedFields = await Promise.all(fields.map(parseField))
+  const parsedFieldNames: string[] = parsedFields.map((field) => field.name)
+  const uniqueFieldNames = new Set(parsedFieldNames)
+  const duplicates = parsedFieldNames.filter((field) => !uniqueFieldNames.delete(field))
+  if (duplicates.length > 0) {
+    throw fieldDuplicatedError(duplicates.join(', '))
+  }
+  return { fields: parsedFields }
 }
-
+  
 function parseField(rawField: string): Promise<Field> {
   const splitInput = rawField.split(':')
   if (splitInput.length != 2 || splitInput[0].length === 0 || splitInput[1].length === 0) {
