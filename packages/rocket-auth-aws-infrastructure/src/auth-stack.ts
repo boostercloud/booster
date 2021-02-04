@@ -23,8 +23,7 @@ export interface AWSAuthRocketParams {
   mode: 'Passwordless' | 'UserPassword'
 }
 
-// Defined type to unify the signature of all private methods
-// we'll fill some params along the way
+// Type to unify the signature of all private methods. It will be filled along the way
 type ResourceParams = {
   params: AWSAuthRocketParams
   stack: Stack
@@ -129,6 +128,12 @@ export class AuthStack {
     return { userPool, userPoolClient }
   }
 
+  /**
+   * It creates auth challenges only for OTP flow based. More info: https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-challenge.html
+   * The createAuthChallenge will send an SMS to the user using its phone number.
+   * @param resourceParams: current resource params
+   * @returns UserPoolTriggers: define, create and verify triggers)
+   */
   public static createAuthChallenges(resourceParams: ResourceParams): UserPoolTriggers | undefined {
     const { rocketStackPrefixId, stack, params } = resourceParams
 
@@ -167,6 +172,11 @@ export class AuthStack {
     }
   }
 
+  /**
+   * It creates a REST API with all the endpoints needed to support auth flows
+   * @param resourceParams current resource params
+   * @returns RestApi
+   */
   private static createAuthResources(resourceParams: ResourceParams): RestApi {
     const { rocketStackPrefixId, config, stack } = resourceParams
 
@@ -193,16 +203,22 @@ export class AuthStack {
     return rootAuthAPI
   }
 
-  // sign-in
+  /**
+   * It creates a sign-in endpoint
+   * @param resourceParams current resource params
+   * @returns void
+   */
   private static createSignInResources(resourceParams: ResourceParams): void {
     const { rootResource, defaultCorsPreflightOptions } = resourceParams
     const signInResource = rootResource!.addResource('sign-in', { defaultCorsPreflightOptions })
     AuthStack.addIntegration(resourceParams, 'sign-in', signInResource, 'sign-in.handler', ['cognito-idp:InitiateAuth'])
   }
 
-  // sign-up
-  // sign-up/confirm
-  // sign-up/resend-code
+  /**
+   * It creates a sign-up, sign-up/confirm, sign-up/resend-code endpoints.
+   * @param resourceParams current resource params
+   * @returns void
+   */
   private static createSignUpResources(resourceParams: ResourceParams): void {
     const { rootResource, defaultCorsPreflightOptions, config } = resourceParams
     const signUpResource = rootResource!.addResource('sign-up', { defaultCorsPreflightOptions })
@@ -221,14 +237,16 @@ export class AuthStack {
     ])
   }
 
-  // token
-  // token/refresh
-  // token/revoke
+  /**
+   * It creates a /token, /token/refresh, /token/revoke endpoints.
+   * @param resourceParams current resource params
+   * @returns void
+   */
   private static createTokenResources(resourceParams: ResourceParams): void {
     const { rootResource, defaultCorsPreflightOptions, params } = resourceParams
 
     const tokenResource = rootResource!.addResource('token', { defaultCorsPreflightOptions })
-    // In passwordless mode we'll have an integration to get a valid token responding to a challenge
+    // In passwordless mode we'll create an integration to get a valid token after responding to a challenge
     if (params.mode === 'Passwordless') {
       AuthStack.addIntegration(resourceParams, 'token', tokenResource, 'challenge-answer.handler', [
         'cognito-idp:InitiateAuth',
@@ -247,8 +265,11 @@ export class AuthStack {
     ])
   }
 
-  // password/forgot
-  // password/change
+  /**
+   * It creates a /password, /password/forgot, /password/change endpoints.
+   * @param resourceParams current resource params
+   * @returns void
+   */
   private static createPasswordResources(resourceParams: ResourceParams): void {
     const { rootResource, defaultCorsPreflightOptions, params } = resourceParams
     if (params.mode !== 'UserPassword') {
@@ -266,6 +287,16 @@ export class AuthStack {
     ])
   }
 
+  /**
+   * It creates an integration between the API and a lambda
+   * @param resourceParams current resource params
+   * @param name lambda name
+   * @param resource the entry endpoint which call the lambda
+   * @param handler main lambda function name
+   * @param actions lambda Cognito permissions
+   * @param env lambda environment variables
+   * @returns void
+   */
   private static addIntegration(
     resourceParams: ResourceParams,
     name: string,
@@ -331,7 +362,11 @@ export class AuthStack {
       description: 'Auth API JKWS URI',
     })
   }
-
+  /**
+   * Helper to generate a tokenVerifier object based on the generated UserPool and the current Stack
+   * @param resourceParams current resource params
+   * @returns { issuer: string; jwksUri: string }
+   */
   private static tokenVerifier(resourceParams: ResourceParams): { issuer: string; jwksUri: string } {
     const { stack, userPool } = resourceParams
 
