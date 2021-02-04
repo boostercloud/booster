@@ -44,13 +44,11 @@ interface EventTimeFilter {
 }
 
 export interface EventFilterByEntity extends EventTimeFilter {
-  kind: 'entity'
   entity: string
   entityID: string
 }
 
 export interface EventFilterByType extends EventTimeFilter {
-  kind: 'type'
   type: string
 }
 

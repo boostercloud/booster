@@ -6,13 +6,11 @@ import {
   GraphQLFieldResolver,
   GraphQLID,
   GraphQLInputObjectType,
-  GraphQLInputType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLScalarType,
   GraphQLString,
-  GraphQLUnionType,
 } from 'graphql'
 import {
   GraphQLNonInputType,
@@ -95,47 +93,52 @@ export class GraphQLQueryGenerator {
   }
 
   private generateEventQueries(): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {
+    const eventQueryResponse = this.buildEventQueryResponse()
     return {
-      events: {
-        type: GraphQLString, // TODO (a transformation between EventEnvelope and the exported type (EventResult) is needed
+      eventsByEntity: {
+        type: eventQueryResponse,
         args: {
-          filter: { type: this.buildEventQueryFilter() }
+          entity: { type: new GraphQLNonNull(GraphQLString) },
+          entityID: { type: GraphQLID },
+          from: { type: GraphQLString },
+          to: { type: GraphQLString },
+        },
+        resolve: this.eventsResolver,
+      },
+      eventsByType: {
+        type: eventQueryResponse,
+        args: {
+          type: { type: new GraphQLNonNull(GraphQLString) },
+          from: { type: GraphQLString },
+          to: { type: GraphQLString },
         },
         resolve: this.eventsResolver,
       },
     }
   }
 
-  private buildEventQueryFilter(): GraphQLInputType {
-    const commonFields = {
-      from: { type: GraphQLString },
-      to: { type: GraphQLString },
-    }
-    const EventFilterByEntity = new GraphQLObjectType({
-      name: 'EventFilterByEntity',
+  private buildEventQueryResponse(): GraphQLObjectType {
+    return new GraphQLObjectType({
+      name: 'EventQueryResponse',
       fields: {
-        ...commonFields,
+        type: { type: new GraphQLNonNull(GraphQLString) },
         entity: { type: new GraphQLNonNull(GraphQLString) },
         entityID: { type: new GraphQLNonNull(GraphQLID) },
-      },
-    })
-    const EventFilterByType = new GraphQLObjectType({
-      name: 'EventFilterByType',
-      fields: {
-        ...commonFields,
-        type: { type: new GraphQLNonNull(GraphQLString) },
-      },
-    })
-
-    return new GraphQLNonNull(
-      new GraphQLUnionType({
-        name: 'EventFilter',
-        types: [EventFilterByEntity, EventFilterByType],
-        resolveType: (value) => {
-          return 'entity' in value ? EventFilterByEntity : EventFilterByType
+        requestID: { type: new GraphQLNonNull(GraphQLID) },
+        user: {
+          type: new GraphQLObjectType({
+            name: 'User',
+            fields: {
+              id: { type: GraphQLString },
+              username: { type: new GraphQLNonNull(GraphQLString) },
+              role: { type: new GraphQLNonNull(GraphQLString) },
+            },
+          }),
         },
-      })
-    )
+        createdAt: { type: new GraphQLNonNull(GraphQLString) },
+        value: { type: new GraphQLNonNull(GraphQLJSONObject) },
+      },
+    })
   }
 
   public generateFilterArguments(typeMetadata: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {

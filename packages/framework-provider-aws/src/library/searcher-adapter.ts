@@ -22,9 +22,6 @@ export async function searchEvents(
   logger: Logger,
   filters: EventFilter
 ): Promise<Array<EventSearchResponse>> {
-  if (!filters.kind) {
-    throw new Error('Missing field "kind" in EventsFilter when searching events')
-  }
   let params: DocumentClient.QueryInput = {
     TableName: config.resourceNames.eventsStore,
     ConsistentRead: true,
@@ -42,19 +39,19 @@ export async function searchEvents(
     timeFilterAttributeValues[':toTime'] = filters.to
   }
 
-  switch (filters.kind) {
-    case 'entity':
-      params = {
-        ...params,
-        KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey AND ${timeFilterQuery}`,
-        ExpressionAttributeValues: {
-          ...timeFilterAttributeValues,
-          ':partitionKey': partitionKeyForEvent(filters.entity, filters.entityID),
-        },
-      }
-      break
-    case 'type':
-      break
+  if ('entity' in filters) {
+    params = {
+      ...params,
+      KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey AND ${timeFilterQuery}`,
+      ExpressionAttributeValues: {
+        ...timeFilterAttributeValues,
+        ':partitionKey': partitionKeyForEvent(filters.entity, filters.entityID),
+      },
+    }
+  } else if ('type' in filters) {
+    console.log(filters)
+  } else {
+    throw new Error('Invalide search event query. It is neither an search by "entity" nor a search by "type"')
   }
 
   logger.debug('Running events search with the following params: \n', params)

@@ -156,8 +156,6 @@ function toReadModelRequestEnvelope(
 }
 
 function toEventSearchRequest(args: EventFilter, context: GraphQLResolverContext): EventSearchRequest {
-  console.log('PRINTING ARGS. PROBABLY THEY ARE MISSING "kind"', args)
-  args.kind = 'entity' in args ? 'entity' : 'type'
   return {
     requestID: context.requestID,
     currentUser: context.user,

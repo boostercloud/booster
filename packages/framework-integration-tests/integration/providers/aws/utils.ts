@@ -1,4 +1,4 @@
-import { CloudFormation, CognitoIdentityServiceProvider, DynamoDB } from 'aws-sdk'
+import { CloudFormation, CognitoIdentityServiceProvider, DynamoDB, config } from 'aws-sdk'
 import { Stack, StackResourceDetail, StackResourceSummary } from 'aws-sdk/clients/cloudformation'
 import { ApolloClient } from 'apollo-client'
 import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
@@ -15,7 +15,6 @@ import { split, ApolloLink } from 'apollo-link'
 import * as WebSocket from 'ws'
 import { SubscriptionClient } from 'subscriptions-transport-ws'
 import { ApolloClientOptions } from 'apollo-client/ApolloClient'
-import { config } from 'aws-sdk'
 import util = require('util')
 const exec = util.promisify(require('child_process').exec)
 
