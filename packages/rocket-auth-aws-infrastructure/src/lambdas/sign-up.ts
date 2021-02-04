@@ -5,7 +5,7 @@ import { errorResponse, okResponse } from './response'
 import { InvalidParameterError } from '@boostercloud/framework-types'
 import * as validator from 'validator'
 
-const validateParams = (params: any): void => {
+const validateParams = (params: any, isCustomAuth: boolean): void => {
   const rolesConfig = JSON.parse(process.env.rolesConfig!)
   const isRoleProvided = params.userAttributes && params.userAttributes.role && Object.keys(rolesConfig).length > 0
   if (!isRoleProvided) {
@@ -25,6 +25,12 @@ const validateParams = (params: any): void => {
 
   const signUpOptions = authMetadata.signUpMethods
 
+  if (isCustomAuth && validator.default.isEmail(params.username)) {
+    throw new InvalidParameterError(
+      `User with role ${params.userAttributes.role} can't sign up with an email, a phone number is expected`
+    )
+  }
+
   if (validator.default.isEmail(params.username) && !signUpOptions.includes('email')) {
     throw new InvalidParameterError(
       `User with role ${params.userAttributes.role} can't sign up with an email, a phone number is expected`
@@ -41,16 +47,16 @@ const validateParams = (params: any): void => {
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
     const params = JSON.parse(event.body!)
+    const isCustomAuth = process.env.mode === 'Passwordless'
 
-    validateParams(params)
+    validateParams(params, isCustomAuth)
 
-    const isCustom = process.env.mode === 'Passwordless'
     const cognitoService = new CognitoIdentityServiceProvider()
     const signUpResponse = await cognitoService
       .signUp({
         ClientId: process.env.userPoolClientId!,
         Username: params.username,
-        Password: isCustom ? params.username : params.password,
+        Password: isCustomAuth ? params.username : params.password,
         UserAttributes: [
           {
             Name: 'custom:role',

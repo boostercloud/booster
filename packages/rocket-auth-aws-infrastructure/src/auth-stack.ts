@@ -10,7 +10,8 @@ import {
 import { Effect, PolicyStatement } from '@aws-cdk/aws-iam'
 import { Cors, CorsOptions, LambdaIntegration, MethodOptions, Resource, RestApi } from '@aws-cdk/aws-apigateway'
 import { createLambda } from './utils'
-import { BoosterConfig } from '@boostercloud/framework-types'
+import { BoosterConfig, JWT_ENV_VARS } from '@boostercloud/framework-types'
+import { Function } from '@aws-cdk/aws-lambda'
 
 export interface AWSAuthRocketParams {
   passwordPolicy?: {
@@ -56,8 +57,8 @@ export class AuthStack {
       resourceParams.authApi = authApi
 
       const tokenVerifier = AuthStack.tokenVerifier(resourceParams)
-      config.tokenVerifier = tokenVerifier
 
+      AuthStack.createEnvVars(stack, tokenVerifier)
       AuthStack.printOutput(resourceParams, tokenVerifier)
     }
   }
@@ -377,5 +378,21 @@ export class AuthStack {
       issuer,
       jwksUri,
     }
+  }
+  /**
+   * It will setup the issuer and jwksUri in the core lambas where token verification is needed
+   * @param stack current stack to find the main core lambdas
+   * @param tokenVerifier
+   */
+  private static createEnvVars(stack: Stack, tokenVerifier: { issuer: string; jwksUri: string }): void {
+    const { issuer, jwksUri } = tokenVerifier
+
+    const graphQLHandler = stack.node.tryFindChild('graphql-handler') as Function
+    graphQLHandler.addEnvironment(JWT_ENV_VARS.BOOSTER_JWKS_URI, jwksUri)
+    graphQLHandler.addEnvironment(JWT_ENV_VARS.BOOSTER_JWT_ISSUER, issuer)
+
+    const subscriptionHandler = stack.node.tryFindChild('subscriptions-notifier') as Function
+    subscriptionHandler.addEnvironment(JWT_ENV_VARS.BOOSTER_JWKS_URI, jwksUri)
+    subscriptionHandler.addEnvironment(JWT_ENV_VARS.BOOSTER_JWT_ISSUER, issuer)
   }
 }

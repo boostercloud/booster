@@ -34,7 +34,7 @@
     "lint": "eslint --ext '.js,.ts' **/*.ts",
     "fix-lint": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
-    "postinstall": "cd src/lambdas && npm install",
+    "postinstall": "npm --prefix src/lambdas install",
     "postcompile": "cp -R src/lambdas/node_modules dist/lambdas",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",
