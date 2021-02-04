@@ -49,14 +49,17 @@ export class AuthStack {
         rocketStackPrefixId,
       }
 
-      const { userPool, userPoolClient } = AuthStack.buildUserPoolAndUserPoolClient(resourceParams)
+      const { userPool, userPoolClient } = AuthStack.createUserPoolAndUserPoolClient(resourceParams)
       resourceParams.userPool = userPool
       resourceParams.userPoolClientId = userPoolClient.userPoolClientId
 
       const authApi = AuthStack.createAuthResources(resourceParams)
       resourceParams.authApi = authApi
 
-      AuthStack.printOutput(resourceParams)
+      const tokenVerifier = AuthStack.tokenVerifier(resourceParams)
+      config.tokenVerifier = tokenVerifier
+
+      AuthStack.printOutput(resourceParams, tokenVerifier)
     }
   }
 
@@ -66,14 +69,14 @@ export class AuthStack {
     return `${config.appName}-${config.environmentName}-rocket-auth`
   }
 
-  private static buildUserPoolAndUserPoolClient(
+  private static createUserPoolAndUserPoolClient(
     resourceParams: ResourceParams
   ): { userPool: UserPool; userPoolClient: UserPoolClient } {
     const { params, rocketStackPrefixId, config, stack } = resourceParams
 
     const userPoolID = `${rocketStackPrefixId}-user-pool`
     const userPassword = params.mode === 'UserPassword'
-    const lambdaTriggers = userPassword ? undefined : AuthStack.buildLambdaTriggers(resourceParams)
+    const authChallenges = AuthStack.createAuthChallenges(resourceParams)
     const preSignUpTrigger = createLambda(
       stack,
       `${AuthStack.rocketArtifactsPrefix(config)}-pre-sign-up`,
@@ -104,7 +107,7 @@ export class AuthStack {
         emailStyle: VerificationEmailStyle.LINK,
       },
       lambdaTriggers: {
-        ...lambdaTriggers,
+        ...authChallenges,
         preSignUp: preSignUpTrigger,
       },
     })
@@ -126,8 +129,10 @@ export class AuthStack {
     return { userPool, userPoolClient }
   }
 
-  public static buildLambdaTriggers(resourceParams: ResourceParams): UserPoolTriggers {
-    const { rocketStackPrefixId, stack } = resourceParams
+  public static createAuthChallenges(resourceParams: ResourceParams): UserPoolTriggers | undefined {
+    const { rocketStackPrefixId, stack, params } = resourceParams
+
+    if (params.mode === 'UserPassword') return
 
     const createAuthChallenge = createLambda(
       stack,
@@ -309,23 +314,33 @@ export class AuthStack {
     )
   }
 
-  private static printOutput(resourceParams: ResourceParams): void {
-    const { stack, userPool, authApi } = resourceParams
+  private static printOutput(resourceParams: ResourceParams, tokenVerifier: { issuer: string; jwksUri: string }): void {
+    const { stack, authApi } = resourceParams
     new CfnOutput(stack, 'AuthApiEndpoint', {
       value: authApi!.url + 'auth',
       description: 'Auth API endpoint',
     })
 
-    const issuer = `https://cognito-idp.${stack.region}.${stack.urlSuffix}/${userPool?.userPoolId}`
-
     new CfnOutput(stack, 'AuthApiIssuer', {
-      value: issuer,
+      value: tokenVerifier.issuer,
       description: 'Auth API JWT issuer',
     })
 
     new CfnOutput(stack, 'AuthApiJwksUri', {
-      value: issuer + '/.well-known/jwks.json',
+      value: tokenVerifier.jwksUri,
       description: 'Auth API JKWS URI',
     })
+  }
+
+  private static tokenVerifier(resourceParams: ResourceParams): { issuer: string; jwksUri: string } {
+    const { stack, userPool } = resourceParams
+
+    const issuer = `https://cognito-idp.${stack.region}.${stack.urlSuffix}/${userPool?.userPoolId}`
+    const jwksUri = issuer + '/.well-known/jwks.json'
+
+    return {
+      issuer,
+      jwksUri,
+    }
   }
 }
