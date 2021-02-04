@@ -1,0 +1,14 @@
+{
+  "name": "lambda",
+  "version": "1.0.0",
+  "description": "",
+  "main": "point-in-time-restore-backend.ts",
+  "devDependencies": {
+    "@types/aws-sdk": "2.7.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

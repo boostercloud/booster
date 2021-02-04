@@ -3,21 +3,7 @@ import { Table } from '@aws-cdk/aws-dynamodb'
 import { RocketUtils } from '@boostercloud/framework-provider-aws-infrastructure'
 import { applyPointInTimeRecoveryBackup } from './utils/point-in-time-recovery'
 import { applyOnDemandBackup } from './utils/on-demand'
-
-export type BackupStackParams = {
-  backupType: string
-  onDemandBackupRules?: OnDemandBackupRules
-}
-
-// There are more rules that we could add in the future
-export type OnDemandBackupRules = {
-  minute?: string
-  hour?: string
-  day?: string
-  month?: string
-  weekDay?: string
-  year?: string
-}
+import { BackupStackParams } from './utils/types'
 
 const allowedBackupTypes = ['ON_DEMAND', 'POINT_IN_TIME']
 
@@ -28,7 +14,7 @@ export class BackupStack {
       if (params.backupType === 'ON_DEMAND') {
         applyOnDemandBackup(stack, params, tables)
       } else {
-        applyPointInTimeRecoveryBackup(tables)
+        applyPointInTimeRecoveryBackup(stack, params, tables)
       }
     } else {
       throw Error(

@@ -28,6 +28,16 @@ Booster.configure('production', (config: BoosterConfig): void => {
   config.env['BOOSTER_APP_SUFFIX'] = appNameSuffix
 
   config.appName = 'my-store-' + appNameSuffix
-  config.provider = AWS.Provider()
+  config.provider = AWS.Provider([
+    {
+      packageName: '@boostercloud/rocket-backup-aws-infrastructure',
+      parameters: {
+        backupType: 'POINT_IN_TIME',
+        pointInTimeRules: {
+          generateRestoreAPI: true,
+        },
+      },
+    },
+  ])
   config.assets = ['assets', 'assetFile.txt']
 })

@@ -10,14 +10,15 @@
   },
   "bugs": "https://github.com/boostercloud/booster/issues",
   "dependencies": {
-    "@boostercloud/framework-core": "^0.11.2",
-    "@boostercloud/framework-provider-aws": "^0.11.2",
-    "@boostercloud/framework-provider-local": "^0.11.2",
-    "@boostercloud/framework-types": "^0.11.2"
+    "@boostercloud/framework-core": "0.11.2",
+    "@boostercloud/framework-provider-aws": "0.11.2",
+    "@boostercloud/framework-provider-local": "0.11.2",
+    "@boostercloud/framework-types": "0.11.2",
+    "@boostercloud/rocket-backup-aws-infrastructure": "0.11.22",
+    "@boostercloud/framework-provider-aws-infrastructure": "0.11.2"
   },
   "devDependencies": {
-    "@boostercloud/framework-provider-aws-infrastructure": "^0.11.2",
-    "@boostercloud/framework-provider-local-infrastructure": "^0.11.2",
+    "@boostercloud/framework-provider-local-infrastructure": "0.11.2",
     "@types/aws-lambda": "8.10.48",
     "@types/faker": "5.1.5",
     "@types/ws": "^7.2.4",

@@ -2,7 +2,7 @@ import { Stack } from '@aws-cdk/core'
 import { Table } from '@aws-cdk/aws-dynamodb'
 import { BackupPlan, BackupResource, BackupPlanRule } from '@aws-cdk/aws-backup'
 import { Schedule } from '@aws-cdk/aws-events'
-import { BackupStackParams, OnDemandBackupRules } from '../backup-stack'
+import { BackupStackParams, OnDemandBackupRules } from './types'
 
 export const applyOnDemandBackup = (stack: Stack, params: BackupStackParams, tables: Array<Table>): void => {
   // Modifiable on future versions. Other options available:

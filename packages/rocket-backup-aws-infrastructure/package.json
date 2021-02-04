@@ -26,12 +26,16 @@
     "@aws-cdk/aws-backup": "1.67.0",
     "@aws-cdk/aws-dynamodb": "1.67.0",
     "@aws-cdk/aws-events": "1.67.0",
+    "@aws-cdk/aws-lambda": "1.67.0",
+    "@aws-cdk/aws-apigateway": "1.67.0",
     "@aws-cdk/core": "1.67.0"
   },
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
+    "postcompile": "cp -R src/lambda/node_modules dist/lambda",
+    "postinstall": "npm --prefix src/lambda install",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
