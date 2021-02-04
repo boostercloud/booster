@@ -204,7 +204,7 @@ export class AuthStack {
   }
 
   /**
-   * It creates a sign-in endpoint
+   * It creates /sign-in endpoint
    * @param resourceParams current resource params
    * @returns void
    */
@@ -215,7 +215,7 @@ export class AuthStack {
   }
 
   /**
-   * It creates a sign-up, sign-up/confirm, sign-up/resend-code endpoints.
+   * It creates /sign-up, /sign-up/confirm, /sign-up/resend-code endpoints
    * @param resourceParams current resource params
    * @returns void
    */
@@ -238,7 +238,7 @@ export class AuthStack {
   }
 
   /**
-   * It creates a /token, /token/refresh, /token/revoke endpoints.
+   * It creates /token, /token/refresh, /token/revoke endpoints
    * @param resourceParams current resource params
    * @returns void
    */
@@ -266,7 +266,7 @@ export class AuthStack {
   }
 
   /**
-   * It creates a /password, /password/forgot, /password/change endpoints.
+   * It creates /password, /password/forgot, /password/change endpoints
    * @param resourceParams current resource params
    * @returns void
    */
