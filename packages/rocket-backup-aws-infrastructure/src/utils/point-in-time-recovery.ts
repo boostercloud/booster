@@ -1,5 +1,5 @@
 import { Stack, Duration, CfnOutput } from '@aws-cdk/core'
-import { Function, Runtime, Code } from '@aws-cdk/lambda'
+import { Function, Runtime, Code } from '@aws-cdk/aws-lambda'
 import { LambdaRestApi } from '@aws-cdk/aws-apigateway'
 import { Table } from '@aws-cdk/aws-dynamodb'
 import { BackupStackParams } from './types'
@@ -21,14 +21,16 @@ export const createRestoreAPI = (stack: Stack, tables: Array<Table>): void => {
   console.log('///// WORKING DIRECTORY /////')
   console.log(__dirname)
   console.log(process.cwd())
+  // __dirname is /dist/utils and we need /dist/lambda
   const lambdaDir = __dirname.split('/')
   lambdaDir.pop()
   console.log(lambdaDir)
+  console.log(path.join(lambdaDir.join('/'), 'lambda'))
 
-  const backend = Function(stack, 'RestoreBackup-Backend', {
+  const backend = new Function(stack, 'RestoreBackup-Backend', {
     runtime: Runtime.NODEJS_12_X,
     handler: 'point-in-time-restore-backend.handler',
-    code: Code.fromAsset(path.join(__dirname, 'lambda')),
+    code: Code.fromAsset(path.join(lambdaDir.join('/'), 'lambda')),
     timeout: Duration.minutes(1),
     memorySize: 1024,
     environment: {

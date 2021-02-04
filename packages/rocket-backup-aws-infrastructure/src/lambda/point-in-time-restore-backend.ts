@@ -1,6 +1,6 @@
 import { DynamoDB } from 'aws-sdk'
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
-import { Booster } from '../../../framework-core/src'
+import { Booster } from '@boostercloud/framework-core'
 import { inspect } from 'util'
 import { errorResponse, okResponse } from './response'
 
