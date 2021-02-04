@@ -43,7 +43,7 @@ export interface ReadModelRequestEnvelope extends Envelope {
   filters?: Record<string, ReadModelPropertyFilter>
 }
 
-export type ReadModelPropertyFilter = FilterFor<any>
+export type ReadModelPropertyFilter = FilterFor<unknown>
 
 export interface GraphQLRequestEnvelope extends Envelope {
   eventType: 'CONNECT' | 'MESSAGE' | 'DISCONNECT'
