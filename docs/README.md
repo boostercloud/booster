@@ -3,99 +3,99 @@
 <!-- toc -->
 
 - [Introduction](#introduction)
-  * [What is Booster?](#what-is-booster)
-  * [Booster Principles](#booster-principles)
-  * [Why use Booster](#why-use-booster)
+  - [What is Booster?](#what-is-booster)
+  - [Booster Principles](#booster-principles)
+  - [Why use Booster](#why-use-booster)
 - [Getting started](#getting-started)
-  * [Installing Booster](#installing-booster)
-    + [Prerequisites](#prerequisites)
-    + [Installing the Booster CLI](#installing-the-booster-cli)
-  * [Your first Booster app in 10 minutes](#your-first-booster-app-in-10-minutes)
-    + [1. Create the project](#1-create-the-project)
-    + [2. First command](#2-first-command)
-    + [3. First event](#3-first-event)
-    + [4. First entity](#4-first-entity)
-    + [5. First read model](#5-first-read-model)
-    + [6. Deployment](#6-deployment)
-    + [7. Testing](#7-testing)
-    + [8. Removing the stack](#8-removing-the-stack)
-    + [9. More functionalities](#9-more-functionalities)
+  - [Installing Booster](#installing-booster)
+    - [Prerequisites](#prerequisites)
+    - [Installing the Booster CLI](#installing-the-booster-cli)
+  - [Your first Booster app in 10 minutes](#your-first-booster-app-in-10-minutes)
+    - [1. Create the project](#1-create-the-project)
+    - [2. First command](#2-first-command)
+    - [3. First event](#3-first-event)
+    - [4. First entity](#4-first-entity)
+    - [5. First read model](#5-first-read-model)
+    - [6. Deployment](#6-deployment)
+    - [7. Testing](#7-testing)
+    - [8. Removing the stack](#8-removing-the-stack)
+    - [9. More functionalities](#9-more-functionalities)
 - [Booster architecture](#booster-architecture)
-  * [1. Command and command handlers](#1-command-and-command-handlers)
-    + [Commands naming convention](#commands-naming-convention)
-    + [Creating a command](#creating-a-command)
-    + [The command handler function](#the-command-handler-function)
-    + [Authorizing a command](#authorizing-a-command)
-    + [Submitting a command](#submitting-a-command)
-    + [Scheduling a command](#scheduling-a-command)
-    + [Creating a scheduled command](#creating-a-scheduled-command)
-  * [2. Events](#2-events)
-    + [Events naming convention](#events-naming-convention)
-    + [Creating events](#creating-events)
-    + [Registering events in the event store](#registering-events-in-the-event-store)
-    + [Events ordering](#events-ordering)
-  * [3. Event handlers](#3-event-handlers)
-    + [Creating an event handler](#creating-an-event-handler)
-    + [Registering events from an event handler](#registering-events-from-an-event-handler)
-    + [Reading entities from event handlers](#reading-entities-from-event-handlers)
-  * [4. Entities and reducers](#4-entities-and-reducers)
-    + [Entities naming convention](#entities-naming-convention)
-    + [Creating entities](#creating-entities)
-    + [The reducer function](#the-reducer-function)
-    + [Eventual consistency](#eventual-consistency)
-  * [5. Read models and projections](#5-read-models-and-projections)
-    + [Read models naming convention](#read-models-naming-convention)
-    + [Creating a read model](#creating-a-read-model)
-    + [The projection function](#the-projection-function)
-    + [Authorizing read models](#authorizing-read-models)
-    + [Querying a read model](#querying-a-read-model)
-    + [Getting real-time updates for a read model](#getting-real-time-updates-for-a-read-model)
+  - [1. Command and command handlers](#1-command-and-command-handlers)
+    - [Commands naming convention](#commands-naming-convention)
+    - [Creating a command](#creating-a-command)
+    - [The command handler function](#the-command-handler-function)
+    - [Authorizing a command](#authorizing-a-command)
+    - [Submitting a command](#submitting-a-command)
+    - [Scheduling a command](#scheduling-a-command)
+    - [Creating a scheduled command](#creating-a-scheduled-command)
+  - [2. Events](#2-events)
+    - [Events naming convention](#events-naming-convention)
+    - [Creating events](#creating-events)
+    - [Registering events in the event store](#registering-events-in-the-event-store)
+    - [Events ordering](#events-ordering)
+  - [3. Event handlers](#3-event-handlers)
+    - [Creating an event handler](#creating-an-event-handler)
+    - [Registering events from an event handler](#registering-events-from-an-event-handler)
+    - [Reading entities from event handlers](#reading-entities-from-event-handlers)
+  - [4. Entities and reducers](#4-entities-and-reducers)
+    - [Entities naming convention](#entities-naming-convention)
+    - [Creating entities](#creating-entities)
+    - [The reducer function](#the-reducer-function)
+    - [Eventual consistency](#eventual-consistency)
+  - [5. Read models and projections](#5-read-models-and-projections)
+    - [Read models naming convention](#read-models-naming-convention)
+    - [Creating a read model](#creating-a-read-model)
+    - [The projection function](#the-projection-function)
+    - [Authorizing read models](#authorizing-read-models)
+    - [Querying a read model](#querying-a-read-model)
+    - [Getting real-time updates for a read model](#getting-real-time-updates-for-a-read-model)
 - [Features](#features)
-  * [Authentication and Authorization](#authentication-and-authorization)
-    + [Authentication API](#authentication-api)
-  * [Custom Authentication](#custom-authentication)
-    + [JWT Configuration](#jwt-configuration)
-  * [GraphQL API](#graphql-api)
-    + [Relationship between GraphQL operations and commands and read models](#relationship-between-graphql-operations-and-commands-and-read-models)
-    + [How to send GraphQL request](#how-to-send-graphql-request)
-    + [Get GraphQL schema from deployed application](#get-graphql-schema-from-deployed-application)
-    + [Sending commands](#sending-commands)
-    + [Reading read models](#reading-read-models)
-    + [Subscribing to read models](#subscribing-to-read-models)
-    + [Using Apollo Client](#using-apollo-client)
-    + [Authorizing operations](#authorizing-operations)
-    + [The GraphQL over WebSocket protocol](#the-graphql-over-websocket-protocol)
-  * [Cloud native](#cloud-native)
-    + [Configure your provider credentials](#configure-your-provider-credentials)
-    + [Deploy your project](#deploy-your-project)
-    + [Application outputs](#application-outputs)
-    + [Delete your cloud stack](#delete-your-cloud-stack)
+  - [Authentication and Authorization](#authentication-and-authorization)
+    - [Authentication API](#authentication-api)
+  - [Custom Authentication](#custom-authentication)
+    - [JWT Configuration](#jwt-configuration)
+  - [GraphQL API](#graphql-api)
+    - [Relationship between GraphQL operations and commands and read models](#relationship-between-graphql-operations-and-commands-and-read-models)
+    - [How to send GraphQL request](#how-to-send-graphql-request)
+    - [Get GraphQL schema from deployed application](#get-graphql-schema-from-deployed-application)
+    - [Sending commands](#sending-commands)
+    - [Reading read models](#reading-read-models)
+    - [Subscribing to read models](#subscribing-to-read-models)
+    - [Using Apollo Client](#using-apollo-client)
+    - [Authorizing operations](#authorizing-operations)
+    - [The GraphQL over WebSocket protocol](#the-graphql-over-websocket-protocol)
+  - [Cloud native](#cloud-native)
+    - [Configure your provider credentials](#configure-your-provider-credentials)
+    - [Deploy your project](#deploy-your-project)
+    - [Application outputs](#application-outputs)
+    - [Delete your cloud stack](#delete-your-cloud-stack)
 - [Going deeper with Booster](#going-deeper-with-booster)
-  * [Contributing](#contributing)
-  * [Framework Core](#framework-core)
-  * [Framework Types](#framework-types)
-  * [Framework integration tests](#framework-integration-tests)
-  * [Providers](#providers)
-    + [framework-provider-aws-\*](#framework-provider-aws-)
-    + [framework-provider-local-\*](#framework-provider-local-)
-    + [framework-provider-kubernetes-\*](#framework-provider-kubernetes-)
-    + [framework-provider-azure-\*](#framework-provider-azure-)
-  * [Configuration and environments](#configuration-and-environments)
-    + [Booster configuration](#booster-configuration)
-    + [Environments](#environments)
-  * [Extending Booster with Rockets!](#extending-booster-with-rockets)
-    + [Naming recommendations](#naming-recommendations)
-    + [Infrastructure extensions](#infrastructure-extensions)
-    + [Runtime extensions (Not yet implemented)](#runtime-extensions-not-yet-implemented)
-    + [Deploy and init hooks (Not yet implemented)](#deploy-and-init-hooks-not-yet-implemented)
+  - [Contributing](#contributing)
+  - [Framework Core](#framework-core)
+  - [Framework Types](#framework-types)
+  - [Framework integration tests](#framework-integration-tests)
+  - [Providers](#providers)
+    - [framework-provider-aws-\*](#framework-provider-aws-)
+    - [framework-provider-local-\*](#framework-provider-local-)
+    - [framework-provider-kubernetes-\*](#framework-provider-kubernetes-)
+    - [framework-provider-azure-\*](#framework-provider-azure-)
+  - [Configuration and environments](#configuration-and-environments)
+    - [Booster configuration](#booster-configuration)
+    - [Environments](#environments)
+  - [Extending Booster with Rockets!](#extending-booster-with-rockets)
+    - [Naming recommendations](#naming-recommendations)
+    - [Infrastructure extensions](#infrastructure-extensions)
+    - [Runtime extensions (Not yet implemented)](#runtime-extensions-not-yet-implemented)
+    - [Deploy and init hooks (Not yet implemented)](#deploy-and-init-hooks-not-yet-implemented)
 - [Debugging and testing Booster applications](#debugging-and-testing-booster-applications)
-  * [Running Booster applications locally](#running-booster-applications-locally)
-    + [Local development prerequisites](#local-development-prerequisites)
-    + [Starting your application](#starting-your-application)
-    + [Performing Auth requests](#performing-auth-requests)
-    + [Performing GraphQL requests](#performing-graphql-requests)
-    + [Inspect Database information](#inspect-database-information)
-  * [Booster examples](#booster-examples)
+  - [Running Booster applications locally](#running-booster-applications-locally)
+    - [Local development prerequisites](#local-development-prerequisites)
+    - [Starting your application](#starting-your-application)
+    - [Performing Auth requests](#performing-auth-requests)
+    - [Performing GraphQL requests](#performing-graphql-requests)
+    - [Inspect Database information](#inspect-database-information)
+  - [Booster examples](#booster-examples)
 - [Frequently Asked Questions](#frequently-asked-questions)
 
 <!-- tocstop -->
@@ -210,6 +210,7 @@ versions:
 - [`nvm-windows`](https://github.com/coreybutler/nvm-windows) - Works with native Windows
 
 ##### Install Git
+
 Booster will initialize a Git repository when you create a new project (unless you use the `--skipGit` flag), so it is required that you have it already installed in your system.
 
 ###### Ubuntu
@@ -231,6 +232,7 @@ choco install git
 ```
 
 ###### Git configuration variables
+
 After installing git in your machine, make sure that `user.name` and `user.email` are properly configured.
 Take a look at the [Git configuration page](https://git-scm.com/docs/git-config) for more info.
 
@@ -393,15 +395,15 @@ parameters are as follows:
 
 If you prefer to specify each parameter without following the instructions, you can use the following flags with this structure `<flag>=<parameter>`.
 
-| Flag                   | Short version | Description |
-| :--------------------- | :------------ | :---------- |
-| `--homepage`           | `-H`          | The website of this project |
-| `--author`             | `-a`          | Author of this project |
-| `--description`        | `-d`          | A short description |
-| `--license`            | `-l`          | License used in this project |
-| `--providerPackageName`| `-p`          | Package name implementing the cloud provider integration where the application will be deployed |
-| `--repository`         | `-r`          | The URL of the repository |
-| `--version`            | `-v`          | The initial version |
+| Flag                    | Short version | Description                                                                                     |
+| :---------------------- | :------------ | :---------------------------------------------------------------------------------------------- |
+| `--homepage`            | `-H`          | The website of this project                                                                     |
+| `--author`              | `-a`          | Author of this project                                                                          |
+| `--description`         | `-d`          | A short description                                                                             |
+| `--license`             | `-l`          | License used in this project                                                                    |
+| `--providerPackageName` | `-p`          | Package name implementing the cloud provider integration where the application will be deployed |
+| `--repository`          | `-r`          | The URL of the repository                                                                       |
+| `--version`             | `-v`          | The initial version                                                                             |
 
 Additionally, you can use the `--skipInstall` flag if you want to skip installing dependencies and the `--skipGit` flag in case you want to skip git initialization.
 
@@ -1561,6 +1563,42 @@ For more information about queries and how to use them, please check the [GraphQ
 
 Booster GraphQL API also provides support for real-time updates using subscriptions and websocket, to get more information about it go to the [GraphQL API](#subscribing-to-read-models) section.
 
+#### Getting and filtering read models data at code level
+
+Booster allows you to get your read models data in your commands, handlers, etc. Using the `Booster.readModel` method.
+
+For example, you can filter and get the total number of the products that meet your criteria in your commands like this:
+
+```typescript
+@Command({
+  authorize: 'all',
+})
+export class GetProductsCount {
+  public constructor(readonly filters: Record<string, any>) {}
+
+  public static async handle(): Promise<void> {
+    const searcher = Booster.readModel(ProductReadModel)
+
+    searcher.filter({
+      sku: { contains: 'toy' },
+      or: [
+        {
+          description: { contains: 'fancy' },
+        },
+        {
+          description: { contains: 'great' },
+        },
+      ],
+    })
+
+    const result = await searcher.search()
+    return { count: result.length }
+  }
+}
+```
+
+> **Warning**: Notice that `ReadModel`s are eventually consistent objects that are calculated as all events in all entities that affect the read model are settled. You should not assume that a read model is a proper source of truth, so you shouldn't use this feature for data validations. If you need to query the most up-to-date current state, consider fetching your Entities, instead of ReadModels, with `Booster.fetchEntitySnapshot`
+
 ## Features
 
 ### Authentication and Authorization
@@ -1926,7 +1964,7 @@ Booster.configure('production', (config: BoosterConfig): void => {
   config.provider = AWS.Provider
   config.tokenVerifier = {
     jwksUri: 'https://demoapp.auth0.com/.well-known/jwks.json',
-    issuer: 'auth0'
+    issuer: 'auth0',
   }
 })
 ```
@@ -2655,12 +2693,11 @@ The following is the list of the fields you can configure:
 
 _**Note:** So far, there is only one provider fully supported in Booster yet, @boostercloud/framework-provider-aws, and it is probably the one you have already set if you used the generator to create your project. The team is currently working on providers for local development, Azure, and Kubernetes._
 
-- **assets**: This is an array of _relative_ paths from the root of the project pointing to files and folders with static assets. They will be included among the deployed files to the cloud provider. 
-For example, imagine you are using the "dotenv" module so that all the environment variables you have in your `.env` files are loaded into memory in runtime. In order for this to work, you need to include your `.env` files as assets of your project, so that they are included when deploying. Assuming you only have a `.env` file in the root of your project, you should add the following to your configuration:
-  
-  ````typescript
-    config.assets = ['.env']
-  ````
+- **assets**: This is an array of _relative_ paths from the root of the project pointing to files and folders with static assets. They will be included among the deployed files to the cloud provider.
+  For example, imagine you are using the "dotenv" module so that all the environment variables you have in your `.env` files are loaded into memory in runtime. In order for this to work, you need to include your `.env` files as assets of your project, so that they are included when deploying. Assuming you only have a `.env` file in the root of your project, you should add the following to your configuration:
+  ```typescript
+  config.assets = ['.env']
+  ```
 
 #### Environments
 
@@ -2791,12 +2828,15 @@ _src/config/production.ts:_
 ```typescript
 Booster.configure('development', (config: BoosterConfig): void => {
   config.appName = 'my-store'
-  config.provider = AWSProvider([{
-    packageName: 'rocket-your-rocket-name-aws-infrastructure', // The name of your infrastructure rocket package
-    parameters: { // An arbitrary object with the parameters required by your infrastructure rocket initializator
-      hello: 'world'
-    }
-  }])
+  config.provider = AWSProvider([
+    {
+      packageName: 'rocket-your-rocket-name-aws-infrastructure', // The name of your infrastructure rocket package
+      parameters: {
+        // An arbitrary object with the parameters required by your infrastructure rocket initializator
+        hello: 'world',
+      },
+    },
+  ])
 })
 ```
 
