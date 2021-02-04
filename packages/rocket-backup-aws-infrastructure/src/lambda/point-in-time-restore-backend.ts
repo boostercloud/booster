@@ -1,6 +1,6 @@
 import { DynamoDB } from 'aws-sdk'
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
-import { Booster } from '../../framework-core/src'
+import { Booster } from '../../../framework-core/src'
 import { inspect } from 'util'
 import { errorResponse, okResponse } from './response'
 
@@ -20,14 +20,12 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     // If request has unknown params, throw an error
     if (event.body) {
       tableNames = new Array(Booster.config.resourceNames.forReadModel(model))
-    }
-    else {
+    } else {
       tableNames = process.env['TABLE_NAMES']!.split(',')
     }
-    const response = await restoreModels(tableNames, dynamoDB, pointInTimeISO);
+    const response = await restoreModels(tableNames, dynamoDB, pointInTimeISO)
     return okResponse(response)
-  }
-  catch (e) {
+  } catch (e) {
     return errorResponse(e)
   }
 }
@@ -45,8 +43,7 @@ const restoreModels = async (tableNames: Array<string>, dynamoDB: DynamoDB, poin
         })
         .promise()
       response.push(tableDescription.TableDescription)
-    }
-    catch (e) {
+    } catch (e) {
       throw Error(`An error has occurred while restoring all your models - ${e.message}`)
     }
   }

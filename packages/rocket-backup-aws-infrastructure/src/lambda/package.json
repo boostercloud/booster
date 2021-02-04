@@ -4,6 +4,7 @@
   "description": "",
   "main": "point-in-time-restore-backend.ts",
   "devDependencies": {
+    "@boostercloud/framework-types": "0.11.2",
     "@types/aws-sdk": "2.7.0"
   },
   "scripts": {
