@@ -47,6 +47,7 @@ export class GraphQLGenerator {
   ) {
     this.typeInformer = new GraphQLTypeInformer({ ...config.readModels, ...config.commandHandlers })
     this.queryGenerator = new GraphQLQueryGenerator(
+      config,
       config.readModels,
       this.typeInformer,
       this.readModelByIDResolverBuilder.bind(this),

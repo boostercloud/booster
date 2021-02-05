@@ -26,6 +26,7 @@ import { GraphQLJSONObject } from 'graphql-type-json'
 import {
   AnyClass,
   BooleanOperations,
+  BoosterConfig,
   NumberOperations,
   PropertyMetadata,
   StringOperations,
@@ -37,6 +38,7 @@ export class GraphQLQueryGenerator {
   private generatedOperationEnumsByTypeName: Record<string, GraphQLEnumType> = {}
 
   public constructor(
+    private readonly config: BoosterConfig,
     private readonly targetTypes: TargetTypesMap,
     private readonly typeInformer: GraphQLTypeInformer,
     private readonly byIDResolverBuilder: ResolverBuilder,
@@ -99,7 +101,9 @@ export class GraphQLQueryGenerator {
       eventsByEntity: {
         type: eventQueryResponse,
         args: {
-          entity: { type: new GraphQLNonNull(GraphQLString) },
+          entity: {
+            type: new GraphQLNonNull(this.buildGraphqlSimpleEnumFor('EntityType', Object.keys(this.config.entities))),
+          },
           entityID: { type: GraphQLID },
           from: { type: GraphQLString },
           to: { type: GraphQLString },
@@ -109,7 +113,9 @@ export class GraphQLQueryGenerator {
       eventsByType: {
         type: eventQueryResponse,
         args: {
-          type: { type: new GraphQLNonNull(GraphQLString) },
+          type: {
+            type: new GraphQLNonNull(this.buildGraphqlSimpleEnumFor('EventType', Object.keys(this.config.reducers))),
+          },
           from: { type: GraphQLString },
           to: { type: GraphQLString },
         },
@@ -212,5 +218,15 @@ export class GraphQLQueryGenerator {
       enumValuesConfig[opName] = { value: opSymbol }
     }
     return enumValuesConfig
+  }
+
+  private buildGraphqlSimpleEnumFor(enumName: string, values: Array<string>): GraphQLEnumType {
+    return new GraphQLEnumType({
+      name: enumName,
+      values: values.reduce((valuesRecord, value) => {
+        valuesRecord[value] = { value }
+        return valuesRecord
+      }, {} as GraphQLEnumValueConfigMap),
+    })
   }
 }
