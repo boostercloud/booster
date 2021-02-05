@@ -9,6 +9,7 @@ import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
+  GraphQLOutputType,
   GraphQLScalarType,
   GraphQLString,
 } from 'graphql'
@@ -117,28 +118,30 @@ export class GraphQLQueryGenerator {
     }
   }
 
-  private buildEventQueryResponse(): GraphQLObjectType {
-    return new GraphQLObjectType({
-      name: 'EventQueryResponse',
-      fields: {
-        type: { type: new GraphQLNonNull(GraphQLString) },
-        entity: { type: new GraphQLNonNull(GraphQLString) },
-        entityID: { type: new GraphQLNonNull(GraphQLID) },
-        requestID: { type: new GraphQLNonNull(GraphQLID) },
-        user: {
-          type: new GraphQLObjectType({
-            name: 'User',
-            fields: {
-              id: { type: GraphQLString },
-              username: { type: new GraphQLNonNull(GraphQLString) },
-              role: { type: new GraphQLNonNull(GraphQLString) },
-            },
-          }),
+  private buildEventQueryResponse(): GraphQLOutputType {
+    return new GraphQLList(
+      new GraphQLObjectType({
+        name: 'EventQueryResponse',
+        fields: {
+          type: { type: new GraphQLNonNull(GraphQLString) },
+          entity: { type: new GraphQLNonNull(GraphQLString) },
+          entityID: { type: new GraphQLNonNull(GraphQLID) },
+          requestID: { type: new GraphQLNonNull(GraphQLID) },
+          user: {
+            type: new GraphQLObjectType({
+              name: 'User',
+              fields: {
+                id: { type: GraphQLString },
+                username: { type: new GraphQLNonNull(GraphQLString) },
+                role: { type: new GraphQLNonNull(GraphQLString) },
+              },
+            }),
+          },
+          createdAt: { type: new GraphQLNonNull(GraphQLString) },
+          value: { type: new GraphQLNonNull(GraphQLJSONObject) },
         },
-        createdAt: { type: new GraphQLNonNull(GraphQLString) },
-        value: { type: new GraphQLNonNull(GraphQLJSONObject) },
-      },
-    })
+      })
+    )
   }
 
   public generateFilterArguments(typeMetadata: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {

@@ -89,7 +89,7 @@ describe('permissions', () => {
       fnRefStub = stub(Fn, 'ref').returns(mockFnRef)
 
       const graphQLStackMembers: GraphQLStackMembers = {
-        subscriptionDispatcherLambda: mockSubscriptionDispatcherLambda,
+        subscriptionNotifier: mockSubscriptionDispatcherLambda,
         subscriptionsStore: mockSubscriptionsStore,
         graphQLLambda: mockGraphQLLambda,
         connectionsStore: mockConnectionsStore,

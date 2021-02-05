@@ -138,8 +138,7 @@ export async function deleteAllSubscriptions(
       [config.resourceNames.subscriptionsStore]: foundSubscriptions.map((subscriptionRecord) => ({
         DeleteRequest: {
           Key: {
-            [subscriptionsStoreAttributes.partitionKey]:
-              subscriptionRecord[subscriptionsStoreAttributes.partitionKey],
+            [subscriptionsStoreAttributes.partitionKey]: subscriptionRecord[subscriptionsStoreAttributes.partitionKey],
             [subscriptionsStoreAttributes.sortKey]: subscriptionRecord[subscriptionsStoreAttributes.sortKey],
           },
         },

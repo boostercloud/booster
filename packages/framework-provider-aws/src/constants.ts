@@ -3,6 +3,14 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 export const eventsStoreAttributes = {
   partitionKey: 'entityTypeName_entityID_kind',
   sortKey: 'createdAt',
+  indexByEntity: {
+    name: (config: BoosterConfig) => config.resourceNames.eventsStore + '-index-by-entity',
+    partitionKey: 'entityTypeName',
+  },
+  indexByType: {
+    name: (config: BoosterConfig) => config.resourceNames.eventsStore + '-index-by-type',
+    partitionKey: 'typeName',
+  },
 } as const
 
 export const subscriptionsStoreAttributes = {

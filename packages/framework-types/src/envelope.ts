@@ -45,7 +45,7 @@ interface EventTimeFilter {
 
 export interface EventFilterByEntity extends EventTimeFilter {
   entity: string
-  entityID: string
+  entityID?: string
 }
 
 export interface EventFilterByType extends EventTimeFilter {

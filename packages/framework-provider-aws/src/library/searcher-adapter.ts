@@ -8,6 +8,7 @@ import {
   EventEnvelope,
   EventSearchResponse,
   EventInterface,
+  UUID,
 } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
@@ -22,57 +23,163 @@ export async function searchEvents(
   logger: Logger,
   filters: EventFilter
 ): Promise<Array<EventSearchResponse>> {
-  let params: DocumentClient.QueryInput = {
-    TableName: config.resourceNames.eventsStore,
-    ConsistentRead: true,
-    ScanIndexForward: false, // Descending order (newer timestamps first)
-  }
-  let timeFilterQuery = ''
-  const timeFilterAttributeValues: Record<string, string> = {}
-  if (filters.from) {
-    timeFilterQuery = `${eventsStoreAttributes.sortKey} >= :fromTime`
-    timeFilterAttributeValues[':fromTime'] = filters.from
-  }
-  if (filters.to) {
-    if (timeFilterQuery.length > 0) timeFilterQuery += ' AND '
-    timeFilterQuery = `${eventsStoreAttributes.sortKey} <= :toTime`
-    timeFilterAttributeValues[':toTime'] = filters.to
-  }
-
+  logger.debug('Initiating an events search. Filters: ', filters)
+  const timeFilterQuery = buildSearchEventsTimeQuery(filters.from, filters.to)
+  let eventEnvelopes: Array<EventEnvelope> = []
   if ('entity' in filters) {
-    params = {
-      ...params,
-      KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey AND ${timeFilterQuery}`,
-      ExpressionAttributeValues: {
-        ...timeFilterAttributeValues,
-        ':partitionKey': partitionKeyForEvent(filters.entity, filters.entityID),
-      },
+    if (filters.entityID) {
+      eventEnvelopes = await searchEventsByEntityAndID(
+        dynamoDB,
+        config,
+        logger,
+        filters.entity,
+        filters.entityID,
+        timeFilterQuery
+      )
+    } else {
+      eventEnvelopes = await searchEventsByEntity(dynamoDB, config, logger, filters.entity, timeFilterQuery)
     }
   } else if ('type' in filters) {
-    console.log(filters)
+    eventEnvelopes = await searchEventsByType(dynamoDB, config, logger, filters.type, timeFilterQuery)
   } else {
-    throw new Error('Invalide search event query. It is neither an search by "entity" nor a search by "type"')
+    throw new Error('Invalid search event query. It is neither an search by "entity" nor a search by "type"')
   }
-
-  logger.debug('Running events search with the following params: \n', params)
-
-  const result = await dynamoDB.query(params).promise()
-  const eventEnvelopes = (result.Items as Array<EventEnvelope>) ?? []
 
   logger.debug('Events search result: ', eventEnvelopes)
 
-  const eventSearchResults: Array<EventSearchResponse> = eventEnvelopes.map((eventEnvelope) => {
-    return {
-      type: eventEnvelope.typeName,
-      entity: eventEnvelope.entityTypeName,
-      entityID: eventEnvelope.entityID,
-      requestID: eventEnvelope.requestID,
-      user: eventEnvelope.currentUser,
-      createdAt: eventEnvelope.createdAt,
-      value: eventEnvelope.value as EventInterface,
-    }
-  })
+  const eventSearchResults: Array<EventSearchResponse> = eventEnvelopes
+    .map((eventEnvelope) => {
+      return {
+        type: eventEnvelope.typeName,
+        entity: eventEnvelope.entityTypeName,
+        entityID: eventEnvelope.entityID,
+        requestID: eventEnvelope.requestID,
+        user: eventEnvelope.currentUser,
+        createdAt: eventEnvelope.createdAt,
+        value: eventEnvelope.value as EventInterface,
+      }
+    })
+    .sort()
+    .reverse()
   return eventSearchResults
+}
+
+interface TimeQueryData {
+  expression: string
+  attributeValues: Record<string, string>
+}
+
+function buildSearchEventsTimeQuery(from?: string, to?: string): TimeQueryData {
+  let timeQueryData: TimeQueryData = {
+    expression: '',
+    attributeValues: {},
+  }
+  if (from && to) {
+    timeQueryData = {
+      expression: ` AND ${eventsStoreAttributes.sortKey} BETWEEN :fromTime AND :toTime`,
+      attributeValues: {
+        ':fromTime': from,
+        ':toTime': to,
+      },
+    }
+  } else if (from) {
+    timeQueryData = {
+      expression: ` AND ${eventsStoreAttributes.sortKey} >= :fromTime`,
+      attributeValues: { ':fromTime': from },
+    }
+  } else if (to) {
+    timeQueryData = {
+      expression: ` AND ${eventsStoreAttributes.sortKey} <= :toTime`,
+      attributeValues: { ':toTime': to },
+    }
+  }
+  return timeQueryData
+}
+
+async function searchEventsByEntityAndID(
+  dynamoDB: DynamoDB.DocumentClient,
+  config: BoosterConfig,
+  logger: Logger,
+  entity: string,
+  entityID: UUID,
+  timeQuery: TimeQueryData
+): Promise<Array<EventEnvelope>> {
+  // TODO: Manage pagination
+  const params: DocumentClient.QueryInput = {
+    TableName: config.resourceNames.eventsStore,
+    ConsistentRead: true,
+    ScanIndexForward: false, // Descending order (newer timestamps first)
+    KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey ${timeQuery.expression}`,
+    ExpressionAttributeValues: {
+      ...timeQuery.attributeValues,
+      ':partitionKey': partitionKeyForEvent(entity, entityID),
+    },
+  }
+
+  logger.debug('Searching events by entity and entity ID. Query params: ', params)
+  const result = await dynamoDB.query(params).promise()
+  return (result.Items as Array<EventEnvelope>) ?? []
+}
+
+interface EventStoreKeys {
+  [eventsStoreAttributes.partitionKey]: string
+  [eventsStoreAttributes.sortKey]: string
+}
+
+async function searchEventsByEntity(
+  dynamoDB: DynamoDB.DocumentClient,
+  config: BoosterConfig,
+  logger: Logger,
+  entity: string,
+  timeQuery: TimeQueryData
+): Promise<Array<EventEnvelope>> {
+  // TODO: manage pagination
+  // Fist query the index
+  const params: DocumentClient.QueryInput = {
+    TableName: config.resourceNames.eventsStore,
+    IndexName: eventsStoreAttributes.indexByEntity.name(config),
+    ConsistentRead: true,
+    ScanIndexForward: false, // Descending order (newer timestamps first)
+    KeyConditionExpression: `${eventsStoreAttributes.indexByEntity.partitionKey} = :partitionKey ${timeQuery.expression}`,
+    ExpressionAttributeValues: {
+      ...timeQuery.attributeValues,
+      ':partitionKey': entity,
+    },
+  }
+
+  logger.debug('Searching events by entity. Index query params: ', params)
+  const partialResult = await dynamoDB.query(params).promise()
+  const indexRecords = (partialResult.Items as Array<EventStoreKeys>) ?? []
+  console.log(indexRecords)
+
+  // Now query the table to get all data
+  const paramss: DocumentClient.BatchGetItemInput = {
+    RequestItems: {
+      [config.resourceNames.eventsStore]: {
+        ConsistentRead: true,
+        Keys: indexRecords.map((record) => {
+          return {
+            [eventsStoreAttributes.partitionKey]: record[eventsStoreAttributes.partitionKey],
+            [eventsStoreAttributes.sortKey]: record[eventsStoreAttributes.sortKey],
+          }
+        }),
+      },
+    },
+  }
+
+  logger.debug('Searching events by entity. Final query params: ', params)
+  const result = await dynamoDB.batchGet(paramss).promise()
+  return (result.Responses?.[config.resourceNames.eventsStore] as Array<EventEnvelope>) ?? []
+}
+
+async function searchEventsByType(
+  dynamoDB: DynamoDB.DocumentClient,
+  config: BoosterConfig,
+  logger: Logger,
+  type: string,
+  timeQuery: TimeQueryData
+): Promise<Array<EventEnvelope>> {
+  return Promise.resolve([])
 }
 
 export async function searchReadModel(

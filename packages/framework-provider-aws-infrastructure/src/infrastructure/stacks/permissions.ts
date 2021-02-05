@@ -27,10 +27,13 @@ export const setupPermissions = (
     ['execute-api:ManageConnections']
   )
 
-  const { graphQLLambda, subscriptionsStore, subscriptionDispatcherLambda, connectionsStore } = graphQLStack
+  const { graphQLLambda, subscriptionsStore, subscriptionNotifier, connectionsStore } = graphQLStack
   const { eventsLambda, eventsStore } = eventsStack
   graphQLLambda.addToRolePolicy(
-    createPolicyStatement([eventsStore.tableArn], ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchWriteItem'])
+    createPolicyStatement(
+      [eventsStore.tableArn + '*'], // The '*' at the end is to also grant permissions on table indexes
+      ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchGetItem', 'dynamodb:BatchWriteItem']
+    )
   )
   graphQLLambda.addToRolePolicy(
     createPolicyStatement(
@@ -43,19 +46,23 @@ export const setupPermissions = (
   )
   graphQLLambda.addToRolePolicy(websocketManageConnectionsPolicy)
 
-  subscriptionDispatcherLambda.addToRolePolicy(
-    createPolicyStatement([subscriptionsStore.tableArn], ['dynamodb:Query*'])
-  )
-  subscriptionDispatcherLambda.addToRolePolicy(websocketManageConnectionsPolicy)
+  subscriptionNotifier.addToRolePolicy(createPolicyStatement([subscriptionsStore.tableArn], ['dynamodb:Query*']))
+  subscriptionNotifier.addToRolePolicy(websocketManageConnectionsPolicy)
 
   eventsLambda.addToRolePolicy(
-    createPolicyStatement([eventsStore.tableArn], ['dynamodb:BatchWriteItem', 'dynamodb:Query*', 'dynamodb:Put*'])
+    createPolicyStatement(
+      [eventsStore.tableArn + '*'], // The '*' at the end is to also grant permissions on table indexes
+      ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchGetItem', 'dynamodb:BatchWriteItem']
+    )
   )
 
   if (scheduledCommandStack) {
     const { scheduledLambda } = scheduledCommandStack
     scheduledLambda.addToRolePolicy(
-      createPolicyStatement([eventsStore.tableArn], ['dynamodb:BatchWriteItem', 'dynamodb:Query*', 'dynamodb:Put*'])
+      createPolicyStatement(
+        [eventsStore.tableArn + '*'], // The '*' at the end is to also grant permissions on table indexes
+        ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchGetItem', 'dynamodb:BatchWriteItem']
+      )
     )
   }
 
