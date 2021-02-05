@@ -126,6 +126,7 @@ function buildExpressionAttributeNames(filters: FilterFor<any>): ExpressionAttri
         }
         break
       case 'includes':
+        // In case of includes, avoid the default behaviour
         break
       default:
         Object.entries(filters[propName] as FilterFor<any>).forEach(([prop, value]) => {
