@@ -62,7 +62,7 @@ describe('providerService', () => {
             Infrastructure: fake.returns({ deploy: fakeDeploy }),
           }
 
-          replace(dynamicLoader, 'dynamicLoad', fake.resolves(fakeInfrastructure))
+          replace(dynamicLoader, 'dynamicLoadModule', fake.resolves(fakeInfrastructure))
 
           const fakeProvider = {
             packageDescription: fake.returns(fakeProviderDescription),
@@ -78,7 +78,7 @@ describe('providerService', () => {
           await providerService.deployToCloudProvider(fakeConfig, logger)
 
           expect(fakeProvider.packageDescription).to.have.been.calledOnce
-          expect(dynamicLoader.dynamicLoad).to.have.been.calledWith('some-provider-package-infrastructure')
+          expect(dynamicLoader.dynamicLoadModule).to.have.been.calledWith('some-provider-package-infrastructure')
           expect(fakeInfrastructure.Infrastructure).to.have.been.calledWith([])
           expect(fakeDeploy).to.have.been.calledOnceWith(fakeConfig, logger)
         })
@@ -96,7 +96,7 @@ describe('providerService', () => {
             Infrastructure: fake.returns({ deploy: fakeDeploy }),
           }
 
-          replace(dynamicLoader, 'dynamicLoad', fake.resolves(fakeInfrastructure))
+          replace(dynamicLoader, 'dynamicLoadModule', fake.resolves(fakeInfrastructure))
 
           const fakeProvider = {
             packageDescription: fake.returns(fakeProviderDescription),
@@ -119,7 +119,7 @@ describe('providerService', () => {
           await providerService.deployToCloudProvider(fakeConfig, logger)
 
           expect(fakeProvider.packageDescription).to.have.been.calledOnce
-          expect(dynamicLoader.dynamicLoad).to.have.been.calledWith('some-provider-package-infrastructure')
+          expect(dynamicLoader.dynamicLoadModule).to.have.been.calledWith('some-provider-package-infrastructure')
           expect(fakeInfrastructure.Infrastructure).to.have.been.calledWith(fakeRockets)
           expect(fakeDeploy).to.have.been.calledOnceWith(fakeConfig, logger)
         })
@@ -137,7 +137,7 @@ describe('providerService', () => {
           Infrastructure: fake.returns({}),
         }
 
-        replace(dynamicLoader, 'dynamicLoad', fake.resolves(fakeInfrastructure))
+        replace(dynamicLoader, 'dynamicLoadModule', fake.resolves(fakeInfrastructure))
 
         const fakeProvider = {
           packageDescription: fake.returns(fakeProviderDescription),
@@ -155,7 +155,7 @@ describe('providerService', () => {
         )
 
         expect(fakeProvider.packageDescription).to.have.been.calledOnce
-        expect(dynamicLoader.dynamicLoad).to.have.been.calledWith('some-provider-package-infrastructure')
+        expect(dynamicLoader.dynamicLoadModule).to.have.been.calledWith('some-provider-package-infrastructure')
         expect(fakeInfrastructure.Infrastructure).to.have.been.calledWith([])
       })
     })
@@ -175,7 +175,7 @@ describe('providerService', () => {
             Infrastructure: fake.returns({ nuke: fakeNuke }),
           }
 
-          replace(dynamicLoader, 'dynamicLoad', fake.resolves(fakeInfrastructure))
+          replace(dynamicLoader, 'dynamicLoadModule', fake.resolves(fakeInfrastructure))
 
           const fakeProvider = {
             packageDescription: fake.returns(fakeProviderDescription),
@@ -191,7 +191,7 @@ describe('providerService', () => {
           await providerService.nukeCloudProviderResources(fakeConfig, logger)
 
           expect(fakeProvider.packageDescription).to.have.been.calledOnce
-          expect(dynamicLoader.dynamicLoad).to.have.been.calledWith('some-provider-package-infrastructure')
+          expect(dynamicLoader.dynamicLoadModule).to.have.been.calledWith('some-provider-package-infrastructure')
           expect(fakeInfrastructure.Infrastructure).to.have.been.calledWith([])
           expect(fakeNuke).to.have.been.calledOnceWith(fakeConfig, logger)
         })
@@ -209,7 +209,7 @@ describe('providerService', () => {
             Infrastructure: fake.returns({ nuke: fakeNuke }),
           }
 
-          replace(dynamicLoader, 'dynamicLoad', fake.resolves(fakeInfrastructure))
+          replace(dynamicLoader, 'dynamicLoadModule', fake.resolves(fakeInfrastructure))
 
           const fakeProvider = {
             packageDescription: fake.returns(fakeProviderDescription),
@@ -232,7 +232,7 @@ describe('providerService', () => {
           await providerService.nukeCloudProviderResources(fakeConfig, logger)
 
           expect(fakeProvider.packageDescription).to.have.been.calledOnce
-          expect(dynamicLoader.dynamicLoad).to.have.been.calledWith('some-provider-package-infrastructure')
+          expect(dynamicLoader.dynamicLoadModule).to.have.been.calledWith('some-provider-package-infrastructure')
           expect(fakeInfrastructure.Infrastructure).to.have.been.calledWith(fakeRockets)
           expect(fakeNuke).to.have.been.calledOnceWith(fakeConfig, logger)
         })
@@ -250,7 +250,7 @@ describe('providerService', () => {
           Infrastructure: fake.returns({}),
         }
 
-        replace(dynamicLoader, 'dynamicLoad', fake.resolves(fakeInfrastructure))
+        replace(dynamicLoader, 'dynamicLoadModule', fake.resolves(fakeInfrastructure))
 
         const fakeProvider = {
           packageDescription: fake.returns(fakeProviderDescription),
@@ -268,7 +268,7 @@ describe('providerService', () => {
         )
 
         expect(fakeProvider.packageDescription).to.have.been.calledOnce
-        expect(dynamicLoader.dynamicLoad).to.have.been.calledWith('some-provider-package-infrastructure')
+        expect(dynamicLoader.dynamicLoadModule).to.have.been.calledWith('some-provider-package-infrastructure')
         expect(fakeInfrastructure.Infrastructure).to.have.been.calledWith([])
       })
     })
@@ -287,7 +287,7 @@ describe('providerService', () => {
           Infrastructure: fake.returns({ start: fakeStart }),
         }
 
-        replace(dynamicLoader, 'dynamicLoad', fake.resolves(fakeInfrastructure))
+        replace(dynamicLoader, 'dynamicLoadModule', fake.resolves(fakeInfrastructure))
 
         const fakeProvider = {
           packageDescription: fake.returns(fakeProviderDescription),
@@ -302,7 +302,7 @@ describe('providerService', () => {
         await providerService.startProvider(3000, fakeConfig)
 
         expect(fakeProvider.packageDescription).to.have.been.calledOnce
-        expect(dynamicLoader.dynamicLoad).to.have.been.calledWith('some-provider-package-infrastructure')
+        expect(dynamicLoader.dynamicLoadModule).to.have.been.calledWith('some-provider-package-infrastructure')
         expect(fakeStart).to.have.been.calledOnceWith(fakeConfig, 3000)
       })
     })
@@ -318,7 +318,7 @@ describe('providerService', () => {
           Infrastructure: fake.returns({}),
         }
 
-        replace(dynamicLoader, 'dynamicLoad', fake.resolves(fakeInfrastructure))
+        replace(dynamicLoader, 'dynamicLoadModule', fake.resolves(fakeInfrastructure))
 
         const fakeProvider = {
           packageDescription: fake.returns(fakeProviderDescription),
@@ -335,7 +335,7 @@ describe('providerService', () => {
         )
 
         expect(fakeProvider.packageDescription).to.have.been.calledOnce
-        expect(dynamicLoader.dynamicLoad).to.have.been.calledWith('some-provider-package-infrastructure')
+        expect(dynamicLoader.dynamicLoadModule).to.have.been.calledWith('some-provider-package-infrastructure')
       })
     })
   })

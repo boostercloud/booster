@@ -1,5 +1,5 @@
 import { BoosterConfig, Logger, ProviderInfrastructure } from '@boostercloud/framework-types'
-import { dynamicLoad } from './dynamic-loader'
+import { dynamicLoadModule } from './dynamic-loader'
 
 export function assertNameIsCorrect(name: string): void {
   // Current characters max length: 37
@@ -34,7 +34,7 @@ function validateConfig(config: BoosterConfig): void {
  */
 async function loadInfrastructure(config: BoosterConfig): Promise<ProviderInfrastructure> {
   const packageDescription = config.provider.packageDescription()
-  const { Infrastructure } = await dynamicLoad(packageDescription.name + '-infrastructure')
+  const { Infrastructure } = await dynamicLoadModule(packageDescription.name + '-infrastructure')
   return Infrastructure(config.rockets)
 }
 

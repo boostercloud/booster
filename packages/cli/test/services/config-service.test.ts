@@ -34,7 +34,7 @@ describe('configService', () => {
 
       replace(
         dynamicLoader,
-        'dynamicLoad',
+        'dynamicLoadModule',
         fake.resolves({
           Booster: {
             config: config,
@@ -58,7 +58,7 @@ describe('configService', () => {
 
       replace(
         dynamicLoader,
-        'dynamicLoad',
+        'dynamicLoadModule',
         fake.resolves({
           Booster: {
             config: config,
@@ -84,7 +84,7 @@ describe('configService', () => {
 
       replace(
         dynamicLoader,
-        'dynamicLoad',
+        'dynamicLoadModule',
         fake.resolves({
           Booster: {
             config: config,
