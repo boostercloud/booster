@@ -1,24 +1,28 @@
 import { DynamoDB } from 'aws-sdk'
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import { Booster } from '@boostercloud/framework-core'
-import { inspect } from 'util'
 import { errorResponse, okResponse } from './response'
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
     const dynamoDB = await new DynamoDB()
-    //const allowedParams = ['model', 'pointInTimeISO']
+    const allowedParams = ['model', 'pointInTimeISO']
     let tableNames
-    console.log('/////// EVENT INPUT ///////')
-    console.log(inspect(event, true, null, true))
-    const data = JSON.parse(event.body!)
-    console.log(data)
-    const pointInTimeISO = data.pointInTimeISO
-    const model = data.model
+    const body = JSON.parse(event.body!)
+    console.log(body)
+    const pointInTimeISO = body.pointInTimeISO
+    const model = body.model
+
+    const unknownParamsProvided = !Object.keys(body).every((p: string) => allowedParams.includes(p))
+    if (unknownParamsProvided) {
+      throw Error(
+        'Restore service has encountered unknown parameters. Valid parameters are: "model" and "pointInTimeISO"'
+      )
+    }
     // If 'model' is not specified, then call restoreModels with all tables
     // If 'model' is specified, transform it into an array with its tableName and then call restoreModels
     // If request has unknown params, throw an error
-    if (event.body) {
+    if (model) {
       tableNames = new Array(Booster.config.resourceNames.forReadModel(model))
     } else {
       tableNames = process.env['TABLE_NAMES']!.split(',')
@@ -44,7 +48,7 @@ const restoreModels = async (tableNames: Array<string>, dynamoDB: DynamoDB, poin
         .promise()
       response.push(tableDescription.TableDescription)
     } catch (e) {
-      throw Error(`An error has occurred while restoring all your models - ${e.message}`)
+      throw Error(`An error has occurred while restoring your model - ${e.message}`)
     }
   }
   return response

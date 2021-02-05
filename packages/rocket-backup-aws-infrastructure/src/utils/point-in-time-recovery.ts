@@ -4,8 +4,14 @@ import { LambdaRestApi } from '@aws-cdk/aws-apigateway'
 import { Table } from '@aws-cdk/aws-dynamodb'
 import { BackupStackParams } from './types'
 import * as path from 'path'
+import { BoosterConfig } from '@boostercloud/framework-types'
 
-export const applyPointInTimeRecoveryBackup = (stack: Stack, params: BackupStackParams, tables: Array<Table>): void => {
+export const applyPointInTimeRecoveryBackup = (
+  stack: Stack,
+  params: BackupStackParams,
+  config: BoosterConfig,
+  tables: Array<Table>
+): void => {
   tables.map((table: Table) => {
     table.node['host'].table.pointInTimeRecoverySpecification = {
       pointInTimeRecoveryEnabled: true,
@@ -13,19 +19,15 @@ export const applyPointInTimeRecoveryBackup = (stack: Stack, params: BackupStack
   })
 
   if (params.pointInTimeRules?.generateRestoreAPI) {
-    createRestoreAPI(stack, tables)
+    createRestoreAPI(stack, config, tables)
   }
 }
 
-export const createRestoreAPI = (stack: Stack, tables: Array<Table>): void => {
-  console.log('///// WORKING DIRECTORY /////')
-  console.log(__dirname)
-  console.log(process.cwd())
+export const createRestoreAPI = (stack: Stack, config: BoosterConfig, tables: Array<Table>): void => {
   // __dirname is /dist/utils and we need /dist/lambda
   const lambdaDir = __dirname.split('/')
+  const boosterEnv = config.environmentName
   lambdaDir.pop()
-  console.log(lambdaDir)
-  console.log(path.join(lambdaDir.join('/'), 'lambda'))
 
   const backend = new Function(stack, 'RestoreBackup-Backend', {
     runtime: Runtime.NODEJS_12_X,
@@ -35,17 +37,20 @@ export const createRestoreAPI = (stack: Stack, tables: Array<Table>): void => {
     memorySize: 1024,
     environment: {
       TABLE_NAMES: tables.map((table) => table.tableName).join(','),
+      BOOSTER_ENV: boosterEnv,
     },
   })
 
   // Permissions:
   // 1. restoreTableToPointInTime(..) -
-  tables.map((table) => {
+  /*tables.map((table) => {
     table.grant(backend, '', '')
-  })
+  })*/
 
   const api = new LambdaRestApi(stack, 'RestoreBackup-API', {
     handler: backend,
+    proxy: false,
+    deployOptions: { stageName: boosterEnv },
   })
 
   // POST <url>/backup/restore - Trigger the restore backup process
