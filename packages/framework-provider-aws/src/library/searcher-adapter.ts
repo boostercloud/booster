@@ -59,8 +59,11 @@ export async function searchEvents(
         value: eventEnvelope.value as EventInterface,
       }
     })
-    .sort()
-    .reverse()
+    .sort((a, b) => {
+      if (a.createdAt > b.createdAt) return -1
+      if (a.createdAt < b.createdAt) return 1
+      return 0
+    })
   return eventSearchResults
 }
 
@@ -138,7 +141,6 @@ async function searchEventsByEntity(
   const params: DocumentClient.QueryInput = {
     TableName: config.resourceNames.eventsStore,
     IndexName: eventsStoreAttributes.indexByEntity.name(config),
-    ConsistentRead: true,
     ScanIndexForward: false, // Descending order (newer timestamps first)
     KeyConditionExpression: `${eventsStoreAttributes.indexByEntity.partitionKey} = :partitionKey ${timeQuery.expression}`,
     ExpressionAttributeValues: {
@@ -150,26 +152,7 @@ async function searchEventsByEntity(
   logger.debug('Searching events by entity. Index query params: ', params)
   const partialResult = await dynamoDB.query(params).promise()
   const indexRecords = (partialResult.Items as Array<EventStoreKeys>) ?? []
-  console.log(indexRecords)
-
-  // Now query the table to get all data
-  const paramss: DocumentClient.BatchGetItemInput = {
-    RequestItems: {
-      [config.resourceNames.eventsStore]: {
-        ConsistentRead: true,
-        Keys: indexRecords.map((record) => {
-          return {
-            [eventsStoreAttributes.partitionKey]: record[eventsStoreAttributes.partitionKey],
-            [eventsStoreAttributes.sortKey]: record[eventsStoreAttributes.sortKey],
-          }
-        }),
-      },
-    },
-  }
-
-  logger.debug('Searching events by entity. Final query params: ', params)
-  const result = await dynamoDB.batchGet(paramss).promise()
-  return (result.Responses?.[config.resourceNames.eventsStore] as Array<EventEnvelope>) ?? []
+  return findEventsDataWithKeys(dynamoDB, config, logger, indexRecords)
 }
 
 async function searchEventsByType(
@@ -179,7 +162,53 @@ async function searchEventsByType(
   type: string,
   timeQuery: TimeQueryData
 ): Promise<Array<EventEnvelope>> {
-  return Promise.resolve([])
+  // TODO: manage pagination
+  // Fist query the index
+  const params: DocumentClient.QueryInput = {
+    TableName: config.resourceNames.eventsStore,
+    IndexName: eventsStoreAttributes.indexByType.name(config),
+    ScanIndexForward: false, // Descending order (newer timestamps first)
+    KeyConditionExpression: `${eventsStoreAttributes.indexByType.partitionKey} = :partitionKey ${timeQuery.expression}`,
+    ExpressionAttributeValues: {
+      ...timeQuery.attributeValues,
+      ':partitionKey': type,
+    },
+  }
+
+  logger.debug('Searching events by type. Index query params: ', params)
+  const partialResult = await dynamoDB.query(params).promise()
+  const indexRecords = (partialResult.Items as Array<EventStoreKeys>) ?? []
+  return findEventsDataWithKeys(dynamoDB, config, logger, indexRecords)
+}
+
+async function findEventsDataWithKeys(
+  dynamoDB: DynamoDB.DocumentClient,
+  config: BoosterConfig,
+  logger: Logger,
+  keys: Array<EventStoreKeys>
+): Promise<Array<EventEnvelope>> {
+  if (keys.length < 1) {
+    return []
+  }
+  // TODO: Manage pagination
+  // Now query the table to get all data
+  const paramss: DocumentClient.BatchGetItemInput = {
+    RequestItems: {
+      [config.resourceNames.eventsStore]: {
+        ConsistentRead: true,
+        Keys: keys.map((record) => {
+          return {
+            [eventsStoreAttributes.partitionKey]: record[eventsStoreAttributes.partitionKey],
+            [eventsStoreAttributes.sortKey]: record[eventsStoreAttributes.sortKey],
+          }
+        }),
+      },
+    },
+  }
+
+  logger.debug('Finding events data for keys: ', keys)
+  const result = await dynamoDB.batchGet(paramss).promise()
+  return (result.Responses?.[config.resourceNames.eventsStore] as Array<EventEnvelope>) ?? []
 }
 
 export async function searchReadModel(
