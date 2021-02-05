@@ -7,6 +7,8 @@ describe('build', () => {
     describe('Build class', () => {
         beforeEach(() => {
             replace(configService,'compileProjectAndLoadConfig', fake.resolves({}))
+            //replace(oraLogger, 'info', fake.resolves({}))
+            //replace(oraLogger, 'start', fake.resolves({}))
         })
 
         afterEach(() => {
@@ -14,6 +16,7 @@ describe('build', () => {
         })
 
         it('runs the command', async () => {
+            //await new Build.default([], {} as IConfig).run()
             expect(1).to.eq(1)
         })
     })
