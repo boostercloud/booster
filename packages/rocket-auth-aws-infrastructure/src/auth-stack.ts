@@ -388,11 +388,11 @@ export class AuthStack {
     const { issuer, jwksUri } = tokenVerifier
 
     const graphQLHandler = stack.node.tryFindChild('graphql-handler') as Function
-    graphQLHandler.addEnvironment(JWT_ENV_VARS.BOOSTER_JWKS_URI, jwksUri)
-    graphQLHandler.addEnvironment(JWT_ENV_VARS.BOOSTER_JWT_ISSUER, issuer)
+    graphQLHandler?.addEnvironment(JWT_ENV_VARS.BOOSTER_JWKS_URI, jwksUri)
+    graphQLHandler?.addEnvironment(JWT_ENV_VARS.BOOSTER_JWT_ISSUER, issuer)
 
     const subscriptionHandler = stack.node.tryFindChild('subscriptions-notifier') as Function
-    subscriptionHandler.addEnvironment(JWT_ENV_VARS.BOOSTER_JWKS_URI, jwksUri)
-    subscriptionHandler.addEnvironment(JWT_ENV_VARS.BOOSTER_JWT_ISSUER, issuer)
+    subscriptionHandler?.addEnvironment(JWT_ENV_VARS.BOOSTER_JWKS_URI, jwksUri)
+    subscriptionHandler?.addEnvironment(JWT_ENV_VARS.BOOSTER_JWT_ISSUER, issuer)
   }
 }
