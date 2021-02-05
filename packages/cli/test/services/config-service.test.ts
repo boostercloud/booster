@@ -19,6 +19,29 @@ describe('configService', () => {
     restore()
   })
 
+  describe('checkAndCompileProject', () => {
+    let checkItIsABoosterProject: SinonStub
+
+    beforeEach(() => {
+      checkItIsABoosterProject = stub(projectChecker, 'checkItIsABoosterProject').resolves()
+    })
+
+    it('loads the config when the selected environment exists', async () => {
+      const config = new BoosterConfig('build')
+
+      const rewires = [
+        configService.__set__('compileProject', fake())
+      ]
+
+      replace(environment, 'currentEnvironment', fake.returns('test'))
+
+      await expect(configService.checkAndCompileProject(userProjectPath)).to.eventually.become(config)
+      expect(checkItIsABoosterProject).to.have.been.calledOnceWithExactly(userProjectPath)
+
+      rewires.forEach((fn) => fn())
+    })
+  })
+
   describe('compileProjectAndLoadConfig', () => {
     let checkItIsABoosterProject: SinonStub
 
