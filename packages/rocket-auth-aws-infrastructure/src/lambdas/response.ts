@@ -1,5 +1,5 @@
 import { APIGatewayProxyResult } from 'aws-lambda'
-import { AWSError } from 'aws-sdk'
+import { AWSError, CognitoIdentityServiceProvider } from 'aws-sdk'
 import { httpStatusCodeFor } from '@boostercloud/framework-types'
 
 export const response = (statusCode: number, data: object): APIGatewayProxyResult => {
@@ -20,4 +20,10 @@ export const errorResponse = (e: AWSError): APIGatewayProxyResult => {
 
 export const okResponse = (data: object): APIGatewayProxyResult => {
   return response(200, data)
+}
+
+export const tokenResponse = (
+  authResult?: CognitoIdentityServiceProvider.AuthenticationResultType
+): APIGatewayProxyResult => {
+  return response(200, { ...authResult })
 }
