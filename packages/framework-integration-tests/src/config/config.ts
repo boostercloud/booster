@@ -8,14 +8,14 @@ if (process.env.BOOSTER_ENV === 'local') {
 
   Booster.configure('local', (config: BoosterConfig): void => {
     config.appName = 'my-store'
-    config.provider = Local.Provider()
+    config.provider = Local.Provider
   })
 }
 
 Booster.configure('development', (config: BoosterConfig): void => {
   config.appName = 'my-store'
-  config.provider = AWS.Provider()
   config.assets = ['assets', 'assetFile.txt']
+  config.provider = AWS.Provider
 })
 
 Booster.configure('production', (config: BoosterConfig): void => {
@@ -28,6 +28,6 @@ Booster.configure('production', (config: BoosterConfig): void => {
   config.env['BOOSTER_APP_SUFFIX'] = appNameSuffix
 
   config.appName = 'my-store-' + appNameSuffix
-  config.provider = AWS.Provider()
   config.assets = ['assets', 'assetFile.txt']
+  config.provider = AWS.Provider
 })

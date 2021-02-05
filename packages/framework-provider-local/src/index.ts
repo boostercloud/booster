@@ -1,4 +1,4 @@
-import { ProviderLibrary, ProviderInfrastructure } from '@boostercloud/framework-types'
+import { ProviderLibrary } from '@boostercloud/framework-types'
 import { rawSignUpDataToUserEnvelope } from './library/auth-adapter'
 import {
   rawEventsToEnvelopes,
@@ -22,7 +22,7 @@ const eventRegistry = new EventRegistry()
 const readModelRegistry = new ReadModelRegistry()
 const userApp: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
 
-export const Provider = (): ProviderLibrary => ({
+export const Provider: ProviderLibrary = {
   // ProviderEventsLibrary
   events: {
     rawToEnvelopes: rawEventsToEnvelopes,
@@ -78,11 +78,16 @@ export const Provider = (): ProviderLibrary => ({
   },
   // ScheduledCommandsLibrary
   scheduled: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rawToEnvelope: undefined as any,
   },
-  // ProviderInfrastructureGetter
-  infrastructure: () =>
-    require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
-})
+  packageDescription: () => {
+    const { name, version } = require('../package.json')
+    return {
+      name,
+      version,
+    }
+  },
+}
 
 function notImplemented(): void {}

@@ -9,4 +9,4 @@ timeout: 1500000
 file:
   - './integration/providers/aws/functionality/setup.ts'
 full-trace: true
-# bail: true -- This option makes the test suite stop after the first failure. Might make sense to enable once tests are stable
+bail: true

@@ -8,10 +8,10 @@ import { runCommand } from '../../helper/runCommand'
 import path = require('path')
 import { ChildProcess } from 'child_process'
 
-const cliBinaryPath = path.join('..', 'cli', 'bin', 'run')
+const cliBinaryPath = path.join('..', '..', 'cli', 'bin', 'run')
 
 export function start(environmentName = 'local', path: string): ChildProcess {
-  return runCommand(path, `../${cliBinaryPath} start -e ${environmentName}`).childProcess
+  return runCommand(path, `${cliBinaryPath} start -e ${environmentName}`).childProcess
 }
 
 // --- Auth helpers ---

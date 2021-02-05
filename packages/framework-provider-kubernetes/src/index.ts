@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ProviderInfrastructure, ProviderLibrary } from '@boostercloud/framework-types'
+import { ProviderLibrary } from '@boostercloud/framework-types'
 
-export const Provider = (): ProviderLibrary => ({
+export const Provider: ProviderLibrary = {
   // ProviderEventsLibrary
   events: {
     rawToEnvelopes: undefined as any,
@@ -47,9 +47,13 @@ export const Provider = (): ProviderLibrary => ({
   scheduled: {
     rawToEnvelope: undefined as any,
   },
-  // ProviderInfrastructureGetter
-  infrastructure: () =>
-    require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
-})
+  packageDescription: () => {
+    const { name, version } = require('../package.json')
+    return {
+      name,
+      version,
+    }
+  },
+}
 
 function notImplemented(): void {}
