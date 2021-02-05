@@ -660,13 +660,22 @@ At this point, we've:
 With this, you already know the basics to build event-driven, CQRS-based applications
 with Booster.
 
-Let's deploy our application to the cloud to see it working. It is as simple as running
+You can check that code compiles correctly by running the build command:
+
+```bash
+boost build
+```
+
+Now, let's deploy our application to the cloud to see it working. It is as simple as running
 the deploy command:
 
 ```bash
 boost deploy -e production
 ```
 
+> Deploy command automatically builds the project for you before performing updates in the cloud provider, 
+  so, build command it's not required beforehand.
+  
 > With `-e production` we are specifying which environment we want to deploy. We'll talk about them later.
 
 It will take a couple of minutes to deploy all the resources. Once finished, you will see
