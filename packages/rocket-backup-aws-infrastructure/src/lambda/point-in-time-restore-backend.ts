@@ -9,11 +9,16 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     const allowedParams = ['model', 'pointInTimeISO']
     let tableNames
     const body = JSON.parse(event.body!)
+    console.log('////// BODY OBJECT //////')
     console.log(body)
-    const pointInTimeISO = body.pointInTimeISO
-    const model = body.model
-
-    const unknownParamsProvided = !Object.keys(body).every((p: string) => allowedParams.includes(p))
+    const pointInTimeISO = body?.pointInTimeISO
+    const model = body?.model
+    console.log('////// BODY PARAMS //////')
+    console.log(pointInTimeISO)
+    console.log(model)
+    const unknownParamsProvided = body ? !Object.keys(body).every((p: string) => allowedParams.includes(p)) : false
+    console.log('////// UNKNOWN PARAMS PROVIDED //////')
+    console.log(unknownParamsProvided)
     if (unknownParamsProvided) {
       throw Error(
         'Restore service has encountered unknown parameters. Valid parameters are: "model" and "pointInTimeISO"'
@@ -23,10 +28,14 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     // If 'model' is specified, transform it into an array with its tableName and then call restoreModels
     // If request has unknown params, throw an error
     if (model) {
+      // On compile time, appName = 'new-booster-app'. That's why we pass the real app name through an env variable
+      Booster.config.appName = process.env['APP_NAME']!
       tableNames = new Array(Booster.config.resourceNames.forReadModel(model))
     } else {
       tableNames = process.env['TABLE_NAMES']!.split(',')
     }
+    console.log('/////// TABLE NAMES ///////')
+    console.log(tableNames)
     const response = await restoreModels(tableNames, dynamoDB, pointInTimeISO)
     return okResponse(response)
   } catch (e) {

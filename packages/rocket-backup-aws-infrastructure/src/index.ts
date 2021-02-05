@@ -1,10 +1,9 @@
 import { BackupStack } from './backup-stack'
 import { InfrastructureRocket } from '@boostercloud/framework-provider-aws-infrastructure'
 import { BackupStackParams } from './utils/types'
-import { BoosterConfig } from '@boostercloud/framework-types'
 
-const AWSBackup = (params: BackupStackParams, config: BoosterConfig): InfrastructureRocket => ({
-  mountStack: BackupStack.mountStack.bind(null, params, config),
+const AWSBackup = (params: BackupStackParams): InfrastructureRocket => ({
+  mountStack: BackupStack.mountStack.bind(null, params),
   unmountStack: BackupStack.unmountStack.bind(null, params),
 })
 

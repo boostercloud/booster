@@ -9,7 +9,7 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 const allowedBackupTypes = ['ON_DEMAND', 'POINT_IN_TIME']
 
 export class BackupStack {
-  public static mountStack(params: BackupStackParams, config: BoosterConfig, stack: Stack): void {
+  public static mountStack(params: BackupStackParams, stack: Stack, config: BoosterConfig): void {
     if (allowedBackupTypes.includes(params.backupType)) {
       const tables = stack.node.children.filter((c: IConstruct) => c instanceof Table) as Array<Table>
       if (params.backupType === 'ON_DEMAND') {

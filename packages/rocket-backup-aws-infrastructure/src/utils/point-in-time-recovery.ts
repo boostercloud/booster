@@ -37,15 +37,25 @@ export const createRestoreAPI = (stack: Stack, config: BoosterConfig, tables: Ar
     memorySize: 1024,
     environment: {
       TABLE_NAMES: tables.map((table) => table.tableName).join(','),
+      APP_NAME: config.appName,
       BOOSTER_ENV: boosterEnv,
     },
   })
 
-  // Permissions:
-  // 1. restoreTableToPointInTime(..) -
-  /*tables.map((table) => {
-    table.grant(backend, '', '')
-  })*/
+  // Permissions for restoreTableToPointInTime(..)
+  tables.map((table: Table) => {
+    table.grant(
+      backend,
+      'dynamodb:RestoreTableToPointInTime',
+      'dynamodb:Scan',
+      'dynamodb:Query',
+      'dynamodb:UpdateItem',
+      'dynamodb:PutItem',
+      'dynamodb:GetItem',
+      'dynamodb:DeleteItem',
+      'dynamodb:BatchWriteItem'
+    )
+  })
 
   const api = new LambdaRestApi(stack, 'RestoreBackup-API', {
     handler: backend,
@@ -53,6 +63,7 @@ export const createRestoreAPI = (stack: Stack, config: BoosterConfig, tables: Ar
     deployOptions: { stageName: boosterEnv },
   })
 
+  // TODO: Check RestoreSummary param, to try to build a GET endpoint
   // POST <url>/backup/restore - Trigger the restore backup process
   api.root
     .addResource('backup')
