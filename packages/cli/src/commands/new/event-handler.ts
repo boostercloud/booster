@@ -9,7 +9,7 @@ import {
 } from '../../services/generator/target'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
-import { checkCurrentDirIsABoosterProject, checkResourceExists } from '../../services/project-checker'
+import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 import { generate } from '../../services/generator'
 import * as path from 'path'
 import { templates } from '../../templates'
@@ -35,7 +35,6 @@ export default class EventHandler extends Oclif.Command {
       if (!args.eventHandlerName)
         throw "You haven't provided an event handler name, but it is required, run with --help for usage"
       if (!event) throw "You haven't provided an event, but it is required, run with --help for usage"
-      await checkResourceExists(args.eventHandlerName, 'event-handlers', '.ts')
       return run(args.eventHandlerName, event)
     } catch (error) {
       console.error(error)
