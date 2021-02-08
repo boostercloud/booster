@@ -1,0 +1,12 @@
+diff: true
+require: 'ts-node/register'
+extension:
+  - ts
+package: './package.json'
+recursive: true
+reporter: 'spec'
+timeout: 1500000
+file:
+  - './test/integration/setup.ts'
+full-trace: true
+# bail: true -- This option makes the test suite stop after the first failure. Might make sense to enable once tests are stable

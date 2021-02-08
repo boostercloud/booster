@@ -8,7 +8,7 @@ import {
   UserPoolTriggers,
 } from '@aws-cdk/aws-cognito'
 import { Effect, PolicyStatement } from '@aws-cdk/aws-iam'
-import { Cors, CorsOptions, LambdaIntegration, MethodOptions, Resource, RestApi } from '@aws-cdk/aws-apigateway'
+import { LambdaIntegration, Resource, RestApi, Cors, CorsOptions } from '@aws-cdk/aws-apigateway'
 import { createLambda } from './utils'
 import { BoosterConfig, JWT_ENV_VARS } from '@boostercloud/framework-types'
 import { Function } from '@aws-cdk/aws-lambda'
@@ -24,6 +24,11 @@ export interface AWSAuthRocketParams {
   mode: 'Passwordless' | 'UserPassword'
 }
 
+type TokenVerifier = {
+  issuer: string
+  jwksUri: string
+}
+
 // Type to unify the signature of all private methods. It will be filled along the way
 type ResourceParams = {
   params: AWSAuthRocketParams
@@ -35,6 +40,7 @@ type ResourceParams = {
   userPoolClientId?: string
   defaultCorsPreflightOptions?: CorsOptions
   authApi?: RestApi
+  tokenVerifier?: TokenVerifier
 }
 
 export class AuthStack {
@@ -57,9 +63,10 @@ export class AuthStack {
       resourceParams.authApi = authApi
 
       const tokenVerifier = AuthStack.tokenVerifier(resourceParams)
+      resourceParams.tokenVerifier = tokenVerifier
 
-      AuthStack.createEnvVars(stack, tokenVerifier)
-      AuthStack.printOutput(resourceParams, tokenVerifier)
+      AuthStack.createEnvVars(resourceParams)
+      AuthStack.printOutput(resourceParams)
     }
   }
 
@@ -308,26 +315,6 @@ export class AuthStack {
   ): void {
     const { userPool, rocketStackPrefixId, userPoolClientId, params, stack } = resourceParams
 
-    const allowedOriginHeaderForCors = {
-      'method.response.header.Access-Control-Allow-Origin': true,
-    }
-    const methodOptions: MethodOptions = {
-      methodResponses: [
-        {
-          statusCode: '200',
-          responseParameters: allowedOriginHeaderForCors,
-        },
-        {
-          statusCode: '400',
-          responseParameters: allowedOriginHeaderForCors,
-        },
-        {
-          statusCode: '500',
-          responseParameters: allowedOriginHeaderForCors,
-        },
-      ],
-    }
-
     const authLambda = createLambda(stack, `${rocketStackPrefixId}-${name}`, handler, {
       userPoolId: userPool!.userPoolId,
       userPoolClientId: userPoolClientId!,
@@ -335,7 +322,7 @@ export class AuthStack {
       ...env,
     })
 
-    resource.addMethod('POST', new LambdaIntegration(authLambda), methodOptions)
+    resource.addMethod('POST', new LambdaIntegration(authLambda))
 
     authLambda.addToRolePolicy(
       new PolicyStatement({
@@ -346,29 +333,48 @@ export class AuthStack {
     )
   }
 
-  private static printOutput(resourceParams: ResourceParams, tokenVerifier: { issuer: string; jwksUri: string }): void {
-    const { stack, authApi } = resourceParams
+  /**
+   * It prints the following Cloud Formation output vars:
+   *  AuthApiEndpoint: Base auth entpoint
+   *  AuthApiIssuer: Issuer which sign jwt tokens
+   *  AuthApiJwksUri: Uri with the public rsa keys to validate signed tokens
+   *  AuthUserPoolId: User pool id, useful for integration tests
+   *  AuthUserPoolClientId: User pool client id, useful for integration tests
+   * @param resourceParams current resource params
+   */
+  private static printOutput(resourceParams: ResourceParams): void {
+    const { stack, authApi, tokenVerifier } = resourceParams
     new CfnOutput(stack, 'AuthApiEndpoint', {
       value: authApi!.url + 'auth',
       description: 'Auth API endpoint',
     })
 
     new CfnOutput(stack, 'AuthApiIssuer', {
-      value: tokenVerifier.issuer,
+      value: tokenVerifier?.issuer!,
       description: 'Auth API JWT issuer',
     })
 
     new CfnOutput(stack, 'AuthApiJwksUri', {
-      value: tokenVerifier.jwksUri,
+      value: tokenVerifier?.jwksUri!,
       description: 'Auth API JKWS URI',
+    })
+
+    new CfnOutput(stack, 'AuthUserPoolId', {
+      value: resourceParams.userPool?.userPoolId!,
+      description: 'Auth UserPoolId',
+    })
+
+    new CfnOutput(stack, 'AuthUserPoolClientId', {
+      value: resourceParams.userPoolClientId!,
+      description: 'Auth UserPoolClientId',
     })
   }
   /**
    * Helper to generate a tokenVerifier object based on the generated UserPool and the current Stack
    * @param resourceParams current resource params
-   * @returns { issuer: string; jwksUri: string }
+   * @returns TokenVerifier object, containing the issuer and jwksUri
    */
-  private static tokenVerifier(resourceParams: ResourceParams): { issuer: string; jwksUri: string } {
+  private static tokenVerifier(resourceParams: ResourceParams): TokenVerifier {
     const { stack, userPool } = resourceParams
 
     const issuer = `https://cognito-idp.${stack.region}.${stack.urlSuffix}/${userPool?.userPoolId}`
@@ -381,11 +387,11 @@ export class AuthStack {
   }
   /**
    * It will setup the issuer and jwksUri in the core lambas where token verification is needed
-   * @param stack current stack to find the main core lambdas
-   * @param tokenVerifier
+   * @param resourceParams current resource params
    */
-  private static createEnvVars(stack: Stack, tokenVerifier: { issuer: string; jwksUri: string }): void {
-    const { issuer, jwksUri } = tokenVerifier
+  private static createEnvVars(resourceParams: ResourceParams): void {
+    const { stack, tokenVerifier } = resourceParams
+    const { issuer, jwksUri } = tokenVerifier!
 
     const graphQLHandler = stack.node.tryFindChild('graphql-handler') as Function
     graphQLHandler?.addEnvironment(JWT_ENV_VARS.BOOSTER_JWKS_URI, jwksUri)

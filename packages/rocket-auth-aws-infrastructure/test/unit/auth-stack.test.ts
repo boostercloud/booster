@@ -1,6 +1,6 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { App, CfnOutput, Stack, StackProps } from '@aws-cdk/core'
-import { AuthStack, AWSAuthRocketParams } from '../src/auth-stack'
+import { AuthStack, AWSAuthRocketParams } from '../../src/auth-stack'
 import * as lambda from '@aws-cdk/aws-lambda'
 
 import * as chai from 'chai'
