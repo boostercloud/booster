@@ -1,6 +1,7 @@
 import { Command, flags } from '@oclif/command'
 import { nukeCloudProviderResources } from '../services/provider-service'
 import { compileProjectAndLoadConfig } from '../services/config-service'
+import { checkCurrentDirBoosterVersion } from '../services/project-checker'
 import { BoosterConfig, Logger } from '@boostercloud/framework-types'
 import { Script } from '../common/script'
 import Brand from '../common/brand'
@@ -54,6 +55,9 @@ export default class Nuke extends Command {
 
   public async run(): Promise<void> {
     const { flags } = this.parse(Nuke)
+
+    await checkCurrentDirBoosterVersion(logger, this.config.userAgent)
+    
     if (initializeEnvironment(logger, flags.environment)) {
       await runTasks(
         askToConfirmRemoval(new Prompter(), flags.force, compileProjectAndLoadConfig(process.cwd())),
