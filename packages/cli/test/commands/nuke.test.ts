@@ -156,7 +156,7 @@ describe('nuke', () => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.be.equal('Flag --environment expects a value')
+        expect(exceptionMessage).to.to.contain('--environment expects a value')
         expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
         expect(providerService.nukeCloudProviderResources).to.have.not.been.called
     })
@@ -171,7 +171,7 @@ describe('nuke', () => {
         exceptionMessage = e.message
       }
       expect(exceptionThrown).to.be.equal(true)
-      expect(exceptionMessage).to.be.equal('Flag --environment expects a value')
+      expect(exceptionMessage).to.to.contain('--environment expects a value')
       expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
       expect(providerService.nukeCloudProviderResources).to.have.not.been.called
     })

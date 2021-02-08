@@ -95,8 +95,8 @@ describe('new', (): void => {
         replace(console, 'error', fake.resolves({}))
         await new Command([], {} as IConfig).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(commandsRoot)
-        expect(console.error).to.have.been.calledWith(
-          "You haven't provided a command name, but it is required, run with --help for usage"
+        expect(console.error).to.have.been.calledWithMatch(
+          /You haven't provided a command name/
         )
       })
 
@@ -110,7 +110,7 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.be.equal('Flag --fields expects a value')
+        expect(exceptionMessage).to.contain('--fields expects a value')
       })
 
       it('with field with no type', async () => {
@@ -124,7 +124,7 @@ describe('new', (): void => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain(
-          'Error: Error parsing field title. Fields must be in the form of <field name>:<field type>'
+          'Error parsing field title'
         )
       })
 
@@ -138,7 +138,7 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain('Error: Error parsing field title:. Fields must be in the form of <field name>:<field type>')
+        expect(exceptionMessage).to.contain('Error parsing field title')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(commandPath)
       })
 
@@ -152,7 +152,7 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain('Error: Error parsing field title. Fields cannot be duplicated')
+        expect(exceptionMessage).to.contain('Error parsing field title')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(commandPath)
       })
     })

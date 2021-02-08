@@ -34,7 +34,7 @@ describe('parsing',() => {
             }
             expect(exceptionThrown).to.be.equal(true)
             expect(exceptionMessage).to.contain(
-                'Error parsing field title. Fields must be in the form of <field name>:<field type>'
+                'Error parsing field title'
             )
         })
 
@@ -49,7 +49,7 @@ describe('parsing',() => {
             }
             expect(exceptionThrown).to.be.equal(true)
             expect(exceptionMessage).to.contain(
-                'Error parsing field content. Fields must be in the form of <field name>:<field type>'
+                'Error parsing field content'
             )
         })
 
@@ -64,7 +64,7 @@ describe('parsing',() => {
             }
             expect(exceptionThrown).to.be.equal(true)
             expect(exceptionMessage).to.contain(
-                'Error parsing field title:. Fields must be in the form of <field name>:<field type>'
+                'Error parsing field title'
             )
         })
 
@@ -79,7 +79,7 @@ describe('parsing',() => {
             }
             expect(exceptionThrown).to.be.equal(true)
             expect(exceptionMessage).to.contain(
-                'Error parsing field content:. Fields must be in the form of <field name>:<field type>'
+                'Error parsing field content'
             )
         })
         
@@ -94,7 +94,7 @@ describe('parsing',() => {
             }
             expect(exceptionThrown).to.be.equal(true)
             expect(exceptionMessage).to.contain(
-                'Error parsing field :string. Fields must be in the form of <field name>:<field type>'
+                'Error parsing field :string'
             )
         })
 
@@ -109,7 +109,7 @@ describe('parsing',() => {
             }
             expect(exceptionThrown).to.be.equal(true)
             expect(exceptionMessage).to.contain(
-                'Error parsing field :string. Fields must be in the form of <field name>:<field type>'
+                'Error parsing field :string'
             )
         })
 
@@ -124,7 +124,7 @@ describe('parsing',() => {
             }
             expect(exceptionThrown).to.be.equal(true)
             expect(exceptionMessage).to.contain(
-                'Error parsing field title. Fields cannot be duplicated'
+                'Fields cannot be duplicated'
             )
         })
 
@@ -139,7 +139,7 @@ describe('parsing',() => {
             }
             expect(exceptionThrown).to.be.equal(true)
             expect(exceptionMessage).to.contain(
-                'Error parsing field title, content. Fields cannot be duplicated'
+                'Fields cannot be duplicated'
             )
         })
 
@@ -154,7 +154,7 @@ describe('parsing',() => {
             }
             expect(exceptionThrown).to.be.equal(true)
             expect(exceptionMessage).to.contain(
-                'Error parsing field content. Fields must be in the form of <field name>:<field type>'
+                'Error parsing field content'
             )
         })
 
@@ -169,7 +169,7 @@ describe('parsing',() => {
             }
             expect(exceptionThrown).to.be.equal(true)
             expect(exceptionMessage).to.contain(
-                'Error parsing field category. Fields must be in the form of <field name>:<field type>'
+                'Error parsing field category'
             )
         })
     })
@@ -203,7 +203,7 @@ describe('parsing',() => {
             }
             expect(exceptionThrown).to.be.equal(true)
             expect(exceptionMessage).to.contain(
-                'Error parsing projection Post. Projections must be in the form of <entity name>:<entity id>'
+                'Error parsing projection Post'
             )
         })
 
@@ -218,7 +218,7 @@ describe('parsing',() => {
             }
             expect(exceptionThrown).to.be.equal(true)
             expect(exceptionMessage).to.contain(
-                'Error parsing projection Comment. Projections must be in the form of <entity name>:<entity id>'
+                'Error parsing projection Comment'
             )
         })
 
@@ -233,7 +233,7 @@ describe('parsing',() => {
             }
             expect(exceptionThrown).to.be.equal(true)
             expect(exceptionMessage).to.contain(
-                'Error parsing projection Post:. Projections must be in the form of <entity name>:<entity id>'
+                'Error parsing projection Post:'
             )
         })
 
@@ -248,7 +248,7 @@ describe('parsing',() => {
             }
             expect(exceptionThrown).to.be.equal(true)
             expect(exceptionMessage).to.contain(
-                'Error parsing projection Comment:. Projections must be in the form of <entity name>:<entity id>'
+                'Error parsing projection Comment:'
             )
         })
         
@@ -263,7 +263,7 @@ describe('parsing',() => {
             }
             expect(exceptionThrown).to.be.equal(true)
             expect(exceptionMessage).to.contain(
-                'Error parsing projection :id. Projections must be in the form of <entity name>:<entity id>'
+                'Error parsing projection :id'
             )
         })
 
@@ -278,7 +278,7 @@ describe('parsing',() => {
             }
             expect(exceptionThrown).to.be.equal(true)
             expect(exceptionMessage).to.contain(
-                'Error parsing projection :id. Projections must be in the form of <entity name>:<entity id>'
+                'Error parsing projection :id'
             )
         })
 

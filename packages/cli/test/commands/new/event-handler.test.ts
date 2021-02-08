@@ -53,14 +53,14 @@ describe('new', (): void => {
         replace(console,'error', fake.resolves({}))
         await new EventHandler([eventHandlerName], {} as IConfig).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(eventHandlerPath)
-        expect(console.error).to.have.been.calledWith("You haven't provided an event, but it is required, run with --help for usage")
+        expect(console.error).to.have.been.calledWithMatch(/You haven't provided an event/)
       })
 
       it('with empty EventHandler name', async () => {
         replace(console,'error', fake.resolves({}))
         await new EventHandler([], {} as IConfig).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(eventHandlersRoot)
-        expect(console.error).to.have.been.calledWith("You haven't provided an event handler name, but it is required, run with --help for usage")
+        expect(console.error).to.have.been.calledWithMatch(/You haven't provided an event handler name/)
       })
 
       it('with empty event', async () => {
@@ -73,7 +73,7 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.be.equal('Flag --event expects a value')
+        expect(exceptionMessage).to.contain('--event expects a value')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(eventHandlerPath)
       })
 

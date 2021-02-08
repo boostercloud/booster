@@ -48,8 +48,8 @@ describe('new', (): void => {
         replace(console, 'error', fake.resolves({}))
         await new ScheduledCommand([], {} as IConfig).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(scheduledCommandRoot)
-        expect(console.error).to.have.been.calledWith(
-          "You haven't provided a scheduled command name, but it is required, run with --help for usage"
+        expect(console.error).to.have.been.calledWithMatch(
+          /You haven't provided a scheduled command name/
         )
       })
 

@@ -95,8 +95,8 @@ describe('new', (): void => {
         replace(console, 'error', fake.resolves({}))
         await new Type([], {} as IConfig).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(typesRoot)
-        expect(console.error).to.have.been.calledWith(
-          "You haven't provided a type name, but it is required, run with --help for usage"
+        expect(console.error).to.have.been.calledWithMatch(
+          /You haven't provided a type name/
         )
       })
 
@@ -124,7 +124,7 @@ describe('new', (): void => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain(
-          'Error: Error parsing field title. Fields must be in the form of <field name>:<field type>'
+          'Error parsing field title'
         )
       })
 
@@ -138,7 +138,7 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain('Error: Error parsing field title:. Fields must be in the form of <field name>:<field type>')
+        expect(exceptionMessage).to.contain('Error parsing field title')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(typePath)
       })
 
@@ -152,7 +152,7 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain('Error: Error parsing field title. Fields cannot be duplicated')
+        expect(exceptionMessage).to.contain('Error parsing field title')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(typePath)
       })
     })

@@ -81,7 +81,7 @@ describe('start', () => {
         exceptionMessage = e.message
       }
       expect(exceptionThrown).to.be.equal(true)
-      expect(exceptionMessage).to.be.equal('Flag --environment expects a value')
+      expect(exceptionMessage).to.to.contain('--environment expects a value')
       expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
       expect(providerService.startProvider).to.have.not.been.called
     })
@@ -96,7 +96,7 @@ describe('start', () => {
         exceptionMessage = e.message
       }
       expect(exceptionThrown).to.be.equal(true)
-      expect(exceptionMessage).to.be.equal('Flag --environment expects a value')
+      expect(exceptionMessage).to.to.contain('--environment expects a value')
       expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
       expect(providerService.startProvider).to.have.not.been.called
     })
@@ -108,7 +108,7 @@ describe('start', () => {
   
         expect(configService.compileProjectAndLoadConfig).to.have.been.called
         expect(providerService.startProvider).to.have.been.called
-        expect(oraLogger.start).to.have.been.calledWithMatch('Starting debug server on port')
+        expect(oraLogger.start).to.have.been.calledWithMatch(/Starting debug server on port/)
       })
 
       it('entering correct environment and --port flag', async () => {
@@ -116,7 +116,7 @@ describe('start', () => {
   
         expect(configService.compileProjectAndLoadConfig).to.have.been.called
         expect(providerService.startProvider).to.have.been.called
-        expect(oraLogger.start).to.have.been.calledWithMatch('Starting debug server on port 5000')
+        expect(oraLogger.start).to.have.been.calledWithMatch(/Starting debug server on port 5000/)
       })
 
       it('entering correct environment and -p flag', async () => {
@@ -124,7 +124,7 @@ describe('start', () => {
   
         expect(configService.compileProjectAndLoadConfig).to.have.been.called
         expect(providerService.startProvider).to.have.been.called
-        expect(oraLogger.start).to.have.been.calledWithMatch('Starting debug server on port 5000')
+        expect(oraLogger.start).to.have.been.calledWithMatch(/Starting debug server on port 5000/)
       })
 
       it('entering correct environment and nonexisting flag', async () => {
@@ -140,7 +140,7 @@ describe('start', () => {
         expect(exceptionMessage).to.contain('Unexpected argument: --nonexistingoption')
         expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
         expect(providerService.startProvider).to.have.not.been.called
-        expect(oraLogger.start).to.have.not.been.calledWithMatch('Starting debug server on port')
+        expect(oraLogger.start).to.have.not.been.calledWithMatch(/Starting debug server on port/)
       })
 
       it('entering correct environment and --port with incomplete port number', async () => {
@@ -153,10 +153,10 @@ describe('start', () => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain('Flag --port expects a value')
+        expect(exceptionMessage).to.contain('--port expects a value')
         expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
         expect(providerService.startProvider).to.have.not.been.called
-        expect(oraLogger.start).to.have.not.been.calledWithMatch('Starting debug server on port')
+        expect(oraLogger.start).to.have.not.been.calledWithMatch(/Starting debug server on port/)
       })
 
       it('entering correct environment and -p with incomplete port number', async () => {
@@ -169,10 +169,10 @@ describe('start', () => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain('Flag --port expects a value')
+        expect(exceptionMessage).to.contain('--port expects a value')
         expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
         expect(providerService.startProvider).to.have.not.been.called
-        expect(oraLogger.start).to.have.not.been.calledWithMatch('Starting debug server on port')
+        expect(oraLogger.start).to.have.not.been.calledWithMatch(/Starting debug server on port/)
       })
 
       it('without defining environment and -p', async () => {

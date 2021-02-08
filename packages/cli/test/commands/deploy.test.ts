@@ -124,7 +124,7 @@ describe('deploy', () => {
         exceptionMessage = e.message
       }
       expect(exceptionThrown).to.be.equal(true)
-      expect(exceptionMessage).to.be.equal('Flag --environment expects a value')
+      expect(exceptionMessage).to.contain('--environment expects a value')
       expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
       expect(providerService.deployToCloudProvider).to.have.not.been.called
     })
@@ -139,7 +139,7 @@ describe('deploy', () => {
         exceptionMessage = e.message
       }
       expect(exceptionThrown).to.be.equal(true)
-      expect(exceptionMessage).to.be.equal('Flag --environment expects a value')
+      expect(exceptionMessage).to.to.contain('--environment expects a value')
       expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
       expect(providerService.deployToCloudProvider).to.have.not.been.called
     })

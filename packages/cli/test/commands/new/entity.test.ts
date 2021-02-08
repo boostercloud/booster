@@ -173,8 +173,8 @@ describe('new', (): void => {
         replace(console, 'error', fake.resolves({}))
         await new Entity([], {} as IConfig).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(entitysRoot)
-        expect(console.error).to.have.been.calledWith(
-          "You haven't provided an entity name, but it is required, run with --help for usage"
+        expect(console.error).to.have.been.calledWithMatch(
+          /You haven't provided an entity name/
         )
       })
 
@@ -188,7 +188,7 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.be.equal('Flag --fields expects a value')
+        expect(exceptionMessage).to.contain('--fields expects a value')
       })
 
       it('with empty reduces', async () => {
@@ -201,7 +201,7 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.be.equal('Flag --reduces expects a value')
+        expect(exceptionMessage).to.contain('--reduces expects a value')
       })
 
       it('with empty fields and reduces', async () => {
@@ -215,7 +215,7 @@ describe('new', (): void => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain(
-          'Error: Error parsing field --reduces. Fields must be in the form of <field name>:<field type>'
+          'Error parsing field --reduces'
         )
       })
 
@@ -230,7 +230,7 @@ describe('new', (): void => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain(
-          'Error: Error parsing field title. Fields must be in the form of <field name>:<field type>'
+          'Error parsing field title'
         )
       })
 
@@ -244,7 +244,7 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain('Error: Error parsing field title:. Fields must be in the form of <field name>:<field type>')
+        expect(exceptionMessage).to.contain('Error parsing field title')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(entityPath)
       })
 
@@ -261,7 +261,7 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain('Error: Error parsing field title. Fields cannot be duplicated')
+        expect(exceptionMessage).to.contain('Error parsing field title')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(entityPath)
       })
     })

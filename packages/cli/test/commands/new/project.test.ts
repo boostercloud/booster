@@ -359,7 +359,7 @@ describe('new', (): void => {
           replace(console,'error', fake.resolves({}))
           await new Project.default([], {} as IConfig).run()
           expect(fs.mkdirs).to.have.not.been.calledWithMatch(`${projectName}/src`)
-          expect(console.error).to.have.been.calledWith("You haven't provided a project name, but it is required, run with --help for usage")
+          expect(console.error).to.have.been.calledWithMatch(/You haven't provided a project name/)
           expect(oraLogger.info).to.have.not.been.calledWithMatch('Project generated!')
         })
 
@@ -391,7 +391,7 @@ describe('new', (): void => {
               exceptionMessage = e.message
             }
             expect(exceptionThrown).to.be.equal(true)
-            expect(exceptionMessage).to.be.equal('Flag --homepage expects a value')
+            expect(exceptionMessage).to.contain('--homepage expects a value')
           })
 
           it('with -H and no value', async () => {
@@ -406,7 +406,7 @@ describe('new', (): void => {
               exceptionMessage = e.message
             }
             expect(exceptionThrown).to.be.equal(true)
-            expect(exceptionMessage).to.be.equal('Flag --homepage expects a value')
+            expect(exceptionMessage).to.contain('--homepage expects a value')
           })
         })
 
@@ -423,7 +423,7 @@ describe('new', (): void => {
               exceptionMessage = e.message
             }
             expect(exceptionThrown).to.be.equal(true)
-            expect(exceptionMessage).to.be.equal('Flag --author expects a value')
+            expect(exceptionMessage).to.contain('--author expects a value')
           })
 
           it('with -a and no author', async () => {
@@ -438,7 +438,7 @@ describe('new', (): void => {
               exceptionMessage = e.message
             }
             expect(exceptionThrown).to.be.equal(true)
-            expect(exceptionMessage).to.be.equal('Flag --author expects a value')
+            expect(exceptionMessage).to.contain('--author expects a value')
           })
         })
 
@@ -455,7 +455,7 @@ describe('new', (): void => {
               exceptionMessage = e.message
             }
             expect(exceptionThrown).to.be.equal(true)
-            expect(exceptionMessage).to.be.equal('Flag --description expects a value')
+            expect(exceptionMessage).to.contain('--description expects a value')
           })
 
           it('with -d and no description', async () => {
@@ -470,7 +470,7 @@ describe('new', (): void => {
               exceptionMessage = e.message
             }
             expect(exceptionThrown).to.be.equal(true)
-            expect(exceptionMessage).to.be.equal('Flag --description expects a value')
+            expect(exceptionMessage).to.contain('--description expects a value')
           })
         })
 
@@ -487,7 +487,7 @@ describe('new', (): void => {
               exceptionMessage = e.message
             }
             expect(exceptionThrown).to.be.equal(true)
-            expect(exceptionMessage).to.be.equal('Flag --license expects a value')
+            expect(exceptionMessage).to.contain('--license expects a value')
           })
 
           it('with -l and no license name', async () => {
@@ -502,7 +502,7 @@ describe('new', (): void => {
               exceptionMessage = e.message
             }
             expect(exceptionThrown).to.be.equal(true)
-            expect(exceptionMessage).to.be.equal('Flag --license expects a value')
+            expect(exceptionMessage).to.contain('--license expects a value')
           })
         })
 
@@ -519,7 +519,7 @@ describe('new', (): void => {
               exceptionMessage = e.message
             }
             expect(exceptionThrown).to.be.equal(true)
-            expect(exceptionMessage).to.be.equal('Flag --providerPackageName expects a value')
+            expect(exceptionMessage).to.contain('--providerPackageName expects a value')
           })
 
           it('with -p and no provider', async () => {
@@ -534,7 +534,7 @@ describe('new', (): void => {
               exceptionMessage = e.message
             }
             expect(exceptionThrown).to.be.equal(true)
-            expect(exceptionMessage).to.be.equal('Flag --providerPackageName expects a value')
+            expect(exceptionMessage).to.contain('--providerPackageName expects a value')
           })
         })
 
@@ -551,7 +551,7 @@ describe('new', (): void => {
               exceptionMessage = e.message
             }
             expect(exceptionThrown).to.be.equal(true)
-            expect(exceptionMessage).to.be.equal('Flag --repository expects a value')
+            expect(exceptionMessage).to.contain('--repository expects a value')
           })
 
           it('with -r and no repository name', async () => {
@@ -566,7 +566,7 @@ describe('new', (): void => {
               exceptionMessage = e.message
             }
             expect(exceptionThrown).to.be.equal(true)
-            expect(exceptionMessage).to.be.equal('Flag --repository expects a value')
+            expect(exceptionMessage).to.contain('--repository expects a value')
           })
         })
 
@@ -583,7 +583,7 @@ describe('new', (): void => {
               exceptionMessage = e.message
             }
             expect(exceptionThrown).to.be.equal(true)
-            expect(exceptionMessage).to.be.equal('Flag --version expects a value')
+            expect(exceptionMessage).to.contain('--version expects a value')
           })
 
           it('with -v and no version number', async () => {
@@ -598,7 +598,7 @@ describe('new', (): void => {
               exceptionMessage = e.message
             }
             expect(exceptionThrown).to.be.equal(true)
-            expect(exceptionMessage).to.be.equal('Flag --version expects a value')
+            expect(exceptionMessage).to.contain('--version expects a value')
           })
         })
       })
@@ -617,7 +617,7 @@ describe('new', (): void => {
               exceptionMessage = e.message
             }
             expect(exceptionThrown).to.be.equal(true)
-            expect(exceptionMessage).to.be.equal('Flag --providerPackageName expects a value')
+            expect(exceptionMessage).to.contain('--providerPackageName expects a value')
           })
         })
 
@@ -634,7 +634,7 @@ describe('new', (): void => {
                 exceptionMessage = e.message
               }
               expect(exceptionThrown).to.be.equal(true)
-              expect(exceptionMessage).to.be.equal('Flag --repository expects a url')
+              expect(exceptionMessage).to.contain('--repository expects a url')
             })
           })
       })

@@ -183,8 +183,8 @@ describe('new', (): void => {
         replace(console, 'error', fake.resolves({}))
         await new ReadModel([], {} as IConfig).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(readModelsRoot)
-        expect(console.error).to.have.been.calledWith(
-          "You haven't provided a read model name, but it is required, run with --help for usage"
+        expect(console.error).to.have.been.calledWithMatch(
+          /You haven't provided a read model name/
         )
       })
 
@@ -198,7 +198,7 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.be.equal('Flag --fields expects a value')
+        expect(exceptionMessage).to.contain('--fields expects a value')
       })
 
       it('with empty projection', async () => {
@@ -211,7 +211,7 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.be.equal('Flag --projects expects a value')
+        expect(exceptionMessage).to.contain('--projects expects a value')
       })
 
       it('with empty fields and projection', async () => {
@@ -225,7 +225,7 @@ describe('new', (): void => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain(
-          'Error: Error parsing field --projects. Fields must be in the form of <field name>:<field type>'
+          'Error parsing field --projects'
         )
       })
 
@@ -240,7 +240,7 @@ describe('new', (): void => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain(
-          'Error: Error parsing field title. Fields must be in the form of <field name>:<field type>'
+          'Error parsing field title'
         )
       })
 
@@ -254,7 +254,7 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain('Error: Error parsing field title:. Fields must be in the form of <field name>:<field type>')
+        expect(exceptionMessage).to.contain('Error parsing field title')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(readModelPath)
       })
 
@@ -269,7 +269,7 @@ describe('new', (): void => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain(
-          'Error parsing projection Post. Projections must be in the form of <entity name>:<entity id>'
+          'Error parsing projection Post'
         )
         expect(fs.outputFile).to.have.not.been.calledWithMatch(readModelPath)
       })
@@ -285,7 +285,7 @@ describe('new', (): void => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain(
-          'Error parsing projection Post:. Projections must be in the form of <entity name>:<entity id>'
+          'Error parsing projection Post'
         )
         expect(fs.outputFile).to.have.not.been.calledWithMatch(readModelPath)
       })
@@ -301,7 +301,7 @@ describe('new', (): void => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain(
-          'Error parsing projection :id. Projections must be in the form of <entity name>:<entity id>'
+          'Error parsing projection :id'
         )
         expect(fs.outputFile).to.have.not.been.calledWithMatch(readModelPath)
       })
@@ -319,7 +319,7 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain('Error: Error parsing field title. Fields cannot be duplicated')
+        expect(exceptionMessage).to.contain('Fields cannot be duplicated')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(readModelPath)
       })
     })
