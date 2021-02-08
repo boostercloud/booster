@@ -7,12 +7,20 @@ export const parseName = (name: string): Promise<HasName> => Promise.resolve({ n
 
 export const parseEvent = (event: string): Promise<HasEvent> => Promise.resolve({ event })
 
-export const parseFields = (fields: Array<string>): Promise<HasFields> =>
-  Promise.all(fields.map(parseField)).then((fields) => ({ fields }))
-
+export const parseFields = async (fields: Array<string>): Promise<HasFields> => {
+  const parsedFields = await Promise.all(fields.map(parseField))
+  const parsedFieldNames: string[] = parsedFields.map((field) => field.name)
+  const uniqueFieldNames = new Set(parsedFieldNames)
+  const duplicates = parsedFieldNames.filter((field) => !uniqueFieldNames.delete(field))
+  if (duplicates.length > 0) {
+    throw fieldDuplicatedError(duplicates.join(', '))
+  }
+  return { fields: parsedFields }
+}
+  
 function parseField(rawField: string): Promise<Field> {
   const splitInput = rawField.split(':')
-  if (splitInput.length != 2) {
+  if (splitInput.length != 2 || splitInput[0].length === 0 || splitInput[1].length === 0) {
     return Promise.reject(fieldParsingError(rawField))
   } else {
     return Promise.resolve({
@@ -27,7 +35,7 @@ export const parseProjections = (fields: Array<string>): Promise<HasProjections>
 
 async function parseProjection(rawProjection: string): Promise<Projection> {
   const splitInput = rawProjection.split(':')
-  if (splitInput.length != 2) {
+  if (splitInput.length != 2 || splitInput[0].length === 0 || splitInput[1].length === 0) {
     throw projectionParsingError(rawProjection)
   } else {
     return {
@@ -46,6 +54,9 @@ const parseReactionEvent = (eventName: string): Promise<ReactionEvent> => Promis
 
 const fieldParsingError = (field: string): Error =>
   new Error(`Error parsing field ${field}. Fields must be in the form of <field name>:<field type>`)
+
+const fieldDuplicatedError = (field: string): Error =>
+  new Error(`Error parsing field ${field}. Fields cannot be duplicated`)
 
 const projectionParsingError = (projection: string): Error =>
   new Error(`Error parsing projection ${projection}. Projections must be in the form of <entity name>:<entity id>`)
