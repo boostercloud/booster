@@ -63,7 +63,10 @@ export const createRestoreAPI = (stack: Stack, config: BoosterConfig, tables: Ar
     deployOptions: { stageName: boosterEnv },
   })
 
-  // TODO: Check RestoreSummary param, to try to build a GET endpoint
+  /*
+    TODO: RestoreSummary param from dynamoDB.describeTable(..) has a RestoreInProgress: boolean.
+      I have to build a GET endpoint to check restore status
+   */
   // POST <url>/backup/restore - Trigger the restore backup process
   api.root
     .addResource('backup')

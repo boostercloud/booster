@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/rocket-backup-aws-infrastructure",
-  "version": "0.11.2995",
+  "version": "0.11.2996",
   "description": "Booster rocket to backup event stores on your current Booster applications.",
   "keywords": [
     "Booster",

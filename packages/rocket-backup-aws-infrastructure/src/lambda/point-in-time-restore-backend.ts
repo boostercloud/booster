@@ -1,6 +1,7 @@
 import { DynamoDB } from 'aws-sdk'
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import { Booster } from '@boostercloud/framework-core'
+import { TableDescription } from 'aws-sdk/clients/dynamodb'
 import { errorResponse, okResponse } from './response'
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -9,26 +10,18 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     const allowedParams = ['model', 'pointInTimeISO']
     let tableNames
     const body = JSON.parse(event.body!)
-    console.log('////// BODY OBJECT //////')
-    console.log(body)
     const pointInTimeISO = body?.pointInTimeISO
     const model = body?.model
-    console.log('////// BODY PARAMS //////')
-    console.log(pointInTimeISO)
-    console.log(model)
     const unknownParamsProvided = body ? !Object.keys(body).every((p: string) => allowedParams.includes(p)) : false
-    console.log('////// UNKNOWN PARAMS PROVIDED //////')
-    console.log(unknownParamsProvided)
+
     if (unknownParamsProvided) {
       throw Error(
         'Restore service has encountered unknown parameters. Valid parameters are: "model" and "pointInTimeISO"'
       )
     }
-    // If 'model' is not specified, then call restoreModels with all tables
-    // If 'model' is specified, transform it into an array with its tableName and then call restoreModels
-    // If request has unknown params, throw an error
+
     if (model) {
-      // On compile time, appName = 'new-booster-app'. That's why we pass the real app name through an env variable
+      // On compile time, appName = 'new-booster-app'.
       Booster.config.appName = process.env['APP_NAME']!
       tableNames = new Array(Booster.config.resourceNames.forReadModel(model))
     } else {
@@ -42,22 +35,38 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     return errorResponse(e)
   }
 }
-const restoreModels = async (tableNames: Array<string>, dynamoDB: DynamoDB, pointInTimeISO?: string) => {
-  const response = []
+const restoreModels = async (
+  tableNames: Array<string>,
+  dynamoDB: DynamoDB,
+  pointInTimeISO?: string
+): Promise<Array<TableDescription>> => {
+  const response = [] as Array<TableDescription>
+  const pointInTimeDateTime = pointInTimeISO ? new Date(pointInTimeISO) : undefined
   for (let i = 0; i < tableNames.length; i++) {
     const tableName = tableNames[i]
-    // Will this work???
+    const newTableName = `${tableName}-${pointInTimeDateTime ?? new Date().toLocaleString()}`
+
     try {
-      const tableDescription = await dynamoDB
+      // https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_RestoreTableToPointInTime.html
+      // Some properties are lost during the restoration process:
+      // Auto scaling policies, IAM policies, Amazon CloudWatch metrics and alarms, Tags, Stream settings,
+      // Time to Live (TTL) settings and Point in time recovery settings
+      const tableDescribeData = await dynamoDB.describeTable({ TableName: tableName }).promise()
+      // Two tables:
+      // 1. CartReadModel
+      // 2. CartReadModel-Restoring: Common name so the GET endpoint can see the restoring process.
+      // 2.1 Or CartReadModel-<pointInTimeISO | new Date()> - But we can't access through the GET method (maybe with regex)
+      const tableRestoreData = await dynamoDB
         .restoreTableToPointInTime({
           SourceTableName: tableName,
-          TargetTableName: tableName,
-          RestoreDateTime: pointInTimeISO ? new Date(pointInTimeISO) : undefined,
+          TargetTableName: newTableName,
+          UseLatestRestorableTime: !pointInTimeISO,
+          RestoreDateTime: pointInTimeDateTime,
         })
         .promise()
-      response.push(tableDescription.TableDescription)
+      response.push(tableRestoreData.TableDescription ?? {})
     } catch (e) {
-      throw Error(`An error has occurred while restoring your model - ${e.message}`)
+      throw Error(`An error has occurred while restoring your model: ${e.message}`)
     }
   }
   return response
