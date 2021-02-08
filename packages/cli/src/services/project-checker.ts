@@ -96,6 +96,19 @@ async function getBoosterVersion(projectPath: string): Promise<string> {
 
 async function compareVersionsAndDisplayMessages(logger: Logger, cliVersion: string, projectVersion: string): Promise<void> {
   if (cliVersion === projectVersion)  { return }
-  //TODO
-  logger.info("versions checked")
+  const cliVersionParts = cliVersion.split('.').map((v) => parseInt(v,10))
+  const projectVersionParts = projectVersion.split('.').map((v) => parseInt(v,10))
+  if (cliVersionParts.length !== projectVersionParts.length) {
+    throw new Error(`Versions must have the same length. CLI version: ${cliVersion}. Project Booster version: ${projectVersion}`)
+  }
+  if (projectVersionParts.length !== 3) {
+    throw new Error(`Versions must follow semantic convention X.Y.Z | CLI version: ${cliVersion}. Project Booster version: ${projectVersion}`)
+  }
+  if (cliVersionParts[0] === projectVersionParts[0]) {
+    if (cliVersionParts[1] === projectVersionParts[1]) {
+      if (cliVersionParts[2] !== projectVersionParts[2]) {
+        logger.info(`WARNING: Project Booster version differs in the 'fix' section from CLI version. CLI version: ${cliVersion}. Project Booster version: ${projectVersion}`)
+      }
+    }
+  }  
 }
