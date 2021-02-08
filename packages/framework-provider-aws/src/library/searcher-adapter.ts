@@ -19,7 +19,9 @@ export async function searchReadModel(
   if (filters && Object.keys(filters).length > 0) {
     params = {
       ...params,
-      ...buildExpression(filters),
+      FilterExpression: buildFilterExpression(filters),
+      ExpressionAttributeNames: buildExpressionAttributeNames(filters),
+      ExpressionAttributeValues: buildExpressionAttributeValues(filters),
     }
   }
   logger.debug('Running search with the following params: \n', params)
@@ -31,39 +33,26 @@ export async function searchReadModel(
   return result.Items ?? []
 }
 
-function buildExpression(filters: FilterFor<any>): any {
-  const expresion = buildFilterExpression(filters)
-  const names = buildExpressionAttributeNames(filters)
-  resetAttrCount()
-  const values = buildExpressionAttributeValues(filters)
-  resetAttrCount()
-  return {
-    FilterExpression: expresion,
-    ExpressionAttributeNames: names,
-    ExpressionAttributeValues: values,
-  }
-}
-
-function buildFilterExpression(filters: FilterFor<any>): string {
+function buildFilterExpression(filters: FilterFor<any>, usedPlaceholders: Array<string> = []): string {
   return Object.entries(filters)
     .map(([propName, filter]) => {
       switch (propName) {
         case 'not':
-          return `NOT (${buildFilterExpression(filter as FilterFor<any>)})`
+          return `NOT (${buildFilterExpression(filter as FilterFor<any>, usedPlaceholders)})`
         case 'and':
         case 'or':
           return `(${(filter as Array<FilterFor<any>>)
-            .map((arrayFilter) => buildFilterExpression(arrayFilter))
+            .map((arrayFilter) => buildFilterExpression(arrayFilter, usedPlaceholders))
             .join(` ${propName} `)})`
         default:
-          return buildOperation(propName, filter)
+          return buildOperation(propName, filter, usedPlaceholders)
       }
     })
     .join(' AND ')
 }
 
-function buildOperation(propName: string, filter: Operation<any> = {}): string {
-  const holder = placeholderBuilderFor(propName)
+function buildOperation(propName: string, filter: Operation<any> = {}, usedPlaceholders: Array<string>): string {
+  const holder = placeholderBuilderFor(propName, usedPlaceholders)
   return Object.entries(filter)
     .map(([operation, value], index) => {
       switch (operation) {
@@ -91,7 +80,7 @@ function buildOperation(propName: string, filter: Operation<any> = {}): string {
           return `contains(#${propName}, ${holder(index)})`
         default:
           if (typeof value === 'object') {
-            return `#${propName}.${buildOperation(operation, value)}`
+            return `#${propName}.${buildOperation(operation, value, usedPlaceholders)}`
           }
           throw new InvalidParameterError(`Operator "${operation}" is not supported`)
       }
@@ -99,15 +88,14 @@ function buildOperation(propName: string, filter: Operation<any> = {}): string {
     .join(' AND ')
 }
 
-const attrCount: string[] = []
-function resetAttrCount(): void {
-  attrCount.length = 0
-}
-function placeholderBuilderFor(propName: string): (valueIndex: number, valueSubIndex?: number) => string {
+function placeholderBuilderFor(
+  propName: string,
+  usedPlaceholders: Array<string>
+): (valueIndex: number, valueSubIndex?: number) => string {
   return (valueIndex: number, valueSubIndex?: number) => {
     const placeholder = `:${propName}_${valueIndex}` + (typeof valueSubIndex === 'number' ? `_${valueSubIndex}` : '')
-    if (attrCount.includes(placeholder)) return placeholderBuilderFor(propName)(valueIndex + 1)
-    attrCount.push(placeholder)
+    if (usedPlaceholders.includes(placeholder)) return placeholderBuilderFor(propName, usedPlaceholders)(valueIndex + 1)
+    usedPlaceholders.push(placeholder)
     return placeholder
   }
 }
@@ -141,30 +129,40 @@ function buildExpressionAttributeNames(filters: FilterFor<any>): ExpressionAttri
   return attributeNames
 }
 
-function buildExpressionAttributeValues(filters: FilterFor<any>): ExpressionAttributeValueMap {
+function buildExpressionAttributeValues(
+  filters: FilterFor<any>,
+  usedPlaceholders: Array<string> = []
+): ExpressionAttributeValueMap {
   const attributeValues: ExpressionAttributeValueMap = {}
   Object.entries(filters).forEach(([propName]) => {
     switch (propName) {
       case 'not':
-        Object.assign(attributeValues, buildExpressionAttributeValues(filters[propName] as FilterFor<any>))
+        Object.assign(
+          attributeValues,
+          buildExpressionAttributeValues(filters[propName] as FilterFor<any>, usedPlaceholders)
+        )
         break
       case 'and':
       case 'or':
         for (const filter of filters[propName] as Array<FilterFor<any>>) {
-          Object.assign(attributeValues, buildExpressionAttributeValues(filter as FilterFor<any>))
+          Object.assign(attributeValues, buildExpressionAttributeValues(filter as FilterFor<any>, usedPlaceholders))
         }
         break
       default:
-        Object.assign(attributeValues, buildAttributeValue(propName, filters[propName]))
+        Object.assign(attributeValues, buildAttributeValue(propName, filters[propName], usedPlaceholders))
         break
     }
   })
   return attributeValues
 }
 
-function buildAttributeValue(propName: string, filter: Operation<any> = {}): ExpressionAttributeValueMap {
+function buildAttributeValue(
+  propName: string,
+  filter: Operation<any> = {},
+  usedPlaceholders: Array<string>
+): ExpressionAttributeValueMap {
   const attributeValues: ExpressionAttributeValueMap = {}
-  const holder = placeholderBuilderFor(propName)
+  const holder = placeholderBuilderFor(propName, usedPlaceholders)
 
   Object.entries(filter).forEach(([key, value], index) => {
     if (Array.isArray(value)) {
@@ -172,7 +170,7 @@ function buildAttributeValue(propName: string, filter: Operation<any> = {}): Exp
         attributeValues[holder(index, subIndex)] = element
       })
     } else if (typeof value === 'object' && key !== 'includes') {
-      Object.assign(attributeValues, buildExpressionAttributeValues({ [key]: value }))
+      Object.assign(attributeValues, buildExpressionAttributeValues({ [key]: value }, usedPlaceholders))
     } else {
       attributeValues[holder(index)] = value
     }
