@@ -11,6 +11,7 @@ import { IConfig } from '@oclif/config'
 import { test } from '@oclif/test'
 import * as environment from '../../src/services/environment'
 import * as configService from '../../src/services/config-service'
+import * as projectChecker from '../../src/services/project-checker'
 
 const rewire = require('rewire')
 const nuke = rewire('../../src/commands/nuke')
@@ -132,6 +133,7 @@ describe('nuke', () => {
         const config = new BoosterConfig('fake_environment')
         replace(configService,'compileProjectAndLoadConfig', fake.resolves(config))
         replace(providerService,'nukeCloudProviderResources', fake.resolves({}))
+        replace(projectChecker,'checkCurrentDirBoosterVersion', fake.resolves({}))
         replace(oraLogger,'fail', fake.resolves({}))
         replace(oraLogger, 'info', fake.resolves({}))
         replace(oraLogger, 'start', fake.resolves({}))
@@ -141,6 +143,7 @@ describe('nuke', () => {
     it('without flags', async () => {
       await new Nuke.default([], {} as IConfig).run()
 
+      expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
       expect(providerService.nukeCloudProviderResources).to.have.not.been.called
       expect(oraLogger.fail).to.have.been.calledWithMatch(/No environment set/)
@@ -182,6 +185,7 @@ describe('nuke', () => {
         replace(Prompter.prototype,'defaultOrPrompt', fake.resolves('new-booster-app'))
         await new Nuke.default(['-e','fake_environment'], {} as IConfig).run()
   
+        expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
         expect(configService.compileProjectAndLoadConfig).to.have.been.called
         expect(providerService.nukeCloudProviderResources).to.have.been.called
         expect(oraLogger.info).to.have.been.calledWithMatch('Removal complete!')
@@ -190,6 +194,7 @@ describe('nuke', () => {
       it('entering correct environment and --force flag', async () => {
         await new Nuke.default(['-e','fake_environment','--force'], {} as IConfig).run()
   
+        expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
         expect(configService.compileProjectAndLoadConfig).to.have.been.called
         expect(providerService.nukeCloudProviderResources).to.have.been.called
         expect(oraLogger.info).to.have.been.calledWithMatch('Removal complete!')
@@ -198,6 +203,7 @@ describe('nuke', () => {
       it('entering correct environment and -f flag', async () => {
         await new Nuke.default(['-e','fake_environment','-f'], {} as IConfig).run()
 
+        expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
         expect(configService.compileProjectAndLoadConfig).to.have.been.called
         expect(providerService.nukeCloudProviderResources).to.have.been.called
         expect(oraLogger.info).to.have.been.calledWithMatch('Removal complete!')
@@ -215,6 +221,7 @@ describe('nuke', () => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('Wrong app name, stopping nuke!')
+        expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
         expect(configService.compileProjectAndLoadConfig).to.have.been.called
         expect(providerService.nukeCloudProviderResources).to.have.not.been.called
         expect(oraLogger.info).to.have.not.been.calledWithMatch('Removal complete!')
@@ -238,6 +245,7 @@ describe('nuke', () => {
       it('without defining environment and --force', async () => {
         await new Nuke.default(['--force'], {} as IConfig).run()
   
+        expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
         expect(providerService.nukeCloudProviderResources).to.have.not.been.called
         expect(oraLogger.fail).to.have.been.calledWithMatch(/No environment set/)
       })
