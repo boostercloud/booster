@@ -10,6 +10,7 @@ import { Script } from '../common/script'
 import Brand from '../common/brand'
 import { logger } from '../services/logger'
 import { currentEnvironment, initializeEnvironment } from '../services/environment'
+import { checkCurrentDirBoosterVersion } from '../services/project-checker'
 
 const runTasks = async (
   compileAndLoad: Promise<BoosterConfig>,
@@ -34,6 +35,8 @@ export default class Deploy extends Command {
 
   public async run(): Promise<void> {
     const { flags } = this.parse(Deploy)
+
+    await checkCurrentDirBoosterVersion(logger, this.config.userAgent)
 
     if (initializeEnvironment(logger, flags.environment)) {
       const deploymentProjectPath = await createDeploymentSandbox()

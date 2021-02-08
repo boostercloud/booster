@@ -11,6 +11,7 @@ import { IConfig } from '@oclif/config'
 import * as environment from '../../src/services/environment'
 import * as dependencies from '../../src/services/dependencies'
 import * as configService from '../../src/services/config-service'
+import * as projectChecker from '../../src/services/project-checker'
 
 // With this trick we can test non exported symbols
 const rewire = require('rewire')
@@ -100,6 +101,7 @@ describe('deploy', () => {
       replace(providerService,'deployToCloudProvider', fake.resolves({}))
       replace(configService,'createDeploymentSandbox', fake.returns('fake/path'))
       replace(configService,'cleanDeploymentSandbox', fake.resolves({}))
+      replace(projectChecker,'checkCurrentDirBoosterVersion', fake.resolves({}))
       replace(oraLogger,'fail', fake.resolves({}))
       replace(oraLogger, 'info', fake.resolves({}))
       replace(oraLogger, 'start', fake.resolves({}))
@@ -109,6 +111,7 @@ describe('deploy', () => {
     it('without flags', async () => {
       await new Deploy.default([], {} as IConfig).run()
 
+      expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
       expect(providerService.deployToCloudProvider).to.have.not.been.called
       expect(oraLogger.fail).to.have.been.calledWithMatch(/No environment set/)
@@ -149,6 +152,7 @@ describe('deploy', () => {
       it('entering correct environment', async () => {
         await new Deploy.default(['-e','fake_environment'], {} as IConfig).run()
   
+        expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
         expect(configService.compileProjectAndLoadConfig).to.have.been.called
         expect(providerService.deployToCloudProvider).to.have.been.called
         expect(oraLogger.info).to.have.been.calledWithMatch('Deployment complete!')
@@ -165,6 +169,7 @@ describe('deploy', () => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('Unexpected argument: --nonexistingoption')
+        expect(projectChecker.checkCurrentDirBoosterVersion).to.have.not.been.called
         expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
         expect(providerService.deployToCloudProvider).to.have.not.been.called
         expect(oraLogger.info).to.have.not.been.calledWithMatch('Deployment complete!')
