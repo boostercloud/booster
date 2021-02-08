@@ -9,6 +9,7 @@ import { IConfig } from '@oclif/config'
 import { test } from '@oclif/test'
 import * as environment from '../../src/services/environment'
 import * as configService from '../../src/services/config-service'
+import * as projectChecker from '../../src/services/project-checker'
 
 const start = rewire('../../src/commands/start')
 const runTasks = start.__get__('runTasks')
@@ -57,6 +58,7 @@ describe('start', () => {
       const config = new BoosterConfig('fake_environment')
       replace(configService,'compileProjectAndLoadConfig', fake.resolves(config))
       replace(providerService,'startProvider', fake.resolves({}))
+      replace(projectChecker,'checkCurrentDirBoosterVersion', fake.resolves({}))
       replace(oraLogger,'fail', fake.resolves({}))
       replace(oraLogger, 'info', fake.resolves({}))
       replace(oraLogger, 'start', fake.resolves({}))
@@ -66,6 +68,7 @@ describe('start', () => {
     it('without flags', async () => {
       await new Start.default([], {} as IConfig).run()
 
+      expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
       expect(providerService.startProvider).to.have.not.been.called
       expect(oraLogger.fail).to.have.been.calledWithMatch(/No environment set/)
@@ -106,6 +109,7 @@ describe('start', () => {
       it('entering correct environment', async () => {
         await new Start.default(['-e','fake_environment'], {} as IConfig).run()
   
+        expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
         expect(configService.compileProjectAndLoadConfig).to.have.been.called
         expect(providerService.startProvider).to.have.been.called
         expect(oraLogger.start).to.have.been.calledWithMatch(/Starting debug server on port/)
@@ -114,6 +118,7 @@ describe('start', () => {
       it('entering correct environment and --port flag', async () => {
         await new Start.default(['-e','fake_environment','--port','5000'], {} as IConfig).run()
   
+        expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
         expect(configService.compileProjectAndLoadConfig).to.have.been.called
         expect(providerService.startProvider).to.have.been.called
         expect(oraLogger.start).to.have.been.calledWithMatch(/Starting debug server on port 5000/)
@@ -122,6 +127,7 @@ describe('start', () => {
       it('entering correct environment and -p flag', async () => {
         await new Start.default(['-e','fake_environment','-p','5000'], {} as IConfig).run()
   
+        expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
         expect(configService.compileProjectAndLoadConfig).to.have.been.called
         expect(providerService.startProvider).to.have.been.called
         expect(oraLogger.start).to.have.been.calledWithMatch(/Starting debug server on port 5000/)
@@ -138,6 +144,7 @@ describe('start', () => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('Unexpected argument: --nonexistingoption')
+        expect(projectChecker.checkCurrentDirBoosterVersion).to.have.not.been.called
         expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
         expect(providerService.startProvider).to.have.not.been.called
         expect(oraLogger.start).to.have.not.been.calledWithMatch(/Starting debug server on port/)
@@ -154,6 +161,7 @@ describe('start', () => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('--port expects a value')
+        expect(projectChecker.checkCurrentDirBoosterVersion).to.have.not.been.called
         expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
         expect(providerService.startProvider).to.have.not.been.called
         expect(oraLogger.start).to.have.not.been.calledWithMatch(/Starting debug server on port/)
@@ -170,6 +178,7 @@ describe('start', () => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('--port expects a value')
+        expect(projectChecker.checkCurrentDirBoosterVersion).to.have.not.been.called
         expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
         expect(providerService.startProvider).to.have.not.been.called
         expect(oraLogger.start).to.have.not.been.calledWithMatch(/Starting debug server on port/)

@@ -6,6 +6,7 @@ import { Script } from '../common/script'
 import Brand from '../common/brand'
 import { logger } from '../services/logger'
 import { currentEnvironment, initializeEnvironment } from '../services/environment'
+import { checkCurrentDirBoosterVersion } from '../services/project-checker'
 
 const runTasks = async (
   port: number,
@@ -34,6 +35,9 @@ export default class Start extends Command {
 
   public async run(): Promise<void> {
     const { flags } = this.parse(Start)
+    
+    await checkCurrentDirBoosterVersion(logger, this.config.userAgent)
+
     if (initializeEnvironment(logger, flags.environment)) {
       await runTasks(flags.port, compileProjectAndLoadConfig(process.cwd()), startProvider.bind(null, flags.port))
     }
