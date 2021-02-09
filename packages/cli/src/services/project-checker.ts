@@ -111,6 +111,16 @@ async function compareVersionsAndDisplayMessages(cliVersion: string, projectVers
       if (cliVersionParts[2] !== projectVersionParts[2]) {
         logger.info(`WARNING: Project Booster version differs in the 'fix' section. CLI version: ${cliVersion}. Project Booster version: ${projectVersion}`)
       }
+    } else if (cliVersionParts[1] > projectVersionParts[1]) {
+
+    } else {
+      //cli lower than project in 'feat' section
+      throw new Error(`CLI version ${cliVersion} is lower than your project Booster version ${projectVersion}. Please upgrade your @boostercloud/cli to the same version with npm`)
     }
-  }  
+  } else if (cliVersionParts[0] > projectVersionParts[0]) {
+
+  } else {
+      //cli lower than project in 'breaking' section
+      throw new Error(`CLI version ${cliVersion} is lower than your project Booster version ${projectVersion}. Please upgrade your @boostercloud/cli to the same version with npm`)
+  }
 }

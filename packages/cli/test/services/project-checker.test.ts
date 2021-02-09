@@ -203,6 +203,18 @@ describe('project checker', (): void => {
             expect(exceptionThrown).to.be.equal(false)
             expect(logger.info).have.been.calledWithMatch(/WARNING: Project Booster version differs in the 'fix' section/)
         })
+
+        it('cli lower than project version in <feature> section', async () => {
+            const userAgent = '@boostercloud/cli/0.10.2 darwin-x64 node-v12.10.0'
+            let exceptionThrown = false
+            let exceptionMessage = ''
+            await checkCurrentDirBoosterVersion(userAgent).catch((e) => {
+                exceptionThrown = true
+                exceptionMessage = e.message
+            })
+            expect(exceptionThrown).to.be.equal(true)
+            expect(exceptionMessage).to.contain('Please upgrade your @boostercloud/cli to the same version with npm')
+            expect(logger.info).have.not.been.called
+        })
     })
 })
-
