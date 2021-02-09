@@ -109,7 +109,7 @@ async function compareVersionsAndDisplayMessages(cliVersion: string, projectVers
   if (cliVersionParts[0] === projectVersionParts[0]) {
     if (cliVersionParts[1] === projectVersionParts[1]) {
       if (cliVersionParts[2] !== projectVersionParts[2]) {
-        logger.info(`WARNING: Project Booster version differs in the 'fix' section from CLI version. CLI version: ${cliVersion}. Project Booster version: ${projectVersion}`)
+        logger.info(`WARNING: Project Booster version differs in the 'fix' section. CLI version: ${cliVersion}. Project Booster version: ${projectVersion}`)
       }
     }
   }  
