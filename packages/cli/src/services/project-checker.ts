@@ -87,7 +87,8 @@ async function getBoosterVersion(projectPath: string): Promise<string> {
   try {
     const packageJsonContents = require(path.join(projectAbsolutePath, 'package.json'))
     const version = packageJsonContents.dependencies['@boostercloud/framework-core']
-    return version.replace('^','')
+    const versionParts = version.replace('^','').replace('.tgz','').split('-')
+    return versionParts[versionParts.length-1]    
   } catch (e) {
     throw new Error(
       `There was an error when recognizing the application. Make sure you are in the root path of a Booster project:\n${e.message}`
