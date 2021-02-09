@@ -5,7 +5,10 @@ import { HasFields, HasName, joinParsers, parseName, parseFields } from '../../s
 import { templates } from '../../templates'
 import { generate } from '../../services/generator'
 import * as path from 'path'
-import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
+import { 
+  checkCurrentDirIsABoosterProject,
+  checkCurrentDirBoosterVersion
+} from '../../services/project-checker'
 
 export default class Type extends Oclif.Command {
   public static description = 'create a new type'
@@ -23,6 +26,8 @@ export default class Type extends Oclif.Command {
 
   public async run(): Promise<void> {
     const { args, flags } = this.parse(Type)
+    await checkCurrentDirBoosterVersion(this.config.userAgent)
+    
     try {
       const fields = flags.fields || []
       if (!args.typeName) throw "You haven't provided a type name, but it is required, run with --help for usage"

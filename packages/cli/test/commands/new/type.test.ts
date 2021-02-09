@@ -44,6 +44,7 @@ describe('new', (): void => {
     beforeEach(() => {
       stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
       replace(fs, 'outputFile', fake.resolves({}))
+      replace(ProjectChecker,'checkCurrentDirBoosterVersion', fake.resolves({}))
     })
 
     afterEach(() => {
@@ -55,24 +56,28 @@ describe('new', (): void => {
         await new Type([typeName], {} as IConfig).run()
         const renderedType = renderType(defaultTypeImports, typeName, [])
         expect(fs.outputFile).to.have.been.calledWithMatch(typePath, renderedType)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates Type with a string field', async () => {
         await new Type([typeName, '--fields', 'title:string'], {} as IConfig).run()
         const renderedType = renderType(defaultTypeImports, typeName, [{ name: 'title', type: 'string' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(typePath, renderedType)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates Type with a number field', async () => {
         await new Type([typeName, '--fields', 'quantity:number'], {} as IConfig).run()
         const renderedType = renderType(defaultTypeImports, typeName, [{ name: 'quantity', type: 'number' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(typePath, renderedType)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates Type with UUID field', async () => {
         await new Type([typeName, '--fields', 'identifier:UUID'], {} as IConfig).run()
         const renderedType = renderType(uuidTypeImports, typeName, [{ name: 'identifier', type: 'UUID' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(typePath, renderedType)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates Type with multiple fields', async () => {
@@ -87,6 +92,7 @@ describe('new', (): void => {
         ]
         const renderedType = renderType(uuidTypeImports, typeName, fields)
         expect(fs.outputFile).to.have.been.calledWithMatch(typePath, renderedType)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
     })
 
@@ -98,6 +104,7 @@ describe('new', (): void => {
         expect(console.error).to.have.been.calledWithMatch(
           /You haven't provided a type name/
         )
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('with empty fields', async () => {
@@ -111,6 +118,7 @@ describe('new', (): void => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.be.equal('Flag --fields expects a value')
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.not.been.called
       })
 
       it('with field with no type', async () => {
@@ -126,6 +134,7 @@ describe('new', (): void => {
         expect(exceptionMessage).to.contain(
           'Error parsing field title'
         )
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('with no field type after :', async () => {
@@ -140,6 +149,7 @@ describe('new', (): void => {
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('Error parsing field title')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(typePath)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('with repeated fields', async () => {
@@ -154,6 +164,7 @@ describe('new', (): void => {
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('Error parsing field title')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(typePath)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
     })
   })
