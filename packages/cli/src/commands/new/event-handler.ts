@@ -9,7 +9,10 @@ import {
 } from '../../services/generator/target'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
-import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
+import { 
+  checkCurrentDirIsABoosterProject,
+  checkCurrentDirBoosterVersion
+} from '../../services/project-checker'
 import { generate } from '../../services/generator'
 import * as path from 'path'
 import { templates } from '../../templates'
@@ -30,6 +33,8 @@ export default class EventHandler extends Oclif.Command {
 
   public async run(): Promise<void> {
     const { args, flags } = this.parse(EventHandler)
+    await checkCurrentDirBoosterVersion(this.config.userAgent)
+
     try {
       const event = flags.event
       if (!args.eventHandlerName)

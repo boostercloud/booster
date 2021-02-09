@@ -30,6 +30,7 @@ describe('new', (): void => {
     beforeEach(() => {
       stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
       replace(fs,'outputFile', fake.resolves({}))
+      replace(ProjectChecker,'checkCurrentDirBoosterVersion', fake.resolves({}))
     })
 
     afterEach(() => {
@@ -45,6 +46,7 @@ describe('new', (): void => {
           event: 'CommentPosted'
         })
         expect(fs.outputFile).to.have.been.calledWithMatch(eventHandlerPath,renderedEventHandler)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
     })
 
@@ -54,6 +56,7 @@ describe('new', (): void => {
         await new EventHandler([eventHandlerName], {} as IConfig).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(eventHandlerPath)
         expect(console.error).to.have.been.calledWithMatch(/You haven't provided an event/)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('with empty EventHandler name', async () => {
@@ -61,6 +64,7 @@ describe('new', (): void => {
         await new EventHandler([], {} as IConfig).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(eventHandlersRoot)
         expect(console.error).to.have.been.calledWithMatch(/You haven't provided an event handler name/)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('with empty event', async () => {
@@ -75,6 +79,7 @@ describe('new', (): void => {
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('--event expects a value')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(eventHandlerPath)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.not.been.called
       })
 
       it('creates EventHandler with two events', async () => {
@@ -89,6 +94,7 @@ describe('new', (): void => {
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('Unexpected argument: ArticlePosted')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(eventHandlerPath)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.not.been.called
       })
     })
 
