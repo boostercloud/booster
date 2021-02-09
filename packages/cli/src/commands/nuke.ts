@@ -56,7 +56,7 @@ export default class Nuke extends Command {
   public async run(): Promise<void> {
     const { flags } = this.parse(Nuke)
 
-    await checkCurrentDirBoosterVersion(logger, this.config.userAgent)
+    await checkCurrentDirBoosterVersion(this.config.userAgent)
     
     if (initializeEnvironment(logger, flags.environment)) {
       await runTasks(

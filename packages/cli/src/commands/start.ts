@@ -36,7 +36,7 @@ export default class Start extends Command {
   public async run(): Promise<void> {
     const { flags } = this.parse(Start)
     
-    await checkCurrentDirBoosterVersion(logger, this.config.userAgent)
+    await checkCurrentDirBoosterVersion(this.config.userAgent)
 
     if (initializeEnvironment(logger, flags.environment)) {
       await runTasks(flags.port, compileProjectAndLoadConfig(process.cwd()), startProvider.bind(null, flags.port))

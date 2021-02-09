@@ -36,7 +36,7 @@ export default class Deploy extends Command {
   public async run(): Promise<void> {
     const { flags } = this.parse(Deploy)
 
-    await checkCurrentDirBoosterVersion(logger, this.config.userAgent)
+    await checkCurrentDirBoosterVersion(this.config.userAgent)
 
     if (initializeEnvironment(logger, flags.environment)) {
       const deploymentProjectPath = await createDeploymentSandbox()
