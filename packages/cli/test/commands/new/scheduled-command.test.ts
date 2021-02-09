@@ -26,6 +26,7 @@ describe('new', (): void => {
     beforeEach(() => {
       stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
       replace(fs, 'outputFile', fake.resolves({}))
+      replace(ProjectChecker,'checkCurrentDirBoosterVersion', fake.resolves({}))
     })
 
     afterEach(() => {
@@ -40,6 +41,7 @@ describe('new', (): void => {
           name: scheduledCommandName,
         })
         expect(fs.outputFile).to.have.been.calledWithMatch(scheduledCommandPath, renderedCommand)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
     })
 
@@ -51,6 +53,7 @@ describe('new', (): void => {
         expect(console.error).to.have.been.calledWithMatch(
           /You haven't provided a scheduled command name/
         )
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('with two scheduled command names', async () => {
@@ -65,6 +68,7 @@ describe('new', (): void => {
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('Unexpected argument: AnotherName')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(scheduledCommandPath)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.not.been.called
       })
     })
   })
