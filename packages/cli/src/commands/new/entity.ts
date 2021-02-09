@@ -14,7 +14,10 @@ import {
 import * as path from 'path'
 import { generate } from '../../services/generator'
 import { templates } from '../../templates'
-import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
+import { 
+  checkCurrentDirIsABoosterProject,
+  checkCurrentDirBoosterVersion 
+} from '../../services/project-checker'
 import { classNameToFileName } from '../../common/filenames'
 
 export default class Entity extends Oclif.Command {
@@ -37,6 +40,7 @@ export default class Entity extends Oclif.Command {
 
   public async run(): Promise<void> {
     const { args, flags } = this.parse(Entity)
+    await checkCurrentDirBoosterVersion(this.config.userAgent)
     try {
       const fields = flags.fields || []
       const events = flags.reduces || []

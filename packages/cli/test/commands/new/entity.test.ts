@@ -67,6 +67,7 @@ describe('new', (): void => {
     beforeEach(() => {
       stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
       replace(fs, 'outputFile', fake.resolves({}))
+      replace(ProjectChecker,'checkCurrentDirBoosterVersion', fake.resolves({}))
     })
 
     afterEach(() => {
@@ -78,42 +79,49 @@ describe('new', (): void => {
         await new Entity([entityName], {} as IConfig).run()
         const renderedEntity = renderEntity(defaultEntityImports,entityName,[],[])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates Entity with a string field', async () => {
         await new Entity([entityName, '--fields', 'title:string'], {} as IConfig).run()
         const renderedEntity = renderEntity(defaultEntityImports,entityName,[{ name: 'title', type: 'string' }],[])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates Entity with a string field reducing PostCreated', async () => {
         await new Entity([entityName, '--fields', 'title:string', '--reduces', 'PostCreated'], {} as IConfig).run()
         const renderedEntity = renderEntity(reducingEntityImports,entityName,[{ name: 'title', type: 'string' }],[{ eventName: 'PostCreated' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates Entity with a number field', async () => {
         await new Entity([entityName, '--fields', 'quantity:number'], {} as IConfig).run()
         const renderedEntity = renderEntity(defaultEntityImports,entityName,[{ name: 'quantity', type: 'number' }],[])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates Entity with a number field reducing PostCreated', async () => {
         await new Entity([entityName, '--fields', 'quantity:number', '--reduces', 'PostCreated'], {} as IConfig).run()
         const renderedEntity = renderEntity(reducingEntityImports,entityName,[{ name: 'quantity', type: 'number' }],[{ eventName: 'PostCreated' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates Entity with UUID field', async () => {
         await new Entity([entityName, '--fields', 'identifier:UUID'], {} as IConfig).run()
         const renderedEntity = renderEntity(defaultEntityImports,entityName,[{ name: 'identifier', type: 'UUID' }],[])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates Entity with UUID field reducing PostCreated', async () => {
         await new Entity([entityName, '--fields', 'identifier:UUID', '--reduces', 'PostCreated'], {} as IConfig).run()
         const renderedEntity = renderEntity(reducingEntityImports,entityName,[{ name: 'identifier', type: 'UUID' }],[{ eventName: 'PostCreated' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates Entity with multiple fields', async () => {
@@ -128,6 +136,7 @@ describe('new', (): void => {
         ]
         const renderedEntity = renderEntity(defaultEntityImports,entityName,fields,[])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates Entity with multiple fields reducing PostCreated', async () => {
@@ -142,6 +151,7 @@ describe('new', (): void => {
         ]
         const renderedEntity = renderEntity(reducingEntityImports,entityName,fields,[{ eventName: 'PostCreated' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates Entity with multiple fields reducing PostCreated and CommentCreated', async () => {
@@ -165,6 +175,7 @@ describe('new', (): void => {
         ]
         const renderedEntity = renderEntity(reducingTwoEntityImports,entityName,fields,[{ eventName: 'PostCreated' }, { eventName: 'CommentCreated' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
     })
 
@@ -176,6 +187,7 @@ describe('new', (): void => {
         expect(console.error).to.have.been.calledWithMatch(
           /You haven't provided an entity name/
         )
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('with empty fields', async () => {
@@ -189,6 +201,7 @@ describe('new', (): void => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('--fields expects a value')
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.not.been.called
       })
 
       it('with empty reduces', async () => {
@@ -202,6 +215,7 @@ describe('new', (): void => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('--reduces expects a value')
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.not.been.called
       })
 
       it('with empty fields and reduces', async () => {
@@ -217,6 +231,7 @@ describe('new', (): void => {
         expect(exceptionMessage).to.contain(
           'Error parsing field --reduces'
         )
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('with field with no type', async () => {
@@ -232,6 +247,7 @@ describe('new', (): void => {
         expect(exceptionMessage).to.contain(
           'Error parsing field title'
         )
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('with no field type after :', async () => {
@@ -246,6 +262,7 @@ describe('new', (): void => {
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('Error parsing field title')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(entityPath)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('with repeated fields', async () => {
@@ -263,6 +280,7 @@ describe('new', (): void => {
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('Error parsing field title')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(entityPath)
+        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
     })
 
