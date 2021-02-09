@@ -51,14 +51,6 @@ export class GraphQLQueryGenerator {
     const filterQueries = this.generateFilterQueries()
     const eventQueries = this.generateEventQueries()
     const fields = { ...byIDQueries, ...filterQueries, ...eventQueries }
-    if (Object.keys(fields).length === 0) {
-      return new GraphQLObjectType({
-        name: 'Query',
-        fields: {
-          NoQueriesDefined: { type: GraphQLString },
-        },
-      })
-    }
     return new GraphQLObjectType({
       name: 'Query',
       fields: fields,

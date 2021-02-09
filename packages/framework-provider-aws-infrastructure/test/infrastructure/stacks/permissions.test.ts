@@ -112,8 +112,8 @@ describe('permissions', () => {
       describe('policy statements', () => {
         it('should add events store permissions', () => {
           expect(createPolicyStatementStub).calledWithExactly(
-            [mockEventsStoreTableArn],
-            ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchWriteItem']
+            [mockEventsStoreTableArn + '*'],
+            ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchGetItem', 'dynamodb:BatchWriteItem']
           )
         })
 
@@ -184,8 +184,8 @@ describe('permissions', () => {
       describe('policy statements', () => {
         it('should add events store permissions', () => {
           expect(createPolicyStatementStub).calledWithExactly(
-            [mockEventsStoreTableArn],
-            ['dynamodb:BatchWriteItem', 'dynamodb:Query*', 'dynamodb:Put*']
+            [mockEventsStoreTableArn + '*'],
+            ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchGetItem', 'dynamodb:BatchWriteItem']
           )
         })
 

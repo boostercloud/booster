@@ -7,14 +7,17 @@ import { TargetTypesMap } from '../../../src/services/graphql/common'
 import { GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql'
 import { random } from 'faker'
 import GraphQLJSON, { GraphQLJSONObject } from 'graphql-type-json'
+import { BoosterConfig } from '@boostercloud/framework-types'
 
 describe('GraphQLQueryGenerator', () => {
+  const config = new BoosterConfig('test')
   let mockTargetTypes: TargetTypesMap
   let mockGraphQLType: any
 
   let mockTypeInformer: SinonStubbedInstance<GraphQLTypeInformer>
   let mockByIdResolverBuilder: SinonStub
   let mockFilterResolverBuilder: SinonStub
+  let mockEventsResolver: SinonStub
 
   let getGraphQLTypeForStub: SinonStub
 
@@ -34,15 +37,18 @@ describe('GraphQLQueryGenerator', () => {
     mockTypeInformer = sinon.createStubInstance(GraphQLTypeInformer)
     mockByIdResolverBuilder = stub()
     mockFilterResolverBuilder = stub()
+    mockEventsResolver = stub()
 
     getGraphQLTypeForStub = stub().returns(mockGraphQLType)
     replace(mockTypeInformer, 'getGraphQLTypeFor', getGraphQLTypeForStub as any)
 
     sut = new GraphQLQueryGenerator(
+      config,
       mockTargetTypes,
       mockTypeInformer as any,
       mockByIdResolverBuilder,
-      mockFilterResolverBuilder
+      mockFilterResolverBuilder,
+      mockEventsResolver
     )
   })
 
@@ -68,10 +74,12 @@ describe('GraphQLQueryGenerator', () => {
           }
 
           sut = new GraphQLQueryGenerator(
+            config,
             mockTargetTypes,
             mockTypeInformer as any,
             mockByIdResolverBuilder,
-            mockFilterResolverBuilder
+            mockFilterResolverBuilder,
+            mockEventsResolver
           )
         })
 
@@ -141,10 +149,12 @@ describe('GraphQLQueryGenerator', () => {
           context('Property GraphQL Type is scalar', () => {
             beforeEach(() => {
               sut = new GraphQLQueryGenerator(
+                config,
                 mockTargetTypes,
                 mockTypeInformer as any,
                 mockByIdResolverBuilder,
-                mockFilterResolverBuilder
+                mockFilterResolverBuilder,
+                mockEventsResolver
               )
             })
 
@@ -199,10 +209,12 @@ describe('GraphQLQueryGenerator', () => {
               getGraphQLTypeForStub.returns(GraphQLJSONObject)
 
               sut = new GraphQLQueryGenerator(
+                config,
                 mockTargetTypes,
                 mockTypeInformer as any,
                 mockByIdResolverBuilder,
-                mockFilterResolverBuilder
+                mockFilterResolverBuilder,
+                mockEventsResolver
               )
             })
 
@@ -240,10 +252,12 @@ describe('GraphQLQueryGenerator', () => {
           }
 
           sut = new GraphQLQueryGenerator(
+            config,
             mockTargetTypes,
             mockTypeInformer as any,
             mockByIdResolverBuilder,
-            mockFilterResolverBuilder
+            mockFilterResolverBuilder,
+            mockEventsResolver
           )
         })
 
@@ -284,10 +298,12 @@ describe('GraphQLQueryGenerator', () => {
             }
 
             sut = new GraphQLQueryGenerator(
+              config,
               mockTargetTypes,
               mockTypeInformer as any,
               mockByIdResolverBuilder,
-              mockFilterResolverBuilder
+              mockFilterResolverBuilder,
+              mockEventsResolver
             )
           })
 
@@ -324,25 +340,14 @@ describe('GraphQLQueryGenerator', () => {
         expect(getGraphQLTypeForStub).to.not.be.called
       })
 
-      it('should return NoQueriesDefined type to fulfil GraphQL Schema validations', () => {
+      it('should return only the event queries', () => {
         const result = sut.generate()
-        const dummyTypeName = 'NoQueriesDefined'
-        
-        expect(result.name).to.be.equal('Query')
-        expect(result.description).to.be.undefined
-        expect(result.extensions).to.be.undefined
-        expect(result.astNode).to.be.undefined
-        expect(result.extensionASTNodes).to.be.undefined
 
-        const config: any = result.toConfig()
-        expect(Object.keys(config.fields).length).to.eq(1)
-        expect(config.fields[dummyTypeName].description).to.be.undefined
-        expect(config.fields[dummyTypeName].type.toString()).to.be.equal(GraphQLString.toString())
-        expect(config.fields[dummyTypeName].resolve).to.be.undefined
-        expect(config.fields[dummyTypeName].subscribe).to.be.undefined
-        expect(config.fields[dummyTypeName].deprecationReason).to.be.undefined
-        expect(config.fields[dummyTypeName].extensions).to.be.undefined
-        expect(config.fields[dummyTypeName].astNode).to.be.undefined
+        expect(result.name).to.be.equal('Query')
+
+        const config = result.toConfig()
+        expect(Object.keys(config.fields).length).to.eq(2)
+        expect(config.fields).to.include.keys('eventsByEntity', 'eventsByType')
       })
     })
   })

@@ -9,12 +9,12 @@ import {
   NotFoundError,
   NotAuthorizedError,
   ProviderLibrary,
+  SubscriptionEnvelope,
 } from '@boostercloud/framework-types'
 import { restore, fake, match } from 'sinon'
 import { BoosterReadModelReader } from '../src/booster-read-model-reader'
 import { Booster } from '../src/booster'
 import { random, internet } from 'faker'
-import { SubscriptionEnvelope } from '@boostercloud/framework-types/dist'
 
 const logger: Logger = {
   debug() {},
