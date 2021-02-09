@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "author": "",
   "dependencies": {
-    "@boostercloud/framework-core": "^0.11.2",
-    "@boostercloud/framework-types": "^0.11.2",
+    "@boostercloud/framework-core": "^1.11.2",
+    "@boostercloud/framework-types": "^1.11.2",
     "@boostercloud/framework-provider-aws": "*",
     "tslib": "^2.0.3"
   },
