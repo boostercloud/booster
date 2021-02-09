@@ -1,6 +1,7 @@
 import { DynamoDB } from 'aws-sdk'
+import { S3EventRecord } from 'aws-lambda'
 
-export const handler = async (event: any): Promise<any> => {
+export const handler = async (event: S3EventRecord): Promise<void> => {
   const { v4: uuidv4 } = require('uuid')
   const ddb = new DynamoDB.DocumentClient()
 

@@ -1,7 +1,7 @@
 # File Uploader Booster Rocket for AWS
 
 This package is a configurable Booster rocket to add an Object Storage(S3 bucket) to your Booster Application. 
-Every time a new object is uploaded, a new event will be persisted in the Events Store will data like the fileUri and file size.
+Every time a new object is uploaded, a new event will be persisted in the Events Store with data like the fileUri and file size.
 
 ## Usage
 

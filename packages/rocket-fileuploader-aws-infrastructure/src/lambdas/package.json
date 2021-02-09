@@ -15,6 +15,7 @@
     "uuid"
   ],
   "dependencies": {
-    "tslib": "2.1.0"
+    "tslib": "2.1.0",
+    "@types/aws-lambda": "8.10.48"
   }
 }
