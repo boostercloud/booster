@@ -35,6 +35,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     return errorResponse(e)
   }
 }
+
 const restoreModels = async (
   tableNames: Array<string>,
   dynamoDB: DynamoDB,
@@ -44,19 +45,24 @@ const restoreModels = async (
   const pointInTimeDateTime = pointInTimeISO ? new Date(pointInTimeISO) : undefined
   for (let i = 0; i < tableNames.length; i++) {
     const tableName = tableNames[i]
-    const newTableName = `${tableName}-${pointInTimeDateTime ?? new Date().toLocaleString()}`
+    // 'targetTableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
+    // ${pointInTimeDateTime ?? new Date().toISOString()
+    const newTableName = `${tableName}-restoring`
 
     try {
       // https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_RestoreTableToPointInTime.html
       // Some properties are lost during the restoration process:
       // Auto scaling policies, IAM policies, Amazon CloudWatch metrics and alarms, Tags, Stream settings,
-      // Time to Live (TTL) settings and Point in time recovery settings
+      // Time to Live (TTL) settings and Point in time recovery settings.
+      // We only need to replicate the DynamoDB stream.
       const tableDescribeData = await dynamoDB.describeTable({ TableName: tableName }).promise()
+      const oldTableStreamSpecification = tableDescribeData.Table?.StreamSpecification
       // Two tables:
       // 1. CartReadModel
       // 2. CartReadModel-Restoring: Common name so the GET endpoint can see the restoring process.
       // 2.1 Or CartReadModel-<pointInTimeISO | new Date()> - But we can't access through the GET method (maybe with regex)
-      const tableRestoreData = await dynamoDB
+      console.log('///// RESTORE 1 /////')
+      await dynamoDB
         .restoreTableToPointInTime({
           SourceTableName: tableName,
           TargetTableName: newTableName,
@@ -64,6 +70,47 @@ const restoreModels = async (
           RestoreDateTime: pointInTimeDateTime,
         })
         .promise()
+      console.log('///// UPDATE STREAM 1 /////')
+      await dynamoDB
+        .updateTable({
+          TableName: newTableName,
+          StreamSpecification: oldTableStreamSpecification,
+        })
+        .promise()
+      console.log('///// UPDATE PITR 1 /////')
+      await dynamoDB
+        .updateContinuousBackups({
+          TableName: newTableName,
+          PointInTimeRecoverySpecification: { PointInTimeRecoveryEnabled: true },
+        })
+        .promise()
+      console.log('///// DELETE 1 /////')
+      await dynamoDB.deleteTable({ TableName: tableName }).promise()
+      console.log('///// RESTORE 2 /////')
+      const tableRestoreData = await dynamoDB
+        .restoreTableToPointInTime({
+          SourceTableName: newTableName,
+          TargetTableName: tableName,
+          UseLatestRestorableTime: true,
+        })
+        .promise()
+      console.log('///// UPDATE STREAM 2 /////')
+      await dynamoDB
+        .updateTable({
+          TableName: tableName,
+          StreamSpecification: oldTableStreamSpecification,
+        })
+        .promise()
+      console.log('///// UPDATE PITR 2 /////')
+      await dynamoDB
+        .updateContinuousBackups({
+          TableName: newTableName,
+          PointInTimeRecoverySpecification: { PointInTimeRecoveryEnabled: true },
+        })
+        .promise()
+      console.log('///// DELETE 2 /////')
+      await dynamoDB.deleteTable({ TableName: newTableName }).promise()
+
       response.push(tableRestoreData.TableDescription ?? {})
     } catch (e) {
       throw Error(`An error has occurred while restoring your model: ${e.message}`)

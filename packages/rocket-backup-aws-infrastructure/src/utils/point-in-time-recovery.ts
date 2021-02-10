@@ -2,6 +2,7 @@ import { Stack, Duration, CfnOutput } from '@aws-cdk/core'
 import { Function, Runtime, Code } from '@aws-cdk/aws-lambda'
 import { LambdaRestApi } from '@aws-cdk/aws-apigateway'
 import { Table } from '@aws-cdk/aws-dynamodb'
+import { PolicyStatement } from '@aws-cdk/aws-iam'
 import { BackupStackParams } from './types'
 import * as path from 'path'
 import { BoosterConfig } from '@boostercloud/framework-types'
@@ -42,8 +43,28 @@ export const createRestoreAPI = (stack: Stack, config: BoosterConfig, tables: Ar
     },
   })
 
+  // Any DynamoDB table since this backend describes, restores and deletes
+  // a DynamoDB table created on the fly (apart from other underground operations)
+  const policyStatement = new PolicyStatement()
+  policyStatement.addResources("*")
+  policyStatement.addActions(
+    'dynamodb:RestoreTableToPointInTime',
+    'dynamodb:Scan',
+    'dynamodb:Query',
+    'dynamodb:UpdateItem',
+    'dynamodb:PutItem',
+    'dynamodb:GetItem',
+    'dynamodb:DeleteItem',
+    'dynamodb:BatchWriteItem',
+    'dynamodb:DescribeTable',
+    'dynamodb:DeleteTable',
+    'dynamodb:UpdateTable'
+  )
+
+  backend.addToRolePolicy(policyStatement)
+
   // Permissions for restoreTableToPointInTime(..)
-  tables.map((table: Table) => {
+  /*tables.map((table: Table) => {
     table.grant(
       backend,
       'dynamodb:RestoreTableToPointInTime',
@@ -53,9 +74,11 @@ export const createRestoreAPI = (stack: Stack, config: BoosterConfig, tables: Ar
       'dynamodb:PutItem',
       'dynamodb:GetItem',
       'dynamodb:DeleteItem',
-      'dynamodb:BatchWriteItem'
+      'dynamodb:BatchWriteItem',
+      'dynamodb:DescribeTable',
+      'dynamodb:DeleteTable'
     )
-  })
+  })*/
 
   const api = new LambdaRestApi(stack, 'RestoreBackup-API', {
     handler: backend,
