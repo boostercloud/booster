@@ -1,12 +1,13 @@
-import { DynamoDB } from 'aws-sdk'
+import { DynamoDB, SQS } from 'aws-sdk'
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import { Booster } from '@boostercloud/framework-core'
-import { TableDescription } from 'aws-sdk/clients/dynamodb'
 import { errorResponse, okResponse } from './response'
+import { RestoreMessage } from './types'
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
     const dynamoDB = await new DynamoDB()
+    const sqs = await new SQS()
     const allowedParams = ['model', 'pointInTimeISO']
     let tableNames
     const body = JSON.parse(event.body!)
@@ -27,10 +28,8 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     } else {
       tableNames = process.env['TABLE_NAMES']!.split(',')
     }
-    console.log('/////// TABLE NAMES ///////')
-    console.log(tableNames)
-    const response = await restoreModels(tableNames, dynamoDB, pointInTimeISO)
-    return okResponse(response)
+    await restoreModels(tableNames, dynamoDB, sqs, pointInTimeISO)
+    return okResponse({ restore_status: 'IN_PROGRESS' })
   } catch (e) {
     return errorResponse(e)
   }
@@ -39,9 +38,9 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 const restoreModels = async (
   tableNames: Array<string>,
   dynamoDB: DynamoDB,
+  sqs: SQS,
   pointInTimeISO?: string
-): Promise<Array<TableDescription>> => {
-  const response = [] as Array<TableDescription>
+): Promise<void> => {
   const pointInTimeDateTime = pointInTimeISO ? new Date(pointInTimeISO) : undefined
   for (let i = 0; i < tableNames.length; i++) {
     const tableName = tableNames[i]
@@ -51,17 +50,10 @@ const restoreModels = async (
 
     try {
       // https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_RestoreTableToPointInTime.html
-      // Some properties are lost during the restoration process:
-      // Auto scaling policies, IAM policies, Amazon CloudWatch metrics and alarms, Tags, Stream settings,
-      // Time to Live (TTL) settings and Point in time recovery settings.
-      // We only need to replicate the DynamoDB stream.
+      // Some properties are lost during the restoration process.
+      // We only need to replicate the DynamoDB stream for now.
       const tableDescribeData = await dynamoDB.describeTable({ TableName: tableName }).promise()
-      const oldTableStreamSpecification = tableDescribeData.Table?.StreamSpecification
-      // Two tables:
-      // 1. CartReadModel
-      // 2. CartReadModel-Restoring: Common name so the GET endpoint can see the restoring process.
-      // 2.1 Or CartReadModel-<pointInTimeISO | new Date()> - But we can't access through the GET method (maybe with regex)
-      console.log('///// RESTORE 1 /////')
+      const oldTableStreamSpecification = tableDescribeData.Table?.StreamSpecification!
       await dynamoDB
         .restoreTableToPointInTime({
           SourceTableName: tableName,
@@ -70,51 +62,15 @@ const restoreModels = async (
           RestoreDateTime: pointInTimeDateTime,
         })
         .promise()
-      console.log('///// UPDATE STREAM 1 /////')
-      await dynamoDB
-        .updateTable({
-          TableName: newTableName,
-          StreamSpecification: oldTableStreamSpecification,
-        })
-        .promise()
-      console.log('///// UPDATE PITR 1 /////')
-      await dynamoDB
-        .updateContinuousBackups({
-          TableName: newTableName,
-          PointInTimeRecoverySpecification: { PointInTimeRecoveryEnabled: true },
-        })
-        .promise()
-      console.log('///// DELETE 1 /////')
-      await dynamoDB.deleteTable({ TableName: tableName }).promise()
-      console.log('///// RESTORE 2 /////')
-      const tableRestoreData = await dynamoDB
-        .restoreTableToPointInTime({
-          SourceTableName: newTableName,
-          TargetTableName: tableName,
-          UseLatestRestorableTime: true,
-        })
-        .promise()
-      console.log('///// UPDATE STREAM 2 /////')
-      await dynamoDB
-        .updateTable({
-          TableName: tableName,
-          StreamSpecification: oldTableStreamSpecification,
-        })
-        .promise()
-      console.log('///// UPDATE PITR 2 /////')
-      await dynamoDB
-        .updateContinuousBackups({
-          TableName: newTableName,
-          PointInTimeRecoverySpecification: { PointInTimeRecoveryEnabled: true },
-        })
-        .promise()
-      console.log('///// DELETE 2 /////')
-      await dynamoDB.deleteTable({ TableName: newTableName }).promise()
-
-      response.push(tableRestoreData.TableDescription ?? {})
+      const message: RestoreMessage = {
+        from_table: tableName,
+        to_table: newTableName,
+        status: 'RESTORING_TEMPORAL_TABLE',
+        options: oldTableStreamSpecification
+      }
+      await sqs.sendMessage({ QueueUrl: process.env['SQS_URL'], MessageBody: JSON.stringify(message) }).promise()
     } catch (e) {
       throw Error(`An error has occurred while restoring your model: ${e.message}`)
     }
   }
-  return response
 }
