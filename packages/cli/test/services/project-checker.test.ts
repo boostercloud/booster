@@ -196,7 +196,16 @@ describe('project checker', (): void => {
                 expect(logger.info).have.not.been.called
                 expect(projectUpdater.updatePackageJsonDependencyVersions).have.not.been.called
             })
-    
+
+            it('versions match on linux', async () => {
+                const userAgent = '@boostercloud/cli/1.11.2 linux-x64 node-v12.10.0'
+                let exceptionThrown = false
+                await checkCurrentDirBoosterVersion(userAgent).catch(() => exceptionThrown = true)
+                expect(exceptionThrown).to.be.equal(false)
+                expect(logger.info).have.not.been.called
+                expect(projectUpdater.updatePackageJsonDependencyVersions).have.not.been.called
+            })
+
             it('versions differs in fix number with cli version greater than project version', async () => {
                 const userAgent = '@boostercloud/cli/1.11.3 darwin-x64 node-v12.10.0'
                 let exceptionThrown = false
@@ -248,7 +257,7 @@ describe('project checker', (): void => {
                     const promptStub = stub(inquirer,'prompt')
                     promptStub.resolves({value: 'Yes'})
                     const userAgent = '@boostercloud/cli/1.12.2 darwin-x64 node-v12.10.0'
-                    let exceptionThrown = false                
+                    let exceptionThrown = false
                     await checkCurrentDirBoosterVersion(userAgent).catch(() => exceptionThrown = true)
                     expect(exceptionThrown).to.be.equal(false)
                     expect(logger.info).have.been.calledWithMatch(/package.json Booster dependencies have been updated to version/)

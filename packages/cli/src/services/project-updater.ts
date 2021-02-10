@@ -10,9 +10,7 @@ export async function updatePackageJsonDependencyVersions(version: string, proje
         if (packageJsonContents.dependencies['@boostercloud/framework-types'] !== undefined) {
             packageJsonContents.dependencies['@boostercloud/framework-types'] = `^${version}`
         }
-        fs.outputFile(packageJsonPath, JSON.stringify(packageJsonContents,null,2), function writeJSON(err) {
-            if (err) return console.log(err);            
-        });
+        fs.outputFile(packageJsonPath, JSON.stringify(packageJsonContents,null,2))
     } catch (e) {
       throw new Error(
         `There was an error when recognizing the application package.json file. Make sure you are in the root path of a Booster project:\n${e.message}`
