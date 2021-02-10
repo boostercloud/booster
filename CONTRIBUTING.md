@@ -37,7 +37,7 @@ If you see unacceptable behavior, please communicate so to `hello@booster.cloud`
 
 ## I don't want to read this whole thing, I just have a question!!!
 
-Go ahead and ask the community in [Discord](https://discord.com/invite/bDY8MKx) or go ahead and [create a new issue](https://github.com/boostercloud/booster/issues).
+Go ahead and ask the community in [Discord](https://discord.com/invite/bDY8MKx) or [create a new issue](https://github.com/boostercloud/booster/issues).
 
 ## What should I know before I get started?
 
