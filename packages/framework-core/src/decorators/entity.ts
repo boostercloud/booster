@@ -1,22 +1,60 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Booster } from '../booster'
-import { Class, EntityInterface, ReducerMetadata, EventInterface } from '@boostercloud/framework-types'
+import {
+  Class,
+  EntityInterface,
+  ReducerMetadata,
+  EventInterface,
+  RoleAccess,
+  AnyClass,
+} from '@boostercloud/framework-types'
 import 'reflect-metadata'
+
+interface EntityAttributes {
+  authorizeReadEvents: RoleAccess['authorize']
+}
+
+type EntityDecoratorParam = AnyClass | EntityAttributes
+type EntityDecoratorResult<TEntity, TParam> = TParam extends EntityAttributes
+  ? (entityClass: Class<TEntity>) => void
+  : void
+
 /**
  * Decorator to register a class as an Entity
  * @constructor
  */
-export function Entity<TEntity extends EntityInterface>(entityClass: Class<TEntity>): void {
-  Booster.configureCurrentEnv((config): void => {
-    if (config.entities[entityClass.name]) {
-      throw new Error(`An entity called ${entityClass.name} is already registered
-        If you think that this is an error, try performing a clean build..`)
-    }
+export function Entity<TEntity extends EntityInterface, TParam extends EntityDecoratorParam>(
+  classOrAttributes: TParam
+): EntityDecoratorResult<TEntity, TParam> {
+  // The craziness with the param and return types is to achieve that either:
+  // - The @Entity decorator doesn't parenthesis: THEN we need to accept a class as parameter and return void
+  // - The @Entity decorator have parenthesis: THEN we need to accept an object with attributes and return a function accepting a class as parameter
 
-    config.entities[entityClass.name] = {
-      class: entityClass,
-    }
-  })
+  let authorizeReadEvents: RoleAccess['authorize'] = []
+  const mainLogicLambda = (entityClass: Class<TEntity>) => {
+    Booster.configureCurrentEnv((config): void => {
+      if (config.entities[entityClass.name]) {
+        throw new Error(`An entity called ${entityClass.name} is already registered
+        If you think that this is an error, try performing a clean build..`)
+      }
+
+      config.entities[entityClass.name] = {
+        class: entityClass,
+        authorizeReadEvents,
+      }
+    })
+  }
+
+  if (isEntityAttributes(classOrAttributes)) {
+    authorizeReadEvents = classOrAttributes.authorizeReadEvents
+    return mainLogicLambda as EntityDecoratorResult<TEntity, TParam>
+  }
+
+  return mainLogicLambda(classOrAttributes as Class<TEntity>) as EntityDecoratorResult<TEntity, TParam>
+}
+
+function isEntityAttributes(param: EntityDecoratorParam): param is EntityAttributes {
+  return 'authorizeReadEvents' in param
 }
 
 /**

@@ -11,7 +11,9 @@ import { ProductAvailabilityChanged } from '../events/product-availability-chang
 /**
  * A product is the representation of a sellable unit in our sample store
  */
-@Entity
+@Entity({
+  authorizeReadEvents: 'all',
+})
 export class Product {
   public constructor(
     public id: UUID,
