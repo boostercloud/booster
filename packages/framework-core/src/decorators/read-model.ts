@@ -1,5 +1,5 @@
 import { Class, ReadModelInterface, RoleAccess } from '@boostercloud/framework-types'
-import { Booster } from '../booster'
+import { BoosterApp } from '../booster-app'
 import { getPropertiesMetadata } from './metadata'
 
 /**
@@ -8,7 +8,7 @@ import { getPropertiesMetadata } from './metadata'
  */
 export function ReadModel(attributes: RoleAccess): (readModelClass: Class<ReadModelInterface>) => void {
   return (readModelClass) => {
-    Booster.configureCurrentEnv((config): void => {
+    BoosterApp.configureCurrentEnv((config): void => {
       if (config.readModels[readModelClass.name]) {
         throw new Error(`A read model called ${readModelClass.name} is already registered.
         If you think that this is an error, try performing a clean build.`)

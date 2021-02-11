@@ -1,4 +1,4 @@
-import { Booster } from '../booster'
+import { BoosterApp } from '../booster-app'
 import { Class, EntityInterface, ProjectionMetadata, ProjectionResult } from '@boostercloud/framework-types'
 
 /**
@@ -25,7 +25,7 @@ export function Projects<TEntity extends EntityInterface>(
 }
 
 function registerProjection(originName: string, projectionMetadata: ProjectionMetadata): void {
-  Booster.configureCurrentEnv((config): void => {
+  BoosterApp.configureCurrentEnv((config): void => {
     const entityProjections = config.projections[originName] || []
     if (entityProjections.indexOf(projectionMetadata) < 0) {
       // Skip duplicate registrations

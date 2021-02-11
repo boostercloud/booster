@@ -1,4 +1,4 @@
-import { Booster } from '../booster'
+import { BoosterApp } from '../booster-app'
 import { CommandInterface, RoleAccess } from '@boostercloud/framework-types'
 import { getPropertiesMetadata } from './metadata'
 
@@ -9,7 +9,7 @@ import { getPropertiesMetadata } from './metadata'
  */
 export function Command(attributes: RoleAccess): <TCommand>(commandClass: CommandInterface<TCommand>) => void {
   return (commandClass) => {
-    Booster.configureCurrentEnv((config): void => {
+    BoosterApp.configureCurrentEnv((config): void => {
       if (config.commandHandlers[commandClass.name]) {
         throw new Error(`A command called ${commandClass.name} is already registered.
         If you think that this is an error, try performing a clean build.`)

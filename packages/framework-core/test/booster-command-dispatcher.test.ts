@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { Booster } from '../src/booster'
+import { Booster } from '../src/index'
 import { fake, replace, restore } from 'sinon'
 import { expect } from './expect'
 import { BoosterCommandDispatcher } from '../src/booster-command-dispatcher'

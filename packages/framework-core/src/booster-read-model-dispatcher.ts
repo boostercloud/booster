@@ -11,7 +11,7 @@ import {
   GraphQLOperation,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
-import { Booster } from './booster'
+import { BoosterApp } from './booster-app'
 
 export class BoosterReadModelDispatcher {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
@@ -56,7 +56,7 @@ export class BoosterReadModelDispatcher {
 
   private async processFetch(readModelRequest: ReadModelRequestEnvelope): Promise<Array<ReadModelInterface>> {
     const readModelMetadata = this.config.readModels[readModelRequest.typeName]
-    const searcher = Booster.readModel(readModelMetadata.class)
+    const searcher = BoosterApp.readModel(readModelMetadata.class)
     if (readModelRequest.filters) {
       searcher.filter(readModelRequest.filters)
     }

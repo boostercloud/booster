@@ -9,27 +9,26 @@ import {
 } from '@boostercloud/framework-types'
 import { Importer } from './importer'
 import { buildLogger } from './booster-logger'
-import { BoosterEventDispatcher } from './booster-event-dispatcher'
-import { BoosterAuth } from './booster-auth'
 import { fetchEntitySnapshot } from './entity-snapshot-fetcher'
-import { BoosterGraphQLDispatcher } from './booster-graphql-dispatcher'
-import { BoosterSubscribersNotifier } from './booster-subscribers-notifier'
-import { BoosterScheduledCommandDispatcher } from './booster-scheduled-command-dispatcher'
 
 /**
- * Main class to interact with Booster and configure it.
- * Sensible defaults are used whenever possible:
- * - `provider`: `Provider.AWS`
- * - `appName`: `new-booster-app`
- * - `region`: 'eu-west-1'
- *
+ * Static (singleton) class that provides access to the logger, the config,
+ * and the runtime methods to configure, manage and interact with Booster features.
  */
-export class Booster {
-  public static readonly configuredEnvironments: Set<string> = new Set<string>()
-  private static logger: Logger
-  public static readonly config = new BoosterConfig(checkAndGetCurrentEnv())
+export class BoosterApp {
   /**
-   * Avoid creating instances of this class
+   * Set of environment names set from the application using `Booster.configure('environment_name', ...)`
+   */
+  public static readonly configuredEnvironments: Set<string> = new Set<string>()
+
+  /**
+   * Default logger, as configured in the current
+   */
+  public static logger: Logger
+  public static readonly config = new BoosterConfig(checkAndGetCurrentEnv())
+
+  /**
+   * Forbid creating `BoosterApp` instances
    */
   private constructor() {}
 
@@ -74,32 +73,6 @@ export class Booster {
   }
 
   /**
-   * Entry point to validate users upon sign up
-   */
-  public static async checkSignUp(signUpRequest: unknown): Promise<unknown> {
-    return BoosterAuth.checkSignUp(signUpRequest, this.config, this.logger)
-  }
-
-  /**
-   * Dispatches event messages to your application.
-   */
-  public static dispatchEvent(rawEvent: unknown): Promise<unknown> {
-    return BoosterEventDispatcher.dispatch(rawEvent, this.config, this.logger)
-  }
-
-  public static serveGraphQL(request: unknown): Promise<unknown> {
-    return new BoosterGraphQLDispatcher(this.config, this.logger).dispatch(request)
-  }
-
-  public static triggerScheduledCommand(request: unknown): Promise<unknown> {
-    return new BoosterScheduledCommandDispatcher(this.config, this.logger).dispatch(request)
-  }
-
-  public static notifySubscribers(request: unknown): Promise<unknown> {
-    return new BoosterSubscribersNotifier(this.config, this.logger).dispatch(request)
-  }
-
-  /**
    * Fetches the last known version of an entity
    * @param entityName Name of the entity class
    * @param entityID
@@ -120,24 +93,4 @@ function checkAndGetCurrentEnv(): string {
     )
   }
   return env
-}
-
-export async function boosterEventDispatcher(rawEvent: unknown): Promise<unknown> {
-  return Booster.dispatchEvent(rawEvent)
-}
-
-export async function boosterPreSignUpChecker(rawMessage: unknown): Promise<unknown> {
-  return Booster.checkSignUp(rawMessage)
-}
-
-export async function boosterServeGraphQL(rawRequest: unknown): Promise<unknown> {
-  return Booster.serveGraphQL(rawRequest)
-}
-
-export async function boosterTriggerScheduledCommand(rawRequest: unknown): Promise<unknown> {
-  return Booster.triggerScheduledCommand(rawRequest)
-}
-
-export async function boosterNotifySubscribers(rawRequest: unknown): Promise<unknown> {
-  return Booster.notifySubscribers(rawRequest)
 }
