@@ -28,11 +28,13 @@ export const applyPointInTimeRecoveryBackup = (
 export const createRestoreAPI = (stack: Stack, config: BoosterConfig, tables: Array<Table>): void => {
   // __dirname is /dist/utils and we need /dist/lambda
   const lambdaDir = __dirname.split('/')
+  const boosterEnv = config.environmentName
   lambdaDir.pop()
 
   const queue = new Queue(stack, 'RestoreBackup-Queue', {
-    queueName: 'restore-backup-queue',
-    deliveryDelay: Duration.seconds(5) // TODO: INCREASE TO 5-15min
+    queueName: `${config.appName}-restore-backup-queue`,
+    deliveryDelay: Duration.minutes(1), // TODO: INCREASE TO 5-15min
+    visibilityTimeout: Duration.minutes(1) // This is required: visibilityTimeout >= lambdaTimeout
   })
 
   const backend = new Function(stack, 'RestoreBackup-Backend', {
@@ -45,6 +47,7 @@ export const createRestoreAPI = (stack: Stack, config: BoosterConfig, tables: Ar
       TABLE_NAMES: tables.map((table) => table.tableName).join(','),
       APP_NAME: config.appName,
       SQS_URL: queue.queueUrl,
+      BOOSTER_ENV: boosterEnv,
     },
   })
 
@@ -58,6 +61,7 @@ export const createRestoreAPI = (stack: Stack, config: BoosterConfig, tables: Ar
       TABLE_NAMES: tables.map((table) => table.tableName).join(','),
       APP_NAME: config.appName,
       SQS_URL: queue.queueUrl,
+      BOOSTER_ENV: boosterEnv,
     },
   })
 
@@ -76,6 +80,7 @@ export const createRestoreAPI = (stack: Stack, config: BoosterConfig, tables: Ar
       'dynamodb:Scan',
       'dynamodb:Query',
       'dynamodb:UpdateItem',
+      'dynamodb:UpdateContinuousBackups',
       'dynamodb:PutItem',
       'dynamodb:GetItem',
       'dynamodb:DeleteItem',
@@ -88,7 +93,7 @@ export const createRestoreAPI = (stack: Stack, config: BoosterConfig, tables: Ar
   const api = new LambdaRestApi(stack, 'RestoreBackup-API', {
     handler: backend,
     proxy: false,
-    deployOptions: { stageName: config.environmentName },
+    deployOptions: { stageName: boosterEnv },
   })
 
   /*
@@ -121,9 +126,11 @@ const applyPermissions = (backend: Function, listener: Function, queue: Queue): 
     'dynamodb:Scan',
     'dynamodb:Query',
     'dynamodb:UpdateItem',
+    'dynamodb:UpdateContinuousBackups',
     'dynamodb:PutItem',
     'dynamodb:GetItem',
     'dynamodb:DeleteItem',
+    'dynamodb:ListTables',
     'dynamodb:BatchWriteItem',
     'dynamodb:DescribeTable',
     'dynamodb:DeleteTable',

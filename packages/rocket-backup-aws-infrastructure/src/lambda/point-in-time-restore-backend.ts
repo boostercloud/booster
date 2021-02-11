@@ -44,8 +44,6 @@ const restoreModels = async (
   const pointInTimeDateTime = pointInTimeISO ? new Date(pointInTimeISO) : undefined
   for (let i = 0; i < tableNames.length; i++) {
     const tableName = tableNames[i]
-    // 'targetTableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+"
-    // ${pointInTimeDateTime ?? new Date().toISOString()
     const newTableName = `${tableName}-restoring`
 
     try {
@@ -68,7 +66,7 @@ const restoreModels = async (
         status: 'RESTORING_TEMPORAL_TABLE',
         options: oldTableStreamSpecification
       }
-      await sqs.sendMessage({ QueueUrl: process.env['SQS_URL'], MessageBody: JSON.stringify(message) }).promise()
+      await sqs.sendMessage({ QueueUrl: process.env['SQS_URL']!, MessageBody: JSON.stringify(message) }).promise()
     } catch (e) {
       throw Error(`An error has occurred while restoring your model: ${e.message}`)
     }
