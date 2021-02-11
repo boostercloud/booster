@@ -4,6 +4,7 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 import * as environment from '../../src/services/environment'
 import * as dependencies from '../../src/services/dependencies'
+import * as childProcessPromise from 'child-process-promise'
 
 const rewire = require('rewire')
 const configService = rewire('../../src/services/config-service')
@@ -19,26 +20,15 @@ describe('configService', () => {
     restore()
   })
 
-  describe('checkAndCompileProject', () => {
-    let checkItIsABoosterProject: SinonStub
+  describe('compileProject', () => {
 
     beforeEach(() => {
-      checkItIsABoosterProject = stub(projectChecker, 'checkItIsABoosterProject').resolves()
+      replace(childProcessPromise,'exec', fake.resolves({}))
     })
 
-    it('loads the config when the selected environment exists', async () => {
-      const config = new BoosterConfig('build')
-
-      const rewires = [
-        configService.__set__('compileProject', fake())
-      ]
-
-      replace(environment, 'currentEnvironment', fake.returns('test'))
-
-      await expect(configService.checkAndCompileProject(userProjectPath)).to.eventually.become(config)
-      expect(checkItIsABoosterProject).to.have.been.calledOnceWithExactly(userProjectPath)
-
-      rewires.forEach((fn) => fn())
+    it('runs the npm command', async () => {
+      await configService.compileProject(userProjectPath)
+      expect(childProcessPromise.exec).to.have.been.calledWith('npm run clean && npm run compile')
     })
   })
 

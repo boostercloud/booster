@@ -26,13 +26,7 @@ export async function compileProjectAndLoadConfig(userProjectPath: string): Prom
   return readProjectConfig(userProjectPath)
 }
 
-export async function checkAndCompileProject(userProjectPath: string): Promise<BoosterConfig> {
-  await checkItIsABoosterProject(userProjectPath)
-  await compileProject(userProjectPath)
-  return new BoosterConfig('build')
-}
-
-async function compileProject(projectPath: string): Promise<void> {
+export async function compileProject(projectPath: string): Promise<void> {
   try {
     await exec('npm run clean && npm run compile', { cwd: projectPath })
   } catch (e) {
