@@ -119,6 +119,9 @@ const applyPermissions = (backend: Function, listener: Function, queue: Queue): 
 
   // Any DynamoDB table since this backend describes, restores and deletes
   // a DynamoDB table created on the fly (apart from other underground operations)
+  // https://docs.aws.amazon.com/es_es/lambda/latest/dg/API_AddPermission.html +
+  // https://docs.aws.amazon.com/es_es/lambda/latest/dg/API_UpdateEventSourceMapping.html =
+  // Update notifier-subscription after re-enabling streaming configurations.
   const policyStatement = new PolicyStatement()
   policyStatement.addResources("*")
   policyStatement.addActions(
