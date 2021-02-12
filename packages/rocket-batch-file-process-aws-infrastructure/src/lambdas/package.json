@@ -16,6 +16,7 @@
   ],
   "dependencies": {
     "tslib": "2.1.0",
-    "aws-sdk": "2.764.0"
+    "aws-sdk": "2.764.0",
+    "@types/aws-lambda": "8.10.48"
   }
 }
