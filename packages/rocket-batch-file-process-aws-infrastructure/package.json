@@ -46,6 +46,12 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@boostercloud/framework-provider-aws-infrastructure": "0.11.2"
+    "@boostercloud/framework-provider-aws-infrastructure": "0.11.2",
+    "chai": "4.2.0",
+    "chai-as-promised": "7.1.1",
+    "faker": "5.1.0",
+    "sinon": "9.2.3",
+    "sinon-chai": "3.5.0",
+    "velocityjs": "^2.0.0"
   }
 }
