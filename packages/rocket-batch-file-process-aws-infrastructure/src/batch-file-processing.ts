@@ -6,8 +6,7 @@ import { S3EventSource } from '@aws-cdk/aws-lambda-event-sources'
 import { createPolicyStatement } from '@boostercloud/framework-provider-aws-infrastructure/dist/infrastructure/stacks/policies'
 import { Table } from '@aws-cdk/aws-dynamodb'
 import { BoosterConfig } from '@boostercloud/framework-types'
-
-const path = require('path')
+import * as path from 'path'
 
 export type AWSBatchProcessingFilesParams = {
   bucketName: string

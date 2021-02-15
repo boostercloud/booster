@@ -54,8 +54,7 @@ export const handler = async (event: S3Event): Promise<void> => {
 }
 
 async function saveFile(key: string, content: string[]): Promise<void> {
-  const AWS = require('aws-sdk')
-  const s3 = new AWS.S3()
+  const s3 = new S3()
 
   try {
     await s3

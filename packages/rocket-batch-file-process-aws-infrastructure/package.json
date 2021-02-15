@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/rocket-batch-file-process-aws-infrastructure",
-  "version": "0.10.0",
+  "version": "0.11.2",
   "description": "Booster rocket to batch process files.",
   "keywords": [
     "Booster",
