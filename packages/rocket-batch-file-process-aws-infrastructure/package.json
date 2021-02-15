@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/rocket-batch-file-process-aws-infrastructure",
-  "version": "0.11.2",
+  "version": "0.11.3",
   "description": "Booster rocket to batch process files.",
   "keywords": [
     "Booster",
@@ -27,9 +27,9 @@
     "@aws-cdk/aws-lambda": "1.67.0",
     "@aws-cdk/aws-lambda-event-sources": "1.67.0",
     "@aws-cdk/aws-s3": "1.67.0",
-    "@boostercloud/framework-types": "0.11.2",
-    "@boostercloud/framework-core": "0.11.2",
     "@aws-cdk/core": "1.67.0",
+    "@boostercloud/framework-core": "^0.11.3",
+    "@boostercloud/framework-types": "^0.11.3",
     "aws-sdk": "2.764.0"
   },
   "scripts": {
@@ -46,7 +46,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@boostercloud/framework-provider-aws-infrastructure": "0.11.2",
+    "@boostercloud/framework-provider-aws-infrastructure": "^0.11.3",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
     "faker": "5.1.0",

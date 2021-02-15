@@ -1,7 +1,7 @@
 {
   "name": "@boostercloud/framework-integration-tests",
   "description": "Example project for Booster",
-  "version": "0.11.2",
+  "version": "0.11.3",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
   "private": true,
@@ -10,14 +10,14 @@
   },
   "bugs": "https://github.com/boostercloud/booster/issues",
   "dependencies": {
-    "@boostercloud/framework-core": "^0.11.2",
-    "@boostercloud/framework-provider-aws": "^0.11.2",
-    "@boostercloud/framework-provider-local": "^0.11.2",
-    "@boostercloud/framework-types": "^0.11.2"
+    "@boostercloud/framework-core": "^0.11.3",
+    "@boostercloud/framework-provider-aws": "^0.11.3",
+    "@boostercloud/framework-provider-local": "^0.11.3",
+    "@boostercloud/framework-types": "^0.11.3"
   },
   "devDependencies": {
-    "@boostercloud/framework-provider-aws-infrastructure": "^0.11.2",
-    "@boostercloud/framework-provider-local-infrastructure": "^0.11.2",
+    "@boostercloud/framework-provider-aws-infrastructure": "^0.11.3",
+    "@boostercloud/framework-provider-local-infrastructure": "^0.11.3",
     "@types/aws-lambda": "8.10.48",
     "@types/faker": "5.1.5",
     "@types/ws": "^7.2.4",
