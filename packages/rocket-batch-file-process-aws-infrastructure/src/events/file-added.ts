@@ -3,9 +3,9 @@ import { UUID } from '@boostercloud/framework-types'
 
 @Event
 export class FileAdded {
-  public constructor(readonly s3uri: string, readonly filesize: number) {}
+  public constructor(readonly fileURI: string, readonly filesize: number) {}
 
   public entityID(): UUID {
-    return this.s3uri
+    return this.fileURI
   }
 }

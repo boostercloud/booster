@@ -8,6 +8,6 @@ export class File {
 
   @Reduces(FileAdded)
   public static reduceSmallFileAdded(event: FileAdded, currentSmallFile?: File): File {
-    return new File(event.s3uri, event.filesize)
+    return new File(event.fileURI, event.filesize)
   }
 }
