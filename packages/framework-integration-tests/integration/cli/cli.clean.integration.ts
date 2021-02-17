@@ -21,21 +21,11 @@ describe('Clean', () => {
 
   context('Valid clean', () => {
     it('should clean the project after build', async () => {
-      
-    //   const expectedBuildOutputRegex = new RegExp(
-    //     ['boost build', 'Checking project structure', 'Building project', 'Build complete'].join('(.|\n)*')
-    //   )
-
+    
       await exec(`${cliPath} build`, { cwd: cleanSandboxDir })
       
       expect(fileExists(path.join(cleanSandboxDir,'dist'))).to.be.true
-      expect(fileExists(path.join(cleanSandboxDir,'dist','index.js'))).to.be.true
-      expect(fileExists(path.join(cleanSandboxDir,'dist','index.d.ts'))).to.be.true
-      expect(fileExists(path.join(cleanSandboxDir,'dist','roles.js'))).to.be.true
-      expect(fileExists(path.join(cleanSandboxDir,'dist','roles.d.ts'))).to.be.true
-      expect(fileExists(path.join(cleanSandboxDir,'dist','config','config.js'))).to.be.true
-      expect(fileExists(path.join(cleanSandboxDir,'dist','config','config.d.ts'))).to.be.true
-
+      
       const expectedCleanOutputRegex = new RegExp(
         ['boost clean', 'Checking project structure', 'Cleaning project', 'Clean complete'].join('(.|\n)*')
       )

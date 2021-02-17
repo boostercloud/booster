@@ -7,7 +7,7 @@ import Brand from '../common/brand'
 const runTasks = async (
   clean: (ctx: string) => Promise<void>
 ): Promise<void> =>
-  Script.init(`boost ${Brand.dangerize('build')} 🚀`, Promise.resolve(process.cwd()))
+  Script.init(`boost ${Brand.dangerize('clean')} 🚀`, Promise.resolve(process.cwd()))
     .step('Checking project structure',checkCurrentDirIsABoosterProject)
     .step('Cleaning project', clean)
     .info('Clean complete!')
