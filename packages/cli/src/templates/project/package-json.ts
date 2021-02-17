@@ -25,7 +25,9 @@ export const template = `{
     "prettier": "^1.19.1",
     "typescript": "^3.9.3",
     "ts-node": "^8.6.2",
-    "@types/node": "^13.5.1"
+    "@types/node": "^13.5.1",
+    "ttypescript": "1.5.12",
+    "metadata-booster": "0.2.0"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -37,7 +39,7 @@ export const template = `{
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "compile": "npx tsc -b tsconfig.json",
+    "compile": "npx ttsc -b tsconfig.json",
     "deploy": "boost deploy",
     "clean": "npx rimraf ./dist tsconfig.tsbuildinfo",
     "test": "npx nyc --extension .ts mocha --forbid-only \\"test/**/*.test.ts\\""
