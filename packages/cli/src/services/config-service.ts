@@ -34,6 +34,14 @@ export async function compileProject(projectPath: string): Promise<void> {
   }
 }
 
+export async function cleanProject(projectPath: string): Promise<void> {
+  try {
+    await exec('npm run clean', { cwd: projectPath })
+  } catch (e) {
+    throw wrapExecError(e, 'Error cleaning project')
+  }
+}
+
 function readProjectConfig(userProjectPath: string): Promise<BoosterConfig> {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const userProject = loadUserProject(userProjectPath)

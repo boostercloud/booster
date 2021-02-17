@@ -32,6 +32,18 @@ describe('configService', () => {
     })
   })
 
+  describe('cleanProject', () => {
+
+    beforeEach(() => {
+      replace(childProcessPromise,'exec', fake.resolves({}))
+    })
+
+    it('runs the npm command', async () => {
+      await configService.cleanProject(userProjectPath)
+      expect(childProcessPromise.exec).to.have.been.calledWith('npm run clean')
+    })
+  })
+
   describe('compileProjectAndLoadConfig', () => {
     let checkItIsABoosterProject: SinonStub
 
