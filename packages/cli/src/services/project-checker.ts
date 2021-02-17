@@ -9,7 +9,7 @@ import { oraLogger } from './logger'
 
 function checkIndexFileIsBooster(indexFilePath: string): void {
   const contents = readFileSync(indexFilePath)
-  if (!contents.includes('Booster.start()')) {
+  if (!contents.includes('Booster.start(')) {
     throw new Error(
       'The main application file does not start a Booster application. Verify you are in the right project'
     )
