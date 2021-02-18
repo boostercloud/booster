@@ -132,7 +132,11 @@ describe('GraphQLQueryGenerator', () => {
               properties: [
                 {
                   name: mockPropertyName,
-                  type: mockPropertyType,
+                  typeInfo: {
+                    name: mockPropertyType.name,
+                    type: mockPropertyType,
+                    parameters: [],
+                  },
                 },
               ],
             }
