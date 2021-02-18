@@ -9,20 +9,14 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLScalarType,
-  GraphQLString
+  GraphQLString,
 } from 'graphql'
 import { GraphQLNonInputType, ResolverBuilder, TargetTypeMetadata, TargetTypesMap } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
 import * as inflected from 'inflected'
 import { GraphQLJSONObject } from 'graphql-type-json'
-import {
-  AnyClass,
-  BooleanOperations,
-  NumberOperations,
-  PropertyMetadata,
-  StringOperations,
-  UUID,
-} from '@boostercloud/framework-types'
+import { AnyClass, BooleanOperations, NumberOperations, StringOperations, UUID } from '@boostercloud/framework-types'
+import { PropertyMetadata } from 'metadata-booster'
 
 export class GraphQLQueryGenerator {
   private generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
@@ -38,13 +32,13 @@ export class GraphQLQueryGenerator {
   public generate(): GraphQLObjectType {
     const byIDQueries = this.generateByIDQueries()
     const filterQueries = this.generateFilterQueries()
-    const fields = {...byIDQueries, ...filterQueries}
+    const fields = { ...byIDQueries, ...filterQueries }
     if (Object.keys(fields).length === 0) {
       return new GraphQLObjectType({
         name: 'Query',
         fields: {
-          NoQueriesDefined: { type: GraphQLString }
-        }
+          NoQueriesDefined: { type: GraphQLString },
+        },
       })
     }
     return new GraphQLObjectType({
@@ -86,13 +80,13 @@ export class GraphQLQueryGenerator {
   public generateFilterArguments(typeMetadata: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
     const args: GraphQLFieldConfigArgumentMap = {}
     typeMetadata.properties.forEach((prop: PropertyMetadata) => {
-      const graphQLPropType = this.typeInformer.getGraphQLTypeFor(prop.type)
+      const graphQLPropType = this.typeInformer.getGraphQLTypeFor(prop.typeInfo.type)
       if (!this.canFilter(graphQLPropType)) {
         // TODO: We still don't handle filtering by complex properties
         return
       }
       args[prop.name] = {
-        type: this.generateFilterFor(prop.type),
+        type: this.generateFilterFor(prop.typeInfo.type),
       }
     })
     return args
