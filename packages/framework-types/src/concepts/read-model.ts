@@ -1,5 +1,6 @@
 import { RoleAccess, UUID } from '.'
-import { Class, PropertyMetadata } from '../typelevel'
+import { Class } from '../typelevel'
+import { PropertyMetadata } from 'metadata-booster'
 
 export interface ReadModelInterface {
   id: UUID

@@ -1,6 +1,6 @@
 import { GraphQLJSONObject } from 'graphql-type-json'
 import { GraphQLNonInputType, TargetTypeMetadata, TargetTypesMap } from './common'
-import { AnyClass, UUID, PropertyMetadata } from '@boostercloud/framework-types'
+import { AnyClass, UUID } from '@boostercloud/framework-types'
 import {
   GraphQLFieldConfigMap,
   GraphQLList,
@@ -18,6 +18,7 @@ import {
   GraphQLInterfaceType,
 } from 'graphql'
 import { GraphQLFieldMap, GraphQLInputFieldConfigMap } from 'graphql/type/definition'
+import { PropertyMetadata } from 'metadata-booster'
 
 export class GraphQLTypeInformer {
   private graphQLTypesByName: Record<string, GraphQLNonInputType> = {}
@@ -41,7 +42,7 @@ export class GraphQLTypeInformer {
   private metadataPropertiesToGraphQLFields(properties: Array<PropertyMetadata>): GraphQLFieldConfigMap<any, any> {
     const fields: GraphQLFieldConfigMap<any, any> = {}
     for (const prop of properties) {
-      fields[prop.name] = { type: this.getGraphQLTypeFor(prop.type) }
+      fields[prop.name] = { type: this.getGraphQLTypeFor(prop.typeInfo.type) }
     }
     return fields
   }

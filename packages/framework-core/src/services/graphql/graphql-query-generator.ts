@@ -28,10 +28,10 @@ import {
   BooleanOperations,
   BoosterConfig,
   NumberOperations,
-  PropertyMetadata,
   StringOperations,
   UUID,
 } from '@boostercloud/framework-types'
+import { PropertyMetadata } from 'metadata-booster'
 
 export class GraphQLQueryGenerator {
   private generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
@@ -145,13 +145,13 @@ export class GraphQLQueryGenerator {
   public generateFilterArguments(typeMetadata: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
     const args: GraphQLFieldConfigArgumentMap = {}
     typeMetadata.properties.forEach((prop: PropertyMetadata) => {
-      const graphQLPropType = this.typeInformer.getGraphQLTypeFor(prop.type)
+      const graphQLPropType = this.typeInformer.getGraphQLTypeFor(prop.typeInfo.type)
       if (!this.canFilter(graphQLPropType)) {
         // TODO: We still don't handle filtering by complex properties
         return
       }
       args[prop.name] = {
-        type: this.generateFilterFor(prop.type),
+        type: this.generateFilterFor(prop.typeInfo.type),
       }
     })
     return args
