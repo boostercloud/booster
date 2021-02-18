@@ -666,6 +666,12 @@ You can check that code compiles correctly by running the build command:
 boost build
 ```
 
+You can also clean the compiled code by running:
+
+```bash
+boost clean
+```
+
 Now, let's deploy our application to the cloud to see it working. It is as simple as running
 the deploy command:
 
