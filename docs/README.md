@@ -12,15 +12,14 @@
     + [Installing the Booster CLI](#installing-the-booster-cli)
   * [Your first Booster app in 10 minutes](#your-first-booster-app-in-10-minutes)
     + [1. Create the project](#1-create-the-project)
-    + [2. Generating Resources](#2-generating-resources)
-    + [2.1. First command](#21-first-command)
-    + [2.2. First event](#22-first-event)
-    + [2.3. First entity](#23-first-entity)
-    + [2.4. First read model](#24-first-read-model)
-    + [3. Deployment](#3-deployment)
-    + [4. Testing](#4-testing)
-    + [5. Removing the stack](#5-removing-the-stack)
-    + [6. More functionalities](#6-more-functionalities)
+    + [2. First command](#2-first-command)
+    + [3. First event](#3-first-event)
+    + [4. First entity](#4-first-entity)
+    + [5. First read model](#5-first-read-model)
+    + [6. Deployment](#6-deployment)
+    + [7. Testing](#7-testing)
+    + [8. Removing the stack](#8-removing-the-stack)
+    + [9. More functionalities](#9-more-functionalities)
 - [Booster architecture](#booster-architecture)
   * [1. Command and command handlers](#1-command-and-command-handlers)
     + [Commands naming convention](#commands-naming-convention)
@@ -353,18 +352,17 @@ In this section, we will go through all the necessary steps to have the backend 
 running for a blog application in just a few minutes. The steps to follow will be:
 
 - [Create project](#1-create-the-project)
-- [Generating Resources](#2-generating-resources)
-  - [First command](#21-first-command)
-  - [First event](#22-first-event)
-  - [First entity](#23-first-entity)
-  - [First read model](#24-first-read-model)
-- [Deployment](#3-deployment)
-- [Testing](#4-testing)
-  - [Creating posts](#41-creating-posts)
-  - [Retrieving all posts](#42-retrieving-all-posts)
-  - [Retrieving specific post](#43-retrieving-specific-post)
-- [Removing stack](#5-removing-stack)
-- [More functionalities](#6-more-functionalities)
+- [First command](#2-first-command)
+- [First event](#3-first-event)
+- [First entity](#4-first-entity)
+- [First read model](#5-first-read-model)
+- [Deployment](#6-deployment)
+- [Testing](#7-testing)
+  - [Creating posts](#71-creating-posts)
+  - [Retrieving all posts](#72-retrieving-all-posts)
+  - [Retrieving specific post](#73-retrieving-specific-post)
+- [Removing stack](#8-removing-stack)
+- [More functionalities](#9-more-functionalities)
 
 #### 1. Create the project
 
@@ -449,12 +447,7 @@ boosted-blog
 
 Now open the project in your favorite editor, e.g. [Visual Studio Code](https://code.visualstudio.com/).
 
-#### 2. Generating Resources
-
-With Booster CLI help you can generate resources by running `boost new:<resource> [<parameters>]` command to generate each resource.
-> In the case of generating a resource with the same name as an already existing one, Booster CLI will ask the user if they want to override existing files.
-
-#### 2.1. First command
+#### 2. First command
 
 Commands define the input to our system, so we'll start by generating our first
 [command](#1-command-and-command-handlers) to create posts. Use the command generator, while in the project's root
@@ -469,8 +462,8 @@ The `new:command` generator creates a `create-post.ts` file in the `commands` fo
 ```text
 boosted-blog
 └── src
-    └── commands
-        └── create-post.ts
+    └── commands
+        └── create-post.ts
 ```
 
 As we mentioned before, commands are the input of our system. They're sent
@@ -503,7 +496,7 @@ export class CreatePost {
 }
 ```
 
-#### 2.2. First event
+#### 3. First event
 
 Instead of creating, updating, or deleting objects, Booster stores data in the form of events.
 They are records of facts and represent the source of truth. Let's generate an event called `PostCreated`
@@ -519,8 +512,8 @@ The name of the file is the name of the event:
 ```text
 boosted-blog
 └── src
-    └── events
-        └── post-created.ts
+    └── events
+        └── post-created.ts
 ```
 
 All events in Booster must target an entity, so we need to implement an `entityID`
@@ -566,7 +559,7 @@ import { PostCreated } from '../events/post-created'
 We can do any validation in the command handler before storing the event, for our
 example, we'll just save the received data in the `PostCreated` event.
 
-#### 2.3. First entity
+#### 4. First entity
 
 So far, our `PostCreated` event suggests we need a `Post` entity. Entities are a
 representation of our system internal state. They are in charge of reducing (combining) all the events
@@ -600,7 +593,7 @@ export class Post {
 Entities represent our domain model and can be queried from command or
 event handlers to make business decisions or enforcing business rules.
 
-#### 2.4. First read model
+#### 5. First read model
 
 In a real application, we rarely want to make public our entire domain model (entities)
 including all their fields. What is more, different users may have different views of the data depending
@@ -624,8 +617,8 @@ As you might guess, the read-model generator will create a file called
 ```text
 boosted-blog
 └── src
-    └── read-models
-        └── post-read-model.ts
+    └── read-models
+        └── post-read-model.ts
 ```
 
 There are two things to do when creating a read model:
@@ -655,7 +648,7 @@ export class PostReadModel {
 }
 ```
 
-#### 3. Deployment
+#### 6. Deployment
 
 At this point, we've:
 
@@ -684,7 +677,7 @@ only need to pick the output ending in `httpURL`, e.g.:
 https://<some random number>.execute-api.us-east-1.amazonaws.com/production
 ```
 
-#### 4. Testing
+#### 7. Testing
 
 Let's get started testing the project. We will perform three actions:
 
@@ -702,7 +695,7 @@ which is free and includes great support for GraphQL. However, you can use any c
 <httpURL>/graphql
 ```
 
-##### 8.1 Creating posts
+##### 7.1 Creating posts
 
 Let's use two mutations to send two `CreatePost` commands.
 
@@ -747,7 +740,7 @@ Note:
 > In this example, the IDs are generated on the client-side. When running production applications
 > consider adding validation for ID uniqueness. For this example, we have used [a UUID generator](https://www.uuidgenerator.net/version4)
 
-##### 8.2 Retrieving all posts
+##### 7.2 Retrieving all posts
 
 Let's perform a GraphQL `query` that will be hitting our `PostReadModel`:
 
@@ -782,7 +775,7 @@ It should respond with something like:
 }
 ```
 
-##### 8.3 Retrieving specific post
+##### 7.3 Retrieving specific post
 
 It is also possible to retrieve specific a `Post` by adding the `id` as input, e.g.:
 
@@ -810,7 +803,7 @@ You should get a response similar to this:
 }
 ```
 
-#### 5. Removing the stack
+#### 8. Removing the stack
 
 It is convenient to destroy all the infrastructure created after you stop using
 it to avoid generating cloud resource costs. Execute the following command from
@@ -827,7 +820,7 @@ we run `new:project` CLI command.
 > Congratulations! You've built a serverless backend in less than 10 minutes. We hope you
 > have enjoyed discovering the magic of the Booster Framework.
 
-#### 6. More functionalities
+#### 9. More functionalities
 
 This is a really basic example of a Booster application. The are many other features Booster provides like:
 
@@ -915,6 +908,10 @@ boost new:command CreateProduct --fields sku:SKU displayName:string description:
 ```
 
 The generator will automatically create a file called `create-product.ts` with a TypeScript class of the same name under the `commands` directory. You can still create (or modify) the command manually. Since the generator is not doing any _magic_, all you need is a class decorated as `@Command`. Anyway, we recommend you always to use the generator, because it handles the boilerplate code for you. 
+
+Note:
+
+> Generating a command with the same name as an already existing one will prompt the user for confirmation
 
 #### The command handler function
 
@@ -1186,6 +1183,10 @@ boost new:event StockMoved --fields productID:string origin:string destination:s
 
 That will generate a file called `stock-moved.ts` under the proper `<project-root>/src/events` directory. You can also create the file manually, but we recommend using the generator and avoid dealing manually with boilerplate code.
 
+Note:
+
+> Generating an event with the same name as an already existing one will prompt the user for confirmation
+
 #### Registering events in the event store
 
 Creating an event file is different than storing an event instance in the event store. In Booster terminology, the latter receives the name of `registering` an event. As said before, Booster applications are event-sourced, which means that all the events are stored forever. Imagine this store as an infinite log used by the [reducer functions](#4-entities-and-reducers) to recreate the application's current state.
@@ -1371,6 +1372,10 @@ boost new:entity Product --fields displayName:string description:string price:Mo
 ```
 
 The generator will automatically create a file called `product.ts` with a TypeScript class of the same name under the `entities` directory. You can still create the entity manually, writing a class decorated with `@Entity`. Anyway, we recommend you always to use the generator because it handles the boilerplate code for you.
+
+Note:
+
+> Generating an entity with the same name as an already existing one will prompt the user for confirmation
 
 #### The reducer function
 
