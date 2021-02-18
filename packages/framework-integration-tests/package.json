@@ -37,7 +37,7 @@
     "subscriptions-transport-ws": "^0.9.16",
     "ws": "^7.3.0",
     "ttypescript": "1.5.12",
-    "metadata-booster": "0.2.0"
+    "metadata-booster": "0.2.1"
   },
   "engines": {
     "node": ">=8.0.0"
