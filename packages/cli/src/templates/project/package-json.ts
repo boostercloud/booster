@@ -27,7 +27,7 @@ export const template = `{
     "ts-node": "^8.6.2",
     "@types/node": "^13.5.1",
     "ttypescript": "1.5.12",
-    "metadata-booster": "0.2.0"
+    "metadata-booster": "0.2.1"
   },
   "engines": {
     "node": ">=8.0.0"
