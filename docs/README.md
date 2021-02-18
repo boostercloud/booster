@@ -462,8 +462,8 @@ The `new:command` generator creates a `create-post.ts` file in the `commands` fo
 ```text
 boosted-blog
 └── src
-    └── commands
-        └── create-post.ts
+    └── commands
+        └── create-post.ts
 ```
 
 As we mentioned before, commands are the input of our system. They're sent
@@ -512,8 +512,8 @@ The name of the file is the name of the event:
 ```text
 boosted-blog
 └── src
-    └── events
-        └── post-created.ts
+    └── events
+        └── post-created.ts
 ```
 
 All events in Booster must target an entity, so we need to implement an `entityID`
@@ -617,8 +617,8 @@ As you might guess, the read-model generator will create a file called
 ```text
 boosted-blog
 └── src
-    └── read-models
-        └── post-read-model.ts
+    └── read-models
+        └── post-read-model.ts
 ```
 
 There are two things to do when creating a read model:
@@ -907,11 +907,11 @@ The preferred way to create a command is by using the generator, e.g.
 boost new:command CreateProduct --fields sku:SKU displayName:string description:string price:Money
 ```
 
-The generator will automatically create a file called `create-product.ts` with a TypeScript class of the same name under the `commands` directory. You can still create (or modify) the command manually. Since the generator is not doing any _magic_, all you need is a class decorated as `@Command`. Anyway, we recommend you always to use the generator, because it handles the boilerplate code for you.
+The generator will automatically create a file called `create-product.ts` with a TypeScript class of the same name under the `commands` directory. You can still create (or modify) the command manually. Since the generator is not doing any _magic_, all you need is a class decorated as `@Command`. Anyway, we recommend you always to use the generator, because it handles the boilerplate code for you. 
 
 Note:
 
-> Generating a command with the same name as an already existing one will override its content. Soon, we will display a warning before overwriting anything.
+> Generating a command with the same name as an already existing one will prompt the user for confirmation
 
 #### The command handler function
 
@@ -1185,7 +1185,7 @@ That will generate a file called `stock-moved.ts` under the proper `<project-roo
 
 Note:
 
-> Generating an event with the same name as an already existing one will overwrite its content. Soon, we will display a warning before overwriting anything.
+> Generating an event with the same name as an already existing one will prompt the user for confirmation
 
 #### Registering events in the event store
 
@@ -1375,7 +1375,7 @@ The generator will automatically create a file called `product.ts` with a TypeSc
 
 Note:
 
-> Generating an entity with the same name as an already existing one will overwrite its content. Soon, we will display a warning before overwriting anything.
+> Generating an entity with the same name as an already existing one will prompt the user for confirmation
 
 #### The reducer function
 
