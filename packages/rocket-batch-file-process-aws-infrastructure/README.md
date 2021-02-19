@@ -7,11 +7,17 @@ Every time a new File is uploaded to the Source S3 Bucket, a new Lambda function
 This Lambda function will
 
 - Split the source file in smaller chunks. The chunk size is defined by the user as input parameter of the rocket.
-- Persist the new formed chunk in the Staging Bucket.
+- Persist the new formed chunk file in the Staging Bucket.
 - Persist a new event (containing fileUri and fileSize) for each chunk in the Event Store.
 
-**Disclaimer:** As of now the rocket can only process CSV files.
+Then, for every chunk file dropped in the Staging rocket a new Lambda function will be triggered that will:
 
+- Read each chunk file line by line and persist a new event in the Events Store for each row
+
+This event is defined in the Booster application and can be consumed from the Event Handler for any kind of processing.
+You drop your file, and you implement your logic based on an event representing a line of the file.
+
+*Disclaimer: Currently the rocket supports CSV and jsonl files.* 
 ## Usage
 
 Install this package as a dependency in your Booster project.
@@ -32,9 +38,16 @@ Booster.configure('development', (config: BoosterConfig): void => {
   config.provider = Provider([{
     packageName: '@boostercloud/rocket-batch-file-process-aws-infrastructure', 
     parameters: {
-      bucketName: 'test-bucket-name', 
-      chunkSize: '2',
-    }
+      config: {
+        bucketName: 'test-bucket',
+        chunkSize: '2',
+      },
+      rowEvent: {
+        entityId: 'id',
+        eventTypeName: 'RowAdded',
+        entityTypeName: 'RowEntity',
+      },
+    },
   }])
 })
 ```
