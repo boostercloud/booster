@@ -18,7 +18,7 @@ import inquirer = require('inquirer')
 
 describe('project checker', (): void => {
     beforeEach(() => {
-        replace(oraLogger,'info', fake.resolves({}))
+        replace(oraLogger, 'info', fake.resolves({}))
     })
 
     afterEach(() => {
@@ -27,21 +27,21 @@ describe('project checker', (): void => {
 
     describe('checkCurrentDirIsABoosterProject', () => {
         it('is a Booster project', async () => {
-            replace(process,'cwd', fake.returns(path.join(process.cwd(),'test', 'fixtures', 'mock_project')))
+            replace(process, 'cwd', fake.returns(path.join(process.cwd(), 'test', 'fixtures', 'mock_project')))
             let exceptionThrown = false
             await checkCurrentDirIsABoosterProject().catch(() => exceptionThrown = true)
             expect(exceptionThrown).to.be.equal(false)
         })
 
         it('is a Booster project with bad index.ts', async () => {
-            replace(process,'cwd', fake.returns(path.join(process.cwd(),'test', 'fixtures', 'mock_project_bad_index')))
+            replace(process, 'cwd', fake.returns(path.join(process.cwd(), 'test', 'fixtures', 'mock_project_bad_index')))
             let exceptionThrown = false
             await checkCurrentDirIsABoosterProject().catch(() => exceptionThrown = true)
             expect(exceptionThrown).to.be.equal(true)
         })
 
         it('is not a Booster project', async () => {
-            replace(process,'cwd', fake.returns(path.join(process.cwd(),'test', 'fixtures')))
+            replace(process, 'cwd', fake.returns(path.join(process.cwd(), 'test', 'fixtures')))
             let exceptionThrown = false
             await checkCurrentDirIsABoosterProject().catch(() => exceptionThrown = true)
             expect(exceptionThrown).to.be.equal(true)
@@ -50,21 +50,21 @@ describe('project checker', (): void => {
 
     describe('checkItIsABoosterProject', (): void => {
         it('is a Booster project', async () => {
-            const projectPath = path.join(process.cwd(),'test', 'fixtures', 'mock_project')
+            const projectPath = path.join(process.cwd(), 'test', 'fixtures', 'mock_project')
             let exceptionThrown = false
             await checkItIsABoosterProject(projectPath).catch(() => exceptionThrown = true)
             expect(exceptionThrown).to.be.equal(false)
         })
 
         it('is a Booster project with bad index.ts', async () => {
-            const projectPath = path.join(process.cwd(),'test', 'fixtures', 'mock_project_bad_index')
+            const projectPath = path.join(process.cwd(), 'test', 'fixtures', 'mock_project_bad_index')
             let exceptionThrown = false
             await checkItIsABoosterProject(projectPath).catch(() => exceptionThrown = true)
             expect(exceptionThrown).to.be.equal(true)
         })
 
         it('is not a Booster project', async () => {
-            const projectPath = path.join(process.cwd(),'test', 'fixtures')
+            const projectPath = path.join(process.cwd(), 'test', 'fixtures')
             let exceptionThrown = false
             await checkItIsABoosterProject(projectPath).catch(() => exceptionThrown = true)
             expect(exceptionThrown).to.be.equal(true)
@@ -178,14 +178,14 @@ describe('project checker', (): void => {
     describe('checkCurrentDirBoosterVersion', (): void => {
         
         beforeEach(() => {
-            replace(projectUpdater,'updatePackageJsonDependencyVersions', fake.resolves({}))
-            replace(logger,'info', fake.resolves({}))
+            replace(projectUpdater, 'updatePackageJsonDependencyVersions', fake.resolves({}))
+            replace(logger, 'info', fake.resolves({}))
         })
 
         describe('inside a Booster project', () => {
             //project version in mocked package.json is 1.11.2
             beforeEach(() => {
-                replace(process,'cwd', fake.returns(path.join(process.cwd(),'test', 'fixtures', 'mock_project')))
+                replace(process, 'cwd', fake.returns(path.join(process.cwd(), 'test', 'fixtures', 'mock_project')))
             })
 
             it('versions match', async () => {
@@ -254,7 +254,7 @@ describe('project checker', (): void => {
     
             describe('cli version higher than project version in <feature> section', () => {
                 it('user upgrades package.json dependencies', async () => {
-                    const promptStub = stub(inquirer,'prompt')
+                    const promptStub = stub(inquirer, 'prompt')
                     promptStub.resolves({value: 'Yes'})
                     const userAgent = '@boostercloud/cli/1.12.2 darwin-x64 node-v12.10.0'
                     let exceptionThrown = false
@@ -265,7 +265,7 @@ describe('project checker', (): void => {
                 })
         
                 it('user rejects upgrading package.json dependencies', async () => {
-                    const promptStub = stub(inquirer,'prompt')
+                    const promptStub = stub(inquirer, 'prompt')
                     promptStub.resolves({value: 'No'})
                     const userAgent = '@boostercloud/cli/1.12.2 darwin-x64 node-v12.10.0'
                     let exceptionThrown = false
@@ -327,7 +327,7 @@ describe('project checker', (): void => {
         
 
         it('outside a Booster project', async () => {
-            replace(process,'cwd', fake.returns(path.join(process.cwd(),'test', 'fixtures')))
+            replace(process, 'cwd', fake.returns(path.join(process.cwd(), 'test', 'fixtures')))
             const userAgent = '@boostercloud/cli/1.11.2 darwin-x64 node-v12.10.0'
             let exceptionThrown = false
             let exceptionMessage = ''

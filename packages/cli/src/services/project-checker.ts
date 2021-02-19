@@ -87,7 +87,7 @@ async function getBoosterVersion(projectPath: string): Promise<string> {
   try {
     const packageJsonContents = require(path.join(projectAbsolutePath, 'package.json'))
     const version = packageJsonContents.dependencies['@boostercloud/framework-core']
-    const versionParts = version.replace('^','').replace('.tgz','').split('-')
+    const versionParts = version.replace('^', '').replace('.tgz', '').split('-')
     return versionParts[versionParts.length-1]    
   } catch (e) {
     throw new Error(
@@ -98,8 +98,8 @@ async function getBoosterVersion(projectPath: string): Promise<string> {
 
 async function compareVersionsAndDisplayMessages(cliVersion: string, projectVersion: string, projectPath: string): Promise<void> {
   if (cliVersion === projectVersion)  { return }
-  const cliVersionParts = cliVersion.split('.').map((v) => parseInt(v,10))
-  const projectVersionParts = projectVersion.split('.').map((v) => parseInt(v,10))
+  const cliVersionParts = cliVersion.split('.').map((v) => parseInt(v, 10))
+  const projectVersionParts = projectVersion.split('.').map((v) => parseInt(v, 10))
   if (cliVersionParts.length !== projectVersionParts.length) {
     throw new Error(`Versions must have the same length. CLI version: ${cliVersion}. Project Booster version: ${projectVersion}`)
   }
@@ -115,7 +115,7 @@ async function compareVersionsAndDisplayMessages(cliVersion: string, projectVers
     } else if (cliVersionParts[1] > projectVersionParts[1]) {
       //cli higher than project in 'feat' section
       const promptMsg = `@boostercloud/cli version ${cliVersion} is higher than project version (${projectVersion}) in the 'feature' section. Do you want to upgrade your project dependencies?`
-      const value: string = await new Prompter().defaultOrChoose(undefined,promptMsg,['Yes','No'])
+      const value: string = await new Prompter().defaultOrChoose(undefined, promptMsg, ['Yes','No'])
       if (value == 'Yes') {
         await updatePackageJsonDependencyVersions(cliVersion, projectPath) //update package.json
         logger.info(`package.json Booster dependencies have been updated to version ^${cliVersion}.`)
