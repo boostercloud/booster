@@ -907,11 +907,11 @@ The preferred way to create a command is by using the generator, e.g.
 boost new:command CreateProduct --fields sku:SKU displayName:string description:string price:Money
 ```
 
-The generator will automatically create a file called `create-product.ts` with a TypeScript class of the same name under the `commands` directory. You can still create (or modify) the command manually. Since the generator is not doing any _magic_, all you need is a class decorated as `@Command`. Anyway, we recommend you always to use the generator, because it handles the boilerplate code for you. 
+The generator will automatically create a file called `create-product.ts` with a TypeScript class of the same name under the `commands` directory. You can still create (or modify) the command manually. Since the generator is not doing any _magic_, all you need is a class decorated as `@Command`. Anyway, we recommend you always to use the generator, because it handles the boilerplate code for you.
 
 Note:
 
-> Generating a command with the same name as an already existing one will prompt the user for confirmation
+> Generating a command with the same name as an already existing one will prompt the user for confirmation.
 
 #### The command handler function
 
@@ -1185,7 +1185,7 @@ That will generate a file called `stock-moved.ts` under the proper `<project-roo
 
 Note:
 
-> Generating an event with the same name as an already existing one will prompt the user for confirmation
+> Generating an event with the same name as an already existing one will prompt the user for confirmation.
 
 #### Registering events in the event store
 
@@ -1375,7 +1375,7 @@ The generator will automatically create a file called `product.ts` with a TypeSc
 
 Note:
 
-> Generating an entity with the same name as an already existing one will prompt the user for confirmation
+> Generating an entity with the same name as an already existing one will prompt the user for confirmation.
 
 #### The reducer function
 
