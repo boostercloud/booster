@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/rocket-batch-file-process-aws-infrastructure",
-  "version": "0.11.3",
+  "version": "0.11.4",
   "description": "Booster rocket to batch process files.",
   "keywords": [
     "Booster",
@@ -36,8 +36,8 @@
     "lint": "eslint --ext '.js,.ts' **/*.ts",
     "fix-lint": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
-    "postcompile": "cp -R src/lambdas/node_modules dist/lambdas",
-    "postinstall": "npm --prefix src/lambdas install",
+    "postcompile": "cp -R src/file-splitter-lambda/node_modules dist/file-splitter-lambda && cp -R src/file-to-line-event-lambda/node_modules dist/file-to-line-event-lambda",
+    "postinstall": "npm --prefix src/file-splitter-lambda install && npm --prefix src/file-to-line-event-lambda install",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""

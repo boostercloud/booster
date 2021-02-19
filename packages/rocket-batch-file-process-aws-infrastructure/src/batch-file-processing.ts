@@ -9,18 +9,25 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import * as path from 'path'
 
 export type AWSBatchProcessingFilesParams = {
-  bucketName: string
-  chunkSize: string
+  config: {
+    bucketName: string
+    chunkSize: string
+  }
+  rowEvent: {
+    entityId: string
+    eventTypeName: string
+    entityTypeName: string
+  }
 }
 
 export class BatchFileProcessingStack {
   public static mountStack(params: AWSBatchProcessingFilesParams, stack: Stack, config: BoosterConfig): void {
     const sourceBucket = new Bucket(stack, 'sourceUploadBucket', {
-      bucketName: params.bucketName,
+      bucketName: params.config.bucketName,
       removalPolicy: RemovalPolicy.DESTROY,
     })
 
-    const stagingBucketName = params.bucketName + '-staging'
+    const stagingBucketName = params.config.bucketName + '-staging'
 
     const stagingBucket = new Bucket(stack, 'stagingUploadBucket', {
       bucketName: stagingBucketName,
@@ -29,47 +36,71 @@ export class BatchFileProcessingStack {
 
     const eventsStore = stack.node.tryFindChild('events-store') as Table
 
-    const fileTriggerFunction = new Function(stack, 'rocketS3Trigger', {
+    const fileSplitterFunction = new Function(stack, 'fileSplitterFunction', {
       runtime: Runtime.NODEJS_12_X,
       timeout: Duration.minutes(15),
       memorySize: 1024,
       handler: 'index.handler',
-      functionName: config.appName + '-s3-rocket-trigger',
-      code: Code.fromAsset(path.join(__dirname, 'lambdas')),
+      functionName: config.appName + '-file-splitter-function',
+      code: Code.fromAsset(path.join(__dirname, 'file-splitter-lambda')),
       environment: {
         EVENT_STORE_NAME: eventsStore.tableName,
-        CHUNK_SIZE: params.chunkSize,
+        CHUNK_SIZE: params.config.chunkSize,
         STAGING_BUCKET_NAME: stagingBucketName,
         ENTITY_TYPE_NAME: 'File',
         TYPE_NAME: 'FileAdded',
       },
     })
 
-    fileTriggerFunction.addToRolePolicy(createPolicyStatement([eventsStore.tableArn], ['dynamodb:Put*']))
+    fileSplitterFunction.addToRolePolicy(createPolicyStatement([eventsStore.tableArn], ['dynamodb:Put*']))
 
-    sourceBucket.grantRead(fileTriggerFunction)
+    sourceBucket.grantRead(fileSplitterFunction)
 
-    fileTriggerFunction.addToRolePolicy(
+    fileSplitterFunction.addToRolePolicy(
       createPolicyStatement(
         [stagingBucket.bucketArn, stagingBucket.bucketArn + '/*'],
         ['s3:ListObject', 's3:PutObject', 's3:GetObject']
       )
     )
 
-    const uploadEvent = new S3EventSource(sourceBucket, {
+    const sourceUploadEvent = new S3EventSource(sourceBucket, {
       events: [EventType.OBJECT_CREATED],
     })
-    fileTriggerFunction.addEventSource(uploadEvent)
+    fileSplitterFunction.addEventSource(sourceUploadEvent)
 
     const eventsHandlerLambda = stack.node.tryFindChild('events-main') as Function
     eventsHandlerLambda.addToRolePolicy(
       createPolicyStatement([stagingBucket.bucketArn, stagingBucket.bucketArn + '/*'], ['s3:*'])
     )
+
+    const fileToLineEventFunction = new Function(stack, 'fileToLineEventFunction', {
+      runtime: Runtime.NODEJS_12_X,
+      timeout: Duration.minutes(15),
+      memorySize: 1024,
+      handler: 'index.handler',
+      functionName: config.appName + '-file-to-line-event-function',
+      code: Code.fromAsset(path.join(__dirname, 'file-to-line-event-lambda')),
+      environment: {
+        EVENT_STORE_NAME: eventsStore.tableName,
+        ENTITY_ID: params.rowEvent.entityId,
+        ENTITY_TYPE_NAME: params.rowEvent.entityTypeName,
+        TYPE_NAME: params.rowEvent.eventTypeName,
+      },
+    })
+
+    const stagingUploadEvent = new S3EventSource(stagingBucket, {
+      events: [EventType.OBJECT_CREATED],
+    })
+    fileToLineEventFunction.addEventSource(stagingUploadEvent)
+
+    stagingBucket.grantRead(fileToLineEventFunction)
+
+    fileToLineEventFunction.addToRolePolicy(createPolicyStatement([eventsStore.tableArn], ['dynamodb:Put*']))
   }
 
   public static async unmountStack(params: AWSBatchProcessingFilesParams, utils: RocketUtils): Promise<void> {
     // The bucket must be empty for the stack deletion to succeed
-    await utils.s3.emptyBucket(params.bucketName)
-    await utils.s3.emptyBucket(params.bucketName + '-staging')
+    await utils.s3.emptyBucket(params.config.bucketName)
+    await utils.s3.emptyBucket(params.config.bucketName + '-staging')
   }
 }
