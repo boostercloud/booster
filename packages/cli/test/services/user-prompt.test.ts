@@ -77,4 +77,11 @@ describe('user prompt', () => {
         const value = await new Prompter().defaultOrChoose(null,"Choose a value",['value1','value2','value3'])
         expect(value).to.equal('value2')
     })
+
+    it('confirmPrompt returns confirm boolean value', async () => {
+        const promptStub = stub(inquirer, 'prompt')
+        promptStub.resolves({ confirm: true })
+        const value = await Prompter.confirmPrompt({ message: 'Delete resource?'})
+        expect(value).to.be.true
+    })
 })
