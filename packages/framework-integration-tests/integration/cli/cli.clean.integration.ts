@@ -34,7 +34,6 @@ describe('Clean', () => {
 
       expect(stdout).to.match(expectedCleanOutputRegex)
       expect(fileExists(path.join(cleanSandboxDir,'dist'))).to.be.false
-
     })
   })
 })
