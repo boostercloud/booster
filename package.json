@@ -7,7 +7,7 @@
   "private": true,
   "scripts": {
     "update-tocs": "npm run update-documentation-toc && npm run update-contributing-toc",
-    "update-documentation-toc": "markdown-toc -i --bullets=- --bullets=* --bullets=+ --maxdepth 4 docs/README.md",
+    "update-documentation-toc": "markdown-toc -i --maxdepth 4 docs/README.md",
     "update-contributing-toc": "markdown-toc -i --bullets=- --maxdepth 4 CONTRIBUTING.md"
   },
   "devDependencies": {
