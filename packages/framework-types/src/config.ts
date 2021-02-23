@@ -8,7 +8,6 @@ import {
   ReadModelMetadata,
   EventHandlerInterface,
   ScheduledCommandMetadata,
-  RoleAccess,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
@@ -23,7 +22,6 @@ export class BoosterConfig {
   private _provider?: ProviderLibrary
   public appName = 'new-booster-app'
   public assets?: Array<string>
-  public authorizeReadEvents: RoleAccess['authorize'] = []
   public readonly subscriptions = {
     maxConnectionDurationInSeconds: 7 * 24 * 60 * 60, // 7 days
     maxDurationInSeconds: 2 * 24 * 60 * 60, // 2 days

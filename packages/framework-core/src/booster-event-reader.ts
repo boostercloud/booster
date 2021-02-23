@@ -5,6 +5,8 @@ import {
   NotAuthorizedError,
   EventSearchResponse,
   NotFoundError,
+  EntityMetadata,
+  InvalidParameterError,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
 import { Booster } from './booster'
@@ -19,18 +21,39 @@ export class BoosterEventReader {
 
   private validateRequest(eventRequest: EventSearchRequest): void {
     this.logger.debug('Validating the following event request: ', eventRequest)
+    const entityMetadata = this.entityMetadataFromRequest(eventRequest)
 
-    if ('entity' in eventRequest.filters && !this.config.entities[eventRequest.filters.entity]) {
-      throw new NotFoundError(`Could not find entity "${eventRequest.filters.entity}"`)
-    }
-
-    if ('type' in eventRequest.filters && !this.config.reducers[eventRequest.filters.type]) {
-      throw new NotFoundError(`Could not find event type "${eventRequest.filters.type}"`)
-    }
-
-    if (!BoosterAuth.isUserAuthorized(this.config.authorizeReadEvents, eventRequest.currentUser)) {
+    if (!BoosterAuth.isUserAuthorized(entityMetadata.authorizeReadEvents, eventRequest.currentUser)) {
       throw new NotAuthorizedError('Access denied for reading events')
     }
+  }
+
+  private entityMetadataFromRequest(eventRequest: EventSearchRequest): EntityMetadata {
+    if ('entity' in eventRequest.filters) {
+      return this.entityMetadataFromEntityName(eventRequest.filters.entity)
+    }
+    if ('type' in eventRequest.filters) {
+      return this.entityMetadataFromEventName(eventRequest.filters.type)
+    }
+    throw new InvalidParameterError('Invalid event search request. It should contain either "type" or "entity" field')
+  }
+
+  private entityMetadataFromEntityName(entityName: string): EntityMetadata {
+    const entityMetadata = this.config.entities[entityName]
+    if (!entityMetadata) {
+      throw new NotFoundError(`Could not find entity metadata for "${entityName}"`)
+    }
+    return entityMetadata
+  }
+
+  private entityMetadataFromEventName(eventName: string): EntityMetadata {
+    // All the events must be reduced by an entity, so we can get the associated entity from the
+    // reducers
+    const reducerMetadata = this.config.reducers[eventName]
+    if (!reducerMetadata) {
+      throw new NotFoundError(`Could not find the entity associated to event type "${eventName}"`)
+    }
+    return this.entityMetadataFromEntityName(reducerMetadata.class.name)
   }
 
   private async processFetch(eventRequest: EventSearchRequest): Promise<Array<EventSearchResponse>> {
