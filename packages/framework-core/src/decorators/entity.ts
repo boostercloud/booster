@@ -27,7 +27,7 @@ export function Entity<TEntity extends EntityInterface, TParam extends EntityDec
   classOrAttributes: TParam
 ): EntityDecoratorResult<TEntity, TParam> {
   // The craziness with the param and return types is to achieve that either:
-  // - The @Entity decorator doesn't parenthesis: THEN we need to accept a class as parameter and return void
+  // - The @Entity decorator doesn't have parenthesis: THEN we need to accept a class as a parameter and return void
   // - The @Entity decorator have parenthesis: THEN we need to accept an object with attributes and return a function accepting a class as parameter
 
   let authorizeReadEvents: RoleAccess['authorize'] = []
