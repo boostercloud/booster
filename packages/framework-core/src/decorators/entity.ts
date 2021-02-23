@@ -28,7 +28,7 @@ export function Entity<TEntity extends EntityInterface, TParam extends EntityDec
 ): EntityDecoratorResult<TEntity, TParam> {
   // The craziness with the param and return types is to achieve that either:
   // - The @Entity decorator doesn't have parenthesis: THEN we need to accept a class as a parameter and return void
-  // - The @Entity decorator have parenthesis: THEN we need to accept an object with attributes and return a function accepting a class as parameter
+  // - The @Entity decorator have parenthesis: THEN we need to accept an object with attributes and return a function accepting a class as a parameter
 
   let authorizeReadEvents: RoleAccess['authorize'] = []
   const mainLogicLambda = (entityClass: Class<TEntity>) => {
