@@ -304,7 +304,7 @@ describe('project checker', (): void => {
                     exceptionMessage = e.message
                 })
                 expect(exceptionThrown).to.be.equal(true)
-                expect(exceptionMessage).to.contain('Versions must have the same length')
+                expect(exceptionMessage).to.contain('Versions must follow semantic convention X.Y.Z')
                 expect(logger.info).have.not.been.called
                 expect(projectUpdater.updatePackageJsonDependencyVersions).have.not.been.called
             })
@@ -318,7 +318,7 @@ describe('project checker', (): void => {
                     exceptionMessage = e.message
                 })
                 expect(exceptionThrown).to.be.equal(true)
-                expect(exceptionMessage).to.contain('Versions must have the same length')
+                expect(exceptionMessage).to.contain('Versions must follow semantic convention X.Y.Z')
                 expect(logger.info).have.not.been.called
                 expect(projectUpdater.updatePackageJsonDependencyVersions).have.not.been.called
             })

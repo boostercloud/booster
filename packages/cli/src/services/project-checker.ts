@@ -7,6 +7,7 @@ import { classNameToFileName } from '../common/filenames'
 import { oraLogger } from './logger'
 import { logger } from '../services/logger'
 import Prompter from '../services/user-prompt'
+import Semver from '../services/semver'
 import { updatePackageJsonDependencyVersions } from '../services/project-updater'
 
 function checkIndexFileIsBooster(indexFilePath: string): void {
@@ -97,22 +98,16 @@ async function getBoosterVersion(projectPath: string): Promise<string> {
 }
 
 async function compareVersionsAndDisplayMessages(cliVersion: string, projectVersion: string, projectPath: string): Promise<void> {
-  if (cliVersion === projectVersion)  { return }
-  const cliVersionParts = cliVersion.split('.').map((v) => parseInt(v, 10))
-  const projectVersionParts = projectVersion.split('.').map((v) => parseInt(v, 10))
-  if (cliVersionParts.length !== projectVersionParts.length) {
-    throw new Error(`Versions must have the same length. CLI version: ${cliVersion}. Project Booster version: ${projectVersion}`)
-  }
-  if (projectVersionParts.length !== 3) {
-    throw new Error(`Versions must follow semantic convention X.Y.Z | CLI version: ${cliVersion}. Project Booster version: ${projectVersion}`)
-  }
-  if (cliVersionParts[0] === projectVersionParts[0]) {
-    if (cliVersionParts[1] === projectVersionParts[1]) {
+  const cliSemVersion = new Semver(cliVersion)
+  const projectSemVersion = new Semver(projectVersion)
+  if (cliSemVersion.equals(projectSemVersion)) { return }
+  if (cliSemVersion.equalsInBreakingSection(projectSemVersion)) {
+    if (cliSemVersion.equalsInFeatureSection(projectSemVersion)) {
       //differences in the 'fix' part
-      if (cliVersionParts[2] !== projectVersionParts[2]) {
+      if (!cliSemVersion.equalsInFixSection(projectSemVersion)) {
         logger.info(`WARNING: Project Booster version differs in the 'fix' section. CLI version: ${cliVersion}. Project Booster version: ${projectVersion}`)
       }
-    } else if (cliVersionParts[1] > projectVersionParts[1]) {
+    } else if (cliSemVersion.greaterInFeatureSectionThan(projectSemVersion)) {
       //cli higher than project in 'feat' section
       const promptMsg = `@boostercloud/cli version ${cliVersion} is higher than project version (${projectVersion}) in the 'feature' section. Do you want to upgrade your project dependencies?`
       const value: string = await new Prompter().defaultOrChoose(undefined, promptMsg, ['Yes','No'])
@@ -126,7 +121,7 @@ async function compareVersionsAndDisplayMessages(cliVersion: string, projectVers
       //cli lower than project in 'feat' section
       throw new Error(`CLI version ${cliVersion} is lower than your project Booster version ${projectVersion}. Please upgrade your @boostercloud/cli to the same version with npm`)
     }
-  } else if (cliVersionParts[0] > projectVersionParts[0]) {
+  } else if (cliSemVersion.greaterInBreakingSectionThan(projectSemVersion)) {
     //cli higher than project in 'breaking' section
     throw new Error(`CLI version ${cliVersion} is higher than your project Booster version (${projectVersion}). Please upgrade your project dependencies or install the same CLI version with \'npm install @boostercloud/cli@${projectVersion}\'.`)
   } else {
