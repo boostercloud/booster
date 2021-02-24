@@ -11,6 +11,7 @@ import {
 import Prompter from '../../services/user-prompt'
 import { assertNameIsCorrect } from '../../services/provider-service'
 import { Provider } from '../../common/provider'
+import { checkProjectAlreadyExists } from '../../services/project-checker'
 
 export default class Project extends Command {
   public static description = 'create a new project from scratch'
@@ -63,13 +64,13 @@ export default class Project extends Command {
 
   public async run(): Promise<void> {
     const { args, flags } = this.parse(Project)
+    const { projectName } = args
+
     try {
-      if (!args.projectName) throw "You haven't provided a project name, but it is required, run with --help for usage"
-      assertNameIsCorrect(args.projectName)
-      const parsedFlags = {
-        projectName: args.projectName,
-        ...flags,
-      }
+      if (!projectName) throw "You haven't provided a project name, but it is required, run with --help for usage"
+      assertNameIsCorrect(projectName)
+      await checkProjectAlreadyExists(projectName)
+      const parsedFlags = { projectName, ...flags }
       await run(parsedFlags as Partial<ProjectInitializerConfig>, this.config.version)
     } catch (error) {
       console.error(error)

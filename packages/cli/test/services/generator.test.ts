@@ -32,9 +32,9 @@ describe('generate service', (): void => {
         }
         const rendered = Mustache.render(target.template, target.info)
 
-        generate(target)
+        await generate(target)
 
-        expect(fs.outputFile).to.have.been.calledWithMatch('src/commands/new-command.ts',rendered)
+        expect(fs.outputFile).to.have.been.calledWithMatch('src/commands/new-command.ts', rendered)
     })
 
     it('generates file for an entity', async () => {
@@ -52,8 +52,8 @@ describe('generate service', (): void => {
             info: info
         }
         const rendered = Mustache.render(target.template, target.info)
-        
-        generate(target)
+
+        await generate(target)
 
         expect(fs.outputFile).to.have.been.calledWithMatch('src/entities/new-entity.ts',rendered)
     })
@@ -72,8 +72,8 @@ describe('generate service', (): void => {
             info: info
         }
         const rendered = Mustache.render(target.template, target.info)
-        
-        generate(target)
+
+        await generate(target)
 
         expect(fs.outputFile).to.have.been.calledWithMatch('src/event-handlers/new-event-handler.ts',rendered)
     })
@@ -92,8 +92,8 @@ describe('generate service', (): void => {
             info: info
         }
         const rendered = Mustache.render(target.template, target.info)
-        
-        generate(target)
+
+        await generate(target)
 
         expect(fs.outputFile).to.have.been.calledWithMatch('src/events/new-event.ts',rendered)
     })
@@ -113,8 +113,8 @@ describe('generate service', (): void => {
             info: info
         }
         const rendered = Mustache.render(target.template, target.info)
-        
-        generate(target)
+
+        await generate(target)
 
         expect(fs.outputFile).to.have.been.calledWithMatch('src/read-models/new-read-model.ts',rendered)
     })
@@ -132,8 +132,8 @@ describe('generate service', (): void => {
             info: info
         }
         const rendered = Mustache.render(target.template, target.info)
-        
-        generate(target)
+
+        await generate(target)
 
         expect(fs.outputFile).to.have.been.calledWithMatch('src/scheduled-commands/new-scheduled-command.ts',rendered)
     })
@@ -152,8 +152,8 @@ describe('generate service', (): void => {
             info: info
         }
         const rendered = Mustache.render(target.template, target.info)
-        
-        generate(target)
+
+        await generate(target)
 
         expect(fs.outputFile).to.have.been.calledWithMatch('src/common/new-type.ts',rendered)
     })

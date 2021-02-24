@@ -79,7 +79,7 @@ export class GraphQLGenerator {
     readModelClass: AnyClass
   ): GraphQLFieldResolver<any, GraphQLResolverContext, Record<string, ReadModelPropertyFilter>> {
     return async (parent, args, context, info) => {
-      const filterArgs = { id: { operation: '=', values: [args.id] } }
+      const filterArgs = { id: { eq: args.id } }
       const result = await this.readModelResolverBuilder(readModelClass)(parent, filterArgs, context, info)
       return result[0]
     }
@@ -99,7 +99,7 @@ export class GraphQLGenerator {
     readModelClass: AnyClass
   ): GraphQLFieldResolver<any, GraphQLResolverContext, Record<string, ReadModelPropertyFilter>> {
     return async (parent, args, context, info) => {
-      const filterArgs = { id: { operation: '=', values: [args.id] } }
+      const filterArgs = { id: { eq: args.id } }
       return this.subscriptionResolverBuilder(readModelClass)(parent, filterArgs, context, info)
     }
   }

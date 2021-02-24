@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/rocket-fileuploader-aws-infrastructure",
-  "version": "0.11.3",
+  "version": "0.11.4",
   "description": "Booster rocket to upload files in File Storage. A new event will be stored in the Events Store as a consequence.",
   "keywords": [
     "Booster",
@@ -27,7 +27,7 @@
     "@aws-cdk/aws-lambda": "1.67.0",
     "@aws-cdk/aws-lambda-event-sources": "1.67.0",
     "@aws-cdk/core": "1.67.0",
-    "@boostercloud/framework-types": "^0.11.3",
+    "@boostercloud/framework-types": "^0.11.4",
     "aws-sdk": "2.764.0"
   },
   "scripts": {
@@ -44,7 +44,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@boostercloud/framework-provider-aws-infrastructure": "^0.11.3",
+    "@boostercloud/framework-provider-aws-infrastructure": "^0.11.4",
     "@types/faker": "5.1.5",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",

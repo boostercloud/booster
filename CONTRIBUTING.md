@@ -23,10 +23,13 @@ Remember that if something here doesn't make sense, you can also propose a chang
   - [Running unit tests](#running-unit-tests)
   - [Running integration tests](#running-integration-tests)
   - [Github flow](#github-flow)
-  - [Test-driven approach](#test-driven-approach)
   - [Publishing your Pull Request](#publishing-your-pull-request)
   - [Branch naming conventions](#branch-naming-conventions)
   - [Commit message guidelines](#commit-message-guidelines)
+- [Code Style Guidelines](#code-style-guidelines)
+  - [Importing other files and libraries](#importing-other-files-and-libraries)
+  - [Functional style](#functional-style)
+  - [Use `const` and `let`](#use-const-and-let)
 
 <!-- tocstop -->
 
@@ -136,7 +139,7 @@ To start contributing to the project you would need to set up the project in you
 - Compile the project `lerna run compile`
 
 - Add your contribution
-  
+
 - Make sure everything works by executing the unit tests: `lerna run test`
 
 - Before making a PR you should run the `check-all-the-things` script:
@@ -333,3 +336,4 @@ a = a + b
 // Less Good
 var c = 0
 let d = 3 // Never updated
+```

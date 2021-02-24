@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/rocket-batch-file-process-aws-infrastructure",
-  "version": "0.11.3",
+  "version": "0.11.4",
   "description": "Booster rocket to batch process files.",
   "keywords": [
     "Booster",
@@ -28,16 +28,16 @@
     "@aws-cdk/aws-lambda-event-sources": "1.67.0",
     "@aws-cdk/aws-s3": "1.67.0",
     "@aws-cdk/core": "1.67.0",
-    "@boostercloud/framework-core": "^0.11.3",
-    "@boostercloud/framework-types": "^0.11.3",
+    "@boostercloud/framework-core": "^0.11.4",
+    "@boostercloud/framework-types": "^0.11.4",
     "aws-sdk": "2.764.0"
   },
   "scripts": {
     "lint": "eslint --ext '.js,.ts' **/*.ts",
     "fix-lint": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
-    "postcompile": "cp -R src/lambdas/node_modules dist/lambdas",
-    "postinstall": "npm --prefix src/lambdas install",
+    "postcompile": "cp -R src/file-splitter-lambda/node_modules dist/file-splitter-lambda && cp -R src/file-to-line-event-lambda/node_modules dist/file-to-line-event-lambda",
+    "postinstall": "npm --prefix src/file-splitter-lambda install && npm --prefix src/file-to-line-event-lambda install",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
@@ -46,7 +46,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@boostercloud/framework-provider-aws-infrastructure": "^0.11.3",
+    "@boostercloud/framework-provider-aws-infrastructure": "^0.11.4",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
     "faker": "5.1.0",

@@ -4,6 +4,7 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 import * as environment from '../../src/services/environment'
 import * as dependencies from '../../src/services/dependencies'
+import * as childProcessPromise from 'child-process-promise'
 
 const rewire = require('rewire')
 const configService = rewire('../../src/services/config-service')
@@ -17,6 +18,30 @@ describe('configService', () => {
   })
   afterEach(() => {
     restore()
+  })
+
+  describe('compileProject', () => {
+
+    beforeEach(() => {
+      replace(childProcessPromise,'exec', fake.resolves({}))
+    })
+
+    it('runs the npm command', async () => {
+      await configService.compileProject(userProjectPath)
+      expect(childProcessPromise.exec).to.have.been.calledWith('npm run clean && npm run compile')
+    })
+  })
+
+  describe('cleanProject', () => {
+
+    beforeEach(() => {
+      replace(childProcessPromise,'exec', fake.resolves({}))
+    })
+
+    it('runs the npm command', async () => {
+      await configService.cleanProject(userProjectPath)
+      expect(childProcessPromise.exec).to.have.been.calledWith('npm run clean')
+    })
   })
 
   describe('compileProjectAndLoadConfig', () => {
