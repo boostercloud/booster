@@ -103,12 +103,10 @@ async function compareVersionsAndDisplayMessages(cliVersion: string, projectVers
   if (cliSemVersion.equals(projectSemVersion)) { return }
   if (cliSemVersion.equalsInBreakingSection(projectSemVersion)) {
     if (cliSemVersion.equalsInFeatureSection(projectSemVersion)) {
-      //differences in the 'fix' part
-      if (!cliSemVersion.equalsInFixSection(projectSemVersion)) {
+      if (!cliSemVersion.equalsInFixSection(projectSemVersion)) { //differences in the 'fix' part
         logger.info(`WARNING: Project Booster version differs in the 'fix' section. CLI version: ${cliVersion}. Project Booster version: ${projectVersion}`)
       }
-    } else if (cliSemVersion.greaterInFeatureSectionThan(projectSemVersion)) {
-      //cli higher than project in 'feat' section
+    } else if (cliSemVersion.greaterInFeatureSectionThan(projectSemVersion)) { //cli higher than project in 'feat' section
       const promptMsg = `@boostercloud/cli version ${cliVersion} is higher than project version (${projectVersion}) in the 'feature' section. Do you want to upgrade your project dependencies?`
       const value: string = await new Prompter().defaultOrChoose(undefined, promptMsg, ['Yes','No'])
       if (value == 'Yes') {
@@ -117,15 +115,12 @@ async function compareVersionsAndDisplayMessages(cliVersion: string, projectVers
       } else {
         throw new Error(`CLI version ${cliVersion} is higher than your project Booster version ${projectVersion}. Please upgrade your project dependencies.`)
       }
-    } else {
-      //cli lower than project in 'feat' section
+    } else { //cli lower than project in 'feat' section
       throw new Error(`CLI version ${cliVersion} is lower than your project Booster version ${projectVersion}. Please upgrade your @boostercloud/cli to the same version with npm`)
     }
-  } else if (cliSemVersion.greaterInBreakingSectionThan(projectSemVersion)) {
-    //cli higher than project in 'breaking' section
+  } else if (cliSemVersion.greaterInBreakingSectionThan(projectSemVersion)) { //cli higher than project in 'breaking' section
     throw new Error(`CLI version ${cliVersion} is higher than your project Booster version (${projectVersion}). Please upgrade your project dependencies or install the same CLI version with \'npm install @boostercloud/cli@${projectVersion}\'.`)
-  } else {
-    //cli lower than project in 'breaking' section
+  } else { //cli lower than project in 'breaking' section
     throw new Error(`CLI version ${cliVersion} is lower than your project Booster version ${projectVersion}. Please upgrade your @boostercloud/cli to the same version with npm`)
   }
 }
