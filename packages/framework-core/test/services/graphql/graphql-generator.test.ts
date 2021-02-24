@@ -1,6 +1,6 @@
 import { replace, restore, SinonStub, stub } from 'sinon'
 import { BoosterCommandDispatcher } from '../../../src/booster-command-dispatcher'
-import { BoosterReadModelReader } from '../../../src/booster-read-model-reader'
+import { BoosterReadModelsReader } from '../../../src/booster-read-models-reader'
 import { GraphQLGenerator } from '../../../src/services/graphql/graphql-generator'
 import { BoosterConfig, ReadModelInterface, Logger, Level } from '@boostercloud/framework-types/dist'
 import { expect } from '../../expect'
@@ -8,7 +8,7 @@ import { GraphQLQueryGenerator } from '../../../src/services/graphql/graphql-que
 import { GraphQLMutationGenerator } from '../../../src/services/graphql/graphql-mutation-generator'
 import { GraphQLSubscriptionGenerator } from '../../../src/services/graphql/graphql-subcriptions-generator'
 import { random, internet, lorem } from 'faker'
-import { buildLogger } from '../../../src/booster-logger';
+import { buildLogger } from '../../../src/booster-logger'
 
 describe('GraphQL generator', () => {
   let mockEnvironmentName: string
@@ -28,7 +28,6 @@ describe('GraphQL generator', () => {
   })
 
   describe('build', () => {
-    
     it('should create the instance', () => {
       const instance = GraphQLGenerator.build(mockConfig, mockLogger)
 
@@ -147,7 +146,7 @@ describe('GraphQL generator', () => {
 
       beforeEach(() => {
         fetchStub = stub().resolves(mockFetchResult)
-        replace(BoosterReadModelReader.prototype,'fetch',fetchStub)
+        replace(BoosterReadModelsReader.prototype, 'fetch', fetchStub)
         sut = GraphQLGenerator.build(mockConfig, mockLogger)
 
         returnedFunction = sut.readModelResolverBuilder(mockType)
@@ -228,7 +227,7 @@ describe('GraphQL generator', () => {
         }
 
         dispatchCommandStub = stub()
-        replace(BoosterCommandDispatcher.prototype,'dispatchCommand', dispatchCommandStub)
+        replace(BoosterCommandDispatcher.prototype, 'dispatchCommand', dispatchCommandStub)
         sut = GraphQLGenerator.build(mockConfig, mockLogger)
 
         returnedFunction = sut.commandResolverBuilder(mockType)
@@ -325,7 +324,7 @@ describe('GraphQL generator', () => {
         subscribeStub = stub().resolves()
         asyncIteratorStub = stub().returns(mockAsyncIteratorResult)
 
-        replace(BoosterReadModelReader.prototype,'subscribe', subscribeStub)
+        replace(BoosterReadModelsReader.prototype, 'subscribe', subscribeStub)
         sut = GraphQLGenerator.build(mockConfig, mockLogger)
 
         returnedFunction = sut.subscriptionResolverBuilder(mockType)

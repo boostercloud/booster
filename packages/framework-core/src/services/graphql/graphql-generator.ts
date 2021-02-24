@@ -15,8 +15,8 @@ import { GraphQLQueryGenerator } from './graphql-query-generator'
 import { GraphQLMutationGenerator } from './graphql-mutation-generator'
 import { GraphQLSubscriptionGenerator } from './graphql-subcriptions-generator'
 import { BoosterCommandDispatcher } from '../../booster-command-dispatcher'
-import { BoosterReadModelReader } from '../../booster-read-model-reader'
-import { BoosterEventReader } from '../../booster-event-reader'
+import { BoosterReadModelsReader } from '../../booster-read-models-reader'
+import { BoosterEventsReader } from '../../booster-events-reader'
 import { GraphQLResolverContext } from './common'
 
 export class GraphQLGenerator {
@@ -33,8 +33,8 @@ export class GraphQLGenerator {
       new GraphQLGenerator(
         config,
         new BoosterCommandDispatcher(config, logger),
-        new BoosterReadModelReader(config, logger),
-        new BoosterEventReader(config, logger)
+        new BoosterReadModelsReader(config, logger),
+        new BoosterEventsReader(config, logger)
       )
     return this.singleton
   }
@@ -42,8 +42,8 @@ export class GraphQLGenerator {
   private constructor(
     config: BoosterConfig,
     private commandsDispatcher: BoosterCommandDispatcher,
-    private readModelsReader: BoosterReadModelReader,
-    private eventsReader: BoosterEventReader
+    private readModelsReader: BoosterReadModelsReader,
+    private eventsReader: BoosterEventsReader
   ) {
     this.typeInformer = new GraphQLTypeInformer({ ...config.readModels, ...config.commandHandlers })
     this.queryGenerator = new GraphQLQueryGenerator(

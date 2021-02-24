@@ -13,7 +13,7 @@ import {
 import { BoosterAuth } from './booster-auth'
 import { Booster } from './booster'
 
-export class BoosterReadModelReader {
+export class BoosterReadModelsReader {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
 
   public async fetch(readModelRequest: ReadModelRequestEnvelope): Promise<Array<ReadModelInterface>> {

@@ -7,11 +7,14 @@ import {
   NotFoundError,
   EntityMetadata,
   InvalidParameterError,
+  EventFilter,
+  EventFilterByEntity,
+  EventFilterByType,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
 import { Booster } from './booster'
 
-export class BoosterEventReader {
+export class BoosterEventsReader {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
 
   public async fetch(eventRequest: EventSearchRequest): Promise<Array<EventSearchResponse>> {
@@ -29,13 +32,19 @@ export class BoosterEventReader {
   }
 
   private entityMetadataFromRequest(eventRequest: EventSearchRequest): EntityMetadata {
-    if ('entity' in eventRequest.filters) {
-      return this.entityMetadataFromEntityName(eventRequest.filters.entity)
+    const { filters } = eventRequest
+    if (isByEntitySearch(filters) === isByEventTypeSearch(filters)) {
+      // Means no search type was passed or both were passed
+      throw new InvalidParameterError('Invalid event search request. It should contain either "type" or "entity" field')
     }
-    if ('type' in eventRequest.filters) {
-      return this.entityMetadataFromEventName(eventRequest.filters.type)
+    if (isByEntitySearch(filters)) {
+      return this.entityMetadataFromEntityName(filters.entity)
     }
-    throw new InvalidParameterError('Invalid event search request. It should contain either "type" or "entity" field')
+    if (isByEventTypeSearch(filters)) {
+      return this.entityMetadataFromEventName(filters.type)
+    }
+    // We would never reach this point
+    throw new InvalidParameterError('Could not determine event search kind')
   }
 
   private entityMetadataFromEntityName(entityName: string): EntityMetadata {
@@ -59,4 +68,11 @@ export class BoosterEventReader {
   private async processFetch(eventRequest: EventSearchRequest): Promise<Array<EventSearchResponse>> {
     return Booster.events(eventRequest.filters)
   }
+}
+
+function isByEntitySearch(filters: EventFilter): filters is EventFilterByEntity {
+  return 'entity' in filters
+}
+function isByEventTypeSearch(filters: EventFilter): filters is EventFilterByType {
+  return 'type' in filters
 }

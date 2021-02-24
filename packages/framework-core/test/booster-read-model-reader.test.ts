@@ -12,7 +12,7 @@ import {
   SubscriptionEnvelope,
 } from '@boostercloud/framework-types'
 import { restore, fake, match } from 'sinon'
-import { BoosterReadModelReader } from '../src/booster-read-model-reader'
+import { BoosterReadModelsReader } from '../src/booster-read-models-reader'
 import { Booster } from '../src/booster'
 import { random, internet } from 'faker'
 
@@ -32,7 +32,7 @@ describe('BoosterReadModelReader', () => {
   }
   class UserRole {}
 
-  let readModelDispatcher: BoosterReadModelReader
+  let readModelDispatcher: BoosterReadModelsReader
   Booster.configureCurrentEnv((config) => {
     config.provider = ({} as unknown) as ProviderLibrary
     config.readModels[TestReadModel.name] = {
@@ -40,7 +40,7 @@ describe('BoosterReadModelReader', () => {
       authorizedRoles: [UserRole],
       properties: [],
     }
-    readModelDispatcher = new BoosterReadModelReader(config, logger)
+    readModelDispatcher = new BoosterReadModelsReader(config, logger)
   })
 
   const noopGraphQLOperation: GraphQLOperation = {
