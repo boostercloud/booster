@@ -1,4 +1,5 @@
-import { Command, flags } from '@oclif/command'
+import { flags } from '@oclif/command'
+import BaseCommand from './base-command'
 import { deployToCloudProvider } from '../services/provider-service'
 import {
   cleanDeploymentSandbox,
@@ -10,7 +11,6 @@ import { Script } from '../common/script'
 import Brand from '../common/brand'
 import { logger } from '../services/logger'
 import { currentEnvironment, initializeEnvironment } from '../services/environment'
-import { checkCurrentDirBoosterVersion } from '../services/project-checker'
 
 const runTasks = async (
   compileAndLoad: Promise<BoosterConfig>,
@@ -22,7 +22,7 @@ const runTasks = async (
     .info('Deployment complete!')
     .done()
 
-export default class Deploy extends Command {
+export default class Deploy extends BaseCommand {
   public static description = 'Deploy the current application as configured in your `index.ts` file.'
 
   public static flags = {
@@ -35,8 +35,6 @@ export default class Deploy extends Command {
 
   public async run(): Promise<void> {
     const { flags } = this.parse(Deploy)
-
-    await checkCurrentDirBoosterVersion(this.config.userAgent)
 
     if (initializeEnvironment(logger, flags.environment)) {
       const deploymentProjectPath = await createDeploymentSandbox()

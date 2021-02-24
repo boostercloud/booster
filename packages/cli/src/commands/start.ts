@@ -1,4 +1,5 @@
-import { Command, flags } from '@oclif/command'
+import { flags } from '@oclif/command'
+import BaseCommand from './base-command'
 import { startProvider } from '../services/provider-service'
 import { compileProjectAndLoadConfig } from '../services/config-service'
 import { BoosterConfig } from '@boostercloud/framework-types'
@@ -6,7 +7,6 @@ import { Script } from '../common/script'
 import Brand from '../common/brand'
 import { logger } from '../services/logger'
 import { currentEnvironment, initializeEnvironment } from '../services/environment'
-import { checkCurrentDirBoosterVersion } from '../services/project-checker'
 
 const runTasks = async (
   port: number,
@@ -17,7 +17,7 @@ const runTasks = async (
     .step(`Starting debug server on port ${port}`, runner)
     .done()
 
-export default class Start extends Command {
+export default class Start extends BaseCommand {
   public static description = 'Start local debug server.'
 
   public static flags = {
@@ -36,8 +36,6 @@ export default class Start extends Command {
   public async run(): Promise<void> {
     const { flags } = this.parse(Start)
     
-    await checkCurrentDirBoosterVersion(this.config.userAgent)
-
     if (initializeEnvironment(logger, flags.environment)) {
       await runTasks(flags.port, compileProjectAndLoadConfig(process.cwd()), startProvider.bind(null, flags.port))
     }

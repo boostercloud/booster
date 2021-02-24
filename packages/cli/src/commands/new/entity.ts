@@ -1,4 +1,5 @@
 import * as Oclif from '@oclif/command'
+import BaseCommand from '../base-command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
 import {
@@ -14,13 +15,10 @@ import {
 import * as path from 'path'
 import { generate } from '../../services/generator'
 import { templates } from '../../templates'
-import { 
-  checkCurrentDirIsABoosterProject,
-  checkCurrentDirBoosterVersion 
-} from '../../services/project-checker'
+import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 import { classNameToFileName } from '../../common/filenames'
 
-export default class Entity extends Oclif.Command {
+export default class Entity extends BaseCommand {
   public static description = 'create a new entity'
   public static flags = {
     help: Oclif.flags.help({ char: 'h' }),
@@ -40,7 +38,7 @@ export default class Entity extends Oclif.Command {
 
   public async run(): Promise<void> {
     const { args, flags } = this.parse(Entity)
-    await checkCurrentDirBoosterVersion(this.config.userAgent)
+    
     try {
       const fields = flags.fields || []
       const events = flags.reduces || []

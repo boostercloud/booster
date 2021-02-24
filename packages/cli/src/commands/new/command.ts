@@ -1,4 +1,5 @@
 import * as Oclif from '@oclif/command'
+import BaseCommand from '../base-command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
 import { generate } from '../../services/generator'
@@ -12,12 +13,9 @@ import {
 } from '../../services/generator/target'
 import * as path from 'path'
 import { templates } from '../../templates'
-import { 
-  checkCurrentDirIsABoosterProject,
-  checkCurrentDirBoosterVersion 
-} from '../../services/project-checker'
+import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 
-export default class Command extends Oclif.Command {
+export default class Command extends BaseCommand {
   public static description = "generate new resource, write 'boost new' to see options"
   public static flags = {
     help: Oclif.flags.help({ char: 'h' }),
@@ -32,7 +30,6 @@ export default class Command extends Oclif.Command {
 
   public async run(): Promise<void> {
     const { args, flags } = this.parse(Command)
-    await checkCurrentDirBoosterVersion(this.config.userAgent)
     try {
       const fields = flags.fields || []
       if (!args.commandName) throw "You haven't provided a command name, but it is required, run with --help for usage"

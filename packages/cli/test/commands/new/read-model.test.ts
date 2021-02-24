@@ -74,33 +74,34 @@ describe('new', (): void => {
       restore()
     })
 
+    it('init calls checkCurrentDirBoosterVersion', async () => {
+      await new ReadModel([], {} as IConfig).init()
+      expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
+    })
+
     describe('Created correctly', () => {
       it('with no fields and no projects', async () => {
         await new ReadModel([readModelName], {} as IConfig).run()
         const renderedReadModel = renderReadModel(defaultReadModelImports, readModelName, [], [])
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates ReadModel with a string field', async () => {
         await new ReadModel([readModelName, '--fields', 'title:string'], {} as IConfig).run()
         const renderedReadModel = renderReadModel(defaultReadModelImports, readModelName, [{ name: 'title', type: 'string' }], [])
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates ReadModel with a string field projecting Post:id', async () => {
         await new ReadModel([readModelName, '--fields', 'title:string', '--projects', 'Post:id'], {} as IConfig).run()
         const renderedReadModel = renderReadModel(projectingReadModelImports, readModelName, [{ name: 'title', type: 'string' }], [{ entityName: 'Post', entityId: 'id' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates ReadModel with a number field', async () => {
         await new ReadModel([readModelName, '--fields', 'quantity:number'], {} as IConfig).run()
         const renderedReadModel = renderReadModel(defaultReadModelImports, readModelName, [{ name: 'quantity', type: 'number' }], [])
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates ReadModel with a number field projecting Post:id', async () => {
@@ -110,14 +111,12 @@ describe('new', (): void => {
         ).run()
         const renderedReadModel = renderReadModel(projectingReadModelImports, readModelName, [{ name: 'quantity', type: 'number' }], [{ entityName: 'Post', entityId: 'id' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates ReadModel with UUID field', async () => {
         await new ReadModel([readModelName, '--fields', 'identifier:UUID'], {} as IConfig).run()
         const renderedReadModel = renderReadModel(defaultReadModelImports, readModelName, [{ name: 'identifier', type: 'UUID' }], [])
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates ReadModel with UUID field projecting Post:id', async () => {
@@ -127,7 +126,6 @@ describe('new', (): void => {
         ).run()
         const renderedReadModel = renderReadModel(projectingReadModelImports, readModelName, [{ name: 'identifier', type: 'UUID' }], [{ entityName: 'Post', entityId: 'id' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates ReadModel with multiple fields', async () => {
@@ -142,7 +140,6 @@ describe('new', (): void => {
         ]
         const renderedReadModel = renderReadModel(defaultReadModelImports, readModelName, fields, [])
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates ReadModel with multiple fields projecting Post:id', async () => {
@@ -157,7 +154,6 @@ describe('new', (): void => {
         ]
         const renderedReadModel = renderReadModel(projectingReadModelImports, readModelName, fields, [{ entityName: 'Post', entityId: 'id' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates ReadModel with multiple fields projecting Post:id and Comment:id', async () => {
@@ -185,7 +181,6 @@ describe('new', (): void => {
         ]
         const renderedReadModel = renderReadModel(projectingTwoReadModelImports, readModelName, fields, projections)
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
     })
 
@@ -197,7 +192,6 @@ describe('new', (): void => {
         expect(console.error).to.have.been.calledWithMatch(
           /You haven't provided a read model name/
         )
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('with empty fields', async () => {
@@ -211,7 +205,6 @@ describe('new', (): void => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('--fields expects a value')
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.not.been.called
       })
 
       it('with empty projection', async () => {
@@ -225,7 +218,6 @@ describe('new', (): void => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('--projects expects a value')
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.not.been.called
       })
 
       it('with empty fields and projection', async () => {
@@ -241,7 +233,6 @@ describe('new', (): void => {
         expect(exceptionMessage).to.contain(
           'Error parsing field --projects'
         )
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('with field with no type', async () => {
@@ -257,7 +248,6 @@ describe('new', (): void => {
         expect(exceptionMessage).to.contain(
           'Error parsing field title'
         )
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('with no field type after :', async () => {
@@ -272,7 +262,6 @@ describe('new', (): void => {
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('Error parsing field title')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(readModelPath)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('with projection with no entity id', async () => {
@@ -289,7 +278,6 @@ describe('new', (): void => {
           'Error parsing projection Post'
         )
         expect(fs.outputFile).to.have.not.been.calledWithMatch(readModelPath)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('with projection with empty entity id', async () => {
@@ -306,7 +294,6 @@ describe('new', (): void => {
           'Error parsing projection Post'
         )
         expect(fs.outputFile).to.have.not.been.calledWithMatch(readModelPath)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('with projection with empty entity name', async () => {
@@ -323,7 +310,6 @@ describe('new', (): void => {
           'Error parsing projection :id'
         )
         expect(fs.outputFile).to.have.not.been.calledWithMatch(readModelPath)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('with repeated fields', async () => {
@@ -341,7 +327,6 @@ describe('new', (): void => {
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('Fields cannot be duplicated')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(readModelPath)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
     })
   })

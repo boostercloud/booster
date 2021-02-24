@@ -1,16 +1,14 @@
 import * as Oclif from '@oclif/command'
+import BaseCommand from '../base-command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
 import { HasFields, HasName, joinParsers, parseName, parseFields } from '../../services/generator/target'
 import { templates } from '../../templates'
 import { generate } from '../../services/generator'
 import * as path from 'path'
-import { 
-  checkCurrentDirIsABoosterProject,
-  checkCurrentDirBoosterVersion
-} from '../../services/project-checker'
+import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 
-export default class Type extends Oclif.Command {
+export default class Type extends BaseCommand {
   public static description = 'create a new type'
 
   public static flags = {
@@ -26,7 +24,6 @@ export default class Type extends Oclif.Command {
 
   public async run(): Promise<void> {
     const { args, flags } = this.parse(Type)
-    await checkCurrentDirBoosterVersion(this.config.userAgent)
     
     try {
       const fields = flags.fields || []

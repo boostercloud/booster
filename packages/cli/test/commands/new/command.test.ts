@@ -51,33 +51,34 @@ describe('new', (): void => {
       restore()
     })
 
+    it('init calls checkCurrentDirBoosterVersion', async () => {
+      await new Command([], {} as IConfig).init()
+      expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
+    })
+
     describe('Created correctly', () => {
       it('with no fields', async () => {
         await new Command([command], {} as IConfig).run()
         const renderedCommand = renderCommand(defaultCommandImports, command, [])
         expect(fs.outputFile).to.have.been.calledWithMatch(commandPath, renderedCommand)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates command with a string field', async () => {
         await new Command([command, '--fields', 'title:string'], {} as IConfig).run()
         const renderedCommand = renderCommand(defaultCommandImports, command, [{ name: 'title', type: 'string' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(commandPath, renderedCommand)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates command with a number field', async () => {
         await new Command([command, '--fields', 'quantity:number'], {} as IConfig).run()
         const renderedCommand = renderCommand(defaultCommandImports, command, [{ name: 'quantity', type: 'number' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(commandPath, renderedCommand)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates command with UUID field', async () => {
         await new Command([command, '--fields', 'identifier:UUID'], {} as IConfig).run()
         const renderedCommand = renderCommand(uuidCommandImports, command, [{ name: 'identifier', type: 'UUID' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(commandPath, renderedCommand)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates command with multiple fields', async () => {
@@ -92,7 +93,6 @@ describe('new', (): void => {
         ]
         const renderedCommand = renderCommand(uuidCommandImports, command, fields)
         expect(fs.outputFile).to.have.been.calledWithMatch(commandPath, renderedCommand)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
     })
 
@@ -101,7 +101,6 @@ describe('new', (): void => {
         replace(console, 'error', fake.resolves({}))
         await new Command([], {} as IConfig).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(commandsRoot)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
         expect(console.error).to.have.been.calledWithMatch(
           /You haven't provided a command name/
         )
@@ -118,7 +117,6 @@ describe('new', (): void => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('--fields expects a value')
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.not.been.called
       })
 
       it('with field with no type', async () => {
@@ -134,7 +132,6 @@ describe('new', (): void => {
         expect(exceptionMessage).to.contain(
           'Error parsing field title'
         )
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('with no field type after :', async () => {
@@ -149,7 +146,6 @@ describe('new', (): void => {
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('Error parsing field title')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(commandPath)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('with repeated fields', async () => {
@@ -164,7 +160,6 @@ describe('new', (): void => {
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('Error parsing field title')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(commandPath)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
     })
   })

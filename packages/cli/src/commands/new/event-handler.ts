@@ -1,4 +1,5 @@
 import * as Oclif from '@oclif/command'
+import BaseCommand from '../base-command'
 import {
   HasEvent,
   HasName,
@@ -9,16 +10,13 @@ import {
 } from '../../services/generator/target'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
-import { 
-  checkCurrentDirIsABoosterProject,
-  checkCurrentDirBoosterVersion
-} from '../../services/project-checker'
+import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 import { generate } from '../../services/generator'
 import * as path from 'path'
 import { templates } from '../../templates'
 import { classNameToFileName } from '../../common/filenames'
 
-export default class EventHandler extends Oclif.Command {
+export default class EventHandler extends BaseCommand {
   public static description = 'create a new event handler'
   public static flags = {
     help: Oclif.flags.help({ char: 'h' }),
@@ -33,7 +31,6 @@ export default class EventHandler extends Oclif.Command {
 
   public async run(): Promise<void> {
     const { args, flags } = this.parse(EventHandler)
-    await checkCurrentDirBoosterVersion(this.config.userAgent)
 
     try {
       const event = flags.event

@@ -108,10 +108,14 @@ describe('deploy', () => {
       replace(oraLogger, 'succeed', fake.resolves({}))
     })
 
+    it('init calls checkCurrentDirBoosterVersion', async () => {
+      await new Deploy.default([], {} as IConfig).init()
+      expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
+    })
+
     it('without flags', async () => {
       await new Deploy.default([], {} as IConfig).run()
 
-      expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
       expect(providerService.deployToCloudProvider).to.have.not.been.called
       expect(oraLogger.fail).to.have.been.calledWithMatch(/No environment set/)
@@ -152,7 +156,6 @@ describe('deploy', () => {
       it('entering correct environment', async () => {
         await new Deploy.default(['-e','fake_environment'], {} as IConfig).run()
   
-        expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
         expect(configService.compileProjectAndLoadConfig).to.have.been.called
         expect(providerService.deployToCloudProvider).to.have.been.called
         expect(oraLogger.info).to.have.been.calledWithMatch('Deployment complete!')
@@ -169,7 +172,6 @@ describe('deploy', () => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('Unexpected argument: --nonexistingoption')
-        expect(projectChecker.checkCurrentDirBoosterVersion).to.have.not.been.called
         expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
         expect(providerService.deployToCloudProvider).to.have.not.been.called
         expect(oraLogger.info).to.have.not.been.calledWithMatch('Deployment complete!')

@@ -1,4 +1,5 @@
-import { Command, flags } from '@oclif/command'
+import { flags } from '@oclif/command'
+import BaseCommand from './base-command'
 import { compileProject } from '../services/config-service'
 import { checkCurrentDirIsABoosterProject } from '../services/project-checker'
 import { Script } from '../common/script'
@@ -13,7 +14,7 @@ const runTasks = async (
     .info('Build complete!')
     .done()
 
-export default class Build extends Command {
+export default class Build extends BaseCommand {
   public static description = 'Build the current application as configured in your `index.ts` file.'
 
   public static flags = {

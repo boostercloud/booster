@@ -41,33 +41,34 @@ describe('new', (): void => {
       restore()
     })
 
+    it('init calls checkCurrentDirBoosterVersion', async () => {
+      await new Event([], {} as IConfig).init()
+      expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
+    })
+
     describe('Created correctly', () => { 
       it('with no fields', async () => {
         await new Event([eventName], {} as IConfig).run()
         const renderedEvent = renderEvent(eventName, [])
         expect(fs.outputFile).to.have.been.calledWithMatch(eventPath,renderedEvent)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates Event with a string field', async () => {
         await new Event([eventName, '--fields', 'title:string'], {} as IConfig).run()
         const renderedEvent = renderEvent(eventName, [{ name: 'title', type: 'string' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(eventPath,renderedEvent)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates Event with a number field', async () => {
         await new Event([eventName, '--fields', 'quantity:number'], {} as IConfig).run()
         const renderedEvent = renderEvent(eventName, [{ name: 'quantity', type: 'number' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(eventPath,renderedEvent)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates Event with UUID field', async () => {
         await new Event([eventName, '--fields', 'identifier:UUID'], {} as IConfig).run()
         const renderedEvent = renderEvent(eventName, [{ name: 'identifier', type: 'UUID' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(eventPath,renderedEvent)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('creates Event with multiple fields', async () => {
@@ -75,7 +76,6 @@ describe('new', (): void => {
         const fields = [{ name: 'title', type: 'string' },{ name: 'quantity', type: 'number' },{ name: 'identifier', type: 'UUID' }]
         const renderedEvent = renderEvent(eventName, fields)
         expect(fs.outputFile).to.have.been.calledWithMatch(eventPath,renderedEvent)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
     })
 
@@ -85,7 +85,6 @@ describe('new', (): void => {
         await new Event([], {} as IConfig).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(eventsRoot)
         expect(console.error).to.have.been.calledWithMatch(/You haven't provided an event name/)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('with empty fields', async () => {
@@ -99,7 +98,6 @@ describe('new', (): void => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('--fields expects a value')
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.not.been.called
       })
 
       it('with field with no type', async () => {
@@ -113,7 +111,6 @@ describe('new', (): void => {
         }
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('Error parsing field title')
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('with no field type after :', async () => {
@@ -128,7 +125,6 @@ describe('new', (): void => {
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('Error parsing field title')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(eventPath)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
       
       it('with repeated fields', async () => {
@@ -143,7 +139,6 @@ describe('new', (): void => {
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('Error parsing field title')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(eventPath)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
     })
 

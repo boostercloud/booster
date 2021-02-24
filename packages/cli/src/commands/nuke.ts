@@ -1,7 +1,7 @@
-import { Command, flags } from '@oclif/command'
+import { flags } from '@oclif/command'
+import BaseCommand from './base-command'
 import { nukeCloudProviderResources } from '../services/provider-service'
 import { compileProjectAndLoadConfig } from '../services/config-service'
-import { checkCurrentDirBoosterVersion } from '../services/project-checker'
 import { BoosterConfig, Logger } from '@boostercloud/framework-types'
 import { Script } from '../common/script'
 import Brand from '../common/brand'
@@ -36,7 +36,7 @@ async function askToConfirmRemoval(
   }
 }
 
-export default class Nuke extends Command {
+export default class Nuke extends BaseCommand {
   public static description =
     'Remove all resources used by the current application as configured in your `index.ts` file.'
 
@@ -56,8 +56,6 @@ export default class Nuke extends Command {
   public async run(): Promise<void> {
     const { flags } = this.parse(Nuke)
 
-    await checkCurrentDirBoosterVersion(this.config.userAgent)
-    
     if (initializeEnvironment(logger, flags.environment)) {
       await runTasks(
         askToConfirmRemoval(new Prompter(), flags.force, compileProjectAndLoadConfig(process.cwd())),

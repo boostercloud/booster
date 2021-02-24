@@ -33,6 +33,11 @@ describe('new', (): void => {
       restore()
     })
 
+    it('init calls checkCurrentDirBoosterVersion', async () => {
+      await new ScheduledCommand([], {} as IConfig).init()
+      expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
+    })
+
     describe('Created correctly', () => {
       it('with scheduled command name', async () => {
         await new ScheduledCommand([scheduledCommandName], {} as IConfig).run()
@@ -41,7 +46,6 @@ describe('new', (): void => {
           name: scheduledCommandName,
         })
         expect(fs.outputFile).to.have.been.calledWithMatch(scheduledCommandPath, renderedCommand)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
     })
 
@@ -53,7 +57,6 @@ describe('new', (): void => {
         expect(console.error).to.have.been.calledWithMatch(
           /You haven't provided a scheduled command name/
         )
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
       })
 
       it('with two scheduled command names', async () => {
@@ -68,7 +71,6 @@ describe('new', (): void => {
         expect(exceptionThrown).to.be.equal(true)
         expect(exceptionMessage).to.contain('Unexpected argument: AnotherName')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(scheduledCommandPath)
-        expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.not.been.called
       })
     })
   })
