@@ -36,7 +36,7 @@ describe('EventStore', () => {
       forEntitySince: () => {},
     },
   } as any) as ProviderLibrary
-  config.entities['ImportantConcept'] = { class: ImportantConcept }
+  config.entities['ImportantConcept'] = { class: ImportantConcept, authorizeReadEvents: [] }
   config.reducers['ImportantEvent'] = {
     class: ImportantConcept,
     methodName: 'someHandler',
