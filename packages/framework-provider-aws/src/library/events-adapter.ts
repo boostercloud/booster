@@ -104,14 +104,14 @@ function inChunksOf<TElement>(n: number, arr: Array<TElement>): Array<Array<TEle
 
 async function persistBatch(
   logger: Logger,
-  eventEnvelopes: EventEnvelope[],
+  batch: EventEnvelope[],
   config: BoosterConfig,
   dynamoDB: DynamoDB.DocumentClient
 ): Promise<void> {
-  logger.debug('[EventsAdapter#storeEvents] Storing EventEnvelopes with eventEnvelopes:', eventEnvelopes)
+  logger.debug('[EventsAdapter#storeEvents] Storing EventEnvelopes with eventEnvelopes:', batch)
   const params: DynamoDB.DocumentClient.BatchWriteItemInput = {
     RequestItems: {
-      [config.resourceNames.eventsStore]: eventEnvelopes.map((eventEnvelope) => ({
+      [config.resourceNames.eventsStore]: batch.map((eventEnvelope) => ({
         PutRequest: {
           Item: {
             ...eventEnvelope,
