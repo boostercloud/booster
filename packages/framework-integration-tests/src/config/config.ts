@@ -29,6 +29,5 @@ Booster.configure('production', (config: BoosterConfig): void => {
 
   config.appName = 'my-store-' + appNameSuffix
   config.provider = AWS.Provider()
-  config.authorizeReadEvents = 'all'
   config.assets = ['assets', 'assetFile.txt']
 })
