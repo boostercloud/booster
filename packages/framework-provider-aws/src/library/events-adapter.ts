@@ -88,28 +88,18 @@ export async function storeEvents(
   config: BoosterConfig,
   logger: Logger
 ): Promise<void> {
-  let processedItems = 0
-  let currentBatch = getBatchFromEnvelopes(eventEnvelopes, processedItems, dynamoDbBatchSize)
-  while (currentBatch.length != 0) {
-    await persistBatch(logger, currentBatch, config, dynamoDB)
-    processedItems += currentBatch.length
-    currentBatch = getBatchFromEnvelopes(eventEnvelopes, processedItems, dynamoDbBatchSize)
+  const batches = inChunksOf(dynamoDbBatchSize, eventEnvelopes)
+  for (const batch of batches) {
+    await persistBatch(logger, batch, config, dynamoDB)
   }
 }
 
-function validBatchSize(eventEnvelopes: EventEnvelope[], processedItems: number, batchSize: number): boolean {
-  return Math.floor((eventEnvelopes.length - processedItems) / batchSize) != 0
-}
-
-function getBatchFromEnvelopes(
-  eventEnvelopes: EventEnvelope[],
-  processedItems: number,
-  batchSize: number
-): EventEnvelope[] {
-  if (!validBatchSize(eventEnvelopes, processedItems, batchSize)) {
-    return eventEnvelopes.slice(processedItems)
+function inChunksOf<TElement>(n: number, arr: Array<TElement>): Array<Array<TElement>> {
+  const result = []
+  while (arr.length) {
+    result.push(arr.splice(0, n))
   }
-  return eventEnvelopes.slice(processedItems, processedItems + batchSize)
+  return result
 }
 
 async function persistBatch(
