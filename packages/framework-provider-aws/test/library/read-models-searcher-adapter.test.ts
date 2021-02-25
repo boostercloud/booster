@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
-import { searchReadModel } from '../../src/library/searcher-adapter'
+import { searchReadModel } from '../../src/library/read-models-searcher-adapter'
 import { createStubInstance, fake, restore, stub, SinonStubbedInstance } from 'sinon'
 import { BoosterConfig, FilterFor, Logger } from '@boostercloud/framework-types'
 import { random } from 'faker'
 import { DynamoDB } from 'aws-sdk'
 
-describe('Searcher adapter', () => {
+describe('Read models searcher adapter', () => {
   describe('The "searchReadModel" method', () => {
     const config: BoosterConfig = new BoosterConfig('test')
     const logger: Logger = {
