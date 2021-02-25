@@ -6,9 +6,17 @@ export async function updatePackageJsonDependencyVersions(version: string, proje
     const packageJsonPath = path.join(projectAbsolutePath, 'package.json')
     try {
         const packageJsonContents = require(packageJsonPath)
-        packageJsonContents.dependencies['@boostercloud/framework-core'] = `^${version}`
-        if (packageJsonContents.dependencies['@boostercloud/framework-types'] !== undefined) {
-            packageJsonContents.dependencies['@boostercloud/framework-types'] = `^${version}`
+        for (let dependency in packageJsonContents.dependencies) {
+          let depVersion = packageJsonContents.dependencies[dependency]
+          if (dependency.startsWith('@boostercloud') && depVersion !== '*') {
+            packageJsonContents.dependencies[dependency] = `^${version}`
+          }
+        }
+        for (let dependency in packageJsonContents.devDependencies) {
+          let depVersion = packageJsonContents.devDependencies[dependency]
+          if (dependency.startsWith('@boostercloud') && depVersion !== '*') {
+            packageJsonContents.devDependencies[dependency] = `^${version}`
+          }
         }
         fs.outputFile(packageJsonPath, JSON.stringify(packageJsonContents,null,2))
     } catch (e) {
