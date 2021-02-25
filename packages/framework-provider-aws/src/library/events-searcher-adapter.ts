@@ -20,28 +20,9 @@ export async function searchEvents(
 ): Promise<Array<EventSearchResponse>> {
   logger.debug('Initiating an events search. Filters: ', filters)
   const timeFilterQuery = buildSearchEventsTimeQuery(filters.from, filters.to)
-  let eventEnvelopes: Array<EventEnvelope> = []
-  if ('entity' in filters) {
-    if (filters.entityID) {
-      eventEnvelopes = await searchEventsByEntityAndID(
-        dynamoDB,
-        config,
-        logger,
-        filters.entity,
-        filters.entityID,
-        timeFilterQuery
-      )
-    } else {
-      eventEnvelopes = await searchEventsByEntity(dynamoDB, config, logger, filters.entity, timeFilterQuery)
-    }
-  } else if ('type' in filters) {
-    eventEnvelopes = await searchEventsByType(dynamoDB, config, logger, filters.type, timeFilterQuery)
-  } else {
-    throw new Error('Invalid search event query. It is neither an search by "entity" nor a search by "type"')
-  }
+  const eventEnvelopes = await executeSearch(dynamoDB, config, logger, filters, timeFilterQuery)
 
   logger.debug('Events search result: ', eventEnvelopes)
-
   return convertToSearchResult(eventEnvelopes)
 }
 
@@ -77,6 +58,33 @@ function buildSearchEventsTimeQuery(from?: string, to?: string): TimeQueryData {
   return timeQueryData
 }
 
+async function executeSearch(
+  dynamoDB: DynamoDB.DocumentClient,
+  config: BoosterConfig,
+  logger: Logger,
+  filters: EventFilter,
+  timeFilterQuery: TimeQueryData
+): Promise<Array<EventEnvelope>> {
+  if ('entity' in filters) {
+    if (filters.entityID) {
+      return await searchEventsByEntityAndID(
+        dynamoDB,
+        config,
+        logger,
+        filters.entity,
+        filters.entityID,
+        timeFilterQuery
+      )
+    } else {
+      return await searchEventsByEntity(dynamoDB, config, logger, filters.entity, timeFilterQuery)
+    }
+  } else if ('type' in filters) {
+    return await searchEventsByType(dynamoDB, config, logger, filters.type, timeFilterQuery)
+  } else {
+    throw new Error('Invalid search event query. It is neither an search by "entity" nor a search by "type"')
+  }
+}
+
 async function searchEventsByEntityAndID(
   dynamoDB: DynamoDB.DocumentClient,
   config: BoosterConfig,
@@ -90,7 +98,7 @@ async function searchEventsByEntityAndID(
     TableName: config.resourceNames.eventsStore,
     ConsistentRead: true,
     ScanIndexForward: false, // Descending order (newer timestamps first)
-    KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey ${timeQuery.expression}`,
+    KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey${timeQuery.expression}`,
     ExpressionAttributeValues: {
       ...timeQuery.attributeValues,
       ':partitionKey': partitionKeyForEvent(entity, entityID),
@@ -120,7 +128,7 @@ async function searchEventsByEntity(
     TableName: config.resourceNames.eventsStore,
     IndexName: eventsStoreAttributes.indexByEntity.name(config),
     ScanIndexForward: false, // Descending order (newer timestamps first)
-    KeyConditionExpression: `${eventsStoreAttributes.indexByEntity.partitionKey} = :partitionKey ${timeQuery.expression}`,
+    KeyConditionExpression: `${eventsStoreAttributes.indexByEntity.partitionKey} = :partitionKey${timeQuery.expression}`,
     ExpressionAttributeValues: {
       ...timeQuery.attributeValues,
       ':partitionKey': entity,
@@ -146,7 +154,7 @@ async function searchEventsByType(
     TableName: config.resourceNames.eventsStore,
     IndexName: eventsStoreAttributes.indexByType.name(config),
     ScanIndexForward: false, // Descending order (newer timestamps first)
-    KeyConditionExpression: `${eventsStoreAttributes.indexByType.partitionKey} = :partitionKey ${timeQuery.expression}`,
+    KeyConditionExpression: `${eventsStoreAttributes.indexByType.partitionKey} = :partitionKey${timeQuery.expression}`,
     ExpressionAttributeValues: {
       ...timeQuery.attributeValues,
       ':partitionKey': type,
