@@ -1,7 +1,7 @@
 import { DynamoDBStreamEvent, DynamoDBRecord } from 'aws-lambda'
 import { BoosterConfig, EventEnvelope, Logger, UUID } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
-import { eventsStoreAttributes } from '../constants'
+import { dynamoDbBatchSize, eventsStoreAttributes } from '../constants'
 import { partitionKeyForEvent } from './partition-keys'
 import { Converter } from 'aws-sdk/clients/dynamodb'
 
@@ -88,13 +88,12 @@ export async function storeEvents(
   config: BoosterConfig,
   logger: Logger
 ): Promise<void> {
-  const batchSize = 25
   let processedItems = 0
-  let currentBatch = getBatchFromEnvelopes(eventEnvelopes, processedItems, batchSize)
+  let currentBatch = getBatchFromEnvelopes(eventEnvelopes, processedItems, dynamoDbBatchSize)
   while (currentBatch.length != 0) {
     await persistBatch(logger, currentBatch, config, dynamoDB)
     processedItems += currentBatch.length
-    currentBatch = getBatchFromEnvelopes(eventEnvelopes, processedItems, batchSize)
+    currentBatch = getBatchFromEnvelopes(eventEnvelopes, processedItems, dynamoDbBatchSize)
   }
 }
 
