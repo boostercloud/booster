@@ -1,5 +1,5 @@
 import * as Oclif from '@oclif/command'
-import BaseCommand from '../../base-command'
+import BaseCommand from '../../common/base-command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
 import { HasFields, HasName, joinParsers, parseName, parseFields } from '../../services/generator/target'

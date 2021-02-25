@@ -1,5 +1,5 @@
 import Command from '@oclif/command'
-import { checkCurrentDirBoosterVersion } from './services/project-checker'
+import { checkCurrentDirBoosterVersion } from '../services/project-checker'
 
 export default abstract class BaseCommand extends Command {
   async init() {

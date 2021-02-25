@@ -1,5 +1,5 @@
 import { flags } from '@oclif/command'
-import BaseCommand from '../base-command'
+import BaseCommand from '../common/base-command'
 import { startProvider } from '../services/provider-service'
 import { compileProjectAndLoadConfig } from '../services/config-service'
 import { BoosterConfig } from '@boostercloud/framework-types'
