@@ -1,5 +1,5 @@
 import { flags } from '@oclif/command'
-import BaseCommand from './base-command'
+import BaseCommand from '../base-command'
 import { deployToCloudProvider } from '../services/provider-service'
 import {
   cleanDeploymentSandbox,
