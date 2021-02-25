@@ -4,7 +4,6 @@ import { projectDir, ProjectInitializerConfig } from './project-initializer'
 import Brand from '../common/brand'
 import { filePath, getResourceType } from './generator'
 import { classNameToFileName } from '../common/filenames'
-import { oraLogger } from './logger'
 import { logger } from '../services/logger'
 import Prompter from '../services/user-prompt'
 import Semver from '../services/semver'
@@ -58,7 +57,7 @@ export async function checkResourceExists(name: string, placementDir: string, ex
   const resourceName = classNameToFileName(name)
   const resourceType = getResourceType(placementDir)
 
-  oraLogger.info(Brand.mellancholize('Checking if resource already exists...'))
+  logger.info(Brand.mellancholize('Checking if resource already exists...'))
 
   if (resourceExists) {
     await Prompter.confirmPrompt({

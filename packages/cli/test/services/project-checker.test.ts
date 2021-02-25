@@ -8,7 +8,6 @@ import {
 } from '../../src/services/project-checker'
 import { restore, replace, fake, spy, stub } from 'sinon'
 import { logger } from '../../src/services/logger'
-import { oraLogger } from '../../src/services/logger'
 import * as fs from 'fs-extra'
 import { projectDir, ProjectInitializerConfig } from '../../src/services/project-initializer'
 import Prompter from '../../src/services/user-prompt'
@@ -17,10 +16,7 @@ import { expect } from '../expect'
 import inquirer = require('inquirer')
 
 describe('project checker', (): void => {
-    beforeEach(() => {
-        replace(oraLogger, 'info', fake.resolves({}))
-    })
-
+   
     afterEach(() => {
         restore()
     })
@@ -126,6 +122,10 @@ describe('project checker', (): void => {
     })
 
     describe('checkResourceExists', (): void => {
+        beforeEach(() => {
+            replace(logger, 'info', fake.resolves({}))
+        })
+
         it('should print info message and do nothing if resource doesn\'t exist', async () => {
             const resourcePath = path.join('test', 'fixtures', 'mock_project', 'src', 'entities')
             const existsSyncStub = stub(fs, 'existsSync')
@@ -134,7 +134,7 @@ describe('project checker', (): void => {
 
             await checkResourceExists('TestResource', resourcePath, '.ts')
 
-            expect(oraLogger.info).to.have.been.calledWithMatch('Checking if resource already exists...')
+            expect(logger.info).to.have.been.calledWithMatch('Checking if resource already exists...')
             expect(fs.existsSync).to.have.been.calledWithMatch(resourcePath)
             expect(Prompter.confirmPrompt).not.to.have.been.called
         })
