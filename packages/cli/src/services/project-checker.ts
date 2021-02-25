@@ -7,7 +7,6 @@ import { classNameToFileName } from '../common/filenames'
 import { logger } from '../services/logger'
 import Prompter from '../services/user-prompt'
 import Semver from '../services/semver'
-import { updatePackageJsonDependencyVersions } from '../services/project-updater'
 
 function checkIndexFileIsBooster(indexFilePath: string): void {
   const contents = readFileSync(indexFilePath)
@@ -106,14 +105,7 @@ async function compareVersionsAndDisplayMessages(cliVersion: string, projectVers
         logger.info(`WARNING: Project Booster version differs in the 'fix' section. CLI version: ${cliVersion}. Project Booster version: ${projectVersion}`)
       }
     } else if (cliSemVersion.greaterInFeatureSectionThan(projectSemVersion)) { //cli higher than project in 'feat' section
-      const promptMsg = `@boostercloud/cli version ${cliVersion} is higher than project version (${projectVersion}) in the 'feature' section. Do you want to upgrade your project dependencies?`
-      const value: string = await new Prompter().defaultOrChoose(undefined, promptMsg, ['Yes','No'])
-      if (value == 'Yes') {
-        await updatePackageJsonDependencyVersions(cliVersion, projectPath) //update package.json
-        logger.info(`package.json Booster dependencies have been updated to version ^${cliVersion}.`)
-      } else {
-        throw new Error(`CLI version ${cliVersion} is higher than your project Booster version ${projectVersion}. Please upgrade your project dependencies.`)
-      }
+      throw new Error(`CLI version ${cliVersion} is higher than your project Booster version ${projectVersion} in the 'feature' section. Please upgrade your project dependencies.`)
     } else { //cli lower than project in 'feat' section
       throw new Error(`CLI version ${cliVersion} is lower than your project Booster version ${projectVersion}. Please upgrade your @boostercloud/cli to the same version with npm`)
     }
