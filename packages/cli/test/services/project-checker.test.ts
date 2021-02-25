@@ -265,7 +265,7 @@ describe('project checker', (): void => {
                     exceptionMessage = e.message
                 })
                 expect(exceptionThrown).to.be.equal(true)
-                expect(exceptionMessage).to.contain('Please upgrade your project dependencies or install the same CLI version with')
+                expect(exceptionMessage).to.contain('Please upgrade your project dependencies')
                 expect(logger.info).have.not.been.called
             })
     
