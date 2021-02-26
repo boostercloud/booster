@@ -58,11 +58,7 @@ export class BoosterReadModelDispatcher {
     const readModelMetadata = this.config.readModels[readModelRequest.typeName]
     const searcher = Booster.readModel(readModelMetadata.class)
     if (readModelRequest.filters) {
-      for (const propName in readModelRequest.filters) {
-        const filter = readModelRequest.filters[propName]
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        searcher.filter(propName as any, filter.operation as any, ...filter.values)
-      }
+      searcher.filter(readModelRequest.filters)
     }
     return searcher.search()
   }

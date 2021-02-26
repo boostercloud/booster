@@ -64,7 +64,7 @@ jobs:
       - name: Discard all the changes after integration tests
         run: git stash
 
-      - uses: theam/actions/lerna-semantic-publish@main
+      - uses: theam/actions/lerna-semantic-publish@master
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_ACTION }}

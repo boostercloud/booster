@@ -1,12 +1,12 @@
 import { CosmosClient, SqlParameter, SqlQuerySpec } from '@azure/cosmos'
-import { BoosterConfig, Filter, Logger, InvalidParameterError } from '@boostercloud/framework-types'
+import { BoosterConfig, FilterOld, Logger, InvalidParameterError } from '@boostercloud/framework-types'
 
 export async function searchReadModel(
   cosmosDb: CosmosClient,
   config: BoosterConfig,
   logger: Logger,
   readModelName: string,
-  filters: Record<string, Filter<any>>
+  filters: Record<string, FilterOld<any>>
 ): Promise<Array<any>> {
   const querySpec: SqlQuerySpec = {
     query: `SELECT * FROM c ${buildFilterExpression(filters)}`,
@@ -25,7 +25,7 @@ export async function searchReadModel(
   return resources ?? []
 }
 
-function buildFilterExpression(filters: Record<string, Filter<any>>): string {
+function buildFilterExpression(filters: Record<string, FilterOld<any>>): string {
   const filterExpression = Object.entries(filters)
     .map(([propName, filter]) => buildOperation(propName, filter))
     .join(' AND ')
@@ -35,7 +35,7 @@ function buildFilterExpression(filters: Record<string, Filter<any>>): string {
   return filterExpression
 }
 
-function buildOperation(propName: string, filter: Filter<any>): string {
+function buildOperation(propName: string, filter: FilterOld<any>): string {
   const holder = placeholderBuilderFor(propName)
   switch (filter.operation) {
     case '=':
@@ -69,7 +69,7 @@ function placeholderBuilderFor(propName: string): (valueIndex: number) => string
   return (valueIndex: number) => `@${propName}_${valueIndex}`
 }
 
-function buildExpressionAttributeValues(filters: Record<string, Filter<any>>): Array<SqlParameter> {
+function buildExpressionAttributeValues(filters: Record<string, FilterOld<any>>): Array<SqlParameter> {
   const attributeValues: Array<SqlParameter> = []
   for (const propName in filters) {
     const filter = filters[propName]

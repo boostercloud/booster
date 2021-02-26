@@ -1,0 +1,22 @@
+{
+  "name": "file-to-line-lambda",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "uuid": "^8.3.2"
+  },
+  "bundledDependencies": [
+    "uuid"
+  ],
+  "dependencies": {
+    "tslib": "2.1.0",
+    "aws-sdk": "2.764.0",
+    "@types/aws-lambda": "8.10.48"
+  }
+}

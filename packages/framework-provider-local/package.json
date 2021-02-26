@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-local",
-  "version": "0.11.2",
+  "version": "0.11.4",
   "description": "Debug your Booster projects locally",
   "keywords": [
     "framework-provider-aws"
@@ -20,8 +20,8 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@boostercloud/framework-core": "^0.11.2",
-    "@boostercloud/framework-types": "^0.11.2",
+    "@boostercloud/framework-core": "^0.11.4",
+    "@boostercloud/framework-types": "^0.11.4",
     "nedb": "^1.8.0"
   },
   "scripts": {
