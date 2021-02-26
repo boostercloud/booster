@@ -178,7 +178,7 @@ async function findEventsDataWithKeys(
   }
   // TODO: Manage pagination
   // Now query the table to get all data
-  const paramss: DocumentClient.BatchGetItemInput = {
+  const params: DocumentClient.BatchGetItemInput = {
     RequestItems: {
       [config.resourceNames.eventsStore]: {
         ConsistentRead: true,
@@ -193,7 +193,7 @@ async function findEventsDataWithKeys(
   }
 
   logger.debug('Finding events data for keys: ', keys)
-  const result = await dynamoDB.batchGet(paramss).promise()
+  const result = await dynamoDB.batchGet(params).promise()
   return (result.Responses?.[config.resourceNames.eventsStore] as Array<EventEnvelope>) ?? []
 }
 
@@ -222,4 +222,8 @@ function convertToSearchResult(eventEnvelopes: Array<EventEnvelope>): Array<Even
       if (a.createdAt < b.createdAt) return 1
       return 0
     })
+}
+
+export const _testing = {
+  executeSearch,
 }
