@@ -294,7 +294,6 @@ describe('project checker', (): void => {
                 expect(exceptionMessage).to.contain('Versions must follow semantic convention X.Y.Z')
                 expect(logger.info).have.not.been.called
             })
-
         })
         
 
