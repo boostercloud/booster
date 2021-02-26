@@ -97,13 +97,13 @@ async function getBoosterVersion(projectPath: string): Promise<string> {
 
 class HigherCliVersionError extends Error {
   constructor(public cliVersion: string, public projectVersion: string, public section: string) {
-    super(`CLI version ${cliVersion} is higher than your project Booster version ${projectVersion} in the '${section}' section. Please upgrade your project dependencies.`)
+    super(`CLI version ${cliVersion} is higher than your project Booster version ${projectVersion} in the '${section}' section. Please upgrade your project Booster dependencies.`)
   }
 }
 
 class LowerCliVersionError extends Error {
   constructor(public cliVersion: string, public projectVersion: string, public section: string) {
-    super(`CLI version ${cliVersion} is lower than your project Booster version ${projectVersion}. Please upgrade your @boostercloud/cli to the same version with npm`)
+    super(`CLI version ${cliVersion} is lower than your project Booster version ${projectVersion}. Please upgrade your @boostercloud/cli to the same version with "npm install -g @boostercloud/cli@${projectVersion}"`)
   }
 }
 
