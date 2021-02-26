@@ -11,12 +11,18 @@ describe('build', () => {
         beforeEach(() => {
             replace(configService,'compileProject', fake.resolves({}))
             replace(projectChecker,'checkCurrentDirIsABoosterProject', fake.resolves({}))
+            replace(projectChecker,'checkCurrentDirBoosterVersion', fake.resolves({}))
             replace(oraLogger, 'info', fake.resolves({}))
             replace(oraLogger, 'start', fake.resolves({}))
         })
 
         afterEach(() => {
             restore()
+        })
+
+        it('init calls checkCurrentDirBoosterVersion', async () => {
+            await new Build.default([], {} as IConfig).init()
+            expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
         })
 
         it('runs the command', async () => {

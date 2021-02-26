@@ -1,4 +1,5 @@
 import * as Oclif from '@oclif/command'
+import BaseCommand from '../../common/base-command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
 import { generate } from '../../services/generator'
@@ -14,7 +15,7 @@ import * as path from 'path'
 import { templates } from '../../templates'
 import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 
-export default class Command extends Oclif.Command {
+export default class Command extends BaseCommand {
   public static description = "generate new resource, write 'boost new' to see options"
   public static flags = {
     help: Oclif.flags.help({ char: 'h' }),

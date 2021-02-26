@@ -1,4 +1,5 @@
 import * as Oclif from '@oclif/command'
+import BaseCommand from '../../common/base-command'
 import {
   HasEvent,
   HasName,
@@ -15,7 +16,7 @@ import * as path from 'path'
 import { templates } from '../../templates'
 import { classNameToFileName } from '../../common/filenames'
 
-export default class EventHandler extends Oclif.Command {
+export default class EventHandler extends BaseCommand {
   public static description = 'create a new event handler'
   public static flags = {
     help: Oclif.flags.help({ char: 'h' }),
@@ -30,6 +31,7 @@ export default class EventHandler extends Oclif.Command {
 
   public async run(): Promise<void> {
     const { args, flags } = this.parse(EventHandler)
+
     try {
       const event = flags.event
       if (!args.eventHandlerName)

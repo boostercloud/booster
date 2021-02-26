@@ -1,4 +1,5 @@
-import { Command, flags } from '@oclif/command'
+import { flags } from '@oclif/command'
+import BaseCommand from '../common/base-command'
 import { deployToCloudProvider } from '../services/provider-service'
 import {
   cleanDeploymentSandbox,
@@ -21,7 +22,7 @@ const runTasks = async (
     .info('Deployment complete!')
     .done()
 
-export default class Deploy extends Command {
+export default class Deploy extends BaseCommand {
   public static description = 'Deploy the current application as configured in your `index.ts` file.'
 
   public static flags = {
