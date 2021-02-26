@@ -4,13 +4,13 @@
   "version": "0.1.0",
   "author": "",
   "dependencies": {
-    "@boostercloud/framework-core": "0.11.2",
-    "@boostercloud/framework-types": "0.11.2",
+    "@boostercloud/framework-core": "0.11.4",
+    "@boostercloud/framework-types": "0.11.4",
     "@boostercloud/framework-provider-aws": "*",
     "tslib": "^2.0.3"
   },
   "devDependencies": {
-    "@boostercloud/rocket-auth-aws-infrastructure": "0.11.2",
+    "@boostercloud/rocket-auth-aws-infrastructure": "0.11.4",
     "@boostercloud/framework-provider-aws-infrastructure": "*",
     "rimraf": "^3.0.1",
     "@typescript-eslint/eslint-plugin": "^2.18.0",
