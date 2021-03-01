@@ -3,6 +3,7 @@ import { restore, fake, replace } from 'sinon'
 import * as Clean from '../../src/commands/clean'
 import * as configService from '../../src/services/config-service'
 import * as projectChecker from '../../src/services/project-checker'
+import * as cliInitializer from '../../src/services/cli-initializer'
 import { oraLogger } from '../../src/services/logger'
 import { IConfig } from '@oclif/config'
 
@@ -12,6 +13,7 @@ describe('clean', () => {
             replace(configService,'cleanProject', fake.resolves({}))
             replace(projectChecker,'checkCurrentDirIsABoosterProject', fake.resolves({}))
             replace(projectChecker,'checkCurrentDirBoosterVersion', fake.resolves({}))
+            replace(cliInitializer, 'createBoosterHomeFolder', fake.resolves({}))
             replace(oraLogger, 'info', fake.resolves({}))
             replace(oraLogger, 'start', fake.resolves({}))
         })
@@ -23,6 +25,7 @@ describe('clean', () => {
         it('init calls checkCurrentDirBoosterVersion', async () => {
             await new Clean.default([], {} as IConfig).init()
             expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
+            expect(cliInitializer.createBoosterHomeFolder).to.have.been.called
         })
 
         it('runs the command', async () => {

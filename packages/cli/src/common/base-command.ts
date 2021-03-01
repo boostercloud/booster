@@ -1,8 +1,10 @@
 import Command from '@oclif/command'
 import { checkCurrentDirBoosterVersion } from '../services/project-checker'
+import { createBoosterHomeFolder } from '../services/cli-initializer'
 
 export default abstract class BaseCommand extends Command {
   async init() {
+    await createBoosterHomeFolder()
     await checkCurrentDirBoosterVersion(this.config.userAgent)
   }
 

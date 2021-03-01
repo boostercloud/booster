@@ -12,6 +12,7 @@ import * as environment from '../../src/services/environment'
 import * as dependencies from '../../src/services/dependencies'
 import * as configService from '../../src/services/config-service'
 import * as projectChecker from '../../src/services/project-checker'
+import * as cliInitializer from '../../src/services/cli-initializer'
 
 // With this trick we can test non exported symbols
 const rewire = require('rewire')
@@ -102,6 +103,7 @@ describe('deploy', () => {
       replace(configService,'createDeploymentSandbox', fake.returns('fake/path'))
       replace(configService,'cleanDeploymentSandbox', fake.resolves({}))
       replace(projectChecker,'checkCurrentDirBoosterVersion', fake.resolves({}))
+      replace(cliInitializer, 'createBoosterHomeFolder', fake.resolves({}))
       replace(oraLogger,'fail', fake.resolves({}))
       replace(oraLogger, 'info', fake.resolves({}))
       replace(oraLogger, 'start', fake.resolves({}))
@@ -111,6 +113,7 @@ describe('deploy', () => {
     it('init calls checkCurrentDirBoosterVersion', async () => {
       await new Deploy.default([], {} as IConfig).init()
       expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
+      expect(cliInitializer.createBoosterHomeFolder).to.have.been.called
     })
 
     it('without flags', async () => {

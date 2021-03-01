@@ -12,6 +12,7 @@ import { test } from '@oclif/test'
 import * as environment from '../../src/services/environment'
 import * as configService from '../../src/services/config-service'
 import * as projectChecker from '../../src/services/project-checker'
+import * as cliInitializer from '../../src/services/cli-initializer'
 
 const rewire = require('rewire')
 const nuke = rewire('../../src/commands/nuke')
@@ -134,6 +135,7 @@ describe('nuke', () => {
         replace(configService,'compileProjectAndLoadConfig', fake.resolves(config))
         replace(providerService,'nukeCloudProviderResources', fake.resolves({}))
         replace(projectChecker,'checkCurrentDirBoosterVersion', fake.resolves({}))
+        replace(cliInitializer, 'createBoosterHomeFolder', fake.resolves({}))
         replace(oraLogger,'fail', fake.resolves({}))
         replace(oraLogger, 'info', fake.resolves({}))
         replace(oraLogger, 'start', fake.resolves({}))
@@ -143,6 +145,7 @@ describe('nuke', () => {
     it('init calls checkCurrentDirBoosterVersion', async () => {
       await new Nuke.default([], {} as IConfig).init()
       expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
+      expect(cliInitializer.createBoosterHomeFolder).to.have.been.called
     })
 
     it('without flags', async () => {
