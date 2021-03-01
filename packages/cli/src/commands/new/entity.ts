@@ -28,7 +28,7 @@ export default class Entity extends BaseCommand {
       multiple: true,
     }),
     reduces: Oclif.flags.string({
-      char: 'p',
+      char: 'r',
       description: 'events that this entity will reduce to build its state',
       multiple: true,
     }),
