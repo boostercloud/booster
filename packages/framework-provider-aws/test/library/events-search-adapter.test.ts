@@ -3,17 +3,20 @@ import { expect } from '../expect'
 import { createStubInstance, restore, SinonStubbedInstance, fake, replace } from 'sinon'
 import {
   BoosterConfig,
+  EventEnvelope,
   EventFilter,
   EventFilterByEntity,
   EventFilterByType,
+  EventSearchResponse,
   Logger,
 } from '@boostercloud/framework-types'
 import { random, date } from 'faker'
 import { DynamoDB } from 'aws-sdk'
-import { searchEvents, _testing } from '../../src/library/events-searcher-adapter'
+import { searchEvents } from '../../src/library/events-searcher-adapter'
 import { eventsStoreAttributes } from '../../src'
 import { partitionKeyForEvent } from '../../src/library/partition-keys'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
+import rewire = require('rewire')
 
 describe('Events searcher adapter', () => {
   const config: BoosterConfig = new BoosterConfig('test')
@@ -186,10 +189,6 @@ describe('Events searcher adapter', () => {
       })
     })
 
-    it('the result is converted and sorted properly', () => {
-      // TODO
-    })
-
     if (requiresExtraQueryToMainTable) {
       it('does an extra query to the main table with the corresponding keys', async () => {
         const firstQueryResponse: Array<Record<string, string>> = [
@@ -229,5 +228,62 @@ describe('Events searcher adapter', () => {
         })
       })
     }
+
+    context('with an unsorted page of result items', () => {
+      const rewiredModule = rewire('../../src/library/events-searcher-adapter')
+
+      const occurredThirdID = random.uuid(),
+        occurredSecondID = random.uuid(),
+        occurredFirstID = random.uuid()
+      const occurredThirdDate = date.recent(),
+        occurredSecondDate = date.recent(10, occurredThirdDate),
+        occurredFirstDate = date.recent(10, occurredSecondDate)
+      const unsortedResult: Array<EventEnvelope> = [
+        buildEventEnvelope(occurredThirdID, occurredThirdDate.toISOString()),
+        buildEventEnvelope(occurredFirstID, occurredFirstDate.toISOString()),
+        buildEventEnvelope(occurredSecondID, occurredSecondDate.toISOString()),
+      ]
+      const fakeExecuteSearch = fake.returns(Promise.resolve(unsortedResult))
+      let revert: () => void
+
+      beforeEach(() => {
+        revert = rewiredModule.__set__('executeSearch', fakeExecuteSearch)
+      })
+      afterEach(() => {
+        revert()
+      })
+
+      it('the result is converted and sorted in descendant order', async () => {
+        // For extra care, first assert that the result page is truly unordered
+        expect(unsortedResult.map((item) => item.entityID)).not.to.be.deep.equal([
+          occurredThirdID,
+          occurredSecondID,
+          occurredFirstID,
+        ])
+
+        const res: Array<EventSearchResponse> = await rewiredModule.searchEvents(db, config, logger, getFilters())
+        console.log(res)
+
+        // Check they are sorted
+        expect(res.map((item) => item.entityID)).to.be.deep.equal([occurredThirdID, occurredSecondID, occurredFirstID])
+        // Check they have the right structure
+        for (const item of res) {
+          expect(item).to.have.keys(['type', 'entity', 'entityID', 'requestID', 'user', 'createdAt', 'value'])
+        }
+      })
+    })
   }
 })
+
+function buildEventEnvelope(id: string, createdAt: string): EventEnvelope {
+  return {
+    entityID: id,
+    createdAt,
+    requestID: random.uuid(),
+    value: { id: random.uuid() },
+    entityTypeName: random.alpha(),
+    typeName: random.alpha(),
+    kind: 'event',
+    version: random.number(),
+  }
+}

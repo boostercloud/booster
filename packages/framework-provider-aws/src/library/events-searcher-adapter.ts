@@ -223,7 +223,3 @@ function convertToSearchResult(eventEnvelopes: Array<EventEnvelope>): Array<Even
       return 0
     })
 }
-
-export const _testing = {
-  executeSearch,
-}
