@@ -2961,6 +2961,21 @@ The databases for the local provider are just json files in the `<project-root>/
 ### Testing Booster applications
 To properly test a Booster application, you should create a `test` folder at the same level as the `src` one (check the generated `tsconfig.json` for more information). Apart from that, tests' names should have the `<my_test>.test.ts` format.
 
+When a Booster application is generated, you will have a script in a `package.json` like this:
+```typescript
+"scripts": {
+  "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+}
+```
+
+The only thing that you should add to this line are the `AWS_SDK_LOAD_CONFIG=true` and `BOOSTER_ENV=test` environment variables, so the script will look like this:
+
+```typescript
+"scripts": {
+  "test": "AWS_SDK_LOAD_CONFIG=true BOOSTER_ENV=test nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+}
+```
+
 #### Testing with sinon-chai
 The `BoosterConfig` can be accessed through the `Booster.config` on any part of a Booster application. To properly mock it for your objective, we really recommend to use sinon `replace` method, after configuring your `Booster.config` as desired.
 
