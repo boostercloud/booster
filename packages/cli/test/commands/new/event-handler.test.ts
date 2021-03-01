@@ -1,5 +1,4 @@
 import * as ProjectChecker from '../../../src/services/project-checker'
-import * as cliInitializer from '../../../src/services/cli-initializer'
 import { restore, replace, fake, stub } from 'sinon'
 import EventHandler from '../../../src/commands/new/event-handler'
 import { templates } from '../../../src/templates'
@@ -32,7 +31,6 @@ describe('new', (): void => {
       stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
       replace(fs,'outputFile', fake.resolves({}))
       replace(ProjectChecker,'checkCurrentDirBoosterVersion', fake.resolves({}))
-      replace(cliInitializer, 'createBoosterHomeFolder', fake.resolves({}))
     })
 
     afterEach(() => {
@@ -42,7 +40,6 @@ describe('new', (): void => {
     it('init calls checkCurrentDirBoosterVersion', async () => {
       await new EventHandler([], {} as IConfig).init()
       expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
-      expect(cliInitializer.createBoosterHomeFolder).to.have.been.called
     })
 
     describe('Created correctly', () => { 
