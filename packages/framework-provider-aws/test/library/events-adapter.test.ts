@@ -166,9 +166,9 @@ describe('the events-adapter', () => {
       await Library.storeEvents(fakeDynamo, eventEnvelopes, config, fakeLogger)
 
       for (const batch of batches) {
-        // chai-sorted doesn't have typings, so using with `any`
+        // chai-arrays doesn't have typings, so using with `any`
         const expectBatch = expect(batch) as any
-        expectBatch.to.be.sorted()
+        expectBatch.to.be.sorted((prev: number, next: number) => prev < next)
       }
       expect(fakeBatchWrite).to.be.calledThrice
     })

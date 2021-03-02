@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { DynamoDBStreamEvent, DynamoDBRecord } from 'aws-lambda'
 import { BoosterConfig, EventEnvelope, Logger, UUID } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
@@ -94,10 +95,11 @@ export async function storeEvents(
   }
 }
 
-function inChunksOf<TElement>(n: number, arr: Array<TElement>): Array<Array<TElement>> {
+function inChunksOf<TElement>(chunkSize: number, array: Array<TElement>): Array<Array<TElement>> {
   const result = []
+  const arr = [...array]
   while (arr.length) {
-    result.push(arr.splice(0, n))
+    result.push(arr.splice(0, chunkSize))
   }
   return result
 }
@@ -109,23 +111,42 @@ async function persistBatch(
   dynamoDB: DynamoDB.DocumentClient
 ): Promise<void> {
   logger.debug('[EventsAdapter#storeEvents] Storing EventEnvelopes with eventEnvelopes:', batch)
+  const putRequests = []
+  for (const eventEnvelope of batch) {
+    const msForSortKey = 5
+    /* We must wait 5ms before generating a new sort key value
+    because if we do it directly, all of them will have the same
+    timestamp, meaning that for DynamoDB this is the same item as
+    the others, because it has the same key. Making BatchWrite fail.
+    */
+    const sortKey = await waitAndReturn(() => new Date().toISOString(), msForSortKey)
+    putRequests.push({
+      PutRequest: {
+        Item: {
+          ...eventEnvelope,
+          [eventsStoreAttributes.partitionKey]: partitionKeyForEvent(
+            eventEnvelope.entityTypeName,
+            eventEnvelope.entityID,
+            eventEnvelope.kind
+          ),
+          [eventsStoreAttributes.sortKey]: sortKey,
+        },
+      },
+    })
+  }
+  // if (batch.length > 1) {
+  //   throw new Error('$$$$$$$$$$$$$$$$$$\n\t\tSHITS CASH YO:\n' + JSON.stringify(putRequests) + '\n$$$$$$$$$$$$$$$$$$\n')
+  // }
   const params: DynamoDB.DocumentClient.BatchWriteItemInput = {
     RequestItems: {
-      [config.resourceNames.eventsStore]: batch.map((eventEnvelope) => ({
-        PutRequest: {
-          Item: {
-            ...eventEnvelope,
-            [eventsStoreAttributes.partitionKey]: partitionKeyForEvent(
-              eventEnvelope.entityTypeName,
-              eventEnvelope.entityID,
-              eventEnvelope.kind
-            ),
-            [eventsStoreAttributes.sortKey]: new Date().toISOString(),
-          },
-        },
-      })),
+      [config.resourceNames.eventsStore]: putRequests,
     },
   }
   await dynamoDB.batchWrite(params).promise()
   logger.debug('[EventsAdapter#storeEvents] EventEnvelope stored')
 }
+
+const waitAndReturn = <TResult>(callback: () => TResult, milliseconds: number): Promise<TResult> =>
+  new Promise((resolve) => {
+    setTimeout(() => resolve(callback()), milliseconds)
+  })

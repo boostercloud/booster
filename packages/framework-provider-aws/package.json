@@ -36,11 +36,12 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "8.10.48",
+    "@types/chai-arrays": "^2.0.0",
     "@types/faker": "5.1.5",
     "aws-sdk": "2.764.0",
     "chai": "4.2.0",
+    "chai-arrays": "^2.2.0",
     "chai-as-promised": "7.1.1",
-    "sams-chai-sorted": "^1.0.2",
     "faker": "5.1.0",
     "rewire": "5.0.0",
     "sinon": "9.2.3",
