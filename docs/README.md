@@ -277,8 +277,12 @@ Identity and Access Management panel. Once there, create an access key:
 
 ![create access key button location](./img/aws-create-access-key.png)
 
-A pop-up will appear, **don't close it!**. Create a folder called `.aws` under your home
-folder, and a file called `credentials` with this template:
+A pop-up like the following will appear, **don't close it!**. 
+
+![credentials pop up](./img/aws-credentials.png)
+
+Using data from that pop-up, create a folder called `.aws` under your home
+folder, and a file inside called `credentials` with this syntax:
 
 ```ini
 # ~/.aws/credentials
