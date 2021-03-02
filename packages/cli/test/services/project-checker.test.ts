@@ -186,42 +186,34 @@ describe('project checker', (): void => {
             })
 
             it('versions match', async () => {
-                const userAgent = '@boostercloud/cli/1.11.2 darwin-x64 node-v12.10.0'
+                const cliVersion = '1.11.2'
                 let exceptionThrown = false
-                await checkCurrentDirBoosterVersion(userAgent).catch(() => exceptionThrown = true)
-                expect(exceptionThrown).to.be.equal(false)
-                expect(logger.info).have.not.been.called
-            })
-
-            it('versions match on linux', async () => {
-                const userAgent = '@boostercloud/cli/1.11.2 linux-x64 node-v12.10.0'
-                let exceptionThrown = false
-                await checkCurrentDirBoosterVersion(userAgent).catch(() => exceptionThrown = true)
+                await checkCurrentDirBoosterVersion(cliVersion).catch(() => exceptionThrown = true)
                 expect(exceptionThrown).to.be.equal(false)
                 expect(logger.info).have.not.been.called
             })
 
             it('versions differs in fix number with cli version greater than project version', async () => {
-                const userAgent = '@boostercloud/cli/1.11.3 darwin-x64 node-v12.10.0'
+                const cliVersion = '1.11.3'
                 let exceptionThrown = false
-                await checkCurrentDirBoosterVersion(userAgent).catch(() => exceptionThrown = true)
+                await checkCurrentDirBoosterVersion(cliVersion).catch(() => exceptionThrown = true)
                 expect(exceptionThrown).to.be.equal(false)
                 expect(logger.info).have.been.calledWithMatch(/WARNING: Project Booster version differs in the 'fix' section/)
             })
     
             it('versions differs in fix number with cli version lower than project version', async () => {
-                const userAgent = '@boostercloud/cli/1.11.0 darwin-x64 node-v12.10.0'
+                const cliVersion = '1.11.0'
                 let exceptionThrown = false
-                await checkCurrentDirBoosterVersion(userAgent).catch(() => exceptionThrown = true)
+                await checkCurrentDirBoosterVersion(cliVersion).catch(() => exceptionThrown = true)
                 expect(exceptionThrown).to.be.equal(false)
                 expect(logger.info).have.been.calledWithMatch(/WARNING: Project Booster version differs in the 'fix' section/)
             })
     
             it('cli lower than project version in <feature> section', async () => {
-                const userAgent = '@boostercloud/cli/1.10.2 darwin-x64 node-v12.10.0'
+                const cliVersion = '1.10.2'
                 let exceptionThrown = false
                 let exceptionMessage = ''
-                await checkCurrentDirBoosterVersion(userAgent).catch((e) => {
+                await checkCurrentDirBoosterVersion(cliVersion).catch((e) => {
                     exceptionThrown = true
                     exceptionMessage = e.message
                 })
@@ -231,10 +223,10 @@ describe('project checker', (): void => {
             })
     
             it('cli lower than project version in <breaking> section', async () => {
-                const userAgent = '@boostercloud/cli/0.11.2 darwin-x64 node-v12.10.0'
+                const cliVersion = '0.11.2'
                 let exceptionThrown = false
                 let exceptionMessage = ''
-                await checkCurrentDirBoosterVersion(userAgent).catch((e) => {
+                await checkCurrentDirBoosterVersion(cliVersion).catch((e) => {
                     exceptionThrown = true
                     exceptionMessage = e.message
                 })
@@ -244,10 +236,10 @@ describe('project checker', (): void => {
             })
         
             it('cli version higher than project version in <feature> section', async () => {
-                const userAgent = '@boostercloud/cli/1.12.2 darwin-x64 node-v12.10.0'
+                const cliVersion = '1.12.2'
                 let exceptionThrown = false
                 let exceptionMessage = ''
-                await checkCurrentDirBoosterVersion(userAgent).catch((e) => {
+                await checkCurrentDirBoosterVersion(cliVersion).catch((e) => {
                     exceptionThrown = true
                     exceptionMessage = e.message
                 })
@@ -257,10 +249,10 @@ describe('project checker', (): void => {
             })
 
             it('cli version higher than project version in <breaking> section', async () => {
-                const userAgent = '@boostercloud/cli/2.11.2 darwin-x64 node-v12.10.0'
+                const cliVersion = '2.11.2'
                 let exceptionThrown = false
                 let exceptionMessage = ''
-                await checkCurrentDirBoosterVersion(userAgent).catch((e) => {
+                await checkCurrentDirBoosterVersion(cliVersion).catch((e) => {
                     exceptionThrown = true
                     exceptionMessage = e.message
                 })
@@ -270,10 +262,10 @@ describe('project checker', (): void => {
             })
     
             it('cli version wrong length shorter', async () => {
-                const userAgent = '@boostercloud/cli/1.11 darwin-x64 node-v12.10.0'
+                const cliVersion = '1.11'
                 let exceptionThrown = false
                 let exceptionMessage = ''
-                await checkCurrentDirBoosterVersion(userAgent).catch((e) => {
+                await checkCurrentDirBoosterVersion(cliVersion).catch((e) => {
                     exceptionThrown = true
                     exceptionMessage = e.message
                 })
@@ -283,10 +275,10 @@ describe('project checker', (): void => {
             })
     
             it('cli version wrong length longer', async () => {
-                const userAgent = '@boostercloud/cli/1.11.2.1 darwin-x64 node-v12.10.0'
+                const cliVersion = '1.11.2.1'
                 let exceptionThrown = false
                 let exceptionMessage = ''
-                await checkCurrentDirBoosterVersion(userAgent).catch((e) => {
+                await checkCurrentDirBoosterVersion(cliVersion).catch((e) => {
                     exceptionThrown = true
                     exceptionMessage = e.message
                 })
@@ -299,10 +291,10 @@ describe('project checker', (): void => {
 
         it('outside a Booster project', async () => {
             replace(process, 'cwd', fake.returns(path.join(process.cwd(), 'test', 'fixtures')))
-            const userAgent = '@boostercloud/cli/1.11.2 darwin-x64 node-v12.10.0'
+            const cliVersion = '1.11.2'
             let exceptionThrown = false
             let exceptionMessage = ''
-            await checkCurrentDirBoosterVersion(userAgent).catch((e) => {
+            await checkCurrentDirBoosterVersion(cliVersion).catch((e) => {
                 exceptionThrown = true
                 exceptionMessage = e.message
             })

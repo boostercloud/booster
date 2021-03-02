@@ -4,7 +4,7 @@ import { appendOnErrorsFile } from '../services/logger'
 
 export default abstract class BaseCommand extends Command {
   async init() {
-    await checkCurrentDirBoosterVersion(this.config.userAgent)
+    await checkCurrentDirBoosterVersion(this.config.version)
   }
 
   async catch(fullError: any) {
