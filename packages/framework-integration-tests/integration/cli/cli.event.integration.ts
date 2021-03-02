@@ -7,7 +7,7 @@ import {
   removeFolders,
   sandboxPathFor,
   writeFileContent
-} from '../helper/fileHelper'
+} from '../helper/file-helper'
 import { exec } from 'child-process-promise'
 // Imported from another package to avoid duplication
 // It is OK-ish, since integration tests are always run in the context of the whole monorepo

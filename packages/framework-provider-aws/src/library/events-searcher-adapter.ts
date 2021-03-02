@@ -177,6 +177,7 @@ async function findEventsDataWithKeys(
     return []
   }
   // TODO: Manage pagination
+  // TODO: also, we can send, at maximum, 100 items to fetch in a BatchGetItemInput. Manage that too.
   // Now query the table to get all data
   const params: DocumentClient.BatchGetItemInput = {
     RequestItems: {

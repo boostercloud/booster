@@ -5,7 +5,6 @@ import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { HttpLink } from 'apollo-link-http'
 import fetch from 'cross-fetch'
 import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
-import { internet } from 'faker'
 import { WebSocketLink } from 'apollo-link-ws'
 import { getMainDefinition } from 'apollo-utilities'
 import { ApolloLink, split } from 'apollo-link'
@@ -266,10 +265,6 @@ export const refreshUserAuthInformation = async (refreshToken: string): Promise<
   })
 
   return await response.json()
-}
-
-export const createPassword = (): string => {
-  return `${internet.password(8)}Passw0rd!`
 }
 
 // --- URL helpers ---

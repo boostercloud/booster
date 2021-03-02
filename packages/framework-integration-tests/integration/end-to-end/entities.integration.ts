@@ -1,12 +1,6 @@
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
-import {
-  createUser,
-  getUserAuthInformation,
-  graphQLClient,
-  UserAuthInformation,
-
-} from '../providers/aws/utils'
+import { createUser, getUserAuthInformation, graphQLClient, UserAuthInformation } from '../providers/aws/utils'
 import { random, commerce, finance, lorem, internet } from 'faker'
 import { expect } from 'chai'
 import gql from 'graphql-tag'
@@ -14,10 +8,6 @@ import { sleep, waitForIt } from '../helper/sleep'
 
 describe('Entities end-to-end tests', () => {
   let client: ApolloClient<NormalizedCacheObject>
-
-  before(async () => {
-    client = await graphQLClient()
-  })
 
   let userAuthInformation: UserAuthInformation
   let userEmail: string
