@@ -11,7 +11,7 @@ export const logger: Logger = {
   error: (message) => oraLogger.fail(message),
 }
 
-export async function appendOnErrorsFile(data: string): Promise<void> {
+export function appendOnErrorsFile(data: string): void {
   const errorsFile = path.join(process.cwd(), 'errors.log')
   const transformedData = data.split("\n").map(line => `[${new Date().toISOString()}] ${line}`).join("\n")
   appendFileSync(errorsFile, transformedData)

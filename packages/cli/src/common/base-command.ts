@@ -10,11 +10,8 @@ export default abstract class BaseCommand extends Command {
   async catch(fullError: any) {
     const errorMessage = fullError.message.split("\n")[0].replace('Error:','')
     const logRefMessage = "\n(You can see the full error logs in ./errors.log)"
-    console.log("BASECOMMAND")
-    console.log(new Date().toISOString())
-    console.log(fullError)
-    console.log("BASECOMMAND")
-    await appendOnErrorsFile(fullError.message)
+    const errorForFile = `\nboost ${this.id} ${this.argv.join(' ')}\n${fullError.message}`
+    appendOnErrorsFile(errorForFile)
     return super.catch(new Error(errorMessage + logRefMessage))
   }
 }
