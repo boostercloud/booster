@@ -1,9 +1,10 @@
-import { countEventItems, countSnapshotItems, queryEvents, graphQLClient, waitForIt } from '../utils'
+import { countEventItems, countSnapshotItems, queryEvents, graphQLClient } from '../utils'
 import { expect } from '../../../helper/expect'
 import gql from 'graphql-tag'
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { random } from 'faker'
+import { waitForIt } from '../../../helper/sleep'
 
 describe('events', async () => {
   let client: ApolloClient<NormalizedCacheObject>

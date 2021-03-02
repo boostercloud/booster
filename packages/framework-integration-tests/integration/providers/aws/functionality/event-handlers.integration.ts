@@ -6,11 +6,11 @@ import {
   getUserAuthInformation,
   getEventsByEntityId,
   graphQLClient,
-  waitForIt,
   UserAuthInformation,
 } from '../utils'
 import { random, address, internet } from 'faker'
 import { expect } from 'chai'
+import { waitForIt } from '../../../helper/sleep'
 
 describe('Event handlers', () => {
   let adminEmail: string
