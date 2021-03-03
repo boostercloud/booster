@@ -52,4 +52,3 @@ export const Booster = BoosterApp
  * reexport public objects
  */
 export * from './decorators'
-export { BoosterApp } from './booster-app'

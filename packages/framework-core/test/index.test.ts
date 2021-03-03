@@ -82,7 +82,5 @@ describe('framework-core package', () => {
 
   it('exports the BoosterApp class and the Booster alias', () => {
     expect(BoosterCore.Booster).not.to.be.null
-    expect(BoosterCore.BoosterApp).not.to.be.null
-    expect(BoosterCore.Booster).to.be.equal(BoosterCore.BoosterApp)
   })
 })
