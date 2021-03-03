@@ -2,9 +2,10 @@
 import { DynamoDBStreamEvent, DynamoDBRecord } from 'aws-lambda'
 import { BoosterConfig, EventEnvelope, Logger, UUID } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
-import { dynamoDbBatchSize, eventsStoreAttributes } from '../constants'
+import { dynamoDbBatchWriteLimit, eventsStoreAttributes } from '../constants'
 import { partitionKeyForEvent } from './partition-keys'
 import { Converter } from 'aws-sdk/clients/dynamodb'
+import { inChunksOf, waitAndReturn } from '../pagination-helpers'
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const originOfTime = new Date(0).toISOString()
@@ -89,19 +90,10 @@ export async function storeEvents(
   config: BoosterConfig,
   logger: Logger
 ): Promise<void> {
-  const batches = inChunksOf(dynamoDbBatchSize, eventEnvelopes)
+  const batches = inChunksOf(dynamoDbBatchWriteLimit, eventEnvelopes)
   for (const batch of batches) {
     await persistBatch(logger, batch, config, dynamoDB)
   }
-}
-
-function inChunksOf<TElement>(chunkSize: number, array: Array<TElement>): Array<Array<TElement>> {
-  const result = []
-  const arr = [...array]
-  while (arr.length) {
-    result.push(arr.splice(0, chunkSize))
-  }
-  return result
 }
 
 async function persistBatch(
@@ -134,9 +126,6 @@ async function persistBatch(
       },
     })
   }
-  // if (batch.length > 1) {
-  //   throw new Error('$$$$$$$$$$$$$$$$$$\n\t\tSHITS CASH YO:\n' + JSON.stringify(putRequests) + '\n$$$$$$$$$$$$$$$$$$\n')
-  // }
   const params: DynamoDB.DocumentClient.BatchWriteItemInput = {
     RequestItems: {
       [config.resourceNames.eventsStore]: putRequests,
@@ -145,8 +134,3 @@ async function persistBatch(
   await dynamoDB.batchWrite(params).promise()
   logger.debug('[EventsAdapter#storeEvents] EventEnvelope stored')
 }
-
-const waitAndReturn = <TResult>(callback: () => TResult, milliseconds: number): Promise<TResult> =>
-  new Promise((resolve) => {
-    setTimeout(() => resolve(callback()), milliseconds)
-  })

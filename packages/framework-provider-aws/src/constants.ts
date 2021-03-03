@@ -24,4 +24,4 @@ export const environmentVarNames = {
   websocketAPIURL: 'BOOSTER_WEBSOCKET_API_URL',
 } as const
 
-export const dynamoDbBatchSize = 25
+export const dynamoDbBatchWriteLimit = 25
