@@ -22,7 +22,7 @@ export class BoosterApp {
   public static readonly configuredEnvironments: Set<string> = new Set<string>()
 
   /**
-   * Default logger, as configured in the current
+   * Default logger
    */
   public static logger: Logger
   public static readonly config = new BoosterConfig(checkAndGetCurrentEnv())
