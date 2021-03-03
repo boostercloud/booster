@@ -1,6 +1,6 @@
 import { RequireApproval } from 'aws-cdk/lib/diff'
 import { Bootstrapper } from 'aws-cdk'
-import { BoosterConfig, Logger } from '@boostercloud/framework-types'
+import { BoosterConfig, EventEnvelope, Logger, UUID } from '@boostercloud/framework-types'
 import { EnvironmentUtils } from '@aws-cdk/cx-api'
 import {
   getStackNames,
@@ -36,4 +36,24 @@ export async function deploy(config: BoosterConfig, logger: Logger, rockets?: In
     stackNames: getStackNames(config),
     requireApproval: RequireApproval.Never,
   })
+
+  logger.info('Running post deployment actions')
+  await createPostDeploymentEvent(config, logger)
+}
+
+const createPostDeploymentEvent = async (config: BoosterConfig, logger: Logger): Promise<void> => {
+  const eventName = 'BoosterAppDeployed'
+  const entityTypeName = 'BoosterPostDeploy'
+  const event = {
+    requestID: UUID.generate(),
+    typeName: eventName,
+    version: 1,
+    kind: 'event',
+    entityID: UUID.generate(),
+    entityTypeName: entityTypeName,
+    value: {},
+    createdAt: new Date().toISOString(),
+  } as EventEnvelope
+
+  await config.provider.events.store([event], config, logger)
 }

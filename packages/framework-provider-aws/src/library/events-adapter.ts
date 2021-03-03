@@ -21,6 +21,30 @@ export function rawEventsToEnvelopes(rawEvents: DynamoDBStreamEvent): Array<Even
   )
 }
 
+export async function getUniqueEntityIDs(
+  dynamoDB: DynamoDB.DocumentClient,
+  config: BoosterConfig,
+  logger: Logger,
+  entityName: string
+): Promise<Array<UUID>> {
+  const result = await dynamoDB
+    .query({
+      TableName: config.resourceNames.eventsStore,
+      IndexName: 'entityIndex',
+      KeyConditionExpression: 'entityTypeName = :entityTypeName',
+      ExpressionAttributeValues: {
+        ':entityTypeName': entityName,
+      },
+    })
+    .promise()
+
+  const ids = result.Items?.map((obj) => {
+    return obj.entityID
+  })
+
+  return [...new Set(ids)]
+}
+
 export async function readEntityEventsSince(
   dynamoDB: DynamoDB.DocumentClient,
   config: BoosterConfig,

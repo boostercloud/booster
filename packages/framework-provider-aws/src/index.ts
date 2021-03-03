@@ -4,6 +4,7 @@ import {
   storeEvents,
   readEntityLatestSnapshot,
   readEntityEventsSince,
+  getUniqueEntityIDs,
 } from './library/events-adapter'
 import {
   fetchReadModel,
@@ -56,6 +57,7 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
     // ProviderEventsLibrary
     events: {
       rawToEnvelopes: rawEventsToEnvelopes,
+      getUniqueEntityIDs: getUniqueEntityIDs.bind(null, dynamoDB),
       forEntitySince: readEntityEventsSince.bind(null, dynamoDB),
       latestEntitySnapshot: readEntityLatestSnapshot.bind(null, dynamoDB),
       store: storeEvents.bind(null, dynamoDB),

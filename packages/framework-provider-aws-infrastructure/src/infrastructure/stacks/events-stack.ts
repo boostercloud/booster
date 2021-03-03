@@ -31,7 +31,7 @@ export class EventsStack {
 
   private buildEventsStore(): dynamodb.Table {
     const localID = 'events-store'
-    return new dynamodb.Table(this.stack, localID, {
+    const eventStore = new dynamodb.Table(this.stack, localID, {
       tableName: this.config.resourceNames.eventsStore,
       partitionKey: {
         name: eventsStoreAttributes.partitionKey,
@@ -45,6 +45,21 @@ export class EventsStack {
       removalPolicy: RemovalPolicy.DESTROY,
       stream: StreamViewType.NEW_IMAGE,
     })
+
+    eventStore.addGlobalSecondaryIndex({
+      indexName: 'entityIndex',
+      partitionKey: {
+        name: eventsStoreAttributes.globalSecondaryIndexes.entityIndex.partitionKey,
+        type: dynamodb.AttributeType.STRING,
+      },
+      sortKey: {
+        name: eventsStoreAttributes.globalSecondaryIndexes.entityIndex.sortKey,
+        type: dynamodb.AttributeType.STRING,
+      },
+      projectionType: dynamodb.ProjectionType.KEYS_ONLY,
+    })
+
+    return eventStore
   }
 
   private buildEventsLambda(eventsStream: Table): Function {

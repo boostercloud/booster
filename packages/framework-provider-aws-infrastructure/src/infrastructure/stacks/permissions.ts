@@ -52,6 +52,8 @@ export const setupPermissions = (
     createPolicyStatement([eventsStore.tableArn], ['dynamodb:BatchWriteItem', 'dynamodb:Query*', 'dynamodb:Put*'])
   )
 
+  eventsLambda.addToRolePolicy(createPolicyStatement([`${eventsStore.tableArn}/index/entityIndex`], ['dynamodb:Query']))
+
   if (scheduledCommandStack) {
     const { scheduledLambda } = scheduledCommandStack
     scheduledLambda.addToRolePolicy(

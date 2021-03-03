@@ -26,6 +26,7 @@ export interface ProviderLibrary {
 
 export interface ProviderEventsLibrary {
   rawToEnvelopes(rawEvents: unknown): Array<EventEnvelope>
+  getUniqueEntityIDs(config: BoosterConfig, logger: Logger, entityName: string): Promise<Array<UUID>>
   forEntitySince(
     config: BoosterConfig,
     logger: Logger,

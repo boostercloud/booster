@@ -31,7 +31,7 @@
   "dependencies": {
     "@boostercloud/framework-types": "^0.11.6",
     "fp-ts": "^2.0.3",
-    "graphql": "15.4.0",
+    "graphql": "15.5.0",
     "graphql-subscriptions": "1.1.0",
     "graphql-type-json": "0.3.2",
     "inflected": "^2.1.0",
