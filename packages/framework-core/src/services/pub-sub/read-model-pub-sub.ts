@@ -4,6 +4,7 @@ import {
   ReadModelInterface,
   ReadModelPropertyFilter,
   Instance,
+  Operation,
 } from '@boostercloud/framework-types'
 
 export interface ReadModelPubSub {
@@ -28,41 +29,43 @@ function filterReadModel(readModel: Record<string, any>, filters?: Record<string
   }
   for (const filteredProp in filters) {
     const readModelPropValue = readModel[filteredProp]
-    const { operation, values }: ReadModelPropertyFilter = filters[filteredProp]
+    return filterByOperation(filters[filteredProp], readModelPropValue)
+  }
+  return true
+}
 
+function filterByOperation(filter: ReadModelPropertyFilter, readModelPropValue: any): boolean {
+  for (const [operation, value] of Object.entries(filter as Operation<any>)) {
     switch (operation) {
       case '=':
-        if (readModelPropValue !== values[0]) return false
+        if (readModelPropValue !== value) return false
         break
       case '!=':
-        if (readModelPropValue === values[0]) return false
+        if (readModelPropValue === value) return false
         break
       case '<':
-        if (readModelPropValue >= values[0]) return false
+        if (readModelPropValue >= value) return false
         break
       case '>':
-        if (readModelPropValue <= values[0]) return false
+        if (readModelPropValue <= value) return false
         break
       case '>=':
-        if (readModelPropValue < values[0]) return false
+        if (readModelPropValue < value) return false
         break
       case '<=':
-        if (readModelPropValue > values[0]) return false
+        if (readModelPropValue > value) return false
         break
       case 'in':
-        if (!values.includes(readModelPropValue)) return false
-        break
-      case 'between':
-        if (readModelPropValue < values[0] || readModelPropValue > values[1]) return false
+        if (!value.includes(readModelPropValue)) return false
         break
       case 'contains':
-        if (!contains(readModelPropValue, values[0])) return false
+        if (!contains(readModelPropValue, value)) return false
         break
       case 'not-contains':
-        if (contains(readModelPropValue, values[0])) return false
+        if (contains(readModelPropValue, value)) return false
         break
       case 'begins-with':
-        if (!beginWith(readModelPropValue, values[0] as string)) return false
+        if (!beginWith(readModelPropValue, value as string)) return false
         break
     }
   }

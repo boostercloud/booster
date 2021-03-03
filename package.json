@@ -8,7 +8,7 @@
   "scripts": {
     "update-tocs": "npm run update-documentation-toc && npm run update-contributing-toc",
     "update-documentation-toc": "markdown-toc -i --maxdepth 4 docs/README.md",
-    "update-contributing-toc": "markdown-toc -i --maxdepth 4 CONTRIBUTING.md"
+    "update-contributing-toc": "markdown-toc -i --bullets=- --maxdepth 4 CONTRIBUTING.md"
   },
   "devDependencies": {
     "@octokit/rest": "^17.0.0",

@@ -1,4 +1,4 @@
-import { copyFileSync, mkdirSync, readdirSync, rmdirSync } from 'fs'
+import { copyFileSync, mkdirSync, readdirSync, rmdirSync, statSync } from 'fs'
 import * as path from 'path'
 
 const copyFolder = (origin: string, destiny: string): void => {
@@ -13,13 +13,23 @@ const copyFolder = (origin: string, destiny: string): void => {
   })
 }
 
-export const createSandboxProject = (sandboxPath: string): string => {
+export const createSandboxProject = (sandboxPath: string, assets?: Array<string>): string => {
   rmdirSync(sandboxPath, { recursive: true })
   mkdirSync(sandboxPath, { recursive: true })
   copyFolder('src', path.join(sandboxPath, 'src'))
 
-  const projectFiles = ['.eslintignore', 'package.json', 'tsconfig.eslint.json', 'tsconfig.json']
+  const projectFiles = ['package.json', 'tsconfig.json']
   projectFiles.forEach((file: string) => copyFileSync(file, path.join(sandboxPath, file)))
+
+  if (assets) {
+    assets.forEach((asset) => {
+      if (statSync(asset).isDirectory()) {
+        copyFolder(asset, path.join(sandboxPath, asset))
+      } else {
+        copyFileSync(asset, path.join(sandboxPath, asset))
+      }
+    })
+  }
 
   return sandboxPath
 }

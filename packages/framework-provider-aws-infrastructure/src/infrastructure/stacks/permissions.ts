@@ -62,7 +62,13 @@ export const setupPermissions = (
   const tableArns = readModelTables.map((table): string => table.tableArn)
   if (tableArns.length > 0) {
     eventsLambda.addToRolePolicy(
-      createPolicyStatement(tableArns, ['dynamodb:Get*', 'dynamodb:Scan*', 'dynamodb:Put*', 'dynamodb:DeleteItem*'])
+      createPolicyStatement(tableArns, [
+        'dynamodb:Get*',
+        'dynamodb:Query*',
+        'dynamodb:Scan*',
+        'dynamodb:Put*',
+        'dynamodb:DeleteItem*',
+      ])
     )
     graphQLLambda.addToRolePolicy(createPolicyStatement(tableArns, ['dynamodb:Query*', 'dynamodb:Scan*']))
     if (scheduledCommandStack) {

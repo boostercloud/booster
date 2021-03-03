@@ -29,7 +29,7 @@ const LICENSE = 'Apache'
 const REPO_URL = 'https://github.com/boostercloud/booster/'
 const PROVIDER = '@boostercloud/framework-provider-aws'
 
-describe.only('Project', () => {
+describe('Project', () => {
   const SANDBOX_INTEGRATION_DIR = 'new-project-integration-sandbox'
 
   before(async () => {
@@ -219,7 +219,6 @@ describe.only('Project', () => {
     const cartDemoPackageJsonObject = JSON.parse(cartDemoPackageJsonContent)
     expect(cartDemoPackageJsonObject['dependencies']['@boostercloud/framework-core']).to.equal(`^${BOOSTER_VERSION}`)
     expect(cartDemoPackageJsonObject['dependencies']['@boostercloud/framework-types']).to.equal(`^${BOOSTER_VERSION}`)
-    expect(cartDemoPackageJsonObject['devDependencies']['@boostercloud/cli']).to.equal(`^${BOOSTER_VERSION}`)
 
     const expectedCartDemoTsConfigEslint = loadFixture('cart-demo/tsconfig.eslint.json')
     const cartDemoTsConfigEslintContent = fileContents('tsconfig.eslint.json')

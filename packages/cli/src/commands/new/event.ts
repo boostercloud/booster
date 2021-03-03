@@ -1,4 +1,5 @@
 import * as Oclif from '@oclif/command'
+import BaseCommand from '../../common/base-command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
 import {
@@ -14,7 +15,7 @@ import * as path from 'path'
 import { templates } from '../../templates'
 import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 
-export default class Event extends Oclif.Command {
+export default class Event extends BaseCommand {
   public static description = 'create a new event'
   public static flags = {
     help: Oclif.flags.help({ char: 'h' }),
@@ -29,6 +30,7 @@ export default class Event extends Oclif.Command {
 
   public async run(): Promise<void> {
     const { args, flags } = this.parse(Event)
+    
     try {
       const fields = flags.fields || []
       if (!args.eventName) throw "You haven't provided an event name, but it is required, run with --help for usage"

@@ -14,13 +14,14 @@ let sandboxPath: string
 
 before(async () => {
   console.log('preparing sandboxed project...')
-  sandboxPath = createSandboxProject(sandboxPathFor(sandboxName))
-
-  console.log('installing dependencies...')
-  await runCommand(sandboxPath, 'npm install')
+  const configuredAssets = ['assets', 'assetFile.txt']
+  sandboxPath = createSandboxProject(sandboxPathFor(sandboxName), configuredAssets)
 
   console.log('overriding booster dependencies...')
   await overrideWithBoosterLocalDependencies(sandboxPath)
+
+  console.log('installing dependencies...')
+  await runCommand(sandboxPath, 'npm install')
 
   console.log(`starting local server in ${sandboxPath}...`)
   serverProcess = start('local', sandboxPath)

@@ -1,4 +1,5 @@
 import * as Oclif from '@oclif/command'
+import BaseCommand from '../../common/base-command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
 import {
@@ -17,7 +18,7 @@ import { templates } from '../../templates'
 import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 import { classNameToFileName } from '../../common/filenames'
 
-export default class Entity extends Oclif.Command {
+export default class Entity extends BaseCommand {
   public static description = 'create a new entity'
   public static flags = {
     help: Oclif.flags.help({ char: 'h' }),
@@ -27,7 +28,7 @@ export default class Entity extends Oclif.Command {
       multiple: true,
     }),
     reduces: Oclif.flags.string({
-      char: 'p',
+      char: 'r',
       description: 'events that this entity will reduce to build its state',
       multiple: true,
     }),
@@ -37,6 +38,7 @@ export default class Entity extends Oclif.Command {
 
   public async run(): Promise<void> {
     const { args, flags } = this.parse(Entity)
+    
     try {
       const fields = flags.fields || []
       const events = flags.reduces || []
