@@ -6,13 +6,12 @@ import { ShippingAddressUpdated as UpdatedCartShippingAddress } from '../events/
 import { Address } from '../common/address'
 import { CartItem } from '../common/cart-item'
 import { CartChecked } from '../events/cart-checked'
-import { UserWithEmail } from '../roles'
 
 /**
  * A cart is a temporary object where users accumulate all the items they want to buy
  */
 @Entity({
-  authorizeReadEvents: [UserWithEmail],
+  authorizeReadEvents: 'all',
 })
 export class Cart {
   public constructor(
