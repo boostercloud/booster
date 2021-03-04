@@ -3,7 +3,7 @@ import { DynamoDBStreamEvent, DynamoDBRecord } from 'aws-lambda'
 import { BoosterConfig, EventEnvelope, Logger, UUID } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { dynamoDbBatchWriteLimit, eventsStoreAttributes } from '../constants'
-import { partitionKeyForEvent } from './partition-keys'
+import { partitionKeyForEvent, partitionKeyForIndexByEntity } from './partition-keys'
 import { Converter } from 'aws-sdk/clients/dynamodb'
 import { inChunksOf, waitAndReturn } from '../pagination-helpers'
 
@@ -122,6 +122,10 @@ async function persistBatch(
             eventEnvelope.kind
           ),
           [eventsStoreAttributes.sortKey]: sortKey,
+          [eventsStoreAttributes.indexByEntity.partitionKey]: partitionKeyForIndexByEntity(
+            eventEnvelope.entityTypeName,
+            eventEnvelope.kind
+          ),
         },
       },
     })

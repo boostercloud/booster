@@ -5,7 +5,7 @@ export const eventsStoreAttributes = {
   sortKey: 'createdAt',
   indexByEntity: {
     name: (config: BoosterConfig) => config.resourceNames.eventsStore + '-index-by-entity',
-    partitionKey: 'entityTypeName',
+    partitionKey: 'entityTypeName_kind',
   },
   indexByType: {
     name: (config: BoosterConfig) => config.resourceNames.eventsStore + '-index-by-type',
@@ -32,4 +32,5 @@ export const environmentVarNames = {
   websocketAPIURL: 'BOOSTER_WEBSOCKET_API_URL',
 } as const
 
+export const dynamoDbBatchGetLimit = 100
 export const dynamoDbBatchWriteLimit = 25

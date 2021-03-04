@@ -38,7 +38,7 @@ export interface EventSearchRequest extends Envelope {
 
 export type EventFilter = EventFilterByEntity | EventFilterByType
 
-interface EventTimeFilter {
+export interface EventTimeFilter {
   from?: string
   to?: string
 }

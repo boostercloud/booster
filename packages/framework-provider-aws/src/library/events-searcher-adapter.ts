@@ -8,9 +8,9 @@ import {
   UUID,
 } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
-import { eventsStoreAttributes } from '../constants'
+import { dynamoDbBatchGetLimit, eventsStoreAttributes } from '../constants'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
-import { partitionKeyForEvent } from './partition-keys'
+import { partitionKeyForEvent, partitionKeyForIndexByEntity } from './partition-keys'
 
 export async function searchEvents(
   dynamoDB: DynamoDB.DocumentClient,
@@ -131,7 +131,7 @@ async function searchEventsByEntity(
     KeyConditionExpression: `${eventsStoreAttributes.indexByEntity.partitionKey} = :partitionKey${timeQuery.expression}`,
     ExpressionAttributeValues: {
       ...timeQuery.attributeValues,
-      ':partitionKey': entity,
+      ':partitionKey': partitionKeyForIndexByEntity(entity, 'event'),
     },
   }
 
@@ -173,12 +173,25 @@ async function findEventsDataWithKeys(
   logger: Logger,
   keys: Array<EventStoreKeys>
 ): Promise<Array<EventEnvelope>> {
-  if (keys.length < 1) {
-    return []
-  }
   // TODO: Manage pagination
-  // TODO: also, we can send, at maximum, 100 items to fetch in a BatchGetItemInput. Manage that too.
-  // Now query the table to get all data
+  const result: Array<EventEnvelope> = []
+
+  const keysBatches = inChunksOf(dynamoDbBatchGetLimit, keys)
+  logger.debug(`Performing batch get for ${keysBatches.length} batches`)
+  for (const keysBatch of keysBatches) {
+    const batchResult = await performBatchGet(dynamoDB, config, logger, keysBatch)
+    result.push(...batchResult)
+  }
+
+  return result
+}
+
+async function performBatchGet(
+  dynamoDB: DynamoDB.DocumentClient,
+  config: BoosterConfig,
+  logger: Logger,
+  keys: Array<EventStoreKeys>
+): Promise<Array<EventEnvelope>> {
   const params: DocumentClient.BatchGetItemInput = {
     RequestItems: {
       [config.resourceNames.eventsStore]: {
@@ -193,7 +206,7 @@ async function findEventsDataWithKeys(
     },
   }
 
-  logger.debug('Finding events data for keys: ', keys)
+  logger.debug('Finding events data for keys: ', keys, params)
   const result = await dynamoDB.batchGet(params).promise()
   return (result.Responses?.[config.resourceNames.eventsStore] as Array<EventEnvelope>) ?? []
 }
@@ -223,4 +236,15 @@ function convertToSearchResult(eventEnvelopes: Array<EventEnvelope>): Array<Even
       if (a.createdAt < b.createdAt) return 1
       return 0
     })
+}
+
+// TODO: Remove this and use the one being merged form PR #571
+function inChunksOf<TElement>(chunkSize: number, arr: Array<TElement>): Array<Array<TElement>> {
+  const result = []
+  if (chunkSize >= 0) {
+    for (let i = 0; i < arr.length; i += chunkSize) {
+      result.push(arr.slice(i, i + chunkSize))
+    }
+  }
+  return result
 }

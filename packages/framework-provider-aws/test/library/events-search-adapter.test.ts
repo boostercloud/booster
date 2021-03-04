@@ -14,7 +14,7 @@ import { random, date } from 'faker'
 import { DynamoDB } from 'aws-sdk'
 import { searchEvents } from '../../src/library/events-searcher-adapter'
 import { eventsStoreAttributes } from '../../src'
-import { partitionKeyForEvent } from '../../src/library/partition-keys'
+import { partitionKeyForEvent, partitionKeyForIndexByEntity } from '../../src/library/partition-keys'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import rewire = require('rewire')
 
@@ -87,7 +87,7 @@ describe('Events searcher adapter', () => {
             ScanIndexForward: false,
             KeyConditionExpression: `${eventsStoreAttributes.indexByEntity.partitionKey} = :partitionKey`,
             ExpressionAttributeValues: {
-              ':partitionKey': filter.entity,
+              ':partitionKey': partitionKeyForIndexByEntity(filter.entity, 'event'),
             },
           }
         },
