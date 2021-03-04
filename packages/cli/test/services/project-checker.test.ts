@@ -4,40 +4,38 @@ import {
     checkCurrentDirIsABoosterProject,
     checkProjectAlreadyExists,
     checkResourceExists,
+    checkCurrentDirBoosterVersion
 } from '../../src/services/project-checker'
 import { restore, replace, fake, spy, stub } from 'sinon'
-import { expect } from '../expect'
-import { oraLogger } from '../../src/services/logger'
+import { logger } from '../../src/services/logger'
 import * as fs from 'fs-extra'
 import { projectDir, ProjectInitializerConfig } from '../../src/services/project-initializer'
 import Prompter from '../../src/services/user-prompt'
+import { expect } from '../expect'
 
 describe('project checker', (): void => {
-    beforeEach(() => {
-        replace(oraLogger,'info', fake.resolves({}))
-    })
-
+   
     afterEach(() => {
         restore()
     })
 
     describe('checkCurrentDirIsABoosterProject', () => {
         it('is a Booster project', async () => {
-            replace(process,'cwd', fake.returns(path.join(process.cwd(),'test', 'fixtures', 'mock_project')))
+            replace(process, 'cwd', fake.returns(path.join(process.cwd(), 'test', 'fixtures', 'mock_project')))
             let exceptionThrown = false
             await checkCurrentDirIsABoosterProject().catch(() => exceptionThrown = true)
             expect(exceptionThrown).to.be.equal(false)
         })
 
         it('is a Booster project with bad index.ts', async () => {
-            replace(process,'cwd', fake.returns(path.join(process.cwd(),'test', 'fixtures', 'mock_project_bad_index')))
+            replace(process, 'cwd', fake.returns(path.join(process.cwd(), 'test', 'fixtures', 'mock_project_bad_index')))
             let exceptionThrown = false
             await checkCurrentDirIsABoosterProject().catch(() => exceptionThrown = true)
             expect(exceptionThrown).to.be.equal(true)
         })
 
         it('is not a Booster project', async () => {
-            replace(process,'cwd', fake.returns(path.join(process.cwd(),'test', 'fixtures')))
+            replace(process, 'cwd', fake.returns(path.join(process.cwd(), 'test', 'fixtures')))
             let exceptionThrown = false
             await checkCurrentDirIsABoosterProject().catch(() => exceptionThrown = true)
             expect(exceptionThrown).to.be.equal(true)
@@ -46,21 +44,21 @@ describe('project checker', (): void => {
 
     describe('checkItIsABoosterProject', (): void => {
         it('is a Booster project', async () => {
-            const projectPath = path.join(process.cwd(),'test', 'fixtures', 'mock_project')
+            const projectPath = path.join(process.cwd(), 'test', 'fixtures', 'mock_project')
             let exceptionThrown = false
             await checkItIsABoosterProject(projectPath).catch(() => exceptionThrown = true)
             expect(exceptionThrown).to.be.equal(false)
         })
 
         it('is a Booster project with bad index.ts', async () => {
-            const projectPath = path.join(process.cwd(),'test', 'fixtures', 'mock_project_bad_index')
+            const projectPath = path.join(process.cwd(), 'test', 'fixtures', 'mock_project_bad_index')
             let exceptionThrown = false
             await checkItIsABoosterProject(projectPath).catch(() => exceptionThrown = true)
             expect(exceptionThrown).to.be.equal(true)
         })
 
         it('is not a Booster project', async () => {
-            const projectPath = path.join(process.cwd(),'test', 'fixtures')
+            const projectPath = path.join(process.cwd(), 'test', 'fixtures')
             let exceptionThrown = false
             await checkItIsABoosterProject(projectPath).catch(() => exceptionThrown = true)
             expect(exceptionThrown).to.be.equal(true)
@@ -122,6 +120,10 @@ describe('project checker', (): void => {
     })
 
     describe('checkResourceExists', (): void => {
+        beforeEach(() => {
+            replace(logger, 'info', fake.resolves({}))
+        })
+
         it('should print info message and do nothing if resource doesn\'t exist', async () => {
             const resourcePath = path.join('test', 'fixtures', 'mock_project', 'src', 'entities')
             const existsSyncStub = stub(fs, 'existsSync')
@@ -130,7 +132,7 @@ describe('project checker', (): void => {
 
             await checkResourceExists('TestResource', resourcePath, '.ts')
 
-            expect(oraLogger.info).to.have.been.calledWithMatch('Checking if resource already exists...')
+            expect(logger.info).to.have.been.calledWithMatch('Checking if resource already exists...')
             expect(fs.existsSync).to.have.been.calledWithMatch(resourcePath)
             expect(Prompter.confirmPrompt).not.to.have.been.called
         })
@@ -168,6 +170,145 @@ describe('project checker', (): void => {
             await checkResourceExists('TestResource', resourcePath, '.ts')
 
             expect(fs.removeSync).to.have.been.calledWithMatch(resourcePath)
+        })
+    })
+
+    describe('checkCurrentDirBoosterVersion', (): void => {
+        
+        beforeEach(() => {
+            replace(logger, 'info', fake.resolves({}))
+        })
+
+        describe('inside a Booster project', () => {
+            //project version in mocked package.json is 1.11.2
+            beforeEach(() => {
+                replace(process, 'cwd', fake.returns(path.join(process.cwd(), 'test', 'fixtures', 'mock_project')))
+            })
+
+            it('versions match', async () => {
+                const userAgent = '@boostercloud/cli/1.11.2 darwin-x64 node-v12.10.0'
+                let exceptionThrown = false
+                await checkCurrentDirBoosterVersion(userAgent).catch(() => exceptionThrown = true)
+                expect(exceptionThrown).to.be.equal(false)
+                expect(logger.info).have.not.been.called
+            })
+
+            it('versions match on linux', async () => {
+                const userAgent = '@boostercloud/cli/1.11.2 linux-x64 node-v12.10.0'
+                let exceptionThrown = false
+                await checkCurrentDirBoosterVersion(userAgent).catch(() => exceptionThrown = true)
+                expect(exceptionThrown).to.be.equal(false)
+                expect(logger.info).have.not.been.called
+            })
+
+            it('versions differs in fix number with cli version greater than project version', async () => {
+                const userAgent = '@boostercloud/cli/1.11.3 darwin-x64 node-v12.10.0'
+                let exceptionThrown = false
+                await checkCurrentDirBoosterVersion(userAgent).catch(() => exceptionThrown = true)
+                expect(exceptionThrown).to.be.equal(false)
+                expect(logger.info).have.been.calledWithMatch(/WARNING: Project Booster version differs in the 'fix' section/)
+            })
+    
+            it('versions differs in fix number with cli version lower than project version', async () => {
+                const userAgent = '@boostercloud/cli/1.11.0 darwin-x64 node-v12.10.0'
+                let exceptionThrown = false
+                await checkCurrentDirBoosterVersion(userAgent).catch(() => exceptionThrown = true)
+                expect(exceptionThrown).to.be.equal(false)
+                expect(logger.info).have.been.calledWithMatch(/WARNING: Project Booster version differs in the 'fix' section/)
+            })
+    
+            it('cli lower than project version in <feature> section', async () => {
+                const userAgent = '@boostercloud/cli/1.10.2 darwin-x64 node-v12.10.0'
+                let exceptionThrown = false
+                let exceptionMessage = ''
+                await checkCurrentDirBoosterVersion(userAgent).catch((e) => {
+                    exceptionThrown = true
+                    exceptionMessage = e.message
+                })
+                expect(exceptionThrown).to.be.equal(true)
+                expect(exceptionMessage).to.contain('Please upgrade your @boostercloud/cli to the same version with "npm')
+                expect(logger.info).have.not.been.called
+            })
+    
+            it('cli lower than project version in <breaking> section', async () => {
+                const userAgent = '@boostercloud/cli/0.11.2 darwin-x64 node-v12.10.0'
+                let exceptionThrown = false
+                let exceptionMessage = ''
+                await checkCurrentDirBoosterVersion(userAgent).catch((e) => {
+                    exceptionThrown = true
+                    exceptionMessage = e.message
+                })
+                expect(exceptionThrown).to.be.equal(true)
+                expect(exceptionMessage).to.contain('Please upgrade your @boostercloud/cli to the same version with "npm')
+                expect(logger.info).have.not.been.called
+            })
+        
+            it('cli version higher than project version in <feature> section', async () => {
+                const userAgent = '@boostercloud/cli/1.12.2 darwin-x64 node-v12.10.0'
+                let exceptionThrown = false
+                let exceptionMessage = ''
+                await checkCurrentDirBoosterVersion(userAgent).catch((e) => {
+                    exceptionThrown = true
+                    exceptionMessage = e.message
+                })
+                expect(exceptionThrown).to.be.equal(true)
+                expect(exceptionMessage).to.contain('Please upgrade your project Booster dependencies')
+                expect(logger.info).have.not.been.called
+            })
+
+            it('cli version higher than project version in <breaking> section', async () => {
+                const userAgent = '@boostercloud/cli/2.11.2 darwin-x64 node-v12.10.0'
+                let exceptionThrown = false
+                let exceptionMessage = ''
+                await checkCurrentDirBoosterVersion(userAgent).catch((e) => {
+                    exceptionThrown = true
+                    exceptionMessage = e.message
+                })
+                expect(exceptionThrown).to.be.equal(true)
+                expect(exceptionMessage).to.contain('Please upgrade your project Booster dependencies')
+                expect(logger.info).have.not.been.called
+            })
+    
+            it('cli version wrong length shorter', async () => {
+                const userAgent = '@boostercloud/cli/1.11 darwin-x64 node-v12.10.0'
+                let exceptionThrown = false
+                let exceptionMessage = ''
+                await checkCurrentDirBoosterVersion(userAgent).catch((e) => {
+                    exceptionThrown = true
+                    exceptionMessage = e.message
+                })
+                expect(exceptionThrown).to.be.equal(true)
+                expect(exceptionMessage).to.contain('Versions must follow semantic convention X.Y.Z')
+                expect(logger.info).have.not.been.called
+            })
+    
+            it('cli version wrong length longer', async () => {
+                const userAgent = '@boostercloud/cli/1.11.2.1 darwin-x64 node-v12.10.0'
+                let exceptionThrown = false
+                let exceptionMessage = ''
+                await checkCurrentDirBoosterVersion(userAgent).catch((e) => {
+                    exceptionThrown = true
+                    exceptionMessage = e.message
+                })
+                expect(exceptionThrown).to.be.equal(true)
+                expect(exceptionMessage).to.contain('Versions must follow semantic convention X.Y.Z')
+                expect(logger.info).have.not.been.called
+            })
+        })
+        
+
+        it('outside a Booster project', async () => {
+            replace(process, 'cwd', fake.returns(path.join(process.cwd(), 'test', 'fixtures')))
+            const userAgent = '@boostercloud/cli/1.11.2 darwin-x64 node-v12.10.0'
+            let exceptionThrown = false
+            let exceptionMessage = ''
+            await checkCurrentDirBoosterVersion(userAgent).catch((e) => {
+                exceptionThrown = true
+                exceptionMessage = e.message
+            })
+            expect(exceptionThrown).to.be.equal(true)
+            expect(exceptionMessage).to.contain('There was an error when recognizing the application')
+            expect(logger.info).have.not.been.called
         })
     })
 })

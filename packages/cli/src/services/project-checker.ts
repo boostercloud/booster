@@ -4,8 +4,9 @@ import { projectDir, ProjectInitializerConfig } from './project-initializer'
 import Brand from '../common/brand'
 import { filePath, getResourceType } from './generator'
 import { classNameToFileName } from '../common/filenames'
-import Prompter from './user-prompt'
-import { oraLogger } from './logger'
+import { logger } from '../services/logger'
+import Prompter from '../services/user-prompt'
+import Semver from '../services/semver'
 
 function checkIndexFileIsBooster(indexFilePath: string): void {
   const contents = readFileSync(indexFilePath)
@@ -55,7 +56,7 @@ export async function checkResourceExists(name: string, placementDir: string, ex
   const resourceName = classNameToFileName(name)
   const resourceType = getResourceType(placementDir)
 
-  oraLogger.info(Brand.mellancholize('Checking if resource already exists...'))
+  logger.info(Brand.mellancholize('Checking if resource already exists...'))
 
   if (resourceExists) {
     await Prompter.confirmPrompt({
@@ -67,5 +68,62 @@ export async function checkResourceExists(name: string, placementDir: string, ex
         )
       removeSync(resourcePath)
     })
+  }
+}
+
+export async function checkCurrentDirBoosterVersion(userAgent: string): Promise<void> {
+  return checkBoosterVersion(userAgent, process.cwd())
+}
+
+async function checkBoosterVersion(userAgent: string, projectPath: string): Promise<void> {
+  const projectVersion = await getBoosterVersion(projectPath)
+  const cliVersion = userAgent.split(' ')[0].split('/')[2]
+  await compareVersionsAndDisplayMessages(cliVersion, projectVersion)
+}
+
+async function getBoosterVersion(projectPath: string): Promise<string> {
+  const projectAbsolutePath = path.resolve(projectPath)
+  try {
+    const packageJsonContents = require(path.join(projectAbsolutePath, 'package.json'))
+    const version = packageJsonContents.dependencies['@boostercloud/framework-core']
+    const versionParts = version.replace('^', '').replace('.tgz', '').split('-')
+    return versionParts[versionParts.length-1]    
+  } catch (e) {
+    throw new Error(
+      `There was an error when recognizing the application. Make sure you are in the root path of a Booster project:\n${e.message}`
+    )
+  }
+}
+
+class HigherCliVersionError extends Error {
+  constructor(public cliVersion: string, public projectVersion: string, public section: string) {
+    super(`CLI version ${cliVersion} is higher than your project Booster version ${projectVersion} in the '${section}' section. Please upgrade your project Booster dependencies.`)
+  }
+}
+
+class LowerCliVersionError extends Error {
+  constructor(public cliVersion: string, public projectVersion: string, public section: string) {
+    super(`CLI version ${cliVersion} is lower than your project Booster version ${projectVersion}. Please upgrade your @boostercloud/cli to the same version with "npm install -g @boostercloud/cli@${projectVersion}"`)
+  }
+}
+
+async function compareVersionsAndDisplayMessages(cliVersion: string, projectVersion: string): Promise<void> {
+  const cliSemVersion = new Semver(cliVersion)
+  const projectSemVersion = new Semver(projectVersion)
+  if (cliSemVersion.equals(projectSemVersion)) { return }
+  if (cliSemVersion.equalsInBreakingSection(projectSemVersion)) {
+    if (cliSemVersion.equalsInFeatureSection(projectSemVersion)) {
+      if (!cliSemVersion.equalsInFixSection(projectSemVersion)) { //differences in the 'fix' part
+        logger.info(`WARNING: Project Booster version differs in the 'fix' section. CLI version: ${cliVersion}. Project Booster version: ${projectVersion}`)
+      }
+    } else if (cliSemVersion.greaterInFeatureSectionThan(projectSemVersion)) { //cli higher than project in 'feat' section
+      throw new HigherCliVersionError(cliVersion, projectVersion, 'feature')
+    } else { //cli lower than project in 'feat' section
+      throw new LowerCliVersionError(cliVersion, projectVersion, 'feature')
+    }
+  } else if (cliSemVersion.greaterInBreakingSectionThan(projectSemVersion)) { //cli higher than project in 'breaking' section
+    throw new HigherCliVersionError(cliVersion, projectVersion, 'breaking')
+  } else { //cli lower than project in 'breaking' section
+    throw new LowerCliVersionError(cliVersion, projectVersion, 'breaking')
   }
 }

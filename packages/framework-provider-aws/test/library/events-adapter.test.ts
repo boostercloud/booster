@@ -2,10 +2,10 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { expect } from '../expect'
 import * as Library from '../../src/library/events-adapter'
-import { restore, fake, match } from 'sinon'
+import { restore, fake, match, createStubInstance } from 'sinon'
 import { EventEnvelope, BoosterConfig, UUID, Logger } from '@boostercloud/framework-types'
 import { DynamoDBStreamEvent } from 'aws-lambda'
-import { createStubInstance } from 'sinon'
+
 import { DynamoDB } from 'aws-sdk'
 import { eventsStoreAttributes } from '../../src'
 import { partitionKeyForEvent } from '../../src/library/partition-keys'
@@ -129,6 +129,48 @@ describe('the events-adapter', () => {
           RequestItems: match.has(streamName, match.has('length', 2)),
         })
       )
+    })
+
+    it('publishes the eventEnvelopes passed via parameter in batch of 25 elements', async () => {
+      const config = new BoosterConfig('test')
+      config.appName = 'test-app'
+      const makeEvent = (n: string): EventEnvelope => ({
+        version: 1,
+        entityID: 'id',
+        kind: 'event',
+        value: {
+          id: n,
+        },
+        typeName: 'EventName',
+        entityTypeName: 'EntityName',
+        requestID: 'requestID',
+        createdAt: 'once',
+      })
+      const eventEnvelopes = Array.from({ length: 51 }, (_, n) => makeEvent(n.toString()))
+
+      const batches: Array<Array<string>> = []
+
+      const fakeBatchWrite = fake((params: DynamoDB.DocumentClient.BatchWriteItemInput) => {
+        const batch: Array<string> = []
+        params.RequestItems[config.resourceNames.eventsStore].forEach((value) => {
+          batch.push(value.PutRequest?.Item?.value?.id ?? '-1')
+        })
+        batches.push(batch)
+        return {
+          promise: fake.resolves(''),
+        }
+      })
+
+      const fakeDynamo: DocumentClient = { batchWrite: fakeBatchWrite } as any
+
+      await Library.storeEvents(fakeDynamo, eventEnvelopes, config, fakeLogger)
+
+      for (const batch of batches) {
+        // chai-arrays doesn't have typings, so using with `any`
+        const expectBatch = expect(batch) as any
+        expectBatch.to.be.sorted((prev: number, next: number) => prev < next)
+      }
+      expect(fakeBatchWrite).to.be.calledThrice
     })
   })
 })

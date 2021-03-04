@@ -1,5 +1,5 @@
 import { countEventItems, countSnapshotItems, queryEvents, graphQLClient, waitForIt } from '../utils'
-import { expect } from 'chai'
+import { expect } from '../../../helper/expect'
 import gql from 'graphql-tag'
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
@@ -55,6 +55,64 @@ describe('events', async () => {
     expect(latestEvent[0].kind).to.be.equal('event')
     expect(latestEvent[0].entityTypeName).to.be.equal('Cart')
     expect(latestEvent[0].typeName).to.be.equal('CartItemChanged')
+  })
+
+  it('should create multiple events in the event store in batches', async () => {
+    const eventsCount = await waitForIt(
+      () => countEventItems(),
+      (eventsCount) => eventsCount > 0
+    )
+
+    const mockCartId = random.uuid()
+    const eventsToCreate = 26 // Using 26 because batches are of 25, making sure the batching gets triggered
+    const response = await client.mutate({
+      variables: {
+        cartId: mockCartId,
+        itemsCount: eventsToCreate,
+      },
+      mutation: gql`
+        mutation ChangeMultipleCartItems($cartId: ID!, $itemsCount: Float!) {
+          ChangeMultipleCartItems(input: { cartId: $cartId, itemsCount: $itemsCount })
+        }
+      `,
+    })
+
+    expect(response).not.to.be.null
+    expect(response?.data?.ChangeMultipleCartItems).to.be.true
+
+    // Verify number of events
+    const expectedEventItemsCount = eventsCount + 1
+    await waitForIt(
+      () => countEventItems(),
+      (newEventsCount) => {
+        console.log('Current count', newEventsCount, '\nExpected', expectedEventItemsCount)
+        return newEventsCount >= expectedEventItemsCount
+      }
+    )
+
+    // Verify latest events
+    const latestEvents = await queryEvents(`Cart-${mockCartId}-event`)
+    const eventProductIds: Array<number> = []
+    expect(latestEvents).not.to.be.null
+
+    // Ensure that
+    for (const event of latestEvents) {
+      expect(event.entityTypeName_entityID_kind).to.be.equal(`Cart-${mockCartId}-event`)
+      const productIdNumber = parseInt(event.value.productId)
+      expect(productIdNumber).to.be.gte(0)
+      expect(productIdNumber).to.be.lessThan(eventsCount)
+      expect(productIdNumber).to.be.lessThan(eventsCount)
+      expect(event.value.cartId).to.be.equal(mockCartId)
+      expect(event.value.quantity).to.be.equal(1)
+      expect(event.kind).to.be.equal('event')
+      expect(event.entityTypeName).to.be.equal('Cart')
+      expect(event.typeName).to.be.equal('CartItemChanged')
+      eventProductIds.push(productIdNumber)
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const expectEvents = expect(eventProductIds) as any
+    expectEvents.to.be.sorted((prev: number, next: number) => prev > next)
   })
 
   it('should generate a snapshot after 5 events with the same entity id', async () => {

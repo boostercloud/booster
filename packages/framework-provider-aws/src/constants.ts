@@ -23,3 +23,5 @@ export const environmentVarNames = {
   restAPIURL: 'BOOSTER_REST_API_URL',
   websocketAPIURL: 'BOOSTER_WEBSOCKET_API_URL',
 } as const
+
+export const dynamoDbBatchWriteLimit = 25

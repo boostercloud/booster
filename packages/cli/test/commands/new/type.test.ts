@@ -44,10 +44,16 @@ describe('new', (): void => {
     beforeEach(() => {
       stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
       replace(fs, 'outputFile', fake.resolves({}))
+      replace(ProjectChecker,'checkCurrentDirBoosterVersion', fake.resolves({}))
     })
 
     afterEach(() => {
       restore()
+    })
+
+    it('init calls checkCurrentDirBoosterVersion', async () => {
+      await new Type([], {} as IConfig).init()
+      expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
     })
 
     describe('Created correctly', () => {

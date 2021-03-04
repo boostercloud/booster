@@ -1,4 +1,5 @@
-import { Command, flags } from '@oclif/command'
+import { flags } from '@oclif/command'
+import BaseCommand from '../common/base-command'
 import { cleanProject } from '../services/config-service'
 import { checkCurrentDirIsABoosterProject } from '../services/project-checker'
 import { Script } from '../common/script'
@@ -13,7 +14,7 @@ const runTasks = async (
     .info('Clean complete!')
     .done()
 
-export default class Clean extends Command {
+export default class Clean extends BaseCommand {
   public static description = 'Clean the current application as configured in your `index.ts` file.'
 
   public static flags = {
