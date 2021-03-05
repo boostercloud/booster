@@ -8,7 +8,7 @@ import { DynamoDBStreamEvent } from 'aws-lambda'
 
 import { DynamoDB } from 'aws-sdk'
 import { eventsStoreAttributes } from '../../src'
-import { partitionKeyForEvent } from '../../src/library/partition-keys'
+import { partitionKeyForEvent } from '../../src/library/keys-helper'
 import { DocumentClient, Converter } from 'aws-sdk/clients/dynamodb'
 
 const fakeLogger: Logger = {

@@ -1,7 +1,7 @@
 import { BoosterConfig, Logger, SubscriptionEnvelope } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { subscriptionsStoreAttributes } from '../constants'
-import { sortKeyForSubscription } from './partition-keys'
+import { sortKeyForSubscription } from './keys-helper'
 
 export interface SubscriptionIndexRecord {
   [subscriptionsStoreAttributes.partitionKey]: string

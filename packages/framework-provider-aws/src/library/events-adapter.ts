@@ -3,7 +3,12 @@ import { DynamoDBStreamEvent, DynamoDBRecord } from 'aws-lambda'
 import { BoosterConfig, EventEnvelope, Logger, UUID } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { dynamoDbBatchWriteLimit, eventsStoreAttributes } from '../constants'
-import { partitionKeyForEvent, partitionKeyForIndexByEntity } from './partition-keys'
+import {
+  encodeEventStoreSortingKey,
+  modifyEventsDecodingSortingKeys,
+  partitionKeyForEvent,
+  partitionKeyForIndexByEntity,
+} from './keys-helper'
 import { Converter } from 'aws-sdk/clients/dynamodb'
 import { inChunksOf, waitAndReturn } from '../pagination-helpers'
 
@@ -46,7 +51,9 @@ export async function readEntityEventsSince(
     `[EventsAdapter#readEntityEventsSince] Loaded events for entity ${entityTypeName} with ID ${entityID} with result:`,
     result.Items
   )
-  return result.Items as Array<EventEnvelope>
+  const events = result.Items as Array<EventEnvelope>
+  modifyEventsDecodingSortingKeys(...events)
+  return events
 }
 
 export async function readEntityLatestSnapshot(
@@ -75,7 +82,9 @@ export async function readEntityLatestSnapshot(
       `[EventsAdapter#readEntityLatestSnapshot] Snapshot found for entity ${entityTypeName} with ID ${entityID}:`,
       snapshot
     )
-    return snapshot as EventEnvelope
+    const foundSnapshot = snapshot as EventEnvelope
+    modifyEventsDecodingSortingKeys(foundSnapshot)
+    return foundSnapshot
   } else {
     logger.debug(
       `[EventsAdapter#readEntityLatestSnapshot] No snapshot found for entity ${entityTypeName} with ID ${entityID}.`
@@ -121,7 +130,7 @@ async function persistBatch(
             eventEnvelope.entityID,
             eventEnvelope.kind
           ),
-          [eventsStoreAttributes.sortKey]: sortKey,
+          [eventsStoreAttributes.sortKey]: encodeEventStoreSortingKey(new Date().toISOString()),
           [eventsStoreAttributes.indexByEntity.partitionKey]: partitionKeyForIndexByEntity(
             eventEnvelope.entityTypeName,
             eventEnvelope.kind

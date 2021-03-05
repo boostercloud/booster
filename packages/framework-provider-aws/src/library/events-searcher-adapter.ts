@@ -10,7 +10,7 @@ import {
 import { DynamoDB } from 'aws-sdk'
 import { dynamoDbBatchGetLimit, eventsStoreAttributes } from '../constants'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
-import { partitionKeyForEvent, partitionKeyForIndexByEntity } from './partition-keys'
+import { decodeEventStoreSortingKey, partitionKeyForEvent, partitionKeyForIndexByEntity } from './keys-helper'
 
 export async function searchEvents(
   dynamoDB: DynamoDB.DocumentClient,
@@ -227,7 +227,7 @@ function convertToSearchResult(eventEnvelopes: Array<EventEnvelope>): Array<Even
         entityID: eventEnvelope.entityID,
         requestID: eventEnvelope.requestID,
         user: eventEnvelope.currentUser,
-        createdAt: eventEnvelope.createdAt,
+        createdAt: decodeEventStoreSortingKey(eventEnvelope.createdAt),
         value: eventEnvelope.value as EventInterface,
       }
     })

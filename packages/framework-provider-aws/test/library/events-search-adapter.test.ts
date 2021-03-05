@@ -14,7 +14,7 @@ import { random, date } from 'faker'
 import { DynamoDB } from 'aws-sdk'
 import { searchEvents } from '../../src/library/events-searcher-adapter'
 import { eventsStoreAttributes } from '../../src'
-import { partitionKeyForEvent, partitionKeyForIndexByEntity } from '../../src/library/partition-keys'
+import { partitionKeyForEvent, partitionKeyForIndexByEntity } from '../../src/library/keys-helper'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import rewire = require('rewire')
 
