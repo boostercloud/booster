@@ -96,10 +96,6 @@ export class BoosterConfig {
     return Math.max(...migrations.keys())
   }
 
-  public validate(): void {
-    this.validateAllMigrations()
-  }
-
   public get provider(): ProviderLibrary {
     if (!this._provider) throw new Error('It is required to set a valid provider runtime in your configuration files')
     return this._provider
@@ -140,25 +136,6 @@ export class BoosterConfig {
 
   public set tokenVerifier(tokenVerifier: { issuer: string; jwksUri: string } | undefined) {
     this._tokenVerifier = tokenVerifier
-  }
-
-  private validateAllMigrations(): void {
-    for (const conceptName in this.migrations) {
-      this.validateConceptMigrations(conceptName, this.migrations[conceptName])
-    }
-  }
-
-  private validateConceptMigrations(conceptName: string, migrations: Map<number, MigrationMetadata>): void {
-    // Check that migrations are defined consecutively. In other words, there are no gaps between the version numbers
-    const currentVersion = this.currentVersionFor(conceptName)
-    for (let toVersion = 2; toVersion <= currentVersion; toVersion++) {
-      if (!migrations.has(toVersion)) {
-        throw new Error(
-          `Migrations for '${conceptName}' are invalid: they are missing a migration with toVersion=${toVersion}. ` +
-            `There must be a migration for '${conceptName}' for every version in the range [2..${currentVersion}]`
-        )
-      }
-    }
   }
 }
 

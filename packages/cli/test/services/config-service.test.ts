@@ -21,9 +21,8 @@ describe('configService', () => {
   })
 
   describe('compileProject', () => {
-
     beforeEach(() => {
-      replace(childProcessPromise,'exec', fake.resolves({}))
+      replace(childProcessPromise, 'exec', fake.resolves({}))
     })
 
     it('runs the npm command', async () => {
@@ -33,9 +32,8 @@ describe('configService', () => {
   })
 
   describe('cleanProject', () => {
-
     beforeEach(() => {
-      replace(childProcessPromise,'exec', fake.resolves({}))
+      replace(childProcessPromise, 'exec', fake.resolves({}))
     })
 
     it('runs the npm command', async () => {
