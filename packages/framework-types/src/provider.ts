@@ -8,7 +8,7 @@ import {
   GraphQLRequestEnvelopeError,
   ScheduledCommandEnvelope,
 } from './envelope'
-import { BoosterConfig } from './config'
+import { BoosterConfig } from './booster-config'
 import { Logger } from './logger'
 import { ReadModelInterface, UUID } from './concepts'
 import { FilterFor } from './searcher'

@@ -10,6 +10,7 @@ import {
 import { Importer } from './importer'
 import { buildLogger } from './booster-logger'
 import { fetchEntitySnapshot } from './entity-snapshot-fetcher'
+import { ConfigValidator } from './services/config-validator'
 
 /**
  * Static (singleton) class that provides access to the logger, the config,
@@ -57,7 +58,7 @@ export class BoosterApp {
     this.config.userProjectRootPath = projectRootPath
     this.logger = buildLogger(this.config.logLevel)
     Importer.importUserProjectFiles(codeRootPath)
-    this.config.validate()
+    ConfigValidator.validate(this.config)
   }
 
   /**

@@ -3,8 +3,6 @@ import { expect } from '../expect'
 import { fancy } from 'fancy-test'
 import { restore, fake, replace } from 'sinon'
 import { ProviderLibrary, Logger, BoosterConfig } from '@boostercloud/framework-types'
-import { test } from '@oclif/test'
-import * as Deploy from '../../src/commands/deploy'
 import * as providerService from '../../src/services/provider-service'
 import { oraLogger } from '../../src/services/logger'
 import { IConfig } from '@oclif/config'
@@ -83,38 +81,27 @@ describe('deploy', () => {
     })
   })
 
-  describe('run', () => {
-    context('when no environment provided', async () => {
-      test
-        .stdout()
-        .command(['deploy'])
-        .it('shows no environment provided error', (ctx) => {
-          expect(ctx.stdout).to.match(/No environment set/)
-        })
-    })
-  })
-
   describe('deploy class', () => {
     beforeEach(() => {
       const config = new BoosterConfig('fake_environment')
-      replace(configService,'compileProjectAndLoadConfig', fake.resolves(config))
-      replace(providerService,'deployToCloudProvider', fake.resolves({}))
-      replace(configService,'createDeploymentSandbox', fake.returns('fake/path'))
-      replace(configService,'cleanDeploymentSandbox', fake.resolves({}))
-      replace(projectChecker,'checkCurrentDirBoosterVersion', fake.resolves({}))
-      replace(oraLogger,'fail', fake.resolves({}))
+      replace(configService, 'compileProjectAndLoadConfig', fake.resolves(config))
+      replace(providerService, 'deployToCloudProvider', fake.resolves({}))
+      replace(configService, 'createDeploymentSandbox', fake.returns('fake/path'))
+      replace(configService, 'cleanDeploymentSandbox', fake.resolves({}))
+      replace(projectChecker, 'checkCurrentDirBoosterVersion', fake.resolves({}))
+      replace(oraLogger, 'fail', fake.resolves({}))
       replace(oraLogger, 'info', fake.resolves({}))
       replace(oraLogger, 'start', fake.resolves({}))
       replace(oraLogger, 'succeed', fake.resolves({}))
     })
 
     it('init calls checkCurrentDirBoosterVersion', async () => {
-      await new Deploy.default([], {} as IConfig).init()
+      await new deploy.default([], {} as IConfig).init()
       expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
     })
 
     it('without flags', async () => {
-      await new Deploy.default([], {} as IConfig).run()
+      await new deploy.default([], {} as IConfig).run()
 
       expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
       expect(providerService.deployToCloudProvider).to.have.not.been.called
@@ -125,7 +112,7 @@ describe('deploy', () => {
       let exceptionThrown = false
       let exceptionMessage = ''
       try {
-        await new Deploy.default(['-e'], {} as IConfig).run()
+        await new deploy.default(['-e'], {} as IConfig).run()
       } catch (e) {
         exceptionThrown = true
         exceptionMessage = e.message
@@ -140,7 +127,7 @@ describe('deploy', () => {
       let exceptionThrown = false
       let exceptionMessage = ''
       try {
-        await new Deploy.default(['--environment'], {} as IConfig).run()
+        await new deploy.default(['--environment'], {} as IConfig).run()
       } catch (e) {
         exceptionThrown = true
         exceptionMessage = e.message
@@ -152,10 +139,9 @@ describe('deploy', () => {
     })
 
     describe('inside a booster project', () => {
-
       it('entering correct environment', async () => {
-        await new Deploy.default(['-e','fake_environment'], {} as IConfig).run()
-  
+        await new deploy.default(['-e', 'fake_environment'], {} as IConfig).run()
+
         expect(configService.compileProjectAndLoadConfig).to.have.been.called
         expect(providerService.deployToCloudProvider).to.have.been.called
         expect(oraLogger.info).to.have.been.calledWithMatch('Deployment complete!')
@@ -165,8 +151,8 @@ describe('deploy', () => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Deploy.default(['-e','fake_environment','--nonexistingoption'], {} as IConfig).run()
-        } catch(e) {
+          await new deploy.default(['-e', 'fake_environment', '--nonexistingoption'], {} as IConfig).run()
+        } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -176,7 +162,6 @@ describe('deploy', () => {
         expect(providerService.deployToCloudProvider).to.have.not.been.called
         expect(oraLogger.info).to.have.not.been.calledWithMatch('Deployment complete!')
       })
-
     })
   })
 })
