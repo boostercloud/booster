@@ -6,7 +6,7 @@ import gql from 'graphql-tag'
 import { expect } from 'chai'
 import * as chai from 'chai'
 import { createPassword } from '../helper/auth-helper'
-import { sleep } from '../helper/sleep'
+import { sleep, waitForIt } from '../helper/sleep'
 import { EventSearchResponse, EventTimeFilter } from '@boostercloud/framework-types'
 chai.use(require('chai-as-promised'))
 
@@ -236,7 +236,7 @@ describe('Events end-to-end tests', () => {
         })
       })
 
-      context.only('when doing a query by type', () => {
+      context('when doing a query by type', () => {
         context('with no time filters', () => {
           it('returns the expected events in the right order', async () => {
             const result = await queryByType(anonymousClient, 'CartItemChanged')
@@ -279,8 +279,49 @@ describe('Events end-to-end tests', () => {
         })
       })
     })
-    describe('the result of involving many events', () => {
-      context('when doing a query that would return 200 events', () => {})
+    describe('the result of the queries involving many events', () => {
+      let mockCartId: string
+      const numberOfProvisionedEvents = 150
+
+      beforeEach(async () => {
+        const mutationPromises: Array<Promise<unknown>> = []
+        mockCartId = random.uuid()
+        for (let i = 0; i < numberOfProvisionedEvents; i++) {
+          mutationPromises.push(
+            anonymousClient.mutate({
+              variables: {
+                cartId: mockCartId,
+                productId: random.uuid(),
+                quantity: 1,
+              },
+              mutation: gql`
+                mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+                  ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+                }
+              `,
+            })
+          )
+        }
+        await Promise.all(mutationPromises)
+      })
+      context('when doing a query that would return many (150) events', () => {
+        it('returns the expected result', async () => {
+          console.log(mockCartId)
+          const result = await waitForIt(
+            () => queryByEntity(anonymousClient, 'Cart', undefined, mockCartId),
+            (result) => {
+              return result.data['eventsByEntity'].length === numberOfProvisionedEvents
+            }
+          )
+          const events: Array<EventSearchResponse> = result.data['eventsByEntity']
+          expect(events.length).to.be.equal(numberOfProvisionedEvents)
+          checkOrderAndStructureOfEvents(events)
+          for (const event of events) {
+            expect(event.type).to.be.equal('CartItemChanged')
+            expect(event.entityID).to.be.equal(mockCartId)
+          }
+        })
+      })
     })
   })
 })
