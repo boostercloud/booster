@@ -9,3 +9,7 @@ export {
 } from '@boostercloud/framework-core'
 
 Booster.start(__dirname)
+
+//Booster.config.projections['Cart'][0].hasBeenProjected = true
+console.log('///// PROJECTIONS /////')
+console.log(Booster.config.projections)

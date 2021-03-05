@@ -23,6 +23,7 @@ export class ReadModelStore {
     this.logger = logger
   }
 
+  // What about sending 'projections' as a parameter? That would increase performance
   public async project(entitySnapshotEnvelope: EventEnvelope): Promise<void> {
     const projections = this.config.projections[entitySnapshotEnvelope.entityTypeName]
     if (!projections) {

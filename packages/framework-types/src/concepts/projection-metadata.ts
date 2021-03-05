@@ -5,6 +5,7 @@ export interface ProjectionMetadata {
   class: Class<any>
   methodName: string
   joinKey: string
+  hasBeenProjected?: boolean
 }
 
 export type ProjectionResult<TReadModel> = TReadModel | ReadModelAction
