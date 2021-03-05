@@ -14,6 +14,7 @@ import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { FilteredReadModelPubSub, ReadModelPubSub } from './services/pub-sub/read-model-pub-sub'
 import { GraphQLResolverContext } from './services/graphql/common'
 import { ExecutionResult } from 'graphql/execution/execute'
+import { Promises } from './helpers/promise'
 
 export class BoosterSubscribersNotifier {
   private readonly graphQLSchema: GraphQLSchema
@@ -34,7 +35,7 @@ export class BoosterSubscribersNotifier {
       )
 
       const pubSub = this.getPubSub(readModelEnvelopes)
-      await Promise.allSettled(subscriptions.map(this.runSubscriptionAndNotify.bind(this, pubSub)))
+      await Promises.allSettledAndFulfilled(subscriptions.map(this.runSubscriptionAndNotify.bind(this, pubSub)))
     } catch (e) {
       this.logger.error(e)
     }
