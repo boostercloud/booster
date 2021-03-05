@@ -142,15 +142,22 @@ describe('Events end-to-end tests', () => {
         }
         eventsProvisionedFinishedAt = new Date()
       })
+
       context('when doing a query by entity', () => {
         context('with no time filters', () => {
           it('returns the expected events in the right order', async () => {
             const result = await queryByEntity(anonymousClient, 'Cart')
-            const lastTenEvents: Array<EventSearchResponse> = result.data['eventsByEntity'].slice(0, 10)
-            expect(lastTenEvents.length).to.be.equal(10)
-            checkOrderAndStructureOfEvents(lastTenEvents)
+            // As we are querying by just Entity, we will get the events we provisioned plus others (possible MANY others)
+            // with different IDs. The only things we can check are:
+            // - That, at least, we have "numberOfProvisionedEvents" events
+            // - The structure is the expected one
+            // - They came sorted by "createdAt" in descending order.
+            const events: Array<EventSearchResponse> = result.data['eventsByEntity'].slice(0, numberOfProvisionedEvents)
+            expect(events.length).to.be.equal(numberOfProvisionedEvents)
+            checkOrderAndStructureOfEvents(events)
           })
         })
+
         context('with time filters', () => {
           it('returns the expected events in the right order', async () => {
             // Fetch events with a time filter that goes from 1 second before the provisioning started to 1 seconds
@@ -159,7 +166,6 @@ describe('Events end-to-end tests', () => {
             //
             // The "one second before and after" is to leave enough room for possible misalignment between the
             // clocks (remember we are using the ISO format, so we can forget about timezones and all that complicated stuff)
-
             const from = new Date(eventsProvisionedStartedAt)
             from.setSeconds(from.getSeconds() - 1)
             const to = new Date(eventsProvisionedFinishedAt)
@@ -169,13 +175,13 @@ describe('Events end-to-end tests', () => {
               from: from.toISOString(),
               to: to.toISOString(),
             })
-            const foundEvents: Array<EventSearchResponse> = result.data['eventsByEntity']
+            const events: Array<EventSearchResponse> = result.data['eventsByEntity']
             // First check the order and structure
-            checkOrderAndStructureOfEvents(foundEvents)
+            checkOrderAndStructureOfEvents(events)
             // Now check if the time filter worked well
             let provisionedEventsFound = 0
-            for (const foundEvent of foundEvents) {
-              if (foundEvent.entityID === mockCartId) {
+            for (const event of events) {
+              if (event.entityID === mockCartId) {
                 provisionedEventsFound++
               }
             }
@@ -183,40 +189,95 @@ describe('Events end-to-end tests', () => {
           })
         })
       })
-      context('when doing a query by entity and entityID', () => {})
-      context('when doing a query by type', () => {})
 
-      function checkOrderAndStructureOfEvents(events: Array<EventSearchResponse>): void {
-        // First check if they are in the right order (from more recent to older)
-        const lastTenEventsSorted = [...events].sort((a, b) => {
-          if (a.createdAt > b.createdAt) return -1
-          if (a.createdAt < b.createdAt) return 1
-          return 0
+      context('when doing a query by entity and entityID', () => {
+        context('with no time filters', () => {
+          it('returns the expected events in the right order', async () => {
+            const result = await queryByEntity(anonymousClient, 'Cart', undefined, mockCartId)
+            const events: Array<EventSearchResponse> = result.data['eventsByEntity']
+            // As now the query included the entityId, we can be sure that ONLY the provisioned events were returned
+            expect(events.length).to.be.equal(numberOfProvisionedEvents)
+            checkOrderAndStructureOfEvents(events)
+            for (const event of events) {
+              expect(event.type).to.be.equal('CartItemChanged')
+              expect(event.entityID).to.be.equal(mockCartId)
+              const value: Record<string, string> = event.value as any
+              expect(value.productId).to.be.equal(mockProductId)
+              expect(value.quantity).to.be.equal(mockQuantity)
+            }
+          })
         })
-        expect(lastTenEventsSorted).to.be.deep.equal(events)
-        // Now check if the structure and some of their fields are correct
-        for (const event of events) {
-          expect(event).to.have.keys(
-            '__typename',
-            'createdAt',
-            'entity',
-            'entityID',
-            'requestID',
-            'type',
-            'user',
-            'value'
-          )
-          expect(event.entity).to.be.equal('Cart')
-          expect(event.type).to.be.equal('CartItemChanged')
-          // We can't check for specific values of type, entityID or value.productID because other tests (and ScheduledCommands)
-          // could have created other events for the Cart entity with different values for those properties.
-          // What we can check is only its presence:
-          expect(event.type).not.to.be.undefined
-          expect(event.entityID).not.to.be.undefined
-          const value: Record<string, string> = event.value as any
-          expect(value.productId).not.to.be.undefined
-        }
-      }
+
+        context('with time filters', () => {
+          it('returns the expected events in the right order', async () => {
+            // Let's use a time filter that tries to get half of the events we provisioned. We can't be sure we will get
+            // exactly half of them, because possible clock differences, but we will check using inequalities
+            const from = new Date(eventsProvisionedStartedAt)
+            from.setSeconds(from.getSeconds() - 1)
+            const halfTheDuration = (eventsProvisionedFinishedAt.getTime() - eventsProvisionedStartedAt.getTime()) / 2
+            const to = new Date(eventsProvisionedStartedAt.getTime() + halfTheDuration)
+
+            const result = await queryByEntity(
+              anonymousClient,
+              'Cart',
+              {
+                from: from.toISOString(),
+                to: to.toISOString(),
+              },
+              mockCartId
+            )
+            const events: Array<EventSearchResponse> = result.data['eventsByEntity']
+            // First check the order and structure
+            checkOrderAndStructureOfEvents(events)
+            // Now we check that we have received more than 0 events and less than number we provisioned, as time filters
+            // we used should have given us less events than what we provisioned
+            expect(events.length).to.be.within(1, numberOfProvisionedEvents - 1)
+          })
+        })
+      })
+
+      context.only('when doing a query by type', () => {
+        context('with no time filters', () => {
+          it('returns the expected events in the right order', async () => {
+            const result = await queryByType(anonymousClient, 'CartItemChanged')
+            // As we are querying by just event type, we will get the events we provisioned plus others (possible MANY others)
+            // with different IDs. The only things we can check are:
+            // - That, at least, we have "numberOfProvisionedEvents" events
+            // - The structure is the expected one
+            // - They came sorted by "createdAt" in descenting order.
+            const events: Array<EventSearchResponse> = result.data['eventsByType'].slice(0, numberOfProvisionedEvents)
+            expect(events.length).to.be.equal(numberOfProvisionedEvents)
+            checkOrderAndStructureOfEvents(events)
+          })
+        })
+
+        context('with time filters', () => {
+          it('returns the expected events in the right order', async () => {
+            // The structure and the reasons of why this test is this way are exactly the same as described in tests:
+            // 'when doing a query by type'.'with time filters'.'returns the expected events in the right order'
+            const from = new Date(eventsProvisionedStartedAt)
+            from.setSeconds(from.getSeconds() - 1)
+            const to = new Date(eventsProvisionedFinishedAt)
+            to.setSeconds(to.getSeconds() + 1)
+
+            const result = await queryByType(anonymousClient, 'CartItemChanged', {
+              from: from.toISOString(),
+              to: to.toISOString(),
+            })
+            const events: Array<EventSearchResponse> = result.data['eventsByType']
+            // First check the order and structure
+            checkOrderAndStructureOfEvents(events)
+            // Now check if the time filter worked well
+            let provisionedEventsFound = 0
+            for (const event of events) {
+              if (event.entityID === mockCartId) {
+                provisionedEventsFound++
+              }
+            }
+            expect(provisionedEventsFound).to.be.gte(numberOfProvisionedEvents)
+          })
+        })
+      })
     })
     describe('the result of involving many events', () => {
       context('when doing a query that would return 200 events', () => {})
@@ -224,11 +285,16 @@ describe('Events end-to-end tests', () => {
   })
 })
 
-function queryByType(client: ApolloClient<unknown>, type: string, timeFilters?: EventTimeFilter): Promise<unknown> {
+function queryByType(
+  client: ApolloClient<unknown>,
+  type: string,
+  timeFilters?: EventTimeFilter
+): Promise<ApolloQueryResult<any>> {
+  const queryTimeFilters = timeFilters ? `, from:"${timeFilters.from}" to:"${timeFilters.to}"` : ''
   return client.query({
     query: gql`
       query {
-        eventsByType(type: ${type}) {
+        eventsByType(type: ${type}${queryTimeFilters}) {
             createdAt
             entity
             entityID
@@ -249,13 +315,15 @@ function queryByType(client: ApolloClient<unknown>, type: string, timeFilters?: 
 function queryByEntity(
   client: ApolloClient<unknown>,
   entity: string,
-  timeFilters?: EventTimeFilter
+  timeFilters?: EventTimeFilter,
+  entityID?: string
 ): Promise<ApolloQueryResult<any>> {
   const queryTimeFilters = timeFilters ? `, from:"${timeFilters.from}" to:"${timeFilters.to}"` : ''
+  const queryEntityID = entityID ? `, entityID:"${entityID}"` : ''
   return client.query({
     query: gql`
       query {
-        eventsByEntity(entity: ${entity}${queryTimeFilters}) {
+        eventsByEntity(entity: ${entity}${queryEntityID}${queryTimeFilters}) {
             createdAt
             entity
             entityID
@@ -271,4 +339,26 @@ function queryByEntity(
       }
     `,
   })
+}
+
+function checkOrderAndStructureOfEvents(events: Array<EventSearchResponse>): void {
+  // First check if they are in the right order (from more recent to older)
+  const eventsSorted = [...events].sort((a, b) => {
+    if (a.createdAt > b.createdAt) return -1
+    if (a.createdAt < b.createdAt) return 1
+    return 0
+  })
+  expect(eventsSorted).to.be.deep.equal(events)
+  // Now check if the structure and some of their fields are correct
+  for (const event of events) {
+    expect(event).to.have.keys('__typename', 'createdAt', 'entity', 'entityID', 'requestID', 'type', 'user', 'value')
+    expect(event.entity).to.be.equal('Cart')
+    // In this function, we can't check for specific values of type, entityID or value.productID because other tests
+    // (and ScheduledCommands) could have created other events for the Cart entity with different values for those properties.
+    // What we can check is only its presence:
+    expect(event.type).not.to.be.undefined
+    expect(event.entityID).not.to.be.undefined
+    const value: Record<string, string> = event.value as any
+    expect(value.productId).not.to.be.undefined
+  }
 }
