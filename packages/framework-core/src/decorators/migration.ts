@@ -1,4 +1,4 @@
-import { Booster } from '../booster'
+import { BoosterApp } from '../booster-app'
 import { Class, AnyClass, MigrationMetadata, BoosterConfig, Instance } from '@boostercloud/framework-types'
 import 'reflect-metadata'
 
@@ -6,7 +6,7 @@ const migrationMethodsMetadataKey = 'booster:migrationsMethods'
 
 export function Migrates(conceptClass: AnyClass): (migrationClass: AnyClass) => void {
   return (migrationClass) => {
-    Booster.configureCurrentEnv((config) => {
+    BoosterApp.configureCurrentEnv((config) => {
       const conceptMigrations = getConceptMigrations(config, conceptClass)
       const migrationMethodsMetadata = getMigrationMethods(migrationClass)
 

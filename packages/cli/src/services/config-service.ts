@@ -1,4 +1,4 @@
-import { BoosterApp, BoosterConfig } from '@boostercloud/framework-types'
+import { BoosterConfig } from '@boostercloud/framework-types'
 import * as path from 'path'
 import { exec } from 'child-process-promise'
 import { wrapExecError } from '../common/errors'
@@ -43,10 +43,9 @@ export async function cleanProject(projectPath: string): Promise<void> {
 }
 
 function readProjectConfig(userProjectPath: string): Promise<BoosterConfig> {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const userProject = loadUserProject(userProjectPath)
   return new Promise((resolve): void => {
-    const app: BoosterApp = userProject.Booster
+    const app = userProject.Booster
     app.configureCurrentEnv((config: BoosterConfig): void => {
       checkEnvironmentWasConfigured(app)
       resolve(config)
@@ -54,12 +53,19 @@ function readProjectConfig(userProjectPath: string): Promise<BoosterConfig> {
   })
 }
 
-function loadUserProject(userProjectPath: string): { Booster: BoosterApp } {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function loadUserProject(userProjectPath: string): { Booster: any } {
+  /* TODO: The main goal of loading the project here is
+   * to get the configuration. In future releases, we'll provide
+   * a static version of the config that can be loaded without
+   * dynamically requiring the user project from the CLI.
+   */
   const projectIndexJSPath = path.resolve(path.join(userProjectPath, 'dist', 'index.js'))
   return require(projectIndexJSPath)
 }
 
-function checkEnvironmentWasConfigured(app: BoosterApp): void {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function checkEnvironmentWasConfigured(app: any): void {
   if (app.configuredEnvironments.size == 0) {
     throw new Error(
       "You haven't configured any environment. Please make sure you have at least one environment configured by calling 'Booster.configure' method (normally done inside the folder 'src/config')"

@@ -1,4 +1,4 @@
-import { Booster } from '../booster'
+import { BoosterApp } from '../booster-app'
 import { ScheduledCommandInterface, ScheduleInterface } from '@boostercloud/framework-types'
 
 /**
@@ -6,9 +6,11 @@ import { ScheduledCommandInterface, ScheduleInterface } from '@boostercloud/fram
  * @param attributes
  * @constructor
  */
-export function ScheduledCommand(attributes: ScheduleInterface): (scheduledCommandClass: ScheduledCommandInterface) => void {
+export function ScheduledCommand(
+  attributes: ScheduleInterface
+): (scheduledCommandClass: ScheduledCommandInterface) => void {
   return (commandClass) => {
-    Booster.configureCurrentEnv((config): void => {
+    BoosterApp.configureCurrentEnv((config): void => {
       if (config.scheduledCommandHandlers[commandClass.name]) {
         throw new Error(`A command called ${commandClass.name} is already registered.
         If you think that this is an error, try performing a clean build.`)

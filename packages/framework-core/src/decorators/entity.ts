@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Booster } from '../booster'
+import { BoosterApp } from '../booster-app'
 import { Class, EntityInterface, ReducerMetadata, EventInterface } from '@boostercloud/framework-types'
 import 'reflect-metadata'
 /**
@@ -7,7 +7,7 @@ import 'reflect-metadata'
  * @constructor
  */
 export function Entity<TEntity extends EntityInterface>(entityClass: Class<TEntity>): void {
-  Booster.configureCurrentEnv((config): void => {
+  BoosterApp.configureCurrentEnv((config): void => {
     if (config.entities[entityClass.name]) {
       throw new Error(`An entity called ${entityClass.name} is already registered
         If you think that this is an error, try performing a clean build..`)
@@ -41,7 +41,7 @@ export function Reduces<TEvent extends EventInterface>(
 }
 
 function registerReducer(eventName: string, reducerMethod: ReducerMetadata): void {
-  Booster.configureCurrentEnv((config): void => {
+  BoosterApp.configureCurrentEnv((config): void => {
     const reducerPath = config.reducers[eventName]
     if (reducerPath) {
       throw new Error(
