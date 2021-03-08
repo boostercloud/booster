@@ -44,6 +44,20 @@ export class GraphQLTypeInformer {
   private metadataPropertiesToGraphQLFields(properties: Array<PropertyMetadata>): GraphQLFieldConfigMap<any, any> {
     const fields: GraphQLFieldConfigMap<any, any> = {}
     for (const prop of properties) {
+      if (prop.typeInfo.type === Array) {
+        prop.typeInfo.parameters.forEach((param) => {
+          const graphQLPropType = this.getGraphQLTypeFor(param.type)
+
+          if (!this.canFilter(graphQLPropType)) {
+            const properties = getPropertiesMetadata(param.type)
+            this.generateGraphQLTypeFromMetadata({ class: param.type, properties })
+          }
+
+          fields[prop.name] = {
+            type: GraphQLList(graphQLPropType),
+          }
+        })
+      } else {
         if (!prop.typeInfo.type.prototype) {
           fields[prop.name] = {
             type: new GraphQLEnumType({
@@ -52,7 +66,9 @@ export class GraphQLTypeInformer {
             }),
           }
         } else {
-      fields[prop.name] = { type: this.getGraphQLTypeFor(prop.typeInfo.type) }
+          fields[prop.name] = { type: this.getGraphQLTypeFor(prop.typeInfo.type) }
+        }
+      }
     }
     return fields
   }
