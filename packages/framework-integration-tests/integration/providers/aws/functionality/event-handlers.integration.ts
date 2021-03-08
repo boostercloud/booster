@@ -1,13 +1,7 @@
 import gql from 'graphql-tag'
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
-import {
-  createUser,
-  getUserAuthInformation,
-  getEventsByEntityId,
-  graphQLClient,
-  UserAuthInformation,
-} from '../utils'
+import { createUser, getUserAuthInformation, getEventsByEntityId, graphQLClient, UserAuthInformation } from '../utils'
 import { random, address, internet } from 'faker'
 import { expect } from 'chai'
 import { waitForIt } from '../../../helper/sleep'
@@ -49,14 +43,18 @@ describe('Event handlers', () => {
         `,
       })
 
-      const events: Array<any> = await waitForIt(
-        () => getEventsByEntityId(mockProductId),
+      const stockEvents: Array<any> = await waitForIt(
+        () => getEventsByEntityId('Stock', mockProductId),
         (events) => {
-          return events?.length > 1
+          return events?.length === 1
         }
       )
-
-      expect(events.length).to.be.equal(2)
+      const productEvents: Array<any> = await waitForIt(
+        () => getEventsByEntityId('Product', mockProductId),
+        (events) => {
+          return events?.length === 1
+        }
+      )
 
       const expectedStockMovedEvent = {
         // eslint-disable-next-line @typescript-eslint/camelcase
@@ -78,7 +76,7 @@ describe('Event handlers', () => {
           id: userId,
         },
       }
-      const stockMovedEvent = events.find((event) => event.typeName === 'StockMoved')
+      const stockMovedEvent = stockEvents[0]
       expect(stockMovedEvent).to.deep.contain(expectedStockMovedEvent)
 
       const expectedProductAvailabilityChangedEvent = {
@@ -99,7 +97,7 @@ describe('Event handlers', () => {
           id: userId,
         },
       }
-      const productAvailabilityChangedEvent = events.find((event) => event.typeName === 'ProductAvailabilityChanged')
+      const productAvailabilityChangedEvent = productEvents[0]
       expect(productAvailabilityChangedEvent).to.deep.contain(expectedProductAvailabilityChangedEvent)
     })
   })

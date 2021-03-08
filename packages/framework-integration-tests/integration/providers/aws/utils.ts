@@ -519,6 +519,11 @@ export async function countTableItems(tableName: string): Promise<number> {
 }
 
 export async function countEventItems(): Promise<number> {
+  // TODO: This way of counting is wrong when there are a lot of events in the event store, as COUNT will only contain
+  // the number of elements in a a result set that is lower than 1MB in size:
+  // "If the size of the Query result set is larger than 1 MB, then ScannedCount and Count
+  // will represent only a partial count of the total items.
+  // You will need to perform multiple Query operations in order to retrieve all of the results\"."
   const output: ScanOutput = await documentClient
     .scan({
       TableName: await eventsStoreTableName(),
@@ -548,14 +553,15 @@ export async function countSnapshotItems(entityTypeName: string, entityID: strin
   return output.Count ?? -1
 }
 
-export async function getEventsByEntityId(entityID: string): Promise<any> {
+export async function getEventsByEntityId(entityName: string, entityID: string): Promise<any> {
   const output: QueryOutput = await documentClient
-    .scan({
+    .query({
       TableName: await eventsStoreTableName(),
-      Select: 'ALL_ATTRIBUTES',
-      ExpressionAttributeNames: { '#entityID': 'entityID' },
-      ExpressionAttributeValues: { ':entityID': entityID },
-      FilterExpression: '#entityID = :entityID',
+      ConsistentRead: true,
+      KeyConditionExpression: 'entityTypeName_entityID_kind = :partitionKey',
+      ExpressionAttributeValues: {
+        ':partitionKey': `${entityName}-${entityID}-event`,
+      },
     })
     .promise()
 
@@ -563,4 +569,3 @@ export async function getEventsByEntityId(entityID: string): Promise<any> {
 }
 
 // --- Other helpers ---
-
