@@ -1,5 +1,7 @@
 import { BoosterConfig, Logger, SubscriptionEnvelope } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
+import { PromiseResult } from 'aws-sdk/lib/request'
+import { AWSError } from 'aws-sdk/lib/error'
 import { subscriptionsStoreAttributes } from '../constants'
 import { sortKeyForSubscription } from './partition-keys'
 
@@ -71,40 +73,46 @@ export async function deleteSubscription(
   connectionID: string,
   subscriptionID: string
 ): Promise<void> {
-  // TODO: Manage query pagination
-  const result = await db
-    .query({
-      TableName: config.resourceNames.subscriptionsStore,
-      IndexName: subscriptionsStoreAttributes.indexByConnectionIDName(config),
-      KeyConditionExpression:
-        `${subscriptionsStoreAttributes.indexByConnectionIDPartitionKey} = :partitionKey AND ` +
-        `${subscriptionsStoreAttributes.indexByConnectionIDSortKey} = :sortKey`,
-      ExpressionAttributeValues: {
-        ':partitionKey': connectionID,
-        ':sortKey': subscriptionID,
-      },
-    })
-    .promise()
+  let result: PromiseResult<DynamoDB.DocumentClient.QueryOutput, AWSError>
 
-  const foundSubscriptions = result.Items as Array<SubscriptionIndexRecord>
-  if (foundSubscriptions?.length < 1) {
-    logger.info(
-      `[deleteSubscription] No subscriptions found with connectionID=${connectionID} and subscriptionID=${subscriptionID}`
-    )
-    return
-  }
+  do {
+    result = await db
+      .query({
+        TableName: config.resourceNames.subscriptionsStore,
+        IndexName: subscriptionsStoreAttributes.indexByConnectionIDName(config),
+        KeyConditionExpression:
+          `${subscriptionsStoreAttributes.indexByConnectionIDPartitionKey} = :partitionKey AND ` +
+          `${subscriptionsStoreAttributes.indexByConnectionIDSortKey} = :sortKey`,
+        ExpressionAttributeValues: {
+          ':partitionKey': connectionID,
+          ':sortKey': subscriptionID,
+        },
+      })
+      .promise()
 
-  const subscriptionToDelete = foundSubscriptions[0] // There can't be more than one, as we used the full primary key in the query
-  logger.debug('[deleteSubscription] Deleting subscription = ', subscriptionToDelete)
-  await db
-    .delete({
-      TableName: config.resourceNames.subscriptionsStore,
-      Key: {
-        [subscriptionsStoreAttributes.partitionKey]: subscriptionToDelete[subscriptionsStoreAttributes.partitionKey],
-        [subscriptionsStoreAttributes.sortKey]: subscriptionToDelete[subscriptionsStoreAttributes.sortKey],
-      },
-    })
-    .promise()
+    const foundSubscriptions = result.Items as Array<SubscriptionIndexRecord>
+    if (foundSubscriptions?.length < 1) {
+      logger.info(
+        `[deleteSubscription] No subscriptions found with connectionID=${connectionID} and subscriptionID=${subscriptionID}, querying again`
+      )
+      break
+    }
+
+    const subscriptionToDelete = foundSubscriptions[0] // There can't be more than one, as we used the full primary key in the query
+    logger.debug('[deleteSubscription] Deleting subscription = ', subscriptionToDelete)
+    await db
+      .delete({
+        TableName: config.resourceNames.subscriptionsStore,
+        Key: {
+          [subscriptionsStoreAttributes.partitionKey]: subscriptionToDelete[subscriptionsStoreAttributes.partitionKey],
+          [subscriptionsStoreAttributes.sortKey]: subscriptionToDelete[subscriptionsStoreAttributes.sortKey],
+        },
+      })
+      .promise()
+  } while (result.LastEvaluatedKey)
+  logger.info(
+    `[deleteSubscription] Finished processing subscriptions with connectionID=${connectionID} and subscriptionID=${subscriptionID}`
+  )
 }
 
 export async function deleteAllSubscriptions(
@@ -138,8 +146,7 @@ export async function deleteAllSubscriptions(
       [config.resourceNames.subscriptionsStore]: foundSubscriptions.map((subscriptionRecord) => ({
         DeleteRequest: {
           Key: {
-            [subscriptionsStoreAttributes.partitionKey]:
-              subscriptionRecord[subscriptionsStoreAttributes.partitionKey],
+            [subscriptionsStoreAttributes.partitionKey]: subscriptionRecord[subscriptionsStoreAttributes.partitionKey],
             [subscriptionsStoreAttributes.sortKey]: subscriptionRecord[subscriptionsStoreAttributes.sortKey],
           },
         },
