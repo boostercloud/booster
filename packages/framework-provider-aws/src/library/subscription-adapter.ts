@@ -2,8 +2,9 @@ import { BoosterConfig, Logger, SubscriptionEnvelope } from '@boostercloud/frame
 import { DynamoDB } from 'aws-sdk'
 import { PromiseResult } from 'aws-sdk/lib/request'
 import { AWSError } from 'aws-sdk/lib/error'
-import { subscriptionsStoreAttributes } from '../constants'
+import { dynamoDbBatchWriteLimit, subscriptionsStoreAttributes } from '../constants'
 import { sortKeyForSubscription } from './partition-keys'
+import { inChunksOf } from '../pagination-helpers'
 
 export interface SubscriptionIndexRecord {
   [subscriptionsStoreAttributes.partitionKey]: string
@@ -122,37 +123,43 @@ export async function deleteAllSubscriptions(
   connectionID: string
 ): Promise<void> {
   // TODO: Manage query pagination and db.batchWrite limit of 25 operations at a time
-  const result = await db
-    .query({
-      TableName: config.resourceNames.subscriptionsStore,
-      IndexName: subscriptionsStoreAttributes.indexByConnectionIDName(config),
-      KeyConditionExpression: `${subscriptionsStoreAttributes.indexByConnectionIDPartitionKey} = :partitionKey`,
-      ExpressionAttributeValues: { ':partitionKey': connectionID },
-    })
-    .promise()
-  const foundSubscriptions = result.Items as Array<SubscriptionIndexRecord>
-  if (foundSubscriptions?.length < 1) {
-    logger.info(`[deleteAllSubscription] No subscriptions found with connectionID=${connectionID}`)
-    return
-  }
+  let result: PromiseResult<DynamoDB.DocumentClient.QueryOutput, AWSError>
 
-  logger.debug(
-    `[deleteAllSubscription] Deleting all subscriptions for connectionID=${connectionID}, which are: `,
-    foundSubscriptions
-  )
+  do {
+    result = await db
+      .query({
+        TableName: config.resourceNames.subscriptionsStore,
+        IndexName: subscriptionsStoreAttributes.indexByConnectionIDName(config),
+        KeyConditionExpression: `${subscriptionsStoreAttributes.indexByConnectionIDPartitionKey} = :partitionKey`,
+        ExpressionAttributeValues: { ':partitionKey': connectionID },
+      })
+      .promise()
+    const foundSubscriptions = result.Items as Array<SubscriptionIndexRecord>
+    if (foundSubscriptions?.length < 1) {
+      logger.info(`[deleteAllSubscription] No subscriptions found with connectionID=${connectionID}, querying again`)
+      return
+    }
 
-  const params: DynamoDB.DocumentClient.BatchWriteItemInput = {
-    RequestItems: {
-      [config.resourceNames.subscriptionsStore]: foundSubscriptions.map((subscriptionRecord) => ({
-        DeleteRequest: {
-          Key: {
-            [subscriptionsStoreAttributes.partitionKey]: subscriptionRecord[subscriptionsStoreAttributes.partitionKey],
-            [subscriptionsStoreAttributes.sortKey]: subscriptionRecord[subscriptionsStoreAttributes.sortKey],
-          },
+    logger.debug(
+      `[deleteAllSubscription] Deleting all subscriptions for connectionID=${connectionID}, which are: `,
+      foundSubscriptions
+    )
+
+    for (const chunk of inChunksOf(dynamoDbBatchWriteLimit, foundSubscriptions)) {
+      const params: DynamoDB.DocumentClient.BatchWriteItemInput = {
+        RequestItems: {
+          [config.resourceNames.subscriptionsStore]: chunk.map((subscriptionRecord) => ({
+            DeleteRequest: {
+              Key: {
+                [subscriptionsStoreAttributes.partitionKey]:
+                  subscriptionRecord[subscriptionsStoreAttributes.partitionKey],
+                [subscriptionsStoreAttributes.sortKey]: subscriptionRecord[subscriptionsStoreAttributes.sortKey],
+              },
+            },
+          })),
         },
-      })),
-    },
-  }
-
-  await db.batchWrite(params).promise()
+      }
+      await db.batchWrite(params).promise()
+    }
+  } while (result.LastEvaluatedKey)
 }
