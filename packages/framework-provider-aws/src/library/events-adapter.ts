@@ -10,7 +10,7 @@ import {
   partitionKeyForIndexByEntity,
 } from './keys-helper'
 import { Converter } from 'aws-sdk/clients/dynamodb'
-import { inChunksOf, waitAndReturn } from '../pagination-helpers'
+import { inChunksOf } from '../pagination-helpers'
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const originOfTime = new Date(0).toISOString()
@@ -114,13 +114,6 @@ async function persistBatch(
   logger.debug('[EventsAdapter#storeEvents] Storing EventEnvelopes with eventEnvelopes:', batch)
   const putRequests = []
   for (const eventEnvelope of batch) {
-    const msForSortKey = 5
-    /* We must wait 5ms before generating a new sort key value
-    because if we do it directly, all of them will have the same
-    timestamp, meaning that for DynamoDB this is the same item as
-    the others, because it has the same key. Making BatchWrite fail.
-    */
-    const sortKey = await waitAndReturn(() => new Date().toISOString(), msForSortKey)
     putRequests.push({
       PutRequest: {
         Item: {
