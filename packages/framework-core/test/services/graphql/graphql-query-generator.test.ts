@@ -124,7 +124,7 @@ describe('GraphQLQueryGenerator', () => {
           expect(config.fields[`${mockTargetTypeName}s`].astNode).to.be.undefined
         })
 
-        describe('with properties', () => {
+        describe('Array with properties', () => {
           let mockPropertyName: string
           let mockTargetType: any
           let mockPropertyType: any
@@ -132,7 +132,7 @@ describe('GraphQLQueryGenerator', () => {
           beforeEach(() => {
             // Provision target types
             mockPropertyName = random.alphaNumeric(10)
-            mockTargetType = Boolean
+            mockTargetType = Array
             mockPropertyType = Boolean
             mockTargetTypes = {}
             mockTargetTypes[mockTargetTypeName] = {
@@ -148,6 +148,7 @@ describe('GraphQLQueryGenerator', () => {
                 },
               ],
             }
+            replace(mockTypeInformer, 'getPrimitiveExtendedType', stub().returnsArg(0) as any)
           })
 
           context('Property GraphQL Type is scalar', () => {
@@ -166,7 +167,7 @@ describe('GraphQLQueryGenerator', () => {
               sut.generate()
 
               expect(getGraphQLTypeForStub)
-                .callCount(4)
+                .callCount(3)
                 .and.calledWith(mockTargetType)
                 .and.calledWith(mockPropertyType)
             })
@@ -174,43 +175,177 @@ describe('GraphQLQueryGenerator', () => {
             it('should call filterResolverBuilder once with expected arguments', () => {
               sut.generate()
 
-              expect(mockByIdResolverBuilder).to.be.calledOnce.and.calledWith(Boolean)
+              expect(mockByIdResolverBuilder).to.be.calledOnce.and.calledWith(mockTargetType)
               // @ts-ignore
               expect(mockByIdResolverBuilder).to.be.calledAfter(getGraphQLTypeForStub)
             })
 
-            it('should have expected args', () => {
-              const result = sut.generate()
+            context('should have expected args', () => {
+              it('When Boolean', () => {
+                const result = sut.generate()
 
-              const config: any = result.toConfig()
-              expect(config.fields[mockTargetTypeName].args['id'].type.toString()).to.be.equal('ID!')
-              expect(config.fields[mockTargetTypeName].args['id'].astNode).to.be.undefined
-              expect(config.fields[mockTargetTypeName].args['id'].defaultValue).to.be.undefined
-              expect(config.fields[mockTargetTypeName].args['id'].description).to.be.undefined
-              expect(config.fields[mockTargetTypeName].args['id'].extensions).to.be.undefined
+                const config: any = result.toConfig()
+                expect(config.fields[mockTargetTypeName].args['id'].type.toString()).to.be.equal('ID!')
+                expect(config.fields[mockTargetTypeName].args['id'].astNode).to.be.undefined
+                expect(config.fields[mockTargetTypeName].args['id'].defaultValue).to.be.undefined
+                expect(config.fields[mockTargetTypeName].args['id'].description).to.be.undefined
+                expect(config.fields[mockTargetTypeName].args['id'].extensions).to.be.undefined
 
-              const booleansTypeFilterConfig = config.fields[`${mockTargetTypeName}s`].args[
-                mockPropertyName
-              ].type.toConfig()
-              expect(booleansTypeFilterConfig.name).to.be.equal('BooleanPropertyFilter')
-              expect(booleansTypeFilterConfig.fields.operation.description).to.be.undefined
-              expect(booleansTypeFilterConfig.fields.operation.type.toString()).to.be.equal('BooleanOperations!')
-              expect(booleansTypeFilterConfig.fields.operation.defaultValue).to.be.undefined
-              expect(booleansTypeFilterConfig.fields.operation.extensions).to.be.undefined
-              expect(booleansTypeFilterConfig.fields.operation.astNode).to.be.undefined
-              expect(booleansTypeFilterConfig.fields.values.description).to.be.undefined
-              expect(booleansTypeFilterConfig.fields.values.type.toString()).to.be.equal(
-                `[${mockGraphQLType.toString()}!]!`
-              )
-              expect(booleansTypeFilterConfig.fields.values.defaultValue).to.be.undefined
-              expect(booleansTypeFilterConfig.fields.values.extensions).to.be.undefined
-              expect(booleansTypeFilterConfig.fields.values.astNode).to.be.undefined
+                const booleansTypeFilterConfig = config.fields[`${mockTargetTypeName}s`].args[
+                  mockPropertyName
+                ].type.toConfig()
+                expect(booleansTypeFilterConfig.name).to.be.equal('BooleanPropertyFilter')
+
+                const fieldsKeys = Object.keys(booleansTypeFilterConfig.fields)
+                expect(fieldsKeys).to.be.deep.equal(['eq', 'ne'])
+                expect(fieldsKeys.length).to.equal(2)
+
+                fieldsKeys.forEach((fieldKey) => {
+                  expect(booleansTypeFilterConfig.fields[fieldKey].description).to.be.undefined
+                  expect(booleansTypeFilterConfig.fields[fieldKey].type.toString()).to.be.equal('Boolean')
+                  expect(booleansTypeFilterConfig.fields[fieldKey].defaultValue).to.be.undefined
+                  expect(booleansTypeFilterConfig.fields[fieldKey].extensions).to.be.undefined
+                  expect(booleansTypeFilterConfig.fields[fieldKey].astNode).to.be.undefined
+                })
+              })
+
+              it('When Number', () => {
+                mockPropertyName = random.alphaNumeric(10)
+                mockTargetType = Array
+                mockPropertyType = Number
+                mockTargetTypes = {}
+                mockTargetTypes[mockTargetTypeName] = {
+                  class: mockTargetType,
+                  properties: [
+                    {
+                      name: mockPropertyName,
+                      typeInfo: {
+                        name: mockPropertyType.name,
+                        type: mockPropertyType,
+                        parameters: [],
+                      },
+                    },
+                  ],
+                }
+                sut = new GraphQLQueryGenerator(
+                  simpleConfig,
+                  mockTargetTypes,
+                  mockTypeInformer as any,
+                  mockByIdResolverBuilder,
+                  mockFilterResolverBuilder,
+                  mockEventsResolver
+                )
+                const result = sut.generate()
+
+                const config: any = result.toConfig()
+                expect(config.fields[mockTargetTypeName].args['id'].type.toString()).to.be.equal('ID!')
+                expect(config.fields[mockTargetTypeName].args['id'].astNode).to.be.undefined
+                expect(config.fields[mockTargetTypeName].args['id'].defaultValue).to.be.undefined
+                expect(config.fields[mockTargetTypeName].args['id'].description).to.be.undefined
+                expect(config.fields[mockTargetTypeName].args['id'].extensions).to.be.undefined
+
+                const TypeFilterConfig = config.fields[`${mockTargetTypeName}s`].args[mockPropertyName].type.toConfig()
+                expect(TypeFilterConfig.name).to.be.equal('NumberPropertyFilter')
+
+                const fieldsKeys = Object.keys(TypeFilterConfig.fields)
+                expect(fieldsKeys).to.be.deep.equal(['eq', 'ne', 'le', 'lt', 'ge', 'gt', 'in'])
+                expect(fieldsKeys.length).to.equal(7)
+
+                fieldsKeys.forEach((fieldKey) => {
+                  expect(TypeFilterConfig.fields[fieldKey].description).to.be.undefined
+                  const type = fieldKey === 'in' ? '[Float]' : 'Float' // The in filter expects an array of the element
+                  expect(TypeFilterConfig.fields[fieldKey].type.toString()).to.be.equal(type)
+                  expect(TypeFilterConfig.fields[fieldKey].defaultValue).to.be.undefined
+                  expect(TypeFilterConfig.fields[fieldKey].extensions).to.be.undefined
+                  expect(TypeFilterConfig.fields[fieldKey].astNode).to.be.undefined
+                })
+              })
+
+              it('When String', () => {
+                mockPropertyName = random.alphaNumeric(10)
+                mockTargetType = Array
+                mockPropertyType = String
+                mockTargetTypes = {}
+                mockTargetTypes[mockTargetTypeName] = {
+                  class: mockTargetType,
+                  properties: [
+                    {
+                      name: mockPropertyName,
+                      typeInfo: {
+                        name: mockPropertyType.name,
+                        type: mockPropertyType,
+                        parameters: [],
+                      },
+                    },
+                  ],
+                }
+                sut = new GraphQLQueryGenerator(
+                  simpleConfig,
+                  mockTargetTypes,
+                  mockTypeInformer as any,
+                  mockByIdResolverBuilder,
+                  mockFilterResolverBuilder,
+                  mockEventsResolver
+                )
+                const result = sut.generate()
+
+                const config: any = result.toConfig()
+                expect(config.fields[mockTargetTypeName].args['id'].type.toString()).to.be.equal('ID!')
+                expect(config.fields[mockTargetTypeName].args['id'].astNode).to.be.undefined
+                expect(config.fields[mockTargetTypeName].args['id'].defaultValue).to.be.undefined
+                expect(config.fields[mockTargetTypeName].args['id'].description).to.be.undefined
+                expect(config.fields[mockTargetTypeName].args['id'].extensions).to.be.undefined
+
+                const TypeFilterConfig = config.fields[`${mockTargetTypeName}s`].args[mockPropertyName].type.toConfig()
+                expect(TypeFilterConfig.name).to.be.equal('StringPropertyFilter')
+
+                const fieldsKeys = Object.keys(TypeFilterConfig.fields)
+                expect(fieldsKeys).to.be.deep.equal([
+                  'eq',
+                  'ne',
+                  'le',
+                  'lt',
+                  'ge',
+                  'gt',
+                  'in',
+                  'beginsWith',
+                  'contains',
+                ])
+                expect(fieldsKeys.length).to.equal(9)
+
+                fieldsKeys.forEach((fieldKey) => {
+                  expect(TypeFilterConfig.fields[fieldKey].description).to.be.undefined
+                  const type = fieldKey === 'in' ? '[String]' : 'String' // The in filter expects an array of the element
+                  expect(TypeFilterConfig.fields[fieldKey].type.toString()).to.be.equal(type)
+                  expect(TypeFilterConfig.fields[fieldKey].defaultValue).to.be.undefined
+                  expect(TypeFilterConfig.fields[fieldKey].extensions).to.be.undefined
+                  expect(TypeFilterConfig.fields[fieldKey].astNode).to.be.undefined
+                })
+              })
             })
           })
 
           context('Property GraphQL Type is GraphQLJSONObject', () => {
             beforeEach(() => {
+              class MockedClass {}
               getGraphQLTypeForStub.returns(GraphQLJSONObject)
+              mockPropertyName = random.alphaNumeric(10)
+              mockTargetType = Array
+              mockPropertyType = MockedClass
+              mockTargetTypes = {}
+              mockTargetTypes[mockTargetTypeName] = {
+                class: mockTargetType,
+                properties: [
+                  {
+                    name: mockPropertyName,
+                    typeInfo: {
+                      name: mockPropertyType.name,
+                      type: mockPropertyType,
+                      parameters: [],
+                    },
+                  },
+                ],
+              }
 
               sut = new GraphQLQueryGenerator(
                 simpleConfig,
@@ -234,7 +369,55 @@ describe('GraphQLQueryGenerator', () => {
             it('should call filterResolverBuilder once with expected arguments', () => {
               sut.generate()
 
-              expect(mockByIdResolverBuilder).to.be.calledOnce.and.calledWith(Boolean)
+              expect(mockByIdResolverBuilder).to.be.calledOnce.and.calledWith(mockTargetType)
+              // @ts-ignore
+              expect(mockByIdResolverBuilder).to.be.calledAfter(getGraphQLTypeForStub)
+            })
+          })
+          context('Property GraphQL Type is GraphQLString', () => {
+            beforeEach(() => {
+              getGraphQLTypeForStub.returns(GraphQLString)
+              mockPropertyName = random.alphaNumeric(10)
+              mockTargetType = Array
+              mockPropertyType = String
+              mockTargetTypes = {}
+              mockTargetTypes[mockTargetTypeName] = {
+                class: mockTargetType,
+                properties: [
+                  {
+                    name: mockPropertyName,
+                    typeInfo: {
+                      name: mockPropertyType.name,
+                      type: mockPropertyType,
+                      parameters: [],
+                    },
+                  },
+                ],
+              }
+
+              sut = new GraphQLQueryGenerator(
+                simpleConfig,
+                mockTargetTypes,
+                mockTypeInformer as any,
+                mockByIdResolverBuilder,
+                mockFilterResolverBuilder,
+                mockEventsResolver
+              )
+            })
+
+            it('should call typeInformer.getGraphQLTypeFor 3 times', () => {
+              sut.generate()
+
+              expect(getGraphQLTypeForStub)
+                .callCount(3)
+                .and.calledWith(mockTargetType)
+                .and.calledWith(mockPropertyType)
+            })
+
+            it('should call filterResolverBuilder once with expected arguments', () => {
+              sut.generate()
+
+              expect(mockByIdResolverBuilder).to.be.calledOnce.and.calledWith(mockTargetType)
               // @ts-ignore
               expect(mockByIdResolverBuilder).to.be.calledAfter(getGraphQLTypeForStub)
             })
