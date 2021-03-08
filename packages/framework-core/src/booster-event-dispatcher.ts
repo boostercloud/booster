@@ -10,7 +10,7 @@ import { EventStore } from './services/event-store'
 import { RawEventsParser } from './services/raw-events-parser'
 import { ReadModelStore } from './services/read-model-store'
 import { RegisterHandler } from './booster-register-handler'
-import { Promises } from './helpers/promise'
+import { Promises } from './helpers/promises'
 
 export class BoosterEventDispatcher {
   /**

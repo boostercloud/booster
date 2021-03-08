@@ -23,18 +23,24 @@ export class Promises {
     const results = await Promise.allSettled(values) // Promise.allSettled never throws
 
     // Get all the failed promises
-    const failed: Array<PromiseRejectedResult> = []
-    for (const result of results) {
-      if (result.status === 'rejected') {
-        failed.push(result)
-      }
-    }
+    const failed: Array<PromiseRejectedResult> = results
+      .filter((res) => res.status == 'rejected')
+      .map((res) => res as PromiseRejectedResult)
 
     // Throw if we found any failed ones
     if (failed.length > 0) {
-      throw failed
+      throw new PromisesError(failed)
     }
 
     return results
+  }
+}
+
+export class PromisesError extends Error {
+  public readonly failedReasons: Array<unknown>
+  constructor(rejectedResults: Array<PromiseRejectedResult>) {
+    const reasons = rejectedResults.map((res) => res.reason)
+    super(reasons.join('. '))
+    this.failedReasons = reasons
   }
 }

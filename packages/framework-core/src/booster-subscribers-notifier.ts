@@ -14,7 +14,7 @@ import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { FilteredReadModelPubSub, ReadModelPubSub } from './services/pub-sub/read-model-pub-sub'
 import { GraphQLResolverContext } from './services/graphql/common'
 import { ExecutionResult } from 'graphql/execution/execute'
-import { Promises } from './helpers/promise'
+import { Promises } from './helpers/promises'
 
 export class BoosterSubscribersNotifier {
   private readonly graphQLSchema: GraphQLSchema
