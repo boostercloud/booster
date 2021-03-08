@@ -47,6 +47,16 @@ export class GraphQLTypeInformer {
     return fields
   }
 
+  public canFilter(graphQLType: GraphQLNonInputType): boolean {
+    return graphQLType instanceof GraphQLScalarType && graphQLType != GraphQLJSONObject
+  }
+
+  public getPrimitiveExtendedType(type: AnyClass): AnyClass {
+    if (!type.prototype) return type
+    const parentType = Object.getPrototypeOf(type.prototype)?.constructor
+    return parentType === Object ? type : parentType
+  }
+
   public getGraphQLTypeFor(type: AnyClass): GraphQLNonInputType {
     switch (type) {
       case UUID:
@@ -107,5 +117,14 @@ export class GraphQLTypeInformer {
       }
     }
     return inputFields
+  }
+
+  private generateOperationEnumValuesFor(operationsEnum: AnyClass): GraphQLEnumValueConfigMap {
+    const enumValuesConfig: GraphQLEnumValueConfigMap = {}
+    for (const opSymbol in operationsEnum) {
+      const opName = (operationsEnum as any)[opSymbol]
+      enumValuesConfig[opName] = { value: opSymbol }
+    }
+    return enumValuesConfig
   }
 }
