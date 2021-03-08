@@ -37,22 +37,22 @@ function filterReadModel(readModel: Record<string, any>, filters?: Record<string
 function filterByOperation(filter: ReadModelPropertyFilter, readModelPropValue: any): boolean {
   for (const [operation, value] of Object.entries(filter as Operation<any>)) {
     switch (operation) {
-      case '=':
+      case 'eq':
         if (readModelPropValue !== value) return false
         break
-      case '!=':
+      case 'ne':
         if (readModelPropValue === value) return false
         break
-      case '<':
+      case 'lt':
         if (readModelPropValue >= value) return false
         break
-      case '>':
+      case 'gt':
         if (readModelPropValue <= value) return false
         break
-      case '>=':
+      case 'gte':
         if (readModelPropValue < value) return false
         break
-      case '<=':
+      case 'lte':
         if (readModelPropValue > value) return false
         break
       case 'in':
