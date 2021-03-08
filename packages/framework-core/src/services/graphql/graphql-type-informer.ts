@@ -17,8 +17,10 @@ import {
   GraphQLEnumType,
   GraphQLInterfaceType,
 } from 'graphql'
-import { GraphQLFieldMap, GraphQLInputFieldConfigMap } from 'graphql/type/definition'
+import { GraphQLEnumValueConfigMap, GraphQLFieldMap, GraphQLInputFieldConfigMap } from 'graphql/type/definition'
 import { PropertyMetadata } from 'metadata-booster'
+import { getPropertiesMetadata } from './../../decorators/metadata'
+import inflected = require('inflected')
 
 export class GraphQLTypeInformer {
   private graphQLTypesByName: Record<string, GraphQLNonInputType> = {}
@@ -42,6 +44,14 @@ export class GraphQLTypeInformer {
   private metadataPropertiesToGraphQLFields(properties: Array<PropertyMetadata>): GraphQLFieldConfigMap<any, any> {
     const fields: GraphQLFieldConfigMap<any, any> = {}
     for (const prop of properties) {
+        if (!prop.typeInfo.type.prototype) {
+          fields[prop.name] = {
+            type: new GraphQLEnumType({
+              name: inflected.camelize(prop.name),
+              values: this.generateOperationEnumValuesFor(prop.typeInfo.type),
+            }),
+          }
+        } else {
       fields[prop.name] = { type: this.getGraphQLTypeFor(prop.typeInfo.type) }
     }
     return fields
@@ -58,19 +68,16 @@ export class GraphQLTypeInformer {
   }
 
   public getGraphQLTypeFor(type: AnyClass): GraphQLNonInputType {
-    switch (type) {
-      case UUID:
-        return GraphQLID
+    if (type === UUID) return GraphQLID
+    const primitiveType = this.getPrimitiveExtendedType(type)
+    switch (primitiveType) {
+      case Date:
       case String:
         return GraphQLString
       case Number:
         return GraphQLFloat
       case Boolean:
         return GraphQLBoolean
-      case Array:
-        return new GraphQLList(GraphQLJSONObject)
-      case Object:
-        return GraphQLJSONObject
       default:
         if (this.graphQLTypesByName[type.name]) {
           return this.graphQLTypesByName[type.name]
