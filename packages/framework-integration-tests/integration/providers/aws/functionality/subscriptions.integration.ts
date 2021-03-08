@@ -71,6 +71,36 @@ describe('subscriptions', () => {
       }
     })
 
+    it('should delete all subscription of the connectionID when socket is disconnected, even with 126 subscriptions', async () => {
+      /*
+       * Note: 126 was specifically chosen because DynamoDB's query limit is of 100 items, while the write limit is 25, which
+       * is a divisor of 100. We chose specifically 126, meaning that it will trigger at least 2 batches of query, and 2 batches of
+       * writing on the second batch of query.
+       */
+      const client = await graphQLClientWithSubscriptions()
+      const numberOfSubscriptions = 126
+      try {
+        const originalSubscriptionsCount = await countSubscriptionsItems()
+
+        // Let's create "a couple" of subscriptions for one client
+        for (let i = 0; i < numberOfSubscriptions; i++) {
+          cartSubscription(client, random.uuid()).subscribe(() => {})
+        }
+
+        // Wait for for the subscriptions to arrive
+        await waitForIt(
+          countSubscriptionsItems,
+          (newCount) => newCount == originalSubscriptionsCount + numberOfSubscriptions
+        )
+
+        // Finally, close the socket of client A and check that we are back to the original count of subscriptions
+        client.disconnect()
+        await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount)
+      } catch (e) {
+        client.disconnect()
+      }
+    })
+
     it('should delete connection data when socket is disconnected', async () => {
       const connectionsCount = await countConnectionsItems()
       const client = await graphQLClientWithSubscriptions()
