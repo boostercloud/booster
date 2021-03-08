@@ -25,3 +25,4 @@ export const environmentVarNames = {
 } as const
 
 export const dynamoDbBatchWriteLimit = 25
+export const dynamoDbBatchGetLimit = 100
