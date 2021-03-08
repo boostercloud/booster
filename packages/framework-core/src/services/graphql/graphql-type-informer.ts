@@ -29,7 +29,7 @@ export class GraphQLTypeInformer {
     }
   }
 
-  private generateGraphQLTypeFromMetadata(typeMetadata: TargetTypeMetadata): void {
+  public generateGraphQLTypeFromMetadata(typeMetadata: TargetTypeMetadata): void {
     const name = typeMetadata.class.name
     if (!this.graphQLTypesByName[name]) {
       this.graphQLTypesByName[name] = new GraphQLObjectType({
