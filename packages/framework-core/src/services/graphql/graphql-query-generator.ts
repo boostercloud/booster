@@ -1,6 +1,4 @@
 import {
-  GraphQLEnumType,
-  GraphQLEnumValueConfigMap,
   GraphQLFieldConfigArgumentMap,
   GraphQLFieldConfigMap,
   GraphQLFieldResolver,
@@ -153,26 +151,32 @@ export class GraphQLQueryGenerator {
       const primitiveType = this.typeInformer.getPrimitiveExtendedType(prop.typeInfo.type)
 
       args[prop.name] = {
-        type: this.generateFilterFor(primitiveType),
+        type: primitiveType === Array ? this.generateArrayFilterFor(prop) : this.generateFilterFor(primitiveType),
       }
     })
     return args
   }
 
-  private canFilter(graphQLType: GraphQLNonInputType): boolean {
-    return graphQLType instanceof GraphQLScalarType && graphQLType != GraphQLJSONObject
-  }
+  private generateArrayFilterFor(property: PropertyMetadata): GraphQLInputObjectType {
+    const filterName = `${property.name}PropertyFilter`
 
-  private generateFilterFor(type: AnyClass): GraphQLInputObjectType {
-    const filterName = `${type.name}PropertyFilter`
     if (!this.generatedFiltersByTypeName[filterName]) {
-      const graphQLValueType = this.typeInformer.getGraphQLTypeFor(type)
+      const propFilters: GraphQLInputFieldConfigMap = {}
+      property.typeInfo.parameters.forEach((param) => {
+        const paramPrimitiveType = this.typeInformer.getPrimitiveExtendedType(param.type)
+        const graphQLPropType = this.typeInformer.getGraphQLTypeFor(paramPrimitiveType)
+
+        propFilters.includes = {
+          ...propFilters.includes,
+          ...{
+            type: graphQLPropType as GraphQLScalarType,
+          },
+        }
+      })
+
       this.generatedFiltersByTypeName[filterName] = new GraphQLInputObjectType({
         name: filterName,
-        fields: {
-          operation: { type: new GraphQLNonNull(this.operationEnumFor(type)) },
-          values: { type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(graphQLValueType))) },
-        },
+        fields: propFilters,
       })
     }
     return this.generatedFiltersByTypeName[filterName]
