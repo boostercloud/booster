@@ -39,7 +39,7 @@ export const template = `{
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "compile": "npx ttsc -b tsconfig.json",
+    "compile": "npx tsc -b tsconfig.json",
     "deploy": "boost deploy",
     "clean": "npx rimraf ./dist tsconfig.tsbuildinfo",
     "test": "npx nyc --extension .ts mocha --forbid-only \\"test/**/*.test.ts\\""
