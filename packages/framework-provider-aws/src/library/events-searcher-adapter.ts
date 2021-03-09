@@ -124,7 +124,7 @@ async function searchEventsByEntity(
   timeQuery: TimeQueryData
 ): Promise<Array<EventEnvelope>> {
   // TODO: manage pagination
-  // Fist query the index
+  // First query the index
   const params: DocumentClient.QueryInput = {
     TableName: config.resourceNames.eventsStore,
     IndexName: eventsStoreAttributes.indexByEntity.name(config),
