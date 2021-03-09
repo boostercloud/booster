@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Operation, FilterFor, BoosterConfig, Logger, InvalidParameterError } from '@boostercloud/framework-types'
-import { DynamoDB } from 'aws-sdk'
+import { AWSError, DynamoDB } from 'aws-sdk'
 import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
+import { PromiseResult } from 'aws-sdk/lib/request'
 import ExpressionAttributeValueMap = DocumentClient.ExpressionAttributeValueMap
 import ExpressionAttributeNameMap = DocumentClient.ExpressionAttributeNameMap
 
@@ -26,11 +27,16 @@ export async function searchReadModel(
   }
   logger.debug('Running search with the following params: \n', params)
 
-  const result = await dynamoDB.scan(params).promise()
+  const resultItems: Array<any> = []
+  let result: PromiseResult<DynamoDB.DocumentClient.ScanOutput, AWSError>
+  do {
+    result = await dynamoDB.scan(params).promise()
+    resultItems.concat(result.Items ?? [])
+  } while (result.LastEvaluatedKey)
 
   logger.debug('Search result: ', result.Items)
 
-  return result.Items ?? []
+  return resultItems
 }
 
 function buildFilterExpression(filters: FilterFor<any>, usedPlaceholders: Array<string> = []): string {
