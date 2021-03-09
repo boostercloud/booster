@@ -1,5 +1,6 @@
 import { BoosterConfig, Logger, SubscriptionEnvelope } from '@boostercloud/framework-types'
-import { DynamoDB } from 'aws-sdk'
+import { AWSError, DynamoDB } from 'aws-sdk'
+import { PromiseResult } from 'aws-sdk/lib/request'
 import { subscriptionsStoreAttributes } from '../constants'
 import { sortKeyForSubscription } from './partition-keys'
 
@@ -50,18 +51,22 @@ export async function fetchSubscriptions(
   subscriptionName: string
 ): Promise<Array<SubscriptionEnvelope>> {
   // TODO: filter expired ones. Or... is it needed?
-  const result = await db
-    .query({
-      TableName: config.resourceNames.subscriptionsStore,
-      ConsistentRead: true,
-      KeyConditionExpression: `${subscriptionsStoreAttributes.partitionKey} = :partitionKey`,
-      ExpressionAttributeValues: {
-        ':partitionKey': subscriptionName,
-      },
-    })
-    .promise()
-
-  return result.Items as Array<SubscriptionEnvelope>
+  const resultItems: Array<SubscriptionEnvelope> = []
+  let result: PromiseResult<DynamoDB.DocumentClient.QueryOutput, AWSError>
+  do {
+    result = await db
+      .query({
+        TableName: config.resourceNames.subscriptionsStore,
+        ConsistentRead: true,
+        KeyConditionExpression: `${subscriptionsStoreAttributes.partitionKey} = :partitionKey`,
+        ExpressionAttributeValues: {
+          ':partitionKey': subscriptionName,
+        },
+      })
+      .promise()
+    resultItems.concat(result.Items ?? [])
+  } while (result.LastEvaluatedKey)
+  return resultItems
 }
 
 export async function deleteSubscription(
@@ -138,8 +143,7 @@ export async function deleteAllSubscriptions(
       [config.resourceNames.subscriptionsStore]: foundSubscriptions.map((subscriptionRecord) => ({
         DeleteRequest: {
           Key: {
-            [subscriptionsStoreAttributes.partitionKey]:
-              subscriptionRecord[subscriptionsStoreAttributes.partitionKey],
+            [subscriptionsStoreAttributes.partitionKey]: subscriptionRecord[subscriptionsStoreAttributes.partitionKey],
             [subscriptionsStoreAttributes.sortKey]: subscriptionRecord[subscriptionsStoreAttributes.sortKey],
           },
         },
