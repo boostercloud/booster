@@ -166,7 +166,7 @@ describe('GraphQLQueryGenerator', () => {
               )
             })
 
-            it('should call typeInformer.getGraphQLTypeFor 4 times', () => {
+            it('should call typeInformer.getGraphQLTypeFor 3 times', () => {
               sut.generate()
 
               expect(getGraphQLTypeForStub)
@@ -194,21 +194,21 @@ describe('GraphQLQueryGenerator', () => {
                 expect(config.fields[mockTargetTypeName].args['id'].description).to.be.undefined
                 expect(config.fields[mockTargetTypeName].args['id'].extensions).to.be.undefined
 
-                const booleansTypeFilterConfig = config.fields[`${mockTargetTypeName}s`].args[
+                const booleansTypeFilterConfig = config.fields[`${mockTargetTypeName}s`].args.filter.type.getFields()[
                   mockPropertyName
-                ].type.toConfig()
-                expect(booleansTypeFilterConfig.name).to.be.equal('BooleanPropertyFilter')
+                ]
+                expect(booleansTypeFilterConfig.type.toString()).to.be.equal('BooleanPropertyFilter')
 
-                const fieldsKeys = Object.keys(booleansTypeFilterConfig.fields)
+                const fieldsKeys = Object.keys(booleansTypeFilterConfig.type.getFields())
                 expect(fieldsKeys).to.be.deep.equal(['eq', 'ne'])
                 expect(fieldsKeys.length).to.equal(2)
 
                 fieldsKeys.forEach((fieldKey) => {
-                  expect(booleansTypeFilterConfig.fields[fieldKey].description).to.be.undefined
-                  expect(booleansTypeFilterConfig.fields[fieldKey].type.toString()).to.be.equal('Boolean')
-                  expect(booleansTypeFilterConfig.fields[fieldKey].defaultValue).to.be.undefined
-                  expect(booleansTypeFilterConfig.fields[fieldKey].extensions).to.be.undefined
-                  expect(booleansTypeFilterConfig.fields[fieldKey].astNode).to.be.undefined
+                  expect(booleansTypeFilterConfig.type.getFields()[fieldKey].description).to.be.undefined
+                  expect(booleansTypeFilterConfig.type.getFields()[fieldKey].type.toString()).to.be.equal('Boolean')
+                  expect(booleansTypeFilterConfig.type.getFields()[fieldKey].defaultValue).to.be.undefined
+                  expect(booleansTypeFilterConfig.type.getFields()[fieldKey].extensions).to.be.undefined
+                  expect(booleansTypeFilterConfig.type.getFields()[fieldKey].astNode).to.be.undefined
                 })
               })
 
@@ -247,20 +247,22 @@ describe('GraphQLQueryGenerator', () => {
                 expect(config.fields[mockTargetTypeName].args['id'].description).to.be.undefined
                 expect(config.fields[mockTargetTypeName].args['id'].extensions).to.be.undefined
 
-                const TypeFilterConfig = config.fields[`${mockTargetTypeName}s`].args[mockPropertyName].type.toConfig()
-                expect(TypeFilterConfig.name).to.be.equal('NumberPropertyFilter')
+                const TypeFilterConfig = config.fields[`${mockTargetTypeName}s`].args.filter.type.getFields()[
+                  mockPropertyName
+                ]
+                expect(TypeFilterConfig.type.toString()).to.be.equal('NumberPropertyFilter')
 
-                const fieldsKeys = Object.keys(TypeFilterConfig.fields)
+                const fieldsKeys = Object.keys(TypeFilterConfig.type.getFields())
                 expect(fieldsKeys).to.be.deep.equal(['eq', 'ne', 'le', 'lt', 'ge', 'gt', 'in'])
                 expect(fieldsKeys.length).to.equal(7)
 
                 fieldsKeys.forEach((fieldKey) => {
-                  expect(TypeFilterConfig.fields[fieldKey].description).to.be.undefined
+                  expect(TypeFilterConfig.type.getFields()[fieldKey].description).to.be.undefined
                   const type = fieldKey === 'in' ? '[Float]' : 'Float' // The in filter expects an array of the element
-                  expect(TypeFilterConfig.fields[fieldKey].type.toString()).to.be.equal(type)
-                  expect(TypeFilterConfig.fields[fieldKey].defaultValue).to.be.undefined
-                  expect(TypeFilterConfig.fields[fieldKey].extensions).to.be.undefined
-                  expect(TypeFilterConfig.fields[fieldKey].astNode).to.be.undefined
+                  expect(TypeFilterConfig.type.getFields()[fieldKey].type.toString()).to.be.equal(type)
+                  expect(TypeFilterConfig.type.getFields()[fieldKey].defaultValue).to.be.undefined
+                  expect(TypeFilterConfig.type.getFields()[fieldKey].extensions).to.be.undefined
+                  expect(TypeFilterConfig.type.getFields()[fieldKey].astNode).to.be.undefined
                 })
               })
 
@@ -299,10 +301,12 @@ describe('GraphQLQueryGenerator', () => {
                 expect(config.fields[mockTargetTypeName].args['id'].description).to.be.undefined
                 expect(config.fields[mockTargetTypeName].args['id'].extensions).to.be.undefined
 
-                const TypeFilterConfig = config.fields[`${mockTargetTypeName}s`].args[mockPropertyName].type.toConfig()
-                expect(TypeFilterConfig.name).to.be.equal('StringPropertyFilter')
+                const TypeFilterConfig = config.fields[`${mockTargetTypeName}s`].args.filter.type.getFields()[
+                  mockPropertyName
+                ]
+                expect(TypeFilterConfig.type.toString()).to.be.equal('StringPropertyFilter')
 
-                const fieldsKeys = Object.keys(TypeFilterConfig.fields)
+                const fieldsKeys = Object.keys(TypeFilterConfig.type.getFields())
                 expect(fieldsKeys).to.be.deep.equal([
                   'eq',
                   'ne',
@@ -317,12 +321,12 @@ describe('GraphQLQueryGenerator', () => {
                 expect(fieldsKeys.length).to.equal(9)
 
                 fieldsKeys.forEach((fieldKey) => {
-                  expect(TypeFilterConfig.fields[fieldKey].description).to.be.undefined
+                  expect(TypeFilterConfig.type.getFields()[fieldKey].description).to.be.undefined
                   const type = fieldKey === 'in' ? '[String]' : 'String' // The in filter expects an array of the element
-                  expect(TypeFilterConfig.fields[fieldKey].type.toString()).to.be.equal(type)
-                  expect(TypeFilterConfig.fields[fieldKey].defaultValue).to.be.undefined
-                  expect(TypeFilterConfig.fields[fieldKey].extensions).to.be.undefined
-                  expect(TypeFilterConfig.fields[fieldKey].astNode).to.be.undefined
+                  expect(TypeFilterConfig.type.getFields()[fieldKey].type.toString()).to.be.equal(type)
+                  expect(TypeFilterConfig.type.getFields()[fieldKey].defaultValue).to.be.undefined
+                  expect(TypeFilterConfig.type.getFields()[fieldKey].extensions).to.be.undefined
+                  expect(TypeFilterConfig.type.getFields()[fieldKey].astNode).to.be.undefined
                 })
               })
             })
