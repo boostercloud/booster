@@ -11,6 +11,7 @@ import { DynamoDB } from 'aws-sdk'
 import { dynamoDbBatchGetLimit, eventsStoreAttributes } from '../constants'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import { decodeEventStoreSortingKey, partitionKeyForEvent, partitionKeyForIndexByEntity } from './keys-helper'
+import { inChunksOf } from '../pagination-helpers'
 
 export async function searchEvents(
   dynamoDB: DynamoDB.DocumentClient,
@@ -236,15 +237,4 @@ function convertToSearchResult(eventEnvelopes: Array<EventEnvelope>): Array<Even
       if (a.createdAt < b.createdAt) return 1
       return 0
     })
-}
-
-// TODO: Remove this and use the one being merged form PR #571
-function inChunksOf<TElement>(chunkSize: number, arr: Array<TElement>): Array<Array<TElement>> {
-  const result = []
-  if (chunkSize >= 0) {
-    for (let i = 0; i < arr.length; i += chunkSize) {
-      result.push(arr.slice(i, i + chunkSize))
-    }
-  }
-  return result
 }

@@ -1,7 +1,7 @@
 import gql from 'graphql-tag'
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
-import { createUser, getUserAuthInformation, getEventsByEntityId, graphQLClient, UserAuthInformation } from '../utils'
+import { createUser, getUserAuthInformation, graphQLClient, UserAuthInformation, queryEvents } from '../utils'
 import { random, address, internet } from 'faker'
 import { expect } from 'chai'
 import { waitForIt } from '../../../helper/sleep'
@@ -44,13 +44,13 @@ describe('Event handlers', () => {
       })
 
       const stockEvents: Array<any> = await waitForIt(
-        () => getEventsByEntityId('Stock', mockProductId),
+        () => queryEvents(`Stock-${mockProductId}-event`),
         (events) => {
           return events?.length === 1
         }
       )
       const productEvents: Array<any> = await waitForIt(
-        () => getEventsByEntityId('Product', mockProductId),
+        () => queryEvents(`Product-${mockProductId}-event`),
         (events) => {
           return events?.length === 1
         }

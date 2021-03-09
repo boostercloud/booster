@@ -460,6 +460,7 @@ export async function queryEvents(primaryKey: string, latestFirst = true): Promi
   const output: QueryOutput = await documentClient
     .query({
       TableName: await eventsStoreTableName(),
+      ConsistentRead: true,
       KeyConditionExpression: 'entityTypeName_entityID_kind = :v',
       ExpressionAttributeValues: { ':v': primaryKey },
       ScanIndexForward: !latestFirst,
@@ -553,19 +554,3 @@ export async function countSnapshotItems(entityTypeName: string, entityID: strin
   return output.Count ?? -1
 }
 
-export async function getEventsByEntityId(entityName: string, entityID: string): Promise<any> {
-  const output: QueryOutput = await documentClient
-    .query({
-      TableName: await eventsStoreTableName(),
-      ConsistentRead: true,
-      KeyConditionExpression: 'entityTypeName_entityID_kind = :partitionKey',
-      ExpressionAttributeValues: {
-        ':partitionKey': `${entityName}-${entityID}-event`,
-      },
-    })
-    .promise()
-
-  return output.Items
-}
-
-// --- Other helpers ---
