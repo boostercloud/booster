@@ -278,7 +278,7 @@ Identity and Access Management panel. Once there, create an access key:
 
 ![create access key button location](./img/aws-create-access-key.png)
 
-A pop-up like the following will appear, **don't close it!**. 
+A pop-up like the following will appear, **don't close it!**.
 
 ![credentials pop up](./img/aws-credentials.png)
 
@@ -686,9 +686,9 @@ the deploy command:
 boost deploy -e production
 ```
 
-> Deploy command automatically builds the project for you before performing updates in the cloud provider, 
-  so, build command it's not required beforehand.
-  
+> Deploy command automatically builds the project for you before performing updates in the cloud provider,
+> so, build command it's not required beforehand.
+
 > With `-e production` we are specifying which environment we want to deploy. We'll talk about them later.
 
 It will take a couple of minutes to deploy all the resources. Once finished, you will see
@@ -1582,6 +1582,142 @@ For more information about queries and how to use them, please check the [GraphQ
 #### Getting real-time updates for a read model
 
 Booster GraphQL API also provides support for real-time updates using subscriptions and websocket, to get more information about it go to the [GraphQL API](#subscribing-to-read-models) section.
+
+#### Filtering a read model
+
+Booster GraphQL API provides support for filtering ReadModels on queries, subscriptions and at code level.
+
+Using the GraphQL API endpoint you can retrieve the schema of your application so you can see what are the filters for every ReadModel and its properties. You can filter like this:
+
+Searching for a specific ReadModel by id
+
+```graphql
+query {
+  ProductReadModels(filter: { id: { eq: "test-id" } }) {
+    id
+    sku
+    availability
+    price
+  }
+}
+```
+
+#### Supported filters
+
+The currently supported filters are in the following ones. |
+
+##### Boolean filters
+
+| Filter |   Value    |  Description |
+| :----- | :--------: | -----------: |
+| eq     | true/false |     Equal to |
+| ne     | true/false | Not equal to |
+
+Example:
+
+```graphql
+query {
+  ProductReadModels(filter: { availability: { eq: true } }) {
+    id
+    sku
+    availability
+    price
+  }
+}
+```
+
+##### Number filters
+
+| Filter |  Value  |           Description |
+| :----- | :-----: | --------------------: |
+| eq     |  Float  |              Equal to |
+| ne     |  Float  |          Not equal to |
+| gt     |  Float  |          Greater than |
+| ge     |  Float  | Greater or equal than |
+| lt     |  Float  |            Lower than |
+| le     |  Float  |   Lower or equal than |
+| in     | [Float] | Exists in given array |
+
+Example:
+
+```graphql
+query {
+  ProductReadModels(filter: { price: { gt: 200 } }) {
+    id
+    sku
+    availability
+    price
+  }
+}
+```
+
+##### String filters
+
+| Filter     |  Value   |                Description |
+| :--------- | :------: | -------------------------: |
+| eq         |  String  |                   Equal to |
+| ne         |  String  |               Not equal to |
+| gt         |  String  |               Greater than |
+| ge         |  String  |      Greater or equal than |
+| lt         |  String  |                 Lower than |
+| le         |  String  |        Lower or equal than |
+| in         | [String] |      Exists in given array |
+| beginsWith |  String  | Starts with a given substr |
+| contains   |  String  |    Contains a given substr |
+
+Example:
+
+```graphql
+query {
+  ProductReadModels(filter: { sku: { begingsWith: "jelwery" } }) {
+    id
+    sku
+    availability
+    price
+  }
+}
+```
+
+##### Array filters
+
+| Filter   | Value  |             Description |
+| :------- | :----: | ----------------------: |
+| includes | Object | Includes a given object |
+
+Example:
+
+```graphql
+query {
+  CartReadModels(filter: { itemsIds: { includes: "test-item" } }) {
+    id
+    price
+    itemsIds
+  }
+}
+```
+
+_Note: Right now there is a limitation with complex properties in Arrays, where you just can filter them if you know the exact value of an element but is not possible to filter from a property of the element. As a workaround, you can use an array of ids of the complex property and filter for that property as in the example above._
+
+##### Filter combinators
+
+All the filters can be combined to create a more complex search on the same properties of the ReadModel.
+| Filter | Value | Description |
+| :----- | :--------: | -----------: |
+| and | [Filters] | AND - all filters on the list have a match |
+| or | [Filters] | OR - At least one filter of the list has a match |
+| not | Filter/and/or | The element does not match the filter
+
+Example:
+
+```graphql
+query {
+  CartReadModels(filter: { or: [{ id: { contains: "a" } }, { id: { contains: "b" } }] }) {
+    id
+    price
+    itemsIds
+  }
+}
+```
 
 #### Getting and filtering read models data at code level
 
@@ -2963,9 +3099,11 @@ Variables
 The databases for the local provider are just json files in the `<project-root>/.booster` folder. If you are wondering what data is available in the application you will only need to chose what file to look into.
 
 ### Testing Booster applications
+
 To properly test a Booster application, you should create a `test` folder at the same level as the `src` one (check the generated `tsconfig.json` for more information). Apart from that, tests' names should have the `<my_test>.test.ts` format.
 
 When a Booster application is generated, you will have a script in a `package.json` like this:
+
 ```typescript
 "scripts": {
   "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
@@ -2981,6 +3119,7 @@ The only thing that you should add to this line are the `AWS_SDK_LOAD_CONFIG=tru
 ```
 
 #### Testing with sinon-chai
+
 The `BoosterConfig` can be accessed through the `Booster.config` on any part of a Booster application. To properly mock it for your objective, we really recommend to use sinon `replace` method, after configuring your `Booster.config` as desired.
 
 In the example below, we add 2 "empty" read-models, since we are iterating `Booster.config.readModels` from a command handler:
@@ -3020,6 +3159,7 @@ public static async handle(command: MyCommand, register: Register): Promise<void
 ```
 
 #### Recommended files
+
 These are some files that might help you speed up your testing with Booster.
 
 ```typescript
@@ -3031,6 +3171,7 @@ chai.use(require('chai-as-promised'))
 
 export const expect = chai.expect
 ```
+
 This `expect` method will help you with some more additional methods like `expect(<my_stub>).to.have.been.calledOnceWithExactly(<my_params..>)`
 
 ```yaml
