@@ -81,7 +81,7 @@ describe('events', async () => {
     expect(response?.data?.ChangeMultipleCartItems).to.be.true
 
     // Verify number of events
-    const expectedEventItemsCount = eventsCount + 1
+    const expectedEventItemsCount = eventsCount + eventsToCreate
     await waitForIt(
       () => countEventItems(),
       (newEventsCount) => {
@@ -100,8 +100,7 @@ describe('events', async () => {
       expect(event.entityTypeName_entityID_kind).to.be.equal(`Cart-${mockCartId}-event`)
       const productIdNumber = parseInt(event.value.productId)
       expect(productIdNumber).to.be.gte(0)
-      expect(productIdNumber).to.be.lessThan(eventsCount)
-      expect(productIdNumber).to.be.lessThan(eventsCount)
+      expect(productIdNumber).to.be.lessThan(eventsToCreate)
       expect(event.value.cartId).to.be.equal(mockCartId)
       expect(event.value.quantity).to.be.equal(1)
       expect(event.kind).to.be.equal('event')
