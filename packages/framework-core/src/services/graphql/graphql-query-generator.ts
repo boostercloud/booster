@@ -14,14 +14,10 @@ import {
   GraphQLBoolean,
   GraphQLFloat,
   Thunk,
+  GraphQLEnumType,
+  GraphQLEnumValueConfigMap,
 } from 'graphql'
-import {
-  GraphQLNonInputType,
-  GraphQLResolverContext,
-  ResolverBuilder,
-  TargetTypeMetadata,
-  TargetTypesMap,
-} from './common'
+import { GraphQLResolverContext, ResolverBuilder, TargetTypeMetadata, TargetTypesMap } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
 import * as inflected from 'inflected'
 import { GraphQLJSONObject } from 'graphql-type-json'
@@ -83,7 +79,7 @@ export class GraphQLQueryGenerator {
       const graphQLType = this.typeInformer.getGraphQLTypeFor(type.class)
       queries[inflected.pluralize(name)] = {
         type: new GraphQLList(graphQLType),
-        args: this.generateFilterArguments(type),
+        args: this.generateFilterQueriesFields(name, type),
         resolve: this.filterResolverBuilder(type.class),
       }
     }
@@ -143,6 +139,19 @@ export class GraphQLQueryGenerator {
         },
       })
     )
+  }
+  public generateFilterQueriesFields(name: string, type: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
+    const filterArguments = this.generateFilterArguments(type)
+    const filter: GraphQLInputObjectType = new GraphQLInputObjectType({
+      name: `${name}Filter`,
+      fields: () => ({
+        ...filterArguments,
+        ...{ and: { type: new GraphQLList(filter) } },
+        ...{ or: { type: new GraphQLList(filter) } },
+        ...{ not: { type: filter } },
+      }),
+    })
+    return { filter: { type: filter } }
   }
 
   public generateFilterArguments(typeMetadata: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
