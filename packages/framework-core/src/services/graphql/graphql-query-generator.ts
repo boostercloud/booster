@@ -9,7 +9,6 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLOutputType,
-  GraphQLScalarType,
   GraphQLString,
   GraphQLBoolean,
   GraphQLFloat,
@@ -163,14 +162,11 @@ export class GraphQLQueryGenerator {
 
     if (!this.generatedFiltersByTypeName[filterName]) {
       const propFilters: GraphQLInputFieldConfigMap = {}
-      property.typeInfo.parameters.forEach((param) => {
-        const paramPrimitiveType = this.typeInformer.getPrimitiveExtendedType(param.type)
-        const graphQLPropType = this.typeInformer.getGraphQLTypeFor(paramPrimitiveType)
-
+      property.typeInfo.parameters.forEach(() => {
         propFilters.includes = {
           ...propFilters.includes,
           ...{
-            type: graphQLPropType as GraphQLScalarType,
+            type: GraphQLJSONObject,
           },
         }
       })
