@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { DynamoDBStreamEvent, DynamoDBRecord } from 'aws-lambda'
 import { BoosterConfig, EventEnvelope, Logger, UUID } from '@boostercloud/framework-types'
-import { DynamoDB } from 'aws-sdk'
+import { AWSError, DynamoDB } from 'aws-sdk'
 import { dynamoDbBatchWriteLimit, eventsStoreAttributes } from '../constants'
 import { partitionKeyForEvent } from './partition-keys'
 import { Converter } from 'aws-sdk/clients/dynamodb'
 import { inChunksOf, waitAndReturn } from '../pagination-helpers'
+import { PromiseResult } from 'aws-sdk/lib/request'
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const originOfTime = new Date(0).toISOString()
@@ -30,21 +31,27 @@ export async function readEntityEventsSince(
   since?: string
 ): Promise<Array<EventEnvelope>> {
   const fromTime = since ? since : originOfTime
-  const result = await dynamoDB
-    .query({
-      TableName: config.resourceNames.eventsStore,
-      ConsistentRead: true,
-      KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey AND ${eventsStoreAttributes.sortKey} > :fromTime`,
-      ExpressionAttributeValues: {
-        ':partitionKey': partitionKeyForEvent(entityTypeName, entityID),
-        ':fromTime': fromTime,
-      },
-      ScanIndexForward: true, // Ascending order (older timestamps first)
-    })
-    .promise()
+  const resultItems: DynamoDB.DocumentClient.ItemList = []
+  let result: PromiseResult<DynamoDB.DocumentClient.QueryOutput, AWSError>
+
+  do {
+    result = await dynamoDB
+      .query({
+        TableName: config.resourceNames.eventsStore,
+        ConsistentRead: true,
+        KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey AND ${eventsStoreAttributes.sortKey} > :fromTime`,
+        ExpressionAttributeValues: {
+          ':partitionKey': partitionKeyForEvent(entityTypeName, entityID),
+          ':fromTime': fromTime,
+        },
+        ScanIndexForward: true, // Ascending order (older timestamps first)
+      })
+      .promise()
+    resultItems.concat(result.Items ?? [])
+  } while (result.LastEvaluatedKey)
   logger.debug(
     `[EventsAdapter#readEntityEventsSince] Loaded events for entity ${entityTypeName} with ID ${entityID} with result:`,
-    result.Items
+    resultItems
   )
   return result.Items as Array<EventEnvelope>
 }
