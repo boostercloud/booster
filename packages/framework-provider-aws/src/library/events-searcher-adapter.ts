@@ -174,7 +174,6 @@ async function findEventsDataWithKeys(
   logger: Logger,
   keys: Array<EventStoreKeys>
 ): Promise<Array<EventEnvelope>> {
-  // TODO: Manage pagination
   const result: Array<EventEnvelope> = []
 
   const keysBatches = inChunksOf(dynamoDbBatchGetLimit, keys)

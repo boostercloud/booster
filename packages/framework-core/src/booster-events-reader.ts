@@ -33,9 +33,15 @@ export class BoosterEventsReader {
 
   private entityMetadataFromRequest(eventRequest: EventSearchRequest): EntityMetadata {
     const { filters } = eventRequest
-    if (isByEntitySearch(filters) === isByEventTypeSearch(filters)) {
-      // Means no search type was passed or both were passed
-      throw new InvalidParameterError('Invalid event search request. It should contain either "type" or "entity" field')
+    if (!isByEntitySearch(filters) && !isByEventTypeSearch(filters)) {
+      throw new InvalidParameterError(
+        'Invalid event search request. It should contain either "type" or "entity" field, but it included none'
+      )
+    }
+    if (isByEntitySearch(filters) && isByEventTypeSearch(filters)) {
+      throw new InvalidParameterError(
+        'Invalid event search request. It should contain either "type" or "entity" field, but it included both'
+      )
     }
     if (isByEntitySearch(filters)) {
       return this.entityMetadataFromEntityName(filters.entity)
@@ -73,6 +79,7 @@ export class BoosterEventsReader {
 function isByEntitySearch(filters: EventFilter): filters is EventFilterByEntity {
   return 'entity' in filters
 }
+
 function isByEventTypeSearch(filters: EventFilter): filters is EventFilterByType {
   return 'type' in filters
 }
