@@ -5,6 +5,7 @@ import { createPolicyStatement } from './policies'
 import { GraphQLStackMembers } from './graphql-stack'
 import { ScheduledCommandStackMembers } from './scheduled-commands-stack'
 import { EventsStackMembers } from './events-stack'
+import { Function } from '@aws-cdk/aws-lambda'
 
 export const setupPermissions = (
   graphQLStack: GraphQLStackMembers,
@@ -13,6 +14,9 @@ export const setupPermissions = (
   websocketAPI: CfnApi,
   scheduledCommandStack?: ScheduledCommandStackMembers
 ): void => {
+  const { graphQLLambda, subscriptionsStore, subscriptionNotifier, connectionsStore } = graphQLStack
+  const { eventsLambda, eventsStore } = eventsStack
+  const scheduledLambda = scheduledCommandStack?.scheduledLambda
   const websocketManageConnectionsPolicy = createPolicyStatement(
     [
       Fn.join(':', [
@@ -27,49 +31,65 @@ export const setupPermissions = (
     ['execute-api:ManageConnections']
   )
 
-  const { graphQLLambda, subscriptionsStore, subscriptionNotifier, connectionsStore } = graphQLStack
-  const { eventsLambda, eventsStore } = eventsStack
-  graphQLLambda.addToRolePolicy(
-    createPolicyStatement(
-      [eventsStore.tableArn + '*'], // The '*' at the end is to also grant permissions on table indexes
-      ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchGetItem', 'dynamodb:BatchWriteItem']
-    )
-  )
-  graphQLLambda.addToRolePolicy(
-    createPolicyStatement(
-      [subscriptionsStore.tableArn + '*'], // The '*' at the end is to also grant permissions on table indexes
-      ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:DeleteItem', 'dynamodb:BatchWriteItem']
-    )
-  )
+  // GraphQL Lambda permissions
+  grantFullAccessToEventStore(eventsStore, graphQLLambda)
+  grantReadAccessToReadModels(readModelTables, graphQLLambda)
+  grantFullAccessToSubscriptionsStore(subscriptionsStore, graphQLLambda)
   graphQLLambda.addToRolePolicy(
     createPolicyStatement([connectionsStore.tableArn], ['dynamodb:GetItem', 'dynamodb:PutItem', 'dynamodb:DeleteItem'])
   )
   graphQLLambda.addToRolePolicy(websocketManageConnectionsPolicy)
 
+  // Subscription notifier lambda permissions
   subscriptionNotifier.addToRolePolicy(createPolicyStatement([subscriptionsStore.tableArn], ['dynamodb:Query*']))
   subscriptionNotifier.addToRolePolicy(websocketManageConnectionsPolicy)
 
-  eventsLambda.addToRolePolicy(
+  // Events Lambda permissions
+  grantFullAccessToEventStore(eventsStore, eventsLambda)
+  grantFullAccessToReadModels(readModelTables, eventsLambda)
+
+  // Scheduled lambda permissions
+  if (scheduledLambda) {
+    grantFullAccessToEventStore(eventsStore, scheduledLambda)
+    grantReadAccessToReadModels(readModelTables, scheduledLambda)
+  }
+}
+
+function grantFullAccessToEventStore(store: Table, lambda: Function): void {
+  lambda.addToRolePolicy(
     createPolicyStatement(
-      [eventsStore.tableArn + '*'], // The '*' at the end is to also grant permissions on table indexes
+      [store.tableArn],
       ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchGetItem', 'dynamodb:BatchWriteItem']
     )
   )
-
-  if (scheduledCommandStack) {
-    const { scheduledLambda } = scheduledCommandStack
-    scheduledLambda.addToRolePolicy(
-      createPolicyStatement(
-        [eventsStore.tableArn + '*'], // The '*' at the end is to also grant permissions on table indexes
-        ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchGetItem', 'dynamodb:BatchWriteItem']
-      )
+  lambda.addToRolePolicy(
+    createPolicyStatement(
+      [store.tableArn + '*'], // The '*' at the end is to grant permissions on table indexes (only read permissions)
+      ['dynamodb:Query*']
     )
-  }
+  )
+}
 
-  const tableArns = readModelTables.map((table): string => table.tableArn)
-  if (tableArns.length > 0) {
-    eventsLambda.addToRolePolicy(
-      createPolicyStatement(tableArns, [
+function grantFullAccessToSubscriptionsStore(store: Table, lambda: Function): void {
+  lambda.addToRolePolicy(
+    createPolicyStatement(
+      [store.tableArn],
+      ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:DeleteItem', 'dynamodb:BatchWriteItem']
+    )
+  )
+  lambda.addToRolePolicy(
+    createPolicyStatement(
+      [store.tableArn + '*'], // The '*' at the end is to grant permissions on table indexes (only read permissions)
+      ['dynamodb:Query*']
+    )
+  )
+}
+
+function grantFullAccessToReadModels(readModelTables: Array<Table>, lambda: Function): void {
+  const tableARNs = readModelTables.map((table): string => table.tableArn)
+  if (tableARNs.length > 0) {
+    lambda.addToRolePolicy(
+      createPolicyStatement(tableARNs, [
         'dynamodb:Get*',
         'dynamodb:Query*',
         'dynamodb:Scan*',
@@ -77,11 +97,12 @@ export const setupPermissions = (
         'dynamodb:DeleteItem*',
       ])
     )
-    graphQLLambda.addToRolePolicy(createPolicyStatement(tableArns, ['dynamodb:Query*', 'dynamodb:Scan*']))
-    if (scheduledCommandStack) {
-      scheduledCommandStack.scheduledLambda.addToRolePolicy(
-        createPolicyStatement(tableArns, ['dynamodb:Query*', 'dynamodb:Scan*'])
-      )
-    }
+  }
+}
+
+function grantReadAccessToReadModels(readModelTables: Array<Table>, lambda: Function): void {
+  const tableARNs = readModelTables.map((table): string => table.tableArn)
+  if (tableARNs.length > 0) {
+    lambda.addToRolePolicy(createPolicyStatement(tableARNs, ['dynamodb:Query*', 'dynamodb:Scan*']))
   }
 }
