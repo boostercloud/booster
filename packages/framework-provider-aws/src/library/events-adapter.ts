@@ -60,15 +60,23 @@ export async function readEntityLatestSnapshot(
   config: BoosterConfig,
   logger: Logger,
   entityTypeName: string,
-  entityID: UUID
+  entityID: UUID,
+  at?: Date
 ): Promise<EventEnvelope | null> {
+  // https://stackoverflow.com/questions/47347547/amazon-dynamodb-and-filtering-by-date
+  // Example: today > yesterday -> true
+  // Only if Date string formats are the same (toISOString in this case)
+  const atQuery = at ? `AND ${at.toISOString()} >= :sortKey` : ''
+  console.log(atQuery ? '///// MY QUERY ////' + atQuery : '')
+  console.log(`${eventsStoreAttributes.partitionKey} = :partitionKey ${atQuery}`)
   const result = await dynamoDB
     .query({
       TableName: config.resourceNames.eventsStore,
       ConsistentRead: true,
-      KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey`,
+      KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey ${atQuery}`,
       ExpressionAttributeValues: {
         ':partitionKey': partitionKeyForEvent(entityTypeName, entityID, 'snapshot'),
+        ':sortKey': at?.toISOString(), // PENDING: Test what happens when this is undefined
       },
       ScanIndexForward: false, // Descending order (newer timestamps first),
       Limit: 1,

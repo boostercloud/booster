@@ -5,9 +5,10 @@ export async function fetchEntitySnapshot<TEntity extends EntityInterface>(
   config: BoosterConfig,
   logger: Logger,
   entityClass: Class<TEntity>,
-  entityID: UUID
+  entityID: UUID,
+  at?: Date
 ): Promise<TEntity | undefined> {
   const eventStore = new EventStore(config, logger)
-  const entitySnapshotEnvelope = await eventStore.fetchEntitySnapshot(entityClass.name, entityID)
+  const entitySnapshotEnvelope = await eventStore.fetchEntitySnapshot(entityClass.name, entityID, at)
   return entitySnapshotEnvelope?.value as TEntity
 }

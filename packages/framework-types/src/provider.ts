@@ -39,7 +39,8 @@ export interface ProviderEventsLibrary {
     config: BoosterConfig,
     logger: Logger,
     entityTypeName: string,
-    entityID: UUID
+    entityID: UUID,
+    at?: Date
   ): Promise<EventEnvelope | null>
   search(config: BoosterConfig, logger: Logger, filters: EventFilter): Promise<Array<EventSearchResponse>>
   /** Streams an event to the corresponding event handler */

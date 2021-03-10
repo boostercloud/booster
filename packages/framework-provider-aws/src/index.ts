@@ -2,8 +2,8 @@
 import {
   rawEventsToEnvelopes,
   storeEvents,
-  readEntityLatestSnapshot,
   readEntityEventsSince,
+  readEntityLatestSnapshot,
 } from './library/events-adapter'
 import {
   fetchReadModel,

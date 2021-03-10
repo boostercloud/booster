@@ -13,7 +13,8 @@ export interface BoosterApp {
   /** @deprecated use "entity" instead*/
   fetchEntitySnapshot<TEntity extends EntityInterface>(
     entityName: Class<TEntity>,
-    entityID: UUID
+    entityID: UUID,
+    at?: Date
   ): Promise<TEntity | undefined>
   readModel<TReadModel extends ReadModelInterface>(readModelClass: Class<TReadModel>): Searcher<TReadModel>
   configuredEnvironments: Set<string>

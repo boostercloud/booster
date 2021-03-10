@@ -20,21 +20,22 @@ export class EventStore {
     this.logger = logger
   }
 
-  public async fetchEntitySnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | null> {
+  public async fetchEntitySnapshot(entityName: string, entityID: UUID, at?: Date): Promise<EventEnvelope | null> {
     this.logger.debug(`[EventStore#fetchEntitySnapshot] Fetching snapshot for entity ${entityName} with ID ${entityID}`)
-    const latestSnapshotEnvelope = await this.loadLatestSnapshot(entityName, entityID)
+    const snapshotEnvelope = await this.loadSnapshot(entityName, entityID, at)
 
     // eslint-disable-next-line @typescript-eslint/no-extra-parens
-    const lastVisitedTime = latestSnapshotEnvelope?.snapshottedEventCreatedAt ?? originOfTime
+    const lastVisitedTime = snapshotEnvelope?.snapshottedEventCreatedAt ?? originOfTime
+    // PROBLEM: This method brings all events, even if a date is provided above ("at ?? new Date()" expression)
     const pendingEvents = await this.loadEventStreamSince(entityName, entityID, lastVisitedTime)
 
     if (pendingEvents.length <= 0) {
-      return latestSnapshotEnvelope
+      return snapshotEnvelope
     } else {
       this.logger.debug(
         `[EventStore#fetchEntitySnapshot] Looking for the reducer for entity ${entityName} with ID ${entityID}`
       )
-      const newEntitySnapshot = pendingEvents.reduce(this.entityReducer.bind(this), latestSnapshotEnvelope)
+      const newEntitySnapshot = pendingEvents.reduce(this.entityReducer.bind(this), snapshotEnvelope)
       this.logger.debug(
         `[EventStore#fetchEntitySnapshot] Reduced new snapshot for entity ${entityName} with ID ${entityID}: `,
         newEntitySnapshot
@@ -79,11 +80,11 @@ export class EventStore {
     return this.provider.events.store([snapshot], this.config, this.logger)
   }
 
-  private loadLatestSnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | null> {
+  private loadSnapshot(entityName: string, entityID: UUID, at?: Date): Promise<EventEnvelope | null> {
     this.logger.debug(
       `[EventStore#loadLatestSnapshot] Loading latest snapshot for entity ${entityName} and ID ${entityID}`
     )
-    return this.provider.events.latestEntitySnapshot(this.config, this.logger, entityName, entityID)
+    return this.provider.events.latestEntitySnapshot(this.config, this.logger, entityName, entityID, at)
   }
 
   private loadEventStreamSince(entityTypeName: string, entityID: UUID, timestamp: string): Promise<EventEnvelope[]> {

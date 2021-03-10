@@ -108,12 +108,14 @@ export class Booster {
    * Fetches the last known version of an entity
    * @param entityClass Name of the entity class
    * @param entityID
+   * @param at? When to retrieve the snapshot
    */
   public static entity<TEntity extends EntityInterface>(
     entityClass: Class<TEntity>,
-    entityID: UUID
+    entityID: UUID,
+    at?: Date
   ): Promise<TEntity | undefined> {
-    return fetchEntitySnapshot(this.config, this.logger, entityClass, entityID)
+    return fetchEntitySnapshot(this.config, this.logger, entityClass, entityID, at)
   }
 
   /** @deprecated Use method "entity" instead */
