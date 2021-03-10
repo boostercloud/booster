@@ -14,6 +14,9 @@ interface EntityAttributes {
   authorizeReadEvents: RoleAccess['authorize']
 }
 
+// The craziness with the following both types (the param and return types of the @Entity decorator) is to achieve that either:
+// - The @Entity decorator doesn't have parenthesis: THEN the decorator needs to accept a class as a parameter and return void
+// - The @Entity decorator have parenthesis: THEN it needs to accept an object with attributes and return a function accepting a class as a parameter
 type EntityDecoratorParam = AnyClass | EntityAttributes
 type EntityDecoratorResult<TEntity, TParam> = TParam extends EntityAttributes
   ? (entityClass: Class<TEntity>) => void
@@ -26,12 +29,9 @@ type EntityDecoratorResult<TEntity, TParam> = TParam extends EntityAttributes
 export function Entity<TEntity extends EntityInterface, TParam extends EntityDecoratorParam>(
   classOrAttributes: TParam
 ): EntityDecoratorResult<TEntity, TParam> {
-  // The craziness with the param and return types is to achieve that either:
-  // - The @Entity decorator doesn't have parenthesis: THEN we need to accept a class as a parameter and return void
-  // - The @Entity decorator have parenthesis: THEN we need to accept an object with attributes and return a function accepting a class as a parameter
-
   let authorizeReadEvents: RoleAccess['authorize'] = []
-  const mainLogicLambda = (entityClass: Class<TEntity>) => {
+  // This function will be either returned or executed, depending on the parameters passed to the decorator
+  const mainLogicFunction = (entityClass: Class<TEntity>) => {
     Booster.configureCurrentEnv((config): void => {
       if (config.entities[entityClass.name]) {
         throw new Error(`An entity called ${entityClass.name} is already registered
@@ -47,10 +47,10 @@ export function Entity<TEntity extends EntityInterface, TParam extends EntityDec
 
   if (isEntityAttributes(classOrAttributes)) {
     authorizeReadEvents = classOrAttributes.authorizeReadEvents
-    return mainLogicLambda as EntityDecoratorResult<TEntity, TParam>
+    return mainLogicFunction as EntityDecoratorResult<TEntity, TParam>
   }
 
-  return mainLogicLambda(classOrAttributes as Class<TEntity>) as EntityDecoratorResult<TEntity, TParam>
+  return mainLogicFunction(classOrAttributes as Class<TEntity>) as EntityDecoratorResult<TEntity, TParam>
 }
 
 function isEntityAttributes(param: EntityDecoratorParam): param is EntityAttributes {
