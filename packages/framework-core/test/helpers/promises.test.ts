@@ -1,7 +1,7 @@
 import { Promises, PromisesError } from '../../src/helpers/promises'
 import { expect } from '../expect'
 
-describe('the `Promises` helers', () => {
+describe('the `Promises` helpers', () => {
   describe('the `allSettledAndFulfilled` method', () => {
     it('Does not throw if all promises are fulfilled', async () => {
       const promises = [Promise.resolve(), Promise.resolve(), Promise.resolve()]
