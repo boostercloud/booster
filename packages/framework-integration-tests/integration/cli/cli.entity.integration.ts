@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { readFileContent, writeFileContent, loadFixture, removeFolders, sandboxPathFor } from '../helper/fileHelper'
+import { readFileContent, writeFileContent, loadFixture, removeFolders, sandboxPathFor } from '../helper/file-helper'
 import * as path from 'path'
 import { exec } from 'child-process-promise'
 // Imported from another package to avoid duplication

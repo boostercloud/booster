@@ -4,10 +4,10 @@ import { changeCartItem, graphQLClient } from './utils'
 import { random } from 'faker'
 import { expect } from 'chai'
 import * as DataStore from 'nedb'
-import { waitForIt } from '../aws/utils'
 import { sandboxPath } from './constants'
 import util = require('util')
 import * as path from 'path'
+import { waitForIt } from '../../helper/sleep'
 
 describe('commands', () => {
   let events: DataStore<unknown>

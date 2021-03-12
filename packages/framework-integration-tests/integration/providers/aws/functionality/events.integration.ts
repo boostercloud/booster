@@ -1,9 +1,10 @@
-import { countEventItems, countSnapshotItems, queryEvents, graphQLClient, waitForIt } from '../utils'
+import { countEventItems, countSnapshotItems, queryEvents, graphQLClient } from '../utils'
 import { expect } from '../../../helper/expect'
 import gql from 'graphql-tag'
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { random } from 'faker'
+import { waitForIt } from '../../../helper/sleep'
 
 describe('events', async () => {
   let client: ApolloClient<NormalizedCacheObject>
@@ -64,7 +65,7 @@ describe('events', async () => {
     )
 
     const mockCartId = random.uuid()
-    const eventsToCreate = 26 // Using 26 because batches are of 25, making sure the batching gets triggered
+    const eventsToCreate = 30 // Using 30 because batches are of 25, making sure the batching gets triggered
     const response = await client.mutate({
       variables: {
         cartId: mockCartId,
@@ -81,7 +82,7 @@ describe('events', async () => {
     expect(response?.data?.ChangeMultipleCartItems).to.be.true
 
     // Verify number of events
-    const expectedEventItemsCount = eventsCount + 1
+    const expectedEventItemsCount = eventsCount + eventsToCreate
     await waitForIt(
       () => countEventItems(),
       (newEventsCount) => {
@@ -95,13 +96,11 @@ describe('events', async () => {
     const eventProductIds: Array<number> = []
     expect(latestEvents).not.to.be.null
 
-    // Ensure that
     for (const event of latestEvents) {
       expect(event.entityTypeName_entityID_kind).to.be.equal(`Cart-${mockCartId}-event`)
       const productIdNumber = parseInt(event.value.productId)
       expect(productIdNumber).to.be.gte(0)
-      expect(productIdNumber).to.be.lessThan(eventsCount)
-      expect(productIdNumber).to.be.lessThan(eventsCount)
+      expect(productIdNumber).to.be.lessThan(eventsToCreate)
       expect(event.value.cartId).to.be.equal(mockCartId)
       expect(event.value.quantity).to.be.equal(1)
       expect(event.kind).to.be.equal('event')

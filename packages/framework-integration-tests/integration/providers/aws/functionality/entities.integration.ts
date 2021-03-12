@@ -1,9 +1,10 @@
-import { countReadModelItems, graphQLClient, queryReadModels, waitForIt } from '../utils'
+import { countReadModelItems, graphQLClient, queryReadModels} from '../utils'
 import { expect } from 'chai'
 import gql from 'graphql-tag'
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { random } from 'faker'
+import { waitForIt } from '../../../helper/sleep'
 
 const CART_READ_MODEL_NAME = 'CartReadModel'
 

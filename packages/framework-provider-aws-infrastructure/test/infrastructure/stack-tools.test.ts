@@ -83,6 +83,7 @@ describe('the `stack-tools` module', () => {
       config.appName = 'testing-app'
       config.entities[EmptyEntity.name] = {
         class: EmptyEntity,
+        authorizeReadEvents: [],
       }
 
       // Just checks that the assemble method does not fail,
@@ -176,6 +177,7 @@ describe('the `stack-tools` module', () => {
         config.appName = 'testing-app'
         config.entities[EmptyEntity.name] = {
           class: EmptyEntity,
+          authorizeReadEvents: [],
         }
 
         const fakeRocket: InfrastructureRocket = {

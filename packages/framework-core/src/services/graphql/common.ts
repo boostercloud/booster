@@ -1,4 +1,4 @@
-import { GraphQLList, GraphQLScalarType, GraphQLObjectType } from 'graphql/type/definition'
+import { GraphQLList, GraphQLScalarType, GraphQLObjectType, GraphQLType } from 'graphql/type/definition'
 import { AnyClass, PropertyMetadata, UserEnvelope, UUID, GraphQLOperation } from '@boostercloud/framework-types'
 import { GraphQLFieldResolver } from 'graphql'
 import { ReadModelPubSub } from '../pub-sub/read-model-pub-sub'
@@ -9,9 +9,9 @@ export interface TargetTypeMetadata {
   properties: Array<PropertyMetadata>
 }
 
-export type GraphQLNonInputType = GraphQLObjectType | GraphQLScalarType | GraphQLList<any>
+export type GraphQLNonInputType = GraphQLObjectType | GraphQLScalarType | GraphQLList<GraphQLType>
 
-export type ResolverBuilder = (objectClass: AnyClass) => GraphQLFieldResolver<any, GraphQLResolverContext, any>
+export type ResolverBuilder = (objectClass: AnyClass) => GraphQLFieldResolver<unknown, GraphQLResolverContext, any>
 
 export interface GraphQLResolverContext {
   connectionID?: string

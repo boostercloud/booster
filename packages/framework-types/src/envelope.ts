@@ -32,6 +32,36 @@ export interface EventEnvelope extends Envelope {
   createdAt: string
 }
 
+export interface EventSearchRequest extends Envelope {
+  filters: EventFilter
+}
+
+export type EventFilter = EventFilterByEntity | EventFilterByType
+
+export interface EventTimeFilter {
+  from?: string
+  to?: string
+}
+
+export interface EventFilterByEntity extends EventTimeFilter {
+  entity: string
+  entityID?: string
+}
+
+export interface EventFilterByType extends EventTimeFilter {
+  type: string
+}
+
+export interface EventSearchResponse {
+  type: string
+  entity: string
+  entityID: UUID
+  requestID: UUID
+  user?: UserEnvelope
+  createdAt: string
+  value: EventInterface
+}
+
 export interface ReadModelEnvelope {
   typeName: string
   value: ReadModelInterface

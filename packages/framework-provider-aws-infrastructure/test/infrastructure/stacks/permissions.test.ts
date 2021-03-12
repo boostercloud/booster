@@ -89,7 +89,7 @@ describe('permissions', () => {
       fnRefStub = stub(Fn, 'ref').returns(mockFnRef)
 
       const graphQLStackMembers: GraphQLStackMembers = {
-        subscriptionDispatcherLambda: mockSubscriptionDispatcherLambda,
+        subscriptionNotifier: mockSubscriptionDispatcherLambda,
         subscriptionsStore: mockSubscriptionsStore,
         graphQLLambda: mockGraphQLLambda,
         connectionsStore: mockConnectionsStore,
@@ -104,7 +104,7 @@ describe('permissions', () => {
 
     describe('GraphQL Lambda', () => {
       it('should call addToRolePolicy', () => {
-        expect(graphQLAddToRolePolicyStub).to.has.callCount(5)
+        expect(graphQLAddToRolePolicyStub).to.has.callCount(7)
 
         expect(graphQLAddToRolePolicyStub).calledWithExactly(mockPolicyStatement)
       })
@@ -113,15 +113,17 @@ describe('permissions', () => {
         it('should add events store permissions', () => {
           expect(createPolicyStatementStub).calledWithExactly(
             [mockEventsStoreTableArn],
-            ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchWriteItem']
+            ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchGetItem', 'dynamodb:BatchWriteItem']
           )
+          expect(createPolicyStatementStub).calledWithExactly([mockEventsStoreTableArn + '*'], ['dynamodb:Query*'])
         })
 
         it('should create subscriptions table permissions', () => {
           expect(createPolicyStatementStub).calledWithExactly(
-            [mockSubscriptionsStoreArn + '*'],
+            [mockSubscriptionsStoreArn],
             ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:DeleteItem', 'dynamodb:BatchWriteItem']
           )
+          expect(createPolicyStatementStub).calledWithExactly([mockSubscriptionsStoreArn + '*'], ['dynamodb:Query*'])
         })
 
         it('should create connections table permissions', () => {
@@ -177,7 +179,7 @@ describe('permissions', () => {
 
     describe('Events Lambda', () => {
       it('should call addToRolePolicy', () => {
-        expect(eventsAddToRolePolicyStub).calledTwice
+        expect(eventsAddToRolePolicyStub).calledThrice
         expect(eventsAddToRolePolicyStub).calledWithExactly(mockPolicyStatement)
       })
 
@@ -185,8 +187,9 @@ describe('permissions', () => {
         it('should add events store permissions', () => {
           expect(createPolicyStatementStub).calledWithExactly(
             [mockEventsStoreTableArn],
-            ['dynamodb:BatchWriteItem', 'dynamodb:Query*', 'dynamodb:Put*']
+            ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchGetItem', 'dynamodb:BatchWriteItem']
           )
+          expect(createPolicyStatementStub).calledWithExactly([mockEventsStoreTableArn + '*'], ['dynamodb:Query*'])
         })
 
         it('should create read model permissions', () => {

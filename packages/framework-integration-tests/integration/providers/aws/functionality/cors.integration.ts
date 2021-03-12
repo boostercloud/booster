@@ -1,7 +1,8 @@
-import { authClientID, createPassword, signInURL, signOutURL, signUpURL } from '../utils'
+import { authClientID, signInURL, signOutURL, signUpURL } from '../utils'
 import { internet } from 'faker'
 import fetch from 'cross-fetch'
 import { expect } from '@boostercloud/framework-provider-aws/test/expect'
+import { createPassword } from '../../../helper/auth-helper'
 
 describe('Given the Authentication API', () => {
   let clientId: string

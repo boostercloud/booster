@@ -1,22 +1,20 @@
-import { CloudFormation, CognitoIdentityServiceProvider, DynamoDB } from 'aws-sdk'
+import { CloudFormation, CognitoIdentityServiceProvider, config, DynamoDB } from 'aws-sdk'
 import { Stack, StackResourceDetail, StackResourceSummary } from 'aws-sdk/clients/cloudformation'
 import { ApolloClient } from 'apollo-client'
 import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { HttpLink } from 'apollo-link-http'
 import fetch from 'cross-fetch'
 import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
-import ScanOutput = DocumentClient.ScanOutput
-import QueryOutput = DocumentClient.QueryOutput
-import { internet } from 'faker'
-import { sleep } from '../../helper/sleep'
 import { WebSocketLink } from 'apollo-link-ws'
 import { getMainDefinition } from 'apollo-utilities'
-import { split, ApolloLink } from 'apollo-link'
+import { ApolloLink, split } from 'apollo-link'
 import * as WebSocket from 'ws'
 import { SubscriptionClient } from 'subscriptions-transport-ws'
 import { ApolloClientOptions } from 'apollo-client/ApolloClient'
-import { config } from 'aws-sdk'
 import util = require('util')
+import QueryOutput = DocumentClient.QueryOutput
+import ScanOutput = DocumentClient.ScanOutput
+
 const exec = util.promisify(require('child_process').exec)
 
 const cloudFormation = new CloudFormation()
@@ -269,10 +267,6 @@ export const refreshUserAuthInformation = async (refreshToken: string): Promise<
   return await response.json()
 }
 
-export const createPassword = (): string => {
-  return `${internet.password(8)}Passw0rd!`
-}
-
 // --- URL helpers ---
 
 export async function baseHTTPURL(): Promise<string> {
@@ -466,6 +460,7 @@ export async function queryEvents(primaryKey: string, latestFirst = true): Promi
   const output: QueryOutput = await documentClient
     .query({
       TableName: await eventsStoreTableName(),
+      ConsistentRead: true,
       KeyConditionExpression: 'entityTypeName_entityID_kind = :v',
       ExpressionAttributeValues: { ':v': primaryKey },
       ScanIndexForward: !latestFirst,
@@ -525,6 +520,11 @@ export async function countTableItems(tableName: string): Promise<number> {
 }
 
 export async function countEventItems(): Promise<number> {
+  // TODO: This way of counting is wrong when there are a lot of events in the event store, as COUNT will only contain
+  // the number of elements in a a result set that is lower than 1MB in size:
+  // "If the size of the Query result set is larger than 1 MB, then ScannedCount and Count
+  // will represent only a partial count of the total items.
+  // You will need to perform multiple Query operations in order to retrieve all of the results\"."
   const output: ScanOutput = await documentClient
     .scan({
       TableName: await eventsStoreTableName(),
@@ -554,46 +554,3 @@ export async function countSnapshotItems(entityTypeName: string, entityID: strin
   return output.Count ?? -1
 }
 
-export async function getEventsByEntityId(entityID: string): Promise<any> {
-  const output: QueryOutput = await documentClient
-    .scan({
-      TableName: await eventsStoreTableName(),
-      Select: 'ALL_ATTRIBUTES',
-      ExpressionAttributeNames: { '#entityID': 'entityID' },
-      ExpressionAttributeValues: { ':entityID': entityID },
-      FilterExpression: '#entityID = :entityID',
-    })
-    .promise()
-
-  return output.Items
-}
-
-// --- Other helpers ---
-
-export async function waitForIt<TResult>(
-  tryFunction: () => Promise<TResult>,
-  checkResult: (result: TResult) => boolean,
-  trialDelayMs = 1000,
-  timeoutMs = 60000
-): Promise<TResult> {
-  console.debug('[waitForIt] start')
-  const start = Date.now()
-  return doWaitFor()
-
-  async function doWaitFor(): Promise<TResult> {
-    console.debug('.')
-    const res = await tryFunction()
-    if (checkResult(res)) {
-      console.debug('[waitForIt] match!')
-      return res
-    }
-    const elapsed = Date.now() - start
-
-    if (elapsed > timeoutMs) {
-      throw new Error('[waitForIt] Timeout reached')
-    }
-
-    await sleep(trialDelayMs)
-    return doWaitFor()
-  }
-}

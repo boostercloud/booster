@@ -9,12 +9,12 @@ import {
   NotFoundError,
   NotAuthorizedError,
   ProviderLibrary,
+  SubscriptionEnvelope,
 } from '@boostercloud/framework-types'
 import { restore, fake, match } from 'sinon'
-import { BoosterReadModelDispatcher } from '../src/booster-read-model-dispatcher'
+import { BoosterReadModelsReader } from '../src/booster-read-models-reader'
 import { Booster } from '../src/booster'
 import { random, internet } from 'faker'
-import { SubscriptionEnvelope } from '@boostercloud/framework-types/dist'
 
 const logger: Logger = {
   debug() {},
@@ -22,7 +22,7 @@ const logger: Logger = {
   error() {},
 }
 
-describe('BoosterReadModelDispatcher', () => {
+describe('BoosterReadModelReader', () => {
   afterEach(() => {
     restore()
   })
@@ -32,7 +32,7 @@ describe('BoosterReadModelDispatcher', () => {
   }
   class UserRole {}
 
-  let readModelDispatcher: BoosterReadModelDispatcher
+  let readModelDispatcher: BoosterReadModelsReader
   Booster.configureCurrentEnv((config) => {
     config.provider = ({} as unknown) as ProviderLibrary
     config.readModels[TestReadModel.name] = {
@@ -40,7 +40,7 @@ describe('BoosterReadModelDispatcher', () => {
       authorizedRoles: [UserRole],
       properties: [],
     }
-    readModelDispatcher = new BoosterReadModelDispatcher(config, logger)
+    readModelDispatcher = new BoosterReadModelsReader(config, logger)
   })
 
   const noopGraphQLOperation: GraphQLOperation = {

@@ -5,10 +5,9 @@ import * as Library from '../../src/library/events-adapter'
 import { restore, fake, match, createStubInstance } from 'sinon'
 import { EventEnvelope, BoosterConfig, UUID, Logger } from '@boostercloud/framework-types'
 import { DynamoDBStreamEvent } from 'aws-lambda'
-
 import { DynamoDB } from 'aws-sdk'
 import { eventsStoreAttributes } from '../../src'
-import { partitionKeyForEvent } from '../../src/library/partition-keys'
+import { partitionKeyForEvent } from '../../src/library/keys-helper'
 import { DocumentClient, Converter } from 'aws-sdk/clients/dynamodb'
 
 const fakeLogger: Logger = {
@@ -36,7 +35,11 @@ describe('the events-adapter', () => {
   describe('the `readEntityEventsSince` method', () => {
     it('queries the events table to find all events related to a specific entity', async () => {
       const dynamoDB = createStubInstance(DynamoDB.DocumentClient)
-      dynamoDB.query = fake.returns({ promise: fake.resolves('') }) as any
+      dynamoDB.query = fake.returns({
+        promise: fake.resolves({
+          Items: [],
+        }),
+      }) as any
       const config = new BoosterConfig('test')
       config.appName = 'nuke-button'
 
