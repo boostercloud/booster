@@ -25,6 +25,7 @@ export const Provider = (): ProviderLibrary => ({
     store: storeEvents.bind(null, cosmosClient),
     forEntitySince: readEntityEventsSince.bind(null, cosmosClient),
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, cosmosClient),
+    search: undefined as any,
   },
   // ProviderReadModelsLibrary
   readModels: {

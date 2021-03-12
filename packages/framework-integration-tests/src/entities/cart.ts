@@ -10,7 +10,9 @@ import { CartChecked } from '../events/cart-checked'
 /**
  * A cart is a temporary object where users accumulate all the items they want to buy
  */
-@Entity
+@Entity({
+  authorizeReadEvents: 'all',
+})
 export class Cart {
   public constructor(
     readonly id: UUID,

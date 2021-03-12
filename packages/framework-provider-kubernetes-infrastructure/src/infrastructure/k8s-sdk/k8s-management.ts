@@ -216,7 +216,7 @@ export class K8sManagement {
       spec.metadata.annotations = spec.metadata.annotations || {}
       delete spec.metadata.annotations['kubectl.kubernetes.io/last-applied-configuration']
       spec.metadata.annotations['kubectl.kubernetes.io/last-applied-configuration'] = JSON.stringify(spec)
-      const resourceExists = this.existsResourceSpec(spec)
+      const resourceExists = await this.existsResourceSpec(spec)
       let response: { body: KubernetesObject; response: IncomingMessage }
       if (resourceExists) {
         response = await client.replace(spec)

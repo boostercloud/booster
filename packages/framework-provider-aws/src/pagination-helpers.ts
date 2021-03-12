@@ -1,14 +1,4 @@
 /**
- * Waits for `milliseconds`, calls `callback`, and returns the value
- * @param callback callback to return the value from
- * @param milliseconds milliseconds to wait before calling the callback
- */
-export const waitAndReturn = <TResult>(callback: () => TResult, milliseconds: number): Promise<TResult> =>
-  new Promise((resolve) => {
-    setTimeout(() => resolve(callback()), milliseconds)
-  })
-
-/**
  * Splits an array in an array of chunks
  * @param chunkSize size of the chunks to split it
  * @param array array to split in chunks

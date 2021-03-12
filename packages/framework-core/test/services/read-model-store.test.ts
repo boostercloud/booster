@@ -46,7 +46,7 @@ describe('ReadModelStore', () => {
       fetch: () => {},
     },
   } as unknown) as ProviderLibrary
-  config.entities['ImportantConcept'] = { class: ImportantConcept }
+  config.entities['ImportantConcept'] = { class: ImportantConcept, authorizeReadEvents: [] }
   config.projections['ImportantConcept'] = [
     {
       class: SomeReadModel,

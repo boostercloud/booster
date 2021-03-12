@@ -3,21 +3,30 @@ import {
   GraphQLEnumValueConfigMap,
   GraphQLFieldConfigArgumentMap,
   GraphQLFieldConfigMap,
+  GraphQLFieldResolver,
   GraphQLID,
   GraphQLInputObjectType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
+  GraphQLOutputType,
   GraphQLScalarType,
-  GraphQLString
+  GraphQLString,
 } from 'graphql'
-import { GraphQLNonInputType, ResolverBuilder, TargetTypeMetadata, TargetTypesMap } from './common'
+import {
+  GraphQLNonInputType,
+  GraphQLResolverContext,
+  ResolverBuilder,
+  TargetTypeMetadata,
+  TargetTypesMap,
+} from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
 import * as inflected from 'inflected'
 import { GraphQLJSONObject } from 'graphql-type-json'
 import {
   AnyClass,
   BooleanOperations,
+  BoosterConfig,
   NumberOperations,
   PropertyMetadata,
   StringOperations,
@@ -29,32 +38,27 @@ export class GraphQLQueryGenerator {
   private generatedOperationEnumsByTypeName: Record<string, GraphQLEnumType> = {}
 
   public constructor(
+    private readonly config: BoosterConfig,
     private readonly targetTypes: TargetTypesMap,
     private readonly typeInformer: GraphQLTypeInformer,
     private readonly byIDResolverBuilder: ResolverBuilder,
-    private readonly filterResolverBuilder: ResolverBuilder
+    private readonly filterResolverBuilder: ResolverBuilder,
+    private readonly eventsResolver: GraphQLFieldResolver<unknown, GraphQLResolverContext, any>
   ) {}
 
   public generate(): GraphQLObjectType {
     const byIDQueries = this.generateByIDQueries()
     const filterQueries = this.generateFilterQueries()
-    const fields = {...byIDQueries, ...filterQueries}
-    if (Object.keys(fields).length === 0) {
-      return new GraphQLObjectType({
-        name: 'Query',
-        fields: {
-          NoQueriesDefined: { type: GraphQLString }
-        }
-      })
-    }
+    const eventQueries = this.generateEventQueries()
+    const fields = { ...byIDQueries, ...filterQueries, ...eventQueries }
     return new GraphQLObjectType({
       name: 'Query',
       fields: fields,
     })
   }
 
-  private generateByIDQueries(): GraphQLFieldConfigMap<any, any> {
-    const queries: GraphQLFieldConfigMap<any, any> = {}
+  private generateByIDQueries(): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {
+    const queries: GraphQLFieldConfigMap<unknown, GraphQLResolverContext> = {}
     for (const name in this.targetTypes) {
       const type = this.targetTypes[name]
       const graphQLType = this.typeInformer.getGraphQLTypeFor(type.class)
@@ -69,8 +73,8 @@ export class GraphQLQueryGenerator {
     return queries
   }
 
-  private generateFilterQueries(): GraphQLFieldConfigMap<any, any> {
-    const queries: GraphQLFieldConfigMap<any, any> = {}
+  private generateFilterQueries(): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {
+    const queries: GraphQLFieldConfigMap<unknown, GraphQLResolverContext> = {}
     for (const name in this.targetTypes) {
       const type = this.targetTypes[name]
       const graphQLType = this.typeInformer.getGraphQLTypeFor(type.class)
@@ -81,6 +85,61 @@ export class GraphQLQueryGenerator {
       }
     }
     return queries
+  }
+
+  private generateEventQueries(): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {
+    const eventQueryResponse = this.buildEventQueryResponse()
+    return {
+      eventsByEntity: {
+        type: eventQueryResponse,
+        args: {
+          entity: {
+            type: new GraphQLNonNull(this.buildGraphqlSimpleEnumFor('EntityType', Object.keys(this.config.entities))),
+          },
+          entityID: { type: GraphQLID },
+          from: { type: GraphQLString },
+          to: { type: GraphQLString },
+        },
+        resolve: this.eventsResolver,
+      },
+      eventsByType: {
+        type: eventQueryResponse,
+        args: {
+          type: {
+            type: new GraphQLNonNull(this.buildGraphqlSimpleEnumFor('EventType', Object.keys(this.config.reducers))),
+          },
+          from: { type: GraphQLString },
+          to: { type: GraphQLString },
+        },
+        resolve: this.eventsResolver,
+      },
+    }
+  }
+
+  private buildEventQueryResponse(): GraphQLOutputType {
+    return new GraphQLList(
+      new GraphQLObjectType({
+        name: 'EventQueryResponse',
+        fields: {
+          type: { type: new GraphQLNonNull(GraphQLString) },
+          entity: { type: new GraphQLNonNull(GraphQLString) },
+          entityID: { type: new GraphQLNonNull(GraphQLID) },
+          requestID: { type: new GraphQLNonNull(GraphQLID) },
+          user: {
+            type: new GraphQLObjectType({
+              name: 'User',
+              fields: {
+                id: { type: GraphQLString },
+                username: { type: new GraphQLNonNull(GraphQLString) },
+                role: { type: new GraphQLNonNull(GraphQLString) },
+              },
+            }),
+          },
+          createdAt: { type: new GraphQLNonNull(GraphQLString) },
+          value: { type: new GraphQLNonNull(GraphQLJSONObject) },
+        },
+      })
+    )
   }
 
   public generateFilterArguments(typeMetadata: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
@@ -151,5 +210,15 @@ export class GraphQLQueryGenerator {
       enumValuesConfig[opName] = { value: opSymbol }
     }
     return enumValuesConfig
+  }
+
+  private buildGraphqlSimpleEnumFor(enumName: string, values: Array<string>): GraphQLEnumType {
+    return new GraphQLEnumType({
+      name: enumName,
+      values: values.reduce((valuesRecord, value) => {
+        valuesRecord[value] = { value }
+        return valuesRecord
+      }, {} as GraphQLEnumValueConfigMap),
+    })
   }
 }

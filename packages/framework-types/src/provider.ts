@@ -7,6 +7,8 @@ import {
   ConnectionDataEnvelope,
   GraphQLRequestEnvelopeError,
   ScheduledCommandEnvelope,
+  EventFilter,
+  EventSearchResponse,
 } from './envelope'
 import { BoosterConfig } from './config'
 import { Logger } from './logger'
@@ -39,6 +41,7 @@ export interface ProviderEventsLibrary {
     entityTypeName: string,
     entityID: UUID
   ): Promise<EventEnvelope | null>
+  search(config: BoosterConfig, logger: Logger, filters: EventFilter): Promise<Array<EventSearchResponse>>
   /** Streams an event to the corresponding event handler */
   store(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig, logger: Logger): Promise<void>
 }

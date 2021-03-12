@@ -1,8 +1,8 @@
 import { deploy } from '../deploy'
 import { sleep } from '../../../helper/sleep'
 import { setEnv, checkConfigAnd } from '../utils'
-import { sandboxPathFor } from '../../../helper/fileHelper'
-import { overrideWithBoosterLocalDependencies } from '../../../helper/depsHelper'
+import { sandboxPathFor } from '../../../helper/file-helper'
+import { overrideWithBoosterLocalDependencies } from '../../../helper/deps-helper'
 // Imported from another package to avoid duplication
 // It is OK-ish, since integration tests are always run in the context of the whole monorepo
 import { createSandboxProject } from '../../../../../cli/src/common/sandbox'

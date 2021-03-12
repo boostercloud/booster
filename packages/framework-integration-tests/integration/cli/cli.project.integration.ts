@@ -8,9 +8,9 @@ import {
   loadFixture,
   readFileContent,
   removeFolders,
-} from '../helper/fileHelper'
+} from '../helper/file-helper'
 import { ChildProcess } from 'child_process'
-import { overrideWithBoosterLocalDependencies } from '../helper/depsHelper'
+import { overrideWithBoosterLocalDependencies } from '../helper/deps-helper'
 
 // The Booster CLI version used should match the integration tests' version
 const BOOSTER_VERSION = require('../../package.json').version

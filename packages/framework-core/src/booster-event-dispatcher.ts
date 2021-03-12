@@ -1,9 +1,16 @@
-import { BoosterConfig, EventEnvelope, Logger, Register, EventInterface } from '@boostercloud/framework-types'
+import {
+  BoosterConfig,
+  EventEnvelope,
+  Logger,
+  Register,
+  EventInterface,
+  EventHandlerInterface,
+} from '@boostercloud/framework-types'
 import { EventStore } from './services/event-store'
 import { RawEventsParser } from './services/raw-events-parser'
 import { ReadModelStore } from './services/read-model-store'
 import { RegisterHandler } from './booster-register-handler'
-import { EventHandlerInterface } from '@boostercloud/framework-types'
+import { Promises } from './helpers/promises'
 
 export class BoosterEventDispatcher {
   /**
@@ -36,8 +43,8 @@ export class BoosterEventDispatcher {
       switch (eventEnvelope.kind) {
         case 'event':
           logger.debug('[BoosterEventDispatcher#eventProcessor]: Started processing workflow for event:', eventEnvelope)
-          // TODO: Separate into two independent processes the snapshotting/read-model generation process from the event handling process
-          await Promise.allSettled([
+          // TODO: Separate into two independent processes the snapshotting/read-model generation process from the event handling process`
+          await Promises.allSettledAndFulfilled([
             BoosterEventDispatcher.snapshotAndUpdateReadModels(eventEnvelope, eventStore, readModelStore, logger),
             BoosterEventDispatcher.handleEvent(eventEnvelope, config, logger),
           ])
@@ -77,7 +84,7 @@ export class BoosterEventDispatcher {
       )
       return
     }
-    const results = await Promise.allSettled(
+    await Promises.allSettledAndFulfilled(
       eventHandlers.map(async (eventHandler: EventHandlerInterface) => {
         const register = new Register(eventEnvelope.requestID, eventEnvelope.currentUser)
         logger.debug('Calling "handle" method on event handler: ', eventHandler)
@@ -85,8 +92,5 @@ export class BoosterEventDispatcher {
         return RegisterHandler.handle(config, logger, register)
       })
     )
-    results
-      .filter((result) => result.status === 'rejected')
-      .forEach((result) => logger.debug(`Event handler execution failed: ${(result as PromiseRejectedResult).reason}`))
   }
 }

@@ -1,8 +1,11 @@
 import { Entity, Reduces } from '@boostercloud/framework-core'
 import { UUID } from '@boostercloud/framework-types'
 import { CartPaid } from '../events/cart-paid'
+import { UserWithPhone } from '../roles'
 
-@Entity
+@Entity({
+  authorizeReadEvents: [UserWithPhone],
+})
 export class Payment {
   public constructor(readonly id: UUID, readonly cartId: UUID, readonly confirmationToken: string) {}
 

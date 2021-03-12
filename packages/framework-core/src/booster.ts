@@ -6,6 +6,8 @@ import {
   UUID,
   Class,
   Searcher,
+  EventSearchResponse,
+  EventFilter,
 } from '@boostercloud/framework-types'
 import { Importer } from './importer'
 import { buildLogger } from './booster-logger'
@@ -73,6 +75,9 @@ export class Booster {
     return new Searcher(readModelClass, searchFunction)
   }
 
+  public static async events(filters: EventFilter): Promise<Array<EventSearchResponse>> {
+    return this.config.provider.events.search(this.config, this.logger, filters)
+  }
   /**
    * Entry point to validate users upon sign up
    */

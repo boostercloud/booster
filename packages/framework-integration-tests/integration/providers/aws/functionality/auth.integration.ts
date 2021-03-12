@@ -6,8 +6,6 @@ import {
   confirmUser,
   createUser,
   deleteUser,
-  waitForIt,
-  createPassword,
   getUserAuthInformation,
   DisconnectableApolloClient,
   countSubscriptionsItems,
@@ -22,6 +20,8 @@ import { random, internet, finance, lorem, phone } from 'faker'
 import fetch from 'cross-fetch'
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
+import { waitForIt } from '../../../helper/sleep'
+import { createPassword } from '../../../helper/auth-helper'
 
 chai.use(require('chai-as-promised'))
 

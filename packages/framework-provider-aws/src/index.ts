@@ -10,12 +10,13 @@ import {
   storeReadModel,
   rawReadModelEventsToEnvelopes,
   deleteReadModel,
-} from './library/read-model-adapter'
+} from './library/read-models-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import { DynamoDB, CognitoIdentityServiceProvider } from 'aws-sdk'
 import { ProviderInfrastructure, ProviderLibrary, RocketDescriptor } from '@boostercloud/framework-types'
 import { requestFailed, requestSucceeded } from './library/api-gateway-io'
-import { searchReadModel } from './library/searcher-adapter'
+import { searchReadModel } from './library/read-models-searcher-adapter'
+import { searchEvents } from './library/events-searcher-adapter'
 import {
   deleteAllSubscriptions,
   deleteSubscription,
@@ -58,6 +59,7 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
       rawToEnvelopes: rawEventsToEnvelopes,
       forEntitySince: readEntityEventsSince.bind(null, dynamoDB),
       latestEntitySnapshot: readEntityLatestSnapshot.bind(null, dynamoDB),
+      search: searchEvents.bind(null, dynamoDB),
       store: storeEvents.bind(null, dynamoDB),
     },
     // ProviderReadModelsLibrary
