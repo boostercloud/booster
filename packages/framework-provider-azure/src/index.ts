@@ -13,10 +13,12 @@ import { environmentVarNames } from './constants'
 import { fetchReadModel, storeReadModel } from './library/read-model-adapter'
 import { searchReadModel } from './library/searcher-adapter'
 
+let cosmosClient: CosmosClient
 if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefined') {
-  throw new Error('No Cosmos DB connection string has been found')
+  cosmosClient = {} as any
+} else {
+  cosmosClient = new CosmosClient(process.env[environmentVarNames.cosmosDbConnectionString] as string)
 }
-const cosmosClient = new CosmosClient(process.env[environmentVarNames.cosmosDbConnectionString] as string)
 
 export const Provider = (): ProviderLibrary => ({
   // ProviderEventsLibrary
@@ -66,8 +68,10 @@ export const Provider = (): ProviderLibrary => ({
     rawToEnvelope: undefined as any,
   },
   // ProviderInfrastructureGetter
-  infrastructure: () =>
-    require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
+  infrastructure: () => {
+    console.log('puf')
+    return require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure
+  },
 })
 
 function notImplemented(): void {}
