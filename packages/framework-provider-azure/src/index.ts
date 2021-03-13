@@ -68,10 +68,8 @@ export const Provider = (): ProviderLibrary => ({
     rawToEnvelope: undefined as any,
   },
   // ProviderInfrastructureGetter
-  infrastructure: () => {
-    console.log('puf')
-    return require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure
-  },
+  infrastructure: () =>
+    require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
 })
 
 function notImplemented(): void {}
