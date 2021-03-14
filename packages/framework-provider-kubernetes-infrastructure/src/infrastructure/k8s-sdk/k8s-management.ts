@@ -42,11 +42,12 @@ export class K8sManagement {
   public async getAllServicesInNamespace(namespace: string): Promise<Array<Service>> {
     const response = await this.unwrapResponse(this.k8sClient.listNamespacedService(namespace))
     return response.items.map((item) => {
+
       return {
         name: item.metadata?.name,
         namespace: item.metadata?.namespace ?? 'default',
         labels: item.metadata?.labels ?? {},
-        ip: item.status?.loadBalancer?.ingress?.[0]?.ip ?? '',
+        ip: item.status?.loadBalancer?.ingress?.[0]?.ip ?? item.status?.loadBalancer?.ingress?.[0]?.hostname ?? '',
       }
     })
   }
