@@ -1,10 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { EventEnvelope, Logger } from 'framework-types/dist'
 import fetch from 'node-fetch'
 
 export class EventRegistry {
-  /**
-   *
-   */
   constructor(readonly url: string) {}
 
   public async store(event: EventEnvelope, logger: Logger): Promise<void> {
@@ -22,5 +20,15 @@ export class EventRegistry {
       const err = response.text()
       throw err
     }
+  }
+
+  public async query(_query: object, _logger: Logger): Promise<Array<EventEnvelope>> {
+    // TODO: Implement accordingly to Dapr
+    throw new Error('EventRegistry#query: Not implemented yet')
+  }
+
+  public async queryLatest(_query: object): Promise<EventEnvelope> {
+    // TODO: Implement accordingly to Dapr
+    throw new Error('EventRegistry#queryLatest: Not implemented yet')
   }
 }
