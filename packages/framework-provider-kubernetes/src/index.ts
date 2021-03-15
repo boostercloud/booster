@@ -6,15 +6,21 @@ import {
   Logger,
   ProviderInfrastructure,
   ProviderLibrary,
+  ReadModelInterface,
   UserApp,
 } from '@boostercloud/framework-types'
 import { EventRegistry } from './services/event-registry'
 import * as EventsAdapter from './library/events-adapter'
+import * as ReadModelAdapter from './library/read-model-adapter'
 import * as path from 'path'
 import * as fetch from 'node-fetch'
+import { ReadModelRegistry } from './services/read-model-registry'
+import { read } from 'fs'
 
-const eventRegistry = new EventRegistry('http://localhost:3500')
-const userApp: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
+const storageUrl = 'http://localhost:3500'
+const eventRegistry = new EventRegistry(storageUrl)
+const readModelRegistry = new ReadModelRegistry(storageUrl)
+// const userApp: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
 
 export const Provider = (): ProviderLibrary => ({
   // ProviderEventsLibrary
@@ -35,44 +41,19 @@ export const Provider = (): ProviderLibrary => ({
       console.log('fetch called')
       return new Promise(() => {})
     },
-    search: async (_config: any, _logger: any, _entityTypeName: any, filters: { id: { values: any[] } }) => {
-      if (filters.id.values[0]) {
-        const result = await fetch('http://localhost:3500/v1.0/state/statestore/' + filters.id.values[0])
-        try {
-          const response = await result.json()
-          if (response) {
-            response.id = filters.id.values[0]
-          }
-          return [response]
-        } catch (err) {
-          return []
-        }
-      } else {
-        return []
-      }
-    },
-    store: (config: any, logger: any, readModelName: any, readModel: any) => {
-      console.log('readmodels: store')
-      return new Promise(() => {})
-    },
-    delete: (config: any, logger: any, readModelName: any, readModel: any) => {
-      console.log('readmodelsL delete')
-      return new Promise(() => {})
-    },
-    subscribe: (config: any, logger: any, subscriptionEnvelope: any) => {
-      console.log('subscribe called')
-      return new Promise(() => {})
-    },
-    fetchSubscriptions: (config: any, logger: any, subscriptionName: any) => {
-      console.log('fetchSubscription called')
-      return new Promise(() => {})
-    },
-    deleteSubscription: () => {
-      return new Promise(() => {})
-    },
-    deleteAllSubscriptions: () => {
-      return new Promise(() => {})
-    },
+    search: async <TReadModel extends ReadModelInterface>(
+      config: BoosterConfig,
+      logger: Logger,
+      readModelName: string,
+      filters: any
+    ) =>
+      (await ReadModelAdapter.search(readModelRegistry, config, logger, readModelName, filters)) as Array<TReadModel>,
+    store: ReadModelAdapter.store.bind(null, readModelRegistry),
+    delete: ReadModelAdapter.deleteReadModel.bind(null, readModelRegistry),
+    subscribe: ReadModelAdapter.subscribe,
+    fetchSubscriptions: ReadModelAdapter.fetchSubscriptions,
+    deleteSubscription: ReadModelAdapter.deleteSubscription,
+    deleteAllSubscriptions: ReadModelAdapter.deleteAllSubscriptions,
   },
   // ProviderGraphQLLibrary
   graphQL: {

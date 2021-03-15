@@ -3,9 +3,6 @@ import { EventEnvelope, Logger } from 'framework-types/dist'
 import fetch from 'node-fetch'
 
 export class EventRegistry {
-  /**
-   *
-   */
   constructor(readonly url: string) {}
 
   public async store(event: EventEnvelope, logger: Logger): Promise<void> {
