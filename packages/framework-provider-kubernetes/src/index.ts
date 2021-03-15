@@ -6,38 +6,24 @@ import {
   Logger,
   ProviderInfrastructure,
   ProviderLibrary,
+  UserApp,
 } from '@boostercloud/framework-types'
 import { EventRegistry } from './services/event-registry'
-const fetch = require('node-fetch')
-interface Post {
-  postId: string
-}
+import * as EventsAdapter from './library/events-adapter'
+import * as path from 'path'
+import * as fetch from 'node-fetch'
 
 const eventRegistry = new EventRegistry('http://localhost:3500')
+const userApp: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
 
 export const Provider = (): ProviderLibrary => ({
   // ProviderEventsLibrary
   events: {
-    rawToEnvelopes: () => {
-      return []
-    },
-    store: async (eventEnvelopes: Array<EventEnvelope>, _config: BoosterConfig, logger: Logger) => {
-      for (const envelope of eventEnvelopes) {
-        await eventRegistry.store(envelope, logger)
-      }
-    },
-    forEntitySince: (config: any, logger: any, entityTypeName: any, entityID: any, since: any) => {
-      console.log('forEntitySince called!')
-      return new Promise(() => {})
-    },
-    latestEntitySnapshot: (config: any, logger: any, entityTypeName: any, entityID: any) => {
-      console.log('latestsEntitySnapshot')
-      return new Promise(() => {})
-    },
-    search: (config: BoosterConfig) => {
-      console.log('events: latestsEntitySnapshot')
-      return new Promise(() => {})
-    },
+    rawToEnvelopes: EventsAdapter.rawToEnvelopes,
+    store: EventsAdapter.store.bind(null, eventRegistry),
+    forEntitySince: EventsAdapter.forEntitySince.bind(null, eventRegistry),
+    latestEntitySnapshot: EventsAdapter.latestEntitySnapshot.bind(null, eventRegistry),
+    search: EventsAdapter.search.bind(null, eventRegistry),
   },
   // ProviderReadModelsLibrary
   readModels: {
