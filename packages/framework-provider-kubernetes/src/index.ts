@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BoosterConfig, ProviderInfrastructure, ProviderLibrary } from '@boostercloud/framework-types'
+const fetch = require('node-fetch')
 interface Post {
   postId: string
 }
