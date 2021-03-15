@@ -1,10 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BoosterConfig, ProviderInfrastructure, ProviderLibrary } from '@boostercloud/framework-types'
+import {
+  BoosterConfig,
+  EventEnvelope,
+  Logger,
+  ProviderInfrastructure,
+  ProviderLibrary,
+} from '@boostercloud/framework-types'
+import { EventRegistry } from './services/event-registry'
 const fetch = require('node-fetch')
 interface Post {
   postId: string
 }
+
+const eventRegistry = new EventRegistry('http://localhost:3500')
 
 export const Provider = (): ProviderLibrary => ({
   // ProviderEventsLibrary
@@ -12,23 +21,9 @@ export const Provider = (): ProviderLibrary => ({
     rawToEnvelopes: () => {
       return []
     },
-    store: async (eventEnvelopes: { value: any }[], _config: any, _logger: any) => {
-      const stateUrl = 'http://localhost:3500/v1.0/state/statestore'
-      const currentPost: Post = (eventEnvelopes[0].value as unknown) as Post
-      const data = [{ key: currentPost.postId, value: eventEnvelopes[0].value }]
-      console.log(JSON.stringify(data))
-      const response = await fetch(stateUrl, {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      if (!response.ok) {
-        console.log(response)
-        return response.text().then((error: any) => {
-          throw error
-        })
+    store: async (eventEnvelopes: Array<EventEnvelope>, _config: BoosterConfig, logger: Logger) => {
+      for (const envelope of eventEnvelopes) {
+        await eventRegistry.store(envelope, logger)
       }
     },
     forEntitySince: (config: any, logger: any, entityTypeName: any, entityID: any, since: any) => {
