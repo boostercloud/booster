@@ -8,9 +8,10 @@ export class EventRegistry {
   public async store(event: EventEnvelope, logger: Logger): Promise<void> {
     const stateUrl = `${this.url}/v1.0/state/statestore`
     logger.debug('About to post', event)
+    const data = [{ key: event.entityID, value: event }]
     const response = await fetch(stateUrl, {
       method: 'POST',
-      body: JSON.stringify(event),
+      body: JSON.stringify(data),
       headers: {
         'Content-Type': 'application/json',
       },

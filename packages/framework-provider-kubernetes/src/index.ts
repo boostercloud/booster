@@ -2,20 +2,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BoosterConfig,
-  EventEnvelope,
   Logger,
   ProviderInfrastructure,
   ProviderLibrary,
   ReadModelInterface,
-  UserApp,
 } from '@boostercloud/framework-types'
 import { EventRegistry } from './services/event-registry'
 import * as EventsAdapter from './library/events-adapter'
 import * as ReadModelAdapter from './library/read-model-adapter'
-import * as path from 'path'
-import * as fetch from 'node-fetch'
 import { ReadModelRegistry } from './services/read-model-registry'
-import { read } from 'fs'
 
 const storageUrl = 'http://localhost:3500'
 const eventRegistry = new EventRegistry(storageUrl)
@@ -71,8 +66,15 @@ export const Provider = (): ProviderLibrary => ({
         value: graphQLValue,
       }
     },
-    handleResult: (result: any, headers: any) => {
-      return new Promise(() => {})
+    handleResult: async (result: unknown, headers: Record<string, string> | undefined) => {
+      return {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          ...headers,
+        },
+        statusCode: 200,
+        body: result ? JSON.stringify(result) : '',
+      }
     },
   },
   // ProviderAuthLibrary

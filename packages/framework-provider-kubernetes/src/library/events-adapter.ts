@@ -5,7 +5,6 @@ import {
   EventFilter,
   EventSearchResponse,
   Logger,
-  UserApp,
   UUID,
 } from '@boostercloud/framework-types'
 import { EventRegistry } from '../services/event-registry'
