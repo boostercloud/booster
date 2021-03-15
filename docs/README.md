@@ -52,7 +52,6 @@
     - [Getting real-time updates for a read model](#getting-real-time-updates-for-a-read-model)
 - [Features](#features)
   - [Authentication and Authorization](#authentication-and-authorization)
-    - [Authentication API](#authentication-api)
   - [Custom Authentication](#custom-authentication)
     - [JWT Configuration](#jwt-configuration)
   - [GraphQL API](#graphql-api)
@@ -248,7 +247,7 @@ git config --global user.email "your_email@youremail.com"
 
 This step is optional; Booster is a cloud-native framework, meaning that your application
 will be deployed to the cloud using different cloud providers. By default, Booster uses the
-[AWS Provider](framework-providers-aws), so you need an AWS account. You can always omit
+[AWS Provider](#aws-provider), so you need an AWS account. You can always omit
 this step if you only want to get a grip of Booster or test it locally without making a
 deployment.
 
@@ -368,7 +367,7 @@ running for a blog application in just a few minutes. The steps to follow will b
   - [Creating posts](#71-creating-posts)
   - [Retrieving all posts](#72-retrieving-all-posts)
   - [Retrieving specific post](#73-retrieving-specific-post)
-- [Removing stack](#8-removing-stack)
+- [Removing the stack](#8-removing-the-stack)
 - [More functionalities](#9-more-functionalities)
 
 #### 1. Create the project
@@ -1623,8 +1622,7 @@ export class GetProductsCount {
 
 ### Authentication and Authorization
 
-Authorization in Booster is done through roles. Every Command and ReadModel has an `authorize` policy that
-tells Booster who can execute or access it. It consists of one of the following two values:
+You can use the [Authentication Rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure) for adding the authentication and authorization to you application. But first, you need to know that authorization in Booster is done through roles. Every Command and ReadModel has an `authorize` policy that tells Booster who can execute or access it. It consists of one of the following two values:
 
 - `'all'`: Meaning that the command is public: any user, both authenticated and anonymous, can execute it.
 - An array of authorized roles `[Role1, Role2, ...]`: This means that only those authenticated users that
@@ -1707,255 +1705,13 @@ Users that sign up with their emails will receive a confirmation link in their i
 Users that sign up with their phones will receive a confirmation code as an SMS message. That code needs to be sent back using the [confirmation endpoint](#sign-up/confirm)
 If `skipConfirmation` is set to true, users can sign in without confirmation after signing up.
 
-If your Booster application has roles defined, an [authentication API](#authentication-api) will be provisioned. It will allow your users to gain
-access to your resources.
+Now with the roles defined, your Booster application is ready to use the Authorization Rocket, please check out its [documentation](https://github.com/boostercloud/rocket-auth-aws-infrastructure) for getting the access tokens.
 
 Once a user has an access token, it can be included in any request made to your Booster application as a
 _Bearer_ token. It will be used to get the user information and
 authorize them to access protected resources.
 
-To learn how to include the access token in your requests, check the section [Authorizing operations](#authorizing-operations)
-
-#### Authentication API
-
-The authentication API consists of several endpoints that allow you to manage user registrations, sessions, tokens and more.
-
-The base URL of all these endpoints is the `httpURL` output of your application. See the ["Application Outputs"](#application-outputs) section to know more.
-
-##### Sign-up
-
-Users can use this endpoint to register in your application and get a role assigned to them.
-
-![confirmation email](./img/sign-up-verificaiton-email.png)
-![email confirmed](./img/sign-up-confirmed.png)
-
-###### Endpoint
-
-```http request
-POST https://<httpURL>/auth/sign-up
-```
-
-###### Request body
-
-```json
-{
-  "clientId": "string",
-  "username": "string",
-  "password": "string",
-  "userAttributes": {
-    "role": "string"
-  }
-}
-```
-
-| Parameter        | Description                                                                                                                                                                                          |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _clientId_       | The application client Id that you got as an output when the application was deployed.                                                                                                               |
-| _username_       | The username of the user you want to register. It **must be an email**.                                                                                                                              |
-| _password_       | The password the user will use to later login into your application and get access tokens.                                                                                                           |
-| _userAttributes_ | Here you can specify the attributes of your user. These are: <br/> -_**role**_: A unique role this user will have. You can only specify here a role where the `signUpOptions` property is not empty. |
-
-###### Response
-
-An Empty Body
-
-###### Errors
-
-You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
-
-Example: The `username` is not an email or a phone number:
-
-```json
-{
-  "__type": "InvalidParameterException",
-  "message": "Username should be an email or a phone number."
-}
-```
-
-You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
-
-##### Confirm-sign-up
-
-Whenever a User signs up with their phone number, an SMS message will be sent with a confirmation code.
-They will need to provide this code to confirm registation by calling the`sign-up/confirm` endpoint
-
-###### Endpoint
-
-```http request
-POST https://<httpURL>/auth/sign-up/confirm
-```
-
-###### Request body
-
-```json
-{
-  "clientId": "string",
-  "confirmationCode": "string",
-  "password": "string"
-}
-```
-
-| Parameter          | Description                                                                            |
-| ------------------ | -------------------------------------------------------------------------------------- |
-| _clientId_         | The application client Id that you got as an output when the application was deployed. |
-| _confirmationCode_ | The confirmation code received in the SMS message.                                     |
-| _username_         | The username of the user you want to sign in. They must have previously signed up.     |
-
-###### Response
-
-An Empty Body
-
-###### Errors
-
-You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
-Common errors would be like submitting an expired confirmation code or a non valid one.
-
-##### Sign-in
-
-This endpoint creates a session for an already registered user, returning an access token that can be used
-to access role-protected resources
-
-###### Endpoint
-
-```http request
-POST https://<httpURL>/auth/sign-in
-```
-
-###### Request body
-
-```json
-{
-  "clientId": "string",
-  "username": "string",
-  "password": "string"
-}
-```
-
-| Parameter  | Description                                                                            |
-| ---------- | -------------------------------------------------------------------------------------- |
-| _clientId_ | The application client Id that you got as an output when the application was deployed. |
-| _username_ | The username of the user you want to sign in. They must have previously signed up.     |
-| _password_ | The password used to sign up the user.                                                 |
-
-###### Response
-
-```json
-{
-  "accessToken": "string",
-  "expiresIn": "string",
-  "refreshToken": "string",
-  "tokenType": "string"
-}
-```
-
-| Parameter      | Description                                                                                                                          |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| _accessToken_  | The token you can use to access restricted resources. It must be sent in the `Authorization` header (prefixed with the `tokenType`). |
-| _expiresIn_    | The period of time, in seconds, after which the token will expire.                                                                   |
-| _refreshToken_ | The token you can use to get a new access token after it has expired.                                                                |
-| _tokenType_    | The type of token used. It is always `Bearer`.                                                                                       |
-
-###### Errors
-
-You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
-
-Example: Login of a user that has not been confirmed
-
-```json
-{
-  "__type": "UserNotConfirmedException",
-  "message": "User is not confirmed."
-}
-```
-
-##### Sign-out
-
-Users can call this endpoint to finish the session.
-
-###### Endpoint
-
-```http request
-POST https://<httpURL>/auth/sign-out
-```
-
-###### Request body
-
-```json
-{
-  "accessToken": "string"
-}
-```
-
-| Parameter     | Description                                   |
-| ------------- | --------------------------------------------- |
-| _accessToken_ | The access token you get in the sign-in call. |
-
-###### Response
-
-An empty body
-
-###### Errors
-
-You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
-
-Example: Invalid access token specified
-
-```json
-{
-  "__type": "NotAuthorizedException",
-  "message": "Invalid Access Token"
-}
-```
-
-##### Refresh token
-
-Users can call this endpoint to refresh the access token.
-
-###### Endpoint
-
-```http request
-POST https://<httpURL>/auth/refresh-token
-```
-
-###### Request body
-
-> Refresh-token request body
-
-```json
-{
-  "clientId": "string",
-  "refreshToken": "string"
-}
-```
-
-| Parameter      | Description                                                                            |
-| -------------- | -------------------------------------------------------------------------------------- |
-| _clientId_     | The application client Id that you got as an output when the application was deployed. |
-| _refreshToken_ | The token you can use to get a new access token after it has expired.                  |
-
-###### Response
-
-```json
-{
-  "accessToken": "string",
-  "expiresIn": "string",
-  "refreshToken": "string",
-  "tokenType": "string"
-}
-```
-
-###### Errors
-
-> Refresh token error response body example: Invalid refresh token specified
-
-```json
-{
-  "__type": "NotAuthorizedException",
-  "message": "Invalid Refresh Token"
-}
-```
-
-You will get a HTTP status code different from 2XX and a body with a message telling you the reason of the error.
+To learn how to include the access token in your requests, check the section [Authorizing operations](#authorizing-operations).
 
 ### Custom Authentication
 
@@ -1963,7 +1719,7 @@ You can use the **JWT authorization mode** to authorize all incoming Booster req
 wich will be decoded internally by Booster, after that, the required roles will be matched with the contained claims
 inside that token.
 
-In that way, you can use different auth providers, like Auth0, Firebase, Cognito, or simply create your own.
+In that way, you can use different auth providers, like Auth0, Firebase, Cognito, create your own or simply use our [Authentication Rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure), which is our recommended solution that works great with Booster.
 
 #### JWT Configuration
 
@@ -2060,16 +1816,13 @@ GraphQL uses two existing protocols:
 - _HTTP_ for `mutation` and `query` operations
 - _WebSocket_ for `subscription` operations
 
-The reason for the WebSocket protocol is that, in order for subscriptions to work, there must be a way for the server to send data
-to clients when it is changed. HTTP doesn't allow that, as it is the client the one which always initiates the request.
+The reason for the WebSocket protocol is that, in order for subscriptions to work, there must be a way for the server to send data to clients when it is changed. HTTP doesn't allow that, as it is the client the one which always initiates the request.
 
-This is the reason why Booster provisions two main URLs: the **httpURL** and the **websocketURL** (you can see them after
-deploying your application). You need to use the "httpURL" to send GraphQL queries and mutations, and the "websocketURL"
-to send subscriptions.
+So you should use the **graphqlURL** to send GraphQL queries and mutations, and the **websocketURL** to send subscriptions. You can see both URLs after deploying your application.
 
 Therefore:
 
-- To send a GraphQL mutation/query, you send an HTTP request to _"&lt;httpURL&gt;/graphql"_, with _method POST_, and a _JSON-encoded body_ with the mutation/query details.
+- To send a GraphQL mutation/query, you send an HTTP request to _"&lt;graphqlURL&gt;"_, with _method POST_, and a _JSON-encoded body_ with the mutation/query details.
 - To send a GraphQL subscription, you first connect to the _"&lt;websocketURL&gt;"_, and then send a _JSON-encoded message_ with the subscription details, _following [the "GraphQL over WebSocket" protocol](#the-graphql-over-websocket-protocol)_.
 
 > Note: you can also **send queries and mutations through the WebSocket** if that's convenient to you. See ["The GraphQL over WebSocket protocol"](#the-graphql-over-websocket-protocol) to know more.
@@ -2083,7 +1836,7 @@ To have a great developer experience, we **strongly recommend** to use a GraphQL
 
 #### Get GraphQL schema from deployed application
 
-After deploying your application with the command `boost deploy -e development`, you can get your GraphQL schema by using a tool like **[Hoppscotch (formerly Postwoman)](https://hoppscotch.io/)**. The previous command displays the deployment URL with the pattern:
+After deploying your application with the command `boost deploy -e development`, you can get your GraphQL schema by using a tool like **[Hoppscotch (formerly Postwoman)](https://hoppscotch.io/)**. The previous command displays multiple endpoints, one of them is **graphqlURL**, which has the following pattern:
 
 `https://<base_url>/<environment>/graphql`
 
@@ -2093,8 +1846,7 @@ By entering this url in Hoppscotch, the schema can be displayed as shown in the 
 
 #### Sending commands
 
-As mentioned in the previous section, we need to use a "mutation" to send a command. The structure of a mutation (the body
-of the request) is the following:
+As mentioned in the previous section, we need to use a "mutation" to send a command. The structure of a mutation (the body of the request) is the following:
 
 ```graphql
 mutation {
@@ -2107,15 +1859,12 @@ mutation {
 Where:
 
 - _**command_name**_ is the name of the class corresponding to the command you want to send
-- _**field_list**_ is a list of pairs in the form of `fieldName: fieldValue` containing the data of your command. The field names
-  correspond to the names of the properties you defined in the command class.
+- _**input_field_list**_ is a list of pairs in the form of `fieldName: fieldValue` containing the data of your command. The field names correspond to the names of the properties you defined in the command class.
 
-In the following example we send a command named "ChangeCart" that will add/remove an item to/from a shopping cart. The
-command requires the ID of the cart (`cartId`), the item identifier (`sku`) and the quantity of units we are adding/removing
-(`quantity`).
+In the following example we send a command named "ChangeCart" that will add/remove an item to/from a shopping cart. The command requires the ID of the cart (`cartId`), the item identifier (`sku`) and the quantity of units we are adding/removing (`quantity`).
 
 ```
-URL: "<httpURL>/graphql"
+URL: "<graphqlURL>"
 ```
 
 ```graphql
@@ -2127,7 +1876,7 @@ mutation {
 In case we are not using any GraphQL client, this would be the equivalent bare HTTP request:
 
 ```
-URL: "<httpURL>/graphql"
+URL: "<graphqlURL>"
 METHOD: "POST"
 ```
 
@@ -2171,7 +1920,7 @@ Where:
 In the following example we send a query to read a read model named `CartReadModel` whose ID is `demo`. We get back its `id` and the list of cart `items` as response.
 
 ```
-URL: "<httpURL>/graphql"
+URL: "<graphqlURL>"
 ```
 
 ```graphql
@@ -2186,7 +1935,7 @@ query {
 In case we are not using any GraphQL client, this would be the equivalent bare HTTP request:
 
 ```
-URL: "<httpURL>/graphql"
+URL: "<graphqlURL>"
 METHOD: "POST"
 ```
 
@@ -2222,9 +1971,7 @@ To subscribe to a specific read model, we need to use a subscription operation, 
 
 Doing this process manually is a bit cumbersome. _You will probably never need to do this_, as GraphQL clients like [Apollo](#using-apollo-client) abstract this process away. However, we will explain how to do it for learning purposes.
 
-Before sending any subscription, you need to _connect_ to the WebSocket to open the two-way communication channel. This connection
-is done differently depending on the client/library you use to manage web sockets. In this section, we will show examples
-using the [`wscat`](https://github.com/websockets/wscat) command line program. You can also use the online tool [Hoppscotch (formerly Postwoman)](https://hoppscotch.io/)
+Before sending any subscription, you need to _connect_ to the WebSocket to open the two-way communication channel. This connection is done differently depending on the client/library you use to manage web sockets. In this section, we will show examples using the [`wscat`](https://github.com/websockets/wscat) command line program. You can also use the online tool [Hoppscotch (formerly Postwoman)](https://hoppscotch.io/)
 
 Once you have connected successfully, you can use this channel to:
 
@@ -2283,13 +2030,12 @@ is modified, a new incoming message will appear in the socket with the updated v
 will have exactly the same format as if you were done a query with the same parameters.
 
 Following with the previous example, we now send a command (using a mutation operation) that adds
-a new item with sku "ABC_02" to the `CartReadModel`. After it has been added, we receive the updated version of the read model through the
-socket.
+a new item with sku "ABC_02" to the `CartReadModel`. After it has been added, we receive the updated version of the read model through the socket.
 
 1. Send the following command (this time using an HTTP request):
 
 ```
-URL: "<httpURL>/graphql"
+URL: "<graphqlURL>"
 ```
 
 ```graphql
@@ -2430,8 +2176,7 @@ subscriptionOperation.subscribe({
 
 #### Authorizing operations
 
-When you have a command or read model whose access is authorized to users with a specific set of roles (see [Authentication and Authorization](#authentication-and-authorization)), you need to use an authorization token when
-sending queries, mutations or subscriptions to that command or read model. See the [Authentication API](#authentication-api) and, more especifically, the [Sign in](#sign-in) section to know how to get a token.
+When you have a command or read model whose access is authorized to users with a specific set of roles (see [Authentication and Authorization](#authentication-and-authorization)), you need to use an authorization token when sending queries, mutations or subscriptions to that command or read model. You can use Authentication Rocket to authorize operations, see its [documentation](https://github.com/boostercloud/rocket-auth-aws-infrastructure) and, more especifically, the [Sign in](https://github.com/boostercloud/rocket-auth-aws-infrastructure#sign-in) section to know how to get a token.
 
 Once you have a token, the way to send it varies depending on the protocol you are using to send GraphQL operations:
 
@@ -2451,7 +2196,7 @@ You normally won't be sending tokens in such a low-level way. GraphQL clients ha
 
 ##### Sending tokens with Apollo clients
 
-We recommend going to the specific documentation of the specific Apollo client you are using to know how to send tokens. However, the basics remains the same. Here is an example of how you would configure the Javascript/Typescript Apollo client to send the authorization token. The example is exactly the same as the one shown in the [Using Apollo clients](#using-apollo-client) section but with the changes needed to send the token. Notice that the only things that change are the `HttpLink` and the `WebSocketLink`:
+We recommend going to the specific documentation of the specific Apollo client you are using to know how to send tokens. However, the basics remains the same. Here is an example of how you would configure the Javascript/Typescript Apollo client to send the authorization token. The example is exactly the same as the one shown in the [Using Apollo clients](#using-apollo-client) section but with the changes needed to send the token. Notice that `<AuthApiEndpoint>` and `<idToken>` are obtained from the [Authentication Rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure).
 
 ```typescript
 import { split, HttpLink } from '@apollo/client'
@@ -2464,15 +2209,16 @@ function isSubscriptionOperation({ query }) {
   return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
 }
 
+// CHANGED: We now use the AuthApiEndpoint obtained by the auth rocket
 const httpLink = new HttpLink({
-  uri: '<httpURL>',
+  uri: '<AuthApiEndpoint>',
 })
 
 // CHANGED: We create an "authLink" that modifies the operation by adding the token to the headers
 const authLink = new ApolloLink((operation, forward) => {
   operation.setContext({
     headers: {
-      Authorization: 'Bearer <your token>',
+      Authorization: 'Bearer <idToken>',
     },
   })
   return forward(operation)
@@ -2486,7 +2232,7 @@ const subscriptionClient = new SubscriptionClient('<websocketURL>', {
   // CHANGED: added a "connectionParam" property with a function that returns the `Authorizaiton` header containing our token
   connectionParams: () => {
     return {
-      Authorization: 'Bearer <your token>',
+      Authorization: 'Bearer <idToken>',
     }
   },
 })
@@ -2502,7 +2248,7 @@ const client = new ApolloClient({
 
 ##### Refreshing tokens with Apollo clients
 
-Authorization tokens expire after a certain amount of time. When a token is expired, you will get an error and you will need to call the [refresh the token](#refresh-token) endpoint to get a new token. After you have done so, you need to use the new token in your GraphQL operations.
+Authorization tokens expire after a certain amount of time. When a token is expired, you will get an error and you will need to call the [refresh the token](https://github.com/boostercloud/rocket-auth-aws-infrastructure#refresh-token) endpoint to get a new token. After you have done so, you need to use the new token in your GraphQL operations.
 
 There are several ways to do this. Here we show the simplest one for learning purposes.
 
@@ -2522,7 +2268,7 @@ function isSubscriptionOperation({ query }) {
 }
 
 const httpLink = new HttpLink({
-  uri: '<httpURL>',
+  uri: '<AuthApiEndpoint>',
 })
 
 const authLink = new ApolloLink((operation, forward) => {
