@@ -7,7 +7,6 @@ interface Post {
 
 export const Provider = (): ProviderLibrary => ({
   // ProviderEventsLibrary
-  declare var fetch
   events: {
     rawToEnvelopes: () => {
       return []
