@@ -11,6 +11,7 @@ import * as packageJson from '../templates/project/package-json'
 import * as configTs from '../templates/project/config-ts'
 import * as indexTs from '../templates/project/index-ts'
 import * as prettierRc from '../templates/project/prettierrc-yaml'
+import * as mochaRc from '../templates/project/mocharc-yml'
 import { wrapExecError } from '../common/errors'
 import { installAllDependencies } from './dependencies'
 
@@ -86,4 +87,5 @@ const filesToGenerate: Array<[Array<string>, string]> = [
   [['.prettierrc.yaml'], prettierRc.template],
   [['src', 'config', 'config.ts'], configTs.template],
   [['src', 'index.ts'], indexTs.template],
+  [['.mocharc.yml'], mochaRc.template],
 ]
