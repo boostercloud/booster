@@ -1,10 +1,10 @@
-import { BoosterConfig, Logger, FilterOld, ReadModelInterface } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, ReadModelInterface } from '@boostercloud/framework-types'
 import fetch from 'node-fetch'
 
 // TODO: Implement querying with filters properly
 interface Filters {
   id: {
-    values: Array<string>
+    eq: string
   }
 }
 
@@ -17,7 +17,7 @@ export class ReadModelRegistry {
     readModelName: string,
     filters: Filters
   ): Promise<Array<ReadModelInterface>> {
-    const readModelId = filters.id.values[0]
+    const readModelId = filters.id.eq
     if (readModelId) {
       const result = await fetch(`${this.url}/v1.0/state/statestore/${readModelId}`)
       try {
@@ -25,7 +25,7 @@ export class ReadModelRegistry {
         if (response) {
           response.id = readModelId
         }
-        return [response]
+        return [response.value]
       } catch (err) {
         return []
       }
