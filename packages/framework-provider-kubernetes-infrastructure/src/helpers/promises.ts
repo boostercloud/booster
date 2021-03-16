@@ -1,5 +1,3 @@
-// TODO: This file is copied from 'packages/framework-core/src/helpers'
-// We should probably merge both into a file in types
 export class Promises {
   /**
    * Waits until all the passed promise-like values are settled, no matter if they were fulfilled or rejected.
