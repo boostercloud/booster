@@ -18,8 +18,7 @@ app.use(function(req, res, next) {
 })
 app.post('/graphQL', async (req, res) => {
   const response = await userProject.boosterServeGraphQL(req)
-  // TODO: Return body/data/result/whatever
-  res.send(response)
+  res.status(response.statusCode).json(response.body)
 })
 app.get('/ready', async (req, res) => {
   res.send('ok')
