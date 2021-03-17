@@ -46,7 +46,7 @@ export const template = {
         ipRangeFilter: '',
         dependsOn: [],
         capabilities: [],
-        enableFreeTier: true,
+        enableFreeTier: false,
       },
       resources: [
         {

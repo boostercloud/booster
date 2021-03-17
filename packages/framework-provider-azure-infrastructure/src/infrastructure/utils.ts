@@ -45,13 +45,13 @@ export async function buildResource(
 }
 
 export async function packageAzureFunction(functionDefinitions: Array<FunctionDefinition>): Promise<any> {
-  const output = fs.createWriteStream(path.join(os.tmpdir(), 'example.zip'))
+  const output = fs.createWriteStream(path.join(os.tmpdir(), 'functionApp.zip'))
   const archive = archiver('zip', {
     zlib: { level: 9 }, // Sets the compression level.
   })
 
   archive.pipe(output)
-  archive.glob('**/*')
+  archive.directory('.deploy', false)
   functionDefinitions.forEach((functionDefinition: FunctionDefinition) => {
     archive.append(JSON.stringify(functionDefinition.config, null, 2), {
       name: functionDefinition.name + '/function.json',
