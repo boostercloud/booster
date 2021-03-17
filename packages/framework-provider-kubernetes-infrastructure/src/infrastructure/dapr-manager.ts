@@ -1,4 +1,5 @@
 import * as path from 'path'
+import { Promises } from '../helpers/promises'
 import * as fs from 'fs'
 import { stateStore } from './templates/statestore'
 import { K8sManagement } from './k8s-sdk/k8s-management'
@@ -36,7 +37,7 @@ export class DaprManager {
       await this.createDaprComponentFile(templateValues)
     }
     const daprComponents = await this.readDaprComponentDirectory()
-    await Promise.all(
+    await Promises.allSettledAndFulfilled(
       daprComponents.map(async (component) => {
         const componentYaml = path.join(this.daprComponentsPath, component)
         const { stderr } = await this.clusterManager.execRawCommand(`apply -f ${componentYaml}`)
