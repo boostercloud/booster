@@ -6,10 +6,10 @@ import { DaprManager } from './dapr-manager'
 import { Promises } from '../helpers/promises'
 
 export const deploy = (configuration: BoosterConfig, logger: Logger): Promise<void> =>
-  deployBoosterApp(logger, configuration).catch(logger.error)
+  deployBoosterApp(logger, configuration)
 
 export const nuke = (configuration: BoosterConfig, logger: Logger): Promise<void> =>
-  nukeBoosterApp(logger, configuration).catch(logger.error)
+  nukeBoosterApp(logger, configuration)
 
 async function deployBoosterApp(logger: Logger, configuration: BoosterConfig): Promise<void> {
   const clusterManager = new K8sManagement()
