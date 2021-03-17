@@ -46,7 +46,7 @@ export class K8sManagement {
         name: item.metadata?.name,
         namespace: item.metadata?.namespace ?? 'default',
         labels: item.metadata?.labels ?? {},
-        ip: item.status?.loadBalancer?.ingress?.[0]?.ip ?? item.status?.loadBalancer?.ingress?.[0]?.hostname ?? '',
+        ip: item.status?.loadBalancer?.ingress?.[0]?.ip ?? item.status?.loadBalancer?.ingress?.[0]?.hostname ?? '', //TODO: Report to the user a failure because his cluster is not providing an IP or hostname for services in K8s
       }
     })
   }
