@@ -33,8 +33,15 @@ export class HelmManager {
    * check if a specific repo is already available to be used by helm
    */
   public async isRepoInstalled(repoName: string): Promise<boolean> {
-    const { stdout } = await this.exec('repo list')
-    return !!stdout?.includes(repoName)
+    try {
+      const { stdout, stderr } = await this.exec('repo list');
+      if (stderr) {
+        return false
+      }
+      return !!stdout?.includes(repoName)
+    } catch (e) {
+      return false
+    }
   }
 
   /**
