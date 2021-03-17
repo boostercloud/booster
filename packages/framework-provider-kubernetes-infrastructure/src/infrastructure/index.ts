@@ -3,6 +3,7 @@ import { K8sManagement } from './k8s-sdk/k8s-management'
 import { HelmManager } from './helm-manager'
 import { DeployManager } from './deploy-manager'
 import { DaprManager } from './dapr-manager'
+import { Promises } from '../helpers/promises'
 
 export const deploy = (configuration: BoosterConfig, logger: Logger): Promise<void> =>
   deployBoosterApp(logger, configuration).catch(logger.error)
@@ -16,13 +17,16 @@ async function deployBoosterApp(logger: Logger, configuration: BoosterConfig): P
   const daprManager = new DaprManager(configuration, clusterManager, helmManager)
   const deployManager = new DeployManager(configuration, clusterManager, daprManager, helmManager)
   logger.info('Checking your cluster and installed tools')
-  await Promise.all([deployManager.ensureNamespaceExists(), deployManager.ensureHelmIsReady()])
+  await Promises.allSettledAndFulfilled([deployManager.ensureNamespaceExists(), deployManager.ensureHelmIsReady()])
   logger.info('Checking your volume claim')
   await deployManager.ensureVolumeClaimExists()
   logger.info('Deploying all necessary services')
-  await Promise.all([deployManager.ensureUploadServiceExists(), deployManager.ensureBoosterServiceExists()])
+  await Promises.allSettledAndFulfilled([
+    deployManager.ensureUploadServiceExists(),
+    deployManager.ensureBoosterServiceExists(),
+  ])
   logger.info('Checking your Dapr services and event store')
-  await Promise.all([deployManager.ensureDaprExists(), deployManager.ensureEventStoreExists()])
+  await Promises.allSettledAndFulfilled([deployManager.ensureDaprExists(), deployManager.ensureEventStoreExists()])
   logger.info('Waiting for cluster to be ready to receive your code')
   await deployManager.ensureUploadPodExists()
   logger.info('Packing and uploading your code into the cluster')
