@@ -31,7 +31,7 @@ spec:
     spec:
       containers:
       - name: booster
-        image: boostercloud/boosterkubernetes:latest
+        image: boostercloud/boosterkubernetes:1.0.0
         env:
         - name: BOOSTER_ENV
           value: {{ environment }}
