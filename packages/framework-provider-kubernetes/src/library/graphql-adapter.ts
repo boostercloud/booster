@@ -31,5 +31,5 @@ export const handleResult = async (
     ...headers,
   },
   statusCode: 200,
-  body: result ? JSON.stringify(result) : '',
+  body: result
 })
