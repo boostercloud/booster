@@ -31,13 +31,13 @@ describe('the `Promises` helpers', () => {
       let successfulPromise2Finished = false
       const promises = [
         Promise.reject(rejectedReason),
-        new Promise((resolve) =>
+        new Promise<void>((resolve) =>
           setTimeout(() => {
             successfulPromise1Finished = true
             resolve()
           }, 100)
         ),
-        new Promise((resolve) =>
+        new Promise<void>((resolve) =>
           setTimeout(() => {
             successfulPromise2Finished = true
             resolve()
