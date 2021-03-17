@@ -8,9 +8,14 @@ import {
   ReadModelInterface,
 } from '@boostercloud/framework-types'
 import { EventRegistry } from './services/event-registry'
+import { ReadModelRegistry } from './services/read-model-registry'
 import * as EventsAdapter from './library/events-adapter'
 import * as ReadModelAdapter from './library/read-model-adapter'
-import { ReadModelRegistry } from './services/read-model-registry'
+import * as GraphQLAdapter from './library/graphql-adapter'
+import * as AuthAdapter from './library/auth-adapter'
+import * as ApiAdapter from './library/api-adapter'
+import * as ScheduledAdapter from './library/scheduled-adapter'
+import * as ConnectionsAdapter from './library/connections-adapter'
 
 const storageUrl = 'http://localhost:3500'
 const eventRegistry = new EventRegistry(storageUrl)
@@ -28,14 +33,9 @@ export const Provider = (): ProviderLibrary => ({
   },
   // ProviderReadModelsLibrary
   readModels: {
-    rawToEnvelopes: (config: any, logger: any, rawEvents: any) => {
-      console.log('rawToEnvelopes called')
-      return new Promise(() => {})
-    },
-    fetch: (config: any, logger: any, readModelName: any, readModelID: any) => {
-      console.log('fetch called')
-      return new Promise(() => {})
-    },
+    rawToEnvelopes: ReadModelAdapter.rawToEnvelopes,
+    fetch: ReadModelAdapter.fetch.bind(null, readModelRegistry),
+    // TODO: Remove generic constraint from ProviderReadModelsLibrary.search
     search: async <TReadModel extends ReadModelInterface>(
       config: BoosterConfig,
       logger: Logger,
@@ -52,71 +52,29 @@ export const Provider = (): ProviderLibrary => ({
   },
   // ProviderGraphQLLibrary
   graphQL: {
-    rawToEnvelope: async (request: { body: any }, logger: { debug: (arg0: string, arg1: any) => void }) => {
-      logger.debug('Received GraphQL request: ', request)
-      let graphQLValue = undefined
-      if (request.body) {
-        graphQLValue = request.body
-      }
-
-      return {
-        requestID: '1',
-        eventType: 'MESSAGE',
-        currentUser: JSON.parse('{}'),
-        value: graphQLValue,
-      }
-    },
-    handleResult: async (result: unknown, headers: Record<string, string> | undefined) => {
-      return {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          ...headers,
-        },
-        statusCode: 200,
-        body: result ? JSON.stringify(result) : '',
-      }
-    },
+    rawToEnvelope: GraphQLAdapter.rawToEnvelope,
+    handleResult: GraphQLAdapter.handleResult,
   },
   // ProviderAuthLibrary
   auth: {
-    rawToEnvelope: (_rawMessage: any) => {
-      return { email: '', role: '', username: '' }
-    },
-    fromAuthToken: (token: any) => {
-      return new Promise(() => {})
-    },
-    handleSignUpResult: (boosterConfir: any, request: any, userEnvelope: any) => {},
+    rawToEnvelope: AuthAdapter.rawToEnvelope,
+    fromAuthToken: AuthAdapter.fromAuthToken,
+    handleSignUpResult: AuthAdapter.handleSignUpResult,
   },
   // ProviderAPIHandling
   api: {
-    requestSucceeded: (body: any) => {
-      console.log('request Succeeded')
-      return new Promise(() => {})
-    },
-    requestFailed: (error: any) => {
-      console.log('request Failed')
-      return new Promise(() => {})
-    },
+    requestSucceeded: ApiAdapter.requestSucceeded,
+    requestFailed: ApiAdapter.requestFailed,
   },
   connections: {
-    storeData: (_boosterConfig: any, _connectionId: any, _data: any) => {
-      return new Promise(() => {})
-    },
-    fetchData: (boosterConfig: any, connectionId: any) => {
-      return new Promise(() => {})
-    },
-    deleteData: (boosterConfig: any, connectionId: any) => {
-      return new Promise(() => {})
-    },
-    sendMessage: (boosterConfig: any, connectionId: any, data: any) => {
-      return new Promise(() => {})
-    },
+    storeData: ConnectionsAdapter.storeData,
+    fetchData: ConnectionsAdapter.fetchData,
+    deleteData: ConnectionsAdapter.deleteData,
+    sendMessage: ConnectionsAdapter.sendMessage,
   },
   // ScheduledCommandsLibrary
   scheduled: {
-    rawToEnvelope: (rawMessage: any, logger: any) => {
-      return new Promise(() => {})
-    },
+    rawToEnvelope: ScheduledAdapter.rawToEnvelope,
   },
   // ProviderInfrastructureGetter
   infrastructure: () =>
