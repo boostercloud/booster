@@ -1,12 +1,12 @@
 import { CosmosClient, SqlParameter, SqlQuerySpec } from '@azure/cosmos'
-import { BoosterConfig, FilterOld, Logger, InvalidParameterError } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, InvalidParameterError, FilterFor, Operation } from '@boostercloud/framework-types'
 
 export async function searchReadModel(
   cosmosDb: CosmosClient,
   config: BoosterConfig,
   logger: Logger,
   readModelName: string,
-  filters: Record<string, FilterOld<any>>
+  filters: FilterFor<unknown>
 ): Promise<Array<any>> {
   const querySpec: SqlQuerySpec = {
     query: `SELECT * FROM c ${buildFilterExpression(filters)}`,
@@ -25,7 +25,7 @@ export async function searchReadModel(
   return resources ?? []
 }
 
-function buildFilterExpression(filters: Record<string, FilterOld<any>>): string {
+function buildFilterExpression(filters: FilterFor<any>): string {
   const filterExpression = Object.entries(filters)
     .map(([propName, filter]) => buildOperation(propName, filter))
     .join(' AND ')
@@ -35,51 +35,54 @@ function buildFilterExpression(filters: Record<string, FilterOld<any>>): string 
   return filterExpression
 }
 
-function buildOperation(propName: string, filter: FilterOld<any>): string {
+function buildOperation(propName: string, filter: Operation<any> = {}): string {
   const holder = placeholderBuilderFor(propName)
-  switch (filter.operation) {
-    case '=':
-      return `c["${propName}"] = ${holder(0)}`
-    case '!=':
-      return `c["${propName}"] <> ${holder(0)}`
-    case '<':
-      return `c["${propName}"] < ${holder(0)}`
-    case '>':
-      return `c["${propName}"] > ${holder(0)}`
-    case '>=':
-      return `c["${propName}"] >= ${holder(0)}`
-    case '<=':
-      return `c["${propName}"] <= ${holder(0)}`
-    case 'in':
-      return `c["${propName}"] IN (${filter.values.map((value, index) => holder(index)).join(',')})`
-    case 'between':
-      return `c["${propName}"] BETWEEN ${holder(0)} AND ${holder(1)}`
-    case 'contains':
-      return `CONTAINS(c["${propName}"], ${holder(0)})`
-    case 'not-contains':
-      return `NOT CONTAINS(c["${propName}"], ${holder(0)})`
-    case 'begins-with':
-      return `STARTSWITH(c["${propName}"], ${holder(0)})`
-    default:
-      throw new InvalidParameterError(`Operator "${filter.operation}" is not supported`)
-  }
+  return Object.entries(filter)
+    .map(([operation, value], index) => {
+      switch (operation) {
+        case 'eq':
+          return `c["${propName}"] = ${holder(index)}`
+        case 'ne':
+          return `c["${propName}"] <> ${holder(index)}`
+        case 'lt':
+          return `c["${propName}"] < ${holder(index)}`
+        case 'gt':
+          return `c["${propName}"] > ${holder(index)}`
+        case 'gte':
+          return `c["${propName}"] >= ${holder(index)}`
+        case 'lte':
+          return `c["${propName}"] <= ${holder(index)}`
+        case 'in':
+          return `c["${propName}"] IN (${value
+            .map((value: any, subIndex: number) => holder(index, subIndex))
+            .join(',')})`
+        case 'contains':
+          return `CONTAINS(c["${propName}"], ${holder(index)})`
+        case 'begins-with':
+          return `STARTSWITH(c["${propName}"], ${holder(index)})`
+        default:
+          throw new InvalidParameterError(`Operator "${operation}" is not supported`)
+      }
+    })
+    .join(' AND ')
 }
 
-function placeholderBuilderFor(propName: string): (valueIndex: number) => string {
-  return (valueIndex: number) => `@${propName}_${valueIndex}`
+function placeholderBuilderFor(propName: string): (valueIndex: number, valueSubIndex?: number) => string {
+  return (valueIndex: number, valueSubIndex?: number) =>
+    `@${propName}_${valueIndex}` + (typeof valueSubIndex === 'number' ? `_${valueSubIndex}` : '')
 }
 
-function buildExpressionAttributeValues(filters: Record<string, FilterOld<any>>): Array<SqlParameter> {
+function buildExpressionAttributeValues(filters: FilterFor<any>): Array<SqlParameter> {
   const attributeValues: Array<SqlParameter> = []
-  for (const propName in filters) {
+  Object.entries(filters).forEach(([propName]) => {
     const filter = filters[propName]
     const holder = placeholderBuilderFor(propName)
-    filter.values.forEach((value, index) => {
+    Object.values(filter as any).forEach((value, index) => {
       attributeValues.push({
         name: holder(index),
-        value,
+        value: value as {},
       })
     })
-  }
+  })
   return attributeValues
 }
