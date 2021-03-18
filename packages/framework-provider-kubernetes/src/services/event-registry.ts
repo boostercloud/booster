@@ -2,11 +2,14 @@
 import { EventEnvelope, Logger } from 'framework-types/dist'
 import { v4 as uuidv4 } from 'uuid';
 import fetch from 'node-fetch'
+//import { RedisAdapter } from './redis-adapter'
 
 export class EventRegistry {
   constructor(readonly url: string) {}
 
   public async store(event: EventEnvelope, logger: Logger): Promise<void> {
+    //await RedisAdapter.build().keys('*', logger)
+
     const stateUrl = `${this.url}/v1.0/state/statestore`
     logger.debug('About to post', event)
     const data = [{ key: this.eventKey(event), value: event }]
