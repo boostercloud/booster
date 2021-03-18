@@ -112,6 +112,7 @@ export class DaprManager {
   }
 
   private async getEventStorePassword(): Promise<string> {
+    const l = scopeLogger('getEventStorePassword', this.logger)
     l.debug('Getting event store password')
     const eventStorePassword = await this.clusterManager.getSecret(this.namespace, this.eventStorePod)
     if (!eventStorePassword) {
