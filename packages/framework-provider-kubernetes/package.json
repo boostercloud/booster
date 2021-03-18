@@ -21,12 +21,13 @@
   },
   "dependencies": {
     "@boostercloud/framework-types": "^0.12.1",
-    "node-fetch": "^2.6.1",
     "body-parser": "^1.18.3",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "form-data": "^3.0.0",
     "isomorphic-fetch": "^2.2.1",
+    "node-fetch": "^2.6.1",
+    "redis": "^3.0.2",
     "uuid": "8.3.2"
   },
   "scripts": {
