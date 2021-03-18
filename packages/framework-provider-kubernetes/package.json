@@ -26,7 +26,8 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "form-data": "^3.0.0",
-    "isomorphic-fetch": "^2.2.1"
+    "isomorphic-fetch": "^2.2.1",
+    "uuid": "8.3.2"
   },
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",

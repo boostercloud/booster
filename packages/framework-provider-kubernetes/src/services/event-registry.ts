@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { EventEnvelope, Logger } from 'framework-types/dist'
+import { v4 as uuidv4 } from 'uuid';
 import fetch from 'node-fetch'
 
 export class EventRegistry {
@@ -35,7 +36,6 @@ export class EventRegistry {
 
   private eventKey(event: EventEnvelope): string {
     //ee_Post_95ddb544-4a60-439f-a0e4-c57e806f2f6e_event_PostCreated_2021-03-17T16:49:29.143Z_j9qn8kd8
-    const hash = Math.random().toString(36).substring(5)
     const keyParts = [
       'ee',                 // event envelope marker
       event.entityTypeName, // 'Post' entity name
@@ -43,7 +43,7 @@ export class EventRegistry {
       event.kind,           // 'event' | 'snapshot'
       event.typeName,       // 'PostCreated' event name
       event.createdAt,      // timespan
-      hash                  // hash to make key unique
+      uuidv4()              // hash to make key unique
     ]
     return keyParts.join('_')
   }
