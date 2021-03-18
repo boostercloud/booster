@@ -188,7 +188,7 @@ describe('Read models searcher adapter', () => {
       expect(database.scan).to.have.been.calledWithExactly(expectedInput)
     })
 
-    it('Thorw an error with non supported filters', async () => {
+    it('Throws an error with non supported filters', async () => {
       const unknownOperator = 'existsIn'
       const filters: FilterFor<any> = {
         id: { [unknownOperator]: 'test' },
