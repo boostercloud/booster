@@ -2,7 +2,6 @@ export const stateStore = {
   name: 'statestore',
   template: `apiVersion: dapr.io/v1alpha1
 kind: Component
-version: v1
 metadata:
   name: statestore
   namespace: {{ namespace }}
@@ -10,6 +9,7 @@ metadata:
     booster/created: "true"
 spec:
   type: state.redis
+  version: v1
   metadata:
   - name: redisHost
     value: {{{ eventStoreHost }}}

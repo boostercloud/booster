@@ -133,7 +133,9 @@ export class DeployManager {
   /**
    * deploy a booster app pod inside the cluster and get the booster app url from the cluster
    */
-  public async deployBoosterApp(): Promise<string> {
+  public async deployBoosterApp(eventStoreUser: string, eventStorePassword: string): Promise<string> {
+    this.templateValues.dbUser = eventStoreUser
+    this.templateValues.dbPass = eventStorePassword
     await this.ensureBoosterPodExists()
     await this.clusterManager.waitForPodToBeReady(this.namespace, boosterAppPod.name)
     const service = await this.clusterManager.waitForServiceToBeReady(this.namespace, boosterService.name)

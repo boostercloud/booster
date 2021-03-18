@@ -35,6 +35,10 @@ spec:
         env:
         - name: BOOSTER_ENV
           value: {{ environment }}
+        - name: DB_USER
+          value: {{ dbUser }}
+        - name: DB_PASSWORD
+          value: {{ dbPass }}
         ports:
         - containerPort: 3000
         readinessProbe:
