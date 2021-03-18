@@ -6,25 +6,33 @@ import { waitForIt } from '../utils'
 import { TemplateValues } from '../templates/template-types'
 import * as util from 'util'
 import { IncomingMessage } from 'http'
+import { Logger } from '@boostercloud/framework-types'
+import { scopeLogger } from '../../helpers/logger'
 const exec = util.promisify(require('child_process').exec)
 
 export class K8sManagement {
   private kube: KubeConfig
   private k8sClient: CoreV1Api
   private kubectlCommand = 'kubectl'
+  private logger: Logger
 
-  constructor() {
+  constructor(logger: Logger) {
     this.kube = new KubeConfig()
     this.kube.loadFromDefault()
     this.k8sClient = this.kube.makeApiClient(CoreV1Api)
+    this.logger = scopeLogger('K8sManagement', logger)
   }
 
   /**
    * get a list including all available pods in an specific namespace
    */
   public async getAllPodsInNamespace(namespace: string): Promise<Array<Pod>> {
+    const l = scopeLogger('getAllPodsInNamespace', this.logger)
+    l.debug('Unwrapping response')
     const response = await this.unwrapResponse(this.k8sClient.listNamespacedPod(namespace))
+    l.debug('Mapping over response items, with length', response.items.length)
     return response.items.map((item) => {
+      l.debug(`Got item called ${item.metadata?.name ?? 'UNDEFINED'}`)
       return {
         name: item.metadata?.name,
         namespace: item.metadata?.namespace ?? 'default',
@@ -40,9 +48,12 @@ export class K8sManagement {
    * get a list including all available services in an specific namespace
    */
   public async getAllServicesInNamespace(namespace: string): Promise<Array<Service>> {
+    const l = scopeLogger('getAllServicesInNamespace', this.logger)
+    l.debug('Calling `k8sClient.listNamespacedService(', namespace, ')`')
     const response = await this.unwrapResponse(this.k8sClient.listNamespacedService(namespace))
+    l.debug('Got items with length', response.items.length)
     return response.items.map((item) => {
-
+      l.debug('Transforming item named', item.metadata?.name ?? 'UNDEFINED')
       return {
         name: item.metadata?.name,
         namespace: item.metadata?.namespace ?? 'default',
@@ -56,7 +67,11 @@ export class K8sManagement {
    * get a list including all Persistent Volume Claim in an specific namespace
    */
   public async getAllVolumeClaimFromNamespace(namespace: string): Promise<Array<VolumeClaim>> {
+    const l = scopeLogger('getAllVolumeClaimFromNamespace', this.logger)
+    l.debug('Calling `k8sClient.listPersistentVolumeClaimForAllNamespaces()`')
     const response = await this.unwrapResponse(this.k8sClient.listPersistentVolumeClaimForAllNamespaces())
+    l.debug('Got', response.items.length, 'items')
+    l.debug('Filtering items called', namespace, 'and transforming them')
     return response.items
       .filter((item) => item.metadata?.namespace === namespace)
       .map((item) => {
@@ -72,8 +87,12 @@ export class K8sManagement {
    * get a list including all namespaces inside your cluster
    */
   public async getAllNamespaces(): Promise<Array<Namespace>> {
+    const l = scopeLogger('getAllNamespaces', this.logger)
+    l.debug('Listing namespaces using `k8sClient.listNamespace()`')
     const response = await this.unwrapResponse(this.k8sClient.listNamespace())
+    l.debug('Processing namespaces')
     return response.items.map((item) => {
+      l.debug('Got namespace called', item.metadata?.name ?? 'UNDEFINED')
       return {
         name: item.metadata?.name,
         status: item.status?.phase,
@@ -86,14 +105,22 @@ export class K8sManagement {
    * create a namespace inside your cluster
    */
   public async createNamespace(name: string): Promise<boolean> {
+    const l = scopeLogger('createNamespace', this.logger)
     const namespace = {
       metadata: {
         name: name,
       },
     }
+    l.debug('Creating namespace using `this.k8sClient.createNamespace`')
     return this.k8sClient.createNamespace(namespace).then(
-      () => true,
-      () => false
+      () => {
+        l.debug('Namespace created successfully')
+        return true
+      },
+      () => {
+        l.debug("Couldn't create namespace")
+        return false
+      }
     )
   }
 
@@ -111,7 +138,10 @@ export class K8sManagement {
    * get the information from a specific namespace inside your cluster
    */
   public async getNamespace(name: string): Promise<Namespace | undefined> {
+    const l = scopeLogger('getNamespace', this.logger)
+    l.debug('Getting all namespaces')
     const namespaces = await this.getAllNamespaces()
+    l.debug('Attempting to find a namespace called', name, 'in array of', namespaces.length, 'elements')
     return namespaces.find((namespace) => {
       return namespace?.name === name
     })
@@ -121,7 +151,10 @@ export class K8sManagement {
    * get a specific pod included in the provided namespace. The search is performed using the label `app` from your pod
    */
   public async getPodFromNamespace(namespace: string, podName: string): Promise<Pod | undefined> {
+    const l = scopeLogger('getPodFromNamespace', this.logger)
+    l.debug('Get all pods in namespace')
     const pods = await this.getAllPodsInNamespace(namespace)
+    l.debug('Attempting to find pod called', podName)
     return pods.find((pod) => {
       return pod?.labels?.['app'] === podName
     })
@@ -131,7 +164,10 @@ export class K8sManagement {
    * get a specific service in the provided namespace. The search is performed using the label `app` from your service
    */
   public async getServiceFromNamespace(namespace: string, serviceName: string): Promise<Pod | undefined> {
+    const l = scopeLogger('getServiceFromNamespace', this.logger)
+    l.debug('Getting all services from namespace')
     const services = await this.getAllServicesInNamespace(namespace)
+    l.debug('Attempting to find service named', serviceName)
     return services.find((service) => {
       return service?.labels?.['app'] === serviceName
     })
@@ -141,7 +177,10 @@ export class K8sManagement {
    * get a specific persistent volume claim from the provided namespace.
    */
   public async getVolumeClaimFromNamespace(namespace: string, volumeClaim: string): Promise<VolumeClaim | undefined> {
+    const l = scopeLogger('getVolumeClaimFromNamespace', this.logger)
+    l.debug('Getting all volume claims')
     const claims = await this.getAllVolumeClaimFromNamespace(namespace)
+    l.debug('Trying to find a claim called', volumeClaim)
     return claims.find((claim) => {
       return claim?.name === volumeClaim
     })
@@ -185,7 +224,11 @@ export class K8sManagement {
    * apply the provided template to the cluster. This method will try to render the provided template using the provided data and apply the result to the cluster
    */
   public async applyTemplate(template: string, templateData: TemplateValues): Promise<Array<KubernetesObject>> {
+    const l = scopeLogger('applyTemplate', this.logger)
+    l.debug('Rendering template')
     const renderedYaml = Mustache.render(template, templateData)
+    l.debug('Rendered YAML:\n', renderedYaml)
+    l.debug('Applying YAML string')
     return await this.applyYamlString(renderedYaml)
   }
 
@@ -208,8 +251,12 @@ export class K8sManagement {
    * apply a string to the cluster. This method allow the user to pass a string containing a yaml definition and apply it to the cluster
    */
   public async applyYamlString(yaml: string): Promise<Array<KubernetesObject>> {
+    const l = scopeLogger('applyYamlString', this.logger)
+    l.debug('Making API client')
     const client = KubernetesObjectApi.makeApiClient(this.kube)
+    l.debug('Safe loading')
     const specs = safeLoadAll(yaml)
+    l.debug('Filtering specs')
     const validSpecs = specs.filter((s) => s?.kind && s?.metadata)
     const created: KubernetesObject[] = []
     for (const spec of validSpecs) {
@@ -217,13 +264,17 @@ export class K8sManagement {
       spec.metadata.annotations = spec.metadata.annotations || {}
       delete spec.metadata.annotations['kubectl.kubernetes.io/last-applied-configuration']
       spec.metadata.annotations['kubectl.kubernetes.io/last-applied-configuration'] = JSON.stringify(spec)
+      l.debug('Checking if resource exists')
       const resourceExists = await this.existsResourceSpec(spec)
       let response: { body: KubernetesObject; response: IncomingMessage }
       if (resourceExists) {
+        l.debug('Resource exists, replacing')
         response = await client.replace(spec)
       } else {
+        l.debug("Resource doesn't exist, creating")
         response = await client.create(spec)
       }
+      l.debug('Pushing response.body')
       created.push(response.body)
     }
     return created
@@ -233,9 +284,17 @@ export class K8sManagement {
    * wait for a pod to be ready or throw an error if the pod is not ready after the provided timeout time
    */
   public waitForPodToBeReady(namespace: string, podName: string, timeout = 180000): Promise<Pod | undefined> {
+    const l = scopeLogger('waitForPodToBeReady', this.logger)
+    l.debug('Waiting for it')
     return waitForIt(
-      () => this.getPodFromNamespace(namespace, podName),
-      (podInfo) => podInfo?.status === 'Running',
+      async () => {
+        l.debug('Getting pod from namespace')
+        return this.getPodFromNamespace(namespace, podName)
+      },
+      (podInfo) => {
+        l.debug('Got podInfo status', podInfo ? podInfo.status : 'UNDEFINED')
+        return podInfo?.status === 'Running'
+      },
       `Unable to get the pod ${podName} in status Running, please check your cluster for more information`,
       timeout
     )
@@ -249,9 +308,17 @@ export class K8sManagement {
     serviceName: string,
     timeout = 180000
   ): Promise<Service | undefined> {
+    const l = scopeLogger('waitForServiceToBeReady', this.logger)
+    l.debug('waiting')
     return waitForIt(
-      () => this.getServiceFromNamespace(namespace, serviceName),
-      (serviceInfo) => serviceInfo?.ip !== '',
+      () => {
+        l.debug('Getting service from namespace')
+        return this.getServiceFromNamespace(namespace, serviceName)
+      },
+      (serviceInfo) => {
+        l.debug('Got service info IP', serviceInfo ? serviceInfo.ip : 'UNDEFINED')
+        return serviceInfo?.ip !== ''
+      },
       `Unable to get the service ${serviceName} in status Running, please check your cluster for more information`,
       timeout
     )
@@ -276,7 +343,10 @@ export class K8sManagement {
    * for example: `kubectl apply -f file.yaml` will be `execRawCommand('apply -f file.yaml')`
    */
   public async execRawCommand(command: string): Promise<{ stderr?: string; stdout?: string }> {
-    return await exec(`${this.kubectlCommand} ${command}`)
+    const l = scopeLogger('execRawCommand', this.logger)
+    const cmd = `${this.kubectlCommand} ${command}`
+    l.debug('Executing', cmd)
+    return await exec(cmd)
   }
 
   private async unwrapResponse<TBody>(wrapped: Promise<{ body: TBody }>): Promise<TBody> {
