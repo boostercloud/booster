@@ -3,16 +3,21 @@ import { K8sManagement } from '../../src/infrastructure/k8s-sdk/k8s-management'
 import { HelmManager } from '../../src/infrastructure/helm-manager'
 import { DaprManager } from '../../src/infrastructure/dapr-manager'
 import { stub, restore, replace, fake } from 'sinon'
-import { BoosterConfig } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger } from '@boostercloud/framework-types'
 import { stateStore } from '../../src/infrastructure/templates/statestore'
 import { internet } from 'faker'
 const fs = require('fs')
 
 describe('Users Dapr interaction inside the cluster', () => {
-  const k8sManager = new K8sManagement()
+  const fakeLogger: Logger = {
+    info: fake(),
+    error: fake(),
+    debug: fake(),
+  }
+  const k8sManager = new K8sManagement(fakeLogger)
   const configuration = new BoosterConfig('test')
-  const helmManager = new HelmManager()
-  const daprManager = new DaprManager(configuration, k8sManager, helmManager)
+  const helmManager = new HelmManager(fakeLogger)
+  const daprManager = new DaprManager(fakeLogger, configuration, k8sManager, helmManager)
 
   afterEach(() => {
     restore()

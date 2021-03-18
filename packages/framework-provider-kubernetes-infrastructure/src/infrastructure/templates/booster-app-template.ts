@@ -26,7 +26,7 @@ spec:
         booster/deployed: "{{ timestamp }}"
         {{/timestamp}}
         dapr.io/enabled: "true"
-        dapr.io/id: "booster"
+        dapr.io/app-id: "booster"
         dapr.io/port: "3000"
     spec:
       containers:
@@ -48,7 +48,7 @@ spec:
           initialDelaySeconds: 15
           periodSeconds: 5
           successThreshold: 1
-        volumeMounts: 
+        volumeMounts:
           - mountPath: /data/appCode
             name: app-code
         imagePullPolicy: Always
@@ -59,11 +59,11 @@ spec:
           - name: BOOSTER_ENV
             value: {{ environment }}
           command: ['sh', '-c', "while [ ! -f /data/appCode/boosterCode.zip ]; do echo Waiting for user code tobe uploaded to the storage; sleep 5; done"]
-          volumeMounts: 
+          volumeMounts:
             - mountPath: /data/appCode
               name: app-code
-      volumes: 
+      volumes:
       - name: app-code
-        persistentVolumeClaim: 
+        persistentVolumeClaim:
           claimName: {{ clusterVolume }} `,
 }
