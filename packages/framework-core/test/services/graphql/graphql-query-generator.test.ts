@@ -231,10 +231,12 @@ describe('GraphQLQueryGenerator', () => {
                   ],
                 }
                 sut = new GraphQLQueryGenerator(
+                  simpleConfig,
                   mockTargetTypes,
                   mockTypeInformer as any,
                   mockByIdResolverBuilder,
-                  mockFilterResolverBuilder
+                  mockFilterResolverBuilder,
+                  mockEventsResolver
                 )
                 const result = sut.generate()
 
@@ -283,10 +285,12 @@ describe('GraphQLQueryGenerator', () => {
                   ],
                 }
                 sut = new GraphQLQueryGenerator(
+                  simpleConfig,
                   mockTargetTypes,
                   mockTypeInformer as any,
                   mockByIdResolverBuilder,
-                  mockFilterResolverBuilder
+                  mockFilterResolverBuilder,
+                  mockEventsResolver
                 )
                 const result = sut.generate()
 
@@ -400,10 +404,12 @@ describe('GraphQLQueryGenerator', () => {
               }
 
               sut = new GraphQLQueryGenerator(
+                simpleConfig,
                 mockTargetTypes,
                 mockTypeInformer as any,
                 mockByIdResolverBuilder,
-                mockFilterResolverBuilder
+                mockFilterResolverBuilder,
+                mockEventsResolver
               )
             })
 
