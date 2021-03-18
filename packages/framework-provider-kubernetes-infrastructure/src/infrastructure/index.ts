@@ -32,7 +32,7 @@ async function deployBoosterApp(logger: Logger, configuration: BoosterConfig): P
   logger.info('Packing and uploading your code into the cluster')
   await deployManager.uploadUserCode()
   logger.info('Deploying your booster app 🚀')
-  const serviceURL = await deployManager.deployBoosterApp()
+  const serviceURL = await deployManager.deployBoosterApp(daprManager.eventStoreUser, daprManager.eventStorePassword)
   logger.info(`Your app is ready in this url: http://${serviceURL}`)
 }
 

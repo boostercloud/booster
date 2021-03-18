@@ -13,8 +13,9 @@ export class DaprManager {
   private eventStoreRepoName = 'bitnami'
   private eventStoreHost = 'redis-master:6379'
   private eventStoreSecretName = 'redis-password'
-  private eventStoreUser = 'admin'
+  public eventStoreUser = 'admin'
   private eventStorePod = 'redis'
+  public eventStorePassword = ''
   private daprComponentsPath = path.join(process.cwd(), 'components')
   private stateStoreFileName = 'statestore.yaml'
   private namespace: string
@@ -35,6 +36,8 @@ export class DaprManager {
     if (!fs.existsSync(this.daprComponentsPath)) {
       const templateValues: DaprTemplateValues = await this.ensureEventStoreIsReady()
       await this.createDaprComponentFile(templateValues)
+    } else {
+      this.eventStorePassword = await this.getEventStorePassword()
     }
     const daprComponents = await this.readDaprComponentDirectory()
     await Promises.allSettledAndFulfilled(
@@ -81,6 +84,16 @@ export class DaprManager {
       await this.helmManager.exec(`install redis bitnami/redis -n ${this.namespace}`)
       await this.clusterManager.waitForPodToBeReady(this.namespace, this.eventStorePod)
     }
+    this.eventStorePassword = await this.getEventStorePassword()
+    return {
+      namespace: this.namespace,
+      eventStoreHost: this.eventStoreHost,
+      eventStoreUsername: this.eventStoreUser,
+      eventStorePassword: this.eventStorePassword,
+    }
+  }
+
+  private async getEventStorePassword(): Promise<string> {
     const eventStorePassword = await this.clusterManager.getSecret(this.namespace, this.eventStorePod)
     if (!eventStorePassword) {
       throw new Error(
@@ -89,13 +102,7 @@ export class DaprManager {
     }
     const buff = Buffer.from(eventStorePassword?.data?.[this.eventStoreSecretName] ?? '', 'base64')
     const decodedPassword = buff.toString('utf-8')
-
-    return {
-      namespace: this.namespace,
-      eventStoreHost: this.eventStoreHost,
-      eventStoreUsername: this.eventStoreUser,
-      eventStorePassword: decodedPassword,
-    }
+    return decodedPassword
   }
 
   /**

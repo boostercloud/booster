@@ -8,6 +8,8 @@ export interface TemplateValues {
   namespace: string
   clusterVolume: string
   environment: string
+  dbUser?: string
+  dbPass?: string
 }
 
 export interface DaprTemplateValues {
