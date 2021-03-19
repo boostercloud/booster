@@ -31,7 +31,7 @@
     "apollo-link-ws": "^1.0.20",
     "apollo-utilities": "^1.3.4",
     "aws-sdk": "2.764.0",
-    "cross-fetch": "^3.0.4",
+    "cross-fetch": "3.0.4",
     "faker": "5.1.0",
     "graphql-tag": "^2.10.3",
     "subscriptions-transport-ws": "^0.9.16",
