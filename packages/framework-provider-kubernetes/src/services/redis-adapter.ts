@@ -1,5 +1,6 @@
 import { Logger } from 'framework-types/dist'
 import fetch from 'node-fetch'
+// TODO: Convert redis require to import
 const redis = require('redis')
 
 export class RedisAdapter {
