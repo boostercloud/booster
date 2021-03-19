@@ -40,7 +40,7 @@ export const forEntitySince = async (
   const originOfTime = new Date(0).toISOString()
   const fromTime = since ?? originOfTime
   const query = {
-    keyQuery: `ee_${entityTypeName}_${entityID}`,
+    keyQuery: `ee_${entityTypeName}_${entityID}_event`,
     keyPredicate: isNewerThan(fromTime),
     valuePredicate: () => true,
     sortBy: (a: EventEnvelope, b: EventEnvelope) => a.createdAt.localeCompare(b.createdAt),
