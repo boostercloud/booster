@@ -35,6 +35,8 @@ spec:
         env:
         - name: BOOSTER_ENV
           value: {{ environment }}
+        - name: DB_HOST
+          value: {{ dbHost }}
         - name: DB_USER
           value: {{ dbUser }}
         - name: DB_PASSWORD

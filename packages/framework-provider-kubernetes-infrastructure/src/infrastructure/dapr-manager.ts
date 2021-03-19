@@ -13,7 +13,7 @@ import { scopeLogger } from '../helpers/logger'
 export class DaprManager {
   private eventStoreRepo = 'https://charts.bitnami.com/bitnami'
   private eventStoreRepoName = 'bitnami'
-  private eventStoreHost = 'redis-master:6379'
+  public eventStoreHost = 'redis-master:6379'
   private eventStoreSecretName = 'redis-password'
   public eventStoreUser = 'admin'
   private eventStorePod = 'redis'

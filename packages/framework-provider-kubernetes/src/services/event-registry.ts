@@ -1,15 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { EventEnvelope, Logger } from 'framework-types/dist'
-import { v4 as uuidv4 } from 'uuid';
+import { EventEnvelope, Logger, UUID } from '@boostercloud/framework-types'
 import fetch from 'node-fetch'
+import { RedisAdapter } from './redis-adapter'
 //import { RedisAdapter } from './redis-adapter'
 
 export class EventRegistry {
   constructor(readonly url: string) {}
 
   public async store(event: EventEnvelope, logger: Logger): Promise<void> {
-    //await RedisAdapter.build().keys('*', logger)
-
     const stateUrl = `${this.url}/v1.0/state/statestore`
     logger.debug('About to post', event)
     const data = [{ key: this.eventKey(event), value: event }]
@@ -27,26 +25,33 @@ export class EventRegistry {
     }
   }
 
-  public async query(_query: object, _logger: Logger): Promise<Array<EventEnvelope>> {
-    // TODO: Implement accordingly to Dapr
-    throw new Error('EventRegistry#query: Not implemented yet')
+  public async query(query: string, logger: Logger): Promise<Array<EventEnvelope>> {
+    const redisKeys = await RedisAdapter.build().keys(query, logger)
+    if (!redisKeys) {
+      return []
+    }
+    console.log(redisKeys)
+    throw new Error('EventRegistry#query: not implemented to get snapshots from redis')
   }
 
-  public async queryLatest(_query: object): Promise<EventEnvelope> {
-    // TODO: Implement accordingly to Dapr
-    throw new Error('EventRegistry#queryLatest: Not implemented yet')
+  public async queryLatest(query: string, logger: Logger): Promise<EventEnvelope | null> {
+    const redisKeys = await RedisAdapter.build().keys(query, logger)
+    if (!redisKeys) {
+      return null
+    }
+    console.log(redisKeys)
+    throw new Error('EventRegistry#queryLatest: not implemented get snapshots from redis')
   }
 
   private eventKey(event: EventEnvelope): string {
-    //ee_Post_95ddb544-4a60-439f-a0e4-c57e806f2f6e_event_PostCreated_2021-03-17T16:49:29.143Z_j9qn8kd8
     const keyParts = [
-      'ee',                 // event envelope marker
+      'ee', // event envelope marker
       event.entityTypeName, // 'Post' entity name
-      event.entityID,       // entityId
-      event.kind,           // 'event' | 'snapshot'
-      event.typeName,       // 'PostCreated' event name
-      event.createdAt,      // timespan
-      uuidv4()              // hash to make key unique
+      event.entityID, // entityId
+      event.kind, // 'event' | 'snapshot'
+      event.typeName, // 'PostCreated' event name
+      event.createdAt, // timespan
+      UUID.generate(), // hash to make key unique
     ]
     return keyParts.join('_')
   }
