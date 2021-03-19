@@ -23,23 +23,30 @@ export const store = async (
   }
 }
 
+const isNewerThan = (isoString: string) => (key: string) => {
+  const keyIsoString = key.split('_')[5]
+  if (!keyIsoString) throw new Error(`No ISO string in key ${key}`)
+  return new Date(keyIsoString) >= new Date(isoString)
+}
+
 export const forEntitySince = async (
   registry: EventRegistry,
   _config: BoosterConfig,
   logger: Logger,
   entityTypeName: string,
   entityID: UUID,
-  _since?: string
+  since?: string
 ): Promise<Array<EventEnvelope>> => {
-  //const originOfTime = new Date(0).toISOString()
-  //const fromTime = since ?? originOfTime
-  const querySnapshot = `ee_${entityTypeName}_${entityID}_snapshot`
-  const queryResult = await registry.query(querySnapshot, logger)
-  if (queryResult.length === 0) {
-    return []
-  } else {
-    throw new Error('eventsAdapter#forEntitySince: snapshot filtering not implemented')
+  const originOfTime = new Date(0).toISOString()
+  const fromTime = since ?? originOfTime
+  const query = {
+    keyQuery: `ee_${entityTypeName}_${entityID}_event`,
+    keyPredicate: isNewerThan(fromTime),
+    valuePredicate: () => true,
+    sortBy: (a: EventEnvelope, b: EventEnvelope) => a.createdAt.localeCompare(b.createdAt),
   }
+  const queryResult = await registry.query(query, logger)
+  return queryResult
 }
 
 export async function latestEntitySnapshot(
@@ -49,7 +56,12 @@ export async function latestEntitySnapshot(
   entityTypeName: string,
   entityID: UUID
 ): Promise<EventEnvelope | null> {
-  const query = `ee_${entityTypeName}_${entityID}_snapshot`
+  const query = {
+    keyQuery: `ee_${entityTypeName}_${entityID}_snapshot`,
+    keyPredicate: () => true,
+    valuePredicate: () => true,
+    sortBy: (a: EventEnvelope, b: EventEnvelope) => a.createdAt.localeCompare(b.createdAt),
+  }
   const snapshot = (await registry.queryLatest(query, logger)) as EventEnvelope
 
   if (snapshot) {

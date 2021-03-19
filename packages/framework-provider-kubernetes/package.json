@@ -40,5 +40,8 @@
   },
   "bugs": {
     "url": "https://github.com/boostercloud/booster/issues"
+  },
+  "devDependencies": {
+    "@types/redis": "^2.8.28"
   }
 }
