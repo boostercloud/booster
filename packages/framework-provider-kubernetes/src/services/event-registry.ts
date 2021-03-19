@@ -2,7 +2,6 @@
 import { EventEnvelope, Logger, UUID } from '@boostercloud/framework-types'
 import fetch from 'node-fetch'
 import { RedisAdapter } from './redis-adapter'
-//import { RedisAdapter } from './redis-adapter'
 
 interface Query {
   keyQuery: string
