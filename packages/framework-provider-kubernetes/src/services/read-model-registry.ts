@@ -1,5 +1,11 @@
-import { BoosterConfig, Logger, ReadModelInterface } from '@boostercloud/framework-types'
+import { 
+  BoosterConfig, 
+  Logger, 
+  ReadModelInterface,
+  ReadModelEnvelope
+} from '@boostercloud/framework-types'
 import fetch from 'node-fetch'
+import { RedisAdapter } from './redis-adapter';
 
 // TODO: Implement querying with filters properly
 interface Filters {
@@ -9,7 +15,11 @@ interface Filters {
 }
 
 export class ReadModelRegistry {
-  constructor(readonly url: string) {}
+  private readonly redis: RedisAdapter
+  
+  constructor(readonly url: string) {
+    this.redis = RedisAdapter.build()
+  }
 
   public async search(
     config: BoosterConfig,
@@ -32,5 +42,18 @@ export class ReadModelRegistry {
     } else {
       return []
     }
+  }
+
+  public async store(readModel: ReadModelEnvelope, logger: Logger): Promise<void> {
+    this.redis.set(this.readModelKey(readModel), readModel, logger)
+  }
+
+  private readModelKey(readmodel: ReadModelEnvelope): string {
+    const keyParts = [
+      'rm', //Read Model mark
+      readmodel.typeName, //readModel type name
+      readmodel.value.id //readModel id
+    ]
+    return keyParts.join('_')
   }
 }

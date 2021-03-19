@@ -45,7 +45,9 @@ export const store = async (
   readModelName: string,
   readModel: ReadModelInterface
 ): Promise<void> => {
-  throw new Error('readModelAdapter#store: Not implemented')
+  await registry.store({ typeName: readModelName, value: readModel }, logger)
+  logger.debug('[ReadModelAdapter#storeReadModel] Read model stored')
+  logger.debug(readModel)
 }
 
 export const deleteReadModel = async (
