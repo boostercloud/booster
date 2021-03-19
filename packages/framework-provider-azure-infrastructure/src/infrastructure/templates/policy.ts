@@ -2,6 +2,28 @@ export const template = `<policies>
     <inbound>
         <base/>
         <set-backend-service base-url="https://{{functionAppName}}.azurewebsites.net/api"/>
+        <cors>
+            <allowed-origins>
+                <origin>*</origin>
+            </allowed-origins>
+            <allowed-methods>
+                <method>GET</method>
+                <method>POST</method>
+                <method>OPTIONS</method>
+            </allowed-methods>
+            <allowed-headers>
+                <header>accept</header>
+                <header>accept-encoding</header>
+                <header>access-control-request-headers</header>
+                <header>access-control-request-method</header>
+                <header>connection</header>
+                <header>content-type</header>
+                <header>host</header>
+                <header>origin</header>
+                <header>referer</header>
+                <header>user-agent</header>
+            </allowed-headers>
+        </cors>
     </inbound>
     <backend>
         <base/>
