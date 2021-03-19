@@ -27,19 +27,19 @@ export const forEntitySince = async (
   registry: EventRegistry,
   _config: BoosterConfig,
   logger: Logger,
-  _entityTypeName: string,
-  _entityID: UUID,
-  since?: string
+  entityTypeName: string,
+  entityID: UUID,
+  _since?: string
 ): Promise<Array<EventEnvelope>> => {
-  const originOfTime = new Date(0).toISOString()
-  const fromTime = since ?? originOfTime
-  const query = {
-    // TODO: add required stuff to query properly
-    createdAt: {
-      $gt: fromTime,
-    },
+  //const originOfTime = new Date(0).toISOString()
+  //const fromTime = since ?? originOfTime
+  const querySnapshot = `ee_${entityTypeName}_${entityID}_snapshot`
+  const queryResult = await registry.query(querySnapshot, logger)
+  if (queryResult.length === 0) {
+    return []
+  } else {
+    throw new Error('eventsAdapter#forEntitySince: snapshot filtering not implemented')
   }
-  return await registry.query(query, logger)
 }
 
 export async function latestEntitySnapshot(
@@ -49,13 +49,8 @@ export async function latestEntitySnapshot(
   entityTypeName: string,
   entityID: UUID
 ): Promise<EventEnvelope | null> {
-  const query: object = {
-    entityID: entityID,
-    entityTypeName: entityTypeName,
-    kind: 'snapshot',
-  }
-
-  const snapshot = (await registry.queryLatest(query)) as EventEnvelope
+  const query = `ee_${entityTypeName}_${entityID}_snapshot`
+  const snapshot = (await registry.queryLatest(query, logger)) as EventEnvelope
 
   if (snapshot) {
     logger.debug(

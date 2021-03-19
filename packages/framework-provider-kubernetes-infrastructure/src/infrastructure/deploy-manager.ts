@@ -170,7 +170,12 @@ export class DeployManager {
   /**
    * deploy a booster app pod inside the cluster and get the booster app url from the cluster
    */
-  public async deployBoosterApp(eventStoreUser: string, eventStorePassword: string): Promise<string> {
+  public async deployBoosterApp(
+    eventStoreHost: string,
+    eventStoreUser: string,
+    eventStorePassword: string
+  ): Promise<string> {
+    this.templateValues.dbHost = eventStoreHost
     this.templateValues.dbUser = eventStoreUser
     this.templateValues.dbPass = eventStorePassword
     const l = scopeLogger('deployBoosterApp', this.logger)
