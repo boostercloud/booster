@@ -58,8 +58,8 @@ export class Booster {
   public static start(codeRootPath: string): void {
     const projectRootPath = codeRootPath.replace(new RegExp(this.config.codeRelativePath + '$'), '')
     this.config.userProjectRootPath = projectRootPath
-    this.logger = buildLogger(this.config.logLevel)
     Importer.importUserProjectFiles(codeRootPath)
+    this.logger = buildLogger(this.config.logLevel)
     this.config.validate()
   }
 
