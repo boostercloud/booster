@@ -4,8 +4,18 @@ import fetch from 'node-fetch'
 import { RedisAdapter } from './redis-adapter'
 //import { RedisAdapter } from './redis-adapter'
 
+interface Query {
+  keyQuery: string
+  keyPredicate: (key: string) => boolean
+  valuePredicate: (envelope: EventEnvelope) => boolean
+  sortBy: (a: EventEnvelope, b: EventEnvelope) => number
+}
+
 export class EventRegistry {
-  constructor(readonly url: string) {}
+  private readonly redis: RedisAdapter
+  constructor(readonly url: string) {
+    this.redis = RedisAdapter.build()
+  }
 
   public async store(event: EventEnvelope, logger: Logger): Promise<void> {
     const stateUrl = `${this.url}/v1.0/state/statestore`
@@ -25,22 +35,31 @@ export class EventRegistry {
     }
   }
 
-  public async query(query: string, logger: Logger): Promise<Array<EventEnvelope>> {
-    const redisKeys = await RedisAdapter.build().keys(query, logger)
+  public async query(query: Query, logger: Logger): Promise<Array<EventEnvelope>> {
+    logger.debug('Getting redis keys')
+    const redisKeys = await this.redis.keys(query.keyQuery, logger)
+    logger.debug(`Got redis keys: ${JSON.stringify(redisKeys)}`)
     if (!redisKeys) {
       return []
     }
-    console.log(redisKeys)
-    throw new Error('EventRegistry#query: not implemented to get snapshots from redis')
+    logger.debug('Filtering keys')
+    const keysToQuery = redisKeys.filter(query.keyPredicate)
+    logger.debug(`Got filtered keys: ${JSON.stringify(keysToQuery)}`)
+    logger.debug('Getting envelopes')
+    const envelopes = (await Promise.all(keysToQuery.map((k) => this.redis.hget<EventEnvelope>(k))))
+      .filter((envelope): envelope is EventEnvelope => envelope !== null)
+      .filter(query.valuePredicate)
+      .sort(query.sortBy)
+    logger.debug(`Got ${envelopes.length} envelopes, returning`)
+    return envelopes
   }
 
-  public async queryLatest(query: string, logger: Logger): Promise<EventEnvelope | null> {
-    const redisKeys = await RedisAdapter.build().keys(query, logger)
-    if (!redisKeys) {
+  public async queryLatest(query: Query, logger: Logger): Promise<EventEnvelope | null> {
+    const result = await this.query(query, logger)
+    if (result.length <= 0) {
       return null
     }
-    console.log(redisKeys)
-    throw new Error('EventRegistry#queryLatest: not implemented get snapshots from redis')
+    return result[0]
   }
 
   private eventKey(event: EventEnvelope): string {

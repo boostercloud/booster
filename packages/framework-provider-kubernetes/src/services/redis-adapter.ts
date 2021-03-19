@@ -1,10 +1,12 @@
 import { Logger } from 'framework-types/dist'
 import fetch from 'node-fetch'
-// TODO: Convert redis require to import
-const redis = require('redis')
+import * as redis from 'redis'
 
 export class RedisAdapter {
-  constructor(readonly daprUrl: string, readonly redisUrl: string) {}
+  private readonly client: redis.RedisClient
+  constructor(readonly daprUrl: string, readonly redisUrl: string) {
+    this.client = redis.createClient({ url: this.redisUrl })
+  }
 
   public static build(): RedisAdapter {
     const redisHost: string = process.env['DB_HOST'] || 'host' //TODO: Manage the failing process of the redis inizialization in Kubernetes provider
@@ -13,7 +15,7 @@ export class RedisAdapter {
     return new RedisAdapter('http://localhost:3500', redisUrl)
   }
 
-  public async set(key: string, value: any, logger: Logger): Promise<void> {
+  public async set(key: string, value: unknown, logger: Logger): Promise<void> {
     const stateUrl = `${this.daprUrl}/v1.0/state/statestore`
     logger.debug('About to post', value)
     const data = [{ key: key, value: value }]
@@ -31,20 +33,30 @@ export class RedisAdapter {
     }
   }
 
-  public async keys(keyPattern: string, logger: Logger): Promise<string[] | void> {
+  public async keys(keyPattern: string, logger: Logger): Promise<Array<string>> {
     logger.debug('RedisAdapter keys')
-    const client = redis.createClient({ url: this.redisUrl })
-    const keys = client.keys('booster||' + keyPattern, function(err: any, res: any) {
-      if (err) {
-        logger.debug(err)
-      }
-      return keys
+    return new Promise((resolve) => {
+      this.client.keys('booster||' + keyPattern, function(err: Error | null, res: Array<string>) {
+        if (err) {
+          logger.debug(err)
+          return resolve([])
+        }
+        resolve(res)
+      })
     })
   }
 
+  public async hget<TResult>(key: string): Promise<TResult | null> {
+    return new Promise((resolve) =>
+      this.client.hget(key, 'data', (err: Error | null, res: string) => {
+        if (err) return resolve(null)
+        resolve(JSON.parse(res))
+      })
+    )
+  }
+
   public async setViaRedis(key: string, value: string, logger: Logger): Promise<void> {
-    const client = redis.createClient({ url: this.redisUrl })
-    const response = client.set('booster||' + key, value)
+    const response = this.client.set('booster||' + key, value)
     logger.debug(response)
     logger.debug('END RedisAdapter setViaRedis')
   }
