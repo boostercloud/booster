@@ -51,7 +51,7 @@ export class EventRegistry {
       event.kind, // 'event' | 'snapshot'
       event.typeName, // 'PostCreated' event name
       event.createdAt, // timespan
-      new UUID(), // hash to make key unique
+      UUID.generate(), // hash to make key unique
     ]
     return keyParts.join('_')
   }
