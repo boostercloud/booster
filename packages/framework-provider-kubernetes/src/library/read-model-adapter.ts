@@ -23,7 +23,10 @@ export const fetch = async (
   readModelName: string,
   readModelID: UUID
 ): Promise<ReadModelInterface> => {
-  throw new Error('readModelAdapter#fetch: Not implemented')
+  logger.debug('readModelAdapter#fetch: getting readModel')
+  const value = await registry.fetch(readModelName, readModelID, logger) as ReadModelInterface
+  logger.debug('readModelAdapter#fetch: ' + JSON.stringify(value))
+  return value
 }
 
 export const search = async (
@@ -34,7 +37,9 @@ export const search = async (
   filters: FilterFor<unknown>
 ): Promise<Array<ReadModelInterface>> => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  logger.debug('readModelAdapter#search: ' + readModelName + ' ' + JSON.stringify(filters))
   const result = await registry.search(config, logger, readModelName, (filters as unknown) as any)
+  logger.debug('readModelAdapter#search result ' + JSON.stringify(result))
   return result as Array<ReadModelInterface>
 }
 
@@ -45,9 +50,9 @@ export const store = async (
   readModelName: string,
   readModel: ReadModelInterface
 ): Promise<void> => {
+  logger.debug('[ReadModelAdapter#storeReadModel] Storing readModel ' + JSON.stringify(readModel))
   await registry.store({ typeName: readModelName, value: readModel }, logger)
   logger.debug('[ReadModelAdapter#storeReadModel] Read model stored')
-  logger.debug(readModel)
 }
 
 export const deleteReadModel = async (

@@ -2,10 +2,11 @@ import {
   BoosterConfig, 
   Logger, 
   ReadModelInterface,
-  ReadModelEnvelope
+  ReadModelEnvelope,
+  UUID
 } from '@boostercloud/framework-types'
 import fetch from 'node-fetch'
-import { RedisAdapter } from './redis-adapter';
+import { RedisAdapter } from './redis-adapter'
 
 // TODO: Implement querying with filters properly
 interface Filters {
@@ -45,14 +46,26 @@ export class ReadModelRegistry {
   }
 
   public async store(readModel: ReadModelEnvelope, logger: Logger): Promise<void> {
-    this.redis.set(this.readModelKey(readModel), readModel, logger)
+    await this.redis.set(this.readModelEnvelopeKey(readModel), readModel, logger)
   }
 
-  private readModelKey(readmodel: ReadModelEnvelope): string {
+  public async fetch(readModelName: string, readModelID: UUID, logger: Logger): Promise<ReadModelInterface | null> {
+    const key: string = this.readModelKey(readModelName, readModelID)
+    logger.debug("fetching key booster||", key)
+    const envelope = await this.redis.hget<ReadModelEnvelope>(`booster||${key}`)
+    logger.debug("envelope fetched " + JSON.stringify(envelope))
+    return envelope ? envelope.value : null
+  }
+
+  private readModelEnvelopeKey(readmodel: ReadModelEnvelope): string {
+    return this.readModelKey(readmodel.typeName, readmodel.value.id)    
+  }
+
+  private readModelKey(typeName: string, id: UUID): string {
     const keyParts = [
       'rm', //Read Model mark
-      readmodel.typeName, //readModel type name
-      readmodel.value.id //readModel id
+      typeName, //readModel type name
+      id //readModel id
     ]
     return keyParts.join('_')
   }
