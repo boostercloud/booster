@@ -3,9 +3,14 @@ import fetch from 'node-fetch'
 import * as redis from 'redis'
 
 export class RedisAdapter {
-  private readonly client: redis.RedisClient
-  constructor(readonly daprUrl: string, readonly redisUrl: string) {
-    this.client = redis.createClient({ url: this.redisUrl })
+  private _client?: redis.RedisClient
+  constructor(readonly daprUrl: string, readonly redisUrl: string) {}
+
+  public get client(): redis.RedisClient {
+    if (!this._client) {
+      this._client = redis.createClient({ url: this.redisUrl })
+    }
+    return this._client
   }
 
   public static build(): RedisAdapter {
@@ -36,7 +41,7 @@ export class RedisAdapter {
   public async keys(keyPattern: string, logger: Logger): Promise<Array<string>> {
     logger.debug('RedisAdapter keys')
     return new Promise((resolve) => {
-      this.client.keys('booster||' + keyPattern, function(err: Error | null, res: Array<string>) {
+      this.client.keys(`booster||${keyPattern}*`, function(err: Error | null, res: Array<string>) {
         if (err) {
           logger.debug(err)
           return resolve([])
