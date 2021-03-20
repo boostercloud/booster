@@ -36,6 +36,7 @@ export class ReadModelRegistry {
     try {
       const body = await response.json()
       l(`Got JSON ${JSON.stringify(body)}`)
+      // TODO: Remove unnecessary id setting from k8s read model registry
       if (body) {
         body.id = readModelId
       }
