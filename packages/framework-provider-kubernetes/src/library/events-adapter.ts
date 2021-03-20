@@ -5,6 +5,7 @@ import {
   EventFilter,
   EventSearchResponse,
   Logger,
+  UserApp,
   UUID,
 } from '@boostercloud/framework-types'
 import { EventRegistry } from '../services/event-registry'
@@ -13,6 +14,7 @@ export const rawToEnvelopes = (events: Array<unknown>): Array<EventEnvelope> => 
 
 export const store = async (
   registry: EventRegistry,
+  userApp: UserApp,
   events: Array<EventEnvelope>,
   _config: BoosterConfig,
   logger: Logger
@@ -21,6 +23,7 @@ export const store = async (
     logger.debug('Storing event envelope', envelope)
     await registry.store(envelope, logger)
   }
+  await userApp.boosterEventDispatcher(events)
 }
 
 const isNewerThan = (isoString: string) => (key: string) => {
