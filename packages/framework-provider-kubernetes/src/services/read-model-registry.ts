@@ -26,8 +26,7 @@ export class ReadModelRegistry {
     const readModelId = filters.id.eq
     l(`Got id ${readModelId ?? 'UNDEFINED'}`)
     if (!readModelId) throw new Error('Only searching by ID is supported')
-    const query = `rm_${readModelName}_${readModelId}`
-    const url = `${this.url}/v1.0/state/statestore/${query}`
+    const url = `${this.url}/v1.0/state/statestore/${this.readModelKey(readModelName, readModelId)}`
     l(`Performing a fetch to ${url}`)
     const response = await fetch(url)
     if (!response.ok) {
