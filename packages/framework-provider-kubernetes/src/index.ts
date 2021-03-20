@@ -6,6 +6,7 @@ import {
   ProviderInfrastructure,
   ProviderLibrary,
   ReadModelInterface,
+  UserApp,
 } from '@boostercloud/framework-types'
 import { EventRegistry } from './services/event-registry'
 import { ReadModelRegistry } from './services/read-model-registry'
@@ -16,17 +17,18 @@ import * as AuthAdapter from './library/auth-adapter'
 import * as ApiAdapter from './library/api-adapter'
 import * as ScheduledAdapter from './library/scheduled-adapter'
 import * as ConnectionsAdapter from './library/connections-adapter'
+import * as path from 'path'
 
 const storageUrl = 'http://localhost:3500'
 const eventRegistry = new EventRegistry(storageUrl)
 const readModelRegistry = new ReadModelRegistry(storageUrl)
-// const userApp: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
+const userApp: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
 
 export const Provider = (): ProviderLibrary => ({
   // ProviderEventsLibrary
   events: {
     rawToEnvelopes: EventsAdapter.rawToEnvelopes,
-    store: EventsAdapter.store.bind(null, eventRegistry),
+    store: EventsAdapter.store.bind(null, eventRegistry, userApp),
     forEntitySince: EventsAdapter.forEntitySince.bind(null, eventRegistry),
     latestEntitySnapshot: EventsAdapter.latestEntitySnapshot.bind(null, eventRegistry),
     search: EventsAdapter.search.bind(null, eventRegistry),

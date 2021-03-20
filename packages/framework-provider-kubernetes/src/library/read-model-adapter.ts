@@ -24,7 +24,7 @@ export const fetch = async (
   readModelID: UUID
 ): Promise<ReadModelInterface> => {
   logger.debug('readModelAdapter#fetch: getting readModel')
-  const value = await registry.fetch(readModelName, readModelID, logger) as ReadModelInterface
+  const value = (await registry.fetch(readModelName, readModelID, logger)) as ReadModelInterface
   logger.debug('readModelAdapter#fetch: ' + JSON.stringify(value))
   return value
 }

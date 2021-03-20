@@ -6,6 +6,7 @@ import {
   GraphQLRequestEnvelopeError,
   GraphQLClientMessage,
   GraphQLOperation,
+  UUID,
 } from '@boostercloud/framework-types'
 
 export const rawToEnvelope = async (
@@ -15,7 +16,7 @@ export const rawToEnvelope = async (
 ): Promise<GraphQLRequestEnvelope | GraphQLRequestEnvelopeError> => {
   logger.debug('Received GraphQL request: ', request)
   return {
-    requestID: '1',
+    requestID: UUID.generate(),
     eventType: 'MESSAGE',
     currentUser: JSON.parse('{}'),
     value: request.body,
@@ -31,5 +32,5 @@ export const handleResult = async (
     ...headers,
   },
   statusCode: 200,
-  body: result
+  body: result,
 })
