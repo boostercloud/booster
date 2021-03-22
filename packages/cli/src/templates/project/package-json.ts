@@ -40,7 +40,7 @@ export const template = `{
     "compile": "npx tsc -b tsconfig.json",
     "deploy": "boost deploy",
     "clean": "npx rimraf ./dist tsconfig.tsbuildinfo",
-    "test": "npx nyc --extension .ts mocha --forbid-only \\"test/**/*.test.ts\\""
+    "test": "AWS_SDK_LOAD_CONFIG=true BOOSTER_ENV=test npx nyc --extension .ts mocha --forbid-only \\"test/**/*.test.ts\\""
   },
   "types": "lib/index.d.ts"
 }`
