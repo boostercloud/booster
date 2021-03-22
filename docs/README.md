@@ -87,6 +87,7 @@
     - [Infrastructure extensions](#infrastructure-extensions)
     - [Runtime extensions (Not yet implemented)](#runtime-extensions-not-yet-implemented)
     - [Deploy and init hooks (Not yet implemented)](#deploy-and-init-hooks-not-yet-implemented)
+    - [Booster Rockets list](#booster-rockets-list)
 - [Debugging and testing Booster applications](#debugging-and-testing-booster-applications)
   - [Running Booster applications locally](#running-booster-applications-locally)
     - [Local development prerequisites](#local-development-prerequisites)
@@ -2610,6 +2611,14 @@ Booster.configure('development', (config: BoosterConfig): void => {
 #### Runtime extensions (Not yet implemented)
 
 #### Deploy and init hooks (Not yet implemented)
+
+#### Booster Rockets list
+
+Here you can find the official Booster Rockets developed at this time:
+
+- [Authentication Booster Rocket for AWS](https://github.com/boostercloud/rocket-auth-aws-infrastructure)
+- [Backup Booster Rocket for AWS](https://github.com/boostercloud/rocket-backup-aws-infrastructure)
+- [Static Sites Booster Rocket for AWS](https://github.com/boostercloud/rocket-static-sites-aws-infrastructure)
 
 ## Debugging and testing Booster applications
 
