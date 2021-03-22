@@ -13,10 +13,12 @@ import { environmentVarNames } from './constants'
 import { fetchReadModel, storeReadModel } from './library/read-model-adapter'
 import { searchReadModel } from './library/searcher-adapter'
 
+let cosmosClient: CosmosClient
 if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefined') {
-  throw new Error('No Cosmos DB connection string has been found')
+  cosmosClient = {} as any
+} else {
+  cosmosClient = new CosmosClient(process.env[environmentVarNames.cosmosDbConnectionString] as string)
 }
-const cosmosClient = new CosmosClient(process.env[environmentVarNames.cosmosDbConnectionString] as string)
 
 export const Provider = (): ProviderLibrary => ({
   // ProviderEventsLibrary
@@ -25,6 +27,7 @@ export const Provider = (): ProviderLibrary => ({
     store: storeEvents.bind(null, cosmosClient),
     forEntitySince: readEntityEventsSince.bind(null, cosmosClient),
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, cosmosClient),
+    search: undefined as any,
   },
   // ProviderReadModelsLibrary
   readModels: {

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
-import { partitionKeyForEvent, sortKeyForSubscription } from '../../src/library/partition-keys'
+import { partitionKeyForEvent, sortKeyForSubscription } from '../../src/library/keys-helper'
 import { EventEnvelope } from '@boostercloud/framework-types'
 import { lorem, random } from 'faker'
 

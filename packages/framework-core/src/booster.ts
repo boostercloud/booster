@@ -6,6 +6,8 @@ import {
   UUID,
   Class,
   Searcher,
+  EventSearchResponse,
+  EventFilter,
 } from '@boostercloud/framework-types'
 import { Importer } from './importer'
 import { buildLogger } from './booster-logger'
@@ -26,7 +28,7 @@ import { BoosterScheduledCommandDispatcher } from './booster-scheduled-command-d
 export class Booster {
   public static readonly configuredEnvironments: Set<string> = new Set<string>()
   private static logger: Logger
-  private static readonly config = new BoosterConfig(checkAndGetCurrentEnv())
+  public static readonly config = new BoosterConfig(checkAndGetCurrentEnv())
   /**
    * Avoid creating instances of this class
    */
@@ -55,8 +57,8 @@ export class Booster {
   public static start(codeRootPath: string): void {
     const projectRootPath = codeRootPath.replace(new RegExp(this.config.codeRelativePath + '$'), '')
     this.config.userProjectRootPath = projectRootPath
-    this.logger = buildLogger(this.config.logLevel)
     Importer.importUserProjectFiles(codeRootPath)
+    this.logger = buildLogger(this.config.logLevel)
     this.config.validate()
   }
 
@@ -72,6 +74,9 @@ export class Booster {
     return new Searcher(readModelClass, searchFunction)
   }
 
+  public static async events(filters: EventFilter): Promise<Array<EventSearchResponse>> {
+    return this.config.provider.events.search(this.config, this.logger, filters)
+  }
   /**
    * Dispatches event messages to your application.
    */

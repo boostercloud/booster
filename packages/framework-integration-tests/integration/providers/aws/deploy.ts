@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { runCommand } from '../../helper/runCommand'
+import { runCommand } from '../../helper/run-command'
 
 // Path to the CLI binary compiled by lerna
 const cliBinaryPath = path.join('..', '..', 'cli', 'bin', 'run')

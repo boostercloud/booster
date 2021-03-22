@@ -9,8 +9,11 @@ export class GraphQLMutationGenerator {
     private readonly mutationResolver: ResolverBuilder
   ) {}
 
-  public generate(): GraphQLObjectType {
+  public generate(): GraphQLObjectType | undefined {
     const mutations = this.generateMutations()
+    if (Object.keys(mutations).length === 0) {
+      return undefined
+    }
     return new GraphQLObjectType({
       name: 'Mutation',
       fields: mutations,

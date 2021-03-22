@@ -1,6 +1,6 @@
 import { replace, restore, SinonStub, stub } from 'sinon'
 import { BoosterCommandDispatcher } from '../../../src/booster-command-dispatcher'
-import { BoosterReadModelDispatcher } from '../../../src/booster-read-model-dispatcher'
+import { BoosterReadModelsReader } from '../../../src/booster-read-models-reader'
 import { GraphQLGenerator } from '../../../src/services/graphql/graphql-generator'
 import { BoosterConfig, ReadModelInterface, Logger, Level } from '@boostercloud/framework-types/dist'
 import { expect } from '../../expect'
@@ -8,7 +8,10 @@ import { GraphQLQueryGenerator } from '../../../src/services/graphql/graphql-que
 import { GraphQLMutationGenerator } from '../../../src/services/graphql/graphql-mutation-generator'
 import { GraphQLSubscriptionGenerator } from '../../../src/services/graphql/graphql-subcriptions-generator'
 import { random, internet, lorem } from 'faker'
-import { buildLogger } from '../../../src/booster-logger';
+import { buildLogger } from '../../../src/booster-logger'
+import { BoosterEventsReader } from '../../../src/booster-events-reader'
+import { EventFilterByEntity, EventSearchRequest, EventSearchResponse } from '@boostercloud/framework-types'
+import { GraphQLResolverContext } from '../../../src/services/graphql/common'
 
 describe('GraphQL generator', () => {
   let mockEnvironmentName: string
@@ -28,7 +31,6 @@ describe('GraphQL generator', () => {
   })
 
   describe('build', () => {
-    
     it('should create the instance', () => {
       const instance = GraphQLGenerator.build(mockConfig, mockLogger)
 
@@ -107,14 +109,16 @@ describe('GraphQL generator', () => {
     })
   })
 
-  describe('builders', () => {
+  describe('resolvers', () => {
     let mockType: any
     let mockRequestId: string
     let mockEmail: string
     let mockRole: string
     let mockFetchResult: Array<ReadModelInterface>
-    let mockResolverContext: any
+    let mockResolverContext: GraphQLResolverContext
     let mockResolverInfo: any
+    let asyncIteratorStub: SinonStub
+    let mockAsyncIteratorResult: string
 
     beforeEach(() => {
       mockType = random.arrayElement([Boolean, String, Number])
@@ -130,12 +134,21 @@ describe('GraphQL generator', () => {
         })
       }
 
+      mockAsyncIteratorResult = lorem.word()
+      asyncIteratorStub = stub().returns(mockAsyncIteratorResult)
       mockResolverContext = {
         requestID: mockRequestId,
         user: {
-          email: mockEmail,
+          username: mockEmail,
           role: mockRole,
         },
+        operation: {
+          query: random.alphaNumeric(),
+        },
+        pubSub: {
+          asyncIterator: (x: any) => asyncIteratorStub(x),
+        },
+        storeSubscriptions: false,
       }
       mockResolverInfo = {}
     })
@@ -147,7 +160,7 @@ describe('GraphQL generator', () => {
 
       beforeEach(() => {
         fetchStub = stub().resolves(mockFetchResult)
-        replace(BoosterReadModelDispatcher.prototype,'fetch',fetchStub)
+        replace(BoosterReadModelsReader.prototype, 'fetch', fetchStub)
         sut = GraphQLGenerator.build(mockConfig, mockLogger)
 
         returnedFunction = sut.readModelResolverBuilder(mockType)
@@ -156,7 +169,7 @@ describe('GraphQL generator', () => {
       it('should call fetch with expected payload', async () => {
         const expectedFetchPayload = {
           currentUser: {
-            email: mockEmail,
+            username: mockEmail,
             role: mockRole,
           },
           filters: {},
@@ -228,7 +241,7 @@ describe('GraphQL generator', () => {
         }
 
         dispatchCommandStub = stub()
-        replace(BoosterCommandDispatcher.prototype,'dispatchCommand', dispatchCommandStub)
+        replace(BoosterCommandDispatcher.prototype, 'dispatchCommand', dispatchCommandStub)
         sut = GraphQLGenerator.build(mockConfig, mockLogger)
 
         returnedFunction = sut.commandResolverBuilder(mockType)
@@ -247,7 +260,7 @@ describe('GraphQL generator', () => {
         expect(dispatchCommandStub).to.have.been.calledOnceWithExactly({
           requestID: mockRequestId,
           currentUser: {
-            email: mockEmail,
+            username: mockEmail,
             role: mockRole,
           },
           typeName: mockType.name,
@@ -303,29 +316,17 @@ describe('GraphQL generator', () => {
 
     describe('subscriptionResolverBuilder', () => {
       let mockContextConnectionID: string
-      let mockContextOperation: string
-      let mockAsyncIteratorResult: string
-
       let subscribeStub: SinonStub
-      let asyncIteratorStub: SinonStub
-
       let returnedFunction: Function
 
       beforeEach(() => {
         mockContextConnectionID = random.uuid()
-        mockContextOperation = random.alphaNumeric(10)
-        mockAsyncIteratorResult = lorem.word()
 
         mockResolverContext.connectionID = mockContextConnectionID
-        mockResolverContext.operation = mockContextOperation
-        mockResolverContext.pubSub = {
-          asyncIterator: (x: any) => asyncIteratorStub(x),
-        }
 
         subscribeStub = stub().resolves()
-        asyncIteratorStub = stub().returns(mockAsyncIteratorResult)
 
-        replace(BoosterReadModelDispatcher.prototype,'subscribe', subscribeStub)
+        replace(BoosterReadModelsReader.prototype, 'subscribe', subscribeStub)
         sut = GraphQLGenerator.build(mockConfig, mockLogger)
 
         returnedFunction = sut.subscriptionResolverBuilder(mockType)
@@ -374,7 +375,7 @@ describe('GraphQL generator', () => {
 
         expect(asyncIteratorStub).to.be.calledOnceWithExactly({
           currentUser: {
-            email: mockEmail,
+            username: mockEmail,
             role: mockRole,
           },
           filters: {},
@@ -388,6 +389,41 @@ describe('GraphQL generator', () => {
         const result = await returnedFunction('', {}, mockResolverContext, mockResolverInfo)
 
         expect(result).to.be.equal(mockAsyncIteratorResult)
+      })
+    })
+
+    describe('eventResolver', () => {
+      let fetchEventsStub: SinonStub
+      const fetchEventsResult: Array<EventSearchResponse> = []
+      const filters: EventFilterByEntity = {
+        entity: 'TestEntity',
+      }
+
+      beforeEach(() => {
+        fetchEventsStub = stub().resolves(fetchEventsResult)
+        replace(BoosterEventsReader.prototype, 'fetch', fetchEventsStub)
+        sut = GraphQLGenerator.build(mockConfig, mockLogger)
+      })
+
+      it('should call fetch with expected payload', async () => {
+        const expectedFetchEventsPayload: EventSearchRequest = {
+          currentUser: {
+            username: mockEmail,
+            role: mockRole,
+          },
+          filters,
+          requestID: mockRequestId,
+        }
+
+        await sut.eventResolver('', filters, mockResolverContext, {} as never)
+
+        expect(fetchEventsStub).to.have.been.calledOnceWithExactly(expectedFetchEventsPayload)
+      })
+
+      it('should return expected result', async () => {
+        const result = await sut.eventResolver('', filters, mockResolverContext, {} as never)
+
+        expect(result).to.be.deep.equal(fetchEventsResult)
       })
     })
   })

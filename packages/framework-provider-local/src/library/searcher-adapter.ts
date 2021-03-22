@@ -1,4 +1,4 @@
-import { Filter } from '@boostercloud/framework-types'
+import { FilterOld } from '@boostercloud/framework-types'
 
 /**
  * Creates a query record out of the read mode name and
@@ -7,7 +7,7 @@ import { Filter } from '@boostercloud/framework-types'
  */
 export function queryRecordFor(
   readModelName: string,
-  filters: Record<string, Filter<QueryValue>>
+  filters: Record<string, FilterOld<QueryValue>>
 ): Record<string, QueryOperation<QueryValue>> {
   const queryFromFilters: Record<string, object> = {}
   if (Object.keys(filters).length != 0) {
@@ -21,7 +21,7 @@ export function queryRecordFor(
 /**
  * Transforms a GraphQL Booster filter into an neDB query
  */
-function filterToQuery(filter: Filter<QueryValue>): QueryOperation<QueryValue> {
+function filterToQuery(filter: FilterOld<QueryValue>): QueryOperation<QueryValue> {
   const query = queryOperatorTable[filter.operation]
   return query(filter.values)
 }

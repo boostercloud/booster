@@ -1,6 +1,13 @@
 import * as path from 'path'
 import { expect } from 'chai'
-import { loadFixture, readFileContent, removeFolders, sandboxPathFor, writeFileContent } from '../helper/fileHelper'
+import {
+  loadFixture,
+  readFileContent,
+  removeFiles,
+  removeFolders,
+  sandboxPathFor,
+  writeFileContent
+} from '../helper/file-helper'
 import { exec } from 'child-process-promise'
 // Imported from another package to avoid duplication
 // It is OK-ish, since integration tests are always run in the context of the whole monorepo
@@ -34,6 +41,7 @@ describe('Event', () => {
     describe('without fields', () => {
       it('should create new event', async () => {
         const FILE_CART_CHANGED_EVENT = `${eventSandboxDir}/src/events/cart-changed.ts`
+        removeFiles([FILE_CART_CHANGED_EVENT])
 
         await exec(`${cliPath} new:event CartChanged`, { cwd: eventSandboxDir })
 

@@ -14,7 +14,11 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "lib": [
+      "ES2019",
+      "ES2020"
+    ]
   },
   "include": [
     "src/**/*"

@@ -1,10 +1,10 @@
 import { start } from './utils'
 import { sleep } from '../../helper/sleep'
 import { ChildProcess } from 'child_process'
-import { removeFolders, sandboxPathFor } from '../../helper/fileHelper'
-import { overrideWithBoosterLocalDependencies } from '../../helper/depsHelper'
+import { removeFolders, sandboxPathFor } from '../../helper/file-helper'
+import { overrideWithBoosterLocalDependencies } from '../../helper/deps-helper'
 import { sandboxName } from './constants'
-import { runCommand } from '../../helper/runCommand'
+import { runCommand } from '../../helper/run-command'
 // Imported from another package to avoid duplication
 // It is OK-ish, since integration tests are always run in the context of the whole monorepo
 import { createSandboxProject } from '../../../../cli/src/common/sandbox'
@@ -14,13 +14,14 @@ let sandboxPath: string
 
 before(async () => {
   console.log('preparing sandboxed project...')
-  sandboxPath = createSandboxProject(sandboxPathFor(sandboxName))
-
-  console.log('installing dependencies...')
-  await runCommand(sandboxPath, 'npm install')
+  const configuredAssets = ['assets', 'assetFile.txt']
+  sandboxPath = createSandboxProject(sandboxPathFor(sandboxName), configuredAssets)
 
   console.log('overriding booster dependencies...')
   await overrideWithBoosterLocalDependencies(sandboxPath)
+
+  console.log('installing dependencies...')
+  await runCommand(sandboxPath, 'npm install')
 
   console.log(`starting local server in ${sandboxPath}...`)
   serverProcess = start('local', sandboxPath)

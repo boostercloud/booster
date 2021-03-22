@@ -21,6 +21,7 @@ export class BoosterConfig {
   public logLevel: Level = Level.debug
   private _provider?: ProviderLibrary
   public appName = 'new-booster-app'
+  public assets?: Array<string>
   public readonly subscriptions = {
     maxConnectionDurationInSeconds: 7 * 24 * 60 * 60, // 7 days
     maxDurationInSeconds: 2 * 24 * 60 * 60, // 2 days

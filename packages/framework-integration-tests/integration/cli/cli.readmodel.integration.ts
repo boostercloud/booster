@@ -1,6 +1,13 @@
 import { expect } from 'chai'
 import * as path from 'path'
-import { loadFixture, readFileContent, removeFolders, sandboxPathFor, writeFileContent } from '../helper/fileHelper'
+import {
+  loadFixture,
+  readFileContent,
+  removeFiles,
+  removeFolders,
+  sandboxPathFor,
+  writeFileContent,
+} from '../helper/file-helper'
 import { exec } from 'child-process-promise'
 // Imported from another package to avoid duplication
 // It is OK-ish, since integration tests are always run in the context of the whole monorepo
@@ -29,6 +36,7 @@ describe('Read model', () => {
     describe('without fields', () => {
       it('should create new read model', async () => {
         const FILE_CART_READ_MODEL = `${readModelSandboxDir}/src/read-models/cart-read-model.ts`
+        removeFiles([FILE_CART_READ_MODEL])
 
         const { stdout } = await exec(`${cliPath} new:read-model CartReadModel`, { cwd: readModelSandboxDir })
         expect(stdout).to.match(EXPECTED_OUTPUT_REGEX)

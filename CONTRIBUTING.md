@@ -23,10 +23,13 @@ Remember that if something here doesn't make sense, you can also propose a chang
   - [Running unit tests](#running-unit-tests)
   - [Running integration tests](#running-integration-tests)
   - [Github flow](#github-flow)
-  - [Test-driven approach](#test-driven-approach)
   - [Publishing your Pull Request](#publishing-your-pull-request)
   - [Branch naming conventions](#branch-naming-conventions)
   - [Commit message guidelines](#commit-message-guidelines)
+- [Code Style Guidelines](#code-style-guidelines)
+  - [Importing other files and libraries](#importing-other-files-and-libraries)
+  - [Functional style](#functional-style)
+  - [Use `const` and `let`](#use-const-and-let)
 
 <!-- tocstop -->
 
@@ -37,7 +40,7 @@ If you see unacceptable behavior, please communicate so to `hello@booster.cloud`
 
 ## I don't want to read this whole thing, I just have a question!!!
 
-Go ahead and [create a new issue](https://github.com/boostercloud/booster/issues).
+Go ahead and ask the community in [Discord](https://discord.com/invite/bDY8MKx) or [create a new issue](https://github.com/boostercloud/booster/issues).
 
 ## What should I know before I get started?
 
@@ -136,12 +139,14 @@ To start contributing to the project you would need to set up the project in you
 - Compile the project `lerna run compile`
 
 - Add your contribution
-  
+
 - Make sure everything works by executing the unit tests: `lerna run test`
 
 - Before making a PR you should run the `check-all-the-things` script:
   - `./scripts/check-all-the-things.sh` on Linux and MacOS
   - `.\scripts\check-all-the-things.ps1` on Windows
+
+**Important:** Node v12 is the minimum version required.
 
 ### Understanding the "lerna monorepo" approach and how dependencies are structured in the project
 
@@ -160,17 +165,17 @@ Finally, **always use exact numbers for dependency versions**. This means that i
 
 Unit tests are executed when you type `lerna run test`. If you want to run the unit tests for an especific package, you should run one of the following commands:
 
-- `lerna run test:cli`: Run unit tests for the `cli` package.
-- `lerna run test:core`: Run unit tests for the `framework-core` package.
-- `lerna run test:provider-aws`: Run unit tests for the `framework-provider-aws` package.
-- `lerna run test:provider-aws-infrastructure`: Run unit tests for the `framework-provider-aws-infrastructure` package.
-- `lerna run test:provider-azure`: Run unit tests for the `framework-provider-azure` package.
-- `lerna run test:provider-azure-infrastructure`: Run unit tests for the `framework-provider-azure-infrastructure` package.
-- `lerna run test:provider-kubernetes`: Run unit tests for the `framework-provider-kubernetes` package.
-- `lerna run test:provider-kubernetes-infrastructure`: Run unit tests for the `framework-provider-kubernetes-infrastructure` package.
-- `lerna run test:provider-local`: Run unit tests for the `framework-provider-local` package.
-- `lerna run test:provider-local-infrastructure`: Run unit tests for the `framework-provider-local-infrastructure` package.
-- `lerna run test:types`: Run unit tests for the `framework-types` package.
+- `lerna run test:cli --stream`: Run unit tests for the `cli` package.
+- `lerna run test:core --stream`: Run unit tests for the `framework-core` package.
+- `lerna run test:provider-aws --stream`: Run unit tests for the `framework-provider-aws` package.
+- `lerna run test:provider-aws-infrastructure --stream`: Run unit tests for the `framework-provider-aws-infrastructure` package.
+- `lerna run test:provider-azure --stream`: Run unit tests for the `framework-provider-azure` package.
+- `lerna run test:provider-azure-infrastructure --stream`: Run unit tests for the `framework-provider-azure-infrastructure` package.
+- `lerna run test:provider-kubernetes --stream`: Run unit tests for the `framework-provider-kubernetes` package.
+- `lerna run test:provider-kubernetes-infrastructure --stream`: Run unit tests for the `framework-provider-kubernetes-infrastructure` package.
+- `lerna run test:provider-local --stream`: Run unit tests for the `framework-provider-local` package.
+- `lerna run test:provider-local-infrastructure --stream`: Run unit tests for the `framework-provider-local-infrastructure` package.
+- `lerna run test:types --stream`: Run unit tests for the `framework-types` package.
 
 ### Running integration tests
 
@@ -188,43 +193,11 @@ These are the available scripts to run integration tests:
 - `lerna run integration/local --stream`: Checks that the test application can be launched locally and that the APIs and the databases behave as expected.
 - `lerna run integration/cli --stream`: Checks cli commands and check that they produce the expected results.
 
-AWS integration tests are run in real AWS resources, so you'll need to have your AWS credentials properly set in your development machine. By default, the sample project will be deployed to your default account. Basically, if you can deploy a Booster project to AWS, you should be good to go ([See more details about setting up an AWS account in the docs](https://github.com/boostercloud/booster/tree/master/docs#set-up-an-aws-account)). Notice that while all resources used by Booster are included in the AWS free tier, running these tests in your own AWS account could incur in some expenses.
+AWS integration tests are run in real AWS resources, so you'll need to have your AWS credentials properly set in your development machine. By default, the sample project will be deployed to your default account. Basically, if you can deploy a Booster project to AWS, you should be good to go ([See more details about setting up an AWS account in the docs](https://github.com/boostercloud/booster/tree/main/docs#set-up-an-aws-account)). Notice that while all resources used by Booster are included in the AWS free tier, running these tests in your own AWS account could incur in some expenses.
 
 ### Github flow
 
 The preferred way of accepting contributions is following the [Github flow](https://guides.github.com/introduction/flow/), that is, you fork the project and work in your own branch until you're happy with the work, and then submit a PR in Github.
-
-### Test-driven approach
-
-Booster is a library, so we recommend that you take a test-driven approach, writing or changing the corresponding tests along with the code that you want to add, using the tests to debug it as you add more code and check when your work is complete. This approach not only helps you to design and debug your ongoing work, but also makes the code more robust. All packages have a `test` folder containing tests describing these package functionality, so tests are also a good way to understand how the code works.
-
-You can run all packages tests with Lerna:
-
-```bash
-~/booster:$ lerna run test
-```
-
-Or in a specific package with npm:
-
-```bash
-~/booster/packages/cli:$ npm run test
-```
-
-Once all your unit tests are passing and your code looks great, if your code changes any behavior in the cloud provider, it's important to update the integration test suite and iterate your code until it passes. Notice that in the `framework-integration-tests` there's an `integration` folder with subfolders for each supported provider (including the local provider). Integration tests require real deployments, so they'll last a while and you must have your provider credentials properly set. The test suite will fail with (hopefully) useful error messages with guidance when some parameter is missed. You can run the integration tests using `lerna` from any package or the project root, or `npm run` from within the integration tests package:
-
-```bash
-~/booster:$ lerna run integration --stream
-```
-
-You can run only the tests for a specific provider using the more specific scoped commands:
-
-```bash
-~/booster:$ lerna run integration/aws # runs AWS integration tests only
-
-...
-
-~/booster:$ lerna run integration/local # runs local integration tests only
-```
 
 ### Publishing your Pull Request
 
@@ -235,11 +208,11 @@ When you submit a PR to the Booster repository:
 - _Unit tests_ will be automatically run. PRs with non-passing tests can't be merged.
 - If tests pass, your code will be reviewed by at least two people from the core team. Clarifications or improvements might be asked, and they reserve the right to close any PR that do not meet the project quality standards, goals or philosophy, so it's always a good idea to discuss your plans in an issue or the Spectrum channel before committing to significant changes.
 - Code must be mergeable and all conflicts solved before merging it.
-- Once the review process is done, unit tests pass and conflicts are fixed, you still need to make the _Integration tests check_ to pass. In order to do that, you need to **post a comment** in the pull request with the content "**bot: integration**". The _integration tests_ will run and a new check will appear with an "In progress" status. After some time, if everything went well, the status check will become green and your PR is now ready to merge. One of the contributors with write permissions will merge it as soon as possible.
+- Once the review process is done, unit tests pass and conflicts are fixed, you still need to make the _Integration tests check_ to pass. In order to do that, you need to **Lock conversation** in the pull request. The _integration tests_ will run and a new check will appear with an "In progress" status. After some time, if everything went well, the status check will become green and your PR is now ready to merge.
 
 ### Branch naming conventions
 
-In order to create a PR, you must create a branch from `master`. You should follow the GitFlow naming conventions, as detailed below:
+In order to create a PR, you must create a branch from `main`. You should follow the GitFlow naming conventions, as detailed below:
 
 - `feature/*` - PR that implements a new feature
 - `fix/*` - PR that fixes a bug
@@ -295,3 +268,72 @@ We're using the following scopes in the project:
 - **local**
 
 Apart of using conventional commits for triggering releases, we use them to build the project changelog.
+
+## Code Style Guidelines
+
+The Booster project comes with a nice set of ESLint config files to help you follow a consistent style, and we really encourage to use it in your editor. You can also run the `lerna run lint:fix` commands to try solving any linter problems automatically.
+
+For everything else, the rule of thumb is: Try to be consistent with the code around yours, and if you're not sure, ask :-)
+
+There are some things that the linter doesn't force but are prefered this way:
+
+### Importing other files and libraries
+
+Use `import` instead of `require` and import the objects individually when possible:
+
+```typescript
+import { Object, function } from 'some-package'
+```
+
+### Functional style
+
+We give priority to a functional style of programming, but always taking into account how the objects are used to make sure they form a nice DSL. Classes are allowed when there's an actual state to hold, and we usually avoid default exports:
+
+```typescript
+// module-a.ts, a conventional functional module
+export functionA() {
+  ...
+}
+
+export const someConstantA = 42
+```
+
+```typescript
+// module-b.ts, grouping functions with a scope
+export const ModuleB = {
+  functionB1: () => {...},
+  functionB2: () => {...},
+}
+```
+
+```typescript
+// object-c.ts, a class
+export class ObjectC {
+  constructor(readonly value: number) {}
+}
+```
+
+```typescript
+import { functionA, someConstantA } from 'module-a'
+import { ModuleB } from 'module-b'
+import { ObjectC } from 'object-c'
+
+functionA()
+ModuleB.functionB1()
+const obj = new ObjectC(someConstantA)
+```
+
+### Use `const` and `let`
+
+Default to `const` and immutable objects when possible, otherwise, use `let`.
+
+```typescript
+// Good
+let a = 0
+const b = 3
+a = a + b
+
+// Less Good
+var c = 0
+let d = 3 // Never updated
+```

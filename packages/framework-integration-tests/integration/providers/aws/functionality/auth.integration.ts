@@ -1,6 +1,5 @@
 import {
   graphQLClientWithSubscriptions,
-  waitForIt,
   DisconnectableApolloClient,
   countSubscriptionsItems,
   graphQLClient,
@@ -12,6 +11,8 @@ import * as chai from 'chai'
 import { random, internet, finance, lorem } from 'faker'
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
+import { waitForIt } from '../../../helper/sleep'
+import { createPassword } from '../../../helper/auth-helper'
 
 chai.use(require('chai-as-promised'))
 

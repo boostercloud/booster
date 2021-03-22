@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-kubernetes",
-  "version": "0.10.0",
+  "version": "0.12.2",
   "description": "Handle Booster's integration with Kubernetes",
   "keywords": [
     "framework-provider-kubernetes"
@@ -20,7 +20,14 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@boostercloud/framework-types": "^0.10.0"
+    "@boostercloud/framework-types": "^0.12.2",
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "form-data": "^3.0.0",
+    "isomorphic-fetch": "^2.2.1",
+    "node-fetch": "^2.6.1",
+    "redis": "^3.0.2"
   },
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
@@ -33,5 +40,8 @@
   },
   "bugs": {
     "url": "https://github.com/boostercloud/booster/issues"
+  },
+  "devDependencies": {
+    "@types/redis": "^2.8.28"
   }
 }

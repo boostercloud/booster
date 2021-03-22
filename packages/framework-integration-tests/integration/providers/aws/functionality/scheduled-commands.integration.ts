@@ -1,6 +1,7 @@
-import { graphQLClient, waitForIt } from '../utils'
+import { graphQLClient} from '../utils'
 import gql from 'graphql-tag'
 import { expect } from 'chai'
+import { waitForIt } from '../../../helper/sleep'
 
 describe('Scheduled commands', () => {
   it('scheduled command ran and created a product', async () => {

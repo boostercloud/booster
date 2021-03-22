@@ -10,7 +10,8 @@ import { installProductionDependencies } from './dependencies'
 export const DEPLOYMENT_SANDBOX = '.deploy'
 
 export async function createDeploymentSandbox(): Promise<string> {
-  const sandboxRelativePath = createSandboxProject(DEPLOYMENT_SANDBOX)
+  const config = await compileProjectAndLoadConfig(process.cwd())
+  const sandboxRelativePath = createSandboxProject(DEPLOYMENT_SANDBOX, config.assets)
   await installProductionDependencies(sandboxRelativePath)
   return sandboxRelativePath
 }
@@ -25,11 +26,19 @@ export async function compileProjectAndLoadConfig(userProjectPath: string): Prom
   return readProjectConfig(userProjectPath)
 }
 
-async function compileProject(projectPath: string): Promise<void> {
+export async function compileProject(projectPath: string): Promise<void> {
   try {
     await exec('npm run clean && npm run compile', { cwd: projectPath })
   } catch (e) {
     throw wrapExecError(e, 'Project contains compilation errors')
+  }
+}
+
+export async function cleanProject(projectPath: string): Promise<void> {
+  try {
+    await exec('npm run clean', { cwd: projectPath })
+  } catch (e) {
+    throw wrapExecError(e, 'Error cleaning project')
   }
 }
 

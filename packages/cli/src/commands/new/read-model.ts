@@ -1,4 +1,5 @@
 import * as Oclif from '@oclif/command'
+import BaseCommand from '../../common/base-command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
 import {
@@ -17,7 +18,7 @@ import { templates } from '../../templates'
 import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 import { classNameToFileName } from '../../common/filenames'
 
-export default class ReadModel extends Oclif.Command {
+export default class ReadModel extends BaseCommand {
   public static description = 'create a new read model'
   public static flags = {
     help: Oclif.flags.help({ char: 'h' }),
@@ -37,6 +38,7 @@ export default class ReadModel extends Oclif.Command {
 
   public async run(): Promise<void> {
     const { args, flags } = this.parse(ReadModel)
+
     try {
       const fields = flags.fields ?? []
       const projections = flags.projects ?? []

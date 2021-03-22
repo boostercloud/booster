@@ -1,9 +1,15 @@
 import { HelmManager } from '../../src/infrastructure/helm-manager'
 import { replace, fake, restore } from 'sinon'
 import { expect } from '../expect'
+import { Logger } from '@boostercloud/framework-types'
 
 describe('The user interaction with Helm', async () => {
-  const helm = new HelmManager()
+  const fakeLogger: Logger = {
+    info: fake(),
+    error: fake(),
+    debug: fake(),
+  }
+  const helm = new HelmManager(fakeLogger)
   afterEach(() => {
     restore()
   })

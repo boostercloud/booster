@@ -8,11 +8,9 @@ import {
   createWebSiteManagementClient,
 } from './setup'
 
-export const deploy = (configuration: BoosterConfig, logger: Logger): Promise<void> =>
-  deployApp(logger, configuration).catch(logger.error)
+export const deploy = (configuration: BoosterConfig, logger: Logger): Promise<void> => deployApp(logger, configuration)
 
-export const nuke = (configuration: BoosterConfig, logger: Logger): Promise<void> =>
-  nukeApp(logger, configuration).catch(logger.error)
+export const nuke = (configuration: BoosterConfig, logger: Logger): Promise<void> => nukeApp(logger, configuration)
 
 /**
  * Deploys the application in Azure

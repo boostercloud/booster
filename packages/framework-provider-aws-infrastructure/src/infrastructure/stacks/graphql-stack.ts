@@ -13,7 +13,7 @@ import { DynamoEventSource } from '@aws-cdk/aws-lambda-event-sources'
 
 export interface GraphQLStackMembers {
   graphQLLambda: Function
-  subscriptionDispatcherLambda: Function
+  subscriptionNotifier: Function
   subscriptionsStore: Table
   connectionsStore: Table
 }
@@ -29,7 +29,7 @@ export class GraphQLStack {
   public build(): GraphQLStackMembers {
     const graphQLLambda = this.buildLambda('graphql-handler', this.config.serveGraphQLHandler)
     const readModelsEventSources = this.buildEventSourcesForTables(this.readModelTables)
-    const subscriptionDispatcherLambda = this.buildLambda(
+    const subscriptionNotifier = this.buildLambda(
       'subscriptions-notifier',
       this.config.notifySubscribersHandler,
       readModelsEventSources
@@ -40,7 +40,7 @@ export class GraphQLStack {
     const subscriptionsStore = this.buildSubscriptionsTable()
     const connectionsStore = this.buildConnectionsTable()
 
-    return { graphQLLambda, subscriptionDispatcherLambda, subscriptionsStore, connectionsStore }
+    return { graphQLLambda, subscriptionNotifier, subscriptionsStore, connectionsStore }
   }
 
   private buildLambda(name: string, handler: string, eventSources?: Array<IEventSource>): Function {

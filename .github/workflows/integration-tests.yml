@@ -42,7 +42,7 @@ jobs:
   end-to-end-tests:
     name: End-to-end Tests
     needs:
-      - aws-deploy-integration-tests
+      - aws-func-integration-tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

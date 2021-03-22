@@ -8,9 +8,9 @@ import {
   loadFixture,
   readFileContent,
   removeFolders,
-} from '../helper/fileHelper'
+} from '../helper/file-helper'
 import { ChildProcess } from 'child_process'
-import { overrideWithBoosterLocalDependencies } from '../helper/depsHelper'
+import { overrideWithBoosterLocalDependencies } from '../helper/deps-helper'
 
 // The Booster CLI version used should match the integration tests' version
 const BOOSTER_VERSION = require('../../package.json').version
@@ -29,7 +29,7 @@ const LICENSE = 'Apache'
 const REPO_URL = 'https://github.com/boostercloud/booster/'
 const PROVIDER = '@boostercloud/framework-provider-aws'
 
-describe.only('Project', () => {
+describe('Project', () => {
   const SANDBOX_INTEGRATION_DIR = 'new-project-integration-sandbox'
 
   before(async () => {
@@ -204,6 +204,11 @@ describe.only('Project', () => {
     const cartDemoPretierRcContent = fileContents('.prettierrc.yaml')
     expect(cartDemoPretierRcContent).to.equal(expectedCartDemoPretierRc)
 
+    const expectedCartDemoMochaRc = loadFixture('cart-demo/.mocharc.yml')
+    const cartDemoMochaRcContent = fileContents('.mocharc.yml')
+    expect(cartDemoMochaRcContent).to.equal(expectedCartDemoMochaRc)
+
+
     const defaults = flags?.includes('--default')
     const expectedCartDemoPackageJson = loadFixture('cart-demo/package.json', [
       ['project_name_placeholder', projectName],
@@ -219,7 +224,6 @@ describe.only('Project', () => {
     const cartDemoPackageJsonObject = JSON.parse(cartDemoPackageJsonContent)
     expect(cartDemoPackageJsonObject['dependencies']['@boostercloud/framework-core']).to.equal(`^${BOOSTER_VERSION}`)
     expect(cartDemoPackageJsonObject['dependencies']['@boostercloud/framework-types']).to.equal(`^${BOOSTER_VERSION}`)
-    expect(cartDemoPackageJsonObject['devDependencies']['@boostercloud/cli']).to.equal(`^${BOOSTER_VERSION}`)
 
     const expectedCartDemoTsConfigEslint = loadFixture('cart-demo/tsconfig.eslint.json')
     const cartDemoTsConfigEslintContent = fileContents('tsconfig.eslint.json')

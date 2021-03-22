@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from '../expect'
-import { Event, Entity, Reduces } from '../../src/decorators/'
+import { Event, Entity, Reduces, Role } from '../../src/decorators/'
 import { Booster } from '../../src'
 import { UUID } from '@boostercloud/framework-types'
 
@@ -15,6 +15,9 @@ describe('the `Entity` decorator', () => {
       }
       for (const propName in config.entities) {
         delete config.entities[propName]
+      }
+      for (const propName in config.roles) {
+        delete config.roles[propName]
       }
     })
   })
@@ -38,15 +41,43 @@ describe('the `Entity` decorator', () => {
       }
     }
 
-    // Make Booster be of any type to access private members
-    const booster = Booster as any
-
-    expect(booster.config.entities['Comment']).to.deep.equal({
+    expect(Booster.config.entities['Comment']).to.deep.equal({
       class: Comment,
+      authorizeReadEvents: [],
     })
-    expect(booster.config.reducers['CommentPosted']).to.deep.include({
+    expect(Booster.config.reducers['CommentPosted']).to.deep.include({
       class: Comment,
       methodName: 'react',
+    })
+  })
+
+  it('adds the entity class as an entity with the right read events permissions', () => {
+    @Entity({
+      authorizeReadEvents: 'all',
+    })
+    class Comment {
+      public constructor(readonly id: UUID, readonly content: string) {}
+    }
+
+    @Role({
+      auth: {},
+    })
+    class Manager {}
+
+    @Entity({
+      authorizeReadEvents: [Manager],
+    })
+    class User {
+      public constructor(readonly id: UUID, readonly content: string) {}
+    }
+
+    expect(Booster.config.entities['Comment']).to.deep.equal({
+      class: Comment,
+      authorizeReadEvents: 'all',
+    })
+    expect(Booster.config.entities['User']).to.deep.equal({
+      class: User,
+      authorizeReadEvents: [Manager],
     })
   })
 })

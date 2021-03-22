@@ -9,6 +9,7 @@ metadata:
     booster/created: "true"
 spec:
   type: state.redis
+  version: v1
   metadata:
   - name: redisHost
     value: {{{ eventStoreHost }}}

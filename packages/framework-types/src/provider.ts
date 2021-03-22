@@ -6,11 +6,13 @@ import {
   ConnectionDataEnvelope,
   GraphQLRequestEnvelopeError,
   ScheduledCommandEnvelope,
+  EventFilter,
+  EventSearchResponse,
 } from './envelope'
 import { BoosterConfig } from './config'
 import { Logger } from './logger'
 import { ReadModelInterface, UUID } from './concepts'
-import { Filter } from './searcher'
+import { FilterFor } from './searcher'
 
 export interface ProviderLibrary {
   events: ProviderEventsLibrary
@@ -37,6 +39,7 @@ export interface ProviderEventsLibrary {
     entityTypeName: string,
     entityID: UUID
   ): Promise<EventEnvelope | null>
+  search(config: BoosterConfig, logger: Logger, filters: EventFilter): Promise<Array<EventSearchResponse>>
   /** Streams an event to the corresponding event handler */
   store(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig, logger: Logger): Promise<void>
 }
@@ -47,7 +50,7 @@ export interface ProviderReadModelsLibrary {
     config: BoosterConfig,
     logger: Logger,
     entityTypeName: string,
-    filters: Record<string, Filter<unknown>>
+    filters: FilterFor<unknown>
   ): Promise<Array<TReadModel>>
   store(config: BoosterConfig, logger: Logger, readModelName: string, readModel: ReadModelInterface): Promise<unknown>
   delete(config: BoosterConfig, logger: Logger, readModelName: string, readModel: ReadModelInterface): Promise<any>
