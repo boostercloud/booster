@@ -13,7 +13,7 @@ export class BoosterTokenVerifier {
       if (this.config.tokenVerifier.jwksUri) {
         this.client = jwksRSA({
           jwksUri: this.config.tokenVerifier.jwksUri,
-          cache: false,
+          cache: true,
           cacheMaxAge: 900000, // 15 Minutes, at least to be equal to AWS max lambda limit runtime
         })
       }
