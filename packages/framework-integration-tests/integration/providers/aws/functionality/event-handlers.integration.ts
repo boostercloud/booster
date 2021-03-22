@@ -1,7 +1,7 @@
 import gql from 'graphql-tag'
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
-import { graphQLClient, getTokenForUser } from '../utils'
+import { graphQLClient, getTokenForUser, queryEvents } from '../utils'
 import { random, address, internet } from 'faker'
 import { expect } from 'chai'
 import { waitForIt } from '../../../helper/sleep'

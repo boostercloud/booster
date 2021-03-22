@@ -3,7 +3,6 @@ import { expect } from '../../expect'
 import { BoosterConfig, UUID } from '@boostercloud/framework-types'
 import { App, StackProps, Stack } from '@aws-cdk/core'
 import { Function } from '@aws-cdk/aws-lambda'
-import { CfnUserPool, CfnUserPoolDomain, UserPoolClient } from '@aws-cdk/aws-cognito'
 import { RestApi } from '@aws-cdk/aws-apigateway'
 import { CfnApi } from '@aws-cdk/aws-apigatewayv2'
 import { InfrastructureRocket } from '../../../src/rockets/infrastructure-rocket'
@@ -77,13 +76,6 @@ describe('the application stack builder', () => {
     expect(appStack.tryFindChild(eventsStore)).not.to.be.undefined
     // ReadModels
     readModels.forEach(({ name }) => expect(appStack.tryFindChild(name)).not.to.be.undefined)
-
-    // Now, check all the construct that must NOT be created (related to roles)
-    expect(restAPI.root.getResource('auth')).to.be.undefined
-    // None of the Cognito constructs should be created
-    appStack.children.forEach((child) => {
-      expect(child.constructor.name).not.to.be.oneOf([CfnUserPool.name, CfnUserPoolDomain.name, UserPoolClient.name])
-    })
   })
 
   it('builds the application stack of an app with roles correctly', () => {

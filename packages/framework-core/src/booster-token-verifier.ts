@@ -15,6 +15,9 @@ export class BoosterTokenVerifier {
         jwksUri,
         cache: true,
         cacheMaxAge: 900000, // 15 Minutes, at least to be equal to AWS max lambda limit runtime
+        getKeysInterceptor: (cb: (err: Error | null, keys: jwksRSA.SigningKey[]) => void) => {
+          return cb(null, config.tokenVerifier?.defaultKeys as jwksRSA.SigningKey[])
+        },
       })
 
       this.options = {

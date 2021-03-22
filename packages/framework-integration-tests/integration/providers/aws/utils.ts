@@ -1,5 +1,5 @@
-import { CloudFormation, CognitoIdentityServiceProvider, config, DynamoDB } from 'aws-sdk'
-import { Stack, StackResourceDetail, StackResourceSummary } from 'aws-sdk/clients/cloudformation'
+import { CloudFormation, config, DynamoDB } from 'aws-sdk'
+import { Stack, StackResourceSummary } from 'aws-sdk/clients/cloudformation'
 import { ApolloClient } from 'apollo-client'
 import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { HttpLink } from 'apollo-link-http'
@@ -12,14 +12,15 @@ import * as WebSocket from 'ws'
 import { SubscriptionClient } from 'subscriptions-transport-ws'
 import { ApolloClientOptions } from 'apollo-client/ApolloClient'
 import * as jwt from 'jsonwebtoken'
+import * as fs from 'fs'
 import util = require('util')
 import QueryOutput = DocumentClient.QueryOutput
 import ScanOutput = DocumentClient.ScanOutput
+import { sleep } from '../../helper/sleep'
 
 const exec = util.promisify(require('child_process').exec)
 
 const cloudFormation = new CloudFormation()
-const cognitoIdentityServiceProvider = new CognitoIdentityServiceProvider()
 const documentClient = new DynamoDB.DocumentClient()
 
 // Environment helpers
@@ -94,180 +95,6 @@ export async function stackResourcesByType(resourceType: string): Promise<Array<
   return resources.StackResourceSummaries?.filter((resource) => resource.ResourceType == resourceType) ?? []
 }
 
-// --- Auth helpers ---
-export async function authClientID(): Promise<string> {
-  const { Outputs } = await appStack()
-  const clientId = Outputs?.find((output) => {
-    return output.OutputKey === 'clientID'
-  })?.OutputValue
-
-  if (clientId) {
-    return clientId
-  } else {
-    throw 'unable to find the clientID from the current stack'
-  }
-}
-
-export interface UserAuthInformation {
-  accessToken: string
-  idToken: string
-  refreshToken: string
-  expiresIn?: number
-  tokenType?: string
-  id?: string
-}
-
-export async function userPool(): Promise<StackResourceDetail> {
-  const resources = await stackResourcesByType('AWS::Cognito::UserPool')
-
-  if (resources.length == 1) {
-    return resources[0]
-  } else {
-    throw 'No user pool (or more than one) found in stack'
-  }
-}
-
-export async function userPoolPhysicalResourceId(): Promise<string> {
-  const { PhysicalResourceId } = await userPool()
-  if (PhysicalResourceId) {
-    return PhysicalResourceId
-  } else {
-    throw 'Unable to get the PhisicalResourceId'
-  }
-}
-
-export async function createUser(username: string, password: string, role = 'UserWithEmail'): Promise<void> {
-  const physicalResourceId = await userPoolPhysicalResourceId()
-  const clientId = await authClientID()
-  const temporaryPassword = 'ChangeMePleas3!'
-
-  await cognitoIdentityServiceProvider
-    .adminCreateUser({
-      UserPoolId: physicalResourceId,
-      Username: username,
-      TemporaryPassword: temporaryPassword,
-      MessageAction: 'SUPPRESS',
-      UserAttributes: [
-        {
-          Name: 'email_verified',
-          Value: 'True',
-        },
-        {
-          Name: 'email',
-          Value: username,
-        },
-      ],
-    })
-    .promise()
-
-  // Setting the roles user attribute on creation triggers an error in the PreSignUp lambda, so we have to set them in a separate call
-  // > UserLambdaValidationException: PreSignUp failed with error User with role Admin can't sign up by themselves. Choose a different role or contact and administrator.
-  // TODO: Should this be the expected behavior taking into account that we're creating it via admin API?
-  // We might want to consider changing the pre-sign-up lambda to check for some kind of credentials to create admin users or something like that.
-  await cognitoIdentityServiceProvider
-    .adminUpdateUserAttributes({
-      UserPoolId: physicalResourceId,
-      Username: username,
-      UserAttributes: [
-        {
-          Name: 'custom:role',
-          Value: role,
-        },
-      ],
-    })
-    .promise()
-
-  // A definitive password can't be set on creation, the user is created with a temporal password
-  // here we're simulating a user resetting their password.
-  const authTrialDetails = await cognitoIdentityServiceProvider
-    .initiateAuth({
-      AuthFlow: 'USER_PASSWORD_AUTH',
-      ClientId: clientId,
-      AuthParameters: {
-        USERNAME: username,
-        PASSWORD: temporaryPassword,
-      },
-    })
-    .promise()
-
-  await cognitoIdentityServiceProvider
-    .respondToAuthChallenge({
-      ChallengeName: authTrialDetails.ChallengeName ?? 'NEW_PASSWORD_REQUIRED',
-      ClientId: clientId,
-      ChallengeResponses: {
-        USERNAME: username,
-        NEW_PASSWORD: password,
-      },
-      Session: authTrialDetails.Session,
-    })
-    .promise()
-}
-
-export async function confirmUser(username: string): Promise<void> {
-  const physicalResourceId = await userPoolPhysicalResourceId()
-  await cognitoIdentityServiceProvider
-    .adminConfirmSignUp({
-      UserPoolId: physicalResourceId,
-      Username: username,
-    })
-    .promise()
-}
-
-export async function deleteUser(username: string): Promise<void> {
-  const phisicalResouceId = await userPoolPhysicalResourceId()
-  await cognitoIdentityServiceProvider
-    .adminDeleteUser({
-      UserPoolId: phisicalResouceId,
-      Username: username,
-    })
-    .promise()
-}
-
-export const getUserAuthInformation = async (email: string, password: string): Promise<UserAuthInformation> => {
-  const url = await signInURL()
-  const clientId = await authClientID()
-
-  const response = await fetch(url, {
-    method: 'POST',
-    body: JSON.stringify({
-      clientId: clientId,
-      username: email,
-      password: password,
-    }),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-
-  const userAuthInformation = await response.json()
-  userAuthInformation.id = await getCognitoUserId(userAuthInformation.accessToken)
-  return userAuthInformation
-}
-
-const getCognitoUserId = async (accessToken: string): Promise<string> => {
-  const cognitoUser = await cognitoIdentityServiceProvider.getUser({ AccessToken: accessToken }).promise()
-  // The username in Cognito references is a UUID
-  return cognitoUser.Username
-}
-
-export const refreshUserAuthInformation = async (refreshToken: string): Promise<UserAuthInformation> => {
-  const url = await refreshTokenURL()
-  const clientId = await authClientID()
-
-  const response = await fetch(url, {
-    method: 'POST',
-    body: JSON.stringify({
-      clientId: clientId,
-      refreshToken: refreshToken,
-    }),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-
-  return await response.json()
-}
-
 // --- URL helpers ---
 
 export async function baseHTTPURL(): Promise<string> {
@@ -292,22 +119,6 @@ export async function baseWebsocketURL(): Promise<string> {
     throw 'Unable to get the Base Websocket URL from the current stack'
   }
   return url
-}
-
-export async function signUpURL(): Promise<string> {
-  return new URL('auth/sign-up', await baseHTTPURL()).href
-}
-
-export async function signInURL(): Promise<string> {
-  return new URL('auth/sign-in', await baseHTTPURL()).href
-}
-
-export async function signOutURL(): Promise<string> {
-  return new URL('auth/sign-out', await baseHTTPURL()).href
-}
-
-export async function refreshTokenURL(): Promise<string> {
-  return new URL('auth/refresh-token', await baseHTTPURL()).href
 }
 
 // --- GraphQL helpers ---
@@ -600,9 +411,10 @@ export async function waitForIt<TResult>(
 }
 
 // This helper will create a valid token using a real private key for testing
-// the tokens will be validate against the public keyset uri
-// located in: https://booster-integration-tests.s3.amazonaws.com/.well-known/jkws.json
+// the tokens will be validate against the public keyset file
+// located in: /keys/private.key file
 export const getTokenForUser = (email: string, role: string): string => {
+  const privateKey = fs.readFileSync(__dirname + '/keys/private.key')
   const keyid = 'booster'
   const issuer = 'booster'
   const token = jwt.sign(
@@ -611,7 +423,7 @@ export const getTokenForUser = (email: string, role: string): string => {
       'custom:role': role,
       email,
     },
-    process.env.BOOSTER_RSA_PRIVATE_KEY!,
+    privateKey,
     {
       algorithm: 'RS256',
       subject: email,

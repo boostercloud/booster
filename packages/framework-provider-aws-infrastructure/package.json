@@ -23,7 +23,6 @@
     "@aws-cdk/aws-apigateway": "1.67.0",
     "@aws-cdk/aws-apigatewayv2": "1.67.0",
     "@aws-cdk/aws-cloudfront": "1.67.0",
-    "@aws-cdk/aws-cognito": "1.67.0",
     "@aws-cdk/aws-dynamodb": "1.67.0",
     "@aws-cdk/aws-events-targets": "1.67.0",
     "@aws-cdk/aws-iam": "1.67.0",

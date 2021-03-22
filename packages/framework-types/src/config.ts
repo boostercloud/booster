@@ -49,7 +49,7 @@ export class BoosterConfig {
   /** Environment variables set at deployment time on the target lambda functions */
   public readonly env: Record<string, string> = {}
 
-  private _tokenVerifier?: { issuer: string; jwksUri: string }
+  private _tokenVerifier?: TokenVerifier
 
   public constructor(public readonly environmentName: string) {}
 
@@ -126,11 +126,11 @@ export class BoosterConfig {
     return value
   }
 
-  public get tokenVerifier(): { issuer: string; jwksUri: string } | undefined {
+  public get tokenVerifier(): TokenVerifier | undefined {
     return this._tokenVerifier
   }
 
-  public set tokenVerifier(tokenVerifier: { issuer: string; jwksUri: string } | undefined) {
+  public set tokenVerifier(tokenVerifier: TokenVerifier | undefined) {
     this._tokenVerifier = tokenVerifier
   }
 
@@ -170,3 +170,4 @@ type RoleName = string
 type ConceptName = string
 type Version = number
 type ScheduledCommandName = string
+type TokenVerifier = { issuer: string; jwksUri: string; defaultKeys?: unknown }
