@@ -1026,7 +1026,7 @@ export class MoveStock {
 }
 ```
 
-In this case, the client who submitted the command can still complete the operation. Then an event handler will take care of that `ErrorEvent` and proceed accordingly.
+In this case, the client who submitted the command can still complete the operation. Then, an event handler will take care of that `ErrorEvent` and proceed accordingly.
 
 ##### Reading entities
 
@@ -1124,7 +1124,7 @@ export class CheckCartCount {
 }
 ```
 
-Notice that you can pass as parameters `minute`, `hour`, `day`, `month`, `weekDay` and `year` to set up a cron expression. By default, if no paramateres are passed, the scheduled command will not be triggered.
+Notice that you can pass as parameters `minute`, `hour`, `day`, `month`, `weekDay` and `year` to set up a cron expression. By default, if no paramaters are passed, the scheduled command will not be triggered.
 
 #### Creating a scheduled command
 
@@ -1149,7 +1149,7 @@ export class EventName {
 }
 ```
 
-Events and [entities](#4-entities-and-reducers) are intimately related. Each event belongs to one entity through the `entityID` method, and entities represent the application's state after reducing the stream of events. Indeed, an entity is just an aggregated representation of the same data present in its events, so it is possible to rebuild entities from events at any time. Booster guarantees that all the events associated with an entity will be reduced in the same order they were stored. Take a look at this event:
+Events and [entities](#4-entities-and-reducers) are intimately related. Each event belongs to one entity identified through the `entityID` method, and entities represent the application's state after reducing the stream of events. Indeed, an entity is just an aggregated representation of the same data present in its events, so it is possible to rebuild entities from events at any time. Booster guarantees that all the events associated with an entity will be reduced in the same order they were stored. Take a look at this event:
 
 ```typescript
 @Event
@@ -1253,13 +1253,9 @@ export class HandleAvailability {
 }
 ```
 
-#### Events ordering
-
-<!-- TODO: several people have asked about how Booster ensures event ordering. I think it makes sense to explain that here  -->
-
 ### 3. Event handlers
 
-In event-driven architectures we have different parts of our application that react to events. In the case of Booster, we have the entities (in charge of reducing the events), and the _event handlers_. These are classes decorated with the `@EventHandler` decorator whose goal is to execute business logic or trigger other events when a specific event occurs.
+In event-driven architectures we have different parts of our application that react to events. In the case of Booster, we have the entities (in charge of reducing the events), and the _event handlers_. These are classes decorated with the `@EventHandler` decorator which can be defined as reactive side effect of the registration of a certain event, that can be used to execute some business logic or register other events related to the handler.
 
 An event handler would look like this:
 
@@ -1336,8 +1332,7 @@ You can assume that entities are created on the fly by _reducing_ the whole even
 automatic snapshots for each entity so that the reduction process is efficient.
 
 An entity is defined as a class with the `@Entity` decorator. Inside of it, you can write one or more static methods (called "reducers") with
-the `@Reduces` decorator specifying the event they reduce. The reducer method will be called with two arguments: the event
-and the current state of the entity. Booster expects you to return a new entity with the changes implied by the event applied to the current one.
+the `@Reduces` decorator specifying the event they reduce. The reducer method will be called with two arguments: the event and the current state of the entity. Booster expects you to return a new entity with the changes implied by the event applied to the current one.
 
 An entity class looks like this:
 
@@ -1353,14 +1348,11 @@ export class EntityName {
 }
 ```
 
-There could be a lot of events being reduced concurrently among many entities, but, **for a specific entity instance, the events order is preserved**.
-This means that while one event is being reduced, all other events of any kind _that belong to the same entity instance_ will be waiting in a queue until the previous reducer has finished (with "entity instance" we refer to an entity of a specific type and with a specific ID).
-This is important to make sure that entities state is built correctly.
+There could be a lot of events being reduced concurrently among many entities, but, **for a specific entity instance, the events order is preserved**. This means that while one event is being reduced, all other events of any kind _that belong to the same entity instance_ will be waiting in a queue until the previous reducer has finished (with "entity instance" we refer to an entity of a specific type and with a specific ID). This is important to make sure that entities state is built correctly.
 
 #### Entities naming convention
 
-Entities are a representation of your application state in a specific moment, so name them as closely to your domain objects as possible. Typical entity names are nouns that
-might appear when you think about your app. In an e-commerce application, some entities would be:
+Entities are a representation of your application state in a specific moment, so name them as closely to your domain objects as possible. Typical entity names are nouns that might appear when you think about your app. In an e-commerce application, some entities would be:
 
 - Cart
 - Product
@@ -1400,8 +1392,7 @@ Note:
 
 #### The reducer function
 
-Booster generates the reducer function as a static method of the entity class. That function is called by the framework every time that an event of the
-specified type needs to be reduced. It's highly recommended to **keep your reducer functions pure**, which means that you should be able to produce the new entity version by just looking at the event and the current entity state. You should avoid calling third party services, reading or writing to a database, or changing any external state.
+Booster generates the reducer function as a static method of the entity class. That function is called by the framework every time that an event of the specified type needs to be reduced. It's highly recommended to **keep your reducer functions pure**, which means that you should be able to produce the new entity version by just looking at the event and the current entity state. You should avoid calling third party services, reading or writing to a database, or changing any external state.
 
 Booster injects two parameters to the reducer functions:
 
@@ -1437,13 +1428,9 @@ You can visualize reduction like this:
 
 #### Eventual consistency
 
-Due to the event driven and async nature of Booster, your data might
-not be instantly updated. Booster will consume the commands,
-generate events, and _eventually_ generate the entities. Most of the
-time this is not perceivable, but under huge loads, it could be noticed.
+Due to the event driven and async nature of Booster, your data might not be instantly updated. Booster will consume the commands, generate events, and _eventually_ generate the entities. Most of the time this is not perceivable, but under huge loads, it could be noticed.
 
-This property is called [Eventual Consistency](https://en.wikipedia.org/wiki/Eventual_consistency), and it is a trade-off to have high availability for
-extreme situations, where other systems might simply fail.
+This property is called [Eventual Consistency](https://en.wikipedia.org/wiki/Eventual_consistency), and it is a trade-off to have high availability for extreme situations, where other systems might simply fail.
 
 ### 5. Read models and projections
 
@@ -1570,17 +1557,19 @@ export class CartReadModel {
 }
 ```
 
-You will get the following GraphQL query:
+You will get the following GraphQL query and subscriptions:
 
 ```graphQL
 query CartReadModel(id: ID!): CartReadModel
+subscription CartReadModel(id: ID!): CartReadModel
+subscription CartReadModels(id: UUIDPropertyFilter!): CartReadModel
 ```
 
 For more information about queries and how to use them, please check the [GraphQL API](#reading-read-models) section.
 
 #### Getting real-time updates for a read model
 
-Booster GraphQL API also provides support for real-time updates using subscriptions and websocket, to get more information about it go to the [GraphQL API](#subscribing-to-read-models) section.
+Booster GraphQL API also provides support for real-time updates using subscriptions and a web-socket. To get more information about it go to the [GraphQL API](#subscribing-to-read-models) section.
 
 #### Getting and filtering read models data at code level
 
