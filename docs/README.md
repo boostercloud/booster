@@ -1026,7 +1026,7 @@ export class MoveStock {
 }
 ```
 
-In this case, the client who submitted the command can still complete the operation. Then, an event handler will take care of that `ErrorEvent` and proceed accordingly.
+In this case, the command operation can still be completed. An event handler will take care of that `ErrorEvent and proceed accordingly.
 
 ##### Reading entities
 
@@ -1149,7 +1149,7 @@ export class EventName {
 }
 ```
 
-Events and [entities](#4-entities-and-reducers) are intimately related. Each event belongs to one entity identified through the `entityID` method, and entities represent the application's state after reducing the stream of events. Indeed, an entity is just an aggregated representation of the same data present in its events, so it is possible to rebuild entities from events at any time. Booster guarantees that all the events associated with an entity will be reduced in the same order they were stored. Take a look at this event:
+Events and [entities](#4-entities-and-reducers) are closely related. Each event belongs to one entity uniquely identified through the entityID method, and entities represent the application's state after reducing the stream of events. Indeed, an entity is just an aggregated representation of the same data present in its events, so it is possible to rebuild entities from events at any time. Booster guarantees that all the events associated with an entity will be reduced in the same order they were stored. Take a look at this event:
 
 ```typescript
 @Event
@@ -1255,7 +1255,7 @@ export class HandleAvailability {
 
 ### 3. Event handlers
 
-In event-driven architectures we have different parts of our application that react to events. In the case of Booster, we have the entities (in charge of reducing the events), and the _event handlers_. These are classes decorated with the `@EventHandler` decorator which can be defined as reactive side effect of the registration of a certain event, that can be used to execute some business logic or register other events related to the handler.
+As expected with event-driven architectures, multiple parts of our application react to events. In the case of Booster, we have entities (in charge of reducing the events) and event handlers. These last ones are classes decorated with the @EventHandler decorator. Every time a new instance of a given event is registered, the handle method of this class is triggered. This method can contain any business logic defined by the user or it can also register new events.
 
 An event handler would look like this:
 
