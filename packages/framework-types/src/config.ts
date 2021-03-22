@@ -170,4 +170,8 @@ type RoleName = string
 type ConceptName = string
 type Version = number
 type ScheduledCommandName = string
-type TokenVerifier = { issuer: string; jwksUri: string; defaultKeys?: unknown }
+type TokenVerifier = { 
+  issuer: string; 
+  jwksUri?: string; 
+  cert?: string;
+}
