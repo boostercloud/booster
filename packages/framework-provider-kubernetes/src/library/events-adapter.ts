@@ -29,7 +29,7 @@ export const store = async (
 const isNewerThan = (isoString: string) => (key: string) => {
   const keyIsoString = key.split('_')[5]
   if (!keyIsoString) throw new Error(`No ISO string in key ${key}`)
-  return new Date(keyIsoString) >= new Date(isoString)
+  return new Date(keyIsoString) > new Date(isoString)
 }
 
 export const forEntitySince = async (
