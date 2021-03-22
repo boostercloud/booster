@@ -23,27 +23,44 @@ export class ReadModelRegistry {
     filters: Filters
   ): Promise<Array<ReadModelInterface>> {
     const l = (msg: string): void => logger.debug('readModelRegistry#search: ' + msg)
-    const readModelId = filters.id.eq
-    l(`Got id ${readModelId ?? 'UNDEFINED'}`)
-    if (!readModelId) throw new Error('Only searching by ID is supported')
-    const url = `${this.url}/v1.0/state/statestore/${this.readModelKey(readModelName, readModelId)}`
-    l(`Performing a fetch to ${url}`)
-    const response = await fetch(url)
-    if (!response.ok) {
-      l(`Error on performing GET from ${url}`)
-    }
-    l(`Got result ${JSON.stringify(response)}`)
-    try {
-      const body = await response.json()
-      l(`Got JSON ${JSON.stringify(body)}`)
-      // TODO: Remove unnecessary id setting from k8s read model registry
-      if (body) {
-        body.id = readModelId
+    if (filters.id) {
+      // TODO: Allow complex filters in K8s provider. Currently we only allow filter by Id or get all entries
+      const readModelId = filters.id.eq
+      l(`Got id ${readModelId ?? 'UNDEFINED'}`)
+      if (!readModelId) throw new Error('Only searching by ID is supported')
+      const url = `${this.url}/v1.0/state/statestore/${this.readModelKey(readModelName, readModelId)}`
+      l(`Performing a fetch to ${url}`)
+      const response = await fetch(url)
+      if (!response.ok) {
+        l(`Error on performing GET from ${url}`)
       }
-      return [body.value]
-    } catch (err) {
-      l(`Error ${JSON.stringify(err)}`)
-      return []
+      l(`Got result ${JSON.stringify(response)}`)
+      try {
+        const body = await response.json()
+        l(`Got JSON ${JSON.stringify(body)}`)
+        // TODO: Remove unnecessary id setting from k8s read model registry
+        if (body) {
+          body.id = readModelId
+        }
+        return [body.value]
+      } catch (err) {
+        l(`Error ${JSON.stringify(err)}`)
+        return []
+      }
+    } else {
+      const keys = await this.redis.keys(`rm_${readModelName}_*`, logger)
+      l(`Obtainer following keys for query: ${keys}`)
+      const results: ReadModelInterface[] = []
+      await Promise.all(
+        keys.map(async (k) => {
+          const data = await this.redis.hget<ReadModelEnvelope>(k)
+          if (data?.value) {
+            results.push(data.value)
+          }
+        })
+      )
+      l(`Got ${results} envelopes, returning`)
+      return results
     }
   }
 
