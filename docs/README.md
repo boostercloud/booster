@@ -2406,7 +2406,13 @@ If you want to start making contributions to Booster, we strongly recommend that
 
 ### Framework Core
 
+The `framework-core` package includes the most important components of the framework abstraction. It can be seen as skeleton or the main architecture of the framework. 
+
+The package defines the specification of how should a Booster application work without taking into account the specific providers that could be used. Every Booster provider package is based on the components that the framework core needs in order to work on the platform.
+
 ### Framework Types
+
+The `framework-types` packages includes the types that define the domain of the Booster framework. It defines domain concepts like an `Event`, a `Command` or a `Role`.
 
 ### Framework integration tests
 
@@ -2416,9 +2422,9 @@ Some integration tests highly depend on the provider chosen for the project, and
 
 There are several types of integration tests in this package:
 
-- Tests to ensure that different packages integrate as expected with each other
-- Tests to ensure that a Booster application behaves as expected when it is hit by a client (a GraphQL client)
-- Tests to ensure that the application behaves in the same way no matter what provider is selected
+- Tests to ensure that different packages integrate as expected with each other.
+- Tests to ensure that a Booster application behaves as expected when it is hit by a client (a GraphQL client).
+- Tests to ensure that the application behaves in the same way no matter what provider is selected.
 
 If you are curious about the framework providers, you will be able to read more about them in the following section.
 
@@ -2426,17 +2432,15 @@ If you are curious about the framework providers, you will be able to read more 
 
 The providers are different implementations of the Booster runtime to allow Booster applications run on different cloud providers or services. They all implement the same interface, and the main idea behind the providers is that no matter what the developer chooses as backend, they won't need to know anything about the underlying infrastructure.
 
-#### framework-provider-aws-\*
+Currently, the Booster framework provides a fully working provider package:
 
-#### framework-provider-local-\*
+-  **framework-provider-aws-\***
 
-The Booster framework local provider combines in-memory databases with a GraphQL API served through a Node.js Express Server.
+Other providers packages are currently under development. Some of the features might be missing:
 
-The local runtime is a convenient and fast way to deploy and test your code in a local development environment. From the API and semantic perspectives, there are no differences from using a real cloud provider, it just runs locally!
-
-#### framework-provider-kubernetes-\*
-
-#### framework-provider-azure-\*
+-  **framework-provider-local-\***. The Booster framework local provider combines in-memory databases with a GraphQL API served through a Node.js Express Server. The local runtime is a convenient and fast way to deploy and test your code in a local development environment. From the API and semantic perspectives, there are no differences from using a real cloud provider, it just runs locally!
+- **framework-provider-kubernetes-\***
+- **framework-provider-azure-\***
 
 ### Configuration and environments
 
@@ -2468,7 +2472,7 @@ The following is the list of the fields you can configure:
 _**Note:** So far, there is only one provider fully supported in Booster yet, @boostercloud/framework-provider-aws, and it is probably the one you have already set if you used the generator to create your project. The team is currently working on providers for local development, Azure, and Kubernetes._
 
 - **assets**: This is an array of _relative_ paths from the root of the project pointing to files and folders with static assets. They will be included among the deployed files to the cloud provider.
-  For example, imagine you are using the "dotenv" module so that all the environment variables you have in your `.env` files are loaded into memory in runtime. In order for this to work, you need to include your `.env` files as assets of your project, so that they are included when deploying. Assuming you only have a `.env` file in the root of your project, you should add the following to your configuration:
+  For example, imagine you are using the `dotenv` module so that all the environment variables you have in your `.env` files are loaded into memory in runtime. In order for this to work, you need to include your `.env` files as assets of your project, so that they are included when deploying. Assuming you only have a `.env` file in the root of your project, you should add the following to your configuration:
   ```typescript
   config.assets = ['.env']
   ```
@@ -2613,10 +2617,6 @@ Booster.configure('development', (config: BoosterConfig): void => {
   ])
 })
 ```
-
-#### Runtime extensions (Not yet implemented)
-
-#### Deploy and init hooks (Not yet implemented)
 
 #### Booster Rockets list
 
