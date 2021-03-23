@@ -692,7 +692,7 @@ boost deploy -e production
   
 > With `-e production` we are specifying which environment we want to deploy. We'll talk about them later.
 
-And here it comes the Booster magic! ✨ Just running the deploy command, Booster handles the creations of the resources, *like Lambda, API Gateway,* and the glue between them; *permissions, events, triggers, etc.* It even creates a fully functional GraphQL API!
+And here it comes the Booster magic! ✨ When running the deploy command, Booster will handle the creation of all the resources, *like Lambdas, API Gateway,* and the "glue" between them; *permissions, events, triggers, etc.* It even creates a fully functional GraphQL API!
 
 *If at this point you still don’t believe everything is done, feel free to check in your provider’s console. You should see, as in the AWS example below, that the stack and all the services are up and running!* 🚀
 
