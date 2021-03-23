@@ -2578,7 +2578,7 @@ const YourRocketInitializator = (params: YourRocketParams): InfrastructureRocket
 export default YourRocketInitializator
 ```
 
-In `mountStack` you will receive an initialized AWS CDK stack that you can use to add new resources. Check out [the Stack API in the official CDK documentation](https://docs.aws.amazon.com/cdk/latest/guide/stacks.html#stack_api). This is the same stack instance that Booster uses to deploy its resources, so your resources will automatically be deployed along with the Booster's on the same stack. You will also receive the `config` object which includes properties of the Booster project that is about to be deployed.
+In `mountStack` you will receive an initialized AWS CDK stack that you can use to add new resources. Check out [the Stack API in the official CDK documentation](https://docs.aws.amazon.com/cdk/latest/guide/stacks.html#stack_api). This is the same stack instance that Booster uses to deploy its resources, so your resources will automatically be deployed along with the Booster's ones on the same stack. You will also receive the `config` object which includes properties of the Booster project that is about to be deployed.
 
 When you nuke your Booster application, all the resources added by your rocket are automatically destroyed along with the application stack, but there are some situations on which it's convenient to delete or move the contents of the resources created by you. In the `unmountStack` function you'll have the opportunity to run any code before deleting the stack. This function receives an utils object with the same tools that Booster uses to perform common actions like emptying the contents of an S3 bucket (Non-empty buckets are kept by default when a stack is deleted).
 
