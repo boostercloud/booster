@@ -61,7 +61,7 @@ describe('the events-adapter', () => {
   })
 
   describe('the `readEntityLatestSnapshot` method', () => {
-    it('finds the latest entity snapshot', async () => {
+    it('finds the latest entity snapshot when the `at` parameter is not passed', async () => {
       const dynamoDB = createStubInstance(DynamoDB.DocumentClient)
       dynamoDB.query = fake.returns({ promise: fake.resolves('') }) as any
       const config = new BoosterConfig('test')
@@ -76,6 +76,30 @@ describe('the events-adapter', () => {
           KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey`,
           ExpressionAttributeValues: {
             ':partitionKey': partitionKeyForEvent('SomeEntity', 'someSpecialID', 'snapshot'),
+            ':at': undefined,
+          },
+          ScanIndexForward: false,
+          Limit: 1,
+        })
+      )
+    })
+    it('finds the entity snapshot at a specific point in time when the `at` parameter is passed', async () => {
+      const dynamoDB = createStubInstance(DynamoDB.DocumentClient)
+      dynamoDB.query = fake.returns({ promise: fake.resolves('') }) as any
+      const config = new BoosterConfig('test')
+      const at = new Date()
+      config.appName = 'nuke-button'
+
+      await Library.readEntityLatestSnapshot(dynamoDB, config, fakeLogger, 'SomeEntity', 'someSpecialID', at)
+
+      expect(dynamoDB.query).to.have.been.calledWith(
+        match({
+          TableName: 'nuke-button-app-events-store',
+          ConsistentRead: true,
+          KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey AND ${eventsStoreAttributes.sortKey} >= :at`,
+          ExpressionAttributeValues: {
+            ':partitionKey': partitionKeyForEvent('SomeEntity', 'someSpecialID', 'snapshot'),
+            ':at': at.toISOString(),
           },
           ScanIndexForward: false,
           Limit: 1,

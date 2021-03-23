@@ -63,6 +63,25 @@ describe('the `Booster` class', () => {
         '42'
       )
     })
+    it('provides an optional `at` parameter to retrieve the snapshot at a specific time', async () => {
+      replace(EntitySnapshotFetcher, 'fetchEntitySnapshot', fake())
+      const booster = Booster as any
+
+      class SomeEntity {
+        public constructor(readonly id: UUID) {}
+      }
+
+      const at = new Date()
+      await Booster.fetchEntitySnapshot(SomeEntity, '42', at)
+
+      expect(EntitySnapshotFetcher.fetchEntitySnapshot).to.have.been.calledOnceWith(
+        booster.config,
+        booster.logger,
+        SomeEntity,
+        '42',
+        at
+      )
+    })
   })
 
   describe('the `readModel` method', () => {
