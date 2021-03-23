@@ -1,13 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  BoosterConfig,
-  Logger,
-  ProviderInfrastructure,
-  ProviderLibrary,
-  ReadModelInterface,
-  UserApp,
-} from '@boostercloud/framework-types'
+import { ProviderInfrastructure, ProviderLibrary, UserApp } from '@boostercloud/framework-types'
 import { EventRegistry } from './services/event-registry'
 import { ReadModelRegistry } from './services/read-model-registry'
 import * as EventsAdapter from './library/events-adapter'
@@ -18,11 +11,14 @@ import * as ApiAdapter from './library/api-adapter'
 import * as ScheduledAdapter from './library/scheduled-adapter'
 import * as ConnectionsAdapter from './library/connections-adapter'
 import * as path from 'path'
+import { searchReadModel } from './library/searcher-adapter'
+import { RedisAdapter } from './services/redis-adapter'
 
 const storageUrl = 'http://localhost:3500'
 const eventRegistry = new EventRegistry(storageUrl)
 const readModelRegistry = new ReadModelRegistry(storageUrl)
 const userApp: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
+const redisDB = RedisAdapter.build()
 
 export const Provider = (): ProviderLibrary => ({
   // ProviderEventsLibrary
@@ -38,13 +34,7 @@ export const Provider = (): ProviderLibrary => ({
     rawToEnvelopes: ReadModelAdapter.rawToEnvelopes,
     fetch: ReadModelAdapter.fetch.bind(null, readModelRegistry),
     // TODO: Remove generic constraint from ProviderReadModelsLibrary.search
-    search: async <TReadModel extends ReadModelInterface>(
-      config: BoosterConfig,
-      logger: Logger,
-      readModelName: string,
-      filters: any
-    ) =>
-      (await ReadModelAdapter.search(readModelRegistry, config, logger, readModelName, filters)) as Array<TReadModel>,
+    search: searchReadModel.bind(null, redisDB),
     store: ReadModelAdapter.store.bind(null, readModelRegistry),
     delete: ReadModelAdapter.deleteReadModel.bind(null, readModelRegistry),
     subscribe: ReadModelAdapter.subscribe,
