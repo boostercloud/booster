@@ -9,6 +9,7 @@ import {
   UUID,
 } from '@boostercloud/framework-types'
 import { EventRegistry } from '../services/event-registry'
+import { RedisAdapter } from '../services/redis-adapter'
 
 export const rawToEnvelopes = (events: Array<unknown>): Array<EventEnvelope> => events as Array<EventEnvelope>
 
@@ -27,7 +28,7 @@ export const store = async (
 }
 
 const isNewerThan = (isoString: string) => (key: string) => {
-  const keyIsoString = key.split('_')[5]
+  const keyIsoString = key.split(RedisAdapter.keySeparator)[5]
   if (!keyIsoString) throw new Error(`No ISO string in key ${key}`)
   return new Date(keyIsoString) > new Date(isoString)
 }
@@ -43,7 +44,7 @@ export const forEntitySince = async (
   const originOfTime = new Date(0).toISOString()
   const fromTime = since ?? originOfTime
   const query = {
-    keyQuery: `ee_${entityTypeName}_${entityID}_event`,
+    keyQuery: ['ee', entityTypeName, entityID, 'event'].join(RedisAdapter.keySeparator),
     keyPredicate: isNewerThan(fromTime),
     valuePredicate: () => true,
     sortBy: (a: EventEnvelope, b: EventEnvelope) => a.createdAt.localeCompare(b.createdAt),
@@ -60,7 +61,7 @@ export async function latestEntitySnapshot(
   entityID: UUID
 ): Promise<EventEnvelope | null> {
   const query = {
-    keyQuery: `ee_${entityTypeName}_${entityID}_snapshot`,
+    keyQuery: ['ee', entityTypeName, entityID, 'snapshot'].join(RedisAdapter.keySeparator),
     keyPredicate: () => true,
     valuePredicate: () => true,
     sortBy: (a: EventEnvelope, b: EventEnvelope) => a.createdAt.localeCompare(b.createdAt),

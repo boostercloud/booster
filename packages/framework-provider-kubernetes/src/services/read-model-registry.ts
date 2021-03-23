@@ -48,7 +48,7 @@ export class ReadModelRegistry {
         return []
       }
     } else {
-      const keys = await this.redis.keys(`rm_${readModelName}_*`, logger)
+      const keys = await this.redis.keys(['rm',readModelName,'*'].join(RedisAdapter.keySeparator), logger)
       l(`Obtainer following keys for query: ${keys}`)
       const results: ReadModelInterface[] = []
       await Promise.all(
@@ -86,6 +86,6 @@ export class ReadModelRegistry {
       typeName, //readModel type name
       id, //readModel id
     ]
-    return keyParts.join('_')
+    return keyParts.join(RedisAdapter.keySeparator)
   }
 }
