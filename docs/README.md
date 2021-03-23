@@ -2621,7 +2621,7 @@ Here you can find the official Booster Rockets developed at this time:
 
 While Booster is designed to deploy your applications to a cloud provider, having the ability to run your code locally speeds-up dramatically the feedback loop and allows developers to view application logs in the terminal.
 
-The Booster approach to run cloud applications locally is very different from the route taken by other major cloud frameworks, we don't try to replicate the cloud services in your machine, but simulate how the code runs in the cloud in a very light local environment based on node and express.js. This approach reduces dramatically the hardware requirements to develop Booster applications and increases the speed of development.
+The Booster approach to run cloud applications locally is very different from the route taken by other major cloud frameworks, we don't try to replicate the cloud services in your machine, but simulate how the code runs in the cloud in a very light local environment based on Node.js and Express.js. This approach reduces dramatically the hardware requirements to develop Booster applications and increases the speed of development.
 
 #### Local development prerequisites
 
@@ -2648,21 +2648,21 @@ Booster.configure('local', (config: BoosterConfig): void => {
 
 #### Starting your application
 
-This step is very simple, you only need to open a terminal window and run:
+This step is very simple. On your project root directory, you only need to run this command:
 
 ```bash
 boost start -e local
 ```
 
-By default, the application will be available at `http://localhost:3000`
+By default, the application will be available at `http://localhost:3000`.
 
-optionally, you could also specify on which port you want your application to be running on with the option `-p <port-number>`:
+Optionally, you could also specify on which port you want your application to be running on with the option `-p <port-number>`:
 
 ```bash
 boost start -e local -p 3333
 ```
 
-After a few seconds, the Booster application should be ready at `http://localhost:<port-number>`
+After a few seconds, the Booster application should be ready at `http://localhost:<port-number>`.
 
 There will be two different endpoints available for our application:
 
@@ -2671,7 +2671,7 @@ There will be two different endpoints available for our application:
 
 #### Performing Auth requests
 
-Booster also provides you with user management for free, allowing you to sign-up, confirm and sign-in users. An example of a sign up would be as follow:
+The local provider also delivers user management for free, allowing you to sign-up, confirm and sign-in users. An example of a sign up would be as follow:
 
 `POST http://localhost:3000/auth/sign-up`
 
@@ -2714,6 +2714,7 @@ Variables
 The databases for the local provider are just json files in the `<project-root>/.booster` folder. If you are wondering what data is available in the application you will only need to chose what file to look into.
 
 ### Testing Booster applications
+
 To properly test a Booster application, you should create a `test` folder at the same level as the `src` one (check the generated `tsconfig.json` for more information). Apart from that, tests' names should have the `<my_test>.test.ts` format.
 
 When a Booster application is generated, you will have a script in a `package.json` like this:
@@ -2731,7 +2732,7 @@ The only thing that you should add to this line are the `AWS_SDK_LOAD_CONFIG=tru
 }
 ```
 
-#### Testing with sinon-chai
+#### Testing with `sinon-chai`
 The `BoosterConfig` can be accessed through the `Booster.config` on any part of a Booster application. To properly mock it for your objective, we really recommend to use sinon `replace` method, after configuring your `Booster.config` as desired.
 
 In the example below, we add 2 "empty" read-models, since we are iterating `Booster.config.readModels` from a command handler:
@@ -2800,13 +2801,12 @@ bail: true
 
 ### Booster examples
 
+In the [examples directory](https://github.com/boostercloud/booster/tree/main/docs/examples) you can find some example apps you can check.
+
 ## Frequently Asked Questions
 
 **1.- When deploying my application in AWS for the first time, I got an error saying _"StagingBucket <your app name>-toolkit-bucket already exists"_**
 
-When you deploy a Booster application to AWS, an S3 bucket needs to be created to upload the application code. Booster names that bucket
-using your application name as a prefix.
-In AWS, bucket names must be unique _globally_, so if there is another bucket in the world with exactly the same name as
-the one generated for your application, you will get this error.
+When you deploy a Booster application to AWS, an S3 bucket needs to be created to upload the application code. Booster names that bucket using your application name as a prefix. In AWS, bucket names must be unique _globally_, so if there is another bucket in the world with exactly the same name as the one generated for your application, you will get this error.
 
-The solution is to change your application name in the configuration file so that the bucket name is unique.
+The solution is to **change your application name in the configuration file so that the bucket name is unique.**
