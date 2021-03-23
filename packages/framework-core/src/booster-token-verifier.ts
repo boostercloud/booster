@@ -43,18 +43,17 @@ export class BoosterTokenVerifier {
         })
       }
 
-      let keyVerifier: jwt.Secret | jwt.GetPublicKeyOrSecret = getKey
+      let keys: jwt.Secret | jwt.GetPublicKeyOrSecret = getKey
       if (!this.client) {
-        if (this.config.tokenVerifier?.cert) {
-          keyVerifier = this.config.tokenVerifier.cert
-        }
-        else {
+        if (this.config.tokenVerifier?.publicKey) {
+          keys = this.config.tokenVerifier.publicKey
+        } else {
           throw new Error('Token verifier not well configured')
         }
       }
-  
+
       token = this.sanitizeToken(token)
-      jwt.verify(token, keyVerifier, this.options, (err: Error | null, decoded: object | undefined) => {
+      jwt.verify(token, keys, this.options, (err: Error | null, decoded: object | undefined) => {
         if (err) {
           return reject(err)
         }
