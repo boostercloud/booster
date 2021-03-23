@@ -351,7 +351,7 @@ something like
 
 ```shell
 $ boost version
-@boostercloud/cli/0.4.1 darwin-x64 node-v13.12.0
+@boostercloud/cli/0.12.3 darwin-x64 node-v14.0.0
 ```
 
 ### Your first Booster app in 10 minutes
@@ -399,7 +399,7 @@ parameters are as follows:
 - License: MIT
 - Version: 0.1.0
 
-If you prefer to specify each parameter without following the instructions, you can use the following flags with this structure `<flag>=<parameter>`.
+In case you want to specify each parameter without following the instructions, you can use the following flags with this structure `<flag>=<parameter>`.
 
 | Flag                    | Short version | Description                                                                                     |
 | :---------------------- | :------------ | :---------------------------------------------------------------------------------------------- |
@@ -691,6 +691,12 @@ boost deploy -e production
   so, build command it's not required beforehand.
   
 > With `-e production` we are specifying which environment we want to deploy. We'll talk about them later.
+
+And here it comes the Booster magic! ✨ When running the deploy command, Booster will handle the creation of all the resources, *like Lambdas, API Gateway,* and the "glue" between them; *permissions, events, triggers, etc.* It even creates a fully functional GraphQL API!
+
+*If at this point you still don’t believe everything is done, feel free to check in your provider’s console. You should see, as in the AWS example below, that the stack and all the services are up and running!* 🚀
+
+![resources](./img/aws-resources.png)
 
 It will take a couple of minutes to deploy all the resources. Once finished, you will see
 information about your application endpoints and other outputs. For this example, we will
