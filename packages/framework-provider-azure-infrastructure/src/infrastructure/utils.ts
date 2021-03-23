@@ -88,6 +88,10 @@ export async function deployFunctionPackage(
   password: string,
   functionAppName: string
 ): Promise<any> {
+  needle.defaults({
+    open_timeout: 0,
+  })
+
   return needle(
     'post',
     `https://${functionAppName}.scm.azurewebsites.net/api/zipDeploy`,
