@@ -31,6 +31,7 @@ describe('Users Dapr interaction inside the cluster', () => {
       eventStoreUsername: internet.userName(),
       eventStorePassword: internet.password(),
     })
+    stub(daprManager, 'getEventStorePassword').resolves('awesomePass')
     stub(daprManager, 'createDaprComponentFile').resolves
     stub(daprManager, 'readDaprComponentDirectory').resolves(['statestore.yaml'])
     stub(k8sManager, 'execRawCommand').resolves({ stdout: '' })
@@ -45,6 +46,7 @@ describe('Users Dapr interaction inside the cluster', () => {
       eventStoreUsername: internet.userName(),
       eventStorePassword: internet.password(),
     })
+    stub(daprManager, 'getEventStorePassword').resolves('awesomePass')
     stub(daprManager, 'createDaprComponentFile').resolves
     stub(daprManager, 'readDaprComponentDirectory').resolves(['statestore.yaml'])
     stub(k8sManager, 'execRawCommand').resolves({ stderr: 'error!!' })
