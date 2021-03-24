@@ -6,7 +6,6 @@ import 'reflect-metadata'
 export function getPropertiesMetadata(classType: Class<any>): Array<PropertyMetadata> {
   const meta: ClassMetadata = Reflect.getMetadata('booster:typeinfo', classType)
   if (!meta) {
-    // eslint-disable-next-line prettier/prettier
     throw new Error(`Could not get proper metadata information of ${classType.name}`)
   }
 
