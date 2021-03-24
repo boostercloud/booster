@@ -121,9 +121,10 @@ export class Booster {
   /** @deprecated Use method "entity" instead */
   public static fetchEntitySnapshot<TEntity extends EntityInterface>(
     entityClass: Class<TEntity>,
-    entityID: UUID
+    entityID: UUID,
+    at?: Date
   ): Promise<TEntity | undefined> {
-    return this.entity(entityClass, entityID)
+    return this.entity(entityClass, entityID, at)
   }
 }
 

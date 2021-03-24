@@ -9,7 +9,11 @@ export interface BoosterApp {
   config: BoosterConfig
   configure(environment: string, configurator: (config: BoosterConfig) => void): void
   configureCurrentEnv(configurator: (config: BoosterConfig) => void): void
-  entity<TEntity extends EntityInterface>(entityName: Class<TEntity>, entityID: UUID): Promise<TEntity | undefined>
+  entity<TEntity extends EntityInterface>(
+    entityName: Class<TEntity>,
+    entityID: UUID,
+    at?: Date
+  ): Promise<TEntity | undefined>
   /** @deprecated use "entity" instead*/
   fetchEntitySnapshot<TEntity extends EntityInterface>(
     entityName: Class<TEntity>,

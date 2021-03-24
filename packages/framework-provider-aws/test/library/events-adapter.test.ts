@@ -58,6 +58,35 @@ describe('the events-adapter', () => {
         })
       )
     })
+
+    it('queries the events table to find all events related to a specific entity, between a range of dates', async () => {
+      const dynamoDB = createStubInstance(DynamoDB.DocumentClient)
+      dynamoDB.query = fake.returns({
+        promise: fake.resolves({
+          Items: [],
+        }),
+      }) as any
+      const config = new BoosterConfig('test')
+      const fromTime = new Date(0).toISOString()
+      const toTime = new Date().toISOString()
+      config.appName = 'nuke-button'
+
+      await Library.readEntityEventsSince(dynamoDB, config, fakeLogger, 'SomeEntity', 'someSpecialID', fromTime, toTime)
+
+      expect(dynamoDB.query).to.have.been.calledWith(
+        match({
+          TableName: 'nuke-button-app-events-store',
+          ConsistentRead: true,
+          KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey AND (${eventsStoreAttributes.sortKey} BETWEEN :fromTime AND :toTime)`,
+          ExpressionAttributeValues: {
+            ':partitionKey': partitionKeyForEvent('SomeEntity', 'someSpecialID'),
+            ':fromTime': fromTime,
+            ':toTime': toTime,
+          },
+          ScanIndexForward: true,
+        })
+      )
+    })
   })
 
   describe('the `readEntityLatestSnapshot` method', () => {
@@ -87,7 +116,7 @@ describe('the events-adapter', () => {
       const dynamoDB = createStubInstance(DynamoDB.DocumentClient)
       dynamoDB.query = fake.returns({ promise: fake.resolves('') }) as any
       const config = new BoosterConfig('test')
-      const at = new Date()
+      const at = new Date().toISOString()
       config.appName = 'nuke-button'
 
       await Library.readEntityLatestSnapshot(dynamoDB, config, fakeLogger, 'SomeEntity', 'someSpecialID', at)
@@ -96,10 +125,10 @@ describe('the events-adapter', () => {
         match({
           TableName: 'nuke-button-app-events-store',
           ConsistentRead: true,
-          KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey AND ${eventsStoreAttributes.sortKey} >= :at`,
+          KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey AND ${eventsStoreAttributes.sortKey} <= :at`,
           ExpressionAttributeValues: {
             ':partitionKey': partitionKeyForEvent('SomeEntity', 'someSpecialID', 'snapshot'),
-            ':at': at.toISOString(),
+            ':at': at,
           },
           ScanIndexForward: false,
           Limit: 1,

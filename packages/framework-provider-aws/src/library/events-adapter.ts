@@ -37,12 +37,14 @@ export async function readEntityEventsSince(
   to?: string
 ): Promise<Array<EventEnvelope>> {
   const fromTime = since ? since : originOfTime
-  const toTimeQuery = to ? ` AND ${eventsStoreAttributes.sortKey} <= :toTime` : ''
+  const timeQuery = to
+    ? `AND (${eventsStoreAttributes.sortKey} BETWEEN :fromTime AND :toTime)`
+    : `AND ${eventsStoreAttributes.sortKey} > :fromTime`
   const result = await dynamoDB
     .query({
       TableName: config.resourceNames.eventsStore,
       ConsistentRead: true,
-      KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey AND ${eventsStoreAttributes.sortKey} > :fromTime${toTimeQuery}`,
+      KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey ${timeQuery}`,
       ExpressionAttributeValues: {
         ':partitionKey': partitionKeyForEvent(entityTypeName, entityID),
         ':fromTime': fromTime,
