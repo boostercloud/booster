@@ -165,9 +165,7 @@ export class GraphQLQueryGenerator {
       property.typeInfo.parameters.forEach(() => {
         propFilters.includes = {
           ...propFilters.includes,
-          ...{
-            type: GraphQLJSONObject,
-          },
+          type: GraphQLJSONObject,
         }
       })
 
