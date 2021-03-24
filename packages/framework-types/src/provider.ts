@@ -33,14 +33,15 @@ export interface ProviderEventsLibrary {
     logger: Logger,
     entityTypeName: string,
     entityID: UUID,
-    since?: string
+    since?: string,
+    to?: string
   ): Promise<Array<EventEnvelope>>
   latestEntitySnapshot(
     config: BoosterConfig,
     logger: Logger,
     entityTypeName: string,
     entityID: UUID,
-    at?: Date
+    at?: string
   ): Promise<EventEnvelope | null>
   search(config: BoosterConfig, logger: Logger, filters: EventFilter): Promise<Array<EventSearchResponse>>
   /** Streams an event to the corresponding event handler */

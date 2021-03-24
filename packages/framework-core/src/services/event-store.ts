@@ -20,14 +20,14 @@ export class EventStore {
     this.logger = logger
   }
 
-  public async fetchEntitySnapshot(entityName: string, entityID: UUID, at?: Date): Promise<EventEnvelope | null> {
+  public async fetchEntitySnapshot(entityName: string, entityID: UUID, at?: string): Promise<EventEnvelope | null> {
     this.logger.debug(`[EventStore#fetchEntitySnapshot] Fetching snapshot for entity ${entityName} with ID ${entityID}`)
     const snapshotEnvelope = await this.loadSnapshot(entityName, entityID, at)
 
     // eslint-disable-next-line @typescript-eslint/no-extra-parens
     const lastVisitedTime = snapshotEnvelope?.snapshottedEventCreatedAt ?? originOfTime
 
-    const pendingEvents = await this.loadEventStreamSince(entityName, entityID, lastVisitedTime)
+    const pendingEvents = await this.loadEventStream(entityName, entityID, lastVisitedTime, at)
 
     if (pendingEvents.length <= 0) {
       return snapshotEnvelope
@@ -80,18 +80,34 @@ export class EventStore {
     return this.provider.events.store([snapshot], this.config, this.logger)
   }
 
-  private loadSnapshot(entityName: string, entityID: UUID, at?: Date): Promise<EventEnvelope | null> {
+  /**
+   * Get the latest snapshot available.
+   * Optionally, you can retrieve the latest snapshot available at a specific point in time.
+   * @param entityName The entity class we want the snapshot from
+   * @param entityID The specific entity id we want the snapshot from
+   * @param at (optional) Retrieve a snapshot from the past at a specific point in time
+   */
+  private loadSnapshot(entityName: string, entityID: UUID, at?: string): Promise<EventEnvelope | null> {
     this.logger.debug(
       `[EventStore#loadLatestSnapshot] Loading latest snapshot for entity ${entityName} and ID ${entityID}`
     )
     return this.provider.events.latestEntitySnapshot(this.config, this.logger, entityName, entityID, at)
   }
 
-  private loadEventStreamSince(entityTypeName: string, entityID: UUID, timestamp: string): Promise<EventEnvelope[]> {
+  /**
+   * Retrieves events from a specific point in time.
+   * Optionally, it can also retrieve events in a time range: from < events.createdAt < to
+   * @param entityTypeName The entity class we want to retrieve events from
+   * @param entityID The specific entity instance we want to retrieve events from
+   * @param from The point in time from which the events are going to be retrieved
+   * @param to (optional) At which point in time we stop retrieving events
+   * Full example: Get events from the Cart entity with id 1112 from 1 month ago to 2 weeks ago
+   */
+  private loadEventStream(entityTypeName: string, entityID: UUID, from: string, to?: string): Promise<EventEnvelope[]> {
     this.logger.debug(
-      `[EventStore#loadEventStreamSince] Loading list of pending events for entity ${entityTypeName} with ID ${entityID} since ${timestamp}`
+      `[EventStore#loadEventStreamSince] Loading list of pending events for entity ${entityTypeName} with ID ${entityID} since ${from}`
     )
-    return this.provider.events.forEntitySince(this.config, this.logger, entityTypeName, entityID, timestamp)
+    return this.provider.events.forEntitySince(this.config, this.logger, entityTypeName, entityID, from, to)
   }
 
   private entityReducer(latestSnapshot: EventEnvelope | null, eventEnvelope: EventEnvelope): EventEnvelope {

@@ -33,17 +33,20 @@ export async function readEntityEventsSince(
   logger: Logger,
   entityTypeName: string,
   entityID: UUID,
-  since?: string
+  since?: string,
+  to?: string
 ): Promise<Array<EventEnvelope>> {
   const fromTime = since ? since : originOfTime
+  const toTimeQuery = to ? ` AND ${eventsStoreAttributes.sortKey} <= :toTime` : ''
   const result = await dynamoDB
     .query({
       TableName: config.resourceNames.eventsStore,
       ConsistentRead: true,
-      KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey AND ${eventsStoreAttributes.sortKey} > :fromTime`,
+      KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey AND ${eventsStoreAttributes.sortKey} > :fromTime${toTimeQuery}`,
       ExpressionAttributeValues: {
         ':partitionKey': partitionKeyForEvent(entityTypeName, entityID),
         ':fromTime': fromTime,
+        ':toTime': to,
       },
       ScanIndexForward: true, // Ascending order (older timestamps first)
     })
@@ -61,9 +64,9 @@ export async function readEntityLatestSnapshot(
   logger: Logger,
   entityTypeName: string,
   entityID: UUID,
-  at?: Date
+  at?: string
 ): Promise<EventEnvelope | null> {
-  const atQuery = at ? ` AND ${eventsStoreAttributes.sortKey} >= :at` : ''
+  const atQuery = at ? ` AND ${eventsStoreAttributes.sortKey} <= :at` : ''
   const result = await dynamoDB
     .query({
       TableName: config.resourceNames.eventsStore,
@@ -71,7 +74,7 @@ export async function readEntityLatestSnapshot(
       KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey${atQuery}`,
       ExpressionAttributeValues: {
         ':partitionKey': partitionKeyForEvent(entityTypeName, entityID, 'snapshot'),
-        ':at': at?.toISOString(),
+        ':at': at,
       },
       ScanIndexForward: false, // Descending order (newer timestamps first),
       Limit: 1,

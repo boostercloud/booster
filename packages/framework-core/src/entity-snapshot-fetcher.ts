@@ -9,6 +9,6 @@ export async function fetchEntitySnapshot<TEntity extends EntityInterface>(
   at?: Date
 ): Promise<TEntity | undefined> {
   const eventStore = new EventStore(config, logger)
-  const entitySnapshotEnvelope = await eventStore.fetchEntitySnapshot(entityClass.name, entityID, at)
+  const entitySnapshotEnvelope = await eventStore.fetchEntitySnapshot(entityClass.name, entityID, at?.toISOString())
   return entitySnapshotEnvelope?.value as TEntity
 }
