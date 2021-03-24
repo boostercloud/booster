@@ -3,6 +3,8 @@ import fetch from 'node-fetch'
 import * as redis from 'redis'
 
 export class RedisAdapter {
+  public static keySeparator: string = '_____'
+
   private _client?: redis.RedisClient
   constructor(readonly daprUrl: string, readonly redisUrl: string) {}
 
@@ -65,4 +67,5 @@ export class RedisAdapter {
     logger.debug(response)
     logger.debug('END RedisAdapter setViaRedis')
   }
+
 }

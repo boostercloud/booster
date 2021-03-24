@@ -71,6 +71,6 @@ export class EventRegistry {
       event.createdAt, // timespan
       UUID.generate(), // hash to make key unique
     ]
-    return keyParts.join('_')
+    return keyParts.join(RedisAdapter.keySeparator)
   }
 }

@@ -85,18 +85,9 @@
   - [Extending Booster with Rockets!](#extending-booster-with-rockets)
     - [Naming recommendations](#naming-recommendations)
     - [Infrastructure extensions](#infrastructure-extensions)
-    - [Runtime extensions (Not yet implemented)](#runtime-extensions-not-yet-implemented)
-    - [Deploy and init hooks (Not yet implemented)](#deploy-and-init-hooks-not-yet-implemented)
     - [Booster Rockets list](#booster-rockets-list)
-- [Debugging and testing Booster applications](#debugging-and-testing-booster-applications)
-  - [Running Booster applications locally](#running-booster-applications-locally)
-    - [Local development prerequisites](#local-development-prerequisites)
-    - [Starting your application](#starting-your-application)
-    - [Performing Auth requests](#performing-auth-requests)
-    - [Performing GraphQL requests](#performing-graphql-requests)
-    - [Inspect Database information](#inspect-database-information)
-  - [Testing Booster applications](#testing-booster-applications)
-  - [Booster examples](#booster-examples)
+- [Testing Booster applications](#testing-booster-applications)
+- [Booster examples](#booster-examples)
 - [Frequently Asked Questions](#frequently-asked-questions)
 
 <!-- tocstop -->
@@ -253,8 +244,8 @@ will be deployed to the cloud using different cloud providers. By default, Boost
 this step if you only want to get a grip of Booster or test it locally without making a
 deployment.
 
-Note:
-
+> **Note**:
+>
 > Booster is free to use, but notice that the resources deployed to your cloud provider
 > might generate some expenses.
 >
@@ -764,9 +755,7 @@ The expected response for each of those requests should be:
 }
 ```
 
-Note:
-
-> In this example, the IDs are generated on the client-side. When running production applications
+> **Note**: In this example, the IDs are generated on the client-side. When running production applications
 > consider adding validation for ID uniqueness. For this example, we have used [a UUID generator](https://www.uuidgenerator.net/version4)
 
 ##### 7.2 Retrieving all posts
@@ -938,9 +927,9 @@ boost new:command CreateProduct --fields sku:SKU displayName:string description:
 
 The generator will automatically create a file called `create-product.ts` with a TypeScript class of the same name under the `commands` directory. You can still create (or modify) the command manually. Since the generator is not doing any _magic_, all you need is a class decorated as `@Command`. Anyway, we recommend you always to use the generator, because it handles the boilerplate code for you.
 
-Note:
 
-> Generating a command with the same name as an already existing one will prompt the user for confirmation.
+
+> **Note**: Generating a command with the same name as an already existing one will prompt the user for confirmation.
 
 #### The command handler function
 
@@ -1174,9 +1163,9 @@ export class CartPaid {
 
 An event has to know the ID of the entity it belongs to and you need to implement the `entityID` method to return it. You can inject the entity ID directly in the event's constructor or as a nested attribute. If your domain requires a _singleton_ entity, where there's only one instance, you can return a constant value. In the `CartPaid` example, the entity ID (`cartID`) is injected directly.
 
-Note:
 
-> The `entityID` method must always return the same value for the same event's instance. Otherwise, the result of the entity reduction will be unpredictable.
+
+> **Note**: The `entityID` method must always return the same value for the same event's instance. Otherwise, the result of the entity reduction will be unpredictable.
 
 #### Events naming convention
 
@@ -1212,9 +1201,7 @@ boost new:event StockMoved --fields productID:string origin:string destination:s
 
 That will generate a file called `stock-moved.ts` under the proper `<project-root>/src/events` directory. You can also create the file manually, but we recommend using the generator and avoid dealing manually with boilerplate code.
 
-Note:
-
-> Generating an event with the same name as an already existing one will prompt the user for confirmation.
+> **Note**: Generating an event with the same name as an already existing one will prompt the user for confirmation.
 
 #### Registering events in the event store
 
@@ -1394,9 +1381,9 @@ boost new:entity Product --fields displayName:string description:string price:Mo
 
 The generator will automatically create a file called `product.ts` with a TypeScript class of the same name under the `entities` directory. You can still create the entity manually, writing a class decorated with `@Entity`. Anyway, we recommend you always to use the generator because it handles the boilerplate code for you.
 
-Note:
 
-> Generating an entity with the same name as an already existing one will prompt the user for confirmation.
+
+> **Note**: Generating an entity with the same name as an already existing one will prompt the user for confirmation.
 
 #### The reducer function
 
@@ -1653,7 +1640,7 @@ Roles are classes annotated with the `@Role` decorator, where you can specify so
 
 _Note: There is no `Admin` user by default. In order to register one you need to specify a sign-up method on `src/roles.ts`._
 
-In the following example we define two roles, `Admin` and `User`:
+In the following example we define `Admin`, `User`, `SuperUser` and `SuperUserWithoutConfirmation` roles. They all contain an `auth` attribute which contains a `signUpMethods` and `skipConfirmation` attributes.
 
 ```typescript
 // src/roles.ts
@@ -1690,8 +1677,6 @@ export class SuperUser {}
 })
 export class SuperUserWithoutConfirmation {}
 ```
-
-Here, we have defined the `Admin`, `User`, `SuperUser` and `SuperUserWithoutConfirmation` roles. They all contain an `auth` attribute which contains a `signUpMethods` and `skipConfirmation` attributes.
 
 When `signUpMethods` is empty (`Admin` role) or is not specified, a user can't use this role to sign up.
 `signUpMethods` is an array with limited possible values: `email`, `phone` or a combination of both.
@@ -1780,9 +1765,9 @@ Authorization: Bearer <your JWT token>
 
 This is the main API of your application, as it allows you to:
 
-- _Modify_ data by **sending commands**
-- _Read_ data by **querying read models**
-- _Receive data in real time_ by **subscribing to read models**
+- _Modify_ data by **sending commands**.
+- _Read_ data by **querying read models**.
+- _Receive data in real time_ by **subscribing to read models**.
 
 All this is done through [GraphQL](https://graphql.org/), a query language for APIs that has useful advantages over simple REST APIs.
 
@@ -1802,16 +1787,16 @@ data on-demand, and a `subscription` when you want to receive data at the moment
 
 Knowing this, you can infer the relationship between those operations and your Booster components:
 
-- You _send_ a **command** using a **mutation**
-- You _read_ a **read model** using a **query**
-- You _subscribe_ to a **read model** using a **subscription**
+- You _send_ a **command** using a **mutation**.
+- You _read_ a **read model** using a **query**.
+- You _subscribe_ to a **read model** using a **subscription**.
 
 #### How to send GraphQL request
 
 GraphQL uses two existing protocols:
 
-- _HTTP_ for `mutation` and `query` operations
-- _WebSocket_ for `subscription` operations
+- _HTTP_ for `mutation` and `query` operations.
+- _WebSocket_ for `subscription` operations.
 
 The reason for the WebSocket protocol is that, in order for subscriptions to work, there must be a way for the server to send data to clients when it is changed. HTTP doesn't allow that, as it is the client the one which always initiates the request.
 
@@ -1822,7 +1807,7 @@ Therefore:
 - To send a GraphQL mutation/query, you send an HTTP request to _"&lt;graphqlURL&gt;"_, with _method POST_, and a _JSON-encoded body_ with the mutation/query details.
 - To send a GraphQL subscription, you first connect to the _"&lt;websocketURL&gt;"_, and then send a _JSON-encoded message_ with the subscription details, _following [the "GraphQL over WebSocket" protocol](#the-graphql-over-websocket-protocol)_.
 
-> Note: you can also **send queries and mutations through the WebSocket** if that's convenient to you. See ["The GraphQL over WebSocket protocol"](#the-graphql-over-websocket-protocol) to know more.
+> **Note**: you can also **send queries and mutations through the WebSocket** if that's convenient to you. See ["The GraphQL over WebSocket protocol"](#the-graphql-over-websocket-protocol) to know more.
 
 While it is OK to know how to manually send GraphQL request, you normally don't need to deal with this low-level details, especially with the WebSocket stuff.
 
@@ -1837,7 +1822,7 @@ After deploying your application with the command `boost deploy -e development`,
 
 `https://<base_url>/<environment>/graphql`
 
-By entering this url in Hoppscotch, the schema can be displayed as shown in the screenshot (You need to select GraphQL mode in the left bar of the tool, fill in the URL and press the button):
+By entering this URL in Hoppscotch, the schema can be displayed as shown in the screenshot (You need to select GraphQL mode in the left bar of the tool, fill in the URL and press the button):
 
 ![hoppscotch screenshot](./img/postwoman-screenshot.png)
 
@@ -1972,7 +1957,7 @@ Before sending any subscription, you need to _connect_ to the WebSocket to open 
 
 Once you have connected successfully, you can use this channel to:
 
-- Send the subscription messages
+- Send the subscription messages.
 - Listen for messages sent by the server with data corresponding to your active subscriptions.
 
 The structure of the "subscription" (the body of the message) is exactly the same as the "query" operation:
@@ -1991,8 +1976,7 @@ Where:
 - _&lt;id of the read model&gt;_ is the ID of the specific read model instance you are interested in.
 - _selection_field_list_ is a list with the names of the specific read model fields you want to get when data is sent back to you.
 
-In the following examples we use [`wscat`](https://github.com/websockets/wscat) to connect to the web socket. After that, we send the required messages to conform the [_GraphQL over WebSocket_ protocol](#the-graphql-over-websocket-protocol), including the subscription operation
-to the read model `CartReadModel` with ID `demo`.
+In the following examples we use [`wscat`](https://github.com/websockets/wscat) to connect to the web socket. After that, we send the required messages to conform the [_GraphQL over WebSocket_ protocol](#the-graphql-over-websocket-protocol), including the subscription operation to the read model `CartReadModel` with ID `demo`.
 
 1. Connect to the web socket:
 
@@ -2022,12 +2006,9 @@ In case you want to authorize the connection, you need to send the authorization
 { "id": "1", "type": "start", "payload": { "query": "subscription { CartReadModel(id:\"demo\") { id items } }" } }
 ```
 
-After a successful subscription, you won't receive anything in return. Now, every time the read model you subscribed to
-is modified, a new incoming message will appear in the socket with the updated version of the read model. This message
-will have exactly the same format as if you were done a query with the same parameters.
+After a successful subscription, you won't receive anything in return. Now, every time the read model you subscribed to is modified, a new incoming message will appear in the socket with the updated version of the read model. This message will have exactly the same format as if you were done a query with the same parameters.
 
-Following with the previous example, we now send a command (using a mutation operation) that adds
-a new item with sku "ABC_02" to the `CartReadModel`. After it has been added, we receive the updated version of the read model through the socket.
+Following with the previous example, we now send a command (using a mutation operation) that adds a new item with sku "ABC_02" to the `CartReadModel`. After it has been added, we receive the updated version of the read model through the socket.
 
 1. Send the following command (this time using an HTTP request):
 
@@ -2071,15 +2052,13 @@ mutation {
 
 #### Using Apollo Client
 
-One of the best clients to connect to a GraphQL API is the [Apollo](https://www.apollographql.com/) client.
-There will probably be a version for your client technology of choice. These are the main ones:
+One of the best clients to connect to a GraphQL API is the [Apollo](https://www.apollographql.com/) client. There will probably be a version for your client technology of choice. These are the main ones:
 
 - [For Javascript/Typescript](https://www.apollographql.com/docs/react/) ([Github](https://github.com/apollographql/apollo-client))
 - [For iOS](https://www.apollographql.com/docs/ios/) ([Github)](https://github.com/apollographql/apollo-ios))
 - [For Java/Kotlin/Android](https://www.apollographql.com/docs/android/) ([Github](https://github.com/apollographql/apollo-android))
 
-We recommend referring to the documentation of those clients to know how to
-use them. Here is an example of how to fully instantiate the Javascript client so that it works for queries, mutations and subscriptions:
+We recommend referring to the documentation of those clients to know how to use them. Here is an example of how to fully instantiate the Javascript client so that it works for queries, mutations and subscriptions:
 
 ```typescript
 import { split, HttpLink } from '@apollo/client'
@@ -2173,9 +2152,9 @@ subscriptionOperation.subscribe({
 
 #### Authorizing operations
 
-When you have a command or read model whose access is authorized to users with a specific set of roles (see [Authentication and Authorization](#authentication-and-authorization)), you need to use an authorization token when sending queries, mutations or subscriptions to that command or read model. You can use Authentication Rocket to authorize operations, see its [documentation](https://github.com/boostercloud/rocket-auth-aws-infrastructure) and, more especifically, the [Sign in](https://github.com/boostercloud/rocket-auth-aws-infrastructure#sign-in) section to know how to get a token.
+When you have a command or read model whose access is authorized to users with a specific set of roles (see [Authentication and Authorization](#authentication-and-authorization)), you need to use an authorization token to send queries, mutations or subscriptions to that command or read model. 
 
-Once you have a token, the way to send it varies depending on the protocol you are using to send GraphQL operations:
+You can use Authentication Rocket to authorize operations, see its [documentation](https://github.com/boostercloud/rocket-auth-aws-infrastructure) and, more especifically, the [Sign in](https://github.com/boostercloud/rocket-auth-aws-infrastructure#sign-in) section to know how to get a token. Once you have a token, the way to send it varies depending on the protocol you are using to send GraphQL operations:
 
 - For **HTTP**, you need to send the HTTP header `Authorization` with the token, making sure you prefix it with `Bearer` (the kind of token Booster uses). For example:
 
@@ -2193,13 +2172,14 @@ You normally won't be sending tokens in such a low-level way. GraphQL clients ha
 
 ##### Sending tokens with Apollo clients
 
-We recommend going to the specific documentation of the specific Apollo client you are using to know how to send tokens. However, the basics remains the same. Here is an example of how you would configure the Javascript/Typescript Apollo client to send the authorization token. The example is exactly the same as the one shown in the [Using Apollo clients](#using-apollo-client) section but with the changes needed to send the token. Notice that `<AuthApiEndpoint>` and `<idToken>` are obtained from the [Authentication Rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure).
+We recommend going to the specific documentation of the specific Apollo client you are using to know how to send tokens. However, the basics of this guide remains the same. Here is an example of how you would configure the Javascript/Typescript Apollo client to send the authorization token. The example is exactly the same as the one shown in the [Using Apollo clients](#using-apollo-client) section, but with the changes needed to send the token. Notice that `<AuthApiEndpoint>` and `<idToken>` are obtained from the [Authentication Rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure).
 
 ```typescript
-import { split, HttpLink } from '@apollo/client'
+import { split, HttpLink, ApolloLink } from '@apollo/client'
 import { getMainDefinition } from '@apollo/client/utilities'
 import { WebSocketLink } from '@apollo/client/link/ws'
 import { ApolloClient, InMemoryCache } from '@apollo/client'
+import { SubscriptionClient } from 'subscriptions-transport-ws'
 
 function isSubscriptionOperation({ query }) {
   const definition = getMainDefinition(query)
@@ -2252,10 +2232,11 @@ There are several ways to do this. Here we show the simplest one for learning pu
 First, we modify the example shown in the section [Sending tokens with apollo clients](#sending-tokens-with-apollo-clients) so that the token is stored in a global variable and the Apollo links get the token from it. That variable will be updated when the user signs-in and the token is refreshed:
 
 ```typescript
-import { split, HttpLink } from '@apollo/client'
+import { split, HttpLink, ApolloLink } from '@apollo/client'
 import { getMainDefinition } from '@apollo/client/utilities'
 import { WebSocketLink } from '@apollo/client/link/ws'
 import { ApolloClient, InMemoryCache } from '@apollo/client'
+import { SubscriptionClient } from 'subscriptions-transport-ws'
 
 let authToken = undefined // <-- CHANGED: This variable will hold the token and will be updated everytime the token is refreshed
 
@@ -2306,19 +2287,19 @@ const client = new ApolloClient({
 Now, _when the user signs-in_ or _when the token is refreshed_, we need to do two things:
 
 1. Update the global variable `authToken` with the new token.
-2. Reconnect the socket used by the subscription client by doing `subscriptionClient.close(false)`
+2. Reconnect the socket used by the subscription client by doing `subscriptionClient.close(false)`.
 
 You might be wondering why we need to do the second step. The reason is that, with operations sent through HTTP, the token goes along with every operation, in the headers. However, with operations sent through WebSockets, like subscriptions, the token is only sent when the socket connection is established. For this reason, **everytime we update the token we need to reconnect the `SubscriptionClient`** so that it sends again the token (the updated one in this case).
 
 #### The GraphQL over WebSocket protocol
 
-Sockets are channels for two-way communication that doesn't follow the request-response cycle, a characteristic feature of the HTTP protocol. One part can send many messages and the other part could receive all of them but only answer to some specific ones. What is more, messages could come in any order. For example, one part can send two messages and receive the response of the second message before the response of the first message.
+Sockets are channels for two-way communication that doesn't follow the request-response cycle, a characteristic feature of the HTTP protocol. One part can send many messages and the other part can receive all of them but only answer to some specific ones. What is more, messages could come in any order. For example, one part can send two messages and receive the response of the second message before the response of the first message.
 
 For these reasons, in order to have an effective non-trivial communication through sockets, a sub-protocol is needed. It would be in charge of making both parts understand each other, share authentication tokens, matching response to the corresponding requests, etc.
 
 The Booster WebSocket communication uses the "GraphQL over WebSocket" protocol as subprotocol. It is in charge of all the low level stuff needed to properly send subscription operations to read models and receive the corresponding data.
 
-You don't need to know anything about this to develop usin Booster, neither in the backend side nor in the frontend side (as all the Apollo GraphQL clients uses this protocol), but it is good to know it is there to guarantee a proper communication. In case you are really curious, you can read about the protocol [here](https://github.com/apollographql/subscriptions-transport-ws/blob/master/PROTOCOL.md)
+You don't need to know anything about this to develop using Booster, neither in the backend side nor in the frontend side (as all the Apollo GraphQL clients uses this protocol), but it is good to know it is there to guarantee a proper communication. In case you are really curious, you can read about the protocol [here](https://github.com/apollographql/subscriptions-transport-ws/blob/master/PROTOCOL.md).
 
 > **Note**: The WebSocket communication in Booster only supports this subprotocol, whose identifier is `graphql-ws`. For this reason, when you connect to the WebSocket provisioned by Booster, you must specify the `graphql-ws` subprotocol. If not, the connection won't succeed.
 
@@ -2354,7 +2335,7 @@ To deploy your Booster project, run the following command:
 boost deploy -e <environment name>
 ```
 
-**Note**: All you have in your project root will be deployed to the cloud provider, so if for example you have an additional frontend project, you should move it to another place because the cloud providers usually have a limited capacity for only code.
+> **Note**: All you have in your project root will be deployed to the cloud provider, so if for example you have an additional frontend project, you should move it to another place because the cloud providers usually have a limited capacity for only code.
 
 The `<environment name>` parameter is the name of the [environment](#environments) you want to deploy.
 It will take a while, but you should have your project deployed to your cloud provider.
@@ -2381,11 +2362,11 @@ If you want to delete the Booster application that has been deployed, you can ru
 boost nuke -e <environment name>
 ```
 
-**Note**: This will delete everything in your stack, including databases. This action is **not** reversible!
+> **Note**: This will delete everything in your stack, including databases. This action is **not** reversible!
 
 For a force delete without asking for confirmation, you can run `boost nuke -e <environment name> -f`.
 
-**Note**: Be EXTRA CAUTIOUS with this option, all your application data will be irreversibly DELETED without confirmation.
+> **Note**: Be EXTRA CAUTIOUS with this option, all your application data will be irreversibly DELETED without confirmation.
 
 ## Going deeper with Booster
 
@@ -2454,7 +2435,7 @@ The following is the list of the fields you can configure:
 
 - **provider:** This field contains the provider library instance that Booster will use when deploying or running your application.
 
-_**Note:** So far, there is only one provider fully supported in Booster yet, @boostercloud/framework-provider-aws, and it is probably the one you have already set if you used the generator to create your project. The team is currently working on providers for local development, Azure, and Kubernetes._
+> **Note:** So far, there is only one provider fully supported in Booster yet, @boostercloud/framework-provider-aws, and it is probably the one you have already set if you used the generator to create your project. The team is currently working on providers for local development, Azure, and Kubernetes._
 
 - **assets**: This is an array of _relative_ paths from the root of the project pointing to files and folders with static assets. They will be included among the deployed files to the cloud provider.
   For example, imagine you are using the "dotenv" module so that all the environment variables you have in your `.env` files are loaded into memory in runtime. In order for this to work, you need to include your `.env` files as assets of your project, so that they are included when deploying. Assuming you only have a `.env` file in the root of your project, you should add the following to your configuration:
@@ -2518,25 +2499,25 @@ The only thing you need to do to deploy a whole new completely-independent copy 
 
 ### Extending Booster with Rockets!
 
-You can extend Booster creating rockets. A rocket is just an node package that implements the public Booster rocket interfaces. You can use them for many things:
+You can extend Booster by creating rockets. A rocket is just a node package that implements the public Booster rocket interfaces. You can use them for many things:
 
 1. Extend your infrastructure (Currently, only in AWS): You can write a rocket that adds provider resources to your application stack.
-2. Runtime extensions (Not yet implemented): Add new annotations and interfaces, that combined with infrastructure extensions, could implement new abstractions on top of highly requested use cases.
+2. Runtime extensions (Not yet implemented): Add new annotations and interfaces, which combined with infrastructure extensions, could implement new abstractions on top of highly requested use cases.
 3. Deploy and init hooks (Not yet implemented): Run custom scripts before or after deployment, or before a Booster application is loaded.
 
 This extension mechanism is very new, but we're planning to port most of the functionality as rockets. This has two benefits:
 
-- Composability: You can use the default rockets or configure your application to fit your needs without adding anything extra.
-- Easier to manage feature sets in different providers: It would be really hard for the core team and contributors to implement and test every new feature in every supported provider, so providing the functionality as rockets, you'll have access to the most advanced features for your provider faster, and the rockets library can be built on-demand for each provider.
+- Composability: You can use the default rockets or configure your application to suit your needs without adding anything extra.
+- Easier to manage feature sets in different providers: It would be really hard for the core team and contributors to implement and test every new feature in every supported provider, so by providing functionality like rockets, you'll have access to the most advanced features for your provider faster, and the rockets library can be built on-demand for each provider.
 
 #### Naming recommendations
 
-There are no restrictions on how you name your rocket packages, but we propose the following name convention to make it easier to find your extensions in the vast npm library and find related packages (code and infrastructure extensions cant be distributed in the same package).
+There are no restrictions on how you name your rocket packages, but we propose the following naming convention to make it easier to find your extensions in the vast npm library and find related packages (code and infrastructure extensions cannot be distributed in the same package).
 
 - `rocket-{rocket-name}-{provider}`: A rocket that adds runtime functionality or init scripts. This code will be deployed along with your application code to the lambdas.
-- `rocket-{rocket-name}-{provider}-infrastructure`: A rocket that provides infrastructure extensions or implements deploy hooks. This code will only be used in developer's or CI/CD machines and won't be deployed to lambda with the rest of the application code.
+- `rocket-{rocket-name}-{provider}-infrastructure`: A rocket that provides infrastructure extensions or implements deploy hooks. This code will only be used on developer's or CI/CD systems machines and won't be deployed to lambda with the rest of the application code.
 
-Notice that some functionalities, for instance an S3 uploader, might require both runtime and infrastructure extensions. In these cases, the convention is to use the same name `rocket-name` and add the suffix `-infrastructure` to the infrastructure rocket. It's recommended, but not required to manage these dependant packages in a monorepo and make sure that versions match on every release.
+Notice that some functionalities, for instance an S3 uploader, might require both runtime and infrastructure extensions. In these cases, the convention is to use the same name `rocket-name` and add the suffix `-infrastructure` to the infrastructure rocket. It's recommended, but not required, to manage these dependent packages in a monorepo and ensure that the versions match on each release.
 
 If you want to support the same functionality in several providers, it could be handy to also have a package named `rocket-{rocket-name}-{provider}-core` where you can have cross-provider code that you can use from all the provider-specific implementations. For instance, a file uploader rocket that supports both AWS and Azure could have an structure like this:
 
@@ -2550,7 +2531,7 @@ If you want to support the same functionality in several providers, it could be 
 
 > Currently only available in AWS
 
-Infrastructure rocket interfaces are provider-dependant, so infrastructure rockets must import the corresponding booster infrastructure package for their choosen provider. For AWS, that's `@boostercloud/framework-provider-aws-infrastructure`. Notice that, as the only thing we use of that package is the `InfrastructureRocket` interface, you can import it as a dev dependency to avoid including that big package in your deployed lambdas. So you can start by creating a new package and adding this dependency:
+Infrastructure rocket interfaces are provider-dependant, so infrastructure rockets must import the corresponding booster infrastructure package for their chosen provider. For AWS, that's `@boostercloud/framework-provider-aws-infrastructure`. Notice that, as the only thing we use of that package is the `InfrastructureRocket` interface, you can import it as a dev dependency to avoid including that big package in your deployed lambdas. So you can start by creating a new package and adding this dependency:
 
 ```sh
 mkdir rocket-your-rocket-name-aws-infrastructure
@@ -2580,11 +2561,11 @@ const YourRocketInitializator = (params: YourRocketParams): InfrastructureRocket
 export default YourRocketInitializator
 ```
 
-In `mountStack` you will receive an initialized AWS CDK stack that you can use to append new resources. Check out [the Stack API in the official CDK documentation](https://docs.aws.amazon.com/cdk/latest/guide/stacks.html#stack_api). This is the same stack instance that Booster uses to deploy its resources, so your resources will be deployed automatically along with the Booster's ones in the same stack. Also you will receive the `config` object which includes properties of the Booster project that is about to be deployed.
+In `mountStack` you will receive an initialized AWS CDK stack that you can use to add new resources. Check out [the Stack API in the official CDK documentation](https://docs.aws.amazon.com/cdk/latest/guide/stacks.html#stack_api). This is the same stack instance that Booster uses to deploy its resources, so your resources will automatically be deployed along with the Booster's ones on the same stack. You will also receive the `config` object which includes properties of the Booster project that is about to be deployed.
 
-The application stack, including the resources added by your rocket are automatically nuked along with the application stack, but there are some situations on which it's convenient to delete or move the contents of the resources created by you. In the appl `unmountStack` you'll have the opportunity to run any code before deleting the stack. This function receives an `utils` object with the same tools that Booster uses to perform common actions like emptying the contents of an S3 bucket (Non-empty buckets are kept by default when a stack is deleted).
+When you nuke your Booster application, all the resources added by your rocket are automatically destroyed along with the application stack, but there are some situations on which it's convenient to delete or move the contents of the resources created by you. In the `unmountStack` function you'll have the opportunity to run any code before deleting the stack. This function receives an utils object with the same tools that Booster uses to perform common actions like emptying the contents of an S3 bucket (Non-empty buckets are kept by default when a stack is deleted).
 
-Notice that infrastructure rockets should not be included from within the application code to avoid including the CDK and other non-used dependencies in the lambdas, as there are some hard restrictions on code size in most platforms. That's why infrastructure rockets are loaded dynamically by Booster passing the packet names as strings in the application config file:
+Notice that infrastructure rockets should not be included from the application code to avoid including the CDK and other unused dependencies in the lambdas, as there are some strict restrictions on code size on most platforms. That's why infrastructure rockets are dynamically loaded by Booster passing the package names as strings in the application config file:
 
 _src/config/production.ts:_
 
@@ -2603,10 +2584,6 @@ Booster.configure('development', (config: BoosterConfig): void => {
 })
 ```
 
-#### Runtime extensions (Not yet implemented)
-
-#### Deploy and init hooks (Not yet implemented)
-
 #### Booster Rockets list
 
 Here you can find the official Booster Rockets developed at this time:
@@ -2615,106 +2592,9 @@ Here you can find the official Booster Rockets developed at this time:
 - [Backup Booster Rocket for AWS](https://github.com/boostercloud/rocket-backup-aws-infrastructure)
 - [Static Sites Booster Rocket for AWS](https://github.com/boostercloud/rocket-static-sites-aws-infrastructure)
 
-## Debugging and testing Booster applications
+## Testing Booster applications
 
-### Running Booster applications locally
-
-While Booster is designed to deploy your applications to a cloud provider, having the ability to run your code locally speeds-up dramatically the feedback loop and allows developers to view application logs in the terminal.
-
-The Booster approach to run cloud applications locally is very different from the route taken by other major cloud frameworks, we don't try to replicate the cloud services in your machine, but simulate how the code runs in the cloud in a very light local environment based on node and express.js. This approach reduces dramatically the hardware requirements to develop Booster applications and increases the speed of development.
-
-#### Local development prerequisites
-
-In order to run locally, it is necessary to add the `framework-provider-local` package to the project, and also define a new configuration environment that you can call, for instance `local`.
-
-First of all, we will have to install the local provider package and the corresponding infrastructure package as development dependencies:
-
-```sh
-npm install --dev @boostercloud/framework-provider-local
-npm install --dev @boostercloud/framework-provider-local-infrastructure
-```
-
-Once the local provider is installed, we will need to create a new config file or update the existing one (usually `src/config/config.ts`). Then you'll have to load and initialize your environment as follows:
-
-```typescript
-import { BoosterConfig } from '@boostercloud/framework-types'
-import * as Local from '@boostercloud/framework-provider-local'
-
-Booster.configure('local', (config: BoosterConfig): void => {
-  config.appName = 'fruit-store-local'
-  config.provider = Local.Provider
-})
-```
-
-#### Starting your application
-
-This step is very simple, you only need to open a terminal window and run:
-
-```bash
-boost start -e local
-```
-
-By default, the application will be available at `http://localhost:3000`
-
-optionally, you could also specify on which port you want your application to be running on with the option `-p <port-number>`:
-
-```bash
-boost start -e local -p 3333
-```
-
-After a few seconds, the Booster application should be ready at `http://localhost:<port-number>`
-
-There will be two different endpoints available for our application:
-
-- `/auth`
-- `/graphql`
-
-#### Performing Auth requests
-
-Booster also provides you with user management for free, allowing you to sign-up, confirm and sign-in users. An example of a sign up would be as follow:
-
-`POST http://localhost:3000/auth/sign-up`
-
-```json
-{
-  "username": "user@test.com",
-  "password": "passw0rd!",
-  "userAttributes": {
-    "role": "User"
-  }
-}
-```
-
-#### Performing GraphQL requests
-
-We should now be able to perform queries and mutations to our GraphQL endpoint `http://localhost:<port-number>/graphql` with a client or tool, for example, a React App, [Hoppscotch (formerly Postwoman)](https://hoppscotch.io), or [Postman](https://www.postman.com).
-
-`POST http://localhost:3000/graphql`
-
-Query
-
-```graphql
-mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
-  ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
-}
-```
-
-Variables
-
-```json
-{
-  "cartId": "e46d1d0e-5e7f-4934-850c-9559dc55af79",
-  "productId": "9214d0a9-0915-417d-852b-de79e54d8e95",
-  "quantity": 10
-}
-```
-
-#### Inspect Database information
-
-The databases for the local provider are just json files in the `<project-root>/.booster` folder. If you are wondering what data is available in the application you will only need to chose what file to look into.
-
-### Testing Booster applications
-To properly test a Booster application, you should create a `test` folder at the same level as the `src` one (check the generated `tsconfig.json` for more information). Apart from that, tests' names should have the `<my_test>.test.ts` format.
+To properly test a Booster application, you should create a `test` folder at the same level as the `src` one. Apart from that, tests' names should have the `<my_test>.test.ts` format.
 
 When a Booster application is generated, you will have a script in a `package.json` like this:
 ```typescript
@@ -2731,7 +2611,7 @@ The only thing that you should add to this line are the `AWS_SDK_LOAD_CONFIG=tru
 }
 ```
 
-#### Testing with sinon-chai
+#### Testing with `sinon-chai`
 The `BoosterConfig` can be accessed through the `Booster.config` on any part of a Booster application. To properly mock it for your objective, we really recommend to use sinon `replace` method, after configuring your `Booster.config` as desired.
 
 In the example below, we add 2 "empty" read-models, since we are iterating `Booster.config.readModels` from a command handler:
@@ -2798,15 +2678,14 @@ full-trace: true
 bail: true
 ```
 
-### Booster examples
+## Booster examples
+
+You can find some example apps in the [examples directory](https://github.com/boostercloud/booster/tree/main/docs/examples) and in this [repository](https://github.com/boostercloud/examples).
 
 ## Frequently Asked Questions
 
 **1.- When deploying my application in AWS for the first time, I got an error saying _"StagingBucket <your app name>-toolkit-bucket already exists"_**
 
-When you deploy a Booster application to AWS, an S3 bucket needs to be created to upload the application code. Booster names that bucket
-using your application name as a prefix.
-In AWS, bucket names must be unique _globally_, so if there is another bucket in the world with exactly the same name as
-the one generated for your application, you will get this error.
+When you deploy a Booster application to AWS, an S3 bucket needs to be created to upload the application code. Booster names that bucket using your application name as a prefix. In AWS, bucket names must be unique _globally_, so if there is another bucket in the world with exactly the same name as the one generated for your application, you will get this error.
 
-The solution is to change your application name in the configuration file so that the bucket name is unique.
+The solution is to **change your application name in the configuration file so that the bucket name is unique.**

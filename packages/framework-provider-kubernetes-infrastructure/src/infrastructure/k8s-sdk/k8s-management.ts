@@ -338,6 +338,10 @@ export class K8sManagement {
     }
   }
 
+  public async setClusterContext(context: string): Promise<void> {
+    await this.execRawCommand(`config use-context ${context}`)
+  }
+
   /**
    * exec a raw kubectl command in your cluster, the user only need to write the command without the `kubectl`
    * for example: `kubectl apply -f file.yaml` will be `execRawCommand('apply -f file.yaml')`
