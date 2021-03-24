@@ -27,7 +27,9 @@
     "form-data": "^3.0.0",
     "isomorphic-fetch": "^2.2.1",
     "node-fetch": "^2.6.1",
-    "redis": "^3.0.2"
+    "redis": "^3.0.2",
+    "mustache": "4.1.0",
+    "axios": "0.21.1"
   },
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",

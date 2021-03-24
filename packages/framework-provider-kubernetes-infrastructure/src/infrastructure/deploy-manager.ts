@@ -10,7 +10,6 @@ import { boosterAppPod } from './templates/booster-app-template'
 import { HelmManager } from './helm-manager'
 import { DaprManager } from './dapr-manager'
 import { scopeLogger } from '../helpers/logger'
-
 export class DeployManager {
   private clusterManager: K8sManagement
   private namespace: string

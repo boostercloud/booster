@@ -9,7 +9,15 @@ import * as Mustache from 'mustache'
 import { BoosterConfig, Logger } from '@boostercloud/framework-types'
 import { getProjectNamespaceName } from './utils'
 import { scopeLogger } from '../helpers/logger'
+import { safeLoad } from 'js-yaml'
 
+interface stateStoreYaml {
+  metadata: {
+    annotations: {
+      [key: string]: string
+    }
+  }
+}
 export class DaprManager {
   private eventStoreRepo = 'https://charts.bitnami.com/bitnami'
   private eventStoreRepoName = 'bitnami'
@@ -39,12 +47,27 @@ export class DaprManager {
   public async configureEventStore(): Promise<void> {
     const l = scopeLogger('configureEventStore', this.logger)
     l.debug('Starting to configure event store')
-    if (!fs.existsSync(this.daprComponentsPath)) {
+    const stateStoreFilePath = path.join(this.daprComponentsPath, this.stateStoreFileName)
+    if (fs.existsSync(stateStoreFilePath)) {
+      l.debug('statetore.yaml exists')
+      const stateStoreFileContent = fs.readFileSync(stateStoreFilePath).toString()
+      const yamlData = safeLoad(stateStoreFileContent) as stateStoreYaml
+      if (yamlData.metadata.annotations['booster/created']) {
+        l.debug('The state store is provisioned by Booster. Verifying that the state store is working on the cluster')
+        const templateValues: DaprTemplateValues = await this.ensureEventStoreIsReady()
+        await this.createDaprComponentFile(templateValues)
+        this.eventStorePassword = templateValues.eventStorePassword
+      } else {
+        l.debug('The state store is provisioned by the user. Getting statestore credentials')
+        //TODO: Get the credentials for the state store in K8s provider if the user provides us the statestore in Dapr. We need to get the DB_HOST, DB_USER and DB_PASS to pass it to the runtime
+        //Research how to get the eventStorePassword from the statestore file
+        //this.eventStorePassword has to be set
+      }
+    } else {
       l.debug("Components path doesn't exist, ensuring event store is ready")
       const templateValues: DaprTemplateValues = await this.ensureEventStoreIsReady()
       l.debug('Creating component file')
       await this.createDaprComponentFile(templateValues)
-    } else {
       this.eventStorePassword = await this.getEventStorePassword()
     }
     l.debug('Reading dapr component directory')
@@ -150,12 +173,14 @@ export class DaprManager {
   public async createDaprComponentFile(templateValues: DaprTemplateValues): Promise<void> {
     const l = scopeLogger('createDaprComponentFile', this.logger)
     l.debug('Creating directory for dapr components')
-    await fs.promises.mkdir(this.daprComponentsPath).catch(() => {
-      l.debug("Couldn't create directory, throwing")
-      throw new Error(
-        'Unable to create folder for Dapr components. Please check permissions of your booster project folder'
-      )
-    })
+    if (!fs.existsSync(this.daprComponentsPath)) {
+      await fs.promises.mkdir(this.daprComponentsPath).catch(() => {
+        l.debug("Couldn't create directory, throwing")
+        throw new Error(
+          'Unable to create folder for Dapr components. Please check permissions of your booster project folder'
+        )
+      })
+    }
     const outFile = path.join(this.daprComponentsPath, this.stateStoreFileName)
     const renderedYaml = Mustache.render(stateStore.template, templateValues)
     l.debug('Rendered Yaml:\n', renderedYaml)
