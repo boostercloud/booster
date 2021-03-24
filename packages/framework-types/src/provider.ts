@@ -54,7 +54,17 @@ export interface ProviderReadModelsLibrary {
     entityTypeName: string,
     filters: FilterFor<unknown>
   ): Promise<Array<TReadModel>>
-  store(config: BoosterConfig, logger: Logger, readModelName: string, readModel: ReadModelInterface): Promise<unknown>
+  /**
+   * If "expectedCurrentVersion" is provided, the underlying provider must throw the error OptimisticConcurrencyUnexpectedVersionError
+   * if the current stored read model contains a version that's different from the provided one
+   */
+  store(
+    config: BoosterConfig,
+    logger: Logger,
+    readModelName: string,
+    readModel: ReadModelInterface,
+    expectedCurrentVersion?: number
+  ): Promise<unknown>
   delete(config: BoosterConfig, logger: Logger, readModelName: string, readModel: ReadModelInterface): Promise<any>
   subscribe(config: BoosterConfig, logger: Logger, subscriptionEnvelope: SubscriptionEnvelope): Promise<void>
   fetchSubscriptions(
