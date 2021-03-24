@@ -1,4 +1,4 @@
-import { countReadModelItems, graphQLClient, queryReadModels} from '../utils'
+import { countReadModelItems, graphQLClient, queryReadModels } from '../utils'
 import { expect } from 'chai'
 import gql from 'graphql-tag'
 import { ApolloClient } from 'apollo-client'

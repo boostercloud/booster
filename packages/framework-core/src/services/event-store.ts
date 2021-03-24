@@ -54,7 +54,7 @@ export class EventStore {
     this.logger.debug(
       `[EventStore#calculateAndStoreEntitySnapshot] Fetching snapshot for entity ${entityName} with ID ${entityID}`
     )
-    const latestSnapshotEnvelope = await this.loadLatestSnapshot(entityName, entityID)
+    const latestSnapshotEnvelope = await this.loadSnapshot(entityName, entityID)
 
     this.logger.debug(
       `[EventStore#calculateAndStoreEntitySnapshot] Looking for the reducer for entity ${entityName} with ID ${entityID}`
