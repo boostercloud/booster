@@ -253,7 +253,7 @@ describe('GraphQLQueryGenerator', () => {
                 expect(TypeFilterConfig.type.toString()).to.be.equal('NumberPropertyFilter')
 
                 const fieldsKeys = Object.keys(TypeFilterConfig.type.getFields())
-                expect(fieldsKeys).to.be.deep.equal(['eq', 'ne', 'le', 'lt', 'ge', 'gt', 'in'])
+                expect(fieldsKeys).to.be.deep.equal(['eq', 'ne', 'lte', 'lt', 'gte', 'gt', 'in'])
                 expect(fieldsKeys.length).to.equal(7)
 
                 fieldsKeys.forEach((fieldKey) => {
@@ -310,9 +310,9 @@ describe('GraphQLQueryGenerator', () => {
                 expect(fieldsKeys).to.be.deep.equal([
                   'eq',
                   'ne',
-                  'le',
+                  'lte',
                   'lt',
-                  'ge',
+                  'gte',
                   'gt',
                   'in',
                   'beginsWith',

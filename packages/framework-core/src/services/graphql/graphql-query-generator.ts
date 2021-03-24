@@ -223,9 +223,9 @@ export class GraphQLQueryGenerator {
         return {
           eq: { type: GraphQLFloat },
           ne: { type: GraphQLFloat },
-          le: { type: GraphQLFloat },
+          lte: { type: GraphQLFloat },
           lt: { type: GraphQLFloat },
-          ge: { type: GraphQLFloat },
+          gte: { type: GraphQLFloat },
           gt: { type: GraphQLFloat },
           in: { type: GraphQLList(GraphQLFloat) },
         }
@@ -234,9 +234,9 @@ export class GraphQLQueryGenerator {
         return {
           eq: { type: GraphQLString },
           ne: { type: GraphQLString },
-          le: { type: GraphQLString },
+          lte: { type: GraphQLString },
           lt: { type: GraphQLString },
-          ge: { type: GraphQLString },
+          gte: { type: GraphQLString },
           gt: { type: GraphQLString },
           in: { type: GraphQLList(GraphQLString) },
           beginsWith: { type: GraphQLString },
