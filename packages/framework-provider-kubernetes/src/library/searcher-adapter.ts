@@ -17,11 +17,11 @@ export async function searchReadModel(
 ): Promise<Array<any>> {
   logger.debug('Running search with the following filters: \n', filters)
 
-  const keys = await redis.keys(`rm_${readModelName}_*`, logger)
+  const keys = await redis.keys(['rm', readModelName, '*'].join(RedisAdapter.keySeparator), logger)
   logger.debug(`Obtainer following keys for query: ${keys}`)
   const results: Array<unknown> = []
   await Promise.all(
-    keys.map(async (k: any) => {
+    keys.map(async (k: string) => {
       const data = await redis.hget<ReadModelEnvelope>(k)
       if (data?.value) {
         results.push(data.value)
