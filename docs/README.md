@@ -2512,13 +2512,13 @@ This extension mechanism is very new, but we're planning to port most of the fun
 
 #### Create your own Rocket
 
-> Currently, only available to extend your Booster infrastructure with AWS
+> Currently, Rockets work in AWS, we are working on porting them to other providers.
 
-To create a rocket that adds new functionality to your Booster app, you just need to create a npm package and add the characteristics your provider needs. For AWS, that's just a main class that contains two functions, `mountStack` and `unmountStack`. *Don't worry about them for now, we'll get to this shortly.*
+A rocket is nothing more than an npm package that extends your current Booster architecture. The structure is simple, and it mainly has 2 methods: `mountStack` and `unmountStack`. We'll explain what they are in shortly.
 
 *Infrastructure Rocket* interfaces are provider-dependant, so *Infrastructure Rockets* must import the corresponding booster infrastructure package for their chosen provider. For AWS, that's `@boostercloud/framework-provider-aws-infrastructure`. Notice that, as the only thing we use of that package is the `InfrastructureRocket` interface, you can import it as a dev dependency to avoid including that big package in your deployed lambdas. 
 
-So let's start by creating a new package and adding this dependency:
+So let's start by creating a new package and adding this dependency:`
 
 ```sh
 mkdir rocket-your-rocket-name-aws-infrastructure
@@ -2528,19 +2528,18 @@ npm init
 npm install --save @boostercloud/framework-provider-aws-infrastructure
 ```
 
-The schema of an *Infrastructure Rocket* project should look something like this:
+The basic structure of an *Infrastructure Rocket* project is quite simple as you can see here:
 
 ```text
 rocket-your-rocket-name-aws-infrastructure
 ├── package.json
 ├── src
-    ├── lambdas
     ├── index.ts
     └── your-main-class.ts
 
 ```
 
-In `<your-main-class>.ts` is where you define the two functions that AWS requires:
+`<your-main-class>.ts`  can be named as you want and this is where we define the mountStack and unmount methods.
 
 ```typescript
 export class YourMainClass {
@@ -2555,16 +2554,14 @@ export class YourMainClass {
 
 Let's look in more detail these two special functions:
 
-- **mountStack**: This function will run when you deploy your Booster application. Here you can use the [CDK](https://docs.aws.amazon.com/cdk/latest/guide/home.html) code you need to extend the Booster functionality as you like. As we can see, it receives three params:
+- **mountStack**: Whenever we are deploying our Booster application (`boost deploy`) this method will also be run.  It receives three params:
   - `params`: The parameters required by your *Infrastructure Rocket* initializator, you will receive them from your Booster app's `config.ts` file.
-  - `stack`: An initialized AWS CDK stack that you can use to add new resources. Check out [the Stack API in the official CDK documentation](https://docs.aws.amazon.com/cdk/latest/guide/stacks.html#stack_api). This is the same stack instance that Booster uses to deploy its resources, so your resources will automatically be deployed along with the Booster's ones on the same stack. 
-  - `config`: It includes properties of the Booster project that is about to be deployed.
+  - `stack`: An initialized AWS CDK stack that you can use to add new resources. Check out [the Stack API in the official CDK documentation](https://docs.aws.amazon.com/cdk/latest/guide/stacks.html#stack_api). This is the same stack instance that Booster uses to deploy its resources, so your resources will automatically be deployed along with the Booster's ones on the same stack.
+  - `config`: It includes properties of the Booster project (e.g. project name) that come in handy for your rocket.
 
+- **unmountStack**: It will run when you run the `boost nuke` command. When you nuke your Booster application, all the resources added by your rocket are automatically destroyed along with the application stack, but there are some situations where you might or need to specify any additional step in the deletion process. The `unmountStack` function will run the code you intend for this purpose. For instance, in AWS, before destroying your stack (where you have some S3 buckets) you need to first empty them in order to delete them. You can accomplish this action in the `unmountStack` method.
 
-- **unmountStack**: It will run when you run the `boost nuke` command. When you nuke your Booster application, all the resources added by your rocket are automatically destroyed along with the application stack, but there are some situations on which it's convenient to delete or move the contents of the resources created by your Rocket. In the `unmountStack` function you'll have the opportunity to run any code before deleting the stack. This function receives an utils object with the same tools that Booster uses to perform common actions like emptying the contents of an S3 bucket (Non-empty buckets are kept by default when a stack is deleted).
-
-Going back to the schema, as you can guess, we can use the `lambdas` file to storage all the lambdas your Rocket needs, and we can use `index.ts` to export these two AWS functions:
-
+We also have an index.ts file to export these two functions:
 ```typescript
 export interface InfrastructureRocket {
   mountStack: (stack: Stack, config: BoosterConfig) => void
