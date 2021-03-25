@@ -48,7 +48,7 @@ export class GraphQLTypeInformer {
         prop.typeInfo.parameters.forEach((param) => {
           const graphQLPropType = this.getGraphQLTypeFor(param.type)
 
-          if (!this.canFilter(graphQLPropType)) {
+          if (!this.isPrimitiveType(graphQLPropType)) {
             const properties = getPropertiesMetadata(param.type)
             this.generateGraphQLTypeFromMetadata({ class: param.type, properties })
           }
@@ -73,7 +73,7 @@ export class GraphQLTypeInformer {
     return fields
   }
 
-  public canFilter(graphQLType: GraphQLNonInputType): boolean {
+  public isPrimitiveType(graphQLType: GraphQLNonInputType): boolean {
     return graphQLType instanceof GraphQLScalarType && graphQLType != GraphQLJSONObject
   }
 

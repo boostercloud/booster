@@ -184,7 +184,7 @@ export class GraphQLQueryGenerator {
       const graphQLPropType = this.typeInformer.getGraphQLTypeFor(primitiveType)
       let fields: Thunk<GraphQLInputFieldConfigMap> = {}
 
-      if (!this.typeInformer.canFilter(graphQLPropType)) {
+      if (!this.typeInformer.isPrimitiveType(graphQLPropType)) {
         const properties = getPropertiesMetadata(type)
         this.typeInformer.generateGraphQLTypeFromMetadata({ class: type, properties })
 

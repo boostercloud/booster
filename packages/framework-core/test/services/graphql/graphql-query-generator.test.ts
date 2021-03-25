@@ -30,7 +30,7 @@ describe('GraphQLQueryGenerator', () => {
   let mockEventsResolver: SinonStub
 
   let getGraphQLTypeForStub: SinonStub
-  let canFilterStub: SinonStub
+  let isPrimitiveTypeStub: SinonStub
 
   beforeEach(() => {
     mockTargetTypes = {}
@@ -50,8 +50,8 @@ describe('GraphQLQueryGenerator', () => {
 
     getGraphQLTypeForStub = stub().returns(mockGraphQLType)
     replace(mockTypeInformer, 'getGraphQLTypeFor', getGraphQLTypeForStub as any)
-    canFilterStub = stub().returns(mockGraphQLType)
-    replace(mockTypeInformer, 'canFilter', canFilterStub as any)
+    isPrimitiveTypeStub = stub().returns(mockGraphQLType)
+    replace(mockTypeInformer, 'isPrimitiveType', isPrimitiveTypeStub as any)
   })
 
   afterEach(() => {
@@ -336,7 +336,7 @@ describe('GraphQLQueryGenerator', () => {
             beforeEach(() => {
               class MockedClass {}
               getGraphQLTypeForStub.returns(GraphQLJSONObject)
-              canFilterStub.returns(false)
+              isPrimitiveTypeStub.returns(false)
               mockPropertyName = random.alphaNumeric(10)
               mockTargetType = Array
               mockPropertyType = MockedClass
