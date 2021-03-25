@@ -23,7 +23,7 @@ describe('Optimistic concurrency on read models', () => {
   context('with 100 products on the same SKU', () => {
     const numberOfProductsBySKU = 250
 
-    it.only('processes the events without corrupting read models data', async () => {
+    it('processes the events without corrupting read models data', async () => {
       const sku = `ABC_${random.uuid()}`
       const promises: Array<Promise<unknown>> = []
       for (let i = 0; i < numberOfProductsBySKU; i++) {
