@@ -31,11 +31,13 @@
     "apollo-link-ws": "^1.0.20",
     "apollo-utilities": "^1.3.4",
     "aws-sdk": "2.764.0",
-    "cross-fetch": "^3.0.4",
+    "cross-fetch": "3.0.4",
     "faker": "5.1.0",
     "graphql-tag": "^2.10.3",
     "subscriptions-transport-ws": "^0.9.16",
-    "ws": "^7.3.0"
+    "ws": "^7.3.0",
+    "ttypescript": "1.5.12",
+    "metadata-booster": "0.3.1"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -47,7 +49,7 @@
     "watch:local": "nodemon --watch ../framework-provider-local/dist --watch ../framework-provider-local-infrastructure --watch dist --exec \"../cli/bin/run start -e local\"",
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "compile": "tsc -b tsconfig.json",
+    "compile": "npx ttsc -b tsconfig.json",
     "clean": "npx rimraf ./dist tsconfig.tsbuildinfo",
     "integration": "npm run integration/cli && npm run integration/local && npm run integration/aws-deploy && npm run integration/aws-func && npm run integration/end-to-end && npm run integration/aws-nuke",
     "integration/aws-deploy": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"integration/providers/aws/deployment/.mocharc.yml\" \"integration/providers/aws/deployment/**/*.integration.ts\"",

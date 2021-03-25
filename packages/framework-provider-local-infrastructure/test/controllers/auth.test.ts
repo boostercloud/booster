@@ -32,7 +32,7 @@ describe('the auth controller', () => {
       }
       const req = mockReq({ body: user })
       const res = mockRes()
-      await controller.signUp(req, res, stub())
+      await controller.signUp(req, res, stub().resolves())
       expect(res.status).to.be.calledOnceWith(200)
     })
 
@@ -54,7 +54,7 @@ describe('the auth controller', () => {
       }
       const req = mockReq({ body: user })
       const res = mockRes()
-      await controller.signUp(req, res, stub())
+      await controller.signUp(req, res, stub().resolves())
       expect(userRegistry.signUp).to.be.calledOnceWith(user)
     })
 
@@ -68,7 +68,7 @@ describe('the auth controller', () => {
       const controller = new AuthController(3000, userRegistry, userApp)
       const req = mockReq({ body: faker.hacker.phrase() })
       const res = mockRes()
-      await controller.signUp(req, res, stub())
+      await controller.signUp(req, res, stub().resolves())
       expect(res.status).to.be.calledOnceWith(400)
     })
   })
@@ -89,7 +89,7 @@ describe('the auth controller', () => {
       }
       const req = mockReq({ body: user })
       const res = mockRes()
-      await controller.signIn(req, res, stub())
+      await controller.signIn(req, res, stub().resolves())
       expect(res.status).to.be.calledOnceWith(200)
     })
 
@@ -108,7 +108,7 @@ describe('the auth controller', () => {
       }
       const req = mockReq({ body: user })
       const res = mockRes()
-      await controller.signIn(req, res, stub())
+      await controller.signIn(req, res, stub().resolves())
       expect(userRegistry.signIn).to.be.calledOnceWith(user)
     })
 
@@ -122,7 +122,7 @@ describe('the auth controller', () => {
       const controller = new AuthController(3000, userRegistry, userApp)
       const req = mockReq({ body: faker.hacker.phrase() })
       const res = mockRes()
-      await controller.signIn(req, res, stub())
+      await controller.signIn(req, res, stub().resolves())
       expect(res.status).to.be.calledOnceWith(400)
     })
   })
@@ -144,7 +144,7 @@ describe('the auth controller', () => {
       }
       const req = mockReq(request)
       const res = mockRes()
-      await controller.signOut(req, res, stub())
+      await controller.signOut(req, res, stub().resolves())
       expect(res.status).to.be.calledOnceWith(200)
     })
 
@@ -164,7 +164,7 @@ describe('the auth controller', () => {
       }
       const req = mockReq(request)
       const res = mockRes()
-      await controller.signOut(req, res, stub())
+      await controller.signOut(req, res, stub().resolves())
       expect(userRegistry.signOut).to.be.calledOnceWith(token)
     })
 
@@ -178,7 +178,7 @@ describe('the auth controller', () => {
       const controller = new AuthController(3000, userRegistry, userApp)
       const req = mockReq({ body: faker.hacker.phrase() })
       const res = mockRes()
-      await controller.signOut(req, res, stub())
+      await controller.signOut(req, res, stub().resolves())
       expect(res.status).to.be.calledOnceWith(400)
     })
   })
@@ -199,7 +199,7 @@ describe('the auth controller', () => {
       }
       const req = mockReq(request)
       const res = mockRes()
-      await controller.confirmUser(req, res, stub())
+      await controller.confirmUser(req, res, stub().resolves())
       expect(res.status).to.be.calledOnceWith(200)
     })
 
@@ -219,7 +219,7 @@ describe('the auth controller', () => {
       }
       const req = mockReq(request)
       const res = mockRes()
-      await controller.confirmUser(req, res, stub())
+      await controller.confirmUser(req, res, stub().resolves())
       expect(userRegistry.confirmUser).to.be.calledOnceWith(email)
     })
 
@@ -233,7 +233,7 @@ describe('the auth controller', () => {
       const controller = new AuthController(3000, userRegistry, userApp)
       const req = mockReq({ body: faker.hacker.phrase() })
       const res = mockRes()
-      await controller.confirmUser(req, res, stub())
+      await controller.confirmUser(req, res, stub().resolves())
       expect(res.status).to.be.calledOnceWith(400)
     })
   })
