@@ -21,7 +21,7 @@ describe('Optimistic concurrency on read models', () => {
   })
 
   context('with 100 products on the same SKU', () => {
-    const numberOfProductsBySKU = 200
+    const numberOfProductsBySKU = 250
 
     it.only('processes the events without corrupting read models data', async () => {
       const sku = `ABC_${random.uuid()}`
@@ -54,7 +54,6 @@ describe('Optimistic concurrency on read models', () => {
           }),
         (result) => result.data.ProductsBySKU.products.length === numberOfProductsBySKU
       )
-      console.log(sku)
       expect(result.data.ProductsBySKU.id).to.be.equal(sku)
       expect(result.data.ProductsBySKU.products.length).to.be.equal(numberOfProductsBySKU)
     })
