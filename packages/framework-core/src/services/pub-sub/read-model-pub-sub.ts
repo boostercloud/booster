@@ -35,6 +35,7 @@ function filterReadModel(readModel: Record<string, any>, filters?: Record<string
 }
 
 function filterByOperation(filter: ReadModelPropertyFilter, readModelPropValue: any): boolean {
+  // TODO: include nested and complex properties in subscriptions
   for (const [operation, value] of Object.entries(filter as Operation<any>)) {
     switch (operation) {
       case 'eq':
