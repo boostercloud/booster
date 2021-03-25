@@ -1,12 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/no-magic-numbers */
-import {
-  BoosterConfig,
-  Logger,
-  ReadModelInterface,
-  UUID,
-  ReadModelEnvelope,
-  OptimisticConcurrencyUnexpectedVersionError,
-} from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, ReadModelInterface, UUID, ReadModelEnvelope } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { DynamoDBRecord, DynamoDBStreamEvent } from 'aws-lambda'
 import { Arn } from './arn'
@@ -45,27 +38,14 @@ export async function storeReadModel(
   config: BoosterConfig,
   logger: Logger,
   readModelName: string,
-  readModel: ReadModelInterface,
-  expectedCurrentVersion: number
+  readModel: ReadModelInterface
 ): Promise<void> {
-  try {
-    await db
-      .put({
-        TableName: config.resourceNames.forReadModel(readModelName),
-        Item: readModel,
-        ConditionExpression: 'attribute_not_exists(boosterMetadata.version) OR boosterMetadata.version = :version',
-        ExpressionAttributeValues: {
-          ':version': expectedCurrentVersion,
-        },
-      })
-      .promise()
-  } catch (e) {
-    // The error will be thrown, but in case of a conditional check, we throw the expected error type by the core
-    if (e.name == 'ConditionalCheckFailedException') {
-      throw new OptimisticConcurrencyUnexpectedVersionError(e.message)
-    }
-    throw e
-  }
+  await db
+    .put({
+      TableName: config.resourceNames.forReadModel(readModelName),
+      Item: readModel,
+    })
+    .promise()
   logger.debug('[ReadModelAdapter#storeReadModel] Read model stored')
 }
 
