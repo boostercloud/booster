@@ -39,7 +39,7 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     await deploy(config, logger)
 
     expect(logger.info.getCalls().length).to.be.equal(8)
-    expect(logger.info).to.have.been.calledWith(`Your app is ready in this url: http://${serviceUrl}`)
+    expect(logger.info).to.have.been.calledWith(`Your app is ready in this url: http://${serviceUrl}/graphql`)
   })
 
   it('allows deploying but the namespace validation fails', async () => {

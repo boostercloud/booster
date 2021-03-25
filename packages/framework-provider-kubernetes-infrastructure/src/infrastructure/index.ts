@@ -44,7 +44,7 @@ async function deployBoosterApp(logger: Logger, configuration: BoosterK8sConfigu
     daprManager.eventStoreUser,
     daprManager.eventStorePassword
   )
-  logger.info(`Your app is ready in this url: http://${serviceURL}`)
+  logger.info(`Your app is ready in this url: http://${serviceURL}/graphql`)
 }
 
 async function nukeBoosterApp(logger: Logger, configuration: BoosterK8sConfiguration): Promise<void> {
