@@ -1,98 +1,8 @@
-# Booster Documentation
-
-<!-- toc -->
-
-- [Introduction](#introduction)
-  - [What is Booster?](#what-is-booster)
-  - [Booster Principles](#booster-principles)
-  - [Why use Booster](#why-use-booster)
-- [Getting started](#getting-started)
-  - [Installing Booster](#installing-booster)
-    - [Prerequisites](#prerequisites)
-    - [Installing the Booster CLI](#installing-the-booster-cli)
-  - [Your first Booster app in 10 minutes](#your-first-booster-app-in-10-minutes)
-    - [1. Create the project](#1-create-the-project)
-    - [2. First command](#2-first-command)
-    - [3. First event](#3-first-event)
-    - [4. First entity](#4-first-entity)
-    - [5. First read model](#5-first-read-model)
-    - [6. Deployment](#6-deployment)
-    - [7. Testing](#7-testing)
-    - [8. Removing the stack](#8-removing-the-stack)
-    - [9. More functionalities](#9-more-functionalities)
-- [Booster architecture](#booster-architecture)
-  - [1. Command and command handlers](#1-command-and-command-handlers)
-    - [Commands naming convention](#commands-naming-convention)
-    - [Creating a command](#creating-a-command)
-    - [The command handler function](#the-command-handler-function)
-    - [Authorizing a command](#authorizing-a-command)
-    - [Submitting a command](#submitting-a-command)
-    - [Scheduling a command](#scheduling-a-command)
-    - [Creating a scheduled command](#creating-a-scheduled-command)
-  - [2. Events](#2-events)
-    - [Events naming convention](#events-naming-convention)
-    - [Creating events](#creating-events)
-    - [Registering events in the event store](#registering-events-in-the-event-store)
-    - [Events ordering](#events-ordering)
-  - [3. Event handlers](#3-event-handlers)
-    - [Creating an event handler](#creating-an-event-handler)
-    - [Registering events from an event handler](#registering-events-from-an-event-handler)
-    - [Reading entities from event handlers](#reading-entities-from-event-handlers)
-  - [4. Entities and reducers](#4-entities-and-reducers)
-    - [Entities naming convention](#entities-naming-convention)
-    - [Creating entities](#creating-entities)
-    - [The reducer function](#the-reducer-function)
-    - [Eventual consistency](#eventual-consistency)
-  - [5. Read models and projections](#5-read-models-and-projections)
-    - [Read models naming convention](#read-models-naming-convention)
-    - [Creating a read model](#creating-a-read-model)
-    - [The projection function](#the-projection-function)
-    - [Authorizing read models](#authorizing-read-models)
-    - [Querying a read model](#querying-a-read-model)
-    - [Getting real-time updates for a read model](#getting-real-time-updates-for-a-read-model)
-- [Features](#features)
-  - [Authentication and Authorization](#authentication-and-authorization)
-  - [Custom Authentication](#custom-authentication)
-    - [JWT Configuration](#jwt-configuration)
-  - [GraphQL API](#graphql-api)
-    - [Relationship between GraphQL operations and commands and read models](#relationship-between-graphql-operations-and-commands-and-read-models)
-    - [How to send GraphQL request](#how-to-send-graphql-request)
-    - [Get GraphQL schema from deployed application](#get-graphql-schema-from-deployed-application)
-    - [Sending commands](#sending-commands)
-    - [Reading read models](#reading-read-models)
-    - [Subscribing to read models](#subscribing-to-read-models)
-    - [Using Apollo Client](#using-apollo-client)
-    - [Authorizing operations](#authorizing-operations)
-    - [The GraphQL over WebSocket protocol](#the-graphql-over-websocket-protocol)
-  - [Cloud native](#cloud-native)
-    - [Configure your provider credentials](#configure-your-provider-credentials)
-    - [Deploy your project](#deploy-your-project)
-    - [Application outputs](#application-outputs)
-    - [Delete your cloud stack](#delete-your-cloud-stack)
-- [Going deeper with Booster](#going-deeper-with-booster)
-  - [Contributing](#contributing)
-  - [Framework Core](#framework-core)
-  - [Framework Types](#framework-types)
-  - [Framework integration tests](#framework-integration-tests)
-  - [Providers](#providers)
-  - [Configuration and environments](#configuration-and-environments)
-    - [Booster configuration](#booster-configuration)
-    - [Environments](#environments)
-  - [Extending Booster with Rockets!](#extending-booster-with-rockets)
-    - [Create your own Rocket](#create-your-own-rocket)
-    - [Naming recommendations](#naming-recommendations)
-    - [Booster Rockets list](#booster-rockets-list)
-- [Testing Booster applications](#testing-booster-applications)
-- [Booster examples](#booster-examples)
-- [Frequently Asked Questions](#frequently-asked-questions)
-
-<!-- tocstop -->
-
-## Introduction
+# Introduction
 
 > _Progress isn't made by early risers. It's made by lazy men trying to find easier ways to do something._ — [Robert A. Heinlein](https://en.wikipedia.org/wiki/Robert_A._Heinlein)
 
-### What is Booster?
+## What is Booster?
 
 Booster is a new kind of framework to build scalable and reliable event-driven systems faster, reimagining the software development experience to maximize your team’s speed and reduce friction on every level.
 
@@ -116,7 +26,7 @@ We have redesigned the whole developer experience from scratch, taking advantage
 
 Booster's ultimate goal is making developer's lives easier, fulfilling the dream of writing code in a domain-driven way that eases communications for the whole team, without caring about how anything else is done at the infrastructure level!
 
-### Booster Principles
+## Booster Principles
 
 Booster takes a holistic and highly-opinionated approach at many levels:
 
@@ -128,7 +38,7 @@ Booster takes a holistic and highly-opinionated approach at many levels:
 - **Principle of Abstraction**: Building an application is hard enough to have to deal with recurring low-level details like SQL, API design, or authentication mechanisms, so we tend to build more semantic abstractions on top of them.
 - **Real-time first**: Client applications must be able to react to events happening in the backend and notice data changes.
 
-### Why use Booster
+## Why use Booster
 
 Booster will fit like a glove in applications that are naturally event-driven like commerce applications (retail, e-commerce, omnichannel applications, warehouse management, etc.), business applications or communication systems, but it's a general-purpose framework that has several advantages over other solutions:
 
@@ -140,9 +50,9 @@ Booster will fit like a glove in applications that are naturally event-driven li
 - **Booster makes it easy to build enterprise-grade applications**: Implementing an event-sourcing system from scratch is a challenging exercise that usually requires highly specialized experts. There are some technical challenges like eventual consistency, message ordering, and snapshot building. Booster takes care of all of that and more for you, lowering the curve for people that are starting and making expert lives easier.
 - **Choose your application cloud and avoid vendor locking:** Booster provides a highly decoupled architecture that enables the possibility of integrating with ease new providers with different specifications, including a custom Multi-cloud provider, without affecting the framework specification.
 
-## Getting started
+# Getting started
 
-### Installing Booster
+## Installing Booster
 
 You can develop with Booster using any of the following operating systems:
 
@@ -150,34 +60,28 @@ You can develop with Booster using any of the following operating systems:
 - macOS
 - Windows (Native and WSL)
 
-#### Prerequisites
+### Prerequisites
 
-##### Install Node.js
+#### Install Node.js
 
 The minimal required Node.js version is `v12`. Download the installer
 [from nodejs website](https://nodejs.org/en/), or install it using your system's package
 manager.
 
-###### Ubuntu
-
-Just run the following commands on the terminal
+##### Ubuntu
 
 ```shell
 curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
 sudo apt install nodejs
 ```
 
-###### macOS
-
-Using [Homebrew](https://brew.sh) package manager, run the following command on the terminal
+##### macOS
 
 ```shell
 brew install node
 ```
 
-###### Windows
-
-Using [Chocolatey](https://chocolatey.org/) package manager, run the following command in your PowerShell
+##### Windows
 
 ```shell
 choco install nodejs
@@ -204,29 +108,29 @@ versions:
   for Linux
 - [`nvm-windows`](https://github.com/coreybutler/nvm-windows) - Works with native Windows
 
-##### Install Git
+#### Install Git
 
 Booster will initialize a Git repository when you create a new project (unless you use the `--skipGit` flag), so it is required that you have it already installed in your system.
 
-###### Ubuntu
+##### Ubuntu
 
 ```shell
 sudo apt install git-all
 ```
 
-###### macOS
+##### macOS
 
 ```shell
 brew install git
 ```
 
-###### Windows
+##### Windows
 
 ```shell
 choco install git
 ```
 
-###### Git configuration variables
+##### Git configuration variables
 
 After installing git in your machine, make sure that `user.name` and `user.email` are properly configured.
 Take a look at the [Git configuration page](https://git-scm.com/docs/git-config) for more info.
@@ -238,7 +142,7 @@ git config --global user.name "Your Name Here"
 git config --global user.email "your_email@youremail.com"
 ```
 
-##### Set up an AWS account
+#### Set up an AWS account
 
 This step is optional; Booster is a cloud-native framework, meaning that your application
 will be deployed to the cloud using different cloud providers. By default, Booster uses the
@@ -278,13 +182,13 @@ Using data from that pop-up, create a folder called `.aws` under your home
 folder, and a file inside called `credentials` with this syntax:
 
 ```ini
-# ~/.aws/credentials
+ ~/.aws/credentials
 [default]
 aws_access_key_id = <YOUR ACCESS KEY ID>
 aws_secret_access_key = <YOUR SECRET ACCESS KEY>
 ```
 
-##### Multiple AWS Accounts
+#### Multiple AWS Accounts
 
 If you are using multiple AWS accounts and don't want to use the default profile,
 you will need to set a `region` option to let the AWS SDK know which region you want your application to be deployed to.
@@ -293,13 +197,13 @@ To do so, we have two possible solutions:
 - Add the region to the profile of your choice in your `~/.aws/credentials` file
 
 ```ini
-# ~/.aws/credentials
+ ~/.aws/credentials
 [default]
 aws_access_key_id = <DEFAULT ACCESS KEY ID>
 aws_secret_access_key = <DEFAULT SECRET ACCESS KEY>
 region=<DEFAULT REGION>
 
-[other_profile] # Give this profile the name that works best for you
+[other_profile]  Give this profile the name that works best for you
 aws_access_key_id = <YOUR ACCESS KEY ID>
 aws_secret_access_key = <YOUR SECRET ACCESS KEY>
 region=<REGION FOR YOUR BOOSTER APP>
@@ -308,11 +212,11 @@ region=<REGION FOR YOUR BOOSTER APP>
 - Or creating a `~/.aws/config` file
 
 ```ini
-# ~/.aws/config
+ ~/.aws/config
 [default]
 region=<DEFAULT REGION>
 
-[profile other_profile] # You can rename the profile in any way that works for you
+[profile other_profile]  You can rename the profile in any way that works for you
 region=<REGION FOR YOUR BOOSTER APP>
 ```
 
@@ -323,7 +227,7 @@ the application with the selected profile.
 export AWS_PROFILE=other_profile
 ```
 
-#### Installing the Booster CLI
+### Installing the Booster CLI
 
 Booster comes with a command-line tool that helps you generating boilerplate code,
 testing and deploying the application, and deleting all the resources in the cloud. All
@@ -345,7 +249,7 @@ $ boost version
 @boostercloud/cli/0.12.3 darwin-x64 node-v14.0.0
 ```
 
-### Your first Booster app in 10 minutes
+## Your first Booster app in 10 minutes
 
 In this section, we will go through all the necessary steps to have the backend up and
 running for a blog application in just a few minutes. The steps to follow will be:
@@ -363,7 +267,7 @@ running for a blog application in just a few minutes. The steps to follow will b
 - [Removing the stack](#8-removing-the-stack)
 - [More functionalities](#9-more-functionalities)
 
-#### 1. Create the project
+### 1. Create the project
 
 First of all, we will use the Booster generators to create a project. Run this command and follow
 the instructions, when asked for the provider, select AWS as that is what we have
@@ -446,7 +350,7 @@ boosted-blog
 
 Now open the project in your favorite editor, e.g. [Visual Studio Code](https://code.visualstudio.com/).
 
-#### 2. First command
+### 2. First command
 
 Commands define the input to our system, so we'll start by generating our first
 [command](#1-command-and-command-handlers) to create posts. Use the command generator, while in the project's root
@@ -495,7 +399,7 @@ export class CreatePost {
 }
 ```
 
-#### 3. First event
+### 3. First event
 
 Instead of creating, updating, or deleting objects, Booster stores data in the form of events.
 They are records of facts and represent the source of truth. Let's generate an event called `PostCreated`
@@ -558,7 +462,7 @@ import { PostCreated } from '../events/post-created'
 We can do any validation in the command handler before storing the event, for our
 example, we'll just save the received data in the `PostCreated` event.
 
-#### 4. First entity
+### 4. First entity
 
 So far, our `PostCreated` event suggests we need a `Post` entity. Entities are a
 representation of our system internal state. They are in charge of reducing (combining) all the events
@@ -592,7 +496,7 @@ export class Post {
 Entities represent our domain model and can be queried from command or
 event handlers to make business decisions or enforcing business rules.
 
-#### 5. First read model
+### 5. First read model
 
 In a real application, we rarely want to make public our entire domain model (entities)
 including all their fields. What is more, different users may have different views of the data depending
@@ -647,7 +551,7 @@ export class PostReadModel {
 }
 ```
 
-#### 6. Deployment
+### 6. Deployment
 
 At this point, we've:
 
@@ -697,7 +601,7 @@ only need to pick the output ending in `httpURL`, e.g.:
 https://<some random number>.execute-api.us-east-1.amazonaws.com/production
 ```
 
-#### 7. Testing
+### 7. Testing
 
 Let's get started testing the project. We will perform three actions:
 
@@ -715,7 +619,7 @@ which is free and includes great support for GraphQL. However, you can use any c
 <httpURL>/graphql
 ```
 
-##### 7.1 Creating posts
+#### 7.1 Creating posts
 
 Let's use two mutations to send two `CreatePost` commands.
 
@@ -758,7 +662,7 @@ The expected response for each of those requests should be:
 > **Note**: In this example, the IDs are generated on the client-side. When running production applications
 > consider adding validation for ID uniqueness. For this example, we have used [a UUID generator](https://www.uuidgenerator.net/version4)
 
-##### 7.2 Retrieving all posts
+#### 7.2 Retrieving all posts
 
 Let's perform a GraphQL `query` that will be hitting our `PostReadModel`:
 
@@ -793,7 +697,7 @@ It should respond with something like:
 }
 ```
 
-##### 7.3 Retrieving specific post
+#### 7.3 Retrieving specific post
 
 It is also possible to retrieve specific a `Post` by adding the `id` as input, e.g.:
 
@@ -821,7 +725,7 @@ You should get a response similar to this:
 }
 ```
 
-#### 8. Removing the stack
+### 8. Removing the stack
 
 It is convenient to destroy all the infrastructure created after you stop using
 it to avoid generating cloud resource costs. Execute the following command from
@@ -838,7 +742,7 @@ we run `new:project` CLI command.
 > Congratulations! You've built a serverless backend in less than 10 minutes. We hope you
 > have enjoyed discovering the magic of the Booster Framework.
 
-#### 9. More functionalities
+### 9. More functionalities
 
 This is a really basic example of a Booster application. The are many other features Booster provides like:
 
@@ -852,7 +756,7 @@ This is a really basic example of a Booster application. The are many other feat
 Continue reading to dig more. You've just scratched the surface of all the Booster
 capabilities!
 
-## Booster architecture
+# Booster architecture
 
 Two patterns influence the Booster's event-driven architecture: Command-Query Responsibility Segregation ([CQRS](https://www.martinfowler.com/bliki/CQRS.html)) and [Event Sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). They're complex techniques to implement from scratch with lower-level frameworks, but Booster makes them feel natural and very easy to use.
 
@@ -864,7 +768,7 @@ Booster applications are event-driven and event-sourced so, **the source of trut
 
 In this chapter you'll walk through these concepts and its details.
 
-### 1. Command and command handlers
+## 1. Command and command handlers
 
 Booster is different than MVC frameworks in which you typically implement controller classes with CRUD methods. Instead of that, you define commands, which are the user actions when interacting with an application. This approach fits very well with Domain-Driven Design. Depending on your application's domain, some examples of commands would be: `RemoveItemFromCart`, `RatePhoto`, `AddCommentToPost`, etc. Although, you can still have `Create*`, `Delete*`, or `Update*` commands when they make sense.
 
@@ -891,7 +795,7 @@ export class CommandName {
 
 Every time you submit a command through the GraphQL API, Booster calls the command handler function for the given command. Commands are part of the public API, so you can define authorization policies for them. They are also the place for validating input data before registering events into the event store because they are immutable once there.
 
-#### Commands naming convention
+### Commands naming convention
 
 Semantics is very important in Booster as it will play an essential role in designing a coherent system. Your application should reflect your domain concepts, and commands are not an exception. Although you can name commands in any way you want, we strongly recommend you to name them starting with verbs in imperative plus the object being affected. If we were designing an e-commerce application, some commands would be:
 
@@ -917,7 +821,7 @@ Despite you can place commands, and other Booster files, in any directory, we st
 │   └── read-models
 ```
 
-#### Creating a command
+### Creating a command
 
 The preferred way to create a command is by using the generator, e.g.
 
@@ -931,15 +835,15 @@ The generator will automatically create a file called `create-product.ts` with a
 
 > **Note**: Generating a command with the same name as an already existing one will prompt the user for confirmation.
 
-#### The command handler function
+### The command handler function
 
 Each command class must have a method called `handle`. This function is the command handler, and it will be called by the framework every time one instance of this command is submitted. Inside the handler you can run validations, return errors, query entities to make decisions, and register relevant domain events.
 
-##### Validating data
+#### Validating data
 
 Booster uses the typed nature of GraphQL to ensure that types are correct before reaching the handler, so you don't have to validate types.
 
-###### Throw an error
+##### Throw an error
 
 There are still business rules to be checked before proceeding with a command. For example, a given number must be between a threshold or a string must match a regular expression. In that case, it is enough just to throw an error in the handler. Booster will use the error's message as the response to make it descriptive, e.g.
 
@@ -968,7 +872,7 @@ mutation($input: CreateProductInput!) {
   CreateProduct(input: $input)
 }
 
-# Variables
+ Variables
 
 {
   "input": {
@@ -993,7 +897,7 @@ You'll get something like this response:
 }
 ```
 
-###### Register error events
+##### Register error events
 
 There could be situations in which you want to register an event representing an error. For example, when moving items with insufficient stock from one location to another:
 
@@ -1025,7 +929,7 @@ export class MoveStock {
 
 In this case, the command operation can still be completed. An event handler will take care of that `ErrorEvent and proceed accordingly.
 
-##### Reading entities
+#### Reading entities
 
 Event handlers are a good place to make decisions and, to make better decisions, you need information. There is a Booster function called `fetchEntitySnapshots` within the `Booster` package and allows you to inspect the application state. This function receives two arguments, the `Entity` to fetch and the `entityID`. Here is an example of fetching an entity called `Stock`:
 
@@ -1055,15 +959,15 @@ export class MoveStock {
 }
 ```
 
-##### Registering events
+#### Registering events
 
 Within the command handler execution, it is possible to register domain events. The command handler function receives the `register` argument, so within the handler, it is possible to call `register.events(...)` with a list of events. For more details about events and the register parameter, see the [`Events`](#2-events) section.
 
-#### Authorizing a command
+### Authorizing a command
 
 Commands are part of the public API of a Booster application, so you can define who is authorized to submit them. The Booster authorization feature is covered in [this](#authentication-and-authorization) section. So far, we have seen that you can make a command publicly accessible by authorizing `'all'` to submit it. You can also set specific roles as we did with the `authorize: [Admin]` parameter of the `MoveStock` command.
 
-#### Submitting a command
+### Submitting a command
 
 Booster commands are accessible to the outside world as GraphQL mutations. GrahpQL fits very well with Booster's CQRS approach because it has two kinds of operations: Mutations and Queries. Mutations are actions that modify the server-side data, as the commands are.
 
@@ -1104,7 +1008,7 @@ where the schema for `CreateProductInput` is
 }
 ```
 
-#### Scheduling a command
+### Scheduling a command
 
 Scheduled commands are the way to add automated tasks to your application, like checking an e-commerce abandoned carts every two hours to send notifications to the customer to come back and complete the checkout. Booster scheduled commands are TypeScript classes decorated with `@ScheduledCommand`, and unlike conventional commands, their handle function doesn't have any parameters.
 
@@ -1123,7 +1027,7 @@ export class CheckCartCount {
 
 Notice that you can pass as parameters `minute`, `hour`, `day`, `month`, `weekDay` and `year` to set up a cron expression. By default, if no paramaters are passed, the scheduled command will not be triggered.
 
-#### Creating a scheduled command
+### Creating a scheduled command
 
 The preferred way to create a scheduled command is by using the generator, e.g.
 
@@ -1131,7 +1035,7 @@ The preferred way to create a scheduled command is by using the generator, e.g.
 boost new:scheduled-command CheckCartCount
 ```
 
-### 2. Events
+## 2. Events
 
 Events are **immutable records of facts** within your application's domain. They are the cornerstone of Booster because of its event-driven and event-sourced nature. Booster events are TypeScript classes decorated with `@Event`. An event class may look like this:
 
@@ -1167,7 +1071,7 @@ An event has to know the ID of the entity it belongs to and you need to implemen
 
 > **Note**: The `entityID` method must always return the same value for the same event's instance. Otherwise, the result of the entity reduction will be unpredictable.
 
-#### Events naming convention
+### Events naming convention
 
 As with commands, you can name events in any way you want, depending on your application's domain. However, we recommend you to choose short sentences written in past tense because events are facts that have happened and can't be changed. Some event names would be:
 
@@ -1191,7 +1095,7 @@ As with other Booster files, events have their own directory:
 │   └── read-models
 ```
 
-#### Creating events
+### Creating events
 
 The preferred way to create event files is the `new:event` generator, e.g.
 
@@ -1203,13 +1107,13 @@ That will generate a file called `stock-moved.ts` under the proper `<project-roo
 
 > **Note**: Generating an event with the same name as an already existing one will prompt the user for confirmation.
 
-#### Registering events in the event store
+### Registering events in the event store
 
 Creating an event file is different than storing an event instance in the event store. In Booster terminology, the latter receives the name of `registering` an event. As said before, Booster applications are event-sourced, which means that all the events are stored forever. Imagine this store as an infinite log used by the [reducer functions](#4-entities-and-reducers) to recreate the application's current state.
 
 Booster injects the register as a parameter in the `handle` method of both the command and the event handlers. Then you can register events by calling the `register.events(...)` method as many times as you want, e.g.
 
-##### Registering events from command handlers
+#### Registering events from command handlers
 
 ```typescript
 @Command({
@@ -1231,7 +1135,7 @@ export class MoveStock {
 }
 ```
 
-##### Registering events from event handlers
+#### Registering events from event handlers
 
 In the case of the event handlers, you also receive the event instance that triggered the handle function.
 
@@ -1248,7 +1152,7 @@ export class HandleAvailability {
 }
 ```
 
-### 3. Event handlers
+## 3. Event handlers
 
 As expected with event-driven architectures, multiple parts of our application react to events. In the case of Booster, we have entities (in charge of reducing the events) and event handlers. These last ones are classes decorated with the @EventHandler decorator. Every time a new instance of a given event is registered, the handle method of this class is triggered. This method can contain any business logic defined by the user or it can also register new events.
 
@@ -1270,7 +1174,7 @@ export class HandleAvailability {
 }
 ```
 
-#### Creating an event handler
+### Creating an event handler
 
 Event handlers can be easily created using the Booster CLI command `boost new:event-handler`. There are two mandatory arguments: the event handler name, and the name of the event it will react to. For instance:
 
@@ -1292,7 +1196,7 @@ Once the creation is completed, there will be a new file in the event handlers d
 │   └── read-models
 ```
 
-#### Registering events from an event handler
+### Registering events from an event handler
 
 Booster injects a `register` instance in the `handle` method that we can use to register extra events. In the above example, you can see there is some logic that ends up registering new events.
 
@@ -1304,7 +1208,7 @@ An example can be found below:
 register.events(new ProductAvailabilityChanged(event.productID, -event.quantity))
 ```
 
-#### Reading entities from event handlers
+### Reading entities from event handlers
 
 Just as we do in command handlers, we can also retrieve entities information to make decisions based on their current state.
 
@@ -1317,7 +1221,7 @@ public static async handle(event: StockMoved, register: Register): Promise<void>
 }
 ```
 
-### 4. Entities and reducers
+## 4. Entities and reducers
 
 The source of truth of your Booster app are the events, but events make sense in the context of a domain entity.
 For example, in a banking app, there might be two events: `MoneyDeposited` and `MoneyWithdrawn`. However, these events
@@ -1345,7 +1249,7 @@ export class EntityName {
 
 There could be a lot of events being reduced concurrently among many entities, but, **for a specific entity instance, the events order is preserved**. This means that while one event is being reduced, all other events of any kind _that belong to the same entity instance_ will be waiting in a queue until the previous reducer has finished (with "entity instance" we refer to an entity of a specific type and with a specific ID). This is important to make sure that entities state is built correctly.
 
-#### Entities naming convention
+### Entities naming convention
 
 Entities are a representation of your application state in a specific moment, so name them as closely to your domain objects as possible. Typical entity names are nouns that might appear when you think about your app. In an e-commerce application, some entities would be:
 
@@ -1371,7 +1275,7 @@ Entities live within the entities directory of the project source: `<project-roo
 │   └── read-models
 ```
 
-#### Creating entities
+### Creating entities
 
 The preferred way to create an entity is by using the generator, e.g.
 
@@ -1385,7 +1289,7 @@ The generator will automatically create a file called `product.ts` with a TypeSc
 
 > **Note**: Generating an entity with the same name as an already existing one will prompt the user for confirmation.
 
-#### The reducer function
+### The reducer function
 
 Booster generates the reducer function as a static method of the entity class. That function is called by the framework every time that an event of the specified type needs to be reduced. It's highly recommended to **keep your reducer functions pure**, which means that you should be able to produce the new entity version by just looking at the event and the current entity state. You should avoid calling third party services, reading or writing to a database, or changing any external state.
 
@@ -1421,13 +1325,13 @@ You can visualize reduction like this:
 
 ![reducer process gif](img/reducer.gif)
 
-#### Eventual consistency
+### Eventual consistency
 
 Due to the event driven and async nature of Booster, your data might not be instantly updated. Booster will consume the commands, generate events, and _eventually_ generate the entities. Most of the time this is not perceivable, but under huge loads, it could be noticed.
 
 This property is called [Eventual Consistency](https://en.wikipedia.org/wiki/Eventual_consistency), and it is a trade-off to have high availability for extreme situations, where other systems might simply fail.
 
-### 5. Read models and projections
+## 5. Read models and projections
 
 Read Models are cached data optimized for read operations. They're updated reactively when [Entities](#4-entities-and-reducers) are updated after reducing [events](#2-events). They also define the _Read API_.
 
@@ -1457,7 +1361,7 @@ export class ReadModelName {
 }
 ```
 
-#### Read models naming convention
+### Read models naming convention
 
 As it has been previously commented, semantics plays an important role in designing a coherent system and your application should reflect your domain concepts, we recommend choosing a representative domain name and use the `ReadModel` suffix in your read models name.
 
@@ -1476,7 +1380,7 @@ Despite you can place your read models in any directory, we strongly recommend y
 │   └── read-models
 ```
 
-#### Creating a read model
+### Creating a read model
 
 The preferred way to create a read model is by using the generator, e.g.
 
@@ -1488,7 +1392,7 @@ The generator will create a Typescript class under the read-models directory `<p
 
 Read Model classes can also be created by hand and there are no restrictions. The structure of the data is totally open and can be as complex as you can manage in your projection functions.
 
-#### The projection function
+### The projection function
 
 A `Projection` is a method decorated with the `@Projects` decorator that, given a new entity value and (optionally) the current read model state, generate a new read model value.
 
@@ -1530,11 +1434,11 @@ export class UserReadModel {
   }
 ```
 
-#### Authorizing read models
+### Authorizing read models
 
 Read models are the tool to build the public read API of a Booster application, so you can define who is authorized to query and subscribe to them. The Booster authorization feature is covered in [the auth section](#authentication-and-authorization). So far, we have seen that you can make a read model publicly accessible by authorizing `'all'` to query it or you can set specific roles providing an array of roles in this way: `authorize: [Admin]`.
 
-#### Querying a read model
+### Querying a read model
 
 For every read model, Booster automatically creates all the necessary queries and subscriptions. For example, given this `CartReadModel`:
 
@@ -1562,11 +1466,148 @@ subscription CartReadModels(id: UUIDPropertyFilter!): CartReadModel
 
 For more information about queries and how to use them, please check the [GraphQL API](#reading-read-models) section.
 
-#### Getting real-time updates for a read model
+### Getting real-time updates for a read model
 
 Booster GraphQL API also provides support for real-time updates using subscriptions and a web-socket. To get more information about it go to the [GraphQL API](#subscribing-to-read-models) section.
 
-#### Getting and filtering read models data at code level
+#### Filtering a read model
+
+The Booster GraphQL API provides support for filtering Read Models on queries, subscriptions and at code level.
+
+Using the GraphQL API endpoint you can retrieve the schema of your application so you can see what are the filters for every Read Model and its properties. You can filter like this:
+
+Searching for a specific Read Model by `id`
+
+```graphql
+query {
+  ProductReadModels(filter: { id: { eq: "test-id" } }) {
+    id
+    sku
+    availability
+    price
+  }
+}
+```
+
+#### Supported filters
+
+The currently supported filters are the following ones:
+
+##### Boolean filters
+
+| Filter |   Value    |  Description |
+| :----- | :--------: | -----------: |
+| eq     | true/false |     Equal to |
+| ne     | true/false | Not equal to |
+
+Example:
+
+```graphql
+query {
+  ProductReadModels(filter: { availability: { eq: true } }) {
+    id
+    sku
+    availability
+    price
+  }
+}
+```
+
+##### Number filters
+
+| Filter |  Value  |           Description |
+| :----- | :-----: | --------------------: |
+| eq     |  Float  |              Equal to |
+| ne     |  Float  |          Not equal to |
+| gt     |  Float  |          Greater than |
+| gte    |  Float  | Greater or equal than |
+| lt     |  Float  |            Lower than |
+| lte    |  Float  |   Lower or equal than |
+| in     | [Float] | Exists in given array |
+
+Example:
+
+```graphql
+query {
+  ProductReadModels(filter: { price: { gt: 200 } }) {
+    id
+    sku
+    availability
+    price
+  }
+}
+```
+
+##### String filters
+
+| Filter     |  Value   |                Description |
+| :--------- | :------: | -------------------------: |
+| eq         |  String  |                   Equal to |
+| ne         |  String  |               Not equal to |
+| gt         |  String  |               Greater than |
+| gte        |  String  |      Greater or equal than |
+| lt         |  String  |                 Lower than |
+| lte        |  String  |        Lower or equal than |
+| in         | [String] |      Exists in given array |
+| beginsWith |  String  | Starts with a given substr |
+| contains   |  String  |    Contains a given substr |
+
+Example:
+
+```graphql
+query {
+  ProductReadModels(filter: { sku: { begingsWith: "jewelry" } }) {
+    id
+    sku
+    availability
+    price
+  }
+}
+```
+
+##### Array filters
+
+| Filter   | Value  |             Description |
+| :------- | :----: | ----------------------: |
+| includes | Object | Includes a given object |
+
+Example:
+
+```graphql
+query {
+  CartReadModels(filter: { itemsIds: { includes: "test-item" } }) {
+    id
+    price
+    itemsIds
+  }
+}
+```
+
+_Note: Right now there is a limitation with complex properties in Arrays, where you just can filter them if you know the exact value of an element but is not possible to filter from a property of the element. As a workaround, you can use an array of ids of the complex property and filter for that property as in the example above._
+
+##### Filter combinators
+
+All the filters can be combined to create a more complex search on the same properties of the ReadModel.
+
+| Filter |     Value     |                                      Description |
+| :----- | :-----------: | -----------------------------------------------: |
+| and    |   [Filters]   |       AND - all filters on the list have a match |
+| or     |   [Filters]   | OR - At least one filter of the list has a match |
+| not    | Filter/and/or |            The element does not match the filter |
+
+Example:
+
+```graphql
+query {
+  CartReadModels(filter: { or: [{ id: { contains: "a" } }, { id: { contains: "b" } }] }) {
+    id
+    price
+    itemsIds
+  }
+}
+```
+
+### Getting and filtering read models data at code level
 
 Booster allows you to get your read models data in your commands handlers and event handlers using the `Booster.readModel` method.
 
@@ -1602,9 +1643,9 @@ export class GetProductsCount {
 
 > **Warning**: Notice that `ReadModel`s are eventually consistent objects that are calculated as all events in all entities that affect the read model are settled. You should not assume that a read model is a proper source of truth, so you shouldn't use this feature for data validations. If you need to query the most up-to-date current state, consider fetching your Entities, instead of ReadModels, with `Booster.fetchEntitySnapshot`
 
-## Features
+# Features
 
-### Authentication and Authorization
+## Authentication and Authorization
 
 You can use the [Authentication Rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure) for adding the authentication and authorization to you application. But first, you need to know that authorization in Booster is done through roles. Every Command and ReadModel has an `authorize` policy that tells Booster who can execute or access it. It consists of one of the following two values:
 
@@ -1695,7 +1736,7 @@ authorize them to access protected resources.
 
 To learn how to include the access token in your requests, check the section [Authorizing operations](#authorizing-operations).
 
-### Custom Authentication
+## Custom Authentication
 
 You can use the **JWT authorization mode** to authorize all incoming Booster requests. Your auth server will return JWT tokens
 wich will be decoded internally by Booster, after that, the required roles will be matched with the contained claims
@@ -1703,7 +1744,7 @@ inside that token.
 
 In that way, you can use different auth providers, like Auth0, Firebase, Cognito, create your own or simply use our [Authentication Rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure), which is our recommended solution that works great with Booster.
 
-#### JWT Configuration
+### JWT Configuration
 
 In order to use the JWT authorization you will need to set a `tokenVerifier` property which contains the following properties:
 
@@ -1761,7 +1802,7 @@ Once you have the token with the auth provider of choice, simply pass it in the 
 Authorization: Bearer <your JWT token>
 ```
 
-### GraphQL API
+## GraphQL API
 
 This is the main API of your application, as it allows you to:
 
@@ -1778,7 +1819,7 @@ Luckily, you can forget about that because Booster does all the work for you!
 
 The GraphQL API is fully **auto-generated** based on your _commands_ and _read models_.
 
-#### Relationship between GraphQL operations and commands and read models
+### Relationship between GraphQL operations and commands and read models
 
 GraphQL defines three kinds of operations that you can use: _mutations_, _queries_, and _subscriptions_.
 
@@ -1791,7 +1832,7 @@ Knowing this, you can infer the relationship between those operations and your B
 - You _read_ a **read model** using a **query**.
 - You _subscribe_ to a **read model** using a **subscription**.
 
-#### How to send GraphQL request
+### How to send GraphQL request
 
 GraphQL uses two existing protocols:
 
@@ -1816,7 +1857,7 @@ To have a great developer experience, we **strongly recommend** to use a GraphQL
 - **[Hoppscotch (formerly Postwoman)](https://hoppscotch.io/)**: Ideal for testing sending manual requests, getting the schema, etc.
 - **Apollo clients**: These are the "go-to" SDKs to interact with a GraphQL API from your clients. It is very likely that there is a version for your client programming language. Check the ["Using Apollo Client"](#using-apollo-client) section to know more about this.
 
-#### Get GraphQL schema from deployed application
+### Get GraphQL schema from deployed application
 
 After deploying your application with the command `boost deploy -e development`, you can get your GraphQL schema by using a tool like **[Hoppscotch (formerly Postwoman)](https://hoppscotch.io/)**. The previous command displays multiple endpoints, one of them is **graphqlURL**, which has the following pattern:
 
@@ -1826,7 +1867,7 @@ By entering this URL in Hoppscotch, the schema can be displayed as shown in the 
 
 ![hoppscotch screenshot](./img/postwoman-screenshot.png)
 
-#### Sending commands
+### Sending commands
 
 As mentioned in the previous section, we need to use a "mutation" to send a command. The structure of a mutation (the body of the request) is the following:
 
@@ -1880,7 +1921,7 @@ And this would be the response:
 
 > **Note**: Remember to set the proper **access token** for secured commands, check ["Authorizing operations"](#authorizing-operations).
 
-#### Reading read models
+### Reading read models
 
 To read a specific read model, we need to use a "query" operation. The structure of the "query" (the body
 of the request) is the following:
@@ -1947,7 +1988,7 @@ And we would get the following as response:
 
 > **Note**: Remember to set the proper **access token** for secured read models, check ["Authorizing operations"](#authorizing-operations).
 
-#### Subscribing to read models
+### Subscribing to read models
 
 To subscribe to a specific read model, we need to use a subscription operation, and it must be _sent through the **websocketURL**_ using the [_GraphQL over WebSocket_ protocol](#the-graphql-over-websocket-protocol).
 
@@ -2050,7 +2091,7 @@ mutation {
 
 > **Note**: Remember that, in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
 
-#### Using Apollo Client
+### Using Apollo Client
 
 One of the best clients to connect to a GraphQL API is the [Apollo](https://www.apollographql.com/) client. There will probably be a version for your client technology of choice. These are the main ones:
 
@@ -2150,7 +2191,7 @@ subscriptionOperation.subscribe({
 })
 ```
 
-#### Authorizing operations
+### Authorizing operations
 
 When you have a command or read model whose access is authorized to users with a specific set of roles (see [Authentication and Authorization](#authentication-and-authorization)), you need to use an authorization token to send queries, mutations or subscriptions to that command or read model. 
 
@@ -2170,7 +2211,7 @@ Authorization: Bearer <your token>
 
 You normally won't be sending tokens in such a low-level way. GraphQL clients have easier ways to send these tokens. See [Sending tokens with Apollo client](#sending-tokens-with-apollo-clients)
 
-##### Sending tokens with Apollo clients
+#### Sending tokens with Apollo clients
 
 We recommend going to the specific documentation of the specific Apollo client you are using to know how to send tokens. However, the basics of this guide remains the same. Here is an example of how you would configure the Javascript/Typescript Apollo client to send the authorization token. The example is exactly the same as the one shown in the [Using Apollo clients](#using-apollo-client) section, but with the changes needed to send the token. Notice that `<AuthApiEndpoint>` and `<idToken>` are obtained from the [Authentication Rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure).
 
@@ -2223,7 +2264,7 @@ const client = new ApolloClient({
 })
 ```
 
-##### Refreshing tokens with Apollo clients
+#### Refreshing tokens with Apollo clients
 
 Authorization tokens expire after a certain amount of time. When a token is expired, you will get an error and you will need to call the [refresh the token](https://github.com/boostercloud/rocket-auth-aws-infrastructure#refresh-token) endpoint to get a new token. After you have done so, you need to use the new token in your GraphQL operations.
 
@@ -2291,7 +2332,7 @@ Now, _when the user signs-in_ or _when the token is refreshed_, we need to do tw
 
 You might be wondering why we need to do the second step. The reason is that, with operations sent through HTTP, the token goes along with every operation, in the headers. However, with operations sent through WebSockets, like subscriptions, the token is only sent when the socket connection is established. For this reason, **everytime we update the token we need to reconnect the `SubscriptionClient`** so that it sends again the token (the updated one in this case).
 
-#### The GraphQL over WebSocket protocol
+### The GraphQL over WebSocket protocol
 
 Sockets are channels for two-way communication that doesn't follow the request-response cycle, a characteristic feature of the HTTP protocol. One part can send many messages and the other part can receive all of them but only answer to some specific ones. What is more, messages could come in any order. For example, one part can send two messages and receive the response of the second message before the response of the first message.
 
@@ -2303,15 +2344,15 @@ You don't need to know anything about this to develop using Booster, neither in 
 
 > **Note**: The WebSocket communication in Booster only supports this subprotocol, whose identifier is `graphql-ws`. For this reason, when you connect to the WebSocket provisioned by Booster, you must specify the `graphql-ws` subprotocol. If not, the connection won't succeed.
 
-### Cloud native
+## Cloud native
 
 One of the goals of Booster is to become provider agnostic so you can deploy your application to any serverless provider like AWS, Google Cloud, Azure, etc...
 
 In the current version, we offer full support for AWS provider and experimental support for Kubernetes and Azure providers. We will eventually support all main cloud providers (**Contributions are welcome!** 😜)
 
-#### Configure your provider credentials
+### Configure your provider credentials
 
-##### AWS provider
+#### AWS provider
 
 In AWS, it is required that your `~/.aws/credentials` file is properly setup, and a `region` attribute is specified. If you have the [AWS CLI installed](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html), you can create the config file by running the command `aws configure`, but that is completely optional, **AWS CLI is not required to run booster**.
 
@@ -2326,7 +2367,7 @@ region = eu-west-1
 
 It's recommended to use IAM user keys and avoiding your root access keys. If you need help obtaining a `KEY ID` and `ACCESS KEY`, [check out the official AWS guides](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey).
 
-#### Deploy your project
+### Deploy your project
 
 To deploy your Booster project, run the following command:
 
@@ -2343,7 +2384,7 @@ If you make changes to your code, you can run `boost deploy -e <environment name
 
 To skip restoring dependencies after deployment you can run `boost deploy -e <environment name> -s`.
 
-#### Application outputs
+### Application outputs
 
 After any deployment, an "Outputs" section will be printed to the console with useful information needed to interact with your application. The meaning of those outputs are:
 
@@ -2353,7 +2394,7 @@ After any deployment, an "Outputs" section will be printed to the console with u
 - **clientID**: This parameter is _specific for the AWS provider_ (only shown if used AWS when deployint) and is
   needed only for the `auth/sign-up` and `auth/sign-in` endpoints.
 
-#### Delete your cloud stack
+### Delete your cloud stack
 
 If you want to delete the Booster application that has been deployed, you can run:
 
@@ -2367,23 +2408,23 @@ For a force delete without asking for confirmation, you can run `boost nuke -e <
 
 > **Note**: Be EXTRA CAUTIOUS with this option, all your application data will be irreversibly DELETED without confirmation.
 
-## Going deeper with Booster
+# Going deeper with Booster
 
-### Contributing
+## Contributing
 
 If you want to start making contributions to Booster, we strongly recommend that you read our [contributing guide](https://github.com/boostercloud/booster/blob/main/CONTRIBUTING.md).
 
-### Framework Core
+## Framework Core
 
 The `framework-core` package includes the most important components of the framework abstraction. It can be seen as skeleton or the main architecture of the framework. 
 
 The package defines the specification of how should a Booster application work without taking into account the specific providers that could be used. Every Booster provider package is based on the components that the framework core needs in order to work on the platform.
 
-### Framework Types
+## Framework Types
 
 The `framework-types` packages includes the types that define the domain of the Booster framework. It defines domain concepts like an `Event`, a `Command` or a `Role`.
 
-### Framework integration tests
+## Framework integration tests
 
 Booster framework integration tests package is used to test the Booster project itself, but it is also an example of how a Booster application could be tested. We encourage developers to have a look at our [Booster project repository](https://github.com/boostercloud/booster/tree/main/packages/framework-integration-tests).
 
@@ -2397,7 +2438,7 @@ There are several types of integration tests in this package:
 
 If you are curious about the framework providers, you will be able to read more about them in the following section.
 
-### Providers
+## Providers
 
 The providers are different implementations of the Booster runtime to allow Booster applications run on different cloud providers or services. They all implement the same interface, and the main idea behind the providers is that no matter what the developer chooses as backend, they won't need to know anything about the underlying infrastructure.
 
@@ -2410,11 +2451,11 @@ Other providers packages are currently under experimental support. Some of the f
 - **framework-provider-kubernetes-\***
 - **framework-provider-azure-\***
 
-### Configuration and environments
+## Configuration and environments
 
 Booster uses sensible defaults, convention over configuration, and code inference to reduce dramatically the amount of configuration needed. However, there are some aspects that can't be inferred (like the application name) or the provider library used for each [environment](#environments).
 
-#### Booster configuration
+### Booster configuration
 
 You configure your application by calling the `Booster.configure()` method. There are no restrictions about where you should do this call, but the convention is to do it in your configuration files located in the `src/config` folder. This folder will get automatically generated for you after running the `boost new:project <project-name>` CLI command.
 
@@ -2445,101 +2486,7 @@ The following is the list of the fields you can configure:
   config.assets = ['.env']
   ```
 
-#### Providers configuration
-
-##### AWS Provider
-
-To configure AWS as a provider you need to meet certain prerequisites:
-
-- Set up an AWS account following the getting started section [instructions](#set-up-an-aws-account)
-- Check `@boostercloud/framework-provider-aws` is listed in your app `package.json` dependencies.
-- Check `@boostercloud/framework-provider-aws-infrastructure` is listed in your app `package.json` devDependencies.
-- Check both dependencies are installed, otherwise use `npm install` in the root of your project.
-
-Now go to your `config.ts` file, import the aws provider library and set up your app environment.
-
-```typescript
-import { Booster } from '@boostercloud/framework-core'
-import { BoosterConfig } from '@boostercloud/framework-types'
-import { Provider as AWSProvider } from '@boostercloud/framework-provider-aws'
-
-Booster.configure('production', (config: BoosterConfig): void => {
-  config.appName = 'my-app-name'
-  config.provider = AWSProvider
-})
-```
-
-Open your terminal and run the deployment command
-
-```sh
-boost deploy -e production
-```
-
-Now just let the magic happen, Booster will create everything for you and give you back your app ready to use URL. 🚀
-
-##### Azure Provider
-
-To configure Azure as a provider you need to meet certain prerequisites:
-
-- Set up an Azure subscription and install [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest).
-- Install [jq](https://stedolan.github.io/jq/download/) in your system.
-- Check `@boostercloud/framework-provider-azure` is listed in your app `package.json` dependencies.
-- Check `@boostercloud/framework-provider-azure-infrastructure` is listed in your app `package.json` devDependencies.
-- Check both dependencies are installed, otherwise use `npm install` in the root of your project.
-
-At this moment you have to log in you Azure account using the Azure CLI with the following command.
-
-```bash
-az login
-```
-
-Then create a service pricipal running the following command.
-
-_Note: Remember to change `<service-principal-name>` for a custom one._
-
-```bash
-az ad sp create-for-rbac --name <service-principal-name>
-```
-
-After the service principal is created, create a bash script with the following content. It will set up the necessary environment variables required by the provider in order to work:
-
-_Note: remember to have [jq](https://stedolan.github.io/jq/download/) installed in your system_
-
-```bash
-#!/usr/bin/env bash
-
-SP_DISPLAY_NAME="<service-principal-name>" # replace <service-principal-name> with the name of your own SP
-REGION="East US" # replace with a region of your choice, see full list here: https://azure.microsoft.com/en-us/global-infrastructure/locations/
-
-export AZURE_APP_ID=$(az ad sp list --display-name ${SP_DISPLAY_NAME} | jq -r '.[].appId')
-export AZURE_TENANT_ID=$(az ad sp list --display-name ${SP_DISPLAY_NAME} | jq -r '.[].appOwnerTenantId')
-export AZURE_SECRET=$(az ad sp credential reset --name ${AZURE_APP_ID} | jq -r '.password')
-export AZURE_SUBSCRIPTION_ID=$(az account show | jq -r '.id')
-export REGION
-```
-
-Now go to your `config.ts` file, import the aws provider library and set up your app environment.
-
-```typescript
-import { Booster } from '@boostercloud/framework-core'
-import { BoosterConfig } from '@boostercloud/framework-types'
-import AzureProvider from '@boostercloud/framework-provider-azure'
-
-Booster.configure('production', (config: BoosterConfig): void => {
-  config.appName = 'my-app-name'
-  config.provider = AzureProvider
-})
-```
-
-Open your terminal and run the bash file to export you env variables and the deploy command
-
-```bash
-source <path-to-your-bash-file> && boost deploy -e production
-```
-
-Now just let the magic happen, Booster will create everything for you and give you back your app ready to use URL. 🚀
-
-#### Environments
+### Environments
 
 You can create multiple environments calling the `Booster.configure` function several times using different environment names as the first argument. You can create one file for each environment, but it is not required. In this example we set all environments in a single file:
 
@@ -2586,7 +2533,7 @@ Booster environments are extremely flexible. As shown in the first example, your
 
 The only thing you need to do to deploy a whole new completely-independent copy of your application is to use a different name. Also, Booster uses the credentials available in the machine (`~/.aws/credentials` in AWS) that performs the deployment process, so developers can even work on separate accounts than production or staging environments.
 
-### Extending Booster with Rockets!
+## Extending Booster with Rockets!
 
 You can extend Booster by creating rockets. A rocket is just a node package that implements the public Booster rocket interfaces. You can use them for many things:
 
@@ -2599,15 +2546,15 @@ This extension mechanism is very new, but we're planning to port most of the fun
 - Composability: You can use the default rockets or configure your application to suit your needs without adding anything extra.
 - Easier to manage feature sets in different providers: It would be really hard for the core team and contributors to implement and test every new feature in every supported provider, so by providing functionality like rockets, you'll have access to the most advanced features for your provider faster, and the rockets library can be built on-demand for each provider.
 
-#### Create your own Rocket
+### Create your own Rocket
 
-> Currently, Rockets work in AWS, we are working on porting them to other providers.
+> Currently, only available to extend your Booster infrastructure with AWS
 
-A rocket is nothing more than an npm package that extends your current Booster architecture. The structure is simple, and it mainly has 2 methods: `mountStack` and `unmountStack`. We'll explain what they are in shortly.
+To create a rocket that adds new functionality to your Booster app, you just need to create a npm package and add the characteristics your provider needs. For AWS, that's just a main class that contains two functions, `mountStack` and `unmountStack`. *Don't worry about them for now, we'll get to this shortly.*
 
 *Infrastructure Rocket* interfaces are provider-dependant, so *Infrastructure Rockets* must import the corresponding booster infrastructure package for their chosen provider. For AWS, that's `@boostercloud/framework-provider-aws-infrastructure`. Notice that, as the only thing we use of that package is the `InfrastructureRocket` interface, you can import it as a dev dependency to avoid including that big package in your deployed lambdas. 
 
-So let's start by creating a new package and adding this dependency:`
+So let's start by creating a new package and adding this dependency:
 
 ```sh
 mkdir rocket-your-rocket-name-aws-infrastructure
@@ -2617,18 +2564,19 @@ npm init
 npm install --save @boostercloud/framework-provider-aws-infrastructure
 ```
 
-The basic structure of an *Infrastructure Rocket* project is quite simple as you can see here:
+The schema of an *Infrastructure Rocket* project should look something like this:
 
 ```text
 rocket-your-rocket-name-aws-infrastructure
 ├── package.json
 ├── src
+    ├── lambdas
     ├── index.ts
     └── your-main-class.ts
 
 ```
 
-`<your-main-class>.ts`  can be named as you want and this is where we define the mountStack and unmount methods.
+In `<your-main-class>.ts` is where you define the two functions that AWS requires:
 
 ```typescript
 export class YourMainClass {
@@ -2643,14 +2591,16 @@ export class YourMainClass {
 
 Let's look in more detail these two special functions:
 
-- **mountStack**: Whenever we are deploying our Booster application (`boost deploy`) this method will also be run.  It receives three params:
+- **mountStack**: This function will run when you deploy your Booster application. Here you can use the [CDK](https://docs.aws.amazon.com/cdk/latest/guide/home.html) code you need to extend the Booster functionality as you like. As we can see, it receives three params:
   - `params`: The parameters required by your *Infrastructure Rocket* initializator, you will receive them from your Booster app's `config.ts` file.
-  - `stack`: An initialized AWS CDK stack that you can use to add new resources. Check out [the Stack API in the official CDK documentation](https://docs.aws.amazon.com/cdk/latest/guide/stacks.html#stack_api). This is the same stack instance that Booster uses to deploy its resources, so your resources will automatically be deployed along with the Booster's ones on the same stack.
-  - `config`: It includes properties of the Booster project (e.g. project name) that come in handy for your rocket.
+  - `stack`: An initialized AWS CDK stack that you can use to add new resources. Check out [the Stack API in the official CDK documentation](https://docs.aws.amazon.com/cdk/latest/guide/stacks.html#stack_api). This is the same stack instance that Booster uses to deploy its resources, so your resources will automatically be deployed along with the Booster's ones on the same stack. 
+  - `config`: It includes properties of the Booster project that is about to be deployed.
 
-- **unmountStack**: It will run when you run the `boost nuke` command. When you nuke your Booster application, all the resources added by your rocket are automatically destroyed along with the application stack, but there are some situations where you might or need to specify any additional step in the deletion process. The `unmountStack` function will run the code you intend for this purpose. For instance, in AWS, before destroying your stack (where you have some S3 buckets) you need to first empty them in order to delete them. You can accomplish this action in the `unmountStack` method.
 
-We also have an index.ts file to export these two functions:
+- **unmountStack**: It will run when you run the `boost nuke` command. When you nuke your Booster application, all the resources added by your rocket are automatically destroyed along with the application stack, but there are some situations on which it's convenient to delete or move the contents of the resources created by your Rocket. In the `unmountStack` function you'll have the opportunity to run any code before deleting the stack. This function receives an utils object with the same tools that Booster uses to perform common actions like emptying the contents of an S3 bucket (Non-empty buckets are kept by default when a stack is deleted).
+
+Going back to the schema, as you can guess, we can use the `lambdas` file to storage all the lambdas your Rocket needs, and we can use `index.ts` to export these two AWS functions:
+
 ```typescript
 export interface InfrastructureRocket {
   mountStack: (stack: Stack, config: BoosterConfig) => void
@@ -2688,7 +2638,7 @@ Booster.configure('development', (config: BoosterConfig): void => {
 })
 ```
 
-#### Naming recommendations
+### Naming recommendations
 
 There are no restrictions on how you name your rocket packages, but we propose the following naming convention to make it easier to find your extensions in the vast npm library and find related packages (code and infrastructure extensions cannot be distributed in the same package).
 
@@ -2705,7 +2655,7 @@ If you want to support the same functionality in several providers, it could be 
 - `rocket-file-uploader-azure`: Implements the API calls to Azure Storage to get the uploaded files.
 - `rocket-file-uploader-azure-infrastructure`: Configures file storage.
 
-#### Booster Rockets list
+### Booster Rockets list
 
 Here you can check out the official Booster Rockets developed at this time:
 
@@ -2713,7 +2663,7 @@ Here you can check out the official Booster Rockets developed at this time:
 - [Backup Booster Rocket for AWS](https://github.com/boostercloud/rocket-backup-aws-infrastructure)
 - [Static Sites Booster Rocket for AWS](https://github.com/boostercloud/rocket-static-sites-aws-infrastructure)
 
-## Testing Booster applications
+# Testing Booster applications
 
 To properly test a Booster application, you should create a `test` folder at the same level as the `src` one. Apart from that, tests' names should have the `<my_test>.test.ts` format.
 
@@ -2732,7 +2682,7 @@ The only thing that you should add to this line are the `AWS_SDK_LOAD_CONFIG=tru
 }
 ```
 
-#### Testing with `sinon-chai`
+### Testing with `sinon-chai`
 The `BoosterConfig` can be accessed through the `Booster.config` on any part of a Booster application. To properly mock it for your objective, we really recommend to use sinon `replace` method, after configuring your `Booster.config` as desired.
 
 In the example below, we add 2 "empty" read-models, since we are iterating `Booster.config.readModels` from a command handler:
@@ -2771,7 +2721,7 @@ public static async handle(command: MyCommand, register: Register): Promise<void
 }
 ```
 
-#### Recommended files
+### Recommended files
 These are some files that might help you speed up your testing with Booster.
 
 ```typescript
@@ -2786,7 +2736,7 @@ export const expect = chai.expect
 This `expect` method will help you with some more additional methods like `expect(<my_stub>).to.have.been.calledOnceWithExactly(<my_params..>)`
 
 ```yaml
-## <root_dir>/.mocharc.yml
+# <root_dir>/.mocharc.yml
 diff: true
 require: 'ts-node/register'
 extension:
@@ -2799,11 +2749,11 @@ full-trace: true
 bail: true
 ```
 
-## Booster examples
+# Booster examples
 
 You can find some example apps in the [examples directory](https://github.com/boostercloud/booster/tree/main/docs/examples) and in this [repository](https://github.com/boostercloud/examples).
 
-## Frequently Asked Questions
+# Frequently Asked Questions
 
 **1.- When deploying my application in AWS for the first time, I got an error saying _"StagingBucket <your app name>-toolkit-bucket already exists"_**
 
