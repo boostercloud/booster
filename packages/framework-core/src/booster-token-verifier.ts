@@ -14,7 +14,7 @@ export class BoosterTokenVerifier {
         this.client = jwksRSA({
           jwksUri: this.config.tokenVerifier.jwksUri,
           cache: true,
-          cacheMaxAge: 900000, // 15 Minutes, at least to be equal to AWS max lambda limit runtime
+          cacheMaxAge: 15 * 60 * 1000, // 15 Minutes, at least to be equal to AWS max lambda limit runtime
         })
       }
 
@@ -43,17 +43,17 @@ export class BoosterTokenVerifier {
         })
       }
 
-      let keys: jwt.Secret | jwt.GetPublicKeyOrSecret = getKey
+      let key: jwt.Secret | jwt.GetPublicKeyOrSecret = getKey
       if (!this.client) {
         if (this.config.tokenVerifier?.publicKey) {
-          keys = this.config.tokenVerifier.publicKey
+          key = this.config.tokenVerifier.publicKey
         } else {
           throw new Error('Token verifier not well configured')
         }
       }
 
       token = this.sanitizeToken(token)
-      jwt.verify(token, keys, this.options, (err: Error | null, decoded: object | undefined) => {
+      jwt.verify(token, key, this.options, (err?: Error | null, decoded?: object) => {
         if (err) {
           return reject(err)
         }
