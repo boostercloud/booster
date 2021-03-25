@@ -15,6 +15,7 @@ import {
   Thunk,
   GraphQLEnumType,
   GraphQLEnumValueConfigMap,
+  GraphQLScalarType,
 } from 'graphql'
 import { GraphQLResolverContext, ResolverBuilder, TargetTypeMetadata, TargetTypesMap } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
@@ -162,10 +163,26 @@ export class GraphQLQueryGenerator {
 
     if (!this.generatedFiltersByTypeName[filterName]) {
       const propFilters: GraphQLInputFieldConfigMap = {}
-      property.typeInfo.parameters.forEach(() => {
+      property.typeInfo.parameters.forEach((param) => {
+        const primitiveType = this.typeInformer.getPrimitiveExtendedType(param.type)
+        let graphqlType: GraphQLScalarType
+        switch (primitiveType) {
+          case Boolean:
+            graphqlType = GraphQLBoolean
+            break
+          case String:
+            graphqlType = GraphQLString
+            break
+          case Number:
+            graphqlType = GraphQLFloat
+            break
+          default:
+            graphqlType = GraphQLJSONObject
+            break
+        }
         propFilters.includes = {
           ...propFilters.includes,
-          type: GraphQLJSONObject,
+          type: graphqlType,
         }
       })
 
