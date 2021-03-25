@@ -24,6 +24,7 @@
     "@types/ws": "^7.2.4",
     "@typescript-eslint/eslint-plugin": "^2.18.0",
     "@typescript-eslint/parser": "^2.18.0",
+    "@types/jsonwebtoken": "^8.5.0",
     "apollo-cache-inmemory": "^1.6.5",
     "apollo-client": "^2.6.8",
     "apollo-link": "^1.2.14",
@@ -36,7 +37,9 @@
     "graphql-tag": "^2.10.3",
     "metadata-booster": "0.3.1",
     "subscriptions-transport-ws": "^0.9.16",
-    "ws": "^7.3.0"
+    "ws": "^7.3.0",
+    "jsonwebtoken": "^8.5.1",
+    "jwks-rsa": "^1.11.0"
   },
   "engines": {
     "node": ">=8.0.0"

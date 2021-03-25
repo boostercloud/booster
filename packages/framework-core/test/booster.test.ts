@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from './expect'
-import { Booster, boosterEventDispatcher, boosterPreSignUpChecker, boosterServeGraphQL } from '../src/booster'
+import { Booster, boosterEventDispatcher, boosterServeGraphQL } from '../src/booster'
 import { replace, fake, restore, match, replaceGetter } from 'sinon'
 import { Importer } from '../src/importer'
 import * as EntitySnapshotFetcher from '../src/entity-snapshot-fetcher'
@@ -100,17 +100,6 @@ describe('the public static function `boosterEventDispatcher`', () => {
     await boosterEventDispatcher(message)
 
     expect(Booster.dispatchEvent).to.have.been.calledOnceWith(message)
-  })
-})
-
-describe('the public static function `boosterPreSignUpChecker`', () => {
-  it('calls `Booster.checkSignUp` passing the rawMessage', async () => {
-    replace(Booster, 'checkSignUp', fake())
-    const message = { body: 'Test body' }
-
-    await boosterPreSignUpChecker(message)
-
-    expect(Booster.checkSignUp).to.have.been.calledOnceWith(message)
   })
 })
 

@@ -29,7 +29,6 @@ export class BoosterConfig {
   private _userProjectRootPath?: string
   public readonly codeRelativePath: string = 'dist'
   public readonly eventDispatcherHandler: string = path.join(this.codeRelativePath, 'index.boosterEventDispatcher')
-  public readonly preSignUpHandler: string = path.join(this.codeRelativePath, 'index.boosterPreSignUpChecker')
   public readonly serveGraphQLHandler: string = path.join(this.codeRelativePath, 'index.boosterServeGraphQL')
   public readonly scheduledTaskHandler: string = path.join(
     this.codeRelativePath,
@@ -50,7 +49,7 @@ export class BoosterConfig {
   /** Environment variables set at deployment time on the target lambda functions */
   public readonly env: Record<string, string> = {}
 
-  private _tokenVerifier?: { issuer: string; jwksUri: string }
+  private _tokenVerifier?: TokenVerifier
 
   public constructor(public readonly environmentName: string) {}
 
@@ -127,18 +126,11 @@ export class BoosterConfig {
     return value
   }
 
-  public get tokenVerifier(): { issuer: string; jwksUri: string } | undefined {
-    if (this._tokenVerifier) return this._tokenVerifier
-    if (process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER] && process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI]) {
-      return {
-        issuer: process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER] as string,
-        jwksUri: process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI] as string,
-      }
-    }
-    return undefined
+  public get tokenVerifier(): TokenVerifier | undefined {
+    return this._tokenVerifier
   }
 
-  public set tokenVerifier(tokenVerifier: { issuer: string; jwksUri: string } | undefined) {
+  public set tokenVerifier(tokenVerifier: TokenVerifier | undefined) {
     this._tokenVerifier = tokenVerifier
   }
 
@@ -162,11 +154,6 @@ export class BoosterConfig {
   }
 }
 
-export const JWT_ENV_VARS = {
-  BOOSTER_JWT_ISSUER: 'BOOSTER_JWT_ISSUER',
-  BOOSTER_JWKS_URI: 'BOOSTER_JWKS_URI',
-}
-
 interface ResourceNames {
   applicationStack: string
   eventsStore: string
@@ -183,3 +170,8 @@ type RoleName = string
 type ConceptName = string
 type Version = number
 type ScheduledCommandName = string
+type TokenVerifier = {
+  issuer: string
+  jwksUri?: string
+  publicKey?: string
+}

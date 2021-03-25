@@ -21,7 +21,6 @@ describe('the `framework-provider-aws` package', () => {
       it('returns a `ProviderLibrary` object', () => {
         expect(providerLibrary).to.be.an('object')
         expect(providerLibrary.api).to.be.an('object')
-        expect(providerLibrary.auth).to.be.an('object')
         expect(providerLibrary.connections).to.be.an('object')
         expect(providerLibrary.events).to.be.an('object')
         expect(providerLibrary.graphQL).to.be.an('object')
@@ -53,7 +52,6 @@ describe('the `framework-provider-aws` package', () => {
       it('returns a `ProviderLibrary` object', () => {
         expect(providerLibrary).to.be.an('object')
         expect(providerLibrary.api).to.be.an('object')
-        expect(providerLibrary.auth).to.be.an('object')
         expect(providerLibrary.connections).to.be.an('object')
         expect(providerLibrary.events).to.be.an('object')
         expect(providerLibrary.graphQL).to.be.an('object')

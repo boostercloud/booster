@@ -10,25 +10,22 @@ export class BoosterTokenVerifier {
 
   public constructor(private config: BoosterConfig) {
     if (this.config.tokenVerifier) {
-      const { issuer, jwksUri } = this.config.tokenVerifier
-      this.client = jwksRSA({
-        jwksUri,
-        cache: true,
-        cacheMaxAge: 900000, // 15 Minutes, at least to be equal to AWS max lambda limit runtime
-      })
+      if (this.config.tokenVerifier.jwksUri) {
+        this.client = jwksRSA({
+          jwksUri: this.config.tokenVerifier.jwksUri,
+          cache: true,
+          cacheMaxAge: 900000, // 15 Minutes, at least to be equal to AWS max lambda limit runtime
+        })
+      }
 
       this.options = {
         algorithms: ['RS256'],
-        issuer,
+        issuer: this.config.tokenVerifier.issuer,
       }
     }
   }
 
   public async verify(token: string): Promise<UserEnvelope> {
-    if (!this.client) {
-      throw new Error('Token verifier not configured')
-    }
-
     return new Promise((resolve, reject) => {
       const getKey = (header: jwt.JwtHeader, callback: jwt.SigningKeyCallback): void => {
         if (!header.kid) {
@@ -46,8 +43,17 @@ export class BoosterTokenVerifier {
         })
       }
 
+      let keys: jwt.Secret | jwt.GetPublicKeyOrSecret = getKey
+      if (!this.client) {
+        if (this.config.tokenVerifier?.publicKey) {
+          keys = this.config.tokenVerifier.publicKey
+        } else {
+          throw new Error('Token verifier not well configured')
+        }
+      }
+
       token = this.sanitizeToken(token)
-      jwt.verify(token, getKey, this.options, (err: Error | null, decoded: object | undefined) => {
+      jwt.verify(token, keys, this.options, (err: Error | null, decoded: object | undefined) => {
         if (err) {
           return reject(err)
         }
