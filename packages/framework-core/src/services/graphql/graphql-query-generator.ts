@@ -137,9 +137,9 @@ export class GraphQLQueryGenerator {
       name: `${name}Filter`,
       fields: () => ({
         ...filterArguments,
-        ...{ and: { type: new GraphQLList(filter) } },
-        ...{ or: { type: new GraphQLList(filter) } },
-        ...{ not: { type: filter } },
+        and: { type: new GraphQLList(filter) },
+        or: { type: new GraphQLList(filter) },
+        not: { type: filter },
       }),
     })
     return { filter: { type: filter } }
