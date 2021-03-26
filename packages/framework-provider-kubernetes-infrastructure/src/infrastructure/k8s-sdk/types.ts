@@ -29,6 +29,7 @@ export interface Service {
   labels?: { [key: string]: string }
   status?: string
   ip?: string
+  port?: string
 }
 
 export interface VolumeClaim {

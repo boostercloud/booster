@@ -10,6 +10,7 @@ import { boosterAppPod } from './templates/booster-app-template'
 import { HelmManager } from './helm-manager'
 import { DaprManager } from './dapr-manager'
 import { scopeLogger } from '../helpers/logger'
+
 export class DeployManager {
   private clusterManager: K8sManagement
   private namespace: string
@@ -157,10 +158,15 @@ export class DeployManager {
     const l = scopeLogger('uploadUserCode', this.logger)
     l.debug('Waiting for service to be ready')
     const fileUploadService = await this.clusterManager.waitForServiceToBeReady(this.namespace, uploadService.name)
+    l.debug('//////// LALALALAL /////////')
+    l.debug(inspect(fileUploadService, true, 5, true))
     l.debug('Creating zip file')
     const codeZipFile = await createProjectZipFile(l)
     l.debug('Uploading file')
-    const fileUploadResponse = await uploadFile(l, fileUploadService?.ip, codeZipFile)
+    const fileUploadServiceAddress = fileUploadService?.port
+      ? `${fileUploadService?.ip}:${fileUploadService?.port}`
+      : fileUploadService?.ip
+    const fileUploadResponse = await uploadFile(l, fileUploadServiceAddress, codeZipFile)
     if (fileUploadResponse.statusCode !== 200) {
       l.debug('Cannot upload code, throwing')
       throw new Error('Unable to upload your code, please check the fileuploader pod for more information')
@@ -185,9 +191,9 @@ export class DeployManager {
     await this.clusterManager.waitForPodToBeReady(this.namespace, boosterAppPod.name)
     l.debug('Getting service ip')
     const service = await this.clusterManager.waitForServiceToBeReady(this.namespace, boosterService.name)
-    const ip = service?.ip
-    l.debug('Got ip', ip ?? 'UNDEFINED')
-    return ip ?? ''
+    const boosterServiceAddress = service?.port ? `${service?.ip}:${service.port}` : service?.ip
+    l.debug('Got booster service address', boosterServiceAddress ?? 'UNDEFINED')
+    return boosterServiceAddress ?? ''
   }
 
   /**
