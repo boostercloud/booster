@@ -400,6 +400,6 @@ function checkOrderAndStructureOfEvents(events: Array<EventSearchResponse>): voi
     expect(event.type).not.to.be.undefined
     expect(event.entityID).not.to.be.undefined
     const value: Record<string, string> = event.value as any
-    expect(value.productId).not.to.be.undefined
+    expect(value.cartId).not.to.be.undefined
   }
 }
