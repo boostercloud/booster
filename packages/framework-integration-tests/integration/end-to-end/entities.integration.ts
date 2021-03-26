@@ -78,10 +78,7 @@ describe('Entities end-to-end tests', () => {
                   sku
                   displayName
                   description
-                  price {
-                    cents
-                    currency
-                  }
+                  price
                   availability
                   deleted
                 }
@@ -102,7 +99,6 @@ describe('Entities end-to-end tests', () => {
         displayName: mockDisplayName,
         description: mockDescription,
         price: {
-          __typename: 'Money',
           cents: mockPriceInCents,
           currency: mockCurrency,
         },
@@ -151,10 +147,7 @@ describe('Entities end-to-end tests', () => {
                   sku
                   displayName
                   description
-                  price {
-                    cents
-                    currency
-                  }
+                  price
                   availability
                   deleted
                 }

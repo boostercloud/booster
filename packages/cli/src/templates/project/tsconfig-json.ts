@@ -14,9 +14,7 @@ export const template = `{
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
-    "plugins": [
-      { "transform": "metadata-booster" }
-    ]
+    "emitDecoratorMetadata": true
   },
   "include": [
     "src/**/*"

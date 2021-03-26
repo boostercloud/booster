@@ -16,7 +16,7 @@ export class GraphQLSubscriptionGenerator {
   public generate(): GraphQLObjectType | undefined {
     const byIDSubscriptions = this.generateByIDSubscriptions()
     const filterSubscriptions = this.generateFilterSubscriptions()
-    const fields = { ...byIDSubscriptions, ...filterSubscriptions }
+    const fields = {...byIDSubscriptions, ...filterSubscriptions}
     if (Object.keys(fields).length === 0) {
       return undefined
     }
@@ -50,7 +50,7 @@ export class GraphQLSubscriptionGenerator {
       const graphQLType = this.typeInformer.getGraphQLTypeFor(type.class)
       subscriptions[inflected.pluralize(name)] = {
         type: graphQLType,
-        args: this.queryGenerator.generateFilterQueriesFields(`${name}Subscription`, type),
+        args: this.queryGenerator.generateFilterArguments(type),
         resolve: (source) => source,
         subscribe: this.filterResolverBuilder(type.class),
       }

@@ -1,32 +1,41 @@
 import {
+  GraphQLEnumType,
+  GraphQLEnumValueConfigMap,
   GraphQLFieldConfigArgumentMap,
   GraphQLFieldConfigMap,
   GraphQLFieldResolver,
   GraphQLID,
   GraphQLInputObjectType,
-  GraphQLInputFieldConfigMap,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLOutputType,
-  GraphQLString,
-  GraphQLBoolean,
-  GraphQLFloat,
-  Thunk,
-  GraphQLEnumType,
-  GraphQLEnumValueConfigMap,
   GraphQLScalarType,
+  GraphQLString,
 } from 'graphql'
-import { GraphQLResolverContext, ResolverBuilder, TargetTypeMetadata, TargetTypesMap } from './common'
+import {
+  GraphQLNonInputType,
+  GraphQLResolverContext,
+  ResolverBuilder,
+  TargetTypeMetadata,
+  TargetTypesMap,
+} from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
 import * as inflected from 'inflected'
 import { GraphQLJSONObject } from 'graphql-type-json'
-import { AnyClass, BoosterConfig } from '@boostercloud/framework-types'
-import { PropertyMetadata } from 'metadata-booster'
-import { getPropertiesMetadata } from './../../decorators/metadata'
+import {
+  AnyClass,
+  BooleanOperations,
+  BoosterConfig,
+  NumberOperations,
+  PropertyMetadata,
+  StringOperations,
+  UUID,
+} from '@boostercloud/framework-types'
 
 export class GraphQLQueryGenerator {
   private generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
+  private generatedOperationEnumsByTypeName: Record<string, GraphQLEnumType> = {}
 
   public constructor(
     private readonly config: BoosterConfig,
@@ -71,7 +80,7 @@ export class GraphQLQueryGenerator {
       const graphQLType = this.typeInformer.getGraphQLTypeFor(type.class)
       queries[inflected.pluralize(name)] = {
         type: new GraphQLList(graphQLType),
-        args: this.generateFilterQueriesFields(name, type),
+        args: this.generateFilterArguments(type),
         resolve: this.filterResolverBuilder(type.class),
       }
     }
@@ -132,134 +141,75 @@ export class GraphQLQueryGenerator {
       })
     )
   }
-  public generateFilterQueriesFields(name: string, type: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
-    const filterArguments = this.generateFilterArguments(type)
-    const filter: GraphQLInputObjectType = new GraphQLInputObjectType({
-      name: `${name}Filter`,
-      fields: () => ({
-        ...filterArguments,
-        and: { type: new GraphQLList(filter) },
-        or: { type: new GraphQLList(filter) },
-        not: { type: filter },
-      }),
-    })
-    return { filter: { type: filter } }
-  }
 
   public generateFilterArguments(typeMetadata: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
     const args: GraphQLFieldConfigArgumentMap = {}
     typeMetadata.properties.forEach((prop: PropertyMetadata) => {
-      const primitiveType = this.typeInformer.getPrimitiveExtendedType(prop.typeInfo.type)
-
+      const graphQLPropType = this.typeInformer.getGraphQLTypeFor(prop.type)
+      if (!this.canFilter(graphQLPropType)) {
+        // TODO: We still don't handle filtering by complex properties
+        return
+      }
       args[prop.name] = {
-        type: primitiveType === Array ? this.generateArrayFilterFor(prop) : this.generateFilterFor(primitiveType),
+        type: this.generateFilterFor(prop.type),
       }
     })
     return args
   }
 
-  private generateArrayFilterFor(property: PropertyMetadata): GraphQLInputObjectType {
-    const filterName = `${property.name}PropertyFilter`
-
-    if (!this.generatedFiltersByTypeName[filterName]) {
-      const propFilters: GraphQLInputFieldConfigMap = {}
-      property.typeInfo.parameters.forEach((param) => {
-        const primitiveType = this.typeInformer.getPrimitiveExtendedType(param.type)
-        let graphqlType: GraphQLScalarType
-        switch (primitiveType) {
-          case Boolean:
-            graphqlType = GraphQLBoolean
-            break
-          case String:
-            graphqlType = GraphQLString
-            break
-          case Number:
-            graphqlType = GraphQLFloat
-            break
-          default:
-            graphqlType = GraphQLJSONObject
-            break
-        }
-        propFilters.includes = {
-          ...propFilters.includes,
-          type: graphqlType,
-        }
-      })
-
-      this.generatedFiltersByTypeName[filterName] = new GraphQLInputObjectType({
-        name: filterName,
-        fields: propFilters,
-      })
-    }
-    return this.generatedFiltersByTypeName[filterName]
+  private canFilter(graphQLType: GraphQLNonInputType): boolean {
+    return graphQLType instanceof GraphQLScalarType && graphQLType != GraphQLJSONObject
   }
 
   private generateFilterFor(type: AnyClass): GraphQLInputObjectType {
     const filterName = `${type.name}PropertyFilter`
     if (!this.generatedFiltersByTypeName[filterName]) {
-      const primitiveType = this.typeInformer.getPrimitiveExtendedType(type)
-      const graphQLPropType = this.typeInformer.getGraphQLTypeFor(primitiveType)
-      let fields: Thunk<GraphQLInputFieldConfigMap> = {}
-
-      if (!this.typeInformer.isPrimitiveType(graphQLPropType)) {
-        const properties = getPropertiesMetadata(type)
-        this.typeInformer.generateGraphQLTypeFromMetadata({ class: type, properties })
-
-        let nestedProperties: GraphQLInputFieldConfigMap = {}
-        for (const prop of properties) {
-          const propPrimitiveType = this.typeInformer.getPrimitiveExtendedType(prop.typeInfo.type)
-          const property = { [prop.name]: { type: this.generateFilterFor(propPrimitiveType) } }
-          nestedProperties = { ...nestedProperties, ...property }
-        }
-
-        fields = () => ({
-          ...nestedProperties,
-          and: { type: new GraphQLList(this.generatedFiltersByTypeName[filterName]) },
-          or: { type: new GraphQLList(this.generatedFiltersByTypeName[filterName]) },
-          not: { type: this.generatedFiltersByTypeName[filterName] },
-        })
-      } else {
-        fields = this.generateFilterInputTypes(type)
-      }
-      this.generatedFiltersByTypeName[filterName] = new GraphQLInputObjectType({ name: filterName, fields })
+      const graphQLValueType = this.typeInformer.getGraphQLTypeFor(type)
+      this.generatedFiltersByTypeName[filterName] = new GraphQLInputObjectType({
+        name: filterName,
+        fields: {
+          operation: { type: new GraphQLNonNull(this.operationEnumFor(type)) },
+          values: { type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(graphQLValueType))) },
+        },
+      })
     }
     return this.generatedFiltersByTypeName[filterName]
   }
 
-  private generateFilterInputTypes(type: AnyClass): GraphQLInputFieldConfigMap {
-    const primitiveType = this.typeInformer.getPrimitiveExtendedType(type)
-    switch (primitiveType) {
-      case Boolean:
-        return {
-          eq: { type: GraphQLBoolean },
-          ne: { type: GraphQLBoolean },
-        }
-      case Number:
-        return {
-          eq: { type: GraphQLFloat },
-          ne: { type: GraphQLFloat },
-          lte: { type: GraphQLFloat },
-          lt: { type: GraphQLFloat },
-          gte: { type: GraphQLFloat },
-          gt: { type: GraphQLFloat },
-          in: { type: GraphQLList(GraphQLFloat) },
-        }
-      case Date:
+  private operationEnumFor(type: AnyClass): GraphQLEnumType {
+    const operationEnumName = `${type.name}Operations`
+    if (!this.generatedOperationEnumsByTypeName[operationEnumName]) {
+      this.generatedOperationEnumsByTypeName[operationEnumName] = new GraphQLEnumType({
+        name: operationEnumName,
+        values: this.generateOperationEnumValuesFor(type),
+      })
+    }
+    return this.generatedOperationEnumsByTypeName[operationEnumName]
+  }
+
+  private generateOperationEnumValuesFor(type: AnyClass): GraphQLEnumValueConfigMap {
+    let operationsEnum: typeof StringOperations | typeof NumberOperations | typeof BooleanOperations
+    switch (type) {
+      case UUID:
       case String:
-        return {
-          eq: { type: GraphQLString },
-          ne: { type: GraphQLString },
-          lte: { type: GraphQLString },
-          lt: { type: GraphQLString },
-          gte: { type: GraphQLString },
-          gt: { type: GraphQLString },
-          in: { type: GraphQLList(GraphQLString) },
-          beginsWith: { type: GraphQLString },
-          contains: { type: GraphQLString },
-        }
+        operationsEnum = StringOperations
+        break
+      case Number:
+        operationsEnum = NumberOperations
+        break
+      case Boolean:
+        operationsEnum = BooleanOperations
+        break
       default:
         throw new Error(`Type ${type.name} is not supported in search filters`)
     }
+
+    const enumValuesConfig: GraphQLEnumValueConfigMap = {}
+    for (const opSymbol in operationsEnum) {
+      const opName = (operationsEnum as any)[opSymbol]
+      enumValuesConfig[opName] = { value: opSymbol }
+    }
+    return enumValuesConfig
   }
 
   private buildGraphqlSimpleEnumFor(enumName: string, values: Array<string>): GraphQLEnumType {

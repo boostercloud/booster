@@ -1,1 +1,1 @@
-export class SKU extends String {}
+export type SKU = string

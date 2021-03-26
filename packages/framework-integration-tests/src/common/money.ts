@@ -1,3 +1,4 @@
-export class Money {
-  public constructor(public cents: number, public currency: string) {}
+export interface Money {
+  cents: number
+  currency: string
 }

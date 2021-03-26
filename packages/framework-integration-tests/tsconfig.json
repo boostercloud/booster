@@ -14,13 +14,10 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "lib": [
       "ES2019",
-      "ES2020",
-      "DOM"
-    ],
-    "plugins": [
-      { "transform": "metadata-booster" }
+      "ES2020"
     ]
   },
   "include": [

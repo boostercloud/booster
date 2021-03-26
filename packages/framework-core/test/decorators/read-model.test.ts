@@ -31,27 +31,15 @@ describe('the `ReadModel` decorator', () => {
       properties: [
         {
           name: 'id',
-          typeInfo: {
-            name: 'UUID',
-            parameters: [],
-            type: UUID,
-          },
+          type: UUID,
         },
         {
           name: 'aStringProp',
-          typeInfo: {
-            name: 'String',
-            parameters: [],
-            type: String,
-          },
+          type: String,
         },
         {
           name: 'aNumberProp',
-          typeInfo: {
-            name: 'Number',
-            parameters: [],
-            type: Number,
-          },
+          type: Number,
         },
       ],
     })

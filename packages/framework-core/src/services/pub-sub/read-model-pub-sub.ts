@@ -35,25 +35,24 @@ function filterReadModel(readModel: Record<string, any>, filters?: Record<string
 }
 
 function filterByOperation(filter: ReadModelPropertyFilter, readModelPropValue: any): boolean {
-  // TODO: include nested and complex properties in subscriptions
   for (const [operation, value] of Object.entries(filter as Operation<any>)) {
     switch (operation) {
-      case 'eq':
+      case '=':
         if (readModelPropValue !== value) return false
         break
-      case 'ne':
+      case '!=':
         if (readModelPropValue === value) return false
         break
-      case 'lt':
+      case '<':
         if (readModelPropValue >= value) return false
         break
-      case 'gt':
+      case '>':
         if (readModelPropValue <= value) return false
         break
-      case 'gte':
+      case '>=':
         if (readModelPropValue < value) return false
         break
-      case 'lte':
+      case '<=':
         if (readModelPropValue > value) return false
         break
       case 'in':
