@@ -26,7 +26,7 @@
     "@boostercloud/framework-types": "^0.13.0",
     "@types/archiver": "^3.1.0",
     "@types/needle": "^2.0.4",
-    "archiver": "^4.0.1",
+    "archiver": "4.0.1",
     "azure-arm-resource": "^7.3.0",
     "azure-arm-website": "^5.7.0",
     "copyfiles": "^2.3.0",

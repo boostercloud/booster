@@ -340,6 +340,8 @@ export class K8sManagement {
 
   public async setClusterContext(context: string): Promise<void> {
     await this.execRawCommand(`config use-context ${context}`)
+    this.kube.loadFromDefault()
+    this.k8sClient = this.kube.makeApiClient(CoreV1Api)
   }
 
   /**
