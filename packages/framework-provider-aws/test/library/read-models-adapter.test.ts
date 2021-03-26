@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
-import { replace, fake, restore } from 'sinon'
+import { replace, fake } from 'sinon'
 import {
   fetchReadModel,
   storeReadModel,
@@ -8,12 +8,7 @@ import {
   deleteReadModel,
 } from '../../src/library/read-models-adapter'
 import { DynamoDB } from 'aws-sdk'
-import {
-  BoosterConfig,
-  Logger,
-  OptimisticConcurrencyUnexpectedVersionError,
-  ReadModelEnvelope,
-} from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, ReadModelEnvelope } from '@boostercloud/framework-types'
 import { DynamoDBStreamEvent } from 'aws-lambda'
 
 const logger: Logger = {
@@ -156,13 +151,9 @@ describe('the "fetchReadModel" method', () => {
 })
 
 describe('the "storeReadModel" method', () => {
-  const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
-  const config = new BoosterConfig('test')
-  beforeEach(() => {
-    restore()
-  })
-
   it('saves a read model', async () => {
+    const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
+    const config = new BoosterConfig('test')
     replace(
       db,
       'put',
@@ -173,33 +164,13 @@ describe('the "storeReadModel" method', () => {
       })
     )
 
-    const something = await storeReadModel(db, config, logger, 'SomeReadModel', { id: 777, some: 'object' } as any, 0)
+    const something = await storeReadModel(db, config, logger, 'SomeReadModel', { id: 777, some: 'object' } as any)
 
     expect(db.put).to.have.been.calledOnceWithExactly({
       TableName: 'new-booster-app-app-SomeReadModel',
       Item: { id: 777, some: 'object' },
-      ConditionExpression: 'attribute_not_exists(boosterMetadata.version) OR boosterMetadata.version = :version',
-      ExpressionAttributeValues: { ':version': 0 },
     })
     expect(something).not.to.be.null
-  })
-
-  it('throws the OptimisticConcurrencyUnexpectedVersionError when there is a ConditionalCheckFailedException', async () => {
-    replace(
-      db,
-      'put',
-      fake.returns({
-        promise: () => {
-          const e = new Error('test error')
-          e.name = 'ConditionalCheckFailedException'
-          throw e
-        },
-      })
-    )
-
-    await expect(
-      storeReadModel(db, config, logger, 'SomeReadModel', { id: 777, some: 'object' } as any, 0)
-    ).to.eventually.be.rejectedWith(OptimisticConcurrencyUnexpectedVersionError)
   })
 })
 

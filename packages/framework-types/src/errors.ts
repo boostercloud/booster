@@ -3,7 +3,6 @@ export class InvalidProtocolError extends Error {}
 export class NotAuthorizedError extends Error {}
 export class NotFoundError extends Error {}
 export class InvalidVersionError extends Error {}
-export class OptimisticConcurrencyUnexpectedVersionError extends Error {}
 
 export function httpStatusCodeFor(error: Error): number {
   const errorToHTTPCode: Record<string, number> = {
