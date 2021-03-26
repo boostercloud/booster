@@ -23,11 +23,9 @@ export const template = `{
     "mocha": "^7.0.1",
     "nyc": "^15.0.0",
     "prettier": "^1.19.1",
-    "typescript": "4.1.5",
-    "ts-node": "9.1.1",
-    "@types/node": "^13.5.1",
-    "ttypescript": "1.5.12",
-    "metadata-booster": "0.3.1"
+    "typescript": "^3.9.3",
+    "ts-node": "^8.6.2",
+    "@types/node": "^13.5.1"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -39,7 +37,7 @@ export const template = `{
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "compile": "npx ttypescript -b tsconfig.json",
+    "compile": "npx tsc -b tsconfig.json",
     "deploy": "boost deploy",
     "clean": "npx rimraf ./dist tsconfig.tsbuildinfo",
     "test": "AWS_SDK_LOAD_CONFIG=true BOOSTER_ENV=test npx nyc --extension .ts mocha --forbid-only \\"test/**/*.test.ts\\""

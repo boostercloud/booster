@@ -1,10 +1,8 @@
-export class Address {
-  public constructor(
-    public firstName: string,
-    public lastName: string,
-    public country: string,
-    public state: string,
-    public postalCode: string,
-    public address: string
-  ) {}
+export interface Address {
+  firstName: string
+  lastName: string
+  country: string
+  state: string
+  postalCode: string
+  address: string
 }

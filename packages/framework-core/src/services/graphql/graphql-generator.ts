@@ -151,7 +151,7 @@ function toReadModelRequestEnvelope(
     requestID: context.requestID,
     currentUser: context.user,
     typeName: readModelName,
-    filters: args.filter ? (args.filter as Record<string, ReadModelPropertyFilter>) : args,
+    filters: args,
     version: 1, // TODO: How to pass the version through GraphQL?
   }
 }

@@ -516,7 +516,7 @@ describe('With the auth API', () => {
       })
 
       it('when using a client with subscriptions, it gets the expected error on connect', async () => {
-        const connectionPromise = new Promise<void>(async (resolve, reject) => {
+        const connectionPromise = new Promise(async (resolve, reject) => {
           await graphQLClientWithSubscriptions('ABC', (err) => {
             if (err) {
               reject(err)
@@ -613,10 +613,7 @@ describe('With the auth API', () => {
                     sku
                     displayName
                     description
-                    price {
-                      cents
-                      currency
-                    }
+                    price
                     availability
                     deleted
                   }
@@ -639,7 +636,6 @@ describe('With the auth API', () => {
           availability: 0,
           deleted: false,
           price: {
-            __typename: 'Money',
             cents: mockPriceInCents,
             currency: mockCurrency,
           },
@@ -853,10 +849,7 @@ describe('With the auth API', () => {
                       sku
                       displayName
                       description
-                      price {
-                        cents
-                        currency
-                      }
+                      price
                       availability
                       deleted
                     }
@@ -879,7 +872,6 @@ describe('With the auth API', () => {
             availability: 0,
             deleted: false,
             price: {
-              __typename: 'Money',
               cents: mockPriceInCents,
               currency: mockCurrency,
             },

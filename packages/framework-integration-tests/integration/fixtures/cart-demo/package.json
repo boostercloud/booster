@@ -21,9 +21,7 @@
     "typescript": "whatever",
     "ts-node": "whatever",
     "@types/node": "whatever",
-    "@boostercloud/framework-provider-aws-infrastructure": "whatever",
-    "ttypescript": "whatever",
-    "metadata-booster": "whatever"
+    "@boostercloud/framework-provider-aws-infrastructure": "whatever"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -35,7 +33,7 @@
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "compile": "npx ttypescript -b tsconfig.json",
+    "compile": "npx tsc -b tsconfig.json",
     "deploy": "boost deploy",
     "clean": "npx rimraf ./dist tsconfig.tsbuildinfo",
     "test": "AWS_SDK_LOAD_CONFIG=true BOOSTER_ENV=test npx nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""

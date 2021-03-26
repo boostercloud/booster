@@ -98,10 +98,10 @@ describe('GraphQLTypeInformer', () => {
         expect(result).to.be.equal(GraphQLBoolean)
       })
 
-      it('should return GraphQLJSONObject', () => {
+      it('should return GraphQLList(GraphQLJSONObject)', () => {
         const result = sut.getGraphQLTypeFor(Array)
 
-        expect(result).to.be.deep.equal(GraphQLJSONObject)
+        expect(result).to.be.deep.equal(GraphQLList(GraphQLJSONObject))
       })
 
       it('should return GraphQLJSONObject', () => {

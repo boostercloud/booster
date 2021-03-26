@@ -221,11 +221,7 @@ describe('Read models end-to-end tests', () => {
                 CartReadModel(id: $cartId) {
                   id
                   cartItems
-                  payment {
-                    cartId
-                    confirmationToken
-                    id
-                  }
+                  payment
                 }
               }
             `,
@@ -245,7 +241,6 @@ describe('Read models end-to-end tests', () => {
           },
         ],
         payment: {
-          __typename: 'Payment',
           confirmationToken: mockConfirmationToken,
           id: mockPaymentId,
           cartId: mockCartId,
