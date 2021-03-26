@@ -52,13 +52,29 @@ export class K8sManagement {
     l.debug('Calling `k8sClient.listNamespacedService(', namespace, ')`')
     const response = await this.unwrapResponse(this.k8sClient.listNamespacedService(namespace))
     l.debug('Got items with length', response.items.length)
+    const mainNode = await this.getMainNode()
+    // We differentiate two provider groups:
+    // 1. Minikube provider (local)
+    // 2. Cloud providers
+    const minikubeProvider = mainNode?.name === 'minikube'
     return response.items.map((item) => {
+      let ip = ''
+      let port = undefined
+      if (minikubeProvider && mainNode?.ip) {
+        // Minikube services work like => <minikube_ip>:<minikube_specific_service_nodePort>
+        ip = mainNode?.ip
+        port = item.spec?.ports?.[0]?.nodePort?.toString()
+      } else {
+        ip = item.status?.loadBalancer?.ingress?.[0]?.ip ?? item.status?.loadBalancer?.ingress?.[0]?.hostname ?? ''
+      }
+
       l.debug('Transforming item named', item.metadata?.name ?? 'UNDEFINED')
       return {
         name: item.metadata?.name,
         namespace: item.metadata?.namespace ?? 'default',
         labels: item.metadata?.labels ?? {},
-        ip: item.status?.loadBalancer?.ingress?.[0]?.ip ?? item.status?.loadBalancer?.ingress?.[0]?.hostname ?? '', //TODO: Report to the user a failure because his cluster is not providing an IP or hostname for services in K8s
+        ip: ip, //TODO: Report to the user a failure because his cluster is not providing an IP or hostname for services in K8s
+        port: port,
       }
     })
   }

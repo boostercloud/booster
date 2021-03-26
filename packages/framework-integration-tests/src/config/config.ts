@@ -1,6 +1,7 @@
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import * as AWS from '@boostercloud/framework-provider-aws'
+import * as Kubernetes from '@boostercloud/framework-provider-kubernetes'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -13,6 +14,12 @@ if (process.env.BOOSTER_ENV === 'local') {
     config.provider = Local.Provider()
   })
 }
+
+Booster.configure('kubernetes', (config: BoosterConfig): void => {
+  config.appName = 'my-store'
+  config.provider = Kubernetes.Provider()
+  config.assets = ['assets', 'assetFile.txt']
+})
 
 Booster.configure('development', (config: BoosterConfig): void => {
   config.appName = 'my-store'
