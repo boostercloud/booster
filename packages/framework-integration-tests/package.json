@@ -25,6 +25,7 @@
     "@types/ws": "^7.2.4",
     "@typescript-eslint/eslint-plugin": "^2.18.0",
     "@typescript-eslint/parser": "^2.18.0",
+    "@kubernetes/client-node": "^0.12.0",
     "apollo-cache-inmemory": "^1.6.5",
     "apollo-client": "^2.6.8",
     "apollo-link": "^1.2.14",
@@ -57,6 +58,7 @@
     "integration/aws-deploy": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"integration/providers/aws/deployment/.mocharc.yml\" \"integration/providers/aws/deployment/**/*.integration.ts\"",
     "integration/aws-func": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"integration/providers/aws/functionality/.mocharc.yml\" \"integration/providers/aws/functionality/**/*.integration.ts\"",
     "integration/aws-nuke": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"integration/providers/aws/nuke/.mocharc.yml\" \"integration/providers/aws/nuke/**/*.integration.ts\"",
+    "integration/k8s-deploy": "BOOSTER_ENV=kubernetes mocha --forbid-only --exit --config \"integration/providers/kubernetes/deployment/.mocharc.yml\" \"integration/providers/kubernetes/deployment/**/*.integration.ts\"",
     "integration/local": "BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/providers/local/.mocharc.yml\" \"integration/providers/local/**/*.integration.ts\"",
     "integration/cli": "mocha --forbid-only --exit --config \"integration/cli/.mocharc.yml\" \"integration/cli/**/*.integration.ts\"",
     "integration/end-to-end": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"integration/end-to-end/.mocharc.yml\" \"integration/end-to-end/**/*.integration.ts\""
