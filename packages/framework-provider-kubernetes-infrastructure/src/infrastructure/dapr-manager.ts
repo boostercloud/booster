@@ -52,17 +52,17 @@ export class DaprManager {
       l.debug('statetore.yaml exists')
       const stateStoreFileContent = fs.readFileSync(stateStoreFilePath).toString()
       const yamlData = safeLoad(stateStoreFileContent) as stateStoreYaml
-      if (yamlData.metadata.annotations['booster/created']) {
-        l.debug('The state store is provisioned by Booster. Verifying that the state store is working on the cluster')
-        const templateValues: DaprTemplateValues = await this.ensureEventStoreIsReady()
-        await this.createDaprComponentFile(templateValues)
-        this.eventStorePassword = templateValues.eventStorePassword
-      } else {
+      if (!yamlData.metadata.annotations['booster/created']) {
         l.debug('The state store is provisioned by the user. Getting statestore credentials')
         //TODO: Get the credentials for the state store in K8s provider if the user provides us the statestore in Dapr. We need to get the DB_HOST, DB_USER and DB_PASS to pass it to the runtime
         //Research how to get the eventStorePassword from the statestore file
         //this.eventStorePassword has to be set
+        throw new Error('Unable to get the state store credentials from your Dapr File')
       }
+      l.debug('The state store is provisioned by Booster. Verifying that the state store is working on the cluster')
+      const templateValues: DaprTemplateValues = await this.ensureEventStoreIsReady()
+      await this.createDaprComponentFile(templateValues)
+      this.eventStorePassword = templateValues.eventStorePassword
     } else {
       l.debug("Components path doesn't exist, ensuring event store is ready")
       const templateValues: DaprTemplateValues = await this.ensureEventStoreIsReady()
