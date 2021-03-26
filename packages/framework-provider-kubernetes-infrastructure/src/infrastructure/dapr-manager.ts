@@ -11,7 +11,7 @@ import { getProjectNamespaceName } from './utils'
 import { scopeLogger } from '../helpers/logger'
 import { safeLoad } from 'js-yaml'
 
-interface stateStoreYaml {
+interface StateStoreYaml {
   metadata: {
     annotations: {
       [key: string]: string
@@ -51,7 +51,7 @@ export class DaprManager {
     if (fs.existsSync(stateStoreFilePath)) {
       l.debug('statetore.yaml exists')
       const stateStoreFileContent = fs.readFileSync(stateStoreFilePath).toString()
-      const yamlData = safeLoad(stateStoreFileContent) as stateStoreYaml
+      const yamlData = safeLoad(stateStoreFileContent) as StateStoreYaml
       if (!yamlData.metadata.annotations['booster/created']) {
         l.debug('The state store is provisioned by the user. Getting statestore credentials')
         //TODO: Get the credentials for the state store in K8s provider if the user provides us the statestore in Dapr. We need to get the DB_HOST, DB_USER and DB_PASS to pass it to the runtime
