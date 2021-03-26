@@ -20,7 +20,7 @@ describe('Optimistic concurrency on read models', () => {
     client = await graphQLClient(userAuthInformation.idToken)
   })
 
-  context('with 100 products on the same SKU', () => {
+  context('with 250 products on the same SKU', () => {
     const numberOfProductsBySKU = 250
 
     it('processes the events without corrupting read models data', async () => {
