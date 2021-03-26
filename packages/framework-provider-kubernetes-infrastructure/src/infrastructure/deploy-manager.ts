@@ -158,8 +158,6 @@ export class DeployManager {
     const l = scopeLogger('uploadUserCode', this.logger)
     l.debug('Waiting for service to be ready')
     const fileUploadService = await this.clusterManager.waitForServiceToBeReady(this.namespace, uploadService.name)
-    l.debug('//////// LALALALAL /////////')
-    l.debug(inspect(fileUploadService, true, 5, true))
     l.debug('Creating zip file')
     const codeZipFile = await createProjectZipFile(l)
     l.debug('Uploading file')
