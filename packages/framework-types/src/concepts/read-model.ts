@@ -4,6 +4,9 @@ import { PropertyMetadata } from 'metadata-booster'
 
 export interface ReadModelInterface {
   id: UUID
+  boosterMetadata?: {
+    version: number
+  }
   [key: string]: any
 }
 
