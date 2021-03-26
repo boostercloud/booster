@@ -75,10 +75,6 @@
   - [Framework Types](#framework-types)
   - [Framework integration tests](#framework-integration-tests)
   - [Providers](#providers)
-    - [framework-provider-aws-\*](#framework-provider-aws-)
-    - [framework-provider-local-\*](#framework-provider-local-)
-    - [framework-provider-kubernetes-\*](#framework-provider-kubernetes-)
-    - [framework-provider-azure-\*](#framework-provider-azure-)
   - [Configuration and environments](#configuration-and-environments)
     - [Booster configuration](#booster-configuration)
     - [Environments](#environments)
@@ -86,15 +82,8 @@
     - [Naming recommendations](#naming-recommendations)
     - [Infrastructure extensions](#infrastructure-extensions)
     - [Booster Rockets list](#booster-rockets-list)
-- [Debugging and testing Booster applications](#debugging-and-testing-booster-applications)
-  - [Running Booster applications locally](#running-booster-applications-locally)
-    - [Local development prerequisites](#local-development-prerequisites)
-    - [Starting your application](#starting-your-application)
-    - [Performing Auth requests](#performing-auth-requests)
-    - [Performing GraphQL requests](#performing-graphql-requests)
-    - [Inspect Database information](#inspect-database-information)
-  - [Testing Booster applications](#testing-booster-applications)
-  - [Booster examples](#booster-examples)
+- [Testing Booster applications](#testing-booster-applications)
+- [Booster examples](#booster-examples)
 - [Frequently Asked Questions](#frequently-asked-questions)
 
 <!-- tocstop -->
@@ -251,8 +240,8 @@ will be deployed to the cloud using different cloud providers. By default, Boost
 this step if you only want to get a grip of Booster or test it locally without making a
 deployment.
 
-Note:
-
+> **Note**:
+>
 > Booster is free to use, but notice that the resources deployed to your cloud provider
 > might generate some expenses.
 >
@@ -762,9 +751,7 @@ The expected response for each of those requests should be:
 }
 ```
 
-Note:
-
-> In this example, the IDs are generated on the client-side. When running production applications
+> **Note**: In this example, the IDs are generated on the client-side. When running production applications
 > consider adding validation for ID uniqueness. For this example, we have used [a UUID generator](https://www.uuidgenerator.net/version4)
 
 ##### 7.2 Retrieving all posts
@@ -936,9 +923,9 @@ boost new:command CreateProduct --fields sku:SKU displayName:string description:
 
 The generator will automatically create a file called `create-product.ts` with a TypeScript class of the same name under the `commands` directory. You can still create (or modify) the command manually. Since the generator is not doing any _magic_, all you need is a class decorated as `@Command`. Anyway, we recommend you always to use the generator, because it handles the boilerplate code for you.
 
-Note:
 
-> Generating a command with the same name as an already existing one will prompt the user for confirmation.
+
+> **Note**: Generating a command with the same name as an already existing one will prompt the user for confirmation.
 
 #### The command handler function
 
@@ -1172,9 +1159,9 @@ export class CartPaid {
 
 An event has to know the ID of the entity it belongs to and you need to implement the `entityID` method to return it. You can inject the entity ID directly in the event's constructor or as a nested attribute. If your domain requires a _singleton_ entity, where there's only one instance, you can return a constant value. In the `CartPaid` example, the entity ID (`cartID`) is injected directly.
 
-Note:
 
-> The `entityID` method must always return the same value for the same event's instance. Otherwise, the result of the entity reduction will be unpredictable.
+
+> **Note**: The `entityID` method must always return the same value for the same event's instance. Otherwise, the result of the entity reduction will be unpredictable.
 
 #### Events naming convention
 
@@ -1210,9 +1197,7 @@ boost new:event StockMoved --fields productID:string origin:string destination:s
 
 That will generate a file called `stock-moved.ts` under the proper `<project-root>/src/events` directory. You can also create the file manually, but we recommend using the generator and avoid dealing manually with boilerplate code.
 
-Note:
-
-> Generating an event with the same name as an already existing one will prompt the user for confirmation.
+> **Note**: Generating an event with the same name as an already existing one will prompt the user for confirmation.
 
 #### Registering events in the event store
 
@@ -1392,9 +1377,9 @@ boost new:entity Product --fields displayName:string description:string price:Mo
 
 The generator will automatically create a file called `product.ts` with a TypeScript class of the same name under the `entities` directory. You can still create the entity manually, writing a class decorated with `@Entity`. Anyway, we recommend you always to use the generator because it handles the boilerplate code for you.
 
-Note:
 
-> Generating an entity with the same name as an already existing one will prompt the user for confirmation.
+
+> **Note**: Generating an entity with the same name as an already existing one will prompt the user for confirmation.
 
 #### The reducer function
 
@@ -1577,6 +1562,143 @@ For more information about queries and how to use them, please check the [GraphQ
 
 Booster GraphQL API also provides support for real-time updates using subscriptions and a web-socket. To get more information about it go to the [GraphQL API](#subscribing-to-read-models) section.
 
+#### Filtering a read model
+
+The Booster GraphQL API provides support for filtering Read Models on queries, subscriptions and at code level.
+
+Using the GraphQL API endpoint you can retrieve the schema of your application so you can see what are the filters for every Read Model and its properties. You can filter like this:
+
+Searching for a specific Read Model by `id`
+
+```graphql
+query {
+  ProductReadModels(filter: { id: { eq: "test-id" } }) {
+    id
+    sku
+    availability
+    price
+  }
+}
+```
+
+#### Supported filters
+
+The currently supported filters are the following ones:
+
+##### Boolean filters
+
+| Filter |   Value    |  Description |
+| :----- | :--------: | -----------: |
+| eq     | true/false |     Equal to |
+| ne     | true/false | Not equal to |
+
+Example:
+
+```graphql
+query {
+  ProductReadModels(filter: { availability: { eq: true } }) {
+    id
+    sku
+    availability
+    price
+  }
+}
+```
+
+##### Number filters
+
+| Filter |  Value  |           Description |
+| :----- | :-----: | --------------------: |
+| eq     |  Float  |              Equal to |
+| ne     |  Float  |          Not equal to |
+| gt     |  Float  |          Greater than |
+| gte    |  Float  | Greater or equal than |
+| lt     |  Float  |            Lower than |
+| lte    |  Float  |   Lower or equal than |
+| in     | [Float] | Exists in given array |
+
+Example:
+
+```graphql
+query {
+  ProductReadModels(filter: { price: { gt: 200 } }) {
+    id
+    sku
+    availability
+    price
+  }
+}
+```
+
+##### String filters
+
+| Filter     |  Value   |                Description |
+| :--------- | :------: | -------------------------: |
+| eq         |  String  |                   Equal to |
+| ne         |  String  |               Not equal to |
+| gt         |  String  |               Greater than |
+| gte        |  String  |      Greater or equal than |
+| lt         |  String  |                 Lower than |
+| lte        |  String  |        Lower or equal than |
+| in         | [String] |      Exists in given array |
+| beginsWith |  String  | Starts with a given substr |
+| contains   |  String  |    Contains a given substr |
+
+Example:
+
+```graphql
+query {
+  ProductReadModels(filter: { sku: { begingsWith: "jewelry" } }) {
+    id
+    sku
+    availability
+    price
+  }
+}
+```
+
+##### Array filters
+
+| Filter   | Value  |             Description |
+| :------- | :----: | ----------------------: |
+| includes | Object | Includes a given object |
+
+Example:
+
+```graphql
+query {
+  CartReadModels(filter: { itemsIds: { includes: "test-item" } }) {
+    id
+    price
+    itemsIds
+  }
+}
+```
+
+_Note: Right now there is a limitation with complex properties in Arrays, where you just can filter them if you know the exact value of an element but is not possible to filter from a property of the element. As a workaround, you can use an array of ids of the complex property and filter for that property as in the example above._
+
+##### Filter combinators
+
+All the filters can be combined to create a more complex search on the same properties of the ReadModel.
+
+| Filter |     Value     |                                      Description |
+| :----- | :-----------: | -----------------------------------------------: |
+| and    |   [Filters]   |       AND - all filters on the list have a match |
+| or     |   [Filters]   | OR - At least one filter of the list has a match |
+| not    | Filter/and/or |            The element does not match the filter |
+
+Example:
+
+```graphql
+query {
+  CartReadModels(filter: { or: [{ id: { contains: "a" } }, { id: { contains: "b" } }] }) {
+    id
+    price
+    itemsIds
+  }
+}
+```
+
 #### Getting and filtering read models data at code level
 
 Booster allows you to get your read models data in your commands handlers and event handlers using the `Booster.readModel` method.
@@ -1651,7 +1773,7 @@ Roles are classes annotated with the `@Role` decorator, where you can specify so
 
 _Note: There is no `Admin` user by default. In order to register one you need to specify a sign-up method on `src/roles.ts`._
 
-In the following example we define two roles, `Admin` and `User`:
+In the following example we define `Admin`, `User`, `SuperUser` and `SuperUserWithoutConfirmation` roles. They all contain an `auth` attribute which contains a `signUpMethods` and `skipConfirmation` attributes.
 
 ```typescript
 // src/roles.ts
@@ -1688,8 +1810,6 @@ export class SuperUser {}
 })
 export class SuperUserWithoutConfirmation {}
 ```
-
-Here, we have defined the `Admin`, `User`, `SuperUser` and `SuperUserWithoutConfirmation` roles. They all contain an `auth` attribute which contains a `signUpMethods` and `skipConfirmation` attributes.
 
 When `signUpMethods` is empty (`Admin` role) or is not specified, a user can't use this role to sign up.
 `signUpMethods` is an array with limited possible values: `email`, `phone` or a combination of both.
@@ -1820,7 +1940,7 @@ Therefore:
 - To send a GraphQL mutation/query, you send an HTTP request to _"&lt;graphqlURL&gt;"_, with _method POST_, and a _JSON-encoded body_ with the mutation/query details.
 - To send a GraphQL subscription, you first connect to the _"&lt;websocketURL&gt;"_, and then send a _JSON-encoded message_ with the subscription details, _following [the "GraphQL over WebSocket" protocol](#the-graphql-over-websocket-protocol)_.
 
-> Note: you can also **send queries and mutations through the WebSocket** if that's convenient to you. See ["The GraphQL over WebSocket protocol"](#the-graphql-over-websocket-protocol) to know more.
+> **Note**: you can also **send queries and mutations through the WebSocket** if that's convenient to you. See ["The GraphQL over WebSocket protocol"](#the-graphql-over-websocket-protocol) to know more.
 
 While it is OK to know how to manually send GraphQL request, you normally don't need to deal with this low-level details, especially with the WebSocket stuff.
 
@@ -2348,7 +2468,7 @@ To deploy your Booster project, run the following command:
 boost deploy -e <environment name>
 ```
 
-**Note**: All you have in your project root will be deployed to the cloud provider, so if for example you have an additional frontend project, you should move it to another place because the cloud providers usually have a limited capacity for only code.
+> **Note**: All you have in your project root will be deployed to the cloud provider, so if for example you have an additional frontend project, you should move it to another place because the cloud providers usually have a limited capacity for only code.
 
 The `<environment name>` parameter is the name of the [environment](#environments) you want to deploy.
 It will take a while, but you should have your project deployed to your cloud provider.
@@ -2375,11 +2495,11 @@ If you want to delete the Booster application that has been deployed, you can ru
 boost nuke -e <environment name>
 ```
 
-**Note**: This will delete everything in your stack, including databases. This action is **not** reversible!
+> **Note**: This will delete everything in your stack, including databases. This action is **not** reversible!
 
 For a force delete without asking for confirmation, you can run `boost nuke -e <environment name> -f`.
 
-**Note**: Be EXTRA CAUTIOUS with this option, all your application data will be irreversibly DELETED without confirmation.
+> **Note**: Be EXTRA CAUTIOUS with this option, all your application data will be irreversibly DELETED without confirmation.
 
 ## Going deeper with Booster
 
@@ -2389,7 +2509,13 @@ If you want to start making contributions to Booster, we strongly recommend that
 
 ### Framework Core
 
+The `framework-core` package includes the most important components of the framework abstraction. It can be seen as skeleton or the main architecture of the framework. 
+
+The package defines the specification of how should a Booster application work without taking into account the specific providers that could be used. Every Booster provider package is based on the components that the framework core needs in order to work on the platform.
+
 ### Framework Types
+
+The `framework-types` packages includes the types that define the domain of the Booster framework. It defines domain concepts like an `Event`, a `Command` or a `Role`.
 
 ### Framework integration tests
 
@@ -2399,9 +2525,9 @@ Some integration tests highly depend on the provider chosen for the project, and
 
 There are several types of integration tests in this package:
 
-- Tests to ensure that different packages integrate as expected with each other
-- Tests to ensure that a Booster application behaves as expected when it is hit by a client (a GraphQL client)
-- Tests to ensure that the application behaves in the same way no matter what provider is selected
+- Tests to ensure that different packages integrate as expected with each other.
+- Tests to ensure that a Booster application behaves as expected when it is hit by a client (a GraphQL client).
+- Tests to ensure that the application behaves in the same way no matter what provider is selected.
 
 If you are curious about the framework providers, you will be able to read more about them in the following section.
 
@@ -2409,17 +2535,15 @@ If you are curious about the framework providers, you will be able to read more 
 
 The providers are different implementations of the Booster runtime to allow Booster applications run on different cloud providers or services. They all implement the same interface, and the main idea behind the providers is that no matter what the developer chooses as backend, they won't need to know anything about the underlying infrastructure.
 
-#### framework-provider-aws-\*
+Currently, the Booster framework provides a fully working provider package:
 
-#### framework-provider-local-\*
+-  **framework-provider-aws-\***
 
-The Booster framework local provider combines in-memory databases with a GraphQL API served through a Node.js Express Server.
+Other providers packages are currently under development. Some of the features might be missing:
 
-The local runtime is a convenient and fast way to deploy and test your code in a local development environment. From the API and semantic perspectives, there are no differences from using a real cloud provider, it just runs locally!
-
-#### framework-provider-kubernetes-\*
-
-#### framework-provider-azure-\*
+-  **framework-provider-local-\***. The Booster framework local provider combines in-memory databases with a GraphQL API served through a Node.js Express Server. The local runtime is a convenient and fast way to deploy and test your code in a local development environment. From the API and semantic perspectives, there are no differences from using a real cloud provider, it just runs locally!
+- **framework-provider-kubernetes-\***
+- **framework-provider-azure-\***
 
 ### Configuration and environments
 
@@ -2448,10 +2572,10 @@ The following is the list of the fields you can configure:
 
 - **provider:** This field contains the provider library instance that Booster will use when deploying or running your application.
 
-_**Note:** So far, there is only one provider fully supported in Booster yet, @boostercloud/framework-provider-aws, and it is probably the one you have already set if you used the generator to create your project. The team is currently working on providers for local development, Azure, and Kubernetes._
+> **Note:** So far, there is only one provider fully supported in Booster yet, @boostercloud/framework-provider-aws, and it is probably the one you have already set if you used the generator to create your project. The team is currently working on providers for local development, Azure, and Kubernetes._
 
 - **assets**: This is an array of _relative_ paths from the root of the project pointing to files and folders with static assets. They will be included among the deployed files to the cloud provider.
-  For example, imagine you are using the "dotenv" module so that all the environment variables you have in your `.env` files are loaded into memory in runtime. In order for this to work, you need to include your `.env` files as assets of your project, so that they are included when deploying. Assuming you only have a `.env` file in the root of your project, you should add the following to your configuration:
+  For example, imagine you are using the `dotenv` module so that all the environment variables you have in your `.env` files are loaded into memory in runtime. In order for this to work, you need to include your `.env` files as assets of your project, so that they are included when deploying. Assuming you only have a `.env` file in the root of your project, you should add the following to your configuration:
   ```typescript
   config.assets = ['.env']
   ```
@@ -2605,107 +2729,9 @@ Here you can find the official Booster Rockets developed at this time:
 - [Backup Booster Rocket for AWS](https://github.com/boostercloud/rocket-backup-aws-infrastructure)
 - [Static Sites Booster Rocket for AWS](https://github.com/boostercloud/rocket-static-sites-aws-infrastructure)
 
-## Debugging and testing Booster applications
+## Testing Booster applications
 
-### Running Booster applications locally
-
-While Booster is designed to deploy your applications to a cloud provider, having the ability to run your code locally speeds-up dramatically the feedback loop and allows developers to view application logs in the terminal.
-
-The Booster approach to run cloud applications locally is very different from the route taken by other major cloud frameworks, we don't try to replicate the cloud services in your machine, but simulate how the code runs in the cloud in a very light local environment based on Node.js and Express.js. This approach reduces dramatically the hardware requirements to develop Booster applications and increases the speed of development.
-
-#### Local development prerequisites
-
-In order to run locally, it is necessary to add the `framework-provider-local` package to the project, and also define a new configuration environment that you can call, for instance `local`.
-
-First of all, we will have to install the local provider package and the corresponding infrastructure package as development dependencies:
-
-```sh
-npm install --dev @boostercloud/framework-provider-local
-npm install --dev @boostercloud/framework-provider-local-infrastructure
-```
-
-Once the local provider is installed, we will need to create a new config file or update the existing one (usually `src/config/config.ts`). Then you'll have to load and initialize your environment as follows:
-
-```typescript
-import { BoosterConfig } from '@boostercloud/framework-types'
-import * as Local from '@boostercloud/framework-provider-local'
-
-Booster.configure('local', (config: BoosterConfig): void => {
-  config.appName = 'fruit-store-local'
-  config.provider = Local.Provider
-})
-```
-
-#### Starting your application
-
-This step is very simple. On your project root directory, you only need to run this command:
-
-```bash
-boost start -e local
-```
-
-By default, the application will be available at `http://localhost:3000`.
-
-Optionally, you could also specify on which port you want your application to be running on with the option `-p <port-number>`:
-
-```bash
-boost start -e local -p 3333
-```
-
-After a few seconds, the Booster application should be ready at `http://localhost:<port-number>`.
-
-There will be two different endpoints available for our application:
-
-- `/auth`
-- `/graphql`
-
-#### Performing Auth requests
-
-The local provider also delivers user management for free, allowing you to sign-up, confirm and sign-in users. An example of a sign up would be as follow:
-
-`POST http://localhost:3000/auth/sign-up`
-
-```json
-{
-  "username": "user@test.com",
-  "password": "passw0rd!",
-  "userAttributes": {
-    "role": "User"
-  }
-}
-```
-
-#### Performing GraphQL requests
-
-We should now be able to perform queries and mutations to our GraphQL endpoint `http://localhost:<port-number>/graphql` with a client or tool, for example, a React App, [Hoppscotch (formerly Postwoman)](https://hoppscotch.io), or [Postman](https://www.postman.com).
-
-`POST http://localhost:3000/graphql`
-
-Query
-
-```graphql
-mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
-  ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
-}
-```
-
-Variables
-
-```json
-{
-  "cartId": "e46d1d0e-5e7f-4934-850c-9559dc55af79",
-  "productId": "9214d0a9-0915-417d-852b-de79e54d8e95",
-  "quantity": 10
-}
-```
-
-#### Inspect Database information
-
-The databases for the local provider are just json files in the `<project-root>/.booster` folder. If you are wondering what data is available in the application you will only need to chose what file to look into.
-
-### Testing Booster applications
-
-To properly test a Booster application, you should create a `test` folder at the same level as the `src` one (check the generated `tsconfig.json` for more information). Apart from that, tests' names should have the `<my_test>.test.ts` format.
+To properly test a Booster application, you should create a `test` folder at the same level as the `src` one. Apart from that, tests' names should have the `<my_test>.test.ts` format.
 
 When a Booster application is generated, you will have a script in a `package.json` like this:
 ```typescript
@@ -2789,9 +2815,9 @@ full-trace: true
 bail: true
 ```
 
-### Booster examples
+## Booster examples
 
-In the [examples directory](https://github.com/boostercloud/booster/tree/main/docs/examples) you can find some example apps you can check.
+You can find some example apps in the [examples directory](https://github.com/boostercloud/booster/tree/main/docs/examples) and in this [repository](https://github.com/boostercloud/examples).
 
 ## Frequently Asked Questions
 

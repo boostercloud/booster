@@ -1,6 +1,6 @@
 import { GraphQLJSONObject } from 'graphql-type-json'
 import { GraphQLNonInputType, TargetTypeMetadata, TargetTypesMap } from './common'
-import { AnyClass, UUID, PropertyMetadata } from '@boostercloud/framework-types'
+import { AnyClass, UUID } from '@boostercloud/framework-types'
 import {
   GraphQLFieldConfigMap,
   GraphQLList,
@@ -17,7 +17,10 @@ import {
   GraphQLEnumType,
   GraphQLInterfaceType,
 } from 'graphql'
-import { GraphQLFieldMap, GraphQLInputFieldConfigMap } from 'graphql/type/definition'
+import { GraphQLEnumValueConfigMap, GraphQLFieldMap, GraphQLInputFieldConfigMap } from 'graphql/type/definition'
+import { PropertyMetadata } from 'metadata-booster'
+import { getPropertiesMetadata } from './../../decorators/metadata'
+import inflected = require('inflected')
 
 export class GraphQLTypeInformer {
   private graphQLTypesByName: Record<string, GraphQLNonInputType> = {}
@@ -28,7 +31,7 @@ export class GraphQLTypeInformer {
     }
   }
 
-  private generateGraphQLTypeFromMetadata(typeMetadata: TargetTypeMetadata): void {
+  public generateGraphQLTypeFromMetadata(typeMetadata: TargetTypeMetadata): void {
     const name = typeMetadata.class.name
     if (!this.graphQLTypesByName[name]) {
       this.graphQLTypesByName[name] = new GraphQLObjectType({
@@ -41,25 +44,56 @@ export class GraphQLTypeInformer {
   private metadataPropertiesToGraphQLFields(properties: Array<PropertyMetadata>): GraphQLFieldConfigMap<any, any> {
     const fields: GraphQLFieldConfigMap<any, any> = {}
     for (const prop of properties) {
-      fields[prop.name] = { type: this.getGraphQLTypeFor(prop.type) }
+      if (prop.typeInfo.type === Array) {
+        prop.typeInfo.parameters.forEach((param) => {
+          const graphQLPropType = this.getGraphQLTypeFor(param.type)
+
+          if (!this.isPrimitiveType(graphQLPropType)) {
+            const properties = getPropertiesMetadata(param.type)
+            this.generateGraphQLTypeFromMetadata({ class: param.type, properties })
+          }
+
+          fields[prop.name] = {
+            type: GraphQLList(graphQLPropType),
+          }
+        })
+      } else {
+        if (!prop.typeInfo.type.prototype) {
+          fields[prop.name] = {
+            type: new GraphQLEnumType({
+              name: inflected.camelize(prop.name),
+              values: this.generateOperationEnumValuesFor(prop.typeInfo.type),
+            }),
+          }
+        } else {
+          fields[prop.name] = { type: this.getGraphQLTypeFor(prop.typeInfo.type) }
+        }
+      }
     }
     return fields
   }
 
+  public isPrimitiveType(graphQLType: GraphQLNonInputType): boolean {
+    return graphQLType instanceof GraphQLScalarType && graphQLType != GraphQLJSONObject
+  }
+
+  public getPrimitiveExtendedType(type: AnyClass): AnyClass {
+    if (!type.prototype) return type
+    const parentType = Object.getPrototypeOf(type.prototype)?.constructor
+    return parentType === Object ? type : parentType
+  }
+
   public getGraphQLTypeFor(type: AnyClass): GraphQLNonInputType {
-    switch (type) {
-      case UUID:
-        return GraphQLID
+    if (type === UUID) return GraphQLID
+    const primitiveType = this.getPrimitiveExtendedType(type)
+    switch (primitiveType) {
+      case Date:
       case String:
         return GraphQLString
       case Number:
         return GraphQLFloat
       case Boolean:
         return GraphQLBoolean
-      case Array:
-        return new GraphQLList(GraphQLJSONObject)
-      case Object:
-        return GraphQLJSONObject
       default:
         if (this.graphQLTypesByName[type.name]) {
           return this.graphQLTypesByName[type.name]
@@ -106,5 +140,14 @@ export class GraphQLTypeInformer {
       }
     }
     return inputFields
+  }
+
+  private generateOperationEnumValuesFor(operationsEnum: AnyClass): GraphQLEnumValueConfigMap {
+    const enumValuesConfig: GraphQLEnumValueConfigMap = {}
+    for (const opSymbol in operationsEnum) {
+      const opName = (operationsEnum as any)[opSymbol]
+      enumValuesConfig[opName] = { value: opSymbol }
+    }
+    return enumValuesConfig
   }
 }
