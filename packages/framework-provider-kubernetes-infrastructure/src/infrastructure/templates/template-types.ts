@@ -19,3 +19,7 @@ export interface DaprTemplateValues {
   eventStoreUsername: string
   eventStorePassword: string
 }
+
+export interface DaprTemplateRoles {
+  namespace: string
+}

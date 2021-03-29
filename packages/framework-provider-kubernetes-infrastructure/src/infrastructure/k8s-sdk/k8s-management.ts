@@ -3,7 +3,7 @@ import { Node, Namespace, Pod, Service, VolumeClaim, Secret } from './types'
 import * as Mustache from 'mustache'
 import { safeLoadAll } from 'js-yaml'
 import { waitForIt } from '../utils'
-import { TemplateValues } from '../templates/template-types'
+import { DaprTemplateRoles, TemplateValues } from '../templates/template-types'
 import * as util from 'util'
 import { IncomingMessage } from 'http'
 import { Logger } from '@boostercloud/framework-types'
@@ -223,7 +223,10 @@ export class K8sManagement {
   /**
    * apply the provided template to the cluster. This method will try to render the provided template using the provided data and apply the result to the cluster
    */
-  public async applyTemplate(template: string, templateData: TemplateValues): Promise<Array<KubernetesObject>> {
+  public async applyTemplate(
+    template: string,
+    templateData: TemplateValues | DaprTemplateRoles
+  ): Promise<Array<KubernetesObject>> {
     const l = scopeLogger('applyTemplate', this.logger)
     l.debug('Rendering template')
     const renderedYaml = Mustache.render(template, templateData)

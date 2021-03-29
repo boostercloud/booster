@@ -45,6 +45,7 @@ describe('User interaction during the deploy:', async () => {
     stub(k8sManager, 'getPodFromNamespace').resolves(undefined)
     stub(helmManager, 'exec').resolves()
     stub(k8sManager, 'waitForPodToBeReady').resolves()
+    stub(daprManager, 'allowDaprToReadSecrets').resolves()
     await expect(deployManager.ensureDaprExists()).to.eventually.be.fulfilled
   })
 

@@ -3,13 +3,15 @@ import { Promises } from '../helpers/promises'
 import * as fs from 'fs'
 import { stateStore } from './templates/statestore'
 import { K8sManagement } from './k8s-sdk/k8s-management'
-import { DaprTemplateValues } from './templates/template-types'
+import { DaprTemplateRoles, DaprTemplateValues, Template } from './templates/template-types'
 import { HelmManager } from './helm-manager'
 import * as Mustache from 'mustache'
 import { BoosterConfig, Logger } from '@boostercloud/framework-types'
 import { getProjectNamespaceName } from './utils'
 import { scopeLogger } from '../helpers/logger'
 import { safeLoad } from 'js-yaml'
+import { stateStoreRoleBinding } from './templates/statestore-role-binding'
+import { stateStoreRole } from './templates/statestore-role'
 
 interface StateStoreYaml {
   metadata: {
@@ -38,6 +40,14 @@ export class DaprManager {
     this.clusterManager = clusterManager
     this.helmManager = helmManager
     this.logger = scopeLogger('HelmManager', logger)
+  }
+
+  /**
+   * Allow Dapr to read secrets in other namespaces different than default
+   */
+  public async allowDaprToReadSecrets(): Promise<void> {
+    await this.applyTemplate(stateStoreRole, { namespace: this.namespace })
+    await this.applyTemplate(stateStoreRoleBinding, { namespace: this.namespace })
   }
 
   /**
@@ -190,5 +200,21 @@ export class DaprManager {
       l.debug("Couldn't write file, throwing")
       throw new Error(`Unable to create the index file for your app: Tried to write ${outFile} and failed`)
     })
+  }
+
+  /*
+   * Fill the template with the provided values and apply it to the cluster
+   */
+  private async applyTemplate(template: Template, templateValues: DaprTemplateRoles): Promise<boolean> {
+    const l = scopeLogger('applyTemplate', this.logger)
+    l.debug('Applying template')
+    const clusterResponse = await this.clusterManager.applyTemplate(template.template, templateValues)
+    if (clusterResponse.length == 0) {
+      l.debug("Cluster didn't respond throwing")
+      throw new Error(
+        `Unable to create ${template.name} service for your project, please check your Kubectl configuration`
+      )
+    }
+    return true
   }
 }
