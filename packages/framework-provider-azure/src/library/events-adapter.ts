@@ -24,7 +24,7 @@ export async function readEntityEventsSince(
   const querySpec: SqlQuerySpec = {
     query:
       `SELECT * FROM c WHERE c["${eventsStoreAttributes.partitionKey}"] = @partitionKey ` +
-      `AND c["${eventsStoreAttributes.sortKey}"] > @fromTime ORDER BY c["${eventsStoreAttributes.sortKey}"] DESC`,
+      `AND c["${eventsStoreAttributes.sortKey}"] > @fromTime ORDER BY c["${eventsStoreAttributes.sortKey}"] ASC`,
     parameters: [
       {
         name: '@partitionKey',
