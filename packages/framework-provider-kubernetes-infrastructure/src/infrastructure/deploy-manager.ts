@@ -65,6 +65,7 @@ export class DeployManager {
       await this.helmManager.exec(`install dapr dapr/dapr --namespace ${this.namespace}`)
       l.debug('Waiting for pod to be ready')
       await this.clusterManager.waitForPodToBeReady(this.namespace, 'dapr-operator')
+      await this.daprManager.allowDaprToReadSecrets()
     }
   }
 

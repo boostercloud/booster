@@ -16,7 +16,9 @@ spec:
   - name: redisUser
     value: {{ eventStoreUsername }} 
   - name: redisPassword
-    value: {{ eventStorePassword }} 
+    secretKeyRef:
+      name: redis
+      key: redis-password
   - name: actorStateStore
     value: "true"`,
 }
