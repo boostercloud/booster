@@ -8,6 +8,7 @@ export interface TemplateValues {
   namespace: string
   clusterVolume: string
   environment: string
+  serviceType: string
   dbHost?: string
   dbUser?: string
   dbPass?: string

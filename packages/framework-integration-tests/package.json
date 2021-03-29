@@ -13,11 +13,13 @@
     "@boostercloud/framework-core": "^0.14.3",
     "@boostercloud/framework-provider-aws": "^0.14.3",
     "@boostercloud/framework-provider-local": "^0.14.3",
+    "@boostercloud/framework-provider-kubernetes": "^0.14.3",
     "@boostercloud/framework-types": "^0.14.3"
   },
   "devDependencies": {
     "@boostercloud/framework-provider-aws-infrastructure": "^0.14.3",
     "@boostercloud/framework-provider-local-infrastructure": "^0.14.3",
+    "@boostercloud/framework-provider-kubernetes-infrastructure": "^0.14.3",
     "@types/aws-lambda": "8.10.48",
     "@types/chai-arrays": "^2.0.0",
     "@types/faker": "5.1.5",

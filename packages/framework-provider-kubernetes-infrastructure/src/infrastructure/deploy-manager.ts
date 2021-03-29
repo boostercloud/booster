@@ -35,6 +35,7 @@ export class DeployManager {
       environment: configuration.environmentName,
       namespace: this.namespace,
       clusterVolume: boosterVolumeClaim.name,
+      serviceType: 'LoadBalancer',
     }
     this.logger = scopeLogger('DeployManager', logger)
   }
@@ -111,6 +112,16 @@ export class DeployManager {
         l.debug("Cluster didn't respond after applying template, throwing")
         throw new Error('Unable to create a volume claim for your project, please check your Kubectl configuration')
       }
+    }
+  }
+
+  /**
+   * Set the type for services in case you are running the cluster locally or in a cloud provider
+   */
+  public async setServiceType(): Promise<void> {
+    const mainNode = await this.clusterManager.getMainNode()
+    if (mainNode?.name === 'minikube') {
+      this.templateValues.serviceType = 'NodePort'
     }
   }
   /**
