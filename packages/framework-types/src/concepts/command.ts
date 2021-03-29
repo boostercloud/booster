@@ -1,6 +1,7 @@
 import { Register } from './register'
-import { PropertyMetadata, Class } from '../typelevel'
+import { Class } from '../typelevel'
 import { RoleAccess } from './role'
+import { PropertyMetadata } from 'metadata-booster'
 
 export interface CommandInterface<TCommand = unknown> extends Class<TCommand> {
   // The command's type is `unknown` because the CommandInterface type specifies the
