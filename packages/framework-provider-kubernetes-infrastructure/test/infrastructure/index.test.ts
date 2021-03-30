@@ -29,6 +29,7 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureDaprExists', fake.resolves(true))
@@ -59,6 +60,7 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     } as any
 
     replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureHelmIsReady', fake.throws(errorMsg))
 
     await expect(deploy(config, logger)).to.eventually.be.rejectedWith(errorMsg)
@@ -73,6 +75,7 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.throws(errorMsg))
+    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true))
 
     await expect(deploy(config, logger)).to.be.eventually.rejectedWith(errorMsg)
   })
@@ -86,6 +89,7 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.throws(errorMsg))
 
     await expect(deploy(config, logger)).to.be.eventually.rejectedWith(errorMsg)
@@ -100,6 +104,7 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.throws(errorMsg))
 
@@ -115,6 +120,7 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureDaprExists', fake.throws(errorMsg))
@@ -131,6 +137,7 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureDaprExists', fake.resolves(true))
@@ -148,6 +155,7 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureDaprExists', fake.resolves(true))
@@ -166,6 +174,7 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureDaprExists', fake.resolves(true))
@@ -185,6 +194,7 @@ describe('During the deploy or nuke of Booster apps:', async () => {
     replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true))
     replace(DeployManager.prototype, 'ensureDaprExists', fake.resolves(true))
