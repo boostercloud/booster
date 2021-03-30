@@ -33,7 +33,8 @@
   },
   "dependencies": {
     "@types/graphql": "14.5.0",
-    "uuid": "8.3.2"
+    "uuid": "8.3.2",
+    "ulid": "2.3.0"
   },
   "devDependencies": {
     "@types/uuid": "8.3.0",

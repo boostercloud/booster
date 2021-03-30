@@ -1,16 +1,18 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { DynamoDBStreamEvent, DynamoDBRecord } from 'aws-lambda'
-import { BoosterConfig, EventEnvelope, Logger, UUID } from '@boostercloud/framework-types'
+import { DynamoDBRecord, DynamoDBStreamEvent } from 'aws-lambda'
+import {
+  BoosterConfig,
+  EventEnvelope,
+  Logger,
+  OptimisticConcurrencyUnexpectedVersionError,
+  UUID,
+} from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { dynamoDbBatchWriteLimit, eventsStoreAttributes } from '../constants'
-import {
-  encodeEventStoreSortingKey,
-  modifyEventsDecodingSortingKeys,
-  partitionKeyForEvent,
-  partitionKeyForIndexByEntity,
-} from './keys-helper'
+import { partitionKeyForEvent, partitionKeyForIndexByEntity } from './keys-helper'
 import { Converter } from 'aws-sdk/clients/dynamodb'
 import { inChunksOf } from '../pagination-helpers'
+import { retryIfError } from './helpers/retrier'
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const originOfTime = new Date(0).toISOString()
@@ -51,9 +53,7 @@ export async function readEntityEventsSince(
     `[EventsAdapter#readEntityEventsSince] Loaded events for entity ${entityTypeName} with ID ${entityID} with result:`,
     result.Items
   )
-  const events = result.Items as Array<EventEnvelope>
-  modifyEventsDecodingSortingKeys(...events)
-  return events
+  return result.Items as Array<EventEnvelope>
 }
 
 export async function readEntityLatestSnapshot(
@@ -82,9 +82,7 @@ export async function readEntityLatestSnapshot(
       `[EventsAdapter#readEntityLatestSnapshot] Snapshot found for entity ${entityTypeName} with ID ${entityID}:`,
       snapshot
     )
-    const foundSnapshot = snapshot as EventEnvelope
-    modifyEventsDecodingSortingKeys(foundSnapshot)
-    return foundSnapshot
+    return snapshot as EventEnvelope
   } else {
     logger.debug(
       `[EventsAdapter#readEntityLatestSnapshot] No snapshot found for entity ${entityTypeName} with ID ${entityID}.`
@@ -112,31 +110,55 @@ async function persistBatch(
   dynamoDB: DynamoDB.DocumentClient
 ): Promise<void> {
   logger.debug('[EventsAdapter#storeEvents] Storing EventEnvelopes with eventEnvelopes:', batch)
-  const putRequests = []
+  // const putRequests = []
   for (const eventEnvelope of batch) {
-    putRequests.push({
-      PutRequest: {
+    await retryIfError(
+      logger,
+      () => persistEvent(dynamoDB, config, eventEnvelope),
+      OptimisticConcurrencyUnexpectedVersionError
+    )
+  }
+  // const params: DynamoDB.DocumentClient.BatchWriteItemInput = {
+  //   RequestItems: {
+  //     [config.resourceNames.eventsStore]: putRequests,
+  //   },
+  // }
+  // await dynamoDB.batchWrite(params).promise()
+  logger.debug('[EventsAdapter#storeEvents] EventEnvelope stored')
+}
+
+async function persistEvent(
+  dynamoDB: DynamoDB.DocumentClient,
+  config: BoosterConfig,
+  eventEnvelope: EventEnvelope
+): Promise<void> {
+  try {
+    const partitionKey = partitionKeyForEvent(eventEnvelope.entityTypeName, eventEnvelope.entityID, eventEnvelope.kind)
+    const sortKey = new Date().toISOString()
+    await dynamoDB
+      .put({
+        TableName: config.resourceNames.eventsStore,
+        ConditionExpression: `${eventsStoreAttributes.partitionKey} <> :partitionKey AND ${eventsStoreAttributes.sortKey} <> :sortKey`,
+        ExpressionAttributeValues: {
+          ':partitionKey': partitionKey,
+          ':sortKey': sortKey,
+        },
         Item: {
           ...eventEnvelope,
-          [eventsStoreAttributes.partitionKey]: partitionKeyForEvent(
-            eventEnvelope.entityTypeName,
-            eventEnvelope.entityID,
-            eventEnvelope.kind
-          ),
-          [eventsStoreAttributes.sortKey]: encodeEventStoreSortingKey(new Date().toISOString()),
+          [eventsStoreAttributes.partitionKey]: partitionKey,
+          [eventsStoreAttributes.sortKey]: sortKey,
           [eventsStoreAttributes.indexByEntity.partitionKey]: partitionKeyForIndexByEntity(
             eventEnvelope.entityTypeName,
             eventEnvelope.kind
           ),
         },
-      },
-    })
+      })
+      .promise()
+  } catch (e) {
+    // The error will be thrown, but in case of a conditional check, we throw the expected error type by the core
+    if (e.name == 'ConditionalCheckFailedException') {
+      throw new OptimisticConcurrencyUnexpectedVersionError(e.message)
+    }
+    throw e
   }
-  const params: DynamoDB.DocumentClient.BatchWriteItemInput = {
-    RequestItems: {
-      [config.resourceNames.eventsStore]: putRequests,
-    },
-  }
-  await dynamoDB.batchWrite(params).promise()
-  logger.debug('[EventsAdapter#storeEvents] EventEnvelope stored')
 }

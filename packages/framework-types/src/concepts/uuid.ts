@@ -1,4 +1,6 @@
-import { v4 as uuid } from 'uuid'
+import { monotonicFactory } from 'ulid'
+
+const ulid = monotonicFactory()
 /**
  * `UUID` type to work globally as a identifier for Entities,
  * Commands, Events or any other booster artifact.
@@ -7,6 +9,6 @@ import { v4 as uuid } from 'uuid'
  */
 export class UUID extends String {
   public static generate(): UUID {
-    return uuid()
+    return ulid()
   }
 }

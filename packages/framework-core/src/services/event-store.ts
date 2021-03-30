@@ -27,7 +27,7 @@ export class EventStore {
     const latestSnapshotEnvelope = await this.loadLatestSnapshot(entityName, entityID)
 
     // eslint-disable-next-line @typescript-eslint/no-extra-parens
-    const lastVisitedTime = latestSnapshotEnvelope?.createdAt || originOfTime
+    const lastVisitedTime = latestSnapshotEnvelope?.snapshottedEventCreatedAt ?? originOfTime
     const pendingEvents = await this.loadEventStreamSince(entityName, entityID, lastVisitedTime)
 
     if (pendingEvents.length <= 0) {
@@ -90,7 +90,8 @@ export class EventStore {
         entityTypeName: eventEnvelope.entityTypeName,
         typeName: eventEnvelope.entityTypeName,
         value: newEntity,
-        createdAt: eventEnvelope.createdAt,
+        createdAt: new Date().toISOString(), // TODO: This could be overridden by the provider. We should not set it. Ensure all providers set it
+        snapshottedEventCreatedAt: eventEnvelope.createdAt,
       }
       this.logger.debug('[EventStore#entityReducer]: Reducer result: ', newSnapshot)
       return newSnapshot

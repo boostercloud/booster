@@ -5,6 +5,7 @@ import {
   Register,
   EventInterface,
   EventHandlerInterface,
+  UUID,
 } from '@boostercloud/framework-types'
 import { EventStore } from './services/event-store'
 import { RawEventsParser } from './services/raw-events-parser'
@@ -22,8 +23,19 @@ export class BoosterEventDispatcher {
   public static async dispatch(rawEvents: unknown, config: BoosterConfig, logger: Logger): Promise<void> {
     const eventStore = new EventStore(config, logger)
     const readModelStore = new ReadModelStore(config, logger)
-    logger.debug('Event workflow started for raw events:', rawEvents)
+    logger.debug('Event workflow started for raw events:', require('util').inspect(rawEvents, false, null, false))
     try {
+      const firstEventEnvelope = config.provider.events.rawToEnvelopes(rawEvents).pop()
+      if (!firstEventEnvelope) {
+        return
+      }
+      await BoosterEventDispatcher.snapshotAndUpdateReadModels(
+        firstEventEnvelope.entityTypeName,
+        firstEventEnvelope.entityID,
+        eventStore,
+        readModelStore,
+        logger
+      )
       await RawEventsParser.streamEvents(
         config,
         rawEvents,
@@ -44,10 +56,7 @@ export class BoosterEventDispatcher {
         case 'event':
           logger.debug('[BoosterEventDispatcher#eventProcessor]: Started processing workflow for event:', eventEnvelope)
           // TODO: Separate into two independent processes the snapshotting/read-model generation process from the event handling process`
-          await Promises.allSettledAndFulfilled([
-            BoosterEventDispatcher.snapshotAndUpdateReadModels(eventEnvelope, eventStore, readModelStore, logger),
-            BoosterEventDispatcher.handleEvent(eventEnvelope, config, logger),
-          ])
+          await Promises.allSettledAndFulfilled([BoosterEventDispatcher.handleEvent(eventEnvelope, config, logger)])
           break
         case 'snapshot':
           // TODO: The event stream includes snapshots, but we currently just ignore them. In the future we could want to introduce snapshot hooks to backup them or other uses.
@@ -57,12 +66,13 @@ export class BoosterEventDispatcher {
   }
 
   private static async snapshotAndUpdateReadModels(
-    event: EventEnvelope,
+    entityTypeName: string,
+    entityID: UUID,
     eventStore: EventStore,
     readModelStore: ReadModelStore,
     logger: Logger
   ): Promise<void> {
-    const entitySnapshot = await eventStore.fetchEntitySnapshot(event.entityTypeName, event.entityID)
+    const entitySnapshot = await eventStore.fetchEntitySnapshot(entityTypeName, entityID)
     if (entitySnapshot) {
       logger.debug(
         '[BoosterEventDispatcher#eventProcessor]: Snapshot loaded and started read models projection:',

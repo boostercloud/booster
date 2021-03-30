@@ -30,6 +30,7 @@ export interface EventEnvelope extends Envelope {
   entityTypeName: string
   value: EventInterface | EntityInterface
   createdAt: string
+  snapshottedEventCreatedAt?: string
 }
 
 export interface EventSearchRequest extends Envelope {
