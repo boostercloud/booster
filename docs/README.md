@@ -2449,6 +2449,37 @@ The following is the list of the fields you can configure:
   config.assets = ['.env']
   ```
 
+#### Providers configuration
+
+##### AWS Provider
+
+To configure AWS as a provider you need to meet certain prerequisites:
+
+- Set up an AWS account following the getting started section [instructions](#set-up-an-aws-account)
+- Check `@boostercloud/framework-provider-aws` is listed in your app `package.json` dependencies.
+- Check `@boostercloud/framework-provider-aws-infrastructure` is listed in your app `package.json` devDependencies.
+- Check both dependencies are installed, otherwise use `npm install` in the root of your project.
+
+Now go to your `config.ts` file, import the aws provider library and set up your app environment.
+
+```typescript
+import { Booster } from '@boostercloud/framework-core'
+import { BoosterConfig } from '@boostercloud/framework-types'
+import * as AWS from '@boostercloud/framework-provider-aws'
+
+Booster.configure('production', (config: BoosterConfig): void => {
+  config.appName = 'my-app-name'
+  config.provider = AWS.Provider
+})
+```
+
+Open your terminal and run the deployment command
+
+```sh
+boost deploy -e production
+```
+
+Now just let the magic happen, Booster will create everything for you and give you back your app ready to use URL. 🚀
 #### Environments
 
 You can create multiple environments calling the `Booster.configure` function several times using different environment names as the first argument. You can create one file for each environment, but it is not required. In this example we set all environments in a single file:
