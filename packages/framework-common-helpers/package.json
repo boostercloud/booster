@@ -1,9 +1,9 @@
 {
-  "name": "@boostercloud/framework-provider-aws",
+  "name": "@boostercloud/framework-common-helpers",
   "version": "0.14.1",
-  "description": "Handle Booster's integration with AWS",
+  "description": "Contains Booster common helpers used by the core and provider packages",
   "keywords": [
-    "framework-provider-aws"
+    "framework-common-helpers"
   ],
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
@@ -19,34 +19,25 @@
     "type": "git",
     "url": "git+https://github.com/boostercloud/booster.git"
   },
-  "dependencies": {
-    "@boostercloud/framework-types": "0.14.1",
-    "@boostercloud/framework-common-helpers": "0.14.1"
-  },
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
-    "prepack": "tsc -b tsconfig.json",
-    "test:provider-aws": "npm run test",
-    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+    "test:helpers": "npm run test",
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
+    "prepack": "tsc -b tsconfig.json"
   },
   "bugs": {
     "url": "https://github.com/boostercloud/booster/issues"
   },
+  "dependencies": {
+    "@boostercloud/framework-types": "0.14.1"
+  },
   "devDependencies": {
-    "@types/aws-lambda": "8.10.48",
-    "@types/chai-arrays": "^2.0.0",
-    "@types/faker": "5.1.5",
-    "aws-sdk": "2.764.0",
+    "@types/uuid": "8.3.0",
     "chai": "4.2.0",
-    "chai-arrays": "^2.2.0",
     "chai-as-promised": "7.1.1",
-    "faker": "5.1.0",
-    "rewire": "5.0.0",
-    "sinon": "9.2.3",
-    "sinon-chai": "3.5.0",
-    "velocityjs": "^2.0.0"
+    "sinon-chai": "3.5.0"
   }
 }

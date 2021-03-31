@@ -84,7 +84,8 @@ describe('EventStore', () => {
       value: entity,
       requestID: 'whatever',
       typeName: 'ImportantConcept',
-      createdAt: importantDateTimeStamp,
+      createdAt: 'fakeTimeStamp',
+      snapshottedEventCreatedAt: importantDateTimeStamp,
     }
   }
 
@@ -197,7 +198,7 @@ describe('EventStore', () => {
       })
 
       context('when there is a snapshot and a long list of pending events', () => {
-        it('produces a new snapshot, stores and returns it', async () => {
+        it('produces a new snapshot and returns it, but never stores it', async () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const eventStore = new EventStore(config, logger) as any
           const someSnapshotEnvelope = snapshotEnvelopeFor(someEntity)
@@ -254,12 +255,7 @@ describe('EventStore', () => {
             expect(eventStore.entityReducer.getCall(index).args[1]).to.deep.equal(pendingEvents[index])
           }
 
-          expect(eventStore.storeSnapshot).to.have.been.calledOnceWith(
-            snapshotEnvelopeFor({
-              id: '42',
-              count: 9,
-            })
-          )
+          expect(eventStore.storeSnapshot).to.not.have.been.called
 
           expect(entity).to.be.deep.equal(
             snapshotEnvelopeFor({
@@ -271,7 +267,7 @@ describe('EventStore', () => {
       })
 
       context('with no snapshot and a list of more than 5 events', () => {
-        it('produces a new snapshot, stores it and returns it', async () => {
+        it('produces a new snapshot and returns it, but never stores it', async () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const eventStore = new EventStore(config, logger) as any
           const someEventEnvelope = eventEnvelopeFor(someEvent)
@@ -323,73 +319,12 @@ describe('EventStore', () => {
             expect(eventStore.entityReducer.getCall(index).args[1]).to.deep.equal(pendingEvents[index])
           }
 
-          expect(eventStore.storeSnapshot).to.have.been.calledOnceWith(
-            snapshotEnvelopeFor({
-              id: '42',
-              count: 9,
-            })
-          )
+          expect(eventStore.storeSnapshot).to.not.have.been.called
 
           expect(entity).to.be.deep.equal(
             snapshotEnvelopeFor({
               id: '42',
               count: 9,
-            })
-          )
-        })
-      })
-
-      context('with no snapshot and a list of less than 5 events', () => {
-        it('produces a new snapshot, and returns it without storing it', async () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const eventStore = new EventStore(config, logger) as any
-          const someEventEnvelope = eventEnvelopeFor(someEvent)
-          const otherEventEnvelope = eventEnvelopeFor(otherEvent)
-          const pendingEvents = [someEventEnvelope, otherEventEnvelope]
-
-          replace(eventStore, 'loadLatestSnapshot', fake.resolves(null))
-          replace(eventStore, 'loadEventStreamSince', fake.resolves(pendingEvents))
-
-          const reducer = stub()
-            .onFirstCall()
-            .returns(
-              snapshotEnvelopeFor({
-                id: '42',
-                count: 1,
-              })
-            )
-            .onSecondCall()
-            .returns(
-              snapshotEnvelopeFor({
-                id: '42',
-                count: 3,
-              })
-            )
-          replace(eventStore, 'entityReducer', reducer)
-          replace(eventStore, 'storeSnapshot', fake())
-
-          const entityName = 'ImportantConcept'
-          const entityID = '42'
-          const entity = await eventStore.fetchEntitySnapshot(entityName, entityID)
-
-          expect(eventStore.loadLatestSnapshot).to.have.been.calledOnceWith(entityName, entityID)
-          expect(eventStore.loadEventStreamSince).to.have.been.calledOnceWith(entityName, entityID, originOfTime)
-
-          expect(eventStore.entityReducer.firstCall.args[0]).to.be.null
-          expect(eventStore.entityReducer.firstCall.args[1]).to.deep.equal(someEventEnvelope)
-          expect(eventStore.entityReducer.secondCall.args[0]).to.deep.equal(
-            snapshotEnvelopeFor({
-              id: '42',
-              count: 1,
-            })
-          )
-          expect(eventStore.entityReducer.secondCall.args[1]).to.deep.equal(otherEventEnvelope)
-          expect(eventStore.storeSnapshot).not.to.have.been.called
-
-          expect(entity).to.be.deep.equal(
-            snapshotEnvelopeFor({
-              id: '42',
-              count: 3,
             })
           )
         })
@@ -419,6 +354,10 @@ describe('EventStore', () => {
           expect(entity).to.be.null
         })
       })
+    })
+
+    describe.skip('calculateAndStoreEntitySnapshot', () => {
+      // TODO: create tests for this method
     })
   })
 
@@ -489,6 +428,7 @@ describe('EventStore', () => {
             replace(eventStore, 'reducerForEvent', fake.returns(fakeReducer))
 
             const newSnapshot = eventStore.entityReducer(snapshot, eventEnvelope)
+            delete newSnapshot.createdAt
 
             expect(eventStore.reducerForEvent).to.have.been.calledOnceWith('ImportantEvent')
             expect(fakeReducer).to.have.been.calledOnceWith(eventEnvelope.value, snapshot.value)
@@ -504,7 +444,7 @@ describe('EventStore', () => {
                 id: '42',
                 count: 1,
               },
-              createdAt: 'fakeTimeStamp',
+              snapshottedEventCreatedAt: 'fakeTimeStamp',
             })
           })
         })
@@ -519,6 +459,7 @@ describe('EventStore', () => {
             replace(eventStore, 'reducerForEvent', fake.returns(fakeReducer))
 
             const newSnapshot = eventStore.entityReducer(null, eventEnvelope)
+            delete newSnapshot.createdAt
 
             expect(eventStore.reducerForEvent).to.have.been.calledOnceWith('ImportantEvent')
             expect(fakeReducer).to.have.been.calledOnceWith(eventEnvelope.value, null)
@@ -534,7 +475,7 @@ describe('EventStore', () => {
                 id: '42',
                 count: 1,
               },
-              createdAt: 'fakeTimeStamp',
+              snapshottedEventCreatedAt: 'fakeTimeStamp',
             })
           })
         })

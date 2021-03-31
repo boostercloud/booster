@@ -1,5 +1,5 @@
-import { Promises, PromisesError } from '../../src/helpers/promises'
-import { expect } from '../expect'
+import { Promises, PromisesError } from '../src'
+import { expect } from './helpers/expect'
 
 describe('the `Promises` helpers', () => {
   describe('the `allSettledAndFulfilled` method', () => {

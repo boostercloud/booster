@@ -3,7 +3,7 @@ import { K8sManagement } from './k8s-sdk/k8s-management'
 import { HelmManager } from './helm-manager'
 import { DeployManager } from './deploy-manager'
 import { DaprManager } from './dapr-manager'
-import { Promises } from '../helpers/promises'
+import { Promises } from '@boostercloud/framework-common-helpers'
 export interface BoosterK8sConfiguration extends BoosterConfig {
   context?: string
 }

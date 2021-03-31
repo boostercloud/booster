@@ -1,4 +1,4 @@
-import { countEventItems, countSnapshotItems, queryEvents, graphQLClient } from '../utils'
+import { countEventItems, queryEvents, graphQLClient } from '../utils'
 import { expect } from '../../../helper/expect'
 import gql from 'graphql-tag'
 import { ApolloClient } from 'apollo-client'
@@ -112,38 +112,5 @@ describe('events', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const expectEvents = expect(eventProductIds) as any
     expectEvents.to.be.sorted((prev: number, next: number) => prev > next)
-  })
-
-  it('should generate a snapshot after 5 events with the same entity id', async () => {
-    const mockCartId = random.uuid()
-    const mockProductId = random.uuid()
-
-    const snapshotsCount = await countSnapshotItems('Cart', mockCartId)
-    expect(snapshotsCount).to.be.equal(0)
-
-    for (let i = 0; i < 5; i++) {
-      const response = await client.mutate({
-        variables: {
-          cartId: mockCartId,
-          productId: mockProductId,
-          quantity: i,
-        },
-        mutation: gql`
-          mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
-            ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
-          }
-        `,
-      })
-
-      expect(response).not.to.be.null
-      expect(response?.data?.ChangeCartItem).to.be.true
-    }
-
-    const minSnapshotItemsCount = 1
-    const newSnapshotItemsCount = await waitForIt(
-      () => countSnapshotItems('Cart', mockCartId),
-      (newSnapshotsCount) => newSnapshotsCount >= minSnapshotItemsCount
-    )
-    expect(newSnapshotItemsCount).to.be.equal(minSnapshotItemsCount)
   })
 })
