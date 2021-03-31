@@ -2465,11 +2465,11 @@ Now go to your `config.ts` file, import the aws provider library and set up your
 ```typescript
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
-import * as AWS from '@boostercloud/framework-provider-aws'
+import { Provider as AWSProvider } from '@boostercloud/framework-provider-aws'
 
 Booster.configure('production', (config: BoosterConfig): void => {
   config.appName = 'my-app-name'
-  config.provider = AWS.Provider
+  config.provider = AWSProvider
 })
 ```
 
@@ -2527,11 +2527,11 @@ Now go to your `config.ts` file, import the aws provider library and set up your
 ```typescript
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
-import * as Azure from '@boostercloud/framework-provider-azure'
+import AzureProvider from '@boostercloud/framework-provider-azure'
 
 Booster.configure('production', (config: BoosterConfig): void => {
   config.appName = 'my-app-name'
-  config.provider = Azure.Provider
+  config.provider = AzureProvider
 })
 ```
 
