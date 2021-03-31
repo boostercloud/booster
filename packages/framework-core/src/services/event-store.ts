@@ -7,8 +7,6 @@ import {
   InvalidParameterError,
 } from '@boostercloud/framework-types'
 
-// eslint-disable-next-line @typescript-eslint/no-magic-numbers
-const numberOfEventsBetweenSnapshots = 5 // TODO: Move this to Booster configuration
 const originOfTime = new Date(0).toISOString() // Unix epoch
 
 export class EventStore {
@@ -77,10 +75,7 @@ export class EventStore {
   }
 
   private async storeSnapshot(snapshot: EventEnvelope): Promise<void> {
-    this.logger.debug(
-      `[EventStore#storeSnapshot] Maximum number of events after latest stored snapshot reached (${numberOfEventsBetweenSnapshots}). Storing snapshot in the event store:`,
-      snapshot
-    )
+    this.logger.debug('[EventStore#storeSnapshot] Storing snapshot in the event store:', snapshot)
     return this.provider.events.store([snapshot], this.config, this.logger)
   }
 
