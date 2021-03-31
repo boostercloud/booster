@@ -160,6 +160,8 @@ manager.
 
 ###### Ubuntu
 
+Just run the following commands on the terminal
+
 ```shell
 curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
 sudo apt install nodejs
@@ -167,11 +169,15 @@ sudo apt install nodejs
 
 ###### macOS
 
+Using [Homebrew](https://brew.sh) package manager, run the following command on the terminal
+
 ```shell
 brew install node
 ```
 
 ###### Windows
+
+Using [Chocolatey](https://chocolatey.org/) package manager, run the following command in your PowerShell
 
 ```shell
 choco install nodejs
