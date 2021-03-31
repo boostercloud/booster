@@ -10,7 +10,6 @@
   },
   "bugs": "https://github.com/boostercloud/booster/issues",
   "dependencies": {
-    "@boostercloud/framework-common-helpers": "^0.14.2",
     "@boostercloud/framework-core": "^0.14.2",
     "@boostercloud/framework-provider-aws": "^0.14.2",
     "@boostercloud/framework-provider-local": "^0.14.2",

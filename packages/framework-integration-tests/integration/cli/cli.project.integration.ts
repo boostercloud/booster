@@ -302,7 +302,7 @@ describe('Project', () => {
         }).timeout(TEST_TIMEOUT)
 
         // TODO: Remove the skip when there is at leas one version published of framework-common-helpers
-        it.skip('compiles', async () => {
+        it('compiles', async () => {
           const fullProjectPath = projectPath(projectName)
           // Rewrite dependencies to use local versions
           await overrideWithBoosterLocalDependencies(fullProjectPath)
