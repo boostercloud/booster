@@ -8,10 +8,9 @@ import {
   UUID,
 } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
-import { dynamoDbBatchWriteLimit, eventsStoreAttributes } from '../constants'
+import { eventsStoreAttributes } from '../constants'
 import { partitionKeyForEvent, partitionKeyForIndexByEntity } from './keys-helper'
 import { Converter } from 'aws-sdk/clients/dynamodb'
-import { inChunksOf } from '../pagination-helpers'
 import { retryIfError } from '@boostercloud/framework-common-helpers'
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
@@ -139,7 +138,6 @@ async function persistEvent(
       })
       .promise()
   } catch (e) {
-    // The error will be thrown, but in case of a conditional check, we throw the expected error type by the core
     if (e.name == 'ConditionalCheckFailedException') {
       throw new OptimisticConcurrencyUnexpectedVersionError(e.message)
     }

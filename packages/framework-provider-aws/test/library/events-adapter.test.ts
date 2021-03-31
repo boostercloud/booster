@@ -7,7 +7,7 @@ import { EventEnvelope, BoosterConfig, UUID, Logger } from '@boostercloud/framew
 import { DynamoDBStreamEvent } from 'aws-lambda'
 import { DynamoDB } from 'aws-sdk'
 import { eventsStoreAttributes } from '../../src'
-import { partitionKeyForEvent } from '../../src/library/keys-helper'
+import { partitionKeyForEvent, partitionKeyForIndexByEntity } from '../../src/library/keys-helper'
 import { DocumentClient, Converter } from 'aws-sdk/clients/dynamodb'
 
 const fakeLogger: Logger = {
@@ -89,7 +89,6 @@ describe('the events-adapter', () => {
       const config = new BoosterConfig('test')
       config.appName = 'test-app'
       const requestID = 'request-id'
-      const streamName = config.resourceNames.eventsStore
       const events = [
         {
           entityID(): UUID {
@@ -103,10 +102,10 @@ describe('the events-adapter', () => {
         },
       ]
 
-      const fakeBatchWrite = fake.returns({
+      const fakePut = fake.returns({
         promise: fake.resolves(''),
       })
-      const fakeDynamo: DocumentClient = { batchWrite: fakeBatchWrite } as any
+      const fakeDynamo: DocumentClient = { put: fakePut } as any
 
       const eventEnvelopes = events.map(
         (e): EventEnvelope => {
@@ -127,53 +126,27 @@ describe('the events-adapter', () => {
 
       await Library.storeEvents(fakeDynamo, eventEnvelopes, config, fakeLogger)
 
-      expect(fakeBatchWrite).to.be.calledWith(
-        match({
-          RequestItems: match.has(streamName, match.has('length', 2)),
+      expect(fakePut).to.be.calledTwice
+      for (const eventEnvelope of eventEnvelopes) {
+        const partitionKey = partitionKeyForEvent(eventEnvelope.entityTypeName, eventEnvelope.entityID, eventEnvelope.kind)
+        expect(fakePut).to.be.calledWithExactly({
+          TableName: config.resourceNames.eventsStore,
+          ConditionExpression: `${eventsStoreAttributes.partitionKey} <> :partitionKey AND ${eventsStoreAttributes.sortKey} <> :sortKey`,
+          ExpressionAttributeValues: {
+            ':partitionKey': partitionKey,
+            ':sortKey': match.string,
+          },
+          Item: {
+            ...eventEnvelope,
+            [eventsStoreAttributes.partitionKey]: partitionKey,
+            [eventsStoreAttributes.sortKey]: match.string,
+            [eventsStoreAttributes.indexByEntity.partitionKey]: partitionKeyForIndexByEntity(
+              eventEnvelope.entityTypeName,
+              eventEnvelope.kind
+            ),
+          }
         })
-      )
-    })
-
-    it('publishes the eventEnvelopes passed via parameter in batch of 25 elements', async () => {
-      const config = new BoosterConfig('test')
-      config.appName = 'test-app'
-      const makeEvent = (n: string): EventEnvelope => ({
-        version: 1,
-        entityID: 'id',
-        kind: 'event',
-        value: {
-          id: n,
-        },
-        typeName: 'EventName',
-        entityTypeName: 'EntityName',
-        requestID: 'requestID',
-        createdAt: 'once',
-      })
-      const eventEnvelopes = Array.from({ length: 51 }, (_, n) => makeEvent(n.toString()))
-
-      const batches: Array<Array<string>> = []
-
-      const fakeBatchWrite = fake((params: DynamoDB.DocumentClient.BatchWriteItemInput) => {
-        const batch: Array<string> = []
-        params.RequestItems[config.resourceNames.eventsStore].forEach((value) => {
-          batch.push(value.PutRequest?.Item?.value?.id ?? '-1')
-        })
-        batches.push(batch)
-        return {
-          promise: fake.resolves(''),
-        }
-      })
-
-      const fakeDynamo: DocumentClient = { batchWrite: fakeBatchWrite } as any
-
-      await Library.storeEvents(fakeDynamo, eventEnvelopes, config, fakeLogger)
-
-      for (const batch of batches) {
-        // chai-arrays doesn't have typings, so using with `any`
-        const expectBatch = expect(batch) as any
-        expectBatch.to.be.sorted((prev: number, next: number) => prev < next)
       }
-      expect(fakeBatchWrite).to.be.calledThrice
     })
   })
 })
