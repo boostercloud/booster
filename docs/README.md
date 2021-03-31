@@ -2449,6 +2449,100 @@ The following is the list of the fields you can configure:
   config.assets = ['.env']
   ```
 
+#### Providers configuration
+
+##### AWS Provider
+
+To configure AWS as a provider you need to meet certain prerequisites:
+
+- Set up an AWS account following the getting started section [instructions](#set-up-an-aws-account)
+- Check `@boostercloud/framework-provider-aws` is listed in your app `package.json` dependencies.
+- Check `@boostercloud/framework-provider-aws-infrastructure` is listed in your app `package.json` devDependencies.
+- Check both dependencies are installed, otherwise use `npm install` in the root of your project.
+
+Now go to your `config.ts` file, import the aws provider library and set up your app environment.
+
+```typescript
+import { Booster } from '@boostercloud/framework-core'
+import { BoosterConfig } from '@boostercloud/framework-types'
+import { Provider as AWSProvider } from '@boostercloud/framework-provider-aws'
+
+Booster.configure('production', (config: BoosterConfig): void => {
+  config.appName = 'my-app-name'
+  config.provider = AWSProvider
+})
+```
+
+Open your terminal and run the deployment command
+
+```sh
+boost deploy -e production
+```
+
+Now just let the magic happen, Booster will create everything for you and give you back your app ready to use URL. 🚀
+
+##### Azure Provider
+
+To configure Azure as a provider you need to meet certain prerequisites:
+
+- Set up an Azure subscription and install [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest).
+- Install [jq](https://stedolan.github.io/jq/download/) in your system.
+- Check `@boostercloud/framework-provider-azure` is listed in your app `package.json` dependencies.
+- Check `@boostercloud/framework-provider-azure-infrastructure` is listed in your app `package.json` devDependencies.
+- Check both dependencies are installed, otherwise use `npm install` in the root of your project.
+
+At this moment you have to log in you Azure account using the Azure CLI with the following command.
+
+```bash
+az login
+```
+
+Then create a service pricipal running the following command.
+
+_Note: Remember to change `<service-principal-name>` for a custom one._
+
+```bash
+az ad sp create-for-rbac --name <service-principal-name>
+```
+
+After the service principal is created, create a bash script with the following content. It will set up the necessary environment variables required by the provider in order to work:
+
+_Note: remember to have [jq](https://stedolan.github.io/jq/download/) installed in your system_
+
+```bash
+#!/usr/bin/env bash
+
+SP_DISPLAY_NAME="<service-principal-name>" # replace <service-principal-name> with the name of your own SP
+REGION="East US" # replace with a region of your choice, see full list here: https://azure.microsoft.com/en-us/global-infrastructure/locations/
+
+export AZURE_APP_ID=$(az ad sp list --display-name ${SP_DISPLAY_NAME} | jq -r '.[].appId')
+export AZURE_TENANT_ID=$(az ad sp list --display-name ${SP_DISPLAY_NAME} | jq -r '.[].appOwnerTenantId')
+export AZURE_SECRET=$(az ad sp credential reset --name ${AZURE_APP_ID} | jq -r '.password')
+export AZURE_SUBSCRIPTION_ID=$(az account show | jq -r '.id')
+export REGION
+```
+
+Now go to your `config.ts` file, import the aws provider library and set up your app environment.
+
+```typescript
+import { Booster } from '@boostercloud/framework-core'
+import { BoosterConfig } from '@boostercloud/framework-types'
+import AzureProvider from '@boostercloud/framework-provider-azure'
+
+Booster.configure('production', (config: BoosterConfig): void => {
+  config.appName = 'my-app-name'
+  config.provider = AzureProvider
+})
+```
+
+Open your terminal and run the bash file to export you env variables and the deploy command
+
+```bash
+source <path-to-your-bash-file> && boost deploy -e production
+```
+
+Now just let the magic happen, Booster will create everything for you and give you back your app ready to use URL. 🚀
+
 #### Environments
 
 You can create multiple environments calling the `Booster.configure` function several times using different environment names as the first argument. You can create one file for each environment, but it is not required. In this example we set all environments in a single file:
