@@ -12,8 +12,7 @@ import {
   ReadModelAction,
   OptimisticConcurrencyUnexpectedVersionError,
 } from '@boostercloud/framework-types'
-import { Promises } from '../helpers/promises'
-import { retryIfError } from '../helpers/retrier'
+import { Promises, retryIfError } from '@boostercloud/framework-common-helpers'
 
 export class ReadModelStore {
   private config: BoosterConfig

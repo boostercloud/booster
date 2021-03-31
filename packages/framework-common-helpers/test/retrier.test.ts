@@ -1,5 +1,5 @@
-import { retryIfError } from '../../src/helpers/retrier'
-import { expect } from '../expect'
+import { retryIfError } from '../src/retrier'
+import { expect } from '../src/test-helpers/expect'
 import { Logger } from '@boostercloud/framework-types'
 
 const logger: Logger = console

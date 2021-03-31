@@ -12,7 +12,7 @@ import { dynamoDbBatchWriteLimit, eventsStoreAttributes } from '../constants'
 import { partitionKeyForEvent, partitionKeyForIndexByEntity } from './keys-helper'
 import { Converter } from 'aws-sdk/clients/dynamodb'
 import { inChunksOf } from '../pagination-helpers'
-import { retryIfError } from './helpers/retrier'
+import { retryIfError } from '@boostercloud/framework-common-helpers'
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const originOfTime = new Date(0).toISOString()

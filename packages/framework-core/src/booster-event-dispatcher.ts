@@ -11,7 +11,7 @@ import { EventStore } from './services/event-store'
 import { EventsStreamingCallback, RawEventsParser } from './services/raw-events-parser'
 import { ReadModelStore } from './services/read-model-store'
 import { RegisterHandler } from './booster-register-handler'
-import { Promises } from './helpers/promises'
+import { Promises } from '@boostercloud/framework-common-helpers'
 
 export class BoosterEventDispatcher {
   /**

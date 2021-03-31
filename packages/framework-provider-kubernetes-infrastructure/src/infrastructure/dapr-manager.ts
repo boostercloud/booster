@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { Promises } from '../helpers/promises'
+import { Promises } from '@boostercloud/framework-common-helpers'
 import * as fs from 'fs'
 import { stateStore } from './templates/statestore'
 import { K8sManagement } from './k8s-sdk/k8s-management'
