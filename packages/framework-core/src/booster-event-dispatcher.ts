@@ -8,7 +8,7 @@ import {
   UUID,
 } from '@boostercloud/framework-types'
 import { EventStore } from './services/event-store'
-import { RawEventsParser } from './services/raw-events-parser'
+import { EventsStreamingCallback, RawEventsParser } from './services/raw-events-parser'
 import { ReadModelStore } from './services/read-model-store'
 import { RegisterHandler } from './booster-register-handler'
 import { Promises } from './helpers/promises'
@@ -25,18 +25,8 @@ export class BoosterEventDispatcher {
     const readModelStore = new ReadModelStore(config, logger)
     logger.debug('Event workflow started for raw events:', require('util').inspect(rawEvents, false, null, false))
     try {
-      const firstEventEnvelope = config.provider.events.rawToEnvelopes(rawEvents).pop()
-      if (!firstEventEnvelope) {
-        return
-      }
-      await BoosterEventDispatcher.snapshotAndUpdateReadModels(
-        firstEventEnvelope.entityTypeName,
-        firstEventEnvelope.entityID,
-        eventStore,
-        readModelStore,
-        logger
-      )
-      await RawEventsParser.streamEvents(
+      await RawEventsParser.streamPerEntityEvents(
+        logger,
         config,
         rawEvents,
         BoosterEventDispatcher.eventProcessor(eventStore, readModelStore, logger)
@@ -50,57 +40,65 @@ export class BoosterEventDispatcher {
     eventStore: EventStore,
     readModelStore: ReadModelStore,
     logger: Logger
-  ): (event: EventEnvelope, config: BoosterConfig) => Promise<void> {
-    return async (eventEnvelope, config) => {
-      switch (eventEnvelope.kind) {
-        case 'event':
-          logger.debug('[BoosterEventDispatcher#eventProcessor]: Started processing workflow for event:', eventEnvelope)
-          // TODO: Separate into two independent processes the snapshotting/read-model generation process from the event handling process`
-          await Promises.allSettledAndFulfilled([BoosterEventDispatcher.handleEvent(eventEnvelope, config, logger)])
-          break
-        case 'snapshot':
-          // TODO: The event stream includes snapshots, but we currently just ignore them. In the future we could want to introduce snapshot hooks to backup them or other uses.
-          break
-      }
+  ): EventsStreamingCallback {
+    return async (entityName, entityID, eventEnvelopes, config) => {
+      // TODO: Separate into two independent processes the snapshotting/read-model generation process from the event handling process`
+      await BoosterEventDispatcher.snapshotAndUpdateReadModels(
+        entityName,
+        entityID,
+        eventEnvelopes,
+        eventStore,
+        readModelStore,
+        logger
+      )
+      await BoosterEventDispatcher.dispatchEntityEventsToEventHandlers(eventEnvelopes, config, logger)
     }
   }
 
   private static async snapshotAndUpdateReadModels(
-    entityTypeName: string,
+    entityName: string,
     entityID: UUID,
+    envelopes: Array<EventEnvelope>,
     eventStore: EventStore,
     readModelStore: ReadModelStore,
     logger: Logger
   ): Promise<void> {
-    const entitySnapshot = await eventStore.fetchEntitySnapshot(entityTypeName, entityID)
-    if (entitySnapshot) {
-      logger.debug(
-        '[BoosterEventDispatcher#eventProcessor]: Snapshot loaded and started read models projection:',
-        entitySnapshot
-      )
-      await readModelStore.project(entitySnapshot)
-    } else {
+    const entitySnapshot = await eventStore.calculateAndStoreEntitySnapshot(entityName, entityID, envelopes)
+    if (!entitySnapshot) {
       logger.debug(
         '[BoosterEventDispatcher#eventProcessor]: No new snapshot generated, skipping read models projection'
       )
-    }
-  }
-
-  private static async handleEvent(eventEnvelope: EventEnvelope, config: BoosterConfig, logger: Logger): Promise<void> {
-    const eventHandlers = config.eventHandlers[eventEnvelope.typeName]
-    if (!eventHandlers || eventHandlers.length == 0) {
-      logger.debug(
-        `[BoosterEventDispatcher#handleEvent] No event-handlers found for event ${eventEnvelope.typeName}. Skipping...`
-      )
       return
     }
-    await Promises.allSettledAndFulfilled(
-      eventHandlers.map(async (eventHandler: EventHandlerInterface) => {
-        const register = new Register(eventEnvelope.requestID, eventEnvelope.currentUser)
-        logger.debug('Calling "handle" method on event handler: ', eventHandler)
-        await eventHandler.handle(eventEnvelope.value as EventInterface, register)
-        return RegisterHandler.handle(config, logger, register)
-      })
+
+    logger.debug(
+      '[BoosterEventDispatcher#eventProcessor]: Snapshot loaded and started read models projection:',
+      entitySnapshot
     )
+    await readModelStore.project(entitySnapshot)
+  }
+
+  private static async dispatchEntityEventsToEventHandlers(
+    entityEventEnvelopes: Array<EventEnvelope>,
+    config: BoosterConfig,
+    logger: Logger
+  ): Promise<void> {
+    for (const eventEnvelope of entityEventEnvelopes) {
+      const eventHandlers = config.eventHandlers[eventEnvelope.typeName]
+      if (!eventHandlers || eventHandlers.length == 0) {
+        logger.debug(
+          `[BoosterEventDispatcher#handleEvent] No event-handlers found for event ${eventEnvelope.typeName}. Skipping...`
+        )
+        continue
+      }
+      await Promises.allSettledAndFulfilled(
+        eventHandlers.map(async (eventHandler: EventHandlerInterface) => {
+          const register = new Register(eventEnvelope.requestID, eventEnvelope.currentUser)
+          logger.debug('Calling "handle" method on event handler: ', eventHandler)
+          await eventHandler.handle(eventEnvelope.value as EventInterface, register)
+          return RegisterHandler.handle(config, logger, register)
+        })
+      )
+    }
   }
 }

@@ -42,12 +42,38 @@ export class EventStore {
         newEntitySnapshot
       )
 
-      if (newEntitySnapshot && pendingEvents.length >= numberOfEventsBetweenSnapshots) {
-        await this.storeSnapshot(newEntitySnapshot)
-      }
-
       return newEntitySnapshot
     }
+  }
+
+  public async calculateAndStoreEntitySnapshot(
+    entityName: string,
+    entityID: UUID,
+    pendingEnvelopes: Array<EventEnvelope>
+  ): Promise<EventEnvelope | null> {
+    this.logger.debug('[EventStore#calculateAndStoreEntitySnapshot] Processing events: ', pendingEnvelopes)
+    this.logger.debug(
+      `[EventStore#calculateAndStoreEntitySnapshot] Fetching snapshot for entity ${entityName} with ID ${entityID}`
+    )
+    const latestSnapshotEnvelope = await this.loadLatestSnapshot(entityName, entityID)
+
+    this.logger.debug(
+      `[EventStore#calculateAndStoreEntitySnapshot] Looking for the reducer for entity ${entityName} with ID ${entityID}`
+    )
+    const newEntitySnapshot = pendingEnvelopes.reduce(this.entityReducer.bind(this), latestSnapshotEnvelope)
+    this.logger.debug(
+      `[EventStore#calculateAndStoreEntitySnapshot] Reduced new snapshot for entity ${entityName} with ID ${entityID}: `,
+      newEntitySnapshot
+    )
+
+    if (!newEntitySnapshot) {
+      this.logger.debug('New entity snapshot is null. Returning old one (which can also be null)')
+      return latestSnapshotEnvelope
+    }
+
+    await this.storeSnapshot(newEntitySnapshot)
+
+    return newEntitySnapshot
   }
 
   private async storeSnapshot(snapshot: EventEnvelope): Promise<void> {
@@ -55,7 +81,7 @@ export class EventStore {
       `[EventStore#storeSnapshot] Maximum number of events after latest stored snapshot reached (${numberOfEventsBetweenSnapshots}). Storing snapshot in the event store:`,
       snapshot
     )
-    return await this.provider.events.store([snapshot], this.config, this.logger)
+    return this.provider.events.store([snapshot], this.config, this.logger)
   }
 
   private loadLatestSnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | null> {
