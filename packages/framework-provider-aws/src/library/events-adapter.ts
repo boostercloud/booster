@@ -97,34 +97,16 @@ export async function storeEvents(
   config: BoosterConfig,
   logger: Logger
 ): Promise<void> {
-  const batches = inChunksOf(dynamoDbBatchWriteLimit, eventEnvelopes)
-  for (const batch of batches) {
-    await persistBatch(logger, batch, config, dynamoDB)
-  }
-}
-
-async function persistBatch(
-  logger: Logger,
-  batch: EventEnvelope[],
-  config: BoosterConfig,
-  dynamoDB: DynamoDB.DocumentClient
-): Promise<void> {
-  logger.debug('[EventsAdapter#storeEvents] Storing EventEnvelopes with eventEnvelopes:', batch)
+  logger.debug('[EventsAdapter#storeEvents] Storing the following event envelopes:', eventEnvelopes)
   // const putRequests = []
-  for (const eventEnvelope of batch) {
+  for (const eventEnvelope of eventEnvelopes) {
     await retryIfError(
       logger,
       () => persistEvent(dynamoDB, config, eventEnvelope),
       OptimisticConcurrencyUnexpectedVersionError
     )
   }
-  // const params: DynamoDB.DocumentClient.BatchWriteItemInput = {
-  //   RequestItems: {
-  //     [config.resourceNames.eventsStore]: putRequests,
-  //   },
-  // }
-  // await dynamoDB.batchWrite(params).promise()
-  logger.debug('[EventsAdapter#storeEvents] EventEnvelope stored')
+  logger.debug('[EventsAdapter#storeEvents] EventEnvelopes stored')
 }
 
 async function persistEvent(
@@ -134,6 +116,8 @@ async function persistEvent(
 ): Promise<void> {
   try {
     const partitionKey = partitionKeyForEvent(eventEnvelope.entityTypeName, eventEnvelope.entityID, eventEnvelope.kind)
+    // Generate a new timestamp as sorting key on every try until we can persist the event.
+    // This way we guarantee ordering even with events that are stored in the same millisecond
     const sortKey = new Date().toISOString()
     await dynamoDB
       .put({
