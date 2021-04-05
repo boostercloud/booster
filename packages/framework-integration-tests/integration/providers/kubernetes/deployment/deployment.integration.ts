@@ -19,7 +19,8 @@ describe('Kubernetes provider', () => {
       if (item?.metadata?.name === 'booster' || item?.metadata?.name === 'fileuploader') {
         expect(item?.spec?.ports?.length).to.equal(1)
         expect(item.spec?.ports?.[0]?.nodePort?.toString()).to.not.be.undefined
-        expect(item.spec?.type).to.equal('LoadBalancer')
+        // Only minikube uses NodePort type
+        expect(item.spec?.type).to.equal('NodePort')
         expect(item.metadata?.labels?.app).to.equal(item?.metadata?.name)
       }
 
