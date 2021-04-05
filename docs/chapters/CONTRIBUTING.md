@@ -1,0 +1,1 @@
+/Users/moneyba/Documents/Projects/Booster/CONTRIBUTING.md
