@@ -17,10 +17,9 @@ import {
   GraphQLEnumType,
   GraphQLInterfaceType,
 } from 'graphql'
-import { GraphQLEnumValueConfigMap, GraphQLFieldMap, GraphQLInputFieldConfigMap } from 'graphql/type/definition'
+import { GraphQLFieldMap, GraphQLInputFieldConfigMap } from 'graphql/type/definition'
 import { PropertyMetadata } from 'metadata-booster'
 import { getPropertiesMetadata } from './../../decorators/metadata'
-import inflected = require('inflected')
 
 export class GraphQLTypeInformer {
   private graphQLTypesByName: Record<string, GraphQLNonInputType> = {}
@@ -48,7 +47,7 @@ export class GraphQLTypeInformer {
         prop.typeInfo.parameters.forEach((param) => {
           const graphQLPropType = this.getGraphQLTypeFor(param.type)
 
-          if (!this.isPrimitiveType(graphQLPropType)) {
+          if (!this.isPrimitiveType(graphQLPropType) && param.type) {
             const properties = getPropertiesMetadata(param.type)
             this.generateGraphQLTypeFromMetadata({ class: param.type, properties })
           }
@@ -58,12 +57,9 @@ export class GraphQLTypeInformer {
           }
         })
       } else {
-        if (!prop.typeInfo.type.prototype) {
+        if (!prop.typeInfo.type?.prototype) {
           fields[prop.name] = {
-            type: new GraphQLEnumType({
-              name: inflected.camelize(prop.name),
-              values: this.generateOperationEnumValuesFor(prop.typeInfo.type),
-            }),
+            type: GraphQLJSONObject,
           }
         } else {
           fields[prop.name] = { type: this.getGraphQLTypeFor(prop.typeInfo.type) }
@@ -78,7 +74,7 @@ export class GraphQLTypeInformer {
   }
 
   public getPrimitiveExtendedType(type: AnyClass): AnyClass {
-    if (!type.prototype) return type
+    if (!type?.prototype) return type
     const parentType = Object.getPrototypeOf(type.prototype)?.constructor
     return parentType === Object ? type : parentType
   }
@@ -87,13 +83,14 @@ export class GraphQLTypeInformer {
     if (type === UUID) return GraphQLID
     const primitiveType = this.getPrimitiveExtendedType(type)
     switch (primitiveType) {
-      case Date:
       case String:
         return GraphQLString
       case Number:
         return GraphQLFloat
       case Boolean:
         return GraphQLBoolean
+      case undefined:
+        return GraphQLJSONObject
       default:
         if (this.graphQLTypesByName[type.name]) {
           return this.graphQLTypesByName[type.name]
@@ -140,14 +137,5 @@ export class GraphQLTypeInformer {
       }
     }
     return inputFields
-  }
-
-  private generateOperationEnumValuesFor(operationsEnum: AnyClass): GraphQLEnumValueConfigMap {
-    const enumValuesConfig: GraphQLEnumValueConfigMap = {}
-    for (const opSymbol in operationsEnum) {
-      const opName = (operationsEnum as any)[opSymbol]
-      enumValuesConfig[opName] = { value: opSymbol }
-    }
-    return enumValuesConfig
   }
 }

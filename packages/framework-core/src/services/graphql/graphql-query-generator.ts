@@ -149,10 +149,8 @@ export class GraphQLQueryGenerator {
   public generateFilterArguments(typeMetadata: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
     const args: GraphQLFieldConfigArgumentMap = {}
     typeMetadata.properties.forEach((prop: PropertyMetadata) => {
-      const primitiveType = this.typeInformer.getPrimitiveExtendedType(prop.typeInfo.type)
-
       args[prop.name] = {
-        type: primitiveType === Array ? this.generateArrayFilterFor(prop) : this.generateFilterFor(primitiveType),
+        type: this.generateFilterFor(prop),
       }
     })
     return args
@@ -194,21 +192,24 @@ export class GraphQLQueryGenerator {
     return this.generatedFiltersByTypeName[filterName]
   }
 
-  private generateFilterFor(type: AnyClass): GraphQLInputObjectType {
-    const filterName = `${type.name}PropertyFilter`
+  private generateFilterFor(prop: PropertyMetadata): GraphQLInputObjectType | GraphQLScalarType {
+    const filterName = `${prop.typeInfo.name}PropertyFilter`
+
+    if (prop.typeInfo.type === undefined) return GraphQLJSONObject
+
+    const primitiveType = this.typeInformer.getPrimitiveExtendedType(prop.typeInfo.type)
+    if (primitiveType === Array) return this.generateArrayFilterFor(prop)
     if (!this.generatedFiltersByTypeName[filterName]) {
-      const primitiveType = this.typeInformer.getPrimitiveExtendedType(type)
       const graphQLPropType = this.typeInformer.getGraphQLTypeFor(primitiveType)
       let fields: Thunk<GraphQLInputFieldConfigMap> = {}
 
       if (!this.typeInformer.isPrimitiveType(graphQLPropType)) {
-        const properties = getPropertiesMetadata(type)
-        this.typeInformer.generateGraphQLTypeFromMetadata({ class: type, properties })
+        const properties = getPropertiesMetadata(prop.typeInfo.type)
+        this.typeInformer.generateGraphQLTypeFromMetadata({ class: prop.typeInfo.type, properties })
 
         let nestedProperties: GraphQLInputFieldConfigMap = {}
         for (const prop of properties) {
-          const propPrimitiveType = this.typeInformer.getPrimitiveExtendedType(prop.typeInfo.type)
-          const property = { [prop.name]: { type: this.generateFilterFor(propPrimitiveType) } }
+          const property = { [prop.name]: { type: this.generateFilterFor(prop) } }
           nestedProperties = { ...nestedProperties, ...property }
         }
 
@@ -219,7 +220,7 @@ export class GraphQLQueryGenerator {
           not: { type: this.generatedFiltersByTypeName[filterName] },
         })
       } else {
-        fields = this.generateFilterInputTypes(type)
+        fields = this.generateFilterInputTypes(prop.typeInfo.type)
       }
       this.generatedFiltersByTypeName[filterName] = new GraphQLInputObjectType({ name: filterName, fields })
     }
