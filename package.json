@@ -34,5 +34,9 @@
     "typescript": "3.9.4",
     "yargs": "^15.1.0"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "dependencies": {
+    "docsify-sidebar-collapse": "^1.3.5",
+    "write-good": "^1.0.8"
+  }
 }
