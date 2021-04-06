@@ -94,7 +94,7 @@
 
 ### What is Booster?
 
-Booster is the fastest way to create an application in the cloud.It is a new kind of framework to build scalable and reliable systems easier, reimagining the software development experience to maximize your team’s speed and reduce friction on every level.
+Booster is the fastest way to create an application in the cloud. It is a new kind of framework to build scalable and reliable systems easier, reimagining the software development experience to maximize your team’s speed and reduce friction on every level.
 
 Booster follows an Event-Driven and a Domain-Driven Design approach in which you define your application in terms that are understandable by anyone in your company. From a bird’s eye view, your project is organized into:
 
