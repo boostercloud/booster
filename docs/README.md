@@ -132,7 +132,7 @@ Booster enhances developers' productivity by focusing only on business logic. Wr
 
 ### Why use Booster
 
-What does Booster boost? Your team’s productivity. Not just because it makes you work faster, but because it makes you worry about less buttons and switches.  We aim to solve major productivity sinks for developers like designing the right cloud infrastructure, writing APIs or dealing with ORMs.
+What does Booster boost? Your team’s productivity. Not just because it makes you work faster, but because it makes you worry about fewer buttons and switches. We aim to solve major productivity sinks for developers like designing the right cloud infrastructure, writing APIs or dealing with ORMs.
 
 Booster will fit like a glove in applications that are naturally event-driven like commerce applications (retail, e-commerce, omnichannel applications, warehouse management, etc.), business applications or communication systems, but it's a general-purpose framework that has several advantages over other solutions:
 
@@ -2815,4 +2815,3 @@ You can find some example apps in the [examples directory](https://github.com/bo
 When you deploy a Booster application to AWS, an S3 bucket needs to be created to upload the application code. Booster names that bucket using your application name as a prefix. In AWS, bucket names must be unique _globally_, so if there is another bucket in the world with exactly the same name as the one generated for your application, you will get this error.
 
 The solution is to **change your application name in the configuration file so that the bucket name is unique.**
-
