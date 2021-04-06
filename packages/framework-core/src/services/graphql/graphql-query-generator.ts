@@ -204,15 +204,18 @@ export class GraphQLQueryGenerator {
       let fields: Thunk<GraphQLInputFieldConfigMap> = {}
 
       if (!this.typeInformer.isPrimitiveType(graphQLPropType)) {
-        const properties = getPropertiesMetadata(prop.typeInfo.type)
-        this.typeInformer.generateGraphQLTypeFromMetadata({ class: prop.typeInfo.type, properties })
-
         let nestedProperties: GraphQLInputFieldConfigMap = {}
-        for (const prop of properties) {
-          const property = { [prop.name]: { type: this.generateFilterFor(prop) } }
-          nestedProperties = { ...nestedProperties, ...property }
-        }
+        const properties = getPropertiesMetadata(prop.typeInfo.type)
+        if (properties.length > 0) {
+          this.typeInformer.generateGraphQLTypeFromMetadata({ class: prop.typeInfo.type, properties })
 
+          for (const prop of properties) {
+            const property = { [prop.name]: { type: this.generateFilterFor(prop) } }
+            nestedProperties = { ...nestedProperties, ...property }
+          }
+        } else {
+          return GraphQLJSONObject
+        }
         fields = () => ({
           ...nestedProperties,
           and: { type: new GraphQLList(this.generatedFiltersByTypeName[filterName]) },
@@ -245,7 +248,6 @@ export class GraphQLQueryGenerator {
           gt: { type: GraphQLFloat },
           in: { type: GraphQLList(GraphQLFloat) },
         }
-      case Date:
       case String:
         return {
           eq: { type: GraphQLString },
