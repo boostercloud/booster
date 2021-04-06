@@ -118,7 +118,7 @@ Booster's ultimate goal is making developer's lives easier, fulfilling the dream
 
 ### Booster Principles
 
-Booster boosts developers's productivity by focusing only on business logic. Write your business logic and provide your credentials. Let Booster do the rest. Booster takes a holistic and highly-opinionated approach at many levels:
+Booster enhances developers' productivity by focusing only on business logic. Write your code, provide your credentials and let Booster do the rest. Booster takes a holistic and highly-opinionated approach at many levels:
 
 - **Focus on business value**: The only code that makes sense is the code that makes your application different from any other.
 - **Convention over configuration**: All the supporting code and configuration that is similar in all applications should be out of programmers’ sight.
