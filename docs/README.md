@@ -242,9 +242,7 @@ git config --global user.email "your_email@youremail.com"
 
 This step is optional; Booster is a cloud-native framework, meaning that your application
 will be deployed to the cloud using different cloud providers. By default, Booster uses the
-[AWS Provider](#aws-provider), so you need an AWS account. You can always omit
-this step if you only want to get a grip of Booster or test it locally without making a
-deployment.
+[AWS Provider](#aws-provider), so you need an AWS account.
 
 > **Note**:
 >
@@ -2390,7 +2388,7 @@ The `framework-types` packages includes the types that define the domain of the 
 
 Booster framework integration tests package is used to test the Booster project itself, but it is also an example of how a Booster application could be tested. We encourage developers to have a look at our [Booster project repository](https://github.com/boostercloud/booster/tree/main/packages/framework-integration-tests).
 
-Some integration tests highly depend on the provider chosen for the project, and the infrastructure is normally deployed locally or in the cloud right before the tests run. Once tests are completed, the application is teared down.
+Some integration tests highly depend on the provider chosen for the project, and the infrastructure is normally deployed in the cloud right before the tests run. Once tests are completed, the application is teared down.
 
 There are several types of integration tests in this package:
 
@@ -2408,9 +2406,8 @@ Currently, the Booster framework provides a fully working provider package:
 
 -  **framework-provider-aws-\***
 
-Other providers packages are currently under development. Some of the features might be missing:
+Other providers packages are currently under experimental support. Some of the features might be missing:
 
--  **framework-provider-local-\***. The Booster framework local provider combines in-memory databases with a GraphQL API served through a Node.js Express Server. The local runtime is a convenient and fast way to deploy and test your code in a local development environment. From the API and semantic perspectives, there are no differences from using a real cloud provider, it just runs locally!
 - **framework-provider-kubernetes-\***
 - **framework-provider-azure-\***
 
@@ -2441,7 +2438,7 @@ The following is the list of the fields you can configure:
 
 - **provider:** This field contains the provider library instance that Booster will use when deploying or running your application.
 
-> **Note:** So far, there is only one provider fully supported in Booster yet, @boostercloud/framework-provider-aws, and it is probably the one you have already set if you used the generator to create your project. The team is currently working on providers for local development, Azure, and Kubernetes._
+> **Note:** So far, there is only one provider fully supported in Booster yet, @boostercloud/framework-provider-aws, and it is probably the one you have already set if you used the generator to create your project. Azure and Kubernetes have experimental support and the team is currently improving them.
 
 - **assets**: This is an array of _relative_ paths from the root of the project pointing to files and folders with static assets. They will be included among the deployed files to the cloud provider.
   For example, imagine you are using the `dotenv` module so that all the environment variables you have in your `.env` files are loaded into memory in runtime. In order for this to work, you need to include your `.env` files as assets of your project, so that they are included when deploying. Assuming you only have a `.env` file in the root of your project, you should add the following to your configuration:
@@ -2553,13 +2550,6 @@ import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
 // A provider that deploys your app to AWS:
 import * as AWS from '@boostercloud/framework-provider-aws'
-// A provider that deploys your app locally:
-import * as Local from '@boostercloud/framework-provider-local'
-
-Booster.configure('dev', (config: BoosterConfig): void => {
-  config.appName = 'fruit-store-dev'
-  config.provider = Local.Provider
-})
 
 Booster.configure('stage', (config: BoosterConfig): void => {
   config.appName = 'fruit-store-stage'
