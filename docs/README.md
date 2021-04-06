@@ -2307,8 +2307,7 @@ You don't need to know anything about this to develop using Booster, neither in 
 
 One of the goals of Booster is to become provider agnostic so you can deploy your application to any serverless provider like AWS, Google Cloud, Azure, etc...
 
-So far, in the current version, only AWS is supported, but given the high level of abstraction, it will eventually support
-all cloud providers. (**Contributions are welcome!** 😜)
+In the current version, we offer full support for AWS provider and experimental support for Kubernetes and Azure providers. We will eventually support all main cloud providers (**Contributions are welcome!** 😜)
 
 #### Configure your provider credentials
 
@@ -2811,3 +2810,4 @@ You can find some example apps in the [examples directory](https://github.com/bo
 When you deploy a Booster application to AWS, an S3 bucket needs to be created to upload the application code. Booster names that bucket using your application name as a prefix. In AWS, bucket names must be unique _globally_, so if there is another bucket in the world with exactly the same name as the one generated for your application, you will get this error.
 
 The solution is to **change your application name in the configuration file so that the bucket name is unique.**
+
