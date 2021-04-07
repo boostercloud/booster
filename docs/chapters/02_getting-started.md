@@ -2,7 +2,7 @@
 
 # Getting started
 
-##   Installing Booster
+## Installing Booster
 
 You can develop with Booster using any of the following operating systems:
 
@@ -10,15 +10,15 @@ You can develop with Booster using any of the following operating systems:
 - macOS
 - Windows (Native and WSL)
 
-###  Booster Prerequisites
+### Booster Prerequisites
 
-####  Install Node.js
+#### Install Node.js
 
 The minimal required Node.js version is `v12`. Download the installer
 [from nodejs website](https://nodejs.org/en/), or install it using your system's package
 manager.
 
-#####  Ubuntu
+##### Ubuntu
 
 Just run the following commands on the terminal
 
@@ -27,7 +27,7 @@ curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
 sudo apt install nodejs
 ```
 
-#####  macOS
+##### macOS
 
 Using [Homebrew](https://brew.sh) package manager, run the following command on the terminal
 
@@ -35,7 +35,7 @@ Using [Homebrew](https://brew.sh) package manager, run the following command on 
 brew install node
 ```
 
-#####  Windows
+##### Windows
 
 Using [Chocolatey](https://chocolatey.org/) package manager, run the following command in your PowerShell
 
@@ -64,29 +64,29 @@ versions:
   for Linux
 - [`nvm-windows`](https://github.com/coreybutler/nvm-windows) - Works with native Windows
 
-####  Install Git
+#### Install Git
 
 Booster will initialize a Git repository when you create a new project (unless you use the `--skipGit` flag), so it is required that you have it already installed in your system.
 
-#####  Ubuntu
+##### Ubuntu
 
 ```shell
 sudo apt install git-all
 ```
 
-#####  macOS
+##### macOS
 
 ```shell
 brew install git
 ```
 
-#####  Windows
+##### Windows
 
 ```shell
 choco install git
 ```
 
-#####  Git configuration variables
+##### Git configuration variables
 
 After installing git in your machine, make sure that `user.name` and `user.email` are properly configured.
 Take a look at the [Git configuration page](https://git-scm.com/docs/git-config) for more info.
@@ -98,11 +98,11 @@ git config --global user.name "Your Name Here"
 git config --global user.email "your_email@youremail.com"
 ```
 
-###  AWS Provider Prerequisites
+### AWS Provider Prerequisites
 
 This step is optional; Booster is a cloud-native framework, meaning that your application
 will be deployed to the cloud using different cloud providers. By default, Booster uses the
-[AWS Provider](#aws-provider), so you need an AWS account.
+[AWS Provider](chapters/04_features.md#aws-provider), so you need an AWS account.
 
 > **Note**:
 >
@@ -144,9 +144,9 @@ aws_access_key_id = <YOUR ACCESS KEY ID>
 aws_secret_access_key = <YOUR SECRET ACCESS KEY>
 ```
 
-> You can see more details in the [Providers configuration](#providers-configuration) section.
+> You can see more details in the [Providers configuration](chapters/05_going-deeper.md#providers) section.
 
-####  Multiple AWS Accounts
+#### Multiple AWS Accounts
 
 If you are using multiple AWS accounts and don't want to use the default profile,
 you will need to set a `region` option to let the AWS SDK know which region you want your application to be deployed to.
@@ -161,7 +161,7 @@ aws_access_key_id = <DEFAULT ACCESS KEY ID>
 aws_secret_access_key = <DEFAULT SECRET ACCESS KEY>
 region=<DEFAULT REGION>
 
-[other_profile]   Give this profile the name that works best for you
+[other_profile] Give this profile the name that works best for you
 aws_access_key_id = <YOUR ACCESS KEY ID>
 aws_secret_access_key = <YOUR SECRET ACCESS KEY>
 region=<REGION FOR YOUR BOOSTER APP>
@@ -174,7 +174,7 @@ region=<REGION FOR YOUR BOOSTER APP>
 [default]
 region=<DEFAULT REGION>
 
-[profile other_profile]   You can rename the profile in any way that works for you
+[profile other_profile] You can rename the profile in any way that works for you
 region=<REGION FOR YOUR BOOSTER APP>
 ```
 
@@ -184,7 +184,7 @@ the application with the selected profile.
 ```shell
 export AWS_PROFILE=other_profile
 ```
-###  Azure Provider Prerequisites
+### Azure Provider Prerequisites
 
 This step is only necessary in the case that you want to use the Azure Provider.
 
@@ -215,9 +215,9 @@ You can check the different login options in this [reference document](https://d
 
 Once you are logged in from the CLI, you can deploy applications with Booster.
 
-> You can see more details in the [Providers configuration](#providers-configuration) section.
+> You can see more details in the [Providers configuration](chapters/05_going-deeper.md#providers) section.
 
-###  Kubernetes Provider Prerequisites
+### Kubernetes Provider Prerequisites
 
 This step is only necessary in the case that you want to use the Kubernetes provider.
 
@@ -236,9 +236,9 @@ Please note that the desired cluster should be accessible from the kubectl comma
 kubectl get pods -A
 ```
 
-> You can see more details in the [Providers configuration](#providers-configuration) section.
+> You can see more details in the [Providers configuration](chapters/05_going-deeper.md#providers) section.
 
-###  Installing the Booster CLI
+### Installing the Booster CLI
 
 Booster comes with a command-line tool that helps you generating boilerplate code,
 testing and deploying the application, and deleting all the resources in the cloud. All
@@ -260,25 +260,25 @@ $ boost version
 @boostercloud/cli/0.12.3 darwin-x64 node-v14.0.0
 ```
 
-##  Your first Booster app in 10 minutes
+## Your first Booster app in 10 minutes
 
 In this section, we will go through all the necessary steps to have the backend up and
 running for a blog application in just a few minutes. The steps to follow will be:
 
-- [Create project](#1-create-the-project)
-- [First command](#2-first-command)
-- [First event](#3-first-event)
-- [First entity](#4-first-entity)
-- [First read model](#5-first-read-model)
-- [Deployment](#6-deployment)
-- [Testing](#7-testing)
-  - [Creating posts](#71-creating-posts)
-  - [Retrieving all posts](#72-retrieving-all-posts)
-  - [Retrieving specific post](#73-retrieving-specific-post)
-- [Removing the stack](#8-removing-the-stack)
-- [More functionalities](#9-more-functionalities)
+- [Create project](#_1-create-the-project)
+- [First command](#_2-first-command)
+- [First event](#_3-first-event)
+- [First entity](#_4-first-entity)
+- [First read model](#_5-first-read-model)
+- [Deployment](#_6-deployment)
+- [Testing](#_7-testing)
+  - [Creating posts](#_71-creating-posts)
+  - [Retrieving all posts](#_72-retrieving-all-posts)
+  - [Retrieving specific post](#_73-retrieving-specific-post)
+- [Removing the stack](#_8-removing-the-stack)
+- [More functionalities](#_9-more-functionalities)
 
-###  1. Create the project
+### 1. Create the project
 
 First of all, we will use the Booster generators to create a project. Run this command and follow
 the instructions. After some prompted questions, the CLI will ask you to select one of the available providers to set up as the main provider that will be used.
@@ -292,7 +292,7 @@ the instructions. After some prompted questions, the CLI will ask you to select 
 ```
 
 When asked for the provider, select AWS as that is what we have
-configured [here](#aws-provider-prerequisites) for the example. You can use another provider if you want, or add more providers once you have created the project.
+configured [here](chapters/02_getting-started.md#aws-provider-prerequisites) for the example. You can use another provider if you want, or add more providers once you have created the project.
 
 To create the project, run the following command:
 
@@ -373,10 +373,10 @@ boosted-blog
 
 Now open the project in your favorite editor, e.g. [Visual Studio Code](https://code.visualstudio.com/).
 
-###  2. First command
+### 2. First command
 
 Commands define the input to our system, so we'll start by generating our first
-[command](#1-command-and-command-handlers) to create posts. Use the command generator, while in the project's root
+[command](chapters/03_booster-architecture.md#_1-command-and-command-handlers) to create posts. Use the command generator, while in the project's root
 directory, as follows:
 
 ```bash
@@ -422,7 +422,7 @@ export class CreatePost {
 }
 ```
 
-###  3. First event
+### 3. First event
 
 Instead of creating, updating, or deleting objects, Booster stores data in the form of events.
 They are records of facts and represent the source of truth. Let's generate an event called `PostCreated`
@@ -485,7 +485,7 @@ import { PostCreated } from '../events/post-created'
 We can do any validation in the command handler before storing the event, for our
 example, we'll just save the received data in the `PostCreated` event.
 
-###  4. First entity
+### 4. First entity
 
 So far, our `PostCreated` event suggests we need a `Post` entity. Entities are a
 representation of our system internal state. They are in charge of reducing (combining) all the events
@@ -519,7 +519,7 @@ export class Post {
 Entities represent our domain model and can be queried from command or
 event handlers to make business decisions or enforcing business rules.
 
-###  5. First read model
+### 5. First read model
 
 In a real application, we rarely want to make public our entire domain model (entities)
 including all their fields. What is more, different users may have different views of the data depending
@@ -534,7 +534,7 @@ boost new:read-model PostReadModel --fields title:string author:string --project
 ```
 
 We have used a new flag, `--projects`, that allow us to specify the entities (can be many) the read model will
-watch for changes. You might be wondering what is the `:id` after the entity name. That's the [joinKey](#the-projection-function),
+watch for changes. You might be wondering what is the `:id` after the entity name. That's the [joinKey](chapters/03_booster-architecture.md#the-projection-function),
 but you can forget about it now.
 
 As you might guess, the read-model generator will create a file called
@@ -574,7 +574,7 @@ export class PostReadModel {
 }
 ```
 
-###  6. Deployment
+### 6. Deployment
 
 At this point, we've:
 
@@ -624,7 +624,7 @@ only need to pick the output ending in `httpURL`, e.g.:
 https://<some random number>.execute-api.us-east-1.amazonaws.com/production
 ```
 
-###  7. Testing
+### 7. Testing
 
 Let's get started testing the project. We will perform three actions:
 
@@ -642,7 +642,7 @@ which is free and includes great support for GraphQL. However, you can use any c
 <httpURL>/graphql
 ```
 
-####  7.1 Creating posts
+#### 7.1 Creating posts
 
 Let's use two mutations to send two `CreatePost` commands.
 
@@ -685,7 +685,7 @@ The expected response for each of those requests should be:
 > **Note**: In this example, the IDs are generated on the client-side. When running production applications
 > consider adding validation for ID uniqueness. For this example, we have used [a UUID generator](https://www.uuidgenerator.net/version4)
 
-####  7.2 Retrieving all posts
+#### 7.2 Retrieving all posts
 
 Let's perform a GraphQL `query` that will be hitting our `PostReadModel`:
 
@@ -720,7 +720,7 @@ It should respond with something like:
 }
 ```
 
-####  7.3 Retrieving specific post
+#### 7.3 Retrieving specific post
 
 It is also possible to retrieve specific a `Post` by adding the `id` as input, e.g.:
 
@@ -748,7 +748,7 @@ You should get a response similar to this:
 }
 ```
 
-###  8. Removing the stack
+### 8. Removing the stack
 
 It is convenient to destroy all the infrastructure created after you stop using
 it to avoid generating cloud resource costs. Execute the following command from
@@ -765,7 +765,7 @@ we run `new:project` CLI command.
 > Congratulations! You've built a serverless backend in less than 10 minutes. We hope you
 > have enjoyed discovering the magic of the Booster Framework.
 
-###  9. More functionalities
+### 9. More functionalities
 
 This is a really basic example of a Booster application. The are many other features Booster provides like:
 
@@ -778,3 +778,7 @@ This is a really basic example of a Booster application. The are many other feat
 
 Continue reading to dig more. You've just scratched the surface of all the Booster
 capabilities!
+
+## Booster examples
+
+Check out [step-by-step guides](https://github.com/boostercloud/booster/tree/main/docs/examples) and [example apps](https://github.com/boostercloud/examples) to see Booster in use.

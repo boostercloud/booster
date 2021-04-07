@@ -1,17 +1,17 @@
 📝[Edit on github](https://github.com/boostercloud/booster/blob/main/docs/chapters/booster-architecture.md)
-#  Booster architecture
+# Booster architecture
 
 Two patterns influence the Booster's event-driven architecture: Command-Query Responsibility Segregation ([CQRS](https://www.martinfowler.com/bliki/CQRS.html)) and [Event Sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). They're complex techniques to implement from scratch with lower-level frameworks, but Booster makes them feel natural and very easy to use.
 
 ![architecture](../img/booster-arch.png)
 
-The public interface of a Booster application is just `Commands` and `ReadModels`. Booster proposes an entirely different approach to the Model-View-\* and CRUD frameworks. With Booster, clients submit commands, query the read models, or subscribe to them for receiving real-time updates thanks to the out of the box [GraphQL API](#graphql-api)
+The public interface of a Booster application is just `Commands` and `ReadModels`. Booster proposes an entirely different approach to the Model-View-\* and CRUD frameworks. With Booster, clients submit commands, query the read models, or subscribe to them for receiving real-time updates thanks to the out of the box [GraphQL API](chapters/04_features#graphql-api)
 
 Booster applications are event-driven and event-sourced so, **the source of truth is the whole history of events**. When a client submits a command, the `CommandHandler` _wakes up_ and executes its logic. Optionally, it can _register_ as many `Events` as needed. The framework caches the current state by automatically _reducing_ all the registered events into `Entities`. Interested parties can _react_ to events via `EventHandlers`, and finally, the _projection_ functions transform the entities into `ReadModels`.
 
 In this chapter you'll walk through these concepts and its details.
-
-##  1. Command and command handlers
+o80
+## 1. Command and command handlers
 
 Booster is different than MVC frameworks in which you typically implement controller classes with CRUD methods. Instead of that, you define commands, which are the user actions when interacting with an application. This approach fits very well with Domain-Driven Design. Depending on your application's domain, some examples of commands would be: `RemoveItemFromCart`, `RatePhoto`, `AddCommentToPost`, etc. Although, you can still have `Create*`, `Delete*`, or `Update*` commands when they make sense.
 
@@ -38,7 +38,7 @@ export class CommandName {
 
 Every time you submit a command through the GraphQL API, Booster calls the command handler function for the given command. Commands are part of the public API, so you can define authorization policies for them. They are also the place for validating input data before registering events into the event store because they are immutable once there.
 
-###  Commands naming convention
+### Commands naming convention
 
 Semantics is very important in Booster as it will play an essential role in designing a coherent system. Your application should reflect your domain concepts, and commands are not an exception. Although you can name commands in any way you want, we strongly recommend you to name them starting with verbs in imperative plus the object being affected. If we were designing an e-commerce application, some commands would be:
 
@@ -64,7 +64,7 @@ Despite you can place commands, and other Booster files, in any directory, we st
 │   └── read-models
 ```
 
-###  Creating a command
+### Creating a command
 
 The preferred way to create a command is by using the generator, e.g.
 
@@ -78,11 +78,11 @@ The generator will automatically create a file called `create-product.ts` with a
 
 > **Note**: Generating a command with the same name as an already existing one will prompt the user for confirmation.
 
-###  The command handler function
+### The command handler function
 
 Each command class must have a method called `handle`. This function is the command handler, and it will be called by the framework every time one instance of this command is submitted. Inside the handler you can run validations, return errors, query entities to make decisions, and register relevant domain events.
 
-####  Validating data
+#### Validating data
 
 Booster uses the typed nature of GraphQL to ensure that types are correct before reaching the handler, so you don't have to validate types.
 
@@ -204,11 +204,11 @@ export class MoveStock {
 
 ####  Registering events
 
-Within the command handler execution, it is possible to register domain events. The command handler function receives the `register` argument, so within the handler, it is possible to call `register.events(...)` with a list of events. For more details about events and the register parameter, see the [`Events`](#2-events) section.
+Within the command handler execution, it is possible to register domain events. The command handler function receives the `register` argument, so within the handler, it is possible to call `register.events(...)` with a list of events. For more details about events and the register parameter, see the [`Events`](chapters/03_booster-architecture#_2-events) section.
 
 ###  Authorizing a command
 
-Commands are part of the public API of a Booster application, so you can define who is authorized to submit them. The Booster authorization feature is covered in [this](#authentication-and-authorization) section. So far, we have seen that you can make a command publicly accessible by authorizing `'all'` to submit it. You can also set specific roles as we did with the `authorize: [Admin]` parameter of the `MoveStock` command.
+Commands are part of the public API of a Booster application, so you can define who is authorized to submit them. The Booster authorization feature is covered in [this](chapters/04_features#authentication-and-authorization) section. So far, we have seen that you can make a command publicly accessible by authorizing `'all'` to submit it. You can also set specific roles as we did with the `authorize: [Admin]` parameter of the `MoveStock` command.
 
 ###  Submitting a command
 
@@ -293,7 +293,7 @@ export class EventName {
 }
 ```
 
-Events and [entities](#4-entities-and-reducers) are closely related. Each event belongs to one entity uniquely identified through the entityID method, and entities represent the application's state after reducing the stream of events. Indeed, an entity is just an aggregated representation of the same data present in its events, so it is possible to rebuild entities from events at any time. Booster guarantees that all the events associated with an entity will be reduced in the same order they were stored. Take a look at this event:
+Events and [entities](chapters/03_booster-architecture#_4-entities-and-reducers) are closely related. Each event belongs to one entity uniquely identified through the entityID method, and entities represent the application's state after reducing the stream of events. Indeed, an entity is just an aggregated representation of the same data present in its events, so it is possible to rebuild entities from events at any time. Booster guarantees that all the events associated with an entity will be reduced in the same order they were stored. Take a look at this event:
 
 ```typescript
 @Event
@@ -352,7 +352,7 @@ That will generate a file called `stock-moved.ts` under the proper `<project-roo
 
 ###  Registering events in the event store
 
-Creating an event file is different than storing an event instance in the event store. In Booster terminology, the latter receives the name of `registering` an event. As said before, Booster applications are event-sourced, which means that all the events are stored forever. Imagine this store as an infinite log used by the [reducer functions](#4-entities-and-reducers) to recreate the application's current state.
+Creating an event file is different than storing an event instance in the event store. In Booster terminology, the latter receives the name of `registering` an event. As said before, Booster applications are event-sourced, which means that all the events are stored forever. Imagine this store as an infinite log used by the [reducer functions](chapters/03_booster-architecture#_4-entities-and-reducers) to recreate the application's current state.
 
 Booster injects the register as a parameter in the `handle` method of both the command and the event handlers. Then you can register events by calling the `register.events(...)` method as many times as you want, e.g.
 
@@ -576,7 +576,7 @@ This property is called [Eventual Consistency](https://en.wikipedia.org/wiki/Eve
 
 ##  5. Read models and projections
 
-Read Models are cached data optimized for read operations. They're updated reactively when [Entities](#4-entities-and-reducers) are updated after reducing [events](#2-events). They also define the _Read API_.
+Read Models are cached data optimized for read operations. They're updated reactively when [Entities](chapters/03_booster-architecture#_4-entities-and-reducers) are updated after reducing [events](chapters/03_booster-architecture#_2-events). They also define the _Read API_.
 
 Read Models are classes decorated with the `@ReadModel` decorator that have one or more projection methods.
 
@@ -639,7 +639,7 @@ Read Model classes can also be created by hand and there are no restrictions. Th
 
 A `Projection` is a method decorated with the `@Projects` decorator that, given a new entity value and (optionally) the current read model state, generate a new read model value.
 
-Read models can be projected from one or more [entities](#4-entities-and-reducers) as soon as all the entities involved have one field with the same semantics that can be used as a join key (usually an identifier or a reference to other entity). A join key in Booster is similar to join keys in relational databases, so you could see Read Models as reactive join operations that you can use to build data aggregates. When an entity is updated, Booster uses the join key to find the right read model instance, so all entities that share the same join key value will trigger the projections of the same read model. When defining a projection with the `@Projects` decorator, it's required to set the field name of the join key in each entity. Let's see an example:
+Read models can be projected from one or more [entities](chapters/03_booster-architecture#_4-entities-and-reducers) as soon as all the entities involved have one field with the same semantics that can be used as a join key (usually an identifier or a reference to other entity). A join key in Booster is similar to join keys in relational databases, so you could see Read Models as reactive join operations that you can use to build data aggregates. When an entity is updated, Booster uses the join key to find the right read model instance, so all entities that share the same join key value will trigger the projections of the same read model. When defining a projection with the `@Projects` decorator, it's required to set the field name of the join key in each entity. Let's see an example:
 
 ```typescript
 @ReadModel
@@ -679,7 +679,7 @@ export class UserReadModel {
 
 ###  Authorizing read models
 
-Read models are the tool to build the public read API of a Booster application, so you can define who is authorized to query and subscribe to them. The Booster authorization feature is covered in [the auth section](#authentication-and-authorization). So far, we have seen that you can make a read model publicly accessible by authorizing `'all'` to query it or you can set specific roles providing an array of roles in this way: `authorize: [Admin]`.
+Read models are the tool to build the public read API of a Booster application, so you can define who is authorized to query and subscribe to them. The Booster authorization feature is covered in [the auth section](chapters/04_features#authentication-and-authorization). So far, we have seen that you can make a read model publicly accessible by authorizing `'all'` to query it or you can set specific roles providing an array of roles in this way: `authorize: [Admin]`.
 
 ###  Querying a read model
 
@@ -707,11 +707,11 @@ subscription CartReadModel(id: ID!): CartReadModel
 subscription CartReadModels(id: UUIDPropertyFilter!): CartReadModel
 ```
 
-For more information about queries and how to use them, please check the [GraphQL API](#reading-read-models) section.
+For more information about queries and how to use them, please check the [GraphQL API](chapters/04_features#reading-read-models) section.
 
 ###  Getting real-time updates for a read model
 
-Booster GraphQL API also provides support for real-time updates using subscriptions and a web-socket. To get more information about it go to the [GraphQL API](#subscribing-to-read-models) section.
+Booster GraphQL API also provides support for real-time updates using subscriptions and a web-socket. To get more information about it go to the [GraphQL API](chapters/04_features#subscribing-to-read-models) section.
 
 ###  Getting and filtering read models data at code level
 

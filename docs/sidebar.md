@@ -2,6 +2,6 @@
 - [Getting started](chapters/02_getting-started.md)
 - [Booster architecture](chapters/03_booster-architecture.md)
 - [Features](chapters/04_features.md)
-- [Testing Booster applications](chapters/05_testing-booster-applications.md)
-- [Going deeper with Booster](chapters/06_going-deeper.md)
+- [Going deeper with Booster](chapters/05_going-deeper.md)
+- [Testing Booster applications](chapters/06_testing-booster-applications.md)
 - [Contributing guide](chapters/CONTRIBUTING.md)

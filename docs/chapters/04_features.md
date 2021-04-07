@@ -2,9 +2,9 @@
 
 # Features
 
-##  Authentication and Authorization
+## Authentication and Authorization
 
-You can use the [Authentication Rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure) for adding the authentication and authorization to you application. But first, you need to know that authorization in Booster is done through roles. Every Command and ReadModel has an `authorize` policy that tells Booster who can execute or access it. It consists of one of the following two values:
+You can use the [Authentication Rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure) for adding the authentication and authorization to your application. But first, you need to know that authorization in Booster is done through roles. Every Command and ReadModel has an `authorize` policy that tells Booster who can execute or access it. It consists of one of the following two values:
 
 - `'all'`: Meaning that the command is public: any user, both authenticated and anonymous, can execute it.
 - An array of authorized roles `[Role1, Role2, ...]`: This means that only those authenticated users that
@@ -82,7 +82,7 @@ Users with the `User` role will only be able to sign up with their emails, where
 
 When `skipConfirmation` is false or not specified, a confirmation is required for the chosen sign up method.
 Users that sign up with their emails will receive a confirmation link in their inbox. They just need to click it to confirm their registration.
-Users that sign up with their phones will receive a confirmation code as an SMS message. That code needs to be sent back using the [confirmation endpoint](#sign-up/confirm)
+Users that sign up with their phones will receive a confirmation code as an SMS message. That code needs to be sent back using the confirmation endpoint.
 If `skipConfirmation` is set to true, users can sign in without confirmation after signing up.
 
 Now with the roles defined, your Booster application is ready to use the Authorization Rocket, please check out its [documentation](https://github.com/boostercloud/rocket-auth-aws-infrastructure) for getting the access tokens.
@@ -93,7 +93,7 @@ authorize them to access protected resources.
 
 To learn how to include the access token in your requests, check the section [Authorizing operations](#authorizing-operations).
 
-##  Custom Authentication
+## Custom Authentication
 
 You can use the **JWT authorization mode** to authorize all incoming Booster requests. Your auth server will return JWT tokens
 wich will be decoded internally by Booster, after that, the required roles will be matched with the contained claims
@@ -101,7 +101,7 @@ inside that token.
 
 In that way, you can use different auth providers, like Auth0, Firebase, Cognito, create your own or simply use our [Authentication Rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure), which is our recommended solution that works great with Booster.
 
-###  JWT Configuration
+### JWT Configuration
 
 In order to use the JWT authorization you will need to set a `tokenVerifier` property which contains the following properties:
 
@@ -159,7 +159,7 @@ Once you have the token with the auth provider of choice, simply pass it in the 
 Authorization: Bearer <your JWT token>
 ```
 
-##  GraphQL API
+## GraphQL API
 
 This is the main API of your application, as it allows you to:
 
@@ -176,7 +176,7 @@ Luckily, you can forget about that because Booster does all the work for you!
 
 The GraphQL API is fully **auto-generated** based on your _commands_ and _read models_.
 
-###  Relationship between GraphQL operations and commands and read models
+### Relationship between GraphQL operations and commands and read models
 
 GraphQL defines three kinds of operations that you can use: _mutations_, _queries_, and _subscriptions_.
 
@@ -189,7 +189,7 @@ Knowing this, you can infer the relationship between those operations and your B
 - You _read_ a **read model** using a **query**.
 - You _subscribe_ to a **read model** using a **subscription**.
 
-###  How to send GraphQL request
+### How to send GraphQL request
 
 GraphQL uses two existing protocols:
 
@@ -214,7 +214,7 @@ To have a great developer experience, we **strongly recommend** to use a GraphQL
 - **[Hoppscotch (formerly Postwoman)](https://hoppscotch.io/)**: Ideal for testing sending manual requests, getting the schema, etc.
 - **Apollo clients**: These are the "go-to" SDKs to interact with a GraphQL API from your clients. It is very likely that there is a version for your client programming language. Check the ["Using Apollo Client"](#using-apollo-client) section to know more about this.
 
-###  Get GraphQL schema from deployed application
+### Get GraphQL schema from deployed application
 
 After deploying your application with the command `boost deploy -e development`, you can get your GraphQL schema by using a tool like **[Hoppscotch (formerly Postwoman)](https://hoppscotch.io/)**. The previous command displays multiple endpoints, one of them is **graphqlURL**, which has the following pattern:
 
@@ -224,7 +224,7 @@ By entering this URL in Hoppscotch, the schema can be displayed as shown in the 
 
 ![hoppscotch screenshot](../img/postwoman-screenshot.png)
 
-###  Sending commands
+### Sending commands
 
 As mentioned in the previous section, we need to use a "mutation" to send a command. The structure of a mutation (the body of the request) is the following:
 
@@ -278,7 +278,7 @@ And this would be the response:
 
 > **Note**: Remember to set the proper **access token** for secured commands, check ["Authorizing operations"](#authorizing-operations).
 
-###  Reading read models
+### Reading read models
 
 To read a specific read model, we need to use a "query" operation. The structure of the "query" (the body
 of the request) is the following:
@@ -345,7 +345,7 @@ And we would get the following as response:
 
 > **Note**: Remember to set the proper **access token** for secured read models, check ["Authorizing operations"](#authorizing-operations).
 
-###  Subscribing to read models
+### Subscribing to read models
 
 To subscribe to a specific read model, we need to use a subscription operation, and it must be _sent through the **websocketURL**_ using the [_GraphQL over WebSocket_ protocol](#the-graphql-over-websocket-protocol).
 
@@ -448,7 +448,7 @@ mutation {
 
 > **Note**: Remember that, in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
 
-###  Using Apollo Client
+### Using Apollo Client
 
 One of the best clients to connect to a GraphQL API is the [Apollo](https://www.apollographql.com/) client. There will probably be a version for your client technology of choice. These are the main ones:
 
@@ -548,7 +548,7 @@ subscriptionOperation.subscribe({
 })
 ```
 
-###  Authorizing operations
+### Authorizing operations
 
 When you have a command or read model whose access is authorized to users with a specific set of roles (see [Authentication and Authorization](#authentication-and-authorization)), you need to use an authorization token to send queries, mutations or subscriptions to that command or read model.
 
@@ -568,7 +568,7 @@ Authorization: Bearer <your token>
 
 You normally won't be sending tokens in such a low-level way. GraphQL clients have easier ways to send these tokens. See [Sending tokens with Apollo client](#sending-tokens-with-apollo-clients)
 
-####  Sending tokens with Apollo clients
+#### Sending tokens with Apollo clients
 
 We recommend going to the specific documentation of the specific Apollo client you are using to know how to send tokens. However, the basics of this guide remains the same. Here is an example of how you would configure the Javascript/Typescript Apollo client to send the authorization token. The example is exactly the same as the one shown in the [Using Apollo clients](#using-apollo-client) section, but with the changes needed to send the token. Notice that `<AuthApiEndpoint>` and `<idToken>` are obtained from the [Authentication Rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure).
 
@@ -621,7 +621,7 @@ const client = new ApolloClient({
 })
 ```
 
-####  Refreshing tokens with Apollo clients
+#### Refreshing tokens with Apollo clients
 
 Authorization tokens expire after a certain amount of time. When a token is expired, you will get an error and you will need to call the [refresh the token](https://github.com/boostercloud/rocket-auth-aws-infrastructure#refresh-token) endpoint to get a new token. After you have done so, you need to use the new token in your GraphQL operations.
 
@@ -689,7 +689,7 @@ Now, _when the user signs-in_ or _when the token is refreshed_, we need to do tw
 
 You might be wondering why we need to do the second step. The reason is that, with operations sent through HTTP, the token goes along with every operation, in the headers. However, with operations sent through WebSockets, like subscriptions, the token is only sent when the socket connection is established. For this reason, **everytime we update the token we need to reconnect the `SubscriptionClient`** so that it sends again the token (the updated one in this case).
 
-###  The GraphQL over WebSocket protocol
+### The GraphQL over WebSocket protocol
 
 Sockets are channels for two-way communication that doesn't follow the request-response cycle, a characteristic feature of the HTTP protocol. One part can send many messages and the other part can receive all of them but only answer to some specific ones. What is more, messages could come in any order. For example, one part can send two messages and receive the response of the second message before the response of the first message.
 
@@ -701,15 +701,15 @@ You don't need to know anything about this to develop using Booster, neither in 
 
 > **Note**: The WebSocket communication in Booster only supports this subprotocol, whose identifier is `graphql-ws`. For this reason, when you connect to the WebSocket provisioned by Booster, you must specify the `graphql-ws` subprotocol. If not, the connection won't succeed.
 
-##  Cloud native
+## Cloud native
 
 One of the goals of Booster is to become provider agnostic so you can deploy your application to any serverless provider like AWS, Google Cloud, Azure, etc...
 
 In the current version, we offer full support for AWS provider and experimental support for Kubernetes and Azure providers. We will eventually support all main cloud providers (**Contributions are welcome!** 😜)
 
-###  Configure your provider credentials
+### Configure your provider credentials
 
-####  AWS provider
+#### AWS provider
 
 In AWS, it is required that your `~/.aws/credentials` file is properly setup, and a `region` attribute is specified. If you have the [AWS CLI installed](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html), you can create the config file by running the command `aws configure`, but that is completely optional, **AWS CLI is not required to run booster**.
 
@@ -724,7 +724,7 @@ region = eu-west-1
 
 It's recommended to use IAM user keys and avoiding your root access keys. If you need help obtaining a `KEY ID` and `ACCESS KEY`, [check out the official AWS guides](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey).
 
-###  Deploy your project
+### Deploy your project
 
 To deploy your Booster project, run the following command:
 
@@ -734,14 +734,14 @@ boost deploy -e <environment name>
 
 > **Note**: All you have in your project root will be deployed to the cloud provider, so if for example you have an additional frontend project, you should move it to another place because the cloud providers usually have a limited capacity for only code.
 
-The `<environment name>` parameter is the name of the [environment](#environments) you want to deploy.
+The `<environment name>` parameter is the name of the [environment](chapters/05_going-deeper#environments) you want to deploy.
 It will take a while, but you should have your project deployed to your cloud provider.
 
 If you make changes to your code, you can run `boost deploy -e <environment name>` again to update your project in the cloud.
 
 To skip restoring dependencies after deployment you can run `boost deploy -e <environment name> -s`.
 
-###  Application outputs
+### Application outputs
 
 After any deployment, an "Outputs" section will be printed to the console with useful information needed to interact with your application. The meaning of those outputs are:
 
@@ -751,7 +751,7 @@ After any deployment, an "Outputs" section will be printed to the console with u
 - **clientID**: This parameter is _specific for the AWS provider_ (only shown if used AWS when deployint) and is
   needed only for the `auth/sign-up` and `auth/sign-in` endpoints.
 
-###  Delete your cloud stack
+### Delete your cloud stack
 
 If you want to delete the Booster application that has been deployed, you can run:
 

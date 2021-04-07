@@ -2,21 +2,17 @@
 
 # Going deeper with Booster
 
-##  Booster examples
-
-Check out [step-by-step guides](https://github.com/boostercloud/booster/tree/main/docs/examples) and [example apps](https://github.com/boostercloud/examples) to see Booster in use.
-
-##  Framework Core
+## Framework Core
 
 The `framework-core` package includes the most important components of the framework abstraction. It can be seen as skeleton or the main architecture of the framework.
 
 The package defines the specification of how should a Booster application work without taking into account the specific providers that could be used. Every Booster provider package is based on the components that the framework core needs in order to work on the platform.
 
-##  Framework Types
+## Framework Types
 
 The `framework-types` packages includes the types that define the domain of the Booster framework. It defines domain concepts like an `Event`, a `Command` or a `Role`.
 
-##  Framework integration tests
+## Framework integration tests
 
 Booster framework integration tests package is used to test the Booster project itself, but it is also an example of how a Booster application could be tested. We encourage developers to have a look at our [Booster project repository](https://github.com/boostercloud/booster/tree/main/packages/framework-integration-tests).
 
@@ -30,7 +26,7 @@ There are several types of integration tests in this package:
 
 If you are curious about the framework providers, you will be able to read more about them in the following section.
 
-##  Providers
+## Providers
 
 The providers are different implementations of the Booster runtime to allow Booster applications run on different cloud providers or services. They all implement the same interface, and the main idea behind the providers is that no matter what the developer chooses as backend, they won't need to know anything about the underlying infrastructure.
 
@@ -43,11 +39,11 @@ Other providers packages are currently under experimental support. Some of the f
 - **framework-provider-kubernetes-\***
 - **framework-provider-azure-\***
 
-##  Configuration and environments
+## Configuration and environments
 
 Booster uses sensible defaults, convention over configuration, and code inference to reduce dramatically the amount of configuration needed. However, there are some aspects that can't be inferred (like the application name) or the provider library used for each [environment](#environments).
 
-###  Booster configuration
+### Booster configuration
 
 You configure your application by calling the `Booster.configure()` method. There are no restrictions about where you should do this call, but the convention is to do it in your configuration files located in the `src/config` folder. This folder will get automatically generated for you after running the `boost new:project <project-name>` CLI command.
 
@@ -78,9 +74,9 @@ The following is the list of the fields you can configure:
   config.assets = ['.env']
   ```
 
-###  Providers configuration
+# Providers configuration
 
-####  AWS Provider
+#### AWS Provider
 
 To configure AWS as a provider you need to meet certain prerequisites:
 
@@ -110,7 +106,7 @@ boost deploy -e production
 
 Now just let the magic happen, Booster will create everything for you and give you back your app ready to use URL. 🚀
 
-####  Azure Provider
+#### Azure Provider
 
 To configure Azure as a provider you need to meet certain prerequisites:
 
@@ -172,7 +168,7 @@ source <path-to-your-bash-file> && boost deploy -e production
 
 Now just let the magic happen, Booster will create everything for you and give you back your app ready to use URL. 🚀
 
-####  Kubernetes provider
+#### Kubernetes provider
 
 To configure Kubernetes as a provider you need to meet certain prerequisites:
 
@@ -196,7 +192,7 @@ Booster.configure('production', (config: BoosterK8sConfiguration): void => {
 })
 ```
 
-###  Environments
+### Environments
 
 You can create multiple environments calling the `Booster.configure` function several times using different environment names as the first argument. You can create one file for each environment, but it is not required. In this example we set all environments in a single file:
 
@@ -243,7 +239,7 @@ Booster environments are extremely flexible. As shown in the first example, your
 
 The only thing you need to do to deploy a whole new completely-independent copy of your application is to use a different name. Also, Booster uses the credentials available in the machine (`~/.aws/credentials` in AWS) that performs the deployment process, so developers can even work on separate accounts than production or staging environments.
 
-##  Extending Booster with Rockets!
+## Extending Booster with Rockets!
 
 You can extend Booster by creating rockets. A rocket is just a node package that implements the public Booster rocket interfaces. You can use them for many things:
 
@@ -256,7 +252,7 @@ This extension mechanism is very new, but we're planning to port most of the fun
 - Composability: You can use the default rockets or configure your application to suit your needs without adding anything extra.
 - Easier to manage feature sets in different providers: It would be really hard for the core team and contributors to implement and test every new feature in every supported provider, so by providing functionality like rockets, you'll have access to the most advanced features for your provider faster, and the rockets library can be built on-demand for each provider.
 
-###  Create your own Rocket
+### Create your own Rocket
 
 > Currently, Rockets work in AWS, we are working on porting them to other providers.
 
@@ -345,7 +341,7 @@ Booster.configure('development', (config: BoosterConfig): void => {
 })
 ```
 
-###  Naming recommendations
+### Naming recommendations
 
 There are no restrictions on how you name your rocket packages, but we propose the following naming convention to make it easier to find your extensions in the vast npm library and find related packages (code and infrastructure extensions cannot be distributed in the same package).
 
@@ -362,7 +358,7 @@ If you want to support the same functionality in several providers, it could be 
 - `rocket-file-uploader-azure`: Implements the API calls to Azure Storage to get the uploaded files.
 - `rocket-file-uploader-azure-infrastructure`: Configures file storage.
 
-###  Booster Rockets list
+### Booster Rockets list
 
 Here you can check out the official Booster Rockets developed at this time:
 
