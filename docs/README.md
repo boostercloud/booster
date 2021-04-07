@@ -2402,12 +2402,6 @@ region = eu-west-1
 
 It's recommended to use IAM user keys and avoiding your root access keys. If you need help obtaining a `KEY ID` and `ACCESS KEY`, [check out the official AWS guides](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey).
 
-##### Azure provider
-
-##### Kubernetes provider
-
-
-
 #### Deploy your project
 
 To deploy your Booster project, run the following command:
