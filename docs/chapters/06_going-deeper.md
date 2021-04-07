@@ -1,23 +1,26 @@
 📝[Edit on github](https://github.com/boostercloud/booster/blob/main/docs/chapters/going-deeper.md)
-## Booster examples
+
+# Going deeper with Booster
+
+##  Booster examples
 
 Check out [step-by-step guides](https://github.com/boostercloud/booster/tree/main/docs/examples) and [example apps](https://github.com/boostercloud/examples) to see Booster in use.
 
-## Framework Core
+##  Framework Core
 
 The `framework-core` package includes the most important components of the framework abstraction. It can be seen as skeleton or the main architecture of the framework.
 
 The package defines the specification of how should a Booster application work without taking into account the specific providers that could be used. Every Booster provider package is based on the components that the framework core needs in order to work on the platform.
 
-## Framework Types
+##  Framework Types
 
 The `framework-types` packages includes the types that define the domain of the Booster framework. It defines domain concepts like an `Event`, a `Command` or a `Role`.
 
-## Framework integration tests
+##  Framework integration tests
 
 Booster framework integration tests package is used to test the Booster project itself, but it is also an example of how a Booster application could be tested. We encourage developers to have a look at our [Booster project repository](https://github.com/boostercloud/booster/tree/main/packages/framework-integration-tests).
 
-Some integration tests highly depend on the provider chosen for the project, and the infrastructure is normally deployed locally or in the cloud right before the tests run. Once tests are completed, the application is teared down.
+Some integration tests highly depend on the provider chosen for the project, and the infrastructure is normally deployed in the cloud right before the tests run. Once tests are completed, the application is teared down.
 
 There are several types of integration tests in this package:
 
@@ -27,7 +30,7 @@ There are several types of integration tests in this package:
 
 If you are curious about the framework providers, you will be able to read more about them in the following section.
 
-## Providers
+##  Providers
 
 The providers are different implementations of the Booster runtime to allow Booster applications run on different cloud providers or services. They all implement the same interface, and the main idea behind the providers is that no matter what the developer chooses as backend, they won't need to know anything about the underlying infrastructure.
 
@@ -35,17 +38,16 @@ Currently, the Booster framework provides a fully working provider package:
 
 -  **framework-provider-aws-\***
 
-Other providers packages are currently under development. Some of the features might be missing:
+Other providers packages are currently under experimental support. Some of the features might be missing:
 
-- **framework-provider-local-\***. The Booster framework local provider combines in-memory databases with a GraphQL API served through a Node.js Express Server. The local runtime is a convenient and fast way to deploy and test your code in a local development environment. From the API and semantic perspectives, there are no differences from using a real cloud provider, it just runs locally!
 - **framework-provider-kubernetes-\***
 - **framework-provider-azure-\***
 
-## Configuration and environments
+##  Configuration and environments
 
 Booster uses sensible defaults, convention over configuration, and code inference to reduce dramatically the amount of configuration needed. However, there are some aspects that can't be inferred (like the application name) or the provider library used for each [environment](#environments).
 
-### Booster configuration
+###  Booster configuration
 
 You configure your application by calling the `Booster.configure()` method. There are no restrictions about where you should do this call, but the convention is to do it in your configuration files located in the `src/config` folder. This folder will get automatically generated for you after running the `boost new:project <project-name>` CLI command.
 
@@ -68,7 +70,7 @@ The following is the list of the fields you can configure:
 
 - **provider:** This field contains the provider library instance that Booster will use when deploying or running your application.
 
-> **Note:** So far, there is only one provider fully supported in Booster yet, @boostercloud/framework-provider-aws, and it is probably the one you have already set if you used the generator to create your project. The team is currently working on providers for local development, Azure, and Kubernetes._
+> **Note:** So far, there is only one provider fully supported in Booster yet, @boostercloud/framework-provider-aws, and it is probably the one you have already set if you used the generator to create your project. Azure and Kubernetes have experimental support and the team is currently improving them.
 
 - **assets**: This is an array of _relative_ paths from the root of the project pointing to files and folders with static assets. They will be included among the deployed files to the cloud provider.
   For example, imagine you are using the `dotenv` module so that all the environment variables you have in your `.env` files are loaded into memory in runtime. In order for this to work, you need to include your `.env` files as assets of your project, so that they are included when deploying. Assuming you only have a `.env` file in the root of your project, you should add the following to your configuration:
@@ -76,13 +78,13 @@ The following is the list of the fields you can configure:
   config.assets = ['.env']
   ```
 
-### Providers configuration
+###  Providers configuration
 
-#### AWS Provider
+####  AWS Provider
 
 To configure AWS as a provider you need to meet certain prerequisites:
 
-- Set up an AWS account following the getting started section [instructions](#set-up-an-aws-account)
+- Set up an AWS account following the getting started section [instructions](#aws-provider-prerequisites)
 - Check `@boostercloud/framework-provider-aws` is listed in your app `package.json` dependencies.
 - Check `@boostercloud/framework-provider-aws-infrastructure` is listed in your app `package.json` devDependencies.
 - Check both dependencies are installed, otherwise use `npm install` in the root of your project.
@@ -108,7 +110,7 @@ boost deploy -e production
 
 Now just let the magic happen, Booster will create everything for you and give you back your app ready to use URL. 🚀
 
-#### Azure Provider
+####  Azure Provider
 
 To configure Azure as a provider you need to meet certain prerequisites:
 
@@ -139,8 +141,8 @@ _Note: remember to have [jq](https://stedolan.github.io/jq/download/) installed 
 ```bash
 #!/usr/bin/env bash
 
-SP_DISPLAY_NAME="<service-principal-name>" # replace <service-principal-name> with the name of your own SP
-REGION="East US" # replace with a region of your choice, see full list here: https://azure.microsoft.com/en-us/global-infrastructure/locations/
+SP_DISPLAY_NAME="<service-principal-name>"   replace <service-principal-name> with the name of your own SP
+REGION="East US"   replace with a region of your choice, see full list here: https://azure.microsoft.com/en-us/global-infrastructure/locations/
 
 export AZURE_APP_ID=$(az ad sp list --display-name ${SP_DISPLAY_NAME} | jq -r '.[].appId')
 export AZURE_TENANT_ID=$(az ad sp list --display-name ${SP_DISPLAY_NAME} | jq -r '.[].appOwnerTenantId')
@@ -170,7 +172,31 @@ source <path-to-your-bash-file> && boost deploy -e production
 
 Now just let the magic happen, Booster will create everything for you and give you back your app ready to use URL. 🚀
 
-### Environments
+####  Kubernetes provider
+
+To configure Kubernetes as a provider you need to meet certain prerequisites:
+
+- Config the Kubernetes cluster beforehand in a cloud provider or on-premises.
+- Install **kubectl** and connect it to your Kubernetes cluster.
+- Install [Helm](https://helm.sh) version 3 or greater.
+- Check `@boostercloud/framework-provider-kubernetes` is listed in your app `package.json` dependencies.
+- Check `@boostercloud/framework-provider-kubernetes-infrastructure` is listed in your app `package.json` devDependencies.
+- Check both dependencies are installed, otherwise use `npm install` in the root of your project.
+
+Now go to your `config.ts` file, import the kubernetes provider library and set up your app environment.
+
+```typescript
+import { Booster } from '@boostercloud/framework-core'
+import { BoosterK8sConfiguration } from '@boostercloud/framework-provider-kubernetes-infrastructure'
+import { Provider } from '@boostercloud/framework-provider-kubernetes'
+
+Booster.configure('production', (config: BoosterK8sConfiguration): void => {
+  config.appName = 'my-app-name'
+  config.provider = Provider()
+})
+```
+
+###  Environments
 
 You can create multiple environments calling the `Booster.configure` function several times using different environment names as the first argument. You can create one file for each environment, but it is not required. In this example we set all environments in a single file:
 
@@ -180,13 +206,6 @@ import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
 // A provider that deploys your app to AWS:
 import * as AWS from '@boostercloud/framework-provider-aws'
-// A provider that deploys your app locally:
-import * as Local from '@boostercloud/framework-provider-local'
-
-Booster.configure('dev', (config: BoosterConfig): void => {
-  config.appName = 'fruit-store-dev'
-  config.provider = Local.Provider
-})
 
 Booster.configure('stage', (config: BoosterConfig): void => {
   config.appName = 'fruit-store-stage'
@@ -224,7 +243,7 @@ Booster environments are extremely flexible. As shown in the first example, your
 
 The only thing you need to do to deploy a whole new completely-independent copy of your application is to use a different name. Also, Booster uses the credentials available in the machine (`~/.aws/credentials` in AWS) that performs the deployment process, so developers can even work on separate accounts than production or staging environments.
 
-## Extending Booster with Rockets!
+##  Extending Booster with Rockets!
 
 You can extend Booster by creating rockets. A rocket is just a node package that implements the public Booster rocket interfaces. You can use them for many things:
 
@@ -237,7 +256,7 @@ This extension mechanism is very new, but we're planning to port most of the fun
 - Composability: You can use the default rockets or configure your application to suit your needs without adding anything extra.
 - Easier to manage feature sets in different providers: It would be really hard for the core team and contributors to implement and test every new feature in every supported provider, so by providing functionality like rockets, you'll have access to the most advanced features for your provider faster, and the rockets library can be built on-demand for each provider.
 
-### Create your own Rocket
+###  Create your own Rocket
 
 > Currently, Rockets work in AWS, we are working on porting them to other providers.
 
@@ -326,7 +345,7 @@ Booster.configure('development', (config: BoosterConfig): void => {
 })
 ```
 
-### Naming recommendations
+###  Naming recommendations
 
 There are no restrictions on how you name your rocket packages, but we propose the following naming convention to make it easier to find your extensions in the vast npm library and find related packages (code and infrastructure extensions cannot be distributed in the same package).
 
@@ -343,19 +362,10 @@ If you want to support the same functionality in several providers, it could be 
 - `rocket-file-uploader-azure`: Implements the API calls to Azure Storage to get the uploaded files.
 - `rocket-file-uploader-azure-infrastructure`: Configures file storage.
 
-### Booster Rockets list
+###  Booster Rockets list
 
 Here you can check out the official Booster Rockets developed at this time:
 
 - [Authentication Booster Rocket for AWS](https://github.com/boostercloud/rocket-auth-aws-infrastructure)
 - [Backup Booster Rocket for AWS](https://github.com/boostercloud/rocket-backup-aws-infrastructure)
 - [Static Sites Booster Rocket for AWS](https://github.com/boostercloud/rocket-static-sites-aws-infrastructure)
-
-## Frequently Asked Questions
-
-**1.- When deploying my application in AWS for the first time, I got an error saying _"StagingBucket <your app name>-toolkit-bucket already exists"_**
-
-When you deploy a Booster application to AWS, an S3 bucket needs to be created to upload the application code. Booster names that bucket using your application name as a prefix. In AWS, bucket names must be unique _globally_, so if there is another bucket in the world with exactly the same name as the one generated for your application, you will get this error.
-
-The solution is to **change your application name in the configuration file so that the bucket name is unique.**
-

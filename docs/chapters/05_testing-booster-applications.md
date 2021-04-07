@@ -19,7 +19,7 @@ The only thing that you should add to this line are the `AWS_SDK_LOAD_CONFIG=tru
 }
 ```
 
-## Testing with `sinon-chai`
+###  Testing with `sinon-chai`
 The `BoosterConfig` can be accessed through the `Booster.config` on any part of a Booster application. To properly mock it for your objective, we really recommend to use sinon `replace` method, after configuring your `Booster.config` as desired.
 
 In the example below, we add 2 "empty" read-models, since we are iterating `Booster.config.readModels` from a command handler:
@@ -58,7 +58,7 @@ public static async handle(command: MyCommand, register: Register): Promise<void
 }
 ```
 
-## Recommended files
+###  Recommended files
 These are some files that might help you speed up your testing with Booster.
 
 ```typescript
@@ -73,7 +73,7 @@ export const expect = chai.expect
 This `expect` method will help you with some more additional methods like `expect(<my_stub>).to.have.been.calledOnceWithExactly(<my_params..>)`
 
 ```yaml
-# <root_dir>/.mocharc.yml
+#  <root_dir>/.mocharc.yml
 diff: true
 require: 'ts-node/register'
 extension:
@@ -85,5 +85,3 @@ timeout: 5000
 full-trace: true
 bail: true
 ```
-
-

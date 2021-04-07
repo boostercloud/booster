@@ -1,6 +1,6 @@
 📝[Edit on github](https://github.com/boostercloud/booster/blob/main/docs/chapters/booster-architecture.md)
+#  Booster architecture
 
-# Booster architecture
 Two patterns influence the Booster's event-driven architecture: Command-Query Responsibility Segregation ([CQRS](https://www.martinfowler.com/bliki/CQRS.html)) and [Event Sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). They're complex techniques to implement from scratch with lower-level frameworks, but Booster makes them feel natural and very easy to use.
 
 ![architecture](../img/booster-arch.png)
@@ -11,7 +11,7 @@ Booster applications are event-driven and event-sourced so, **the source of trut
 
 In this chapter you'll walk through these concepts and its details.
 
-## 1. Command and command handlers
+##  1. Command and command handlers
 
 Booster is different than MVC frameworks in which you typically implement controller classes with CRUD methods. Instead of that, you define commands, which are the user actions when interacting with an application. This approach fits very well with Domain-Driven Design. Depending on your application's domain, some examples of commands would be: `RemoveItemFromCart`, `RatePhoto`, `AddCommentToPost`, etc. Although, you can still have `Create*`, `Delete*`, or `Update*` commands when they make sense.
 
@@ -38,7 +38,7 @@ export class CommandName {
 
 Every time you submit a command through the GraphQL API, Booster calls the command handler function for the given command. Commands are part of the public API, so you can define authorization policies for them. They are also the place for validating input data before registering events into the event store because they are immutable once there.
 
-### Commands naming convention
+###  Commands naming convention
 
 Semantics is very important in Booster as it will play an essential role in designing a coherent system. Your application should reflect your domain concepts, and commands are not an exception. Although you can name commands in any way you want, we strongly recommend you to name them starting with verbs in imperative plus the object being affected. If we were designing an e-commerce application, some commands would be:
 
@@ -64,7 +64,7 @@ Despite you can place commands, and other Booster files, in any directory, we st
 │   └── read-models
 ```
 
-### Creating a command
+###  Creating a command
 
 The preferred way to create a command is by using the generator, e.g.
 
@@ -78,15 +78,15 @@ The generator will automatically create a file called `create-product.ts` with a
 
 > **Note**: Generating a command with the same name as an already existing one will prompt the user for confirmation.
 
-### The command handler function
+###  The command handler function
 
 Each command class must have a method called `handle`. This function is the command handler, and it will be called by the framework every time one instance of this command is submitted. Inside the handler you can run validations, return errors, query entities to make decisions, and register relevant domain events.
 
-### Validating data
+####  Validating data
 
 Booster uses the typed nature of GraphQL to ensure that types are correct before reaching the handler, so you don't have to validate types.
 
-#### Throw an error
+#####  Throw an error
 
 There are still business rules to be checked before proceeding with a command. For example, a given number must be between a threshold or a string must match a regular expression. In that case, it is enough just to throw an error in the handler. Booster will use the error's message as the response to make it descriptive, e.g.
 
@@ -115,7 +115,7 @@ mutation($input: CreateProductInput!) {
   CreateProduct(input: $input)
 }
 
- Variables
+  Variables
 
 {
   "input": {
@@ -140,7 +140,7 @@ You'll get something like this response:
 }
 ```
 
-#### Register error events
+#####  Register error events
 
 There could be situations in which you want to register an event representing an error. For example, when moving items with insufficient stock from one location to another:
 
@@ -172,7 +172,7 @@ export class MoveStock {
 
 In this case, the command operation can still be completed. An event handler will take care of that `ErrorEvent and proceed accordingly.
 
-### Reading entities
+####  Reading entities
 
 Event handlers are a good place to make decisions and, to make better decisions, you need information. There is a Booster function called `fetchEntitySnapshots` within the `Booster` package and allows you to inspect the application state. This function receives two arguments, the `Entity` to fetch and the `entityID`. Here is an example of fetching an entity called `Stock`:
 
@@ -202,15 +202,15 @@ export class MoveStock {
 }
 ```
 
-### Registering events
+####  Registering events
 
 Within the command handler execution, it is possible to register domain events. The command handler function receives the `register` argument, so within the handler, it is possible to call `register.events(...)` with a list of events. For more details about events and the register parameter, see the [`Events`](#2-events) section.
 
-### Authorizing a command
+###  Authorizing a command
 
 Commands are part of the public API of a Booster application, so you can define who is authorized to submit them. The Booster authorization feature is covered in [this](#authentication-and-authorization) section. So far, we have seen that you can make a command publicly accessible by authorizing `'all'` to submit it. You can also set specific roles as we did with the `authorize: [Admin]` parameter of the `MoveStock` command.
 
-### Submitting a command
+###  Submitting a command
 
 Booster commands are accessible to the outside world as GraphQL mutations. GrahpQL fits very well with Booster's CQRS approach because it has two kinds of operations: Mutations and Queries. Mutations are actions that modify the server-side data, as the commands are.
 
@@ -251,7 +251,7 @@ where the schema for `CreateProductInput` is
 }
 ```
 
-### Scheduling a command
+###  Scheduling a command
 
 Scheduled commands are the way to add automated tasks to your application, like checking an e-commerce abandoned carts every two hours to send notifications to the customer to come back and complete the checkout. Booster scheduled commands are TypeScript classes decorated with `@ScheduledCommand`, and unlike conventional commands, their handle function doesn't have any parameters.
 
@@ -270,7 +270,7 @@ export class CheckCartCount {
 
 Notice that you can pass as parameters `minute`, `hour`, `day`, `month`, `weekDay` and `year` to set up a cron expression. By default, if no paramaters are passed, the scheduled command will not be triggered.
 
-### Creating a scheduled command
+###  Creating a scheduled command
 
 The preferred way to create a scheduled command is by using the generator, e.g.
 
@@ -278,7 +278,7 @@ The preferred way to create a scheduled command is by using the generator, e.g.
 boost new:scheduled-command CheckCartCount
 ```
 
-## 2. Events
+##  2. Events
 
 Events are **immutable records of facts** within your application's domain. They are the cornerstone of Booster because of its event-driven and event-sourced nature. Booster events are TypeScript classes decorated with `@Event`. An event class may look like this:
 
@@ -314,7 +314,7 @@ An event has to know the ID of the entity it belongs to and you need to implemen
 
 > **Note**: The `entityID` method must always return the same value for the same event's instance. Otherwise, the result of the entity reduction will be unpredictable.
 
-### Events naming convention
+###  Events naming convention
 
 As with commands, you can name events in any way you want, depending on your application's domain. However, we recommend you to choose short sentences written in past tense because events are facts that have happened and can't be changed. Some event names would be:
 
@@ -338,7 +338,7 @@ As with other Booster files, events have their own directory:
 │   └── read-models
 ```
 
-### Creating events
+###  Creating events
 
 The preferred way to create event files is the `new:event` generator, e.g.
 
@@ -350,13 +350,13 @@ That will generate a file called `stock-moved.ts` under the proper `<project-roo
 
 > **Note**: Generating an event with the same name as an already existing one will prompt the user for confirmation.
 
-### Registering events in the event store
+###  Registering events in the event store
 
 Creating an event file is different than storing an event instance in the event store. In Booster terminology, the latter receives the name of `registering` an event. As said before, Booster applications are event-sourced, which means that all the events are stored forever. Imagine this store as an infinite log used by the [reducer functions](#4-entities-and-reducers) to recreate the application's current state.
 
 Booster injects the register as a parameter in the `handle` method of both the command and the event handlers. Then you can register events by calling the `register.events(...)` method as many times as you want, e.g.
 
-### Registering events from command handlers
+####  Registering events from command handlers
 
 ```typescript
 @Command({
@@ -378,7 +378,7 @@ export class MoveStock {
 }
 ```
 
-### Registering events from event handlers
+####  Registering events from event handlers
 
 In the case of the event handlers, you also receive the event instance that triggered the handle function.
 
@@ -395,7 +395,7 @@ export class HandleAvailability {
 }
 ```
 
-## 3. Event handlers
+##  3. Event handlers
 
 As expected with event-driven architectures, multiple parts of our application react to events. In the case of Booster, we have entities (in charge of reducing the events) and event handlers. These last ones are classes decorated with the @EventHandler decorator. Every time a new instance of a given event is registered, the handle method of this class is triggered. This method can contain any business logic defined by the user or it can also register new events.
 
@@ -417,7 +417,7 @@ export class HandleAvailability {
 }
 ```
 
-### Creating an event handler
+###  Creating an event handler
 
 Event handlers can be easily created using the Booster CLI command `boost new:event-handler`. There are two mandatory arguments: the event handler name, and the name of the event it will react to. For instance:
 
@@ -439,7 +439,7 @@ Once the creation is completed, there will be a new file in the event handlers d
 │   └── read-models
 ```
 
-### Registering events from an event handler
+###  Registering events from an event handler
 
 Booster injects a `register` instance in the `handle` method that we can use to register extra events. In the above example, you can see there is some logic that ends up registering new events.
 
@@ -451,7 +451,7 @@ An example can be found below:
 register.events(new ProductAvailabilityChanged(event.productID, -event.quantity))
 ```
 
-### Reading entities from event handlers
+###  Reading entities from event handlers
 
 Just as we do in command handlers, we can also retrieve entities information to make decisions based on their current state.
 
@@ -464,7 +464,7 @@ public static async handle(event: StockMoved, register: Register): Promise<void>
 }
 ```
 
-## 4. Entities and reducers
+##  4. Entities and reducers
 
 The source of truth of your Booster app are the events, but events make sense in the context of a domain entity.
 For example, in a banking app, there might be two events: `MoneyDeposited` and `MoneyWithdrawn`. However, these events
@@ -492,7 +492,7 @@ export class EntityName {
 
 There could be a lot of events being reduced concurrently among many entities, but, **for a specific entity instance, the events order is preserved**. This means that while one event is being reduced, all other events of any kind _that belong to the same entity instance_ will be waiting in a queue until the previous reducer has finished (with "entity instance" we refer to an entity of a specific type and with a specific ID). This is important to make sure that entities state is built correctly.
 
-### Entities naming convention
+###  Entities naming convention
 
 Entities are a representation of your application state in a specific moment, so name them as closely to your domain objects as possible. Typical entity names are nouns that might appear when you think about your app. In an e-commerce application, some entities would be:
 
@@ -518,7 +518,7 @@ Entities live within the entities directory of the project source: `<project-roo
 │   └── read-models
 ```
 
-### Creating entities
+###  Creating entities
 
 The preferred way to create an entity is by using the generator, e.g.
 
@@ -532,7 +532,7 @@ The generator will automatically create a file called `product.ts` with a TypeSc
 
 > **Note**: Generating an entity with the same name as an already existing one will prompt the user for confirmation.
 
-### The reducer function
+###  The reducer function
 
 Booster generates the reducer function as a static method of the entity class. That function is called by the framework every time that an event of the specified type needs to be reduced. It's highly recommended to **keep your reducer functions pure**, which means that you should be able to produce the new entity version by just looking at the event and the current entity state. You should avoid calling third party services, reading or writing to a database, or changing any external state.
 
@@ -568,13 +568,13 @@ You can visualize reduction like this:
 
 ![reducer process gif](img/reducer.gif)
 
-### Eventual consistency
+###  Eventual consistency
 
 Due to the event driven and async nature of Booster, your data might not be instantly updated. Booster will consume the commands, generate events, and _eventually_ generate the entities. Most of the time this is not perceivable, but under huge loads, it could be noticed.
 
 This property is called [Eventual Consistency](https://en.wikipedia.org/wiki/Eventual_consistency), and it is a trade-off to have high availability for extreme situations, where other systems might simply fail.
 
-## 5. Read models and projections
+##  5. Read models and projections
 
 Read Models are cached data optimized for read operations. They're updated reactively when [Entities](#4-entities-and-reducers) are updated after reducing [events](#2-events). They also define the _Read API_.
 
@@ -604,7 +604,7 @@ export class ReadModelName {
 }
 ```
 
-### Read models naming convention
+###  Read models naming convention
 
 As it has been previously commented, semantics plays an important role in designing a coherent system and your application should reflect your domain concepts, we recommend choosing a representative domain name and use the `ReadModel` suffix in your read models name.
 
@@ -623,7 +623,7 @@ Despite you can place your read models in any directory, we strongly recommend y
 │   └── read-models
 ```
 
-### Creating a read model
+###  Creating a read model
 
 The preferred way to create a read model is by using the generator, e.g.
 
@@ -635,7 +635,7 @@ The generator will create a Typescript class under the read-models directory `<p
 
 Read Model classes can also be created by hand and there are no restrictions. The structure of the data is totally open and can be as complex as you can manage in your projection functions.
 
-### The projection function
+###  The projection function
 
 A `Projection` is a method decorated with the `@Projects` decorator that, given a new entity value and (optionally) the current read model state, generate a new read model value.
 
@@ -677,11 +677,11 @@ export class UserReadModel {
   }
 ```
 
-### Authorizing read models
+###  Authorizing read models
 
 Read models are the tool to build the public read API of a Booster application, so you can define who is authorized to query and subscribe to them. The Booster authorization feature is covered in [the auth section](#authentication-and-authorization). So far, we have seen that you can make a read model publicly accessible by authorizing `'all'` to query it or you can set specific roles providing an array of roles in this way: `authorize: [Admin]`.
 
-### Querying a read model
+###  Querying a read model
 
 For every read model, Booster automatically creates all the necessary queries and subscriptions. For example, given this `CartReadModel`:
 
@@ -709,148 +709,11 @@ subscription CartReadModels(id: UUIDPropertyFilter!): CartReadModel
 
 For more information about queries and how to use them, please check the [GraphQL API](#reading-read-models) section.
 
-### Getting real-time updates for a read model
+###  Getting real-time updates for a read model
 
 Booster GraphQL API also provides support for real-time updates using subscriptions and a web-socket. To get more information about it go to the [GraphQL API](#subscribing-to-read-models) section.
 
-### Filtering a read model
-
-The Booster GraphQL API provides support for filtering Read Models on queries, subscriptions and at code level.
-
-Using the GraphQL API endpoint you can retrieve the schema of your application so you can see what are the filters for every Read Model and its properties. You can filter like this:
-
-Searching for a specific Read Model by `id`
-
-```graphql
-query {
-  ProductReadModels(filter: { id: { eq: "test-id" } }) {
-    id
-    sku
-    availability
-    price
-  }
-}
-```
-
-### Supported filters
-
-The currently supported filters are the following ones:
-
-#### Boolean filters
-
-| Filter |   Value    |  Description |
-| :----- | :--------: | -----------: |
-| eq     | true/false |     Equal to |
-| ne     | true/false | Not equal to |
-
-Example:
-
-```graphql
-query {
-  ProductReadModels(filter: { availability: { eq: true } }) {
-    id
-    sku
-    availability
-    price
-  }
-}
-```
-
-#### Number filters
-
-| Filter |  Value  |           Description |
-| :----- | :-----: | --------------------: |
-| eq     |  Float  |              Equal to |
-| ne     |  Float  |          Not equal to |
-| gt     |  Float  |          Greater than |
-| gte    |  Float  | Greater or equal than |
-| lt     |  Float  |            Lower than |
-| lte    |  Float  |   Lower or equal than |
-| in     | [Float] | Exists in given array |
-
-Example:
-
-```graphql
-query {
-  ProductReadModels(filter: { price: { gt: 200 } }) {
-    id
-    sku
-    availability
-    price
-  }
-}
-```
-
-#### String filters
-
-| Filter     |  Value   |                Description |
-| :--------- | :------: | -------------------------: |
-| eq         |  String  |                   Equal to |
-| ne         |  String  |               Not equal to |
-| gt         |  String  |               Greater than |
-| gte        |  String  |      Greater or equal than |
-| lt         |  String  |                 Lower than |
-| lte        |  String  |        Lower or equal than |
-| in         | [String] |      Exists in given array |
-| beginsWith |  String  | Starts with a given substr |
-| contains   |  String  |    Contains a given substr |
-
-Example:
-
-```graphql
-query {
-  ProductReadModels(filter: { sku: { begingsWith: "jewelry" } }) {
-    id
-    sku
-    availability
-    price
-  }
-}
-```
-
-#### Array filters
-
-| Filter   | Value  |             Description |
-| :------- | :----: | ----------------------: |
-| includes | Object | Includes a given object |
-
-Example:
-
-```graphql
-query {
-  CartReadModels(filter: { itemsIds: { includes: "test-item" } }) {
-    id
-    price
-    itemsIds
-  }
-}
-```
-
-_Note: Right now there is a limitation with complex properties in Arrays, where you just can filter them if you know the exact value of an element but is not possible to filter from a property of the element. As a workaround, you can use an array of ids of the complex property and filter for that property as in the example above._
-
-#### Filter combinators
-
-All the filters can be combined to create a more complex search on the same properties of the ReadModel.
-
-| Filter |     Value     |                                      Description |
-| :----- | :-----------: | -----------------------------------------------: |
-| and    |   [Filters]   |       AND - all filters on the list have a match |
-| or     |   [Filters]   | OR - At least one filter of the list has a match |
-| not    | Filter/and/or |            The element does not match the filter |
-
-Example:
-
-```graphql
-query {
-  CartReadModels(filter: { or: [{ id: { contains: "a" } }, { id: { contains: "b" } }] }) {
-    id
-    price
-    itemsIds
-  }
-}
-```
-
-### Getting and filtering read models data at code level
+###  Getting and filtering read models data at code level
 
 Booster allows you to get your read models data in your commands handlers and event handlers using the `Booster.readModel` method.
 
