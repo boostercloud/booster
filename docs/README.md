@@ -80,6 +80,7 @@
   - [Providers](#providers)
   - [Configuration and environments](#configuration-and-environments)
     - [Booster configuration](#booster-configuration)
+    - [Providers configuration](#providers-configuration)
     - [Environments](#environments)
   - [Extending Booster with Rockets!](#extending-booster-with-rockets)
     - [Create your own Rocket](#create-your-own-rocket)
@@ -292,6 +293,8 @@ aws_access_key_id = <YOUR ACCESS KEY ID>
 aws_secret_access_key = <YOUR SECRET ACCESS KEY>
 ```
 
+> You can see more details in [Providers configuration](#providers-configuration) section.
+
 ##### Multiple AWS Accounts
 
 If you are using multiple AWS accounts and don't want to use the default profile,
@@ -349,6 +352,8 @@ Now it is a good time to create that Microsoft Azure account. You can do so from
 
 Once you have created the Azure account, you need to install the [Azure CLI](https://docs.microsoft.com/es-es/cli/azure/install-azure-cli) in your machine, by following the instructions of the Azure CLI documentation.
 
+Apart from that, you need to install [jq](https://stedolan.github.io/jq/download/) in your system.
+
 The final step consists of signing in in your Azure account from the Azure CLI:
 
 ```shell
@@ -358,6 +363,8 @@ az login
 You can check the different login options in this [reference document](https://docs.microsoft.com/en-us/cli/azure/authenticate-azure-cli). 
 
 Once you are logged in from the CLI, you can deploy applications with Booster.
+
+> You can see more details in [Providers configuration](#providers-configuration) section.
 
 #### Kubernetes Provider Prerequisites
 
@@ -377,6 +384,8 @@ Please note that the desired cluster should be accessible from the kubectl comma
 ```shell
 kubectl get pods -A
 ```
+
+> You can see more details in [Providers configuration](#providers-configuration) section.
 
 #### Installing the Booster CLI
 
@@ -421,8 +430,20 @@ running for a blog application in just a few minutes. The steps to follow will b
 #### 1. Create the project
 
 First of all, we will use the Booster generators to create a project. Run this command and follow
-the instructions, when asked for the provider, select AWS as that is what we have
-configured [here](#set-up-an-aws-account).
+the instructions. After some questions prompted, the CLI will ask you to select one of the available providers to set up as the main provider that will be used.
+
+```shell
+? What's the package name of your provider infrastructure library? (Use arrow keys)
+❯ @boostercloud/framework-provider-aws (AWS) 
+  @boostercloud/framework-provider-azure (Azure) 
+  @boostercloud/framework-provider-kubernetes (Kubernetes) 
+  Other 
+```
+
+When asked for the provider, select AWS as that is what we have
+configured [here](#aws-provider-prerequisites) for the example. You can use another provider if you want, or add more providers once you have created the project. 
+
+To create the project, run the following command:
 
 ```shell
 > boost new:project boosted-blog
@@ -740,7 +761,7 @@ boost deploy -e production
 
 And here it comes the Booster magic! ✨ When running the deploy command, Booster will handle the creation of all the resources, *like Lambdas, API Gateway,* and the "glue" between them; *permissions, events, triggers, etc.* It even creates a fully functional GraphQL API!
 
-*If at this point you still don’t believe everything is done, feel free to check in your provider’s console. You should see, as in the AWS example below, that the stack and all the services are up and running!* 🚀
+*If at this point you still don’t believe everything is done, feel free to check in your provider’s console. You should see, as in the AWS example below, that the stack and all the services are up and running! For the other providers would be the same* 🚀
 
 ![resources](./img/aws-resources.png)
 
@@ -2381,6 +2402,12 @@ region = eu-west-1
 
 It's recommended to use IAM user keys and avoiding your root access keys. If you need help obtaining a `KEY ID` and `ACCESS KEY`, [check out the official AWS guides](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey).
 
+##### Azure provider
+
+##### Kubernetes provider
+
+
+
 #### Deploy your project
 
 To deploy your Booster project, run the following command:
@@ -2506,7 +2533,7 @@ The following is the list of the fields you can configure:
 
 To configure AWS as a provider you need to meet certain prerequisites:
 
-- Set up an AWS account following the getting started section [instructions](#set-up-an-aws-account)
+- Set up an AWS account following the getting started section [instructions](#aws-provider-prerequisites)
 - Check `@boostercloud/framework-provider-aws` is listed in your app `package.json` dependencies.
 - Check `@boostercloud/framework-provider-aws-infrastructure` is listed in your app `package.json` devDependencies.
 - Check both dependencies are installed, otherwise use `npm install` in the root of your project.
@@ -2593,6 +2620,32 @@ source <path-to-your-bash-file> && boost deploy -e production
 ```
 
 Now just let the magic happen, Booster will create everything for you and give you back your app ready to use URL. 🚀
+
+##### Kubernetes provider
+
+To configure Kubernetes as a provider you need to meet certain prerequisites:
+
+- Config the Kubernetes cluster beforehand in a cloud provider or on-premises.
+- Install **kubectl**.
+- Install [Helm](https://helm.sh).
+- Check `@boostercloud/framework-provider-kubernetes` is listed in your app `package.json` dependencies.
+- Check `@boostercloud/framework-provider-kubernetes-infrastructure` is listed in your app `package.json` devDependencies.
+- Check both dependencies are installed, otherwise use `npm install` in the root of your project.
+
+At this moment you should be able to access your Kuberbetes cluster from **kubectl** command.
+
+Now go to your `config.ts` file, import the kubernetes provider library and set up your app environment.
+
+```typescript
+import { Booster } from '@boostercloud/framework-core'
+import { BoosterConfig } from '@boostercloud/framework-types'
+import { Provider } from '@boostercloud/framework-provider-kubernetes'
+
+Booster.configure('production', (config: BoosterConfig): void => {
+  config.appName = 'my-app-name'
+  config.provider = Provider()
+})
+```
 
 #### Environments
 
