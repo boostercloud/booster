@@ -2698,7 +2698,7 @@ The only thing you need to do to deploy a whole new completely-independent copy 
 
 You can extend Booster by creating rockets. A rocket is just a node package that implements the public Booster rocket interfaces. You can use them for many things:
 
-1. Extend your infrastructure (Currently, only in AWS): You can write a rocket that adds provider resources to your application stack.
+1. Extend your infrastructure: You can write a rocket that adds provider resources to your application stack.
 2. Runtime extensions (Not yet implemented): Add new annotations and interfaces, which combined with infrastructure extensions, could implement new abstractions on top of highly requested use cases.
 3. Deploy and init hooks (Not yet implemented): Run custom scripts before or after deployment, or before a Booster application is loaded.
 
