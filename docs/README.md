@@ -8,7 +8,10 @@
   - [Why use Booster](#why-use-booster)
 - [Getting started](#getting-started)
   - [Installing Booster](#installing-booster)
-    - [Prerequisites](#prerequisites)
+    - [Booster Prerequisites](#booster-prerequisites)
+    - [AWS Provider Prerequisites](#aws-provider-prerequisites)
+    - [Azure Provider Prerequisites](#azure-provider-prerequisites)
+    - [Kubernetes Provider Prerequisites](#kubernetes-provider-prerequisites)
     - [Installing the Booster CLI](#installing-the-booster-cli)
   - [Your first Booster app in 10 minutes](#your-first-booster-app-in-10-minutes)
     - [1. Create the project](#1-create-the-project)
@@ -155,7 +158,7 @@ You can develop with Booster using any of the following operating systems:
 - macOS
 - Windows (Native and WSL)
 
-#### Prerequisites
+#### Booster Prerequisites
 
 ##### Install Node.js
 
@@ -243,7 +246,7 @@ git config --global user.name "Your Name Here"
 git config --global user.email "your_email@youremail.com"
 ```
 
-##### Set up an AWS account
+#### AWS Provider Prerequisites
 
 This step is optional; Booster is a cloud-native framework, meaning that your application
 will be deployed to the cloud using different cloud providers. By default, Booster uses the
@@ -326,6 +329,53 @@ the application with the selected profile.
 
 ```shell
 export AWS_PROFILE=other_profile
+```
+#### Azure Provider Prerequisites
+
+This step is optional, in the case you want to use the Azure Provider. 
+
+> **Note**:
+>
+> Booster is free to use, but notice that the resources deployed to your cloud provider
+> might generate some expenses.
+>
+> In Azure, when you're not eligible for the free tier, resources are charged on-demand. Deploying a
+> Booster project and sending a few commands and queries should cost just a few cents.
+>
+> In any case, make sure to un-deploy your application with the command `boost nuke -e production`
+> if you're not planning to keep using it.
+
+Now it is a good time to create that Microsoft Azure account. You can do so from [the Microsoft SingUp page](https://signup.live.com/). Then you can go to your Azure account in this [link](https://azure.microsoft.com).
+
+Once you have created the Azure account, you need to install the [Azure CLI](https://docs.microsoft.com/es-es/cli/azure/install-azure-cli) in your machine, by following the instructions of the Azure CLI documentation.
+
+The final step consists of signing in in your Azure account from the Azure CLI:
+
+```shell
+az login
+```
+
+You can check the different login options in this [reference document](https://docs.microsoft.com/en-us/cli/azure/authenticate-azure-cli). 
+
+Once you are logged in from the CLI, you can deploy applications with Booster.
+
+#### Kubernetes Provider Prerequisites
+
+This step is optional, in the case you want to use the Kubernetes provider. 
+
+The main requirement is having a Kubernetes Cluster already configured. This provider has been succesfully tested in EKS (Amazon Elastic Kubernetes Service), AKS (Azure Kubernetes Service) and GKE (Google Kubernetes Engine). Since Kubernetes is a standard, this provider can also work in other Kubernetes clusters, including on-premises configurations.
+
+> **Note**:
+>
+> Booster is free to use, but notice that the Kubernetes cluster resources used for the deployment
+> might generate some expenses.
+
+On the other hand, it is also required to install **kubectl** and [Helm](https://helm.sh). 
+
+Please note that the desired cluster should be accessible from the kubectl command and you can successfully run:
+
+```shell
+kubectl get pods -A
 ```
 
 #### Installing the Booster CLI
