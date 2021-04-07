@@ -335,7 +335,7 @@ export AWS_PROFILE=other_profile
 ```
 #### Azure Provider Prerequisites
 
-This step is optional, in the case you want to use the Azure Provider. 
+This step is only necessary in the case you want to use the Azure Provider. 
 
 > **Note**:
 >
@@ -368,7 +368,7 @@ Once you are logged in from the CLI, you can deploy applications with Booster.
 
 #### Kubernetes Provider Prerequisites
 
-This step is optional, in the case you want to use the Kubernetes provider. 
+This step is only necessary in the case you want to use the Kubernetes provider. 
 
 The main requirement is having a Kubernetes Cluster already configured. This provider has been succesfully tested in EKS (Amazon Elastic Kubernetes Service), AKS (Azure Kubernetes Service) and GKE (Google Kubernetes Engine). Since Kubernetes is a standard, this provider can also work in other Kubernetes clusters, including on-premises configurations.
 
@@ -377,7 +377,7 @@ The main requirement is having a Kubernetes Cluster already configured. This pro
 > Booster is free to use, but notice that the Kubernetes cluster resources used for the deployment
 > might generate some expenses.
 
-On the other hand, it is also required to install **kubectl** and [Helm](https://helm.sh). 
+Additionally, it is also required to install **kubectl** and [Helm](https://helm.sh). The required **Helm** version is 3 or greater.
 
 Please note that the desired cluster should be accessible from the kubectl command and you can successfully run:
 
@@ -2620,22 +2620,20 @@ Now just let the magic happen, Booster will create everything for you and give y
 To configure Kubernetes as a provider you need to meet certain prerequisites:
 
 - Config the Kubernetes cluster beforehand in a cloud provider or on-premises.
-- Install **kubectl**.
-- Install [Helm](https://helm.sh).
+- Install **kubectl** and connect it to your Kubernetes cluster.
+- Install [Helm](https://helm.sh) version 3 or greater.
 - Check `@boostercloud/framework-provider-kubernetes` is listed in your app `package.json` dependencies.
 - Check `@boostercloud/framework-provider-kubernetes-infrastructure` is listed in your app `package.json` devDependencies.
 - Check both dependencies are installed, otherwise use `npm install` in the root of your project.
-
-At this moment you should be able to access your Kuberbetes cluster from **kubectl** command.
 
 Now go to your `config.ts` file, import the kubernetes provider library and set up your app environment.
 
 ```typescript
 import { Booster } from '@boostercloud/framework-core'
-import { BoosterConfig } from '@boostercloud/framework-types'
+import { BoosterK8sConfiguration } from '@boostercloud/framework-provider-kubernetes-infrastructure'
 import { Provider } from '@boostercloud/framework-provider-kubernetes'
 
-Booster.configure('production', (config: BoosterConfig): void => {
+Booster.configure('production', (config: BoosterK8sConfiguration): void => {
   config.appName = 'my-app-name'
   config.provider = Provider()
 })
