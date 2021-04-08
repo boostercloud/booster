@@ -1,0 +1,64 @@
+
+section.cover .cover-main > p:last-child a:last-child:hover {
+    color: white;
+    background-color: #7a8bff;
+    opacity: 1;
+}
+
+section.cover.has-mask .mask {
+    opacity: 0.05;
+}
+
+section.cover .cover-main > p:last-child a {
+    background-color: #3D52E4;
+    color: white;
+    border-color: #3D52E4;
+    font-weight: bold;
+}
+
+section.cover .cover-main > p:last-child a:last-child {
+    border-color: var(--theme-color);
+}
+
+.sidebar > h1 {
+    max-width: 50%;
+}
+
+
+#navbar {
+    font-size: 18px;
+    line-height: 42px;
+    font-style: italic;
+}
+
+.sidebar-toggle {
+    bottom: unset;
+}
+
+.sidebar {
+    padding-top: 40px !important;
+}
+
+.docsify-copy-code-button span {
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.docsify-copy-code-button.success .success{
+    transform: translate(-50%, -50%) !important;
+}
+
+@media only screen and (max-width: 768px) {
+    .sidebar-toggle {
+        padding: 20px 20px 20px 20px !important;
+    }
+
+    .markdown-section {
+        margin-top: 20px;
+    }
+
+    .docsify-copy-code-button span {
+        font-size: 20px;
+    }
+
+}
