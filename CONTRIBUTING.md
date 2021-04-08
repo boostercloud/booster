@@ -1,5 +1,3 @@
-📝[Edit on github](https://github.com/boostercloud/booster/blob/main/CONTRIBUTING.md)
-
 # Contributing to Booster
 
 Thanks for taking the time to contribute to Booster. It is an open-source project and it wouldn't be possible without people like you 🙏🎉
@@ -106,7 +104,7 @@ Enhancement suggestions are tracked as GitHub issues. Make sure you provide the 
 ##  Improving documentation
 
 [Booster documentation](https://boostercloud.github.io/booster) is treated as a live document that continues improving on a daily basis. If you find something that is missing or can be improved, please contribute, it will be of great help for other developers.
-To contribute you can use the button "📝Edit on github" at the top of each chapter.
+To contribute you can use the button "Edit on github" at the top of each chapter.
 
 ###  Documentation principles and practices
 

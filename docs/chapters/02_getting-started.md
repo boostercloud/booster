@@ -1,5 +1,3 @@
-📝[Edit on github](https://github.com/boostercloud/booster/blob/main/docs/chapters/02_getting-started.md)
-
 # Getting started
 
 ## Installing Booster

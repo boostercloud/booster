@@ -1,5 +1,3 @@
-📝[Edit on github](https://github.com/boostercloud/booster/blob/main/docs/chapters/06_testing-booster-applications.md)
-
 # Testing Booster applications
 
 To properly test a Booster application, you should create a `test` folder at the same level as the `src` one. Apart from that, tests' names should have the `<my_test>.test.ts` format.

@@ -1,5 +1,3 @@
-📝[Edit on github](https://github.com/boostercloud/booster/blob/main/docs/chapters/01_introduction.md)
-
 # Introduction
 
 > _Progress isn't made by early risers. It's made by lazy men trying to find easier ways to do something._ — [Robert A. Heinlein](https://en.wikipedia.org/wiki/Robert_A._Heinlein)
