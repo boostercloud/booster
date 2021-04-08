@@ -21,7 +21,7 @@ export function lambda(
 ): Pick<FunctionProps, 'runtime' | 'timeout' | 'memorySize' | 'environment'> {
   return {
     runtime: Runtime.NODEJS_12_X,
-    timeout: Duration.minutes(10),
+    timeout: Duration.minutes(15),
     memorySize: 1024,
     environment: {
       BOOSTER_ENV: config.environmentName,
