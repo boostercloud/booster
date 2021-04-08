@@ -1,5 +1,3 @@
-📝[Edit on github](https://github.com/boostercloud/booster/blob/main/docs/chapters/05_going-deeper.md)
-
 # Going deeper with Booster
 
 ## Contributing

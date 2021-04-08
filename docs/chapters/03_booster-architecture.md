@@ -1,4 +1,3 @@
-📝[Edit on github](https://github.com/boostercloud/booster/blob/main/docs/chapters/03_booster-architecture.md)
 # Booster architecture
 
 Two patterns influence the Booster's event-driven architecture: Command-Query Responsibility Segregation ([CQRS](https://www.martinfowler.com/bliki/CQRS.html)) and [Event Sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). They're complex techniques to implement from scratch with lower-level frameworks, but Booster makes them feel natural and very easy to use.
