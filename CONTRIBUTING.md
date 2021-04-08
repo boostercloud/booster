@@ -69,7 +69,7 @@ The packages are published to `npm` under the prefix `@boostercloud/`, their pur
   - etc…
 
 This is a dependency graph that shows the dependencies among all packages, including the application using Booster:
-![Booster packages dependencies](docs/img/packages-dependencies.png)
+![Booster packages dependencies](https://raw.githubusercontent.com/boostercloud/booster/main/docs/img/packages-dependencies.png)
 
 # How Can I Contribute?
 
