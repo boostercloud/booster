@@ -21,7 +21,7 @@ export function lambda(
 ): Pick<FunctionProps, 'runtime' | 'timeout' | 'memorySize' | 'environment'> {
   return {
     runtime: Runtime.NODEJS_12_X,
-    timeout: Duration.minutes(1),
+    timeout: Duration.minutes(10),
     memorySize: 1024,
     environment: {
       BOOSTER_ENV: config.environmentName,
@@ -43,10 +43,11 @@ export function baseURLForAPI(
   return `${protocol}://${apiID}.execute-api.${stack.region}.${stack.urlSuffix}/${config.environmentName}/`
 }
 
-export function stream(): Pick<DynamoEventSourceProps, 'startingPosition' | 'batchSize'> {
+export function stream(): DynamoEventSourceProps {
   return {
     startingPosition: StartingPosition.TRIM_HORIZON,
-    batchSize: 100,
+    batchSize: 1000,
+    parallelizationFactor: 10,
   }
 }
 
