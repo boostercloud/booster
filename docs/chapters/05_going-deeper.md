@@ -1,6 +1,10 @@
-📝[Edit on github](https://github.com/boostercloud/booster/blob/main/docs/chapters/going-deeper.md)
+📝[Edit on github](https://github.com/boostercloud/booster/blob/main/docs/chapters/05_going-deeper.md)
 
 # Going deeper with Booster
+
+## Contributing
+
+If you want to start making contributions to Booster, we strongly recommend that you read our [contributing guide](chapters/CONTRIBUTING.md).
 
 ## Framework Core
 
@@ -74,7 +78,7 @@ The following is the list of the fields you can configure:
   config.assets = ['.env']
   ```
 
-# Providers configuration
+### Providers configuration
 
 #### AWS Provider
 

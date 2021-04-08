@@ -1,4 +1,4 @@
-📝[Edit on github](https://github.com/boostercloud/booster/blob/main/docs/chapters/getting-started.md)
+📝[Edit on github](https://github.com/boostercloud/booster/blob/main/docs/chapters/02_getting-started.md)
 
 # Getting started
 
@@ -144,7 +144,7 @@ aws_access_key_id = <YOUR ACCESS KEY ID>
 aws_secret_access_key = <YOUR SECRET ACCESS KEY>
 ```
 
-> You can see more details in the [Providers configuration](chapters/05_going-deeper.md#providers) section.
+> You can see more details in the [Providers configuration](chapters/05_going-deeper.md#providers-configuration) section.
 
 #### Multiple AWS Accounts
 
@@ -215,7 +215,7 @@ You can check the different login options in this [reference document](https://d
 
 Once you are logged in from the CLI, you can deploy applications with Booster.
 
-> You can see more details in the [Providers configuration](chapters/05_going-deeper.md#providers) section.
+> You can see more details in the [Providers configuration](chapters/05_going-deeper.md#providers-configuration) section.
 
 ### Kubernetes Provider Prerequisites
 
@@ -236,7 +236,7 @@ Please note that the desired cluster should be accessible from the kubectl comma
 kubectl get pods -A
 ```
 
-> You can see more details in the [Providers configuration](chapters/05_going-deeper.md#providers) section.
+> You can see more details in the [Providers configuration](chapters/05_going-deeper.md#providers-configuration) section.
 
 ### Installing the Booster CLI
 

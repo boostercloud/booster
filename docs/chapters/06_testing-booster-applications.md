@@ -1,4 +1,4 @@
-📝[Edit on github](https://github.com/boostercloud/booster/blob/main/docs/chapters/testing-booster-applications.md)
+📝[Edit on github](https://github.com/boostercloud/booster/blob/main/docs/chapters/06_testing-booster-applications.md)
 
 # Testing Booster applications
 

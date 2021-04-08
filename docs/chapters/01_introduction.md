@@ -1,4 +1,4 @@
-📝[Edit on github](https://github.com/boostercloud/booster/blob/main/docs/chapters/introduction.md)
+📝[Edit on github](https://github.com/boostercloud/booster/blob/main/docs/chapters/01_introduction.md)
 
 # Introduction
 
