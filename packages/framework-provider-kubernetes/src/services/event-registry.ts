@@ -58,7 +58,7 @@ export class EventRegistry {
     if (result.length <= 0) {
       return null
     }
-    return result[0]
+    return result[result.length - 1]
   }
 
   private eventKey(event: EventEnvelope): string {
