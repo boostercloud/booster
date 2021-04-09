@@ -6,6 +6,7 @@
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 ![Integration tests](https://github.com/boostercloud/booster/workflows/Integration%20tests/badge.svg)
 [![Discord](https://img.shields.io/discord/763753198388510780.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/bDY8MKx)
+[![Docs](https://img.shields.io/badge/Docs-Booster-blue)](https://docs.booster.cloud)
 ---
 
 ## Disclaimer
