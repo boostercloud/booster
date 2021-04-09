@@ -30,7 +30,7 @@ Booster is a highly opinionated true-serverless framework based on the following
 
 ## Documentation
 
-Browse the [Booster Cloud Documentation](https://boostercloud.github.io/booster) to set up your environment and learn the core concepts of the Booster Cloud Framework.
+Browse the [Booster Cloud Documentation](https://docs.booster.cloud) to set up your environment and learn the core concepts of the Booster Cloud Framework.
 
 ## Examples
 

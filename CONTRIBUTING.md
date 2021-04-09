@@ -103,7 +103,7 @@ Enhancement suggestions are tracked as GitHub issues. Make sure you provide the 
 
 ##  Improving documentation
 
-[Booster documentation](https://boostercloud.github.io/booster) is treated as a live document that continues improving on a daily basis. If you find something that is missing or can be improved, please contribute, it will be of great help for other developers.
+[Booster documentation](https://docs.booster.cloud) is treated as a live document that continues improving on a daily basis. If you find something that is missing or can be improved, please contribute, it will be of great help for other developers.
 To contribute you can use the button "Edit on github" at the top of each chapter.
 
 ###  Documentation principles and practices
