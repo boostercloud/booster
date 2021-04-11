@@ -37,6 +37,7 @@ export default class Deploy extends BaseCommand {
     const { flags } = this.parse(Deploy)
 
     if (initializeEnvironment(logger, flags.environment)) {
+      logger.info('Preparing the deploy 📦')
       const deploymentProjectPath = await createDeploymentSandbox()
       await runTasks(compileProjectAndLoadConfig(deploymentProjectPath), deployToCloudProvider)
     }

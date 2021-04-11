@@ -1,6 +1,6 @@
 import { K8sManagement } from './k8s-sdk/k8s-management'
 import { BoosterConfig, Logger } from '@boostercloud/framework-types'
-import { getProjectNamespaceName, createProjectZipFile, uploadFile } from './utils'
+import { getProjectNamespaceName, createProjectZipFile, uploadFile, waitForIt } from './utils'
 import { uploadService } from './templates/upload-service-template'
 import { boosterVolumeClaim } from './templates/volume-claim-template'
 import { boosterService } from './templates/booster-service-template'
@@ -10,6 +10,7 @@ import { boosterAppPod } from './templates/booster-app-template'
 import { HelmManager } from './helm-manager'
 import { DaprManager } from './dapr-manager'
 import { scopeLogger } from '../helpers/logger'
+import fetch from 'node-fetch'
 export class DeployManager {
   private clusterManager: K8sManagement
   private namespace: string
@@ -155,10 +156,12 @@ export class DeployManager {
    */
   public async uploadUserCode(): Promise<void> {
     const l = scopeLogger('uploadUserCode', this.logger)
-    l.debug('Waiting for service to be ready')
+    this.logger.info('Waiting for Upload service to be ready')
     const fileUploadService = await this.clusterManager.waitForServiceToBeReady(this.namespace, uploadService.name)
-    l.debug('Creating zip file')
+    this.logger.info('Creating zip file')
     const codeZipFile = await createProjectZipFile(l)
+    this.logger.info('Waiting for Upload service to be accesible')
+    await this.waitForServiceToBeAvailable(fileUploadService?.ip)
     l.debug('Uploading file')
     const fileUploadResponse = await uploadFile(l, fileUploadService?.ip, codeZipFile)
     if (fileUploadResponse.statusCode !== 200) {
@@ -209,6 +212,30 @@ export class DeployManager {
    */
   public async deleteAllResources(): Promise<void> {
     await this.clusterManager.deleteNamespace(this.namespace)
+  }
+
+  private async waitForServiceToBeAvailable(url: string | undefined, timeout = 180000): Promise<void> {
+    const l = scopeLogger('waitForServiceToBeAvailable', this.logger)
+    if (!url) {
+      throw new Error('Service Url not valid')
+    }
+    await waitForIt(
+      () => {
+        l.debug('Getting service from namespace')
+        return fetch(`http://${url}`)
+          .then((response) => {
+            return response.status
+          })
+          .catch(() => {
+            return 0
+          })
+      },
+      (requestStatus) => {
+        return requestStatus === 200
+      },
+      'Unable to get the services in available status',
+      timeout
+    )
   }
 
   private async ensureServiceIsReady(template: Template): Promise<void> {
