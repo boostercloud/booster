@@ -6,7 +6,6 @@
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 ![Integration tests](https://github.com/boostercloud/booster/workflows/Integration%20tests/badge.svg)
 [![Discord](https://img.shields.io/discord/763753198388510780.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/bDY8MKx)
-[![Docs](https://img.shields.io/badge/Docs-Booster-blue)](https://docs.booster.cloud)
 ---
 
 ## Disclaimer
@@ -31,7 +30,7 @@ Booster is a highly opinionated true-serverless framework based on the following
 
 ## Documentation
 
-Browse the [Booster Cloud Documentation](https://docs.booster.cloud) to set up your environment and learn the core concepts of the Booster Cloud Framework.
+Browse the [Booster Cloud Documentation](https://boostercloud.github.io/docs) to set up your environment and learn the core concepts of the Booster Cloud Framework.
 
 ## Examples
 
