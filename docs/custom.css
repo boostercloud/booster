@@ -8,34 +8,35 @@
     font-style: italic;
 }
 
-.sidebar-toggle {
-    bottom: unset;
+.docsify-copy-code-button {
+    border-radius: 4px !important;
 }
 
-.sidebar {
-    padding-top: 40px !important;
-}
-
-.docsify-copy-code-button span {
-    font-size: 25px;
-    font-weight: bold;
-}
-
-.docsify-copy-code-button.success .success{
-    transform: translate(-50%, -50%) !important;
+.markdown-section > :first-child {
+    display: flex;
+    justify-content: flex-end;
 }
 
 @media only screen and (max-width: 768px) {
     .sidebar-toggle {
+        bottom: unset;
         padding: 20px 20px 20px 20px !important;
+    }
+    .sidebar {
+        padding-top: 40px !important;
+    }
+    .app-nav.no-badge{
+        margin-left: 40px;
     }
 
     .markdown-section {
         margin-top: 20px;
     }
 
-    .docsify-copy-code-button span {
-        font-size: 20px;
-    }
+}
 
+@media screen and (min-width: 768px) {
+    .sidebar-toggle-button {
+        display: none;
+    }
 }
