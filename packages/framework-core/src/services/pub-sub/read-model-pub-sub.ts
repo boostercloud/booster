@@ -35,7 +35,6 @@ function filterReadModel(readModel: Record<string, any>, filters?: Record<string
 }
 
 function filterByOperation(filter: ReadModelPropertyFilter, readModelPropValue: any): boolean {
-  // TODO: include nested and complex properties in subscriptions
   for (const [operation, value] of Object.entries(filter as Operation<any>)) {
     switch (operation) {
       case 'eq':
@@ -62,12 +61,18 @@ function filterByOperation(filter: ReadModelPropertyFilter, readModelPropValue: 
       case 'contains':
         if (!contains(readModelPropValue, value)) return false
         break
-      case 'not-contains':
-        if (contains(readModelPropValue, value)) return false
-        break
-      case 'begins-with':
+      case 'beginsWith':
         if (!beginWith(readModelPropValue, value as string)) return false
         break
+      case 'includes':
+        if (Array.isArray(readModelPropValue)) {
+          return readModelPropValue.includes(value)
+        }
+        break
+      default:
+        if (typeof value === 'object') {
+          return filterByOperation(value, readModelPropValue[operation])
+        }
     }
   }
   return true
