@@ -14,12 +14,21 @@ export class CartReadModel {
     readonly cartItems: Array<CartItem>,
     readonly checks: number,
     public shippingAddress?: Address,
-    public payment?: Payment
+    public payment?: Payment,
+    public cartItemsIds?: Array<string>
   ) {}
 
   @Projects(Cart, 'id')
   public static updateWithCart(cart: Cart, oldCartReadModel?: CartReadModel): ProjectionResult<CartReadModel> {
-    return new CartReadModel(cart.id, cart.cartItems, cart.checks, cart.shippingAddress, oldCartReadModel?.payment)
+    const cartProductIds = cart?.cartItems.map((item) => item.productId as string)
+    return new CartReadModel(
+      cart.id,
+      cart.cartItems,
+      cart.checks,
+      cart.shippingAddress,
+      oldCartReadModel?.payment,
+      cartProductIds
+    )
   }
 
   @Projects(Payment, 'cartId')

@@ -11,7 +11,12 @@ interface ProductIDWithPrice {
   authorize: 'all',
 })
 export class ProductsBySKU {
-  public constructor(public id: UUID, readonly products: Array<ProductIDWithPrice>) {}
+  public constructor(
+    public id: UUID,
+    readonly products: Array<ProductIDWithPrice>,
+    readonly firstProduct?: ProductIDWithPrice,
+    readonly record?: Record<string, number>
+  ) {}
 
   @Projects(Product, 'sku')
   public static projectProduct(entity: Product, currentProductsBySKU?: ProductsBySKU): ProjectionResult<ProductsBySKU> {
@@ -28,6 +33,8 @@ export class ProductsBySKU {
       .concat({ productId: entity.id, priceCents: entity.price.cents }) // Add the new product or the existing, removed, product with the latest information
       .sort((a, b) => b.priceCents - a.priceCents)
 
-    return new ProductsBySKU(currentProductsBySKU.id, newAndSortedProducts)
+    return new ProductsBySKU(currentProductsBySKU.id, newAndSortedProducts, newAndSortedProducts[0], {
+      items: newAndSortedProducts.length,
+    })
   }
 }
