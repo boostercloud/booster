@@ -51,7 +51,7 @@ function buildOperation(
   nested?: string
 ): string {
   const holder = placeholderBuilderFor(propName, usedPlaceholders)
-  propName = nested ? `c["${nested}"].c["${propName}"]` : `c["${propName}"]`
+  propName = nested ? `${nested}.c["${propName}"]` : `c["${propName}"]`
   return Object.entries(filter)
     .map(([operation, value], index) => {
       switch (operation) {
