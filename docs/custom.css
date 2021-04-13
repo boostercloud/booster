@@ -8,34 +8,50 @@
     font-style: italic;
 }
 
-.sidebar-toggle {
-    bottom: unset;
-}
-
-.sidebar {
-    padding-top: 40px !important;
-}
-
-.docsify-copy-code-button span {
-    font-size: 25px;
-    font-weight: bold;
+.docsify-copy-code-button {
+    border-radius: 4px !important;
 }
 
 .docsify-copy-code-button.success .success{
     transform: translate(-50%, -50%) !important;
 }
 
-@media only screen and (max-width: 768px) {
+.search {
+    margin: 0 20px 20px 20px;
+    padding: 6px;
+    border-bottom: none !important;
+}
+
+.search input {
+    border: 1px solid rgba(0, 0, 0, 0.07)!important;
+    border-radius: 15px; !important;
+    padding: 0 20px !important;
+}
+
+.search .input-wrap {
+    margin-top: 20px!important;
+}
+
+@media only screen and (max-width: 1024px) {
     .sidebar-toggle {
+        bottom: unset;
         padding: 20px 20px 20px 20px !important;
+    }
+    .sidebar {
+        padding-top: 40px !important;
+    }
+    .app-nav.no-badge{
+        margin-left: 40px;
     }
 
     .markdown-section {
         margin-top: 20px;
     }
 
-    .docsify-copy-code-button span {
-        font-size: 20px;
-    }
+}
 
+@media screen and (min-width: 1025px) {
+    .sidebar-toggle-button {
+        display: none;
+    }
 }
