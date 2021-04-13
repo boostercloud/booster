@@ -22,13 +22,7 @@
     color: var(--theme-color);
 }
 
-
 .markdown-section h1 {
     margin-top: 20px;
 }
 
-@media screen and (min-width: 1024px) {
-    :root {
-        --sidebar-width: 20rem;
-    }
-}
