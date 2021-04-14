@@ -1,28 +1,29 @@
 :root {
-    --theme-color: #5A6FFF;
-    --link-color: #5A6FFF;
+    --theme-color: var(--theme-color);
+    --link-color: var(--theme-color);
     --code-inline-color: #e96900;
     --code-inline-background: #f8f8f8;
+    --sidebar-toggle-icon-color: var(--theme-color);
+    --navbar-root-color--hover: var(--theme-color);
 }
 
 .sidebar > h1 img {
-    max-width: 70%;
-}
-
-.app-nav > a {
-    margin: 0 1rem;
-    padding: 5px 0;
-}
-
-.app-nav a {
-    color: inherit;
-}
-
-.app-nav a:hover {
-    color: var(--theme-color);
+    max-width: 60%;
 }
 
 .markdown-section h1 {
     margin-top: 20px;
+}
+
+@media screen and (min-width: 1024px) {
+    :root {
+        --sidebar-width: 20rem;
+    }
+}
+
+@media screen and (min-width: 768px) {
+    .sidebar-toggle .sidebar-toggle-button {
+        display: none;
+    }
 }
 
