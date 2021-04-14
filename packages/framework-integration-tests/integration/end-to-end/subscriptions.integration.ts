@@ -3,14 +3,13 @@ import {
   countSubscriptionsItems,
   DisconnectableApolloClient,
   graphQLClientWithSubscriptions,
-
-} from '../utils'
+} from '../providers/aws/utils'
 import { random } from 'faker'
 import gql from 'graphql-tag'
 import { expect } from 'chai'
 import * as chai from 'chai'
 import { Observable } from 'apollo-client/util/Observable'
-import { waitForIt } from '../../../helper/sleep'
+import { waitForIt } from '../helper/sleep'
 
 chai.use(require('chai-as-promised'))
 
