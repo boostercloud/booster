@@ -65,10 +65,7 @@ function filterByOperation(filter: ReadModelPropertyFilter, readModelPropValue: 
         if (!beginWith(readModelPropValue, value as string)) return false
         break
       case 'includes':
-        if (Array.isArray(readModelPropValue)) {
-          return readModelPropValue.includes(value)
-        }
-        break
+        return includes(readModelPropValue, value)
       default:
         if (typeof value === 'object') {
           return filterByOperation(value, readModelPropValue[operation])
@@ -90,4 +87,10 @@ function beginWith(readModelPropValue: any, element: string): boolean {
     return readModelPropValue.startsWith(element)
   }
   return false
+}
+
+function includes(readModelPropValue: any, element: any): boolean {
+  if (!Array.isArray(readModelPropValue)) return false
+  if (readModelPropValue.includes(element)) return true
+  return readModelPropValue.some((prop: any) => Object.keys(prop).some((key) => prop[key] === element[key]))
 }
