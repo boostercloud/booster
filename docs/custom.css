@@ -15,16 +15,6 @@
     margin-top: 20px;
 }
 
-.markdown-section p, li {
-    text-align: justify;
-}
-
-.markdown-section img {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-}
-
 @media screen and (min-width: 1024px) {
     :root {
         --sidebar-width: 20rem;
@@ -36,3 +26,4 @@
         display: none;
     }
 }
+
