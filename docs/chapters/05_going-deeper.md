@@ -68,7 +68,7 @@ The following is the list of the fields you can configure:
 
 - **provider:** This field contains the provider library instance that Booster will use when deploying or running your application.
 
-> **Note:** So far, there is only one provider fully supported in Booster yet, @boostercloud/framework-provider-aws, and it is probably the one you have already set if you used the generator to create your project. Azure and Kubernetes have experimental support and the team is currently improving them.
+> [!NOTE]  So far, there is only one provider fully supported in Booster yet, @boostercloud/framework-provider-aws, and it is probably the one you have already set if you used the generator to create your project. Azure and Kubernetes have experimental support and the team is currently improving them.
 
 - **assets**: This is an array of _relative_ paths from the root of the project pointing to files and folders with static assets. They will be included among the deployed files to the cloud provider.
   For example, imagine you are using the `dotenv` module so that all the environment variables you have in your `.env` files are loaded into memory in runtime. In order for this to work, you need to include your `.env` files as assets of your project, so that they are included when deploying. Assuming you only have a `.env` file in the root of your project, you should add the following to your configuration:
@@ -126,15 +126,13 @@ az login
 
 Then create a service pricipal running the following command.
 
-_Note: Remember to change `<service-principal-name>` for a custom one._
-
 ```bash
 az ad sp create-for-rbac --name <service-principal-name>
 ```
 
-After the service principal is created, create a bash script with the following content. It will set up the necessary environment variables required by the provider in order to work:
+> [!NOTE]  Remember to change `<service-principal-name>` for a custom one.
 
-_Note: remember to have [jq](https://stedolan.github.io/jq/download/) installed in your system_
+After the service principal is created, create a bash script with the following content. It will set up the necessary environment variables required by the provider in order to work:
 
 ```bash
 #!/usr/bin/env bash
@@ -148,6 +146,8 @@ export AZURE_SECRET=$(az ad sp credential reset --name ${AZURE_APP_ID} | jq -r '
 export AZURE_SUBSCRIPTION_ID=$(az account show | jq -r '.id')
 export REGION
 ```
+
+> [!NOTE]  remember to have [jq](https://stedolan.github.io/jq/download/) installed in your system.
 
 Now go to your `config.ts` file, import the aws provider library and set up your app environment.
 
@@ -256,7 +256,7 @@ This extension mechanism is very new, but we're planning to port most of the fun
 
 ### Create your own Rocket
 
-> Currently, Rockets work in AWS, we are working on porting them to other providers.
+> [!NOTE] Currently, Rockets work in AWS, we are working on porting them to other providers.
 
 A rocket is nothing more than an npm package that extends your current Booster architecture. The structure is simple, and it mainly has 2 methods: `mountStack` and `unmountStack`. We'll explain what they are in shortly.
 
