@@ -16,11 +16,10 @@
 }
 
 :root {
-    --theme-color: var(--theme-color);
     --link-color: var(--theme-color);
-    --code-inline-color: #FE5AFF !important;
-    --code-inline-background: #f8f8f8;
-    --sidebar-toggle-icon-color: var(--theme-color);
+    --code-inline-color: #e96900 !important;
+    --code-inline-background: var(--code-theme-background) !important;
+    --sidebar-toggle-icon-color: var(--theme-color) !important;
     --navbar-root-color--hover: var(--theme-color);
     --content-max-width: 90% !important;
     --link-text-decoration: none !important;

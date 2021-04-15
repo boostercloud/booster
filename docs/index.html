@@ -57,9 +57,16 @@
           if (file.includes('CONTRIBUTING')) {
             url = 'https://github.com/boostercloud/booster/tree/main/CONTRIBUTING.md'
           }
-          return '[📝Edit Document](' + url + ')\n'
-                  + html
+          return '[📝Edit Document](' + url + ')\n' + html
         })
+        const footer = [
+          '<footer style="text-align: center;margin-top: 50px;">',
+          '<span> Booster is a spin-off project from <a href="https://www.theagilemonkeys.com">The Agile Monkeys</a>.</span>',
+          '</footer>'
+        ].join('');
+        hook.afterEach(function(html) {
+          return html + footer;
+        });
       }
     ]
   };
