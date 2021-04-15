@@ -1,18 +1,37 @@
+#docsify-darklight-theme {
+    position: absolute;
+    right: 45px;
+    top: 75px;
+    width: 25px;
+    height: 25px;
+    background-repeat: no-repeat;
+    background-image: var(--toogleImage);
+    background-size: cover;
+    cursor: pointer;
+    transition: background-image .15s ease-in-out .15s
+}
+
+#docsify-darklight-theme p {
+    visibility: hidden
+}
+
 :root {
     --theme-color: var(--theme-color);
     --link-color: var(--theme-color);
-    --code-inline-color: #e96900;
+    --code-inline-color: #FE5AFF !important;
     --code-inline-background: #f8f8f8;
     --sidebar-toggle-icon-color: var(--theme-color);
     --navbar-root-color--hover: var(--theme-color);
+    --content-max-width: 90% !important;
+    --link-text-decoration: none !important;
 }
 
 .sidebar > h1 img {
-    max-width: 60%;
+    max-width: 55% !important;
 }
 
 .markdown-section h1 {
-    margin-top: 20px;
+    margin-top: 20px !important;
 }
 
 .markdown-section p, li {
@@ -27,7 +46,7 @@
 
 @media screen and (min-width: 1024px) {
     :root {
-        --sidebar-width: 20rem;
+        --sidebar-width: 20rem !important;
     }
 }
 
@@ -35,4 +54,12 @@
     .sidebar-toggle .sidebar-toggle-button {
         display: none;
     }
+}
+
+@media screen and (max-width: 600px) {
+    #docsify-darklight-theme {
+        right: 20px;
+        top: 25px;
+    }
+
 }
