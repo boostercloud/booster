@@ -6,6 +6,7 @@
     --navbar-root-color--hover: var(--theme-color);
     --content-max-width: 90% !important;
     --link-text-decoration: none !important;
+    --heading-h5-font-size: 16px !important;
 }
 
 #docsify-darklight-theme {
