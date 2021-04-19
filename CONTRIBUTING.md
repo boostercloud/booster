@@ -33,18 +33,18 @@ Remember that if something here doesn't make sense, you can also propose a chang
 
 <!-- tocstop -->
 
-# Code of Conduct
+## Code of Conduct
 
 This project and everyone participating in it are expected to uphold the [Berlin Code of Conduct](https://berlincodeofconduct.org).
 If you see unacceptable behavior, please communicate so to `hello@booster.cloud`.
 
-# I don't want to read this whole thing, I just have a question!!!
+## I don't want to read this whole thing, I just have a question!!!
 
 Go ahead and ask the community in [Discord](https://discord.com/invite/bDY8MKx) or [create a new issue](https://github.com/boostercloud/booster/issues).
 
-# What should I know before I get started?
+## What should I know before I get started?
 
-## Packages
+### Packages
 
 Booster is divided in many different packages. The criteria to split the code in packages is that each package meets at least one of the following conditions:
 
@@ -71,11 +71,11 @@ The packages are published to `npm` under the prefix `@boostercloud/`, their pur
 This is a dependency graph that shows the dependencies among all packages, including the application using Booster:
 ![Booster packages dependencies](https://raw.githubusercontent.com/boostercloud/booster/main/docs/img/packages-dependencies.png)
 
-# How Can I Contribute?
+## How Can I Contribute?
 
 Contributing to an open source project is never just a matter of code, you can help us significantly by just using Booster and interacting with our community. Here you'll find some tips on how to do it effectively.
 
-##  Reporting Bugs
+###  Reporting Bugs
 
 Before creating a bug report, please search for similar issues to make sure that they're not already reported. If you don't find any, go ahead and create an issue including as many details as possible. Fill out the required template, the information requested helps us to resolve issues faster.
 
@@ -90,7 +90,7 @@ Bugs are tracked as GitHub issues. Explain the problem and include additional de
 - Explain which behavior you expected to see instead and why.
 - If the problem is related to performance or memory, include a CPU profile capture with your report.
 
-##  Suggesting Enhancements
+###  Suggesting Enhancements
 
 Enhancement suggestions are tracked as GitHub issues. Make sure you provide the following information:
 
@@ -101,12 +101,12 @@ Enhancement suggestions are tracked as GitHub issues. Make sure you provide the 
 - Explain why this enhancement would be useful to most Booster users and isn't something that can or should be implemented as a community package.
 - List some other libraries or frameworks where this enhancement exists.
 
-##  Improving documentation
+###  Improving documentation
 
 [Booster documentation](https://docs.booster.cloud) is treated as a live document that continues improving on a daily basis. If you find something that is missing or can be improved, please contribute, it will be of great help for other developers.
 To contribute you can use the button "Edit on github" at the top of each chapter.
 
-##  Documentation principles and practices
+####  Documentation principles and practices
 
 The ultimate goal of a technical document is to translate the knowledge from the technology creators into the reader's mind so that they learn. The challenging
 part here is the one in which they learn. It is challenging because, under the same amount of information, a person can suffer an information overload because
@@ -123,9 +123,9 @@ To achieve our goal we propose writing documentation following these principles:
 6. Inclusive
 7. Cohesive
 
-###  Principles
+#####  Principles
 
-####  Clean and Clear
+**1. Clean and Clear**
 
 Less is more. Apple is, among many others, a good example of creating clean and clear content, where visual elements are carefully chosen to look beautiful
 (e.g. [Apple's swift UI](https://developer.apple.com/tutorials/swiftui)) and making the reader getting the point as soon as possible.
@@ -133,7 +133,7 @@ Less is more. Apple is, among many others, a good example of creating clean and 
 The intention of every section, paragraph, and sentence must be clear, we should avoid writing details of two different things even when they are related.
 It is better to link pages and keep the focus and the intention clear, Wikipedia is the best example on this.
 
-####  Simple
+**2. Simple**
 
 Technical writings deal with different backgrounds and expertise from the readers. We should not assume the reader knows everything we are talking about
 but we should not explain everything in the same paragraph or section. Every section has a goal to stick to the goal and link to internal or external resources
@@ -142,23 +142,23 @@ to go deeper.
 Diagrams are great tools, you know a picture is worth more than a thousand words unless that picture contains too much information.
 Keep it simple intentionally omitting details.
 
-####  Coherent
+**3. Coherent**
 
 The documentation tells a story. Every section should integrate naturally without making the reader switch between different contexts. Text, diagrams,
 and code examples should support each other without introducing abrupt changes breaking the reader’s flow. Also, the font, colors, diagrams, code samples,
 animations, and all the visual elements we include, should support the story we are telling.
 
-####  Explicit
+**4. Explicit**
 
 Go straight to the point without assuming the readers should know about something. Again, link internal or external resources to clarify.
 
 The index of the whole content must be visible all the time so the reader knows exactly where they are and what is left.
 
-####  Attractive
+**5. Attractive**
 
 Our text must be nice to read, our diagrams delectable to see, and our site… a feast for the eyes!!
 
-####  Inclusive
+**6. Inclusive**
 
 Everybody should understand our writings, especially the topics at the top. We have arranged the documentation structure in a way that anybody can dig
 deeper by just going down so, sections 1 to 4 must be suitable for all ages.
@@ -166,7 +166,7 @@ deeper by just going down so, sections 1 to 4 must be suitable for all ages.
 Use gender-neutral language to avoid the use of he, him, his to refer to undetermined gender. It is better to use their or they as a gender-neutral
 approach than s/he or similars.
 
-####  Cohesive
+**7. Cohesive**
 
 Writing short and concise sentences is good, but remember to use proper connectors (“Therefore”, “Besides”, “However”, “thus”, etc) that provide a
 sense of continuation to the whole paragraph. If not, when people read the paragraphs, their internal voice sounds like a robot with unnatural stops.
@@ -183,7 +183,7 @@ snapshots to make the reduction process efficient. In any case, this is opaque t
 
 Did you feel the difference? The latter makes you feel that everything is connected, it is more cohesive.
 
-###  Practices
+####  Practices
 
 There are many writing styles depending on the type of document. It is common within technical and scientific writing to use Inductive and/or Deductive styles
 for paragraphs. They have different outcomes and one style may suit better in one case or another, that is why it is important to know them, and decide which
@@ -203,11 +203,11 @@ The first paragraph is deductive and the last one is inductive. In general, it i
 So decide one or another being conscious about your intention.
 
 
-##  Create your very first GitHub issue
+###  Create your very first GitHub issue
 
 [Click here](https://github.com/boostercloud/booster/issues/new) to start making contributions to Booster.
 
-# Your First Code Contribution
+## Your First Code Contribution
 
 Unsure where to begin contributing to Booster? You can start by looking through issued tagged as `good-first-issue` and `help-wanted`:
 
@@ -218,7 +218,7 @@ Both issue lists are sorted by the total number of comments. While not perfect, 
 
 Make sure that you assign the chosen issue to yourself to communicate your intention to work on it and reduce the possibilities of other people taking the same assignment.
 
-## Getting the code
+### Getting the code
 
 To start contributing to the project you would need to set up the project in your system, to do so, you must first follow these steps in your terminal.
 
@@ -240,7 +240,7 @@ To start contributing to the project you would need to set up the project in you
 
 **Important:** Node v12 is the minimum version required.
 
-## Understanding the "lerna monorepo" approach and how dependencies are structured in the project
+### Understanding the "lerna monorepo" approach and how dependencies are structured in the project
 
 The Booster Framework project is organized following the ["lerna monorepo"](https://lerna.js.org/) structure. There are several "package.json" files and each one has its purpose with regard to the dependencies you include on them:
 
@@ -253,7 +253,7 @@ There could be the situation in which two packages depends on the same dependenc
 
 Finally, **always use exact numbers for dependency versions**. This means that if you want to add the dependency "aws-sdk" in version 1.2.3, you should add `"aws-sdk": "1.2.3"` to the corresponding "package.json" file, and never `"aws-sdk": "^1.2.3"` or `"aws-sdk": "~1.2.3"`. This restriction comes from hard problems we've had in the past.
 
-## Running unit tests
+### Running unit tests
 
 Unit tests are executed when you type `lerna run test`. If you want to run the unit tests for an especific package, you should run one of the following commands:
 
@@ -269,7 +269,7 @@ Unit tests are executed when you type `lerna run test`. If you want to run the u
 - `lerna run test:provider-local-infrastructure --stream`: Run unit tests for the `framework-provider-local-infrastructure` package.
 - `lerna run test:types --stream`: Run unit tests for the `framework-types` package.
 
-## Running integration tests
+### Running integration tests
 
 Integration tests are run automatically in Github Actions when a PR is locked, but it would be recommendable to run them locally before submitting a PR for review. You can find several scripts in `packages/framework-integration-tests/package.json` to run different test suites. You can run them using lerna tool:
 
@@ -287,11 +287,11 @@ These are the available scripts to run integration tests:
 
 AWS integration tests are run in real AWS resources, so you'll need to have your AWS credentials properly set in your development machine. By default, the sample project will be deployed to your default account. Basically, if you can deploy a Booster project to AWS, you should be good to go ([See more details about setting up an AWS account in the docs](https://github.com/boostercloud/booster/tree/main/docs#set-up-an-aws-account)). Notice that while all resources used by Booster are included in the AWS free tier, running these tests in your own AWS account could incur in some expenses.
 
-## Github flow
+### Github flow
 
 The preferred way of accepting contributions is following the [Github flow](https://guides.github.com/introduction/flow/), that is, you fork the project and work in your own branch until you're happy with the work, and then submit a PR in Github.
 
-## Publishing your Pull Request
+### Publishing your Pull Request
 
 Make sure that you describe your change thoroughly in the PR body, adding references for any related issues and links to any resource that helps clarifying the intent and goals of the change.
 
@@ -302,7 +302,7 @@ When you submit a PR to the Booster repository:
 - Code must be mergeable and all conflicts solved before merging it.
 - Once the review process is done, unit tests pass and conflicts are fixed, you still need to make the _Integration tests check_ to pass. In order to do that, you need to **Lock conversation** in the pull request. The _integration tests_ will run and a new check will appear with an "In progress" status. After some time, if everything went well, the status check will become green and your PR is now ready to merge.
 
-## Branch naming conventions
+### Branch naming conventions
 
 In order to create a PR, you must create a branch from `main`. You should follow the GitFlow naming conventions, as detailed below:
 
@@ -318,7 +318,7 @@ git checkout -b feature/XXX_add-an-awesome-new-feature
 
 (where `XXX` is the issue number)
 
-## Commit message guidelines
+### Commit message guidelines
 
 The merge commit message should be structured following the [conventional commits](https://www.conventionalcommits.org/) standard:
 
@@ -361,7 +361,7 @@ We're using the following scopes in the project:
 
 Apart of using conventional commits for triggering releases, we use them to build the project changelog.
 
-# Code Style Guidelines
+## Code Style Guidelines
 
 The Booster project comes with a nice set of ESLint config files to help you follow a consistent style, and we really encourage to use it in your editor. You can also run the `lerna run lint:fix` commands to try solving any linter problems automatically.
 
@@ -369,7 +369,7 @@ For everything else, the rule of thumb is: Try to be consistent with the code ar
 
 There are some things that the linter doesn't force but are prefered this way:
 
-## Importing other files and libraries
+### Importing other files and libraries
 
 Use `import` instead of `require` and import the objects individually when possible:
 
@@ -377,7 +377,7 @@ Use `import` instead of `require` and import the objects individually when possi
 import { Object, function } from 'some-package'
 ```
 
-## Functional style
+### Functional style
 
 We give priority to a functional style of programming, but always taking into account how the objects are used to make sure they form a nice DSL. Classes are allowed when there's an actual state to hold, and we usually avoid default exports:
 
@@ -415,7 +415,7 @@ ModuleB.functionB1()
 const obj = new ObjectC(someConstantA)
 ```
 
-## Use `const` and `let`
+### Use `const` and `let`
 
 Default to `const` and immutable objects when possible, otherwise, use `let`.
 
