@@ -59,18 +59,18 @@ export class EventsStack {
       projectionType: dynamodb.ProjectionType.KEYS_ONLY,
     })
 
-    table.addGlobalSecondaryIndex({
-      indexName: eventsStoreAttributes.indexByType.name(this.config),
-      partitionKey: {
-        name: eventsStoreAttributes.indexByType.partitionKey,
-        type: dynamodb.AttributeType.STRING,
-      },
-      sortKey: {
-        name: eventsStoreAttributes.sortKey,
-        type: dynamodb.AttributeType.STRING,
-      },
-      projectionType: dynamodb.ProjectionType.KEYS_ONLY,
-    })
+    // table.addGlobalSecondaryIndex({
+    //   indexName: eventsStoreAttributes.indexByType.name(this.config),
+    //   partitionKey: {
+    //     name: eventsStoreAttributes.indexByType.partitionKey,
+    //     type: dynamodb.AttributeType.STRING,
+    //   },
+    //   sortKey: {
+    //     name: eventsStoreAttributes.sortKey,
+    //     type: dynamodb.AttributeType.STRING,
+    //   },
+    //   projectionType: dynamodb.ProjectionType.KEYS_ONLY,
+    // })
     return table
   }
 
