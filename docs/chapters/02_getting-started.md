@@ -102,8 +102,7 @@ This step is optional; Booster is a cloud-native framework, meaning that your ap
 will be deployed to the cloud using different cloud providers. By default, Booster uses the
 [AWS Provider](chapters/04_features.md#aws-provider), so you need an AWS account.
 
-> **Note**:
->
+> [!WARNING]
 > Booster is free to use, but remember that the resources deployed to your cloud provider
 > might generate some expenses.
 >
@@ -186,7 +185,7 @@ export AWS_PROFILE=other_profile
 
 This step is only necessary in the case that you want to use the Azure Provider.
 
-> **Note**:
+> [!WARNING]
 >
 > Booster is free to use, but remember that the resources deployed to your cloud provider
 > might generate some expenses.
@@ -221,8 +220,7 @@ This step is only necessary in the case that you want to use the Kubernetes prov
 
 The main requirement is having a Kubernetes Cluster already configured. This provider has been succesfully tested in EKS (Amazon Elastic Kubernetes Service), AKS (Azure Kubernetes Service) and GKE (Google Kubernetes Engine). Since Kubernetes is a standard, this provider can also work in other Kubernetes clusters, including on-premises configurations.
 
-> **Note**:
->
+> [!WARNING]
 > Booster is free to use, but remember that the Kubernetes cluster resources used for the deployment
 > might generate some expenses.
 
@@ -306,14 +304,14 @@ To create the project, run the following command:
 ℹ Project generated!
 ```
 
-**Note:** If you prefer to create the project with default parameters, you can run the command as `boost new:project booster-blog --default`. The default
-parameters are as follows:
-
-- Project name: The one provided when running the command, in this case "booster-blog"
-- Provider: AWS
-- Description, author, homepage and repository: ""
-- License: MIT
-- Version: 0.1.0
+> [!TIP] If you prefer to create the project with default parameters, you can run the command as `boost new:project booster-blog --default`. The default
+> parameters are as follows:
+> 
+> - Project name: The one provided when running the command, in this case "booster-blog"
+> - Provider: AWS
+> - Description, author, homepage and repository: ""
+> - License: MIT
+> - Version: 0.1.0
 
 In case you want to specify each parameter without following the instructions, you can use the following flags with this structure `<flag>=<parameter>`.
 
@@ -336,7 +334,7 @@ Additionally, you can use the `--skipInstall` flag if you want to skip installin
 > - `new:project` is the "subcommand" part. In this case, it is composed of two parts separated by a colon. The first part, `new`, means that we want to generate a new resource. The second part, `project`, indicates which kind of resource we are interested in. Other examples are `new:command`, `new:event`, etc. We'll see a bunch of them later.
 > - `boosted-blog` is a "parameter" for the subcommand `new:project`. Flags and parameters are optional and their meaning and shape depend on the subcommand you used. In this case, we are specifying the name of the project we are creating.
 
-**Note:** You can always use the `--help` flag to get all the available options for each cli command.
+> [!TIP] You can always use the `--help` flag to get all the available options for each cli command.
 
 When finished, you'll see some scaffolding that has been generated. The project name will be the
 project's root so `cd` into it:
@@ -603,14 +601,14 @@ the deploy command:
 boost deploy -e production
 ```
 
-> Deploy command automatically builds the project for you before performing updates in the cloud provider,
+And here it comes the Booster magic! ✨ When running the deploy command, Booster will handle the creation of all the resources, *like Lambdas, API Gateway,* and the "glue" between them; *permissions, events, triggers, etc.* It even creates a fully functional GraphQL API!
+
+> [!NOTE] Deploy command automatically builds the project for you before performing updates in the cloud provider,
 so, build command it's not required beforehand.
 
 > With `-e production` we are specifying which environment we want to deploy. We'll talk about them later.
 
-And here it comes the Booster magic! ✨ When running the deploy command, Booster will handle the creation of all the resources, *like Lambdas, API Gateway,* and the "glue" between them; *permissions, events, triggers, etc.* It even creates a fully functional GraphQL API!
-
-*If at this point you still don’t believe everything is done, feel free to check in your provider’s console. You should see, as in the AWS example below, that the stack and all the services are up and running! It will be the same for other providers* 🚀
+> [!TIP] If at this point you still don’t believe everything is done, feel free to check in your provider’s console. You should see, as in the AWS example below, that the stack and all the services are up and running! It will be the same for other providers. 🚀
 
 ![resources](../img/aws-resources.png)
 
@@ -680,7 +678,7 @@ The expected response for each of those requests should be:
 }
 ```
 
-> **Note**: In this example, the IDs are generated on the client-side. When running production applications
+> [!NOTE] In this example, the IDs are generated on the client-side. When running production applications
 > consider adding validation for ID uniqueness. For this example, we have used [a UUID generator](https://www.uuidgenerator.net/version4)
 
 #### 7.2 Retrieving all posts
@@ -760,8 +758,7 @@ we run `new:project` CLI command.
 ? Please, enter the app name to confirm deletion of all resources: boosted-blog
 ```
 
-> Congratulations! You've built a serverless backend in less than 10 minutes. We hope you
-> have enjoyed discovering the magic of the Booster Framework.
+> Congratulations! You've built a serverless backend in less than 10 minutes. We hope you have enjoyed discovering the magic of the Booster Framework.
 
 ### 9. More functionalities
 

@@ -34,7 +34,7 @@ By default, a Booster application has no roles defined, so the only allowed valu
 If you want to add user authorization, you first need to create the roles that are suitable for your application.
 Roles are classes annotated with the `@Role` decorator, where you can specify some attributes. We recommend that you define your roles in the file `src/roles.ts` or, if you have too many roles, put them in several files under the `src/roles` folder.
 
-_Note: There is no `Admin` user by default. In order to register one you need to specify a sign-up method on `src/roles.ts`._
+> [!NOTE] There is no `Admin` user by default. In order to register one you need to specify a sign-up method on `src/roles.ts`.
 
 In the following example we define `Admin`, `User`, `SuperUser` and `SuperUserWithoutConfirmation` roles. They all contain an `auth` attribute which contains a `signUpMethods` and `skipConfirmation` attributes.
 
@@ -203,7 +203,7 @@ Therefore:
 - To send a GraphQL mutation/query, you send an HTTP request to _"&lt;graphqlURL&gt;"_, with _method POST_, and a _JSON-encoded body_ with the mutation/query details.
 - To send a GraphQL subscription, you first connect to the _"&lt;websocketURL&gt;"_, and then send a _JSON-encoded message_ with the subscription details, _following [the "GraphQL over WebSocket" protocol](#the-graphql-over-websocket-protocol)_.
 
-> **Note**: you can also **send queries and mutations through the WebSocket** if that's convenient to you. See ["The GraphQL over WebSocket protocol"](#the-graphql-over-websocket-protocol) to know more.
+> [!NOTE] you can also **send queries and mutations through the WebSocket** if that's convenient to you. See ["The GraphQL over WebSocket protocol"](#the-graphql-over-websocket-protocol) to know more.
 
 While it is OK to know how to manually send GraphQL request, you normally don't need to deal with this low-level details, especially with the WebSocket stuff.
 
@@ -274,7 +274,7 @@ And this would be the response:
 }
 ```
 
-> **Note**: Remember to set the proper **access token** for secured commands, check ["Authorizing operations"](#authorizing-operations).
+> [!NOTE] Remember to set the proper **access token** for secured commands, check ["Authorizing operations"](#authorizing-operations).
 
 ### Reading read models
 
@@ -341,7 +341,7 @@ And we would get the following as response:
 }
 ```
 
-> **Note**: Remember to set the proper **access token** for secured read models, check ["Authorizing operations"](#authorizing-operations).
+> [!NOTE]  Remember to set the proper **access token** for secured read models, check ["Authorizing operations"](#authorizing-operations).
 
 ### Subscribing to read models
 
@@ -380,7 +380,7 @@ In the following examples we use [`wscat`](https://github.com/websockets/wscat) 
  wscat -c <websocketURL> -s graphql-ws
 ```
 
-> **Note:** You should specify the `graphql-ws` subprotocol when connecting with your client via the `Sec-WebSocket-Protocol` header (in this case, `wscat` does that when you use the `-s` option).
+> [!NOTE]  You should specify the `graphql-ws` subprotocol when connecting with your client via the `Sec-WebSocket-Protocol` header (in this case, `wscat` does that when you use the `-s` option).
 
 Now we can start sending messages just by writing them and hitting the <kbd>Enter</kbd> key.
 
@@ -444,7 +444,7 @@ mutation {
 }
 ```
 
-> **Note**: Remember that, in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
+> [!NOTE]  Remember that, in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
 
 ### Using Apollo Client
 
@@ -697,7 +697,7 @@ The Booster WebSocket communication uses the "GraphQL over WebSocket" protocol a
 
 You don't need to know anything about this to develop using Booster, neither in the backend side nor in the frontend side (as all the Apollo GraphQL clients uses this protocol), but it is good to know it is there to guarantee a proper communication. In case you are really curious, you can read about the protocol [here](https://github.com/apollographql/subscriptions-transport-ws/blob/master/PROTOCOL.md).
 
-> **Note**: The WebSocket communication in Booster only supports this subprotocol, whose identifier is `graphql-ws`. For this reason, when you connect to the WebSocket provisioned by Booster, you must specify the `graphql-ws` subprotocol. If not, the connection won't succeed.
+> [!NOTE]  The WebSocket communication in Booster only supports this subprotocol, whose identifier is `graphql-ws`. For this reason, when you connect to the WebSocket provisioned by Booster, you must specify the `graphql-ws` subprotocol. If not, the connection won't succeed.
 
 ## Cloud native
 
@@ -730,7 +730,7 @@ To deploy your Booster project, run the following command:
 boost deploy -e <environment name>
 ```
 
-> **Note**: All you have in your project root will be deployed to the cloud provider, so if for example you have an additional frontend project, you should move it to another place because the cloud providers usually have a limited capacity for only code.
+> [!NOTE]  All you have in your project root will be deployed to the cloud provider, so if for example you have an additional frontend project, you should move it to another place because the cloud providers usually have a limited capacity for only code.
 
 The `<environment name>` parameter is the name of the [environment](chapters/05_going-deeper#environments) you want to deploy.
 It will take a while, but you should have your project deployed to your cloud provider.
@@ -757,8 +757,8 @@ If you want to delete the Booster application that has been deployed, you can ru
 boost nuke -e <environment name>
 ```
 
-> **Note**: This will delete everything in your stack, including databases. This action is **not** reversible!
+> [!WARNING]  This will delete everything in your stack, including databases. This action is **not** reversible!
 
 For a force delete without asking for confirmation, you can run `boost nuke -e <environment name> -f`.
 
-> **Note**: Be EXTRA CAUTIOUS with this option, all your application data will be irreversibly DELETED without confirmation.
+> [!ATTENTION]  Be EXTRA CAUTIOUS with this option, all your application data will be irreversibly DELETED without confirmation.
