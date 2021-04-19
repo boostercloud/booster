@@ -8,9 +8,11 @@
   <meta name="description" content="The fastest way to create an application for the cloud.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css">
+  <link rel="stylesheet" href="custom.css" type="text/css">
+  <!-- docsify-themeable styles-->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css" title="light">
+  <link rel="stylesheet alternative" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple-dark.css" title="dark">
 
-  <link rel="stylesheet" href="./custom.css">
   <link rel="stylesheet"
         href="https://fonts.googleapis.com/css?family=Lato">
   <style>
@@ -20,14 +22,12 @@
   </style>
 </head>
 <body>
-
-
 <div id="app"></div>
 <script>
   window.$docsify = {
     homepage: 'chapters/01_introduction.md',
-    logo: 'img/booster-logo.png',
-    name: 'booster framework',
+
+    name: '<div style="font-size: 25px; font-style: italic;" id="navbar"><span style="font-weight: bold; color: var(--heading-color)" >booster</span> framework</div>',
     maxLevel: 4,
     themeColor: '#5A6FFF',
     auto2top:true,
@@ -57,9 +57,16 @@
           if (file.includes('CONTRIBUTING')) {
             url = 'https://github.com/boostercloud/booster/tree/main/CONTRIBUTING.md'
           }
-          return '[📝Edit Document](' + url + ')\n'
-                  + html
+          return '[📝Edit Document](' + url + ')\n' + html
         })
+        const footer = [
+          '<footer style="text-align: center;margin-top: 50px;">',
+          '<span> Booster is a spin-off project from <a href="https://www.theagilemonkeys.com">The Agile Monkeys</a>.</span>',
+          '</footer>'
+        ].join('');
+        hook.afterEach(function(html) {
+          return html + footer;
+        });
       }
     ]
   };
@@ -73,6 +80,15 @@
 <script src="//unpkg.com/docsify-copy-code@2"></script>
 <script src="//unpkg.com/docsify-remote-markdown/dist/docsify-remote-markdown.min.js"></script>
 <script src="//unpkg.com/docsify-pagination/dist/docsify-pagination.min.js"></script>
+<script
+        src="//cdn.jsdelivr.net/npm/docsify-darklight-theme@3/dist/docsify-themeable/main.min.js"
+        type="text/javascript">
+</script>
+
+<script
+        src="//cdn.jsdelivr.net/npm/docsify-darklight-theme@3/dist/docsify-themeable/index.min.js"
+        type="text/javascript">
+</script>
 
 
 
