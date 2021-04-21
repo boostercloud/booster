@@ -32,7 +32,12 @@ import {
 } from './library/connections-adapter'
 import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
 
-const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
+const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient({
+  maxRetries: 10,
+  httpOptions: {
+    timeout: 5000,
+  },
+})
 const userPool = new CognitoIdentityServiceProvider()
 
 interface HasInfrastructure {
