@@ -9,7 +9,7 @@ Remember that if something here doesn't make sense, you can also propose a chang
 <!-- toc -->
 
 - [Code of Conduct](#code-of-conduct)
-- [I don't want to read this whole thing, I just have a question!!!](#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
+- [I don't want to read this whole thing, I just have a question!!!](#i-don39t-want-to-read-this-whole-thing-i-just-have-a-question)
 - [What should I know before I get started?](#what-should-i-know-before-i-get-started)
   - [Packages](#packages)
 - [How Can I Contribute?](#how-can-i-contribute)
@@ -183,7 +183,7 @@ snapshots to make the reduction process efficient. In any case, this is opaque t
 
 Did you feel the difference? The latter makes you feel that everything is connected, it is more cohesive.
 
-####  Practices
+#####  Practices
 
 There are many writing styles depending on the type of document. It is common within technical and scientific writing to use Inductive and/or Deductive styles
 for paragraphs. They have different outcomes and one style may suit better in one case or another, that is why it is important to know them, and decide which
