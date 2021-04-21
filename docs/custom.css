@@ -36,6 +36,18 @@
     margin-right: auto;
 }
 
+.alert.callout.warning {
+    background: var(--warningBackground);
+}
+
+.alert.callout.tip {
+    background: var(--tipBackground);
+}
+
+.alert.callout.note {
+    background: var(--noteBackground);
+}
+
 @media screen and (min-width: 1024px) {
     :root {
         --sidebar-width: 20rem !important;
