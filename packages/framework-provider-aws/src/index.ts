@@ -35,7 +35,7 @@ import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
 const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient({
   maxRetries: 10,
   httpOptions: {
-    timeout: 5000,
+    timeout: 2000,
   },
 })
 const userPool = new CognitoIdentityServiceProvider()
