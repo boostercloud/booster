@@ -3,17 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-MQ5KFKG');</script>
+    <script>(function (w, d, s, l, i) {
+        w[l] = w[l] || []
+        w[l].push({
+            'gtm.start':
+                new Date().getTime(), event: 'gtm.js'
+        })
+        var f = d.getElementsByTagName(s)[0],
+            j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''
+        j.async = true
+        j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl
+        f.parentNode.insertBefore(j, f)
+    })(window, document, 'script', 'dataLayer', 'GTM-MQ5KFKG')</script>
     <!-- End Google Tag Manager -->
     <title>Booster cloud</title>
     <link rel="icon" href="img/favicon.png">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
     <meta name="description" content="The fastest way to create an application for the cloud.">
-    <meta name="keywords" content="booster, booster cloud, documentation, event sourcing, multicloud, scalability, open-source, typescript, serverless,developer, experience, microservices">
+    <meta name="keywords"
+          content="booster, booster cloud, documentation, event sourcing, multicloud, scalability, open-source, typescript, serverless,developer, experience, microservices">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
 
     <link rel="stylesheet" href="custom.css" type="text/css">
@@ -32,8 +41,10 @@
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MQ5KFKG"
-                  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MQ5KFKG"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe>
+</noscript>
 <!-- End Google Tag Manager (noscript) -->
 <div id="app"></div>
 <script>
@@ -81,7 +92,20 @@
                     return html + footer
                 })
             },
-        ]
+        ],
+        darklightTheme: {
+            light: {
+                warningBackground: '#fcf7dc',
+                tipBackground: '#e8faec',
+                noteBackground: '#eff6fb'
+            },
+            dark: {
+                warningBackground: '#091a28',
+                tipBackground: '#091a28',
+                noteBackground: '#091a28'
+            }
+        },
+
     }
 </script>
 <script>
@@ -94,11 +118,12 @@
         function meta(name, content) {
             document.querySelector(`meta[name="${name}"]`).content = content || ''
         }
+
         function plugin(hook, vm) {
             const refreshInfo = () => {
-                const { config, route, frontmatter } = vm
-                const { description, keywords } = frontmatter || {}
-                const entries = { description, keywords }
+                const {config, route, frontmatter} = vm
+                const {description, keywords} = frontmatter || {}
+                const entries = {description, keywords}
                 for (const key in entries) {
                     let value = entries[key]
                     if (value === undefined) {
@@ -112,6 +137,7 @@
             hook.init(refreshInfo)
             hook.doneEach(refreshInfo)
         }
+
         window.$docsify = window.$docsify || {}
         window.$docsify.plugins = window.$docsify.plugins || []
         window.$docsify.plugins.push(plugin)
