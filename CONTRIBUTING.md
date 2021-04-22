@@ -9,7 +9,7 @@ Remember that if something here doesn't make sense, you can also propose a chang
 <!-- toc -->
 
 - [Code of Conduct](#code-of-conduct)
-- [I don't want to read this whole thing, I just have a question!!!](#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
+- [I don't want to read this whole thing, I just have a question!!!](#i-don39t-want-to-read-this-whole-thing-i-just-have-a-question)
 - [What should I know before I get started?](#what-should-i-know-before-i-get-started)
   - [Packages](#packages)
 - [How Can I Contribute?](#how-can-i-contribute)
@@ -69,17 +69,17 @@ The packages are published to `npm` under the prefix `@boostercloud/`, their pur
   - etc…
 
 This is a dependency graph that shows the dependencies among all packages, including the application using Booster:
-![Booster packages dependencies](docs/img/packages-dependencies.png)
+![Booster packages dependencies](https://raw.githubusercontent.com/boostercloud/booster/main/docs/img/packages-dependencies.png)
 
 ## How Can I Contribute?
 
 Contributing to an open source project is never just a matter of code, you can help us significantly by just using Booster and interacting with our community. Here you'll find some tips on how to do it effectively.
 
-### Reporting Bugs
+###  Reporting Bugs
 
 Before creating a bug report, please search for similar issues to make sure that they're not already reported. If you don't find any, go ahead and create an issue including as many details as possible. Fill out the required template, the information requested helps us to resolve issues faster.
 
-Note: If you find a Closed issue that seems related to the issues that you're experiencing, make sure to reference it in the body of your new one by writing its number like this => #42 (Github will autolink it for you).
+> **Note**: If you find a Closed issue that seems related to the issues that you're experiencing, make sure to reference it in the body of your new one by writing its number like this => #42 (Github will autolink it for you).
 
 Bugs are tracked as GitHub issues. Explain the problem and include additional details to help maintainers reproduce the problem:
 
@@ -90,7 +90,7 @@ Bugs are tracked as GitHub issues. Explain the problem and include additional de
 - Explain which behavior you expected to see instead and why.
 - If the problem is related to performance or memory, include a CPU profile capture with your report.
 
-### Suggesting Enhancements
+###  Suggesting Enhancements
 
 Enhancement suggestions are tracked as GitHub issues. Make sure you provide the following information:
 
@@ -101,17 +101,109 @@ Enhancement suggestions are tracked as GitHub issues. Make sure you provide the 
 - Explain why this enhancement would be useful to most Booster users and isn't something that can or should be implemented as a community package.
 - List some other libraries or frameworks where this enhancement exists.
 
-### Improving documentation
+###  Improving documentation
 
-Booster documentation, located at `/docs/README.md`, is treated as a live document that continues improving on a daily basis. If you find something that is missing or can be improved, please contribute, it will be of great help for other developers.
+[Booster documentation](https://docs.booster.cloud) is treated as a live document that continues improving on a daily basis. If you find something that is missing or can be improved, please contribute, it will be of great help for other developers.
+To contribute you can use the button "Edit on github" at the top of each chapter.
 
-Bear in mind that if you have added a new section, or changed an existing one you will need to update the table of content. This can be easily done with the following command:
+####  Documentation principles and practices
 
-```sh
-npm run update-tocs
-```
+The ultimate goal of a technical document is to translate the knowledge from the technology creators into the reader's mind so that they learn. The challenging
+part here is the one in which they learn. It is challenging because, under the same amount of information, a person can suffer an information overload because
+we (humans) don't have the same information-processing capacity. That idea is going to work as our compass, it should drive our efforts so people with less
+capacity is still able to follow and understand our documentation.
 
-### Create your very first GitHub issue
+To achieve our goal we propose writing documentation following these principles:
+
+1. Clean and Clear
+2. Simple
+3. Coherent
+4. Explicit
+5. Attractive
+6. Inclusive
+7. Cohesive
+
+#####  Principles
+
+**1. Clean and Clear**
+
+Less is more. Apple is, among many others, a good example of creating clean and clear content, where visual elements are carefully chosen to look beautiful
+(e.g. [Apple's swift UI](https://developer.apple.com/tutorials/swiftui)) and making the reader getting the point as soon as possible.
+
+The intention of every section, paragraph, and sentence must be clear, we should avoid writing details of two different things even when they are related.
+It is better to link pages and keep the focus and the intention clear, Wikipedia is the best example on this.
+
+**2. Simple**
+
+Technical writings deal with different backgrounds and expertise from the readers. We should not assume the reader knows everything we are talking about
+but we should not explain everything in the same paragraph or section. Every section has a goal to stick to the goal and link to internal or external resources
+to go deeper.
+
+Diagrams are great tools, you know a picture is worth more than a thousand words unless that picture contains too much information.
+Keep it simple intentionally omitting details.
+
+**3. Coherent**
+
+The documentation tells a story. Every section should integrate naturally without making the reader switch between different contexts. Text, diagrams,
+and code examples should support each other without introducing abrupt changes breaking the reader’s flow. Also, the font, colors, diagrams, code samples,
+animations, and all the visual elements we include, should support the story we are telling.
+
+**4. Explicit**
+
+Go straight to the point without assuming the readers should know about something. Again, link internal or external resources to clarify.
+
+The index of the whole content must be visible all the time so the reader knows exactly where they are and what is left.
+
+**5. Attractive**
+
+Our text must be nice to read, our diagrams delectable to see, and our site… a feast for the eyes!!
+
+**6. Inclusive**
+
+Everybody should understand our writings, especially the topics at the top. We have arranged the documentation structure in a way that anybody can dig
+deeper by just going down so, sections 1 to 4 must be suitable for all ages.
+
+Use gender-neutral language to avoid the use of he, him, his to refer to undetermined gender. It is better to use their or they as a gender-neutral
+approach than s/he or similars.
+
+**7. Cohesive**
+
+Writing short and concise sentences is good, but remember to use proper connectors (“Therefore”, “Besides”, “However”, “thus”, etc) that provide a
+sense of continuation to the whole paragraph. If not, when people read the paragraphs, their internal voice sounds like a robot with unnatural stops.
+
+For example, read this paragraph and try to hear your internal voice:
+
+> Entities are created on the fly, by reducing the whole event stream. You shouldn't assume that they are stored anywhere.  Booster does create
+automatic snapshots to make the reduction process efficient. You are the one in charge of writing the reducer function.
+
+And now read this one:
+
+> Entities are created on the fly by reducing the whole event stream. While you shouldn't assume that they are stored anywhere,  Booster does create automatic
+snapshots to make the reduction process efficient. In any case, this is opaque to you and the only thing you should care is to provide the reducer function.
+
+Did you feel the difference? The latter makes you feel that everything is connected, it is more cohesive.
+
+#####  Practices
+
+There are many writing styles depending on the type of document. It is common within technical and scientific writing to use Inductive and/or Deductive styles
+for paragraphs. They have different outcomes and one style may suit better in one case or another, that is why it is important to know them, and decide which
+one to use in every moment. Let’s see the difference with 2 recursive examples.
+
+**Deductive paragraphs ease the reading for advanced users but still allows you to elaborate on ideas and concepts for newcomers**. In deductive paragraphs,
+the conclusions or definitions appear at the beginning, and then, details, facts, or supporting phrases complete the paragraph’s idea. By placing the
+conclusion in the first sentence, the reader immediately identifies the main point so they can decide to skip the whole paragraph or keep reading.
+If you take a look at the structure of this paragraph, it is deductive.
+
+On the other hand, if you want to drive the readers' attention and play with it as if they were in a roller coaster, you can do so by using a different approach.
+In that approach, you first introduce the facts and ideas and then you wrap them with a conclusion. This style is more narrative and forces the reader to
+continue because the main idea is diluted in the whole paragraph. Once all the ideas are placed together, you can finally conclude the paragraph. **This style is
+called Inductive.**
+
+The first paragraph is deductive and the last one is inductive. In general, it is better to use the deductive style, but if we stick to one, our writing will start looking weird and maybe boring.
+So decide one or another being conscious about your intention.
+
+
+###  Create your very first GitHub issue
 
 [Click here](https://github.com/boostercloud/booster/issues/new) to start making contributions to Booster.
 

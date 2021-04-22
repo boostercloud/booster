@@ -17,8 +17,12 @@ app.use(function(req, res, next) {
   next()
 })
 app.post('/graphQL', async (req, res) => {
-  const response = await userProject.boosterServeGraphQL(req)
-  res.send(response)
+  try {
+    const response = await userProject.boosterServeGraphQL(req)
+    res.status(response.statusCode).json(response.body)
+  } catch (e) {
+    console.error(e)
+  }
 })
 app.get('/ready', async (req, res) => {
   res.send('ok')

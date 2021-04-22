@@ -3,6 +3,9 @@ import { Class, PropertyMetadata } from '../typelevel'
 
 export interface ReadModelInterface {
   id: UUID
+  boosterMetadata?: {
+    version: number
+  }
   [key: string]: any
 }
 

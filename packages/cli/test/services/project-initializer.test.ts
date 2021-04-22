@@ -73,6 +73,7 @@ describe('project initializer', (): void => {
         expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.prettierrc.yaml`)
         expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/src/config/config.ts`)
         expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/src/index.ts`)
+        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.mocharc.yml`)
     })
     
 })

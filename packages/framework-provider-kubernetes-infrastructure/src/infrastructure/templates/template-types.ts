@@ -8,6 +8,9 @@ export interface TemplateValues {
   namespace: string
   clusterVolume: string
   environment: string
+  dbHost?: string
+  dbUser?: string
+  dbPass?: string
 }
 
 export interface DaprTemplateValues {
@@ -15,4 +18,8 @@ export interface DaprTemplateValues {
   eventStoreHost: string
   eventStoreUsername: string
   eventStorePassword: string
+}
+
+export interface DaprTemplateRoles {
+  namespace: string
 }

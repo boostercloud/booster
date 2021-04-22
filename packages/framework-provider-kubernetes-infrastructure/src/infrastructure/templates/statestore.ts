@@ -9,13 +9,16 @@ metadata:
     booster/created: "true"
 spec:
   type: state.redis
+  version: v1
   metadata:
   - name: redisHost
     value: {{{ eventStoreHost }}}
   - name: redisUser
     value: {{ eventStoreUsername }} 
   - name: redisPassword
-    value: {{ eventStorePassword }} 
+    secretKeyRef:
+      name: redis
+      key: redis-password
   - name: actorStateStore
     value: "true"`,
 }

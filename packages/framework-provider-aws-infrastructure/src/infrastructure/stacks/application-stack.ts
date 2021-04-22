@@ -51,7 +51,7 @@ export class ApplicationStackBuilder {
     })
 
     new CfnOutput(stack, 'graphqlURL', {
-      value: rootAPI.url + 'graphqlURL',
+      value: rootAPI.url + 'graphql',
       description: 'The base URL for sending GraphQL mutations and queries',
     })
 

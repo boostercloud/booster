@@ -7,8 +7,6 @@ import {
   InvalidParameterError,
 } from '@boostercloud/framework-types'
 
-// eslint-disable-next-line @typescript-eslint/no-magic-numbers
-const numberOfEventsBetweenSnapshots = 5 // TODO: Move this to Booster configuration
 const originOfTime = new Date(0).toISOString() // Unix epoch
 
 export class EventStore {
@@ -27,7 +25,7 @@ export class EventStore {
     const latestSnapshotEnvelope = await this.loadLatestSnapshot(entityName, entityID)
 
     // eslint-disable-next-line @typescript-eslint/no-extra-parens
-    const lastVisitedTime = latestSnapshotEnvelope?.createdAt || originOfTime
+    const lastVisitedTime = latestSnapshotEnvelope?.snapshottedEventCreatedAt ?? originOfTime
     const pendingEvents = await this.loadEventStreamSince(entityName, entityID, lastVisitedTime)
 
     if (pendingEvents.length <= 0) {
@@ -42,20 +40,43 @@ export class EventStore {
         newEntitySnapshot
       )
 
-      if (newEntitySnapshot && pendingEvents.length >= numberOfEventsBetweenSnapshots) {
-        await this.storeSnapshot(newEntitySnapshot)
-      }
-
       return newEntitySnapshot
     }
   }
 
-  private async storeSnapshot(snapshot: EventEnvelope): Promise<void> {
+  public async calculateAndStoreEntitySnapshot(
+    entityName: string,
+    entityID: UUID,
+    pendingEnvelopes: Array<EventEnvelope>
+  ): Promise<EventEnvelope | null> {
+    this.logger.debug('[EventStore#calculateAndStoreEntitySnapshot] Processing events: ', pendingEnvelopes)
     this.logger.debug(
-      `[EventStore#storeSnapshot] Maximum number of events after latest stored snapshot reached (${numberOfEventsBetweenSnapshots}). Storing snapshot in the event store:`,
-      snapshot
+      `[EventStore#calculateAndStoreEntitySnapshot] Fetching snapshot for entity ${entityName} with ID ${entityID}`
     )
-    return await this.provider.events.store([snapshot], this.config, this.logger)
+    const latestSnapshotEnvelope = await this.loadLatestSnapshot(entityName, entityID)
+
+    this.logger.debug(
+      `[EventStore#calculateAndStoreEntitySnapshot] Looking for the reducer for entity ${entityName} with ID ${entityID}`
+    )
+    const newEntitySnapshot = pendingEnvelopes.reduce(this.entityReducer.bind(this), latestSnapshotEnvelope)
+    this.logger.debug(
+      `[EventStore#calculateAndStoreEntitySnapshot] Reduced new snapshot for entity ${entityName} with ID ${entityID}: `,
+      newEntitySnapshot
+    )
+
+    if (!newEntitySnapshot) {
+      this.logger.debug('New entity snapshot is null. Returning old one (which can also be null)')
+      return latestSnapshotEnvelope
+    }
+
+    await this.storeSnapshot(newEntitySnapshot)
+
+    return newEntitySnapshot
+  }
+
+  private async storeSnapshot(snapshot: EventEnvelope): Promise<void> {
+    this.logger.debug('[EventStore#storeSnapshot] Storing snapshot in the event store:', snapshot)
+    return this.provider.events.store([snapshot], this.config, this.logger)
   }
 
   private loadLatestSnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | null> {
@@ -90,7 +111,8 @@ export class EventStore {
         entityTypeName: eventEnvelope.entityTypeName,
         typeName: eventEnvelope.entityTypeName,
         value: newEntity,
-        createdAt: eventEnvelope.createdAt,
+        createdAt: new Date().toISOString(), // TODO: This could be overridden by the provider. We should not set it. Ensure all providers set it
+        snapshottedEventCreatedAt: eventEnvelope.createdAt,
       }
       this.logger.debug('[EventStore#entityReducer]: Reducer result: ', newSnapshot)
       return newSnapshot

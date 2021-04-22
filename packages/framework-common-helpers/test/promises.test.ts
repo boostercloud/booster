@@ -1,5 +1,5 @@
-import { Promises, PromisesError } from '../../src/helpers/promises'
-import { expect } from '../expect'
+import { Promises, PromisesError } from '../src'
+import { expect } from './helpers/expect'
 
 describe('the `Promises` helpers', () => {
   describe('the `allSettledAndFulfilled` method', () => {
@@ -31,13 +31,13 @@ describe('the `Promises` helpers', () => {
       let successfulPromise2Finished = false
       const promises = [
         Promise.reject(rejectedReason),
-        new Promise((resolve) =>
+        new Promise<void>((resolve) =>
           setTimeout(() => {
             successfulPromise1Finished = true
             resolve()
           }, 100)
         ),
-        new Promise((resolve) =>
+        new Promise<void>((resolve) =>
           setTimeout(() => {
             successfulPromise2Finished = true
             resolve()

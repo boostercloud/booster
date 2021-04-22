@@ -1,0 +1,43 @@
+{
+  "name": "@boostercloud/framework-common-helpers",
+  "version": "0.14.6",
+  "description": "Contains Booster common helpers used by the core and provider packages",
+  "keywords": [
+    "framework-common-helpers"
+  ],
+  "author": "Booster Cloud",
+  "homepage": "https://booster.cloud",
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boostercloud/booster.git"
+  },
+  "scripts": {
+    "lint:check": "eslint --ext '.js,.ts' **/*.ts",
+    "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
+    "compile": "tsc -b tsconfig.json",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "test:helpers": "npm run test",
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
+    "prepack": "tsc -b tsconfig.json"
+  },
+  "bugs": {
+    "url": "https://github.com/boostercloud/booster/issues"
+  },
+  "dependencies": {
+    "@boostercloud/framework-types": "^0.14.6"
+  },
+  "devDependencies": {
+    "@types/uuid": "8.3.0",
+    "chai": "4.2.0",
+    "chai-as-promised": "7.1.1",
+    "sinon-chai": "3.5.0"
+  }
+}

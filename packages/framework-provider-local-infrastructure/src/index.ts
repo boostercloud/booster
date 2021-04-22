@@ -1,11 +1,10 @@
 import * as express from 'express'
 import { GraphQLService, UserRegistry } from '@boostercloud/framework-provider-local'
 import { AuthController } from './controllers/auth'
-import { BoosterConfig } from '@boostercloud/framework-types'
+import { BoosterConfig, UserApp } from '@boostercloud/framework-types'
 import * as path from 'path'
 import { requestFailed } from './http'
 import { GraphQLController } from './controllers/graphql'
-import { UserApp } from '@boostercloud/framework-types'
 
 /**
  * Default error handling middleware. Instead of performing a try/catch in all endpoints
