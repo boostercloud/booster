@@ -9,9 +9,10 @@ export class InvoiceReadModel {
   public constructor(
     public id: UUID,
     readonly totalPrice: number,
-    readonly createdAt: string,
-    readonly latestInvoice?: object,
-    readonly oldInvoice?: object
+    readonly oldestInvoiceDate?: string,
+    readonly latestInvoiceDate?: string,
+    readonly latestInvoicePrice?: number,
+    readonly oldInvoicePrice?: number
   ) {}
 
   @Projects(Invoice, 'id')
@@ -19,9 +20,10 @@ export class InvoiceReadModel {
     return new InvoiceReadModel(
       invoice.id,
       invoice.totalPrice,
-      invoice.createdAt,
-      invoice.latestInvoice,
-      invoice.oldInvoice
+      invoice.oldestInvoiceDate,
+      invoice.latestInvoiceDate,
+      invoice.latestInvoicePrice,
+      invoice.oldInvoicePrice
     )
   }
 }

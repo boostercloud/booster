@@ -8,26 +8,31 @@ import { InvoiceFinished } from '../events/invoice-finished'
   authorize: 'all',
 })
 export class AddPriceToInvoice {
-  public constructor(
-    readonly id: UUID,
-    readonly totalPrice: number,
-    readonly invoiceFinished: boolean,
-    readonly createdAt: string
-  ) {}
+  public constructor(readonly id: UUID, readonly totalPrice: number, readonly invoiceFinished: boolean) {}
 
   public static async handle(command: AddPriceToInvoice, register: Register): Promise<void> {
-    register.events(new InvoicePriceAdded(command.id, command.totalPrice, command.createdAt))
     if (command.invoiceFinished) {
-      // Look for the first snapshot (5th position) and reduce 3 events to generate a new snapshot
-      const previousSnapshotDate = new Date(command.createdAt)
-      // I don't have much invoices so that's not a valid entity to fetch
+      const currentSnapshotDate = new Date()
+      const previousSnapshotDate = new Date(
+        new Date(currentSnapshotDate).setSeconds(currentSnapshotDate.getSeconds() - 1)
+      )
       const newestSnapshot = await Booster.entity(Invoice, command.id) as Invoice
       const oldSnapshot = await Booster.entity(Invoice, command.id, previousSnapshotDate) as Invoice
       console.log('///// OLDEST SNAPSHOT /////')
       console.log(oldSnapshot)
       console.log('///// NEWEST SNAPSHOT /////')
       console.log(newestSnapshot)
-      register.events(new InvoiceFinished(command.id, newestSnapshot, oldSnapshot))
+      register.events(
+        new InvoiceFinished(
+          command.id,
+          newestSnapshot?.totalPrice,
+          oldSnapshot?.totalPrice,
+          currentSnapshotDate.toISOString(),
+          previousSnapshotDate.toISOString()
+        )
+      )
+    } else {
+      register.events(new InvoicePriceAdded(command.id, command.totalPrice))
     }
   }
 }

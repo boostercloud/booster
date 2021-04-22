@@ -3,7 +3,7 @@ import { UUID } from '@boostercloud/framework-types'
 
 @Event
 export class InvoicePriceAdded {
-  public constructor(readonly id: UUID, readonly totalPrice: number, readonly createdAt: string) {}
+  public constructor(readonly id: UUID, readonly totalPrice: number) {}
 
   public entityID(): UUID {
     return this.id

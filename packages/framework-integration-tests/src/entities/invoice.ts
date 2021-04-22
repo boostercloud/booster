@@ -8,15 +8,16 @@ export class Invoice {
   public constructor(
     public id: UUID,
     readonly totalPrice: number,
-    readonly createdAt: string,
-    readonly latestInvoice?: object,
-    readonly oldInvoice?: object
+    readonly latestInvoiceDate?: string,
+    readonly oldestInvoiceDate?: string,
+    readonly latestInvoicePrice?: number,
+    readonly oldInvoicePrice?: number
   ) {}
 
   @Reduces(InvoicePriceAdded)
   public static addPriceToInvoice(event: InvoicePriceAdded, currentInvoice?: Invoice): Invoice {
     const newTotalPrice = currentInvoice?.totalPrice ? currentInvoice.totalPrice + event.totalPrice : event.totalPrice
-    return new Invoice(event.id, newTotalPrice, event.createdAt)
+    return new Invoice(event.id, newTotalPrice)
   }
 
   @Reduces(InvoiceFinished)
@@ -24,9 +25,10 @@ export class Invoice {
     return new Invoice(
       event.id,
       currentInvoice?.totalPrice ?? 0,
-      currentInvoice?.createdAt ?? new Date(10000).toISOString(),
-      event.latestInvoice,
-      event.oldInvoice
+      event.latestInvoiceDate,
+      event.oldestInvoiceDate,
+      event.latestInvoicePrice,
+      event.oldInvoicePrice
     )
   }
 }

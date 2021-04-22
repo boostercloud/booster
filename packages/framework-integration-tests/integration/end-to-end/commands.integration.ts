@@ -4,6 +4,8 @@ import { graphQLClient } from '../providers/aws/utils'
 import { random } from 'faker'
 import { expect } from 'chai'
 import gql from 'graphql-tag'
+import { sleep, waitForIt } from '../helper/sleep'
+import { InvoiceReadModel } from '../../src/read-models/invoice-read-model'
 
 describe('Commands end-to-end tests', () => {
   let client: ApolloClient<NormalizedCacheObject>
@@ -35,23 +37,57 @@ describe('Commands end-to-end tests', () => {
       const id = '122333444455555'
       const totalPrice = 5
       for (let i = 1; i <= 11; i++) {
-        const createdAt = new Date(i).toISOString()
         await client.mutate({
           variables: {
             id: id,
             totalPrice: totalPrice,
             invoiceFinished: i === 11, // We get snapshots on the 11th one, when 2 snapshots have been generated already
-            createdAt: createdAt,
           },
           mutation: gql`
-            mutation AddPriceToInvoice($id: ID!, $totalPrice: Float, $invoiceFinished: Boolean, $createdAt: String) {
-              AddPriceToInvoice(
-                input: { id: $id, totalPrice: $totalPrice, invoiceFinished: $invoiceFinished, createdAt: $createdAt }
-              )
+            mutation AddPriceToInvoice($id: ID!, $totalPrice: Float, $invoiceFinished: Boolean) {
+              AddPriceToInvoice(input: { id: $id, totalPrice: $totalPrice, invoiceFinished: $invoiceFinished })
             }
           `,
         })
       }
+
+      // Sleep so the 11th mutation finishes
+      await sleep(2000)
+
+      const queryResult = await waitForIt(
+        () => {
+          return client.query({
+            variables: {
+              id: id,
+            },
+            query: gql`
+              query InvoiceReadModel($id: ID!) {
+                InvoiceReadModel(id: $id) {
+                  id
+                  totalPrice
+                  oldestInvoiceDate
+                  latestInvoiceDate
+                  latestInvoicePrice
+                  oldInvoicePrice
+                }
+              }
+            `,
+          })
+        },
+        (result) => result?.data?.InvoiceReadModel != null
+      )
+      console.log('///// RESULT /////')
+      console.log(queryResult.data.InvoiceReadModel)
+      const invoiceReadModel: InvoiceReadModel = queryResult.data.InvoiceReadModel
+      expect(invoiceReadModel).to.not.be.undefined
+      expect(invoiceReadModel.latestInvoicePrice).to.not.be.undefined
+      expect(invoiceReadModel.oldInvoicePrice).to.not.be.undefined
+      expect(invoiceReadModel.latestInvoiceDate).to.not.be.undefined
+      expect(invoiceReadModel.oldestInvoiceDate).to.not.be.undefined
+
+      expect(invoiceReadModel.totalPrice).to.be.equal(invoiceReadModel.latestInvoicePrice)
+      expect(invoiceReadModel.latestInvoicePrice).to.be.greaterThan(invoiceReadModel.oldInvoicePrice!)
+      expect(invoiceReadModel.latestInvoiceDate! > invoiceReadModel.oldestInvoiceDate!).to.be.true
     })
   })
 })
