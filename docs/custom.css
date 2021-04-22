@@ -48,6 +48,10 @@
     background: var(--noteBackground);
 }
 
+.alert.callout.attention {
+    background: var(--attentionBackground);
+}
+
 @media screen and (min-width: 1024px) {
     :root {
         --sidebar-width: 20rem !important;
