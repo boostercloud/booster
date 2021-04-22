@@ -282,8 +282,8 @@ the instructions. After some prompted questions, the CLI will ask you to select 
 ```shell
 ? What's the package name of your provider infrastructure library? (Use arrow keys)
 ❯ @boostercloud/framework-provider-aws (AWS) 
-  @boostercloud/framework-provider-azure (Azure) 
-  @boostercloud/framework-provider-kubernetes (Kubernetes) 
+  @boostercloud/framework-provider-azure (Azure) [Experimental]
+  @boostercloud/framework-provider-kubernetes (Kubernetes) [Experimental]
   Other 
 ```
 
