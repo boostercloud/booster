@@ -185,6 +185,9 @@ export AWS_PROFILE=other_profile
 
 This step is only necessary in the case that you want to use the Azure Provider.
 
+> [!NOTE]
+> Azure has experimental support and the team is currently improving them.
+
 > [!WARNING]
 >
 > Booster is free to use, but remember that the resources deployed to your cloud provider
@@ -217,6 +220,9 @@ Once you are logged in from the CLI, you can deploy applications with Booster.
 ### Kubernetes Provider Prerequisites
 
 This step is only necessary in the case that you want to use the Kubernetes provider.
+
+> [!NOTE]
+> Kubernetes has experimental support and the team is currently improving them.
 
 The main requirement is having a Kubernetes Cluster already configured. This provider has been succesfully tested in EKS (Amazon Elastic Kubernetes Service), AKS (Azure Kubernetes Service) and GKE (Google Kubernetes Engine). Since Kubernetes is a standard, this provider can also work in other Kubernetes clusters, including on-premises configurations.
 
@@ -282,8 +288,8 @@ the instructions. After some prompted questions, the CLI will ask you to select 
 ```shell
 ? What's the package name of your provider infrastructure library? (Use arrow keys)
 ❯ @boostercloud/framework-provider-aws (AWS) 
-  @boostercloud/framework-provider-azure (Azure) 
-  @boostercloud/framework-provider-kubernetes (Kubernetes) 
+  @boostercloud/framework-provider-azure (Azure) [Experimental]
+  @boostercloud/framework-provider-kubernetes (Kubernetes) [Experimental]
   Other 
 ```
 
