@@ -10,7 +10,6 @@ import { Cors } from '@aws-cdk/aws-apigateway/lib/cors'
 import { AttributeType, BillingMode, ProjectionType, Table } from '@aws-cdk/aws-dynamodb'
 import { connectionsStoreAttributes, subscriptionsStoreAttributes } from '@boostercloud/framework-provider-aws'
 import { DynamoEventSource } from '@aws-cdk/aws-lambda-event-sources'
-import { UserPool } from '@aws-cdk/aws-cognito'
 
 export interface GraphQLStackMembers {
   graphQLLambda: Function
@@ -24,8 +23,7 @@ export class GraphQLStack {
     private readonly config: BoosterConfig,
     private readonly stack: Stack,
     private readonly apis: APIs,
-    private readonly readModelTables: Array<Table>,
-    private readonly userPool?: UserPool
+    private readonly readModelTables: Array<Table>
   ) {}
 
   public build(): GraphQLStackMembers {
@@ -47,7 +45,7 @@ export class GraphQLStack {
 
   private buildLambda(name: string, handler: string, eventSources?: Array<IEventSource>): Function {
     const lambda = new Function(this.stack, name, {
-      ...params.lambda(this.config, this.stack, this.apis, this.userPool),
+      ...params.lambda(this.config, this.stack, this.apis),
       functionName: `${this.config.resourceNames.applicationStack}-${name}`,
       handler: handler,
       code: Code.fromAsset(this.config.userProjectRootPath),

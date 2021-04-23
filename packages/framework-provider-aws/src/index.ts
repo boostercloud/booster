@@ -12,7 +12,7 @@ import {
   deleteReadModel,
 } from './library/read-models-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
-import { DynamoDB, CognitoIdentityServiceProvider } from 'aws-sdk'
+import { DynamoDB } from 'aws-sdk'
 import { ProviderInfrastructure, ProviderLibrary, RocketDescriptor } from '@boostercloud/framework-types'
 import { requestFailed, requestSucceeded } from './library/api-gateway-io'
 import { searchReadModel } from './library/read-models-searcher-adapter'
@@ -23,7 +23,6 @@ import {
   fetchSubscriptions,
   subscribeToReadModel,
 } from './library/subscription-adapter'
-import { handleSignUpResult, rawSignUpDataToUserEnvelope, userEnvelopeFromAuthToken } from './library/auth-adapter'
 import {
   deleteConnectionData,
   fetchConnectionData,
@@ -38,7 +37,6 @@ const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient({
     timeout: 2000,
   },
 })
-const userPool = new CognitoIdentityServiceProvider()
 
 interface HasInfrastructure {
   Infrastructure: (rockets?: RocketDescriptor[]) => ProviderInfrastructure
@@ -84,12 +82,6 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
     graphQL: {
       rawToEnvelope: rawGraphQLRequestToEnvelope,
       handleResult: requestSucceeded,
-    },
-    // ProviderAuthLibrary
-    auth: {
-      rawToEnvelope: rawSignUpDataToUserEnvelope,
-      fromAuthToken: userEnvelopeFromAuthToken.bind(null, userPool),
-      handleSignUpResult: handleSignUpResult,
     },
     // ProviderAPIHandling
     api: {

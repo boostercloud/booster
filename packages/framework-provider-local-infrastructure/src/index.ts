@@ -1,6 +1,5 @@
 import * as express from 'express'
-import { GraphQLService, UserRegistry } from '@boostercloud/framework-provider-local'
-import { AuthController } from './controllers/auth'
+import { GraphQLService } from '@boostercloud/framework-provider-local'
 import { BoosterConfig, UserApp } from '@boostercloud/framework-types'
 import * as path from 'path'
 import { requestFailed } from './http'
@@ -36,9 +35,7 @@ export const Infrastructure = {
     const expressServer = express()
     const router = express.Router()
     const userProject: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
-    const userRegistry = new UserRegistry()
     const graphQLService = new GraphQLService(userProject)
-    router.use('/auth', new AuthController(port, userRegistry, userProject).router)
     router.use('/graphql', new GraphQLController(graphQLService).router)
     expressServer.use(express.json())
     expressServer.use(router)

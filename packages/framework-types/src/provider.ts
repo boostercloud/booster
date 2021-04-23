@@ -2,7 +2,6 @@ import {
   EventEnvelope,
   GraphQLRequestEnvelope,
   SubscriptionEnvelope,
-  UserEnvelope,
   ReadModelEnvelope,
   ConnectionDataEnvelope,
   GraphQLRequestEnvelopeError,
@@ -18,7 +17,6 @@ import { FilterFor } from './searcher'
 export interface ProviderLibrary {
   events: ProviderEventsLibrary
   readModels: ProviderReadModelsLibrary
-  auth: ProviderAuthLibrary
   graphQL: ProviderGraphQLLibrary
   api: ProviderAPIHandling
   connections: ProviderConnectionsLibrary
@@ -90,13 +88,6 @@ export interface ProviderConnectionsLibrary {
   fetchData(config: BoosterConfig, connectionID: string): Promise<ConnectionDataEnvelope | undefined>
   deleteData(config: BoosterConfig, connectionID: string): Promise<void>
   sendMessage(config: BoosterConfig, connectionID: string, data: unknown): Promise<void>
-}
-
-export interface ProviderAuthLibrary {
-  rawToEnvelope(rawMessage: unknown): UserEnvelope
-  fromAuthToken(token: string): Promise<UserEnvelope | undefined>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleSignUpResult(config: BoosterConfig, request: any, userEnvelope: UserEnvelope): any
 }
 
 export interface ProviderAPIHandling {

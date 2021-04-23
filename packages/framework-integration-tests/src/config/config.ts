@@ -1,6 +1,8 @@
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import * as AWS from '@boostercloud/framework-provider-aws'
+import * as fs from 'fs'
+import * as path from 'path'
 
 // TODO: After prunning `devDependencies` to deploy the project to lambda, we cannot import the local provider anymore. We should look for a better solution than this, maybe loading a different config file depending on the configured environment in BOOSTER_ENV
 if (process.env.BOOSTER_ENV === 'local') {
@@ -29,5 +31,10 @@ Booster.configure('production', (config: BoosterConfig): void => {
 
   config.appName = 'my-store-' + appNameSuffix
   config.provider = AWS.Provider()
-  config.assets = ['assets', 'assetFile.txt']
+  config.assets = ['assets']
+  config.tokenVerifier = {
+    issuer: 'booster',
+    // Read the content of the public RS256 cert, used to sign the JWT tokens
+    publicKey: fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8'),
+  }
 })

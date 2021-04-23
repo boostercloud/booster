@@ -6,7 +6,6 @@ import { ReadModelRegistry } from './services/read-model-registry'
 import * as EventsAdapter from './library/events-adapter'
 import * as ReadModelAdapter from './library/read-model-adapter'
 import * as GraphQLAdapter from './library/graphql-adapter'
-import * as AuthAdapter from './library/auth-adapter'
 import * as ApiAdapter from './library/api-adapter'
 import * as ScheduledAdapter from './library/scheduled-adapter'
 import * as ConnectionsAdapter from './library/connections-adapter'
@@ -46,12 +45,6 @@ export const Provider = (): ProviderLibrary => ({
   graphQL: {
     rawToEnvelope: GraphQLAdapter.rawToEnvelope,
     handleResult: GraphQLAdapter.handleResult,
-  },
-  // ProviderAuthLibrary
-  auth: {
-    rawToEnvelope: AuthAdapter.rawToEnvelope,
-    fromAuthToken: AuthAdapter.fromAuthToken,
-    handleSignUpResult: AuthAdapter.handleSignUpResult,
   },
   // ProviderAPIHandling
   api: {
