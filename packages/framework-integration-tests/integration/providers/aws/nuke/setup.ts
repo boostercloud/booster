@@ -8,8 +8,9 @@ import { sandboxPathFor } from '../../../helper/file-helper'
 
 before(async () => {
   await setEnv()
-  const sandboxPath = sandboxPathFor('deploy')
-  const sandboxedProject = createSandboxProject(sandboxPath)
+  const sandboxPath = sandboxPathFor('nuke')
+  const configuredAssets = ['assets', 'assetFile.txt']
+  const sandboxedProject = createSandboxProject(sandboxPath, configuredAssets)
 
   await overrideWithBoosterLocalDependencies(sandboxedProject)
 

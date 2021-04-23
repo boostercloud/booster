@@ -27,6 +27,28 @@ export async function overrideWithBoosterLocalDependencies(projectPath: string):
       packageJSON.dependencies[packageName] = `file:${path.join(dotBoosterAbsolutePath, packedDependencyFileName)}`
     }
   }
+
+  for (const packageName in packageJSON.devDependencies) {
+    if (/@boostercloud/.test(packageName)) {
+      const dependencyName = packageName.replace('@boostercloud/', '')
+
+      const dotBooster = '.booster'
+      if (!fs.existsSync(dotBooster)) {
+        fs.mkdirSync(dotBooster)
+      }
+
+      const execution = await exec(`npm pack ${path.join('..', '..', dependencyName)}`, { cwd: dotBooster })
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const packedDependencyFileName = execution.stdout
+        ?.trim()
+        ?.split('\n')
+        ?.pop()!
+      const dotBoosterAbsolutePath = path.resolve(dotBooster)
+      // Now override the packageJSON dependencies with the path to the packed dependency
+      packageJSON.devDependencies[packageName] = `file:${path.join(dotBoosterAbsolutePath, packedDependencyFileName)}`
+    }
+  }
+
   fs.writeFileSync(path.join(projectPath, 'package.json'), JSON.stringify(packageJSON, undefined, 2))
 }
 
