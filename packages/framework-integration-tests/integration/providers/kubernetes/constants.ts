@@ -11,5 +11,5 @@ export const boosterKubernetesServices = [
   'fileuploader',
   'redis-headless',
   'redis-master',
-  'redis-slave',
+  'redis-replica',
 ]
