@@ -25,20 +25,14 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
       },
       // ProviderReadModelsLibrary
       readModels: {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         rawToEnvelopes: undefined as any,
         fetch: undefined as any,
         search: undefined as any,
         store: undefined as any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete: undefined as any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         subscribe: undefined as any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         fetchSubscriptions: undefined as any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         deleteSubscription: undefined as any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         deleteAllSubscriptions: undefined as any,
       },
       // ProviderGraphQLLibrary
@@ -52,13 +46,9 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
         requestFailed,
       },
       connections: {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         storeData: undefined as any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         fetchData: undefined as any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         deleteData: undefined as any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         sendMessage: undefined as any,
       },
       // ScheduledCommandsLibrary
