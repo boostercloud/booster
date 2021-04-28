@@ -11,7 +11,7 @@ import { requestFailed, requestSucceeded } from './library/api-gateway-io'
 export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
   try {
     require('aws-sdk')
-    const { Provider } = require('./setup.ts')
+    const { Provider } = require('./setup')
     return Provider(rockets)
   } catch (e) {
     return {

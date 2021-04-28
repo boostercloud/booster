@@ -47,7 +47,7 @@ interface HasInfrastructure {
  * package is only used during the deploy.
  * Notice that this is done in a separate function to ease testing
  */
-function loadInfrastructurePackage(packageName: string): HasInfrastructure {
+export function loadInfrastructurePackage(packageName: string): HasInfrastructure {
   return require(packageName)
 }
 
