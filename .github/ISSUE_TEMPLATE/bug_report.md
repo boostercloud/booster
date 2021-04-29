@@ -21,6 +21,6 @@ A clear and concise description of what you expected to happen (or code).
 
 ### Environment
 
-- Booster version: [e.g. 0.8.2] <!--- You can check this with `boost version` -->
-- Node/npm version: [e.g. Node 8/npm 5]
+- Booster version: [e.g. 0.15.1] <!--- You can check this with `boost version` -->
+- Node/npm version: [e.g. Node 14/npm 7]
 - OS: [e.g. OSX 10.13.4, Windows 10]
