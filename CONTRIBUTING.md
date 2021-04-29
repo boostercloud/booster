@@ -232,13 +232,19 @@ To start contributing to the project you would need to set up the project in you
 
 - Add your contribution
 
-- Make sure everything works by executing the unit tests: `lerna run test`
+- Make sure everything works by [executing the unit tests](#running-unit-tests): `lerna run test --stream`
+
+- Make sure everything works by [running the integration tests](#running-integration-tests): `lerna run integration --stream`
 
 - Before making a PR you should run the `check-all-the-things` script:
   - `./scripts/check-all-the-things.sh` on Linux and MacOS
   - `.\scripts\check-all-the-things.ps1` on Windows
 
-**Important:** Node v12 is the minimum version required.
+> [!Warning]
+> Node v12 is the minimum version required.
+
+> [!Attention]
+> All tests must have passed before submitting a PR.
 
 ### Understanding the "lerna monorepo" approach and how dependencies are structured in the project
 
