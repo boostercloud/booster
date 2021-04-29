@@ -178,10 +178,7 @@ export class GraphQLQueryGenerator {
             graphqlType = GraphQLJSONObject
             break
         }
-        propFilters.includes = {
-          ...propFilters.includes,
-          type: graphqlType,
-        }
+        propFilters.includes = { type: graphqlType }
       })
 
       this.generatedFiltersByTypeName[filterName] = new GraphQLInputObjectType({
@@ -197,9 +194,9 @@ export class GraphQLQueryGenerator {
 
     if (prop.typeInfo.type === undefined) return GraphQLJSONObject
 
-    const primitiveType = this.typeInformer.getPrimitiveExtendedType(prop.typeInfo.type)
-    if (primitiveType === Array) return this.generateArrayFilterFor(prop)
     if (!this.generatedFiltersByTypeName[filterName]) {
+      const primitiveType = this.typeInformer.getPrimitiveExtendedType(prop.typeInfo.type)
+      if (primitiveType === Array) return this.generateArrayFilterFor(prop)
       const graphQLPropType = this.typeInformer.getGraphQLTypeFor(primitiveType)
       let fields: Thunk<GraphQLInputFieldConfigMap> = {}
 
