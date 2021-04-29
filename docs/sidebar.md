@@ -4,4 +4,5 @@
 - [Features](chapters/04_features.md)
 - [Going deeper with Booster](chapters/05_going-deeper.md)
 - [Testing Booster applications](chapters/06_testing-booster-applications.md)
+- [Frequently asked questions](chapters/07_frequently-asked-questions.md)
 - [Contributing guide](chapters/CONTRIBUTING.md)
