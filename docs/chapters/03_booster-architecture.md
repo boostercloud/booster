@@ -714,7 +714,7 @@ Booster GraphQL API also provides support for real-time updates using subscripti
 
 #### Filtering a read model
 
-The Booster GraphQL API provides support for filtering Read Models on queries, subscriptions and at code level.
+The Booster GraphQL API provides support for filtering Read Models on `queries` and `subscriptions`.
 
 Using the GraphQL API endpoint you can retrieve the schema of your application so you can see what are the filters for every Read Model and its properties. You can filter like this:
 
@@ -883,4 +883,4 @@ export class GetProductsCount {
 }
 ```
 
-> **Warning**: Notice that `ReadModel`s are eventually consistent objects that are calculated as all events in all entities that affect the read model are settled. You should not assume that a read model is a proper source of truth, so you shouldn't use this feature for data validations. If you need to query the most up-to-date current state, consider fetching your Entities, instead of ReadModels, with `Booster.fetchEntitySnapshot`
+> **Warning**: Notice that `ReadModel`s are eventually consistent objects that are calculated as all events in all entities that affect the read model are settled. You should not assume that a read model is a proper source of truth, so you shouldn't use this feature for data validations. If you need to query the most up-to-date current state, consider fetching your Entities, instead of ReadModels, with `Booster.entity`
