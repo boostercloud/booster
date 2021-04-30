@@ -7,7 +7,6 @@ import { generate } from '../../src/services/generator'
 import { templates } from '../../src/templates'
 import { restore, replace, fake } from 'sinon'
 import { expect } from '../expect'
-import { resourceNameToClassName } from '../../src/common/filenames'
 
 describe('generate service', (): void => {
   beforeEach(() => {
@@ -22,7 +21,7 @@ describe('generate service', (): void => {
   it('generates file for a command', async () => {
     type CommandInfo = HasName & HasFields
     const info: CommandInfo = {
-      name: 'new-command',
+      name: 'NewCommand',
       fields: [
         { name: 'name', type: 'string' },
         { name: 'description', type: 'string' },
@@ -36,7 +35,7 @@ describe('generate service', (): void => {
       template: templates.command,
       info: info,
     }
-    const rendered = Mustache.render(target.template, { ...target.info, name: resourceNameToClassName(target.name) })
+    const rendered = Mustache.render(target.template, { ...target.info })
 
     await generate(target)
 
@@ -47,7 +46,7 @@ describe('generate service', (): void => {
   it('generates file for an entity', async () => {
     type EntityInfo = HasName & HasFields & HasReaction
     const info: EntityInfo = {
-      name: 'new-entity',
+      name: 'NewEntity',
       fields: [
         { name: 'name', type: 'string' },
         { name: 'description', type: 'string' },
@@ -61,7 +60,7 @@ describe('generate service', (): void => {
       template: templates.entity,
       info: info,
     }
-    const rendered = Mustache.render(target.template, { ...target.info, name: resourceNameToClassName(target.name) })
+    const rendered = Mustache.render(target.template, { ...target.info })
 
     await generate(target)
 
@@ -72,7 +71,7 @@ describe('generate service', (): void => {
   it('generates file for an event handler', async () => {
     type EventHandlerInfo = HasName & HasEvent
     const info: EventHandlerInfo = {
-      name: 'new-event-handler',
+      name: 'NewEventHandler',
       event: 'product-purchased',
     }
 
@@ -83,7 +82,7 @@ describe('generate service', (): void => {
       template: templates.eventHandler,
       info: info,
     }
-    const rendered = Mustache.render(target.template, { ...target.info, name: resourceNameToClassName(target.name) })
+    const rendered = Mustache.render(target.template, { ...target.info })
 
     await generate(target)
 
@@ -94,7 +93,7 @@ describe('generate service', (): void => {
   it('generates file for an event', async () => {
     type EventInfo = HasName & HasFields
     const info: EventInfo = {
-      name: 'new-event',
+      name: 'NewEvent',
       fields: [
         { name: 'name', type: 'string' },
         { name: 'description', type: 'string' },
@@ -108,7 +107,7 @@ describe('generate service', (): void => {
       template: templates.event,
       info: info,
     }
-    const rendered = Mustache.render(target.template, { ...target.info, name: resourceNameToClassName(target.name) })
+    const rendered = Mustache.render(target.template, { ...target.info })
 
     await generate(target)
 
@@ -119,7 +118,7 @@ describe('generate service', (): void => {
   it('generates file for a read model', async () => {
     type ReadModelInfo = HasName & HasFields & HasProjections
     const info: ReadModelInfo = {
-      name: 'new-read-model',
+      name: 'NewReadModel',
       fields: [
         { name: 'name', type: 'string' },
         { name: 'description', type: 'string' },
@@ -134,7 +133,7 @@ describe('generate service', (): void => {
       template: templates.readModel,
       info: info,
     }
-    const rendered = Mustache.render(target.template, { ...target.info, name: resourceNameToClassName(target.name) })
+    const rendered = Mustache.render(target.template, { ...target.info })
 
     await generate(target)
 
@@ -145,7 +144,7 @@ describe('generate service', (): void => {
   it('generates file for a scheduled command', async () => {
     type ScheduledCommandInfo = HasName
     const info: ScheduledCommandInfo = {
-      name: 'new-scheduled-command',
+      name: 'NewScheduledCommand',
     }
 
     const target: Target<ScheduledCommandInfo> = {
@@ -155,7 +154,7 @@ describe('generate service', (): void => {
       template: templates.scheduledCommand,
       info: info,
     }
-    const rendered = Mustache.render(target.template, { ...target.info, name: resourceNameToClassName(target.name) })
+    const rendered = Mustache.render(target.template, { ...target.info })
 
     await generate(target)
 
@@ -166,7 +165,7 @@ describe('generate service', (): void => {
   it('generates file for a type', async () => {
     type TypeInfo = HasName & HasFields
     const info: TypeInfo = {
-      name: 'new-type',
+      name: 'NewType',
       fields: [
         { name: 'name', type: 'string' },
         { name: 'description', type: 'string' },
@@ -180,7 +179,7 @@ describe('generate service', (): void => {
       template: templates.type,
       info: info,
     }
-    const rendered = Mustache.render(target.template, { ...target.info, name: resourceNameToClassName(target.name) })
+    const rendered = Mustache.render(target.template, { ...target.info })
 
     await generate(target)
 

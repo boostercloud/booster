@@ -2,12 +2,13 @@ import * as path from 'path'
 import * as fs from 'fs-extra'
 import * as Mustache from 'mustache'
 import { Target, FileDir } from './generator/target'
-import { classNameToFileName, resourceNameToClassName } from '../common/filenames'
+import { classNameToFileName, checkResourceNameIsValid } from '../common/filenames'
 import { checkResourceExists } from './project-checker'
 
 export async function generate<TInfo>(target: Target<TInfo>): Promise<void> {
   await checkResourceExists(target.name, target.placementDir, target.extension)
-  const rendered = Mustache.render(target.template, { ...target.info, name: resourceNameToClassName(target.name) })
+  checkResourceNameIsValid(target.name)
+  const rendered = Mustache.render(target.template, { ...target.info })
   const renderPath = filePath<TInfo>(target)
   await fs.outputFile(renderPath, rendered)
 }
