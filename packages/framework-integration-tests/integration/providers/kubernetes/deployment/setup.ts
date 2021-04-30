@@ -14,9 +14,9 @@ before(async () => {
   console.log('overriding Booster dependencies...')
   await overrideWithBoosterLocalDependencies(sandboxPath)
 
-  // So the docker image can find the kubernetes runtime (inside node_modules). Only needed for integration tests.
-  await exec(`cp -r node_modules ${sandboxPath}`)
-
+  // This command is also ran during the deployment, but this provider takes dependencies from the root sandboxed directory.
+  // This is a bug that only happens on integration-tests, and this is a quick workaround to avoid editing the provider or the cli package.
+  await exec('npm install --production --no-bin-links', { cwd: sandboxPath })
   console.log(`starting kubernetes server in ${sandboxPath}...`)
   // start kubernetes
   await deploy(sandboxPath)
