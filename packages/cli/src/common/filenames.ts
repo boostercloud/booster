@@ -1,14 +1,10 @@
 import * as inflected from 'inflected'
-import { logger } from '../services/logger'
-import Brand from './brand'
 
 export function classNameToFileName(name: string): string {
   return inflected.dasherize(inflected.underscore(name))
 }
 
 export async function checkResourceNameIsValid(name: string): Promise<void> {
-  logger.info(Brand.mellancholize('Checking if resource has valid name...'))
-
   if (!hasValidResourceName(name))
     throw new Error(`'${name}' is not valid resource name. Please use PascalCase name with valid characters.`)
 }

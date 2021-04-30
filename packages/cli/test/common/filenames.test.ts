@@ -1,7 +1,6 @@
 import { checkResourceNameIsValid, classNameToFileName } from '../../src/common/filenames'
 import { expect } from '../expect'
-import { fake, replace, restore } from 'sinon'
-import { logger } from '../../src/services/logger'
+import { restore } from 'sinon'
 
 const rewire = require('rewire')
 const filenames = rewire('../../src/common/filenames')
@@ -14,15 +13,6 @@ describe('filenames', () => {
   })
 
   describe('checkResourceNameIsValid', () => {
-    beforeEach(() => {
-      replace(logger, 'info', fake.resolves({}))
-    })
-
-    it('should print info message', async () => {
-      await checkResourceNameIsValid('TestResource')
-      expect(logger.info).to.have.been.calledWithMatch('Checking if resource has valid name...')
-    })
-
     it('should do nothing if resource name is valid PascalCase', async () => {
       let exceptionThrown = false
 
