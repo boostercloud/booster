@@ -28,6 +28,7 @@ async function deployBoosterApp(logger: Logger, configuration: BoosterK8sConfigu
   logger.info('Checking your volume claim')
   await deployManager.ensureVolumeClaimExists()
   logger.info('Deploying all necessary services')
+  await deployManager.setServiceType()
   await Promises.allSettledAndFulfilled([
     deployManager.ensureUploadServiceExists(),
     deployManager.ensureBoosterServiceExists(),

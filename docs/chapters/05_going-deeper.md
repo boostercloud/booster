@@ -183,6 +183,16 @@ To configure Kubernetes as a provider you need to meet certain prerequisites:
 
 Now go to your `config.ts` file, import the kubernetes provider library and set up your app environment.
 
+### Working with minikube
+
+[Minikube](https://minikube.sigs.k8s.io/docs/) allows you to use a Kubeneter cluster on your local environment.
+
+Once you have it installed, you just have to make sure that you configure the namespace for the current context. By default, the namespace has the following format: `booster-<app_name>-<environment_name>`. For example, if our app name were “myApp” and the environment “kubernetes-dev”, the namespace config command would be like:
+
+`kubectl config set-context --current --namespace=booster-myApp-kubernetes-dev`
+
+Ready! We can now boost deploy -e kubernetes-dev to deploy our application locally.
+
 ```typescript
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterK8sConfiguration } from '@boostercloud/framework-provider-kubernetes-infrastructure'

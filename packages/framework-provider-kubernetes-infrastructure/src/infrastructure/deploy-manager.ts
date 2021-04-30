@@ -10,6 +10,7 @@ import { boosterAppPod } from './templates/booster-app-template'
 import { HelmManager } from './helm-manager'
 import { DaprManager } from './dapr-manager'
 import { scopeLogger } from '../helpers/logger'
+
 export class DeployManager {
   private clusterManager: K8sManagement
   private namespace: string
@@ -34,6 +35,7 @@ export class DeployManager {
       environment: configuration.environmentName,
       namespace: this.namespace,
       clusterVolume: boosterVolumeClaim.name,
+      serviceType: 'LoadBalancer',
     }
     this.logger = scopeLogger('DeployManager', logger)
   }
@@ -112,6 +114,16 @@ export class DeployManager {
       }
     }
   }
+
+  /**
+   * Set the type for services in case you are running the cluster locally or in a cloud provider
+   */
+  public async setServiceType(): Promise<void> {
+    const mainNode = await this.clusterManager.getMainNode()
+    if (mainNode?.name === 'minikube') {
+      this.templateValues.serviceType = 'NodePort'
+    }
+  }
   /**
    * verify that the upload service is running and in a negative case it tries to create it
    */
@@ -160,7 +172,10 @@ export class DeployManager {
     l.debug('Creating zip file')
     const codeZipFile = await createProjectZipFile(l)
     l.debug('Uploading file')
-    const fileUploadResponse = await uploadFile(l, fileUploadService?.ip, codeZipFile)
+    const fileUploadServiceAddress = fileUploadService?.port
+      ? `${fileUploadService?.ip}:${fileUploadService?.port}`
+      : fileUploadService?.ip
+    const fileUploadResponse = await uploadFile(l, fileUploadServiceAddress, codeZipFile)
     if (fileUploadResponse.statusCode !== 200) {
       l.debug('Cannot upload code, throwing')
       throw new Error('Unable to upload your code, please check the fileuploader pod for more information')
@@ -185,9 +200,9 @@ export class DeployManager {
     await this.clusterManager.waitForPodToBeReady(this.namespace, boosterAppPod.name)
     l.debug('Getting service ip')
     const service = await this.clusterManager.waitForServiceToBeReady(this.namespace, boosterService.name)
-    const ip = service?.ip
-    l.debug('Got ip', ip ?? 'UNDEFINED')
-    return ip ?? ''
+    const boosterServiceAddress = service?.port ? `${service?.ip}:${service.port}` : service?.ip
+    l.debug('Got booster service address', boosterServiceAddress ?? 'UNDEFINED')
+    return boosterServiceAddress ?? ''
   }
 
   /**

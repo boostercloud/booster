@@ -53,7 +53,8 @@ export class HelmManager {
     try {
       l.debug('Listing repos')
       const { stdout, stderr } = await this.exec('repo list')
-      if (stderr) {
+      // Only catch errors, not warnings
+      if (stderr && stderr.includes('Error')) {
         l.debug('Found stderr, repo not installed')
         return false
       }
