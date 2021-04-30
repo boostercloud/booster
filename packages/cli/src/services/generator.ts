@@ -7,7 +7,7 @@ import { checkResourceExists } from './project-checker'
 
 export async function generate<TInfo>(target: Target<TInfo>): Promise<void> {
   await checkResourceExists(target.name, target.placementDir, target.extension)
-  await checkResourceNameIsValid(target.name)
+  checkResourceNameIsValid(target.name)
   const rendered = Mustache.render(target.template, { ...target.info })
   const renderPath = filePath<TInfo>(target)
   await fs.outputFile(renderPath, rendered)

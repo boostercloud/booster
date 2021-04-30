@@ -1,6 +1,5 @@
 import { checkResourceNameIsValid, classNameToFileName } from '../../src/common/filenames'
 import { expect } from '../expect'
-import { restore } from 'sinon'
 
 const rewire = require('rewire')
 const filenames = rewire('../../src/common/filenames')
@@ -8,30 +7,30 @@ const formatResourceName = filenames.__get__('formatResourceName')
 const titleCaseString = filenames.__get__('titleCaseString')
 
 describe('filenames', () => {
-  afterEach(() => {
-    restore()
-  })
-
   describe('checkResourceNameIsValid', () => {
-    it('should do nothing if resource name is valid PascalCase', async () => {
+    it('should do nothing if resource name is valid PascalCase', () => {
       let exceptionThrown = false
 
-      await checkResourceNameIsValid('TestResource').then(() => {
+      try {
+        checkResourceNameIsValid('TestResource')
+      } catch (e) {
         exceptionThrown = false
-      })
+      }
 
       expect(exceptionThrown).to.be.equal(false)
     })
 
-    it('should throw error if resource name is not valid PascalCase ', async () => {
+    it('should throw error if resource name is not valid PascalCase ', () => {
       const resourceName = 'test resource'
       let exceptionThrown = false
       let exceptionMessage = ''
 
-      await checkResourceNameIsValid(resourceName).catch((e) => {
+      try {
+        checkResourceNameIsValid(resourceName)
+      } catch (e) {
         exceptionThrown = true
         exceptionMessage = e.message
-      })
+      }
 
       expect(exceptionThrown).to.be.equal(true)
       expect(exceptionMessage).to.be.equal(
