@@ -36,10 +36,10 @@
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "compile": "npx tsc -b tsconfig.json",
+    "compile": "tsc -b tsconfig.json",
     "deploy": "boost deploy",
-    "clean": "npx rimraf ./dist tsconfig.tsbuildinfo",
-    "test": "npx nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
   },
   "types": "lib/index.d.ts"
 }
