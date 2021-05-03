@@ -224,7 +224,7 @@ describe('Searcher adapter', () => {
         match({
           query:
             'SELECT * FROM c WHERE c["mainItem"].c["sku"] = @sku_0 ' +
-            'AND c["mainItem"].c["price"].c["cents"] >= @cents_0 AND c["cents"] < @cents_1',
+            'AND c["mainItem"].c["price"].c["cents"] >= @cents_0 AND c["mainItem"].c["price"].c["cents"] < @cents_1',
           parameters: [
             {
               name: '@sku_0',

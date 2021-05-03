@@ -45,14 +45,14 @@ Verify that it was installed properly by checking so from your terminal:
 
 ```shell
 $ node -v
-v13.12.0
+v14.2.0
 
 $ npm -v
-6.14.4
+7.0.0
 ```
 
-As soon as you have a Node.js version higher than `v12`, and an `npm` version higher than
-`6`, you are good to go. Just note that `npm` comes with node, you don't have to install
+As soon as you have a Node.js version higher than `v14`, and an `npm` version higher than
+`7`, you are good to go. Just note that `npm` comes with node, you don't have to install
 it apart.
 
 Alternatively, we recommend you to use a version manager for dealing with different Node.js

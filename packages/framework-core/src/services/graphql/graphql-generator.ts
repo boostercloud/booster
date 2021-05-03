@@ -78,7 +78,7 @@ export class GraphQLGenerator {
 
   public readModelResolverBuilder(
     readModelClass: AnyClass
-  ): GraphQLFieldResolver<any, GraphQLResolverContext, Record<string, ReadModelPropertyFilter>> {
+  ): GraphQLFieldResolver<any, GraphQLResolverContext, { filter: Record<string, ReadModelPropertyFilter> }> {
     return (parent, args, context, info) => {
       const readModelEnvelope = toReadModelRequestEnvelope(readModelClass.name, args, context)
       return this.readModelsReader.fetch(readModelEnvelope)
@@ -87,9 +87,9 @@ export class GraphQLGenerator {
 
   public readModelByIDResolverBuilder(
     readModelClass: AnyClass
-  ): GraphQLFieldResolver<unknown, GraphQLResolverContext, Record<string, ReadModelPropertyFilter>> {
+  ): GraphQLFieldResolver<unknown, GraphQLResolverContext, { id: string }> {
     return async (parent, args, context, info) => {
-      const filterArgs = { id: { eq: args.id } }
+      const filterArgs = { filter: { id: { eq: args.id } } }
       const result = await this.readModelResolverBuilder(readModelClass)(parent, filterArgs, context, info)
       return result[0]
     }
@@ -119,14 +119,14 @@ export class GraphQLGenerator {
     readModelClass: AnyClass
   ): GraphQLFieldResolver<any, GraphQLResolverContext, Record<string, ReadModelPropertyFilter>> {
     return async (parent, args, context, info) => {
-      const filterArgs = { id: { eq: args.id } }
+      const filterArgs = { filter: { id: { eq: args.id } } }
       return this.subscriptionResolverBuilder(readModelClass)(parent, filterArgs, context, info)
     }
   }
 
   public subscriptionResolverBuilder(
     readModelClass: AnyClass
-  ): GraphQLFieldResolver<any, GraphQLResolverContext, Record<string, ReadModelPropertyFilter>> {
+  ): GraphQLFieldResolver<any, GraphQLResolverContext, { filter: Record<string, ReadModelPropertyFilter> }> {
     return async (parent, args, context, info) => {
       if (!context.connectionID) {
         throw new Error('Missing "connectionID". It is required for subscriptions')
@@ -144,14 +144,14 @@ export class GraphQLGenerator {
 
 function toReadModelRequestEnvelope(
   readModelName: string,
-  args: Record<string, ReadModelPropertyFilter>,
+  args: { filter: Record<string, ReadModelPropertyFilter> },
   context: GraphQLResolverContext
 ): ReadModelRequestEnvelope {
   return {
     requestID: context.requestID,
     currentUser: context.user,
     typeName: readModelName,
-    filters: args,
+    filters: args.filter,
     version: 1, // TODO: How to pass the version through GraphQL?
   }
 }

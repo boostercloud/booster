@@ -51,8 +51,14 @@ function buildFilterExpression(filters: FilterFor<any>, usedPlaceholders: Array<
     .join(' AND ')
 }
 
-function buildOperation(propName: string, filter: Operation<any> = {}, usedPlaceholders: Array<string>): string {
+function buildOperation(
+  propName: string,
+  filter: Operation<any> = {},
+  usedPlaceholders: Array<string>,
+  nested?: string
+): string {
   const holder = placeholderBuilderFor(propName, usedPlaceholders)
+  propName = nested ? `${nested}.#${propName}` : propName
   return Object.entries(filter)
     .map(([operation, value], index) => {
       switch (operation) {
@@ -80,7 +86,7 @@ function buildOperation(propName: string, filter: Operation<any> = {}, usedPlace
           return `contains(#${propName}, ${holder(index)})`
         default:
           if (typeof value === 'object') {
-            return `#${propName}.${buildOperation(operation, value, usedPlaceholders)}`
+            return buildOperation(operation, value, usedPlaceholders, propName)
           }
           throw new InvalidParameterError(`Operator "${operation}" is not supported`)
       }

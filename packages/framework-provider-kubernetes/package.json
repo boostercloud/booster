@@ -43,6 +43,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@types/redis": "^2.8.28"
+    "@types/redis": "^2.8.28",
+    "@types/node-fetch": "^2.5.10"
   }
 }

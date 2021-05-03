@@ -44,36 +44,40 @@ function buildFilterExpression(filters: FilterFor<any>, usedPlaceholders: Array<
     .join(' AND ')
 }
 
-function buildOperation(propName: string, filter: Operation<any> = {}, usedPlaceholders: Array<string>): string {
+function buildOperation(
+  propName: string,
+  filter: Operation<any> = {},
+  usedPlaceholders: Array<string>,
+  nested?: string
+): string {
   const holder = placeholderBuilderFor(propName, usedPlaceholders)
+  propName = nested ? `${nested}.c["${propName}"]` : `c["${propName}"]`
   return Object.entries(filter)
     .map(([operation, value], index) => {
       switch (operation) {
         case 'eq':
-          return `c["${propName}"] = ${holder(index)}`
+          return `${propName} = ${holder(index)}`
         case 'ne':
-          return `c["${propName}"] <> ${holder(index)}`
+          return `${propName} <> ${holder(index)}`
         case 'lt':
-          return `c["${propName}"] < ${holder(index)}`
+          return `${propName} < ${holder(index)}`
         case 'gt':
-          return `c["${propName}"] > ${holder(index)}`
+          return `${propName} > ${holder(index)}`
         case 'gte':
-          return `c["${propName}"] >= ${holder(index)}`
+          return `${propName} >= ${holder(index)}`
         case 'lte':
-          return `c["${propName}"] <= ${holder(index)}`
+          return `${propName} <= ${holder(index)}`
         case 'in':
-          return `c["${propName}"] IN (${value
-            .map((value: any, subIndex: number) => holder(index, subIndex))
-            .join(',')})`
+          return `${propName} IN (${value.map((value: any, subIndex: number) => holder(index, subIndex)).join(',')})`
         case 'contains':
-          return `CONTAINS(c["${propName}"], ${holder(index)})`
+          return `CONTAINS(${propName}, ${holder(index)})`
         case 'beginsWith':
-          return `STARTSWITH(c["${propName}"], ${holder(index)})`
+          return `STARTSWITH(${propName}, ${holder(index)})`
         case 'includes':
-          return `CONTAINS(c["${propName}"], ${holder(index)})`
+          return `CONTAINS(${propName}, ${holder(index)})`
         default:
           if (typeof value === 'object') {
-            return `c["${propName}"].${buildOperation(operation, value, usedPlaceholders)}`
+            return buildOperation(operation, value, usedPlaceholders, propName)
           }
           throw new InvalidParameterError(`Operator "${operation}" is not supported`)
       }

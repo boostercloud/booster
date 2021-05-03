@@ -2,7 +2,15 @@ import { replace, restore, SinonStub, stub } from 'sinon'
 import { BoosterCommandDispatcher } from '../../../src/booster-command-dispatcher'
 import { BoosterReadModelsReader } from '../../../src/booster-read-models-reader'
 import { GraphQLGenerator } from '../../../src/services/graphql/graphql-generator'
-import { BoosterConfig, ReadModelInterface, Logger, Level } from '@boostercloud/framework-types/dist'
+import {
+  BoosterConfig,
+  ReadModelInterface,
+  Logger,
+  Level,
+  EventFilterByEntity,
+  EventSearchRequest,
+  EventSearchResponse,
+} from '@boostercloud/framework-types'
 import { expect } from '../../expect'
 import { GraphQLQueryGenerator } from '../../../src/services/graphql/graphql-query-generator'
 import { GraphQLMutationGenerator } from '../../../src/services/graphql/graphql-mutation-generator'
@@ -10,7 +18,7 @@ import { GraphQLSubscriptionGenerator } from '../../../src/services/graphql/grap
 import { random, internet, lorem } from 'faker'
 import { buildLogger } from '../../../src/booster-logger'
 import { BoosterEventsReader } from '../../../src/booster-events-reader'
-import { EventFilterByEntity, EventSearchRequest, EventSearchResponse } from '@boostercloud/framework-types'
+
 import { GraphQLResolverContext } from '../../../src/services/graphql/common'
 
 describe('GraphQL generator', () => {
@@ -172,7 +180,7 @@ describe('GraphQL generator', () => {
             username: mockEmail,
             role: mockRole,
           },
-          filters: {},
+          filters: undefined,
           requestID: mockRequestId,
           typeName: mockType.name,
           version: 1,
@@ -378,7 +386,7 @@ describe('GraphQL generator', () => {
             username: mockEmail,
             role: mockRole,
           },
-          filters: {},
+          filters: undefined,
           requestID: mockRequestId,
           typeName: mockType.name,
           version: 1,

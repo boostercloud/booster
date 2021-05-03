@@ -25,6 +25,17 @@ export class Searcher<TObject> {
     private readonly searcherFunction: SearcherFunction<TObject>
   ) {}
 
+  /**
+   * Adds a filter for the search. For example: If you want to search for people whose age is greater than 30
+   * and their height is between 1.80m and 2.00m, you would do:
+   * ```
+   * searcher.filter({
+   *  age: { gt: 30 },
+   *  height: { gte: 1.8, lte: 2 }
+   * }).search()
+   * ```
+   * @param filters An object with the property filters
+   */
   public filter(filters: FilterFor<TObject>): this {
     this.filters = filters
     return this

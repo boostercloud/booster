@@ -142,7 +142,8 @@ describe('Read models searcher adapter', () => {
     it('Executes query using nested filters', async () => {
       const expectedInput = {
         ...expectedParams,
-        FilterExpression: '#mainItem.#sku = :sku_0 AND #mainItem.#price.#cents >= :cents_0 AND #cents < :cents_1',
+        FilterExpression:
+          '#mainItem.#sku = :sku_0 AND #mainItem.#price.#cents >= :cents_0 AND #mainItem.#price.#cents < :cents_1',
         ExpressionAttributeNames: {
           '#mainItem': 'mainItem',
           '#sku': 'sku',

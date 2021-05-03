@@ -1,6 +1,5 @@
 import { UUID } from '@boostercloud/framework-types'
 
-export interface CartItem {
-  productId: UUID
-  quantity: number
+export class CartItem {
+  public constructor(public productId: UUID, public quantity: number) {}
 }

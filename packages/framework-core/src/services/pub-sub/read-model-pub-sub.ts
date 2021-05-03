@@ -37,22 +37,22 @@ function filterReadModel(readModel: Record<string, any>, filters?: Record<string
 function filterByOperation(filter: ReadModelPropertyFilter, readModelPropValue: any): boolean {
   for (const [operation, value] of Object.entries(filter as Operation<any>)) {
     switch (operation) {
-      case '=':
+      case 'eq':
         if (readModelPropValue !== value) return false
         break
-      case '!=':
+      case 'ne':
         if (readModelPropValue === value) return false
         break
-      case '<':
+      case 'lt':
         if (readModelPropValue >= value) return false
         break
-      case '>':
+      case 'gt':
         if (readModelPropValue <= value) return false
         break
-      case '>=':
+      case 'gte':
         if (readModelPropValue < value) return false
         break
-      case '<=':
+      case 'lte':
         if (readModelPropValue > value) return false
         break
       case 'in':
@@ -61,12 +61,15 @@ function filterByOperation(filter: ReadModelPropertyFilter, readModelPropValue: 
       case 'contains':
         if (!contains(readModelPropValue, value)) return false
         break
-      case 'not-contains':
-        if (contains(readModelPropValue, value)) return false
-        break
-      case 'begins-with':
+      case 'beginsWith':
         if (!beginWith(readModelPropValue, value as string)) return false
         break
+      case 'includes':
+        return includes(readModelPropValue, value)
+      default:
+        if (typeof value === 'object') {
+          return filterByOperation(value, readModelPropValue[operation])
+        }
     }
   }
   return true
@@ -84,4 +87,10 @@ function beginWith(readModelPropValue: any, element: string): boolean {
     return readModelPropValue.startsWith(element)
   }
   return false
+}
+
+function includes(readModelPropValue: any, element: any): boolean {
+  if (!Array.isArray(readModelPropValue)) return false
+  if (readModelPropValue.includes(element)) return true
+  return readModelPropValue.some((prop: any) => Object.keys(prop).some((key) => prop[key] === element[key]))
 }

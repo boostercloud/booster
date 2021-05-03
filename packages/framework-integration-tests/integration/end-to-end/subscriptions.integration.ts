@@ -3,14 +3,14 @@ import {
   countSubscriptionsItems,
   DisconnectableApolloClient,
   graphQLClientWithSubscriptions,
-
-} from '../utils'
+} from '../providers/aws/utils'
 import { random } from 'faker'
 import gql from 'graphql-tag'
 import { expect } from 'chai'
 import * as chai from 'chai'
 import { Observable } from 'apollo-client/util/Observable'
-import { waitForIt } from '../../../helper/sleep'
+import { waitForIt } from '../helper/sleep'
+import { FilterFor } from '@boostercloud/framework-types'
 
 chai.use(require('chai-as-promised'))
 
@@ -18,6 +18,7 @@ describe('subscriptions', () => {
   describe('the "unsubscribe" operation', () => {
     let client: DisconnectableApolloClient
     before(async () => {
+      // TODO: make tests cloud agnostic
       client = await graphQLClientWithSubscriptions()
     })
     after(() => {
@@ -115,6 +116,80 @@ describe('subscriptions', () => {
       await expect(Promise.all([promisify(observableOne), promisify(observableTwo)])).to.eventually.be.fulfilled
     })
   })
+
+  describe('with filters', () => {
+    let client: DisconnectableApolloClient
+    before(async () => {
+      client = await graphQLClientWithSubscriptions()
+    })
+    after(() => {
+      client.disconnect()
+    })
+
+    it('get a carts with a specific ID', async () => {
+      const cartID = random.uuid()
+
+      const originalSubscriptionsCount = await countSubscriptionsItems()
+      // Let's create two subscriptions to the same read model
+      const observable = cartFilteredSubscription(client, { id: { eq: cartID } })
+      // Call the subscribe function to send the subscription to server
+      observable.subscribe(() => {})
+      // Wait for for the subscriptions to arrive
+      await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount + 1)
+      // Check we receive data when the read model is modified
+      await cartMutation(client, cartID)
+      const result = await promisify(observable)
+      const cart = result.data.CartReadModels
+      expect(cart.id).to.equal(cartID)
+    })
+
+    it('get the carts with an specific product id', async () => {
+      const cartID = random.uuid()
+      const productId = random.uuid()
+
+      const originalSubscriptionsCount = await countSubscriptionsItems()
+      // Let's create two subscriptions to the same read model
+      const observable = cartFilteredSubscription(client, {
+        cartItems: { includes: { productId: productId, quantity: 2 } },
+      })
+      // Call the subscribe function to send the subscription to server
+      observable.subscribe(() => {})
+      // Wait for for the subscriptions to arrive
+      await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount + 1)
+      // Check we receive data when the read model is modified
+      await cartMutation(client, cartID, productId)
+      const result = await promisify(observable)
+      const cart = result.data.CartReadModels
+      expect(cart.id).to.equal(cartID)
+
+      const isWellFiltered = cart.cartItems.some((cartItem: { productId: string }) => cartItem.productId === productId)
+      expect(isWellFiltered).to.be.true
+    })
+
+    it('get the cart filtering by an array of strings', async () => {
+      const cartID = random.uuid()
+      const productId = random.uuid()
+
+      const originalSubscriptionsCount = await countSubscriptionsItems()
+      // Let's create two subscriptions to the same read model
+      const observable = cartFilteredSubscription(client, {
+        cartItemsIds: { includes: productId },
+      })
+      // Call the subscribe function to send the subscription to server
+      observable.subscribe(() => {})
+      // Wait for for the subscriptions to arrive
+      await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount + 1)
+      // Check we receive data when the read model is modified
+      await cartMutation(client, cartID, productId)
+      const result = await promisify(observable)
+      const cart = result.data.CartReadModels
+
+      expect(cart.id).to.equal(cartID)
+
+      const isWellFiltered = cart.cartItemsIds.some((cartItemId: string) => cartItemId === productId)
+      expect(isWellFiltered).to.be.true
+    })
+  })
 })
 
 function cartSubscription(client: DisconnectableApolloClient, cartID: string): Observable<any> {
@@ -131,6 +206,21 @@ function cartSubscription(client: DisconnectableApolloClient, cartID: string): O
   })
 }
 
+function cartFilteredSubscription(client: DisconnectableApolloClient, filter: FilterFor<any>): Observable<any> {
+  return client.subscribe({
+    variables: { filter },
+    query: gql`
+      subscription CartReadModels($filter: CartReadModelSubscriptionFilter) {
+        CartReadModels(filter: $filter) {
+          id
+          cartItems
+          cartItemsIds
+        }
+      }
+    `,
+  })
+}
+
 function promisify(observable: Observable<any>): Promise<any> {
   return new Promise((resolve, reject) => {
     observable.subscribe({
@@ -140,11 +230,15 @@ function promisify(observable: Observable<any>): Promise<any> {
   })
 }
 
-async function cartMutation(client: DisconnectableApolloClient, cartID: string): Promise<void> {
+async function cartMutation(
+  client: DisconnectableApolloClient,
+  cartID: string,
+  productId: string = random.uuid()
+): Promise<void> {
   await client.mutate({
     variables: {
       cartId: cartID,
-      productId: random.uuid(),
+      productId: productId,
     },
     mutation: gql`
       mutation ChangeCartItem($cartId: ID!, $productId: ID!) {
