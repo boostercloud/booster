@@ -1,6 +1,7 @@
 import { expect } from '../../../helper/expect'
 import * as Kubernetes from '@kubernetes/client-node'
 import { boosterKubernetesServices, kubernetesNamespace } from '../constants'
+import { waitForIt } from '../../aws/utils'
 
 describe('Kubernetes provider', () => {
   const kubernetesConfig = new Kubernetes.KubeConfig()
@@ -9,7 +10,7 @@ describe('Kubernetes provider', () => {
 
   it('deploys the Booster application with accessible nodePort for fileuploader and booster services', async () => {
     const services = await k8sClient.listNamespacedService(kubernetesNamespace)
-
+    const pods = await k8sClient.listNamespacedPod(kubernetesNamespace)
     expect(services.body).not.to.be.undefined
 
     const serviceNames = services.body.items.map((item: Kubernetes.V1Service) => {
@@ -24,6 +25,19 @@ describe('Kubernetes provider', () => {
       }
 
       return item?.metadata?.name
+    })
+
+    pods.body.items.map(async (pod: Kubernetes.V1Pod) => {
+      await waitForIt(
+        async () => {
+          return Promise.resolve('Keep trying')
+        },
+        () => {
+          return pod?.status?.phase === 'Running'
+        }
+      )
+
+      expect(pod?.status?.phase).to.be.equal('Running')
     })
 
     expect(serviceNames).to.include.members(boosterKubernetesServices)
