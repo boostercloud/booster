@@ -225,7 +225,10 @@ describe('Cart end-to-end tests', () => {
                     sku
                     displayName
                     description
-                    price
+                    price {
+                      cents
+                      currency
+                    }
                     availability
                     deleted
                   }
@@ -246,6 +249,7 @@ describe('Cart end-to-end tests', () => {
           displayName: mockDisplayName,
           description: mockDescription,
           price: {
+            __typename: 'Money',
             cents: mockPriceInCents,
             currency: mockCurrency,
           },
@@ -291,7 +295,10 @@ describe('Cart end-to-end tests', () => {
                     sku
                     displayName
                     description
-                    price
+                    price {
+                      cents
+                      currency
+                    }
                     availability
                     deleted
                   }
@@ -393,7 +400,11 @@ describe('Cart end-to-end tests', () => {
                   CartReadModel(id: $cartId) {
                     id
                     cartItems
-                    payment
+                    payment {
+                      confirmationToken
+                      id
+                      cartId
+                    }
                   }
                 }
               `,
@@ -413,6 +424,7 @@ describe('Cart end-to-end tests', () => {
             },
           ],
           payment: {
+            __typename: 'Payment',
             confirmationToken: mockConfirmationToken,
             id: mockPaymentId,
             cartId: mockCartId,
