@@ -8,3 +8,7 @@ export async function deploy(projectPath: string, environmentName = 'kubernetes'
   // Production dependencies are installed by the deploy command
   await runCommand(projectPath, `${cliBinaryPath} deploy -e ${environmentName}`)
 }
+
+export async function nuke(projectPath: string, environmentName = 'kubernetes'): Promise<void> {
+  await runCommand(projectPath, `${cliBinaryPath} nuke -e ${environmentName} --force`)
+}

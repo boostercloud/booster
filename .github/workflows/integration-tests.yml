@@ -116,7 +116,7 @@ jobs:
       - run: npx lerna run compile
       - run: npx lerna run integration/local --stream
 
-  kubernetes-deploy-integration-tests:
+  kubernetes-integration-tests:
     name: Kubernetes deployment integration tests
     runs-on: ubuntu-latest
     env:
