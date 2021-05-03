@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-aws",
-  "version": "0.15.1",
+  "version": "0.16.0",
   "description": "Handle Booster's integration with AWS",
   "keywords": [
     "framework-provider-aws"
@@ -20,8 +20,8 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@boostercloud/framework-common-helpers": "^0.15.1",
-    "@boostercloud/framework-types": "^0.15.1"
+    "@boostercloud/framework-common-helpers": "^0.16.0",
+    "@boostercloud/framework-types": "^0.16.0"
   },
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
