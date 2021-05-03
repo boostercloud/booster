@@ -38,7 +38,7 @@ export default class Entity extends BaseCommand {
 
   public async run(): Promise<void> {
     const { args, flags } = this.parse(Entity)
-    
+
     try {
       const fields = flags.fields || []
       const events = flags.reduces || []

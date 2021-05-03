@@ -24,7 +24,7 @@ export default class Type extends BaseCommand {
 
   public async run(): Promise<void> {
     const { args, flags } = this.parse(Type)
-    
+
     try {
       const fields = flags.fields || []
       if (!args.typeName) throw "You haven't provided a type name, but it is required, run with --help for usage"

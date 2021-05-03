@@ -21,7 +21,6 @@ describe('Build', () => {
 
   context('Valid build', () => {
     it('should build the project', async () => {
-      
       const expectedOutputRegex = new RegExp(
         ['boost build', 'Checking project structure', 'Building project', 'Build complete'].join('(.|\n)*')
       )
@@ -29,12 +28,12 @@ describe('Build', () => {
       const { stdout } = await exec(`${cliPath} build`, { cwd: buildSandboxDir })
 
       expect(stdout).to.match(expectedOutputRegex)
-      expect(fileExists(path.join(buildSandboxDir,'dist','index.js'))).to.be.true
-      expect(fileExists(path.join(buildSandboxDir,'dist','index.d.ts'))).to.be.true
-      expect(fileExists(path.join(buildSandboxDir,'dist','roles.js'))).to.be.true
-      expect(fileExists(path.join(buildSandboxDir,'dist','roles.d.ts'))).to.be.true
-      expect(fileExists(path.join(buildSandboxDir,'dist','config','config.js'))).to.be.true
-      expect(fileExists(path.join(buildSandboxDir,'dist','config','config.d.ts'))).to.be.true
+      expect(fileExists(path.join(buildSandboxDir, 'dist', 'index.js'))).to.be.true
+      expect(fileExists(path.join(buildSandboxDir, 'dist', 'index.d.ts'))).to.be.true
+      expect(fileExists(path.join(buildSandboxDir, 'dist', 'roles.js'))).to.be.true
+      expect(fileExists(path.join(buildSandboxDir, 'dist', 'roles.d.ts'))).to.be.true
+      expect(fileExists(path.join(buildSandboxDir, 'dist', 'config', 'config.js'))).to.be.true
+      expect(fileExists(path.join(buildSandboxDir, 'dist', 'config', 'config.d.ts'))).to.be.true
     })
   })
 })

@@ -6,7 +6,9 @@ import { ScheduledCommandInterface, ScheduleInterface } from '@boostercloud/fram
  * @param attributes
  * @constructor
  */
-export function ScheduledCommand(attributes: ScheduleInterface): (scheduledCommandClass: ScheduledCommandInterface) => void {
+export function ScheduledCommand(
+  attributes: ScheduleInterface
+): (scheduledCommandClass: ScheduledCommandInterface) => void {
   return (commandClass) => {
     Booster.configureCurrentEnv((config): void => {
       if (config.scheduledCommandHandlers[commandClass.name]) {

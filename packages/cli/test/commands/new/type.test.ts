@@ -44,7 +44,7 @@ describe('new', (): void => {
     beforeEach(() => {
       stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
       replace(fs, 'outputFile', fake.resolves({}))
-      replace(ProjectChecker,'checkCurrentDirBoosterVersion', fake.resolves({}))
+      replace(ProjectChecker, 'checkCurrentDirBoosterVersion', fake.resolves({}))
     })
 
     afterEach(() => {
@@ -101,9 +101,7 @@ describe('new', (): void => {
         replace(console, 'error', fake.resolves({}))
         await new Type([], {} as IConfig).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(typesRoot)
-        expect(console.error).to.have.been.calledWithMatch(
-          /You haven't provided a type name/
-        )
+        expect(console.error).to.have.been.calledWithMatch(/You haven't provided a type name/)
       })
 
       it('with empty fields', async () => {
@@ -129,9 +127,7 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain(
-          'Error parsing field title'
-        )
+        expect(exceptionMessage).to.contain('Error parsing field title')
       })
 
       it('with no field type after :', async () => {
@@ -139,7 +135,7 @@ describe('new', (): void => {
         let exceptionMessage = ''
         try {
           await new Type([typeName, '--fields', 'title:'], {} as IConfig).run()
-        } catch(e) {
+        } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -153,7 +149,7 @@ describe('new', (): void => {
         let exceptionMessage = ''
         try {
           await new Type([typeName, '--fields', 'title:string', 'title:string', 'quantity:number'], {} as IConfig).run()
-        } catch(e) {
+        } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
         }

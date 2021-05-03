@@ -3,7 +3,7 @@
     "packages/*"
   ],
   "command": {
-    "add": {
+        "add": {
       "exact": true
     },
     "bootstrap": {

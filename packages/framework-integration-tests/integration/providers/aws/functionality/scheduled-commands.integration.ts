@@ -1,4 +1,4 @@
-import { graphQLClient} from '../utils'
+import { graphQLClient } from '../utils'
 import gql from 'graphql-tag'
 import { expect } from 'chai'
 import { waitForIt } from '../../../helper/sleep'

@@ -60,14 +60,14 @@ describe('new', (): void => {
         imports: imports,
         name: name,
         fields: fields,
-        events: events
+        events: events,
       })
     }
 
     beforeEach(() => {
       stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
       replace(fs, 'outputFile', fake.resolves({}))
-      replace(ProjectChecker,'checkCurrentDirBoosterVersion', fake.resolves({}))
+      replace(ProjectChecker, 'checkCurrentDirBoosterVersion', fake.resolves({}))
     })
 
     afterEach(() => {
@@ -82,43 +82,68 @@ describe('new', (): void => {
     describe('Created correctly', () => {
       it('with no fields and no reduces', async () => {
         await new Entity([entityName], {} as IConfig).run()
-        const renderedEntity = renderEntity(defaultEntityImports,entityName,[],[])
+        const renderedEntity = renderEntity(defaultEntityImports, entityName, [], [])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
 
       it('creates Entity with a string field', async () => {
         await new Entity([entityName, '--fields', 'title:string'], {} as IConfig).run()
-        const renderedEntity = renderEntity(defaultEntityImports,entityName,[{ name: 'title', type: 'string' }],[])
+        const renderedEntity = renderEntity(defaultEntityImports, entityName, [{ name: 'title', type: 'string' }], [])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
 
       it('creates Entity with a string field reducing PostCreated', async () => {
         await new Entity([entityName, '--fields', 'title:string', '--reduces', 'PostCreated'], {} as IConfig).run()
-        const renderedEntity = renderEntity(reducingEntityImports,entityName,[{ name: 'title', type: 'string' }],[{ eventName: 'PostCreated' }])
+        const renderedEntity = renderEntity(
+          reducingEntityImports,
+          entityName,
+          [{ name: 'title', type: 'string' }],
+          [{ eventName: 'PostCreated' }]
+        )
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
 
       it('creates Entity with a number field', async () => {
         await new Entity([entityName, '--fields', 'quantity:number'], {} as IConfig).run()
-        const renderedEntity = renderEntity(defaultEntityImports,entityName,[{ name: 'quantity', type: 'number' }],[])
+        const renderedEntity = renderEntity(
+          defaultEntityImports,
+          entityName,
+          [{ name: 'quantity', type: 'number' }],
+          []
+        )
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
 
       it('creates Entity with a number field reducing PostCreated', async () => {
         await new Entity([entityName, '--fields', 'quantity:number', '--reduces', 'PostCreated'], {} as IConfig).run()
-        const renderedEntity = renderEntity(reducingEntityImports,entityName,[{ name: 'quantity', type: 'number' }],[{ eventName: 'PostCreated' }])
+        const renderedEntity = renderEntity(
+          reducingEntityImports,
+          entityName,
+          [{ name: 'quantity', type: 'number' }],
+          [{ eventName: 'PostCreated' }]
+        )
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
 
       it('creates Entity with UUID field', async () => {
         await new Entity([entityName, '--fields', 'identifier:UUID'], {} as IConfig).run()
-        const renderedEntity = renderEntity(defaultEntityImports,entityName,[{ name: 'identifier', type: 'UUID' }],[])
+        const renderedEntity = renderEntity(
+          defaultEntityImports,
+          entityName,
+          [{ name: 'identifier', type: 'UUID' }],
+          []
+        )
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
 
       it('creates Entity with UUID field reducing PostCreated', async () => {
         await new Entity([entityName, '--fields', 'identifier:UUID', '--reduces', 'PostCreated'], {} as IConfig).run()
-        const renderedEntity = renderEntity(reducingEntityImports,entityName,[{ name: 'identifier', type: 'UUID' }],[{ eventName: 'PostCreated' }])
+        const renderedEntity = renderEntity(
+          reducingEntityImports,
+          entityName,
+          [{ name: 'identifier', type: 'UUID' }],
+          [{ eventName: 'PostCreated' }]
+        )
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
 
@@ -132,7 +157,7 @@ describe('new', (): void => {
           { name: 'quantity', type: 'number' },
           { name: 'identifier', type: 'UUID' },
         ]
-        const renderedEntity = renderEntity(defaultEntityImports,entityName,fields,[])
+        const renderedEntity = renderEntity(defaultEntityImports, entityName, fields, [])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
 
@@ -146,7 +171,7 @@ describe('new', (): void => {
           { name: 'quantity', type: 'number' },
           { name: 'identifier', type: 'UUID' },
         ]
-        const renderedEntity = renderEntity(reducingEntityImports,entityName,fields,[{ eventName: 'PostCreated' }])
+        const renderedEntity = renderEntity(reducingEntityImports, entityName, fields, [{ eventName: 'PostCreated' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
 
@@ -169,7 +194,10 @@ describe('new', (): void => {
           { name: 'quantity', type: 'number' },
           { name: 'identifier', type: 'UUID' },
         ]
-        const renderedEntity = renderEntity(reducingTwoEntityImports,entityName,fields,[{ eventName: 'PostCreated' }, { eventName: 'CommentCreated' }])
+        const renderedEntity = renderEntity(reducingTwoEntityImports, entityName, fields, [
+          { eventName: 'PostCreated' },
+          { eventName: 'CommentCreated' },
+        ])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
     })
@@ -179,9 +207,7 @@ describe('new', (): void => {
         replace(console, 'error', fake.resolves({}))
         await new Entity([], {} as IConfig).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(entitysRoot)
-        expect(console.error).to.have.been.calledWithMatch(
-          /You haven't provided an entity name/
-        )
+        expect(console.error).to.have.been.calledWithMatch(/You haven't provided an entity name/)
       })
 
       it('with empty fields', async () => {
@@ -220,9 +246,7 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain(
-          'Error parsing field --reduces'
-        )
+        expect(exceptionMessage).to.contain('Error parsing field --reduces')
       })
 
       it('with field with no type', async () => {
@@ -235,9 +259,7 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain(
-          'Error parsing field title'
-        )
+        expect(exceptionMessage).to.contain('Error parsing field title')
       })
 
       it('with no field type after :', async () => {
@@ -245,7 +267,7 @@ describe('new', (): void => {
         let exceptionMessage = ''
         try {
           await new Entity([entityName, '--fields', 'title:'], {} as IConfig).run()
-        } catch(e) {
+        } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -262,7 +284,7 @@ describe('new', (): void => {
             [entityName, '--fields', 'title:string', 'title:string', 'quantity:number'],
             {} as IConfig
           ).run()
-        } catch(e) {
+        } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -271,6 +293,5 @@ describe('new', (): void => {
         expect(fs.outputFile).to.have.not.been.calledWithMatch(entityPath)
       })
     })
-
   })
 })

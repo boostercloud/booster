@@ -1,12 +1,4 @@
-import {
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  rmdirSync,
-  unlinkSync,
-  writeFileSync,
-} from 'fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmdirSync, unlinkSync, writeFileSync } from 'fs'
 
 export const loadFixture = (fixturePath: string, replacements?: Array<Array<string>>): string => {
   const template = readFileContent(`integration/fixtures/${fixturePath}`)

@@ -17,6 +17,7 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "scripts": {
+    "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "tsc -b tsconfig.json",

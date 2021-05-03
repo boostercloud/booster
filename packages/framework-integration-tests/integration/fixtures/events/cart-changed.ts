@@ -3,8 +3,7 @@ import { UUID } from '@boostercloud/framework-types'
 
 @Event
 export class CartChanged {
-  public constructor(
-  ) {}
+  public constructor() {}
 
   public entityID(): UUID {
     return /* the associated entity ID */

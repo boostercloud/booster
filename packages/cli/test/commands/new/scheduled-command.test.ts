@@ -26,7 +26,7 @@ describe('new', (): void => {
     beforeEach(() => {
       stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
       replace(fs, 'outputFile', fake.resolves({}))
-      replace(ProjectChecker,'checkCurrentDirBoosterVersion', fake.resolves({}))
+      replace(ProjectChecker, 'checkCurrentDirBoosterVersion', fake.resolves({}))
     })
 
     afterEach(() => {
@@ -54,9 +54,7 @@ describe('new', (): void => {
         replace(console, 'error', fake.resolves({}))
         await new ScheduledCommand([], {} as IConfig).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(scheduledCommandRoot)
-        expect(console.error).to.have.been.calledWithMatch(
-          /You haven't provided a scheduled command name/
-        )
+        expect(console.error).to.have.been.calledWithMatch(/You haven't provided a scheduled command name/)
       })
 
       it('with two scheduled command names', async () => {

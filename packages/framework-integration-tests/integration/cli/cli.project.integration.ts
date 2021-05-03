@@ -208,7 +208,6 @@ describe('Project', () => {
     const cartDemoMochaRcContent = fileContents('.mocharc.yml')
     expect(cartDemoMochaRcContent).to.equal(expectedCartDemoMochaRc)
 
-
     const defaults = flags?.includes('--default')
     const expectedCartDemoPackageJson = loadFixture('cart-demo/package.json', [
       ['project_name_placeholder', projectName],

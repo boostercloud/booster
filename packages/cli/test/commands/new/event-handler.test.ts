@@ -24,13 +24,13 @@ describe('new', (): void => {
       {
         packagePath: '@boostercloud/framework-types',
         commaSeparatedComponents: 'Register',
-      }
+      },
     ]
 
     beforeEach(() => {
       stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
-      replace(fs,'outputFile', fake.resolves({}))
-      replace(ProjectChecker,'checkCurrentDirBoosterVersion', fake.resolves({}))
+      replace(fs, 'outputFile', fake.resolves({}))
+      replace(ProjectChecker, 'checkCurrentDirBoosterVersion', fake.resolves({}))
     })
 
     afterEach(() => {
@@ -42,28 +42,28 @@ describe('new', (): void => {
       expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
     })
 
-    describe('Created correctly', () => { 
+    describe('Created correctly', () => {
       it('creates Event with a event', async () => {
         await new EventHandler([eventHandlerName, '--event', 'CommentPosted'], {} as IConfig).run()
         const renderedEventHandler = Mustache.render(templates.eventHandler, {
           imports: defaultEventHandlerImports,
           name: eventHandlerName,
-          event: 'CommentPosted'
+          event: 'CommentPosted',
         })
-        expect(fs.outputFile).to.have.been.calledWithMatch(eventHandlerPath,renderedEventHandler)
+        expect(fs.outputFile).to.have.been.calledWithMatch(eventHandlerPath, renderedEventHandler)
       })
     })
 
-    describe('displays an error', () => { 
+    describe('displays an error', () => {
       it('with no event', async () => {
-        replace(console,'error', fake.resolves({}))
+        replace(console, 'error', fake.resolves({}))
         await new EventHandler([eventHandlerName], {} as IConfig).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(eventHandlerPath)
         expect(console.error).to.have.been.calledWithMatch(/You haven't provided an event/)
       })
 
       it('with empty EventHandler name', async () => {
-        replace(console,'error', fake.resolves({}))
+        replace(console, 'error', fake.resolves({}))
         await new EventHandler([], {} as IConfig).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(eventHandlersRoot)
         expect(console.error).to.have.been.calledWithMatch(/You haven't provided an event handler name/)
@@ -74,7 +74,7 @@ describe('new', (): void => {
         let exceptionMessage = ''
         try {
           await new EventHandler([eventHandlerName, '--event'], {} as IConfig).run()
-        } catch(e) {
+        } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -87,8 +87,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new EventHandler([eventHandlerName, '--event', 'CommentPosted','ArticlePosted'], {} as IConfig).run()
-        } catch(e) {
+          await new EventHandler([eventHandlerName, '--event', 'CommentPosted', 'ArticlePosted'], {} as IConfig).run()
+        } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -97,7 +97,5 @@ describe('new', (): void => {
         expect(fs.outputFile).to.have.not.been.calledWithMatch(eventHandlerPath)
       })
     })
-
   })
-
 })

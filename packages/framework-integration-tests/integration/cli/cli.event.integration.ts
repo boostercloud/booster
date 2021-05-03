@@ -6,7 +6,7 @@ import {
   removeFiles,
   removeFolders,
   sandboxPathFor,
-  writeFileContent
+  writeFileContent,
 } from '../helper/file-helper'
 import { exec } from 'child-process-promise'
 // Imported from another package to avoid duplication

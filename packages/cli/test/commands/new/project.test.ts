@@ -53,7 +53,7 @@ describe('new', (): void => {
       } as ProjectInitializerConfig
 
       const renderPackageJson = (config: ProjectInitializerConfig): string => {
-        return Mustache.render(packageJson.template, config) 
+        return Mustache.render(packageJson.template, config)
       }
 
       beforeEach(() => {
@@ -105,8 +105,8 @@ describe('new', (): void => {
             defaultProjectInitializerConfig as ProjectInitializerConfig
           )
 
-          const expectedPackageJson = renderPackageJson(defaultProjectInitializerConfig) 
-          expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,expectedPackageJson)
+          const expectedPackageJson = renderPackageJson(defaultProjectInitializerConfig)
+          expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`, expectedPackageJson)
           expect(ProjectInitializer.installDependencies).to.have.been.called
         })
 
@@ -119,126 +119,126 @@ describe('new', (): void => {
           expect(ProjectInitializer.initializeGit).to.have.not.been.called
           expectFilesAndDirectoriesCreated(projectName)
           const expectedPackageJson = renderPackageJson(defaultProjectInitializerConfig)
-          expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,expectedPackageJson)
+          expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`, expectedPackageJson)
         })
 
-        describe('define homepage', () => { 
+        describe('define homepage', () => {
           it('with --homepage', async () => {
             const config = { ...defaultProjectInitializerConfig, homepage: 'booster.cloud' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'--homepage',"'booster.cloud'"], {} as IConfig).run()
+            await new Project.default([projectName, '--homepage', "'booster.cloud'"], {} as IConfig).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`, renderPackageJson(config))
           })
 
           it('with -H', async () => {
             const config = { ...defaultProjectInitializerConfig, homepage: 'booster.cloud' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'-H',"'booster.cloud'"], {} as IConfig).run()
+            await new Project.default([projectName, '-H', "'booster.cloud'"], {} as IConfig).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`, renderPackageJson(config))
           })
         })
 
-        describe('define author', () => { 
+        describe('define author', () => {
           it('with --author', async () => {
             const config = { ...defaultProjectInitializerConfig, author: 'John Doe' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'--author',"'John Doe'"], {} as IConfig).run()
+            await new Project.default([projectName, '--author', "'John Doe'"], {} as IConfig).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`, renderPackageJson(config))
           })
 
           it('with -a', async () => {
             const config = { ...defaultProjectInitializerConfig, author: 'John Doe' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'-a',"'John Doe'"], {} as IConfig).run()
+            await new Project.default([projectName, '-a', "'John Doe'"], {} as IConfig).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`, renderPackageJson(config))
           })
         })
 
-        describe('define description', () => { 
+        describe('define description', () => {
           it('with --description', async () => {
             const config = { ...defaultProjectInitializerConfig, description: 'a short description' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'--description',"'a short description'"], {} as IConfig).run()
+            await new Project.default([projectName, '--description', "'a short description'"], {} as IConfig).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`, renderPackageJson(config))
           })
 
           it('with -d', async () => {
             const config = { ...defaultProjectInitializerConfig, description: 'a short description' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'-d',"'a short description'"], {} as IConfig).run()
+            await new Project.default([projectName, '-d', "'a short description'"], {} as IConfig).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`, renderPackageJson(config))
           })
         })
 
-        describe('define license', () => { 
+        describe('define license', () => {
           it('with --license', async () => {
             const config = { ...defaultProjectInitializerConfig, license: 'GPL' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'--license','GPL'], {} as IConfig).run()
+            await new Project.default([projectName, '--license', 'GPL'], {} as IConfig).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`, renderPackageJson(config))
           })
 
           it('with -l', async () => {
             const config = { ...defaultProjectInitializerConfig, license: 'GPL' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'-l','GPL'], {} as IConfig).run()
+            await new Project.default([projectName, '-l', 'GPL'], {} as IConfig).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`, renderPackageJson(config))
           })
         })
 
-        describe('define provider', () => { 
+        describe('define provider', () => {
           it('with --providerPackageName', async () => {
             replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
 
-            await new Project.default([projectName,'--providerPackageName',defaultProvider], {} as IConfig).run()
+            await new Project.default([projectName, '--providerPackageName', defaultProvider], {} as IConfig).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
@@ -249,7 +249,7 @@ describe('new', (): void => {
           it('with -p', async () => {
             replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
 
-            await new Project.default([projectName,'-p',defaultProvider], {} as IConfig).run()
+            await new Project.default([projectName, '-p', defaultProvider], {} as IConfig).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
@@ -258,106 +258,128 @@ describe('new', (): void => {
           })
         })
 
-        describe('define repository', () => { 
+        describe('define repository', () => {
           it('with --repository', async () => {
             const config = { ...defaultProjectInitializerConfig, repository: defaultRepository }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'--repository',defaultRepository], {} as IConfig).run()
+            await new Project.default([projectName, '--repository', defaultRepository], {} as IConfig).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`, renderPackageJson(config))
           })
 
           it('with -r', async () => {
             const config = { ...defaultProjectInitializerConfig, repository: defaultRepository }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'-r',defaultRepository], {} as IConfig).run()
+            await new Project.default([projectName, '-r', defaultRepository], {} as IConfig).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`, renderPackageJson(config))
           })
         })
 
-        describe('define version', () => { 
+        describe('define version', () => {
           it('with --version', async () => {
             const config = { ...defaultProjectInitializerConfig, version: '1.0.0' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'--version','1.0.0'], {} as IConfig).run()
+            await new Project.default([projectName, '--version', '1.0.0'], {} as IConfig).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`, renderPackageJson(config))
           })
 
           it('with -v', async () => {
             const config = { ...defaultProjectInitializerConfig, version: '1.0.0' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'-v','1.0.0'], {} as IConfig).run()
+            await new Project.default([projectName, '-v', '1.0.0'], {} as IConfig).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`, renderPackageJson(config))
           })
         })
 
-        describe('define multiple flags', () => { 
-            it('with all options (long flags)', async () => {
-              await new Project.default([projectName,
-                '--version','1.0.0',
-                '--author',"'John Doe'",
-                '--description',"'a new description'",
-                '--homepage','booster.cloud',
-                '--repository','github.com/boostercloud/booster.git',
-                '--license','GPL',
-                '--providerPackageName',defaultProvider,
+        describe('define multiple flags', () => {
+          it('with all options (long flags)', async () => {
+            await new Project.default(
+              [
+                projectName,
+                '--version',
+                '1.0.0',
+                '--author',
+                "'John Doe'",
+                '--description',
+                "'a new description'",
+                '--homepage',
+                'booster.cloud',
+                '--repository',
+                'github.com/boostercloud/booster.git',
+                '--license',
+                'GPL',
+                '--providerPackageName',
+                defaultProvider,
                 '--skipInstall',
-                '--skipGit'
-              ], {} as IConfig).run()
-  
-              expect(ProjectInitializer.initializeGit).to.have.not.been.called
-              expect(ProjectInitializer.installDependencies).to.have.not.been.called
-              expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
-              expectFilesAndDirectoriesCreated(projectName)
-            })
+                '--skipGit',
+              ],
+              {} as IConfig
+            ).run()
 
-            it('with all options (short flags)', async () => {
-                await new Project.default([projectName,
-                  '-v','1.0.0',
-                  '-a',"'John Doe'",
-                  '-d',"'a new description'",
-                  '-H','booster.cloud',
-                  '-r','github.com/boostercloud/booster.git',
-                  '-l','GPL',
-                  '-p',defaultProvider,
-                  '--skipInstall',
-                  '--skipGit'
-                ], {} as IConfig).run()
-    
-                expect(ProjectInitializer.initializeGit).to.have.not.been.called
-                expect(ProjectInitializer.installDependencies).to.have.not.been.called
-                expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
-                expectFilesAndDirectoriesCreated(projectName)
-            })
+            expect(ProjectInitializer.initializeGit).to.have.not.been.called
+            expect(ProjectInitializer.installDependencies).to.have.not.been.called
+            expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
+            expectFilesAndDirectoriesCreated(projectName)
+          })
+
+          it('with all options (short flags)', async () => {
+            await new Project.default(
+              [
+                projectName,
+                '-v',
+                '1.0.0',
+                '-a',
+                "'John Doe'",
+                '-d',
+                "'a new description'",
+                '-H',
+                'booster.cloud',
+                '-r',
+                'github.com/boostercloud/booster.git',
+                '-l',
+                'GPL',
+                '-p',
+                defaultProvider,
+                '--skipInstall',
+                '--skipGit',
+              ],
+              {} as IConfig
+            ).run()
+
+            expect(ProjectInitializer.initializeGit).to.have.not.been.called
+            expect(ProjectInitializer.installDependencies).to.have.not.been.called
+            expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
+            expectFilesAndDirectoriesCreated(projectName)
+          })
         })
       })
 
       describe('displays an error', () => {
         it('with empty project name', async () => {
-          replace(console,'error', fake.resolves({}))
+          replace(console, 'error', fake.resolves({}))
           await new Project.default([], {} as IConfig).run()
           expect(fs.mkdirs).to.have.not.been.calledWithMatch(`${projectName}/src`)
           expect(console.error).to.have.been.calledWithMatch(/You haven't provided a project name/)
@@ -365,18 +387,18 @@ describe('new', (): void => {
         })
 
         it('with nonexisting option', async () => {
-            let exceptionThrown = false
-            let exceptionMessage = ''
-            try {
-              await new Project.default([projectName,'--nonexistingoption'], {} as IConfig).run()
-            } catch(e) {
-              exceptionThrown = true
-              exceptionMessage = e.message
-            }
-            expect(exceptionThrown).to.be.equal(true)
-            expect(exceptionMessage).to.contain('Unexpected argument: --nonexistingoption')
-            expect(oraLogger.info).to.have.not.been.calledWithMatch('Project generated!')
-            expect(fs.mkdirs).to.have.not.been.calledWithMatch(`${projectName}/src`)
+          let exceptionThrown = false
+          let exceptionMessage = ''
+          try {
+            await new Project.default([projectName, '--nonexistingoption'], {} as IConfig).run()
+          } catch (e) {
+            exceptionThrown = true
+            exceptionMessage = e.message
+          }
+          expect(exceptionThrown).to.be.equal(true)
+          expect(exceptionMessage).to.contain('Unexpected argument: --nonexistingoption')
+          expect(oraLogger.info).to.have.not.been.calledWithMatch('Project generated!')
+          expect(fs.mkdirs).to.have.not.been.calledWithMatch(`${projectName}/src`)
         })
 
         describe('define homepage badly', () => {
@@ -386,8 +408,8 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'--homepage'], {} as IConfig).run()
-            } catch(e) {
+              await new Project.default([projectName, '--homepage'], {} as IConfig).run()
+            } catch (e) {
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -401,8 +423,8 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'-H'], {} as IConfig).run()
-            } catch(e) {
+              await new Project.default([projectName, '-H'], {} as IConfig).run()
+            } catch (e) {
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -418,8 +440,8 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'--author'], {} as IConfig).run()
-            } catch(e) {
+              await new Project.default([projectName, '--author'], {} as IConfig).run()
+            } catch (e) {
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -433,8 +455,8 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'-a'], {} as IConfig).run()
-            } catch(e) {
+              await new Project.default([projectName, '-a'], {} as IConfig).run()
+            } catch (e) {
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -450,8 +472,8 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'--description'], {} as IConfig).run()
-            } catch(e) {
+              await new Project.default([projectName, '--description'], {} as IConfig).run()
+            } catch (e) {
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -465,8 +487,8 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'-d'], {} as IConfig).run()
-            } catch(e) {
+              await new Project.default([projectName, '-d'], {} as IConfig).run()
+            } catch (e) {
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -482,8 +504,8 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'--license'], {} as IConfig).run()
-            } catch(e) {
+              await new Project.default([projectName, '--license'], {} as IConfig).run()
+            } catch (e) {
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -497,8 +519,8 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'-l'], {} as IConfig).run()
-            } catch(e) {
+              await new Project.default([projectName, '-l'], {} as IConfig).run()
+            } catch (e) {
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -514,8 +536,8 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'--providerPackageName'], {} as IConfig).run()
-            } catch(e) {
+              await new Project.default([projectName, '--providerPackageName'], {} as IConfig).run()
+            } catch (e) {
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -529,8 +551,8 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'-p'], {} as IConfig).run()
-            } catch(e) {
+              await new Project.default([projectName, '-p'], {} as IConfig).run()
+            } catch (e) {
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -539,15 +561,15 @@ describe('new', (): void => {
           })
         })
 
-        describe('define repository badly', () => { 
+        describe('define repository badly', () => {
           it('with --repository and no repository name', async () => {
             replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
 
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'--repository'], {} as IConfig).run()
-            } catch(e) {
+              await new Project.default([projectName, '--repository'], {} as IConfig).run()
+            } catch (e) {
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -561,8 +583,8 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'-r'], {} as IConfig).run()
-            } catch(e) {
+              await new Project.default([projectName, '-r'], {} as IConfig).run()
+            } catch (e) {
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -571,15 +593,15 @@ describe('new', (): void => {
           })
         })
 
-        describe('define version badly', () => { 
+        describe('define version badly', () => {
           it('with --version and no version number', async () => {
             replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
 
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'--version'], {} as IConfig).run()
-            } catch(e) {
+              await new Project.default([projectName, '--version'], {} as IConfig).run()
+            } catch (e) {
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -593,8 +615,8 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'-v'], {} as IConfig).run()
-            } catch(e) {
+              await new Project.default([projectName, '-v'], {} as IConfig).run()
+            } catch (e) {
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -612,8 +634,11 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'--providerPackageName','nonexistingProvider'], {} as IConfig).run()
-            } catch(e) {
+              await new Project.default(
+                [projectName, '--providerPackageName', 'nonexistingProvider'],
+                {} as IConfig
+              ).run()
+            } catch (e) {
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -623,24 +648,22 @@ describe('new', (): void => {
         })
 
         describe('define repository badly', () => {
-            xit('with --repository and invalid URL', async () => {
-              replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
-    
-              let exceptionThrown = false
-              let exceptionMessage = ''
-              try {
-                await new Project.default([projectName,'--repository','invalidUrl'], {} as IConfig).run()
-              } catch(e) {
-                exceptionThrown = true
-                exceptionMessage = e.message
-              }
-              expect(exceptionThrown).to.be.equal(true)
-              expect(exceptionMessage).to.contain('--repository expects a url')
-            })
-          })
-      })
+          xit('with --repository and invalid URL', async () => {
+            replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
 
-      
+            let exceptionThrown = false
+            let exceptionMessage = ''
+            try {
+              await new Project.default([projectName, '--repository', 'invalidUrl'], {} as IConfig).run()
+            } catch (e) {
+              exceptionThrown = true
+              exceptionMessage = e.message
+            }
+            expect(exceptionThrown).to.be.equal(true)
+            expect(exceptionMessage).to.contain('--repository expects a url')
+          })
+        })
+      })
     })
   })
 })

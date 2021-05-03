@@ -17,7 +17,7 @@ export const parseFields = async (fields: Array<string>): Promise<HasFields> => 
   }
   return { fields: parsedFields }
 }
-  
+
 function parseField(rawField: string): Promise<Field> {
   const splitInput = rawField.split(':')
   if (splitInput.length != 2 || splitInput[0].length === 0 || splitInput[1].length === 0) {

@@ -30,7 +30,7 @@ export default class Event extends BaseCommand {
 
   public async run(): Promise<void> {
     const { args, flags } = this.parse(Event)
-    
+
     try {
       const fields = flags.fields || []
       if (!args.eventName) throw "You haven't provided an event name, but it is required, run with --help for usage"

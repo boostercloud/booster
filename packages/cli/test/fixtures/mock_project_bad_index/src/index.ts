@@ -7,5 +7,3 @@ export {
   boosterRequestAuthorizer,
   boosterNotifySubscribers,
 } from '@boostercloud/framework-core'
-
-

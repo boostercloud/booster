@@ -21,11 +21,10 @@ describe('Clean', () => {
 
   context('Valid clean', () => {
     it('should clean the project after build', async () => {
-    
       await exec(`${cliPath} build`, { cwd: cleanSandboxDir })
-      
-      expect(fileExists(path.join(cleanSandboxDir,'dist'))).to.be.true
-      
+
+      expect(fileExists(path.join(cleanSandboxDir, 'dist'))).to.be.true
+
       const expectedCleanOutputRegex = new RegExp(
         ['boost clean', 'Checking project structure', 'Cleaning project', 'Clean complete'].join('(.|\n)*')
       )
@@ -33,7 +32,7 @@ describe('Clean', () => {
       const { stdout } = await exec(`${cliPath} clean`, { cwd: cleanSandboxDir })
 
       expect(stdout).to.match(expectedCleanOutputRegex)
-      expect(fileExists(path.join(cleanSandboxDir,'dist'))).to.be.false
+      expect(fileExists(path.join(cleanSandboxDir, 'dist'))).to.be.false
     })
   })
 })
