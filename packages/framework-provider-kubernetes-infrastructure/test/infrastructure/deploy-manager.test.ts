@@ -150,7 +150,8 @@ describe('User interaction during the deploy:', async () => {
   })
 
   it('allows verifying that the upload code works', async () => {
-    stub(k8sManager, 'waitForServiceToBeReady').resolves()
+    stub(k8sManager, 'waitForServiceToBeReady').resolves({ ip: 'http://ip_mock.com' })
+    replace(utils, 'waitForIt', fake.resolves(200))
     replace(utils, 'uploadFile', fake.resolves({ statusCode: 200 }))
     replace(utils, 'createProjectZipFile', fake.resolves('path'))
     await expect(deployManager.uploadUserCode()).to.eventually.be.fulfilled
