@@ -6,6 +6,7 @@ import { stub, restore, replace, fake } from 'sinon'
 import { BoosterConfig, Logger } from '@boostercloud/framework-types'
 import { stateStore } from '../../src/infrastructure/templates/statestore'
 import { internet } from 'faker'
+import { CoreV1Api, KubeConfig, KubernetesObjectApi } from '@kubernetes/client-node'
 const fs = require('fs')
 
 describe('Users Dapr interaction inside the cluster', () => {
@@ -14,6 +15,9 @@ describe('Users Dapr interaction inside the cluster', () => {
     error: fake(),
     debug: fake(),
   }
+
+  replace(KubeConfig.prototype, 'makeApiClient', fake.returns(new CoreV1Api()))
+  replace(KubernetesObjectApi, 'makeApiClient', fake.returns(new KubernetesObjectApi()))
   const k8sManager = new K8sManagement(fakeLogger)
   const configuration = new BoosterConfig('test')
   const helmManager = new HelmManager(fakeLogger)
