@@ -245,4 +245,42 @@ describe('GraphQLTypeInformer', () => {
       })
     })
   })
+
+  describe('getOriginalAncestor', () => {
+    class CustomClass {}
+
+    class ExtendedClass extends CustomClass {}
+
+    it('should return CustomClass', () => {
+      expect(sut.getOriginalAncestor(CustomClass)).to.equal(CustomClass)
+    })
+
+    it('should return CustomClass from ExtendedClass', () => {
+      expect(sut.getOriginalAncestor(ExtendedClass)).to.equal(CustomClass)
+    })
+
+    it('should return String', () => {
+      class StringCustom extends String {}
+      expect(sut.getOriginalAncestor(StringCustom)).to.equal(String)
+    })
+
+    it('should return Number', () => {
+      class NumberExtended extends Number {}
+      expect(sut.getOriginalAncestor(NumberExtended)).to.equal(Number)
+    })
+
+    it('should return Array', () => {
+      class ArrayOfA extends Array<CustomClass> {}
+      class IndirectArrayOfA extends ArrayOfA {}
+
+      expect(sut.getOriginalAncestor(Array)).to.equal(Array)
+      expect(sut.getOriginalAncestor(ArrayOfA)).to.equal(Array)
+      expect(sut.getOriginalAncestor(IndirectArrayOfA)).to.equal(Array)
+    })
+
+    it('should return Set', () => {
+      class SetOfB extends Set<ExtendedClass> {}
+      expect(sut.getOriginalAncestor(SetOfB)).to.equal(Set)
+    })
+  })
 })
