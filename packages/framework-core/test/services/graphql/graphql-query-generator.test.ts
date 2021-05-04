@@ -151,7 +151,7 @@ describe('GraphQLQueryGenerator', () => {
                 },
               ],
             }
-            replace(mockTypeInformer, 'getPrimitiveExtendedType', stub().returnsArg(0) as any)
+            replace(mockTypeInformer, 'getOriginalAncestor', stub().returnsArg(0) as any)
           })
 
           context('Property GraphQL Type is scalar', () => {
