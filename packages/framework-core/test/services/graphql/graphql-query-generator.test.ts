@@ -30,7 +30,7 @@ describe('GraphQLQueryGenerator', () => {
   let mockEventsResolver: SinonStub
 
   let getGraphQLTypeForStub: SinonStub
-  let isPrimitiveTypeStub: SinonStub
+  let isGraphQLScalarTypeStub: SinonStub
 
   beforeEach(() => {
     mockTargetTypes = {}
@@ -50,8 +50,8 @@ describe('GraphQLQueryGenerator', () => {
 
     getGraphQLTypeForStub = stub().returns(mockGraphQLType)
     replace(mockTypeInformer, 'getGraphQLTypeFor', getGraphQLTypeForStub as any)
-    isPrimitiveTypeStub = stub().returns(mockGraphQLType)
-    replace(mockTypeInformer, 'isPrimitiveType', isPrimitiveTypeStub as any)
+    isGraphQLScalarTypeStub = stub().returns(mockGraphQLType)
+    replace(mockTypeInformer, 'isGraphQLScalarType', isGraphQLScalarTypeStub as any)
   })
 
   afterEach(() => {
@@ -336,7 +336,7 @@ describe('GraphQLQueryGenerator', () => {
             beforeEach(() => {
               class MockedClass {}
               getGraphQLTypeForStub.returns(GraphQLJSONObject)
-              isPrimitiveTypeStub.returns(false)
+              isGraphQLScalarTypeStub.returns(false)
               mockPropertyName = random.alphaNumeric(10)
               mockTargetType = Array
               mockPropertyType = MockedClass

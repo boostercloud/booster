@@ -200,7 +200,7 @@ export class GraphQLQueryGenerator {
       const graphQLPropType = this.typeInformer.getGraphQLTypeFor(primitiveType)
       let fields: Thunk<GraphQLInputFieldConfigMap> = {}
 
-      if (!this.typeInformer.isPrimitiveType(graphQLPropType)) {
+      if (!this.typeInformer.isGraphQLScalarType(graphQLPropType)) {
         let nestedProperties: GraphQLInputFieldConfigMap = {}
         const properties = getPropertiesMetadata(prop.typeInfo.type)
         if (properties.length > 0) {
