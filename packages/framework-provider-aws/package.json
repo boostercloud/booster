@@ -38,7 +38,7 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "8.10.48",
-    "@types/chai-arrays": "^2.0.0",
+    "@types/chai-arrays": "2.0.0",
     "@types/faker": "5.1.5",
     "chai": "4.2.0",
     "chai-arrays": "^2.2.0",
