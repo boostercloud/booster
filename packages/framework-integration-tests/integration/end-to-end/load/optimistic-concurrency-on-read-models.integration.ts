@@ -1,11 +1,11 @@
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
-import { getTokenForUser, graphQLClient } from '../../providers/aws/utils'
 import { internet, random } from 'faker'
 import { expect } from '../../helper/expect'
 import gql from 'graphql-tag'
 
 import { waitForIt } from '../../helper/sleep'
+import { applicationUnderTest } from '../setup'
 
 describe('Optimistic concurrency on read models', () => {
   let client: ApolloClient<NormalizedCacheObject>
@@ -14,8 +14,8 @@ describe('Optimistic concurrency on read models', () => {
     const userEmail = internet.email()
 
     // TODO: Make retrieval of auth token cloud agnostic
-    const idToken = await getTokenForUser(userEmail, 'UserWithEmail')
-    client = await graphQLClient(idToken)
+    const idToken = applicationUnderTest.token.getTokenForUser(userEmail, 'UserWithEmail')
+    client = applicationUnderTest.graphql.client(idToken)
   })
 
   context('with 250 products on the same SKU', () => {
