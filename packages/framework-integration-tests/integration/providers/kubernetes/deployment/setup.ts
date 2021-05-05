@@ -4,7 +4,6 @@ import { sandboxProjectName } from '../constants'
 import { overrideWithBoosterLocalDependencies } from '../../../helper/deps-helper'
 import { sleep } from '../../../helper/sleep'
 import { deploy } from '../deploy'
-import { exec } from 'child-process-promise'
 
 before(async () => {
   console.log('preparing sandboxed project...')
