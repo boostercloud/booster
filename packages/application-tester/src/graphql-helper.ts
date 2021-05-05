@@ -31,11 +31,8 @@ export class GraphQLHelper {
    * IMPORTANT: After using this "DisconnectableApolloClient", you must call ".disconnect()" to close the socket. Otherwise
    * it will keep waiting for messages forever
    */
-  public clientWithSubscriptions(
-    authToken?: AuthToken,
-    onConnected?: (err?: string) => void
-  ): DisconnectableApolloClient {
-    const subscriptionClient: SubscriptionClient = this.subscriptionsClient(authToken, onConnected)
+  public async clientWithSubscriptions(authToken?: AuthToken): Promise<DisconnectableApolloClient> {
+    const subscriptionClient: SubscriptionClient = await this.subscriptionsClient(authToken)
 
     const link = split(
       ({ query }) => {
@@ -74,52 +71,55 @@ export class GraphQLHelper {
     })
   }
 
-  private subscriptionsClient(authToken?: AuthToken, onConnected?: (err?: string) => void): SubscriptionClient {
-    return new SubscriptionClient(
-      this.providerTestHelper.outputs.websocketURL,
-      {
-        reconnect: true,
-        connectionParams: () => {
-          if (authToken) {
-            const token = typeof authToken == 'function' ? authToken() : authToken
-            return {
-              Authorization: 'Bearer ' + token,
+  private async subscriptionsClient(authToken?: AuthToken): Promise<SubscriptionClient> {
+    return new Promise((resolve, reject) => {
+      const subscriptionClient = new SubscriptionClient(
+        this.providerTestHelper.outputs.websocketURL,
+        {
+          reconnect: true,
+          connectionParams: () => {
+            if (authToken) {
+              const token = typeof authToken == 'function' ? authToken() : authToken
+              return {
+                Authorization: 'Bearer ' + token,
+              }
             }
-          }
-          return {}
+            return {}
+          },
+          connectionCallback: (err?: any) => {
+            if (err) {
+              reject(err)
+              return
+            }
+            resolve(subscriptionClient)
+          },
         },
-        connectionCallback: (err?: any) => {
-          if (onConnected) {
-            const errMessage = err ?? err.toString()
-            onConnected(errMessage)
-          }
-        },
-      },
-      class MyWebSocket extends WebSocket {
-        public constructor(url: string, protocols?: string | string[]) {
-          super(url, protocols)
+        class MyWebSocket extends WebSocket {
+          public constructor(url: string, protocols?: string | string[]) {
+            super(url, protocols)
 
-          this.addListener('open', (): void => {
-            console.debug('[GraphQL socket] on open')
-          })
-          this.addListener('ping', (): void => {
-            console.debug('[GraphQL socket] on "ping"')
-          })
-          this.addListener('pong', (): void => {
-            console.debug('[GraphQL socket] on "pong"')
-          })
-          this.addListener('message', (data: WebSocket.Data): void => {
-            console.debug('[GraphQL socket] on message: ', data)
-          })
-          this.addListener('close', (code: number, message: string): void => {
-            console.debug('[GraphQL socket] on close: ', code, message)
-          })
-          this.addListener('error', (err: Error): void => {
-            console.debug('[GraphQL socket] on error: ', err.message)
-          })
+            this.addListener('open', (): void => {
+              console.debug('[GraphQL socket] on open')
+            })
+            this.addListener('ping', (): void => {
+              console.debug('[GraphQL socket] on "ping"')
+            })
+            this.addListener('pong', (): void => {
+              console.debug('[GraphQL socket] on "pong"')
+            })
+            this.addListener('message', (data: WebSocket.Data): void => {
+              console.debug('[GraphQL socket] on message: ', data)
+            })
+            this.addListener('close', (code: number, message: string): void => {
+              console.debug('[GraphQL socket] on close: ', code, message)
+            })
+            this.addListener('error', (err: Error): void => {
+              console.debug('[GraphQL socket] on error: ', err.message)
+            })
+          }
         }
-      }
-    )
+      )
+    })
   }
 }
 

@@ -1,9 +1,4 @@
-import {
-  countConnectionsItems,
-  countSubscriptionsItems,
-  DisconnectableApolloClient,
-  graphQLClientWithSubscriptions,
-} from '../providers/aws/utils'
+import { countConnectionsItems, countSubscriptionsItems } from '../providers/aws/utils'
 import { random } from 'faker'
 import gql from 'graphql-tag'
 import { expect } from 'chai'
@@ -11,6 +6,8 @@ import * as chai from 'chai'
 import { Observable } from 'apollo-client/util/Observable'
 import { waitForIt } from '../helper/sleep'
 import { FilterFor } from '@boostercloud/framework-types'
+import { DisconnectableApolloClient } from '@boostercloud/application-tester'
+import { applicationUnderTest } from './setup'
 
 chai.use(require('chai-as-promised'))
 
@@ -19,7 +16,7 @@ describe('subscriptions', () => {
     let client: DisconnectableApolloClient
     before(async () => {
       // TODO: make tests cloud agnostic
-      client = await graphQLClientWithSubscriptions()
+      client = await applicationUnderTest.graphql.clientWithSubscriptions()
     })
     after(() => {
       client.disconnect()
@@ -45,8 +42,8 @@ describe('subscriptions', () => {
 
   describe('the "terminate" operation', () => {
     it('should delete all subscription of the connectionID when socket is disconnected', async () => {
-      const clientA = await graphQLClientWithSubscriptions()
-      const clientB = await graphQLClientWithSubscriptions()
+      const clientA = await applicationUnderTest.graphql.clientWithSubscriptions()
+      const clientB = await applicationUnderTest.graphql.clientWithSubscriptions()
       try {
         const originalSubscriptionsCount = await countSubscriptionsItems()
 
@@ -75,7 +72,7 @@ describe('subscriptions', () => {
 
     it('should delete connection data when socket is disconnected', async () => {
       const connectionsCount = await countConnectionsItems()
-      const client = await graphQLClientWithSubscriptions()
+      const client = await applicationUnderTest.graphql.clientWithSubscriptions()
       try {
         await waitForIt(countConnectionsItems, (newCount) => newCount == connectionsCount + 1)
         client.disconnect()
@@ -89,7 +86,7 @@ describe('subscriptions', () => {
   describe('when socket reconnects ', () => {
     let client: DisconnectableApolloClient
     before(async () => {
-      client = await graphQLClientWithSubscriptions()
+      client = await applicationUnderTest.graphql.clientWithSubscriptions()
     })
     after(() => {
       client.disconnect()
@@ -120,7 +117,7 @@ describe('subscriptions', () => {
   describe('with filters', () => {
     let client: DisconnectableApolloClient
     before(async () => {
-      client = await graphQLClientWithSubscriptions()
+      client = await applicationUnderTest.graphql.clientWithSubscriptions()
     })
     after(() => {
       client.disconnect()
