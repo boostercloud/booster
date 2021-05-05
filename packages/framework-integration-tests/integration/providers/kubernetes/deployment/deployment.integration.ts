@@ -26,6 +26,6 @@ describe('Kubernetes provider', () => {
       return item?.metadata?.name
     })
 
-    expect(serviceNames).to.contains(boosterKubernetesServices)
+    expect(serviceNames).to.deep.contains(boosterKubernetesServices)
   })
 })
