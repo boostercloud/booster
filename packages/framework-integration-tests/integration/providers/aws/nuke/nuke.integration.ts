@@ -1,16 +1,13 @@
-import * as chai from 'chai'
-
-chai.use(require('sinon-chai'))
-chai.use(require('chai-as-promised'))
-
-export const expect = chai.expect
-
-import { appStack, appStackName } from '../utils'
+import { AWSTestHelper } from '@boostercloud/framework-provider-aws-infrastructure'
+import { applicationName } from '../../../helper/app-helper'
+import { expect } from '../../../helper/expect'
 
 describe('After nuke', () => {
   describe('the stack', () => {
     it('is deleted successfully', async () => {
-      await expect(appStack()).to.be.eventually.rejectedWith(`Stack with id ${appStackName()} does not exist`)
+      await expect(AWSTestHelper.build(applicationName())).to.be.eventually.rejectedWith(
+        new RegExp(`Stack with id ${applicationName()}[^\\s]+ does not exist`)
+      )
     })
   })
 })
