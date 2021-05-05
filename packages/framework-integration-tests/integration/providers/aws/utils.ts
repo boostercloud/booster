@@ -1,5 +1,5 @@
 import { CloudFormation, config, DynamoDB } from 'aws-sdk'
-import { Stack, StackResourceSummary } from 'aws-sdk/clients/cloudformation'
+import { Stack } from 'aws-sdk/clients/cloudformation'
 import { ApolloClient } from 'apollo-client'
 import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { HttpLink } from 'apollo-link-http'
@@ -33,12 +33,6 @@ export async function setEnv(): Promise<void> {
     process.env['BOOSTER_APP_SUFFIX'] = stdout.trim().substring(0, 6)
     console.log('setting BOOSTER_APP_SUFFIX=' + process.env.BOOSTER_APP_SUFFIX)
   }
-  // The following variable is set to make AWS SDK try to load the region config from
-  // `~/.aws/config` if it fails reading it from `/.aws/credentials`. Loading the region doesn't seem
-  // to be a very reliable process, so in some cases we'll need to set the environment variable
-  // AWS_REGION to our chosen region to make this thing work...
-  process.env['AWS_SDK_LOAD_CONFIG'] = 'true'
-  console.log('setting AWS_SDK_LOAD_CONFIG=' + process.env.AWS_SDK_LOAD_CONFIG)
 }
 
 export async function checkConfigAnd(action: () => Promise<void>): Promise<void> {
@@ -66,10 +60,14 @@ export async function hopeTheBest(): Promise<void> {
   }
 }
 
+export function applicationName(): string {
+  return `my-store-${process.env.BOOSTER_APP_SUFFIX}`
+}
+
 // --- Stack Helpers ---
 
 export function appStackName(): string {
-  return `my-store-${process.env.BOOSTER_APP_SUFFIX}-app`
+  return `${applicationName()}-app`
 }
 
 export async function appStack(): Promise<Stack> {
@@ -84,15 +82,6 @@ export async function appStack(): Promise<Stack> {
   } else {
     throw `No stack found with name "${appStackName}". Try running 'integration/aws-deploy' first to make sure that the AWS environment is properly set.`
   }
-}
-
-export async function stackResourcesByType(resourceType: string): Promise<Array<StackResourceSummary>> {
-  const resources = await cloudFormation
-    .listStackResources({
-      StackName: appStackName(),
-    })
-    .promise()
-  return resources.StackResourceSummaries?.filter((resource) => resource.ResourceType == resourceType) ?? []
 }
 
 // --- URL helpers ---
