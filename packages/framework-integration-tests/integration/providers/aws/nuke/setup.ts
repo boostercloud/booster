@@ -1,11 +1,11 @@
 import { overrideWithBoosterLocalDependencies } from '../../../helper/deps-helper'
 import { nuke } from '../deploy'
-import { checkConfigAnd } from '../utils'
 // Imported from another package to avoid duplication
 // It is OK-ish, since integration tests are always run in the context of the whole monorepo
 import { createSandboxProject, removeSandboxProject } from '../../../../../cli/src/common/sandbox'
 import { sandboxPathFor } from '../../../helper/file-helper'
 import { setEnv } from '../../../helper/app-helper'
+import { AWSTestHelper } from '@boostercloud/framework-provider-aws-infrastructure'
 
 before(async () => {
   await setEnv()
@@ -15,6 +15,7 @@ before(async () => {
 
   await overrideWithBoosterLocalDependencies(sandboxedProject)
 
-  await checkConfigAnd(nuke.bind(null, sandboxedProject))
+  AWSTestHelper.ensureAWSConfiguration()
+  await nuke(sandboxedProject)
   removeSandboxProject(sandboxPath)
 })

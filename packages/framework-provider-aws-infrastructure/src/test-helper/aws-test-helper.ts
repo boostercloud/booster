@@ -22,7 +22,7 @@ export class AWSTestHelper {
     })
   }
 
-  private static ensureAWSConfiguration(): void {
+  public static ensureAWSConfiguration(): void {
     console.log('Checking AWS configuration...')
     if (!config.credentials?.accessKeyId || !config.credentials?.secretAccessKey) {
       throw new Error(
