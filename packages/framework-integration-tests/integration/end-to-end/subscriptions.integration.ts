@@ -1,4 +1,3 @@
-import { countConnectionsItems, countSubscriptionsItems } from '../providers/aws/utils'
 import { random } from 'faker'
 import gql from 'graphql-tag'
 import { expect } from 'chai'
@@ -12,6 +11,13 @@ import { applicationUnderTest } from './setup'
 chai.use(require('chai-as-promised'))
 
 describe('subscriptions', () => {
+  let countSubscriptions: () => Promise<number>
+  let countConnections: () => Promise<number>
+  before(async () => {
+    countSubscriptions = applicationUnderTest.count.subscriptions.bind(applicationUnderTest.count)
+    countConnections = applicationUnderTest.count.connections.bind(applicationUnderTest.count)
+  })
+
   describe('the "unsubscribe" operation', () => {
     let client: DisconnectableApolloClient
     before(async () => {
@@ -23,20 +29,26 @@ describe('subscriptions', () => {
     })
 
     it('should delete a subscription when the client calls "unsubscribe"', async () => {
-      const originalSubscriptionsCount = await countSubscriptionsItems()
+      const originalSubscriptionsCount = await countSubscriptions()
 
       // Let's create two subscriptions to the same read model
       cartSubscription(client, random.uuid()).subscribe(() => {})
       const subscriptionObservable = cartSubscription(client, random.uuid()).subscribe(() => {})
 
       // Wait for for the subscriptions to arrive
-      await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount + 2)
+      await waitForIt(
+        countSubscriptions,
+        (newCount) => newCount == originalSubscriptionsCount + 2
+      )
 
       // Stop one of the subscription
       subscriptionObservable.unsubscribe()
 
       // And now check that the new subscriptions count down by one
-      await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount + 1)
+      await waitForIt(
+        countSubscriptions,
+        (newCount) => newCount == originalSubscriptionsCount + 1
+      )
     })
   })
 
@@ -45,7 +57,7 @@ describe('subscriptions', () => {
       const clientA = await applicationUnderTest.graphql.clientWithSubscriptions()
       const clientB = await applicationUnderTest.graphql.clientWithSubscriptions()
       try {
-        const originalSubscriptionsCount = await countSubscriptionsItems()
+        const originalSubscriptionsCount = await countSubscriptions()
 
         // Let's create one subscription for one client
         cartSubscription(clientA, random.uuid()).subscribe(() => {})
@@ -55,15 +67,24 @@ describe('subscriptions', () => {
         cartSubscription(clientB, random.uuid()).subscribe(() => {})
 
         // Wait for for the subscriptions to arrive
-        await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount + 3)
+        await waitForIt(
+          countSubscriptions,
+          (newCount) => newCount == originalSubscriptionsCount + 3
+        )
 
         // Now we close the socket of client B and check its 2 subscriptions were deleted
         clientB.disconnect()
-        await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount + 1)
+        await waitForIt(
+          countSubscriptions,
+          (newCount) => newCount == originalSubscriptionsCount + 1
+        )
 
         // Finally, close the socket of client A and check that we are back to the original count of subscriptions
         clientA.disconnect()
-        await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount)
+        await waitForIt(
+          countSubscriptions,
+          (newCount) => newCount == originalSubscriptionsCount
+        )
       } catch (e) {
         clientA.disconnect()
         clientB.disconnect()
@@ -71,12 +92,12 @@ describe('subscriptions', () => {
     })
 
     it('should delete connection data when socket is disconnected', async () => {
-      const connectionsCount = await countConnectionsItems()
+      const connectionsCount = await countConnections()
       const client = await applicationUnderTest.graphql.clientWithSubscriptions()
       try {
-        await waitForIt(countConnectionsItems, (newCount) => newCount == connectionsCount + 1)
+        await waitForIt(countConnections, (newCount) => newCount == connectionsCount + 1)
         client.disconnect()
-        await waitForIt(countConnectionsItems, (newCount) => newCount == connectionsCount)
+        await waitForIt(countConnections, (newCount) => newCount == connectionsCount)
       } catch {
         client.disconnect()
       }
@@ -94,7 +115,7 @@ describe('subscriptions', () => {
 
     it('keeps the same subscriptions', async () => {
       const cartID = random.uuid()
-      const originalSubscriptionsCount = await countSubscriptionsItems()
+      const originalSubscriptionsCount = await countSubscriptions()
       // Let's create two subscriptions to the same read model
       const observableOne = cartSubscription(client, cartID)
       const observableTwo = cartSubscription(client, cartID)
@@ -102,7 +123,10 @@ describe('subscriptions', () => {
       observableOne.subscribe(() => {})
       observableTwo.subscribe(() => {})
       // Wait for for the subscriptions to arrive
-      await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount + 2)
+      await waitForIt(
+        countSubscriptions,
+        (newCount) => newCount == originalSubscriptionsCount + 2
+      )
       // Check we receive data when the read model is modified
       await cartMutation(client, cartID)
       await expect(Promise.all([promisify(observableOne), promisify(observableTwo)])).to.eventually.be.fulfilled
@@ -126,13 +150,16 @@ describe('subscriptions', () => {
     it('get a carts with a specific ID', async () => {
       const cartID = random.uuid()
 
-      const originalSubscriptionsCount = await countSubscriptionsItems()
+      const originalSubscriptionsCount = await countSubscriptions()
       // Let's create two subscriptions to the same read model
       const observable = cartFilteredSubscription(client, { id: { eq: cartID } })
       // Call the subscribe function to send the subscription to server
       observable.subscribe(() => {})
       // Wait for for the subscriptions to arrive
-      await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount + 1)
+      await waitForIt(
+        countSubscriptions,
+        (newCount) => newCount == originalSubscriptionsCount + 1
+      )
       // Check we receive data when the read model is modified
       await cartMutation(client, cartID)
       const result = await promisify(observable)
@@ -144,7 +171,7 @@ describe('subscriptions', () => {
       const cartID = random.uuid()
       const productId = random.uuid()
 
-      const originalSubscriptionsCount = await countSubscriptionsItems()
+      const originalSubscriptionsCount = await countSubscriptions()
       // Let's create two subscriptions to the same read model
       const observable = cartFilteredSubscription(client, {
         cartItems: { includes: { productId: productId, quantity: 2 } },
@@ -152,7 +179,10 @@ describe('subscriptions', () => {
       // Call the subscribe function to send the subscription to server
       observable.subscribe(() => {})
       // Wait for for the subscriptions to arrive
-      await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount + 1)
+      await waitForIt(
+        countSubscriptions,
+        (newCount) => newCount == originalSubscriptionsCount + 1
+      )
       // Check we receive data when the read model is modified
       await cartMutation(client, cartID, productId)
       const result = await promisify(observable)
@@ -167,7 +197,7 @@ describe('subscriptions', () => {
       const cartID = random.uuid()
       const productId = random.uuid()
 
-      const originalSubscriptionsCount = await countSubscriptionsItems()
+      const originalSubscriptionsCount = await countSubscriptions()
       // Let's create two subscriptions to the same read model
       const observable = cartFilteredSubscription(client, {
         cartItemsIds: { includes: productId },
@@ -175,7 +205,10 @@ describe('subscriptions', () => {
       // Call the subscribe function to send the subscription to server
       observable.subscribe(() => {})
       // Wait for for the subscriptions to arrive
-      await waitForIt(countSubscriptionsItems, (newCount) => newCount == originalSubscriptionsCount + 1)
+      await waitForIt(
+        countSubscriptions,
+        (newCount) => newCount == originalSubscriptionsCount + 1
+      )
       // Check we receive data when the read model is modified
       await cartMutation(client, cartID, productId)
       const result = await promisify(observable)

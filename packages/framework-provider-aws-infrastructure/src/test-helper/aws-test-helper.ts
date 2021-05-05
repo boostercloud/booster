@@ -1,5 +1,7 @@
 import { Stack } from 'aws-sdk/clients/cloudformation'
 import { CloudFormation, config } from 'aws-sdk'
+import { AWSCounters } from './aws-counters'
+import { AWSQueries } from './aws-queries'
 
 interface ApplicationOutputs {
   graphqlURL: string
@@ -9,17 +11,25 @@ interface ApplicationOutputs {
 const cloudFormation = new CloudFormation()
 
 export class AWSTestHelper {
-  private constructor(readonly outputs: ApplicationOutputs) {}
+  private constructor(
+    readonly outputs: ApplicationOutputs,
+    readonly counters: AWSCounters,
+    readonly queries: AWSQueries
+  ) {}
 
   public static async build(appName: string): Promise<AWSTestHelper> {
     const stackName = `${appName}-app`
     this.ensureAWSConfiguration()
     const stack = await this.appStack(stackName)
     this.ensureStackIsReady(stack)
-    return new AWSTestHelper({
-      graphqlURL: await this.graphqlURL(stack),
-      websocketURL: await this.websocketURL(stack),
-    })
+    return new AWSTestHelper(
+      {
+        graphqlURL: await this.graphqlURL(stack),
+        websocketURL: await this.websocketURL(stack),
+      },
+      new AWSCounters(stackName),
+      new AWSQueries(stackName)
+    )
   }
 
   public static ensureAWSConfiguration(): void {
