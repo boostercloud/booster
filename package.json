@@ -25,7 +25,9 @@
     "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-prettier": "^3.1.2",
+    "husky": "^6.0.0",
     "lerna": "^3.22.1",
+    "lint-staged": "^10.5.4",
     "markdown-toc": "1.2.0",
     "nyc": "^15.0.1",
     "prettier": "^1.19.1",
@@ -34,5 +36,9 @@
     "typescript": "4.1.5",
     "yargs": "^15.1.0"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "lint-staged": {
+    "*.{js,ts,md}": "prettier --single-quote --write",
+    "**/*.{ts,md}": "prettier --single-quote --write"
+  }
 }

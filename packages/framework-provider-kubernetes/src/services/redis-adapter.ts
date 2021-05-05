@@ -67,5 +67,4 @@ export class RedisAdapter {
     logger.debug(response)
     logger.debug('END RedisAdapter setViaRedis')
   }
-
 }
