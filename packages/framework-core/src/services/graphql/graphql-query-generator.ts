@@ -162,7 +162,7 @@ export class GraphQLQueryGenerator {
     if (!this.generatedFiltersByTypeName[filterName]) {
       const propFilters: GraphQLInputFieldConfigMap = {}
       property.typeInfo.parameters.forEach((param) => {
-        const primitiveType = this.typeInformer.getPrimitiveExtendedType(param.type)
+        const primitiveType = this.typeInformer.getOriginalAncestor(param.type)
         let graphqlType: GraphQLScalarType
         switch (primitiveType) {
           case Boolean:
@@ -192,15 +192,15 @@ export class GraphQLQueryGenerator {
   private generateFilterFor(prop: PropertyMetadata): GraphQLInputObjectType | GraphQLScalarType {
     const filterName = `${prop.typeInfo.name}PropertyFilter`
 
-    if (prop.typeInfo.type === undefined) return GraphQLJSONObject
+    if (!prop.typeInfo.type) return GraphQLJSONObject
 
     if (!this.generatedFiltersByTypeName[filterName]) {
-      const primitiveType = this.typeInformer.getPrimitiveExtendedType(prop.typeInfo.type)
+      const primitiveType = this.typeInformer.getOriginalAncestor(prop.typeInfo.type)
       if (primitiveType === Array) return this.generateArrayFilterFor(prop)
       const graphQLPropType = this.typeInformer.getGraphQLTypeFor(primitiveType)
       let fields: Thunk<GraphQLInputFieldConfigMap> = {}
 
-      if (!this.typeInformer.isPrimitiveType(graphQLPropType)) {
+      if (!this.typeInformer.isGraphQLScalarType(graphQLPropType)) {
         let nestedProperties: GraphQLInputFieldConfigMap = {}
         const properties = getPropertiesMetadata(prop.typeInfo.type)
         if (properties.length > 0) {
@@ -228,7 +228,7 @@ export class GraphQLQueryGenerator {
   }
 
   private generateFilterInputTypes(type: AnyClass): GraphQLInputFieldConfigMap {
-    const primitiveType = this.typeInformer.getPrimitiveExtendedType(type)
+    const primitiveType = this.typeInformer.getOriginalAncestor(type)
     switch (primitiveType) {
       case Boolean:
         return {

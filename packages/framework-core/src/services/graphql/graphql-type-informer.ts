@@ -43,13 +43,13 @@ export class GraphQLTypeInformer {
   private metadataPropertiesToGraphQLFields(properties: Array<PropertyMetadata>): GraphQLFieldConfigMap<any, any> {
     const fields: GraphQLFieldConfigMap<any, any> = {}
     for (const prop of properties) {
-      const primitiveType = this.getPrimitiveExtendedType(prop.typeInfo.type)
+      const primitiveType = this.getOriginalAncestor(prop.typeInfo.type)
 
       if (primitiveType === Array) {
         const param = prop.typeInfo.parameters[0]
         const graphQLPropType = this.getGraphQLTypeFor(param.type)
 
-        if (!this.isPrimitiveType(graphQLPropType) && param.type) {
+        if (!this.isGraphQLScalarType(graphQLPropType) && param.type) {
           const properties = getPropertiesMetadata(param.type)
           this.generateGraphQLTypeFromMetadata({ class: param.type, properties })
         }
@@ -64,19 +64,23 @@ export class GraphQLTypeInformer {
     return fields
   }
 
-  public isPrimitiveType(graphQLType: GraphQLNonInputType): boolean {
+  public isGraphQLScalarType(graphQLType: GraphQLNonInputType): boolean {
     return graphQLType instanceof GraphQLScalarType && graphQLType != GraphQLJSONObject
   }
 
-  public getPrimitiveExtendedType(type: AnyClass): AnyClass {
-    if (!type?.prototype) return type
-    const parentType = Object.getPrototypeOf(type.prototype)?.constructor
-    return parentType === Object ? type : parentType
+  public getOriginalAncestor(type: AnyClass): AnyClass {
+    if (!type) return type
+
+    const typePrototype = Object.getPrototypeOf(type)
+    if (typePrototype === Function.prototype) {
+      return type // End of the prototype chain, return the type
+    }
+    return this.getOriginalAncestor(typePrototype)
   }
 
   public getGraphQLTypeFor(type: AnyClass): GraphQLNonInputType {
     if (type === UUID) return GraphQLID
-    const primitiveType = this.getPrimitiveExtendedType(type)
+    const primitiveType = this.getOriginalAncestor(type)
     switch (primitiveType) {
       case String:
         return GraphQLString
