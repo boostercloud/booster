@@ -172,10 +172,13 @@ export class DeployManager {
     const fileUploadService = await this.clusterManager.waitForServiceToBeReady(this.namespace, uploadService.name)
     l.debug('Creating zip file')
     const codeZipFile = await createProjectZipFile(l)
+    const fileUploadServiceAddress = fileUploadService?.port
+      ? `${fileUploadService?.ip}:${fileUploadService?.port}`
+      : fileUploadService?.ip
     l.debug('Waiting for Upload service to be accesible')
-    await this.waitForServiceToBeAvailable(fileUploadService?.ip)
+    await this.waitForServiceToBeAvailable(fileUploadServiceAddress)
     l.debug('Uploading file')
-    const fileUploadResponse = await uploadFile(l, fileUploadService?.ip, codeZipFile)
+    const fileUploadResponse = await uploadFile(l, fileUploadServiceAddress, codeZipFile)
     if (fileUploadResponse.statusCode !== 200) {
       l.debug('Cannot upload code, throwing')
       throw new Error('Unable to upload your code, please check the fileuploader pod for more information')
