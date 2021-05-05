@@ -471,7 +471,7 @@ function isSubscriptionOperation({ query }) {
 
 // Create an HTTP link for sending queries and mutations
 const httpLink = new HttpLink({
-  uri: '<httpURL>',
+  uri: '<graphqlURL>',
 })
 
 // Create a SusbscriptionClient and a WebSocket link for sending subscriptions
@@ -584,7 +584,7 @@ function isSubscriptionOperation({ query }) {
 
 // CHANGED: We now use the AuthApiEndpoint obtained by the auth rocket
 const httpLink = new HttpLink({
-  uri: '<AuthApiEndpoint>',
+  uri: '<graphqlURL>',
 })
 
 // CHANGED: We create an "authLink" that modifies the operation by adding the token to the headers
