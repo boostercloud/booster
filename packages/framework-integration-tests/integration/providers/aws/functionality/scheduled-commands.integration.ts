@@ -1,11 +1,11 @@
-import { graphQLClient} from '../utils'
 import gql from 'graphql-tag'
 import { expect } from 'chai'
 import { waitForIt } from '../../../helper/sleep'
+import { applicationUnderTest } from './setup'
 
 describe('Scheduled commands', () => {
   it('scheduled command ran and created a product', async () => {
-    const client = await graphQLClient()
+    const client = await applicationUnderTest.graphql.client()
     const checkedCartSku = 'the-checked-cart'
 
     // Check that scheduled command created the new product

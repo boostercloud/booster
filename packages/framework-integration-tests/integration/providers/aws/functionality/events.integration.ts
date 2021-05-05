@@ -1,16 +1,17 @@
-import { countEventItems, queryEvents, graphQLClient } from '../utils'
+import { countEventItems, queryEvents } from '../utils'
 import { expect } from '../../../helper/expect'
 import gql from 'graphql-tag'
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { random } from 'faker'
 import { waitForIt } from '../../../helper/sleep'
+import { applicationUnderTest } from './setup'
 
 describe('events', async () => {
   let client: ApolloClient<NormalizedCacheObject>
 
   before(async () => {
-    client = await graphQLClient()
+    client = applicationUnderTest.graphql.client()
   })
 
   it('should create an event in the event store', async () => {

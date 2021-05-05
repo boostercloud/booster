@@ -13,27 +13,13 @@ import { SubscriptionClient } from 'subscriptions-transport-ws'
 import { ApolloClientOptions } from 'apollo-client/ApolloClient'
 import * as jwt from 'jsonwebtoken'
 import * as fs from 'fs'
-import util = require('util')
 import QueryOutput = DocumentClient.QueryOutput
 import ScanOutput = DocumentClient.ScanOutput
 import { sleep } from '../../helper/sleep'
-
-const exec = util.promisify(require('child_process').exec)
+import { applicationName } from '../../helper/app-helper'
 
 const cloudFormation = new CloudFormation()
 const documentClient = new DynamoDB.DocumentClient()
-
-// Environment helpers
-export async function setEnv(): Promise<void> {
-  if (!process.env.BOOSTER_APP_SUFFIX) {
-    // If the user doesn't set an app name suffix, use the current git commit hash
-    // to build a unique suffix for the application name in AWS to avoid collisions
-    // between tests from different branches.
-    const { stdout } = await exec('git rev-parse HEAD')
-    process.env['BOOSTER_APP_SUFFIX'] = stdout.trim().substring(0, 6)
-    console.log('setting BOOSTER_APP_SUFFIX=' + process.env.BOOSTER_APP_SUFFIX)
-  }
-}
 
 export async function checkConfigAnd(action: () => Promise<void>): Promise<void> {
   console.log('Checking AWS configuration...')
@@ -58,10 +44,6 @@ export async function hopeTheBest(): Promise<void> {
   if (!validStatuses.includes(stack?.StackStatus)) {
     throw new Error(`The stack '${appStackName()}' status is ${stack?.StackStatus} and tests can't run.`)
   }
-}
-
-export function applicationName(): string {
-  return `my-store-${process.env.BOOSTER_APP_SUFFIX}`
 }
 
 // --- Stack Helpers ---
