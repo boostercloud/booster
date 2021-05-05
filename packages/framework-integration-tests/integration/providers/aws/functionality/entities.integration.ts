@@ -1,10 +1,11 @@
-import { countReadModelItems, graphQLClient, queryReadModels} from '../utils'
+import { countReadModelItems, queryReadModels } from '../utils'
 import { expect } from 'chai'
 import gql from 'graphql-tag'
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { random } from 'faker'
 import { waitForIt } from '../../../helper/sleep'
+import { applicationUnderTest } from './setup'
 
 const CART_READ_MODEL_NAME = 'CartReadModel'
 
@@ -12,7 +13,7 @@ describe('entities', async () => {
   let client: ApolloClient<NormalizedCacheObject>
 
   before(async () => {
-    client = await graphQLClient()
+    client = applicationUnderTest.graphql.client()
   })
 
   it('should be projected into a read model', async () => {

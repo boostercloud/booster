@@ -58,12 +58,17 @@
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "ttsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
-    "integration": "npm run integration/cli && npm run integration/local && npm run integration/aws-deploy && npm run integration/aws-func && npm run integration/end-to-end && npm run integration/aws-nuke",
+    "integration": "npm run integration/cli && npm run integration/local && npm run integration/aws",
+
+    "integration/aws": "npm run integration/aws-deploy && npm run integration/aws-func && npm run integration/aws-end-to-end && npm run integration/aws-nuke",
     "integration/aws-deploy": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"integration/providers/aws/deployment/.mocharc.yml\" \"integration/providers/aws/deployment/**/*.integration.ts\"",
     "integration/aws-func": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"integration/providers/aws/functionality/.mocharc.yml\" \"integration/providers/aws/functionality/**/*.integration.ts\"",
     "integration/aws-nuke": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"integration/providers/aws/nuke/.mocharc.yml\" \"integration/providers/aws/nuke/**/*.integration.ts\"",
-    "integration/aws-end-to-end": "E2E_PROVIDER=AWS AWS_SDK_LOAD_CONFIG=true mocha --exit --config \"integration/end-to-end/.mocharc.yml\" \"integration/end-to-end/**/*.integration.ts\"",
+    "integration/aws-end-to-end": "E2E_PROVIDER=AWS AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"integration/end-to-end/.mocharc.yml\" \"integration/end-to-end/**/*.integration.ts\"",
+
+    "integration/k8s": "npm run integration/k8s-deploy",
     "integration/k8s-deploy": "BOOSTER_ENV=kubernetes mocha --forbid-only --exit --config \"integration/providers/kubernetes/deployment/.mocharc.yml\" \"integration/providers/kubernetes/deployment/**/*.integration.ts\"",
+
     "integration/local": "BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/providers/local/.mocharc.yml\" \"integration/providers/local/**/*.integration.ts\"",
     "integration/cli": "mocha --forbid-only --exit --config \"integration/cli/.mocharc.yml\" \"integration/cli/**/*.integration.ts\""
   },

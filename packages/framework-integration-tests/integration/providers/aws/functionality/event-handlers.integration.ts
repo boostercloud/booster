@@ -1,10 +1,11 @@
 import gql from 'graphql-tag'
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
-import { graphQLClient, getTokenForUser, queryEvents } from '../utils'
+import { queryEvents } from '../utils'
 import { random, address, internet } from 'faker'
 import { expect } from 'chai'
 import { waitForIt } from '../../../helper/sleep'
+import { applicationUnderTest } from './setup'
 
 describe('Event handlers', () => {
   let adminEmail: string
@@ -14,8 +15,8 @@ describe('Event handlers', () => {
 
   before(async () => {
     adminEmail = internet.email()
-    authToken = await getTokenForUser(adminEmail, 'Admin')
-    client = await graphQLClient(authToken)
+    authToken = applicationUnderTest.token.getTokenForUser(adminEmail, 'Admin')
+    client = applicationUnderTest.graphql.client(authToken)
   })
 
   context('move product', () => {
