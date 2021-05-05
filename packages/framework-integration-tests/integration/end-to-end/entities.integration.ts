@@ -1,10 +1,10 @@
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
-import { getTokenForUser, graphQLClient } from '../providers/aws/utils'
 import { random, commerce, finance, lorem, internet } from 'faker'
 import { expect } from 'chai'
 import gql from 'graphql-tag'
 import { sleep, waitForIt } from '../helper/sleep'
+import { applicationUnderTest } from './setup'
 
 describe('Entities end-to-end tests', () => {
   let client: ApolloClient<NormalizedCacheObject>
@@ -12,8 +12,8 @@ describe('Entities end-to-end tests', () => {
 
   before(async () => {
     const userEmail = internet.email()
-    userToken = await getTokenForUser(userEmail, 'UserWithEmail')
-    client = await graphQLClient(userToken)
+    userToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail')
+    client = applicationUnderTest.graphql.client(userToken)
   })
 
   context('Reducers', () => {
@@ -112,8 +112,8 @@ describe('Entities end-to-end tests', () => {
       // TODO: Make retrieval of auth token cloud agnostic
       // provision admin user to delete a product
       const adminEmail: string = internet.email()
-      const adminToken = await getTokenForUser(adminEmail, 'Admin')
-      client = await graphQLClient(adminToken)
+      const adminToken = applicationUnderTest.token.forUser(adminEmail, 'Admin')
+      client = applicationUnderTest.graphql.client(adminToken)
 
       // Delete a product given an id
       await client.mutate({
@@ -130,7 +130,7 @@ describe('Entities end-to-end tests', () => {
       console.log('Waiting 1 second for deletion to complete...')
       await sleep(1000)
 
-      client = await graphQLClient(userToken)
+      client = applicationUnderTest.graphql.client(userToken)
       // Retrieve updated entity
       const queryResult = await waitForIt(
         () => {

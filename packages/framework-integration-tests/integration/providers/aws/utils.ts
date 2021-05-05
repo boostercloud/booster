@@ -11,11 +11,8 @@ import { ApolloLink, split } from 'apollo-link'
 import * as WebSocket from 'ws'
 import { SubscriptionClient } from 'subscriptions-transport-ws'
 import { ApolloClientOptions } from 'apollo-client/ApolloClient'
-import * as jwt from 'jsonwebtoken'
-import * as fs from 'fs'
 import QueryOutput = DocumentClient.QueryOutput
 import ScanOutput = DocumentClient.ScanOutput
-import { sleep } from '../../helper/sleep'
 import { applicationName } from '../../helper/app-helper'
 
 const cloudFormation = new CloudFormation()
@@ -349,58 +346,4 @@ export async function getEventsByEntityId(entityID: string): Promise<any> {
     .promise()
 
   return output.Items
-}
-
-// --- Other helpers ---
-
-export async function waitForIt<TResult>(
-  tryFunction: () => Promise<TResult>,
-  checkResult: (result: TResult) => boolean,
-  trialDelayMs = 1000,
-  timeoutMs = 60000
-): Promise<TResult> {
-  console.debug('[waitForIt] start')
-  const start = Date.now()
-  return doWaitFor()
-
-  async function doWaitFor(): Promise<TResult> {
-    console.debug('.')
-    const res = await tryFunction()
-    if (checkResult(res)) {
-      console.debug('[waitForIt] match!')
-      return res
-    }
-    const elapsed = Date.now() - start
-
-    if (elapsed > timeoutMs) {
-      throw new Error('[waitForIt] Timeout reached')
-    }
-
-    await sleep(trialDelayMs)
-    return doWaitFor()
-  }
-}
-
-// This helper will create a valid token using a real private key for testing
-// the tokens will be validate against the public keyset file
-// located in: /keys/private.key file
-export const getTokenForUser = (email: string, role: string): string => {
-  const privateKey = fs.readFileSync(__dirname + '/keys/private.key')
-  const keyid = 'booster'
-  const issuer = 'booster'
-  const token = jwt.sign(
-    {
-      id: email,
-      'custom:role': role,
-      email,
-    },
-    privateKey,
-    {
-      algorithm: 'RS256',
-      subject: email,
-      issuer,
-      keyid,
-    }
-  )
-  return token
 }

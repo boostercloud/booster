@@ -15,7 +15,7 @@ describe('Event handlers', () => {
 
   before(async () => {
     adminEmail = internet.email()
-    authToken = applicationUnderTest.token.getTokenForUser(adminEmail, 'Admin')
+    authToken = applicationUnderTest.token.forUser(adminEmail, 'Admin')
     client = applicationUnderTest.graphql.client(authToken)
   })
 

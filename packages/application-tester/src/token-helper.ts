@@ -11,7 +11,7 @@ export class TokenHelper {
   constructor() {
     this.privateKey = fs.readFileSync(path.join(__dirname, '..', 'keys', 'private.key'))
   }
-  public getTokenForUser(email: string, role: string): string {
+  public forUser(email: string, role: string): string {
     const keyid = 'booster'
     const issuer = 'booster'
     return jwt.sign(
