@@ -4,6 +4,7 @@ import { createSandboxProject, removeSandboxProject } from '../../../../../cli/s
 import { sandboxPathFor } from '../../../helper/file-helper'
 import { sandboxProjectName } from '../constants'
 import { exec } from 'child-process-promise'
+import { createDaprComponentFile } from '../util'
 
 before(async () => {
   const sandboxPath = sandboxPathFor(sandboxProjectName)
@@ -13,6 +14,11 @@ before(async () => {
   await overrideWithBoosterLocalDependencies(sandboxPath)
   // Only the deploy command creates the production dependencies
   await exec('npm install --production --no-bin-links', { cwd: sandboxPath })
+
+  // boost deploy removes the dapr components folder, so we need to create it again.
+  await createDaprComponentFile(sandboxPath)
+
+  await exec('mv assets/templates .', { cwd: sandboxPath })
 
   await nuke(sandboxedProject)
   removeSandboxProject(sandboxPath)
