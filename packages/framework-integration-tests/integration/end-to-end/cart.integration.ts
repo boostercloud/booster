@@ -1,17 +1,17 @@
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
-import { getTokenForUser, graphQLClient, waitForIt } from '../providers/aws/utils'
 import { random, commerce, finance, lorem, internet } from 'faker'
 import { expect } from 'chai'
 import gql from 'graphql-tag'
 import { CartItem } from '../../src/common/cart-item'
-import { sleep } from '../helper/sleep'
+import { sleep, waitForIt } from '../helper/sleep'
+import { applicationUnderTest } from './setup'
 
 describe('Cart end-to-end tests', () => {
   let client: ApolloClient<NormalizedCacheObject>
 
   before(async () => {
-    client = await graphQLClient()
+    client = applicationUnderTest.graphql.client()
   })
 
   describe('Commands', () => {
@@ -164,8 +164,8 @@ describe('Cart end-to-end tests', () => {
 
     before(async () => {
       userEmail = internet.email()
-      authToken = await getTokenForUser(userEmail, 'UserWithEmail')
-      client = await graphQLClient(authToken)
+      authToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail')
+      client = applicationUnderTest.graphql.client(authToken)
     })
 
     context('Reducers', () => {
@@ -262,8 +262,8 @@ describe('Cart end-to-end tests', () => {
 
       it('should reduce the entity as expected', async () => {
         const adminEmail: string = internet.email()
-        const adminAuthToken = await getTokenForUser(adminEmail, 'Admin')
-        client = await graphQLClient(adminAuthToken)
+        const adminAuthToken = applicationUnderTest.token.forUser(adminEmail, 'Admin')
+        client = applicationUnderTest.graphql.client(adminAuthToken)
 
         // Delete a product given an id
         await client.mutate({
@@ -280,7 +280,7 @@ describe('Cart end-to-end tests', () => {
         console.log('Waiting 1 second for deletion to complete...')
         await sleep(1000)
 
-        client = await graphQLClient(authToken)
+        client = applicationUnderTest.graphql.client(authToken)
         // Retrieve updated entity
         const queryResult = await waitForIt(
           () => {

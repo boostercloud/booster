@@ -1,15 +1,15 @@
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
-import { graphQLClient} from '../providers/aws/utils'
 import { random } from 'faker'
 import { expect } from 'chai'
 import gql from 'graphql-tag'
+import { applicationUnderTest } from './setup'
 
 describe('Commands end-to-end tests', () => {
   let client: ApolloClient<NormalizedCacheObject>
 
   before(async () => {
-    client = await graphQLClient()
+    client = await applicationUnderTest.graphql.client()
   })
 
   it('accepts a command successfully', async () => {

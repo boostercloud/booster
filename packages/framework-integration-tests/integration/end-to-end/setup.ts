@@ -1,6 +1,5 @@
-import { setEnv } from '../providers/aws/utils'
 import { ApplicationTester } from '@boostercloud/application-tester'
-import { getProviderTestHelper } from '../helper/app-helper'
+import { getProviderTestHelper, setEnv } from '../helper/app-helper'
 
 export let applicationUnderTest: ApplicationTester
 

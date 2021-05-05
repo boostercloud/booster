@@ -11,11 +11,8 @@ import { ApolloLink, split } from 'apollo-link'
 import * as WebSocket from 'ws'
 import { SubscriptionClient } from 'subscriptions-transport-ws'
 import { ApolloClientOptions } from 'apollo-client/ApolloClient'
-import * as jwt from 'jsonwebtoken'
-import * as fs from 'fs'
 import QueryOutput = DocumentClient.QueryOutput
 import ScanOutput = DocumentClient.ScanOutput
-import { sleep } from '../../helper/sleep'
 import { applicationName } from '../../helper/app-helper'
 
 const cloudFormation = new CloudFormation()

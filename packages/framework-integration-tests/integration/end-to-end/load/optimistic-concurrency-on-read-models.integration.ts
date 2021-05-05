@@ -14,7 +14,7 @@ describe('Optimistic concurrency on read models', () => {
     const userEmail = internet.email()
 
     // TODO: Make retrieval of auth token cloud agnostic
-    const idToken = applicationUnderTest.token.getTokenForUser(userEmail, 'UserWithEmail')
+    const idToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail')
     client = applicationUnderTest.graphql.client(idToken)
   })
 

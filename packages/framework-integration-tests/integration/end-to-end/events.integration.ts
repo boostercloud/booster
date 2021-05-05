@@ -1,12 +1,12 @@
 import { ApolloClient, ApolloQueryResult } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
-import { getTokenForUser, graphQLClient } from '../providers/aws/utils'
 import { internet, random } from 'faker'
 import gql from 'graphql-tag'
 import { expect } from 'chai'
 import * as chai from 'chai'
 import { sleep, waitForIt } from '../helper/sleep'
 import { EventSearchResponse, EventTimeFilter } from '@boostercloud/framework-types'
+import { applicationUnderTest } from './setup'
 chai.use(require('chai-as-promised'))
 
 describe('Events end-to-end tests', () => {
@@ -14,12 +14,11 @@ describe('Events end-to-end tests', () => {
   let loggedClient: ApolloClient<NormalizedCacheObject>
 
   before(async () => {
-    anonymousClient = await graphQLClient()
+    anonymousClient = applicationUnderTest.graphql.client()
 
     const userEmail = internet.email()
-    // TODO: Make retrieval of auth token cloud agnostic
-    const userToken = await getTokenForUser(userEmail, 'UserWithEmail')
-    loggedClient = await graphQLClient(userToken)
+    const userToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail')
+    loggedClient = applicationUnderTest.graphql.client(userToken)
   })
 
   describe('Query events', () => {
