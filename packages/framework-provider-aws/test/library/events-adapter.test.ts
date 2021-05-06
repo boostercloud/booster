@@ -128,7 +128,11 @@ describe('the events-adapter', () => {
 
       expect(fakePut).to.be.calledTwice
       for (const eventEnvelope of eventEnvelopes) {
-        const partitionKey = partitionKeyForEvent(eventEnvelope.entityTypeName, eventEnvelope.entityID, eventEnvelope.kind)
+        const partitionKey = partitionKeyForEvent(
+          eventEnvelope.entityTypeName,
+          eventEnvelope.entityID,
+          eventEnvelope.kind
+        )
         expect(fakePut).to.be.calledWithExactly({
           TableName: config.resourceNames.eventsStore,
           ConditionExpression: `${eventsStoreAttributes.partitionKey} <> :partitionKey AND ${eventsStoreAttributes.sortKey} <> :sortKey`,
@@ -144,7 +148,7 @@ describe('the events-adapter', () => {
               eventEnvelope.entityTypeName,
               eventEnvelope.kind
             ),
-          }
+          },
         })
       }
     })

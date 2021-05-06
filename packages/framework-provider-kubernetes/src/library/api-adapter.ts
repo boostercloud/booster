@@ -10,7 +10,7 @@ export const requestFailed = async (_error: Error): Promise<unknown> => {
   const statusCode = httpStatusCodeFor(_error)
   return {
     headers: {
-      'Access-Control-Allow-Origin': '*'
+      'Access-Control-Allow-Origin': '*',
     },
     statusCode,
     body: {
