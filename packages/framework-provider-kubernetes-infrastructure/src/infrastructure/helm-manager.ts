@@ -20,7 +20,7 @@ export class HelmManager {
     const l = scopeLogger('exec', this.logger)
     const cmd = `${this.BASE_COMMAND} ${args}`
     l.debug('Executing command', cmd)
-    return exec(cmd)
+    return exec(this.BASE_COMMAND, args)
   }
 
   /**
