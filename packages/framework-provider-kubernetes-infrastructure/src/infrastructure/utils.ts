@@ -59,7 +59,7 @@ export async function createProjectZipFile(logger: Logger): Promise<string> {
   const archive = archiver('zip', { zlib: { level: 9 } })
   l.debug('Putting contents into zip file')
   archive.pipe(output)
-  archive.glob('**/*')
+  archive.directory('.deploy', false)
   await archive.finalize()
   return new Promise((resolve, reject) => {
     output.on('close', () => {

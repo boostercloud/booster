@@ -13,7 +13,6 @@ describe('Kubernetes provider', () => {
     expect(services.body).not.to.be.undefined
 
     const serviceNames = services.body.items.map((item: Kubernetes.V1Service) => {
-
       expect(item.metadata?.namespace).to.equal(kubernetesNamespace)
 
       if (item?.metadata?.name === 'booster' || item?.metadata?.name === 'fileuploader') {
@@ -27,6 +26,6 @@ describe('Kubernetes provider', () => {
       return item?.metadata?.name
     })
 
-    expect(serviceNames).to.deep.equal(boosterKubernetesServices)
+    expect(serviceNames).to.include.members(boosterKubernetesServices)
   })
 })
