@@ -50,7 +50,7 @@ jobs:
           node-version: 12.x
       - run: npx lerna bootstrap
       - run: npx lerna run compile
-      - run: npx lerna run integration/end-to-end --stream
+      - run: npx lerna run integration/aws-end-to-end --stream
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
