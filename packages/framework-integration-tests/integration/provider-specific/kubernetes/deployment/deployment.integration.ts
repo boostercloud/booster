@@ -11,7 +11,9 @@ describe('Kubernetes provider', () => {
   it('deploys the Booster application with accessible nodePort for fileuploader and booster services', async () => {
     const services = await k8sClient.listNamespacedService(kubernetesNamespace)
     const pods = await k8sClient.listNamespacedPod(kubernetesNamespace)
-    expect(services.body).not.to.be.undefined
+
+    expect(services.body.items).not.to.be.undefined
+    expect(pods.body.items).not.to.be.undefined
 
     const serviceNames = services.body.items.map((item: Kubernetes.V1Service) => {
       expect(item.metadata?.namespace).to.equal(kubernetesNamespace)

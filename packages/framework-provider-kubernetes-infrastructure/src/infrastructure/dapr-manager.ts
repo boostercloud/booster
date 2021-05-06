@@ -97,8 +97,8 @@ export class DaprManager {
    * remove dapr services from your cluster
    */
   public async deleteDaprService(): Promise<void> {
-    const { stderr } = await this.helmManager.exec(`uninstall dapr -n ${this.namespace}`)
-    if (stderr) throw new Error(stderr)
+    const { stdout, stderr } = await this.helmManager.exec(`uninstall dapr -n ${this.namespace}`)
+    if (!stdout && stderr) throw new Error(stderr)
   }
 
   /**
@@ -108,8 +108,8 @@ export class DaprManager {
   public async deleteEventStore(): Promise<void> {
     const fileContent = await this.readDaprComponentFile(this.stateStoreFileName)
     if (fileContent.indexOf('booster/created: "true"') > -1) {
-      const { stderr } = await this.helmManager.exec(`uninstall redis -n ${this.namespace}`)
-      if (stderr) {
+      const { stdout, stderr } = await this.helmManager.exec(`uninstall redis -n ${this.namespace}`)
+      if (!stdout && stderr) {
         throw new Error(stderr)
       }
     }

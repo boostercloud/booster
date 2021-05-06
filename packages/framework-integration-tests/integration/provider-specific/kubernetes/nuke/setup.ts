@@ -18,8 +18,6 @@ before(async () => {
   // boost deploy removes the dapr components folder, so we need to create it again.
   await createDaprComponentFile(sandboxPath)
 
-  await exec('mv assets/templates .', { cwd: sandboxPath })
-
   await nuke(sandboxedProject)
   removeSandboxProject(sandboxPath)
 })
