@@ -11,8 +11,8 @@ export interface Counters {
 }
 
 export interface Queries {
-  events(primaryKey: string): Promise<unknown>
-  readModels(primaryKey: string, readModelName: string): Promise<unknown>
+  events(primaryKey: string): Promise<Array<unknown>>
+  readModels(primaryKey: string, readModelName: string): Promise<Array<unknown>>
 }
 
 export interface ProviderTestHelper {

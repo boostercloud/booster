@@ -28,7 +28,6 @@ module.exports = {
     'linebreak-style': ['error', 'unix'],
     quotes: ['error', 'single', { avoidEscape: true, allowTemplateLiterals: false }],
     semi: ['error', 'never'],
-    '@typescript-eslint/generic-type-naming': ['error', '^T[A-Z][a-zA-Z]+$'],
     'no-extra-parens': 'off',
     '@typescript-eslint/no-extra-parens': ['error'],
     'no-magic-numbers': 'off',

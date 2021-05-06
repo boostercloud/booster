@@ -5,7 +5,7 @@ const documentClient = new DynamoDB.DocumentClient()
 export class AWSQueries {
   constructor(private readonly stackName: string) {}
 
-  public async events(primaryKey: string, latestFirst = true): Promise<any> {
+  public async events(primaryKey: string, latestFirst = true): Promise<Array<unknown>> {
     const output: DynamoDB.QueryOutput = await documentClient
       .query({
         TableName: `${this.stackName}-events-store`,
@@ -16,10 +16,10 @@ export class AWSQueries {
       })
       .promise()
 
-    return output.Items
+    return output.Items || []
   }
 
-  public async readModels(primaryKey: string, readModelName: string, latestFirst = true): Promise<any> {
+  public async readModels(primaryKey: string, readModelName: string, latestFirst = true): Promise<Array<unknown>> {
     const output: DynamoDB.QueryOutput = await documentClient
       .query({
         TableName: `${this.stackName}-${readModelName}`,
@@ -29,6 +29,6 @@ export class AWSQueries {
       })
       .promise()
 
-    return output.Items
+    return output.Items || []
   }
 }
