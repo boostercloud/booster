@@ -1,7 +1,7 @@
 import { Logger } from '@boostercloud/framework-types'
 import util = require('util')
 import { scopeLogger } from '../helpers/logger'
-const exec = util.promisify(require('child_process').exec)
+const execFile = util.promisify(require('child_process').execFile)
 const semver = require('semver')
 
 export class HelmManager {
@@ -20,7 +20,7 @@ export class HelmManager {
     const l = scopeLogger('exec', this.logger)
     const cmd = `${this.BASE_COMMAND} ${args}`
     l.debug('Executing command', cmd)
-    return exec(this.BASE_COMMAND, args)
+    return execFile(this.BASE_COMMAND, args.split(' '))
   }
 
   /**
