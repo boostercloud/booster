@@ -1,10 +1,10 @@
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { internet, random } from 'faker'
-import { expect } from '../../helper/expect'
+import { expect } from '../../../helper/expect'
 import gql from 'graphql-tag'
 
-import { waitForIt } from '../../helper/sleep'
+import { waitForIt } from '../../../helper/sleep'
 import { applicationUnderTest } from '../setup'
 
 describe('Optimistic concurrency on read models', () => {
