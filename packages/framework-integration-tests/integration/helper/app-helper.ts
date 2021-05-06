@@ -9,14 +9,14 @@ export function applicationName(): string {
 }
 
 export async function getProviderTestHelper(): Promise<ProviderTestHelper> {
-  const provider = process.env.E2E_PROVIDER
+  const provider = process.env.TESTED_PROVIDER
   const providerHelpers: Record<string, () => Promise<ProviderTestHelper>> = {
     AWS: () => AWSTestHelper.build(applicationName()),
   }
   const supportedProviders = Object.keys(providerHelpers)
   if (!provider || !supportedProviders.includes(provider)) {
     throw new Error(
-      `Invalid provider to run tests. Environment variable E2E_PROVIDER is ${provider} and the supported ones are [${supportedProviders}]`
+      `Invalid provider to run tests. Environment variable TESTED_PROVIDER is ${provider} and the supported ones are [${supportedProviders}]`
     )
   }
 
