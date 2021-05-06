@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import { BoosterConfig, UserEnvelope } from '@boostercloud/framework-types'
 
 import * as jwksRSA from 'jwks-rsa'
@@ -53,7 +52,7 @@ export class BoosterTokenVerifier {
       }
 
       token = this.sanitizeToken(token)
-      jwt.verify(token, key, this.options, (err?: Error | null, decoded?: object) => {
+      jwt.verify(token, key, this.options, (err?: Error | null, decoded?: unknown) => {
         if (err) {
           return reject(err)
         }
