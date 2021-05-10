@@ -768,7 +768,6 @@ For a force delete without asking for confirmation, you can run `boost nuke -e <
 Booster now supports fetching events from your Booster application! Here are some examples of how it works:
 
 **A) Read all events associated with CartEntity by a specific ID**
-
 ```graphql
 query {
   eventsByEntity(entity: CartEntity, entityID: "B5") {
@@ -777,7 +776,32 @@ query {
 }
 ```
 
-**B) Read all events from CartEntity. Optionally, you can include time filters (from...to) to just get the events in that range of time:**
+**B) Read all events from CartEntity**
+```graphql
+query {
+  eventsByEntity(entity: CartEntity) {
+    type entity entityID requestID createdAt value
+  }
+}
+```
+
+**C) Query specific events, no matter the entity/es it has assigned.**
+```
+query {
+  eventsByType(type: CartChangedEvent) {
+    type entity entityID requestID createdAt value
+  }
+}
+```
+
+### Time filters
+Optionally, you can get events in a range of dates for any endpoint of this API. The time filter format is in ISO format, with any precision, for example:
+* from:"2021" : Events created on 2021 year or up
+* from:"2021-02-12" to:"2021-02-13" : Events created during February 12th
+* from:"2021-03-16T16:16:25.178" : Events created at that date and time, using millisecond precision
+
+#### Time filters examples
+**A) CartEntity events from February 23rd to July 20th, 2021**
 ```graphql
 query {
   eventsByEntity(entity: CartEntity, from:"2021-02-23", to:"2021-07-20") {
@@ -786,16 +810,10 @@ query {
 }
 ```
 
-The time filter format is in ISO format, with any precision, for example:
-* from:"2021" : Events created on 2021 year or up
-* from:"2021-02-12" to:"2021-02-13" : Events created during February 12th
-* from:"2021-03-16T16:16:25.178" : Events created at that date and time, using millisecond precision
-
-**C) Query specific events, no matter the entity/es it has assigned.**
-
+**B) CartChangedEvent events from February 25th to February 28th, 2021**
 ```
 query {
-  eventsByType(type: CartChangedEvent, from:"2021-02-23", to:"2021-07-20") {
+  eventsByType(type: CartChangedEvent, from:"2021-02-25", to:"2021-02-28") {
     type entity entityID requestID createdAt value
   }
 }
