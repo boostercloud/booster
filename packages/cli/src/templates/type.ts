@@ -1,4 +1,4 @@
-export const template = `export interface {{{ name }}} {
+export const template = `export class {{{ name }}} {
   {{#fields}}
   {{{name}}}: {{{type}}}
   {{/fields}}

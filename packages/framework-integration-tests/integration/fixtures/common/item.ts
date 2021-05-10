@@ -1,2 +1,2 @@
-export interface Item {
+export class Item {
 }
