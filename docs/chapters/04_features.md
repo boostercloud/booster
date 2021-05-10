@@ -786,7 +786,7 @@ query {
 ```
 
 **C) Query specific events, no matter the entity/es it has assigned.**
-```
+```graphql
 query {
   eventsByType(type: CartChangedEvent) {
     type entity entityID requestID createdAt value
@@ -811,7 +811,7 @@ query {
 ```
 
 **B) CartChangedEvent events from February 25th to February 28th, 2021**
-```
+```graphql
 query {
   eventsByType(type: CartChangedEvent, from:"2021-02-25", to:"2021-02-28") {
     type entity entityID requestID createdAt value
@@ -820,7 +820,7 @@ query {
 ```
 
 ### Authorization
-You can authorize who can check these events with the [authorization rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure). After adding the rocket, you can specify which role/s can access to them via the @Entity annotation:
+You can authorize who can query these events with the [authorization rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure). After adding the rocket, you can specify which role/s can access to them via the @Entity annotation:
 ```typescript
 // cart.ts (entity)
 @Entity({
