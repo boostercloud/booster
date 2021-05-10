@@ -1,4 +1,6 @@
 export class ItemWithFields {
-  sku: string
-  quantity: number
+  public constructor(
+    public sku: string,
+    public quantity: number,
+  ) {}
 }

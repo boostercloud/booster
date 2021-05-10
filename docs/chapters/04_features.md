@@ -178,8 +178,7 @@ The GraphQL API is fully **auto-generated** based on your _commands_ and _read m
 ```typescript
 // My type
 export class ItemWithFields {
-  sku: string
-  quantity: number
+  public constructor(sku: string, quantity: number) {}
 }
 ```
 

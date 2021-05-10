@@ -1,6 +1,8 @@
 export const template = `export class {{{ name }}} {
-  {{#fields}}
-  {{{name}}}: {{{type}}}
-  {{/fields}}
+  public constructor(
+    {{#fields}}
+    public {{{name}}}: {{{type}}},
+    {{/fields}}
+  ) {}
 }
 `
