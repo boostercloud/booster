@@ -1,7 +1,7 @@
 import { expect } from '../../../helper/expect'
 import * as Kubernetes from '@kubernetes/client-node'
 import { boosterKubernetesServices, kubernetesNamespace } from '../constants'
-import { waitForIt } from '../../aws/utils'
+import { waitForIt } from '../../../helper/sleep'
 
 describe('Kubernetes provider', () => {
   const kubernetesConfig = new Kubernetes.KubeConfig()

@@ -1,7 +1,7 @@
 import * as chai from 'chai'
 import * as Kubernetes from '@kubernetes/client-node'
 import { kubernetesNamespace } from '../constants'
-import { waitForIt } from '../../aws/utils'
+import { waitForIt } from '../../../helper/sleep'
 
 export const expect = chai.expect
 
@@ -19,8 +19,8 @@ describe('After nuke', () => {
         (services) => {
           return services.body.items.length === 0
         },
-        2000,
-        100000
+        5000,
+        150000
       )
 
       const pods = await waitForIt(
@@ -30,8 +30,8 @@ describe('After nuke', () => {
         (pods) => {
           return pods.body.items.length === 0
         },
-        2000,
-        100000
+        5000,
+        150000
       )
 
       expect(services.body.items).to.be.empty
