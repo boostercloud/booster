@@ -762,3 +762,63 @@ boost nuke -e <environment name>
 For a force delete without asking for confirmation, you can run `boost nuke -e <environment name> -f`.
 
 > [!ATTENTION]  Be EXTRA CAUTIOUS with this option, all your application data will be irreversibly DELETED without confirmation.
+
+## Events API
+
+Booster now supports fetching events from your Booster application! Here are some examples of how it works:
+
+**A) Read all events associated with CartEntity by a specific ID**
+
+```graphql
+query {
+  eventsByEntity(entity: CartEntity, entityID: "B5") {
+    type entity entityID requestID createdAt value
+  }
+}
+```
+
+**B) Read all events from CartEntity. Optionally, you can include time filters (from...to) to just get the events in that range of time:**
+```graphql
+query {
+  eventsByEntity(entity: CartEntity, from:"2021-02-23", to:"2021-07-20") {
+    type entity entityID requestID createdAt value
+  }
+}
+```
+
+The time filter format is in ISO format, with any precision, for example:
+* from:"2021" : Events created on 2021 year or up
+* from:"2021-02-12" to:"2021-02-13" : Events created during February 12th
+* from:"2021-03-16T16:16:25.178" : Events created at that date and time, using millisecond precision
+
+**C) Query specific events, no matter the entity/es it has assigned.**
+
+```
+query {
+  eventsByType(type: CartChangedEvent, from:"2021-02-23", to:"2021-07-20") {
+    type entity entityID requestID createdAt value
+  }
+}
+```
+
+### Authorization
+You can authorize who can check these events with the [authorization rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure). After adding the rocket, you can specify which role/s can access to them via the @Entity annotation:
+```typescript
+// cart.ts (entity)
+@Entity({
+  authorizeReadEvents: 'all',
+})
+export class Cart {
+  public constructor(
+          readonly id: UUID,
+          readonly cartItems: Array<CartItem>,
+          public shippingAddress?: Address,
+          public checks = 0
+  ) {}
+  // <reducers...>
+}
+```
+
+### Known limitations
+* Subscriptions don't work for the events API yet
+* You can only query events, but not write them through this API
