@@ -38,7 +38,7 @@ Booster.configure('production', (config: BoosterConfig): void => {
 
   config.appName = 'my-store-' + appNameSuffix
   config.provider = AWS.Provider()
-  config.assets = ['assets', 'components']
+  config.assets = ['assets']
   config.tokenVerifier = {
     issuer: 'booster',
     // Read the content of the public RS256 cert, used to sign the JWT tokens
