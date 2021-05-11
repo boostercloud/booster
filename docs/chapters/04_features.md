@@ -30,6 +30,23 @@ export class UpdateUser {
 }
 ```
 
+Optionally, you can also authorize entities, so you can have control of who reads its events. You can specify which role/s can access to them via the @Entity annotation:
+```typescript
+// cart.ts (entity)
+@Entity({
+  authorizeReadEvents: 'all',
+})
+export class Cart {
+  public constructor(
+          readonly id: UUID,
+          readonly cartItems: Array<CartItem>,
+          public shippingAddress?: Address,
+          public checks = 0
+  ) {}
+  // <reducers...>
+}
+```
+
 By default, a Booster application has no roles defined, so the only allowed value you can use in the `authorize` policy is `'all'` (good for public APIs).
 If you want to add user authorization, you first need to create the roles that are suitable for your application.
 Roles are classes annotated with the `@Role` decorator, where you can specify some attributes. We recommend that you define your roles in the file `src/roles.ts` or, if you have too many roles, put them in several files under the `src/roles` folder.
@@ -446,6 +463,86 @@ mutation {
 
 > [!NOTE]  Remember that, in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
 
+### Reading events
+
+You can also fetch events directly if you need. To do so, there are two kind of queries that have the following structure:
+```graphql
+query {
+  eventsByEntity(entity: <name of entity>, entityID: "<id of the entity>") {
+    selection_field_list
+  }
+}
+
+query {
+  eventsByType(type: <name of event>) {
+    selection_field_list
+  }
+}
+```
+Where:
+- _<name of your entity>_ is the name of the class corresponding to the entity whose events you want to retrieve.
+- _<id of the entity>_ is the ID of the specific entity instance whose events you are interested in. **This is optional**
+- _<name of event>_ is the name of the class corresponding to the event type whose instances you want to retrieve.
+- _selection_field_list_ is a list with the names of the specific fields you want to get as response. See the response example below to know more.
+
+
+#### Examples
+**A) Read all events associated with CartEntity by a specific ID**
+```graphql
+query {
+  eventsByEntity(entity: CartEntity, entityID: "B5") {
+    type entity entityID requestID createdAt value
+  }
+}
+```
+
+**B) Read all events from CartEntity**
+```graphql
+query {
+  eventsByEntity(entity: CartEntity) {
+    type entity entityID requestID createdAt value
+  }
+}
+```
+
+**C) Query specific events, no matter the entity/es it has assigned.**
+```graphql
+query {
+  eventsByType(type: CartChangedEvent) {
+    type entity entityID requestID createdAt value
+  }
+}
+```
+
+#### Time filters
+Optionally, you can get events in a range of dates for any endpoint of this API. The time filter format is in ISO format, with any precision, for example:
+* from:"2021" : Events created on 2021 year or up
+* from:"2021-02-12" to:"2021-02-13" : Events created during February 12th
+* from:"2021-03-16T16:16:25.178" : Events created at that date and time, using millisecond precision
+
+#### Time filters examples
+**A) CartEntity events from February 23rd to July 20th, 2021**
+```graphql
+query {
+  eventsByEntity(entity: CartEntity, from:"2021-02-23", to:"2021-07-20") {
+    type entity entityID requestID createdAt value
+  }
+}
+```
+
+**B) CartChangedEvent events from February 25th to February 28th, 2021**
+```graphql
+query {
+  eventsByType(type: CartChangedEvent, from:"2021-02-25", to:"2021-02-28") {
+    type entity entityID requestID createdAt value
+  }
+}
+```
+
+#### Known limitations
+* Subscriptions don't work for the events API yet
+* You can only query events, but not write them through this API. Use a command for that.
+
 ### Using Apollo Client
 
 One of the best clients to connect to a GraphQL API is the [Apollo](https://www.apollographql.com/) client. There will probably be a version for your client technology of choice. These are the main ones:
@@ -762,81 +859,3 @@ boost nuke -e <environment name>
 For a force delete without asking for confirmation, you can run `boost nuke -e <environment name> -f`.
 
 > [!ATTENTION]  Be EXTRA CAUTIOUS with this option, all your application data will be irreversibly DELETED without confirmation.
-
-## Events API
-
-Booster now supports fetching events from your Booster application! Here are some examples of how it works:
-
-**A) Read all events associated with CartEntity by a specific ID**
-```graphql
-query {
-  eventsByEntity(entity: CartEntity, entityID: "B5") {
-    type entity entityID requestID createdAt value
-  }
-}
-```
-
-**B) Read all events from CartEntity**
-```graphql
-query {
-  eventsByEntity(entity: CartEntity) {
-    type entity entityID requestID createdAt value
-  }
-}
-```
-
-**C) Query specific events, no matter the entity/es it has assigned.**
-```graphql
-query {
-  eventsByType(type: CartChangedEvent) {
-    type entity entityID requestID createdAt value
-  }
-}
-```
-
-### Time filters
-Optionally, you can get events in a range of dates for any endpoint of this API. The time filter format is in ISO format, with any precision, for example:
-* from:"2021" : Events created on 2021 year or up
-* from:"2021-02-12" to:"2021-02-13" : Events created during February 12th
-* from:"2021-03-16T16:16:25.178" : Events created at that date and time, using millisecond precision
-
-#### Time filters examples
-**A) CartEntity events from February 23rd to July 20th, 2021**
-```graphql
-query {
-  eventsByEntity(entity: CartEntity, from:"2021-02-23", to:"2021-07-20") {
-    type entity entityID requestID createdAt value
-  }
-}
-```
-
-**B) CartChangedEvent events from February 25th to February 28th, 2021**
-```graphql
-query {
-  eventsByType(type: CartChangedEvent, from:"2021-02-25", to:"2021-02-28") {
-    type entity entityID requestID createdAt value
-  }
-}
-```
-
-### Authorization
-You can authorize who can query these events with the [authorization rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure). After adding the rocket, you can specify which role/s can access to them via the @Entity annotation:
-```typescript
-// cart.ts (entity)
-@Entity({
-  authorizeReadEvents: 'all',
-})
-export class Cart {
-  public constructor(
-          readonly id: UUID,
-          readonly cartItems: Array<CartItem>,
-          public shippingAddress?: Address,
-          public checks = 0
-  ) {}
-  // <reducers...>
-}
-```
-
-### Known limitations
-* Subscriptions don't work for the events API yet
-* You can only query events, but not write them through this API
