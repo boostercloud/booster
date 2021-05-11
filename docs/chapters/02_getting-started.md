@@ -282,7 +282,7 @@ running for a blog application in just a few minutes. The steps to follow will b
 
 ### 1. Create the project
 
-First of all, we will use the Booster generators to create a project. Run this command and follow
+First of all, we will use the Booster generators to create a project. Run this command `boost new:project boosted-blog` and follow
 the instructions. After some prompted questions, the CLI will ask you to select one of the available providers to set up as the main provider that will be used.
 
 ```shell
@@ -296,7 +296,7 @@ the instructions. After some prompted questions, the CLI will ask you to select 
 When asked for the provider, select AWS as that is what we have
 configured [here](chapters/02_getting-started.md#aws-provider-prerequisites) for the example. You can use another provider if you want, or add more providers once you have created the project.
 
-To create the project, run the following command:
+After choosing your provider, you will see your project generated!:
 
 ```shell
 > boost new:project boosted-blog
