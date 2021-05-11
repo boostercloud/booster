@@ -138,3 +138,4 @@ jobs:
       - run: npx lerna bootstrap
       - run: npx lerna run compile
       - run: npx lerna run integration/k8s-deploy --stream
+      - run: npx lerna run integration/k8s-nuke --stream
