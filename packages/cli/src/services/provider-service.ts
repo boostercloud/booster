@@ -46,3 +46,7 @@ export function nukeCloudProviderResources(config: BoosterConfig, logger: Logger
 export async function startProvider(port: number, config: BoosterConfig): Promise<void> {
   return supportedInfrastructureMethodOrDie('start', config)(config, port)
 }
+
+export async function fetchLogsProvider(config: BoosterConfig, logger: Logger): Promise<void> {
+  await config.provider.logs.fetchAll(config, logger)
+}

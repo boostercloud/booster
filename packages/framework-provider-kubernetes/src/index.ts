@@ -61,6 +61,9 @@ export const Provider = (): ProviderLibrary => ({
   scheduled: {
     rawToEnvelope: ScheduledAdapter.rawToEnvelope,
   },
+  logs: {
+    fetchAll: undefined as any,
+  },
   // ProviderInfrastructureGetter
   infrastructure: () =>
     require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,

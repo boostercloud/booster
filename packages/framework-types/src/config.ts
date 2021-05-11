@@ -61,6 +61,11 @@ export class BoosterConfig {
       eventsStore: applicationStackName + '-events-store',
       subscriptionsStore: applicationStackName + '-subscriptions-store',
       connectionsStore: applicationStackName + '-connections-store',
+      functions: {
+        eventsMain: applicationStackName + '-events-main',
+        graphqlHandler: applicationStackName + '-graphql-handler',
+        subscriptionNotifier: applicationStackName + '-subscriptions-notifier',
+      },
       forReadModel(readModelName: string): string {
         return applicationStackName + '-' + readModelName
       },
@@ -171,6 +176,11 @@ interface ResourceNames {
   eventsStore: string
   subscriptionsStore: string
   connectionsStore: string
+  functions: {
+    eventsMain: string
+    graphqlHandler: string
+    subscriptionNotifier: string
+  }
   forReadModel(entityName: string): string
 }
 

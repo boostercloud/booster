@@ -21,6 +21,7 @@ export interface ProviderLibrary {
   api: ProviderAPIHandling
   connections: ProviderConnectionsLibrary
   scheduled: ScheduledCommandsLibrary
+  logs: LogsLibrary
   infrastructure: () => ProviderInfrastructure
 }
 
@@ -103,4 +104,8 @@ export interface ProviderInfrastructure {
 
 export interface ScheduledCommandsLibrary {
   rawToEnvelope(rawMessage: unknown, logger: Logger): Promise<ScheduledCommandEnvelope>
+}
+
+export interface LogsLibrary {
+  fetchAll(config: BoosterConfig, logger: Logger): Promise<unknown>
 }

@@ -12,7 +12,7 @@ import {
   deleteReadModel,
 } from './library/read-models-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
-import { DynamoDB } from 'aws-sdk'
+import { DynamoDB, CloudWatchLogs } from 'aws-sdk'
 import { ProviderInfrastructure, ProviderLibrary, RocketDescriptor } from '@boostercloud/framework-types'
 import { requestFailed, requestSucceeded } from './library/api-gateway-io'
 import { searchReadModel } from './library/read-models-searcher-adapter'
@@ -30,6 +30,7 @@ import {
   storeConnectionData,
 } from './library/connections-adapter'
 import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
+import { fetchAllLogs } from './library/logs-adapter'
 
 const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient({
   maxRetries: 10,
@@ -37,6 +38,8 @@ const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient({
     timeout: 2000,
   },
 })
+
+const cloudWatchLogs = new CloudWatchLogs({ apiVersion: '2014-03-28' })
 
 interface HasInfrastructure {
   Infrastructure: (rockets?: RocketDescriptor[]) => ProviderInfrastructure
@@ -97,6 +100,9 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
     // ScheduledCommandsLibrary
     scheduled: {
       rawToEnvelope: rawScheduledInputToEnvelope,
+    },
+    logs: {
+      fetchAll: fetchAllLogs.bind(null, cloudWatchLogs),
     },
     // ProviderInfrastructureGetter
     infrastructure: () => {
