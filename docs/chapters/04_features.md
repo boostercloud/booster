@@ -730,8 +730,6 @@ To deploy your Booster project, run the following command:
 boost deploy -e <environment name>
 ```
 
-> [!NOTE]  All you have in your project root will be deployed to the cloud provider, so if for example you have an additional frontend project, you should move it to another place because the cloud providers usually have a limited capacity for only code.
-
 The `<environment name>` parameter is the name of the [environment](chapters/05_going-deeper#environments) you want to deploy.
 It will take a while, but you should have your project deployed to your cloud provider.
 
