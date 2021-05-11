@@ -68,7 +68,7 @@ export class BoosterTokenVerifier {
     const rolesClaim = this.config.tokenVerifier?.rolesClaim || 'custom:role'
     const role = decodedToken[rolesClaim]
     const roleValue = Array.isArray(role) ? role[0] : role
-    
+
     return {
       id,
       username,
