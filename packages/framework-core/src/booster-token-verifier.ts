@@ -63,13 +63,16 @@ export class BoosterTokenVerifier {
   }
 
   private tokenToUserEnvelope(decodedToken: any): UserEnvelope {
-    const username = decodedToken.email ?? decodedToken.phone_number
+    const username = decodedToken?.email || decodedToken?.phone_number || decodedToken.sub
     const id = decodedToken.sub
-    const role = decodedToken['custom:role']
+    const rolesClaim = this.config.tokenVerifier?.rolesClaim || 'custom:role'
+    const role = decodedToken[rolesClaim]
+    const roleValue = Array.isArray(role) ? role[0] : role
+    
     return {
       id,
       username,
-      role: role?.trim() ?? '',
+      role: roleValue?.trim() ?? '',
     }
   }
 
