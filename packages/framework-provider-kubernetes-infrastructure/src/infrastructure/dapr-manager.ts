@@ -23,10 +23,10 @@ interface StateStoreYaml {
 export class DaprManager {
   private eventStoreRepo = 'https://charts.bitnami.com/bitnami'
   private eventStoreRepoName = 'bitnami'
-  public eventStoreHost = 'redis-master:6379'
-  private eventStoreSecretName = 'redis-password'
+  public eventStoreHost = 'eventstore-mongodb:6379'
+  private eventStoreSecretName = 'eventstore-mongodb'
   public eventStoreUser = 'admin'
-  private eventStorePod = 'redis'
+  private eventStorePod = 'mongodb'
   public eventStorePassword = ''
   private daprComponentsPath = path.join(process.cwd(), 'components')
   private stateStoreFileName = 'statestore.yaml'
@@ -108,7 +108,7 @@ export class DaprManager {
   public async deleteEventStore(): Promise<void> {
     const fileContent = await this.readDaprComponentFile(this.stateStoreFileName)
     if (fileContent.indexOf('booster/created: "true"') > -1) {
-      const { stderr } = await this.helmManager.exec(`uninstall redis -n ${this.namespace}`)
+      const { stderr } = await this.helmManager.exec(`uninstall eventstore -n ${this.namespace}`)
       if (stderr) {
         throw new Error(stderr)
       }
@@ -129,8 +129,8 @@ export class DaprManager {
         l.debug('Repo not installed, installing')
         await this.helmManager.installRepo(this.eventStoreRepoName, this.eventStoreRepo)
       }
-      l.debug('Installing redis using bitnami/redis')
-      await this.helmManager.exec(`install redis bitnami/redis -n ${this.namespace}`)
+      l.debug('Installing mongoDB using bitnami/mongodb')
+      await this.helmManager.exec(`install eventstore bitnami/mongodb -n ${this.namespace}`)
       l.debug('Waiting for pod to be ready')
       await this.clusterManager.waitForPodToBeReady(this.namespace, this.eventStorePod)
     }
@@ -147,7 +147,7 @@ export class DaprManager {
   public async getEventStorePassword(): Promise<string> {
     const l = scopeLogger('getEventStorePassword', this.logger)
     l.debug('Getting event store password')
-    const eventStorePassword = await this.clusterManager.getSecret(this.namespace, this.eventStorePod)
+    const eventStorePassword = await this.clusterManager.getSecret(this.namespace, this.eventStoreSecretName)
     if (!eventStorePassword) {
       l.debug("Couldn't get event store password, throwing")
       throw new Error(

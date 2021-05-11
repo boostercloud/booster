@@ -171,11 +171,11 @@ export class K8sManagement {
     l.debug('Get all pods in namespace')
     const pods = await this.getAllPodsInNamespace(namespace)
     l.debug('Attempting to find pod called', podName)
-    return pods.find((pod) => {
-      return pod?.name?.includes('redis')
-        ? pod.labels?.['app.kubernetes.io/name'] === podName
-        : pod.labels?.['app'] === podName
+    const foundPod = pods.find((pod) => {
+      return pod.labels?.['app.kubernetes.io/name'] === podName || pod.labels?.['app'] === podName
     })
+    l.debug(`pod founded: ${foundPod}`)
+    return foundPod
   }
 
   /**

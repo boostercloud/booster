@@ -8,17 +8,17 @@ metadata:
   annotations:
     booster/created: "true"
 spec:
-  type: state.redis
+  type: state.mongodb
   version: v1
   metadata:
-  - name: redisHost
+  - name: host
     value: {{{ eventStoreHost }}}
-  - name: redisUser
+  - name: username
     value: {{ eventStoreUsername }} 
-  - name: redisPassword
+  - name: password
     secretKeyRef:
-      name: redis
-      key: redis-password
+      name: eventstore-mongodb
+      key: mongodb-root-password
   - name: actorStateStore
     value: "true"`,
 }
