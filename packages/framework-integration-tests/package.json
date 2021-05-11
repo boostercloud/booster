@@ -18,10 +18,10 @@
     "aws-sdk": "2.764.0"
   },
   "devDependencies": {
+    "@boostercloud/application-tester": "0.16.0",
     "@boostercloud/framework-provider-aws-infrastructure": "0.16.0",
     "@boostercloud/framework-provider-kubernetes-infrastructure": "0.16.0",
     "@boostercloud/framework-provider-local-infrastructure": "0.16.0",
-    "@boostercloud/application-tester": "0.16.0",
     "@kubernetes/client-node": "0.14.3",
     "@types/aws-lambda": "8.10.48",
     "@types/chai-arrays": "2.0.0",
@@ -42,9 +42,12 @@
     "jsonwebtoken": "8.5.1",
     "jwks-rsa": "2.0.3",
     "metadata-booster": "0.3.1",
+    "serverless": "1.83.3",
+    "serverless-artillery": "0.5.2",
     "subscriptions-transport-ws": "0.9.18",
     "ttypescript": "1.5.12",
-    "ws": "7.4.5"
+    "ws": "7.4.5",
+    "yaml": "1.10.2"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -59,18 +62,15 @@
     "compile": "ttsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "integration": "npm run integration/cli && npm run integration/local && npm run integration/aws",
-
     "integration/cli": "mocha --forbid-only --exit --config \"integration/provider-unaware/cli/.mocharc.yml\" \"integration/provider-unaware/cli/**/*.integration.ts\"",
-
     "integration/aws": "npm run integration/aws-deploy && npm run integration/aws-func && npm run integration/aws-end-to-end && npm run integration/aws-nuke",
     "integration/aws-deploy": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \\\"integration/provider-specific/aws/deployment/.mocharc.yml\\\" \\\"integration/provider-specific/aws/deployment/**/*.integration.ts\\\"",
     "integration/aws-func": "TESTED_PROVIDER=AWS AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \\\"integration/provider-unaware/functionality/.mocharc.yml\\\" \\\"integration/provider-unaware/functionality/**/*.integration.ts\\\"",
     "integration/aws-end-to-end": "TESTED_PROVIDER=AWS AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"integration/provider-unaware/end-to-end/.mocharc.yml\" \"integration/provider-unaware/end-to-end/**/*.integration.ts\"",
+    "integration/aws-load": "TESTED_PROVIDER=AWS AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"integration/provider-unaware/load/.mocharc.yml\" \"integration/provider-unaware/load/**/*.load.ts\"",
     "integration/aws-nuke": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \\\"integration/provider-specific/aws/nuke/.mocharc.yml\\\" \\\"integration/provider-specific/aws/nuke/**/*.integration.ts\\\"",
-
     "integration/k8s": "npm run integration/k8s-deploy",
     "integration/k8s-deploy": "BOOSTER_ENV=kubernetes mocha --forbid-only --exit --config \\\"integration/provider-specific/kubernetes/deployment/.mocharc.yml\\\" \\\"integration/provider-specific/kubernetes/deployment/**/*.integration.ts\\\"",
-
     "integration/local": "BOOSTER_ENV=local mocha --forbid-only --exit --config \\\"integration/provider-specific/local/.mocharc.yml\\\" \\\"integration/provider-specific/local/**/*.integration.ts\\\""
   },
   "types": "dist/index.d.ts"
