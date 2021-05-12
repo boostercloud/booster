@@ -1,11 +1,17 @@
 import { StockMoved } from '../events/stock-moved'
 import { Register } from '@boostercloud/framework-types'
 import { ProductAvailabilityChanged } from '../events/product-availability-changed'
-import { EventHandler } from '@boostercloud/framework-core'
+import { Booster, EventHandler } from '@boostercloud/framework-core'
+import { Product } from '../entities/product'
 
 @EventHandler(StockMoved)
 export class HandleAvailability {
   public static async handle(event: StockMoved, register: Register): Promise<void> {
+    const product = await Booster.entity(Product, event.productID)
+    if (!product) {
+      // This means that we have moved stock of a product we don't have in our store. Ignore it
+      return
+    }
     if (event.origin == 'provider') {
       // New stock enters the system
       register.events(new ProductAvailabilityChanged(event.productID, event.quantity))

@@ -3,6 +3,9 @@ import * as yaml from 'yaml'
 import * as path from 'path'
 import { ProviderTestHelper } from '@boostercloud/application-tester'
 import { runCommand } from '../../helper/run-command'
+import { CloudFormation } from 'aws-sdk'
+
+const cloudFormation = new CloudFormation()
 
 interface Phase {
   duration: number
@@ -15,6 +18,7 @@ interface OverrideOptions {
 }
 
 export class ArtilleryExecutor {
+  private readonly serverlessArtilleryStackPrefix = 'serverless-artillery'
   constructor(
     private scriptsFolder: string,
     private readonly providerTestHelper: ProviderTestHelper,
@@ -22,12 +26,21 @@ export class ArtilleryExecutor {
   ) {}
 
   public async ensureDeployed(): Promise<void> {
-    await runCommand('.', `slsart deploy --stage ${this.stage}`)
+    const { Stacks } = await cloudFormation
+      .describeStacks({
+        StackName: `${this.serverlessArtilleryStackPrefix}-${this.stage}`,
+      })
+      .promise()
+
+    if (!Stacks?.[0]) {
+      await runCommand('.', `slsart deploy --stage ${this.stage}`)
+    } else {
+      console.info('Serverless Artillery stack is already deployed. Skipping redeployment.')
+    }
   }
 
   public async executeScript(scriptName: string, overrideOptions: OverrideOptions = {}): Promise<void> {
     const scriptContent = this.getScriptContent(scriptName, overrideOptions)
-    console.log(scriptContent)
     await runCommand('.', `slsart invoke --stage ${this.stage} --data '${scriptContent}'`)
   }
 

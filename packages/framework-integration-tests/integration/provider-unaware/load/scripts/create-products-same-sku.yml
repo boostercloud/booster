@@ -1,8 +1,8 @@
 config:
   target: <not_set>
   phases:
-    - duration: 5
-      arrivalRate: 200
+    - duration: <not_set>
+      arrivalRate: <not_set>
   variables:
     token: <not_set>
     sku: <not_set>
@@ -10,7 +10,7 @@ scenarios:
   - name: Create products
     flow:
       - post:
+          url: /
           headers:
             Authorization: "Bearer {{token}}"
-          url: /
           body: '{ "query": "mutation { CreateProduct(input: { sku: \"{{sku}}\" }) }" }'

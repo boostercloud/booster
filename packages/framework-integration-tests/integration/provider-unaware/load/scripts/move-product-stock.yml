@@ -1,0 +1,22 @@
+config:
+  target: <not_set>
+  phases:
+    - duration: <not-set>
+      arrivalRate: <not-set>
+  variables:
+    token: <not_set>
+    productID: <not_set>
+    destinationWarehouse: <not_set>
+scenarios:
+  - name: Moving stock from provider
+    flow:
+      - post:
+          url: /
+          headers:
+            Authorization: "Bearer {{token}}"
+          body: '{ "query":"mutation { MoveStock(input:{
+            productID: \"{{productID}}\",
+            origin: \"provider\",
+            destination: \"{{destinationWarehouse}}\",
+            quantity: 1
+            }) }" }'
