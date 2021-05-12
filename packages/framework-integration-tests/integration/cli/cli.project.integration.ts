@@ -307,7 +307,7 @@ describe('Project', () => {
           // Rewrite dependencies to use local versions
           await overrideWithBoosterLocalDependencies(fullProjectPath)
           // Install those dependencies
-          await exec('npm install --production --no-bin-links', { cwd: fullProjectPath })
+          await exec('npm install --production --no-bin-links --no-optional', { cwd: fullProjectPath })
 
           await expect(exec('npm run compile', { cwd: fullProjectPath })).to.be.eventually.fulfilled
         })
