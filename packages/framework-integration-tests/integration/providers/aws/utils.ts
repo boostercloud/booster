@@ -420,7 +420,7 @@ export const getTokenForUser = (email: string, role: string): string => {
   const token = jwt.sign(
     {
       id: email,
-      'custom:role': role,
+      'booster:role': role,
       email,
     },
     privateKey,

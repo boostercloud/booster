@@ -51,7 +51,7 @@ export class BoosterConfig {
 
   private _tokenVerifier?: TokenVerifier
 
-  public constructor(public readonly environmentName: string) {}
+  public constructor(public readonly environmentName: string) { }
 
   public get resourceNames(): ResourceNames {
     if (this.appName.length === 0) throw new Error('Application name cannot be empty')
@@ -128,10 +128,11 @@ export class BoosterConfig {
 
   public get tokenVerifier(): TokenVerifier | undefined {
     if (this._tokenVerifier) return this._tokenVerifier
-    if (process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER] && process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI]) {
+    if (process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER] && process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI] && process.env[JWT_ENV_VARS.BOOSTER_ROLES_CLAIM]) {
       return {
         issuer: process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER] as string,
         jwksUri: process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI] as string,
+        rolesClaim: process.env[JWT_ENV_VARS.BOOSTER_ROLES_CLAIM] as string,
       }
     }
     return undefined
@@ -154,7 +155,7 @@ export class BoosterConfig {
       if (!migrations.has(toVersion)) {
         throw new Error(
           `Migrations for '${conceptName}' are invalid: they are missing a migration with toVersion=${toVersion}. ` +
-            `There must be a migration for '${conceptName}' for every version in the range [2..${currentVersion}]`
+          `There must be a migration for '${conceptName}' for every version in the range [2..${currentVersion}]`
         )
       }
     }
@@ -164,6 +165,7 @@ export class BoosterConfig {
 export const JWT_ENV_VARS = {
   BOOSTER_JWT_ISSUER: 'BOOSTER_JWT_ISSUER',
   BOOSTER_JWKS_URI: 'BOOSTER_JWKS_URI',
+  BOOSTER_ROLES_CLAIM: 'BOOSTER_ROLES_CLAIM',
 }
 
 interface ResourceNames {
@@ -186,4 +188,5 @@ type TokenVerifier = {
   issuer: string
   jwksUri?: string
   publicKey?: string
+  rolesClaim?: string
 }
