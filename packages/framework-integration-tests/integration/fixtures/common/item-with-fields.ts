@@ -1,4 +1,6 @@
-export interface ItemWithFields {
-  sku: string
-  quantity: number
+export class ItemWithFields {
+  public constructor(
+    public sku: string,
+    public quantity: number,
+  ) {}
 }

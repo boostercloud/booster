@@ -174,6 +174,27 @@ Luckily, you can forget about that because Booster does all the work for you!
 
 The GraphQL API is fully **auto-generated** based on your _commands_ and _read models_.
 
+**Note:** To get the full potential of the GraphQL API, it is recommended not to use `interface` types in any command or read model attributes. Use `class` types instead. This will allow you to perform complex graphQL filters, including over nested attributes. There's an example below:
+```typescript
+// My type
+export class ItemWithQuantity { // Use "class", not "interface"
+  public constructor(sku: string, quantity: number) {}
+}
+```
+
+```typescript
+// The read-model file
+import { ItemWithQuantity } from "./types";
+@ReadModel({
+  authorize: 'all'
+})
+export class CartReadModel {
+  public constructor(
+          readonly id: UUID,
+          item: ItemWithQuantity // As ItemWithQuantity is a class, you will be able to query over nested attributes like item `quantity`
+  ) {}
+```
+
 ### Relationship between GraphQL operations and commands and read models
 
 GraphQL defines three kinds of operations that you can use: _mutations_, _queries_, and _subscriptions_.
