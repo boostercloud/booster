@@ -487,6 +487,10 @@ Where:
 
 
 #### Examples
+
+```
+  URL: "<graphqlURL>"
+```
 **A) Read all events associated with CartEntity by a specific ID**
 ```graphql
 query {
@@ -505,12 +509,56 @@ query {
 }
 ```
 
+For cases A and B, the response look like this:
+```json
+{
+    "data": {
+        "eventsByEntity": [
+            {
+                "type": "CartItemChanged",
+                "entity": "Cart",
+                "entityID": "B5",
+                "requestID": "7a9cc6a7-7c7f-4ef0-aef1-b226ae4d94fa",
+                "createdAt": "2021-05-12T08:41:13.792Z",
+                "value": {
+                    "productId": "73f7818c-f83e-4482-be49-339c004b6fdf",
+                    "cartId": "B5",
+                    "quantity": 2
+                }
+            }
+        ]
+    }
+}
+```
+
 **C) Query specific events, no matter the entity/es it has assigned.**
 ```graphql
 query {
   eventsByType(type: CartChangedEvent) {
     type entity entityID requestID createdAt value
   }
+}
+```
+In this case, for the **eventsByType** endpoint, the response would be:
+```json
+{
+    "data": {
+        "eventsByType": [
+            {
+                "type": "CartItemChanged",
+                "entity": "Cart",
+                "entityID": "5d81a60c-2e27-4fef-9f57-e5ae36519144",
+                "requestID": "7a9cc6a7-7c7f-4ef0-aef1-b226ae4d94fa",
+                "createdAt": "2021-05-12T08:41:13.792Z",
+                "value": {
+                    "productId": "73f7818c-f83e-4482-be49-339c004b6fdf",
+                    "cartId": "5d81a60c-2e27-4fef-9f57-e5ae36519144",
+                    "quantity": 2
+                }
+            }, 
+          ...
+        ]}
+    }
 }
 ```
 
