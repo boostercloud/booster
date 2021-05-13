@@ -13,7 +13,7 @@ interface Phase {
 }
 
 interface OverrideOptions {
-  phases?: [Phase]
+  phases?: Array<Phase>
   variables?: Record<string, any>
 }
 
