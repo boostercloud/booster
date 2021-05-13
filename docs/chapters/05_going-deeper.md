@@ -137,8 +137,8 @@ After the service principal is created, create a bash script with the following 
 ```bash
 #!/usr/bin/env bash
 
-SP_DISPLAY_NAME="<service-principal-name>"   replace <service-principal-name> with the name of your own SP
-REGION="East US"   replace with a region of your choice, see full list here: https://azure.microsoft.com/en-us/global-infrastructure/locations/
+SP_DISPLAY_NAME="<service-principal-name>" #replace <service-principal-name> with the name of your own SP
+REGION="East US" #replace with a region of your choice, see full list here: https://azure.microsoft.com/en-us/global-infrastructure/locations/
 
 export AZURE_APP_ID=$(az ad sp list --display-name ${SP_DISPLAY_NAME} | jq -r '.[].appId')
 export AZURE_TENANT_ID=$(az ad sp list --display-name ${SP_DISPLAY_NAME} | jq -r '.[].appOwnerTenantId')
@@ -154,11 +154,11 @@ Now go to your `config.ts` file, import the aws provider library and set up your
 ```typescript
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
-import AzureProvider from '@boostercloud/framework-provider-azure'
+import { Provider as AzureProvider } from '@boostercloud/framework-provider-azure'
 
 Booster.configure('production', (config: BoosterConfig): void => {
   config.appName = 'my-app-name'
-  config.provider = AzureProvider
+  config.provider = AzureProvider()
 })
 ```
 

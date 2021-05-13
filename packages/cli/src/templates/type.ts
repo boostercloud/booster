@@ -1,6 +1,8 @@
-export const template = `export interface {{{ name }}} {
-  {{#fields}}
-  {{{name}}}: {{{type}}}
-  {{/fields}}
+export const template = `export class {{{ name }}} {
+  public constructor(
+    {{#fields}}
+    public {{{name}}}: {{{type}}},
+    {{/fields}}
+  ) {}
 }
 `

@@ -17,7 +17,7 @@ export class TokenHelper {
     return jwt.sign(
       {
         id: email,
-        'custom:role': role,
+        'booster:role': role,
         email,
       },
       this.privateKey,
