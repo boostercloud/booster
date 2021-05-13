@@ -12,7 +12,7 @@ You can develop with Booster using any of the following operating systems:
 
 #### Install Node.js
 
-The minimal required Node.js version is `v12`. Download the installer
+The minimal required Node.js version is `v14`. Download the installer
 [from nodejs website](https://nodejs.org/en/), or install it using your system's package
 manager.
 
