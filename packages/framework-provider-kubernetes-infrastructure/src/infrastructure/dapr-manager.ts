@@ -23,11 +23,11 @@ interface StateStoreYaml {
 export class DaprManager {
   private eventStoreRepo = 'https://charts.bitnami.com/bitnami'
   private eventStoreRepoName = 'bitnami'
-  public eventStoreHost = 'eventstore-mongodb:6379'
-  private eventStoreSecretName = 'eventstore-mongodb'
-  public eventStoreUser = 'admin'
+  public eventStoreHost = 'eventstore-mongodb.booster-test-production.svc.cluster.local:27017'
+  public eventStoreUser = 'boosteruser'
+  public eventStoreSecretName = 'eventstore-mongodb'
+  public eventStoreSecretKey = 'mongodb-password'
   private eventStorePod = 'mongodb'
-  public eventStorePassword = ''
   private daprComponentsPath = path.join(process.cwd(), 'components')
   private stateStoreFileName = 'statestore.yaml'
   private namespace: string
@@ -69,17 +69,18 @@ export class DaprManager {
         //this.eventStorePassword has to be set
         throw new Error('Unable to get the state store credentials from your Dapr File')
       }
-      l.debug('The state store is provisioned by Booster. Verifying that the state store is working on the cluster')
-      const templateValues: DaprTemplateValues = await this.ensureEventStoreIsReady()
-      await this.createDaprComponentFile(templateValues)
-      this.eventStorePassword = templateValues.eventStorePassword
-    } else {
-      l.debug("Components path doesn't exist, ensuring event store is ready")
-      const templateValues: DaprTemplateValues = await this.ensureEventStoreIsReady()
-      l.debug('Creating component file')
-      await this.createDaprComponentFile(templateValues)
-      this.eventStorePassword = await this.getEventStorePassword()
     }
+    l.debug("Components path doesn't exist, ensuring event store is ready")
+    const templateValues: DaprTemplateValues = await this.ensureEventStoreIsReady()
+    l.debug('Creating component file')
+    await this.createDaprComponentFile(templateValues)
+  }
+
+  /**
+   * register the event store as a Dapr component applying the statestore.yaml under the component folder to the cluster with a manual kubectl apply
+   */
+  public async registerEventStoreInDapr(): Promise<void> {
+    const l = scopeLogger('registerEventStoreInDapr', this.logger)
     l.debug('Reading dapr component directory')
     const daprComponents = await this.readDaprComponentDirectory()
     l.debug('Creating all yaml components')
@@ -130,34 +131,19 @@ export class DaprManager {
         await this.helmManager.installRepo(this.eventStoreRepoName, this.eventStoreRepo)
       }
       l.debug('Installing mongoDB using bitnami/mongodb')
-      await this.helmManager.exec(`install eventstore bitnami/mongodb -n ${this.namespace}`)
+      await this.helmManager.exec(
+        `install eventstore bitnami/mongodb -n ${this.namespace} --set auth.enabled=true --set auth.username=boosteruser --set auth.database=booster`
+      )
       l.debug('Waiting for pod to be ready')
       await this.clusterManager.waitForPodToBeReady(this.namespace, this.eventStorePod)
     }
-    l.debug('Getting event store password')
-    this.eventStorePassword = await this.getEventStorePassword()
     return {
       namespace: this.namespace,
       eventStoreHost: this.eventStoreHost,
       eventStoreUsername: this.eventStoreUser,
-      eventStorePassword: this.eventStorePassword,
+      eventStoreSecretName: this.eventStoreSecretName,
+      eventStoreSecretKey: this.eventStoreSecretKey,
     }
-  }
-
-  public async getEventStorePassword(): Promise<string> {
-    const l = scopeLogger('getEventStorePassword', this.logger)
-    l.debug('Getting event store password')
-    const eventStorePassword = await this.clusterManager.getSecret(this.namespace, this.eventStoreSecretName)
-    if (!eventStorePassword) {
-      l.debug("Couldn't get event store password, throwing")
-      throw new Error(
-        'Impossible to get the secret from the cluster for your event store, please check your cluster for more information'
-      )
-    }
-    l.debug('Encoding password')
-    const buff = Buffer.from(eventStorePassword?.data?.[this.eventStoreSecretName] ?? '', 'base64')
-    const decodedPassword = buff.toString('utf-8')
-    return decodedPassword
   }
 
   /**

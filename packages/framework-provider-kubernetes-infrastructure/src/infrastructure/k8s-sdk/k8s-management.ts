@@ -1,4 +1,4 @@
-import { CoreV1Api, KubeConfig, KubernetesObject, KubernetesObjectApi } from '@kubernetes/client-node'
+import { CoreV1Api, KubeConfig, KubernetesObject, KubernetesObjectApi, V1ContainerStatus } from '@kubernetes/client-node'
 import { Node, Namespace, Pod, Service, VolumeClaim, Secret } from './types'
 import * as Mustache from 'mustache'
 import { safeLoadAll } from 'js-yaml'
@@ -23,6 +23,12 @@ export class K8sManagement {
     this.logger = scopeLogger('K8sManagement', logger)
   }
 
+  private getPodStatus(statusContainers: V1ContainerStatus[] | undefined): string {
+    if (!statusContainers) return 'not ready'
+    const readyPod = statusContainers.filter((container) => container.ready)
+    return readyPod.length === statusContainers.length ? 'running' : 'not ready'
+  }
+
   /**
    * get a list including all available pods in an specific namespace
    */
@@ -37,7 +43,7 @@ export class K8sManagement {
         name: item.metadata?.name,
         namespace: item.metadata?.namespace ?? 'default',
         labels: item.metadata?.labels ?? {},
-        status: item.status?.phase,
+        status: this.getPodStatus(item.status?.containerStatuses),
         nodeName: item.spec?.nodeName,
         ip: item.status?.podIP,
       }
@@ -314,7 +320,7 @@ export class K8sManagement {
       },
       (podInfo) => {
         l.debug('Got podInfo status', podInfo ? podInfo.status : 'UNDEFINED')
-        return podInfo?.status === 'Running'
+        return podInfo?.status === 'running'
       },
       `Unable to get the pod ${podName} in status Running, please check your cluster for more information`,
       timeout

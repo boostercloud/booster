@@ -34,7 +34,9 @@ async function deployBoosterApp(logger: Logger, configuration: BoosterK8sConfigu
     deployManager.ensureBoosterServiceExists(),
   ])
   logger.info('Checking your Dapr services and event store')
-  await Promises.allSettledAndFulfilled([deployManager.ensureDaprExists(), deployManager.ensureEventStoreExists()])
+  await deployManager.ensureDaprExists()
+  await deployManager.ensureEventStoreExists()
+  await daprManager.registerEventStoreInDapr()
   logger.info('Waiting for cluster to be ready to receive your code')
   await deployManager.ensureUploadPodExists()
   logger.info('Packing and uploading your code into the cluster')
@@ -43,7 +45,8 @@ async function deployBoosterApp(logger: Logger, configuration: BoosterK8sConfigu
   const serviceURL = await deployManager.deployBoosterApp(
     daprManager.eventStoreHost,
     daprManager.eventStoreUser,
-    daprManager.eventStorePassword
+    daprManager.eventStoreSecretName,
+    daprManager.eventStoreSecretKey
   )
   logger.info(`Your app is ready in this url: http://${serviceURL}/graphql`)
 }

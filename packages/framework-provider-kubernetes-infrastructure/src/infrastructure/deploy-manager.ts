@@ -67,6 +67,9 @@ export class DeployManager {
       await this.helmManager.exec(`install dapr dapr/dapr --namespace ${this.namespace}`)
       l.debug('Waiting for pod to be ready')
       await this.clusterManager.waitForPodToBeReady(this.namespace, 'dapr-operator')
+      await this.clusterManager.waitForPodToBeReady(this.namespace, 'dapr-placement')
+      await this.clusterManager.waitForPodToBeReady(this.namespace, 'dapr-sentry')
+      await this.clusterManager.waitForPodToBeReady(this.namespace, 'dapr-sidecar-injector')
       await this.daprManager.allowDaprToReadSecrets()
     }
   }
@@ -191,11 +194,13 @@ export class DeployManager {
   public async deployBoosterApp(
     eventStoreHost: string,
     eventStoreUser: string,
-    eventStorePassword: string
+    eventStoreSecretName: string,
+    eventStoreSecretKey: string
   ): Promise<string> {
     this.templateValues.dbHost = eventStoreHost
     this.templateValues.dbUser = eventStoreUser
-    this.templateValues.dbPass = eventStorePassword
+    this.templateValues.eventStoreSecretName = eventStoreSecretName
+    this.templateValues.eventStoreSecretKey = eventStoreSecretKey
     const l = scopeLogger('deployBoosterApp', this.logger)
     l.debug('Ensuring booster pod exists')
     await this.ensureBoosterPodExists()

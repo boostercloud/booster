@@ -11,14 +11,16 @@ export interface TemplateValues {
   serviceType: string
   dbHost?: string
   dbUser?: string
-  dbPass?: string
+  eventStoreSecretName?: string
+  eventStoreSecretKey?: string
 }
 
 export interface DaprTemplateValues {
   namespace: string
   eventStoreHost: string
   eventStoreUsername: string
-  eventStorePassword: string
+  eventStoreSecretName: string
+  eventStoreSecretKey: string
 }
 
 export interface DaprTemplateRoles {

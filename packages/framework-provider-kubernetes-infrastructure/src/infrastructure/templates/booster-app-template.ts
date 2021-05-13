@@ -39,8 +39,10 @@ spec:
           value: {{ dbHost }}
         - name: DB_USER
           value: {{ dbUser }}
-        - name: DB_PASSWORD
-          value: {{ dbPass }}
+        - name: DB_SECRET_NAME
+          value: {{ eventStoreSecretName }}
+        - name: DB_SECRET_KEY
+          value: {{ eventStoreSecretKey}}
         ports:
         - containerPort: 3000
         readinessProbe:

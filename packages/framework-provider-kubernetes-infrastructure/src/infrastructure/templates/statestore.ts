@@ -18,7 +18,9 @@ spec:
   - name: password
     secretKeyRef:
       name: eventstore-mongodb
-      key: mongodb-root-password
+      key: mongodb-password
+  - name: databaseName
+    value: booster
   - name: actorStateStore
     value: "true"`,
 }
