@@ -7,8 +7,8 @@ export const template = `{
   "version": "{{{version}}}",
   "author": "{{{author}}}",
   "dependencies": {
-    "@boostercloud/framework-core": "${VERSION}",
-    "@boostercloud/framework-types": "${VERSION}",
+    "@boostercloud/framework-core": "^${VERSION}",
+    "@boostercloud/framework-types": "^${VERSION}",
     "{{{providerPackageName}}}": "*"
   },
   "devDependencies": {

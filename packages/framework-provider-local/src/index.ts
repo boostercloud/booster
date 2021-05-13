@@ -69,6 +69,7 @@ export const Provider = (): ProviderLibrary => ({
   },
   // ScheduledCommandsLibrary
   scheduled: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rawToEnvelope: undefined as any,
   },
   // ProviderInfrastructureGetter

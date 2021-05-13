@@ -1,4 +1,3 @@
-import { describe } from 'mocha'
 import { Logger, ProviderLibrary, EventSearchRequest, EventSearchResponse, UUID } from '@boostercloud/framework-types'
 import { restore, fake, SinonSpy, match } from 'sinon'
 import { random, internet } from 'faker'
