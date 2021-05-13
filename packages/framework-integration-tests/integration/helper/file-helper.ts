@@ -1,12 +1,4 @@
-import {
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  rmdirSync,
-  unlinkSync,
-  writeFileSync,
-} from 'fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'fs'
 
 export const loadFixture = (fixturePath: string, replacements?: Array<Array<string>>): string => {
   const template = readFileContent(`integration/fixtures/${fixturePath}`)
@@ -39,7 +31,7 @@ export const createFolder = (folder: string): void => {
 }
 
 export const removeFolders = (paths: Array<string>): void => {
-  paths.map((path: string) => rmdirSync(path, { recursive: true }))
+  paths.map((path: string) => rmSync(path, { recursive: true, force: true }))
 }
 
 export const fileExists = existsSync

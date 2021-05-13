@@ -6,17 +6,17 @@ import { Dirent } from 'fs'
 import * as path from 'path'
 
 describe('sandbox', () => {
-  let fakeRmdirSync: SinonSpy
+  let fakeRmSync: SinonSpy
   let fakeMkdirSync: SinonSpy
   let fakeCopyFileSync: SinonSpy
   beforeEach(() => {
-    fakeRmdirSync = fake()
+    fakeRmSync = fake()
     fakeMkdirSync = fake()
     fakeCopyFileSync = fake()
     const fakeStatSync = (fileName: string) => ({
       isDirectory: () => !fileName.includes('.'),
     })
-    replace(fs, 'rmdirSync', fakeRmdirSync)
+    replace(fs, 'rmSync', fakeRmSync)
     replace(fs, 'mkdirSync', fakeMkdirSync)
     replace(fs, 'copyFileSync', fakeCopyFileSync)
     replace(fs, 'statSync', fakeStatSync as any)
@@ -40,7 +40,7 @@ describe('sandbox', () => {
       const projectAssets = ['assetFolder', 'assetFile3.txt']
       createSandboxProject(sandboxPath, projectAssets)
 
-      expect(fakeRmdirSync).to.have.been.calledOnceWith(sandboxPath)
+      expect(fakeRmSync).to.have.been.calledOnceWith(sandboxPath)
 
       expect(fakeMkdirSync).to.have.been.calledTwice
       expect(fakeMkdirSync).to.have.been.calledWith(sandboxPath)

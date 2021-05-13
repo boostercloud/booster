@@ -1,4 +1,4 @@
-import { copyFileSync, mkdirSync, readdirSync, rmdirSync, statSync } from 'fs'
+import { copyFileSync, mkdirSync, readdirSync, rmSync, statSync } from 'fs'
 import * as path from 'path'
 
 const copyFolder = (origin: string, destiny: string): void => {
@@ -14,7 +14,7 @@ const copyFolder = (origin: string, destiny: string): void => {
 }
 
 export const createSandboxProject = (sandboxPath: string, assets?: Array<string>): string => {
-  rmdirSync(sandboxPath, { recursive: true })
+  rmSync(sandboxPath, { recursive: true, force: true })
   mkdirSync(sandboxPath, { recursive: true })
   copyFolder('src', path.join(sandboxPath, 'src'))
 
@@ -35,5 +35,5 @@ export const createSandboxProject = (sandboxPath: string, assets?: Array<string>
 }
 
 export const removeSandboxProject = (sandboxPath: string): void => {
-  rmdirSync(sandboxPath, { recursive: true })
+  rmSync(sandboxPath, { recursive: true, force: true })
 }
