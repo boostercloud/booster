@@ -1,5 +1,6 @@
 # ![Booster logo](docs/img/booster-logo.png)
 
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg)](code_of_conduct.md)
 [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fboostercloud%2Fbooster%2Fbadge&style=flat)](https://actions-badge.atrox.dev/boostercloud/booster/goto)
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
 [![License](https://img.shields.io/npm/l/@boostercloud/cli)](https://github.com/boostercloud/booster/blob/main/package.json)
@@ -11,7 +12,7 @@
 
 ## Disclaimer
 
-Booster is a pre-release framework under heavy development, so non-backward-compatible changes might be introduced until we reach v1.0.0.
+Booster is still under heavy development, so non-backward-compatible changes might be introduced until we reach v1.0.0.
 
 Refer to [Release Notes](https://github.com/boostercloud/booster/releases) for more specific information about changes of each iteration.
 
