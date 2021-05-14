@@ -12,7 +12,7 @@ You can develop with Booster using any of the following operating systems:
 
 #### Install Node.js
 
-The minimal required Node.js version is `v14`. Download the installer
+The minimal required Node.js version is `v14.14`. Download the installer
 [from nodejs website](https://nodejs.org/en/), or install it using your system's package
 manager.
 
@@ -45,13 +45,13 @@ Verify that it was installed properly by checking so from your terminal:
 
 ```shell
 $ node -v
-v14.2.0
+v14.14.0
 
 $ npm -v
 7.0.0
 ```
 
-As soon as you have a Node.js version higher than `v14`, and an `npm` version higher than
+As soon as you have a Node.js version higher than `v14.14`, and an `npm` version higher than
 `7`, you are good to go. Just note that `npm` comes with node, you don't have to install
 it apart.
 
@@ -259,7 +259,7 @@ something like
 
 ```shell
 $ boost version
-@boostercloud/cli/0.12.3 darwin-x64 node-v14.0.0
+@boostercloud/cli/0.16.1 darwin-x64 node-v14.14.0
 ```
 
 ## Your first Booster app in 10 minutes
