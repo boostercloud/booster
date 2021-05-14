@@ -26,16 +26,16 @@ export class ArtilleryExecutor {
   ) {}
 
   public async ensureDeployed(): Promise<void> {
-    const { Stacks } = await cloudFormation
-      .describeStacks({
-        StackName: `${this.serverlessArtilleryStackPrefix}-${this.stage}`,
-      })
-      .promise()
-
-    if (!Stacks?.[0]) {
-      await runCommand('.', `slsart deploy --stage ${this.stage}`)
-    } else {
+    try {
+      await cloudFormation
+        .describeStacks({
+          StackName: `${this.serverlessArtilleryStackPrefix}-${this.stage}`,
+        })
+        .promise()
       console.info('Serverless Artillery stack is already deployed. Skipping redeployment.')
+    } catch (e) {
+      // The CDK returns an exception when the stack is not found. Deploy it in that case
+      await runCommand('.', `slsart deploy --stage ${this.stage}`)
     }
   }
 
