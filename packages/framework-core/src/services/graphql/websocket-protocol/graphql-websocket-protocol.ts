@@ -150,7 +150,17 @@ export class GraphQLWebsocketHandler {
     this.logger.debug('Executing stop operation')
     await this.callbacks.onStopOperation(connectionID, message.id)
     this.logger.debug('Stop operation finished')
-    await this.connectionManager.sendMessage(this.config, connectionID, new GraphQLComplete(message.id))
+    try {
+      await this.connectionManager.sendMessage(this.config, connectionID, new GraphQLComplete(message.id))
+    } catch (e) {
+      // It could be the case that the client already closed the connection without waiting for stop operation to finish
+      // Log this but ignore it
+      this.logger.info(
+        `Received an exception while sending the "complete" message after stopping the GraphQL operation with id ${message.id}.` +
+          'The client probably closed the connection. Ignoring. ',
+        e
+      )
+    }
   }
 
   private async handleTerminate(connectionID: string): Promise<void> {

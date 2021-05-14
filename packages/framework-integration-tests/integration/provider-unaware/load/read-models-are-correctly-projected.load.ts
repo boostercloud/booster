@@ -7,7 +7,7 @@ import gql from 'graphql-tag'
 import { waitForIt } from '../../helper/sleep'
 import { applicationUnderTest, scriptExecutor } from './setup'
 
-describe.skip('Data consistency on read models', () => {
+describe('Data consistency on read models', () => {
   let client: ApolloClient<NormalizedCacheObject>
   let token: string
 
