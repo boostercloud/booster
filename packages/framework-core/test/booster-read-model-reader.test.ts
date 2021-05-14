@@ -33,7 +33,7 @@ describe('BoosterReadModelReader', () => {
 
   let readModelDispatcher: BoosterReadModelsReader
   Booster.configureCurrentEnv((config) => {
-    config.provider = ({} as unknown) as ProviderLibrary
+    config.provider = {} as unknown as ProviderLibrary
     config.readModels[TestReadModel.name] = {
       class: TestReadModel,
       authorizedRoles: [UserRole],

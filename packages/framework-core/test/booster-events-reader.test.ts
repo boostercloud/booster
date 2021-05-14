@@ -35,11 +35,11 @@ describe('BoosterEventsReader', () => {
     Booster.configureCurrentEnv((config) => {
       providerEventsSearch = fake.returns(searchResult)
 
-      config.provider = ({
+      config.provider = {
         events: {
           search: providerEventsSearch,
         },
-      } as unknown) as ProviderLibrary
+      } as unknown as ProviderLibrary
 
       config.entities[TestEntity.name] = {
         class: TestEntity,
