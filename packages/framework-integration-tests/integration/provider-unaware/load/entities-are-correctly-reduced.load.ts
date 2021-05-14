@@ -17,9 +17,9 @@ describe('Data consistency on entities', () => {
   })
 
   context('with 200 products ready to be stocked', () => {
-    const idPrefix = random.alpha({count: 10})
+    const idPrefix = random.alpha({ count: 10 })
     const destinationWarehouse = 'GC'
-    const numberOfProducts = 200
+    const numberOfProducts = 1000
     let productIDs: Array<string>
 
     before(async () => {
@@ -40,21 +40,21 @@ describe('Data consistency on entities', () => {
         phases: [
           {
             duration: durationWarmup,
-            arrivalRate: arrivalRateWarmup
+            arrivalRate: arrivalRateWarmup,
           },
           {
             duration: durationBurst,
-            arrivalRate: arrivalRateBurst
-          }
-        ]
+            arrivalRate: arrivalRateBurst,
+          },
+        ],
       })
 
       await waitForIt(
         () => queryStocks(client, idPrefix),
         (result) => {
-          const totalStock = result.data.StockReadModels
-            .map((stock: any) => stock.warehouses[destinationWarehouse])
-            .reduce((stockProductA: number, stockProductB: number) => stockProductA + stockProductB, 0)
+          const totalStock = result.data.StockReadModels.map(
+            (stock: any) => stock.warehouses[destinationWarehouse]
+          ).reduce((stockProductA: number, stockProductB: number) => stockProductA + stockProductB, 0)
           console.debug(`Total stock. Got: ${totalStock}, expected: ${expectedStock}`)
           return totalStock === expectedStock
         }
@@ -62,7 +62,6 @@ describe('Data consistency on entities', () => {
     })
   })
 })
-
 
 async function queryStocks(client: ApolloClient<NormalizedCacheObject>, idPrefix: string): Promise<any> {
   return client.query({
