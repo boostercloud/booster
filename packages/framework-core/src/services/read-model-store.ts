@@ -33,12 +33,14 @@ export class ReadModelStore {
       )
       return
     }
-
+    const entityMetadata = this.config.entities[entitySnapshotEnvelope.entityTypeName]
     await Promises.allSettledAndFulfilled(
       projections.map(async (projectionMetadata: ProjectionMetadata) => {
         const readModelName = projectionMetadata.class.name
-        const entitySnapshot = entitySnapshotEnvelope.value as EntityInterface
-        const readModelID = this.joinKeyForProjection(entitySnapshot, projectionMetadata)
+        const entityInstance = new entityMetadata.class()
+        Object.assign(entityInstance, entitySnapshotEnvelope.value)
+        // const entitySnapshot = entitySnapshotEnvelope.value as EntityInterface
+        const readModelID = this.joinKeyForProjection(entityInstance, projectionMetadata)
         this.logger.debug(
           '[ReadModelStore#project] Projecting entity snapshot ',
           entitySnapshotEnvelope,
@@ -47,7 +49,7 @@ export class ReadModelStore {
 
         return await retryIfError(
           this.logger,
-          () => this.applyProjectionToReadModel(readModelName, readModelID, projectionMetadata, entitySnapshot),
+          () => this.applyProjectionToReadModel(readModelName, readModelID, projectionMetadata, entityInstance),
           OptimisticConcurrencyUnexpectedVersionError
         )
       })

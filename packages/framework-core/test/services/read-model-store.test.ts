@@ -12,6 +12,7 @@ import {
   ProviderLibrary,
   ReadModelAction,
   OptimisticConcurrencyUnexpectedVersionError,
+  ProjectionResult,
 } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 
@@ -24,12 +25,24 @@ describe('ReadModelStore', () => {
 
   class ImportantConcept {
     public constructor(readonly id: UUID, readonly someKey: UUID, readonly count: number) {}
+
+    public getPrefixedKey(prefix: string): string {
+      return `${prefix}-${this.someKey}`
+    }
   }
 
   class SomeReadModel {
     public static someObserver(entity: ImportantConcept, obj: any): any {
       const count = (obj?.count || 0) + entity.count
       return { id: entity.someKey, kind: 'some', count: count }
+    }
+
+    public static callsEntityMethod(
+      entity: ImportantConcept,
+      currentReadModel: SomeReadModel
+    ): ProjectionResult<SomeReadModel> {
+      entity.getPrefixedKey('a prefix')
+      return ReadModelAction.Nothing
     }
   }
 
@@ -56,6 +69,11 @@ describe('ReadModelStore', () => {
       joinKey: 'someKey',
     },
     {
+      class: SomeReadModel,
+      methodName: 'callsEntityMethod',
+      joinKey: 'someKey',
+    },
+    {
       class: AnotherReadModel,
       methodName: 'anotherObserver',
       joinKey: 'someKey',
@@ -69,7 +87,6 @@ describe('ReadModelStore', () => {
     entityTypeName: 'ImportantConcept',
     value: new ImportantConcept('importantEntityID', 'joinColumnID', 123),
     requestID: 'whatever',
-
     typeName: 'ImportantConcept',
     createdAt: new Date().toISOString(),
   }
@@ -112,7 +129,7 @@ describe('ReadModelStore', () => {
 
         await readModelStore.project(anEntitySnapshot)
         expect(config.provider.readModels.store).not.to.have.been.called
-        expect(config.provider.readModels.delete).to.have.been.calledTwice
+        expect(config.provider.readModels.delete).to.have.been.calledThrice
       })
     })
 
@@ -143,7 +160,7 @@ describe('ReadModelStore', () => {
 
         await readModelStore.project(anEntitySnapshot)
 
-        expect(readModelStore.fetchReadModel).to.have.been.calledTwice
+        expect(readModelStore.fetchReadModel).to.have.been.calledThrice
         expect(readModelStore.fetchReadModel).to.have.been.calledWith('SomeReadModel', 'joinColumnID')
         expect(readModelStore.fetchReadModel).to.have.been.calledWith('AnotherReadModel', 'joinColumnID')
         expect(SomeReadModel.someObserver).to.have.been.calledOnceWith(anEntitySnapshot.value, null)
@@ -215,7 +232,7 @@ describe('ReadModelStore', () => {
 
         await readModelStore.project(anEntitySnapshot)
 
-        expect(readModelStore.fetchReadModel).to.have.been.calledTwice
+        expect(readModelStore.fetchReadModel).to.have.been.calledThrice
         expect(readModelStore.fetchReadModel).to.have.been.calledWith('SomeReadModel', 'joinColumnID')
         expect(readModelStore.fetchReadModel).to.have.been.calledWith('AnotherReadModel', 'joinColumnID')
         expect(SomeReadModel.someObserver).to.have.been.calledOnceWith(anEntitySnapshot.value, {
@@ -267,6 +284,31 @@ describe('ReadModelStore', () => {
           },
           anotherReadModelStoredVersion
         )
+      })
+    })
+
+    context('when the projection calls an instance method in the entity', () => {
+      const anEntity: EventEnvelope = {
+        version: 1,
+        kind: 'snapshot',
+        entityID: '42',
+        entityTypeName: 'ImportantConcept',
+        value: {
+          id: 'importantEntityID',
+          someKey: 'joinColumnID',
+          count: 123,
+        } as any,
+        requestID: 'whatever',
+
+        typeName: 'ImportantConcept',
+        createdAt: new Date().toISOString(),
+      }
+      it('is executed without failing', async () => {
+        const readModelStore = new ReadModelStore(config, logger)
+        const getPrefixedKeyFake = fake()
+        replace(ImportantConcept.prototype, 'getPrefixedKey', getPrefixedKeyFake)
+        await readModelStore.project(anEntity)
+        expect(getPrefixedKeyFake).to.have.been.called
       })
     })
 
