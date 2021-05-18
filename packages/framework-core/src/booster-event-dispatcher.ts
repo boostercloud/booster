@@ -3,9 +3,9 @@ import {
   EventEnvelope,
   Logger,
   Register,
-  EventInterface,
   EventHandlerInterface,
   UUID,
+  EventInterface,
 } from '@boostercloud/framework-types'
 import { EventStore } from './services/event-store'
 import { EventsStreamingCallback, RawEventsParser } from './services/raw-events-parser'
