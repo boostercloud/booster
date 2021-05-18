@@ -16,7 +16,7 @@ describe('Data consistency on entities', () => {
     client = applicationUnderTest.graphql.client(token)
   })
 
-  context('with 200 products ready to be stocked', () => {
+  context('with 1000 products ready to be stocked', () => {
     const idPrefix = random.alpha({ count: 10 })
     const destinationWarehouse = 'GC'
     const numberOfProducts = 1000
