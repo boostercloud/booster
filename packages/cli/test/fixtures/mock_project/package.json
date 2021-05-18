@@ -27,7 +27,7 @@
     "@types/node": "^13.5.1"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=14.0.0"
   },
   "homepage": "",
   "license": "MIT",

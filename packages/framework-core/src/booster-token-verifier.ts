@@ -31,7 +31,7 @@ export class BoosterTokenVerifier {
           callback(new Error('JWT kid not found'))
           return
         }
-        this.client?.getSigningKey(header.kid, function(err: Error | null, key: jwksRSA.SigningKey) {
+        this.client?.getSigningKey(header.kid, function (err: Error | null, key: jwksRSA.SigningKey) {
           if (err) {
             // This callback doesn't accept null so an empty string is enough here
             callback(err, '')

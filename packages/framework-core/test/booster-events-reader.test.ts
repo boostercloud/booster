@@ -1,4 +1,3 @@
-import { describe } from 'mocha'
 import { Logger, ProviderLibrary, EventSearchRequest, EventSearchResponse, UUID } from '@boostercloud/framework-types'
 import { restore, fake, SinonSpy, match } from 'sinon'
 import { random, internet } from 'faker'
@@ -36,11 +35,11 @@ describe('BoosterEventsReader', () => {
     Booster.configureCurrentEnv((config) => {
       providerEventsSearch = fake.returns(searchResult)
 
-      config.provider = ({
+      config.provider = {
         events: {
           search: providerEventsSearch,
         },
-      } as unknown) as ProviderLibrary
+      } as unknown as ProviderLibrary
 
       config.entities[TestEntity.name] = {
         class: TestEntity,

@@ -25,6 +25,8 @@ describe('Event handlers', () => {
       const mockDestination: string = address.city()
       const mockQuantity: number = random.number({ min: 1 })
 
+      await createProductAndWaitForIt(client, mockProductId)
+
       await client.mutate({
         variables: {
           productID: mockProductId,
@@ -48,7 +50,7 @@ describe('Event handlers', () => {
       const productEvents = await waitForIt(
         () => applicationUnderTest.query.events(`Product-${mockProductId}-event`),
         (events) => {
-          return events?.length === 1
+          return events?.length === 2
         }
       )
 
@@ -98,3 +100,23 @@ describe('Event handlers', () => {
     })
   })
 })
+
+async function createProductAndWaitForIt(client: ApolloClient<NormalizedCacheObject>, mockProductId: string): Promise<void> {
+  await client.mutate({
+    variables: {
+      productID: mockProductId,
+      sku: random.alpha({count: 10})
+    },
+    mutation: gql`
+        mutation CreateProduct($productID: ID!, $sku: String) {
+            CreateProduct(input: { productID: $productID, sku: $sku })
+        }
+    `,
+  })
+  await waitForIt(
+    () => applicationUnderTest.query.events(`Product-${mockProductId}-event`),
+    (events) => {
+      return events?.length === 1
+    }
+  )
+}

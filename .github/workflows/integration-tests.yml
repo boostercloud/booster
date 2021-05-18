@@ -38,8 +38,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
 
-  end-to-end-tests:
-    name: End-to-end Tests
+  aws-end-to-end-tests:
+    name: AWS end-to-end Tests
     needs:
       - aws-func-integration-tests
     runs-on: ubuntu-latest
@@ -56,11 +56,28 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
 
+  aws-load-tests:
+    name: AWS load tests
+    needs:
+      - aws-end-to-end-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - run: npx lerna bootstrap
+      - run: npx lerna run compile
+      - run: npx lerna run integration/aws-load --stream
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+
   aws-nuke-integration-tests:
     name: AWS Nuke Integration Tests
     needs:
-      - aws-func-integration-tests
-      - end-to-end-tests
+      - aws-load-tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

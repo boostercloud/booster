@@ -1,4 +1,3 @@
-import { describe } from 'mocha'
 import { fake, replace, restore } from 'sinon'
 import { expect } from './expect'
 import { BoosterConfig, Level, ProviderLibrary, UUID } from '@boostercloud/framework-types'
