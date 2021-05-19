@@ -143,7 +143,7 @@ Your token should include a property specified in `rolesClaim` with the value `A
 ```json
 {
   "firebase:groups": "User",
-  "iss: "https://securetoken.google.com/demoapp",
+  "iss": "https://securetoken.google.com/demoapp",
   "aud": "demoapp",
   "auth_time": 1604676721,
   "user_id": "xJY5Y6fTbVggNtDjaNh7cNSBd7q1",
