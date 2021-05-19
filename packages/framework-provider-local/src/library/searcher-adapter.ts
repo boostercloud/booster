@@ -1,4 +1,4 @@
-import { FilterOld } from '@boostercloud/framework-types'
+import { FilterFor } from '@boostercloud/framework-types'
 
 /**
  * Creates a query record out of the read mode name and
@@ -7,7 +7,7 @@ import { FilterOld } from '@boostercloud/framework-types'
  */
 export function queryRecordFor(
   readModelName: string,
-  filters: Record<string, FilterOld<QueryValue>>
+  filters: Record<string, FilterFor<QueryValue>>
 ): Record<string, QueryOperation<QueryValue>> {
   const queryFromFilters: Record<string, object> = {}
   if (Object.keys(filters).length != 0) {
@@ -21,9 +21,13 @@ export function queryRecordFor(
 /**
  * Transforms a GraphQL Booster filter into an neDB query
  */
-function filterToQuery(filter: FilterOld<QueryValue>): QueryOperation<QueryValue> {
-  const query = queryOperatorTable[filter.operation]
-  return query(filter.values)
+function filterToQuery(filter: FilterFor<QueryValue>): QueryOperation<QueryValue> {
+  const [query] = Object.entries(filter).map(([propName, filter]) => {
+    const query = queryOperatorTable[propName]
+    const queryFilter = Array.isArray(filter) ? filter : [filter]
+    return query(queryFilter)
+  })
+  return query
 }
 
 export type QueryValue = number | string | boolean
@@ -51,17 +55,16 @@ type QueryOperation<TValue> =
  * of `=`, in which the operator is the value itself.
  */
 const queryOperatorTable: Record<string, (values: Array<QueryValue>) => QueryOperation<QueryValue>> = {
-  '=': (values) => values[0],
-  '!=': (values) => ({ $ne: values[0] }),
-  '<': (values) => ({ $lt: values[0] }),
-  '>': (values) => ({ $gt: values[0] }),
-  '<=': (values) => ({ $lte: values[0] }),
-  '>=': (values) => ({ $gte: values[0] }),
+  eq: (values) => values[0],
+  ne: (values) => ({ $ne: values[0] }),
+  lt: (values) => ({ $lt: values[0] }),
+  gt: (values) => ({ $gt: values[0] }),
+  lte: (values) => ({ $lte: values[0] }),
+  gte: (values) => ({ $gte: values[0] }),
   in: (values) => ({ $in: values }),
-  between: (values) => ({ $gt: values[0], $lte: values[1] }),
   contains: buildRegexQuery.bind(null, 'contains'),
-  'not-contains': buildRegexQuery.bind(null, 'not-contains'),
-  'begins-with': buildRegexQuery.bind(null, 'begins-with'),
+  beginsWith: buildRegexQuery.bind(null, 'begins-with'),
+  includes: buildRegexQuery.bind(null, 'contains'),
 }
 
 /**
@@ -71,12 +74,6 @@ function buildRegexQuery(operation: string, values: Array<QueryValue>): QueryOpe
   const matcher = values[0]
   if (typeof matcher != 'string') {
     throw new Error(`Attempted to perform a ${operation} operation on a non-string`)
-  }
-  if (operation === 'not-contains') {
-    // Matching on a string not containing something by using
-    // negative lookahead, which JS' regexes support.
-    // Check: https://stackoverflow.com/a/406408/3847023
-    return { $regex: new RegExp(`^((?!${matcher}).)*$`, 'gm') }
   }
   if (operation === 'begins-with') {
     return { $regex: new RegExp(`^${matcher}`) }
