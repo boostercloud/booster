@@ -30,7 +30,24 @@ export class UpdateUser {
 }
 ```
 
-By default, a Booster application has no roles defined, so the only allowed value you can use in the `authorize` policy is `'all'` (good for public APIs).
+Optionally, you can also add authorization to entities to control who can read its events. To do so, pass a configuration object to the @Entity annotation with the authorized roles (or `'all'` for everyone) in the `authorizeReadEvents` field. For example:
+```typescript
+// cart.ts (entity)
+@Entity({
+  authorizeReadEvents: 'all',
+})
+export class Cart {
+  public constructor(
+          readonly id: UUID,
+          readonly cartItems: Array<CartItem>,
+          public shippingAddress?: Address,
+          public checks = 0
+  ) {}
+  // <reducers...>
+}
+```
+
+By default, a Booster application has no roles defined, so the only allowed value you can use in the `authorize` (or `authorizeReadEvents`) policy is `'all'` (good for public APIs).
 If you want to add user authorization, you first need to create the roles that are suitable for your application.
 Roles are classes annotated with the `@Role` decorator, where you can specify some attributes. We recommend that you define your roles in the file `src/roles.ts` or, if you have too many roles, put them in several files under the `src/roles` folder.
 
@@ -466,6 +483,116 @@ mutation {
 ```
 
 > [!NOTE]  Remember that, in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
+
+### Reading events
+
+You can also fetch events directly if you need. To do so, there are two kind of queries that have the following structure:
+```graphql
+query {
+  eventsByEntity(entity: <name of entity>, entityID: "<id of the entity>") {
+    selection_field_list
+  }
+}
+
+query {
+  eventsByType(type: <name of event>) {
+    selection_field_list
+  }
+}
+```
+Where:
+- _&lt;name of your entity&gt;_ is the name of the class corresponding to the entity whose events you want to retrieve.
+- _&lt;id of the entity&gt;_ is the ID of the specific entity instance whose events you are interested in. **This is optional**
+- _&lt;name of event&gt;_ is the name of the class corresponding to the event type whose instances you want to retrieve.
+- _selection_field_list_ is a list with the names of the specific fields you want to get as response. See the response example below to know more.
+
+
+#### Examples
+
+```
+  URL: "<graphqlURL>"
+```
+**A) Read all events associated with a specific instance (a specific ID) of the entity Cart**
+```graphql
+query {
+  eventsByEntity(entity: Cart, entityID: "ABC123") {
+    type entity entityID requestID createdAt value
+  }
+}
+```
+
+**B) Read all events associated with any instance of the entity Cart**
+```graphql
+query {
+  eventsByEntity(entity: Cart) {
+    type entity entityID requestID createdAt value
+  }
+}
+```
+
+For these cases, you would get an array of event _envelopes_ as a response. This means that you get some metadata related to the event along with the event content, which can be found inside the `"value"` field.
+
+The response look like this:
+```json
+{
+    "data": {
+        "eventsByEntity": [
+            {
+                "type": "CartItemChanged",
+                "entity": "Cart",
+                "entityID": "ABC123",
+                "requestID": "7a9cc6a7-7c7f-4ef0-aef1-b226ae4d94fa",
+                "createdAt": "2021-05-12T08:41:13.792Z",
+                "value": {
+                    "productId": "73f7818c-f83e-4482-be49-339c004b6fdf",
+                    "cartId": "ABC123",
+                    "quantity": 2
+                }
+            }
+        ]
+    }
+}
+```
+
+**C) Read events of a specific type**
+```graphql
+query {
+  eventsByType(type: CartItemChanged) {
+    type entity entityID requestID createdAt value
+  }
+}
+```
+
+The response would have the same structure as seen in the previous examples. The only difference is that this time you will get only the events with the type you have specified ("CartItemChanged")
+
+#### Time filters
+Optionally, for any of the previous queries, you can include a `from` and/or `to` time filters to get only those events that happened inside that time range. You must use a string with a time in ISO format with any precision you like, for example:
+* `from:"2021"` : Events created on 2021 year or up.
+* `from:"2021-02-12" to:"2021-02-13"` : Events created during February 12th.
+* `from:"2021-03-16T16:16:25.178"` : Events created at that date and time, using millisecond precision, or later.
+
+#### Time filters examples
+**A) Cart events from February 23rd to July 20th, 2021**
+```graphql
+query {
+  eventsByEntity(entity: Cart, from:"2021-02-23", to:"2021-07-20") {
+    type entity entityID requestID createdAt value
+  }
+}
+```
+
+**B) CartItemChanged events from February 25th to February 28th, 2021**
+```graphql
+query {
+  eventsByType(type: CartItemChanged, from:"2021-02-25", to:"2021-02-28") {
+    type entity entityID requestID createdAt value
+  }
+}
+```
+
+#### Known limitations
+* Subscriptions don't work for the events API yet
+* You can only query events, but not write them through this API. Use a command for that.
 
 ### Using Apollo Client
 
