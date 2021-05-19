@@ -96,7 +96,7 @@ To learn how to include the access token in your requests, check the section [Au
 
 Booster provides a **JWT authorization mode** to authorize all incoming Booster requests using the server you decide. Your authentication server will provide JWT tokens that you can use with Booster. Your application will decode your token and verify its validity with your server, and then, the required roles will be matched with the claims contained in the token.
 
-In that way, you can use different authentication providers, like Auth0, Firebase, Cognito, or create your own, without thee need of a specific rocket implementation.
+In that way, you can use different authentication providers, like Auth0, Firebase, Cognito, or create your own, without the need of a specific rocket implementation.
 
 Note:
   > The JWT authorization mode does not make use of the signUpMethods |> and signUpConfirmation attributes of your roles configuration. This > configuration depends on the authentication server you use.
