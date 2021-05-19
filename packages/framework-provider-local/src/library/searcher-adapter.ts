@@ -7,12 +7,25 @@ import { FilterFor } from '@boostercloud/framework-types'
  */
 export function queryRecordFor(
   readModelName: string,
-  filters: Record<string, FilterFor<QueryValue>>
+  filters: FilterFor<any>
 ): Record<string, QueryOperation<QueryValue>> {
   const queryFromFilters: Record<string, object> = {}
   if (Object.keys(filters).length != 0) {
     for (const key in filters) {
-      queryFromFilters[`value.${key}`] = filterToQuery(filters[key]) as object
+      switch (key) {
+        case 'not':
+          queryFromFilters[`$${key}`] = queryRecordFor(readModelName, filters[key] as FilterFor<any>)
+          break
+        case 'or':
+        case 'and':
+          queryFromFilters[`$${key}`] = (filters[key] as Array<FilterFor<any>>).map((filter) =>
+            queryRecordFor(readModelName, filter)
+          )
+          break
+        default:
+          queryFromFilters[`value.${key}`] = filterToQuery(filters[key] as FilterFor<any>) as FilterFor<QueryValue>
+          break
+      }
     }
   }
   return { ...queryFromFilters, typeName: readModelName }
@@ -21,7 +34,7 @@ export function queryRecordFor(
 /**
  * Transforms a GraphQL Booster filter into an neDB query
  */
-function filterToQuery(filter: FilterFor<QueryValue>): QueryOperation<QueryValue> {
+function filterToQuery(filter: FilterFor<any>): QueryOperation<QueryValue> {
   const [query] = Object.entries(filter).map(([propName, filter]) => {
     const query = queryOperatorTable[propName]
     const queryFilter = Array.isArray(filter) ? filter : [filter]
@@ -30,7 +43,7 @@ function filterToQuery(filter: FilterFor<QueryValue>): QueryOperation<QueryValue
   return query
 }
 
-export type QueryValue = number | string | boolean
+type QueryValue = number | string | boolean
 type QueryOperation<TValue> =
   // In the case that the operation is `eq`, NeDB matches directly
   | TValue
