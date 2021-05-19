@@ -20,13 +20,13 @@ Combining these features, Booster provides an unprecedented developer experience
 
 Booster is designed with extensibility in mind. If there's still something you can't do with the default functionality, there are lower-level APIs that you can use to extend any layer of the framework with Rockets (The way we call Booster's plugins). With rockets, it's easy to add support for new cloud building blocks or pack functionality in highly reusable npm packages.
 
-This is only the beginning. We want to keep expanding the framework to become a tool usable from any programming language, add support for more runtime targets and implement other common high-level patterns like MVC. If you want to help us make this a reality, don't hesitate to ping us in [Discord](https://discord.gg/bDY8MKx)!
+This is only the beginning. We want to keep expanding the framework to become a tool usable from any programming language, add support for more runtime targets and implement other common high-level patterns like MVC. If you want to help us make this a reality, don't hesitate to ping us on [Discord](https://discord.gg/bDY8MKx)!
 
 ## Current state
 
 We've built the foundations, and there's a fully working TypeScript implementation that models CQRS and Event-Sourcing on top of AWS Serverless. The AWS implementation is end-to-end tested, including unit tests, integration tests, and automated load tests before every new version release. It implements advanced techniques like optimistic concurrency or sharding databases out of the box and by default, so you don't have to worry about your data consistency. It feels like magic!
 
-We also have experimental support for Azure and Kubernetes runtimes, which are already usable, but still, need work to reach the same level of robustness and scalability of the AWS implementation.
+We also have experimental support for Azure and Kubernetes runtimes, which are already usable, but still, need some work to reach the same level of robustness and scalability of the AWS implementation.
 
 We know that this project is extremely ambitious. Still, we're convinced that this project could become the next level of abstraction in software history. That's why we made it open-source. Because we believe that the only way to make something like this succeed is by the collaboration and support of diverse groups of developers with varying goals. Now and then, there has to be a jump in software evolution, and we won't make it if we're not bold!
 
@@ -40,9 +40,9 @@ Booster Framework follows the next principles:
 * *The cloud is the machine:* We believe that the developer's tools should create infrastructure transparently in the same way that a compiler hides the details of the target processor. We often think about Booster as the "TypeScript-to-Cloud compiler."
 * *True Serverless*: Serverless is about to stop caring about your servers, but many implementations still require long YAML files to describe your infrastructure, and you really need to know what you're doing. True Serverless means that you don't even care about cloud configuration. Booster will figure it out for you based on the code you write.
 * *Convention over Configuration:* We prefer to provide standardized highly-opinionated modules than highly-configurable ones. This helps us to keep your code small and follow the best security and structure practices when deploying your applications to the cloud. High consistency in your project and code structure also helps to abstract out most of the boilerplate.
-* * Don't Repeat Yourself (Extreme edition):* /The only code that matters is the one that makes your application different/. We push TypeScript structure and type system to the limit to avoid writing repetitive code, like object-to-JSON serializations, API or database schemas, or redundant architecture layers. 
-* *self-documenting APIs* We adopted GraphQL because it's a self-documenting standard. You can grab a standard GraphQL client like [ApolloClient](https://github.com/apollographql/apollo-client) and start using a Booster backend in a minute.
-* * Developer's productivity:* Software development is fun, and a modern tool should make it even more fun, reducing the effort needed for mundane tasks. Booster provides code generators to help you quickstart new projects and objects, and the framework types and APIs are hand-crafted to help your IDE help you.
+* *Don't Repeat Yourself (Extreme edition):* /The only code that matters is the one that makes your application different/. We push TypeScript structure and type system to the limit to avoid writing repetitive code, like object-to-JSON serializations, API or database schemas, or redundant architecture layers. 
+* *Self-documenting APIs* We adopted GraphQL because it's a self-documenting standard. You can grab a standard GraphQL client like [ApolloClient](https://github.com/apollographql/apollo-client) and start using a Booster backend in a minute.
+* *Developer's productivity:* Software development is fun, and a modern tool should make it even more fun, reducing the effort needed for mundane tasks. Booster provides code generators to help you quickstart new projects and objects, and the framework types and APIs are hand-crafted to help your IDE help you.
 
 
 ## Contributing
@@ -56,7 +56,7 @@ You can join the conversation and start contributing in any of the following way
 * [Create a new issue in Github](https://github.com/boostercloud/booster/issues/new/choose)
 * [Try the framework and let us know how you liked it!](https://docs.booster.cloud/#/chapters/02_getting-started)
 
-Please refer to [`CONTRIBUTING.md`](CONTRIBUTING.md) for more details. Pull requests are welcome. For major changes, please
+Please refer to [`CONTRIBUTING.md`](./CONTRIBUTING.md) for more details. Pull requests are welcome. For major changes, please
 open an issue first to discuss what you would like to change.
 
 ## License
