@@ -98,8 +98,7 @@ Booster provides a **JWT authorization mode** to authorize all incoming Booster 
 
 In that way, you can use different authentication providers, like Auth0, Firebase, Cognito, or create your own, without the need of a specific rocket implementation.
 
-Note:
-  > The JWT authorization mode does not make use of the signUpMethods |> and signUpConfirmation attributes of your roles configuration. This > configuration depends on the authentication server you use.
+> [!NOTE] The JWT authorization mode does not make use of the `signUpMethods` and `signUpConfirmation` attributes of your roles configuration. This configuration depends on the authentication server you use.
 
 ### JWT Configuration
 
