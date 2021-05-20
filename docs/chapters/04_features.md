@@ -2,7 +2,7 @@
 
 ## Authentication and Authorization
 
-You can use the [Authentication Rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure) for adding the authentication and authorization to your application. But first, you need to know that authorization in Booster is done through roles. Every Command and ReadModel has an `authorize` policy that tells Booster who can execute or access it. It consists of one of the following two values:
+First of all, you need to know that the authorization in Booster is done through roles. Every Command and ReadModel has an authorize policy that tells Booster who can execute or access it. It consists of one of the following two values:
 
 - `'all'`: Meaning that the command is public: any user, both authenticated and anonymous, can execute it.
 - An array of authorized roles `[Role1, Role2, ...]`: This means that only those authenticated users that
@@ -49,6 +49,7 @@ export class Cart {
 
 By default, a Booster application has no roles defined, so the only allowed value you can use in the `authorize` (or `authorizeReadEvents`) policy is `'all'` (good for public APIs).
 If you want to add user authorization, you first need to create the roles that are suitable for your application.
+
 Roles are classes annotated with the `@Role` decorator, where you can specify some attributes. We recommend that you define your roles in the file `src/roles.ts` or, if you have too many roles, put them in several files under the `src/roles` folder.
 
 > [!NOTE] There is no `Admin` user by default. In order to register one you need to specify a sign-up method on `src/roles.ts`.
@@ -100,21 +101,21 @@ Users that sign up with their emails will receive a confirmation link in their i
 Users that sign up with their phones will receive a confirmation code as an SMS message. That code needs to be sent back using the confirmation endpoint.
 If `skipConfirmation` is set to true, users can sign in without confirmation after signing up.
 
-Now with the roles defined, your Booster application is ready to use the Authorization Rocket, please check out its [documentation](https://github.com/boostercloud/rocket-auth-aws-infrastructure) for getting the access tokens.
+## Autentication Rocket
 
-Once a user has an access token, it can be included in any request made to your Booster application as a
-_Bearer_ token. It will be used to get the user information and
-authorize them to access protected resources.
+Now, with the roles defined, your Booster application is ready to use the [AWS Authorization Rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure), which provides authentication and authorization integration in your application. Check out its documentation to know how you can configure it and how the user can get their access tokens.
+
+Once a user has an access token, it can be included in any request made to your Booster application as a Bearer token. It will be used to get the user information and authorize them to access protected resources.
 
 To learn how to include the access token in your requests, check the section [Authorizing operations](#authorizing-operations).
 
 ## Custom Authentication
 
-You can use the **JWT authorization mode** to authorize all incoming Booster requests. Your auth server will return JWT tokens
-wich will be decoded internally by Booster, after that, the required roles will be matched with the contained claims
-inside that token.
+Booster provides a **JWT authorization mode** to authorize all incoming Booster requests using the server you decide. Your authentication server will provide JWT tokens that you can use with Booster. Your application will decode your token and verify its validity with your server, and then, the required roles will be matched with the claims contained in the token.
 
-In that way, you can use different auth providers, like Auth0, Firebase, Cognito, create your own or simply use our [Authentication Rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure), which is our recommended solution that works great with Booster.
+In that way, you can use different authentication providers, like Auth0, Firebase, Cognito, or create your own, without the need of a specific rocket implementation.
+
+> [!NOTE] The JWT authorization mode does not make use of the `signUpMethods` and `signUpConfirmation` attributes of your roles configuration. This configuration depends on the authentication server you use.
 
 ### JWT Configuration
 
@@ -122,6 +123,7 @@ In order to use the JWT authorization you will need to set a `tokenVerifier` pro
 
 - jwksUri: Public uri with the public keys the auth server used to sign in the JWT tokens, commonly known as a key sets.
 - issuer: Identifies the principal that issued the JWT tokens.
+- rolesClaim: Field where provider contains the token. As an example Cognito uses `cognito:groups`.
 
 Auth sample configuration:
 
@@ -134,8 +136,9 @@ Booster.configure('production', (config: BoosterConfig): void => {
   config.appName = 'demoapp'
   config.provider = AWS.Provider
   config.tokenVerifier = {
-    jwksUri: 'https://demoapp.auth0.com/.well-known/jwks.json',
-    issuer: 'auth0',
+    jwksUri: 'https://demoapp.firebase.com/.well-known/jwks.json',
+    issuer: 'https://securetoken.google.com/demoapp',
+    rolesClaim: 'firebase:groups'
   }
 })
 ```
@@ -151,20 +154,20 @@ export class UpdateUser {
 }
 ```
 
-Your token should include a property `custom:role` with the value `Admin` or `User`. Here is an example of a Firebase token:
+Your token should include a property specified in `rolesClaim` with the value `Admin` or `User`. Here is an example of a Firebase token:
 
 ```json
 {
-  "custom:role": "User",
-  iss: "https://securetoken.google.com/demoapp",
-  aud: "demoapp",
-  auth_time: 1604676721,
-  user_id: "xJY5Y6fTbVggNtDjaNh7cNSBd7q1",
-  sub: "xJY5Y6fTbVggNtDjaNh7cNSBd7q1",
-  iat: 1604676721,
-  exp: 1604680321,
-  phone_number: "+999999999",
-  firebase: { ... }
+  "firebase:groups": "User",
+  "iss": "https://securetoken.google.com/demoapp",
+  "aud": "demoapp",
+  "auth_time": 1604676721,
+  "user_id": "xJY5Y6fTbVggNtDjaNh7cNSBd7q1",
+  "sub": "xJY5Y6fTbVggNtDjaNh7cNSBd7q1",
+  "iat": 1604676721,
+  "exp": 1604680321,
+  "phone_number": "+999999999",
+  "firebase": { }
 }
 ```
 
