@@ -113,13 +113,24 @@ describe('the event registry', () => {
     })
 
     it('should return latest item', async () => {
-      const result: EventEnvelope = await eventRegistry.queryLatest({
+      const result: EventEnvelope | null = await eventRegistry.queryLatest({
         kind: mockTargetEvent.kind,
         entityID: mockTargetEvent.entityID,
         entityTypeName: mockTargetEvent.entityTypeName,
       })
 
+      expect(result).not.to.be.null
       expect(result).to.deep.include(copyOfMockTargetEvent)
+    })
+
+    it('should return null', async () => {
+      const result: EventEnvelope | null = await eventRegistry.queryLatest({
+        kind: mockTargetEvent.kind,
+        entityID: random.uuid(),
+        entityTypeName: mockTargetEvent.entityTypeName,
+      })
+
+      expect(result).to.be.null      
     })
   })
 

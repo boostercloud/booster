@@ -198,7 +198,7 @@ describe('events-adapter', () => {
 
     context('without snapshot', () => {
       beforeEach(async () => {
-        queryLatestStub.resolves(undefined)
+        queryLatestStub.resolves(null)
       })
 
       it('should log expected message', async () => {
