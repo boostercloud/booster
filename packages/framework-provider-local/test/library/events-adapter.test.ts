@@ -88,8 +88,10 @@ describe('events-adapter', () => {
         mockEntityTypeName,
         mockEntityID
       )
+      const expectedLogMessage = `[EventsAdapter#readEntityEventsSince] Loaded events for entity ${mockEntityTypeName} with ID ${mockEntityID} with result:`
 
       expect(result).to.be.deep.equal([mockEventEnvelop])
+      expect(mockLogger.debug).to.be.calledWith(expectedLogMessage,[mockEventEnvelop])
     })
 
     context('date provided', () => {
@@ -117,6 +119,11 @@ describe('events-adapter', () => {
           entityTypeName: mockEntityTypeName,
         })
       })
+
+      it('should call logger with message', async () => {
+        const expectedLogMessage = `[EventsAdapter#readEntityEventsSince] Loaded events for entity ${mockEntityTypeName} with ID ${mockEntityID} with result:`
+        expect(mockLogger.debug).to.be.calledWith(expectedLogMessage,[mockEventEnvelop])
+      })
     })
 
     context('date not provided', () => {
@@ -132,6 +139,11 @@ describe('events-adapter', () => {
           entityID: mockEntityID,
           entityTypeName: mockEntityTypeName,
         })
+      })
+
+      it('should call logger with message', async () => {
+        const expectedLogMessage = `[EventsAdapter#readEntityEventsSince] Loaded events for entity ${mockEntityTypeName} with ID ${mockEntityID} with result:`
+        expect(mockLogger.debug).to.be.calledWith(expectedLogMessage,[mockEventEnvelop])
       })
     })
   })
