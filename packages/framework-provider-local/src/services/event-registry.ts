@@ -10,7 +10,10 @@ export class EventRegistry {
 
   public async query(query: object): Promise<Array<EventEnvelope>> {
     const queryPromise = new Promise((resolve, reject) =>
-      this.events.find(query).exec((err, docs) => {
+      this.events
+      .find(query)
+      .sort({ createdAt: 1 }) // sort in ascending order (older timestamps first)
+      .exec((err, docs) => {
         if (err) reject(err)
         else resolve(docs)
       })
@@ -23,7 +26,7 @@ export class EventRegistry {
     const queryPromise = new Promise((resolve, reject) =>
       this.events
         .find(query)
-        .sort({ createdAt: -1 }) // Sort in descending order
+        .sort({ createdAt: -1 }) // Sort in descending order (newer timestamps first)
         .exec((err, docs) => {
           if (err) reject(err)
           else resolve(docs)
