@@ -7,7 +7,7 @@ import { deploy } from '../deploy'
 
 before(async () => {
   console.log('preparing sandboxed project...')
-  const configuredAssets = ['assets', 'assetFile.txt']
+  const configuredAssets = ['assets', 'components', 'assetFile.txt']
   const sandboxPath = await createSandboxProject(sandboxPathFor(sandboxProjectName), configuredAssets)
 
   console.log('overriding Booster dependencies...')

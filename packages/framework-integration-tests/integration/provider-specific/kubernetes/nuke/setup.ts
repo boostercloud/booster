@@ -7,7 +7,7 @@ import { exec } from 'child-process-promise'
 
 before(async () => {
   const sandboxPath = sandboxPathFor(sandboxProjectName)
-  const configuredAssets = ['assets', 'assetFile.txt']
+  const configuredAssets = ['assets', 'components', 'assetFile.txt']
   createSandboxProject(sandboxPath, configuredAssets)
 
   await overrideWithBoosterLocalDependencies(sandboxPath)

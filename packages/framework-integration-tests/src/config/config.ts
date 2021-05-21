@@ -18,7 +18,7 @@ if (process.env.BOOSTER_ENV === 'local') {
 Booster.configure('kubernetes', (config: BoosterConfig): void => {
   config.appName = 'my-store'
   config.provider = Kubernetes.Provider()
-  config.assets = ['assets', 'assetFile.txt']
+  config.assets = ['assets', 'components', 'assetFile.txt']
 })
 
 Booster.configure('development', (config: BoosterConfig): void => {
