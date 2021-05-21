@@ -20,6 +20,7 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
+    "@boostercloud/framework-common-helpers": "^0.16.2",
     "@boostercloud/framework-core": "^0.16.2",
     "@boostercloud/framework-types": "^0.16.2",
     "@types/nedb": "^1.8.11",
