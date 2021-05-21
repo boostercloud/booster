@@ -7,23 +7,30 @@ import { FilterFor } from '@boostercloud/framework-types'
  */
 export function queryRecordFor(
   readModelName: string,
-  filters: FilterFor<any>
+  filters: FilterFor<any>,
+  nested?: string
 ): Record<string, QueryOperation<QueryValue>> {
   const queryFromFilters: Record<string, object> = {}
   if (Object.keys(filters).length != 0) {
     for (const key in filters) {
+      const propName = nested ? `${nested}.${key}` : key
+      const filter = filters[key] as FilterFor<any>
       switch (key) {
         case 'not':
-          queryFromFilters[`$${key}`] = queryRecordFor(readModelName, filters[key] as FilterFor<any>)
+          queryFromFilters[`$${propName}`] = queryRecordFor(readModelName, filter)
           break
         case 'or':
         case 'and':
-          queryFromFilters[`$${key}`] = (filters[key] as Array<FilterFor<any>>).map((filter) =>
+          queryFromFilters[`$${propName}`] = (filters[key] as Array<FilterFor<any>>).map((filter) =>
             queryRecordFor(readModelName, filter)
           )
           break
         default:
-          queryFromFilters[`value.${key}`] = filterToQuery(filters[key] as FilterFor<any>) as FilterFor<QueryValue>
+          if (!Object.keys(queryOperatorTable).includes(Object.keys(filter)[0])) {
+            return queryRecordFor(readModelName, filter, propName)
+          } else {
+            queryFromFilters[`value.${key}`] = filterToQuery(filter) as FilterFor<QueryValue>
+          }
           break
       }
     }
