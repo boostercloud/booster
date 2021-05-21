@@ -1,6 +1,6 @@
 import { createStubInstance, fake, SinonStub, SinonStubbedInstance, replace, stub } from 'sinon'
 import { EventRegistry } from '../../src/services'
-import { readEntityEventsSince, readEntityLatestSnapshot, storeEvents } from '../../src/library/events-adapter'
+import { readEntityEventsSince, readEntityLatestSnapshot, storeEvents, rawEventsToEnvelopes } from '../../src/library/events-adapter'
 import { UserApp, EventEnvelope, UUID, BoosterConfig, Logger } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 import { createMockEventEnvelop, createMockSnapshot } from '../helpers/event-helper'
@@ -47,6 +47,26 @@ describe('events-adapter', () => {
     replace(mockEventRegistry, 'store', storeStub as any)
     replace(mockEventRegistry, 'query', queryStub as any)
     replace(mockEventRegistry, 'queryLatest', queryLatestStub as any)
+  })
+
+  describe('rawEventsToEnvelopes', () => {
+    it('should return an empty array of envelopes', async () => {
+      const results = rawEventsToEnvelopes([])
+      const expected : EventEnvelope[]  = []
+      expect(results).to.deep.equal(expected)
+    })
+
+    it('should return an array of envelopes', async () => {
+      const value1: EventEnvelope = createMockEventEnvelop()
+      const value2: EventEnvelope = createMockEventEnvelop()
+      const rawEvents: unknown[] = [
+        value1 as unknown, 
+        value2 as unknown
+      ]
+      const results = rawEventsToEnvelopes(rawEvents)
+      const expected : EventEnvelope[]  = [value1, value2]
+      expect(results).to.deep.equal(expected)
+    })
   })
 
   describe('readEntityEventsSince', () => {
