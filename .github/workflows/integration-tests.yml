@@ -116,8 +116,8 @@ jobs:
       - run: npx lerna run compile
       - run: npx lerna run integration/local --stream
 
-  kubernetes-deploy-integration-tests:
-    name: Kubernetes deployment integration tests
+  kubernetes-integration-tests:
+    name: Kubernetes integration tests
     runs-on: ubuntu-latest
     env:
       KUBECONFIG: '/home/runner/.kube/config'
@@ -138,3 +138,4 @@ jobs:
       - run: npx lerna bootstrap
       - run: npx lerna run compile
       - run: npx lerna run integration/k8s-deploy --stream
+      - run: npx lerna run integration/k8s-nuke --stream

@@ -1,4 +1,4 @@
-import { start } from './utils'
+import { start } from '../../helper/cli-helper'
 import { sleep } from '../../helper/sleep'
 import { ChildProcess } from 'child_process'
 import { removeFolders, sandboxPathFor } from '../../helper/file-helper'
