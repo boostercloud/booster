@@ -1,5 +1,6 @@
 import * as path from 'path'
-import { runCommand } from '../../helper/run-command'
+import { runCommand } from '../helper/run-command'
+import { ChildProcess } from 'child_process'
 
 // Path to the CLI binary compiled by lerna
 const cliBinaryPath = path.join('..', '..', 'cli', 'bin', 'run')
@@ -13,4 +14,8 @@ export async function nuke(projectPath: string, environmentName = 'production'):
   // Dependencies should be installed before running the nuke command
   await runCommand(projectPath, 'npm install')
   await runCommand(projectPath, `${cliBinaryPath} nuke -e ${environmentName} --force`)
+}
+
+export function start(environmentName = 'local', path: string): ChildProcess {
+  return runCommand(path, `../${cliBinaryPath} start -e ${environmentName}`).childProcess
 }

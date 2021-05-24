@@ -1,4 +1,4 @@
-import { deploy } from '../deploy'
+import { deploy } from '../../deploy'
 import { sleep } from '../../../helper/sleep'
 import { sandboxPathFor } from '../../../helper/file-helper'
 import { overrideWithBoosterLocalDependencies } from '../../../helper/deps-helper'

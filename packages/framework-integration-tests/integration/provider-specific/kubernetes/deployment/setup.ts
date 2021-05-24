@@ -3,7 +3,7 @@ import { sandboxPathFor } from '../../../helper/file-helper'
 import { sandboxProjectName } from '../constants'
 import { overrideWithBoosterLocalDependencies } from '../../../helper/deps-helper'
 import { sleep } from '../../../helper/sleep'
-import { deploy } from '../deploy'
+import { deploy } from '../../deploy'
 
 before(async () => {
   console.log('preparing sandboxed project...')
@@ -15,6 +15,6 @@ before(async () => {
 
   console.log(`starting kubernetes server in ${sandboxPath}...`)
   // start kubernetes
-  await deploy(sandboxPath)
+  await deploy(sandboxPath, 'kubernetes')
   await sleep(10000)
 })

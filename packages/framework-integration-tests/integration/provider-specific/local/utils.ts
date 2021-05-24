@@ -4,15 +4,6 @@ import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { HttpLink } from 'apollo-link-http'
 import { LOCAL_PROVIDER_HOST } from './constants'
 import gql from 'graphql-tag'
-import { runCommand } from '../../helper/run-command'
-import path = require('path')
-import { ChildProcess } from 'child_process'
-
-const cliBinaryPath = path.join('..', 'cli', 'bin', 'run')
-
-export function start(environmentName = 'local', path: string): ChildProcess {
-  return runCommand(path, `../${cliBinaryPath} start -e ${environmentName}`).childProcess
-}
 
 // --- Auth helpers ---
 

@@ -4,7 +4,7 @@ import { createSandboxProject, removeSandboxProject } from '../../../../../cli/s
 import { sandboxPathFor } from '../../../helper/file-helper'
 import { setEnv } from '../../../helper/app-helper'
 import { AWSTestHelper } from '@boostercloud/framework-provider-aws-infrastructure'
-import { nuke } from '../deploy'
+import { nuke } from '../../deploy'
 import { overrideWithBoosterLocalDependencies } from '../../../helper/deps-helper'
 
 before(async () => {
