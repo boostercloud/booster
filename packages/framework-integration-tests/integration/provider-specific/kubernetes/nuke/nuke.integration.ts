@@ -1,21 +1,35 @@
 import * as chai from 'chai'
-import * as Kubernetes from '@kubernetes/client-node'
-import { kubernetesNamespace } from '../constants'
+import { K8SManager } from '../k8s-manager'
+import { waitForIt } from '../../../helper/sleep'
+import { V1PodList, V1ServiceList } from '@kubernetes/client-node'
 
 export const expect = chai.expect
 
 describe('After nuke', () => {
-  const kubernetesConfig = new Kubernetes.KubeConfig()
-  kubernetesConfig.loadFromDefault()
-  const k8sClient = kubernetesConfig.makeApiClient(Kubernetes.CoreV1Api)
+  const k8sManager = new K8SManager()
 
-  describe('the pods', () => {
+  describe('the pods and services', () => {
     it('are deleted successfully', async () => {
-      const services = await k8sClient.listNamespacedService(kubernetesNamespace)
-      const pods = await k8sClient.listNamespacedPod(kubernetesNamespace)
+      const services = await waitForIt(
+        async () => await k8sManager.getKubernetesServices(),
+        (service: V1ServiceList) => {
+          return service.items.length === 0
+        },
+        5000,
+        150000
+      )
 
-      expect(services.body.items).to.be.empty
-      expect(pods.body.items).to.be.empty
+      const pods = await waitForIt(
+        async () => await k8sManager.getKubernetesPods(),
+        (pods: V1PodList) => {
+          return pods.items.length === 0
+        },
+        5000,
+        150000
+      )
+
+      expect(services.items).to.be.empty
+      expect(pods.items).to.be.empty
     })
   })
 })
