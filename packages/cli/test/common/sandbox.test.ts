@@ -9,17 +9,17 @@ import * as path from 'path'
 describe('sandbox', () => {
   let fakeRmSync: SinonSpy
   let fakeMkdirSync: SinonSpy
-  let fakeFileSync: SinonSpy
+  let fakeCopySync: SinonSpy
   beforeEach(() => {
     fakeRmSync = fake()
     fakeMkdirSync = fake()
-    fakeFileSync = fake()
+    fakeCopySync = fake()
     const fakeStatSync = (fileName: string) => ({
       isDirectory: () => !fileName.includes('.'),
     })
     replace(fs, 'rmSync', fakeRmSync)
     replace(fs, 'mkdirSync', fakeMkdirSync)
-    replace(fse, 'copySync', fakeFileSync)
+    replace(fse, 'copySync', fakeCopySync)
     replace(fs, 'statSync', fakeStatSync as any)
   })
   afterEach(() => {
@@ -52,7 +52,7 @@ describe('sandbox', () => {
       expect(fakeReaddirSync).to.have.been.calledWith(path.join('src', 'commands'))
       expect(fakeReaddirSync).to.have.been.calledWith(path.join('assetFolder'))
 
-      expect(fakeFileSync).to.have.callCount(8)
+      expect(fakeCopySync).to.have.callCount(8)
       const copyFileCallsArguments = [
         ['package.json', path.join(sandboxPath, 'package.json')],
         ['tsconfig.json', path.join(sandboxPath, 'tsconfig.json')],
@@ -64,7 +64,7 @@ describe('sandbox', () => {
         ['assetFile3.txt', path.join(sandboxPath, 'assetFile3.txt')],
       ]
       copyFileCallsArguments.forEach((args) => {
-        expect(fakeFileSync).to.have.been.calledWith(...args)
+        expect(fakeCopySync).to.have.been.calledWith(...args)
       })
     })
   })

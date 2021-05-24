@@ -1,12 +1,12 @@
 import * as path from 'path'
-import { runCommand } from '../helper/run-command'
+import { runCommand } from './run-command'
 import { ChildProcess } from 'child_process'
 
 // Path to the CLI binary compiled by lerna
 const cliBinaryPath = path.join('..', '..', 'cli', 'bin', 'run')
 
 export async function deploy(projectPath: string, environmentName = 'production'): Promise<void> {
-  // Production dependencies are installed by the deploy command
+  // Production dependencies are installed by the cliHelper command
   await runCommand(projectPath, `${cliBinaryPath} deploy -e ${environmentName}`)
 }
 

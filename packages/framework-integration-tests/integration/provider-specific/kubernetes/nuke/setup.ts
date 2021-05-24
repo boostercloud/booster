@@ -1,5 +1,5 @@
 import { overrideWithBoosterLocalDependencies } from '../../../helper/deps-helper'
-import { nuke } from '../../deploy'
+import { nuke } from '../../../helper/cli-helper'
 import { createSandboxProject, removeSandboxProject } from '../../../../../cli/src/common/sandbox'
 import { sandboxPathFor } from '../../../helper/file-helper'
 import { sandboxProjectName } from '../constants'
