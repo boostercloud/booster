@@ -11,7 +11,7 @@ describe('Kubernetes provider', () => {
     const services = await k8sManager.getKubernetesServices()
     const pods = await k8sManager.getKubernetesPods()
 
-    const serviceNames = services.items.map((item: Kubernetes.V1Service) => {
+    services.items.map((item: Kubernetes.V1Service) => {
       expect(item.metadata?.namespace).to.equal(kubernetesNamespace)
 
       if (item?.metadata?.name === 'booster' || item?.metadata?.name === 'fileuploader') {
@@ -22,7 +22,7 @@ describe('Kubernetes provider', () => {
         expect(item.metadata?.labels?.app).to.equal(item?.metadata?.name)
       }
 
-      return item?.metadata?.name
+      expect(boosterKubernetesServices).to.include(item?.metadata?.name)
     })
 
     pods.items.map(async (pod: Kubernetes.V1Pod) => {
@@ -37,7 +37,5 @@ describe('Kubernetes provider', () => {
 
       expect(pod?.status?.phase).to.be.equal('Running')
     })
-
-    expect(serviceNames).to.include.members(boosterKubernetesServices)
   })
 })
