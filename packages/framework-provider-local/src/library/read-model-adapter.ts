@@ -1,13 +1,13 @@
 import {
   BoosterConfig,
-  FilterOld,
+  FilterFor,
   Logger,
   ReadModelEnvelope,
   ReadModelInterface,
   UUID,
 } from '@boostercloud/framework-types'
 import { ReadModelRegistry } from '../services/read-model-registry'
-import { queryRecordFor, QueryValue } from './searcher-adapter'
+import { queryRecordFor } from './searcher-adapter'
 
 export async function rawReadModelEventsToEnvelopes(
   config: BoosterConfig,
@@ -53,7 +53,7 @@ export async function searchReadModel(
   _config: BoosterConfig,
   logger: Logger,
   readModelName: string,
-  filters: Record<string, FilterOld<QueryValue>>
+  filters: FilterFor<any>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<Array<any>> {
   logger.info('Converting filter to query')

@@ -1,8 +1,8 @@
 import { createStubInstance, fake, SinonStub, SinonStubbedInstance, replace, stub } from 'sinon'
 import { ReadModelRegistry } from '../../src/services'
-import { BoosterConfig, Logger } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, ReadModelEnvelope, UUID } from '@boostercloud/framework-types'
 import { expect } from '../expect'
-import { ReadModelEnvelope, UUID } from '@boostercloud/framework-types'
+
 import { random } from 'faker'
 import { createMockReadModelEnvelope } from '../helpers/read-model-helper'
 import { fetchReadModel, searchReadModel, storeReadModel } from '../../src/library/read-model-adapter'
@@ -85,7 +85,7 @@ describe('read-models-adapter', () => {
     it('should call read model registry store with the appropriate operation converted', async () => {
       const mockReadModel = createMockReadModelEnvelope()
       await searchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel.typeName, {
-        foo: { operation: '>', values: [1] },
+        foo: { gt: 1 },
       })
       expect(queryStub).to.have.been.calledWithExactly({ typeName: mockReadModel.typeName, 'value.foo': { $gt: 1 } })
     })
