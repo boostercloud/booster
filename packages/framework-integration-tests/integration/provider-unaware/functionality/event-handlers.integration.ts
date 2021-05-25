@@ -76,6 +76,7 @@ describe('Event handlers', () => {
       }
       const stockMovedEvent = stockEvents[0]
       expect(stockMovedEvent).to.deep.contain(expectedStockMovedEvent)
+      expect(false).to.be.true
 
       const expectedProductAvailabilityChangedEvent = {
         // eslint-disable-next-line @typescript-eslint/camelcase
@@ -101,16 +102,19 @@ describe('Event handlers', () => {
   })
 })
 
-async function createProductAndWaitForIt(client: ApolloClient<NormalizedCacheObject>, mockProductId: string): Promise<void> {
+async function createProductAndWaitForIt(
+  client: ApolloClient<NormalizedCacheObject>,
+  mockProductId: string
+): Promise<void> {
   await client.mutate({
     variables: {
       productID: mockProductId,
-      sku: random.alpha({count: 10})
+      sku: random.alpha({ count: 10 }),
     },
     mutation: gql`
-        mutation CreateProduct($productID: ID!, $sku: String) {
-            CreateProduct(input: { productID: $productID, sku: $sku })
-        }
+      mutation CreateProduct($productID: ID!, $sku: String) {
+        CreateProduct(input: { productID: $productID, sku: $sku })
+      }
     `,
   })
   await waitForIt(
