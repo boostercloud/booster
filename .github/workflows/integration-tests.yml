@@ -37,7 +37,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
-    continue-on-error: true
+    # continue-on-error: true
 
   aws-end-to-end-tests:
     name: AWS end-to-end Tests
@@ -56,7 +56,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
-    continue-on-error: true
+    # continue-on-error: true
 
   aws-load-tests:
     name: AWS load tests
@@ -75,7 +75,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
-    continue-on-error: true
+    # continue-on-error: true
 
   aws-nuke-integration-tests:
     name: AWS Nuke Integration Tests
