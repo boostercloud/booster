@@ -79,7 +79,7 @@ jobs:
 
   aws-nuke-integration-tests:
     name: AWS Nuke Integration Tests
-    if: always() && needs.aws-deploy-integration-tests.outcome == 'success'
+    if: always() && needs.aws-deploy-integration-tests.result == 'success'
     continue-on-error: true
     needs:
       - aws-load-tests
