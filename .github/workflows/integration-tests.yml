@@ -76,8 +76,8 @@ jobs:
 
   aws-nuke-integration-tests:
     name: AWS Nuke Integration Tests
-    needs:
-      - aws-load-tests
+    # needs:
+    #   - aws-load-tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
