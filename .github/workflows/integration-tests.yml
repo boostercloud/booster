@@ -76,7 +76,7 @@ jobs:
 
   aws-nuke-integration-tests:
     name: AWS Nuke Integration Tests
-    if: always() && steps.aws-deploy-integration-tests.outcome == 'success'
+    if: always() && jobs.aws-deploy-integration-tests.outcome == 'success'
     needs:
       - aws-load-tests
     runs-on: ubuntu-latest
