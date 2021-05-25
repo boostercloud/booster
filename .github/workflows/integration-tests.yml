@@ -76,6 +76,7 @@ jobs:
 
   aws-nuke-integration-tests:
     name: AWS Nuke Integration Tests
+    if: always() && steps.aws-deploy-integration-tests.outcome == 'success'
     needs:
       - aws-load-tests
     runs-on: ubuntu-latest
@@ -91,8 +92,6 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
-        # if: ${{ always() && (steps.aws-deploy-integration-tests.outcome == 'success') }}
-        if: always()
 
   cli-integration-tests:
     name: CLI Integration Tests
