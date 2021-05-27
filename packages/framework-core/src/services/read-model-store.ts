@@ -39,7 +39,6 @@ export class ReadModelStore {
         const readModelName = projectionMetadata.class.name
         const entityInstance = new entityMetadata.class()
         Object.assign(entityInstance, entitySnapshotEnvelope.value)
-        // const entitySnapshot = entitySnapshotEnvelope.value as EntityInterface
         const readModelID = this.joinKeyForProjection(entityInstance, projectionMetadata)
         this.logger.debug(
           '[ReadModelStore#project] Projecting entity snapshot ',
@@ -112,7 +111,14 @@ export class ReadModelStore {
     this.logger.debug(
       `[ReadModelStore#fetchReadModel] Looking for existing version of read model ${readModelName} with ID ${readModelID}`
     )
-    return this.provider.readModels.fetch(this.config, this.logger, readModelName, readModelID)
+     const rawReadModel = this.provider.readModels.fetch(this.config, this.logger, readModelName, readModelID)
+      if (!rawReadModel) {
+       return rawReadModel
+      }
+    const readModelMetadata = this.config.readModels[readModelName]
+    const readModelInstance = new readModelMetadata.class()
+    void Object.assign(readModelInstance, rawReadModel)
+    return readModelInstance
   }
 
   public projectionFunction(projectionMetadata: ProjectionMetadata): Function {
