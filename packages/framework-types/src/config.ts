@@ -8,6 +8,7 @@ import {
   ReadModelMetadata,
   EventHandlerInterface,
   ScheduledCommandMetadata,
+  EventMetadata,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
