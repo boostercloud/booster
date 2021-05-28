@@ -19,6 +19,22 @@ import { EventStore } from '../src/services/event-store'
 import { RegisterHandler } from '../src/booster-register-handler'
 import { random } from 'faker'
 
+class SomeEvent {
+  public constructor(readonly id: UUID) {}
+
+  public entityID(): UUID {
+    return this.id
+  }
+  public getPrefixedId(prefix: string): UUID {
+    return `${prefix}-${this.id}`
+  }
+}
+
+class AnEventHandler {
+  public static async handle(event: SomeEvent, register: Register): Promise<void> {
+    event.getPrefixedId('prefix')
+  }
+}
 const someEvent: EventEnvelope = {
   version: 1,
   kind: 'event',
@@ -28,6 +44,7 @@ const someEvent: EventEnvelope = {
     entityID: (): UUID => {
       return '42'
     },
+    id: '42',
   },
   requestID: '123',
   typeName: 'SomeEvent',
@@ -62,6 +79,12 @@ describe('BoosterEventDispatcher', () => {
 
   const config = new BoosterConfig('test')
   config.provider = {} as ProviderLibrary
+  config.events[SomeEvent.name] = { class: SomeEvent }
+  config.eventHandlers[SomeEvent.name] = [
+    {
+      handle: AnEventHandler.handle,
+    },
+  ]
 
   context('with a configured provider', () => {
     describe('the `dispatch` method', () => {
@@ -193,8 +216,12 @@ describe('BoosterEventDispatcher', () => {
         const boosterEventDispatcher = BoosterEventDispatcher as any
         await boosterEventDispatcher.dispatchEntityEventsToEventHandlers([someEvent], config, logger)
 
-        expect(fakeHandler1).to.have.been.calledOnceWith(someEvent.value)
-        expect(fakeHandler2).to.have.been.calledOnceWith(someEvent.value)
+        const eventValue: any = someEvent.value
+        const anEventInstance = new SomeEvent(eventValue.id)
+        anEventInstance.entityID = eventValue.entityID
+
+        expect(fakeHandler1).to.have.been.calledOnceWith(anEventInstance)
+        expect(fakeHandler2).to.have.been.calledOnceWith(anEventInstance)
       })
 
       it('calls the register handler for all the published events', async () => {
@@ -235,6 +262,14 @@ describe('BoosterEventDispatcher', () => {
         expect(RegisterHandler.handle).to.have.been.calledWith(config, logger, capturedRegister)
         expect(capturedRegister.eventList[0]).to.be.deep.equal(someEvent.value)
       })
+    })
+
+    it('calls an instance method in the event and it is executed without failing', async () => {
+      const boosterEventDispatcher = BoosterEventDispatcher as any
+      const getPrefixedIdFake = fake()
+      replace(SomeEvent.prototype, 'getPrefixedId', getPrefixedIdFake)
+      await boosterEventDispatcher.dispatchEntityEventsToEventHandlers([someEvent], config, logger)
+      expect(getPrefixedIdFake).to.have.been.called
     })
   })
 })
