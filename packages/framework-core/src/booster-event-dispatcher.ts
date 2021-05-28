@@ -4,8 +4,7 @@ import {
   Logger,
   Register,
   EventHandlerInterface,
-  UUID,
-  EventInterface,
+  UUID
 } from '@boostercloud/framework-types'
 import { EventStore } from './services/event-store'
 import { EventsStreamingCallback, RawEventsParser } from './services/raw-events-parser'
@@ -91,11 +90,15 @@ export class BoosterEventDispatcher {
         )
         continue
       }
+      const eventClass = config.events[eventEnvelope.typeName]
       await Promises.allSettledAndFulfilled(
         eventHandlers.map(async (eventHandler: EventHandlerInterface) => {
+
+          const eventInstance = new eventClass.class()
+          Object.assign(eventInstance, eventEnvelope.value)
           const register = new Register(eventEnvelope.requestID, eventEnvelope.currentUser)
           logger.debug('Calling "handle" method on event handler: ', eventHandler)
-          await eventHandler.handle(eventEnvelope.value as EventInterface, register)
+          await eventHandler.handle(eventInstance, register)
           return RegisterHandler.handle(config, logger, register)
         })
       )
