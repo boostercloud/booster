@@ -1,4 +1,5 @@
 import { UUID } from './uuid'
+import { Class } from '../typelevel'
 
 /**
  * An `Event` is a fact that has happened in your system.
@@ -7,4 +8,8 @@ import { UUID } from './uuid'
 
 export interface EventInterface {
   entityID(): UUID
+}
+
+export interface EventMetadata {
+  readonly class: Class<EventInterface>
 }

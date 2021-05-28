@@ -6,8 +6,8 @@ import {
   EventInterface,
   EntityInterface,
   Level,
-  UUID,
   ProviderLibrary,
+  UUID,
 } from '@boostercloud/framework-types'
 import { replace, fake, stub, restore } from 'sinon'
 import { EventStore } from '../../src/services/event-store'
@@ -21,31 +21,66 @@ describe('EventStore', () => {
 
   const logger = buildLogger(Level.error)
 
-  class ImportantConcept {
-    public constructor(readonly id: UUID) {}
-    public static someHandler(): void {
-      console.log('I EXIST!!!')
+  class AnEvent {
+    public constructor(readonly id: UUID, readonly entityId: string, readonly delta: number){}
+    public entityID(): UUID{
+      return this.entityId
+    }
+  }
+
+  class AnotherEvent {
+    public constructor(readonly id: UUID){}
+    public entityID(): UUID{
+      return this.id
+    }
+    public getId(): UUID{
+      return this.id
+    }
+  }
+
+  class AnEntity {
+    public constructor(readonly id: UUID, readonly count: number) {}
+    public getId(): UUID {
+      return this.id
+    }
+    public static reducerThatCallsEntityMethod(event: AnEvent, currentEntity?: AnEntity): AnEntity {
+      if(currentEntity){
+        currentEntity.getId()
+      }
+      return new AnEntity(event.entityId, event.delta)
+    }
+
+    public static reducerThatCallsEventMethod(event: AnotherEvent, currentEntity?: AnEntity): AnEntity {
+      event.getId()
+      return new AnEntity('1', 1)
     }
   }
 
   const config = new BoosterConfig('test')
-  config.provider = ({
+  config.provider = {
     events: {
       store: () => {},
       latestEntitySnapshot: () => {},
       forEntitySince: () => {},
     },
-  } as any) as ProviderLibrary
-  config.entities['ImportantConcept'] = { class: ImportantConcept, authorizeReadEvents: [] }
-  config.reducers['ImportantEvent'] = {
-    class: ImportantConcept,
-    methodName: 'someHandler',
+  } as any as ProviderLibrary
+  config.entities[AnEntity.name] = { class: AnEntity, authorizeReadEvents: [] }
+  config.reducers[AnEvent.name] = {
+    class: AnEntity,
+    methodName: 'reducerThatCallsEntityMethod',
   }
+  config.reducers[AnotherEvent.name] = {
+    class: AnEntity,
+    methodName: 'reducerThatCallsEventMethod',
+  }
+  config.events[AnEvent.name] = {class: AnEvent}
+  config.events[AnotherEvent.name] = {class: AnotherEvent}
 
   const importantDateTimeStamp = new Date(2019, 11, 23, 6, 30).toISOString()
   const originOfTime = new Date(0).toISOString() // Unix epoch
 
   const someEvent = {
+    id: '1',
     entityID: () => '42',
     entityId: '42',
     delta: 1,
@@ -62,7 +97,7 @@ describe('EventStore', () => {
     count: 0,
   }
 
-  function eventEnvelopeFor<TEvent extends EventInterface>(event: TEvent, timestamp?: string): EventEnvelope {
+  function eventEnvelopeFor<TEvent extends EventInterface>(event: TEvent, typeName: string, timestamp?: string): EventEnvelope {
     return {
       version: 1,
       kind: 'event',
@@ -94,11 +129,11 @@ describe('EventStore', () => {
       it('properly binds `this` to the entityReducer', async () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const eventStore = new EventStore(config, logger) as any
-        const someEventEnvelope = eventEnvelopeFor(someEvent)
+        const someEventEnvelope = eventEnvelopeFor(someEvent, AnEvent.name)
 
         replace(eventStore, 'loadLatestSnapshot', fake.resolves(null))
         replace(eventStore, 'loadEventStreamSince', fake.resolves([someEventEnvelope]))
-        replace(eventStore, 'entityReducer', function() {
+        replace(eventStore, 'entityReducer', function () {
           // @ts-ignore
           expect(this).to.be.equal(eventStore)
         })
@@ -141,8 +176,8 @@ describe('EventStore', () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const eventStore = new EventStore(config, logger) as any
           const someSnapshotEnvelope = snapshotEnvelopeFor(someEntity)
-          const someEventEnvelope = eventEnvelopeFor(someEvent)
-          const otherEventEnvelope = eventEnvelopeFor(otherEvent)
+          const someEventEnvelope = eventEnvelopeFor(someEvent, AnEvent.name)
+          const otherEventEnvelope = eventEnvelopeFor(otherEvent, AnEvent.name)
 
           replace(eventStore, 'loadLatestSnapshot', fake.resolves(someSnapshotEnvelope))
           replace(eventStore, 'loadEventStreamSince', fake.resolves([someEventEnvelope, otherEventEnvelope]))
@@ -202,8 +237,8 @@ describe('EventStore', () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const eventStore = new EventStore(config, logger) as any
           const someSnapshotEnvelope = snapshotEnvelopeFor(someEntity)
-          const someEventEnvelope = eventEnvelopeFor(someEvent)
-          const otherEventEnvelope = eventEnvelopeFor(otherEvent)
+          const someEventEnvelope = eventEnvelopeFor(someEvent, AnEvent.name)
+          const otherEventEnvelope = eventEnvelopeFor(otherEvent, AnEvent.name)
           const pendingEvents = [
             someEventEnvelope,
             otherEventEnvelope,
@@ -270,8 +305,8 @@ describe('EventStore', () => {
         it('produces a new snapshot and returns it, but never stores it', async () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const eventStore = new EventStore(config, logger) as any
-          const someEventEnvelope = eventEnvelopeFor(someEvent)
-          const otherEventEnvelope = eventEnvelopeFor(otherEvent)
+          const someEventEnvelope = eventEnvelopeFor(someEvent, AnEvent.name)
+          const otherEventEnvelope = eventEnvelopeFor(otherEvent, AnEvent.name)
           const pendingEvents = [
             someEventEnvelope,
             otherEventEnvelope,
@@ -420,7 +455,7 @@ describe('EventStore', () => {
         context('given a snapshot and a new event', () => {
           it('calculates the new snapshot value using the proper reducer for the event and the entity types', () => {
             const snapshot = snapshotEnvelopeFor(someEntity)
-            const eventEnvelope = eventEnvelopeFor(someEvent, 'fakeTimeStamp')
+            const eventEnvelope = eventEnvelopeFor(someEvent, AnEvent.name, 'fakeTimeStamp')
             const fakeReducer = fake.returns({
               id: '42',
               count: 1,
@@ -430,8 +465,12 @@ describe('EventStore', () => {
             const newSnapshot = eventStore.entityReducer(snapshot, eventEnvelope)
             delete newSnapshot.createdAt
 
-            expect(eventStore.reducerForEvent).to.have.been.calledOnceWith('ImportantEvent')
-            expect(fakeReducer).to.have.been.calledOnceWith(eventEnvelope.value, snapshot.value)
+            const eventInstance = new AnEvent(someEvent.id, someEvent.entityId, someEvent.delta)
+            eventInstance.entityID = someEvent.entityID
+            const entityInstance = new AnEntity(someEntity.id, someEntity.count)
+
+            expect(eventStore.reducerForEvent).to.have.been.calledOnceWith(AnEvent.name)
+            expect(fakeReducer).to.have.been.calledOnceWith(eventInstance, entityInstance)
 
             expect(newSnapshot).to.be.deep.equal({
               version: 1,
@@ -451,7 +490,7 @@ describe('EventStore', () => {
 
         context('given no snapshot and an event', () => {
           it('generates a new snapshot value using the proper reducer for the event and the entity types', () => {
-            const eventEnvelope = eventEnvelopeFor(someEvent, 'fakeTimeStamp')
+            const eventEnvelope = eventEnvelopeFor(someEvent, AnEvent.name, 'fakeTimeStamp')
             const fakeReducer = fake.returns({
               id: '42',
               count: 1,
@@ -461,8 +500,11 @@ describe('EventStore', () => {
             const newSnapshot = eventStore.entityReducer(null, eventEnvelope)
             delete newSnapshot.createdAt
 
-            expect(eventStore.reducerForEvent).to.have.been.calledOnceWith('ImportantEvent')
-            expect(fakeReducer).to.have.been.calledOnceWith(eventEnvelope.value, null)
+            const eventInstance = new AnEvent(someEvent.id, someEvent.entityId, someEvent.delta)
+            eventInstance.entityID = someEvent.entityID
+
+            expect(eventStore.reducerForEvent).to.have.been.calledOnceWith(AnEvent.name)
+            expect(fakeReducer).to.have.been.calledOnceWith(eventInstance, null)
 
             expect(newSnapshot).to.be.deep.equal({
               version: 1,
@@ -480,6 +522,23 @@ describe('EventStore', () => {
           })
         })
       })
+      context('when an entity reducer calls an instance method in the event', () => {
+        it('is executed without failing', async () => {
+          const eventEnvelope = eventEnvelopeFor(someEvent, AnotherEvent.name, 'fakeTimeStamp')
+          const getIdFake = fake()
+          replace(AnotherEvent.prototype, 'getId', getIdFake)
+          eventStore.entityReducer(null, eventEnvelope)
+          expect(getIdFake).to.have.been.called
+        })})
+      context('when an entity reducer calls an instance method in the entity', () => {
+        it('is executed without failing', async () => {
+          const snapshot = snapshotEnvelopeFor(someEntity)
+          const eventEnvelope = eventEnvelopeFor(someEvent, AnEvent.name, 'fakeTimeStamp')
+          const getIdFake = fake()
+          replace(AnEntity.prototype, 'getId', getIdFake)
+          eventStore.entityReducer(snapshot, eventEnvelope)
+          expect(getIdFake).to.have.been.called
+        })})
     })
 
     describe('reducerForEvent', () => {
