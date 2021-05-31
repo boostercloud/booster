@@ -4,13 +4,14 @@ import {
   Logger,
   Register,
   EventHandlerInterface,
-  UUID
+  UUID,
 } from '@boostercloud/framework-types'
 import { EventStore } from './services/event-store'
 import { EventsStreamingCallback, RawEventsParser } from './services/raw-events-parser'
 import { ReadModelStore } from './services/read-model-store'
 import { RegisterHandler } from './booster-register-handler'
 import { Promises } from '@boostercloud/framework-common-helpers'
+import { createInstance } from './services/parser-helpers'
 
 export class BoosterEventDispatcher {
   /**
@@ -93,9 +94,7 @@ export class BoosterEventDispatcher {
       const eventClass = config.events[eventEnvelope.typeName]
       await Promises.allSettledAndFulfilled(
         eventHandlers.map(async (eventHandler: EventHandlerInterface) => {
-
-          const eventInstance = new eventClass.class()
-          Object.assign(eventInstance, eventEnvelope.value)
+          const eventInstance = createInstance(eventClass.class, eventEnvelope.value)
           const register = new Register(eventEnvelope.requestID, eventEnvelope.currentUser)
           logger.debug('Calling "handle" method on event handler: ', eventHandler)
           await eventHandler.handle(eventInstance, register)

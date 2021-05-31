@@ -6,6 +6,7 @@ import {
   EventEnvelope,
   InvalidParameterError,
 } from '@boostercloud/framework-types'
+import { createInstance } from './parser-helpers'
 
 const originOfTime = new Date(0).toISOString() // Unix epoch
 
@@ -101,8 +102,10 @@ export class EventStore {
         ' and entity snapshot ',
         latestSnapshot
       )
-      const eventInstance = this.createEventInstance(eventEnvelope)
-      const snapshotInstance = latestSnapshot ? this.createSnapshotInstance(eventEnvelope.entityTypeName, latestSnapshot) : null
+      const eventMetadata = this.config.events[eventEnvelope.typeName]
+      const eventInstance = createInstance(eventMetadata.class, eventEnvelope.value)
+      const entityMetadata = this.config.entities[eventEnvelope.entityTypeName]
+      const snapshotInstance = latestSnapshot ? createInstance(entityMetadata.class, latestSnapshot.value) : null
       const newEntity = this.reducerForEvent(eventEnvelope.typeName)(eventInstance, snapshotInstance)
       const newSnapshot: EventEnvelope = {
         version: this.config.currentVersionFor(eventEnvelope.entityTypeName),
@@ -122,21 +125,6 @@ export class EventStore {
       throw e
     }
   }
-
-  private createEventInstance(eventEnvelope: EventEnvelope) {
-    const eventMetadata = this.config.events[eventEnvelope.typeName]
-    const eventInstance = new eventMetadata.class()
-    Object.assign(eventInstance, eventEnvelope.value)
-    return eventInstance
-  }
-
-  private createSnapshotInstance(entityName:string, latestSnapshot: EventEnvelope){
-    const entityMetadata = this.config.entities[entityName]
-    const snapshotInstance = new entityMetadata.class()
-    Object.assign(snapshotInstance, latestSnapshot.value)
-    return snapshotInstance
-  }
-
 
   private reducerForEvent(eventName: string): Function {
     const reducerMetadata = this.config.reducers[eventName]

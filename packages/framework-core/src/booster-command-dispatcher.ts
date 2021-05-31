@@ -9,6 +9,7 @@ import {
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
 import { RegisterHandler } from './booster-register-handler'
+import {createInstance} from './services/parser-helpers'
 
 export class BoosterCommandDispatcher {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
@@ -30,8 +31,7 @@ export class BoosterCommandDispatcher {
 
     const commandClass = commandMetadata.class
     this.logger.debug('Found the following command:', commandClass.name)
-    //const command = commandClass as CommandInterface
-    const commandInstance = new commandClass()
+    const commandInstance = createInstance(commandClass, commandEnvelope.value as any)
     Object.assign(commandInstance, commandEnvelope.value)
     // TODO: Here we could call "command.validate()" so that the user can prevalidate
     // the command inputted by the user.
