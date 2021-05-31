@@ -5,7 +5,7 @@ import { expect } from '../expect'
 
 import { random } from 'faker'
 import { createMockReadModelEnvelope } from '../helpers/read-model-helper'
-import { fetchReadModel, searchReadModel, storeReadModel } from '../../src/library/read-model-adapter'
+import { fetchReadModel, rawReadModelEventsToEnvelopes, searchReadModel, storeReadModel } from '../../src/library/read-model-adapter'
 
 describe('read-models-adapter', () => {
   let mockConfig: BoosterConfig
@@ -38,6 +38,23 @@ describe('read-models-adapter', () => {
     replace(mockReadModelRegistry, 'store', storeStub as any)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     replace(mockReadModelRegistry, 'query', queryStub as any)
+  })
+
+  describe('rawReadModelEventsToEnvelopes', () => {
+    it('should return an empty array of envelopes', async () => {
+      const results = await rawReadModelEventsToEnvelopes(mockConfig, mockLogger, [])
+      const expected: ReadModelEnvelope[] = []
+      expect(results).to.deep.equal(expected)
+    })
+
+    it('should return an array of envelopes', async () => {
+      const value1: ReadModelEnvelope = createMockReadModelEnvelope()
+      const value2: ReadModelEnvelope = createMockReadModelEnvelope()
+      const rawEvents: unknown[] = [value1 as unknown, value2 as unknown]
+      const results = await rawReadModelEventsToEnvelopes(mockConfig, mockLogger, rawEvents)
+      const expected: ReadModelEnvelope[] = [value1, value2]
+      expect(results).to.deep.equal(expected)
+    })
   })
 
   describe('fetchReadModel', () => {
