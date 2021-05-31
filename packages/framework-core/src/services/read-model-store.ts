@@ -13,6 +13,7 @@ import {
   OptimisticConcurrencyUnexpectedVersionError,
 } from '@boostercloud/framework-types'
 import { Promises, retryIfError } from '@boostercloud/framework-common-helpers'
+import { createInstance } from './parser-helpers'
 
 export class ReadModelStore {
   private config: BoosterConfig
@@ -37,8 +38,7 @@ export class ReadModelStore {
     await Promises.allSettledAndFulfilled(
       projections.map(async (projectionMetadata: ProjectionMetadata) => {
         const readModelName = projectionMetadata.class.name
-        const entityInstance = new entityMetadata.class()
-        Object.assign(entityInstance, entitySnapshotEnvelope.value)
+        const entityInstance = createInstance(entityMetadata.class, entitySnapshotEnvelope.value)
         const readModelID = this.joinKeyForProjection(entityInstance, projectionMetadata)
         this.logger.debug(
           '[ReadModelStore#project] Projecting entity snapshot ',
@@ -107,18 +107,13 @@ export class ReadModelStore {
     )
   }
 
-  public async fetchReadModel(readModelName: string, readModelID: UUID): Promise<ReadModelInterface> {
+  public async fetchReadModel(readModelName: string, readModelID: UUID): Promise<ReadModelInterface | null> {
     this.logger.debug(
       `[ReadModelStore#fetchReadModel] Looking for existing version of read model ${readModelName} with ID ${readModelID}`
     )
-     const rawReadModel = this.provider.readModels.fetch(this.config, this.logger, readModelName, readModelID)
-      if (!rawReadModel) {
-       return rawReadModel
-      }
+    const rawReadModel = this.provider.readModels.fetch(this.config, this.logger, readModelName, readModelID)
     const readModelMetadata = this.config.readModels[readModelName]
-    const readModelInstance = new readModelMetadata.class()
-    void Object.assign(readModelInstance, rawReadModel)
-    return readModelInstance
+    return rawReadModel ? createInstance(readModelMetadata.class, rawReadModel) : null
   }
 
   public projectionFunction(projectionMetadata: ProjectionMetadata): Function {
