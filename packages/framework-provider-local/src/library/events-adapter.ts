@@ -4,11 +4,10 @@ import {
   Logger,
   BoosterConfig,
   EventEnvelope,
-  OptimisticConcurrencyUnexpectedVersionError
+  OptimisticConcurrencyUnexpectedVersionError,
 } from '@boostercloud/framework-types'
 import { retryIfError } from '@boostercloud/framework-common-helpers'
 import { EventRegistry } from '..'
-
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const originOfTime = new Date(0).toISOString()
@@ -92,16 +91,13 @@ export async function storeEvents(
   await userApp.boosterEventDispatcher(eventEnvelopes)
 }
 
-async function persistEvent(
-  eventRegistry: EventRegistry,
-  eventEnvelope: EventEnvelope
-): Promise<void> {
+async function persistEvent(eventRegistry: EventRegistry, eventEnvelope: EventEnvelope): Promise<void> {
   try {
     await eventRegistry.store(eventEnvelope)
   } catch (e) {
     //TODO check the exception raised when there is a write error, to implement
     //Optimistic Concurrency
-    //if (e.name == 'TODO') { 
+    //if (e.name == 'TODO') {
     //  throw new OptimisticConcurrencyUnexpectedVersionError(e.message)
     //}
     throw e

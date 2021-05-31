@@ -26,21 +26,20 @@ describe('the event registry', () => {
   })
 
   describe('query', () => {
-
     describe('with db full of random events', () => {
       beforeEach(async () => {
         const publishPromises: Array<Promise<any>> = []
-  
+
         for (let i = 0; i < initialEventsCount; i++) {
           publishPromises.push(eventRegistry.store(createMockEventEnvelop()))
         }
-  
+
         await Promise.all(publishPromises)
-  
+
         mockTargetEvent = createMockEventEnvelop()
         await eventRegistry.store(mockTargetEvent)
       })
-  
+
       it('should return expected event', async () => {
         const result = await eventRegistry.query({
           kind: mockTargetEvent.kind,
@@ -52,7 +51,7 @@ describe('the event registry', () => {
           typeName: mockTargetEvent.typeName,
           version: mockTargetEvent.version,
         })
-  
+
         expect(result.length).to.be.equal(1)
         expect(result[0]).to.deep.include(mockTargetEvent)
       })
@@ -64,36 +63,35 @@ describe('the event registry', () => {
 
       beforeEach(async () => {
         const publishPromises: Array<Promise<any>> = []
-  
+
         for (let i = 0; i < initialEventsCount; i++) {
-          publishPromises.push(eventRegistry.store(createMockEventEnvelopForEntity(entityName,entityId)))
+          publishPromises.push(eventRegistry.store(createMockEventEnvelopForEntity(entityName, entityId)))
         }
 
         for (let i = 0; i < initialEventsCount; i++) {
-          publishPromises.push(eventRegistry.store(createMockEventEnvelopForEntity(entityName,random.uuid())))
+          publishPromises.push(eventRegistry.store(createMockEventEnvelopForEntity(entityName, random.uuid())))
         }
-  
+
         for (let i = 0; i < initialEventsCount; i++) {
           publishPromises.push(eventRegistry.store(createMockEventEnvelop()))
         }
 
         await Promise.all(publishPromises)
       })
-  
+
       it('should return expected events of the same id sorted', async () => {
         const result: EventEnvelope[] = await eventRegistry.query({
           kind: 'event',
           entityID: entityId,
           entityTypeName: entityName,
         })
-  
+
         expect(result.length).to.be.equal(initialEventsCount)
         expect(result[0].entityID).to.be.equal(entityId)
         expect(result[0].entityTypeName).to.be.equal(entityName)
-        expect(new Date(result[0].createdAt)).to.be.lessThan(new Date(result[result.length-1].createdAt))
+        expect(new Date(result[0].createdAt)).to.be.lessThan(new Date(result[result.length - 1].createdAt))
       })
     })
-    
   })
 
   describe('query latest', () => {
@@ -130,7 +128,7 @@ describe('the event registry', () => {
         entityTypeName: mockTargetEvent.entityTypeName,
       })
 
-      expect(result).to.be.null      
+      expect(result).to.be.null
     })
   })
 
