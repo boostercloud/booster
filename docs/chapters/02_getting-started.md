@@ -287,10 +287,10 @@ the instructions. After some prompted questions, the CLI will ask you to select 
 
 ```shell
 ? What's the package name of your provider infrastructure library? (Use arrow keys)
-❯ @boostercloud/framework-provider-aws (AWS) 
+❯ @boostercloud/framework-provider-aws (AWS)
   @boostercloud/framework-provider-azure (Azure) [Experimental]
   @boostercloud/framework-provider-kubernetes (Kubernetes) [Experimental]
-  Other 
+  Other
 ```
 
 When asked for the provider, select AWS as that is what we have
@@ -312,7 +312,7 @@ After choosing your provider, you will see your project generated!:
 
 > [!TIP] If you prefer to create the project with default parameters, you can run the command as `boost new:project booster-blog --default`. The default
 > parameters are as follows:
-> 
+>
 > - Project name: The one provided when running the command, in this case "booster-blog"
 > - Provider: AWS
 > - Description, author, homepage and repository: ""
@@ -780,6 +780,19 @@ This is a really basic example of a Booster application. The are many other feat
 Continue reading to dig more. You've just scratched the surface of all the Booster
 capabilities!
 
-## Booster examples
+## Examples and walkthroughs
 
-Check out [step-by-step guides](https://github.com/boostercloud/booster/tree/main/docs/examples) and [example apps](https://github.com/boostercloud/examples) to see Booster in use.
+### Creation of a question-asking application backend
+
+In the following video, you will find how to create a backend for a question-asking application from scratch. This application would allow
+users to create questions and like them. This video goes from creating the project to incrementally deploying features in the application.
+You can find the code both for the frontend and the backend in
+[this GitHub repo](https://github.com/boostercloud/examples/tree/master/askme).
+
+<div align="center">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/C4K2M-orT8k" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+
+### All the guides and examples
+
+Check out the [step-by-step guides](https://github.com/boostercloud/booster/tree/main/docs/examples) and the [example apps repository](https://github.com/boostercloud/examples) to see Booster in use.
