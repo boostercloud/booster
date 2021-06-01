@@ -1,5 +1,5 @@
-import { ReadModel, Projects } from '@boostercloud/framework-core'
-import { ProjectionResult, UUID } from '@boostercloud/framework-types'
+import { Projects, ReadModel } from '@boostercloud/framework-core'
+import { FilterFor, ProjectionResult, UserEnvelope, UUID } from '@boostercloud/framework-types'
 import { CartItem } from '../common/cart-item'
 import { Address } from '../common/address'
 import { Cart } from '../entities/cart'
@@ -7,6 +7,7 @@ import { Payment } from '../entities/payment'
 
 @ReadModel({
   authorize: 'all',
+  before: [CartReadModel.idOne, CartReadModel.idTwo],
 })
 export class CartReadModel {
   public constructor(
@@ -21,6 +22,15 @@ export class CartReadModel {
   public getChecks() {
     return this.checks
   }
+
+  public static idOne(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
+    return { id: { eq: filter.id } } as FilterFor<CartReadModel>
+  }
+
+  public static idTwo(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
+    return { id: { ne: 'the-checked-cart' } } as FilterFor<CartReadModel>
+  }
+
   @Projects(Cart, 'id')
   public static updateWithCart(cart: Cart, oldCartReadModel?: CartReadModel): ProjectionResult<CartReadModel> {
     const cartProductIds = cart?.cartItems.map((item) => item.productId as string)

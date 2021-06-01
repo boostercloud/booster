@@ -9,6 +9,9 @@ import {
   ReadModelInterface,
   SubscriptionEnvelope,
   GraphQLOperation,
+  FilterFor,
+  UserEnvelope,
+  BeforeFunction,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
 import { Booster } from './booster'
@@ -57,10 +60,33 @@ export class BoosterReadModelsReader {
   private async processFetch(readModelRequest: ReadModelRequestEnvelope): Promise<Array<ReadModelInterface>> {
     const readModelMetadata = this.config.readModels[readModelRequest.typeName]
     const searcher = Booster.readModel(readModelMetadata.class)
+
     if (readModelRequest.filters) {
-      searcher.filter(readModelRequest.filters)
+      const filters = this.getReadModelFilters(
+        readModelRequest.filters,
+        readModelRequest.currentUser,
+        readModelMetadata.before
+      )
+
+      searcher.filter(filters)
     }
     return searcher.search()
+  }
+
+  private getReadModelFilters(
+    filters: FilterFor<ReadModelInterface>,
+    user?: UserEnvelope,
+    beforeHooks?: Array<BeforeFunction>
+  ): FilterFor<ReadModelInterface> {
+    if (beforeHooks) {
+      let currentFilter = filters
+      beforeHooks.map((before: BeforeFunction) => {
+        currentFilter = before(currentFilter, user)
+      })
+      return currentFilter
+    }
+
+    return filters
   }
 
   private async processSubscription(

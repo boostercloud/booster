@@ -14,4 +14,5 @@ export interface ReadModelMetadata {
   readonly class: Class<ReadModelInterface>
   readonly properties: Array<PropertyMetadata>
   readonly authorizedRoles: RoleAccess['authorize']
+  readonly before?: RoleAccess['before']
 }

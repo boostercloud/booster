@@ -18,6 +18,7 @@ export function ReadModel(attributes: RoleAccess): (readModelClass: Class<ReadMo
         class: readModelClass,
         properties: getPropertiesMetadata(readModelClass),
         authorizedRoles: attributes.authorize,
+        before: attributes.before,
       }
     })
   }
