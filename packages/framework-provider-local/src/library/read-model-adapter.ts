@@ -25,7 +25,7 @@ export async function fetchReadModel(
   readModelName: string,
   readModelID: UUID
 ): Promise<ReadModelInterface> {
-  const response = await db.query({ typeName: readModelName, value: { id: readModelID } })
+  const response = await db.query({ typeName: readModelName, "value.id": readModelID })
   const item = response[0]
   if (!item) {
     console.log(`[ReadModelAdapter#fetchReadModel] Read model ${readModelName} with ID ${readModelID} not found`)
@@ -45,9 +45,10 @@ export async function storeReadModel(
   readModelName: string,
   readModel: ReadModelInterface,
   expectedCurrentVersion: number,
-): Promise<void> {  
+): Promise<void> {
+  logger.debug('[ReadModelAdapter#storeReadModel] Storing readModel ' + JSON.stringify(readModel))
   try {
-    await db.store({ typeName: readModelName, value: readModel })
+    await db.store({ typeName: readModelName, value: readModel } as ReadModelEnvelope)
   } catch (e) {
     // The error will be thrown, but in case of a conditional check, we throw the expected error type by the core
     // TODO: verify the name of the exception thrown in Local Provider

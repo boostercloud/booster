@@ -72,7 +72,7 @@ describe('read-models-adapter', () => {
       await fetchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModelTypeName, mockReadModelID)
 
       expect(queryStub).to.have.been.calledOnceWithExactly({
-        value: { id: mockReadModelID },
+        "value.id": mockReadModelID,
         typeName: mockReadModelTypeName,
       })
     })
@@ -84,12 +84,17 @@ describe('read-models-adapter', () => {
     beforeEach(async () => {
       mockReadModel = createMockReadModelEnvelope()
 
-      await storeReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel.typeName, mockReadModel.value)
+      await storeReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel.typeName, mockReadModel.value, 1)
     })
 
     it('should call read model registry store', () => {
       expect(storeStub).to.have.been.calledWithExactly(mockReadModel)
     })
+
+    it('should log the right debug message', () => {
+      expect(mockLogger.debug).to.have.been.calledWithExactly('[ReadModelAdapter#storeReadModel] Read model stored')
+    })
+
   })
 
   describe('searchReadModel', () => {

@@ -64,12 +64,13 @@ describe('the read model registry', () => {
 
   describe('the store method', () => {
     it('should upsert read models into the read models database', async () => {
-      const mockEvent: ReadModelEnvelope = createMockReadModelEnvelope()
+      const mockReadModel: ReadModelEnvelope = createMockReadModelEnvelope()
+      const expectedQuery = { typeName: mockReadModel.typeName, "value.id": mockReadModel.value.id }
 
-      readModelRegistry.readModels.update = stub().yields(null, mockEvent)
+      readModelRegistry.readModels.update = stub().yields(null, mockReadModel)
 
-      await readModelRegistry.store(mockEvent)
-      return expect(readModelRegistry.readModels.update).to.have.been.called
+      await readModelRegistry.store(mockReadModel)
+      expect(readModelRegistry.readModels.update).to.have.been.calledWith(expectedQuery, mockReadModel, { upsert: true })
     })
 
     it('should throw if the database `insert` fails', async () => {
@@ -84,7 +85,7 @@ describe('the read model registry', () => {
 
       readModelRegistry.readModels.update = stub().yields(error, null)
 
-      return expect(readModelRegistry.store(readModel)).to.be.rejectedWith(error)
+      expect(readModelRegistry.store(readModel)).to.be.rejectedWith(error)
     })
   })
 })
