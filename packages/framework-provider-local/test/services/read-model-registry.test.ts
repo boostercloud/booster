@@ -65,7 +65,7 @@ describe('the read model registry', () => {
         typeName: mockReadModel.typeName,
       })
 
-      expect(result.length).to.be.equal(0)      
+      expect(result.length).to.be.equal(0)
     })
 
     it('should return no results when typeName do not match', async () => {
@@ -74,7 +74,7 @@ describe('the read model registry', () => {
         typeName: random.words(),
       })
 
-      expect(result.length).to.be.equal(0)      
+      expect(result.length).to.be.equal(0)
     })
   })
 

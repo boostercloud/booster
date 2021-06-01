@@ -1,6 +1,6 @@
 import { createStubInstance, fake, SinonStub, SinonStubbedInstance, replace, stub } from 'sinon'
 import { ReadModelRegistry } from '../../src/services'
-import { BoosterConfig, Logger, ReadModelEnvelope, UUID } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, ReadModelEnvelope, ReadModelInterface, UUID } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 
 import { random } from 'faker'
@@ -62,19 +62,34 @@ describe('read-models-adapter', () => {
     let mockReadModelID: UUID
 
     beforeEach(() => {
-      queryStub.resolves([mockReadModel])
-
       mockReadModelTypeName = random.alphaNumeric(10)
       mockReadModelID = random.uuid()
     })
 
-    it('should call read model registry query', async () => {
-      await fetchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModelTypeName, mockReadModelID)
+    it('should call read model registry query and return a value', async () => {
+      queryStub.resolves([mockReadModel])
+      const result: ReadModelInterface = await fetchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModelTypeName, mockReadModelID)
 
       expect(queryStub).to.have.been.calledOnceWithExactly({
         "value.id": mockReadModelID,
         typeName: mockReadModelTypeName,
       })
+      expect(result).to.deep.equal(mockReadModel.value)
+      expect(mockLogger.debug).to.not.be.calledWith(`[ReadModelAdapter#fetchReadModel] Read model ${mockReadModelTypeName} with ID ${mockReadModelID} not found`)
+      expect(mockLogger.debug).to.be.calledWith(`[ReadModelAdapter#fetchReadModel] Loaded read model ${mockReadModelTypeName} with ID ${mockReadModelID} with result:`)
+    })
+
+    it('should call read model registry query and no results', async () => {
+      queryStub.resolves([])
+      const result = await fetchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModelTypeName, mockReadModelID)
+
+      expect(queryStub).to.have.been.calledOnceWithExactly({
+        "value.id": mockReadModelID,
+        typeName: mockReadModelTypeName,
+      })
+      expect(result).to.be.undefined
+      expect(mockLogger.debug).to.be.calledWith(`[ReadModelAdapter#fetchReadModel] Read model ${mockReadModelTypeName} with ID ${mockReadModelID} not found`)
+      expect(mockLogger.debug).to.not.be.calledWith(`[ReadModelAdapter#fetchReadModel] Loaded read model ${mockReadModelTypeName} with ID ${mockReadModelID} with result:`)
     })
   })
 
