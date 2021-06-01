@@ -48,6 +48,34 @@ describe('the read model registry', () => {
       expect(result.length).to.be.equal(1)
       expect(result[0]).to.deep.include(mockReadModel)
     })
+
+    it('should return expected read model by id', async () => {
+      const result = await readModelRegistry.query({
+        "value.id": mockReadModel.value.id,
+        typeName: mockReadModel.typeName,
+      })
+
+      expect(result.length).to.be.equal(1)
+      expect(result[0]).to.deep.include(mockReadModel)
+    })
+
+    it('should return no results when id do not match', async () => {
+      const result = await readModelRegistry.query({
+        "value.id": random.uuid(),
+        typeName: mockReadModel.typeName,
+      })
+
+      expect(result.length).to.be.equal(0)      
+    })
+
+    it('should return no results when typeName do not match', async () => {
+      const result = await readModelRegistry.query({
+        "value.id": mockReadModel.value.id,
+        typeName: random.words(),
+      })
+
+      expect(result.length).to.be.equal(0)      
+    })
   })
 
   describe('delete by id', () => {
