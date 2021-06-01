@@ -2,6 +2,7 @@ import {
   BoosterConfig,
   FilterFor,
   Logger,
+  OptimisticConcurrencyUnexpectedVersionError,
   ReadModelEnvelope,
   ReadModelInterface,
   UUID,
@@ -42,9 +43,19 @@ export async function storeReadModel(
   _config: BoosterConfig,
   logger: Logger,
   readModelName: string,
-  readModel: ReadModelInterface
-): Promise<void> {
-  await db.store({ typeName: readModelName, value: readModel })
+  readModel: ReadModelInterface,
+  expectedCurrentVersion: number,
+): Promise<void> {  
+  try {
+    await db.store({ typeName: readModelName, value: readModel })
+  } catch (e) {
+    // The error will be thrown, but in case of a conditional check, we throw the expected error type by the core
+    // TODO: verify the name of the exception thrown in Local Provider
+    if (e.name == 'TODO') {
+      throw new OptimisticConcurrencyUnexpectedVersionError(e.message)
+    }
+    throw e
+  }
   logger.debug('[ReadModelAdapter#storeReadModel] Read model stored')
 }
 
