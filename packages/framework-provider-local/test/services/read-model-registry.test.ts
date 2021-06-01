@@ -51,7 +51,7 @@ describe('the read model registry', () => {
 
     it('should return expected read model by id', async () => {
       const result = await readModelRegistry.query({
-        "value.id": mockReadModel.value.id,
+        'value.id': mockReadModel.value.id,
         typeName: mockReadModel.typeName,
       })
 
@@ -61,7 +61,7 @@ describe('the read model registry', () => {
 
     it('should return no results when id do not match', async () => {
       const result = await readModelRegistry.query({
-        "value.id": random.uuid(),
+        'value.id': random.uuid(),
         typeName: mockReadModel.typeName,
       })
 
@@ -70,7 +70,7 @@ describe('the read model registry', () => {
 
     it('should return no results when typeName do not match', async () => {
       const result = await readModelRegistry.query({
-        "value.id": mockReadModel.value.id,
+        'value.id': mockReadModel.value.id,
         typeName: random.words(),
       })
 
@@ -93,12 +93,14 @@ describe('the read model registry', () => {
   describe('the store method', () => {
     it('should upsert read models into the read models database', async () => {
       const mockReadModel: ReadModelEnvelope = createMockReadModelEnvelope()
-      const expectedQuery = { typeName: mockReadModel.typeName, "value.id": mockReadModel.value.id }
+      const expectedQuery = { typeName: mockReadModel.typeName, 'value.id': mockReadModel.value.id }
 
       readModelRegistry.readModels.update = stub().yields(null, mockReadModel)
 
       await readModelRegistry.store(mockReadModel)
-      expect(readModelRegistry.readModels.update).to.have.been.calledWith(expectedQuery, mockReadModel, { upsert: true })
+      expect(readModelRegistry.readModels.update).to.have.been.calledWith(expectedQuery, mockReadModel, {
+        upsert: true,
+      })
     })
 
     it('should throw if the database `insert` fails', async () => {

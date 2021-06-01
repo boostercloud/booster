@@ -21,12 +21,14 @@ export class ReadModelRegistry {
 
   public async store(readModel: ReadModelEnvelope): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.readModels.update({ typeName: readModel.typeName, "value.id": readModel.value.id },
-      readModel,
-      { upsert: true },
-      (err) => {
-        err ? reject(err) : resolve()
-      })
+      this.readModels.update(
+        { typeName: readModel.typeName, 'value.id': readModel.value.id },
+        readModel,
+        { upsert: true },
+        (err) => {
+          err ? reject(err) : resolve()
+        }
+      )
     })
   }
 

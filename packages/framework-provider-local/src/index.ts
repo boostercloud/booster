@@ -11,7 +11,12 @@ import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 
 import * as path from 'path'
 import { ReadModelRegistry } from './services/read-model-registry'
-import { fetchReadModel, rawReadModelEventsToEnvelopes, searchReadModel, storeReadModel } from './library/read-model-adapter'
+import {
+  fetchReadModel,
+  rawReadModelEventsToEnvelopes,
+  searchReadModel,
+  storeReadModel,
+} from './library/read-model-adapter'
 
 export * from './paths'
 export * from './services'

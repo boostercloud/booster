@@ -25,7 +25,7 @@ export async function fetchReadModel(
   readModelName: string,
   readModelID: UUID
 ): Promise<ReadModelInterface> {
-  const response = await db.query({ typeName: readModelName, "value.id": readModelID })
+  const response = await db.query({ typeName: readModelName, 'value.id': readModelID })
   const item = response[0]
   if (!item) {
     logger.debug(`[ReadModelAdapter#fetchReadModel] Read model ${readModelName} with ID ${readModelID} not found`)
@@ -44,7 +44,7 @@ export async function storeReadModel(
   logger: Logger,
   readModelName: string,
   readModel: ReadModelInterface,
-  expectedCurrentVersion: number,
+  expectedCurrentVersion: number
 ): Promise<void> {
   logger.debug('[ReadModelAdapter#storeReadModel] Storing readModel ' + JSON.stringify(readModel))
   try {
