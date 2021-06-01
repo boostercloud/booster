@@ -12,6 +12,7 @@ import {
   FilterFor,
   UserEnvelope,
   BeforeFunction,
+  Class,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
 import { Booster } from './booster'
@@ -74,7 +75,7 @@ export class BoosterReadModelsReader {
   }
 
   private getReadModelFilters(
-    filters: FilterFor<ReadModelInterface>,
+    filters: FilterFor<Class<ReadModelInterface>>,
     user?: UserEnvelope,
     beforeHooks?: Array<BeforeFunction>
   ): FilterFor<ReadModelInterface> {

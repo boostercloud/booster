@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { expect } from '../expect'
 import { describe } from 'mocha'
-import { ReadModel, Booster, Entity, Projects } from '../../src/index'
+import { ReadModel, Booster, Entity, Projects } from '../../src'
 import { UUID, ProjectionResult } from '@boostercloud/framework-types'
 
 describe('the `ReadModel` decorator', () => {
@@ -28,6 +28,7 @@ describe('the `ReadModel` decorator', () => {
     expect(booster.config.readModels['SomeReadModel']).to.be.deep.equal({
       class: SomeReadModel,
       authorizedRoles: 'all',
+      before: undefined,
       properties: [
         {
           name: 'id',

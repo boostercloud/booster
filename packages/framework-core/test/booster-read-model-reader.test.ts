@@ -9,8 +9,10 @@ import {
   NotAuthorizedError,
   ProviderLibrary,
   SubscriptionEnvelope,
+  FilterFor,
+  UserEnvelope,
 } from '@boostercloud/framework-types'
-import { restore, fake, match } from 'sinon'
+import { restore, fake, match, spy } from 'sinon'
 import { BoosterReadModelsReader } from '../src/booster-read-models-reader'
 import { Booster } from '../src/booster'
 import { random, internet } from 'faker'
@@ -100,15 +102,26 @@ describe('BoosterReadModelReader', () => {
         values: [random.number(10)],
       },
     }
+
+    const currentUser = {
+      username: internet.email(),
+      role: UserRole.name,
+    }
+
     const envelope: ReadModelRequestEnvelope = {
       typeName: TestReadModel.name,
       requestID: random.uuid(),
       version: 1,
       filters,
-      currentUser: {
-        username: internet.email(),
-        role: UserRole.name,
-      },
+      currentUser,
+    }
+
+    const beforeFn = (filter: FilterFor<TestReadModel>, currentUser?: UserEnvelope): FilterFor<TestReadModel> => {
+      return { id: { eq: filter.id } } as FilterFor<TestReadModel>
+    }
+
+    const beforeFnV2 = (filter: FilterFor<TestReadModel>, currentUser?: UserEnvelope): FilterFor<TestReadModel> => {
+      return { id: { eq: currentUser?.username } } as FilterFor<TestReadModel>
     }
 
     context('the "fetch" method', () => {
@@ -130,6 +143,51 @@ describe('BoosterReadModelReader', () => {
           filters
         )
         expect(result).to.be.deep.equal(expectedReadModels)
+      })
+
+      it('calls the before hook function when there is only one', async () => {
+        const providerSearcherFunctionFake = fake.returns({})
+
+        const beforeFnSpy = spy(beforeFn)
+
+        Booster.configureCurrentEnv((config) => {
+          config.readModels[TestReadModel.name] = {
+            ...config.readModels[TestReadModel.name],
+            before: [beforeFnSpy],
+          }
+          config.provider.readModels = {
+            search: providerSearcherFunctionFake,
+          } as any
+        })
+
+        await readModelDispatcher.fetch(envelope)
+
+        expect(beforeFnSpy).to.have.returned({ id: { eq: filters.id } })
+        expect(beforeFnSpy).to.have.been.calledOnceWithExactly(filters, currentUser)
+      })
+
+      it('calls the before hook function when there is only one', async () => {
+        const providerSearcherFunctionFake = fake.returns({})
+
+        const beforeFnSpy = spy(beforeFn)
+        const beforeFnV2Spy = spy(beforeFnV2)
+
+        Booster.configureCurrentEnv((config) => {
+          config.readModels[TestReadModel.name] = {
+            ...config.readModels[TestReadModel.name],
+            before: [beforeFnSpy, beforeFnV2Spy],
+          }
+          config.provider.readModels = {
+            search: providerSearcherFunctionFake,
+          } as any
+        })
+
+        await readModelDispatcher.fetch(envelope)
+
+        expect(beforeFnSpy).to.have.returned({ id: { eq: filters.id } })
+        expect(beforeFnSpy).to.have.been.calledOnceWithExactly(filters, currentUser)
+        expect(beforeFnV2Spy).to.have.returned({ id: { eq: currentUser.username } })
+        expect(beforeFnV2Spy).to.have.been.calledOnceWithExactly(beforeFnSpy.returnValues[0], currentUser)
       })
     })
 
