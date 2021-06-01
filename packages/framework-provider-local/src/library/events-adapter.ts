@@ -96,7 +96,7 @@ async function persistEvent(eventRegistry: EventRegistry, eventEnvelope: EventEn
     await eventRegistry.store(eventEnvelope)
   } catch (e) {
     //TODO check the exception raised when there is a write error,
-    //to implement Optimistic Concurrency
+    //to implement Optimistic Concurrency approach
     //if (e.name == 'TODO') {
     //  throw new OptimisticConcurrencyUnexpectedVersionError(e.message)
     //}
