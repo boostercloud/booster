@@ -67,12 +67,24 @@ export class BoosterTokenVerifier {
     const rolesClaim = this.config.tokenVerifier?.rolesClaim || 'custom:role'
     const role = decodedToken[rolesClaim]
     const roleValue = Array.isArray(role) ? role[0] : role
+    const customParams = this.getCustomParameters(decodedToken)
 
     return {
       id,
       username,
       role: roleValue?.trim() ?? '',
+      ...customParams,
     }
+  }
+
+  private getCustomParameters(decodedToken: Record<string, unknown>): Record<string, unknown> {
+    return Object.keys(decodedToken)
+      .filter((key: string) => key.includes('custom:') && key !== 'custom:role')
+      .reduce((obj: Record<string, unknown>, key: string) => {
+        const cleanKey = key.split(':')[1]
+        obj[cleanKey] = decodedToken[key]
+        return obj
+      }, {})
   }
 
   private sanitizeToken(token: string): string {

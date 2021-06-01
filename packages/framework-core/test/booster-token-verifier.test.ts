@@ -31,6 +31,28 @@ describe('the "verifyToken" method', () => {
     await jwks.stop()
   })
 
+  it('accepts custom parameters and generates a UserEnvelope with them', async () => {
+    const token = jwks.token({
+      sub: userId,
+      iss: issuer,
+      'custom:role': 'User',
+      'custom:customParam': 'extra parameter',
+      'custom:anotherCustomParam': 111,
+      email: email,
+      phone_number: phoneNumber,
+    })
+
+    const expectedUser: UserEnvelope = {
+      id: userId,
+      username: email,
+      role: 'User',
+      customParam: 'extra parameter',
+      anotherCustomParam: 111,
+    }
+
+    expect(await boosterTokenVerifier.verify(token)).to.deep.equals(expectedUser)
+  })
+
   it('decode and verify an auth token with the custom roles', async () => {
     const token = jwks.token({
       sub: userId,
