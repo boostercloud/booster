@@ -65,6 +65,49 @@ describe('Read models end-to-end tests', () => {
           quantity: mockQuantity,
         })
       })
+
+      it('should apply modified filter by before hooks', async () => {
+        const variables = {
+          cartId: 'before-fn-test-modified',
+          productId: mockProductId + 1,
+          quantity: mockQuantity + 1,
+        }
+        await client.mutate({
+          variables,
+          mutation: gql`
+            mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+              ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+            }
+          `,
+        })
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                cartId: variables.cartId,
+              },
+              query: gql`
+                query CartReadModel($cartId: ID!) {
+                  CartReadModel(id: $cartId) {
+                    id
+                    cartItems
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.CartReadModel != null
+        )
+
+        const cartData = queryResult.data.CartReadModel
+
+        expect(cartData.id).to.be.equal(variables.cartId)
+        expect(cartData.cartItems).to.have.length(1)
+        expect(cartData.cartItems[0]).to.deep.equal({
+          productId: variables.productId,
+          quantity: variables.quantity,
+        })
+      })
     })
 
     context('several cart items', () => {

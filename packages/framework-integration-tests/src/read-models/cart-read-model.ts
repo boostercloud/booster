@@ -7,7 +7,7 @@ import { Payment } from '../entities/payment'
 
 @ReadModel({
   authorize: 'all',
-  before: [CartReadModel.idOne, CartReadModel.idTwo],
+  before: [CartReadModel.beforeFn, CartReadModel.beforeFnV2],
 })
 export class CartReadModel {
   public constructor(
@@ -23,12 +23,13 @@ export class CartReadModel {
     return this.checks
   }
 
-  public static idOne(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
+  public static beforeFn(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
     return { id: { eq: filter.id } } as FilterFor<CartReadModel>
   }
 
-  public static idTwo(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
-    return { id: { ne: 'the-checked-cart' } } as FilterFor<CartReadModel>
+  public static beforeFnV2(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
+    if (filter.id !== 'before-fn-test') return filter
+    return { id: { eq: filter.id + '-modified' } } as FilterFor<CartReadModel>
   }
 
   @Projects(Cart, 'id')
