@@ -155,13 +155,13 @@ describe('the read model registry', () => {
 
   describe('the store method', () => {
     it('should upsert read models into the read models database', async () => {
-      const mockReadModel: ReadModelEnvelope = createMockReadModelEnvelope()
-      const expectedQuery = { typeName: mockReadModel.typeName, 'value.id': mockReadModel.value.id }
+      const readModel: ReadModelEnvelope = createMockReadModelEnvelope()
+      const expectedQuery = { typeName: readModel.typeName, 'value.id': readModel.value.id }
 
-      readModelRegistry.readModels.update = stub().yields(null, mockReadModel)
+      readModelRegistry.readModels.update = stub().yields(null, readModel)
 
-      await readModelRegistry.store(mockReadModel)
-      expect(readModelRegistry.readModels.update).to.have.been.calledWith(expectedQuery, mockReadModel, {
+      await readModelRegistry.store(readModel)
+      expect(readModelRegistry.readModels.update).to.have.been.calledWith(expectedQuery, readModel, {
         upsert: true,
       })
     })
