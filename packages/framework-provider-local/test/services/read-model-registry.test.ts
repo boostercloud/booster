@@ -87,10 +87,10 @@ describe('the read model registry', () => {
 
     it('should return all results when age is less than or equal than max age', async () => {
       const result = await readModelRegistry.query({
-        'value.age': { $lte: 40 },        
+        'value.age': { $lte: 40 },
       })
 
-      expect(result.length).to.be.equal(initialReadModelsCount+1)
+      expect(result.length).to.be.equal(initialReadModelsCount + 1)
     })
 
     it('should return 1 result when age is less than or equal than max age', async () => {
@@ -104,11 +104,11 @@ describe('the read model registry', () => {
 
     it('should return some results when age is between a range with an and', async () => {
       const result = await readModelRegistry.query({
-        $and: [{'value.age': { $lte: 40 }}, {'value.age': { $gte: 1 }}]        
+        $and: [{ 'value.age': { $lte: 40 } }, { 'value.age': { $gte: 1 } }],
       })
 
       expect(result.length).to.be.greaterThan(1)
-      expect(result.length).to.be.lte(initialReadModelsCount+1)
+      expect(result.length).to.be.lte(initialReadModelsCount + 1)
     })
 
     it('should return 1 result when you search with string', async () => {
@@ -123,7 +123,7 @@ describe('the read model registry', () => {
 
     it('should return 1 result when you search with a RegExp', async () => {
       const result = await readModelRegistry.query({
-        'value.foo': new RegExp(mockReadModel.value.foo.substring(0,4)),
+        'value.foo': new RegExp(mockReadModel.value.foo.substring(0, 4)),
         typeName: mockReadModel.typeName,
       })
 
@@ -133,7 +133,7 @@ describe('the read model registry', () => {
 
     it('should return n-1 results when you search with string and not operator', async () => {
       const result = await readModelRegistry.query({
-        $not: {'value.foo': mockReadModel.value.foo }
+        $not: { 'value.foo': mockReadModel.value.foo },
       })
 
       expect(result.length).to.be.equal(initialReadModelsCount)
