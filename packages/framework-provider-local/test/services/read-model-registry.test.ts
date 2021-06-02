@@ -76,9 +76,72 @@ describe('the read model registry', () => {
 
       expect(result.length).to.be.equal(0)
     })
+
+    it('should return no results when age is greater than max age', async () => {
+      const result = await readModelRegistry.query({
+        'value.age': { $gt: 40 },
+      })
+
+      expect(result.length).to.be.equal(0)
+    })
+
+    it('should return all results when age is less than or equal than max age', async () => {
+      const result = await readModelRegistry.query({
+        'value.age': { $lte: 40 },        
+      })
+
+      expect(result.length).to.be.equal(initialReadModelsCount+1)
+    })
+
+    it('should return 1 result when age is less than or equal than max age', async () => {
+      const result = await readModelRegistry.query({
+        'value.age': { $lte: 40 },
+        typeName: mockReadModel.typeName,
+      })
+
+      expect(result.length).to.be.equal(1)
+    })
+
+    it('should return some results when age is between a range with an and', async () => {
+      const result = await readModelRegistry.query({
+        $and: [{'value.age': { $lte: 40 }}, {'value.age': { $gte: 1 }}]        
+      })
+
+      expect(result.length).to.be.greaterThan(1)
+      expect(result.length).to.be.lte(initialReadModelsCount+1)
+    })
+
+    it('should return 1 result when you search with string', async () => {
+      const result = await readModelRegistry.query({
+        'value.foo': mockReadModel.value.foo,
+        typeName: mockReadModel.typeName,
+      })
+
+      expect(result.length).to.be.equal(1)
+      expect(result[0]).to.deep.include(mockReadModel)
+    })
+
+    it('should return 1 result when you search with a RegExp', async () => {
+      const result = await readModelRegistry.query({
+        'value.foo': new RegExp(mockReadModel.value.foo.substring(0,4)),
+        typeName: mockReadModel.typeName,
+      })
+
+      expect(result.length).to.be.equal(1)
+      expect(result[0]).to.deep.include(mockReadModel)
+    })
+
+    it('should return n-1 results when you search with string and not operator', async () => {
+      const result = await readModelRegistry.query({
+        $not: {'value.foo': mockReadModel.value.foo }
+      })
+
+      expect(result.length).to.be.equal(initialReadModelsCount)
+      expect(result[0]).to.not.deep.include(mockReadModel)
+    })
   })
 
-  describe('delete by id', () => {
+  xdescribe('delete by id', () => {
     it('should delete read models by id', async () => {
       const mockEvent: ReadModelEnvelope = createMockReadModelEnvelope()
       const id = '1'
