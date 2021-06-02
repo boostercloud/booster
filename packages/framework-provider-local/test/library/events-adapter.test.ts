@@ -117,6 +117,7 @@ describe('events-adapter', () => {
           createdAt: {
             $gt: dateStr,
           },
+          kind: 'event',
           entityID: mockEntityID,
           entityTypeName: mockEntityTypeName,
         })
@@ -138,6 +139,7 @@ describe('events-adapter', () => {
           createdAt: {
             $gt: new Date(0).toISOString(),
           },
+          kind: 'event',
           entityID: mockEntityID,
           entityTypeName: mockEntityTypeName,
         })

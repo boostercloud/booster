@@ -29,6 +29,7 @@ export async function readEntityEventsSince(
   const query: object = {
     entityID: entityID,
     entityTypeName: entityTypeName,
+    kind: 'event',
     createdAt: {
       $gt: fromTime,
     },
