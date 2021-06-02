@@ -166,7 +166,7 @@ describe('BoosterReadModelReader', () => {
         expect(beforeFnSpy).to.have.been.calledOnceWithExactly(filters, currentUser)
       })
 
-      it('calls the before hook function when there is only one', async () => {
+      it('chains the before hook functions when there is more than one', async () => {
         const providerSearcherFunctionFake = fake.returns({})
 
         const beforeFnSpy = spy(beforeFn)

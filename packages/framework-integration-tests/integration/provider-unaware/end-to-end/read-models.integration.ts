@@ -67,10 +67,13 @@ describe('Read models end-to-end tests', () => {
       })
 
       it('should apply modified filter by before hooks', async () => {
+        // We create a cart with id 'before-fn-test-modified', but we query for
+        // 'before-fn-test', which will then change the filter after two "before" functions
+        // to return the original cart (id 'before-fn-test-modified')
         const variables = {
           cartId: 'before-fn-test-modified',
-          productId: mockProductId + 1,
-          quantity: mockQuantity + 1,
+          productId: 'my-product-id-1',
+          quantity: 1,
         }
         await client.mutate({
           variables,
@@ -84,7 +87,7 @@ describe('Read models end-to-end tests', () => {
           () => {
             return client.query({
               variables: {
-                cartId: variables.cartId,
+                cartId: 'before-fn-test',
               },
               query: gql`
                 query CartReadModel($cartId: ID!) {

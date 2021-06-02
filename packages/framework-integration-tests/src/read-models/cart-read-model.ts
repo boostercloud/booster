@@ -24,12 +24,12 @@ export class CartReadModel {
   }
 
   public static beforeFn(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
-    return { id: { eq: filter.id } } as FilterFor<CartReadModel>
+    return filter
   }
 
   public static beforeFnV2(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
-    if (filter.id !== 'before-fn-test') return filter
-    return { id: { eq: filter.id + '-modified' } } as FilterFor<CartReadModel>
+    if (!filter.id || filter.id?.eq !== 'before-fn-test') return filter
+    return { id: { eq: filter.id.eq + '-modified' } } as FilterFor<CartReadModel>
   }
 
   @Projects(Cart, 'id')
