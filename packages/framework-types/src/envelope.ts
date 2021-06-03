@@ -71,7 +71,7 @@ export interface ReadModelEnvelope {
 export interface ReadModelRequestEnvelope extends Envelope {
   typeName: string
   version: number
-  filters?: Record<string, ReadModelPropertyFilter>
+  filters: Record<string, ReadModelPropertyFilter>
 }
 
 export type ReadModelPropertyFilter = FilterFor<unknown>

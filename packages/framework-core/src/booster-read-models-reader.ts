@@ -62,15 +62,14 @@ export class BoosterReadModelsReader {
     const readModelMetadata = this.config.readModels[readModelRequest.typeName]
     const searcher = Booster.readModel(readModelMetadata.class)
 
-    if (readModelRequest.filters) {
-      const filters = this.getReadModelFilters(
-        readModelRequest.filters,
-        readModelRequest.currentUser,
-        readModelMetadata.before
-      )
+    const filters = this.getReadModelFilters(
+      readModelRequest.filters,
+      readModelRequest.currentUser,
+      readModelMetadata.before
+    )
 
-      searcher.filter(filters)
-    }
+    searcher.filter(filters)
+
     return searcher.search()
   }
 
