@@ -65,6 +65,7 @@ describe('BoosterReadModelReader', () => {
     it('throws the right error when the read model does not exist', async () => {
       const envelope: ReadModelRequestEnvelope = {
         typeName: 'nonExistentReadModel',
+        filters: {},
         requestID: random.uuid(),
         version: 1,
       }
@@ -78,6 +79,7 @@ describe('BoosterReadModelReader', () => {
       const envelope: ReadModelRequestEnvelope = {
         typeName: TestReadModel.name,
         requestID: random.uuid(),
+        filters: {},
         version: 1,
         currentUser: {
           username: internet.email(),
