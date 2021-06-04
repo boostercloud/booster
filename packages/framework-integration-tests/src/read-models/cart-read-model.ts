@@ -18,9 +18,18 @@ export class CartReadModel {
     public cartItemsIds?: Array<string>
   ) {}
 
+  public getChecks() {
+    return this.checks
+  }
   @Projects(Cart, 'id')
   public static updateWithCart(cart: Cart, oldCartReadModel?: CartReadModel): ProjectionResult<CartReadModel> {
     const cartProductIds = cart?.cartItems.map((item) => item.productId as string)
+    // This method calls are here to ensure they work. More info: https://github.com/boostercloud/booster/issues/797
+    cart.getId()
+    if (oldCartReadModel) {
+      oldCartReadModel.getChecks()
+    }
+
     return new CartReadModel(
       cart.id,
       cart.cartItems,

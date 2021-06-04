@@ -67,7 +67,7 @@ export interface ProviderReadModelsLibrary {
     config: BoosterConfig,
     logger: Logger,
     readModelName: string,
-    readModel: ReadModelInterface | null
+    readModel: ReadModelInterface | undefined
   ): Promise<any>
   subscribe(config: BoosterConfig, logger: Logger, subscriptionEnvelope: SubscriptionEnvelope): Promise<void>
   fetchSubscriptions(

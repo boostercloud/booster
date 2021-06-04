@@ -50,43 +50,7 @@ describe('the `Entity` decorator', () => {
       methodName: 'react',
     })
   })
-  it('', () => {
-    @Event
-    class PersonCreated {
-      public constructor(
-        readonly personId: UUID,
-        readonly firstName: string,
-        readonly lastName: string,
-        readonly age: number
-      ) {}
-      public fullName(): string {
-        return this.firstName + ' ' + this.lastName
-      }
-      public entityID(): UUID {
-        return this.personId
-      }
-    }
-    @Entity
-    class Person {
-      public constructor(readonly id: UUID, readonly fullName: string, readonly age: number) {}
-      @Reduces(PersonCreated)
-      public static reducePersonCreated(event: PersonCreated, currentEntity: Person): Person {
-        const fullName = event.fullName()
-        return new Person(event.personId, fullName, event.age)
-      }
-    }
-    let exceptionThrown = false
-    try {
-      new PersonCreated(UUID.generate(), 'Pink', 'Floyd', 70)
-    } catch (e) {
-      exceptionThrown = true
-    }
-    expect(exceptionThrown).to.be.equal(false)
-    expect(Booster.config.entities['Person']).to.deep.equal({
-      class: Person,
-      authorizeReadEvents: [],
-    })
-  })
+
   it('adds the entity class as an entity with the right read events permissions', () => {
     @Entity({
       authorizeReadEvents: 'all',

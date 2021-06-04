@@ -15,7 +15,7 @@ export interface Envelope {
 export interface CommandEnvelope extends Envelope {
   typeName: string
   version: number
-  value: unknown
+  value: Record<string, any>
 }
 
 export interface ScheduledCommandEnvelope extends Envelope {

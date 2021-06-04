@@ -8,4 +8,8 @@ export class CartItemChanged {
   public entityID(): UUID {
     return this.cartId
   }
+
+  public getProductId(): UUID {
+    return this.productId
+  }
 }

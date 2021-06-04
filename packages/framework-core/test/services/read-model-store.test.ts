@@ -12,7 +12,7 @@ import {
   ProviderLibrary,
   ReadModelAction,
   OptimisticConcurrencyUnexpectedVersionError,
-  ProjectionResult
+  ProjectionResult,
 } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 
@@ -46,8 +46,8 @@ describe('ReadModelStore', () => {
     }
 
     public static projectionThatCallsReadModelMethod(
-        entity: AnEntity,
-        currentReadModel: SomeReadModel
+      entity: AnEntity,
+      currentReadModel: SomeReadModel
     ): ProjectionResult<SomeReadModel> {
       currentReadModel.getId()
       return ReadModelAction.Nothing
@@ -198,6 +198,8 @@ describe('ReadModelStore', () => {
         replace(readModelStore, 'fetchReadModel', fake.returns(null))
         spy(SomeReadModel, 'someObserver')
         spy(AnotherReadModel, 'anotherObserver')
+        const entityValue: any = eventEnvelopeFor(AnImportantEntity.name).value
+        const anEntityInstance = new AnImportantEntity(entityValue.id, entityValue.someKey, entityValue.count)
 
         await readModelStore.project(eventEnvelopeFor(AnImportantEntity.name))
 
@@ -211,7 +213,7 @@ describe('ReadModelStore', () => {
           count: 123,
           boosterMetadata: { version: 1 },
         })
-        expect(AnotherReadModel.anotherObserver).to.have.been.calledOnceWith(anEntitySnapshot.value, null)
+        expect(AnotherReadModel.anotherObserver).to.have.been.calledOnceWith(anEntityInstance, null)
         expect(AnotherReadModel.anotherObserver).to.have.returned({
           id: 'joinColumnID',
           kind: 'another',
@@ -399,11 +401,11 @@ describe('ReadModelStore', () => {
         SomeReadModel.name,
         'joinColumnID'
       )
-      expect(result).to.be.null
+      expect(result).to.be.undefined
     })
 
     it('returns an instance of the current read model value when it exists', async () => {
-      replace(config.provider.readModels, 'fetch', fake.returns({ id: 'joinColumnID'}))
+      replace(config.provider.readModels, 'fetch', fake.returns({ id: 'joinColumnID' }))
       const readModelStore = new ReadModelStore(config, logger)
       const result = await readModelStore.fetchReadModel(SomeReadModel.name, 'joinColumnID')
 

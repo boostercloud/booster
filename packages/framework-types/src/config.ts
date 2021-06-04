@@ -37,6 +37,7 @@ export class BoosterConfig {
   )
   public readonly notifySubscribersHandler: string = path.join(this.codeRelativePath, 'index.boosterNotifySubscribers')
 
+  public readonly events: Record<EventName, EventMetadata> = {}
   public readonly entities: Record<EntityName, EntityMetadata> = {}
   public readonly reducers: Record<EventName, ReducerMetadata> = {}
   public readonly commandHandlers: Record<CommandName, CommandMetadata> = {}

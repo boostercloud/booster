@@ -7,6 +7,8 @@ import { Product } from '../entities/product'
 @EventHandler(StockMoved)
 export class HandleAvailability {
   public static async handle(event: StockMoved, register: Register): Promise<void> {
+    // This method call is here to ensure it work. More info: https://github.com/boostercloud/booster/issues/797
+    event.getOrigin()
     const product = await Booster.entity(Product, event.productID)
     if (!product) {
       // This means that we have moved stock of a product we don't have in our store. Ignore it

@@ -107,13 +107,13 @@ export class ReadModelStore {
     )
   }
 
-  public async fetchReadModel(readModelName: string, readModelID: UUID): Promise<ReadModelInterface | null> {
+  public async fetchReadModel(readModelName: string, readModelID: UUID): Promise<ReadModelInterface | undefined> {
     this.logger.debug(
       `[ReadModelStore#fetchReadModel] Looking for existing version of read model ${readModelName} with ID ${readModelID}`
     )
-    const rawReadModel = this.provider.readModels.fetch(this.config, this.logger, readModelName, readModelID)
+    const rawReadModel = await this.provider.readModels.fetch(this.config, this.logger, readModelName, readModelID)
     const readModelMetadata = this.config.readModels[readModelName]
-    return rawReadModel ? createInstance(readModelMetadata.class, rawReadModel) : null
+    return rawReadModel ? createInstance(readModelMetadata.class, rawReadModel) : undefined
   }
 
   public projectionFunction(projectionMetadata: ProjectionMetadata): Function {
