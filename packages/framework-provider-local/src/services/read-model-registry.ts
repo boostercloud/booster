@@ -22,6 +22,7 @@ export class ReadModelRegistry {
   public async store(readModel: ReadModelEnvelope): Promise<void> {
     return new Promise((resolve, reject) => {
       this.readModels.update(
+        //use nedb dot notation value.id to match the record (see https://github.com/louischatriot/nedb#finding-documents)
         { typeName: readModel.typeName, 'value.id': readModel.value.id },
         readModel,
         { upsert: true },
