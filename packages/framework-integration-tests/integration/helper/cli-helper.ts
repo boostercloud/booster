@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { runCommand } from './run-command'
+import { runCommand, runCommandBackground } from './run-command'
 import { ChildProcess } from 'child_process'
 
 // Path to the CLI binary compiled by lerna
@@ -18,4 +18,8 @@ export async function nuke(projectPath: string, environmentName = 'production'):
 
 export function start(environmentName = 'local', path: string): ChildProcess {
   return runCommand(path, `../${cliBinaryPath} start -e ${environmentName}`).childProcess
+}
+
+export function startInBackground(environmentName = 'local', path: string): ChildProcess {
+  return runCommandBackground(path, `../${cliBinaryPath} start -e ${environmentName}`).childProcess
 }

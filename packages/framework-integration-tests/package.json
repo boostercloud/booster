@@ -70,7 +70,9 @@
     "integration/k8s": "npm run integration/k8s-deploy && npm run integration/k8s-nuke",
     "integration/k8s-deploy": "BOOSTER_ENV=kubernetes mocha --forbid-only --exit --config \"integration/provider-specific/kubernetes/deployment/.mocharc.yml\" \"integration/provider-specific/kubernetes/deployment/**/*.integration.ts\"",
     "integration/k8s-nuke": "BOOSTER_ENV=kubernetes mocha --forbid-only --exit --config \"integration/provider-specific/kubernetes/nuke/.mocharc.yml\" \"integration/provider-specific/kubernetes/nuke/**/*.integration.ts\"",
-    "integration/local": "BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/provider-specific/local/.mocharc.yml\" \"integration/provider-specific/local/**/*.integration.ts\""
+    "integration/local": "BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/provider-specific/local/.mocharc.yml\" \"integration/provider-specific/local/**/*.integration.ts\"",
+    "integration/local-start": "BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/provider-specific/local/start/.mocharc.yml\" \"integration/provider-specific/local/start/*.integration.ts\"",
+    "integration/local-stop": "BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/provider-specific/local/stop/.mocharc.yml\" \"integration/provider-specific/local/stop/*.integration.ts\""
   },
   "types": "dist/index.d.ts"
 }
