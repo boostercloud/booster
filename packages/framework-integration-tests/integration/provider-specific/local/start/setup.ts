@@ -1,15 +1,15 @@
-import { startInBackground } from '../../../helper/cli-helper'
+import { start } from '../../../helper/cli-helper'
 import { sleep } from '../../../helper/sleep'
-//import { ChildProcess } from 'child_process'
+import { ChildProcess } from 'child_process'
 import { sandboxPathFor } from '../../../helper/file-helper'
 import { overrideWithBoosterLocalDependencies } from '../../../helper/deps-helper'
 import { sandboxName } from '../constants'
 import { runCommand } from '../../../helper/run-command'
-// Imported from another package to avoid duplication
-// It is OK-ish, since integration tests are always run in the context of the whole monorepo
 import { createSandboxProject } from '../../../../../cli/src/common/sandbox'
+import { writeFileSync } from 'fs'
+import * as path from 'path'
 
-//let serverProcess: ChildProcess
+let serverProcess: ChildProcess
 let sandboxPath: string
 
 before(async () => {
@@ -24,6 +24,9 @@ before(async () => {
   await runCommand(sandboxPath, 'npm install')
 
   console.log(`starting local server in ${sandboxPath}...`)
-  startInBackground('local', sandboxPath)
-  await sleep(1000) // TODO: We need some time for the server to start, but maybe we could do this faster using the `waitForIt` method
+  serverProcess = start('local', sandboxPath)
+  const pidFile: string = path.join(sandboxPath, 'local_provider.pid')
+  writeFileSync(pidFile, serverProcess.pid.toString()) //store pid to kill process on stop 
+  await sleep(2000)
+  console.log(`local server ready`)
 })
