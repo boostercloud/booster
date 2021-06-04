@@ -1,4 +1,4 @@
-import { exec, ChildProcessPromise, PromiseResult } from 'child-process-promise'
+import { exec, spawn, ChildProcessPromise, PromiseResult } from 'child-process-promise'
 
 export function runCommand(
   path: string,

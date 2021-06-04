@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { runCommand } from './run-command'
+import { runCommand, runCommandBackground } from './run-command'
 import { ChildProcess } from 'child_process'
 
 // Path to the CLI binary compiled by lerna
