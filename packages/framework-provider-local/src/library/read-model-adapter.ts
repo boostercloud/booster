@@ -2,6 +2,7 @@ import {
   BoosterConfig,
   FilterFor,
   Logger,
+  OptimisticConcurrencyUnexpectedVersionError,
   ReadModelEnvelope,
   ReadModelInterface,
   UUID,
@@ -24,10 +25,11 @@ export async function fetchReadModel(
   readModelName: string,
   readModelID: UUID
 ): Promise<ReadModelInterface> {
-  const response = await db.query({ typeName: readModelName, value: { id: readModelID } })
+  //use dot notation value.id to match the record (see https://github.com/louischatriot/nedb#finding-documents)
+  const response = await db.query({ typeName: readModelName, 'value.id': readModelID })
   const item = response[0]
   if (!item) {
-    console.log(`[ReadModelAdapter#fetchReadModel] Read model ${readModelName} with ID ${readModelID} not found`)
+    logger.debug(`[ReadModelAdapter#fetchReadModel] Read model ${readModelName} with ID ${readModelID} not found`)
   } else {
     logger.debug(
       `[ReadModelAdapter#fetchReadModel] Loaded read model ${readModelName} with ID ${readModelID} with result:`,
@@ -42,9 +44,20 @@ export async function storeReadModel(
   _config: BoosterConfig,
   logger: Logger,
   readModelName: string,
-  readModel: ReadModelInterface
+  readModel: ReadModelInterface,
+  expectedCurrentVersion: number
 ): Promise<void> {
-  await db.store({ typeName: readModelName, value: readModel })
+  logger.debug('[ReadModelAdapter#storeReadModel] Storing readModel ' + JSON.stringify(readModel))
+  try {
+    await db.store({ typeName: readModelName, value: readModel } as ReadModelEnvelope)
+  } catch (e) {
+    // The error will be thrown, but in case of a conditional check, we throw the expected error type by the core
+    // TODO: verify the name of the exception thrown in Local Provider
+    if (e.name == 'TODO') {
+      throw new OptimisticConcurrencyUnexpectedVersionError(e.message)
+    }
+    throw e
+  }
   logger.debug('[ReadModelAdapter#storeReadModel] Read model stored')
 }
 
