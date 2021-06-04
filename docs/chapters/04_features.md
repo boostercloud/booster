@@ -487,6 +487,52 @@ mutation {
 
 > [!NOTE]  Remember that, in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
 
+
+### Validating read models' filters
+You can validate read models by using the `before` hook. The functions you add here will be executed **before fetching from your event-store**:
+
+```typescript
+@ReadModel({
+  authorize: [User],
+  before: [CartReadModel.validateUser],
+})
+export class CartReadModel {
+  public constructor(
+    readonly id: UUID,
+    readonly userId: UUID
+  ) {}
+
+  public static validateUser(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
+    if (filter?.userId !== currentUser.id) throw NotAuthorizedError("...")
+    return filter
+  }
+}
+```
+
+As an addition, functions can also be chained:
+```typescript
+@ReadModel({
+  authorize: [User],
+  before: [CartReadModel.validateUser, CartReadModel.validateEmail],
+})
+export class CartReadModel {
+  public constructor(
+    readonly id: UUID,
+    readonly userId: UUID
+  ) {}
+
+  public static validateUser(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
+    if (filter?.userId !== currentUser.id) throw NotAuthorizedError("...")
+    return filter // This filter will be passed as a parameter to the validateEmail function
+  }
+
+  public static validateEmail(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
+    if (!filter?.email.includes('myCompanyDomain.com')) throw NotAuthorizedError("...")
+    return filter
+  }
+}
+```
+
 ### Reading events
 
 You can also fetch events directly if you need. To do so, there are two kind of queries that have the following structure:
