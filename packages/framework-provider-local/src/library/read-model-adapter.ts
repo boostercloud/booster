@@ -25,7 +25,7 @@ export async function fetchReadModel(
   readModelName: string,
   readModelID: UUID
 ): Promise<ReadModelInterface> {
-  //use nedb dot notation value.id to match the record (see https://github.com/louischatriot/nedb#finding-documents)
+  //use dot notation value.id to match the record (see https://github.com/louischatriot/nedb#finding-documents)
   const response = await db.query({ typeName: readModelName, 'value.id': readModelID })
   const item = response[0]
   if (!item) {
