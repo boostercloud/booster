@@ -40,7 +40,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@types/express": "4.17.2",
+    "@types/express": "4.17.12",
     "@types/faker": "5.1.5",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
