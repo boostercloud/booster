@@ -111,7 +111,7 @@ export class ReadModelStore {
     this.logger.debug(
       `[ReadModelStore#fetchReadModel] Looking for existing version of read model ${readModelName} with ID ${readModelID}`
     )
-    const rawReadModel = this.provider.readModels.fetch(this.config, this.logger, readModelName, readModelID)
+    const rawReadModel = await this.provider.readModels.fetch(this.config, this.logger, readModelName, readModelID)
     const readModelMetadata = this.config.readModels[readModelName]
     return rawReadModel ? createInstance(readModelMetadata.class, rawReadModel) : null
   }

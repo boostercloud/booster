@@ -22,18 +22,18 @@ describe('EventStore', () => {
   const logger = buildLogger(Level.error)
 
   class AnEvent {
-    public constructor(readonly id: UUID, readonly entityId: string, readonly delta: number){}
-    public entityID(): UUID{
+    public constructor(readonly id: UUID, readonly entityId: string, readonly delta: number) {}
+    public entityID(): UUID {
       return this.entityId
     }
   }
 
   class AnotherEvent {
-    public constructor(readonly id: UUID){}
-    public entityID(): UUID{
+    public constructor(readonly id: UUID) {}
+    public entityID(): UUID {
       return this.id
     }
-    public getId(): UUID{
+    public getId(): UUID {
       return this.id
     }
   }
@@ -44,7 +44,7 @@ describe('EventStore', () => {
       return this.id
     }
     public static reducerThatCallsEntityMethod(event: AnEvent, currentEntity?: AnEntity): AnEntity {
-      if(currentEntity){
+      if (currentEntity) {
         currentEntity.getId()
       }
       return new AnEntity(event.entityId, event.delta)
@@ -73,8 +73,8 @@ describe('EventStore', () => {
     class: AnEntity,
     methodName: 'reducerThatCallsEventMethod',
   }
-  config.events[AnEvent.name] = {class: AnEvent}
-  config.events[AnotherEvent.name] = {class: AnotherEvent}
+  config.events[AnEvent.name] = { class: AnEvent }
+  config.events[AnotherEvent.name] = { class: AnotherEvent }
 
   const importantDateTimeStamp = new Date(2019, 11, 23, 6, 30).toISOString()
   const originOfTime = new Date(0).toISOString() // Unix epoch
@@ -97,15 +97,19 @@ describe('EventStore', () => {
     count: 0,
   }
 
-  function eventEnvelopeFor<TEvent extends EventInterface>(event: TEvent, typeName: string, timestamp?: string): EventEnvelope {
+  function eventEnvelopeFor<TEvent extends EventInterface>(
+    event: TEvent,
+    typeName: string,
+    timestamp?: string
+  ): EventEnvelope {
     return {
       version: 1,
       kind: 'event',
       entityID: '42',
-      entityTypeName: 'ImportantConcept',
+      entityTypeName: AnEntity.name,
       value: event,
       requestID: 'whatever',
-      typeName: 'ImportantEvent',
+      typeName: typeName,
       createdAt: timestamp || new Date().toISOString(),
     }
   }
@@ -115,10 +119,10 @@ describe('EventStore', () => {
       version: 1,
       kind: 'snapshot',
       entityID: '42',
-      entityTypeName: 'ImportantConcept',
+      entityTypeName: AnEntity.name,
       value: entity,
       requestID: 'whatever',
-      typeName: 'ImportantConcept',
+      typeName: AnEntity.name,
       createdAt: 'fakeTimeStamp',
       snapshottedEventCreatedAt: importantDateTimeStamp,
     }
@@ -138,7 +142,7 @@ describe('EventStore', () => {
           expect(this).to.be.equal(eventStore)
         })
 
-        const entityName = 'ImportantConcept'
+        const entityName = AnEntity.name
         const entityID = '42'
         await expect(eventStore.fetchEntitySnapshot(entityName, entityID)).to.be.eventually.fulfilled
       })
@@ -154,7 +158,7 @@ describe('EventStore', () => {
           replace(eventStore, 'entityReducer', fake())
           replace(eventStore, 'storeSnapshot', fake())
 
-          const entityName = 'ImportantConcept'
+          const entityName = AnEntity.name
           const entityID = '42'
           const entity = await eventStore.fetchEntitySnapshot(entityName, entityID)
 
@@ -200,7 +204,7 @@ describe('EventStore', () => {
           replace(eventStore, 'entityReducer', reducer)
           replace(eventStore, 'storeSnapshot', fake())
 
-          const entityName = 'ImportantConcept'
+          const entityName = AnEntity.name
           const entityID = '42'
           const entity = await eventStore.fetchEntitySnapshot(entityName, entityID)
 
@@ -274,7 +278,7 @@ describe('EventStore', () => {
           replace(eventStore, 'entityReducer', reducer)
           replace(eventStore, 'storeSnapshot', fake())
 
-          const entityName = 'ImportantConcept'
+          const entityName = AnEntity.name
           const entityID = '42'
           const entity = await eventStore.fetchEntitySnapshot(entityName, entityID)
 
@@ -340,7 +344,7 @@ describe('EventStore', () => {
           replace(eventStore, 'entityReducer', reducer)
           replace(eventStore, 'storeSnapshot', fake())
 
-          const entityName = 'ImportantConcept'
+          const entityName = AnEntity.name
           const entityID = '42'
           const entity = await eventStore.fetchEntitySnapshot(entityName, entityID)
 
@@ -376,7 +380,7 @@ describe('EventStore', () => {
           replace(eventStore, 'entityReducer', fake())
           replace(eventStore, 'storeSnapshot', fake())
 
-          const entityName = 'ImportantConcept'
+          const entityName = AnEntity.name
           const entityID = '42'
           const entity = await eventStore.fetchEntitySnapshot(entityName, entityID)
 
@@ -419,7 +423,7 @@ describe('EventStore', () => {
       it('looks for the latest snapshot stored in the event stream', async () => {
         replace(config.provider.events, 'latestEntitySnapshot', fake())
 
-        const entityTypeName = 'ImportantConcept'
+        const entityTypeName = AnEntity.name
         const entityID = '42'
         await eventStore.loadLatestSnapshot(entityTypeName, entityID)
 
@@ -436,7 +440,7 @@ describe('EventStore', () => {
       it('loads a event stream starting from a specific timestapm', async () => {
         replace(config.provider.events, 'forEntitySince', fake())
 
-        const entityTypeName = 'ImportantConcept'
+        const entityTypeName = AnEntity.name
         const entityID = '42'
         await eventStore.loadEventStreamSince(entityTypeName, entityID, originOfTime)
 
@@ -477,8 +481,8 @@ describe('EventStore', () => {
               kind: 'snapshot',
               requestID: eventEnvelope.requestID,
               entityID: '42',
-              entityTypeName: 'ImportantConcept',
-              typeName: 'ImportantConcept',
+              entityTypeName: AnEntity.name,
+              typeName: AnEntity.name,
               value: {
                 id: '42',
                 count: 1,
@@ -511,8 +515,8 @@ describe('EventStore', () => {
               kind: 'snapshot',
               requestID: eventEnvelope.requestID,
               entityID: '42',
-              entityTypeName: 'ImportantConcept',
-              typeName: 'ImportantConcept',
+              entityTypeName: AnEntity.name,
+              typeName: AnEntity.name,
               value: {
                 id: '42',
                 count: 1,
@@ -529,7 +533,8 @@ describe('EventStore', () => {
           replace(AnotherEvent.prototype, 'getId', getIdFake)
           eventStore.entityReducer(null, eventEnvelope)
           expect(getIdFake).to.have.been.called
-        })})
+        })
+      })
       context('when an entity reducer calls an instance method in the entity', () => {
         it('is executed without failing', async () => {
           const snapshot = snapshotEnvelopeFor(someEntity)
@@ -538,16 +543,17 @@ describe('EventStore', () => {
           replace(AnEntity.prototype, 'getId', getIdFake)
           eventStore.entityReducer(snapshot, eventEnvelope)
           expect(getIdFake).to.have.been.called
-        })})
+        })
+      })
     })
 
     describe('reducerForEvent', () => {
       context('for an event with a registered reducer', () => {
         it('returns the proper reducer method for the event', () => {
-          const reducer = eventStore.reducerForEvent('ImportantEvent')
+          const reducer = eventStore.reducerForEvent(AnEvent.name)
 
           expect(reducer).to.be.instanceOf(Function)
-          expect(reducer).to.be.equal(eval('ImportantConcept')['someHandler'])
+          expect(reducer).to.be.equal(eval('AnEntity')['reducerThatCallsEntityMethod'])
         })
       })
 
