@@ -1,4 +1,12 @@
-import { UUID, UserApp, Logger, BoosterConfig, EventEnvelope } from '@boostercloud/framework-types'
+import {
+  UUID,
+  UserApp,
+  Logger,
+  BoosterConfig,
+  EventEnvelope,
+  OptimisticConcurrencyUnexpectedVersionError,
+} from '@boostercloud/framework-types'
+import { retryIfError } from '@boostercloud/framework-common-helpers'
 import { EventRegistry } from '..'
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
@@ -21,12 +29,18 @@ export async function readEntityEventsSince(
   const query: object = {
     entityID: entityID,
     entityTypeName: entityTypeName,
+    kind: 'event',
     createdAt: {
       $gt: fromTime,
     },
   }
+  const result: Array<EventEnvelope> = await eventRegistry.query(query)
 
-  return (await eventRegistry.query(query)) as Array<EventEnvelope>
+  logger.debug(
+    `[EventsAdapter#readEntityEventsSince] Loaded events for entity ${entityTypeName} with ID ${entityID} with result:`,
+    result
+  )
+  return result
 }
 
 export async function readEntityLatestSnapshot(
@@ -65,11 +79,28 @@ export async function storeEvents(
   _config: BoosterConfig,
   logger: Logger
 ): Promise<void> {
-  logger.info('Publishing the following events:', eventEnvelopes)
-
-  for (const event of eventEnvelopes) {
-    await eventRegistry.store(event)
+  logger.debug('[EventsAdapter#storeEvents] Storing the following event envelopes:', eventEnvelopes)
+  for (const eventEnvelope of eventEnvelopes) {
+    await retryIfError(
+      logger,
+      () => persistEvent(eventRegistry, eventEnvelope),
+      OptimisticConcurrencyUnexpectedVersionError
+    )
   }
+  logger.debug('[EventsAdapter#storeEvents] EventEnvelopes stored')
 
   await userApp.boosterEventDispatcher(eventEnvelopes)
+}
+
+async function persistEvent(eventRegistry: EventRegistry, eventEnvelope: EventEnvelope): Promise<void> {
+  try {
+    await eventRegistry.store(eventEnvelope)
+  } catch (e) {
+    //TODO check the exception raised when there is a write error,
+    //to implement Optimistic Concurrency approach
+    //if (e.name == 'TODO') {
+    //  throw new OptimisticConcurrencyUnexpectedVersionError(e.message)
+    //}
+    throw e
+  }
 }

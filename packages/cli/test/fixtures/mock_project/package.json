@@ -14,8 +14,8 @@
     "@boostercloud/rocket-backup-aws-infrastructure": "^1.11.2",
     "@boostercloud/rocket-static-sites-aws-infrastructure": "^1.11.2",
     "rimraf": "^3.0.1",
-    "@typescript-eslint/eslint-plugin": "^2.18.0",
-    "@typescript-eslint/parser": "^2.18.0",
+    "@typescript-eslint/eslint-plugin": "4.22.1",
+    "@typescript-eslint/parser": "4.22.1",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-prettier": "^3.1.2",
@@ -27,7 +27,7 @@
     "@types/node": "^13.5.1"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=14.0.0"
   },
   "homepage": "",
   "license": "MIT",

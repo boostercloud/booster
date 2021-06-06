@@ -12,7 +12,7 @@ You can develop with Booster using any of the following operating systems:
 
 #### Install Node.js
 
-The minimal required Node.js version is `v12`. Download the installer
+The minimal required Node.js version is `v14.14`. Download the installer
 [from nodejs website](https://nodejs.org/en/), or install it using your system's package
 manager.
 
@@ -45,13 +45,13 @@ Verify that it was installed properly by checking so from your terminal:
 
 ```shell
 $ node -v
-v14.2.0
+v14.14.0
 
 $ npm -v
 7.0.0
 ```
 
-As soon as you have a Node.js version higher than `v14`, and an `npm` version higher than
+As soon as you have a Node.js version higher than `v14.14`, and an `npm` version higher than
 `7`, you are good to go. Just note that `npm` comes with node, you don't have to install
 it apart.
 
@@ -259,7 +259,7 @@ something like
 
 ```shell
 $ boost version
-@boostercloud/cli/0.12.3 darwin-x64 node-v14.0.0
+@boostercloud/cli/0.16.1 darwin-x64 node-v14.14.0
 ```
 
 ## Your first Booster app in 10 minutes
@@ -282,21 +282,21 @@ running for a blog application in just a few minutes. The steps to follow will b
 
 ### 1. Create the project
 
-First of all, we will use the Booster generators to create a project. Run this command and follow
+First of all, we will use the Booster generators to create a project. Run this command `boost new:project boosted-blog` and follow
 the instructions. After some prompted questions, the CLI will ask you to select one of the available providers to set up as the main provider that will be used.
 
 ```shell
 ? What's the package name of your provider infrastructure library? (Use arrow keys)
-❯ @boostercloud/framework-provider-aws (AWS) 
+❯ @boostercloud/framework-provider-aws (AWS)
   @boostercloud/framework-provider-azure (Azure) [Experimental]
   @boostercloud/framework-provider-kubernetes (Kubernetes) [Experimental]
-  Other 
+  Other
 ```
 
 When asked for the provider, select AWS as that is what we have
 configured [here](chapters/02_getting-started.md#aws-provider-prerequisites) for the example. You can use another provider if you want, or add more providers once you have created the project.
 
-To create the project, run the following command:
+After choosing your provider, you will see your project generated!:
 
 ```shell
 > boost new:project boosted-blog
@@ -312,7 +312,7 @@ To create the project, run the following command:
 
 > [!TIP] If you prefer to create the project with default parameters, you can run the command as `boost new:project booster-blog --default`. The default
 > parameters are as follows:
-> 
+>
 > - Project name: The one provided when running the command, in this case "booster-blog"
 > - Provider: AWS
 > - Description, author, homepage and repository: ""
@@ -780,6 +780,19 @@ This is a really basic example of a Booster application. The are many other feat
 Continue reading to dig more. You've just scratched the surface of all the Booster
 capabilities!
 
-## Booster examples
+## Examples and walkthroughs
 
-Check out [step-by-step guides](https://github.com/boostercloud/booster/tree/main/docs/examples) and [example apps](https://github.com/boostercloud/examples) to see Booster in use.
+### Creation of a question-asking application backend
+
+In the following video, you will find how to create a backend for a question-asking application from scratch. This application would allow
+users to create questions and like them. This video goes from creating the project to incrementally deploying features in the application.
+You can find the code both for the frontend and the backend in
+[this GitHub repo](https://github.com/boostercloud/examples/tree/master/askme).
+
+<div align="center">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/C4K2M-orT8k" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+
+### All the guides and examples
+
+Check out the [step-by-step guides](https://github.com/boostercloud/booster/tree/main/docs/examples) and the [example apps repository](https://github.com/boostercloud/examples) to see Booster in use.

@@ -11,7 +11,12 @@ import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 
 import * as path from 'path'
 import { ReadModelRegistry } from './services/read-model-registry'
-import { fetchReadModel, searchReadModel, storeReadModel } from './library/read-model-adapter'
+import {
+  fetchReadModel,
+  rawReadModelEventsToEnvelopes,
+  searchReadModel,
+  storeReadModel,
+} from './library/read-model-adapter'
 
 export * from './paths'
 export * from './services'
@@ -32,7 +37,7 @@ export const Provider = (): ProviderLibrary => ({
   // ProviderReadModelsLibrary
   readModels: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rawToEnvelopes: undefined as any,
+    rawToEnvelopes: rawReadModelEventsToEnvelopes,
     fetch: fetchReadModel.bind(null, readModelRegistry),
     search: searchReadModel.bind(null, readModelRegistry),
     store: storeReadModel.bind(null, readModelRegistry),
@@ -69,6 +74,7 @@ export const Provider = (): ProviderLibrary => ({
   },
   // ScheduledCommandsLibrary
   scheduled: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rawToEnvelope: undefined as any,
   },
   // ProviderInfrastructureGetter

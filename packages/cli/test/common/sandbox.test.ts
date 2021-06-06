@@ -1,24 +1,25 @@
 import { fake, replace, restore, SinonSpy, stub } from 'sinon'
 import { expect } from '../expect'
 import * as fs from 'fs'
+import * as fse from 'fs-extra'
 import { createSandboxProject } from '../../src/common/sandbox'
 import { Dirent } from 'fs'
 import * as path from 'path'
 
 describe('sandbox', () => {
-  let fakeRmdirSync: SinonSpy
+  let fakeRmSync: SinonSpy
   let fakeMkdirSync: SinonSpy
-  let fakeCopyFileSync: SinonSpy
+  let fakeCopySync: SinonSpy
   beforeEach(() => {
-    fakeRmdirSync = fake()
+    fakeRmSync = fake()
     fakeMkdirSync = fake()
-    fakeCopyFileSync = fake()
+    fakeCopySync = fake()
     const fakeStatSync = (fileName: string) => ({
       isDirectory: () => !fileName.includes('.'),
     })
-    replace(fs, 'rmdirSync', fakeRmdirSync)
+    replace(fs, 'rmSync', fakeRmSync)
     replace(fs, 'mkdirSync', fakeMkdirSync)
-    replace(fs, 'copyFileSync', fakeCopyFileSync)
+    replace(fse, 'copySync', fakeCopySync)
     replace(fs, 'statSync', fakeStatSync as any)
   })
   afterEach(() => {
@@ -40,7 +41,7 @@ describe('sandbox', () => {
       const projectAssets = ['assetFolder', 'assetFile3.txt']
       createSandboxProject(sandboxPath, projectAssets)
 
-      expect(fakeRmdirSync).to.have.been.calledOnceWith(sandboxPath)
+      expect(fakeRmSync).to.have.been.calledOnceWith(sandboxPath)
 
       expect(fakeMkdirSync).to.have.been.calledTwice
       expect(fakeMkdirSync).to.have.been.calledWith(sandboxPath)
@@ -51,7 +52,7 @@ describe('sandbox', () => {
       expect(fakeReaddirSync).to.have.been.calledWith(path.join('src', 'commands'))
       expect(fakeReaddirSync).to.have.been.calledWith(path.join('assetFolder'))
 
-      expect(fakeCopyFileSync).to.have.callCount(8)
+      expect(fakeCopySync).to.have.callCount(8)
       const copyFileCallsArguments = [
         ['package.json', path.join(sandboxPath, 'package.json')],
         ['tsconfig.json', path.join(sandboxPath, 'tsconfig.json')],
@@ -63,7 +64,7 @@ describe('sandbox', () => {
         ['assetFile3.txt', path.join(sandboxPath, 'assetFile3.txt')],
       ]
       copyFileCallsArguments.forEach((args) => {
-        expect(fakeCopyFileSync).to.have.been.calledWith(...args)
+        expect(fakeCopySync).to.have.been.calledWith(...args)
       })
     })
   })

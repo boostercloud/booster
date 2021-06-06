@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import { Class, UserEnvelope, RoleInterface, RoleAccess } from '@boostercloud/framework-types'
 
 export class BoosterAuth {

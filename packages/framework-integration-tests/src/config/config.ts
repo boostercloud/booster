@@ -18,7 +18,7 @@ if (process.env.BOOSTER_ENV === 'local') {
 Booster.configure('kubernetes', (config: BoosterConfig): void => {
   config.appName = 'my-store'
   config.provider = Kubernetes.Provider()
-  config.assets = ['assets', 'assetFile.txt']
+  config.assets = ['assets', 'components', 'assetFile.txt']
 })
 
 Booster.configure('development', (config: BoosterConfig): void => {
@@ -43,5 +43,6 @@ Booster.configure('production', (config: BoosterConfig): void => {
     issuer: 'booster',
     // Read the content of the public RS256 cert, used to sign the JWT tokens
     publicKey: fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8'),
+    rolesClaim: 'booster:role',
   }
 })

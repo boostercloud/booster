@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import { BoosterConfig, UserEnvelope } from '@boostercloud/framework-types'
 
 import * as jwksRSA from 'jwks-rsa'
@@ -32,7 +31,7 @@ export class BoosterTokenVerifier {
           callback(new Error('JWT kid not found'))
           return
         }
-        this.client?.getSigningKey(header.kid, function(err: Error | null, key: jwksRSA.SigningKey) {
+        this.client?.getSigningKey(header.kid, function (err: Error | null, key: jwksRSA.SigningKey) {
           if (err) {
             // This callback doesn't accept null so an empty string is enough here
             callback(err, '')
@@ -53,7 +52,7 @@ export class BoosterTokenVerifier {
       }
 
       token = this.sanitizeToken(token)
-      jwt.verify(token, key, this.options, (err?: Error | null, decoded?: object) => {
+      jwt.verify(token, key, this.options, (err?: Error | null, decoded?: unknown) => {
         if (err) {
           return reject(err)
         }
@@ -63,13 +62,16 @@ export class BoosterTokenVerifier {
   }
 
   private tokenToUserEnvelope(decodedToken: any): UserEnvelope {
-    const username = decodedToken.email ?? decodedToken.phone_number
+    const username = decodedToken?.email || decodedToken?.phone_number || decodedToken.sub
     const id = decodedToken.sub
-    const role = decodedToken['custom:role']
+    const rolesClaim = this.config.tokenVerifier?.rolesClaim || 'custom:role'
+    const role = decodedToken[rolesClaim]
+    const roleValue = Array.isArray(role) ? role[0] : role
+
     return {
       id,
       username,
-      role: role?.trim() ?? '',
+      role: roleValue?.trim() ?? '',
     }
   }
 

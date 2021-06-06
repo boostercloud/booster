@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { describe } from 'mocha'
 import { BoosterEventDispatcher } from '../src/booster-event-dispatcher'
 import { fake, replace, restore, createStubInstance } from 'sinon'
 import {

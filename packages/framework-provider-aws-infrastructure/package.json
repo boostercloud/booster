@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-aws-infrastructure",
-  "version": "0.16.0",
+  "version": "0.16.2",
   "description": "Handle the Booster deployment process to AWS",
   "keywords": [
     "framework-provider-aws-infrastructure"
@@ -20,20 +20,20 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@aws-cdk/aws-apigateway": "1.67.0",
-    "@aws-cdk/aws-apigatewayv2": "1.67.0",
-    "@aws-cdk/aws-cloudfront": "1.67.0",
-    "@aws-cdk/aws-dynamodb": "1.67.0",
-    "@aws-cdk/aws-events-targets": "1.67.0",
-    "@aws-cdk/aws-iam": "1.67.0",
-    "@aws-cdk/aws-lambda": "1.67.0",
-    "@aws-cdk/aws-lambda-event-sources": "1.67.0",
-    "@aws-cdk/aws-s3": "1.67.0",
-    "@aws-cdk/aws-s3-deployment": "1.67.0",
-    "@boostercloud/framework-provider-aws": "^0.16.0",
-    "@boostercloud/framework-types": "^0.16.0",
-    "aws-cdk": "1.67.0",
-    "aws-sdk": "2.764.0",
+    "@aws-cdk/aws-apigateway": "1.91.0",
+    "@aws-cdk/aws-apigatewayv2": "1.91.0",
+    "@aws-cdk/aws-cloudfront": "1.91.0",
+    "@aws-cdk/aws-dynamodb": "1.91.0",
+    "@aws-cdk/aws-events-targets": "1.91.0",
+    "@aws-cdk/aws-iam": "1.91.0",
+    "@aws-cdk/aws-lambda": "1.91.0",
+    "@aws-cdk/aws-lambda-event-sources": "1.91.0",
+    "@aws-cdk/aws-s3": "1.91.0",
+    "@aws-cdk/aws-s3-deployment": "1.91.0",
+    "@boostercloud/framework-provider-aws": "^0.16.2",
+    "@boostercloud/framework-types": "^0.16.2",
+    "aws-cdk": "1.91.0",
+    "aws-sdk": "2.853.0",
     "colors": "^1.4.0"
   },
   "scripts": {

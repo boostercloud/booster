@@ -1,6 +1,6 @@
 :root {
     --link-color: var(--theme-color);
-    --code-inline-color: var(--codeTextColor);
+    --code-inline-color: #d22778 !important;
     --code-inline-background: var(--code-theme-background) !important;
     --sidebar-toggle-icon-color: var(--theme-color) !important;
     --navbar-root-color--hover: var(--theme-color);

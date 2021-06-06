@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-aws",
-  "version": "0.16.0",
+  "version": "0.16.2",
   "description": "Handle Booster's integration with AWS",
   "keywords": [
     "framework-provider-aws"
@@ -20,8 +20,8 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@boostercloud/framework-common-helpers": "^0.16.0",
-    "@boostercloud/framework-types": "^0.16.0"
+    "@boostercloud/framework-common-helpers": "^0.16.2",
+    "@boostercloud/framework-types": "^0.16.2"
   },
   "scripts": {
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
@@ -38,9 +38,8 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "8.10.48",
-    "@types/chai-arrays": "^2.0.0",
+    "@types/chai-arrays": "2.0.0",
     "@types/faker": "5.1.5",
-    "aws-sdk": "2.764.0",
     "chai": "4.2.0",
     "chai-arrays": "^2.2.0",
     "chai-as-promised": "7.1.1",
@@ -49,5 +48,8 @@
     "sinon": "9.2.3",
     "sinon-chai": "3.5.0",
     "velocityjs": "^2.0.0"
+  },
+  "optionalDependencies": {
+    "aws-sdk": "2.853.0"
   }
 }

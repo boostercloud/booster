@@ -241,7 +241,7 @@ To start contributing to the project you would need to set up the project in you
   - `.\scripts\check-all-the-things.ps1` on Windows
 
 > [!Warning]
-> Node v12 is the minimum version required.
+> Node v14.14 is the minimum version required.
 
 > [!Attention]
 > All tests must have passed before submitting a PR.

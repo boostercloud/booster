@@ -1,7 +1,7 @@
 {
   "name": "@boostercloud/cli",
   "description": "CLI of the Booster Cloud Framework, the next level of abstraction for cloud-native applications",
-  "version": "0.16.0",
+  "version": "0.16.2",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
   "publishConfig": {
@@ -12,18 +12,18 @@
   },
   "bugs": "https://github.com/boostercloud/booster/issues",
   "dependencies": {
-    "@boostercloud/framework-core": "^0.16.0",
-    "@boostercloud/framework-types": "^0.16.0",
+    "@boostercloud/framework-core": "^0.16.2",
+    "@boostercloud/framework-types": "^0.16.2",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^2",
     "chalk": "^2.4.2",
     "child-process-promise": "^2.2.1",
     "execa": "^2.0.3",
-    "fp-ts": "^2.0.3",
+    "fp-ts": "2.10.5",
     "fs-extra": "^8.1.0",
     "globby": "^8",
-    "inflected": "^2.1.0",
+    "inflected": "2.1.0",
     "inquirer": "^7.0.0",
     "mustache": "4.1.0",
     "ora": "^3.4.0"
@@ -34,7 +34,7 @@
     "@types/child-process-promise": "^2.2.1",
     "@types/faker": "5.1.5",
     "@types/fs-extra": "^8.0.0",
-    "@types/inflected": "^1.1.29",
+    "@types/inflected": "1.1.29",
     "@types/inquirer": "^6.5.0",
     "@types/mustache": "4.1.0",
     "@types/rewire": "^2.5.28",
@@ -47,7 +47,7 @@
     "sinon-chai": "3.5.0"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=14.0.0"
   },
   "files": [
     "/bin",

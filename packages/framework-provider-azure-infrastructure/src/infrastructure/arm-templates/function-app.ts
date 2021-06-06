@@ -64,7 +64,7 @@ export const template = {
             },
             {
               name: 'WEBSITE_NODE_DEFAULT_VERSION',
-              value: '~10',
+              value: '~14',
             },
             {
               name: 'FUNCTIONS_WORKER_RUNTIME',

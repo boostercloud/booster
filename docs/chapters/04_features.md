@@ -2,7 +2,7 @@
 
 ## Authentication and Authorization
 
-You can use the [Authentication Rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure) for adding the authentication and authorization to your application. But first, you need to know that authorization in Booster is done through roles. Every Command and ReadModel has an `authorize` policy that tells Booster who can execute or access it. It consists of one of the following two values:
+First of all, you need to know that the authorization in Booster is done through roles. Every Command and ReadModel has an authorize policy that tells Booster who can execute or access it. It consists of one of the following two values:
 
 - `'all'`: Meaning that the command is public: any user, both authenticated and anonymous, can execute it.
 - An array of authorized roles `[Role1, Role2, ...]`: This means that only those authenticated users that
@@ -30,8 +30,26 @@ export class UpdateUser {
 }
 ```
 
-By default, a Booster application has no roles defined, so the only allowed value you can use in the `authorize` policy is `'all'` (good for public APIs).
+Optionally, you can also add authorization to entities to control who can read its events. To do so, pass a configuration object to the @Entity annotation with the authorized roles (or `'all'` for everyone) in the `authorizeReadEvents` field. For example:
+```typescript
+// cart.ts (entity)
+@Entity({
+  authorizeReadEvents: 'all',
+})
+export class Cart {
+  public constructor(
+          readonly id: UUID,
+          readonly cartItems: Array<CartItem>,
+          public shippingAddress?: Address,
+          public checks = 0
+  ) {}
+  // <reducers...>
+}
+```
+
+By default, a Booster application has no roles defined, so the only allowed value you can use in the `authorize` (or `authorizeReadEvents`) policy is `'all'` (good for public APIs).
 If you want to add user authorization, you first need to create the roles that are suitable for your application.
+
 Roles are classes annotated with the `@Role` decorator, where you can specify some attributes. We recommend that you define your roles in the file `src/roles.ts` or, if you have too many roles, put them in several files under the `src/roles` folder.
 
 > [!NOTE] There is no `Admin` user by default. In order to register one you need to specify a sign-up method on `src/roles.ts`.
@@ -83,21 +101,21 @@ Users that sign up with their emails will receive a confirmation link in their i
 Users that sign up with their phones will receive a confirmation code as an SMS message. That code needs to be sent back using the confirmation endpoint.
 If `skipConfirmation` is set to true, users can sign in without confirmation after signing up.
 
-Now with the roles defined, your Booster application is ready to use the Authorization Rocket, please check out its [documentation](https://github.com/boostercloud/rocket-auth-aws-infrastructure) for getting the access tokens.
+## Autentication Rocket
 
-Once a user has an access token, it can be included in any request made to your Booster application as a
-_Bearer_ token. It will be used to get the user information and
-authorize them to access protected resources.
+Now, with the roles defined, your Booster application is ready to use the [AWS Authorization Rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure), which provides authentication and authorization integration in your application. Check out its documentation to know how you can configure it and how the user can get their access tokens.
+
+Once a user has an access token, it can be included in any request made to your Booster application as a Bearer token. It will be used to get the user information and authorize them to access protected resources.
 
 To learn how to include the access token in your requests, check the section [Authorizing operations](#authorizing-operations).
 
 ## Custom Authentication
 
-You can use the **JWT authorization mode** to authorize all incoming Booster requests. Your auth server will return JWT tokens
-wich will be decoded internally by Booster, after that, the required roles will be matched with the contained claims
-inside that token.
+Booster provides a **JWT authorization mode** to authorize all incoming Booster requests using the server you decide. Your authentication server will provide JWT tokens that you can use with Booster. Your application will decode your token and verify its validity with your server, and then, the required roles will be matched with the claims contained in the token.
 
-In that way, you can use different auth providers, like Auth0, Firebase, Cognito, create your own or simply use our [Authentication Rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure), which is our recommended solution that works great with Booster.
+In that way, you can use different authentication providers, like Auth0, Firebase, Cognito, or create your own, without the need of a specific rocket implementation.
+
+> [!NOTE] The JWT authorization mode does not make use of the `signUpMethods` and `signUpConfirmation` attributes of your roles configuration. This configuration depends on the authentication server you use.
 
 ### JWT Configuration
 
@@ -105,6 +123,7 @@ In order to use the JWT authorization you will need to set a `tokenVerifier` pro
 
 - jwksUri: Public uri with the public keys the auth server used to sign in the JWT tokens, commonly known as a key sets.
 - issuer: Identifies the principal that issued the JWT tokens.
+- rolesClaim: Field where provider contains the token. As an example Cognito uses `cognito:groups`.
 
 Auth sample configuration:
 
@@ -117,8 +136,9 @@ Booster.configure('production', (config: BoosterConfig): void => {
   config.appName = 'demoapp'
   config.provider = AWS.Provider
   config.tokenVerifier = {
-    jwksUri: 'https://demoapp.auth0.com/.well-known/jwks.json',
-    issuer: 'auth0',
+    jwksUri: 'https://demoapp.firebase.com/.well-known/jwks.json',
+    issuer: 'https://securetoken.google.com/demoapp',
+    rolesClaim: 'firebase:groups'
   }
 })
 ```
@@ -134,20 +154,20 @@ export class UpdateUser {
 }
 ```
 
-Your token should include a property `custom:role` with the value `Admin` or `User`. Here is an example of a Firebase token:
+Your token should include a property specified in `rolesClaim` with the value `Admin` or `User`. Here is an example of a Firebase token:
 
 ```json
 {
-  "custom:role": "User",
-  iss: "https://securetoken.google.com/demoapp",
-  aud: "demoapp",
-  auth_time: 1604676721,
-  user_id: "xJY5Y6fTbVggNtDjaNh7cNSBd7q1",
-  sub: "xJY5Y6fTbVggNtDjaNh7cNSBd7q1",
-  iat: 1604676721,
-  exp: 1604680321,
-  phone_number: "+999999999",
-  firebase: { ... }
+  "firebase:groups": "User",
+  "iss": "https://securetoken.google.com/demoapp",
+  "aud": "demoapp",
+  "auth_time": 1604676721,
+  "user_id": "xJY5Y6fTbVggNtDjaNh7cNSBd7q1",
+  "sub": "xJY5Y6fTbVggNtDjaNh7cNSBd7q1",
+  "iat": 1604676721,
+  "exp": 1604680321,
+  "phone_number": "+999999999",
+  "firebase": { }
 }
 ```
 
@@ -173,6 +193,27 @@ _Implementing it_ on the server side is usually the hard part, as you need to de
 Luckily, you can forget about that because Booster does all the work for you!
 
 The GraphQL API is fully **auto-generated** based on your _commands_ and _read models_.
+
+**Note:** To get the full potential of the GraphQL API, it is recommended not to use `interface` types in any command or read model attributes. Use `class` types instead. This will allow you to perform complex graphQL filters, including over nested attributes. There's an example below:
+```typescript
+// My type
+export class ItemWithQuantity { // Use "class", not "interface"
+  public constructor(sku: string, quantity: number) {}
+}
+```
+
+```typescript
+// The read-model file
+import { ItemWithQuantity } from "./types";
+@ReadModel({
+  authorize: 'all'
+})
+export class CartReadModel {
+  public constructor(
+          readonly id: UUID,
+          item: ItemWithQuantity // As ItemWithQuantity is a class, you will be able to query over nested attributes like item `quantity`
+  ) {}
+```
 
 ### Relationship between GraphQL operations and commands and read models
 
@@ -445,6 +486,116 @@ mutation {
 ```
 
 > [!NOTE]  Remember that, in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
+
+### Reading events
+
+You can also fetch events directly if you need. To do so, there are two kind of queries that have the following structure:
+```graphql
+query {
+  eventsByEntity(entity: <name of entity>, entityID: "<id of the entity>") {
+    selection_field_list
+  }
+}
+
+query {
+  eventsByType(type: <name of event>) {
+    selection_field_list
+  }
+}
+```
+Where:
+- _&lt;name of your entity&gt;_ is the name of the class corresponding to the entity whose events you want to retrieve.
+- _&lt;id of the entity&gt;_ is the ID of the specific entity instance whose events you are interested in. **This is optional**
+- _&lt;name of event&gt;_ is the name of the class corresponding to the event type whose instances you want to retrieve.
+- _selection_field_list_ is a list with the names of the specific fields you want to get as response. See the response example below to know more.
+
+
+#### Examples
+
+```
+  URL: "<graphqlURL>"
+```
+**A) Read all events associated with a specific instance (a specific ID) of the entity Cart**
+```graphql
+query {
+  eventsByEntity(entity: Cart, entityID: "ABC123") {
+    type entity entityID requestID createdAt value
+  }
+}
+```
+
+**B) Read all events associated with any instance of the entity Cart**
+```graphql
+query {
+  eventsByEntity(entity: Cart) {
+    type entity entityID requestID createdAt value
+  }
+}
+```
+
+For these cases, you would get an array of event _envelopes_ as a response. This means that you get some metadata related to the event along with the event content, which can be found inside the `"value"` field.
+
+The response look like this:
+```json
+{
+    "data": {
+        "eventsByEntity": [
+            {
+                "type": "CartItemChanged",
+                "entity": "Cart",
+                "entityID": "ABC123",
+                "requestID": "7a9cc6a7-7c7f-4ef0-aef1-b226ae4d94fa",
+                "createdAt": "2021-05-12T08:41:13.792Z",
+                "value": {
+                    "productId": "73f7818c-f83e-4482-be49-339c004b6fdf",
+                    "cartId": "ABC123",
+                    "quantity": 2
+                }
+            }
+        ]
+    }
+}
+```
+
+**C) Read events of a specific type**
+```graphql
+query {
+  eventsByType(type: CartItemChanged) {
+    type entity entityID requestID createdAt value
+  }
+}
+```
+
+The response would have the same structure as seen in the previous examples. The only difference is that this time you will get only the events with the type you have specified ("CartItemChanged")
+
+#### Time filters
+Optionally, for any of the previous queries, you can include a `from` and/or `to` time filters to get only those events that happened inside that time range. You must use a string with a time in ISO format with any precision you like, for example:
+* `from:"2021"` : Events created on 2021 year or up.
+* `from:"2021-02-12" to:"2021-02-13"` : Events created during February 12th.
+* `from:"2021-03-16T16:16:25.178"` : Events created at that date and time, using millisecond precision, or later.
+
+#### Time filters examples
+**A) Cart events from February 23rd to July 20th, 2021**
+```graphql
+query {
+  eventsByEntity(entity: Cart, from:"2021-02-23", to:"2021-07-20") {
+    type entity entityID requestID createdAt value
+  }
+}
+```
+
+**B) CartItemChanged events from February 25th to February 28th, 2021**
+```graphql
+query {
+  eventsByType(type: CartItemChanged, from:"2021-02-25", to:"2021-02-28") {
+    type entity entityID requestID createdAt value
+  }
+}
+```
+
+#### Known limitations
+* Subscriptions don't work for the events API yet
+* You can only query events, but not write them through this API. Use a command for that.
 
 ### Using Apollo Client
 
@@ -729,8 +880,6 @@ To deploy your Booster project, run the following command:
 ```shell
 boost deploy -e <environment name>
 ```
-
-> [!NOTE]  All you have in your project root will be deployed to the cloud provider, so if for example you have an additional frontend project, you should move it to another place because the cloud providers usually have a limited capacity for only code.
 
 The `<environment name>` parameter is the name of the [environment](chapters/05_going-deeper#environments) you want to deploy.
 It will take a while, but you should have your project deployed to your cloud provider.

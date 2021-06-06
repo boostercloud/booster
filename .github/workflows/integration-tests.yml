@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 12.x
+          node-version: 14.x
       - run: npx lerna bootstrap
       - run: npx lerna run compile
       - run: npx lerna run integration/aws-deploy --stream
@@ -29,7 +29,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 12.x
+          node-version: 14.x
       - run: npx lerna bootstrap
       - run: npx lerna run compile
       - run: npx lerna run integration/aws-func --stream
@@ -38,10 +38,28 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
 
-  end-to-end-tests:
-    name: End-to-end Tests
+  aws-end-to-end-tests:
+    name: AWS end-to-end Tests
     needs:
       - aws-func-integration-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+      - run: npx lerna bootstrap
+      - run: npx lerna run compile
+      - run: npx lerna run integration/aws-end-to-end --stream
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+
+  aws-load-tests:
+    name: AWS load tests
+    needs:
+      - aws-end-to-end-tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -50,7 +68,7 @@ jobs:
           node-version: 12.x
       - run: npx lerna bootstrap
       - run: npx lerna run compile
-      - run: npx lerna run integration/end-to-end --stream
+      - run: npx lerna run integration/aws-load --stream
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
@@ -58,15 +76,16 @@ jobs:
 
   aws-nuke-integration-tests:
     name: AWS Nuke Integration Tests
+    if: always() && needs.aws-deploy-integration-tests.result == 'success'
+    continue-on-error: true
     needs:
-      - aws-func-integration-tests
-      - end-to-end-tests
+      - aws-load-tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 12.x
+          node-version: 14.x
       - run: npx lerna bootstrap
       - run: npx lerna run compile
       - run: npx lerna run integration/aws-nuke --stream
@@ -82,7 +101,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 12.x
+          node-version: 14.x
       - run: npx lerna bootstrap
       - run: npx lerna run compile
       - run: npx lerna run integration/cli --stream
@@ -94,13 +113,13 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 12.x
+          node-version: 14.x
       - run: npx lerna bootstrap
       - run: npx lerna run compile
       - run: npx lerna run integration/local --stream
 
-  kubernetes-deploy-integration-tests:
-    name: Kubernetes deployment integration tests
+  kubernetes-integration-tests:
+    name: Kubernetes integration tests
     runs-on: ubuntu-latest
     env:
       KUBECONFIG: '/home/runner/.kube/config'
@@ -113,7 +132,7 @@ jobs:
           driver: 'docker'
       - uses: actions/setup-node@v1
         with:
-          node-version: 12.x
+          node-version: 14.x
       - run: sudo snap install helm --classic
       - run: kubectl create ns booster-my-store-kubernetes
       - run: kubectl config set-context --current --namespace=booster-my-store-kubernetes
@@ -121,3 +140,4 @@ jobs:
       - run: npx lerna bootstrap
       - run: npx lerna run compile
       - run: npx lerna run integration/k8s-deploy --stream
+      - run: npx lerna run integration/k8s-nuke --stream
