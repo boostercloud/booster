@@ -22,7 +22,7 @@
   "dependencies": {
     "@boostercloud/framework-common-helpers": "^0.16.2",
     "@kubernetes/client-node": "0.14.3",
-    "archiver": "4.0.1",
+    "archiver": "5.3.0",
     "body-parser": "^1.18.3",
     "cors": "^2.8.5",
     "express": "^4.17.1",
@@ -47,7 +47,7 @@
   },
   "devDependencies": {
     "@boostercloud/framework-types": "^0.16.2",
-    "@types/archiver": "^3.1.0",
+    "@types/archiver": "5.1.0",
     "@types/cors": "^2.8.7",
     "@types/express": "4.17.12",
     "@types/faker": "5.1.5",

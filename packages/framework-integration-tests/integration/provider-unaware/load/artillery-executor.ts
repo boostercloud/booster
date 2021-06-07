@@ -4,6 +4,7 @@ import * as path from 'path'
 import { ProviderTestHelper } from '@boostercloud/application-tester'
 import { runCommand } from '../../helper/run-command'
 import { CloudFormation } from 'aws-sdk'
+import { Stack } from 'aws-sdk/clients/cloudformation'
 
 const cloudFormation = new CloudFormation()
 
@@ -26,17 +27,28 @@ export class ArtilleryExecutor {
   ) {}
 
   public async ensureDeployed(): Promise<void> {
+    let slsartStack: Stack | undefined
     try {
-      await cloudFormation
+      const { Stacks } = await cloudFormation
         .describeStacks({
           StackName: `${this.serverlessArtilleryStackPrefix}-${this.stage}`,
         })
         .promise()
-      console.info('Serverless Artillery stack is already deployed. Skipping redeployment.')
+      if (Stacks?.[0]) {
+        slsartStack = Stacks[0]
+      }
     } catch (e) {
-      // The CDK returns an exception when the stack is not found. Deploy it in that case
-      await runCommand('.', `slsart deploy --stage ${this.stage}`)
+      // The CDK returns an exception when the stack is not found. Ignore it and deploy
     }
+    const validStatuses = ['CREATE_COMPLETE', 'UPDATE_COMPLETE']
+    if (slsartStack) {
+      if (validStatuses.includes(slsartStack?.StackStatus)) {
+        console.info('Serverless Artillery stack is already deployed. Skipping redeployment.')
+        return
+      }
+      console.info(`Serverless Artillery stack is in a wrong state: ${slsartStack?.StackStatus}. Redeploying.`)
+    }
+    await runCommand('.', `slsart deploy --stage ${this.stage}`)
   }
 
   public async executeScript(scriptName: string, overrideOptions: OverrideOptions = {}): Promise<void> {
