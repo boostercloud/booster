@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from './expect'
 import { Booster, boosterEventDispatcher, boosterServeGraphQL } from '../src/booster'
-import { replace, fake, restore, match, replaceGetter } from 'sinon'
+import { replace, fake, restore, match, replaceGetter, spy } from 'sinon'
 import { Importer } from '../src/importer'
 import * as EntitySnapshotFetcher from '../src/entity-snapshot-fetcher'
 import { UUID } from '@boostercloud/framework-types'
@@ -35,6 +35,27 @@ describe('the `Booster` class', () => {
       expect(booster.config.appName).to.equal('test-app-name')
     })
   })
+
+  describe('the `configureLocal` method', () => {
+    it('uses the `configure` method underneath, if the env variable is set', () => {
+      const booster = Booster as any
+
+      const environmentName = 'test'
+      const env = process.env.BOOSTER_ENV
+      process.env.BOOSTER_ENV = environmentName
+
+      booster.configure = spy()
+
+      Booster.configureLocal(environmentName, (config) => {
+        config.appName = 'test-app-name'
+      })
+
+      process.env.BOOSTER_ENV = env
+
+      expect(booster.configure).to.have.been.calledOnce
+    })
+  })
+
 
   describe('the `start` method', () => {
     it('imports all the user files', () => {
