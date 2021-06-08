@@ -73,6 +73,8 @@
     "integration/local-old": "BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/provider-specific/local/.mocharc.yml\" \"integration/provider-specific/local/**/*.integration.ts\"",
     "integration/local": "npm run integration/local-start && npm run integration/local-stop",
     "integration/local-start": "BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/provider-specific/local/start/.mocharc.yml\" \"integration/provider-specific/local/start/*.integration.ts\"",
+    "integration/local-func": "TESTED_PROVIDER=LOCAL BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/provider-unaware/functionality/.mocharc.yml\" \"integration/provider-unaware/functionality/**/*.integration.ts\"",
+    "integration/local-end-to-end": "TESTED_PROVIDER=LOCAL BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/provider-unaware/end-to-end/.mocharc.yml\" \"integration/provider-unaware/end-to-end/**/*.integration.ts\"",
     "integration/local-stop": "BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/provider-specific/local/stop/.mocharc.yml\" \"integration/provider-specific/local/stop/*.integration.ts\""
   },
   "types": "dist/index.d.ts"

@@ -5,6 +5,8 @@ import * as path from 'path'
 import { requestFailed } from './http'
 import { GraphQLController } from './controllers/graphql'
 
+export * from './test-helper/local-test-helper'
+
 /**
  * Default error handling middleware. Instead of performing a try/catch in all endpoints
  * express will check if contents were sent, and if it failed, it will send a 500 with the
