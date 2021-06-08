@@ -6,6 +6,7 @@ import * as Project from './project'
 import * as ReadModel from './read-model'
 import * as EventHandler from './event-handler'
 import * as ScheduledCommand from './scheduled-command'
+import * as Test from './test'
 
 export const templates = {
   command: Command.template,
@@ -16,4 +17,5 @@ export const templates = {
   project: Project.templates,
   readModel: ReadModel.template,
   scheduledCommand: ScheduledCommand.template,
+  test: Test.template,
 }
