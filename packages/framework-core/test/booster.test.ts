@@ -56,7 +56,6 @@ describe('the `Booster` class', () => {
     })
   })
 
-
   describe('the `start` method', () => {
     it('imports all the user files', () => {
       const fakeImporter = fake()
