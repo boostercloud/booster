@@ -15,9 +15,12 @@ describe('dependencies service', () => {
 
       await expect(installProductionDependencies(path)).to.eventually.be.fulfilled
 
-      expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install --production --no-bin-links --no-optional', {
-        cwd: path,
-      })
+      expect(childProcessPromise.exec).to.have.been.calledWithMatch(
+        'npm install --production --no-bin-links --no-optional',
+        {
+          cwd: path,
+        }
+      )
     })
 
     it('wraps the exec error', async () => {

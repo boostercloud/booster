@@ -41,13 +41,13 @@ describe('ReadModelStore', () => {
   }
 
   const config = new BoosterConfig('test')
-  config.provider = ({
+  config.provider = {
     readModels: {
       store: () => {},
       delete: () => {},
       fetch: () => {},
     },
-  } as unknown) as ProviderLibrary
+  } as unknown as ProviderLibrary
   config.entities['ImportantConcept'] = { class: ImportantConcept, authorizeReadEvents: [] }
   config.projections['ImportantConcept'] = [
     {
@@ -274,15 +274,13 @@ describe('ReadModelStore', () => {
       it('retries 5 times when the error OptimisticConcurrencyUnexpectedVersionError happens 4 times', async () => {
         let tryNumber = 1
         const expectedTries = 5
-        const fakeStore = fake(
-          (config: BoosterConfig, logger: Logger, readModelName: string): Promise<unknown> => {
-            if (readModelName === SomeReadModel.name && tryNumber < expectedTries) {
-              tryNumber++
-              throw new OptimisticConcurrencyUnexpectedVersionError('test error')
-            }
-            return Promise.resolve()
+        const fakeStore = fake((config: BoosterConfig, logger: Logger, readModelName: string): Promise<unknown> => {
+          if (readModelName === SomeReadModel.name && tryNumber < expectedTries) {
+            tryNumber++
+            throw new OptimisticConcurrencyUnexpectedVersionError('test error')
           }
-        )
+          return Promise.resolve()
+        })
         replace(config.provider.readModels, 'store', fakeStore)
         const readModelStore = new ReadModelStore(config, logger)
         await readModelStore.project(anEntitySnapshot)

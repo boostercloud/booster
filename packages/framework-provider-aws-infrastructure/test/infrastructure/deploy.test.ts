@@ -38,9 +38,9 @@ describe('the deployment module', () => {
           },
         })
       )
-      const logger = ({
+      const logger = {
         info: fake(),
-      } as unknown) as Logger
+      } as unknown as Logger
 
       await deploy(config, logger)
 
@@ -62,10 +62,10 @@ describe('the deployment module', () => {
         })
       )
 
-      const logger = ({
+      const logger = {
         info: fake(),
         error: fake(),
-      } as unknown) as Logger
+      } as unknown as Logger
 
       await expect(deploy(config, logger)).to.eventually.be.rejectedWith(errorMessage)
     })
@@ -83,9 +83,9 @@ describe('the deployment module', () => {
         })
       )
 
-      const logger = ({
+      const logger = {
         info: fake(),
-      } as unknown) as Logger
+      } as unknown as Logger
 
       await deploy(config, logger)
 
@@ -107,9 +107,9 @@ describe('the deployment module', () => {
         })
       )
 
-      const logger = ({
+      const logger = {
         info: fake(),
-      } as unknown) as Logger
+      } as unknown as Logger
 
       await deploy(config, logger)
 
@@ -135,9 +135,9 @@ describe('the deployment module', () => {
         })
       )
 
-      const logger = ({
+      const logger = {
         info: fake(),
-      } as unknown) as Logger
+      } as unknown as Logger
 
       await deploy(config, logger)
 
@@ -169,9 +169,9 @@ describe('the deployment module', () => {
           })
         )
 
-        const logger = ({
+        const logger = {
           info: fake(),
-        } as unknown) as Logger
+        } as unknown as Logger
 
         const fakeRocket: InfrastructureRocket = {
           mountStack: fake(),

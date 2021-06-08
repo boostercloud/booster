@@ -43,7 +43,7 @@ export class RedisAdapter {
   public async keys(keyPattern: string, logger: Logger): Promise<Array<string>> {
     logger.debug('RedisAdapter keys')
     return new Promise((resolve) => {
-      this.client.keys(`booster||${keyPattern}*`, function(err: Error | null, res: Array<string>) {
+      this.client.keys(`booster||${keyPattern}*`, function (err: Error | null, res: Array<string>) {
         if (err) {
           logger.debug(err)
           return resolve([])
