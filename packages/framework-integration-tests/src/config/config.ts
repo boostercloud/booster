@@ -5,15 +5,9 @@ import * as Kubernetes from '@boostercloud/framework-provider-kubernetes'
 import * as fs from 'fs'
 import * as path from 'path'
 
-// TODO: After prunning `devDependencies` to deploy the project to lambda, we cannot import the local provider anymore. We should look for a better solution than this, maybe loading a different config file depending on the configured environment in BOOSTER_ENV
-if (process.env.BOOSTER_ENV === 'local') {
-  const Local = require('@boostercloud/framework-provider-local')
-
-  Booster.configure('local', (config: BoosterConfig): void => {
-    config.appName = 'my-store'
-    config.provider = Local.Provider()
-  })
-}
+Booster.configureLocal('local', (config: BoosterConfig): void => {
+  config.appName = 'my-store'
+})
 
 Booster.configure('kubernetes', (config: BoosterConfig): void => {
   config.appName = 'my-store'

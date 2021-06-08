@@ -8,6 +8,7 @@ export interface BoosterApp {
   start(projectPath: string): void
   config: BoosterConfig
   configure(environment: string, configurator: (config: BoosterConfig) => void): void
+  configureLocal(environment: string, configurator: (config: BoosterConfig) => void): void
   configureCurrentEnv(configurator: (config: BoosterConfig) => void): void
   entity<TEntity extends EntityInterface>(entityName: Class<TEntity>, entityID: UUID): Promise<TEntity | undefined>
   /** @deprecated use "entity" instead*/

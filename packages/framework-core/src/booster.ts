@@ -52,6 +52,22 @@ export class Booster {
   }
 
   /**
+   * Configures a local environment for development
+   * purposes
+   *
+   * @param environment The name of the local environment
+   * @param configurator A function that receives the configuration object to set the values
+   */
+  public static configureLocal(environment: string, configurator: (config: BoosterConfig) => void): void {
+    if (process.env.BOOSTER_ENV === environment) {
+      Booster.configure(environment, (config: BoosterConfig): void => {
+        config.provider = require('@boostercloud/framework-provider-local').Provider()
+        configurator(config)
+      })
+    }
+  }
+
+  /**
    * Initializes the Booster project
    */
   public static start(codeRootPath: string): void {
