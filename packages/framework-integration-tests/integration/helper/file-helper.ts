@@ -5,7 +5,7 @@ export const loadFixture = (fixturePath: string, replacements?: Array<Array<stri
   const template = readFileContent(`integration/fixtures/${fixturePath}`)
   return (
     replacements?.reduce(
-      (prevContents: string, replacement: string[]): string => prevContents.replace(replacement[0], replacement[1]),
+      (prevContents: string, replacement: string[]): string => prevContents.split(replacement[0]).join(replacement[1]),
       template
     ) ?? template
   )

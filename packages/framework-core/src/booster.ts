@@ -53,7 +53,7 @@ export class Booster {
 
   /**
    * Configures a local environment for development
-   * purposes
+   * purposes using the local provider
    *
    * @param environment The name of the local environment
    * @param configurator A function that receives the configuration object to set the values
@@ -61,8 +61,8 @@ export class Booster {
   public static configureLocal(environment: string, configurator: (config: BoosterConfig) => void): void {
     if (process.env.BOOSTER_ENV === environment) {
       Booster.configure(environment, (config: BoosterConfig): void => {
-        config.provider = require('@boostercloud/framework-provider-local').Provider()
         configurator(config)
+        config.provider = require('@boostercloud/framework-provider-local').Provider()
       })
     }
   }
