@@ -107,22 +107,20 @@ describe('the events-adapter', () => {
       })
       const fakeDynamo: DocumentClient = { put: fakePut } as any
 
-      const eventEnvelopes = events.map(
-        (e): EventEnvelope => {
-          return {
-            version: 1,
-            kind: 'event',
-            requestID,
-            entityID: e.entityID(),
-            entityTypeName: 'fake-entity-name',
-            typeName: 'fake-type-name',
-            value: {
-              entityID: e.entityID,
-            },
-            createdAt: new Date().toISOString(),
-          }
+      const eventEnvelopes = events.map((e): EventEnvelope => {
+        return {
+          version: 1,
+          kind: 'event',
+          requestID,
+          entityID: e.entityID(),
+          entityTypeName: 'fake-entity-name',
+          typeName: 'fake-type-name',
+          value: {
+            entityID: e.entityID,
+          },
+          createdAt: new Date().toISOString(),
         }
-      )
+      })
 
       await Library.storeEvents(fakeDynamo, eventEnvelopes, config, fakeLogger)
 

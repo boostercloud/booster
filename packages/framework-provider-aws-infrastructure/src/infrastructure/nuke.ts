@@ -33,10 +33,7 @@ async function nukeToolkit(logger: Logger, config: BoosterConfig, sdk: ISDK): Pr
   logger.info(colors.blue(stackToolkitName) + colors.yellow(': destroying...'))
   await emptyS3Bucket(sdk, logger, getStackToolkitBucketName(config))
 
-  await sdk
-    .cloudFormation()
-    .deleteStack({ StackName: stackToolkitName })
-    .promise()
+  await sdk.cloudFormation().deleteStack({ StackName: stackToolkitName }).promise()
   logger.info('✅  ' + colors.blue(stackToolkitName) + colors.red(': DESTROYED'))
 }
 

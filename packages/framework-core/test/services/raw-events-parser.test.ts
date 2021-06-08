@@ -59,11 +59,11 @@ describe('RawEventsParser', () => {
 
     fakeRawToEnvelopes = fake.returns(allEventEnvelopes)
     config = new BoosterConfig('test')
-    config.provider = ({
+    config.provider = {
       events: {
         rawToEnvelopes: fakeRawToEnvelopes,
       },
-    } as unknown) as ProviderLibrary
+    } as unknown as ProviderLibrary
   })
 
   describe('streamPerEntityEvents', () => {
