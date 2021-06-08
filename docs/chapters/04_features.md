@@ -1,5 +1,27 @@
 # Features
 
+## Local Provider
+
+All Booster projects come with a local development environment configured by default, so you can test your app before deploying it to the cloud.
+You can see the configured local environment in your `src/config/config.ts` file:
+
+```typescript
+Booster.configureLocal('local', (config: BoosterConfig): void => {
+  config.appName = 'my-store'
+})
+```
+
+Note how, contrary to the rest of the environments, the configuration of the local environment is using the `Booster.configureLocal` method, and not
+`Booster.configure`. This is because `Booster.configureLocal` is used to define local environments that are going to be used for development purposes.
+
+In order to start your application using the local provider, use the following command:
+
+```bash
+boost start -e local
+```
+
+Where `local` is one of your defined environments with the `Booster.configureLocal` call.
+
 ## Authentication and Authorization
 
 First of all, you need to know that the authorization in Booster is done through roles. Every Command and ReadModel has an authorize policy that tells Booster who can execute or access it. It consists of one of the following two values:
