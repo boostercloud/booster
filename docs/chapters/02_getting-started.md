@@ -181,6 +181,7 @@ the application with the selected profile.
 ```shell
 export AWS_PROFILE=other_profile
 ```
+
 ### Azure Provider Prerequisites
 
 This step is only necessary in the case that you want to use the Azure Provider.
@@ -600,17 +601,23 @@ You can also clean the compiled code by running:
 boost clean
 ```
 
-Now, let's deploy our application to the cloud to see it working. It is as simple as running
+Now, let's run our application to see it working. It is as simple as running:
+
+```bash
+boost start -e local
+```
+
+Or, we can deploy our application to the cloud with no additional changes by running
 the deploy command:
 
 ```bash
 boost deploy -e production
 ```
 
-And here it comes the Booster magic! ✨ When running the deploy command, Booster will handle the creation of all the resources, *like Lambdas, API Gateway,* and the "glue" between them; *permissions, events, triggers, etc.* It even creates a fully functional GraphQL API!
+This is the Booster magic! ✨ When running the start or the deploy commands, Booster will handle the creation of all the resources, _like Lambdas, API Gateway,_ and the "glue" between them; _permissions, events, triggers, etc._ It even creates a fully functional GraphQL API!
 
 > [!NOTE] Deploy command automatically builds the project for you before performing updates in the cloud provider,
-so, build command it's not required beforehand.
+> so, build command it's not required beforehand.
 
 > With `-e production` we are specifying which environment we want to deploy. We'll talk about them later.
 
@@ -618,7 +625,7 @@ so, build command it's not required beforehand.
 
 ![resources](../img/aws-resources.png)
 
-It will take a couple of minutes to deploy all the resources. Once finished, you will see
+When deploying, it will take a couple of minutes to deploy all the resources. Once finished, you will see
 information about your application endpoints and other outputs. For this example, we will
 only need to pick the output ending in `httpURL`, e.g.:
 
@@ -637,8 +644,8 @@ Let's get started testing the project. We will perform three actions:
 Booster applications provide you with a GraphQL API out of the box. You send commands using
 _mutations_ and get read models data using _queries_ or _subscriptions_.
 
-In this section, we will be sending requests by hand using the online tool [Hoppscotch (formerly Postwoman)](https://hoppscotch.io/graphql),
-which is free and includes great support for GraphQL. However, you can use any client you want. Your endpoint URL should look like this:
+In this section, we will be sending requests by hand using the free [Altair](https://altair.sirmuel.design/) GraphQL client,
+which is very simple and straightforward for this guide. However, you can use any client you want. Your endpoint URL should look like this:
 
 ```text
 <httpURL>/graphql
