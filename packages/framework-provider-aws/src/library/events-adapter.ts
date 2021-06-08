@@ -17,14 +17,12 @@ import { retryIfError } from '@boostercloud/framework-common-helpers'
 const originOfTime = new Date(0).toISOString()
 
 export function rawEventsToEnvelopes(rawEvents: DynamoDBStreamEvent): Array<EventEnvelope> {
-  return rawEvents.Records.map(
-    (record: DynamoDBRecord): EventEnvelope => {
-      if (!record.dynamodb?.NewImage) {
-        throw new Error('Received a DynamoDB stream event without "NewImage" field. It is required')
-      }
-      return Converter.unmarshall(record.dynamodb?.NewImage) as EventEnvelope
+  return rawEvents.Records.map((record: DynamoDBRecord): EventEnvelope => {
+    if (!record.dynamodb?.NewImage) {
+      throw new Error('Received a DynamoDB stream event without "NewImage" field. It is required')
     }
-  )
+    return Converter.unmarshall(record.dynamodb?.NewImage) as EventEnvelope
+  })
 }
 
 export async function readEntityEventsSince(

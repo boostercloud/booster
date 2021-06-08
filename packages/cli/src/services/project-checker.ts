@@ -86,10 +86,7 @@ async function getBoosterVersion(projectPath: string): Promise<string> {
   try {
     const packageJsonContents = require(path.join(projectAbsolutePath, 'package.json'))
     const version = packageJsonContents.dependencies['@boostercloud/framework-core']
-    const versionParts = version
-      .replace('^', '')
-      .replace('.tgz', '')
-      .split('-')
+    const versionParts = version.replace('^', '').replace('.tgz', '').split('-')
     return versionParts[versionParts.length - 1]
   } catch (e) {
     throw new Error(

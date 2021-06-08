@@ -38,7 +38,7 @@ export const search = async (
 ): Promise<Array<ReadModelInterface>> => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   logger.debug('readModelAdapter#search: ' + readModelName + ' ' + JSON.stringify(filters))
-  const result = await registry.search(config, logger, readModelName, (filters as unknown) as any)
+  const result = await registry.search(config, logger, readModelName, filters as unknown as any)
   logger.debug('readModelAdapter#search result ' + JSON.stringify(result))
   return result as Array<ReadModelInterface>
 }

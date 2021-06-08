@@ -112,9 +112,7 @@ describe('The Script class', () => {
       const msg = 'yo!'
       const logger = replaceLogger()
 
-      await Script.init(initMsg, Promise.resolve(testContext))
-        .info(msg)
-        .done()
+      await Script.init(initMsg, Promise.resolve(testContext)).info(msg).done()
 
       expect(logger.info).to.have.been.calledWith(msg)
     })
@@ -127,9 +125,7 @@ describe('The Script class', () => {
       const stepFn = stub().resolves(val)
       const logger = replaceLogger()
 
-      await Script.init('initializing', Promise.resolve(testContext))
-        .step(msg, stepFn)
-        .done()
+      await Script.init('initializing', Promise.resolve(testContext)).step(msg, stepFn).done()
 
       expect(logger.start).to.have.been.calledOnceWith(msg)
       expect(logger.succeed).to.have.been.called
@@ -144,9 +140,7 @@ describe('The Script class', () => {
       const logger = replaceLogger()
 
       await expect(
-        Script.init('initializing', Promise.resolve(testContext))
-          .step(msg, stepFn)
-          .done()
+        Script.init('initializing', Promise.resolve(testContext)).step(msg, stepFn).done()
       ).to.eventually.be.rejectedWith(errorMsg)
 
       expect(logger.start).to.have.been.calledOnceWith(msg)
@@ -189,9 +183,7 @@ describe('The Script class', () => {
       const logger = replaceLogger()
       const willSkip = true
 
-      await Script.init(initMessage, Promise.resolve(testContext))
-        .optionalStep(willSkip, message, stepFn)
-        .done()
+      await Script.init(initMessage, Promise.resolve(testContext)).optionalStep(willSkip, message, stepFn).done()
 
       expect(logger.start).to.not.have.been.calledOnce
       expect(logger.succeed).to.not.have.been.calledOnce
@@ -205,9 +197,7 @@ describe('The Script class', () => {
       const logger = replaceLogger()
       const willSkip = false
 
-      await Script.init(initMessage, Promise.resolve(testContext))
-        .optionalStep(willSkip, message, stepFn)
-        .done()
+      await Script.init(initMessage, Promise.resolve(testContext)).optionalStep(willSkip, message, stepFn).done()
 
       expect(logger.start).to.have.been.calledOnceWith(message)
       expect(logger.succeed).to.have.been.called

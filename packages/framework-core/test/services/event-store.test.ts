@@ -29,13 +29,13 @@ describe('EventStore', () => {
   }
 
   const config = new BoosterConfig('test')
-  config.provider = ({
+  config.provider = {
     events: {
       store: () => {},
       latestEntitySnapshot: () => {},
       forEntitySince: () => {},
     },
-  } as any) as ProviderLibrary
+  } as any as ProviderLibrary
   config.entities['ImportantConcept'] = { class: ImportantConcept, authorizeReadEvents: [] }
   config.reducers['ImportantEvent'] = {
     class: ImportantConcept,
@@ -98,7 +98,7 @@ describe('EventStore', () => {
 
         replace(eventStore, 'loadLatestSnapshot', fake.resolves(null))
         replace(eventStore, 'loadEventStreamSince', fake.resolves([someEventEnvelope]))
-        replace(eventStore, 'entityReducer', function() {
+        replace(eventStore, 'entityReducer', function () {
           // @ts-ignore
           expect(this).to.be.equal(eventStore)
         })
