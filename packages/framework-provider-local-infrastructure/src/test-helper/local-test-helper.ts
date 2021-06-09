@@ -26,9 +26,7 @@ export class LocalTestHelper {
       }
     
       private static ensureProviderIsReady(): void {
-        if (false) {
-          throw new Error(`The local provider is not ready.`)
-        }
+        //TODO check provider is ready making a HTTP request or a GraphQL query
       }         
     
       private static async graphqlURL(): Promise<string> {

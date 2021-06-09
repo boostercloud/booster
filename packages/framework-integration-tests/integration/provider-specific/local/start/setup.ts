@@ -1,13 +1,11 @@
 import { start } from '../../../helper/cli-helper'
 import { sleep } from '../../../helper/sleep'
 import { ChildProcess } from 'child_process'
-import { sandboxPathFor } from '../../../helper/file-helper'
+import { sandboxPathFor, storePIDFor } from '../../../helper/file-helper'
 import { overrideWithBoosterLocalDependencies } from '../../../helper/deps-helper'
 import { sandboxName } from '../constants'
 import { runCommand } from '../../../helper/run-command'
 import { createSandboxProject } from '../../../../../cli/src/common/sandbox'
-import { writeFileSync } from 'fs'
-import * as path from 'path'
 
 let serverProcess: ChildProcess
 let sandboxPath: string
@@ -25,8 +23,7 @@ before(async () => {
 
   console.log(`starting local server in ${sandboxPath}...`)
   serverProcess = start(sandboxPath, 'local')
-  const pidFile: string = path.join(sandboxPath, 'local_provider.pid')
-  writeFileSync(pidFile, serverProcess.pid.toString()) //store pid to kill process on stop 
+  storePIDFor(sandboxPath, serverProcess.pid) //store pid to kill process on stop
   await sleep(2000)
   console.log(`local server ready`)
 })
