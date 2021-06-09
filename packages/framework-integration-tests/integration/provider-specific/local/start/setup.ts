@@ -6,8 +6,6 @@ import { overrideWithBoosterLocalDependencies } from '../../../helper/deps-helpe
 import { sandboxName } from '../constants'
 import { runCommand } from '../../../helper/run-command'
 import { createSandboxProject } from '../../../../../cli/src/common/sandbox'
-import { writeFileSync } from 'fs'
-import * as path from 'path'
 
 let serverProcess: ChildProcess
 let sandboxPath: string
@@ -26,8 +24,6 @@ before(async () => {
   console.log(`starting local server in ${sandboxPath}...`)
   serverProcess = start(sandboxPath, 'local')
   storePIDFor(sandboxPath, serverProcess.pid) //store pid to kill process on stop
-  const pidFile: string = path.join(sandboxPath, 'local_provider.pid')
-  writeFileSync(pidFile, serverProcess.pid.toString()) //store pid to kill process on stop
   await sleep(2000)
   console.log('local server ready')
 })
