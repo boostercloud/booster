@@ -1,5 +1,6 @@
 import { ProviderTestHelper } from '@boostercloud/application-tester'
 import { AWSTestHelper } from '@boostercloud/framework-provider-aws-infrastructure'
+import { LocalTestHelper } from '@boostercloud/framework-provider-local-infrastructure'
 import * as util from 'util'
 
 const exec = util.promisify(require('child_process').exec)
@@ -12,6 +13,7 @@ export async function getProviderTestHelper(): Promise<ProviderTestHelper> {
   const provider = process.env.TESTED_PROVIDER
   const providerHelpers: Record<string, () => Promise<ProviderTestHelper>> = {
     AWS: () => AWSTestHelper.build(applicationName()),
+    LOCAL: () => LocalTestHelper.build(applicationName()),
   }
   const supportedProviders = Object.keys(providerHelpers)
   if (!provider || !supportedProviders.includes(provider)) {
