@@ -78,7 +78,7 @@ export function Reduces<TEvent extends EventInterface>(
   }
 }
 
-function registerReducer(eventName: string, reducerMethod: ReducerMetadata): void {
+function registerReducer(eventName: string, reducerMetadata: ReducerMetadata): void {
   Booster.configureCurrentEnv((config): void => {
     const reducerPath = config.reducers[eventName]
     if (reducerPath) {
@@ -88,7 +88,7 @@ function registerReducer(eventName: string, reducerMethod: ReducerMetadata): voi
       )
     }
 
-    config.reducers[eventName] = reducerMethod
+    config.reducers[eventName] = reducerMetadata
   })
 }
 

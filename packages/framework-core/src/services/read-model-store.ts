@@ -13,6 +13,7 @@ import {
   OptimisticConcurrencyUnexpectedVersionError,
 } from '@boostercloud/framework-types'
 import { Promises, retryIfError } from '@boostercloud/framework-common-helpers'
+import { createInstance } from './parser-helpers'
 
 export class ReadModelStore {
   private config: BoosterConfig
@@ -33,12 +34,12 @@ export class ReadModelStore {
       )
       return
     }
-
+    const entityMetadata = this.config.entities[entitySnapshotEnvelope.entityTypeName]
     await Promises.allSettledAndFulfilled(
       projections.map(async (projectionMetadata: ProjectionMetadata) => {
         const readModelName = projectionMetadata.class.name
-        const entitySnapshot = entitySnapshotEnvelope.value as EntityInterface
-        const readModelID = this.joinKeyForProjection(entitySnapshot, projectionMetadata)
+        const entityInstance = createInstance(entityMetadata.class, entitySnapshotEnvelope.value)
+        const readModelID = this.joinKeyForProjection(entityInstance, projectionMetadata)
         this.logger.debug(
           '[ReadModelStore#project] Projecting entity snapshot ',
           entitySnapshotEnvelope,
@@ -47,7 +48,7 @@ export class ReadModelStore {
 
         return await retryIfError(
           this.logger,
-          () => this.applyProjectionToReadModel(readModelName, readModelID, projectionMetadata, entitySnapshot),
+          () => this.applyProjectionToReadModel(readModelName, readModelID, projectionMetadata, entityInstance),
           OptimisticConcurrencyUnexpectedVersionError
         )
       })
@@ -106,11 +107,13 @@ export class ReadModelStore {
     )
   }
 
-  public async fetchReadModel(readModelName: string, readModelID: UUID): Promise<ReadModelInterface> {
+  public async fetchReadModel(readModelName: string, readModelID: UUID): Promise<ReadModelInterface | undefined> {
     this.logger.debug(
       `[ReadModelStore#fetchReadModel] Looking for existing version of read model ${readModelName} with ID ${readModelID}`
     )
-    return this.provider.readModels.fetch(this.config, this.logger, readModelName, readModelID)
+    const rawReadModel = await this.provider.readModels.fetch(this.config, this.logger, readModelName, readModelID)
+    const readModelMetadata = this.config.readModels[readModelName]
+    return rawReadModel ? createInstance(readModelMetadata.class, rawReadModel) : undefined
   }
 
   public projectionFunction(projectionMetadata: ProjectionMetadata): Function {

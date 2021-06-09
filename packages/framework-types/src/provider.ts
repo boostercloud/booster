@@ -63,7 +63,12 @@ export interface ProviderReadModelsLibrary {
     readModel: ReadModelInterface,
     expectedCurrentVersion?: number
   ): Promise<unknown>
-  delete(config: BoosterConfig, logger: Logger, readModelName: string, readModel: ReadModelInterface): Promise<any>
+  delete(
+    config: BoosterConfig,
+    logger: Logger,
+    readModelName: string,
+    readModel: ReadModelInterface | undefined
+  ): Promise<any>
   subscribe(config: BoosterConfig, logger: Logger, subscriptionEnvelope: SubscriptionEnvelope): Promise<void>
   fetchSubscriptions(
     config: BoosterConfig,

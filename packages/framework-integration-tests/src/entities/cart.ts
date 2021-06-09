@@ -1,9 +1,9 @@
-import '../common/address'
+import { Address } from '../common/address'
 import { Entity, Reduces } from '@boostercloud/framework-core'
 import { UUID } from '@boostercloud/framework-types'
 import { CartItemChanged } from '../events/cart-item-changed'
 import { ShippingAddressUpdated as UpdatedCartShippingAddress } from '../events/shipping-address-updated'
-import { Address } from '../common/address'
+
 import { CartItem } from '../common/cart-item'
 import { CartChecked } from '../events/cart-checked'
 
@@ -20,12 +20,17 @@ export class Cart {
     public shippingAddress?: Address,
     public checks = 0
   ) {}
-
+  public getId() {
+    return this.id
+  }
   @Reduces(CartItemChanged)
   public static changeItem(event: CartItemChanged, currentCart: Cart): Cart {
     if (currentCart == null) {
       currentCart = new Cart(event.cartId, [])
     }
+    // This method calls are here to ensure they work. More info: https://github.com/boostercloud/booster/issues/797
+    currentCart.getId()
+    event.getProductId()
 
     const current = currentCart.cartItems.find((cartItem: CartItem): boolean => cartItem.productId === event.productId)
     if (current) {

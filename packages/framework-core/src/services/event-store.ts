@@ -6,6 +6,7 @@ import {
   EventEnvelope,
   InvalidParameterError,
 } from '@boostercloud/framework-types'
+import { createInstance } from './parser-helpers'
 
 const originOfTime = new Date(0).toISOString() // Unix epoch
 
@@ -101,8 +102,11 @@ export class EventStore {
         ' and entity snapshot ',
         latestSnapshot
       )
-      const snapshotValue = latestSnapshot ? latestSnapshot.value : null
-      const newEntity = this.reducerForEvent(eventEnvelope.typeName)(eventEnvelope.value, snapshotValue)
+      const eventMetadata = this.config.events[eventEnvelope.typeName]
+      const eventInstance = createInstance(eventMetadata.class, eventEnvelope.value)
+      const entityMetadata = this.config.entities[eventEnvelope.entityTypeName]
+      const snapshotInstance = latestSnapshot ? createInstance(entityMetadata.class, latestSnapshot.value) : null
+      const newEntity = this.reducerForEvent(eventEnvelope.typeName)(eventInstance, snapshotInstance)
       const newSnapshot: EventEnvelope = {
         version: this.config.currentVersionFor(eventEnvelope.entityTypeName),
         kind: 'snapshot',
