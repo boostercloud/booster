@@ -24,7 +24,7 @@ before(async () => {
   await runCommand(sandboxPath, 'npm install')
 
   console.log(`starting local server in ${sandboxPath}...`)
-  serverProcess = start('local', sandboxPath)
+  serverProcess = start(sandboxPath, 'local')
   const pidFile: string = path.join(sandboxPath, 'local_provider.pid')
   writeFileSync(pidFile, serverProcess.pid.toString()) //store pid to kill process on stop 
   await sleep(2000)

@@ -24,7 +24,7 @@ before(async () => {
   await runCommand(sandboxPath, 'npm install')
 
   console.log(`starting local server in ${sandboxPath}...`)
-  serverProcess = start('local', sandboxPath)
+  serverProcess = start(sandboxPath, 'local')
   await sleep(10000) // TODO: We need some time for the server to start, but maybe we could do this faster using the `waitForIt` method
 })
 

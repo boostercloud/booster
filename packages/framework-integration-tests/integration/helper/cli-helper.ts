@@ -16,6 +16,6 @@ export async function nuke(projectPath: string, environmentName = 'production'):
   await runCommand(projectPath, `${cliBinaryPath} nuke -e ${environmentName} --force`)
 }
 
-export function start(environmentName = 'local', path: string): ChildProcess {
+export function start(path: string, environmentName = 'local'): ChildProcess {
   return runCommand(path, `${cliBinaryPath} start -e ${environmentName}`).childProcess
 }
