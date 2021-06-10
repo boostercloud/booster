@@ -3,16 +3,23 @@
 ## Local Provider
 
 All Booster projects come with a local development environment configured by default, so you can test your app before deploying it to the cloud.
+
 You can see the configured local environment in your `src/config/config.ts` file:
 
 ```typescript
-Booster.configureLocal('local', (config: BoosterConfig): void => {
+Booster.configure('local', (config: BoosterConfig): void => {
   config.appName = 'my-store'
+  config.providerPackage = '@boostercloud/framework-provider-local'
 })
 ```
 
-Note how, contrary to the rest of the environments, the configuration of the local environment is using the `Booster.configureLocal` method, and not
-`Booster.configure`. This is because `Booster.configureLocal` is used to define local environments that are going to be used for development purposes.
+Note how, contrary to the rest of the environments, the configuration of the local environment is using the `config.providerPackage` field,
+and not the `config.provider`.
+
+This is a special field that allows deferring the loading of the
+provider to later, so you don't get dependencies errors when you
+upload your app to production, given that the local provider lives in
+the `devDependencies` section of your `package.json`
 
 In order to start your application using the local provider, use the following command:
 
@@ -20,7 +27,7 @@ In order to start your application using the local provider, use the following c
 boost start -e local
 ```
 
-Where `local` is one of your defined environments with the `Booster.configureLocal` call.
+Where `local` is one of your defined environments with the `Booster.configure` call.
 
 ## Authentication and Authorization
 
