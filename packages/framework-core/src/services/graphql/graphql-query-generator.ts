@@ -192,7 +192,7 @@ export class GraphQLQueryGenerator {
   private generateFilterFor(prop: PropertyMetadata): GraphQLInputObjectType | GraphQLScalarType {
     const filterName = `${prop.typeInfo.name}PropertyFilter`
 
-    if (!prop.typeInfo.type) return GraphQLJSONObject
+    if (!prop.typeInfo.type || typeof prop.typeInfo.type === 'object') return GraphQLJSONObject
 
     if (!this.generatedFiltersByTypeName[filterName]) {
       const primitiveType = this.typeInformer.getOriginalAncestor(prop.typeInfo.type)
