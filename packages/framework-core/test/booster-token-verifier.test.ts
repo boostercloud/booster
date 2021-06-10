@@ -31,13 +31,13 @@ describe('the "verifyToken" method', () => {
     await jwks.stop()
   })
 
-  it('accepts custom parameters and generates a UserEnvelope with them', async () => {
+  it('accepts custom claims and generates a UserEnvelope with them', async () => {
     const token = jwks.token({
       sub: userId,
       iss: issuer,
       'custom:role': 'User',
-      'custom:customParam': 'extra parameter',
-      'custom:anotherCustomParam': 111,
+      extraParam: 'claims',
+      anotherParam: 111,
       email: email,
       phone_number: phoneNumber,
     })
@@ -46,8 +46,15 @@ describe('the "verifyToken" method', () => {
       id: userId,
       username: email,
       role: 'User',
-      customParam: 'extra parameter',
-      anotherCustomParam: 111,
+      claims: {
+        sub: userId,
+        iss: issuer,
+        'custom:role': 'User',
+        extraParam: 'claims',
+        anotherParam: 111,
+        email: email,
+        phone_number: phoneNumber,
+      },
     }
 
     expect(await boosterTokenVerifier.verify(token)).to.deep.equals(expectedUser)
@@ -66,6 +73,13 @@ describe('the "verifyToken" method', () => {
       id: userId,
       username: email,
       role: 'User',
+      claims: {
+        sub: userId,
+        iss: issuer,
+        'custom:role': 'User',
+        email: email,
+        phone_number: phoneNumber,
+      },
     }
 
     expect(await boosterTokenVerifier.verify(token)).to.deep.equals(expectedUser)

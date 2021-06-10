@@ -61,6 +61,7 @@ describe('Local provider graphql-adapter', () => {
         currentUser: {
           username: 'test@test.com',
           role: '',
+          claims: {},
         },
         value: mockBody,
       })

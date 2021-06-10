@@ -149,6 +149,7 @@ describe('GraphQL generator', () => {
         user: {
           username: mockEmail,
           role: mockRole,
+          claims: {},
         },
         operation: {
           query: random.alphaNumeric(),
@@ -179,6 +180,7 @@ describe('GraphQL generator', () => {
           currentUser: {
             username: mockEmail,
             role: mockRole,
+            claims: {},
           },
           filters: {},
           requestID: mockRequestId,
@@ -270,6 +272,7 @@ describe('GraphQL generator', () => {
           currentUser: {
             username: mockEmail,
             role: mockRole,
+            claims: {},
           },
           typeName: mockType.name,
           value: mockInput,
@@ -385,6 +388,7 @@ describe('GraphQL generator', () => {
           currentUser: {
             username: mockEmail,
             role: mockRole,
+            claims: {},
           },
           filters: {},
           requestID: mockRequestId,
@@ -418,6 +422,7 @@ describe('GraphQL generator', () => {
           currentUser: {
             username: mockEmail,
             role: mockRole,
+            claims: {},
           },
           filters,
           requestID: mockRequestId,

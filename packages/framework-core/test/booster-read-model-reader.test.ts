@@ -85,6 +85,7 @@ describe('BoosterReadModelReader', () => {
         currentUser: {
           username: internet.email(),
           role: '',
+          claims: {},
         },
       }
       await expect(readModelDispatcher.fetch(envelope)).to.eventually.be.rejectedWith(NotAuthorizedError)
@@ -109,6 +110,7 @@ describe('BoosterReadModelReader', () => {
     const currentUser = {
       username: internet.email(),
       role: UserRole.name,
+      claims: {},
     }
 
     const envelope: ReadModelRequestEnvelope = {
@@ -201,6 +203,10 @@ describe('BoosterReadModelReader', () => {
           config.provider.readModels = {
             subscribe: providerSubscribeFunctionFake,
           } as any
+          config.readModels[TestReadModel.name] = {
+            ...config.readModels[TestReadModel.name],
+            before: [],
+          }
         })
         const connectionID = random.uuid()
         const expectedSubscriptionEnvelope: SubscriptionEnvelope = {
@@ -213,7 +219,7 @@ describe('BoosterReadModelReader', () => {
         await readModelDispatcher.subscribe(connectionID, envelope, noopGraphQLOperation)
 
         expect(providerSubscribeFunctionFake).to.have.been.calledOnce
-        const gotSubscriptionEnvelope = providerSubscribeFunctionFake.getCall(0).args[2]
+        const gotSubscriptionEnvelope = providerSubscribeFunctionFake.getCall(0).lastArg
         expect(gotSubscriptionEnvelope).to.include.keys('expirationTime')
         gotSubscriptionEnvelope.expirationTime = expectedSubscriptionEnvelope.expirationTime // We don't care now about the value
         expect(gotSubscriptionEnvelope).to.be.deep.equal(expectedSubscriptionEnvelope)

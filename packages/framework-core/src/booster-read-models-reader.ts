@@ -13,6 +13,7 @@ import {
   UserEnvelope,
   BeforeFunction,
   Class,
+  ReadModelPropertyFilter,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
 import { Booster } from './booster'
@@ -90,6 +91,17 @@ export class BoosterReadModelsReader {
       `Processing subscription of connection '${connectionID}' to read model '${readModelRequest.typeName}' with the following data: `,
       readModelRequest
     )
+    const readModelMetadata = this.config.readModels[readModelRequest.typeName]
+
+    // This type is specified because there is a mismatch between types in the filters attribute (ReadModelRequestEnvelope)
+    // FilterFor<unknown> is already an object itself, and contains keys and the filters as values, but right now
+    // the ReadModelRequestEnvelope property is typed as Record<string, ReadModelPropertyFilter>.
+    // Apparently these two types are compatible by accident, which made us think that this could be a bug.
+    readModelRequest.filters = this.getReadModelFilters(
+      readModelRequest.filters,
+      readModelMetadata.before,
+      readModelRequest.currentUser
+    ) as Record<string, ReadModelPropertyFilter>
 
     const nowEpoch = Math.floor(new Date().getTime() / 1000)
     const subscription: SubscriptionEnvelope = {
