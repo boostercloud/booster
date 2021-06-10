@@ -5,8 +5,9 @@ import * as Kubernetes from '@boostercloud/framework-provider-kubernetes'
 import * as fs from 'fs'
 import * as path from 'path'
 
-Booster.configureLocal('local', (config: BoosterConfig): void => {
+Booster.configure('local', (config: BoosterConfig): void => {
   config.appName = 'my-store'
+  config.providerPackage = '@boostercloud/framework-provider-local'
 })
 
 Booster.configure('kubernetes', (config: BoosterConfig): void => {
