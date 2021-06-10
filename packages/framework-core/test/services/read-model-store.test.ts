@@ -84,11 +84,13 @@ describe('ReadModelStore', () => {
     class: SomeReadModel,
     authorizedRoles: 'all',
     properties: [],
+    before: [],
   }
   config.readModels[AnotherReadModel.name] = {
     class: AnotherReadModel,
     authorizedRoles: 'all',
     properties: [],
+    before: [],
   }
   config.projections[AnImportantEntity.name] = [
     {
