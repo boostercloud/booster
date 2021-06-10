@@ -40,6 +40,7 @@ describe('BoosterReadModelReader', () => {
       class: TestReadModel,
       authorizedRoles: [UserRole],
       properties: [],
+      before: [],
     }
     readModelDispatcher = new BoosterReadModelsReader(config, logger)
   })

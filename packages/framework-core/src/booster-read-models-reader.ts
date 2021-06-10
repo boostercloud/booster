@@ -64,8 +64,8 @@ export class BoosterReadModelsReader {
 
     const filters = this.getReadModelFilters(
       readModelRequest.filters,
-      readModelRequest.currentUser,
-      readModelMetadata.before
+      readModelMetadata.before,
+      readModelRequest.currentUser
     )
 
     searcher.filter(filters)
@@ -75,18 +75,10 @@ export class BoosterReadModelsReader {
 
   private getReadModelFilters(
     filters: FilterFor<Class<ReadModelInterface>>,
-    user?: UserEnvelope,
-    beforeHooks?: Array<BeforeFunction>
+    beforeHooks: Array<BeforeFunction>,
+    user?: UserEnvelope
   ): FilterFor<ReadModelInterface> {
-    if (beforeHooks) {
-      let currentFilter = filters
-      beforeHooks.map((before: BeforeFunction) => {
-        currentFilter = before(currentFilter, user)
-      })
-      return currentFilter
-    }
-
-    return filters
+    return beforeHooks.reduce((currentFilter, before) => before(currentFilter, user), filters)
   }
 
   private async processSubscription(

@@ -530,12 +530,12 @@ export class CartReadModel {
   ) {}
 
   public static validateUser(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
-    if (filter?.userId !== currentUser.id) throw NotAuthorizedError("...")
+    if (filter.userId !== currentUser.id) throw NotAuthorizedError("...")
     return filter // This filter will be passed as a parameter to the validateEmail function
   }
 
   public static validateEmail(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
-    if (!filter?.email.includes('myCompanyDomain.com')) throw NotAuthorizedError("...")
+    if (!filter.email.includes('myCompanyDomain.com')) throw NotAuthorizedError("...")
     return filter
   }
 }

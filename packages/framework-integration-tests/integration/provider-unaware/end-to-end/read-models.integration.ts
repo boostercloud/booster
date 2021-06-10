@@ -6,6 +6,7 @@ import gql from 'graphql-tag'
 import { waitForIt } from '../../helper/sleep'
 import { CartItem } from '../../../src/common/cart-item'
 import { applicationUnderTest } from './setup'
+import { beforeHookProductId } from '../../../src/constants'
 
 describe('Read models end-to-end tests', () => {
   let client: ApolloClient<NormalizedCacheObject>
@@ -72,7 +73,7 @@ describe('Read models end-to-end tests', () => {
         // to return the original cart (id 'before-fn-test-modified')
         const variables = {
           cartId: 'before-fn-test-modified',
-          productId: 'my-product-id-1',
+          productId: beforeHookProductId,
           quantity: 1,
         }
         await client.mutate({

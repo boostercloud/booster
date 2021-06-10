@@ -6,6 +6,7 @@ import { ShippingAddressUpdated as UpdatedCartShippingAddress } from '../events/
 
 import { CartItem } from '../common/cart-item'
 import { CartChecked } from '../events/cart-checked'
+import { beforeHookProductId } from '../constants'
 
 /**
  * A cart is a temporary object where users accumulate all the items they want to buy
@@ -33,7 +34,9 @@ export class Cart {
     event.getProductId()
 
     const current = currentCart.cartItems.find((cartItem: CartItem): boolean => cartItem.productId === event.productId)
-    if (current) {
+    // We don't want to increase quantity for the read models' before hook test as the cartId and productId are not random
+    // and executing integration tests is failing when running them more than once.
+    if (current && current.productId !== beforeHookProductId) {
       current.quantity += event.quantity
       return currentCart
     } else {

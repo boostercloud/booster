@@ -28,7 +28,7 @@ describe('the `ReadModel` decorator', () => {
     expect(booster.config.readModels['SomeReadModel']).to.be.deep.equal({
       class: SomeReadModel,
       authorizedRoles: 'all',
-      before: undefined,
+      before: [],
       properties: [
         {
           name: 'id',

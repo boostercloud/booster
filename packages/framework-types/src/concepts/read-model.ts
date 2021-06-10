@@ -1,6 +1,8 @@
 import { RoleAccess, UUID } from '.'
 import { Class } from '../typelevel'
 import { PropertyMetadata } from 'metadata-booster'
+import { FilterFor } from '../searcher'
+import { UserEnvelope } from '../envelope'
 
 export interface ReadModelInterface {
   id: UUID
@@ -14,5 +16,14 @@ export interface ReadModelMetadata {
   readonly class: Class<ReadModelInterface>
   readonly properties: Array<PropertyMetadata>
   readonly authorizedRoles: RoleAccess['authorize']
-  readonly before?: RoleAccess['before']
+  readonly before: NonNullable<FilterHooks['before']>
 }
+
+export interface FilterHooks {
+  readonly before?: Array<BeforeFunction>
+}
+
+export type BeforeFunction = (
+  filter: FilterFor<Class<ReadModelInterface>>,
+  currentUser?: UserEnvelope
+) => FilterFor<Class<ReadModelInterface>>

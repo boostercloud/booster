@@ -18,6 +18,7 @@ describe('ReadModelsStack', () => {
       class: SomeReadModel,
       authorizedRoles: 'all',
       properties: [],
+      before: [],
     }
 
     const stack = new Stack(new App(), 'some-app')
