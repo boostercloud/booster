@@ -1,3 +1,5 @@
+import { ReadModelRegistry } from '@boostercloud/framework-provider-local'
+
 export class LocalCounters {
   constructor(private readonly stackName: string) {}
 
@@ -15,7 +17,8 @@ export class LocalCounters {
   }
 
   public async readModels(readModelName: string): Promise<number> {
-    return this.countTableItems(`${this.stackName}-${readModelName}`)
+    const readModelRegistry = new ReadModelRegistry()
+    return await readModelRegistry.count(readModelName)
   }
 
   private async countTableItems(tableName: string): Promise<number> {
