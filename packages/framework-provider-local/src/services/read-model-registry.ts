@@ -3,8 +3,10 @@ import * as DataStore from 'nedb'
 import { readModelsDatabase } from '../paths'
 
 export class ReadModelRegistry {
-  public readonly readModels: DataStore<ReadModelEnvelope> = new DataStore(readModelsDatabase)
-  constructor() {
+  public readonly readModels: DataStore<ReadModelEnvelope>
+  
+  constructor(dbPath: string = readModelsDatabase) {
+    this.readModels = new DataStore(dbPath)
     this.readModels.loadDatabase()
   }
 

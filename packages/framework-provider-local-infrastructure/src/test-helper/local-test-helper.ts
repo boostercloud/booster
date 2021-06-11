@@ -20,7 +20,7 @@ export class LocalTestHelper {
         graphqlURL: await this.graphqlURL(),
         websocketURL: await this.websocketURL(),
       },
-      new LocalCounters(`${appName}-app`),
+      new LocalCounters(appName),
       new LocalQueries()
     )
   }
