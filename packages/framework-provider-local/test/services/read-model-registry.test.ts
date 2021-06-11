@@ -4,7 +4,7 @@ import { expect } from '../expect'
 import * as faker from 'faker'
 import { stub, restore } from 'sinon'
 import { ReadModelRegistry } from '../../src/services'
-import { createMockReadModelEnvelope } from '../helpers/read-model-helper'
+import { createMockReadModelEnvelope, createMockReadModelEnvelopeWithTypeName } from '../helpers/read-model-helper'
 import { random } from 'faker'
 
 describe('the read model registry', () => {
@@ -138,6 +138,42 @@ describe('the read model registry', () => {
 
       expect(result.length).to.be.equal(initialReadModelsCount)
       expect(result[0]).to.not.deep.include(mockReadModel)
+    })
+  })
+
+  describe('count', () => {
+    const myTypeName: string = 'myTypeName'
+
+    beforeEach(async () => {
+      const publishPromises: Array<Promise<any>> = []
+
+      for (let i = 0; i < initialReadModelsCount; i++) {
+        publishPromises.push(readModelRegistry.store(createMockReadModelEnvelope()))
+      }
+
+      for (let i = 0; i < initialReadModelsCount; i++) {
+        publishPromises.push(readModelRegistry.store(createMockReadModelEnvelopeWithTypeName(myTypeName)))
+      }
+
+      await Promise.all(publishPromises)
+
+      mockReadModel = createMockReadModelEnvelope()
+      await readModelRegistry.store(mockReadModel)
+    })
+
+    it('should return the count of 1 result', async () => {
+      const result = await readModelRegistry.count(mockReadModel.typeName)
+      expect(result).to.be.equal(1)
+    })
+
+    it('should return the count of 0 results', async () => {
+      const result = await readModelRegistry.count(random.word())
+      expect(result).to.be.equal(0)
+    })
+
+    it('should return the count of many results', async () => {
+      const result = await readModelRegistry.count(myTypeName)
+      expect(result).to.be.equal(initialReadModelsCount)
     })
   })
 

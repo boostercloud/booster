@@ -3,8 +3,10 @@ import * as DataStore from 'nedb'
 import { readModelsDatabase } from '../paths'
 
 export class ReadModelRegistry {
-  public readonly readModels: DataStore<ReadModelEnvelope> = new DataStore(readModelsDatabase)
-  constructor() {
+  public readonly readModels: DataStore<ReadModelEnvelope>
+  
+  constructor(dbPath: string = readModelsDatabase) {
+    this.readModels = new DataStore(dbPath)
     this.readModels.loadDatabase()
   }
 
@@ -17,6 +19,17 @@ export class ReadModelRegistry {
     )
 
     return queryPromise as Promise<Array<ReadModelEnvelope>>
+  }
+
+  public async count(typeName: string): Promise<number> {
+    const queryPromise = new Promise((resolve, reject) =>
+      this.readModels.count({ typeName: typeName }).exec((err, quantity) => {
+        if (err) reject(err)
+        else resolve(quantity)
+      })
+    )
+
+    return queryPromise as Promise<number>
   }
 
   public async store(readModel: ReadModelEnvelope): Promise<void> {

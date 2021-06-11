@@ -25,5 +25,5 @@ before(async () => {
   serverProcess = start(sandboxPath, 'local')
   storePIDFor(sandboxPath, serverProcess.pid) //store pid to kill process on stop
   await sleep(2000)
-  console.log(`local server ready`)
+  console.log('local server ready')
 })

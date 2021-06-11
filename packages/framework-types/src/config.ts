@@ -13,6 +13,7 @@ import {
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
 import * as path from 'path'
+import { RocketDescriptor } from './rocket-descriptor'
 
 /**
  * Class used by external packages that needs to get a representation of
@@ -21,6 +22,8 @@ import * as path from 'path'
 export class BoosterConfig {
   public logLevel: Level = Level.debug
   private _provider?: ProviderLibrary
+  public providerPackage?: string
+  public rockets?: Array<RocketDescriptor>
   public appName = 'new-booster-app'
   public assets?: Array<string>
   public readonly subscriptions = {
@@ -102,6 +105,11 @@ export class BoosterConfig {
   }
 
   public get provider(): ProviderLibrary {
+    if (!this._provider && this.providerPackage) {
+      const rockets = this.rockets ?? []
+      const provider = require(this.providerPackage)
+      this._provider = provider.Provider(rockets)
+    }
     if (!this._provider) throw new Error('It is required to set a valid provider runtime in your configuration files')
     return this._provider
   }
