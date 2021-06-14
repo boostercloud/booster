@@ -5,8 +5,8 @@ import {
   UUID,
   EventEnvelope,
   InvalidParameterError,
+  createInstance,
 } from '@boostercloud/framework-types'
-import { createInstance } from './parser-helpers'
 
 const originOfTime = new Date(0).toISOString() // Unix epoch
 

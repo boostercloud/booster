@@ -7,15 +7,16 @@ import {
   Class,
   Searcher,
   EventSearchResponse,
+  createInstance,
   EventFilter,
 } from '@boostercloud/framework-types'
 import { Importer } from './importer'
 import { buildLogger } from './booster-logger'
 import { BoosterEventDispatcher } from './booster-event-dispatcher'
-import { fetchEntitySnapshot } from './entity-snapshot-fetcher'
 import { BoosterGraphQLDispatcher } from './booster-graphql-dispatcher'
 import { BoosterSubscribersNotifier } from './booster-subscribers-notifier'
 import { BoosterScheduledCommandDispatcher } from './booster-scheduled-command-dispatcher'
+import { EventStore } from './services/event-store'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -75,7 +76,30 @@ export class Booster {
   }
 
   public static async events(filters: EventFilter): Promise<Array<EventSearchResponse>> {
-    return this.config.provider.events.search(this.config, this.logger, filters)
+    const events: Array<EventSearchResponse> = await this.config.provider.events.search(
+      this.config,
+      this.logger,
+      filters
+    )
+    return events.map((event) => {
+      const eventMetadata = this.config.events[event.type]
+      event.value = createInstance(eventMetadata.class, event.value)
+      return event
+    })
+  }
+
+  /**
+   * Fetches the last known version of an entity
+   * @param entityClass Name of the entity class
+   * @param entityID
+   */
+  public static async entity<TEntity extends EntityInterface>(
+    entityClass: Class<TEntity>,
+    entityID: UUID
+  ): Promise<TEntity | undefined> {
+    const eventStore = new EventStore(this.config, this.logger)
+    const entitySnapshotEnvelope = await eventStore.fetchEntitySnapshot(entityClass.name, entityID)
+    return entitySnapshotEnvelope ? createInstance(entityClass, entitySnapshotEnvelope) : undefined
   }
 
   /**
@@ -95,26 +119,6 @@ export class Booster {
 
   public static notifySubscribers(request: unknown): Promise<unknown> {
     return new BoosterSubscribersNotifier(this.config, this.logger).dispatch(request)
-  }
-
-  /**
-   * Fetches the last known version of an entity
-   * @param entityClass Name of the entity class
-   * @param entityID
-   */
-  public static entity<TEntity extends EntityInterface>(
-    entityClass: Class<TEntity>,
-    entityID: UUID
-  ): Promise<TEntity | undefined> {
-    return fetchEntitySnapshot(this.config, this.logger, entityClass, entityID)
-  }
-
-  /** @deprecated Use method "entity" instead */
-  public static fetchEntitySnapshot<TEntity extends EntityInterface>(
-    entityClass: Class<TEntity>,
-    entityID: UUID
-  ): Promise<TEntity | undefined> {
-    return this.entity(entityClass, entityID)
   }
 }
 

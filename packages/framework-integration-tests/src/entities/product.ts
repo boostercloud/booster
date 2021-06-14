@@ -27,6 +27,9 @@ export class Product {
     public availability: number = 0
   ) {}
 
+  public getId(): UUID {
+    return this.id
+  }
   @Reduces(ProductCreated)
   public static create(event: ProductCreated): Product {
     return new Product(event.productId, event.sku, event.displayName, event.description, event.price, [])

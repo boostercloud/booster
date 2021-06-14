@@ -6,10 +6,10 @@ import {
   InvalidParameterError,
   NotAuthorizedError,
   NotFoundError,
+  createInstance,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
 import { RegisterHandler } from './booster-register-handler'
-import { createInstance } from './services/parser-helpers'
 
 export class BoosterCommandDispatcher {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}

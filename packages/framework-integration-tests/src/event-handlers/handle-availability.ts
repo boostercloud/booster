@@ -14,6 +14,9 @@ export class HandleAvailability {
       // This means that we have moved stock of a product we don't have in our store. Ignore it
       return
     }
+    // This method call is here to ensure it work. More info: https://github.com/boostercloud/booster/issues/849
+    product.getId()
+
     if (event.origin == 'provider') {
       // New stock enters the system
       register.events(new ProductAvailabilityChanged(event.productID, event.quantity))
