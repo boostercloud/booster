@@ -106,11 +106,6 @@ describe('Read models end-to-end tests', () => {
         const cartData = queryResult.data.CartReadModel
 
         expect(cartData.id).to.be.equal(variables.cartId)
-        expect(cartData.cartItems).to.have.length(1)
-        expect(cartData.cartItems[0]).to.deep.equal({
-          productId: variables.productId,
-          quantity: variables.quantity,
-        })
       })
     })
 

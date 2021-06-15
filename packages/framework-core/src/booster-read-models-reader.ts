@@ -93,7 +93,7 @@ export class BoosterReadModelsReader {
     )
     const readModelMetadata = this.config.readModels[readModelRequest.typeName]
 
-    // This type is specified because there is a mismatch between types in the filters attribute (ReadModelRequestEnvelope)
+    // This type is specified because there is a mismatch between types in the filters attribute (ReadModelRequestEnvelope).
     // FilterFor<unknown> is already an object itself, and contains keys and the filters as values, but right now
     // the ReadModelRequestEnvelope property is typed as Record<string, ReadModelPropertyFilter>.
     // Apparently these two types are compatible by accident, which made us think that this could be a bug.

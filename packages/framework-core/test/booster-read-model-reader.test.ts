@@ -224,6 +224,35 @@ describe('BoosterReadModelReader', () => {
         gotSubscriptionEnvelope.expirationTime = expectedSubscriptionEnvelope.expirationTime // We don't care now about the value
         expect(gotSubscriptionEnvelope).to.be.deep.equal(expectedSubscriptionEnvelope)
       })
+
+      it('calls the provider subscribe function when setting before hooks and returns the new filter in the result', async () => {
+        const providerSubscribeFunctionFake = fake()
+        Booster.configureCurrentEnv((config) => {
+          config.provider.readModels = {
+            subscribe: providerSubscribeFunctionFake,
+          } as any
+          config.readModels[TestReadModel.name] = {
+            ...config.readModels[TestReadModel.name],
+            before: [beforeFn, beforeFnV2],
+          }
+        })
+        const connectionID = random.uuid()
+        envelope.filters = { id: { eq: currentUser?.username } } as Record<string, FilterFor<unknown>>
+        const expectedSubscriptionEnvelope: SubscriptionEnvelope = {
+          ...envelope,
+          connectionID,
+          operation: noopGraphQLOperation,
+          expirationTime: 1,
+        }
+
+        await readModelDispatcher.subscribe(connectionID, envelope, noopGraphQLOperation)
+
+        expect(providerSubscribeFunctionFake).to.have.been.calledOnce
+        const gotSubscriptionEnvelope = providerSubscribeFunctionFake.getCall(0).lastArg
+        expect(gotSubscriptionEnvelope).to.include.keys('expirationTime')
+        gotSubscriptionEnvelope.expirationTime = expectedSubscriptionEnvelope.expirationTime // We don't care now about the value
+        expect(gotSubscriptionEnvelope).to.be.deep.equal(expectedSubscriptionEnvelope)
+      })
     })
   })
 

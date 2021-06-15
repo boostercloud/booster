@@ -80,6 +80,11 @@ export class BoosterSubscribersNotifier {
       storeSubscriptions: false, // We don't store the subscription again, just get the result now
     }
     const document = this.parseSubscriptionQuery(subscription.operation.query)
+    // When want filters to be the same as the ones stored in the database,
+    // and not the ones from the initial operation (in case they've been modified by before hooks).
+    if (subscription.operation.variables) {
+      subscription.operation.variables.filter = subscription.filters
+    }
     this.logger.debug('Running subscription with context: ', context)
     const iterator = await graphql.subscribe({
       contextValue: context,

@@ -7,6 +7,7 @@ import { waitForIt } from '../../helper/sleep'
 import { FilterFor } from '@boostercloud/framework-types'
 import { DisconnectableApolloClient } from '@boostercloud/application-tester'
 import { applicationUnderTest } from './setup'
+import { beforeHookProductId } from '../../../src/constants'
 
 chai.use(require('chai-as-promised'))
 
@@ -129,12 +130,12 @@ describe('subscriptions', () => {
       )
       // Check we receive data when the read model is modified
       await cartMutation(client, cartID)
-      await expect(Promise.all([promisify(observableOne), promisify(observableTwo)])).to.eventually.be.fulfilled
+      await expect(Promise.all([promisifyNextSubscriptionResult(observableOne), promisifyNextSubscriptionResult(observableTwo)])).to.eventually.be.fulfilled
 
       // Now reconnect and see if we keep the having the same subscription and receive data
       await client.reconnect()
       await cartMutation(client, cartID)
-      await expect(Promise.all([promisify(observableOne), promisify(observableTwo)])).to.eventually.be.fulfilled
+      await expect(Promise.all([promisifyNextSubscriptionResult(observableOne), promisifyNextSubscriptionResult(observableTwo)])).to.eventually.be.fulfilled
     })
   })
 
@@ -162,9 +163,31 @@ describe('subscriptions', () => {
       )
       // Check we receive data when the read model is modified
       await cartMutation(client, cartID)
-      const result = await promisify(observable)
+      const result = await promisifyNextSubscriptionResult(observable)
       const cart = result.data.CartReadModels
       expect(cart.id).to.equal(cartID)
+    })
+
+    it('filters based on before hooks', async () => {
+      const cartID = 'before-fn-test'
+
+      const originalSubscriptionsCount = await countSubscriptions()
+      // Let's create two subscriptions to the same read model
+      const observable = cartFilteredSubscription(client, { id: { eq: cartID } })
+      // Call the subscribe function to send the subscription to server
+      const subscriptionPromise = promisifyNextSubscriptionResult(observable)
+      // Wait for for the subscriptions to arrive
+      await waitForIt(
+        countSubscriptions,
+        (newCount) => newCount == originalSubscriptionsCount + 1
+      )
+      // Check we receive data when the read model is modified
+      await cartMutation(client, 'before-fn-test-modified', beforeHookProductId)
+
+      const result = await subscriptionPromise
+      const cart = result.data.CartReadModels
+
+      expect(cart.id).to.equal('before-fn-test-modified')
     })
 
     it('get the carts with an specific product id', async () => {
@@ -185,7 +208,7 @@ describe('subscriptions', () => {
       )
       // Check we receive data when the read model is modified
       await cartMutation(client, cartID, productId)
-      const result = await promisify(observable)
+      const result = await promisifyNextSubscriptionResult(observable)
       const cart = result.data.CartReadModels
       expect(cart.id).to.equal(cartID)
 
@@ -211,7 +234,7 @@ describe('subscriptions', () => {
       )
       // Check we receive data when the read model is modified
       await cartMutation(client, cartID, productId)
-      const result = await promisify(observable)
+      const result = await promisifyNextSubscriptionResult(observable)
       const cart = result.data.CartReadModels
 
       expect(cart.id).to.equal(cartID)
@@ -251,7 +274,7 @@ function cartFilteredSubscription(client: DisconnectableApolloClient, filter: Fi
   })
 }
 
-function promisify(observable: Observable<any>): Promise<any> {
+function promisifyNextSubscriptionResult(observable: Observable<any>): Promise<any> {
   return new Promise((resolve, reject) => {
     observable.subscribe({
       next: resolve,
