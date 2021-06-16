@@ -6,6 +6,7 @@ import gql from 'graphql-tag'
 import { CartItem } from '../../../src/common/cart-item'
 import { sleep, waitForIt } from '../../helper/sleep'
 import { applicationUnderTest } from './setup'
+import { beforeHookMutationID, beforeHookMutationIDModified, beforeHookQuantity } from '../../../src/constants'
 
 describe('Cart end-to-end tests', () => {
   let client: ApolloClient<NormalizedCacheObject>
@@ -31,6 +32,48 @@ describe('Cart end-to-end tests', () => {
 
       expect(response).not.to.be.null
       expect(response?.data?.ChangeCartItem).to.be.true
+    })
+
+    it('changes input before calling handle', async () => {
+      const response = await client.mutate({
+        variables: {
+          cartId: beforeHookMutationID,
+          productId: random.uuid(),
+          quantity: random.number({ min: 1 }),
+        },
+        mutation: gql`
+          mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+            ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+          }
+        `,
+      })
+
+      expect(response).not.to.be.null
+      expect(response?.data?.ChangeCartItem).to.be.true
+
+      const queryResult = await waitForIt(
+        () => {
+          return client.query({
+            variables: {
+              cartId: beforeHookMutationID + '-modified',
+            },
+            query: gql`
+              query CartReadModel($cartId: ID!) {
+                CartReadModel(id: $cartId) {
+                  id
+                  cartItems
+                }
+              }
+            `,
+          })
+        },
+        (result) => result?.data?.CartReadModel != null
+      )
+
+      const cartData = queryResult.data.CartReadModel
+
+      expect(cartData.id).to.be.equal(beforeHookMutationIDModified)
+      expect(cartData.cartItems[0].quantity).to.be.equal(beforeHookQuantity)
     })
 
     describe('Query read models', () => {
