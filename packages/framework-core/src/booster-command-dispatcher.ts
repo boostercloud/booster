@@ -6,6 +6,9 @@ import {
   InvalidParameterError,
   NotAuthorizedError,
   NotFoundError,
+  CommandBeforeFunction,
+  UserEnvelope,
+  CommandInput,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
 import { RegisterHandler } from './booster-register-handler'
@@ -31,7 +34,14 @@ export class BoosterCommandDispatcher {
 
     const commandClass = commandMetadata.class
     this.logger.debug('Found the following command:', commandClass.name)
-    const commandInstance = createInstance(commandClass, commandEnvelope.value)
+
+    const commandInput = this.applyBeforeFunctions(
+      commandEnvelope.value,
+      commandMetadata.before,
+      commandEnvelope.currentUser
+    )
+
+    const commandInstance = createInstance(commandClass, commandInput)
     // TODO: Here we could call "command.validate()" so that the user can prevalidate
     // the command inputted by the user.
     const register = new Register(commandEnvelope.requestID, commandEnvelope.currentUser)
@@ -39,5 +49,13 @@ export class BoosterCommandDispatcher {
     await commandClass.handle(commandInstance, register)
     this.logger.debug('Command dispatched with register: ', register)
     await RegisterHandler.handle(this.config, this.logger, register)
+  }
+
+  private applyBeforeFunctions(
+    commandInput: Record<string, unknown>,
+    beforeHooks: Array<CommandBeforeFunction>,
+    user?: UserEnvelope
+  ): CommandInput {
+    return beforeHooks.reduce((currentInput, before) => before(currentInput, user), commandInput)
   }
 }
