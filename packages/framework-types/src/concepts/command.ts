@@ -4,7 +4,7 @@ import { RoleAccess } from './role'
 import { PropertyMetadata } from 'metadata-booster'
 import { FilterHooks } from './filter-hooks'
 
-export type CommandInput = Record<string, unknown>
+export type CommandInput = Record<string, any>
 
 export interface CommandInterface<TCommand = unknown> extends Class<TCommand> {
   // The command's type is `unknown` because the CommandInterface type specifies the

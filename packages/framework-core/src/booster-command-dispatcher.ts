@@ -54,8 +54,8 @@ export class BoosterCommandDispatcher {
   private applyBeforeFunctions(
     commandInput: Record<string, unknown>,
     beforeHooks: Array<CommandBeforeFunction>,
-    user?: UserEnvelope
+    currentUser?: UserEnvelope
   ): CommandInput {
-    return beforeHooks.reduce((currentInput, before) => before(currentInput, user), commandInput)
+    return beforeHooks.reduce((currentInput, before) => before(currentInput, currentUser), commandInput)
   }
 }
