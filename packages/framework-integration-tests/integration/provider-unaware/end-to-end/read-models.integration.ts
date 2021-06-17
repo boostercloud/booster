@@ -308,6 +308,88 @@ describe('Read models end-to-end tests', () => {
         expect(cartData[0].id).to.equal(mockCartId)
       })
 
+      it('should retrieve a list of carts using paginated read model', async () => {
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              query: gql`
+                query ListCartReadModels {
+                  ListCartReadModels {
+                    items {
+                      id
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels?.items.length >= 1
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.be.gte(1)
+      })
+
+      it('should retrieve a specific cart using filters using paginated read model', async () => {
+        const filter = { id: { eq: mockCartId } }
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: filter,
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter) {
+                  ListCartReadModels(filter: $filter) {
+                    items {
+                      id
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels?.items.length >= 1
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.equal(1)
+        expect(cartData[0].id).to.equal(mockCartId)
+      })
+
+      it('should retrieve a list of carts using  complex filters using paginated read model', async () => {
+        const filter = { cartItems: { includes: { productId: mockProductId, quantity: 2 } } }
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: filter,
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter) {
+                  ListCartReadModels(filter: $filter) {
+                    items {
+                      id
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels?.items.length >= 1
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.equal(1)
+        expect(cartData[0].id).to.equal(mockCartId)
+      })
+    })
   })
 
   describe('projecting two entities', () => {
