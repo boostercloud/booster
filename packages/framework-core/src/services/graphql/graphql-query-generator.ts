@@ -16,6 +16,7 @@ import {
   GraphQLEnumType,
   GraphQLEnumValueConfigMap,
   GraphQLScalarType,
+  GraphQLInt,
 } from 'graphql'
 import { GraphQLResolverContext, ResolverBuilder, TargetTypeMetadata, TargetTypesMap } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
@@ -39,7 +40,7 @@ export class GraphQLQueryGenerator {
 
   public generate(): GraphQLObjectType {
     const byIDQueries = this.generateByIDQueries()
-    const filterQueries = this.generateFilterQueries()
+    const filterQueries = { ...this.generateFilterQueries(), ...this.generateFilterListedQueries() }
     const eventQueries = this.generateEventQueries()
     const fields = { ...byIDQueries, ...filterQueries, ...eventQueries }
     return new GraphQLObjectType({
@@ -72,6 +73,26 @@ export class GraphQLQueryGenerator {
       queries[inflected.pluralize(name)] = {
         type: new GraphQLList(graphQLType),
         args: this.generateFilterQueriesFields(name, type),
+        resolve: this.filterResolverBuilder(type.class),
+      }
+    }
+    return queries
+  }
+
+  private generateFilterListedQueries(): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {
+    const queries: GraphQLFieldConfigMap<unknown, GraphQLResolverContext> = {}
+    for (const name in this.targetTypes) {
+      const type = this.targetTypes[name]
+      const graphQLType = this.typeInformer.getGraphQLTypeFor(type.class)
+      queries[`List${inflected.pluralize(name)}`] = {
+        type: new GraphQLObjectType({
+          name: `${type.class.name}Connection`,
+          fields: {
+            items: { type: new GraphQLList(graphQLType) },
+            cursor: { type: GraphQLJSONObject },
+          },
+        }),
+        args: this.generateFilterListedQueriesFields(name, type),
         resolve: this.filterResolverBuilder(type.class),
       }
     }
@@ -144,6 +165,23 @@ export class GraphQLQueryGenerator {
       }),
     })
     return { filter: { type: filter } }
+  }
+  public generateFilterListedQueriesFields(name: string, type: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
+    const filterArguments = this.generateFilterArguments(type)
+    const filter: GraphQLInputObjectType = new GraphQLInputObjectType({
+      name: `List${name}Filter`,
+      fields: () => ({
+        ...filterArguments,
+        and: { type: new GraphQLList(filter) },
+        or: { type: new GraphQLList(filter) },
+        not: { type: filter },
+      }),
+    })
+    return {
+      filter: { type: filter },
+      limit: { type: GraphQLInt },
+      afterCursor: { type: GraphQLJSONObject },
+    }
   }
 
   public generateFilterArguments(typeMetadata: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
