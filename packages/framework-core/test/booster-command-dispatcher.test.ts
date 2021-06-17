@@ -4,7 +4,7 @@ import { Booster } from '../src/booster'
 import { fake, replace, restore } from 'sinon'
 import { expect } from './expect'
 import { BoosterCommandDispatcher } from '../src/booster-command-dispatcher'
-import {CommandBeforeFunction, Logger, Register} from '@boostercloud/framework-types'
+import { CommandBeforeFunction, Logger, Register } from '@boostercloud/framework-types'
 import { Command } from '../src/decorators'
 import { RegisterHandler } from '../src/booster-register-handler'
 import { random } from 'faker'
@@ -235,7 +235,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
           value: command,
         })
 
-        expect(transformedInput).to.deep.equal({ comment: newComment } as PostComment)
+        expect(transformedInput).to.deep.equal(new PostComment(newComment))
       })
 
       it('transforms the input when more than one before hook function is passed', async () => {
@@ -264,7 +264,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
           value: command,
         })
 
-        expect(transformedInput).to.deep.equal({ comment: newCommentV2 } as PostComment)
+        expect(transformedInput).to.deep.equal(new PostComment(newCommentV2))
       })
     })
   })

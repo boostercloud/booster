@@ -52,7 +52,7 @@ export class BoosterCommandDispatcher {
   }
 
   private applyBeforeFunctions(
-    commandInput: Record<string, unknown>,
+    commandInput: CommandInput,
     beforeHooks: Array<CommandBeforeFunction>,
     currentUser?: UserEnvelope
   ): CommandInput {
