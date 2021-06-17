@@ -13,8 +13,6 @@ export class Searcher<TObject> {
   // private offset?: number
   // private limit?: number
   private filters: FilterFor<TObject> = {}
-  /** @deprecated */
-  readonly filtersOld: Record<string, FilterOld<any>> = {}
 
   /**
    * @param objectClass The class of the object you want to run the search for.
@@ -41,31 +39,6 @@ export class Searcher<TObject> {
     return this
   }
 
-  /**
-   * Adds a filter for the search. For example: If you want to search for people whose age is greater than 30
-   * and their height is between 1.80m and 2.00m, you would do:
-   * ```
-   * searcher.filter('age', 'gt', 30)
-   *         .filter('height', 'between', 1.8, 2)
-   *         .search()
-   * ```
-   * @param property The property the filter will act upon
-   * @param operation The filter operation.
-   * @param values The values for the filter. Depending on the operation, you can specify here one or many values
-   * @deprecated Use "filter" instead
-   */
-  public filterOld<TPropName extends keyof TObject, TPropType extends TObject[TPropName]>(
-    property: TPropName,
-    operation: OperationOld<TPropType>,
-    ...values: Array<TPropType>
-  ): this {
-    this.filtersOld[property as string] = {
-      operation,
-      values,
-    }
-    return this
-  }
-
   public async searchOne(): Promise<TObject> {
     // Optimize if there is only an ID filter with one value
     // this.provider.fetchEntitySnapshot(this.entityClass.name, id)
@@ -80,55 +53,6 @@ export class Searcher<TObject> {
     return searchResult as Array<TObject>
   }
 }
-
-// ---------------- DEPRECATED ----------------------
-export interface FilterOld<TType> {
-  operation: OperationOld<TType>
-  values: Array<TType>
-}
-
-export enum NumberOperations {
-  '=' = 'eq',
-  '!=' = 'not_eq',
-  '<' = 'less',
-  '>' = 'greater',
-  '<=' = 'less_eq',
-  '>=' = 'greater_eq',
-  'in' = 'in',
-  'between' = 'between',
-}
-
-export enum StringOperations {
-  '=' = 'eq',
-  '!=' = 'notEq',
-  '<' = 'less',
-  '>' = 'greater',
-  '<=' = 'less_eq',
-  '>=' = 'greater_eq',
-  'in' = 'in',
-  'between' = 'between',
-  'contains' = 'contains',
-  'not-contains' = 'not_contains',
-  'begins-with' = 'begins_with',
-}
-
-export enum BooleanOperations {
-  '=' = 'equal',
-  '!=' = 'not_equal',
-}
-
-// eslint-disable-next-line prettier/prettier
-type OperationOld<TType> = TType extends number
-  ? EnumToUnion<typeof NumberOperations>
-  : TType extends string
-  ? EnumToUnion<typeof StringOperations>
-  : TType extends boolean
-  ? EnumToUnion<typeof BooleanOperations>
-  : never
-
-type EnumToUnion<TEnum> = keyof TEnum
-
-// ----------------------------------------------------------------------------------------------------
 
 export type FilterFor<TType> = {
   [TProp in keyof TType]?: Operation<TType[TProp]>
