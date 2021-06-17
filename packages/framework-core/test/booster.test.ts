@@ -78,7 +78,10 @@ describe('the `Booster` class', () => {
         match.any,
         match.any,
         TestReadModel.name,
-        match.any
+        match.any,
+        undefined,
+        undefined,
+        false
       )
     })
     it('has an instance method', async () => {
