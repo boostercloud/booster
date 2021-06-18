@@ -309,7 +309,7 @@ describe('GraphQL generator', () => {
         })
         replace(sut, 'subscriptionResolverBuilder', subscriptionResolverBuilderStub)
 
-        returnedFunction = sut.subscriptionByIDResolverBuilder(mockType)
+        returnedFunction = sut.subscriptionByIDResolverBuilder(mockConfig, mockType)
       })
 
       it('should call subscriptionResolverBuilder', async () => {
@@ -340,7 +340,7 @@ describe('GraphQL generator', () => {
         replace(BoosterReadModelsReader.prototype, 'subscribe', subscribeStub)
         sut = GraphQLGenerator.build(mockConfig, mockLogger)
 
-        returnedFunction = sut.subscriptionResolverBuilder(mockType)
+        returnedFunction = sut.subscriptionResolverBuilder(mockConfig, mockType)
       })
 
       context('missing context.connectionID', () => {
