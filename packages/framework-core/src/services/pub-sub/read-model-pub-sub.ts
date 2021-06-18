@@ -5,20 +5,36 @@ import {
   ReadModelPropertyFilter,
   Instance,
   Operation,
+  BoosterConfig,
 } from '@boostercloud/framework-types'
+import { getReadModelFilters } from '../../utils'
 
 export interface ReadModelPubSub {
-  asyncIterator(readModelRequestEnvelope: ReadModelRequestEnvelope): AsyncIterator<ReadModelInterface>
+  asyncIterator(
+    readModelRequestEnvelope: ReadModelRequestEnvelope,
+    config: BoosterConfig
+  ): AsyncIterator<ReadModelInterface>
 }
 
 export class FilteredReadModelPubSub implements ReadModelPubSub {
   constructor(private readModels: Array<ReadModelInterface & Instance>) {}
 
-  public asyncIterator(readModelRequestEnvelope: ReadModelRequestEnvelope): AsyncIterator<ReadModelInterface> {
+  public asyncIterator(
+    readModelRequestEnvelope: ReadModelRequestEnvelope,
+    config: BoosterConfig
+  ): AsyncIterator<ReadModelInterface> {
+    const readModelMetadata = config.readModels[readModelRequestEnvelope.typeName]
+
+    const filters = getReadModelFilters(
+      readModelRequestEnvelope.filters,
+      readModelMetadata.before,
+      readModelRequestEnvelope.currentUser
+    ) as Record<string, ReadModelPropertyFilter>
+
     return createAsyncIterator(
       this.readModels
         .filter((readModel) => readModelRequestEnvelope.typeName == readModel.constructor.name)
-        .filter((readModel) => filterReadModel(readModel, readModelRequestEnvelope.filters))
+        .filter((readModel) => filterReadModel(readModel, filters))
     )
   }
 }

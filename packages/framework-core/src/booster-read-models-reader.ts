@@ -9,14 +9,11 @@ import {
   ReadModelInterface,
   SubscriptionEnvelope,
   GraphQLOperation,
-  FilterFor,
-  UserEnvelope,
-  BeforeFunction,
-  Class,
   ReadModelPropertyFilter,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
 import { Booster } from './booster'
+import { getReadModelFilters } from './utils'
 
 export class BoosterReadModelsReader {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
@@ -63,7 +60,7 @@ export class BoosterReadModelsReader {
     const readModelMetadata = this.config.readModels[readModelRequest.typeName]
     const searcher = Booster.readModel(readModelMetadata.class)
 
-    const filters = this.getReadModelFilters(
+    const filters = getReadModelFilters(
       readModelRequest.filters,
       readModelMetadata.before,
       readModelRequest.currentUser
@@ -72,14 +69,6 @@ export class BoosterReadModelsReader {
     searcher.filter(filters)
 
     return searcher.search()
-  }
-
-  private getReadModelFilters(
-    filters: FilterFor<Class<ReadModelInterface>>,
-    beforeHooks: Array<BeforeFunction>,
-    user?: UserEnvelope
-  ): FilterFor<ReadModelInterface> {
-    return beforeHooks.reduce((currentFilter, before) => before(currentFilter, user), filters)
   }
 
   private async processSubscription(
@@ -97,7 +86,7 @@ export class BoosterReadModelsReader {
     // FilterFor<unknown> is already an object itself, and contains keys and the filters as values, but right now
     // the ReadModelRequestEnvelope property is typed as Record<string, ReadModelPropertyFilter>.
     // Apparently these two types are compatible by accident, which made us think that this could be a bug.
-    readModelRequest.filters = this.getReadModelFilters(
+    readModelRequest.filters = getReadModelFilters(
       readModelRequest.filters,
       readModelMetadata.before,
       readModelRequest.currentUser
