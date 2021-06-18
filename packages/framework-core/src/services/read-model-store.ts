@@ -11,9 +11,8 @@ import {
   InvalidParameterError,
   ReadModelAction,
   OptimisticConcurrencyUnexpectedVersionError,
-  createInstance,
 } from '@boostercloud/framework-types'
-import { Promises, retryIfError } from '@boostercloud/framework-common-helpers'
+import { Promises, retryIfError, createInstance } from '@boostercloud/framework-common-helpers'
 
 export class ReadModelStore {
   private config: BoosterConfig

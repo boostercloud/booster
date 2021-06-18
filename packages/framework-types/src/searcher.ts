@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/indent */
 import { UUID } from './concepts'
 import { Class } from './typelevel'
-import { createInstances } from './parser-helpers'
 
 export type SearcherFunction<TObject> = (className: string, filters: FilterFor<TObject>) => Promise<Array<any>>
 
@@ -67,7 +66,7 @@ export class Searcher<TObject> {
     return this
   }
 
-  public async searchOne(): Promise<TObject | undefined> {
+  public async searchOne(): Promise<TObject> {
     // Optimize if there is only an ID filter with one value
     // this.provider.fetchEntitySnapshot(this.entityClass.name, id)
     return (await this.search())[0]
@@ -78,7 +77,7 @@ export class Searcher<TObject> {
    */
   public async search(): Promise<Array<TObject>> {
     const searchResult = await this.searcherFunction(this.objectClass.name, this.filters)
-    return searchResult ? createInstances(this.objectClass, searchResult) : []
+    return searchResult as Array<TObject>
   }
 }
 

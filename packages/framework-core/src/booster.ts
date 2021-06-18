@@ -7,8 +7,9 @@ import {
   Class,
   Searcher,
   EventSearchResponse,
-  createInstance,
   EventFilter,
+  SearcherFunction,
+  FilterFor,
 } from '@boostercloud/framework-types'
 import { Importer } from './importer'
 import { buildLogger } from './booster-logger'
@@ -17,6 +18,7 @@ import { BoosterGraphQLDispatcher } from './booster-graphql-dispatcher'
 import { BoosterSubscribersNotifier } from './booster-subscribers-notifier'
 import { BoosterScheduledCommandDispatcher } from './booster-scheduled-command-dispatcher'
 import { EventStore } from './services/event-store'
+import { createInstance, createInstances } from '@boostercloud/framework-common-helpers'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -71,7 +73,18 @@ export class Booster {
   public static readModel<TReadModel extends ReadModelInterface>(
     readModelClass: Class<TReadModel>
   ): Searcher<TReadModel> {
-    const searchFunction = this.config.provider.readModels.search.bind(null, this.config, this.logger)
+    const searchFunction: SearcherFunction<TReadModel> = async (
+      entityTypeName: string,
+      filters: FilterFor<unknown>
+    ) => {
+      const searchResult = await this.config.provider.readModels.search(
+        this.config,
+        this.logger,
+        entityTypeName,
+        filters
+      )
+      return searchResult ? createInstances(readModelClass, searchResult) : []
+    }
     return new Searcher(readModelClass, searchFunction)
   }
 

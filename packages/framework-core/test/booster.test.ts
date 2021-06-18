@@ -176,10 +176,6 @@ describe('the `Booster` class', () => {
   })
 
   describe('The `entity` method', () => {
-    afterEach(() => {
-      restore()
-    })
-
     context('given a BoosterConfig', () => {
       const config = new BoosterConfig('test')
       config.provider = {} as ProviderLibrary
