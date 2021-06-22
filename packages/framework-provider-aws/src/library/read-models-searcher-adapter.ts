@@ -25,6 +25,8 @@ export async function searchReadModel(
   let params: DocumentClient.ScanInput = {
     TableName: config.resourceNames.forReadModel(readModelName),
     ConsistentRead: true,
+    Limit: limit,
+    ExclusiveStartKey: afterCursor,
   }
   if (filters && Object.keys(filters).length > 0) {
     params = {
@@ -33,12 +35,6 @@ export async function searchReadModel(
       ExpressionAttributeNames: buildExpressionAttributeNames(filters),
       ExpressionAttributeValues: buildExpressionAttributeValues(filters),
     }
-  }
-  if (limit) {
-    params = { ...params, Limit: limit }
-  }
-  if (afterCursor) {
-    params = { ...params, ExclusiveStartKey: afterCursor }
   }
 
   logger.debug('Running search with the following params: \n', params)
