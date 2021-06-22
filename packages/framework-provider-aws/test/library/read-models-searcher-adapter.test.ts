@@ -20,6 +20,8 @@ describe('Read models searcher adapter', () => {
     const expectedParams = {
       TableName: config.resourceNames.forReadModel(readModelName),
       ConsistentRead: true,
+      Limit: undefined,
+      ExclusiveStartKey: undefined,
     }
 
     class Money {
