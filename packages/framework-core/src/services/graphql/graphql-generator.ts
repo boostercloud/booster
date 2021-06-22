@@ -11,6 +11,7 @@ import {
   ReadModelRequestArgs,
 } from '@boostercloud/framework-types'
 import { GraphQLFieldResolver, GraphQLResolveInfo, GraphQLSchema } from 'graphql'
+import { pluralize } from 'inflected'
 import { GraphQLTypeInformer } from './graphql-type-informer'
 import { GraphQLQueryGenerator } from './graphql-query-generator'
 import { GraphQLMutationGenerator } from './graphql-mutation-generator'
@@ -82,7 +83,7 @@ export class GraphQLGenerator {
   ): GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestArgs> {
     return (parent, args, context, info) => {
       let isPaginated = false
-      if (info.fieldName && info.fieldName.startsWith('List') && info.returnType.toString().endsWith('Connection')) {
+      if (info.fieldName && info.fieldName === `List${pluralize(readModelClass.name)}`) {
         isPaginated = true
       }
       const readModelEnvelope = toReadModelRequestEnvelope(readModelClass.name, args, context, isPaginated)
