@@ -1,7 +1,7 @@
 import { Command } from '@boostercloud/framework-core'
 import { CommandInput, Register, UserEnvelope, UUID } from '@boostercloud/framework-types'
 import { CartItemChanged } from '../events/cart-item-changed'
-import {beforeHookMutationID, beforeHookQuantity} from '../constants'
+import {beforeHookException, beforeHookMutationID, beforeHookQuantity, throwExceptionId} from '../constants'
 
 @Command({
   authorize: 'all',
@@ -13,6 +13,8 @@ export class ChangeCartItem {
   public static beforeFn(input: CommandInput, currentUser?: UserEnvelope): CommandInput {
     if (input.cartId === beforeHookMutationID) {
       input.quantity = beforeHookQuantity
+    } else if (input.cartId === throwExceptionId) {
+      throw new Error(beforeHookException)
     }
     return input
   }

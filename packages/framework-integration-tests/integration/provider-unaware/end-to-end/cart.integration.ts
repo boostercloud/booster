@@ -6,7 +6,13 @@ import gql from 'graphql-tag'
 import { CartItem } from '../../../src/common/cart-item'
 import { sleep, waitForIt } from '../../helper/sleep'
 import { applicationUnderTest } from './setup'
-import { beforeHookMutationID, beforeHookMutationIDModified, beforeHookQuantity } from '../../../src/constants'
+import {
+  beforeHookException,
+  beforeHookMutationID,
+  beforeHookMutationIDModified,
+  beforeHookQuantity,
+  throwExceptionId,
+} from '../../../src/constants'
 
 describe('Cart end-to-end tests', () => {
   let client: ApolloClient<NormalizedCacheObject>
@@ -74,6 +80,26 @@ describe('Cart end-to-end tests', () => {
 
       expect(cartData.id).to.be.equal(beforeHookMutationIDModified)
       expect(cartData.cartItems[0].quantity).to.be.equal(beforeHookQuantity)
+    })
+
+    it('throws an exception when before hook throws', async () => {
+      try {
+        await client.mutate({
+          variables: {
+            cartId: throwExceptionId,
+            productId: random.uuid(),
+            quantity: random.number({ min: 1 }),
+          },
+          mutation: gql`
+            mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+              ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+            }
+          `,
+        })
+      } catch (e) {
+        expect(e.graphQLErrors[0].message).to.be.eq(beforeHookException)
+        expect(e.graphQLErrors[0].path).to.deep.eq(['ChangeCartItem'])
+      }
     })
 
     describe('Query read models', () => {
