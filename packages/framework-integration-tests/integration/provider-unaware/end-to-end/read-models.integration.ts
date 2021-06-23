@@ -6,7 +6,7 @@ import gql from 'graphql-tag'
 import { waitForIt } from '../../helper/sleep'
 import { CartItem } from '../../../src/common/cart-item'
 import { applicationUnderTest } from './setup'
-import { beforeHookProductId } from '../../../src/constants'
+import { beforeHookException, beforeHookProductId, throwExceptionId } from '../../../src/constants'
 
 describe('Read models end-to-end tests', () => {
   let client: ApolloClient<NormalizedCacheObject>
@@ -106,6 +106,32 @@ describe('Read models end-to-end tests', () => {
         const cartData = queryResult.data.CartReadModel
 
         expect(cartData.id).to.be.equal(variables.cartId)
+      })
+
+      it('should return exceptions thrown by before functions', async () => {
+        try {
+          await waitForIt(
+            () => {
+              return client.query({
+                variables: {
+                  cartId: throwExceptionId,
+                },
+                query: gql`
+                  query CartReadModel($cartId: ID!) {
+                    CartReadModel(id: $cartId) {
+                      id
+                      cartItems
+                    }
+                  }
+                `,
+              })
+            },
+            (_) => true
+          )
+        } catch (e) {
+          expect(e.graphQLErrors[0].message).to.be.eq(beforeHookException)
+          expect(e.graphQLErrors[0].path).to.deep.eq(['CartReadModel'])
+        }
       })
     })
 

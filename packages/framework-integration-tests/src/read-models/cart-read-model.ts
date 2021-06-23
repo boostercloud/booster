@@ -4,6 +4,7 @@ import { CartItem } from '../common/cart-item'
 import { Address } from '../common/address'
 import { Cart } from '../entities/cart'
 import { Payment } from '../entities/payment'
+import { beforeHookException, throwExceptionId } from '../constants'
 
 @ReadModel({
   authorize: 'all',
@@ -24,6 +25,7 @@ export class CartReadModel {
   }
 
   public static beforeFn(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
+    if (filter.id && filter.id.eq === throwExceptionId) throw new Error(beforeHookException)
     return filter
   }
 
