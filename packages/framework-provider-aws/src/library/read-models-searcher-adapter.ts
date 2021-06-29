@@ -5,7 +5,7 @@ import {
   BoosterConfig,
   Logger,
   InvalidParameterError,
-  ReadModelResult,
+  ReadModelListResult,
 } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
@@ -21,7 +21,7 @@ export async function searchReadModel(
   limit?: number,
   afterCursor?: DynamoDB.DocumentClient.Key | undefined,
   paginatedVersion = false
-): Promise<Array<any> | ReadModelResult> {
+): Promise<Array<any> | ReadModelListResult> {
   let params: DocumentClient.ScanInput = {
     TableName: config.resourceNames.forReadModel(readModelName),
     ConsistentRead: true,

@@ -40,7 +40,7 @@ export class GraphQLQueryGenerator {
 
   public generate(): GraphQLObjectType {
     const byIDQueries = this.generateByIDQueries()
-    const filterQueries = { ...this.generateFilterQueries(), ...this.generateFilterListedQueries() }
+    const filterQueries = { ...this.generateFilterQueries(), ...this.generateListedQueries() }
     const eventQueries = this.generateEventQueries()
     const fields = { ...byIDQueries, ...filterQueries, ...eventQueries }
     return new GraphQLObjectType({
@@ -79,20 +79,20 @@ export class GraphQLQueryGenerator {
     return queries
   }
 
-  private generateFilterListedQueries(): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {
+  private generateListedQueries(): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {
     const queries: GraphQLFieldConfigMap<unknown, GraphQLResolverContext> = {}
     for (const name in this.targetTypes) {
       const type = this.targetTypes[name]
       const graphQLType = this.typeInformer.getGraphQLTypeFor(type.class)
       queries[`List${inflected.pluralize(name)}`] = {
         type: new GraphQLObjectType({
-          name: `${type.class.name}Connection`,
+          name: `${name}Connection`,
           fields: {
             items: { type: new GraphQLList(graphQLType) },
             cursor: { type: GraphQLJSONObject },
           },
         }),
-        args: this.generateFilterListedQueriesFields(name, type),
+        args: this.generateListedQueriesFields(name, type),
         resolve: this.filterResolverBuilder(type.class),
       }
     }
@@ -166,7 +166,7 @@ export class GraphQLQueryGenerator {
     })
     return { filter: { type: filter } }
   }
-  public generateFilterListedQueriesFields(name: string, type: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
+  public generateListedQueriesFields(name: string, type: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
     const filterArguments = this.generateFilterArguments(type)
     const filter: GraphQLInputObjectType = new GraphQLInputObjectType({
       name: `List${name}Filter`,

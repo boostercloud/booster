@@ -68,7 +68,7 @@ export interface ReadModelEnvelope {
   value: ReadModelInterface
 }
 
-export interface ReadModelResult {
+export interface ReadModelListResult {
   items: Array<unknown>
   count?: number
   cursor?: Record<string, string>

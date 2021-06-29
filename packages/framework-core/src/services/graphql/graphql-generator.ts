@@ -83,7 +83,7 @@ export class GraphQLGenerator {
   ): GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestArgs> {
     return (parent, args, context, info) => {
       let isPaginated = false
-      if (info.fieldName && info.fieldName === `List${pluralize(readModelClass.name)}`) {
+      if (info?.fieldName === `List${pluralize(readModelClass.name)}`) {
         isPaginated = true
       }
       const readModelEnvelope = toReadModelRequestEnvelope(readModelClass.name, args, context, isPaginated)

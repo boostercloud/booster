@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/indent */
 import { UUID } from './concepts'
-import { ReadModelResult } from './envelope'
+import { ReadModelListResult } from './envelope'
 import { Class } from './typelevel'
 
 export type SearcherFunction<TObject> = (
@@ -9,7 +9,7 @@ export type SearcherFunction<TObject> = (
   limit?: number,
   afterCursor?: any,
   paginatedVersion?: boolean
-) => Promise<Array<any> | ReadModelResult>
+) => Promise<Array<any> | ReadModelListResult>
 
 /**
  * This class represents a search intended to be run by any search provider. They way you use it
@@ -18,10 +18,10 @@ export type SearcherFunction<TObject> = (
  */
 export class Searcher<TObject> {
   // private offset?: number
-  private maxItems?: number
-  private after?: any
+  private _limit?: number
+  private _afterCursor?: any
   private filters: FilterFor<TObject> = {}
-  private isPaginated = false
+  private _paginatedVersion = false
 
   /**
    * @param objectClass The class of the object you want to run the search for.
@@ -49,17 +49,17 @@ export class Searcher<TObject> {
   }
 
   public limit(limit?: number): this {
-    if (limit) this.maxItems = limit
+    if (limit) this._limit = limit
     return this
   }
 
   public afterCursor(afterCursor?: unknown): this {
-    if (afterCursor) this.after = afterCursor
+    if (afterCursor) this._afterCursor = afterCursor
     return this
   }
 
   public paginatedVersion(paginatedVersion?: boolean): this {
-    if (paginatedVersion) this.isPaginated = paginatedVersion
+    if (paginatedVersion) this._paginatedVersion = paginatedVersion
     return this
   }
 
@@ -76,9 +76,9 @@ export class Searcher<TObject> {
     const searchResult = await this.searcherFunction(
       this.objectClass.name,
       this.filters,
-      this.maxItems,
-      this.after,
-      this.isPaginated
+      this._limit,
+      this._afterCursor,
+      this._paginatedVersion
     )
     return searchResult as Array<TObject>
   }
