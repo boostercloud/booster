@@ -54,6 +54,8 @@ describe('Event handlers', () => {
         }
       )
 
+      const stockMovedEvent = stockEvents[0]
+
       const expectedStockMovedEvent = {
         // eslint-disable-next-line @typescript-eslint/camelcase
         entityTypeName_entityID_kind: `Stock-${mockProductId}-event`,
@@ -69,13 +71,23 @@ describe('Event handlers', () => {
         typeName: 'StockMoved',
         entityID: mockProductId,
         currentUser: {
+          claims: {
+            'booster:role': 'Admin',
+            email: adminEmail,
+            iat: (stockMovedEvent as any).currentUser.claims.iat,
+            id: adminEmail,
+            iss: 'booster',
+            sub: adminEmail,
+          },
           username: adminEmail,
           role: 'Admin',
           id: adminEmail,
         },
       }
-      const stockMovedEvent = stockEvents[0]
+
       expect(stockMovedEvent).to.deep.contain(expectedStockMovedEvent)
+
+      const productAvailabilityChangedEvent = productEvents[0]
 
       const expectedProductAvailabilityChangedEvent = {
         // eslint-disable-next-line @typescript-eslint/camelcase
@@ -90,27 +102,38 @@ describe('Event handlers', () => {
         typeName: 'ProductAvailabilityChanged',
         entityID: mockProductId,
         currentUser: {
+          claims: {
+            'booster:role': 'Admin',
+            email: adminEmail,
+            iat: (productAvailabilityChangedEvent as any).currentUser.claims.iat,
+            id: adminEmail,
+            iss: 'booster',
+            sub: adminEmail,
+          },
           username: adminEmail,
           role: 'Admin',
           id: adminEmail,
         },
       }
-      const productAvailabilityChangedEvent = productEvents[0]
+
       expect(productAvailabilityChangedEvent).to.deep.contain(expectedProductAvailabilityChangedEvent)
     })
   })
 })
 
-async function createProductAndWaitForIt(client: ApolloClient<NormalizedCacheObject>, mockProductId: string): Promise<void> {
+async function createProductAndWaitForIt(
+  client: ApolloClient<NormalizedCacheObject>,
+  mockProductId: string
+): Promise<void> {
   await client.mutate({
     variables: {
       productID: mockProductId,
-      sku: random.alpha({count: 10})
+      sku: random.alpha({ count: 10 }),
     },
     mutation: gql`
-        mutation CreateProduct($productID: ID!, $sku: String) {
-            CreateProduct(input: { productID: $productID, sku: $sku })
-        }
+      mutation CreateProduct($productID: ID!, $sku: String) {
+        CreateProduct(input: { productID: $productID, sku: $sku })
+      }
     `,
   })
   await waitForIt(
