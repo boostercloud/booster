@@ -7,7 +7,7 @@ import {
   Operation,
   BoosterConfig,
 } from '@boostercloud/framework-types'
-import { getReadModelFilters } from '../../utils'
+import { getReadModelFilters } from '../filter-helpers'
 
 export interface ReadModelPubSub {
   asyncIterator(

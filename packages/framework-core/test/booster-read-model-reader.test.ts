@@ -189,6 +189,7 @@ describe('BoosterReadModelReader', () => {
 
         await readModelDispatcher.fetch(envelope)
 
+        expect(beforeFnV2Spy).to.have.been.calledAfter(beforeFnSpy)
         expect(beforeFnSpy).to.have.returned({ id: { eq: filters.id } })
         expect(beforeFnSpy).to.have.been.calledOnceWithExactly(filters, currentUser)
         expect(beforeFnV2Spy).to.have.returned({ id: { eq: currentUser.username } })

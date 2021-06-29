@@ -13,7 +13,7 @@ import {
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
 import { Booster } from './booster'
-import { getReadModelFilters } from './utils'
+import { getReadModelFilters } from './services/filter-helpers'
 
 export class BoosterReadModelsReader {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
