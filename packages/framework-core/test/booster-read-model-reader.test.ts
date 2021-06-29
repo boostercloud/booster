@@ -151,7 +151,7 @@ describe('BoosterReadModelReader', () => {
       })
 
       it('calls the before hook function when there is only one', async () => {
-        const providerSearcherFunctionFake = fake.returns({})
+        const providerSearcherFunctionFake = fake.returns([])
 
         const beforeFnSpy = spy(beforeFn)
 
@@ -172,7 +172,7 @@ describe('BoosterReadModelReader', () => {
       })
 
       it('chains the before hook functions when there is more than one', async () => {
-        const providerSearcherFunctionFake = fake.returns({})
+        const providerSearcherFunctionFake = fake.returns([])
 
         const beforeFnSpy = spy(beforeFn)
         const beforeFnV2Spy = spy(beforeFnV2)

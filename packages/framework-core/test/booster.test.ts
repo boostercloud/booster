@@ -107,11 +107,31 @@ describe('the `Booster` class', () => {
         return this.id
       }
     }
+    class BestEvent {
+      public constructor(readonly id: UUID) {}
+      public entityID(): UUID {
+        return this.id
+      }
+      public getId(): UUID {
+        return this.id
+      }
+    }
     it('has an instance method', async () => {
       const searchResult: EventSearchResponse[] = [
         {
           requestID: random.uuid(),
           type: TestEvent.name,
+          entity: random.alpha(),
+          entityID: random.uuid(),
+          createdAt: random.alphaNumeric(),
+          value: {
+            id: '1',
+            entityID: () => UUID.generate(),
+          } as EventInterface,
+        },
+        {
+          requestID: random.uuid(),
+          type: BestEvent.name,
           entity: random.alpha(),
           entityID: random.uuid(),
           createdAt: random.alphaNumeric(),
@@ -129,6 +149,7 @@ describe('the `Booster` class', () => {
           },
         } as unknown as ProviderLibrary
         config.events[TestEvent.name] = { class: TestEvent }
+        config.events[BestEvent.name] = { class: BestEvent }
       })
 
       const eventFilterByType: EventFilterByType = {
@@ -143,8 +164,11 @@ describe('the `Booster` class', () => {
             eventValue = event.value as TestEvent
             expect(eventValue.getId()).to.not.throw
             break
+          case BestEvent.name:
+            eventValue = event.value as BestEvent
+            expect(eventValue.getId()).to.not.throw
+            break
           default:
-            console.log('Default')
             break
         }
       }
