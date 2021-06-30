@@ -11,13 +11,13 @@ import * as ScheduledAdapter from './library/scheduled-adapter'
 import * as ConnectionsAdapter from './library/connections-adapter'
 import * as path from 'path'
 import { searchReadModel } from './library/searcher-adapter'
-import { RedisAdapter } from './services/redis-adapter'
+import { DatabaseAdapter } from './services/database-adapter'
 
 const storageUrl = 'http://localhost:3500'
-const eventRegistry = new EventRegistry(storageUrl)
+const eventRegistry = new EventRegistry()
 const readModelRegistry = new ReadModelRegistry(storageUrl)
 const userApp: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
-const redisDB = RedisAdapter.build()
+const redisDB = new DatabaseAdapter()
 
 export const Provider = (): ProviderLibrary => ({
   // ProviderEventsLibrary

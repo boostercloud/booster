@@ -33,6 +33,8 @@ spec:
       - name: booster
         image: boostercloud/boosterkubernetes:1.0.0
         env:
+        - name: NAMESPACE
+          value: {{ namespace }}
         - name: BOOSTER_ENV
           value: {{ environment }}
         - name: DB_HOST
@@ -42,7 +44,7 @@ spec:
         - name: DB_SECRET_NAME
           value: {{ eventStoreSecretName }}
         - name: DB_SECRET_KEY
-          value: {{ eventStoreSecretKey}}
+          value: {{ eventStoreSecretKey }}
         ports:
         - containerPort: 3000
         readinessProbe:

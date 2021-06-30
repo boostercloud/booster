@@ -201,6 +201,7 @@ export class DeployManager {
     this.templateValues.dbUser = eventStoreUser
     this.templateValues.eventStoreSecretName = eventStoreSecretName
     this.templateValues.eventStoreSecretKey = eventStoreSecretKey
+  
     const l = scopeLogger('deployBoosterApp', this.logger)
     l.debug('Ensuring booster pod exists')
     await this.ensureBoosterPodExists()

@@ -1,15 +1,9 @@
-import { RedisAdapter } from './../services/redis-adapter'
-import {
-  BoosterConfig,
-  Logger,
-  InvalidParameterError,
-  FilterFor,
-  Operation,
-  ReadModelEnvelope,
-} from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, FilterFor } from '@boostercloud/framework-types'
+import { DatabaseAdapter } from '../services/database-adapter'
+import { EntityType } from '../types/query'
 
 export async function searchReadModel(
-  redis: RedisAdapter,
+  databaseAdapter: DatabaseAdapter,
   config: BoosterConfig,
   logger: Logger,
   readModelName: string,
@@ -17,12 +11,23 @@ export async function searchReadModel(
 ): Promise<Array<any>> {
   logger.debug('Running search with the following filters: \n', filters)
 
-  const keys = await redis.keys(['rm', readModelName, '*'].join(RedisAdapter.keySeparator), logger)
-  logger.debug(`Obtainer following keys for query: ${keys}`)
+  const query = {
+    type: EntityType.ReadModel,
+    typeName: readModelName,
+    keyPredicate: () => true,
+    valuePredicate: () => true,
+    sortBy: () => 1,
+  }
+
+  const keys = await databaseAdapter.query(query, logger)
+  const data: Array<any> = []
+  keys.map((element: any) => data.push(element.value))
+  return data
+  /*logger.debug(`Obtainer following keys for query: ${keys}`)
   const results: Array<unknown> = []
   await Promise.all(
     keys.map(async (k: string) => {
-      const data = await redis.hget<ReadModelEnvelope>(k)
+      const data = await databaseAdapter.hget<ReadModelEnvelope>(k)
       if (data?.value) {
         results.push(data.value)
       }
@@ -32,10 +37,10 @@ export async function searchReadModel(
   if (!Object.keys(filters).length) return results
 
   const [filtered] = filterResults(results, filters)
-  return filtered
+  return filtered*/
 }
 
-function filterResults(results: Array<unknown>, filters: FilterFor<unknown> = {}): Array<any> {
+/*function filterResults(results: Array<unknown>, filters: FilterFor<unknown> = {}): Array<any> {
   return Object.entries(filters).map(([propName, filter]) => {
     if (['and', 'or', 'not'].includes(propName)) {
       throw new Error('Filter combinators not yet supported')
@@ -43,9 +48,9 @@ function filterResults(results: Array<unknown>, filters: FilterFor<unknown> = {}
       return filterByOperation(propName, results, filter)
     }
   })
-}
+}*/
 
-function filterByOperation(propName: string, input: Array<any>, filter: Operation<any>): Array<unknown> {
+/*function filterByOperation(propName: string, input: Array<any>, filter: Operation<any>): Array<unknown> {
   const [res] = Object.entries(filter).map(([operation, value]) => {
     switch (operation) {
       case 'eq':
@@ -76,4 +81,4 @@ function filterByOperation(propName: string, input: Array<any>, filter: Operatio
     }
   })
   return res
-}
+}*/

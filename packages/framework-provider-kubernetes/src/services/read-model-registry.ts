@@ -1,6 +1,7 @@
 import { BoosterConfig, Logger, ReadModelInterface, ReadModelEnvelope, UUID } from '@boostercloud/framework-types'
 import fetch from 'node-fetch'
-import { RedisAdapter } from './redis-adapter'
+import { EntityType } from '../types/query'
+import { DatabaseAdapter } from './database-adapter'
 
 // TODO: Implement querying with filters properly
 interface Filters {
@@ -10,10 +11,10 @@ interface Filters {
 }
 
 export class ReadModelRegistry {
-  private readonly redis: RedisAdapter
+  private readonly databaseAdapter: DatabaseAdapter
 
   constructor(readonly url: string) {
-    this.redis = RedisAdapter.build()
+    this.databaseAdapter = new DatabaseAdapter()
   }
 
   public async search(
@@ -28,7 +29,7 @@ export class ReadModelRegistry {
       const readModelId = filters.id.eq
       l(`Got id ${readModelId ?? 'UNDEFINED'}`)
       if (!readModelId) throw new Error('Only searching by ID is supported')
-      const url = `${this.url}/v1.0/state/statestore/${this.readModelKey(readModelName, readModelId)}`
+      const url = `${this.url}/v1.0/state/statestore/` // ${this.readModelKey(readModelName, readModelId)}`
       l(`Performing a fetch to ${url}`)
       const response = await fetch(url)
       if (!response.ok) {
@@ -48,44 +49,40 @@ export class ReadModelRegistry {
         return []
       }
     } else {
-      const keys = await this.redis.keys(['rm', readModelName, '*'].join(RedisAdapter.keySeparator), logger)
-      l(`Obtainer following keys for query: ${keys}`)
+      const query = {
+        type: EntityType.ReadModel,
+        typeName: readModelName,
+        id: filters.id,
+        keyPredicate: () => true,
+        valuePredicate: () => true,
+        sortBy: () => 1,
+      }
+      const keys = (await this.databaseAdapter.query(query, logger)) as Array<ReadModelInterface>
+      return keys
+      /*l(`Obtainer following keys for query: ${keys}`)
       const results: ReadModelInterface[] = []
       await Promise.all(
         keys.map(async (k) => {
-          const data = await this.redis.hget<ReadModelEnvelope>(k)
+          const data = await this.databaseAdapter.hget<ReadModelEnvelope>(k)
           if (data?.value) {
             results.push(data.value)
           }
         })
       )
       l(`Got ${results} envelopes, returning`)
-      return results
+      return results*/
     }
   }
 
   public async store(readModel: ReadModelEnvelope, logger: Logger): Promise<void> {
-    await this.redis.set(this.readModelEnvelopeKey(readModel), readModel, logger)
+    await this.databaseAdapter.storeReadModel(readModel, logger)
   }
 
   public async fetch(readModelName: string, readModelID: UUID, logger: Logger): Promise<ReadModelInterface | null> {
-    const key: string = this.readModelKey(readModelName, readModelID)
-    logger.debug('fetching key booster||', key)
-    const envelope = await this.redis.hget<ReadModelEnvelope>(`booster||${key}`)
-    logger.debug('envelope fetched ' + JSON.stringify(envelope))
-    return envelope ? envelope.value : null
-  }
-
-  private readModelEnvelopeKey(readmodel: ReadModelEnvelope): string {
-    return this.readModelKey(readmodel.typeName, readmodel.value.id)
-  }
-
-  private readModelKey(typeName: string, id: UUID): string {
-    const keyParts = [
-      'rm', //Read Model mark
-      typeName, //readModel type name
-      id, //readModel id
-    ]
-    return keyParts.join(RedisAdapter.keySeparator)
+    //const key: string = this.readModelKey(readModelName, readModelID)
+    //logger.debug('fetching key booster||', key)
+    //const envelope = await this.databaseAdapter.hget<ReadModelEnvelope>(`booster||${key}`)
+    //logger.debug('envelope fetched ' + JSON.stringify(envelope))
+    return null
   }
 }

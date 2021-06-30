@@ -28,7 +28,8 @@
     "isomorphic-fetch": "^2.2.1",
     "mustache": "4.1.0",
     "node-fetch": "^2.6.1",
-    "redis": "^3.0.2"
+    "redis": "^3.0.2",
+    "mongoose": "5.10.5"
   },
   "scripts": {
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
@@ -45,6 +46,8 @@
   },
   "devDependencies": {
     "@types/node-fetch": "^2.5.10",
-    "@types/redis": "^2.8.28"
+    "@types/redis": "^2.8.28",
+    "@types/mongoose": "5.10.5"
+
   }
 }

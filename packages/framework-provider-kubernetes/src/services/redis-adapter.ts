@@ -3,7 +3,7 @@ import fetch from 'node-fetch'
 import * as redis from 'redis'
 
 export class RedisAdapter {
-  public static keySeparator: string = '_____'
+  public static keySeparator = '_____'
 
   private _client?: redis.RedisClient
   constructor(readonly daprUrl: string, readonly redisUrl: string) {}
@@ -54,17 +54,12 @@ export class RedisAdapter {
   }
 
   public async hget<TResult>(key: string): Promise<TResult | null> {
-    return new Promise((resolve) =>
+    /*return new Promise((resolve) =>
       this.client.hget(key, 'data', (err: Error | null, res: string) => {
         if (err) return resolve(null)
         resolve(JSON.parse(res))
       })
-    )
-  }
-
-  public async setViaRedis(key: string, value: string, logger: Logger): Promise<void> {
-    const response = this.client.set('booster||' + key, value)
-    logger.debug(response)
-    logger.debug('END RedisAdapter setViaRedis')
+    )*/
+    return null
   }
 }
