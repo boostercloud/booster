@@ -130,7 +130,7 @@ export class DaprManager {
         await this.helmManager.installRepo(this.eventStoreRepoName, this.eventStoreRepo)
       }
       l.debug('Installing redis using bitnami/redis')
-      await this.helmManager.exec(`install redis bitnami/redis -n ${this.namespace}`)
+      await this.helmManager.exec(`install redis bitnami/redis -n ${this.namespace} --version 14.3.3`)
       l.debug('Waiting for pod to be ready')
       await this.clusterManager.waitForPodToBeReady(this.namespace, this.eventStorePod)
     }
