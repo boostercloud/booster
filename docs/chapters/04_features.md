@@ -922,6 +922,36 @@ export class GetProductsCount {
 
 
 
+#### Using pagination
+
+The current Booster GraphQL API includes an alternative type for your read models that stands for `List{"your-read-model-name"}`, which includes the functionality to work with pagination.
+
+The Read Model List type includes some new parameters that can be used on queries:
+ * `limit`; an integer that specifies the maximum number of items to be returned.
+ * `afterCursor`; an object that includes the key of the last retrieved item, so the next query will return the next page of results.
+
+ Example:
+```graphql
+query {
+  ListProductReadModels
+  (
+    limit: 1,
+    afterCursor: { id: "last-page-item"}
+  ) {
+    id
+    sku
+    availability
+    price
+  }
+}
+```
+
+Besides the parameters, this new type also returns a different result than the regular one. Called `{your-read-model-name}Connection`, it includes the following properties:
+ * `afterCursor`; if there are more results to paginate, it will return the object to pass to the `cursor` parameter on the next query. If there aren't more items to be shown, it will be undefined.
+ * `items`; the list of items returned by the query, if there aren't any, it will be an empty list.
+
+_Note: currenty it just works with Read Models on the AWS Provider_
+
 ### Using Apollo Client
 
 One of the best clients to connect to a GraphQL API is the [Apollo](https://www.apollographql.com/) client. There will probably be a version for your client technology of choice. These are the main ones:
