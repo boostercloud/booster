@@ -6,13 +6,11 @@ import {
   InvalidParameterError,
   NotAuthorizedError,
   NotFoundError,
-  CommandBeforeFunction,
-  UserEnvelope,
-  CommandInput,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
 import { RegisterHandler } from './booster-register-handler'
 import { createInstance } from '@boostercloud/framework-common-helpers'
+import { applyBeforeFunctions } from './services/filter-helpers'
 
 export class BoosterCommandDispatcher {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
@@ -35,7 +33,7 @@ export class BoosterCommandDispatcher {
     const commandClass = commandMetadata.class
     this.logger.debug('Found the following command:', commandClass.name)
 
-    const commandInput = this.applyBeforeFunctions(
+    const commandInput = applyBeforeFunctions(
       commandEnvelope.value,
       commandMetadata.before,
       commandEnvelope.currentUser
@@ -48,13 +46,5 @@ export class BoosterCommandDispatcher {
     await commandClass.handle(commandInstance, register)
     this.logger.debug('Command dispatched with register: ', register)
     await RegisterHandler.handle(this.config, this.logger, register)
-  }
-
-  private applyBeforeFunctions(
-    commandInput: CommandInput,
-    beforeHooks: Array<CommandBeforeFunction>,
-    currentUser?: UserEnvelope
-  ): CommandInput {
-    return beforeHooks.reduce((currentInput, before) => before(currentInput, currentUser), commandInput)
   }
 }
