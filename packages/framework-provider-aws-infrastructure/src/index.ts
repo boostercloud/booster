@@ -9,19 +9,7 @@ export * from './test-helper/aws-test-helper'
 export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): ProviderInfrastructure => {
   const rockets = rocketDescriptors?.map(loadRocket)
   return {
-    deploy: async (config: BoosterConfig, logger: Logger) => {
-      try {
-        await deploy(config, logger, rockets)
-      } catch (error) {
-        logger.error(error)
-      }
-    },
-    nuke: async (config: BoosterConfig, logger: Logger) => {
-      try {
-        await nuke(config, logger, rockets)
-      } catch (error) {
-        logger.error(error)
-      }
-    },
+    deploy: async (config: BoosterConfig, logger: Logger) => await deploy(config, logger, rockets),
+    nuke: async (config: BoosterConfig, logger: Logger) => await nuke(config, logger, rockets),
   }
 }

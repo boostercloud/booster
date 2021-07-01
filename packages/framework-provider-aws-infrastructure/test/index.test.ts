@@ -40,50 +40,32 @@ describe('the `framework-provider-aws-infrastructure` package', () => {
           expect(infra.deploy).to.have.been.calledWith(fakeConfig, logger)
         })
 
-        it('logs an error through the passed logger when an error is thrown', async () => {
+        it('throws an error if the deploy process failed', async () => {
           const errorMessage = new Error('Ooops')
           replace(infra, 'deploy', fake.throws(errorMessage))
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const fakeConfig = { fake: 'config' } as any
 
-          const logger: Logger = {
-            info: fake(),
-            error: fake(),
-            debug: fake(),
-          }
-
           expect(providerInfrastructure.deploy).to.be.a('function')
           if (providerInfrastructure.deploy)
-            await expect(providerInfrastructure.deploy(fakeConfig, logger)).not.to.eventually.be.rejected
-
-          // It receives the thrown Error object, not just the message
-          expect(logger.error).to.have.been.calledWithMatch(errorMessage)
+            await expect(providerInfrastructure.deploy(fakeConfig, logger)).to.be.rejectedWith(errorMessage)
         })
       })
 
       describe('nuke', () => {
         xit('initializes nuke with no rockets')
 
-        it('logs an error through the passed logger when an error is thrown', async () => {
+        it('throws error if the nuke process fails', async () => {
           const errorMessage = new Error('Ooops')
           replace(infra, 'nuke', fake.throws(errorMessage))
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const fakeConfig = { fake: 'config' } as any
 
-          const logger: Logger = {
-            info: fake(),
-            error: fake(),
-            debug: fake(),
-          }
-
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const providerInfrastructureAlias = providerInfrastructure as any
-          await expect(providerInfrastructureAlias.nuke(fakeConfig, logger)).not.to.eventually.be.rejected
-
-          // It receives the thrown Error object, not just the message
-          expect(logger.error).to.have.been.calledWithMatch(errorMessage)
+          await expect(providerInfrastructureAlias.nuke(fakeConfig, logger)).to.be.rejectedWith(errorMessage)
         })
       })
     })
