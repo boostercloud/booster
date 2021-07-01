@@ -42,8 +42,7 @@ export class BoosterCommandDispatcher {
     )
 
     const commandInstance = createInstance(commandClass, commandInput)
-    // TODO: Here we could call "command.validate()" so that the user can prevalidate
-    // the command inputted by the user.
+
     const register = new Register(commandEnvelope.requestID, commandEnvelope.currentUser)
     this.logger.debug('Calling "handle" method on command: ', commandClass)
     await commandClass.handle(commandInstance, register)

@@ -214,8 +214,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
         @Command({ authorize: 'all', beforeCommand: [beforeFn] })
         class PostComment {
           public constructor(readonly comment: string) {}
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          public static async handle(command: PostComment, _register: Register): Promise<void> {
+          public static async handle(command: PostComment): Promise<void> {
             transformedInput = command
           }
         }
@@ -243,8 +242,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
         @Command({ authorize: 'all', beforeCommand: [beforeFn, beforeFnV2] })
         class PostComment {
           public constructor(readonly comment: string) {}
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          public static async handle(command: PostComment, _register: Register): Promise<void> {
+          public static async handle(command: PostComment): Promise<void> {
             transformedInput = command
           }
         }

@@ -321,7 +321,7 @@ And this would be the response:
 As seen above, when you send commands, you can include input parameters to be received for the command handler. Although, there are some cases where you'd want to do some actions just before the `handle` function gets called in your command, like:
 - Validating parameters
 - Change command inputs on the fly with custom logic
-- Deny access to concrete users
+- Deny access to specific users
 
 For these cases (and more), you can use the commands before hooks. 
 
