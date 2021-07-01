@@ -1,11 +1,11 @@
 import { Command } from '@boostercloud/framework-core'
 import { CommandInput, Register, UserEnvelope, UUID } from '@boostercloud/framework-types'
 import { CartItemChanged } from '../events/cart-item-changed'
-import {beforeHookException, beforeHookMutationID, beforeHookQuantity, throwExceptionId} from '../constants'
+import { beforeHookException, beforeHookMutationID, beforeHookQuantity, throwExceptionId } from '../constants'
 
 @Command({
   authorize: 'all',
-  beforeCommand: [ChangeCartItem.beforeFn, ChangeCartItem.beforeFnV2],
+  before: [ChangeCartItem.beforeFn, ChangeCartItem.beforeFnV2],
 })
 export class ChangeCartItem {
   public constructor(readonly cartId: UUID, readonly productId: UUID, readonly quantity: number) {}

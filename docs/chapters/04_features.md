@@ -325,11 +325,11 @@ As seen above, when you send commands, you can include input parameters to be re
 
 For these cases (and more), you can use the commands before hooks. 
 
-These hooks can be added in your @Command decorator through the `beforeCommand` parameter, as an array of functions:
+These hooks can be added in your @Command decorator through the `before` parameter, as an array of functions:
 ```typescript
 @Command({
   authorize: [User],
-  beforeCommand: [ChangeCartItem.beforeFn],
+  before: [ChangeCartItem.beforeFn],
 })
 export class ChangeCartItem {
   public constructor(readonly cartId: UUID, readonly productId: UUID, readonly quantity: number) {
@@ -346,7 +346,7 @@ export class ChangeCartItem {
 
 As you can see, we just check if the `cartUserId` is equal to the `currentUser.id`, which is the user id extracted from the auth token. This way, we can throw an exception and avoid this user to call this command.
 
-But this is not all, remember that the `beforeCommand` parameter is an array of functions. That is because these functions are chainable:
+But this is not all, remember that the `before` parameter is an array of functions. That is because these functions are chainable:
 1. Imagine that we have 2 functions: `beforeFn` and `beforeFnV2`
 2. When sending a command, the `beforeFn` above will be called, and we could change the `input` variable (for example)
 3. That changed `input` variable will then be passed to the next function `beforeFnV2`
@@ -355,7 +355,7 @@ Let's see it through an example:
 ```typescript
 @Command({
   authorize: [User],
-  beforeCommand: [ChangeCartItem.beforeFn, ChangeCartItem.beforeFnV2],
+  before: [ChangeCartItem.beforeFn, ChangeCartItem.beforeFnV2],
 })
 export class ChangeCartItem {
   public constructor(readonly cartId: UUID, readonly productId: UUID, readonly quantity: number) {

@@ -1,5 +1,5 @@
 import { Booster } from '../booster'
-import { CommandInterface, FilterHooks, RoleAccess } from '@boostercloud/framework-types'
+import { CommandInterface, CommandFilterHooks, RoleAccess } from '@boostercloud/framework-types'
 import { getPropertiesMetadata } from './metadata'
 
 /**
@@ -8,7 +8,7 @@ import { getPropertiesMetadata } from './metadata'
  * @constructor
  */
 export function Command(
-  attributes: RoleAccess & FilterHooks
+  attributes: RoleAccess & CommandFilterHooks
 ): <TCommand>(commandClass: CommandInterface<TCommand>) => void {
   return (commandClass) => {
     Booster.configureCurrentEnv((config): void => {
@@ -20,7 +20,7 @@ export function Command(
       config.commandHandlers[commandClass.name] = {
         class: commandClass,
         authorizedRoles: attributes.authorize,
-        before: attributes.beforeCommand ?? [],
+        before: attributes.before ?? [],
         properties: getPropertiesMetadata(commandClass),
       }
     })

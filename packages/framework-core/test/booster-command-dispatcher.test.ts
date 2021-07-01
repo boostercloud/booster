@@ -211,7 +211,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
 
       it('transforms the input if a before hook function is passed', async () => {
         let transformedInput = {}
-        @Command({ authorize: 'all', beforeCommand: [beforeFn] })
+        @Command({ authorize: 'all', before: [beforeFn] })
         class PostComment {
           public constructor(readonly comment: string) {}
           public static async handle(command: PostComment): Promise<void> {
@@ -239,7 +239,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
 
       it('transforms the input when more than one before hook function is passed', async () => {
         let transformedInput = {}
-        @Command({ authorize: 'all', beforeCommand: [beforeFn, beforeFnV2] })
+        @Command({ authorize: 'all', before: [beforeFn, beforeFnV2] })
         class PostComment {
           public constructor(readonly comment: string) {}
           public static async handle(command: PostComment): Promise<void> {
