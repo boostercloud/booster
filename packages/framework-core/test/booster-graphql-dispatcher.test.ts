@@ -259,6 +259,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
           const currentUser: UserEnvelope = {
             username: internet.email(),
             role: random.word(),
+            claims: {},
           }
 
           const config = mockConfigForGraphQLEnvelope(graphQLEnvelope)

@@ -6,6 +6,7 @@ import gql from 'graphql-tag'
 import { waitForIt } from '../../helper/sleep'
 import { CartItem } from '../../../src/common/cart-item'
 import { applicationUnderTest } from './setup'
+import { beforeHookException, beforeHookProductId, throwExceptionId } from '../../../src/constants'
 
 describe('Read models end-to-end tests', () => {
   let client: ApolloClient<NormalizedCacheObject>
@@ -64,6 +65,73 @@ describe('Read models end-to-end tests', () => {
           productId: mockProductId,
           quantity: mockQuantity,
         })
+      })
+
+      it('should apply modified filter by before hooks', async () => {
+        // We create a cart with id 'before-fn-test-modified', but we query for
+        // 'before-fn-test', which will then change the filter after two "before" functions
+        // to return the original cart (id 'before-fn-test-modified')
+        const variables = {
+          cartId: 'before-fn-test-modified',
+          productId: beforeHookProductId,
+          quantity: 1,
+        }
+        await client.mutate({
+          variables,
+          mutation: gql`
+            mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+              ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+            }
+          `,
+        })
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                cartId: 'before-fn-test',
+              },
+              query: gql`
+                query CartReadModel($cartId: ID!) {
+                  CartReadModel(id: $cartId) {
+                    id
+                    cartItems
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.CartReadModel != null
+        )
+
+        const cartData = queryResult.data.CartReadModel
+
+        expect(cartData.id).to.be.equal(variables.cartId)
+      })
+
+      it('should return exceptions thrown by before functions', async () => {
+        try {
+          await waitForIt(
+            () => {
+              return client.query({
+                variables: {
+                  cartId: throwExceptionId,
+                },
+                query: gql`
+                  query CartReadModel($cartId: ID!) {
+                    CartReadModel(id: $cartId) {
+                      id
+                      cartItems
+                    }
+                  }
+                `,
+              })
+            },
+            (_) => true
+          )
+        } catch (e) {
+          expect(e.graphQLErrors[0].message).to.be.eq(beforeHookException)
+          expect(e.graphQLErrors[0].path).to.deep.eq(['CartReadModel'])
+        }
       })
     })
 

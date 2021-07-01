@@ -72,6 +72,7 @@ export class BoosterTokenVerifier {
       id,
       username,
       role: roleValue?.trim() ?? '',
+      claims: decodedToken,
     }
   }
 

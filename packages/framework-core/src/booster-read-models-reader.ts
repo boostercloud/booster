@@ -9,9 +9,11 @@ import {
   ReadModelInterface,
   SubscriptionEnvelope,
   GraphQLOperation,
+  ReadModelPropertyFilter,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
 import { Booster } from './booster'
+import { getReadModelFilters } from './services/filter-helpers'
 
 export class BoosterReadModelsReader {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
@@ -57,9 +59,15 @@ export class BoosterReadModelsReader {
   private async processFetch(readModelRequest: ReadModelRequestEnvelope): Promise<Array<ReadModelInterface>> {
     const readModelMetadata = this.config.readModels[readModelRequest.typeName]
     const searcher = Booster.readModel(readModelMetadata.class)
-    if (readModelRequest.filters) {
-      searcher.filter(readModelRequest.filters)
-    }
+
+    const filters = getReadModelFilters(
+      readModelRequest.filters,
+      readModelMetadata.before,
+      readModelRequest.currentUser
+    )
+
+    searcher.filter(filters)
+
     return searcher.search()
   }
 
@@ -72,6 +80,17 @@ export class BoosterReadModelsReader {
       `Processing subscription of connection '${connectionID}' to read model '${readModelRequest.typeName}' with the following data: `,
       readModelRequest
     )
+    const readModelMetadata = this.config.readModels[readModelRequest.typeName]
+
+    // This type is specified because there is a mismatch between types in the filters attribute (ReadModelRequestEnvelope).
+    // FilterFor<unknown> is already an object itself, and contains keys and the filters as values, but right now
+    // the ReadModelRequestEnvelope property is typed as Record<string, ReadModelPropertyFilter>.
+    // Apparently these two types are compatible by accident, which made us think that this could be a bug.
+    readModelRequest.filters = getReadModelFilters(
+      readModelRequest.filters,
+      readModelMetadata.before,
+      readModelRequest.currentUser
+    ) as Record<string, ReadModelPropertyFilter>
 
     const nowEpoch = Math.floor(new Date().getTime() / 1000)
     const subscription: SubscriptionEnvelope = {

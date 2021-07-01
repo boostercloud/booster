@@ -124,6 +124,7 @@ describe('the `RegisterHandler` class', () => {
     const user: UserEnvelope = {
       username: 'paco@example.com',
       role: 'Paco',
+      claims: {},
     }
     const register = new Register('1234', user)
     const event = new SomeEvent('a')

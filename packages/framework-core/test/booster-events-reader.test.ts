@@ -122,6 +122,7 @@ describe('BoosterEventsReader', () => {
         currentUser: {
           role: 'NonValidRole',
           username: internet.email(),
+          claims: {},
         },
         requestID: random.uuid(),
         filters: {
@@ -138,6 +139,7 @@ describe('BoosterEventsReader', () => {
         currentUser: {
           role: CanReadEventsRole.name,
           username: internet.email(),
+          claims: {},
         },
         requestID: random.uuid(),
         filters: {

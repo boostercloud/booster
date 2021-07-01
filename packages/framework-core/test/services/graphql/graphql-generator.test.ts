@@ -149,6 +149,7 @@ describe('GraphQL generator', () => {
         user: {
           username: mockEmail,
           role: mockRole,
+          claims: {},
         },
         operation: {
           query: random.alphaNumeric(),
@@ -179,8 +180,9 @@ describe('GraphQL generator', () => {
           currentUser: {
             username: mockEmail,
             role: mockRole,
+            claims: {},
           },
-          filters: undefined,
+          filters: {},
           requestID: mockRequestId,
           typeName: mockType.name,
           version: 1,
@@ -270,6 +272,7 @@ describe('GraphQL generator', () => {
           currentUser: {
             username: mockEmail,
             role: mockRole,
+            claims: {},
           },
           typeName: mockType.name,
           value: mockInput,
@@ -306,7 +309,7 @@ describe('GraphQL generator', () => {
         })
         replace(sut, 'subscriptionResolverBuilder', subscriptionResolverBuilderStub)
 
-        returnedFunction = sut.subscriptionByIDResolverBuilder(mockType)
+        returnedFunction = sut.subscriptionByIDResolverBuilder(mockConfig, mockType)
       })
 
       it('should call subscriptionResolverBuilder', async () => {
@@ -337,7 +340,7 @@ describe('GraphQL generator', () => {
         replace(BoosterReadModelsReader.prototype, 'subscribe', subscribeStub)
         sut = GraphQLGenerator.build(mockConfig, mockLogger)
 
-        returnedFunction = sut.subscriptionResolverBuilder(mockType)
+        returnedFunction = sut.subscriptionResolverBuilder(mockConfig, mockType)
       })
 
       context('missing context.connectionID', () => {
@@ -385,8 +388,9 @@ describe('GraphQL generator', () => {
           currentUser: {
             username: mockEmail,
             role: mockRole,
+            claims: {},
           },
-          filters: undefined,
+          filters: {},
           requestID: mockRequestId,
           typeName: mockType.name,
           version: 1,
@@ -418,6 +422,7 @@ describe('GraphQL generator', () => {
           currentUser: {
             username: mockEmail,
             role: mockRole,
+            claims: {},
           },
           filters,
           requestID: mockRequestId,

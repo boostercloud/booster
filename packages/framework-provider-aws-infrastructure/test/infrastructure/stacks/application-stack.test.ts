@@ -29,6 +29,7 @@ describe('the application stack builder', () => {
       class: readModel,
       authorizedRoles: 'all',
       properties: [],
+      before: [],
     }
   })
   config.env['A_CUSTOM_ENV_VARIABLE'] = 'important-value'

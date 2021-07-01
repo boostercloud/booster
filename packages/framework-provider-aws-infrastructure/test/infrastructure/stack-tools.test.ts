@@ -119,6 +119,7 @@ describe('the `stack-tools` module', () => {
         class: SomeReadModel,
         authorizedRoles: 'all',
         properties: [],
+        before: [],
       }
       const cloudAssembly = assemble(config)
 

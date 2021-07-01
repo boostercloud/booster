@@ -22,6 +22,7 @@ describe('The "storeConnectionData" method', () => {
       user: {
         role: lorem.word(),
         username: internet.email(),
+        claims: {},
       },
     }
     await storeConnectionData(fakeDB, config, connectionID, expectedData)
@@ -43,6 +44,7 @@ describe('The "fetchConnectionData" method', () => {
       user: {
         role: lorem.word(),
         username: internet.email(),
+        claims: {},
       },
     }
     const fakeGet = stub().returns({

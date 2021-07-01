@@ -1,12 +1,14 @@
-import { ReadModel, Projects } from '@boostercloud/framework-core'
-import { ProjectionResult, UUID } from '@boostercloud/framework-types'
+import { Projects, ReadModel } from '@boostercloud/framework-core'
+import { FilterFor, ProjectionResult, UserEnvelope, UUID } from '@boostercloud/framework-types'
 import { CartItem } from '../common/cart-item'
 import { Address } from '../common/address'
 import { Cart } from '../entities/cart'
 import { Payment } from '../entities/payment'
+import { beforeHookException, throwExceptionId } from '../constants'
 
 @ReadModel({
   authorize: 'all',
+  before: [CartReadModel.beforeFn, CartReadModel.beforeFnV2],
 })
 export class CartReadModel {
   public constructor(
@@ -21,6 +23,17 @@ export class CartReadModel {
   public getChecks() {
     return this.checks
   }
+
+  public static beforeFn(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
+    if (filter.id && filter.id.eq === throwExceptionId) throw new Error(beforeHookException)
+    return filter
+  }
+
+  public static beforeFnV2(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
+    if (!filter.id || filter.id?.eq !== 'before-fn-test') return filter
+    return { id: { eq: filter.id.eq + '-modified' } } as FilterFor<CartReadModel>
+  }
+
   @Projects(Cart, 'id')
   public static updateWithCart(cart: Cart, oldCartReadModel?: CartReadModel): ProjectionResult<CartReadModel> {
     const cartProductIds = cart?.cartItems.map((item) => item.productId as string)

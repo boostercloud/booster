@@ -487,6 +487,68 @@ mutation {
 
 > [!NOTE]  Remember that, in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
 
+
+### Adding "before" hooks to your read models
+
+When you send queries or subscriptions to your read models, you can tell Booster to execute some code before executing the operation. These are called `before` hooks, and they receive two parameters: the read model filter sent with the request and an object with information about the currently signed-in user.
+
+These `before` hooks are useful for many things, but mainly:
+- To add fine-grained access control. For example, to allow user `A` access to its Cart read models, but not the ones belonging to user `B`.
+- Modify the read model filters sent with the request based on some criteria. For example, you can narrow the results the users will get by adding extra filters based on the season of the year.
+  From inside a `before` hook, you can either throw an exception, in which case the query or subscription will be aborted, and the error will be sent back to the user, or return final filters to be used in the operation. 
+
+This is an example of how you would define a before hook in a read model:
+
+```typescript
+@ReadModel({
+  authorize: [User],
+  before: [validateUser],
+})
+export class CartReadModel {
+  public constructor(
+    readonly id: UUID,
+    readonly userId: UUID
+  ) {}
+  // Your projections go here
+}
+
+function validateUser(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
+  if (filter?.userId !== currentUser.id) throw NotAuthorizedError("...")
+  return filter
+}
+```
+
+You can also define more than one `before` hook for a read model. The filter resulting from the call to one hook will be used as a parameter for the next one.
+
+> [!NOTE] The order in which filters are specified matters.
+
+```typescript
+import { changeFilters } from '../../filters-helper' // You can also use external functions!
+
+@ReadModel({
+  authorize: [User],
+  before: [validateUser, validateEmail, changeFilters],
+})
+export class CartReadModel {
+  public constructor(
+    readonly id: UUID,
+    readonly userId: UUID
+  ) {}
+
+  // Your projections go here
+}
+
+function validateUser(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
+  if (filter.userId !== currentUser.id) throw NotAuthorizedError("...")
+  return filter // This filter will be passed as a parameter to the validateEmail function
+}
+
+function validateEmail(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
+  if (!filter.email.includes('myCompanyDomain.com')) throw NotAuthorizedError("...")
+  return filter
+}
+```
+
 ### Reading events
 
 You can also fetch events directly if you need. To do so, there are two kind of queries that have the following structure:

@@ -33,7 +33,7 @@
     "@boostercloud/framework-common-helpers": "^0.16.3",
     "@boostercloud/framework-types": "^0.16.3",
     "fp-ts": "2.10.5",
-    "graphql": "15.5.0",
+    "graphql": "15.5.1",
     "graphql-subscriptions": "1.2.1",
     "graphql-type-json": "0.3.2",
     "inflected": "2.1.0",

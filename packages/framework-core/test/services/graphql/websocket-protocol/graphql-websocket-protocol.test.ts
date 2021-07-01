@@ -181,6 +181,7 @@ describe('the `GraphQLWebsocketHandler`', () => {
             const expectedUser: UserEnvelope = {
               username: internet.email(),
               role: lorem.word(),
+              claims: {},
             }
 
             const fakeVerifier = fake.returns(expectedUser)
@@ -274,6 +275,7 @@ describe('the `GraphQLWebsocketHandler`', () => {
             user: {
               username: internet.email(),
               role: lorem.word(),
+              claims: {},
             },
             expirationTime: random.number(),
           }

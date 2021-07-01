@@ -63,8 +63,8 @@ export class GraphQLGenerator {
       config.readModels,
       this.typeInformer,
       this.queryGenerator,
-      this.subscriptionByIDResolverBuilder.bind(this),
-      this.subscriptionResolverBuilder.bind(this)
+      this.subscriptionByIDResolverBuilder.bind(this, config),
+      this.subscriptionResolverBuilder.bind(this, config)
     )
   }
 
@@ -116,15 +116,17 @@ export class GraphQLGenerator {
   }
 
   public subscriptionByIDResolverBuilder(
+    config: BoosterConfig,
     readModelClass: AnyClass
   ): GraphQLFieldResolver<any, GraphQLResolverContext, Record<string, ReadModelPropertyFilter>> {
     return async (parent, args, context, info) => {
       const filterArgs = { filter: { id: { eq: args.id } } }
-      return this.subscriptionResolverBuilder(readModelClass)(parent, filterArgs, context, info)
+      return this.subscriptionResolverBuilder(config, readModelClass)(parent, filterArgs, context, info)
     }
   }
 
   public subscriptionResolverBuilder(
+    config: BoosterConfig,
     readModelClass: AnyClass
   ): GraphQLFieldResolver<any, GraphQLResolverContext, { filter: Record<string, ReadModelPropertyFilter> }> {
     return async (parent, args, context, info) => {
@@ -137,7 +139,7 @@ export class GraphQLGenerator {
         await this.readModelsReader.subscribe(context.connectionID, readModelRequestEnvelope, context.operation)
       }
 
-      return context.pubSub.asyncIterator(readModelRequestEnvelope)
+      return context.pubSub.asyncIterator(readModelRequestEnvelope, config)
     }
   }
 }
@@ -151,7 +153,7 @@ function toReadModelRequestEnvelope(
     requestID: context.requestID,
     currentUser: context.user,
     typeName: readModelName,
-    filters: args.filter,
+    filters: args.filter ?? {},
     version: 1, // TODO: How to pass the version through GraphQL?
   }
 }
