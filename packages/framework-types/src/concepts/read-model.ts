@@ -16,10 +16,10 @@ export interface ReadModelMetadata {
   readonly class: Class<ReadModelInterface>
   readonly properties: Array<PropertyMetadata>
   readonly authorizedRoles: RoleAccess['authorize']
-  readonly before: NonNullable<FilterHooks['before']>
+  readonly before: NonNullable<ReadModelFilterHooks['before']>
 }
 
-export interface FilterHooks {
+export interface ReadModelFilterHooks {
   readonly before?: Array<BeforeFunction>
 }
 
