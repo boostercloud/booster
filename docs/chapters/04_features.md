@@ -494,10 +494,10 @@ When you send queries or subscriptions to your read models, you can tell Booster
 
 These `before` hooks are useful for many things, but mainly:
 - To add fine-grained access control. For example, to allow user `A` access to its Cart read models, but not the ones belonging to user `B`.
-
 - Modify the read model filters sent with the request based on some criteria. For example, you can narrow the results the users will get by adding extra filters based on the season of the year.
-  From inside a `before` hook, you can either throw an exception, in which case the query or subscription will be aborted, and the error will be sent back to the user, or return final filters to be used in the operation.
-  This is an example of how you would define a before hook in a read model:
+  From inside a `before` hook, you can either throw an exception, in which case the query or subscription will be aborted, and the error will be sent back to the user, or return final filters to be used in the operation. 
+
+This is an example of how you would define a before hook in a read model:
 
 ```typescript
 @ReadModel({
@@ -517,11 +517,16 @@ export class CartReadModel {
 }
 ```
 
-You can define more than one `before` hook for a read model. The filter resulting from the call to one hook will be used as a parameter for the next one. Therefore, _the order in which they are specified matters_:
+You can also define more than one `before` hook for a read model. The filter resulting from the call to one hook will be used as a parameter for the next one.
+
+> [!NOTE] The order in which filters are specified matters.
+
 ```typescript
+import { checkAuth } from '../../auth' // You can also use external functions!
+
 @ReadModel({
   authorize: [User],
-  before: [CartReadModel.validateUser, CartReadModel.validateEmail],
+  before: [CartReadModel.validateUser, CartReadModel.validateEmail, checkAuth],
 })
 export class CartReadModel {
   public constructor(

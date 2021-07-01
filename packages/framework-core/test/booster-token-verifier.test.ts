@@ -57,7 +57,9 @@ describe('the "verifyToken" method', () => {
       },
     }
 
-    expect(await boosterTokenVerifier.verify(token)).to.deep.equals(expectedUser)
+    const user = await boosterTokenVerifier.verify(token)
+
+    expect(user).to.deep.equals(expectedUser)
   })
 
   it('decode and verify an auth token with the custom roles', async () => {
@@ -82,7 +84,9 @@ describe('the "verifyToken" method', () => {
       },
     }
 
-    expect(await boosterTokenVerifier.verify(token)).to.deep.equals(expectedUser)
+    const user = await boosterTokenVerifier.verify(token)
+
+    expect(user).to.deep.equals(expectedUser)
   })
 
   it('fails if a different issuer emitted the token', async () => {
@@ -90,7 +94,9 @@ describe('the "verifyToken" method', () => {
       iss: 'firebase',
     })
 
-    await expect(boosterTokenVerifier.verify(token)).to.eventually.be.rejected
+    const verifyFunction = boosterTokenVerifier.verify(token)
+
+    await expect(verifyFunction).to.eventually.be.rejected
   })
 
   it('fails if a token has expired', async () => {
@@ -103,6 +109,8 @@ describe('the "verifyToken" method', () => {
       exp: 0,
     })
 
-    await expect(boosterTokenVerifier.verify(token)).to.eventually.be.rejected
+    const verifyFunction = boosterTokenVerifier.verify(token)
+
+    await expect(verifyFunction).to.eventually.be.rejected
   })
 })
