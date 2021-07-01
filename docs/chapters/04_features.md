@@ -502,18 +502,19 @@ This is an example of how you would define a before hook in a read model:
 ```typescript
 @ReadModel({
   authorize: [User],
-  before: [CartReadModel.validateUser],
+  before: [validateUser],
 })
 export class CartReadModel {
   public constructor(
     readonly id: UUID,
     readonly userId: UUID
   ) {}
+  // Your projections go here
+}
 
-  public static validateUser(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
-    if (filter?.userId !== currentUser.id) throw NotAuthorizedError("...")
-    return filter
-  }
+function validateUser(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
+  if (filter?.userId !== currentUser.id) throw NotAuthorizedError("...")
+  return filter
 }
 ```
 
@@ -522,11 +523,11 @@ You can also define more than one `before` hook for a read model. The filter res
 > [!NOTE] The order in which filters are specified matters.
 
 ```typescript
-import { checkAuth } from '../../auth' // You can also use external functions!
+import { changeFilters } from '../../filters-helper' // You can also use external functions!
 
 @ReadModel({
   authorize: [User],
-  before: [CartReadModel.validateUser, CartReadModel.validateEmail, checkAuth],
+  before: [validateUser, validateEmail, changeFilters],
 })
 export class CartReadModel {
   public constructor(
@@ -534,15 +535,17 @@ export class CartReadModel {
     readonly userId: UUID
   ) {}
 
-  public static validateUser(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
-    if (filter.userId !== currentUser.id) throw NotAuthorizedError("...")
-    return filter // This filter will be passed as a parameter to the validateEmail function
-  }
+  // Your projections go here
+}
 
-  public static validateEmail(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
-    if (!filter.email.includes('myCompanyDomain.com')) throw NotAuthorizedError("...")
-    return filter
-  }
+function validateUser(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
+  if (filter.userId !== currentUser.id) throw NotAuthorizedError("...")
+  return filter // This filter will be passed as a parameter to the validateEmail function
+}
+
+function validateEmail(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
+  if (!filter.email.includes('myCompanyDomain.com')) throw NotAuthorizedError("...")
+  return filter
 }
 ```
 
