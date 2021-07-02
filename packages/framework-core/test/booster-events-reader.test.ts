@@ -14,22 +14,32 @@ describe('BoosterEventsReader', () => {
   class NonRegisteredTestEntity {
     public id = 'testID'
   }
-  class TestEvent {}
+  class TestEvent {
+    public id = 'testId'
+    public entityID(): UUID {
+      return this.id
+    }
+    public getPrefixedId(prefix: string): string {
+      return `${prefix}-${this.id}`
+    }
+  }
   class TestEventReducedByNonRegisteredEntity {}
   class CanReadEventsRole {}
 
   let eventsReader: BoosterEventsReader
   let providerEventsSearch: SinonSpy
-  const searchResult: EventSearchResponse = {
-    requestID: random.uuid(),
-    type: random.alpha(),
-    entity: random.alpha(),
-    entityID: random.uuid(),
-    createdAt: random.alphaNumeric(),
-    value: {
-      entityID: () => UUID.generate(),
+  const searchResult: EventSearchResponse[] = [
+    {
+      requestID: random.uuid(),
+      type: TestEvent.name,
+      entity: random.alpha(),
+      entityID: random.uuid(),
+      createdAt: random.alphaNumeric(),
+      value: {
+        entityID: () => UUID.generate(),
+      },
     },
-  }
+  ]
 
   beforeEach(() => {
     Booster.configureCurrentEnv((config) => {
@@ -53,6 +63,7 @@ describe('BoosterEventsReader', () => {
         class: NonRegisteredTestEntity,
         methodName: 'testReducerMethod',
       }
+      config.events[TestEvent.name] = { class: TestEvent }
       eventsReader = new BoosterEventsReader(config, logger)
     })
   })

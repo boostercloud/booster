@@ -10,11 +10,6 @@ export interface BoosterApp {
   configure(environment: string, configurator: (config: BoosterConfig) => void): void
   configureCurrentEnv(configurator: (config: BoosterConfig) => void): void
   entity<TEntity extends EntityInterface>(entityName: Class<TEntity>, entityID: UUID): Promise<TEntity | undefined>
-  /** @deprecated use "entity" instead*/
-  fetchEntitySnapshot<TEntity extends EntityInterface>(
-    entityName: Class<TEntity>,
-    entityID: UUID
-  ): Promise<TEntity | undefined>
   readModel<TReadModel extends ReadModelInterface>(readModelClass: Class<TReadModel>): Searcher<TReadModel>
   configuredEnvironments: Set<string>
 }

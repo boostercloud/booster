@@ -5,3 +5,7 @@ export function createInstance<T>(instanceClass: Class<T>, rawObject: Record<str
   Object.assign(instance, rawObject)
   return instance
 }
+
+export function createInstances<T>(instanceClass: Class<T>, rawObjects: Array<Record<string, any>>): T[] {
+  return rawObjects.map((rawObject) => createInstance(instanceClass, rawObject))
+}
