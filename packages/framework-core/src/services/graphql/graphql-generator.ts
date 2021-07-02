@@ -81,7 +81,11 @@ export class GraphQLGenerator {
     readModelClass: AnyClass
   ): GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestArgs> {
     return (parent, args, context, info) => {
-      const readModelEnvelope = toReadModelRequestEnvelope(readModelClass.name, args, context)
+      let isPaginated = false
+      if (info.fieldName && info.fieldName.startsWith('List') && info.returnType.toString().endsWith('Connection')) {
+        isPaginated = true
+      }
+      const readModelEnvelope = toReadModelRequestEnvelope(readModelClass.name, args, context, isPaginated)
       return this.readModelsReader.fetch(readModelEnvelope)
     }
   }
@@ -145,7 +149,12 @@ export class GraphQLGenerator {
   }
 }
 
-function toReadModelRequestEnvelope(readModelName: string, args: ReadModelRequestArgs): ReadModelRequestEnvelope {
+function toReadModelRequestEnvelope(
+  readModelName: string,
+  args: ReadModelRequestArgs,
+  context: GraphQLResolverContext,
+  paginatedVersion = false
+): ReadModelRequestEnvelope {
   return {
     requestID: context.requestID,
     currentUser: context.user,
@@ -153,6 +162,7 @@ function toReadModelRequestEnvelope(readModelName: string, args: ReadModelReques
     filters: args.filter ?? {},
     limit: args.limit,
     afterCursor: args.afterCursor,
+    paginatedVersion,
     version: 1, // TODO: How to pass the version through GraphQL?
   }
 }
