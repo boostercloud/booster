@@ -50,7 +50,9 @@ export interface ProviderReadModelsLibrary {
     config: BoosterConfig,
     logger: Logger,
     entityTypeName: string,
-    filters: FilterFor<unknown>
+    filters: FilterFor<unknown>,
+    limit?: number,
+    afterCursor?: unknown,
   ): Promise<Array<TReadModel>>
   /**
    * If "expectedCurrentVersion" is provided, the underlying provider must throw the error OptimisticConcurrencyUnexpectedVersionError

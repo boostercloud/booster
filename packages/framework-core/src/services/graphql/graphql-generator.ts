@@ -8,6 +8,7 @@ import {
   EventSearchRequest,
   EventFilter,
   EventSearchResponse,
+  ReadModelRequestArgs,
 } from '@boostercloud/framework-types'
 import { GraphQLFieldResolver, GraphQLResolveInfo, GraphQLSchema } from 'graphql'
 import { GraphQLTypeInformer } from './graphql-type-informer'
@@ -78,7 +79,7 @@ export class GraphQLGenerator {
 
   public readModelResolverBuilder(
     readModelClass: AnyClass
-  ): GraphQLFieldResolver<any, GraphQLResolverContext, { filter: Record<string, ReadModelPropertyFilter> }> {
+  ): GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestArgs> {
     return (parent, args, context, info) => {
       const readModelEnvelope = toReadModelRequestEnvelope(readModelClass.name, args, context)
       return this.readModelsReader.fetch(readModelEnvelope)
@@ -128,7 +129,7 @@ export class GraphQLGenerator {
   public subscriptionResolverBuilder(
     config: BoosterConfig,
     readModelClass: AnyClass
-  ): GraphQLFieldResolver<any, GraphQLResolverContext, { filter: Record<string, ReadModelPropertyFilter> }> {
+  ): GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestArgs> {
     return async (parent, args, context, info) => {
       if (!context.connectionID) {
         throw new Error('Missing "connectionID". It is required for subscriptions')
@@ -144,16 +145,14 @@ export class GraphQLGenerator {
   }
 }
 
-function toReadModelRequestEnvelope(
-  readModelName: string,
-  args: { filter: Record<string, ReadModelPropertyFilter> },
-  context: GraphQLResolverContext
-): ReadModelRequestEnvelope {
+function toReadModelRequestEnvelope(readModelName: string, args: ReadModelRequestArgs): ReadModelRequestEnvelope {
   return {
     requestID: context.requestID,
     currentUser: context.user,
     typeName: readModelName,
     filters: args.filter ?? {},
+    limit: args.limit,
+    afterCursor: args.afterCursor,
     version: 1, // TODO: How to pass the version through GraphQL?
   }
 }

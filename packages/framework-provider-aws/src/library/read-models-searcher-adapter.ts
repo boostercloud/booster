@@ -10,7 +10,9 @@ export async function searchReadModel(
   config: BoosterConfig,
   logger: Logger,
   readModelName: string,
-  filters: FilterFor<unknown>
+  filters: FilterFor<unknown>,
+  limit?: number,
+  afterCursor?: DynamoDB.DocumentClient.Key | undefined,
 ): Promise<Array<any>> {
   let params: DocumentClient.ScanInput = {
     TableName: config.resourceNames.forReadModel(readModelName),
@@ -24,11 +26,18 @@ export async function searchReadModel(
       ExpressionAttributeValues: buildExpressionAttributeValues(filters),
     }
   }
+  if (limit) {
+    params = { ...params, Limit: limit }
+  }
+  if (afterCursor) {
+    params = { ...params, ExclusiveStartKey: afterCursor }
+  }
+
   logger.debug('Running search with the following params: \n', params)
 
   const result = await dynamoDB.scan(params).promise()
 
-  logger.debug('Search result: ', result.Items)
+  logger.debug('Search result: ', result)
 
   return result.Items ?? []
 }
