@@ -77,7 +77,7 @@ export interface ReadModelListResult {
 export interface ReadModelRequestEnvelope extends Envelope {
   typeName: string
   version: number
-  filters?: ReadModelRequestProperties
+  filters: ReadModelRequestProperties
   limit?: number
   afterCursor?: unknown
   paginatedVersion?: boolean // Used only for retrocompatibility
@@ -126,4 +126,5 @@ export interface UserEnvelope {
   id?: string
   username: string
   role: string
+  claims: Record<string, unknown>
 }
