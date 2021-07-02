@@ -1,8 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/indent */
 import { UUID } from './concepts'
+import { ReadModelResult } from './envelope'
 import { Class } from './typelevel'
 
-export type SearcherFunction<TObject> = (className: string, filters: FilterFor<TObject>) => Promise<Array<any>>
+export type SearcherFunction<TObject> = (
+  className: string,
+  filters: FilterFor<TObject>,
+  limit?: number,
+  afterCursor?: any,
+  paginatedVersion?: boolean
+) => Promise<Array<any> | ReadModelResult>
 
 /**
  * This class represents a search intended to be run by any search provider. They way you use it
@@ -11,8 +18,10 @@ export type SearcherFunction<TObject> = (className: string, filters: FilterFor<T
  */
 export class Searcher<TObject> {
   // private offset?: number
-  // private limit?: number
+  private maxItems?: number
+  private after?: any
   private filters: FilterFor<TObject> = {}
+  private isPaginated = false
 
   /**
    * @param objectClass The class of the object you want to run the search for.
@@ -39,6 +48,21 @@ export class Searcher<TObject> {
     return this
   }
 
+  public limit(limit?: number): this {
+    if (limit) this.maxItems = limit
+    return this
+  }
+
+  public afterCursor(afterCursor?: unknown): this {
+    if (afterCursor) this.after = afterCursor
+    return this
+  }
+
+  public paginatedVersion(paginatedVersion?: boolean): this {
+    if (paginatedVersion) this.isPaginated = paginatedVersion
+    return this
+  }
+
   public async searchOne(): Promise<TObject> {
     // Optimize if there is only an ID filter with one value
     // this.provider.fetchEntitySnapshot(this.entityClass.name, id)
@@ -49,7 +73,13 @@ export class Searcher<TObject> {
    * Do the actual search by sending all the configured filters to the provided search function
    */
   public async search(): Promise<Array<TObject>> {
-    const searchResult = await this.searcherFunction(this.objectClass.name, this.filters)
+    const searchResult = await this.searcherFunction(
+      this.objectClass.name,
+      this.filters,
+      this.maxItems,
+      this.after,
+      this.isPaginated
+    )
     return searchResult as Array<TObject>
   }
 }
