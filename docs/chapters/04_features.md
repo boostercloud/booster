@@ -924,11 +924,11 @@ export class GetProductsCount {
 
 #### Using pagination
 
-The current Booster GraphQL API includes an alternative type for your read models that stands for `List{"your-read-model-name"}`, which includes the functionality to work with pagination.
+The Booster GraphQL API includes a type for your read models that stands for `List{"your-read-model-name"}`, which is the official way to work with pagination. Alternative, there is another type without the `List` prefix, which will be deprecated in future versions.
 
 The Read Model List type includes some new parameters that can be used on queries:
  * `limit`; an integer that specifies the maximum number of items to be returned.
- * `afterCursor`; an object that includes the key of the last retrieved item, so the next query will return the next page of results.
+ * `afterCursor`; a parameter to set the `cursor` property returned by the previous query, if not null.
 
  Example:
 ```graphql
@@ -946,11 +946,9 @@ query {
 }
 ```
 
-Besides the parameters, this new type also returns a different result than the regular one. Called `{your-read-model-name}Connection`, it includes the following properties:
- * `afterCursor`; if there are more results to paginate, it will return the object to pass to the `cursor` parameter on the next query. If there aren't more items to be shown, it will be undefined.
+Besides the parameters, this type also returns a type `{your-read-model-name}Connection`, it includes the following properties:
+ * `cursor`; if there are more results to paginate, it will return the object to pass to the `afterCursor` parameter on the next query. If there aren't more items to be shown, it will be undefined.
  * `items`; the list of items returned by the query, if there aren't any, it will be an empty list.
-
-_Note: currenty it just works with Read Models on the AWS Provider_
 
 ### Using Apollo Client
 
