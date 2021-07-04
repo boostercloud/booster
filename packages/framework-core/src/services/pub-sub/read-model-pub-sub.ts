@@ -44,8 +44,12 @@ function filterReadModel(readModel: Record<string, any>, filters?: Record<string
     return true
   }
   for (const filteredProp in filters) {
-    const readModelPropValue = readModel[filteredProp]
-    return filterByOperation(filters[filteredProp], readModelPropValue)
+    if (Array.isArray(readModel[filteredProp])) {
+      return readModel[filteredProp].some((readModelFilteredProp: any) =>
+        filterByOperation(filters[filteredProp], readModelFilteredProp)
+      )
+    }
+    return filterByOperation(filters[filteredProp], readModel[filteredProp])
   }
   return true
 }

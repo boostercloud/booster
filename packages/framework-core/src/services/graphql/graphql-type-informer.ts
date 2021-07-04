@@ -57,6 +57,11 @@ export class GraphQLTypeInformer {
         fields[prop.name] = {
           type: GraphQLList(graphQLPropType),
         }
+        // TODO: awaiting update of metadata-booster package to access .isArray boolean
+      } else if ((prop.typeInfo as any).isArray) {
+        fields[prop.name] = {
+          type: GraphQLList(this.getGraphQLTypeFor(prop.typeInfo.type)),
+        }
       } else {
         fields[prop.name] = { type: this.getGraphQLTypeFor(prop.typeInfo.type) }
       }
