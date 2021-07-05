@@ -556,18 +556,18 @@ You can use `before` hooks also in your command handlers, and [they work as the 
 ```typescript
 @Command({
   authorize: [User],
-  before: [ChangeCartItem.beforeFn],
+  before: [beforeFn],
 })
 export class ChangeCartItem {
   public constructor(readonly cartId: UUID, readonly productId: UUID, readonly quantity: number) {
   }
+}
 
-  public static beforeFn(input: CommandInput, currentUser?: UserEnvelope): CommandInput {
-    if (input.cartUserId !== currentUser.id) {
-      throw NonAuthorizedUserException() // We don't let this user to trigger the command
-    }
-    return input
+function beforeFn(input: CommandInput, currentUser?: UserEnvelope): CommandInput {
+  if (input.cartUserId !== currentUser.id) {
+    throw NonAuthorizedUserException() // We don't let this user to trigger the command
   }
+  return input
 }
 ```
 
