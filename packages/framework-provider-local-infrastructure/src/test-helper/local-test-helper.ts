@@ -35,7 +35,7 @@ export class LocalTestHelper {
   }
 
   private static async websocketURL(): Promise<string> {
-    const url = 'TODO'
+    const url = 'SOME-URL'
     return url
   }
 }
