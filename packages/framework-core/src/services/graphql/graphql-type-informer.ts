@@ -47,20 +47,16 @@ export class GraphQLTypeInformer {
 
       if (primitiveType === Array) {
         const param = prop.typeInfo.parameters[0]
-        const graphQLPropType = this.getGraphQLTypeFor(param.type)
+        let graphQLPropType = this.getGraphQLTypeFor(param.type)
 
         if (!this.isGraphQLScalarType(graphQLPropType) && param.type) {
           const properties = getPropertiesMetadata(param.type)
           this.generateGraphQLTypeFromMetadata({ class: param.type, properties })
+          graphQLPropType = this.getGraphQLTypeFor(param.type)
         }
 
         fields[prop.name] = {
           type: GraphQLList(graphQLPropType),
-        }
-        // TODO: awaiting update of metadata-booster package to access .isArray boolean
-      } else if ((prop.typeInfo as any).isArray) {
-        fields[prop.name] = {
-          type: GraphQLList(this.getGraphQLTypeFor(prop.typeInfo.type)),
         }
       } else {
         fields[prop.name] = { type: this.getGraphQLTypeFor(prop.typeInfo.type) }
