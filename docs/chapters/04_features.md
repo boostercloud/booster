@@ -317,69 +317,6 @@ And this would be the response:
 
 > [!NOTE] Remember to set the proper **access token** for secured commands, check ["Authorizing operations"](#authorizing-operations).
 
-### Adding "before" hooks to your commands
-As seen above, when you send commands, you can include input parameters to be received for the command handler. Although, there are some cases where you'd want to do some actions just before the `handle` function gets called in your command, like:
-- Validating parameters
-- Change command inputs on the fly with custom logic
-- Deny access to specific users
-
-For these cases (and more), you can use the commands before hooks. 
-
-These hooks can be added in your @Command decorator through the `before` parameter, as an array of functions:
-```typescript
-@Command({
-  authorize: [User],
-  before: [ChangeCartItem.beforeFn],
-})
-export class ChangeCartItem {
-  public constructor(readonly cartId: UUID, readonly productId: UUID, readonly quantity: number) {
-  }
-
-  public static beforeFn(input: CommandInput, currentUser?: UserEnvelope): CommandInput {
-    if (input.cartUserId !== currentUser.id) {
-      throw NonAuthorizedUserException() // We don't let this user to trigger the command
-    }
-    return input
-  }
-}
-```
-
-As you can see, we just check if the `cartUserId` is equal to the `currentUser.id`, which is the user id extracted from the auth token. This way, we can throw an exception and avoid this user to call this command.
-
-But this is not all, remember that the `before` parameter is an array of functions. That is because these functions are chainable:
-1. Imagine that we have 2 functions: `beforeFn` and `beforeFnV2`
-2. When sending a command, the `beforeFn` above will be called, and we could change the `input` variable (for example)
-3. That changed `input` variable will then be passed to the next function `beforeFnV2`
-
-Let's see it through an example:
-```typescript
-@Command({
-  authorize: [User],
-  before: [ChangeCartItem.beforeFn, ChangeCartItem.beforeFnV2],
-})
-export class ChangeCartItem {
-  public constructor(readonly cartId: UUID, readonly productId: UUID, readonly quantity: number) {
-  }
-
-  public static beforeFn(input: CommandInput, currentUser?: UserEnvelope): CommandInput {
-    if (currentUser) {
-      input.cartId += 'check-this-out!'
-    }
-    return input
-  }
-
-  public static beforeFnV2(input: CommandInput, currentUser?: UserEnvelope): CommandInput {
-    if (input.cartId.includes('check-this-out!')) {
-      input.quantity += 2
-    }
-    return input
-  }
-}
-```
-**Note:** Remember that the functions' order matters!
-
-As you can see from the example above, we are modifying the cartId only if this command was send by an authenticated user. Then, in the next function `beforeFnV2`, we check that this id has been modified, to finally update the quantity by 2.
-
 ### Reading read models
 
 To read a specific read model, we need to use a "query" operation. The structure of the "query" (the body
@@ -551,7 +488,7 @@ mutation {
 > [!NOTE]  Remember that, in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
 
 
-### Adding "before" hooks to your read models
+### Adding before hooks to your read models
 
 When you send queries or subscriptions to your read models, you can tell Booster to execute some code before executing the operation. These are called `before` hooks, and they receive two parameters: the read model filter sent with the request and an object with information about the currently signed-in user.
 
@@ -611,6 +548,30 @@ function validateEmail(filter: FilterFor<CartReadModel>, currentUser?: UserEnvel
   return filter
 }
 ```
+
+### Adding before hooks to your commands
+
+You can use `before` hooks also in your command handlers, and [they work as the Read Models ones](#Adding-before-hooks-to-your-read-models), with a slight difference: **we don't modify `filters` but `inputs` (the parameters sent with a command)**. Apart from that, it's pretty much the same, here's an example:
+
+```typescript
+@Command({
+  authorize: [User],
+  before: [ChangeCartItem.beforeFn],
+})
+export class ChangeCartItem {
+  public constructor(readonly cartId: UUID, readonly productId: UUID, readonly quantity: number) {
+  }
+
+  public static beforeFn(input: CommandInput, currentUser?: UserEnvelope): CommandInput {
+    if (input.cartUserId !== currentUser.id) {
+      throw NonAuthorizedUserException() // We don't let this user to trigger the command
+    }
+    return input
+  }
+}
+```
+
+As you can see, we just check if the `cartUserId` is equal to the `currentUser.id`, which is the user id extracted from the auth token. This way, we can throw an exception and avoid this user to call this command.
 
 ### Reading events
 
