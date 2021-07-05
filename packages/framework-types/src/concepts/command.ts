@@ -2,6 +2,9 @@ import { Register } from './register'
 import { Class } from '../typelevel'
 import { RoleAccess } from './role'
 import { PropertyMetadata } from 'metadata-booster'
+import { CommandFilterHooks } from './filter-hooks'
+
+export type CommandInput = Record<string, any>
 
 export interface CommandInterface<TCommand = unknown> extends Class<TCommand> {
   // The command's type is `unknown` because the CommandInterface type specifies the
@@ -21,4 +24,5 @@ export interface CommandMetadata<TCommand = unknown> {
   readonly class: CommandInterface<TCommand>
   readonly properties: Array<PropertyMetadata>
   readonly authorizedRoles: RoleAccess['authorize']
+  readonly before: NonNullable<CommandFilterHooks['before']>
 }

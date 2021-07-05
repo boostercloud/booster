@@ -4,7 +4,7 @@ import { Booster } from '../src/booster'
 import { fake, replace, restore } from 'sinon'
 import { expect } from './expect'
 import { BoosterCommandDispatcher } from '../src/booster-command-dispatcher'
-import { Logger, Register } from '@boostercloud/framework-types'
+import { CommandBeforeFunction, Logger, Register } from '@boostercloud/framework-types'
 import { Command } from '../src/decorators'
 import { RegisterHandler } from '../src/booster-register-handler'
 import { random } from 'faker'
@@ -89,6 +89,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
         commandHandlers: {
           ProperlyHandledCommand: {
             authorizedRoles: 'all',
+            before: [],
             class: ProperlyHandledCommand,
           },
         },
@@ -137,6 +138,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
         commandHandlers: {
           ProperlyHandledCommand: {
             authorizedRoles: 'all',
+            before: [],
             class: ProperlyHandledCommand,
           },
         },
@@ -192,6 +194,76 @@ describe('the `BoosterCommandsDispatcher`', () => {
         value: command,
       })
       expect(asyncOperationFinished).to.be.true
+    })
+
+    context('when before hook functions are passed', () => {
+      const newComment = 'Look, I changed the message'
+      const newCommentV2 = 'Yes, I changed it for a second time'
+      const beforeFn: CommandBeforeFunction = (input, currentUser) => {
+        input.comment = newComment
+        return input
+      }
+      const beforeFnV2: CommandBeforeFunction = (input, currentUser) => {
+        // To double-check it's really chained
+        if (input.comment === newComment) input.comment = newCommentV2
+        return input
+      }
+
+      it('transforms the input if a before hook function is passed', async () => {
+        let transformedInput = {}
+        @Command({ authorize: 'all', before: [beforeFn] })
+        class PostComment {
+          public constructor(readonly comment: string) {}
+          public static async handle(command: PostComment): Promise<void> {
+            transformedInput = command
+          }
+        }
+
+        const command = new PostComment('This test is good!')
+        replace(RegisterHandler, 'handle', fake())
+
+        let boosterConfig: any
+        Booster.configure('test', (config) => {
+          boosterConfig = config
+        })
+
+        await new BoosterCommandDispatcher(boosterConfig, logger).dispatchCommand({
+          requestID: '1234',
+          version: 1,
+          typeName: 'PostComment',
+          value: command,
+        })
+
+        expect(transformedInput).to.deep.equal(new PostComment(newComment))
+      })
+
+      it('transforms the input when more than one before hook function is passed', async () => {
+        let transformedInput = {}
+        @Command({ authorize: 'all', before: [beforeFn, beforeFnV2] })
+        class PostComment {
+          public constructor(readonly comment: string) {}
+          public static async handle(command: PostComment): Promise<void> {
+            transformedInput = command
+          }
+        }
+
+        const command = new PostComment('This test is good!')
+        replace(RegisterHandler, 'handle', fake())
+
+        let boosterConfig: any
+        Booster.configure('test', (config) => {
+          boosterConfig = config
+        })
+
+        await new BoosterCommandDispatcher(boosterConfig, logger).dispatchCommand({
+          requestID: '1234',
+          version: 1,
+          typeName: 'PostComment',
+          value: command,
+        })
+
+        expect(transformedInput).to.deep.equal(new PostComment(newCommentV2))
+      })
     })
   })
 })
