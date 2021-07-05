@@ -54,11 +54,10 @@ This is an example of a possible configuration:
 ```typescript
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
-import * as AWS from '@boostercloud/framework-provider-aws'
 
 Booster.configure('pre-production', (config: BoosterConfig): void => {
   config.appName = 'my-app-name'
-  config.provider = AWS.Provider
+  config.providerPackage = '@boostercloud/framework-provider-aws'
 })
 ```
 
@@ -66,9 +65,7 @@ The following is the list of the fields you can configure:
 
 - **appName:** This is the name that identifies your application. It will be used for many things, such us prefixing the resources created by the provider. There are certain restrictions regarding the characters you can use: all of them must be lower-cased and can't contain spaces. Two apps with different names are completely independent.
 
-- **provider:** This field contains the provider library instance that Booster will use when deploying or running your application.
-
-> [!NOTE]  So far, there is only one provider fully supported in Booster yet, @boostercloud/framework-provider-aws, and it is probably the one you have already set if you used the generator to create your project. Azure and Kubernetes have experimental support and the team is currently improving them.
+- **providerPackage:** This field contains the name of the provider package that Booster will use when deploying or running your application.
 
 - **assets**: This is an array of _relative_ paths from the root of the project pointing to files and folders with static assets. They will be included among the deployed files to the cloud provider.
   For example, imagine you are using the `dotenv` module so that all the environment variables you have in your `.env` files are loaded into memory in runtime. In order for this to work, you need to include your `.env` files as assets of your project, so that they are included when deploying. Assuming you only have a `.env` file in the root of your project, you should add the following to your configuration:
@@ -92,11 +89,11 @@ Now go to your `config.ts` file, import the aws provider library and set up your
 ```typescript
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { Provider as AWSProvider } from '@boostercloud/framework-provider-aws'
+import { Provider as AWSProvider } from
 
 Booster.configure('production', (config: BoosterConfig): void => {
   config.appName = 'my-app-name'
-  config.provider = AWSProvider
+  config.providePackage = '@boostercloud/framework-provider-aws'
 })
 ```
 
@@ -154,11 +151,10 @@ Now go to your `config.ts` file, import the aws provider library and set up your
 ```typescript
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { Provider as AzureProvider } from '@boostercloud/framework-provider-azure'
 
 Booster.configure('production', (config: BoosterConfig): void => {
   config.appName = 'my-app-name'
-  config.provider = AzureProvider()
+  config.providerPackage = '@boostercloud/framework-provider-azure'
 })
 ```
 
@@ -196,11 +192,10 @@ Ready! We can now boost deploy -e kubernetes-dev to deploy our application local
 ```typescript
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterK8sConfiguration } from '@boostercloud/framework-provider-kubernetes-infrastructure'
-import { Provider } from '@boostercloud/framework-provider-kubernetes'
 
 Booster.configure('production', (config: BoosterK8sConfiguration): void => {
   config.appName = 'my-app-name'
-  config.provider = Provider()
+  config.providerPackage = '@boostercloud/framework-provider-kubernetes'
 })
 ```
 
@@ -213,16 +208,15 @@ You can create multiple environments calling the `Booster.configure` function se
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
 // A provider that deploys your app to AWS:
-import * as AWS from '@boostercloud/framework-provider-aws'
 
 Booster.configure('stage', (config: BoosterConfig): void => {
   config.appName = 'fruit-store-stage'
-  config.provider = AWS.Provider
+  config.providerPackage = '@boostercloud/framework-provider-aws'
 })
 
 Booster.configure('prod', (config: BoosterConfig): void => {
   config.appName = 'fruit-store-prod'
-  config.provider = AWS.Provider
+  config.providerPackage = '@boostercloud/framework-provider-aws'
 })
 ```
 
@@ -231,11 +225,11 @@ It is also possible to place an environment configuration in a separated file. L
 ```typescript
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
-import * as AWS from '@boostercloud/framework-provider-aws'
+import * as AWS from
 
 Booster.configure('john', (config: BoosterConfig): void => {
   config.appName = 'john-fruit-store'
-  config.provider = AWS.Provider
+  config.providerPackage = '@boostercloud/framework-provider-aws'
 })
 ```
 
@@ -341,7 +335,8 @@ _src/config/production.ts:_
 ```typescript
 Booster.configure('development', (config: BoosterConfig): void => {
   config.appName = 'my-store'
-  config.provider = AWSProvider([
+  config.providerPackage = '@boostercloud/framework-provider-aws'
+  config.rockets = [
     {
       packageName: 'rocket-your-rocket-name-aws-infrastructure', // The name of your infrastructure rocket package
       parameters: {
@@ -349,7 +344,7 @@ Booster.configure('development', (config: BoosterConfig): void => {
         hello: 'world',
       },
     },
-  ])
+  ]
 })
 ```
 
