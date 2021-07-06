@@ -105,16 +105,6 @@ export class BoosterConfig {
   }
 
   public get provider(): ProviderLibrary {
-    if (this._provider) {
-      console.warn(`
-      The usage of the 'config.provider' field is deprecated,
-      please use 'config.providerPackage' instead.
-
-      For more information, check out the docs:
-
-      https://docs.booster.cloud/chapters/05_going-deeper?id=configuration-and-environments
-      `)
-    }
     if (!this._provider && this.providerPackage) {
       const rockets = this.rockets ?? []
       const provider = require(this.providerPackage)
@@ -125,6 +115,14 @@ export class BoosterConfig {
   }
 
   public set provider(provider: ProviderLibrary) {
+    console.warn(`
+      The usage of the 'config.provider' field is deprecated,
+      please use 'config.providerPackage' instead.
+
+      For more information, check out the docs:
+
+      https://docs.booster.cloud/chapters/05_going-deeper?id=configuration-and-environments
+    `)
     this._provider = provider
   }
 
