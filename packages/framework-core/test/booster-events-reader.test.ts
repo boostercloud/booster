@@ -1,11 +1,10 @@
-import { Logger, ProviderLibrary, EventSearchRequest, EventSearchResponse, UUID } from '@boostercloud/framework-types'
+import { ProviderLibrary, EventSearchRequest, EventSearchResponse, UUID } from '@boostercloud/framework-types'
 import { restore, fake, SinonSpy, match } from 'sinon'
 import { random, internet } from 'faker'
 import { BoosterEventsReader } from '../src/booster-events-reader'
 import { expect } from './expect'
 import { Booster } from '../src'
-
-const logger: Logger = console
+import { noopLogger as logger } from './helpers/logger-helper'
 
 describe('BoosterEventsReader', () => {
   class TestEntity {

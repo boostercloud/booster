@@ -27,11 +27,12 @@ describe('the `Booster` class', () => {
   })
 
   describe('the `configure` method', () => {
-    it('can be used to configure the app, using the `configure` method', () => {
+    it('can be used to configure the app', () => {
       const booster = Booster as any
 
       Booster.configure('test', (config) => {
         config.appName = 'test-app-name'
+        config.providerPackage = 'some-provider'
       })
 
       Booster.configure('another-environment', (config) => {
@@ -41,6 +42,7 @@ describe('the `Booster` class', () => {
       expect(booster.configuredEnvironments).to.have.lengthOf(2)
       expect(booster.configuredEnvironments).to.include.keys(['test', 'another-environment'])
       expect(booster.config.appName).to.equal('test-app-name')
+      expect(booster.config.providerPackage).to.equal('some-provider')
     })
   })
 

@@ -1,5 +1,26 @@
 # Features
 
+## Local Provider
+
+All Booster projects come with a local development environment configured by default, so you can test your app before deploying it to the cloud.
+
+You can see the configured local environment in your `src/config/config.ts` file:
+
+```typescript
+Booster.configure('local', (config: BoosterConfig): void => {
+  config.appName = 'my-store'
+  config.providerPackage = '@boostercloud/framework-provider-local'
+})
+```
+
+In order to start your application using the local provider, use the following command:
+
+```bash
+boost start -e local
+```
+
+Where `local` is one of your defined environments with the `Booster.configure` call.
+
 ## Authentication and Authorization
 
 First of all, you need to know that the authorization in Booster is done through roles. Every Command and ReadModel has an authorize policy that tells Booster who can execute or access it. It consists of one of the following two values:
@@ -31,6 +52,7 @@ export class UpdateUser {
 ```
 
 Optionally, you can also add authorization to entities to control who can read its events. To do so, pass a configuration object to the @Entity annotation with the authorized roles (or `'all'` for everyone) in the `authorizeReadEvents` field. For example:
+
 ```typescript
 // cart.ts (entity)
 @Entity({
@@ -38,10 +60,10 @@ Optionally, you can also add authorization to entities to control who can read i
 })
 export class Cart {
   public constructor(
-          readonly id: UUID,
-          readonly cartItems: Array<CartItem>,
-          public shippingAddress?: Address,
-          public checks = 0
+    readonly id: UUID,
+    readonly cartItems: Array<CartItem>,
+    public shippingAddress?: Address,
+    public checks = 0
   ) {}
   // <reducers...>
 }
@@ -130,15 +152,14 @@ Auth sample configuration:
 ```typescript
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
-import * as AWS from '@boostercloud/framework-provider-aws'
 
 Booster.configure('production', (config: BoosterConfig): void => {
   config.appName = 'demoapp'
-  config.provider = AWS.Provider
+  config.providerPackage = '@boostercloud/framework-provider-aws'
   config.tokenVerifier = {
     jwksUri: 'https://demoapp.firebase.com/.well-known/jwks.json',
     issuer: 'https://securetoken.google.com/demoapp',
-    rolesClaim: 'firebase:groups'
+    rolesClaim: 'firebase:groups',
   }
 })
 ```
@@ -167,7 +188,7 @@ Your token should include a property specified in `rolesClaim` with the value `A
   "iat": 1604676721,
   "exp": 1604680321,
   "phone_number": "+999999999",
-  "firebase": { }
+  "firebase": {}
 }
 ```
 
@@ -195,9 +216,11 @@ Luckily, you can forget about that because Booster does all the work for you!
 The GraphQL API is fully **auto-generated** based on your _commands_ and _read models_.
 
 **Note:** To get the full potential of the GraphQL API, it is recommended not to use `interface` types in any command or read model attributes. Use `class` types instead. This will allow you to perform complex graphQL filters, including over nested attributes. There's an example below:
+
 ```typescript
 // My type
-export class ItemWithQuantity { // Use "class", not "interface"
+export class ItemWithQuantity {
+  // Use "class", not "interface"
   public constructor(sku: string, quantity: number) {}
 }
 ```
@@ -250,18 +273,20 @@ While it is OK to know how to manually send GraphQL request, you normally don't 
 
 To have a great developer experience, we **strongly recommend** to use a GraphQL client for your platform of choice. Here are some great ones:
 
-- **[Hoppscotch (formerly Postwoman)](https://hoppscotch.io/)**: Ideal for testing sending manual requests, getting the schema, etc.
+- **[Altair](https://altair.sirmuel.design/)**: Ideal for testing sending manual requests, getting the schema, etc.
 - **Apollo clients**: These are the "go-to" SDKs to interact with a GraphQL API from your clients. It is very likely that there is a version for your client programming language. Check the ["Using Apollo Client"](#using-apollo-client) section to know more about this.
 
 ### Get GraphQL schema from deployed application
 
-After deploying your application with the command `boost deploy -e development`, you can get your GraphQL schema by using a tool like **[Hoppscotch (formerly Postwoman)](https://hoppscotch.io/)**. The previous command displays multiple endpoints, one of them is **graphqlURL**, which has the following pattern:
+After deploying your application with the command `boost deploy -e development`, you can get your GraphQL schema by using a tool like **[Altair](https://altair.sirmuel.design/)**. The previous command displays multiple endpoints, one of them is **graphqlURL**, which has the following pattern:
 
 `https://<base_url>/<environment>/graphql`
 
-By entering this URL in Hoppscotch, the schema can be displayed as shown in the screenshot (You need to select GraphQL mode in the left bar of the tool, fill in the URL and press the button):
+By entering this URL in Altair, the schema can be displayed as shown in the screenshot (You need to click on the Docs button in the URL bar). You can
+check the available Queries and Mutations by clicking on their name:
 
-![hoppscotch screenshot](../img/postwoman-screenshot.png)
+![Altair queries](../img/altair-queries.png)
+![Altair mutations](../img/altair-mutations.png)
 
 ### Sending commands
 
@@ -382,7 +407,7 @@ And we would get the following as response:
 }
 ```
 
-> [!NOTE]  Remember to set the proper **access token** for secured read models, check ["Authorizing operations"](#authorizing-operations).
+> [!NOTE] Remember to set the proper **access token** for secured read models, check ["Authorizing operations"](#authorizing-operations).
 
 ### Subscribing to read models
 
@@ -390,7 +415,7 @@ To subscribe to a specific read model, we need to use a subscription operation, 
 
 Doing this process manually is a bit cumbersome. _You will probably never need to do this_, as GraphQL clients like [Apollo](#using-apollo-client) abstract this process away. However, we will explain how to do it for learning purposes.
 
-Before sending any subscription, you need to _connect_ to the WebSocket to open the two-way communication channel. This connection is done differently depending on the client/library you use to manage web sockets. In this section, we will show examples using the [`wscat`](https://github.com/websockets/wscat) command line program. You can also use the online tool [Hoppscotch (formerly Postwoman)](https://hoppscotch.io/)
+Before sending any subscription, you need to _connect_ to the WebSocket to open the two-way communication channel. This connection is done differently depending on the client/library you use to manage web sockets. In this section, we will show examples using the [`wscat`](https://github.com/websockets/wscat) command line program. You can also use the online tool [Altair](https://altair.sirmuel.design/)
 
 Once you have connected successfully, you can use this channel to:
 
@@ -421,7 +446,7 @@ In the following examples we use [`wscat`](https://github.com/websockets/wscat) 
  wscat -c <websocketURL> -s graphql-ws
 ```
 
-> [!NOTE]  You should specify the `graphql-ws` subprotocol when connecting with your client via the `Sec-WebSocket-Protocol` header (in this case, `wscat` does that when you use the `-s` option).
+> [!NOTE] You should specify the `graphql-ws` subprotocol when connecting with your client via the `Sec-WebSocket-Protocol` header (in this case, `wscat` does that when you use the `-s` option).
 
 Now we can start sending messages just by writing them and hitting the <kbd>Enter</kbd> key.
 
@@ -485,7 +510,7 @@ mutation {
 }
 ```
 
-> [!NOTE]  Remember that, in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
+> [!NOTE] Remember that, in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
 
 
 ### Adding before hooks to your read models
@@ -576,6 +601,7 @@ As you can see, we just check if the `cartUserId` is equal to the `currentUser.i
 ### Reading events
 
 You can also fetch events directly if you need. To do so, there are two kind of queries that have the following structure:
+
 ```graphql
 query {
   eventsByEntity(entity: <name of entity>, entityID: "<id of the entity>") {
@@ -589,32 +615,46 @@ query {
   }
 }
 ```
+
 Where:
+
 - _&lt;name of your entity&gt;_ is the name of the class corresponding to the entity whose events you want to retrieve.
 - _&lt;id of the entity&gt;_ is the ID of the specific entity instance whose events you are interested in. **This is optional**
 - _&lt;name of event&gt;_ is the name of the class corresponding to the event type whose instances you want to retrieve.
 - _selection_field_list_ is a list with the names of the specific fields you want to get as response. See the response example below to know more.
-
 
 #### Examples
 
 ```
   URL: "<graphqlURL>"
 ```
+
 **A) Read all events associated with a specific instance (a specific ID) of the entity Cart**
+
 ```graphql
 query {
   eventsByEntity(entity: Cart, entityID: "ABC123") {
-    type entity entityID requestID createdAt value
+    type
+    entity
+    entityID
+    requestID
+    createdAt
+    value
   }
 }
 ```
 
 **B) Read all events associated with any instance of the entity Cart**
+
 ```graphql
 query {
   eventsByEntity(entity: Cart) {
-    type entity entityID requestID createdAt value
+    type
+    entity
+    entityID
+    requestID
+    createdAt
+    value
   }
 }
 ```
@@ -622,32 +662,39 @@ query {
 For these cases, you would get an array of event _envelopes_ as a response. This means that you get some metadata related to the event along with the event content, which can be found inside the `"value"` field.
 
 The response look like this:
+
 ```json
 {
-    "data": {
-        "eventsByEntity": [
-            {
-                "type": "CartItemChanged",
-                "entity": "Cart",
-                "entityID": "ABC123",
-                "requestID": "7a9cc6a7-7c7f-4ef0-aef1-b226ae4d94fa",
-                "createdAt": "2021-05-12T08:41:13.792Z",
-                "value": {
-                    "productId": "73f7818c-f83e-4482-be49-339c004b6fdf",
-                    "cartId": "ABC123",
-                    "quantity": 2
-                }
-            }
-        ]
-    }
+  "data": {
+    "eventsByEntity": [
+      {
+        "type": "CartItemChanged",
+        "entity": "Cart",
+        "entityID": "ABC123",
+        "requestID": "7a9cc6a7-7c7f-4ef0-aef1-b226ae4d94fa",
+        "createdAt": "2021-05-12T08:41:13.792Z",
+        "value": {
+          "productId": "73f7818c-f83e-4482-be49-339c004b6fdf",
+          "cartId": "ABC123",
+          "quantity": 2
+        }
+      }
+    ]
+  }
 }
 ```
 
 **C) Read events of a specific type**
+
 ```graphql
 query {
   eventsByType(type: CartItemChanged) {
-    type entity entityID requestID createdAt value
+    type
+    entity
+    entityID
+    requestID
+    createdAt
+    value
   }
 }
 ```
@@ -655,33 +702,49 @@ query {
 The response would have the same structure as seen in the previous examples. The only difference is that this time you will get only the events with the type you have specified ("CartItemChanged")
 
 #### Time filters
+
 Optionally, for any of the previous queries, you can include a `from` and/or `to` time filters to get only those events that happened inside that time range. You must use a string with a time in ISO format with any precision you like, for example:
-* `from:"2021"` : Events created on 2021 year or up.
-* `from:"2021-02-12" to:"2021-02-13"` : Events created during February 12th.
-* `from:"2021-03-16T16:16:25.178"` : Events created at that date and time, using millisecond precision, or later.
+
+- `from:"2021"` : Events created on 2021 year or up.
+- `from:"2021-02-12" to:"2021-02-13"` : Events created during February 12th.
+- `from:"2021-03-16T16:16:25.178"` : Events created at that date and time, using millisecond precision, or later.
 
 #### Time filters examples
+
 **A) Cart events from February 23rd to July 20th, 2021**
+
 ```graphql
 query {
-  eventsByEntity(entity: Cart, from:"2021-02-23", to:"2021-07-20") {
-    type entity entityID requestID createdAt value
+  eventsByEntity(entity: Cart, from: "2021-02-23", to: "2021-07-20") {
+    type
+    entity
+    entityID
+    requestID
+    createdAt
+    value
   }
 }
 ```
 
 **B) CartItemChanged events from February 25th to February 28th, 2021**
+
 ```graphql
 query {
-  eventsByType(type: CartItemChanged, from:"2021-02-25", to:"2021-02-28") {
-    type entity entityID requestID createdAt value
+  eventsByType(type: CartItemChanged, from: "2021-02-25", to: "2021-02-28") {
+    type
+    entity
+    entityID
+    requestID
+    createdAt
+    value
   }
 }
 ```
 
 #### Known limitations
-* Subscriptions don't work for the events API yet
-* You can only query events, but not write them through this API. Use a command for that.
+
+- Subscriptions don't work for the events API yet
+- You can only query events, but not write them through this API. Use a command for that.
 
 ### Using Apollo Client
 
@@ -934,7 +997,7 @@ The Booster WebSocket communication uses the "GraphQL over WebSocket" protocol a
 
 You don't need to know anything about this to develop using Booster, neither in the backend side nor in the frontend side (as all the Apollo GraphQL clients uses this protocol), but it is good to know it is there to guarantee a proper communication. In case you are really curious, you can read about the protocol [here](https://github.com/apollographql/subscriptions-transport-ws/blob/master/PROTOCOL.md).
 
-> [!NOTE]  The WebSocket communication in Booster only supports this subprotocol, whose identifier is `graphql-ws`. For this reason, when you connect to the WebSocket provisioned by Booster, you must specify the `graphql-ws` subprotocol. If not, the connection won't succeed.
+> [!NOTE] The WebSocket communication in Booster only supports this subprotocol, whose identifier is `graphql-ws`. For this reason, when you connect to the WebSocket provisioned by Booster, you must specify the `graphql-ws` subprotocol. If not, the connection won't succeed.
 
 ## Cloud native
 
@@ -992,8 +1055,8 @@ If you want to delete the Booster application that has been deployed, you can ru
 boost nuke -e <environment name>
 ```
 
-> [!WARNING]  This will delete everything in your stack, including databases. This action is **not** reversible!
+> [!WARNING] This will delete everything in your stack, including databases. This action is **not** reversible!
 
 For a force delete without asking for confirmation, you can run `boost nuke -e <environment name> -f`.
 
-> [!ATTENTION]  Be EXTRA CAUTIOUS with this option, all your application data will be irreversibly DELETED without confirmation.
+> [!ATTENTION] Be EXTRA CAUTIOUS with this option, all your application data will be irreversibly DELETED without confirmation.
