@@ -22,3 +22,4 @@ jobs:
       - run: npx lerna bootstrap
       - run: npx lerna run compile --stream
       - run: npx lerna run test --stream
+ 
