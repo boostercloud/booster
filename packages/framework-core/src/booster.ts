@@ -75,14 +75,27 @@ export class Booster {
   ): Searcher<TReadModel> {
     const searchFunction: SearcherFunction<TReadModel> = async (
       entityTypeName: string,
-      filters: FilterFor<unknown>
+      filters: FilterFor<unknown>,
+      limit?: number,
+      afterCursor?: any,
+      paginatedVersion?: boolean
     ) => {
       const searchResult = await this.config.provider.readModels.search(
         this.config,
         this.logger,
         entityTypeName,
-        filters
+        filters,
+        limit,
+        afterCursor,
+        paginatedVersion
       )
+
+      if (!Array.isArray(searchResult)) {
+        return {
+          ...searchResult,
+          items: searchResult ? createInstances(readModelClass, searchResult.items as Array<any>) : [],
+        }
+      }
       return searchResult ? createInstances(readModelClass, searchResult) : []
     }
     return new Searcher(readModelClass, searchFunction)
