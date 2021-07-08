@@ -68,6 +68,11 @@ export class BoosterReadModelsReader {
 
     searcher.filter(filters)
 
+    searcher
+      .limit(readModelRequest.limit)
+      .afterCursor(readModelRequest.afterCursor)
+      .paginatedVersion(readModelRequest.paginatedVersion)
+
     return searcher.search()
   }
 

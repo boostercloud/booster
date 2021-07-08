@@ -185,6 +185,9 @@ describe('GraphQL generator', () => {
           filters: {},
           requestID: mockRequestId,
           typeName: mockType.name,
+          limit: undefined,
+          afterCursor: undefined,
+          paginatedVersion: false,
           version: 1,
         }
 
@@ -393,6 +396,9 @@ describe('GraphQL generator', () => {
           filters: {},
           requestID: mockRequestId,
           typeName: mockType.name,
+          limit: undefined,
+          afterCursor: undefined,
+          paginatedVersion: false,
           version: 1,
         })
       })

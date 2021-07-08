@@ -145,7 +145,10 @@ describe('BoosterReadModelReader', () => {
           match.any,
           match.any,
           TestReadModel.name,
-          filters
+          filters,
+          undefined,
+          undefined,
+          false
         )
         expect(result).to.be.deep.equal(expectedReadModels)
       })

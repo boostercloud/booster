@@ -68,13 +68,30 @@ export interface ReadModelEnvelope {
   value: ReadModelInterface
 }
 
+export interface ReadModelListResult {
+  items: Array<unknown>
+  count?: number
+  cursor?: Record<string, string>
+}
+
 export interface ReadModelRequestEnvelope extends Envelope {
   typeName: string
   version: number
-  filters: Record<string, ReadModelPropertyFilter>
+  filters: ReadModelRequestProperties
+  limit?: number
+  afterCursor?: unknown
+  paginatedVersion?: boolean // Used only for retrocompatibility
+}
+
+export interface ReadModelRequestArgs {
+  filter?: ReadModelRequestProperties
+  limit?: number
+  afterCursor?: unknown
 }
 
 export type ReadModelPropertyFilter = FilterFor<unknown>
+
+export type ReadModelRequestProperties = Record<string, ReadModelPropertyFilter>
 
 export interface GraphQLRequestEnvelope extends Envelope {
   eventType: 'CONNECT' | 'MESSAGE' | 'DISCONNECT'

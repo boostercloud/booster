@@ -86,10 +86,10 @@ describe('GraphQLQueryGenerator', () => {
           )
         })
 
-        it('should call typeInformer.getGraphQLTypeFor twice', () => {
+        it('should call typeInformer.getGraphQLTypeFor thrice', () => {
           sut.generate()
 
-          expect(getGraphQLTypeForStub).calledTwice.and.calledWith(mockTargetTypeClass)
+          expect(getGraphQLTypeForStub).calledThrice.and.calledWith(mockTargetTypeClass)
         })
 
         it('should call filterResolverBuilder once with expected argument', () => {
@@ -166,13 +166,10 @@ describe('GraphQLQueryGenerator', () => {
               )
             })
 
-            it('should call typeInformer.getGraphQLTypeFor 3 times', () => {
+            it('should call typeInformer.getGraphQLTypeFor 4 times', () => {
               sut.generate()
 
-              expect(getGraphQLTypeForStub)
-                .callCount(3)
-                .and.calledWith(mockTargetType)
-                .and.calledWith(mockPropertyType)
+              expect(getGraphQLTypeForStub).callCount(4).and.calledWith(mockTargetType).and.calledWith(mockPropertyType)
             })
 
             it('should call filterResolverBuilder once with expected arguments', () => {
@@ -194,9 +191,8 @@ describe('GraphQLQueryGenerator', () => {
                 expect(config.fields[mockTargetTypeName].args['id'].description).to.be.undefined
                 expect(config.fields[mockTargetTypeName].args['id'].extensions).to.be.undefined
 
-                const booleansTypeFilterConfig = config.fields[`${mockTargetTypeName}s`].args.filter.type.getFields()[
-                  mockPropertyName
-                ]
+                const booleansTypeFilterConfig =
+                  config.fields[`${mockTargetTypeName}s`].args.filter.type.getFields()[mockPropertyName]
                 expect(booleansTypeFilterConfig.type.toString()).to.be.equal('BooleanPropertyFilter')
 
                 const fieldsKeys = Object.keys(booleansTypeFilterConfig.type.getFields())
@@ -247,9 +243,8 @@ describe('GraphQLQueryGenerator', () => {
                 expect(config.fields[mockTargetTypeName].args['id'].description).to.be.undefined
                 expect(config.fields[mockTargetTypeName].args['id'].extensions).to.be.undefined
 
-                const TypeFilterConfig = config.fields[`${mockTargetTypeName}s`].args.filter.type.getFields()[
-                  mockPropertyName
-                ]
+                const TypeFilterConfig =
+                  config.fields[`${mockTargetTypeName}s`].args.filter.type.getFields()[mockPropertyName]
                 expect(TypeFilterConfig.type.toString()).to.be.equal('NumberPropertyFilter')
 
                 const fieldsKeys = Object.keys(TypeFilterConfig.type.getFields())
@@ -301,9 +296,8 @@ describe('GraphQLQueryGenerator', () => {
                 expect(config.fields[mockTargetTypeName].args['id'].description).to.be.undefined
                 expect(config.fields[mockTargetTypeName].args['id'].extensions).to.be.undefined
 
-                const TypeFilterConfig = config.fields[`${mockTargetTypeName}s`].args.filter.type.getFields()[
-                  mockPropertyName
-                ]
+                const TypeFilterConfig =
+                  config.fields[`${mockTargetTypeName}s`].args.filter.type.getFields()[mockPropertyName]
                 expect(TypeFilterConfig.type.toString()).to.be.equal('StringPropertyFilter')
 
                 const fieldsKeys = Object.keys(TypeFilterConfig.type.getFields())
@@ -365,13 +359,10 @@ describe('GraphQLQueryGenerator', () => {
               )
             })
 
-            it('should call typeInformer.getGraphQLTypeFor 3 times', () => {
+            it('should call typeInformer.getGraphQLTypeFor 5 times', () => {
               sut.generate()
 
-              expect(getGraphQLTypeForStub)
-                .callCount(3)
-                .and.calledWith(mockTargetType)
-                .and.calledWith(mockPropertyType)
+              expect(getGraphQLTypeForStub).callCount(5).and.calledWith(mockTargetType).and.calledWith(mockPropertyType)
             })
 
             it('should call filterResolverBuilder once with expected arguments', () => {
@@ -413,13 +404,10 @@ describe('GraphQLQueryGenerator', () => {
               )
             })
 
-            it('should call typeInformer.getGraphQLTypeFor 3 times', () => {
+            it('should call typeInformer.getGraphQLTypeFor 4 times', () => {
               sut.generate()
 
-              expect(getGraphQLTypeForStub)
-                .callCount(3)
-                .and.calledWith(mockTargetType)
-                .and.calledWith(mockPropertyType)
+              expect(getGraphQLTypeForStub).callCount(4).and.calledWith(mockTargetType).and.calledWith(mockPropertyType)
             })
 
             it('should call filterResolverBuilder once with expected arguments', () => {
@@ -460,18 +448,13 @@ describe('GraphQLQueryGenerator', () => {
         it('should call typeInformer.getGraphQLTypeFor n of target types * 2', () => {
           sut.generate()
 
-          expect(getGraphQLTypeForStub)
-            .callCount(4)
-            .and.calledWith(Boolean)
-            .and.calledWith(String)
+          expect(getGraphQLTypeForStub).callCount(6).and.calledWith(Boolean).and.calledWith(String)
         })
 
         it('should call filterResolverBuilder twice with expected arguments', () => {
           sut.generate()
 
-          expect(mockByIdResolverBuilder)
-            .to.be.calledTwice.and.calledWith(Boolean)
-            .and.calledWith(String)
+          expect(mockByIdResolverBuilder).to.be.calledTwice.and.calledWith(Boolean).and.calledWith(String)
           // @ts-ignore
           expect(mockByIdResolverBuilder).to.be.calledAfter(getGraphQLTypeForStub)
         })
@@ -506,18 +489,13 @@ describe('GraphQLQueryGenerator', () => {
           it('should call typeInformer.getGraphQLTypeFor (number of types * 2) - (2 * (repeated types))', () => {
             sut.generate()
 
-            expect(getGraphQLTypeForStub)
-              .to.be.callCount(4)
-              .and.calledWith(Boolean)
-              .and.calledWith(String)
+            expect(getGraphQLTypeForStub).to.be.callCount(6).and.calledWith(Boolean).and.calledWith(String)
           })
 
           it('should call filterResolverBuilder twice with expected arguments', () => {
             sut.generate()
 
-            expect(mockByIdResolverBuilder)
-              .to.be.calledTwice.and.calledWith(Boolean)
-              .and.calledWith(String)
+            expect(mockByIdResolverBuilder).to.be.calledTwice.and.calledWith(Boolean).and.calledWith(String)
             // @ts-ignore
             expect(mockByIdResolverBuilder).to.be.calledAfter(getGraphQLTypeForStub)
           })

@@ -8,6 +8,7 @@ import {
   ScheduledCommandEnvelope,
   EventFilter,
   EventSearchResponse,
+  ReadModelListResult,
 } from './envelope'
 import { BoosterConfig } from './config'
 import { Logger } from './logger'
@@ -50,8 +51,11 @@ export interface ProviderReadModelsLibrary {
     config: BoosterConfig,
     logger: Logger,
     entityTypeName: string,
-    filters: FilterFor<unknown>
-  ): Promise<Array<TReadModel>>
+    filters: FilterFor<unknown>,
+    limit?: number,
+    afterCursor?: unknown,
+    paginatedVersion?: boolean
+  ): Promise<Array<TReadModel> | ReadModelListResult>
   /**
    * If "expectedCurrentVersion" is provided, the underlying provider must throw the error OptimisticConcurrencyUnexpectedVersionError
    * if the current stored read model contains a version that's different from the provided one

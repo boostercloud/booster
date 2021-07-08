@@ -1,5 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Operation, FilterFor, BoosterConfig, Logger, InvalidParameterError } from '@boostercloud/framework-types'
+import {
+  Operation,
+  FilterFor,
+  BoosterConfig,
+  Logger,
+  InvalidParameterError,
+  ReadModelListResult,
+} from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
 import ExpressionAttributeValueMap = DocumentClient.ExpressionAttributeValueMap
@@ -10,11 +17,16 @@ export async function searchReadModel(
   config: BoosterConfig,
   logger: Logger,
   readModelName: string,
-  filters: FilterFor<unknown>
-): Promise<Array<any>> {
+  filters: FilterFor<unknown>,
+  limit?: number,
+  afterCursor?: DynamoDB.DocumentClient.Key | undefined,
+  paginatedVersion = false
+): Promise<Array<any> | ReadModelListResult> {
   let params: DocumentClient.ScanInput = {
     TableName: config.resourceNames.forReadModel(readModelName),
     ConsistentRead: true,
+    Limit: limit,
+    ExclusiveStartKey: afterCursor,
   }
   if (filters && Object.keys(filters).length > 0) {
     params = {
@@ -24,13 +36,22 @@ export async function searchReadModel(
       ExpressionAttributeValues: buildExpressionAttributeValues(filters),
     }
   }
+
   logger.debug('Running search with the following params: \n', params)
 
   const result = await dynamoDB.scan(params).promise()
 
-  logger.debug('Search result: ', result.Items)
+  logger.debug('Search result: ', result)
 
-  return result.Items ?? []
+  if (paginatedVersion) {
+    return {
+      items: result.Items ?? [],
+      count: result.Count,
+      cursor: result.LastEvaluatedKey,
+    }
+  } else {
+    return result.Items ?? []
+  }
 }
 
 function buildFilterExpression(filters: FilterFor<any>, usedPlaceholders: Array<string> = []): string {

@@ -204,6 +204,301 @@ describe('Read models end-to-end tests', () => {
         })
       })
     })
+
+    context('query lists of carts', () => {
+      let mockCartId: string
+      const mockCartItems: Array<{ productId: string; quantity: number }> = []
+      let mockProductId: string
+      let mockQuantity: number
+
+      beforeEach(async () => {
+        mockCartId = random.uuid()
+
+        mockProductId = random.uuid()
+        mockQuantity = 2
+        mockCartItems.push({ productId: mockProductId, quantity: mockQuantity })
+
+        await client.mutate({
+          variables: {
+            cartId: mockCartId,
+            productId: mockProductId,
+            quantity: mockQuantity,
+          },
+          mutation: gql`
+            mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+              ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+            }
+          `,
+        })
+      })
+
+      it('should retrieve a list of carts', async () => {
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              query: gql`
+                query CartReadModels {
+                  CartReadModels {
+                    id
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.CartReadModels?.length >= 1
+        )
+
+        const cartData = queryResult.data.CartReadModels
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.be.gte(1)
+      })
+
+      it('should retrieve a specific cart using filters', async () => {
+        const filter = { id: { eq: mockCartId } }
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: filter,
+              },
+              query: gql`
+                query CartReadModels($filter: CartReadModelFilter) {
+                  CartReadModels(filter: $filter) {
+                    id
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.CartReadModels?.length >= 1
+        )
+
+        const cartData = queryResult.data.CartReadModels
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.equal(1)
+        expect(cartData[0].id).to.equal(mockCartId)
+      })
+
+      it('should retrieve a list of carts using  complex filters', async () => {
+        const filter = { cartItems: { includes: { productId: mockProductId, quantity: 2 } } }
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: filter,
+              },
+              query: gql`
+                query CartReadModels($filter: CartReadModelFilter) {
+                  CartReadModels(filter: $filter) {
+                    id
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.CartReadModels?.length >= 1
+        )
+
+        const cartData = queryResult.data.CartReadModels
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.equal(1)
+        expect(cartData[0].id).to.equal(mockCartId)
+      })
+
+      it('should retrieve a list of carts using paginated read model', async () => {
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              query: gql`
+                query ListCartReadModels {
+                  ListCartReadModels {
+                    items {
+                      id
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels?.items.length >= 1
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.be.gte(1)
+      })
+
+      it('should retrieve a specific cart using filters using paginated read model', async () => {
+        const filter = { id: { eq: mockCartId } }
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: filter,
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter) {
+                  ListCartReadModels(filter: $filter) {
+                    items {
+                      id
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels?.items.length >= 1
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.equal(1)
+        expect(cartData[0].id).to.equal(mockCartId)
+      })
+
+      it('should retrieve a list of carts using complex filters using paginated read model', async () => {
+        const filter = { cartItems: { includes: { productId: mockProductId, quantity: 2 } } }
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: filter,
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter) {
+                  ListCartReadModels(filter: $filter) {
+                    items {
+                      id
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels?.items.length >= 1
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.equal(1)
+        expect(cartData[0].id).to.equal(mockCartId)
+      })
+    })
+
+    context('query using pagination', () => {
+      const mockCartIds: Array<string> = []
+      const mockCartItems: Array<{ productId: string; quantity: number }> = []
+      let mockProductId: string
+      let mockQuantity: number
+      const changeCartPromises: Array<Promise<unknown>> = []
+      const cartsNumber = 3
+
+      beforeEach(async () => {
+        mockProductId = random.uuid()
+        mockQuantity = 2
+        mockCartItems.push({ productId: mockProductId, quantity: mockQuantity })
+
+        for (let i = 0; i < cartsNumber; i++) {
+          const mockCartId = random.uuid()
+          mockCartIds.push(mockCartId)
+
+          const mockProductId: string = random.uuid()
+          const mockQuantity: number = random.number({ min: 1 })
+          mockCartItems.push({ productId: mockProductId, quantity: mockQuantity })
+
+          changeCartPromises.push(
+            client.mutate({
+              variables: {
+                cartId: mockCartId,
+                productId: mockProductId,
+                quantity: mockQuantity,
+              },
+              mutation: gql`
+                mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+                  ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+                }
+              `,
+            })
+          )
+        }
+
+        await Promise.all(changeCartPromises)
+      })
+
+      it('should retrieve a list of carts limited to 2 items', async () => {
+        const limit = 2
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                limit: limit,
+              },
+              query: gql`
+                query ListCartReadModels($limit: Int) {
+                  ListCartReadModels(limit: $limit) {
+                    items {
+                      id
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels?.items.length == 2
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.equal(2)
+      })
+
+      it('should retrieve a list of carts paginated', async () => {
+        const limit = 1
+        let cursor: Record<'id', string> | undefined = undefined
+
+        for (let i = 0; i < cartsNumber; i++) {
+          const queryResult = await waitForIt(
+            () => {
+              return client.query({
+                variables: {
+                  limit: limit,
+                  afterCursor: cursor,
+                },
+                query: gql`
+                  query ListCartReadModels($limit: Int, $afterCursor: JSONObject) {
+                    ListCartReadModels(limit: $limit, afterCursor: $afterCursor) {
+                      cursor
+                      items {
+                        id
+                      }
+                    }
+                  }
+                `,
+              })
+            },
+            (result) => result?.data?.ListCartReadModels?.items.length === 1
+          )
+
+          const currentPageCartData = queryResult.data.ListCartReadModels.items
+
+          cursor = queryResult.data.ListCartReadModels.cursor
+
+          if (cursor) {
+            expect(cursor.id).to.equal(currentPageCartData[0].id)
+          }
+          expect(currentPageCartData).to.be.an('array')
+          expect(currentPageCartData.length).to.equal(1)
+          expect(cursor).to.not.be.undefined
+        }
+      })
+    })
   })
 
   describe('projecting two entities', () => {
