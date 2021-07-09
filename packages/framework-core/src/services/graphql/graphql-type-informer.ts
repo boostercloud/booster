@@ -47,11 +47,12 @@ export class GraphQLTypeInformer {
 
       if (primitiveType === Array) {
         const param = prop.typeInfo.parameters[0]
-        const graphQLPropType = this.getGraphQLTypeFor(param.type)
+        let graphQLPropType = this.getGraphQLTypeFor(param.type)
 
         if (!this.isGraphQLScalarType(graphQLPropType) && param.type) {
           const properties = getPropertiesMetadata(param.type)
           this.generateGraphQLTypeFromMetadata({ class: param.type, properties })
+          graphQLPropType = this.getGraphQLTypeFor(param.type)
         }
 
         fields[prop.name] = {
