@@ -14,11 +14,7 @@ export async function rawGraphQLRequestToEnvelope(
       requestID,
       eventType,
       connectionID,
-      currentUser: {
-        username: 'test@test.com',
-        role: '',
-        claims: {},
-      },
+      token: request.headers.authorization,
       value: request.body,
     }
   } catch (e) {
