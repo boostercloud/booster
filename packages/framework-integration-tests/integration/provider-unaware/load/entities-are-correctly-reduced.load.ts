@@ -31,7 +31,7 @@ describe('Data consistency on entities', () => {
 
     it('adds stock to all of them with many events without corrupting data', async () => {
       const durationWarmup = 10
-      const arrivalRateWarmup = 800
+      const arrivalRateWarmup = 500
       const durationBurst = 10
       const arrivalRateBurst = 1500
       const expectedStock = durationWarmup * arrivalRateWarmup + durationBurst * arrivalRateBurst
