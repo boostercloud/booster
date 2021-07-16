@@ -22,7 +22,7 @@
   "dependencies": {
     "@boostercloud/framework-types": "^0.20.0",
     "body-parser": "^1.18.3",
-    "cors": "^2.8.5",
+    "cors": "2.8.5",
     "express": "^4.17.1",
     "form-data": "^3.0.0",
     "isomorphic-fetch": "^2.2.1",
