@@ -8,3 +8,4 @@ export {
 } from '@boostercloud/framework-core'
 
 Booster.start(__dirname)
+
