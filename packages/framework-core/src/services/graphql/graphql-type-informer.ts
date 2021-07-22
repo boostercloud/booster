@@ -55,7 +55,7 @@ export class GraphQLTypeInformer {
         }
 
         fields[prop.name] = {
-          type: GraphQLList(graphQLPropType),
+          type: GraphQLList(new GraphQLNonNull(graphQLPropType)),
         }
       } else {
         fields[prop.name] = { type: this.getGraphQLTypeFor(prop.typeInfo.type) }
