@@ -17,6 +17,7 @@
     "@boostercloud/framework-types": "^0.20.2",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
+    "@oclif/errors": "^1",
     "@oclif/plugin-help": "^2",
     "chalk": "^2.4.2",
     "child-process-promise": "^2.2.1",
