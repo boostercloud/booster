@@ -24,7 +24,6 @@
     "execa": "^2.0.3",
     "fp-ts": "2.10.5",
     "fs-extra": "^8.1.0",
-    "globby": "^8",
     "inflected": "2.1.0",
     "inquirer": "^7.0.0",
     "mustache": "4.1.0",
