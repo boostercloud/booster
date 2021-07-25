@@ -69,9 +69,9 @@ export async function searchReadModel(
   filters: FilterFor<any>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<Array<any>> {
-  logger.info('Converting filter to query')
+  logger.debug('Converting filter to query')
   const query = queryRecordFor(readModelName, filters)
-  logger.info('Got query ', query)
+  logger.debug('Got query ', query)
   const result = await db.query(query)
   logger.debug('[ReadModelAdapter#searchReadModel] Search result: ', result)
   return result?.map((envelope) => envelope.value) ?? []
