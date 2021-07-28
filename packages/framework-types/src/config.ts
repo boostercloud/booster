@@ -14,6 +14,7 @@ import { ProviderLibrary } from './provider'
 import { Level } from './logger'
 import * as path from 'path'
 import { RocketDescriptor } from './rocket-descriptor'
+import { ReadModelReferenceMetadata } from './concepts/read-model-reference-metadata'
 
 /**
  * Class used by external packages that needs to get a representation of
@@ -46,6 +47,7 @@ export class BoosterConfig {
   public readonly commandHandlers: Record<CommandName, CommandMetadata> = {}
   public readonly eventHandlers: Record<EventName, Array<EventHandlerInterface>> = {}
   public readonly readModels: Record<ReadModelName, ReadModelMetadata> = {}
+  public readonly readModelReferences: Record<ReadModelName, ReadModelReferenceMetadata> = {}
   public readonly projections: Record<EntityName, Array<ProjectionMetadata>> = {}
   public readonly roles: Record<RoleName, RoleMetadata> = {}
   public readonly migrations: Record<ConceptName, Map<Version, MigrationMetadata>> = {}
