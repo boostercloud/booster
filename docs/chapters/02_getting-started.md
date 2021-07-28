@@ -182,6 +182,12 @@ the application with the selected profile.
 export AWS_PROFILE=other_profile
 ```
 
+> [!WARNING]
+> If you want to use multiple profiles by setting the `AWS_PROFILE` environment variable, first ensure that the 
+> `AWS_SECRET_ACCESS_KEY` and `AWS_ACCESS_KEY_ID` are **not** set. Otherwise, the AWS SDK will ignore the credentials 
+> associated with the profile assigned to the `AWS_PROFILE` variable and use the credentials set to the other 
+> environment variables instead.
+
 ### Azure Provider Prerequisites
 
 This step is only necessary in the case that you want to use the Azure Provider.
