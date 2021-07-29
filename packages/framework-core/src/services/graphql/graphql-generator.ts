@@ -119,8 +119,8 @@ export class GraphQLGenerator {
   ): GraphQLFieldResolver<any, GraphQLResolverContext, { input: any }> {
     return async (parent, args, context, info) => {
       const commandEnvelope = toCommandEnvelope(commandClass.name, args.input, context)
-      await this.commandsDispatcher.dispatchCommand(commandEnvelope)
-      return true
+      const result = await this.commandsDispatcher.dispatchCommand(commandEnvelope)
+      return result
     }
   }
 
