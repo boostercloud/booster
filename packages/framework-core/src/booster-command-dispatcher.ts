@@ -46,8 +46,6 @@ export class BoosterCommandDispatcher {
     const result = await commandClass.handle(commandInstance, register)
     this.logger.debug('Command dispatched with register: ', register)
     await RegisterHandler.handle(this.config, this.logger, register)
-    // It could be that the command didn't return anything
-    // so in that case we return `true`, as GraphQL doesn't have a `null` type
-    return result ?? true
+    return result
   }
 }
