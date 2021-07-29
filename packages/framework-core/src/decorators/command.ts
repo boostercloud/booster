@@ -49,7 +49,7 @@ export function Returns<TReturn>(
   return (commandClass) => {
     Booster.configureCurrentEnv((config): void => {
       if (config.commandHandlerReturnTypes[commandClass.name]) {
-        throw new Error(`A command handler for the command ${commandClass.name} is already registered`)
+        throw new Error(`A command handler return type for the command ${commandClass.name} is already registered`)
       }
 
       config.commandHandlerReturnTypes[commandClass.name] = { class: returnClass }
