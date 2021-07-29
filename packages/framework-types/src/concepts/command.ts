@@ -1,16 +1,16 @@
 import { Register } from './register'
-import { Class } from '../typelevel'
+import { AnyClass, Class } from '../typelevel'
 import { RoleAccess } from './role'
 import { PropertyMetadata } from 'metadata-booster'
 import { CommandFilterHooks } from './filter-hooks'
 
 export type CommandInput = Record<string, any>
 
-export interface CommandInterface<TCommand = unknown> extends Class<TCommand> {
+export interface CommandInterface<TCommand = unknown, THandleResult = unknown> extends Class<TCommand> {
   // The command's type is `unknown` because the CommandInterface type specifies the
   // structure of the class, rather than the instance of the commands, which is what
   // arrives to the `handle` static method.
-  handle(command: TCommand, register: Register): Promise<void>
+  handle(command: TCommand, register: Register): Promise<THandleResult>
 }
 
 // We set the TCommand type to `unknown` because at the time of execution of the
@@ -25,4 +25,5 @@ export interface CommandMetadata<TCommand = unknown> {
   readonly properties: Array<PropertyMetadata>
   readonly authorizedRoles: RoleAccess['authorize']
   readonly before: NonNullable<CommandFilterHooks['before']>
+  readonly returnClass: AnyClass
 }

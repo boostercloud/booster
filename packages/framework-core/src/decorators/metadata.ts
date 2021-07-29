@@ -1,14 +1,29 @@
-import { Class } from '@boostercloud/framework-types'
+import { AnyClass } from '@boostercloud/framework-types'
 import { ClassMetadata, PropertyMetadata } from 'metadata-booster'
 import 'reflect-metadata'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getPropertiesMetadata(classType: Class<any>): Array<PropertyMetadata> {
-  const meta: ClassMetadata = Reflect.getMetadata('booster:typeinfo', classType)
-  if (!meta) {
-    console.log(`Could not get proper metadata information of ${classType.name}`)
+export function getPropertiesMetadata(classType: AnyClass): Array<PropertyMetadata> {
+  try {
+    return getMetadata(classType).fields
+  } catch (e) {
+    console.log(e.message)
     return []
   }
+}
 
-  return meta.fields
+export function getMethodsMetadata(classType: AnyClass): Array<PropertyMetadata> {
+  try {
+    return getMetadata(classType).methods
+  } catch (e) {
+    console.log(e.message)
+    return []
+  }
+}
+
+export function getMetadata(classType: AnyClass): ClassMetadata {
+  const meta: ClassMetadata = Reflect.getMetadata('booster:typeinfo', classType)
+  if (!meta) {
+    throw new Error(`Could not get proper metadata information of ${classType.name}`)
+  }
+  return meta
 }
