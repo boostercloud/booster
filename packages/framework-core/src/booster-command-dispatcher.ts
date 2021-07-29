@@ -15,7 +15,7 @@ import { applyBeforeFunctions } from './services/filter-helpers'
 export class BoosterCommandDispatcher {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
 
-  public async dispatchCommand(commandEnvelope: CommandEnvelope): Promise<void> {
+  public async dispatchCommand(commandEnvelope: CommandEnvelope): Promise<unknown> {
     this.logger.debug('Dispatching the following command envelope: ', commandEnvelope)
     if (!commandEnvelope.version) {
       throw new InvalidParameterError('The required command "version" was not present')
@@ -43,8 +43,9 @@ export class BoosterCommandDispatcher {
 
     const register = new Register(commandEnvelope.requestID, commandEnvelope.currentUser)
     this.logger.debug('Calling "handle" method on command: ', commandClass)
-    await commandClass.handle(commandInstance, register)
+    const result = await commandClass.handle(commandInstance, register)
     this.logger.debug('Command dispatched with register: ', register)
     await RegisterHandler.handle(this.config, this.logger, register)
+    return result
   }
 }

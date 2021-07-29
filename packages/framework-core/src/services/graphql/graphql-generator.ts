@@ -47,7 +47,10 @@ export class GraphQLGenerator {
     private readModelsReader: BoosterReadModelsReader,
     private eventsReader: BoosterEventsReader
   ) {
-    this.typeInformer = new GraphQLTypeInformer({ ...config.readModels, ...config.commandHandlers })
+    this.typeInformer = new GraphQLTypeInformer({
+      ...config.readModels,
+      ...config.commandHandlers,
+    })
     this.queryGenerator = new GraphQLQueryGenerator(
       config,
       config.readModels,
@@ -116,8 +119,10 @@ export class GraphQLGenerator {
   ): GraphQLFieldResolver<any, GraphQLResolverContext, { input: any }> {
     return async (parent, args, context, info) => {
       const commandEnvelope = toCommandEnvelope(commandClass.name, args.input, context)
-      await this.commandsDispatcher.dispatchCommand(commandEnvelope)
-      return true
+      const result = await this.commandsDispatcher.dispatchCommand(commandEnvelope)
+      // It could be that the command didn't return anything
+      // so in that case we return `true`, as GraphQL doesn't have a `null` type
+      return result ?? true
     }
   }
 

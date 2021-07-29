@@ -81,6 +81,35 @@ The generator will automatically create a file called `create-product.ts` with a
 
 Each command class must have a method called `handle`. This function is the command handler, and it will be called by the framework every time one instance of this command is submitted. Inside the handler you can run validations, return errors, query entities to make decisions, and register relevant domain events.
 
+### Returning a value
+
+By default, the command handler function is generated with `void` as a return type,
+and in consequence, it will return `true` when called through the GraphQL.
+
+> [!NOTE] `true` is returned because GraphQL lacks of a `void` type, and it represents that the execution was successful.
+
+If you want to return something back to the client, you have to decorate this
+function with the `@Returns` decorator, passing the **class** that you want to
+return.
+
+> [!NOTE] For primitive types like `number`, `string`. The class is the name of the type but with the first letter in uppercase. E.g. `Number`, `String`
+
+For example:
+
+```typescript
+@Command({
+  authorize: 'all',
+})
+export class CreateProduct {
+  public constructor(readonly sku: string, readonly price: number) {}
+
+  @Returns(String)
+  public static async handle(command: CreateProduct, register: Register): Promise<string> {
+    return "Product created!"
+  }
+}
+```
+
 ### Validating data
 
 Booster uses the typed nature of GraphQL to ensure that types are correct before reaching the handler, so you don't have to validate types.

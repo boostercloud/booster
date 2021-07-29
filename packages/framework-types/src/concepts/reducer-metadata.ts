@@ -1,7 +1,6 @@
-import { Class } from '..'
+import { AnyClass } from '..'
 
 export interface ReducerMetadata {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  class: Class<any>
+  class: AnyClass
   methodName: string
 }
