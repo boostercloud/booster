@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-core",
-  "version": "0.20.2",
+  "version": "0.20.3",
   "description": "Library for your Booster apps",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
@@ -30,8 +30,8 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "dependencies": {
-    "@boostercloud/framework-common-helpers": "^0.20.2",
-    "@boostercloud/framework-types": "^0.20.2",
+    "@boostercloud/framework-common-helpers": "^0.20.3",
+    "@boostercloud/framework-types": "^0.20.3",
     "fp-ts": "2.10.5",
     "graphql": "15.5.1",
     "graphql-subscriptions": "1.2.1",
@@ -45,7 +45,6 @@
     "validator": "13.6.0"
   },
   "devDependencies": {
-    "mocha": "8.4.0",
     "@types/faker": "5.1.5",
     "@types/graphql-type-json": "0.3.2",
     "@types/inflected": "1.1.29",
@@ -55,6 +54,7 @@
     "chai-as-promised": "7.1.1",
     "faker": "5.1.0",
     "metadata-booster": "0.3.1",
+    "mocha": "8.4.0",
     "mock-jwks": "1.0.0",
     "sinon": "9.2.3",
     "sinon-chai": "3.5.0"
