@@ -37,6 +37,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
+    "mocha": "8.4.0",
     "@types/aws-lambda": "8.10.48",
     "@types/chai-arrays": "2.0.0",
     "@types/faker": "5.1.5",

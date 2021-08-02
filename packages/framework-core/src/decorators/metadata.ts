@@ -5,7 +5,8 @@ import 'reflect-metadata'
 export function getPropertiesMetadata(classType: AnyClass): Array<PropertyMetadata> {
   const meta: ClassMetadata = Reflect.getMetadata('booster:typeinfo', classType)
   if (!meta) {
-    throw new Error(`Could not get proper metadata information of ${classType.name}`)
+    console.log(`Could not get proper metadata information of ${classType.name}`)
+    return []
   }
   return meta.fields
 }

@@ -1,7 +1,5 @@
 import { Booster } from '@boostercloud/framework-core'
 import { BoosterConfig } from '@boostercloud/framework-types'
-import * as AWS from '@boostercloud/framework-provider-aws'
-import * as Kubernetes from '@boostercloud/framework-provider-kubernetes'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -12,13 +10,13 @@ Booster.configure('local', (config: BoosterConfig): void => {
 
 Booster.configure('kubernetes', (config: BoosterConfig): void => {
   config.appName = 'my-store'
-  config.provider = Kubernetes.Provider()
+  config.providerPackage = '@boostercloud/framework-provider-kubernetes'
   config.assets = ['assets', 'components', 'assetFile.txt']
 })
 
 Booster.configure('development', (config: BoosterConfig): void => {
   config.appName = 'my-store'
-  config.provider = AWS.Provider()
+  config.providerPackage = '@boostercloud/framework-provider-aws'
   config.assets = ['assets', 'assetFile.txt']
 })
 
@@ -32,7 +30,7 @@ Booster.configure('production', (config: BoosterConfig): void => {
   config.env['BOOSTER_APP_SUFFIX'] = appNameSuffix
 
   config.appName = 'my-store-' + appNameSuffix
-  config.provider = AWS.Provider()
+  config.providerPackage = '@boostercloud/framework-provider-aws'
   config.assets = ['assets']
   config.tokenVerifier = {
     issuer: 'booster',

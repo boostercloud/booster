@@ -20,6 +20,7 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
+    "mocha": "8.4.0",
     "@azure/cosmos": "3.7.3",
     "@azure/functions": "^1.2.2",
     "@boostercloud/framework-types": "^0.20.2",

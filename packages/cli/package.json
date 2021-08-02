@@ -29,6 +29,7 @@
     "ora": "^3.4.0"
   },
   "devDependencies": {
+    "mocha": "8.4.0",
     "@oclif/dev-cli": "^1",
     "@oclif/test": "^1",
     "@types/child-process-promise": "^2.2.1",

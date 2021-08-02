@@ -19,6 +19,7 @@
     "aws-sdk": "2.853.0"
   },
   "devDependencies": {
+    "mocha": "8.4.0",
     "@boostercloud/application-tester": "^0.20.2",
     "@boostercloud/framework-provider-aws-infrastructure": "^0.20.2",
     "@boostercloud/framework-provider-kubernetes-infrastructure": "^0.20.2",
