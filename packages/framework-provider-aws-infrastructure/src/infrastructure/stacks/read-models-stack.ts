@@ -11,12 +11,20 @@ export class ReadModelsStack {
       return []
     }
     return Object.keys(this.config.readModels).map((readModelName) => {
+      const sortKey = this.config.readModelSortKeys[readModelName]
+        ? {
+            name: this.config.readModelSortKeys[readModelName],
+            type: dynamodb.AttributeType.STRING,
+          }
+        : undefined
+
       return new dynamodb.Table(this.stack, readModelName, {
         tableName: this.config.resourceNames.forReadModel(readModelName),
         partitionKey: {
           name: 'id',
           type: dynamodb.AttributeType.STRING,
         },
+        sortKey,
         billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
         removalPolicy: RemovalPolicy.DESTROY,
         stream: StreamViewType.NEW_IMAGE,
