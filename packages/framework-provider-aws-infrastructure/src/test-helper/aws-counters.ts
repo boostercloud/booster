@@ -40,20 +40,6 @@ export class AWSCounters {
     return count
   }
 
-  /*private onScan(err: AWSError, data: DocumentClient.ScanOutput): void {
-    if (err) {
-      console.error('Unable to scan the table. Error JSON:', JSON.stringify(err, null, 2))
-    } else {
-      console.log('Scan succeeded.')
-      // continue scanning if we have more items
-      if (typeof data.LastEvaluatedKey !== undefined) {
-        console.log('Scanning for more...')
-        this.scanParams = { ...this.scanParams, ExclusiveStartKey: data.LastEvaluatedKey }
-        documentClient.scan(this.scanParams, this.onScan)
-      }
-    }
-  }*/
-
   public async readModels(readModelName: string): Promise<number> {
     return this.countTableItems(`${this.stackName}-${readModelName}`)
   }
