@@ -89,6 +89,7 @@ export class GraphQLQueryGenerator {
           name: `${name}Connection`,
           fields: {
             items: { type: new GraphQLList(graphQLType) },
+            count: { type: GraphQLInt },
             cursor: { type: GraphQLJSONObject },
           },
         }),
