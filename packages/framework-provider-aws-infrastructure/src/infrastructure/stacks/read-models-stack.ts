@@ -11,9 +11,9 @@ export class ReadModelsStack {
       return []
     }
     return Object.keys(this.config.readModels).map((readModelName) => {
-      const sortKey = this.config.readModelSortKeys[readModelName]
+      const sequenceKey = this.config.readModelSequenceKeys[readModelName]
         ? {
-            name: this.config.readModelSortKeys[readModelName],
+            name: this.config.readModelSequenceKeys[readModelName],
             type: dynamodb.AttributeType.STRING,
           }
         : undefined
@@ -24,7 +24,7 @@ export class ReadModelsStack {
           name: 'id',
           type: dynamodb.AttributeType.STRING,
         },
-        sortKey,
+        sortKey: sequenceKey,
         billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
         removalPolicy: RemovalPolicy.DESTROY,
         stream: StreamViewType.NEW_IMAGE,

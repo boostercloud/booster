@@ -9,7 +9,7 @@ import { Table } from '@aws-cdk/aws-dynamodb'
 
 describe('ReadModelsStack', () => {
   describe('the `build` method', () => {
-    context('When no sort key has been defined', () => {
+    context('When no sequence key has been defined', () => {
       class SomeReadModel {
         public constructor(readonly id: UUID) {}
       }
@@ -24,7 +24,7 @@ describe('ReadModelsStack', () => {
 
       const stack = new Stack(new App(), 'some-app')
 
-      it('generates a DynamoDB table with the field `id` as the partitionKey and no `sortKey`', () => {
+      it('generates a DynamoDB table with the field `id` as the partitionKey and no `sequenceKey`', () => {
         const readModelsStack = new ReadModelsStack(config, stack)
 
         const tables = readModelsStack.build()
@@ -39,7 +39,7 @@ describe('ReadModelsStack', () => {
       })
     })
 
-    context('When a sort key has been defined', () => {
+    context('When a sequence key has been defined', () => {
       class SomeReadModel {
         public constructor(readonly id: UUID) {}
       }
@@ -51,11 +51,11 @@ describe('ReadModelsStack', () => {
         properties: [],
         before: [],
       }
-      config.readModelSortKeys['SomeReadModel'] = 'timestamp'
+      config.readModelSequenceKeys['SomeReadModel'] = 'timestamp'
 
       const stack = new Stack(new App(), 'some-app')
 
-      it('generates a DynamoDB table with the field `id` as the partitionKey and the defined field as the `sortKey`', () => {
+      it('generates a DynamoDB table with the field `id` as the partitionKey and the defined field as the `sequenceKey`', () => {
         const readModelsStack = new ReadModelsStack(config, stack)
 
         const tables = readModelsStack.build()
