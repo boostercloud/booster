@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { expect } from '../expect'
 import { describe } from 'mocha'
-import { ReadModel, Booster, Entity, Projects, sortBy } from '../../src'
+import { ReadModel, Booster, Entity, Projects, sequencedBy } from '../../src'
 import { UUID, ProjectionResult } from '@boostercloud/framework-types'
 
 describe('the `ReadModel` decorator', () => {
@@ -103,7 +103,7 @@ describe('the `Projects` decorator', () => {
     })
   })
 
-  describe('the `sortBy` decorator', () => {
+  describe('the `sequencedBy` decorator', () => {
     afterEach(() => {
       Booster.configure('test', (config) => {
         for (const propName in config.readModels) {
@@ -115,20 +115,20 @@ describe('the `Projects` decorator', () => {
       })
     })
 
-    it('registers a sort key in the read model', () => {
+    it('registers a sequence key in the read model', () => {
       @ReadModel({
         authorize: 'all',
       })
-      class SortedReadModel {
-        public constructor(readonly id: UUID, @sortBy readonly timestamp: string) {}
+      class SequencedReadModel {
+        public constructor(readonly id: UUID, @sequencedBy readonly timestamp: string) {}
       }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const booster = Booster as any
 
-      expect(booster.config.readModelSortKeys).not.to.be.null
-      expect(booster.config.readModelSortKeys[SortedReadModel.name]).to.be.a('String')
-      expect(booster.config.readModelSortKeys[SortedReadModel.name]).to.be.equal('timestamp')
+      expect(booster.config.readModelSequenceKeys).not.to.be.null
+      expect(booster.config.readModelSequenceKeys[SequencedReadModel.name]).to.be.a('String')
+      expect(booster.config.readModelSequenceKeys[SequencedReadModel.name]).to.be.equal('timestamp')
     })
   })
 })
