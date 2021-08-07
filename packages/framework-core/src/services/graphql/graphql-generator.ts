@@ -22,66 +22,55 @@ import { BoosterEventsReader } from '../../booster-events-reader'
 import { GraphQLResolverContext } from './common'
 
 export class GraphQLGenerator {
-  private readonly queryGenerator: GraphQLQueryGenerator
-  private readonly mutationGenerator: GraphQLMutationGenerator
-  private readonly subscriptionGenerator: GraphQLSubscriptionGenerator
-  private readonly typeInformer: GraphQLTypeInformer
+  private static commandsDispatcher: BoosterCommandDispatcher
+  private static readModelsReader: BoosterReadModelsReader
+  private static eventsReader: BoosterEventsReader
+  private static schema: GraphQLSchema
 
-  private static singleton: GraphQLGenerator | undefined
+  public static generateSchema(config: BoosterConfig, logger: Logger): GraphQLSchema {
+    if (!this.schema) {
+      this.commandsDispatcher = new BoosterCommandDispatcher(config, logger)
+      this.readModelsReader = new BoosterReadModelsReader(config, logger)
+      this.eventsReader = new BoosterEventsReader(config, logger)
 
-  public static build(config: BoosterConfig, logger: Logger): GraphQLGenerator {
-    this.singleton =
-      this.singleton ??
-      new GraphQLGenerator(
+      const typeInformer = new GraphQLTypeInformer({
+        ...config.readModels,
+        ...config.commandHandlers,
+      })
+
+      const queryGenerator = new GraphQLQueryGenerator(
         config,
-        new BoosterCommandDispatcher(config, logger),
-        new BoosterReadModelsReader(config, logger),
-        new BoosterEventsReader(config, logger)
+        config.readModels,
+        typeInformer,
+        this.readModelByIDResolverBuilder.bind(this),
+        this.readModelResolverBuilder.bind(this),
+        this.eventResolver.bind(this)
       )
-    return this.singleton
+
+      const mutationGenerator = new GraphQLMutationGenerator(
+        config.commandHandlers,
+        typeInformer,
+        this.commandResolverBuilder.bind(this)
+      )
+
+      const subscriptionGenerator = new GraphQLSubscriptionGenerator(
+        config.readModels,
+        typeInformer,
+        queryGenerator,
+        this.subscriptionByIDResolverBuilder.bind(this, config),
+        this.subscriptionResolverBuilder.bind(this, config)
+      )
+
+      this.schema = new GraphQLSchema({
+        query: queryGenerator.generate(),
+        mutation: mutationGenerator.generate(),
+        subscription: subscriptionGenerator.generate(),
+      })
+    }
+    return this.schema
   }
 
-  private constructor(
-    config: BoosterConfig,
-    private commandsDispatcher: BoosterCommandDispatcher,
-    private readModelsReader: BoosterReadModelsReader,
-    private eventsReader: BoosterEventsReader
-  ) {
-    this.typeInformer = new GraphQLTypeInformer({
-      ...config.readModels,
-      ...config.commandHandlers,
-    })
-    this.queryGenerator = new GraphQLQueryGenerator(
-      config,
-      config.readModels,
-      this.typeInformer,
-      this.readModelByIDResolverBuilder.bind(this),
-      this.readModelResolverBuilder.bind(this),
-      this.eventResolver.bind(this)
-    )
-    this.mutationGenerator = new GraphQLMutationGenerator(
-      config.commandHandlers,
-      this.typeInformer,
-      this.commandResolverBuilder.bind(this)
-    )
-    this.subscriptionGenerator = new GraphQLSubscriptionGenerator(
-      config.readModels,
-      this.typeInformer,
-      this.queryGenerator,
-      this.subscriptionByIDResolverBuilder.bind(this, config),
-      this.subscriptionResolverBuilder.bind(this, config)
-    )
-  }
-
-  public generateSchema(): GraphQLSchema {
-    return new GraphQLSchema({
-      query: this.queryGenerator.generate(),
-      mutation: this.mutationGenerator.generate(),
-      subscription: this.subscriptionGenerator.generate(),
-    })
-  }
-
-  public readModelResolverBuilder(
+  public static readModelResolverBuilder(
     readModelClass: AnyClass
   ): GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestArgs> {
     return (parent, args, context, info) => {
@@ -94,7 +83,7 @@ export class GraphQLGenerator {
     }
   }
 
-  public readModelByIDResolverBuilder(
+  public static readModelByIDResolverBuilder(
     readModelClass: AnyClass
   ): GraphQLFieldResolver<unknown, GraphQLResolverContext, { id: string }> {
     return async (parent, args, context, info) => {
@@ -104,7 +93,7 @@ export class GraphQLGenerator {
     }
   }
 
-  public eventResolver(
+  public static eventResolver(
     parent: unknown,
     args: EventFilter,
     context: GraphQLResolverContext,
@@ -114,7 +103,7 @@ export class GraphQLGenerator {
     return this.eventsReader.fetch(eventsRequestEnvelope)
   }
 
-  public commandResolverBuilder(
+  public static commandResolverBuilder(
     commandClass: AnyClass
   ): GraphQLFieldResolver<any, GraphQLResolverContext, { input: any }> {
     return async (parent, args, context, info) => {
@@ -126,7 +115,7 @@ export class GraphQLGenerator {
     }
   }
 
-  public subscriptionByIDResolverBuilder(
+  public static subscriptionByIDResolverBuilder(
     config: BoosterConfig,
     readModelClass: AnyClass
   ): GraphQLFieldResolver<any, GraphQLResolverContext, Record<string, ReadModelPropertyFilter>> {
@@ -136,7 +125,7 @@ export class GraphQLGenerator {
     }
   }
 
-  public subscriptionResolverBuilder(
+  public static subscriptionResolverBuilder(
     config: BoosterConfig,
     readModelClass: AnyClass
   ): GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestArgs> {
