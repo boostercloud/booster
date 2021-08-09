@@ -1,6 +1,6 @@
 import { GraphQLList, GraphQLScalarType, GraphQLObjectType, GraphQLType } from 'graphql/type/definition'
 import { AnyClass, UserEnvelope, UUID, GraphQLOperation } from '@boostercloud/framework-types'
-import { GraphQLFieldResolver } from 'graphql'
+import { GraphQLFieldResolver, Kind } from 'graphql'
 import { ReadModelPubSub } from '../pub-sub/read-model-pub-sub'
 import { PropertyMetadata } from 'metadata-booster'
 
@@ -27,3 +27,20 @@ export interface GraphQLResolverContext {
 export const graphQLWebsocketSubprotocolHeaders = {
   'Sec-WebSocket-Protocol': 'graphql-ws',
 }
+
+export const DateScalar = new GraphQLScalarType({
+  name: 'Date',
+  description: 'Date custom scalar type',
+  serialize(value) {
+    return value.toJSON()
+  },
+  parseValue(value) {
+    return new Date(value)
+  },
+  parseLiteral(ast) {
+    if (ast.kind === Kind.STRING) {
+      return new Date(ast.value)
+    }
+    return null
+  },
+})

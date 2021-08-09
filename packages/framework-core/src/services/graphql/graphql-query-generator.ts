@@ -295,6 +295,16 @@ export class GraphQLQueryGenerator {
           beginsWith: { type: GraphQLString },
           contains: { type: GraphQLString },
         }
+      case Date:
+        return {
+          eq: { type: GraphQLString },
+          ne: { type: GraphQLString },
+          lte: { type: GraphQLString },
+          lt: { type: GraphQLString },
+          gte: { type: GraphQLString },
+          gt: { type: GraphQLString },
+          in: { type: GraphQLList(GraphQLString) },
+        }
       default:
         throw new Error(`Type ${type.name} is not supported in search filters`)
     }
