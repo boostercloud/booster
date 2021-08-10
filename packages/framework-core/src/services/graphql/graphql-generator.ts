@@ -2,7 +2,6 @@ import {
   AnyClass,
   Logger,
   BoosterConfig,
-  CommandEnvelope,
   ReadModelPropertyFilter,
   ReadModelRequestEnvelope,
   EventSearchRequest,
@@ -10,26 +9,23 @@ import {
   EventSearchResponse,
   ReadModelRequestArgs,
 } from '@boostercloud/framework-types'
-import { GraphQLFieldResolver, GraphQLResolveInfo, GraphQLSchema } from 'graphql'
+import { GraphQLFieldResolver, GraphQLObjectType, GraphQLResolveInfo, GraphQLSchema } from 'graphql'
 import { pluralize } from 'inflected'
 import { GraphQLTypeInformer } from './graphql-type-informer'
 import { GraphQLQueryGenerator } from './graphql-query-generator'
-import { GraphQLMutationGenerator } from './graphql-mutation-generator'
+import { GraphQLCommandMutationGenerator } from './graphql-mutation-generator'
 import { GraphQLSubscriptionGenerator } from './graphql-subcriptions-generator'
-import { BoosterCommandDispatcher } from '../../booster-command-dispatcher'
 import { BoosterReadModelsReader } from '../../booster-read-models-reader'
 import { BoosterEventsReader } from '../../booster-events-reader'
 import { GraphQLResolverContext } from './common'
 
 export class GraphQLGenerator {
-  private static commandsDispatcher: BoosterCommandDispatcher
   private static readModelsReader: BoosterReadModelsReader
   private static eventsReader: BoosterEventsReader
   private static schema: GraphQLSchema
 
   public static generateSchema(config: BoosterConfig, logger: Logger): GraphQLSchema {
     if (!this.schema) {
-      this.commandsDispatcher = new BoosterCommandDispatcher(config, logger)
       this.readModelsReader = new BoosterReadModelsReader(config, logger)
       this.eventsReader = new BoosterEventsReader(config, logger)
 
@@ -47,12 +43,6 @@ export class GraphQLGenerator {
         this.eventResolver.bind(this)
       )
 
-      const mutationGenerator = new GraphQLMutationGenerator(
-        config.commandHandlers,
-        typeInformer,
-        this.commandResolverBuilder.bind(this)
-      )
-
       const subscriptionGenerator = new GraphQLSubscriptionGenerator(
         config.readModels,
         typeInformer,
@@ -61,9 +51,22 @@ export class GraphQLGenerator {
         this.subscriptionResolverBuilder.bind(this, config)
       )
 
+      // Build the mutation types
+      let mutation: GraphQLObjectType<unknown, unknown> | undefined = undefined
+      /* TODO: In the future, this structure can be loaded dynamically
+       * from the Booster configuration. This will alow rockets to add mutations
+       * for new use cases (They can already add them declaring regular commands) */
+      const mutations = { ...GraphQLCommandMutationGenerator.generate(config, logger) }
+      if (Object.keys(mutations).length > 0) {
+        mutation = new GraphQLObjectType({
+          name: 'Mutation',
+          fields: mutations,
+        })
+      }
+
       this.schema = new GraphQLSchema({
+        mutation,
         query: queryGenerator.generate(),
-        mutation: mutationGenerator.generate(),
         subscription: subscriptionGenerator.generate(),
       })
     }
@@ -101,18 +104,6 @@ export class GraphQLGenerator {
   ): Promise<Array<EventSearchResponse>> {
     const eventsRequestEnvelope = toEventSearchRequest(args, context)
     return this.eventsReader.fetch(eventsRequestEnvelope)
-  }
-
-  public static commandResolverBuilder(
-    commandClass: AnyClass
-  ): GraphQLFieldResolver<any, GraphQLResolverContext, { input: any }> {
-    return async (parent, args, context, info) => {
-      const commandEnvelope = toCommandEnvelope(commandClass.name, args.input, context)
-      const result = await this.commandsDispatcher.dispatchCommand(commandEnvelope)
-      // It could be that the command didn't return anything
-      // so in that case we return `true`, as GraphQL doesn't have a `null` type
-      return result ?? true
-    }
   }
 
   public static subscriptionByIDResolverBuilder(
@@ -167,16 +158,5 @@ function toEventSearchRequest(args: EventFilter, context: GraphQLResolverContext
     requestID: context.requestID,
     currentUser: context.user,
     filters: args,
-  }
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function toCommandEnvelope(commandName: string, value: any, context: GraphQLResolverContext): CommandEnvelope {
-  return {
-    requestID: context.requestID,
-    currentUser: context.user,
-    typeName: commandName,
-    value,
-    version: 1, // TODO: How to pass the version through GraphQL?
   }
 }
