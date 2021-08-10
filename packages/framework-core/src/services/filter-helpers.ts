@@ -16,10 +16,13 @@ export const getReadModelFilters = (
   return beforeHooks.reduce((currentFilter, before) => before(currentFilter, user), filters)
 }
 
-export const applyBeforeFunctions = (
+export const applyBeforeFunctions = async (
   commandInput: CommandInput,
   beforeHooks: Array<CommandBeforeFunction>,
   currentUser?: UserEnvelope
-): CommandInput => {
-  return beforeHooks.reduce((currentInput, before) => before(currentInput, currentUser), commandInput)
+): Promise<CommandInput> => {
+  return beforeHooks.reduce(async (currentInputPromise, before) => {
+    const currentInput = await currentInputPromise
+    return Promise.resolve(before(currentInput, currentUser))
+  }, Promise.resolve(commandInput))
 }
