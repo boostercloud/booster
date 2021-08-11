@@ -6,6 +6,8 @@ import {
   UUID,
   ReadModelEnvelope,
   OptimisticConcurrencyUnexpectedVersionError,
+  TimeKey,
+  SequenceKey,
 } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { DynamoDBRecord, DynamoDBStreamEvent } from 'aws-lambda'
@@ -25,11 +27,12 @@ export async function fetchReadModel(
   config: BoosterConfig,
   logger: Logger,
   readModelName: string,
-  readModelID: UUID
+  readModelID: UUID,
+  sequenceKey?: SequenceKey
 ): Promise<ReadModelInterface> {
   const params: DynamoDB.DocumentClient.GetItemInput = {
     TableName: config.resourceNames.forReadModel(readModelName),
-    Key: { id: readModelID },
+    Key: buildKey(readModelID, sequenceKey?.name, sequenceKey?.value),
     ConsistentRead: true,
   }
   const response = await db.get(params).promise()
@@ -59,7 +62,7 @@ export async function storeReadModel(
         },
       })
       .promise()
-  } catch (e) {
+  } catch (e: any) {
     // The error will be thrown, but in case of a conditional check, we throw the expected error type by the core
     if (e.name == 'ConditionalCheckFailedException') {
       throw new OptimisticConcurrencyUnexpectedVersionError(e.message)
@@ -76,10 +79,11 @@ export async function deleteReadModel(
   readModelName: string,
   readModel: ReadModelInterface
 ): Promise<void> {
+  const sequenceKeyName = config.readModelSequenceKeys[readModelName]
   await db
     .delete({
       TableName: config.resourceNames.forReadModel(readModelName),
-      Key: { id: readModel.id },
+      Key: buildKey(readModel.id, sequenceKeyName, readModel[sequenceKeyName]),
     })
     .promise()
   logger.debug(`[ReadModelAdapter#deleteReadModel] Read model deleted. ID = ${readModel.id}`)
@@ -98,4 +102,13 @@ function toReadModelEnvelope(config: BoosterConfig, record: DynamoDBRecord): Rea
     typeName: config.readModelNameFromResourceName(readModelTableName),
     value: Converter.unmarshall(record.dynamodb.NewImage) as ReadModelInterface,
   }
+}
+
+function buildKey(
+  readModelID: UUID,
+  sequenceKeyName?: string,
+  sequenceKeyValue?: TimeKey
+): DynamoDB.DocumentClient.Key {
+  if (sequenceKeyName && sequenceKeyValue) return { id: readModelID, [sequenceKeyName]: sequenceKeyValue }
+  else return { id: readModelID }
 }

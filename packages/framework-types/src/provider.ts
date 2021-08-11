@@ -12,7 +12,7 @@ import {
 } from './envelope'
 import { BoosterConfig } from './config'
 import { Logger } from './logger'
-import { ReadModelInterface, UUID } from './concepts'
+import { ReadModelInterface, SequenceKey, UUID } from './concepts'
 import { FilterFor } from './searcher'
 
 export interface ProviderLibrary {
@@ -46,7 +46,13 @@ export interface ProviderEventsLibrary {
 }
 export interface ProviderReadModelsLibrary {
   rawToEnvelopes(config: BoosterConfig, logger: Logger, rawEvents: unknown): Promise<Array<ReadModelEnvelope>>
-  fetch(config: BoosterConfig, logger: Logger, readModelName: string, readModelID: UUID): Promise<ReadModelInterface>
+  fetch(
+    config: BoosterConfig,
+    logger: Logger,
+    readModelName: string,
+    readModelID: UUID,
+    sequenceKey?: SequenceKey
+  ): Promise<ReadModelInterface>
   search<TReadModel extends ReadModelInterface>(
     config: BoosterConfig,
     logger: Logger,

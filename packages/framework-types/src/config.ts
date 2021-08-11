@@ -85,9 +85,9 @@ export class BoosterConfig {
   }
 
   /**
-   * This is a convenient property to easily check if the application has defined some roles.
+   * This is a convenience property to easily check if the application has defined any roles.
    * Only in that case we will create a user pool and an authorization API.
-   * If there are no roles defined, it means that the app is completely public and users
+   * If there are no roles defined, it means that all app endpoints are public and users
    * won't be registered (they are all anonymous)
    */
   public get thereAreRoles(): boolean {
