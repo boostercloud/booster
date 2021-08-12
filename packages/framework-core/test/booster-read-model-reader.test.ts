@@ -33,7 +33,7 @@ describe('BoosterReadModelReader', () => {
   }
   class UserRole {}
 
-  let readModelDispatcher: BoosterReadModelsReader
+  let readModelReader: BoosterReadModelsReader
   Booster.configureCurrentEnv((config) => {
     config.provider = {} as unknown as ProviderLibrary
     config.readModels[TestReadModel.name] = {
@@ -42,7 +42,7 @@ describe('BoosterReadModelReader', () => {
       properties: [],
       before: [],
     }
-    readModelDispatcher = new BoosterReadModelsReader(config, logger)
+    readModelReader = new BoosterReadModelsReader(config, logger)
   })
 
   const noopGraphQLOperation: GraphQLOperation = {
@@ -57,9 +57,9 @@ describe('BoosterReadModelReader', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any // To avoid the compilation failure of "missing version field"
 
-      await expect(readModelDispatcher.fetch(envelope)).to.eventually.be.rejectedWith(InvalidParameterError)
+      await expect(readModelReader.search(envelope)).to.eventually.be.rejectedWith(InvalidParameterError)
       await expect(
-        readModelDispatcher.subscribe(envelope.requestID, envelope, noopGraphQLOperation)
+        readModelReader.subscribe(envelope.requestID, envelope, noopGraphQLOperation)
       ).to.eventually.be.rejectedWith(InvalidParameterError)
     })
 
@@ -70,9 +70,9 @@ describe('BoosterReadModelReader', () => {
         requestID: random.uuid(),
         version: 1,
       }
-      await expect(readModelDispatcher.fetch(envelope)).to.eventually.be.rejectedWith(NotFoundError)
+      await expect(readModelReader.search(envelope)).to.eventually.be.rejectedWith(NotFoundError)
       await expect(
-        readModelDispatcher.subscribe(envelope.requestID.toString(), envelope, noopGraphQLOperation)
+        readModelReader.subscribe(envelope.requestID.toString(), envelope, noopGraphQLOperation)
       ).to.eventually.be.rejectedWith(NotFoundError)
     })
 
@@ -88,9 +88,9 @@ describe('BoosterReadModelReader', () => {
           claims: {},
         },
       }
-      await expect(readModelDispatcher.fetch(envelope)).to.eventually.be.rejectedWith(NotAuthorizedError)
+      await expect(readModelReader.search(envelope)).to.eventually.be.rejectedWith(NotAuthorizedError)
       await expect(
-        readModelDispatcher.subscribe(envelope.requestID.toString(), envelope, noopGraphQLOperation)
+        readModelReader.subscribe(envelope.requestID.toString(), envelope, noopGraphQLOperation)
       ).to.eventually.be.rejectedWith(NotAuthorizedError)
     })
   })
@@ -139,7 +139,7 @@ describe('BoosterReadModelReader', () => {
           } as any
         })
 
-        const result = await readModelDispatcher.fetch(envelope)
+        const result = await readModelReader.search(envelope)
 
         expect(providerSearcherFunctionFake).to.have.been.calledOnceWithExactly(
           match.any,
@@ -168,7 +168,7 @@ describe('BoosterReadModelReader', () => {
           } as any
         })
 
-        await readModelDispatcher.fetch(envelope)
+        await readModelReader.search(envelope)
 
         expect(beforeFnSpy).to.have.returned({ id: { eq: filters.id } })
         expect(beforeFnSpy).to.have.been.calledOnceWithExactly(filters, currentUser)
@@ -190,7 +190,7 @@ describe('BoosterReadModelReader', () => {
           } as any
         })
 
-        await readModelDispatcher.fetch(envelope)
+        await readModelReader.search(envelope)
 
         expect(beforeFnV2Spy).to.have.been.calledAfter(beforeFnSpy)
         expect(beforeFnSpy).to.have.returned({ id: { eq: filters.id } })
@@ -220,7 +220,7 @@ describe('BoosterReadModelReader', () => {
           expirationTime: 1,
         }
 
-        await readModelDispatcher.subscribe(connectionID, envelope, noopGraphQLOperation)
+        await readModelReader.subscribe(connectionID, envelope, noopGraphQLOperation)
 
         expect(providerSubscribeFunctionFake).to.have.been.calledOnce
         const gotSubscriptionEnvelope = providerSubscribeFunctionFake.getCall(0).lastArg
@@ -249,7 +249,7 @@ describe('BoosterReadModelReader', () => {
           expirationTime: 1,
         }
 
-        await readModelDispatcher.subscribe(connectionID, envelope, noopGraphQLOperation)
+        await readModelReader.subscribe(connectionID, envelope, noopGraphQLOperation)
 
         expect(providerSubscribeFunctionFake).to.have.been.calledOnce
         const gotSubscriptionEnvelope = providerSubscribeFunctionFake.getCall(0).lastArg
@@ -270,7 +270,7 @@ describe('BoosterReadModelReader', () => {
       })
       const connectionID = random.uuid()
       const subscriptionID = random.uuid()
-      await readModelDispatcher.unsubscribe(connectionID, subscriptionID)
+      await readModelReader.unsubscribe(connectionID, subscriptionID)
 
       expect(deleteSubscriptionFake).to.have.been.calledOnceWithExactly(
         match.any,
@@ -290,7 +290,7 @@ describe('BoosterReadModelReader', () => {
         } as any
       })
       const connectionID = random.uuid()
-      await readModelDispatcher.unsubscribeAll(connectionID)
+      await readModelReader.unsubscribeAll(connectionID)
 
       expect(deleteAllSubscriptionsFake).to.have.been.calledOnceWithExactly(match.any, match.any, connectionID)
     })

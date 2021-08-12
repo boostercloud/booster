@@ -10,6 +10,8 @@ import {
   SubscriptionEnvelope,
   GraphQLOperation,
   ReadModelPropertyFilter,
+  ReadModelByIdRequestEnvelope,
+  ReadModelListResult,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
 import { Booster } from './booster'
@@ -18,9 +20,39 @@ import { getReadModelFilters } from './services/filter-helpers'
 export class BoosterReadModelsReader {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
 
-  public async fetch(readModelRequest: ReadModelRequestEnvelope): Promise<Array<ReadModelInterface>> {
+  public async findById(readModelByIdRequestEnvelope: ReadModelByIdRequestEnvelope): Promise<ReadModelInterface> {
+    this.validateByIdRequest(readModelByIdRequestEnvelope)
+    const readModelMetadata = this.config.readModels[readModelByIdRequestEnvelope.typeName]
+    const searcher = Booster.readModel(readModelMetadata.class)
+
+    const filters = getReadModelFilters({}, readModelMetadata.before, readModelByIdRequestEnvelope.currentUser)
+
+    searcher.filter(filters)
+
+    return searcher.findById(readModelByIdRequestEnvelope.id, readModelByIdRequestEnvelope.sequenceKey)
+  }
+
+  public async search(
+    readModelRequest: ReadModelRequestEnvelope
+  ): Promise<ReadModelInterface[] | ReadModelListResult<ReadModelInterface>> {
     this.validateRequest(readModelRequest)
-    return this.processFetch(readModelRequest)
+    const readModelMetadata = this.config.readModels[readModelRequest.typeName]
+    const searcher = Booster.readModel(readModelMetadata.class)
+
+    const filters = getReadModelFilters(
+      readModelRequest.filters,
+      readModelMetadata.before,
+      readModelRequest.currentUser
+    )
+
+    searcher.filter(filters)
+
+    searcher
+      .limit(readModelRequest.limit)
+      .afterCursor(readModelRequest.afterCursor)
+      .paginatedVersion(readModelRequest.paginatedVersion)
+
+    return searcher.search()
   }
 
   public async subscribe(
@@ -40,6 +72,31 @@ export class BoosterReadModelsReader {
     return this.config.provider.readModels.deleteAllSubscriptions(this.config, this.logger, connectionID)
   }
 
+  private validateByIdRequest(readModelByIdRequest: ReadModelByIdRequestEnvelope): void {
+    this.logger.debug('Validating the following read model by id request: ', readModelByIdRequest)
+    if (!readModelByIdRequest.version) {
+      throw new InvalidParameterError('The required request "version" was not present')
+    }
+
+    const readModelMetadata = this.config.readModels[readModelByIdRequest.typeName]
+    if (!readModelMetadata) {
+      throw new NotFoundError(`Could not find read model ${readModelByIdRequest.typeName}`)
+    }
+
+    if (!BoosterAuth.isUserAuthorized(readModelMetadata.authorizedRoles, readModelByIdRequest.currentUser)) {
+      throw new NotAuthorizedError(`Access denied for read model ${readModelByIdRequest.typeName}`)
+    }
+
+    if (
+      readModelByIdRequest.sequenceKey &&
+      readModelByIdRequest.sequenceKey.name !== this.config.readModelSequenceKeys[readModelByIdRequest.typeName]
+    ) {
+      throw new InvalidParameterError(
+        `Could not find a sort key defined for ${readModelByIdRequest.typeName} named '${readModelByIdRequest.sequenceKey?.name}'.`
+      )
+    }
+  }
+
   private validateRequest(readModelRequest: ReadModelRequestEnvelope): void {
     this.logger.debug('Validating the following read model request: ', readModelRequest)
     if (!readModelRequest.version) {
@@ -54,26 +111,6 @@ export class BoosterReadModelsReader {
     if (!BoosterAuth.isUserAuthorized(readModelMetadata.authorizedRoles, readModelRequest.currentUser)) {
       throw new NotAuthorizedError(`Access denied for read model ${readModelRequest.typeName}`)
     }
-  }
-
-  private async processFetch(readModelRequest: ReadModelRequestEnvelope): Promise<Array<ReadModelInterface>> {
-    const readModelMetadata = this.config.readModels[readModelRequest.typeName]
-    const searcher = Booster.readModel(readModelMetadata.class)
-
-    const filters = getReadModelFilters(
-      readModelRequest.filters,
-      readModelMetadata.before,
-      readModelRequest.currentUser
-    )
-
-    searcher.filter(filters)
-
-    searcher
-      .limit(readModelRequest.limit)
-      .afterCursor(readModelRequest.afterCursor)
-      .paginatedVersion(readModelRequest.paginatedVersion)
-
-    return searcher.search()
   }
 
   private async processSubscription(

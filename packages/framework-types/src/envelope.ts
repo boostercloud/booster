@@ -1,11 +1,12 @@
-import { CommandInput, EntityInterface, EventInterface, ReadModelInterface, UUID } from './concepts'
+import { CommandInput, EntityInterface, EventInterface, ReadModelInterface, SequenceKey, UUID } from './concepts'
 import { GraphQLClientMessage } from './graphql-websocket-messages'
 import { FilterFor } from './searcher'
 
 /**
  * An `Envelope` carries a command/event body together with the name
  * of its class. This is important information for the `Distributor` to
- * work. Each provider has to implement their own `Envelope`.
+ * work. Each provider haimport { SequenceKey } from './concepts/sequence-metadata';
+s to implement their own `Envelope`.
  */
 export interface Envelope {
   currentUser?: UserEnvelope
@@ -68,8 +69,8 @@ export interface ReadModelEnvelope {
   value: ReadModelInterface
 }
 
-export interface ReadModelListResult {
-  items: Array<unknown>
+export interface ReadModelListResult<TReadModel> {
+  items: Array<TReadModel>
   count?: number
   cursor?: Record<string, string>
 }
@@ -83,10 +84,22 @@ export interface ReadModelRequestEnvelope extends Envelope {
   paginatedVersion?: boolean // Used only for retrocompatibility
 }
 
+export interface ReadModelByIdRequestEnvelope extends Envelope {
+  typeName: string
+  version: number
+  id: string
+  sequenceKey?: SequenceKey
+}
+
 export interface ReadModelRequestArgs {
   filter?: ReadModelRequestProperties
   limit?: number
   afterCursor?: unknown
+}
+
+export interface ReadModelByIdRequestArgs {
+  id: string
+  [sequenceKey: string]: string | undefined
 }
 
 export type ReadModelPropertyFilter = FilterFor<unknown>
