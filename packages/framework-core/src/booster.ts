@@ -10,6 +10,8 @@ import {
   EventFilter,
   SearcherFunction,
   FilterFor,
+  SequenceKey,
+  FinderByKeyFunction,
 } from '@boostercloud/framework-types'
 import { Importer } from './importer'
 import { buildLogger } from './booster-logger'
@@ -74,7 +76,7 @@ export class Booster {
     readModelClass: Class<TReadModel>
   ): Searcher<TReadModel> {
     const searchFunction: SearcherFunction<TReadModel> = async (
-      entityTypeName: string,
+      readModelName: string,
       filters: FilterFor<unknown>,
       limit?: number,
       afterCursor?: any,
@@ -83,7 +85,7 @@ export class Booster {
       const searchResult = await this.config.provider.readModels.search(
         this.config,
         this.logger,
-        entityTypeName,
+        readModelName,
         filters,
         limit,
         afterCursor,
@@ -93,12 +95,29 @@ export class Booster {
       if (!Array.isArray(searchResult)) {
         return {
           ...searchResult,
-          items: searchResult ? createInstances(readModelClass, searchResult.items as Array<any>) : [],
+          items: createInstances(readModelClass, searchResult.items),
         }
+      } else {
+        return createInstances(readModelClass, searchResult)
       }
-      return searchResult ? createInstances(readModelClass, searchResult) : []
     }
-    return new Searcher(readModelClass, searchFunction)
+
+    const finderByIdFunction: FinderByKeyFunction<TReadModel> = async (
+      readModelName: string,
+      id: UUID,
+      sequenceKey?: SequenceKey
+    ) => {
+      const readModel = await this.config.provider.readModels.fetch(
+        this.config,
+        this.logger,
+        readModelName,
+        id,
+        sequenceKey
+      )
+      return readModel as TReadModel
+    }
+
+    return new Searcher(readModelClass, searchFunction, finderByIdFunction)
   }
 
   public static async events(filters: EventFilter): Promise<Array<EventSearchResponse>> {

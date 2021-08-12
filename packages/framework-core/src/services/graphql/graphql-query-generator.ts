@@ -31,7 +31,7 @@ export class GraphQLQueryGenerator {
 
   public constructor(
     private readonly config: BoosterConfig,
-    private readonly targetTypes: TargetTypesMap,
+    private readonly readModelsMetadata: TargetTypesMap,
     private readonly typeInformer: GraphQLTypeInformer,
     private readonly byIDResolverBuilder: ResolverBuilder,
     private readonly filterResolverBuilder: ResolverBuilder,
@@ -40,26 +40,29 @@ export class GraphQLQueryGenerator {
 
   public generate(): GraphQLObjectType {
     const byIDQueries = this.generateByIDQueries()
-    const filterQueries = { ...this.generateFilterQueries(), ...this.generateListedQueries() }
+    const filterQueries = this.generateFilterQueries()
+    const listedQueries = this.generateListedQueries()
+    // const sequenceQueries = this.generateSequenceQueries()
     const eventQueries = this.generateEventQueries()
-    const fields = { ...byIDQueries, ...filterQueries, ...eventQueries }
     return new GraphQLObjectType({
       name: 'Query',
-      fields: fields,
+      fields: { ...byIDQueries, ...filterQueries, ...listedQueries, ...eventQueries },
     })
   }
 
   private generateByIDQueries(): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {
     const queries: GraphQLFieldConfigMap<unknown, GraphQLResolverContext> = {}
-    for (const name in this.targetTypes) {
-      const type = this.targetTypes[name]
-      const graphQLType = this.typeInformer.getGraphQLTypeFor(type.class)
-      queries[name] = {
+    for (const readModelName in this.readModelsMetadata) {
+      const readModelMetadata = this.readModelsMetadata[readModelName]
+
+      const sequenceKeyName = this.config.readModelSequenceKeys[readModelName]
+      const args = buildArgsForQueryById(sequenceKeyName)
+
+      const graphQLType = this.typeInformer.getGraphQLTypeFor(readModelMetadata.class)
+      queries[readModelName] = {
         type: graphQLType,
-        args: {
-          id: { type: new GraphQLNonNull(GraphQLID) },
-        },
-        resolve: this.byIDResolverBuilder(type.class),
+        args,
+        resolve: this.byIDResolverBuilder(readModelMetadata.class),
       }
     }
     return queries
@@ -67,8 +70,8 @@ export class GraphQLQueryGenerator {
 
   private generateFilterQueries(): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {
     const queries: GraphQLFieldConfigMap<unknown, GraphQLResolverContext> = {}
-    for (const name in this.targetTypes) {
-      const type = this.targetTypes[name]
+    for (const name in this.readModelsMetadata) {
+      const type = this.readModelsMetadata[name]
       const graphQLType = this.typeInformer.getGraphQLTypeFor(type.class)
       queries[inflected.pluralize(name)] = {
         type: new GraphQLList(graphQLType),
@@ -81,8 +84,8 @@ export class GraphQLQueryGenerator {
 
   private generateListedQueries(): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {
     const queries: GraphQLFieldConfigMap<unknown, GraphQLResolverContext> = {}
-    for (const name in this.targetTypes) {
-      const type = this.targetTypes[name]
+    for (const name in this.readModelsMetadata) {
+      const type = this.readModelsMetadata[name]
       const graphQLType = this.typeInformer.getGraphQLTypeFor(type.class)
       queries[`List${inflected.pluralize(name)}`] = {
         type: new GraphQLObjectType({
@@ -308,5 +311,18 @@ export class GraphQLQueryGenerator {
         return valuesRecord
       }, {} as GraphQLEnumValueConfigMap),
     })
+  }
+}
+
+function buildArgsForQueryById(sequenceKeyName?: string): GraphQLFieldConfigArgumentMap {
+  if (sequenceKeyName) {
+    return {
+      id: { type: new GraphQLNonNull(GraphQLID) },
+      sequenceKeyName: { type: new GraphQLNonNull(GraphQLID) },
+    }
+  } else {
+    return {
+      id: { type: new GraphQLNonNull(GraphQLID) },
+    }
   }
 }

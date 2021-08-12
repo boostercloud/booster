@@ -9,6 +9,9 @@ import {
   EventFilter,
   EventSearchResponse,
   ReadModelRequestArgs,
+  ReadModelByIdRequestArgs,
+  ReadModelByIdRequestEnvelope,
+  TimeKey,
 } from '@boostercloud/framework-types'
 import { GraphQLFieldResolver, GraphQLResolveInfo, GraphQLSchema } from 'graphql'
 import { pluralize } from 'inflected'
@@ -42,7 +45,7 @@ export class GraphQLGenerator {
         config,
         config.readModels,
         typeInformer,
-        this.readModelByIDResolverBuilder.bind(this),
+        this.readModelByIDResolverBuilder.bind(this, config),
         this.readModelResolverBuilder.bind(this),
         this.eventResolver.bind(this)
       )
@@ -79,17 +82,23 @@ export class GraphQLGenerator {
         isPaginated = true
       }
       const readModelEnvelope = toReadModelRequestEnvelope(readModelClass.name, args, context, isPaginated)
-      return this.readModelsReader.fetch(readModelEnvelope)
+      return this.readModelsReader.search(readModelEnvelope)
     }
   }
 
   public static readModelByIDResolverBuilder(
+    config: BoosterConfig,
     readModelClass: AnyClass
-  ): GraphQLFieldResolver<unknown, GraphQLResolverContext, { id: string }> {
+  ): GraphQLFieldResolver<unknown, GraphQLResolverContext, ReadModelByIdRequestArgs> {
+    const sequenceKeyName = config.readModelSequenceKeys[readModelClass.name]
     return async (parent, args, context, info) => {
-      const filterArgs = { filter: { id: { eq: args.id } } }
-      const result = await this.readModelResolverBuilder(readModelClass)(parent, filterArgs, context, info)
-      return result[0]
+      const readModelRequestEnvelope = toReadModelByIdRequestEnvelope(
+        readModelClass.name,
+        args,
+        context,
+        sequenceKeyName
+      )
+      return await this.readModelsReader.findById(readModelRequestEnvelope)
     }
   }
 
@@ -141,6 +150,28 @@ export class GraphQLGenerator {
 
       return context.pubSub.asyncIterator(readModelRequestEnvelope, config)
     }
+  }
+}
+
+function toReadModelByIdRequestEnvelope(
+  readModelName: string,
+  args: ReadModelByIdRequestArgs,
+  context: GraphQLResolverContext,
+  sequenceKeyName?: string
+): ReadModelByIdRequestEnvelope {
+  const sequenceKey = sequenceKeyName
+    ? {
+        name: sequenceKeyName,
+        value: args[sequenceKeyName] as TimeKey,
+      }
+    : undefined
+  return {
+    currentUser: context.user,
+    requestID: context.requestID,
+    typeName: readModelName,
+    id: args.id,
+    sequenceKey,
+    version: 1, // TODO: How to pass the version through GraphQL?
   }
 }
 

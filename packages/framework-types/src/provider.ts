@@ -61,7 +61,7 @@ export interface ProviderReadModelsLibrary {
     limit?: number,
     afterCursor?: unknown,
     paginatedVersion?: boolean
-  ): Promise<Array<TReadModel> | ReadModelListResult>
+  ): Promise<Array<TReadModel> | ReadModelListResult<TReadModel>>
   /**
    * If "expectedCurrentVersion" is provided, the underlying provider must throw the error OptimisticConcurrencyUnexpectedVersionError
    * if the current stored read model contains a version that's different from the provided one

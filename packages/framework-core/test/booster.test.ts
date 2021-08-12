@@ -63,7 +63,7 @@ describe('the `Booster` class', () => {
       }
     }
     it('returns a properly configured Searcher', async () => {
-      const searcherFunctionFake = fake()
+      const searcherFunctionFake = fake.resolves([])
       Booster.configureCurrentEnv((config) => {
         replaceGetter(config, 'provider', () => {
           return {
@@ -95,7 +95,7 @@ describe('the `Booster` class', () => {
           } as any
         })
       })
-      const readModels = await Booster.readModel(TestReadModel).search()
+      const readModels = (await Booster.readModel(TestReadModel).search()) as Array<TestReadModel>
       for (const readModel of readModels) {
         expect(readModel.getId()).to.not.throw
       }
