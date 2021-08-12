@@ -30,6 +30,16 @@ export async function fetchReadModel(
   const params: DynamoDB.DocumentClient.GetItemInput = {
     TableName: config.resourceNames.forReadModel(readModelName),
     Key: { id: readModelID },
+    /*
+     * TODO: We need to have consistent reads active here to manage the case when we write a new version of the read model
+     * and read it in the same lambda execution. For instance, when we're processing the event stream and updating the entities,
+     * then read models are updated. We need to make sure that the second time we read it we get the same object we stored in 
+     * the previous iteration.
+     * 
+     * Still, it would be interesting to make eventual consistent reads for requests coming from the API, because they're faster. 
+     * One possible solution would be having an extra optional parameter that defaults to `true`, but can be set to `false` in
+     * that scenario.
+     */
     ConsistentRead: true,
   }
   const response = await db.get(params).promise()
