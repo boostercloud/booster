@@ -1,12 +1,14 @@
 import { fake } from 'sinon'
-import { Searcher } from '../src'
+import { FilterFor, Searcher, SequenceKey } from '../src'
 import { expect } from './expect'
 
 describe('the `Searcher` class', () => {
-  class SomeModel {}
+  class SomeModel {
+    constructor(readonly someField: string) {}
+  }
 
-  const searcherFunction = fake()
-  const finderByKeyFunction = fake()
+  const searcherFunction = fake.resolves([{ hello: 'world' }])
+  const finderByKeyFunction = fake.resolves({ hello: 'world' })
   let searcher: Searcher<SomeModel>
 
   beforeEach(() => {
@@ -26,7 +28,7 @@ describe('the `Searcher` class', () => {
 
     describe('the method `filter`', () => {
       it('adds an array of filters to the searcher and returns the searcher', () => {
-        const fakeFilters = [{name: 'a'},{name: 'b'}]
+        const fakeFilters: FilterFor<SomeModel> = { someField: { gt: '200' }}
 
         const newSearcher = searcher.filter(fakeFilters)
 
@@ -72,15 +74,57 @@ describe('the `Searcher` class', () => {
     })
 
     describe('the method `findById`', () => {
-      it('...') // TODO
+      it('calls to the `finderByKeyFunction` with the right parameters', async () => {
+        // With a unique primary key
+        await searcher.findById('42')
+        expect(finderByKeyFunction).to.have.been.calledWith('SomeModel', '42')
+
+        // With a compound primary key (sequenced read models)
+        const sequenceKey: SequenceKey = { name: 'timestamp', value: '1' }
+        await searcher.findById('43', sequenceKey)
+        expect(finderByKeyFunction).to.have.been.calledWith('SomeModel', '43', sequenceKey)
+      })
     })
 
     describe('the method `searchOne`', () => {
-      it('...') // TODO
+      it("calls the `searcherFunction` discarding searcher's limit and pagination settings", async () => {
+        const filters = { someField: { gt: '200' } }
+        const result = await searcher
+          .filter(filters)
+          .afterCursor('30')
+          .limit(50)
+          .paginatedVersion(true)
+          .searchOne()
+
+        expect(searcherFunction).to.have.been.calledWithMatch(
+          'SomeModel',
+          filters,
+          1,
+          '30',
+          false
+        )
+        expect(result).not.to.be.an('Array')
+      })
     })
 
     describe('the method `search`', () => {
-      it('...') // TODO
+      it('calls the `searcherFunction` forwarding the configured parameters', async () => {
+        const filters = { someField: { gt: '200' } }
+        await searcher
+          .filter(filters)
+          .afterCursor('30')
+          .limit(50)
+          .paginatedVersion(true)
+          .search()
+
+        expect(searcherFunction).to.have.been.calledWithMatch(
+          'SomeModel',
+          filters,
+          50,
+          '30',
+          true
+        )
+      })
     })
   })
 })

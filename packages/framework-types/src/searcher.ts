@@ -77,8 +77,14 @@ export class Searcher<TObject> {
 
   public async searchOne(): Promise<TObject> {
     // TODO: If there is only an ID filter with one value, this should call to `findById`
-    const searchResult = await this.search()
-    return Array.isArray(searchResult) ? searchResult[0] : searchResult.items[0]
+    const searchResult = await this.searcherFunction(
+      this.objectClass.name,
+      this.filters,
+      1, // Forces limit 1
+      this._afterCursor,
+      false // It doesn't make sense to paginate a single result, as pagination metadata would be discarded
+    )
+    return (searchResult as TObject[])[0]
   }
 
   /**
