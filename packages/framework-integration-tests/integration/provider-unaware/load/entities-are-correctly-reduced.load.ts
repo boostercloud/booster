@@ -33,7 +33,7 @@ describe('Data consistency on entities', () => {
       const durationWarmup = 10
       const arrivalRateWarmup = 500
       const durationBurst = 10
-      const arrivalRateBurst = 1500
+      const arrivalRateBurst = 1200
       const expectedStock = durationWarmup * arrivalRateWarmup + durationBurst * arrivalRateBurst
       await scriptExecutor.executeScript('move-product-stock.yml', {
         variables: { token, productID: productIDs, destinationWarehouse },
