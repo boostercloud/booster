@@ -19,8 +19,8 @@ describe('the `Searcher` class', () => {
     describe('the constructor', () => {
       it('creates a valid searcher instance', () => {
         // The searcher instance won't respond with the right class
-        // when using a conventional typeOf call because the Searcher class 
-        // is a generic. The instance keeps a reference to the 
+        // when using a conventional typeOf call because the Searcher class
+        // is a generic. The instance keeps a reference to the
         // constructor that we can use though.
         expect(searcher.constructor.name).to.be.equal('Searcher')
       })
@@ -28,7 +28,7 @@ describe('the `Searcher` class', () => {
 
     describe('the method `filter`', () => {
       it('adds an array of filters to the searcher and returns the searcher', () => {
-        const fakeFilters: FilterFor<SomeModel> = { someField: { gt: '200' }}
+        const fakeFilters: FilterFor<SomeModel> = { someField: { gt: '200' } }
 
         const newSearcher = searcher.filter(fakeFilters)
 
@@ -89,20 +89,9 @@ describe('the `Searcher` class', () => {
     describe('the method `searchOne`', () => {
       it("calls the `searcherFunction` discarding searcher's limit and pagination settings", async () => {
         const filters = { someField: { gt: '200' } }
-        const result = await searcher
-          .filter(filters)
-          .afterCursor('30')
-          .limit(50)
-          .paginatedVersion(true)
-          .searchOne()
+        const result = await searcher.filter(filters).afterCursor('30').limit(50).paginatedVersion(true).searchOne()
 
-        expect(searcherFunction).to.have.been.calledWithMatch(
-          'SomeModel',
-          filters,
-          1,
-          '30',
-          false
-        )
+        expect(searcherFunction).to.have.been.calledWithMatch('SomeModel', filters, 1, '30', false)
         expect(result).not.to.be.an('Array')
       })
     })
@@ -110,20 +99,9 @@ describe('the `Searcher` class', () => {
     describe('the method `search`', () => {
       it('calls the `searcherFunction` forwarding the configured parameters', async () => {
         const filters = { someField: { gt: '200' } }
-        await searcher
-          .filter(filters)
-          .afterCursor('30')
-          .limit(50)
-          .paginatedVersion(true)
-          .search()
+        await searcher.filter(filters).afterCursor('30').limit(50).paginatedVersion(true).search()
 
-        expect(searcherFunction).to.have.been.calledWithMatch(
-          'SomeModel',
-          filters,
-          50,
-          '30',
-          true
-        )
+        expect(searcherFunction).to.have.been.calledWithMatch('SomeModel', filters, 50, '30', true)
       })
     })
   })
