@@ -31,17 +31,31 @@ export async function fetchReadModel(
   readModelID: UUID,
   sequenceKey?: SequenceKey
 ): Promise<ReadOnlyNonEmptyArray<ReadModelInterface>> {
-  const params: DynamoDB.DocumentClient.GetItemInput = {
+  // We're using query for get single read models too as the difference in performance
+  // between get-item and query is none for a single item.
+  // Source: https://forums.aws.amazon.com/thread.jspa?threadID=93743
+  const sequenceKeyCondition = sequenceKey ? ` AND #${sequenceKey.name} = :${sequenceKey.name}` : ''
+  const sequenceAttributeNames = sequenceKey ? { [`#${sequenceKey.name}`]: sequenceKey.name } : {}
+  const sequenceAttributeValues = sequenceKey ? { [`:${sequenceKey.name}`]: sequenceKey.value } : {}
+  const queryParams: DynamoDB.DocumentClient.QueryInput = {
     TableName: config.resourceNames.forReadModel(readModelName),
-    Key: buildKey(readModelID, sequenceKey?.name, sequenceKey?.value),
+    KeyConditionExpression: '#id = :id' + sequenceKeyCondition,
+    ExpressionAttributeNames: {
+      '#id': 'id',
+      ...sequenceAttributeNames,
+    },
+    ExpressionAttributeValues: {
+      ':id': readModelID,
+      ...sequenceAttributeValues,
+    },
     ConsistentRead: true,
   }
-  const response = await db.get(params).promise()
+  const response = await db.query(queryParams).promise()
   logger.debug(
     `[ReadModelAdapter#fetchReadModel] Loaded read model ${readModelName} with ID ${readModelID} with result:`,
-    response.Item
+    response.Items
   )
-  return [response.Item as ReadModelInterface]
+  return response.Items as unknown as ReadOnlyNonEmptyArray<ReadModelInterface>
 }
 
 export async function storeReadModel(
