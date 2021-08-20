@@ -58,7 +58,7 @@ export class GraphQLQueryGenerator {
 
       const graphQLType = this.typeInformer.getGraphQLTypeFor(readModelMetadata.class)
       queries[readModelName] = {
-        type: graphQLType,
+        type: new GraphQLList(graphQLType),
         args,
         resolve: this.byIDResolverBuilder(readModelMetadata.class),
       }
