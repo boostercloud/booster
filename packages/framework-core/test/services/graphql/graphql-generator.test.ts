@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { replace, restore, SinonStub, stub } from 'sinon'
+import { fake, replace, restore, SinonStub, spy, stub } from 'sinon'
 import { BoosterCommandDispatcher } from '../../../src/booster-command-dispatcher'
 import { BoosterReadModelsReader } from '../../../src/booster-read-models-reader'
 import { GraphQLGenerator } from '../../../src/services/graphql/graphql-generator'
@@ -186,33 +186,77 @@ describe('GraphQL generator', () => {
       })
     })
 
-    // describe('readModelByIDResolverBuilder', () => {
-    //   let mockReadModels: Array<ReadModelInterface>
+    describe('readModelByIDResolverBuilder', () => {
+      class SomeReadModel {
+        public constructor(readonly id: string, readonly timestamp: string) {}
+      }
 
-    //   let readModelResolverBuilderStub: SinonStub
+      context('when the read model is non sequenced', () => {
+        const config = new BoosterConfig('test')
 
-    //   let returnedFunction: GraphQLFieldResolver<unknown, GraphQLResolverContext, any>
+        it('builds a function that perform requests by id', async () => {
+          const toReadModelByIdRequestEnvelopeSpy = spy(GraphQLGenerator as any, 'toReadModelByIdRequestEnvelope')
 
-    //   beforeEach(() => {
-    //     mockReadModels = []
+          const fakeFindById = fake()
+          replace((GraphQLGenerator as any).readModelsReader, 'findById', fakeFindById)
 
-    //     for (let i = 0; i < random.number({ min: 1, max: 10 }); i++) {
-    //       mockReadModels.push({
-    //         id: random.uuid(),
-    //         testKey: random.number(),
-    //       })
-    //     }
+          const returnedFunction = GraphQLGenerator.readModelByIDResolverBuilder(config, SomeReadModel)
 
-    //     readModelResolverBuilderStub = stub().returns(() => {
-    //       return mockReadModels
-    //     })
-    //     replace(GraphQLGenerator, 'readModelResolverBuilder', readModelResolverBuilderStub)
+          const fakeArgs = { id: '42' }
+          const fakeUser = { a: 'user' }
+          const fakeContext: any = { user: fakeUser, requestID: '314' }
+          await returnedFunction({}, fakeArgs, fakeContext, {} as any)
 
-    //     returnedFunction = GraphQLGenerator.readModelByIDResolverBuilder(new BoosterConfig('test'), mockType)
-    //   })
+          expect(toReadModelByIdRequestEnvelopeSpy).to.have.been.calledOnceWith('SomeReadModel', fakeArgs, fakeContext)
 
-    //   it('should return expected result') // TODO
-    // })
+          const envelope = toReadModelByIdRequestEnvelopeSpy.returnValues[0]
+          expect(envelope).to.have.property('currentUser', fakeUser)
+          expect(envelope).to.have.property('requestID', '314')
+          expect(envelope).to.have.property('typeName', 'SomeReadModel')
+          expect(envelope).to.have.property('id', '42')
+          expect(envelope.sequenceKey).to.be.undefined
+          expect(envelope).to.have.property('version', 1)
+
+          expect(fakeFindById).to.have.been.calledOnceWith(envelope)
+        })
+      })
+
+      context('when the read model is sequenced', () => {
+        const config = new BoosterConfig('test')
+        config.readModelSequenceKeys['SomeReadModel'] = 'timestamp'
+
+        it('builds a function that perform requests by id and sequence key', async () => {
+          const toReadModelByIdRequestEnvelopeSpy = spy(GraphQLGenerator as any, 'toReadModelByIdRequestEnvelope')
+
+          const fakeFindById = fake()
+          replace((GraphQLGenerator as any).readModelsReader, 'findById', fakeFindById)
+
+          const returnedFunction = GraphQLGenerator.readModelByIDResolverBuilder(config, SomeReadModel)
+
+          const fakeArgs = { id: '42', timestamp: '1000' }
+          const fakeUser = { a: 'user' }
+          const fakeContext: any = { user: fakeUser, requestID: '314' }
+          await returnedFunction({}, fakeArgs, fakeContext, {} as any)
+
+          expect(toReadModelByIdRequestEnvelopeSpy).to.have.been.calledOnceWith(
+            'SomeReadModel',
+            fakeArgs,
+            fakeContext,
+            'timestamp'
+          )
+
+          const envelope = toReadModelByIdRequestEnvelopeSpy.returnValues[0]
+          expect(envelope).to.have.property('currentUser', fakeUser)
+          expect(envelope).to.have.property('requestID', '314')
+          expect(envelope).to.have.property('typeName', 'SomeReadModel')
+          expect(envelope).to.have.property('id', '42')
+          expect(envelope.sequenceKey).to.be.deep.equal({ name: 'timestamp', value: '1000' })
+          expect(envelope).to.have.property('version', 1)
+
+          expect(fakeFindById).to.have.been.calledOnceWith(envelope)
+        })
+      })
+    })
 
     describe('commandResolverBuilder', () => {
       let mockInput: any

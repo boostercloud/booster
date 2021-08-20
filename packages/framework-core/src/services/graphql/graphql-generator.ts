@@ -92,7 +92,7 @@ export class GraphQLGenerator {
   ): GraphQLFieldResolver<unknown, GraphQLResolverContext, ReadModelByIdRequestArgs> {
     const sequenceKeyName = config.readModelSequenceKeys[readModelClass.name]
     return async (parent, args, context, info) => {
-      const readModelRequestEnvelope = toReadModelByIdRequestEnvelope(
+      const readModelRequestEnvelope = this.toReadModelByIdRequestEnvelope(
         readModelClass.name,
         args,
         context,
@@ -151,27 +151,27 @@ export class GraphQLGenerator {
       return context.pubSub.asyncIterator(readModelRequestEnvelope, config)
     }
   }
-}
 
-function toReadModelByIdRequestEnvelope(
-  readModelName: string,
-  args: ReadModelByIdRequestArgs,
-  context: GraphQLResolverContext,
-  sequenceKeyName?: string
-): ReadModelByIdRequestEnvelope {
-  const sequenceKey = sequenceKeyName
-    ? {
-        name: sequenceKeyName,
-        value: args[sequenceKeyName] as TimeKey,
-      }
-    : undefined
-  return {
-    currentUser: context.user,
-    requestID: context.requestID,
-    typeName: readModelName,
-    id: args.id,
-    sequenceKey,
-    version: 1, // TODO: How to pass the version through GraphQL?
+  private static toReadModelByIdRequestEnvelope(
+    readModelName: string,
+    args: ReadModelByIdRequestArgs,
+    context: GraphQLResolverContext,
+    sequenceKeyName?: string
+  ): ReadModelByIdRequestEnvelope {
+    const sequenceKey = sequenceKeyName
+      ? {
+          name: sequenceKeyName,
+          value: args[sequenceKeyName] as TimeKey,
+        }
+      : undefined
+    return {
+      currentUser: context.user,
+      requestID: context.requestID,
+      typeName: readModelName,
+      id: args.id,
+      sequenceKey,
+      version: 1, // TODO: How to pass the version through GraphQL?
+    }
   }
 }
 
