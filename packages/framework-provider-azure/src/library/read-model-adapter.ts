@@ -1,5 +1,5 @@
 import { CosmosClient } from '@azure/cosmos'
-import { BoosterConfig, Logger, ReadModelInterface, UUID } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger, ReadModelInterface, ReadOnlyNonEmptyArray, UUID } from '@boostercloud/framework-types'
 
 export async function fetchReadModel(
   db: CosmosClient,
@@ -7,7 +7,7 @@ export async function fetchReadModel(
   logger: Logger,
   readModelName: string,
   readModelID: UUID
-): Promise<ReadModelInterface> {
+): Promise<ReadOnlyNonEmptyArray<ReadModelInterface>> {
   const { resource } = await db
     .database(config.resourceNames.applicationStack)
     .container(config.resourceNames.forReadModel(readModelName))
@@ -18,7 +18,7 @@ export async function fetchReadModel(
     `[ReadModelAdapter#fetchReadModel] Loaded read model ${readModelName} with ID ${readModelID} with result:`,
     resource
   )
-  return resource as ReadModelInterface
+  return [resource as ReadModelInterface]
 }
 
 export async function storeReadModel(
