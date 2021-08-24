@@ -1,30 +1,33 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BoosterConfig,
-  Logger,
+  GraphQLOperation,
   InvalidParameterError,
+  Logger,
   NotAuthorizedError,
   NotFoundError,
-  ReadModelRequestEnvelope,
-  ReadModelInterface,
-  SubscriptionEnvelope,
-  GraphQLOperation,
-  ReadModelPropertyFilter,
   ReadModelByIdRequestEnvelope,
+  ReadModelInterface,
   ReadModelListResult,
   Searcher,
   Class,
   FilterFor,
   UserEnvelope,
+  ReadModelPropertyFilter,
+  ReadModelRequestEnvelope,
+  ReadOnlyNonEmptyArray,
+  SubscriptionEnvelope,
 } from '@boostercloud/framework-types'
-import { BoosterAuth } from './booster-auth'
 import { Booster } from './booster'
+import { BoosterAuth } from './booster-auth'
 import { getReadModelFilters } from './services/filter-helpers'
 
 export class BoosterReadModelsReader {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
 
-  public async findById(readModelByIdRequestEnvelope: ReadModelByIdRequestEnvelope): Promise<ReadModelInterface> {
+  public async findById(
+    readModelByIdRequestEnvelope: ReadModelByIdRequestEnvelope
+  ): Promise<ReadOnlyNonEmptyArray<ReadModelInterface>> {
     this.validateByIdRequest(readModelByIdRequestEnvelope)
 
     return this.initializeSearcherWithFilters(

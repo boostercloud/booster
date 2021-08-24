@@ -1,26 +1,27 @@
+import { createInstance, createInstances } from '@boostercloud/framework-common-helpers'
 import {
   BoosterConfig,
-  Logger,
-  EntityInterface,
-  ReadModelInterface,
-  UUID,
   Class,
-  Searcher,
-  EventSearchResponse,
+  EntityInterface,
   EventFilter,
-  SearcherFunction,
+  EventSearchResponse,
   FilterFor,
-  SequenceKey,
   FinderByKeyFunction,
+  Logger,
+  ReadModelInterface,
+  ReadOnlyNonEmptyArray,
+  Searcher,
+  SearcherFunction,
+  SequenceKey,
+  UUID,
 } from '@boostercloud/framework-types'
-import { Importer } from './importer'
-import { buildLogger } from './booster-logger'
 import { BoosterEventDispatcher } from './booster-event-dispatcher'
 import { BoosterGraphQLDispatcher } from './booster-graphql-dispatcher'
-import { BoosterSubscribersNotifier } from './booster-subscribers-notifier'
+import { buildLogger } from './booster-logger'
 import { BoosterScheduledCommandDispatcher } from './booster-scheduled-command-dispatcher'
+import { BoosterSubscribersNotifier } from './booster-subscribers-notifier'
+import { Importer } from './importer'
 import { EventStore } from './services/event-store'
-import { createInstance, createInstances } from '@boostercloud/framework-common-helpers'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -107,14 +108,14 @@ export class Booster {
       id: UUID,
       sequenceKey?: SequenceKey
     ) => {
-      const readModel = await this.config.provider.readModels.fetch(
+      const readModels = await this.config.provider.readModels.fetch(
         this.config,
         this.logger,
         readModelName,
         id,
         sequenceKey
       )
-      return readModel as TReadModel
+      return readModels as ReadOnlyNonEmptyArray<TReadModel>
     }
 
     return new Searcher(readModelClass, searchFunction, finderByIdFunction)

@@ -1,19 +1,20 @@
+import { ReadModelInterface, SequenceKey, UUID } from './concepts'
+import { BoosterConfig } from './config'
 import {
-  EventEnvelope,
-  GraphQLRequestEnvelope,
-  SubscriptionEnvelope,
-  ReadModelEnvelope,
   ConnectionDataEnvelope,
-  GraphQLRequestEnvelopeError,
-  ScheduledCommandEnvelope,
+  EventEnvelope,
   EventFilter,
   EventSearchResponse,
+  GraphQLRequestEnvelope,
+  GraphQLRequestEnvelopeError,
+  ReadModelEnvelope,
   ReadModelListResult,
+  ScheduledCommandEnvelope,
+  SubscriptionEnvelope,
 } from './envelope'
-import { BoosterConfig } from './config'
 import { Logger } from './logger'
-import { ReadModelInterface, SequenceKey, UUID } from './concepts'
 import { FilterFor } from './searcher'
+import { ReadOnlyNonEmptyArray } from './typelevel'
 
 export interface ProviderLibrary {
   events: ProviderEventsLibrary
@@ -52,7 +53,7 @@ export interface ProviderReadModelsLibrary {
     readModelName: string,
     readModelID: UUID,
     sequenceKey?: SequenceKey
-  ): Promise<ReadModelInterface>
+  ): Promise<ReadOnlyNonEmptyArray<ReadModelInterface>>
   search<TReadModel extends ReadModelInterface>(
     config: BoosterConfig,
     logger: Logger,
