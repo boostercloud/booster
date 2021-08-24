@@ -27,7 +27,7 @@ export class BoosterReadModelsReader {
 
   public async findById(
     readModelByIdRequestEnvelope: ReadModelByIdRequestEnvelope
-  ): Promise<ReadOnlyNonEmptyArray<ReadModelInterface>> {
+  ): Promise<ReadModelInterface | ReadOnlyNonEmptyArray<ReadModelInterface>> {
     this.validateByIdRequest(readModelByIdRequestEnvelope)
 
     return this.initializeSearcherWithFilters(

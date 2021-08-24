@@ -118,7 +118,7 @@ describe('the "fetchReadModel" method', () => {
         const config = new BoosterConfig('test')
         replace(
           db,
-          'get',
+          'query',
           fake.returns({
             promise: fake.rejects('not found'),
           })
@@ -128,10 +128,16 @@ describe('the "fetchReadModel" method', () => {
           fetchReadModel(db, config, logger, 'SomeReadModel', 'someReadModelID')
         ).to.be.eventually.rejectedWith('not found')
 
-        expect(db.get).to.have.been.calledOnceWith({
+        expect(db.query).to.have.been.calledOnceWith({
           TableName: 'new-booster-app-app-SomeReadModel',
+          KeyConditionExpression: '#id = :id',
+          ExpressionAttributeNames: {
+            '#id': 'id',
+          },
+          ExpressionAttributeValues: {
+            ':id': 'someReadModelID',
+          },
           ConsistentRead: true,
-          Key: { id: 'someReadModelID' },
         })
       })
     })
@@ -142,7 +148,7 @@ describe('the "fetchReadModel" method', () => {
         const config = new BoosterConfig('test')
         replace(
           db,
-          'get',
+          'query',
           fake.returns({
             promise: fake.rejects('not found'),
           })
@@ -152,10 +158,18 @@ describe('the "fetchReadModel" method', () => {
           fetchReadModel(db, config, logger, 'SomeReadModel', 'someReadModelID', { name: 'asdf', value: '42' })
         ).to.be.eventually.rejectedWith('not found')
 
-        expect(db.get).to.have.been.calledOnceWith({
+        expect(db.query).to.have.been.calledOnceWith({
           TableName: 'new-booster-app-app-SomeReadModel',
+          KeyConditionExpression: '#id = :id AND #asdf = :asdf',
+          ExpressionAttributeNames: {
+            '#id': 'id',
+            '#asdf': 'asdf',
+          },
+          ExpressionAttributeValues: {
+            ':id': 'someReadModelID',
+            ':asdf': '42',
+          },
           ConsistentRead: true,
-          Key: { id: 'someReadModelID', asdf: '42' },
         })
       })
     })
@@ -168,20 +182,26 @@ describe('the "fetchReadModel" method', () => {
         const config = new BoosterConfig('test')
         replace(
           db,
-          'get',
+          'query',
           fake.returns({
-            promise: fake.resolves({ Item: { some: 'object' } }),
+            promise: fake.resolves({ Items: [{ some: 'object' }] }),
           })
         )
 
-        const result = await fetchReadModel(db, config, logger, 'SomeReadModel', 'someReadModelID')
+        const results = await fetchReadModel(db, config, logger, 'SomeReadModel', 'someReadModelID')
 
-        expect(db.get).to.have.been.calledOnceWithExactly({
+        expect(db.query).to.have.been.calledOnceWith({
           TableName: 'new-booster-app-app-SomeReadModel',
+          KeyConditionExpression: '#id = :id',
+          ExpressionAttributeNames: {
+            '#id': 'id',
+          },
+          ExpressionAttributeValues: {
+            ':id': 'someReadModelID',
+          },
           ConsistentRead: true,
-          Key: { id: 'someReadModelID' },
         })
-        expect(result).to.deep.equal({ some: 'object' })
+        expect(results).to.deep.equal([{ some: 'object' }])
       })
     })
 
@@ -191,23 +211,31 @@ describe('the "fetchReadModel" method', () => {
         const config = new BoosterConfig('test')
         replace(
           db,
-          'get',
+          'query',
           fake.returns({
-            promise: fake.resolves({ Item: { some: 'object', time: '42' } }),
+            promise: fake.resolves({ Items: [{ some: 'object', time: '42' }] }),
           })
         )
 
-        const result = await fetchReadModel(db, config, logger, 'SomeReadModel', 'someReadModelID', {
+        const results = await fetchReadModel(db, config, logger, 'SomeReadModel', 'someReadModelID', {
           name: 'time',
           value: '42',
         })
 
-        expect(db.get).to.have.been.calledOnceWithExactly({
+        expect(db.query).to.have.been.calledOnceWith({
           TableName: 'new-booster-app-app-SomeReadModel',
+          KeyConditionExpression: '#id = :id AND #time = :time',
+          ExpressionAttributeNames: {
+            '#id': 'id',
+            '#time': 'time',
+          },
+          ExpressionAttributeValues: {
+            ':id': 'someReadModelID',
+            ':time': '42',
+          },
           ConsistentRead: true,
-          Key: { id: 'someReadModelID', time: '42' },
         })
-        expect(result).to.deep.equal({ some: 'object', time: '42' })
+        expect(results).to.deep.equal([{ some: 'object', time: '42' }])
       })
     })
   })

@@ -130,23 +130,35 @@ export class ReadModelStore {
     )
   }
 
+  /**
+   * Gets a specific read model instance referencing it by ID when it's a regular read model
+   * or by ID + sequenceKey when it's a sequenced read model
+   */
   public async fetchReadModel(
     readModelName: string,
     readModelID: UUID,
     sequenceKey?: SequenceKey
   ): Promise<ReadModelInterface | undefined> {
     this.logger.debug(
-      `[ReadModelStore#fetchReadModel] Looking for existing version of read model ${readModelName} with ID ${readModelID}`
+      `[ReadModelStore#fetchReadModel] Looking for existing version of read model ${readModelName} with ID = ${readModelID}` +
+        (sequenceKey ? ` and sequence key ${sequenceKey.name} = ${sequenceKey.value}` : '')
     )
-    const rawReadModel = await this.provider.readModels.fetch(
+    const rawReadModels = await this.provider.readModels.fetch(
       this.config,
       this.logger,
       readModelName,
       readModelID,
       sequenceKey
     )
-    const readModelMetadata = this.config.readModels[readModelName]
-    return rawReadModel ? createInstance(readModelMetadata.class, rawReadModel) : undefined
+    if (rawReadModels?.length) {
+      if (rawReadModels.length > 1) {
+        throw 'Got multiple objects for a request by Id. If this is a sequenced read model you should also specify the sequenceKey field.'
+      } else if (rawReadModels.length === 1) {
+        const readModelMetadata = this.config.readModels[readModelName]
+        return createInstance(readModelMetadata.class, rawReadModels[0])
+      }
+    }
+    return undefined
   }
 
   public projectionFunction(projectionMetadata: ProjectionMetadata): Function {

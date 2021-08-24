@@ -115,7 +115,11 @@ export class Booster {
         id,
         sequenceKey
       )
-      return readModels as ReadOnlyNonEmptyArray<TReadModel>
+      if (sequenceKey) {
+        return readModels as ReadOnlyNonEmptyArray<TReadModel>
+      } else {
+        return readModels[0] as TReadModel
+      }
     }
 
     return new Searcher(readModelClass, searchFunction, finderByIdFunction)

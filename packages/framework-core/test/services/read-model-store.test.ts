@@ -349,7 +349,7 @@ describe('ReadModelStore', () => {
     context('when the projection calls an instance method in the read model', () => {
       it('is executed without failing', async () => {
         const readModelStore = new ReadModelStore(config, logger)
-        replace(config.provider.readModels, 'fetch', fake.returns({ id: 'joinColumnID', count: 31415 }))
+        replace(config.provider.readModels, 'fetch', fake.returns([{ id: 'joinColumnID', count: 31415 }]))
         const getIdFake = fake()
         replace(SomeReadModel.prototype, 'getId', getIdFake)
         await readModelStore.project(eventEnvelopeFor(AnEntity.name))
@@ -443,7 +443,7 @@ describe('ReadModelStore', () => {
       })
 
       it('returns an instance of the current read model value when it exists', async () => {
-        replace(config.provider.readModels, 'fetch', fake.returns({ id: 'joinColumnID' }))
+        replace(config.provider.readModels, 'fetch', fake.returns([{ id: 'joinColumnID' }]))
         const readModelStore = new ReadModelStore(config, logger)
 
         const result = await readModelStore.fetchReadModel(SomeReadModel.name, 'joinColumnID')
