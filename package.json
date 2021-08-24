@@ -6,11 +6,14 @@
   "bugs": "https://github.com/boostercloud/booster/issues",
   "private": true,
   "scripts": {
+    "build": "lerna run compile",
+    "clean-compile": "lerna run clean && lerna clean --yes && lerna bootstrap && lerna run compile",
     "update-tocs": "npm run update-documentation-toc && npm run update-contributing-toc",
     "update-documentation-toc": "markdown-toc -i --maxdepth 4 docs/README.md",
     "update-contributing-toc": "markdown-toc -i --bullets=- --maxdepth 4 CONTRIBUTING.md"
   },
   "devDependencies": {
+    "@boostercloud/framework-provider-local": "file:packages/framework-provider-local",
     "@octokit/rest": "18.5.3",
     "@types/chai": "4.2.18",
     "@types/chai-as-promised": "7.1.4",

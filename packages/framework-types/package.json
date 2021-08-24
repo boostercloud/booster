@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-types",
-  "version": "0.20.2",
+  "version": "0.20.4",
   "description": "Contains Booster types related to the information extracted from the user project",
   "keywords": [
     "framework-types"
@@ -43,6 +43,7 @@
     "chai-as-promised": "7.1.1",
     "fast-check": "^1.18.1",
     "metadata-booster": "0.3.1",
+    "mocha": "8.4.0",
     "sinon": "9.2.3",
     "sinon-chai": "3.5.0"
   }

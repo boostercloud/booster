@@ -1,6 +1,6 @@
 import { ResolverBuilder, TargetTypesMap } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
-import { GraphQLBoolean, GraphQLFieldConfigMap, GraphQLObjectType, GraphQLNonNull } from 'graphql'
+import { GraphQLFieldConfigMap, GraphQLObjectType, GraphQLNonNull } from 'graphql'
 
 export class GraphQLMutationGenerator {
   public constructor(
@@ -25,7 +25,7 @@ export class GraphQLMutationGenerator {
     for (const name in this.targetTypes) {
       const type = this.targetTypes[name]
       mutations[name] = {
-        type: GraphQLBoolean, // TODO: Return the request ID an useful information
+        type: this.typeInformer.getGraphQLTypeFor(type.returnClass ?? Boolean),
         args: {
           input: {
             type: new GraphQLNonNull(this.typeInformer.getGraphQLInputTypeFor(type.class)),

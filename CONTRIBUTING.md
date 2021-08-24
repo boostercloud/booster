@@ -35,7 +35,7 @@ Remember that if something here doesn't make sense, you can also propose a chang
 
 ## Code of Conduct
 
-This project and everyone participating in it are expected to uphold the [Berlin Code of Conduct](https://berlincodeofconduct.org).
+This project and everyone participating in it are expected to uphold the [Booster's Code of Conduct](https://github.com/boostercloud/booster/blob/main/CODE_OF_CONDUCT.md), based on the Covenant Code of Conduct.
 If you see unacceptable behavior, please communicate so to `hello@booster.cloud`.
 
 ## I don't want to read this whole thing, I just have a question!!!

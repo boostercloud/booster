@@ -8,6 +8,7 @@ export type TargetTypesMap = Record<string, TargetTypeMetadata>
 export interface TargetTypeMetadata {
   class: AnyClass
   properties: Array<PropertyMetadata>
+  returnClass?: AnyClass
 }
 
 export type GraphQLNonInputType = GraphQLObjectType | GraphQLScalarType | GraphQLList<GraphQLType>

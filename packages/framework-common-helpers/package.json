@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-common-helpers",
-  "version": "0.20.2",
+  "version": "0.20.4",
   "description": "Contains Booster common helpers used by the core and provider packages",
   "keywords": [
     "framework-common-helpers"
@@ -33,8 +33,8 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "dependencies": {
-    "tslib": "2.3.0",
-    "@boostercloud/framework-types": "^0.20.2"
+    "@boostercloud/framework-types": "^0.20.4",
+    "tslib": "2.3.0"
   },
   "devDependencies": {
     "@types/uuid": "8.3.0",
