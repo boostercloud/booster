@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-  Operation,
-  FilterFor,
   BoosterConfig,
-  Logger,
+  FilterFor,
   InvalidParameterError,
+  Logger,
+  Operation,
   ReadModelListResult,
 } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'

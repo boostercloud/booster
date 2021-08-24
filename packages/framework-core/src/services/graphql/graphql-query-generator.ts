@@ -1,30 +1,30 @@
+import { AnyClass, BoosterConfig } from '@boostercloud/framework-types'
 import {
+  GraphQLBoolean,
+  GraphQLEnumType,
+  GraphQLEnumValueConfigMap,
   GraphQLFieldConfigArgumentMap,
   GraphQLFieldConfigMap,
   GraphQLFieldResolver,
+  GraphQLFloat,
   GraphQLID,
-  GraphQLInputObjectType,
   GraphQLInputFieldConfigMap,
+  GraphQLInputObjectType,
+  GraphQLInt,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLOutputType,
-  GraphQLString,
-  GraphQLBoolean,
-  GraphQLFloat,
-  Thunk,
-  GraphQLEnumType,
-  GraphQLEnumValueConfigMap,
   GraphQLScalarType,
-  GraphQLInt,
+  GraphQLString,
+  Thunk,
 } from 'graphql'
-import { GraphQLResolverContext, ResolverBuilder, TargetTypeMetadata, TargetTypesMap } from './common'
-import { GraphQLTypeInformer } from './graphql-type-informer'
-import * as inflected from 'inflected'
 import { GraphQLJSONObject } from 'graphql-type-json'
-import { AnyClass, BoosterConfig } from '@boostercloud/framework-types'
+import * as inflected from 'inflected'
 import { PropertyMetadata } from 'metadata-booster'
 import { getPropertiesMetadata } from './../../decorators/metadata'
+import { GraphQLResolverContext, ResolverBuilder, TargetTypeMetadata, TargetTypesMap } from './common'
+import { GraphQLTypeInformer } from './graphql-type-informer'
 
 export class GraphQLQueryGenerator {
   private generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
@@ -42,7 +42,6 @@ export class GraphQLQueryGenerator {
     const byIDQueries = this.generateByIDQueries()
     const filterQueries = this.generateFilterQueries()
     const listedQueries = this.generateListedQueries()
-    // const sequenceQueries = this.generateSequenceQueries()
     const eventQueries = this.generateEventQueries()
     return new GraphQLObjectType({
       name: 'Query',

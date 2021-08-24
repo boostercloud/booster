@@ -1,28 +1,28 @@
 import {
   AnyClass,
-  Logger,
   BoosterConfig,
   CommandEnvelope,
-  ReadModelPropertyFilter,
-  ReadModelRequestEnvelope,
-  EventSearchRequest,
   EventFilter,
+  EventSearchRequest,
   EventSearchResponse,
-  ReadModelRequestArgs,
+  Logger,
   ReadModelByIdRequestArgs,
   ReadModelByIdRequestEnvelope,
+  ReadModelPropertyFilter,
+  ReadModelRequestArgs,
+  ReadModelRequestEnvelope,
   TimeKey,
 } from '@boostercloud/framework-types'
 import { GraphQLFieldResolver, GraphQLResolveInfo, GraphQLSchema } from 'graphql'
 import { pluralize } from 'inflected'
-import { GraphQLTypeInformer } from './graphql-type-informer'
-import { GraphQLQueryGenerator } from './graphql-query-generator'
-import { GraphQLMutationGenerator } from './graphql-mutation-generator'
-import { GraphQLSubscriptionGenerator } from './graphql-subcriptions-generator'
 import { BoosterCommandDispatcher } from '../../booster-command-dispatcher'
-import { BoosterReadModelsReader } from '../../booster-read-models-reader'
 import { BoosterEventsReader } from '../../booster-events-reader'
+import { BoosterReadModelsReader } from '../../booster-read-models-reader'
 import { GraphQLResolverContext } from './common'
+import { GraphQLMutationGenerator } from './graphql-mutation-generator'
+import { GraphQLQueryGenerator } from './graphql-query-generator'
+import { GraphQLSubscriptionGenerator } from './graphql-subcriptions-generator'
+import { GraphQLTypeInformer } from './graphql-type-informer'
 
 export class GraphQLGenerator {
   private static commandsDispatcher: BoosterCommandDispatcher

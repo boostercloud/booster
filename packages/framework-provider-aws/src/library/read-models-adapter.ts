@@ -2,17 +2,18 @@
 import {
   BoosterConfig,
   Logger,
-  ReadModelInterface,
-  UUID,
-  ReadModelEnvelope,
   OptimisticConcurrencyUnexpectedVersionError,
-  TimeKey,
+  ReadModelEnvelope,
+  ReadModelInterface,
+  ReadOnlyNonEmptyArray,
   SequenceKey,
+  TimeKey,
+  UUID,
 } from '@boostercloud/framework-types'
-import { DynamoDB } from 'aws-sdk'
 import { DynamoDBRecord, DynamoDBStreamEvent } from 'aws-lambda'
-import { Arn } from './arn'
+import { DynamoDB } from 'aws-sdk'
 import { Converter } from 'aws-sdk/clients/dynamodb'
+import { Arn } from './arn'
 
 export async function rawReadModelEventsToEnvelopes(
   config: BoosterConfig,
@@ -29,7 +30,7 @@ export async function fetchReadModel(
   readModelName: string,
   readModelID: UUID,
   sequenceKey?: SequenceKey
-): Promise<ReadModelInterface> {
+): Promise<ReadOnlyNonEmptyArray<ReadModelInterface>> {
   const params: DynamoDB.DocumentClient.GetItemInput = {
     TableName: config.resourceNames.forReadModel(readModelName),
     Key: buildKey(readModelID, sequenceKey?.name, sequenceKey?.value),
@@ -40,7 +41,7 @@ export async function fetchReadModel(
     `[ReadModelAdapter#fetchReadModel] Loaded read model ${readModelName} with ID ${readModelID} with result:`,
     response.Item
   )
-  return response.Item as ReadModelInterface
+  return [response.Item as ReadModelInterface]
 }
 
 export async function storeReadModel(

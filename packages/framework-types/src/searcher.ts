@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/indent */
 import { SequenceKey, UUID } from './concepts'
 import { ReadModelListResult } from './envelope'
-import { Class } from './typelevel'
+import { Class, ReadOnlyNonEmptyArray } from './typelevel'
 
 export type SearcherFunction<TObject> = (
   className: string,
@@ -12,6 +12,12 @@ export type SearcherFunction<TObject> = (
 ) => Promise<Array<TObject> | ReadModelListResult<TObject>>
 
 export type FinderByKeyFunction<TObject> = (
+  className: string,
+  id: string,
+  sequenceKey?: SequenceKey
+) => Promise<ReadOnlyNonEmptyArray<TObject>>
+
+export type SequenceFinderByKeyFunction<TObject> = (
   className: string,
   id: string,
   sequenceKey?: SequenceKey
@@ -71,7 +77,7 @@ export class Searcher<TObject> {
     return this
   }
 
-  public async findById(id: string, sequenceKey?: SequenceKey): Promise<TObject> {
+  public async findById(id: string, sequenceKey?: SequenceKey): Promise<ReadOnlyNonEmptyArray<TObject>> {
     return this.finderByKeyFunction(this.objectClass.name, id, sequenceKey)
   }
 
