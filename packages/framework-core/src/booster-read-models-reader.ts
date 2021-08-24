@@ -12,6 +12,10 @@ import {
   ReadModelPropertyFilter,
   ReadModelByIdRequestEnvelope,
   ReadModelListResult,
+  Searcher,
+  Class,
+  FilterFor,
+  UserEnvelope,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
 import { Booster } from './booster'
@@ -22,37 +26,27 @@ export class BoosterReadModelsReader {
 
   public async findById(readModelByIdRequestEnvelope: ReadModelByIdRequestEnvelope): Promise<ReadModelInterface> {
     this.validateByIdRequest(readModelByIdRequestEnvelope)
-    const readModelMetadata = this.config.readModels[readModelByIdRequestEnvelope.typeName]
-    const searcher = Booster.readModel(readModelMetadata.class)
 
-    const filters = getReadModelFilters({}, readModelMetadata.before, readModelByIdRequestEnvelope.currentUser)
-
-    searcher.filter(filters)
-
-    return searcher.findById(readModelByIdRequestEnvelope.id, readModelByIdRequestEnvelope.sequenceKey)
+    return this.initializeSearcherWithFilters(
+      readModelByIdRequestEnvelope.typeName,
+      readModelByIdRequestEnvelope.currentUser
+    ).findById(readModelByIdRequestEnvelope.id, readModelByIdRequestEnvelope.sequenceKey)
   }
 
   public async search(
     readModelRequest: ReadModelRequestEnvelope
   ): Promise<ReadModelInterface[] | ReadModelListResult<ReadModelInterface>> {
     this.validateRequest(readModelRequest)
-    const readModelMetadata = this.config.readModels[readModelRequest.typeName]
-    const searcher = Booster.readModel(readModelMetadata.class)
 
-    const filters = getReadModelFilters(
-      readModelRequest.filters,
-      readModelMetadata.before,
-      readModelRequest.currentUser
+    return this.initializeSearcherWithFilters(
+      readModelRequest.typeName,
+      readModelRequest.currentUser,
+      readModelRequest.filters
     )
-
-    searcher.filter(filters)
-
-    searcher
       .limit(readModelRequest.limit)
       .afterCursor(readModelRequest.afterCursor)
       .paginatedVersion(readModelRequest.paginatedVersion)
-
-    return searcher.search()
+      .search()
   }
 
   public async subscribe(
@@ -142,5 +136,18 @@ export class BoosterReadModelsReader {
       operation,
     }
     return this.config.provider.readModels.subscribe(this.config, this.logger, subscription)
+  }
+
+  private initializeSearcherWithFilters(
+    typeName: string,
+    currentUser?: UserEnvelope,
+    filters?: FilterFor<Class<ReadModelInterface>>
+  ): Searcher<ReadModelInterface> {
+    const readModelMetadata = this.config.readModels[typeName]
+    const searcher = Booster.readModel(readModelMetadata.class)
+
+    const readModelFilters = getReadModelFilters(filters ?? {}, readModelMetadata.before, currentUser)
+
+    return searcher.filter(readModelFilters)
   }
 }

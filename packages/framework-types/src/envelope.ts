@@ -5,8 +5,7 @@ import { FilterFor } from './searcher'
 /**
  * An `Envelope` carries a command/event body together with the name
  * of its class. This is important information for the `Distributor` to
- * work. Each provider haimport { SequenceKey } from './concepts/sequence-metadata';
-s to implement their own `Envelope`.
+ * work. Each provider has to implement their own `Envelope`.
  */
 export interface Envelope {
   currentUser?: UserEnvelope

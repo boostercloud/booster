@@ -55,8 +55,7 @@ export class GraphQLQueryGenerator {
     for (const readModelName in this.readModelsMetadata) {
       const readModelMetadata = this.readModelsMetadata[readModelName]
 
-      const sequenceKeyName = this.config.readModelSequenceKeys[readModelName]
-      const args = buildArgsForQueryById(sequenceKeyName)
+      const args = this.buildArgsForQueryById(readModelName)
 
       const graphQLType = this.typeInformer.getGraphQLTypeFor(readModelMetadata.class)
       queries[readModelName] = {
@@ -156,6 +155,7 @@ export class GraphQLQueryGenerator {
       })
     )
   }
+
   public generateFilterQueriesFields(name: string, type: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
     const filterArguments = this.generateFilterArguments(type)
     const filter: GraphQLInputObjectType = new GraphQLInputObjectType({
@@ -169,6 +169,7 @@ export class GraphQLQueryGenerator {
     })
     return { filter: { type: filter } }
   }
+
   public generateListedQueriesFields(name: string, type: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
     const filterArguments = this.generateFilterArguments(type)
     const filter: GraphQLInputObjectType = new GraphQLInputObjectType({
@@ -312,17 +313,18 @@ export class GraphQLQueryGenerator {
       }, {} as GraphQLEnumValueConfigMap),
     })
   }
-}
 
-function buildArgsForQueryById(sequenceKeyName?: string): GraphQLFieldConfigArgumentMap {
-  if (sequenceKeyName) {
-    return {
-      id: { type: new GraphQLNonNull(GraphQLID) },
-      sequenceKeyName: { type: new GraphQLNonNull(GraphQLID) },
-    }
-  } else {
-    return {
-      id: { type: new GraphQLNonNull(GraphQLID) },
+  private buildArgsForQueryById(readModelName: string): GraphQLFieldConfigArgumentMap {
+    const sequenceKeyName = this.config.readModelSequenceKeys[readModelName]
+    if (sequenceKeyName) {
+      return {
+        id: { type: new GraphQLNonNull(GraphQLID) },
+        [sequenceKeyName]: { type: new GraphQLNonNull(GraphQLID) },
+      }
+    } else {
+      return {
+        id: { type: new GraphQLNonNull(GraphQLID) },
+      }
     }
   }
 }
