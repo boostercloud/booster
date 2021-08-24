@@ -58,6 +58,11 @@ export class GraphQLTypeInformer {
           type: GraphQLList(new GraphQLNonNull(graphQLPropType)),
         }
       } else {
+        let graphQLPropType = this.getGraphQLTypeFor(prop.typeInfo.type);
+        if (!this.isGraphQLScalarType(graphQLPropType) && prop.typeInfo.type) {
+          const properties = getPropertiesMetadata(prop.typeInfo.type);
+          this.generateGraphQLTypeFromMetadata({ class: prop.typeInfo.type, properties });
+        }
         fields[prop.name] = { type: this.getGraphQLTypeFor(prop.typeInfo.type) }
       }
     }
