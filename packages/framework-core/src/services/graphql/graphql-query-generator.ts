@@ -18,7 +18,7 @@ import {
   GraphQLScalarType,
   GraphQLInt,
 } from 'graphql'
-import { GraphQLResolverContext, ResolverBuilder, TargetTypeMetadata, TargetTypesMap } from './common'
+import { DateScalar, GraphQLResolverContext, ResolverBuilder, TargetTypeMetadata, TargetTypesMap } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
 import * as inflected from 'inflected'
 import { GraphQLJSONObject } from 'graphql-type-json'
@@ -297,13 +297,13 @@ export class GraphQLQueryGenerator {
         }
       case Date:
         return {
-          eq: { type: GraphQLString },
-          ne: { type: GraphQLString },
-          lte: { type: GraphQLString },
-          lt: { type: GraphQLString },
-          gte: { type: GraphQLString },
-          gt: { type: GraphQLString },
-          in: { type: GraphQLList(GraphQLString) },
+          eq: { type: DateScalar },
+          ne: { type: DateScalar },
+          lte: { type: DateScalar },
+          lt: { type: DateScalar },
+          gte: { type: DateScalar },
+          gt: { type: DateScalar },
+          in: { type: GraphQLList(DateScalar) },
         }
       default:
         throw new Error(`Type ${type.name} is not supported in search filters`)
