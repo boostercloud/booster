@@ -62,13 +62,13 @@ export class BoosterSubscribersNotifier {
     return subscriptionSets.flat()
   }
 
-  private getPubSub(readModelEnvelopes: Array<ReadModelEnvelope>): ReadModelPubSub {
+  private getPubSub(readModelEnvelopes: Array<ReadModelEnvelope>): ReadModelPubSub<ReadModelInterface> {
     const readModelInstances = readModelEnvelopes.map(this.getReadModelInstance, this)
     return new FilteredReadModelPubSub(readModelInstances)
   }
 
   private async runSubscriptionAndNotify(
-    pubSub: ReadModelPubSub,
+    pubSub: ReadModelPubSub<ReadModelInterface>,
     subscription: SubscriptionEnvelope
   ): Promise<unknown> {
     const context: GraphQLResolverContext = {

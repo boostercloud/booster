@@ -1,11 +1,13 @@
 import { CommandInput, EntityInterface, EventInterface, ReadModelInterface, SequenceKey, UUID } from './concepts'
 import { GraphQLClientMessage } from './graphql-websocket-messages'
 import { FilterFor } from './searcher'
+import { Class } from './typelevel'
 
 /**
  * An `Envelope` carries a command/event body together with the name
  * of its class. This is important information for the `Distributor` to
- * work. Each provider has to implement their own `Envelope`.
+ * work. Each provider haimport { SequenceKey } from './concepts/sequence-metadata';
+s to implement their own `Envelope`.
  */
 export interface Envelope {
   currentUser?: UserEnvelope
@@ -74,24 +76,22 @@ export interface ReadModelListResult<TReadModel> {
   cursor?: Record<string, string>
 }
 
-export interface ReadModelRequestEnvelope extends Envelope {
-  typeName: string
+export interface ReadModelRequestEnvelope<TReadModel extends ReadModelInterface> extends Envelope {
+  key?: {
+    id: UUID
+    sequenceKey?: SequenceKey
+  }
+  class: Class<TReadModel>
+  className: string
   version: number
-  filters: ReadModelRequestProperties
+  filters: ReadModelRequestProperties<TReadModel>
   limit?: number
   afterCursor?: unknown
   paginatedVersion?: boolean // Used only for retrocompatibility
 }
 
-export interface ReadModelByIdRequestEnvelope extends Envelope {
-  typeName: string
-  version: number
-  id: string
-  sequenceKey?: SequenceKey
-}
-
-export interface ReadModelRequestArgs {
-  filter?: ReadModelRequestProperties
+export interface ReadModelRequestArgs<TReadModel extends ReadModelInterface> {
+  filter?: ReadModelRequestProperties<TReadModel>
   limit?: number
   afterCursor?: unknown
 }
@@ -101,9 +101,7 @@ export interface ReadModelByIdRequestArgs {
   [sequenceKey: string]: string | undefined
 }
 
-export type ReadModelPropertyFilter = FilterFor<unknown>
-
-export type ReadModelRequestProperties = Record<string, ReadModelPropertyFilter>
+export type ReadModelRequestProperties<TReadModel> = Record<string, FilterFor<TReadModel>>
 
 export interface GraphQLRequestEnvelope extends Envelope {
   eventType: 'CONNECT' | 'MESSAGE' | 'DISCONNECT'
@@ -115,7 +113,7 @@ export type GraphQLRequestEnvelopeError = Pick<GraphQLRequestEnvelope, 'eventTyp
   error: Error
 }
 
-export interface SubscriptionEnvelope extends ReadModelRequestEnvelope {
+export interface SubscriptionEnvelope extends ReadModelRequestEnvelope<ReadModelInterface> {
   expirationTime: number // In Epoch format
   connectionID: string
   operation: GraphQLOperation

@@ -6,55 +6,53 @@ import {
   Logger,
   NotAuthorizedError,
   NotFoundError,
-  ReadModelByIdRequestEnvelope,
   ReadModelInterface,
   ReadModelListResult,
-  Searcher,
-  Class,
-  FilterFor,
-  UserEnvelope,
-  ReadModelPropertyFilter,
   ReadModelRequestEnvelope,
   ReadOnlyNonEmptyArray,
   SubscriptionEnvelope,
 } from '@boostercloud/framework-types'
 import { Booster } from './booster'
 import { BoosterAuth } from './booster-auth'
-import { getReadModelFilters } from './services/filter-helpers'
+import { applyReadModelRequestBeforeFunctions } from './services/filter-helpers'
 
 export class BoosterReadModelsReader {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
 
   public async findById(
-    readModelByIdRequestEnvelope: ReadModelByIdRequestEnvelope
+    readModelRequest: ReadModelRequestEnvelope<ReadModelInterface>
   ): Promise<ReadModelInterface | ReadOnlyNonEmptyArray<ReadModelInterface>> {
-    this.validateByIdRequest(readModelByIdRequestEnvelope)
+    this.validateByIdRequest(readModelRequest)
 
-    return this.initializeSearcherWithFilters(
-      readModelByIdRequestEnvelope.typeName,
-      readModelByIdRequestEnvelope.currentUser
-    ).findById(readModelByIdRequestEnvelope.id, readModelByIdRequestEnvelope.sequenceKey)
+    const readModelMetadata = this.config.readModels[readModelRequest.class.name]
+    const readModelTransformedRequest = applyReadModelRequestBeforeFunctions(readModelRequest, readModelMetadata.before)
+
+    const key = readModelTransformedRequest.key
+    if (!key) {
+      throw 'Tried to run a findById operation without providing a key. An ID is required to perform this operation.'
+    }
+    return Booster.readModel(readModelMetadata.class).findById(key.id, key.sequenceKey)
   }
 
   public async search(
-    readModelRequest: ReadModelRequestEnvelope
+    readModelRequest: ReadModelRequestEnvelope<ReadModelInterface>
   ): Promise<ReadModelInterface[] | ReadModelListResult<ReadModelInterface>> {
     this.validateRequest(readModelRequest)
 
-    return this.initializeSearcherWithFilters(
-      readModelRequest.typeName,
-      readModelRequest.currentUser,
-      readModelRequest.filters
-    )
-      .limit(readModelRequest.limit)
-      .afterCursor(readModelRequest.afterCursor)
-      .paginatedVersion(readModelRequest.paginatedVersion)
+    const readModelMetadata = this.config.readModels[readModelRequest.class.name]
+    const readModelTransformedRequest = applyReadModelRequestBeforeFunctions(readModelRequest, readModelMetadata.before)
+
+    return Booster.readModel(readModelMetadata.class)
+      .filter(readModelTransformedRequest.filters)
+      .limit(readModelTransformedRequest.limit)
+      .afterCursor(readModelTransformedRequest.afterCursor)
+      .paginatedVersion(readModelTransformedRequest.paginatedVersion)
       .search()
   }
 
   public async subscribe(
     connectionID: string,
-    readModelRequest: ReadModelRequestEnvelope,
+    readModelRequest: ReadModelRequestEnvelope<ReadModelInterface>,
     operation: GraphQLOperation
   ): Promise<unknown> {
     this.validateRequest(readModelRequest)
@@ -69,88 +67,67 @@ export class BoosterReadModelsReader {
     return this.config.provider.readModels.deleteAllSubscriptions(this.config, this.logger, connectionID)
   }
 
-  private validateByIdRequest(readModelByIdRequest: ReadModelByIdRequestEnvelope): void {
+  private validateByIdRequest(readModelByIdRequest: ReadModelRequestEnvelope<ReadModelInterface>): void {
     this.logger.debug('Validating the following read model by id request: ', readModelByIdRequest)
     if (!readModelByIdRequest.version) {
       throw new InvalidParameterError('The required request "version" was not present')
     }
 
-    const readModelMetadata = this.config.readModels[readModelByIdRequest.typeName]
+    const readModelMetadata = this.config.readModels[readModelByIdRequest.class.name]
     if (!readModelMetadata) {
-      throw new NotFoundError(`Could not find read model ${readModelByIdRequest.typeName}`)
+      throw new NotFoundError(`Could not find read model ${readModelByIdRequest.class.name}`)
     }
 
     if (!BoosterAuth.isUserAuthorized(readModelMetadata.authorizedRoles, readModelByIdRequest.currentUser)) {
-      throw new NotAuthorizedError(`Access denied for read model ${readModelByIdRequest.typeName}`)
+      throw new NotAuthorizedError(`Access denied for read model ${readModelByIdRequest.class.name}`)
     }
 
     if (
-      readModelByIdRequest.sequenceKey &&
-      readModelByIdRequest.sequenceKey.name !== this.config.readModelSequenceKeys[readModelByIdRequest.typeName]
+      readModelByIdRequest?.key?.sequenceKey &&
+      readModelByIdRequest.key.sequenceKey.name !== this.config.readModelSequenceKeys[readModelByIdRequest.class.name]
     ) {
       throw new InvalidParameterError(
-        `Could not find a sort key defined for ${readModelByIdRequest.typeName} named '${readModelByIdRequest.sequenceKey?.name}'.`
+        `Could not find a sort key defined for ${readModelByIdRequest.class.name} named '${readModelByIdRequest.key.sequenceKey.name}'.`
       )
     }
   }
 
-  private validateRequest(readModelRequest: ReadModelRequestEnvelope): void {
+  private validateRequest(readModelRequest: ReadModelRequestEnvelope<ReadModelInterface>): void {
     this.logger.debug('Validating the following read model request: ', readModelRequest)
     if (!readModelRequest.version) {
       throw new InvalidParameterError('The required request "version" was not present')
     }
 
-    const readModelMetadata = this.config.readModels[readModelRequest.typeName]
+    const readModelMetadata = this.config.readModels[readModelRequest.class.name]
     if (!readModelMetadata) {
-      throw new NotFoundError(`Could not find read model ${readModelRequest.typeName}`)
+      throw new NotFoundError(`Could not find read model ${readModelRequest.class.name}`)
     }
 
     if (!BoosterAuth.isUserAuthorized(readModelMetadata.authorizedRoles, readModelRequest.currentUser)) {
-      throw new NotAuthorizedError(`Access denied for read model ${readModelRequest.typeName}`)
+      throw new NotAuthorizedError(`Access denied for read model ${readModelRequest.class.name}`)
     }
   }
 
   private async processSubscription(
     connectionID: string,
-    readModelRequest: ReadModelRequestEnvelope,
+    readModelRequest: ReadModelRequestEnvelope<ReadModelInterface>,
     operation: GraphQLOperation
   ): Promise<void> {
     this.logger.info(
-      `Processing subscription of connection '${connectionID}' to read model '${readModelRequest.typeName}' with the following data: `,
+      `Processing subscription of connection '${connectionID}' to read model '${readModelRequest.class.name}' with the following data: `,
       readModelRequest
     )
-    const readModelMetadata = this.config.readModels[readModelRequest.typeName]
+    const readModelMetadata = this.config.readModels[readModelRequest.class.name]
 
-    // This type is specified because there is a mismatch between types in the filters attribute (ReadModelRequestEnvelope).
-    // FilterFor<unknown> is already an object itself, and contains keys and the filters as values, but right now
-    // the ReadModelRequestEnvelope property is typed as Record<string, ReadModelPropertyFilter>.
-    // Apparently these two types are compatible by accident, which made us think that this could be a bug.
-    readModelRequest.filters = getReadModelFilters(
-      readModelRequest.filters,
-      readModelMetadata.before,
-      readModelRequest.currentUser
-    ) as Record<string, ReadModelPropertyFilter>
+    const newReadModelRequest = applyReadModelRequestBeforeFunctions(readModelRequest, readModelMetadata.before)
 
     const nowEpoch = Math.floor(new Date().getTime() / 1000)
     const subscription: SubscriptionEnvelope = {
-      ...readModelRequest,
+      ...newReadModelRequest,
       expirationTime: nowEpoch + this.config.subscriptions.maxDurationInSeconds,
       connectionID,
       operation,
     }
     return this.config.provider.readModels.subscribe(this.config, this.logger, subscription)
-  }
-
-  private initializeSearcherWithFilters(
-    typeName: string,
-    currentUser?: UserEnvelope,
-    filters?: FilterFor<Class<ReadModelInterface>>
-  ): Searcher<ReadModelInterface> {
-    const readModelMetadata = this.config.readModels[typeName]
-    const searcher = Booster.readModel(readModelMetadata.class)
-
-    const readModelFilters = getReadModelFilters(filters ?? {}, readModelMetadata.before, currentUser)
-
-    return searcher.filter(readModelFilters)
   }
 }

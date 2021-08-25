@@ -11,7 +11,7 @@ import {
   EventSearchRequest,
   EventSearchResponse,
   ReadModelRequestArgs,
-  ReadModelPropertyFilter,
+  ReadModelRequestProperties,
 } from '@boostercloud/framework-types'
 import { expect } from '../../expect'
 import { GraphQLQueryGenerator } from '../../../src/services/graphql/graphql-query-generator'
@@ -147,13 +147,13 @@ describe('GraphQL generator', () => {
     })
 
     describe('readModelResolverBuilder', () => {
-      let fetchStub: SinonStub
+      let fakeSearch: SinonStub
 
-      let returnedFunction: GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestArgs>
+      let returnedFunction: GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestArgs<ReadModelInterface>>
 
       beforeEach(() => {
-        fetchStub = stub().resolves(mockFetchResult)
-        replace(BoosterReadModelsReader.prototype, 'search', fetchStub)
+        fakeSearch = stub().resolves(mockFetchResult)
+        replace(BoosterReadModelsReader.prototype, 'search', fakeSearch)
 
         returnedFunction = GraphQLGenerator.readModelResolverBuilder(mockType)
       })
@@ -167,7 +167,8 @@ describe('GraphQL generator', () => {
           },
           filters: {},
           requestID: mockRequestId,
-          typeName: mockType.name,
+          class: mockType,
+          className: mockType.name,
           limit: undefined,
           afterCursor: undefined,
           paginatedVersion: false,
@@ -176,7 +177,7 @@ describe('GraphQL generator', () => {
 
         await returnedFunction('', {}, mockResolverContext, {} as any)
 
-        expect(fetchStub).to.have.been.calledOnceWithExactly(expectedFetchPayload)
+        expect(fakeSearch).to.have.been.calledOnceWithExactly(expectedFetchPayload)
       })
 
       it('should return expected result', async () => {
@@ -207,14 +208,15 @@ describe('GraphQL generator', () => {
           const fakeContext: any = { user: fakeUser, requestID: '314' }
           await returnedFunction({}, fakeArgs, fakeContext, {} as any)
 
-          expect(toReadModelByIdRequestEnvelopeSpy).to.have.been.calledOnceWith('SomeReadModel', fakeArgs, fakeContext)
+          expect(toReadModelByIdRequestEnvelopeSpy).to.have.been.calledOnceWith(SomeReadModel, fakeArgs, fakeContext)
 
           const envelope = toReadModelByIdRequestEnvelopeSpy.returnValues[0]
           expect(envelope).to.have.property('currentUser', fakeUser)
           expect(envelope).to.have.property('requestID', '314')
-          expect(envelope).to.have.property('typeName', 'SomeReadModel')
-          expect(envelope).to.have.property('id', '42')
-          expect(envelope.sequenceKey).to.be.undefined
+          expect(envelope).to.have.property('class', SomeReadModel)
+          expect(envelope).to.have.property('className', 'SomeReadModel')
+          expect(envelope.key).to.be.deep.equal({ id: '42' })
+          expect(envelope.key.sequenceKey).to.be.undefined
           expect(envelope).to.have.property('version', 1)
 
           expect(fakeFindById).to.have.been.calledOnceWith(envelope)
@@ -239,7 +241,7 @@ describe('GraphQL generator', () => {
           await returnedFunction({}, fakeArgs, fakeContext, {} as any)
 
           expect(toReadModelByIdRequestEnvelopeSpy).to.have.been.calledOnceWith(
-            'SomeReadModel',
+            SomeReadModel,
             fakeArgs,
             fakeContext,
             'timestamp'
@@ -248,9 +250,9 @@ describe('GraphQL generator', () => {
           const envelope = toReadModelByIdRequestEnvelopeSpy.returnValues[0]
           expect(envelope).to.have.property('currentUser', fakeUser)
           expect(envelope).to.have.property('requestID', '314')
-          expect(envelope).to.have.property('typeName', 'SomeReadModel')
-          expect(envelope).to.have.property('id', '42')
-          expect(envelope.sequenceKey).to.be.deep.equal({ name: 'timestamp', value: '1000' })
+          expect(envelope).to.have.property('class', SomeReadModel)
+          expect(envelope).to.have.property('className', 'SomeReadModel')
+          expect(envelope.key).to.be.deep.equal({ id: '42', sequenceKey: { name: 'timestamp', value: '1000' } })
           expect(envelope).to.have.property('version', 1)
 
           expect(fakeFindById).to.have.been.calledOnceWith(envelope)
@@ -318,7 +320,11 @@ describe('GraphQL generator', () => {
 
       let subscriptionResolverBuilderStub: SinonStub
 
-      let returnedFunction: GraphQLFieldResolver<any, GraphQLResolverContext, Record<string, ReadModelPropertyFilter>>
+      let returnedFunction: GraphQLFieldResolver<
+        any,
+        GraphQLResolverContext,
+        ReadModelRequestProperties<ReadModelInterface>
+      >
 
       beforeEach(() => {
         mockResolverResult = random.alphaNumeric(10)
@@ -347,7 +353,7 @@ describe('GraphQL generator', () => {
     describe('subscriptionResolverBuilder', () => {
       let mockContextConnectionID: string
       let subscribeStub: SinonStub
-      let returnedFunction: GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestArgs>
+      let returnedFunction: GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestArgs<ReadModelInterface>>
 
       beforeEach(() => {
         mockContextConnectionID = random.uuid()
@@ -410,7 +416,8 @@ describe('GraphQL generator', () => {
           },
           filters: {},
           requestID: mockRequestId,
-          typeName: mockType.name,
+          class: mockType,
+          className: mockType.name,
           limit: undefined,
           afterCursor: undefined,
           paginatedVersion: false,
