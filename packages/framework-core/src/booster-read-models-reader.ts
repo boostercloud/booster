@@ -29,7 +29,6 @@ export class BoosterReadModelsReader {
 
     return this.initializeSearcherWithFilters(
       readModelByIdRequestEnvelope.typeName,
-      {},
       readModelByIdRequestEnvelope.currentUser
     ).findById(readModelByIdRequestEnvelope.id, readModelByIdRequestEnvelope.sequenceKey)
   }
@@ -41,8 +40,8 @@ export class BoosterReadModelsReader {
 
     return this.initializeSearcherWithFilters(
       readModelRequest.typeName,
-      readModelRequest.filters,
-      readModelRequest.currentUser
+      readModelRequest.currentUser,
+      readModelRequest.filters
     )
       .limit(readModelRequest.limit)
       .afterCursor(readModelRequest.afterCursor)
@@ -141,13 +140,13 @@ export class BoosterReadModelsReader {
 
   private initializeSearcherWithFilters(
     typeName: string,
-    filters: FilterFor<Class<ReadModelInterface>>,
-    currentUser?: UserEnvelope
+    currentUser?: UserEnvelope,
+    filters?: FilterFor<Class<ReadModelInterface>>
   ): Searcher<ReadModelInterface> {
     const readModelMetadata = this.config.readModels[typeName]
     const searcher = Booster.readModel(readModelMetadata.class)
 
-    const readModelFilters = getReadModelFilters(filters, readModelMetadata.before, currentUser)
+    const readModelFilters = getReadModelFilters(filters ?? {}, readModelMetadata.before, currentUser)
 
     return searcher.filter(readModelFilters)
   }
