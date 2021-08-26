@@ -3,6 +3,7 @@ import {
   GraphQLBoolean,
   GraphQLEnumType,
   GraphQLEnumValueConfigMap,
+  GraphQLFieldConfig,
   GraphQLFieldConfigArgumentMap,
   GraphQLFieldConfigMap,
   GraphQLFieldResolver,
@@ -39,7 +40,7 @@ export class GraphQLQueryGenerator {
   ) {}
 
   public generate(): GraphQLObjectType {
-    const byIDQueries = this.generateByIDQueries()
+    const byIDQueries = this.generateByKeysQueries()
     const filterQueries = this.generateFilterQueries()
     const listedQueries = this.generateListedQueries()
     const eventQueries = this.generateEventQueries()
@@ -49,22 +50,45 @@ export class GraphQLQueryGenerator {
     })
   }
 
-  private generateByIDQueries(): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {
+  private generateByKeysQueries(): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {
     const queries: GraphQLFieldConfigMap<unknown, GraphQLResolverContext> = {}
     for (const readModelName in this.readModelsMetadata) {
-      const readModelMetadata = this.readModelsMetadata[readModelName]
-
       const sequenceKeyName = this.config.readModelSequenceKeys[readModelName]
-      const args = this.buildArgsForQueryById(sequenceKeyName)
-
-      const graphQLType = this.typeInformer.getGraphQLTypeFor(readModelMetadata.class)
-      queries[readModelName] = {
-        type: sequenceKeyName ? new GraphQLList(graphQLType) : graphQLType,
-        args,
-        resolve: this.byIDResolverBuilder(readModelMetadata.class),
+      if (sequenceKeyName) {
+        queries[readModelName] = this.generateByIdAndSequenceKeyQuery(readModelName, sequenceKeyName)
+      } else {
+        queries[readModelName] = this.generateByIdQuery(readModelName)
       }
     }
     return queries
+  }
+
+  private generateByIdQuery(readModelName: string): GraphQLFieldConfig<unknown, GraphQLResolverContext> {
+    const readModelMetadata = this.readModelsMetadata[readModelName]
+    const graphQLType = this.typeInformer.getGraphQLTypeFor(readModelMetadata.class)
+    return {
+      type: graphQLType,
+      args: {
+        id: { type: new GraphQLNonNull(GraphQLID) },
+      },
+      resolve: this.byIDResolverBuilder(readModelMetadata.class),
+    }
+  }
+
+  private generateByIdAndSequenceKeyQuery(
+    readModelName: string,
+    sequenceKeyName: string
+  ): GraphQLFieldConfig<unknown, GraphQLResolverContext> {
+    const readModelMetadata = this.readModelsMetadata[readModelName]
+    const graphQLType = this.typeInformer.getGraphQLTypeFor(readModelMetadata.class)
+    return {
+      type: new GraphQLList(graphQLType),
+      args: {
+        id: { type: new GraphQLNonNull(GraphQLID) },
+        [sequenceKeyName]: { type: GraphQLID },
+      },
+      resolve: this.byIDResolverBuilder(readModelMetadata.class),
+    }
   }
 
   private generateFilterQueries(): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {
@@ -312,18 +336,5 @@ export class GraphQLQueryGenerator {
         return valuesRecord
       }, {} as GraphQLEnumValueConfigMap),
     })
-  }
-
-  private buildArgsForQueryById(sequenceKeyName?: string): GraphQLFieldConfigArgumentMap {
-    if (sequenceKeyName) {
-      return {
-        id: { type: new GraphQLNonNull(GraphQLID) },
-        [sequenceKeyName]: { type: GraphQLID },
-      }
-    } else {
-      return {
-        id: { type: new GraphQLNonNull(GraphQLID) },
-      }
-    }
   }
 }

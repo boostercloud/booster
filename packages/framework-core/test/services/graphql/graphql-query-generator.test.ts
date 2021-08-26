@@ -62,20 +62,20 @@ describe('GraphQLQueryGenerator', () => {
       fake()
     )
 
-    it('generates by ID queries', () => {
-      const fakeGenerateByIDQueries = fake()
-      replace(graphQLQueryGenerator as any, 'generateByIDQueries', fakeGenerateByIDQueries)
+    it('generates by Key queries', () => {
+      const fakegenerateByKeysQueries = fake()
+      replace(graphQLQueryGenerator as any, 'generateByKeysQueries', fakegenerateByKeysQueries)
       replace(graphQLQueryGenerator as any, 'generateFilterQueries', fake())
       replace(graphQLQueryGenerator as any, 'generateListedQueries', fake())
       replace(graphQLQueryGenerator as any, 'generateEventQueries', fake())
 
       graphQLQueryGenerator.generate()
 
-      expect(fakeGenerateByIDQueries).to.have.been.calledOnce
+      expect(fakegenerateByKeysQueries).to.have.been.calledOnce
     })
 
     it('generates filter queries', () => {
-      replace(graphQLQueryGenerator as any, 'generateByIDQueries', fake())
+      replace(graphQLQueryGenerator as any, 'generateByKeysQueries', fake())
       const fakeGenerateFilterQueries = fake()
       replace(graphQLQueryGenerator as any, 'generateFilterQueries', fakeGenerateFilterQueries)
       replace(graphQLQueryGenerator as any, 'generateListedQueries', fake())
@@ -87,7 +87,7 @@ describe('GraphQLQueryGenerator', () => {
     })
 
     it('generates listed queries', () => {
-      replace(graphQLQueryGenerator as any, 'generateByIDQueries', fake())
+      replace(graphQLQueryGenerator as any, 'generateByKeysQueries', fake())
       replace(graphQLQueryGenerator as any, 'generateFilterQueries', fake())
       const fakeGenerateListedQueries = fake()
       replace(graphQLQueryGenerator as any, 'generateListedQueries', fakeGenerateListedQueries)
@@ -99,7 +99,7 @@ describe('GraphQLQueryGenerator', () => {
     })
 
     it('generates event queries', () => {
-      replace(graphQLQueryGenerator as any, 'generateByIDQueries', fake())
+      replace(graphQLQueryGenerator as any, 'generateByKeysQueries', fake())
       replace(graphQLQueryGenerator as any, 'generateFilterQueries', fake())
       replace(graphQLQueryGenerator as any, 'generateListedQueries', fake())
       const fakeGenerateEventQueries = fake()
@@ -112,7 +112,7 @@ describe('GraphQLQueryGenerator', () => {
 
     it('returns a well-formed GraphQL Query Object Type', () => {
       const fakeIDQueries = buildFakeGraphQLFielConfigMap('IDQuery')
-      replace(graphQLQueryGenerator as any, 'generateByIDQueries', fake.returns(fakeIDQueries))
+      replace(graphQLQueryGenerator as any, 'generateByKeysQueries', fake.returns(fakeIDQueries))
       const fakeFilterQueries = buildFakeGraphQLFielConfigMap('FilterQuery')
       replace(graphQLQueryGenerator as any, 'generateFilterQueries', fake.returns(fakeFilterQueries))
       const fakeListedQueries = buildFakeGraphQLFielConfigMap('ListedQuery')
@@ -709,7 +709,7 @@ describe('GraphQLQueryGenerator', () => {
     })
   })
 
-  describe('the `generateByIDQueries` private method', () => {
+  describe('the `generateByKeysQueries` private method', () => {
     class AnotherReadModel {
       public constructor(readonly id: UUID, readonly otherField: string) {}
     }
@@ -743,71 +743,100 @@ describe('GraphQLQueryGenerator', () => {
       () => fake(),
       () => fake(),
       fake()
-    )
+    ) as any // So we can see private methods
 
-    context('for regular read models', () => {
-      it('generates a query named after the read model class that accepts a unique ID', () => {
-        const untypedGraphQLQueryGenerator = graphQLQueryGenerator as any
-        const queries = untypedGraphQLQueryGenerator.generateByIDQueries()
+    it('generates by ID and sequenced queries', () => {
+      const fakeGenerateByIdQuery = fake()
+      replace(graphQLQueryGenerator, 'generateByIdQuery', fakeGenerateByIdQuery)
+      const fakeGenerateByIdAndSequenceKeyQuery = fake()
+      replace(graphQLQueryGenerator, 'generateByIdAndSequenceKeyQuery', fakeGenerateByIdAndSequenceKeyQuery)
 
-        expect(queries['AnotherReadModel']).not.to.be.undefined
-        const anotherReadModelByIdQuery = queries['AnotherReadModel']
-        expect(anotherReadModelByIdQuery.type).to.has.a.property('name', 'AnotherReadModel')
-        expect(anotherReadModelByIdQuery.args).to.have.a.property('id')
-        expect(anotherReadModelByIdQuery.resolve).to.be.a('Function')
-      })
-    })
+      graphQLQueryGenerator.generateByKeysQueries()
 
-    context('for sequenced read models', () => {
-      it('generates a query named after the read model class that accepts an ID and a sequence key', () => {
-        const untypedGraphQLQueryGenerator = graphQLQueryGenerator as any
-        const queries = untypedGraphQLQueryGenerator.generateByIDQueries()
-
-        expect(queries['ASequencedReadModel']).not.to.be.undefined
-        const anotherReadModelByIdQuery = queries['ASequencedReadModel']
-        expect(anotherReadModelByIdQuery.type).to.be.a('GraphQLList')
-        expect(anotherReadModelByIdQuery.type.ofType).to.have.a.property('name', 'ASequencedReadModel')
-        expect(anotherReadModelByIdQuery.args).to.have.a.property('id')
-        expect(anotherReadModelByIdQuery.args).to.have.a.property('timestamp')
-        expect(anotherReadModelByIdQuery.resolve).to.be.a('Function')
-      })
+      expect(fakeGenerateByIdQuery).to.have.been.calledOnceWith('AnotherReadModel')
+      expect(fakeGenerateByIdAndSequenceKeyQuery).to.have.been.calledOnceWith('ASequencedReadModel', 'timestamp')
     })
   })
 
-  describe('the `buildArgsForQueryById` private method', () => {
+  describe('the `generateByIdQuery` private method', () => {
+    class ARegularReadModel {
+      readonly id: string = '∫'
+    }
+
+    const fakeReadModelsMetadata: TargetTypesMap = {
+      ARegularReadModel: {
+        class: ARegularReadModel,
+        properties: [],
+      },
+    }
+
+    const typeInformer = new GraphQLTypeInformer({
+      ...fakeReadModelsMetadata,
+    })
+
     const config = new BoosterConfig('test')
 
     const graphQLQueryGenerator = new GraphQLQueryGenerator(
       config,
-      {},
-      {} as any,
+      fakeReadModelsMetadata,
+      typeInformer,
       () => fake(),
       () => fake(),
       fake()
-    )
+    ) as any // So we can see private methods
 
-    context('with no sequence key name', () => {
-      it('returns the arguments for a query by ID including only the ID', () => {
-        const args = (graphQLQueryGenerator as any).buildArgsForQueryById()
+    it('generates a query named after the read model class that accepts a unique ID', () => {
+      const fakeByIdResolverBuilder = fake.returns(fake())
+      replace(graphQLQueryGenerator, 'byIDResolverBuilder', fakeByIdResolverBuilder)
 
-        const argNames = Object.keys(args)
-        expect(argNames).to.has.length(1)
-        expect(argNames[0]).to.equal('id')
-        expect(args['id'].type).to.deep.equal(new GraphQLNonNull(GraphQLID))
-      })
+      const query = graphQLQueryGenerator.generateByIdQuery('ARegularReadModel')
+
+      expect(query.type).to.has.a.property('name', 'ARegularReadModel')
+      expect(query.args).to.have.a.property('id')
+      expect(query.resolve).to.be.a('Function')
+      expect(fakeByIdResolverBuilder).to.have.been.calledWith(ARegularReadModel)
+    })
+  })
+
+  describe('the `generateByIdAndSequenceKeyQuery` private method', () => {
+    class AnotherSequencedReadModel {
+      readonly id: string = 'µ'
+      readonly timestamp: string = '™'
+    }
+
+    const fakeReadModelsMetadata: TargetTypesMap = {
+      AnotherSequencedReadModel: {
+        class: AnotherSequencedReadModel,
+        properties: [],
+      },
+    }
+
+    const typeInformer = new GraphQLTypeInformer({
+      ...fakeReadModelsMetadata,
     })
 
-    context('with a sequence key name', () => {
-      it('returns the arguments for a query by ID including both the ID and the sequence key', () => {
-        const args = (graphQLQueryGenerator as any).buildArgsForQueryById('timestamp')
+    const config = new BoosterConfig('test')
 
-        const argNames = Object.keys(args)
-        expect(argNames).to.has.length(2)
-        expect(argNames).to.include('id')
-        expect(argNames).to.include('timestamp')
-        expect(args['id'].type).to.deep.equal(new GraphQLNonNull(GraphQLID))
-        expect(args['timestamp'].type).to.deep.equal(GraphQLID)
-      })
+    const graphQLQueryGenerator = new GraphQLQueryGenerator(
+      config,
+      fakeReadModelsMetadata,
+      typeInformer,
+      () => fake(),
+      () => fake(),
+      fake()
+    ) as any // So we can see private methods
+    it('generates a query named after the read model class that accepts an ID and a sequence key', () => {
+      const fakeByIdResolverBuilder = fake.returns(fake())
+      replace(graphQLQueryGenerator, 'byIDResolverBuilder', fakeByIdResolverBuilder)
+
+      const query = graphQLQueryGenerator.generateByIdAndSequenceKeyQuery('AnotherSequencedReadModel', 'timestamp')
+
+      expect(query.type).to.be.a('GraphQLList')
+      expect(query.type.ofType).to.have.a.property('name', 'AnotherSequencedReadModel')
+      expect(query.args).to.have.a.property('id')
+      expect(query.args).to.have.a.property('timestamp')
+      expect(query.resolve).to.be.a('Function')
+      expect(fakeByIdResolverBuilder).to.have.been.calledWith(AnotherSequencedReadModel)
     })
   })
 
