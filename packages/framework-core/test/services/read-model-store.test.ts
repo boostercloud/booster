@@ -13,8 +13,10 @@ import {
   ReadModelAction,
   OptimisticConcurrencyUnexpectedVersionError,
   ProjectionResult,
+  InvalidParameterError,
 } from '@boostercloud/framework-types'
 import { expect } from '../expect'
+import { createInstance } from '@boostercloud/framework-common-helpers'
 
 describe('ReadModelStore', () => {
   afterEach(() => {
@@ -388,46 +390,170 @@ describe('ReadModelStore', () => {
         })
       })
     })
+
+    context('for read models with defined sequenceKeys', () => {
+      beforeEach(() => {
+        config.readModelSequenceKeys['AnotherReadModel'] = 'count'
+      })
+
+      afterEach(() => {
+        delete config.readModelSequenceKeys.AnotherReadModel
+      })
+
+      it('applies the projections with the right sequenceMetadata', async () => {
+        const anEntitySnapshot = eventEnvelopeFor(AnImportantEntity.name)
+        const anEntityInstance = createInstance(AnImportantEntity, anEntitySnapshot.value) as any
+        const readModelStore = new ReadModelStore(config, logger)
+        const fakeApplyProjectionToReadModel = fake()
+        replace(readModelStore as any, 'applyProjectionToReadModel', fakeApplyProjectionToReadModel)
+
+        await readModelStore.project(anEntitySnapshot)
+
+        expect(fakeApplyProjectionToReadModel).to.have.been.calledThrice
+        for (const projectionMetadata of config.projections[AnImportantEntity.name]) {
+          const readModelClassName = projectionMetadata.class.name
+          expect(fakeApplyProjectionToReadModel).to.have.been.calledWith(
+            anEntityInstance,
+            projectionMetadata,
+            readModelClassName,
+            anEntityInstance[projectionMetadata.joinKey],
+            readModelClassName === 'AnotherReadModel' ? { name: 'count', value: 123 } : undefined
+          )
+        }
+      })
+    })
   })
 
   describe('the `fetchReadModel` method', () => {
-    it("returns null when the read model doesn't exist", async () => {
-      replace(config.provider.readModels, 'fetch', fake.returns(null))
-      const readModelStore = new ReadModelStore(config, logger)
+    context('with no sequenceMetadata', () => {
+      it("returns `undefined` when the read model doesn't exist", async () => {
+        replace(config.provider.readModels, 'fetch', fake.returns(undefined))
+        const readModelStore = new ReadModelStore(config, logger)
 
-      const result = await readModelStore.fetchReadModel(SomeReadModel.name, 'joinColumnID')
+        const result = await readModelStore.fetchReadModel(SomeReadModel.name, 'joinColumnID')
 
-      expect(config.provider.readModels.fetch).to.have.been.calledOnceWithExactly(
-        config,
-        logger,
-        SomeReadModel.name,
-        'joinColumnID'
-      )
-      expect(result).to.be.undefined
+        expect(config.provider.readModels.fetch).to.have.been.calledOnceWithExactly(
+          config,
+          logger,
+          SomeReadModel.name,
+          'joinColumnID',
+          undefined
+        )
+        expect(result).to.be.undefined
+      })
+
+      it('returns an instance of the current read model value when it exists', async () => {
+        replace(config.provider.readModels, 'fetch', fake.returns({ id: 'joinColumnID' }))
+        const readModelStore = new ReadModelStore(config, logger)
+
+        const result = await readModelStore.fetchReadModel(SomeReadModel.name, 'joinColumnID')
+
+        expect(config.provider.readModels.fetch).to.have.been.calledOnceWithExactly(
+          config,
+          logger,
+          SomeReadModel.name,
+          'joinColumnID',
+          undefined
+        )
+        expect(result).to.be.deep.equal(new SomeReadModel('joinColumnID'))
+      })
     })
 
-    it('returns an instance of the current read model value when it exists', async () => {
-      replace(config.provider.readModels, 'fetch', fake.returns({ id: 'joinColumnID' }))
-      const readModelStore = new ReadModelStore(config, logger)
-      const result = await readModelStore.fetchReadModel(SomeReadModel.name, 'joinColumnID')
+    context('with sequenceMetadata', () => {
+      it("calls the provider's fetch method passing the sequenceMetadata object", async () => {
+        replace(config.provider.readModels, 'fetch', fake.returns({ id: 'joinColumnID' }))
+        const readModelStore = new ReadModelStore(config, logger)
 
-      expect(config.provider.readModels.fetch).to.have.been.calledOnceWithExactly(
-        config,
-        logger,
-        SomeReadModel.name,
-        'joinColumnID'
-      )
-      expect(result).to.be.deep.equal(new SomeReadModel('joinColumnID'))
+        await readModelStore.fetchReadModel(SomeReadModel.name, 'joinColumnID', {
+          name: 'time',
+          value: 'now!',
+        })
+
+        expect(config.provider.readModels.fetch).to.have.been.calledOnceWithExactly(
+          config,
+          logger,
+          SomeReadModel.name,
+          'joinColumnID',
+          { name: 'time', value: 'now!' }
+        )
+      })
     })
   })
 
   describe('the `joinKeyForProjection` private method', () => {
-    it('returns the value of the joinKey if it exists') // TODO
-    it('raises an error when the joinkey do not exist') // TODO
+    context('when the joinKey exists', () => {
+      it('returns the joinKey value', () => {
+        const anEntitySnapshot = eventEnvelopeFor(AnImportantEntity.name)
+        const anEntityInstance = createInstance(AnImportantEntity, anEntitySnapshot.value) as any
+        const readModelStore = new ReadModelStore(config, logger) as any
+
+        expect(readModelStore.joinKeyForProjection(anEntityInstance, { joinKey: 'someKey' })).to.be.equal(
+          'joinColumnID'
+        )
+      })
+    })
+
+    context('when the joinkey does not exist', () => {
+      it('throws an `InvalidParameterError', () => {
+        const anEntitySnapshot = eventEnvelopeFor(AnImportantEntity.name)
+        const anEntityInstance = createInstance(AnImportantEntity, anEntitySnapshot.value) as any
+        const readModelStore = new ReadModelStore(config, logger) as any
+
+        expect(() => {
+          readModelStore.joinKeyForProjection(anEntityInstance, { joinKey: 'whatever' })
+        }).to.throw(InvalidParameterError)
+      })
+    })
   })
 
-  describe('the `reducerForProjection` method', () => {
-    it('returns the reducer function for a projection metadata') // TODO
-    it('raises an error when the method is not found') // TODO
+  describe('the `sequenceKeyForProjection` private method', () => {
+    context('when there is no sequence key for the read model in the config', () => {
+      it('returns undefined', () => {
+        const anEntitySnapshot = eventEnvelopeFor(AnImportantEntity.name)
+        const anEntityInstance = createInstance(AnImportantEntity, anEntitySnapshot.value) as any
+        const readModelStore = new ReadModelStore(config, logger) as any
+
+        expect(readModelStore.sequenceKeyForProjection(anEntityInstance, { class: SomeReadModel })).to.be.undefined
+      })
+    })
+
+    context('when there is a sequence key for the read model in the config', () => {
+      beforeEach(() => {
+        config.readModelSequenceKeys['AnotherReadModel'] = 'count'
+      })
+
+      afterEach(() => {
+        delete config.readModelSequenceKeys.AnotherReadModel
+      })
+
+      it('returns a `SequenceMetadata`object with the right sequenceKeyName and sequenceValue values', () => {
+        const anEntitySnapshot = eventEnvelopeFor(AnImportantEntity.name)
+        const anEntityInstance = createInstance(AnImportantEntity, anEntitySnapshot.value) as any
+        const readModelStore = new ReadModelStore(config, logger) as any
+
+        expect(readModelStore.sequenceKeyForProjection(anEntityInstance, { class: AnotherReadModel })).to.be.deep.equal(
+          {
+            name: 'count',
+            value: 123,
+          }
+        )
+      })
+    })
+  })
+
+  // TODO: This method is tested indirectly in the `project` method tests, but it would be nice to have dedicated unit tests for it too
+  describe('the `applyProjectionToReadModel` private method', () => {
+    context('when `ReadModelAction.Delete` is returned', () => {
+      it('deletes the read model') // TODO
+    })
+    context('when `ReadModelAction.Nothing` is returned', () => {
+      it('does not update the read model state') // TODO
+    })
+    context('with no sequenceMetadata', () => {
+      it('calls the `fetchReadodel` method with no sequenceMetadata object') // TODO
+    })
+    context('with sequenceMetadata', () => {
+      it('calls the `fetchReadModel` method passing the sequenceMetadata object') // TODO
+    })
   })
 })
