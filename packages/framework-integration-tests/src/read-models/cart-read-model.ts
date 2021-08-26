@@ -35,13 +35,22 @@ export class CartReadModel {
   public static beforeFnV2(
     request: ReadModelRequestEnvelope<ReadModelInterface>
   ): ReadModelRequestEnvelope<ReadModelInterface> {
-    const id = request?.key?.id
+    const id = request.key?.id || request.filters?.id?.eq
+    console.log(`Running \`beforeFnV2\` with ID = ${id}, and request = ${JSON.stringify(request)}`)
     if (!id || id !== 'before-fn-test') return request
-    return {
-      ...request,
-      key: {
-        id: id + '-modified',
-      },
+    const newId = id + '-modified'
+    if (request.key?.id) {
+      return {
+        ...request,
+        key: {
+          id: newId,
+        },
+      }
+    } else {
+      return {
+        ...request,
+        filters: { id: { eq: newId } },
+      }
     }
   }
 
