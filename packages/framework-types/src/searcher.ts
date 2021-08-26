@@ -15,7 +15,7 @@ export type FinderByKeyFunction<TObject> = (
   className: string,
   id: string,
   sequenceKey?: SequenceKey
-) => Promise<ReadOnlyNonEmptyArray<TObject>>
+) => Promise<TObject | ReadOnlyNonEmptyArray<TObject>>
 
 export type SequenceFinderByKeyFunction<TObject> = (
   className: string,
@@ -77,7 +77,7 @@ export class Searcher<TObject> {
     return this
   }
 
-  public async findById(id: string, sequenceKey?: SequenceKey): Promise<ReadOnlyNonEmptyArray<TObject>> {
+  public async findById(id: string, sequenceKey?: SequenceKey): Promise<TObject | ReadOnlyNonEmptyArray<TObject>> {
     return this.finderByKeyFunction(this.objectClass.name, id, sequenceKey)
   }
 

@@ -54,11 +54,12 @@ export class GraphQLQueryGenerator {
     for (const readModelName in this.readModelsMetadata) {
       const readModelMetadata = this.readModelsMetadata[readModelName]
 
-      const args = this.buildArgsForQueryById(readModelName)
+      const sequenceKeyName = this.config.readModelSequenceKeys[readModelName]
+      const args = this.buildArgsForQueryById(sequenceKeyName)
 
       const graphQLType = this.typeInformer.getGraphQLTypeFor(readModelMetadata.class)
       queries[readModelName] = {
-        type: new GraphQLList(graphQLType),
+        type: sequenceKeyName ? new GraphQLList(graphQLType) : graphQLType,
         args,
         resolve: this.byIDResolverBuilder(readModelMetadata.class),
       }
@@ -313,16 +314,15 @@ export class GraphQLQueryGenerator {
     })
   }
 
-  private buildArgsForQueryById(readModelName: string): GraphQLFieldConfigArgumentMap {
-    const sequenceKeyName = this.config.readModelSequenceKeys[readModelName]
+  private buildArgsForQueryById(sequenceKeyName?: string): GraphQLFieldConfigArgumentMap {
     if (sequenceKeyName) {
       return {
-        id: { type: GraphQLID },
+        id: { type: new GraphQLNonNull(GraphQLID) },
         [sequenceKeyName]: { type: GraphQLID },
       }
     } else {
       return {
-        id: { type: GraphQLID },
+        id: { type: new GraphQLNonNull(GraphQLID) },
       }
     }
   }

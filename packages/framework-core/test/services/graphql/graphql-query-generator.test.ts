@@ -765,7 +765,8 @@ describe('GraphQLQueryGenerator', () => {
 
         expect(queries['ASequencedReadModel']).not.to.be.undefined
         const anotherReadModelByIdQuery = queries['ASequencedReadModel']
-        expect(anotherReadModelByIdQuery.type).to.has.a.property('name', 'ASequencedReadModel')
+        expect(anotherReadModelByIdQuery.type).to.be.a('GraphQLList')
+        expect(anotherReadModelByIdQuery.type.ofType).to.have.a.property('name', 'ASequencedReadModel')
         expect(anotherReadModelByIdQuery.args).to.have.a.property('id')
         expect(anotherReadModelByIdQuery.args).to.have.a.property('timestamp')
         expect(anotherReadModelByIdQuery.resolve).to.be.a('Function')
@@ -775,7 +776,6 @@ describe('GraphQLQueryGenerator', () => {
 
   describe('the `buildArgsForQueryById` private method', () => {
     const config = new BoosterConfig('test')
-    config.readModelSequenceKeys['ASequencedReadModel'] = 'timestamp'
 
     const graphQLQueryGenerator = new GraphQLQueryGenerator(
       config,
@@ -786,9 +786,9 @@ describe('GraphQLQueryGenerator', () => {
       fake()
     )
 
-    context('with a regular read model name', () => {
+    context('with no sequence key name', () => {
       it('returns the arguments for a query by ID including only the ID', () => {
-        const args = (graphQLQueryGenerator as any).buildArgsForQueryById('AnotherReadModel')
+        const args = (graphQLQueryGenerator as any).buildArgsForQueryById()
 
         const argNames = Object.keys(args)
         expect(argNames).to.has.length(1)
@@ -797,16 +797,16 @@ describe('GraphQLQueryGenerator', () => {
       })
     })
 
-    context('with a sequenced read model name', () => {
+    context('with a sequence key name', () => {
       it('returns the arguments for a query by ID including both the ID and the sequence key', () => {
-        const args = (graphQLQueryGenerator as any).buildArgsForQueryById('ASequencedReadModel')
+        const args = (graphQLQueryGenerator as any).buildArgsForQueryById('timestamp')
 
         const argNames = Object.keys(args)
         expect(argNames).to.has.length(2)
         expect(argNames).to.include('id')
         expect(argNames).to.include('timestamp')
         expect(args['id'].type).to.deep.equal(new GraphQLNonNull(GraphQLID))
-        expect(args['timestamp'].type).to.deep.equal(new GraphQLNonNull(GraphQLID))
+        expect(args['timestamp'].type).to.deep.equal(GraphQLID)
       })
     })
   })
