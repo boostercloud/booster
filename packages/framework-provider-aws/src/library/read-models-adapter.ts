@@ -39,7 +39,7 @@ export async function fetchReadModel(
      * then read models are updated. We need to make sure that the second time we read it we get the same object we stored in
      * the previous iteration.
      *
-     * Still, it would be interesting to make eventual consistent reads for requests coming from the API, because they're faster.
+     * Still, it would be interesting to make eventual consistent reads for requests coming from the API, as they're faster.
      * One possible solution would be having an extra optional parameter that defaults to `true`, but can be set to `false` in
      * that scenario.
      */
