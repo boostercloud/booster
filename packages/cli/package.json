@@ -16,17 +16,18 @@
     "@boostercloud/framework-types": "^0.20.4",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
+    "@oclif/errors": "^1",
     "@oclif/plugin-help": "^2",
     "chalk": "^2.4.2",
     "child-process-promise": "^2.2.1",
     "execa": "^2.0.3",
     "fp-ts": "2.10.5",
     "fs-extra": "^8.1.0",
-    "globby": "^8",
     "inflected": "2.1.0",
     "inquirer": "^7.0.0",
     "mustache": "4.1.0",
-    "ora": "^3.4.0"
+    "ora": "^3.4.0",
+    "tslib": "2.3.0"
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1",

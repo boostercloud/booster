@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "@types/graphql": "14.5.0",
+    "tslib": "2.3.0",
     "uuid": "8.3.2"
   },
   "devDependencies": {
@@ -43,6 +44,7 @@
     "fast-check": "^1.18.1",
     "metadata-booster": "0.3.1",
     "mocha": "8.4.0",
+    "sinon": "9.2.3",
     "sinon-chai": "3.5.0"
   }
 }

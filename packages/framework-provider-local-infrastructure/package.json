@@ -24,7 +24,8 @@
     "@boostercloud/framework-types": "^0.20.4",
     "cors": "2.8.5",
     "express": "^4.17.1",
-    "nedb": "^1.8.0"
+    "nedb": "^1.8.0",
+    "tslib": "2.3.0"
   },
   "scripts": {
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
@@ -48,6 +49,7 @@
     "chai-as-promised": "7.1.1",
     "faker": "5.1.0",
     "mocha": "8.4.0",
+    "sinon": "9.2.3",
     "sinon-chai": "3.5.0",
     "sinon-express-mock": "^2.2.1"
   }
