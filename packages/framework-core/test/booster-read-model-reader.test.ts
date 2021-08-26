@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from './expect'
 import {
   Logger,
@@ -7,15 +8,16 @@ import {
   GraphQLOperation,
   NotFoundError,
   NotAuthorizedError,
-  ProviderLibrary,
   SubscriptionEnvelope,
   FilterFor,
   UserEnvelope,
+  BoosterConfig,
 } from '@boostercloud/framework-types'
-import { restore, fake, match, spy } from 'sinon'
+import { restore, fake, match, spy, replace } from 'sinon'
 import { BoosterReadModelsReader } from '../src/booster-read-models-reader'
 import { Booster } from '../src/booster'
 import { random, internet } from 'faker'
+import { BoosterAuth } from '../src/booster-auth'
 
 const logger: Logger = {
   debug() {},
@@ -29,27 +31,103 @@ describe('BoosterReadModelReader', () => {
   })
 
   class TestReadModel {
-    public id: UUID = ''
+    public id: UUID = '∂'
   }
+
+  class SequencedReadModel {
+    public id: UUID = 'π'
+  }
+
   class UserRole {}
 
-  let readModelReader: BoosterReadModelsReader
-  Booster.configureCurrentEnv((config) => {
-    config.provider = {} as unknown as ProviderLibrary
-    config.readModels[TestReadModel.name] = {
-      class: TestReadModel,
-      authorizedRoles: [UserRole],
-      properties: [],
-      before: [],
-    }
-    readModelReader = new BoosterReadModelsReader(config, logger)
-  })
+  const config = new BoosterConfig('test')
+  config.readModels[TestReadModel.name] = {
+    class: TestReadModel,
+    authorizedRoles: [UserRole],
+    properties: [],
+    before: [],
+  }
+  config.readModels[SequencedReadModel.name] = {
+    class: SequencedReadModel,
+    authorizedRoles: [UserRole],
+    properties: [],
+    before: [],
+  }
+  // Why sorting by salmon? Salmons are fun! https://youtu.be/dDj7DuHVV9E
+  config.readModelSequenceKeys[SequencedReadModel.name] = 'salmon'
+
+  const readModelReader = new BoosterReadModelsReader(config, logger)
 
   const noopGraphQLOperation: GraphQLOperation = {
     query: '',
   }
 
-  describe('the validation for methods `fetch` and `subscribe`', () => {
+  context('requests by Id', () => {
+    describe('the `validateByIdRequest', () => {
+      const validateByIdRequest = (readModelReader as any).validateByIdRequest.bind(readModelReader)
+
+      it('throws an invalid parameter error when the version is not present in a request', () => {
+        expect(() => {
+          validateByIdRequest({})
+        }).to.throw('"version" was not present')
+      })
+
+      it("throws a not found error when it can't find the read model metadata", () => {
+        expect(() => {
+          validateByIdRequest({ version: 1, typeName: 'NonexistentReadModel' })
+        }).to.throw(/Could not find read model/)
+      })
+
+      it('throws a non authorized error when the current user is not allowed to perform the request', () => {
+        expect(() => {
+          validateByIdRequest({ version: 1, typeName: TestReadModel.name })
+        }).to.throw(/Access denied/)
+      })
+
+      it('throws an invalid parameter error when the request receives a sequence key but it cannot be found in the Booster metadata', () => {
+        replace(BoosterAuth, 'isUserAuthorized', fake.returns(true))
+        expect(() => {
+          validateByIdRequest({
+            version: 1,
+            typeName: TestReadModel.name,
+            currentUser: { id: '666', username: 'root', role: 'root' },
+            sequenceKey: { name: 'salmon', value: 'sammy' },
+          })
+        }).to.throw(/Could not find a sort key/)
+      })
+
+      it('does not throw an error when there is no sequence key and everything else is ok', () => {
+        replace(BoosterAuth, 'isUserAuthorized', fake.returns(true))
+        expect(() => {
+          validateByIdRequest({
+            version: 1,
+            typeName: TestReadModel.name,
+            currentUser: { id: '666', username: 'root', role: 'root' },
+          })
+        }).not.to.throw()
+      })
+
+      it('does not throw an error when there is a valid sequence key and everything else is ok', () => {
+        replace(BoosterAuth, 'isUserAuthorized', fake.returns(true))
+        expect(() => {
+          validateByIdRequest({
+            version: 1,
+            typeName: SequencedReadModel.name,
+            currentUser: { id: '666', username: 'root', role: 'root' },
+            sequenceKey: { name: 'salmon', value: 'sammy' },
+          })
+        }).not.to.throw()
+      })
+    })
+
+    describe('the `findById` method', () => {
+      it('...', () => {
+        throw 'here!' // TODO
+      })
+    })
+  })
+
+  describe('the validation for methods `search` and `subscribe`', () => {
     it('throws the right error when request is missing "version"', async () => {
       const envelope = {
         typeName: 'anyReadModel',
@@ -95,7 +173,7 @@ describe('BoosterReadModelReader', () => {
     })
   })
 
-  describe("The logic of 'fetch' and 'subscribe'  methods", () => {
+  context("The logic of 'search' and 'subscribe'  methods", () => {
     const filters = {
       id: {
         operation: 'eq',
@@ -129,7 +207,7 @@ describe('BoosterReadModelReader', () => {
       return { id: { eq: currentUser?.username } } as FilterFor<TestReadModel>
     }
 
-    context('the "fetch" method', () => {
+    describe('the "search" method', () => {
       it('calls the provider search function and returns its results', async () => {
         const expectedReadModels = [new TestReadModel(), new TestReadModel()]
         const providerSearcherFunctionFake = fake.returns(expectedReadModels)
@@ -200,7 +278,7 @@ describe('BoosterReadModelReader', () => {
       })
     })
 
-    context('the "subscribe" method', () => {
+    describe('the "subscribe" method', () => {
       it('calls the provider subscribe function and returns its results', async () => {
         const providerSubscribeFunctionFake = fake()
         Booster.configureCurrentEnv((config) => {
@@ -293,6 +371,12 @@ describe('BoosterReadModelReader', () => {
       await readModelReader.unsubscribeAll(connectionID)
 
       expect(deleteAllSubscriptionsFake).to.have.been.calledOnceWithExactly(match.any, match.any, connectionID)
+    })
+  })
+
+  describe('the `initializeSearcherWithFilters` method', () => {
+    it('builds a searcher for a specific request', () => {
+      throw 'yisus!' // TODO
     })
   })
 })
