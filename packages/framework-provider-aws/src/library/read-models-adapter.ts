@@ -34,9 +34,13 @@ export async function fetchReadModel(
   // We're using query for get single read models too as the difference in performance
   // between get-item and query is none for a single item.
   // Source: https://forums.aws.amazon.com/thread.jspa?threadID=93743
-  const sequenceKeyCondition = sequenceKey ? ` AND #${sequenceKey.name} = :${sequenceKey.name}` : ''
-  const sequenceAttributeNames = sequenceKey ? { [`#${sequenceKey.name}`]: sequenceKey.name } : {}
-  const sequenceAttributeValues = sequenceKey ? { [`:${sequenceKey.name}`]: sequenceKey.value } : {}
+  const sequenceKeyCondition = sequenceKey?.value ? ` AND #${sequenceKey.name} = :${sequenceKey.name}` : ''
+  const sequenceAttributeNames = sequenceKey?.value ? { [`#${sequenceKey.name}`]: sequenceKey.name } : {}
+  const sequenceAttributeValues = sequenceKey?.value ? { [`:${sequenceKey.name}`]: sequenceKey.value } : {}
+  logger.debug(
+    `[ReadModelAdapter#fetchReadModel] Performing query for ${readModelName}, with ID ${readModelID} and sequenceKey`,
+    sequenceKey
+  )
   const queryParams: DynamoDB.DocumentClient.QueryInput = {
     TableName: config.resourceNames.forReadModel(readModelName),
     KeyConditionExpression: '#id = :id' + sequenceKeyCondition,

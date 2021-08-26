@@ -317,12 +317,12 @@ export class GraphQLQueryGenerator {
     const sequenceKeyName = this.config.readModelSequenceKeys[readModelName]
     if (sequenceKeyName) {
       return {
-        id: { type: new GraphQLNonNull(GraphQLID) },
-        [sequenceKeyName]: { type: new GraphQLNonNull(GraphQLID) },
+        id: { type: GraphQLID },
+        [sequenceKeyName]: { type: GraphQLID },
       }
     } else {
       return {
-        id: { type: new GraphQLNonNull(GraphQLID) },
+        id: { type: GraphQLID },
       }
     }
   }
