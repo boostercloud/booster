@@ -98,9 +98,8 @@ export class Booster {
           ...searchResult,
           items: createInstances(readModelClass, searchResult.items),
         }
-      } else {
-        return createInstances(readModelClass, searchResult)
       }
+      return createInstances(readModelClass, searchResult)
     }
 
     const finderByIdFunction: FinderByKeyFunction<TReadModel> = async (
@@ -117,11 +116,9 @@ export class Booster {
       )
       if (sequenceKey) {
         return readModels as ReadOnlyNonEmptyArray<TReadModel>
-      } else {
-        return readModels[0] as TReadModel
       }
+      return readModels[0] as TReadModel
     }
-
     return new Searcher(readModelClass, searchFunction, finderByIdFunction)
   }
 

@@ -82,9 +82,8 @@ export class ReadModelStore {
     const sequenceKeyValue = (entity as any)[sequenceKeyName]
     if (sequenceKeyName && sequenceKeyValue) {
       return { name: sequenceKeyName, value: sequenceKeyValue }
-    } else {
-      return undefined
     }
+    return undefined
   }
 
   private async applyProjectionToReadModel(

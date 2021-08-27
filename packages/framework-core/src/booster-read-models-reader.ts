@@ -36,7 +36,7 @@ export class BoosterReadModelsReader {
 
   public async search(
     readModelRequest: ReadModelRequestEnvelope<ReadModelInterface>
-  ): Promise<ReadModelInterface[] | ReadModelListResult<ReadModelInterface>> {
+  ): Promise<Array<ReadModelInterface> | ReadModelListResult<ReadModelInterface>> {
     this.validateRequest(readModelRequest)
 
     const readModelMetadata = this.config.readModels[readModelRequest.class.name]
