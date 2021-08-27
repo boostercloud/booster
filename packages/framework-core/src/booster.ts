@@ -1,24 +1,27 @@
+import { createInstance, createInstances } from '@boostercloud/framework-common-helpers'
 import {
   BoosterConfig,
-  Logger,
-  EntityInterface,
-  ReadModelInterface,
-  UUID,
   Class,
-  Searcher,
-  EventSearchResponse,
+  EntityInterface,
   EventFilter,
-  SearcherFunction,
+  EventSearchResponse,
   FilterFor,
+  FinderByKeyFunction,
+  Logger,
+  ReadModelInterface,
+  ReadOnlyNonEmptyArray,
+  Searcher,
+  SearcherFunction,
+  SequenceKey,
+  UUID,
 } from '@boostercloud/framework-types'
-import { Importer } from './importer'
-import { buildLogger } from './booster-logger'
 import { BoosterEventDispatcher } from './booster-event-dispatcher'
 import { BoosterGraphQLDispatcher } from './booster-graphql-dispatcher'
-import { BoosterSubscribersNotifier } from './booster-subscribers-notifier'
+import { buildLogger } from './booster-logger'
 import { BoosterScheduledCommandDispatcher } from './booster-scheduled-command-dispatcher'
+import { BoosterSubscribersNotifier } from './booster-subscribers-notifier'
+import { Importer } from './importer'
 import { EventStore } from './services/event-store'
-import { createInstance, createInstances } from '@boostercloud/framework-common-helpers'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -74,7 +77,7 @@ export class Booster {
     readModelClass: Class<TReadModel>
   ): Searcher<TReadModel> {
     const searchFunction: SearcherFunction<TReadModel> = async (
-      entityTypeName: string,
+      readModelName: string,
       filters: FilterFor<unknown>,
       limit?: number,
       afterCursor?: any,
@@ -83,7 +86,7 @@ export class Booster {
       const searchResult = await this.config.provider.readModels.search(
         this.config,
         this.logger,
-        entityTypeName,
+        readModelName,
         filters,
         limit,
         afterCursor,
@@ -93,12 +96,30 @@ export class Booster {
       if (!Array.isArray(searchResult)) {
         return {
           ...searchResult,
-          items: searchResult ? createInstances(readModelClass, searchResult.items as Array<any>) : [],
+          items: createInstances(readModelClass, searchResult.items),
         }
       }
-      return searchResult ? createInstances(readModelClass, searchResult) : []
+      return createInstances(readModelClass, searchResult)
     }
-    return new Searcher(readModelClass, searchFunction)
+
+    const finderByIdFunction: FinderByKeyFunction<TReadModel> = async (
+      readModelName: string,
+      id: UUID,
+      sequenceKey?: SequenceKey
+    ) => {
+      const readModels = await this.config.provider.readModels.fetch(
+        this.config,
+        this.logger,
+        readModelName,
+        id,
+        sequenceKey
+      )
+      if (sequenceKey) {
+        return readModels as ReadOnlyNonEmptyArray<TReadModel>
+      }
+      return readModels[0] as TReadModel
+    }
+    return new Searcher(readModelClass, searchFunction, finderByIdFunction)
   }
 
   public static async events(filters: EventFilter): Promise<Array<EventSearchResponse>> {

@@ -5,6 +5,7 @@ import {
   OptimisticConcurrencyUnexpectedVersionError,
   ReadModelEnvelope,
   ReadModelInterface,
+  ReadOnlyNonEmptyArray,
   UUID,
 } from '@boostercloud/framework-types'
 import { ReadModelRegistry } from '../services/read-model-registry'
@@ -24,7 +25,7 @@ export async function fetchReadModel(
   logger: Logger,
   readModelName: string,
   readModelID: UUID
-): Promise<ReadModelInterface> {
+): Promise<ReadOnlyNonEmptyArray<ReadModelInterface>> {
   //use dot notation value.id to match the record (see https://github.com/louischatriot/nedb#finding-documents)
   const response = await db.query({ typeName: readModelName, 'value.id': readModelID })
   const item = response[0]
@@ -36,7 +37,7 @@ export async function fetchReadModel(
       item.value
     )
   }
-  return item?.value
+  return [item?.value]
 }
 
 export async function storeReadModel(

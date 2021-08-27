@@ -46,13 +46,9 @@ describe('Read Model adapter', () => {
 
   describe('The "fetchReadModel" method', () => {
     it('Responds with a read model when it exists', async () => {
-      const result = await fetchReadModel(
-        mockCosmosDbClient as any,
-        mockConfig,
-        mockLogger,
-        mockReadModelName,
-        mockReadModelId
-      )
+      const result = (
+        await fetchReadModel(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, mockReadModelId)
+      )[0]
 
       expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
       expect(

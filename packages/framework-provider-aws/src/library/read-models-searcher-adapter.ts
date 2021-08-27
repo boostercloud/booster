@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-  Operation,
-  FilterFor,
   BoosterConfig,
-  Logger,
+  FilterFor,
   InvalidParameterError,
+  Logger,
+  Operation,
   ReadModelListResult,
 } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
@@ -21,7 +21,7 @@ export async function searchReadModel(
   limit?: number,
   afterCursor?: DynamoDB.DocumentClient.Key | undefined,
   paginatedVersion = false
-): Promise<Array<any> | ReadModelListResult> {
+): Promise<Array<any> | ReadModelListResult<any>> {
   let params: DocumentClient.ScanInput = {
     TableName: config.resourceNames.forReadModel(readModelName),
     ConsistentRead: true,

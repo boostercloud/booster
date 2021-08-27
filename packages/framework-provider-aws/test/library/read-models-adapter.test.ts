@@ -111,47 +111,133 @@ describe('the "rawReadModelEventsToEnvelopes" method', () => {
 })
 
 describe('the "fetchReadModel" method', () => {
-  it("responds with an error when the read model doesn't exist", async () => {
-    const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
-    const config = new BoosterConfig('test')
-    replace(
-      db,
-      'get',
-      fake.returns({
-        promise: fake.rejects('not found'),
+  context("when the read model doesn't exist", () => {
+    context('when no sequenceMetadata is defined', () => {
+      it('responds with an error querying by partition key', async () => {
+        const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
+        const config = new BoosterConfig('test')
+        replace(
+          db,
+          'query',
+          fake.returns({
+            promise: fake.rejects('not found'),
+          })
+        )
+
+        await expect(
+          fetchReadModel(db, config, logger, 'SomeReadModel', 'someReadModelID')
+        ).to.be.eventually.rejectedWith('not found')
+
+        expect(db.query).to.have.been.calledOnceWith({
+          TableName: 'new-booster-app-app-SomeReadModel',
+          KeyConditionExpression: '#id = :id',
+          ExpressionAttributeNames: {
+            '#id': 'id',
+          },
+          ExpressionAttributeValues: {
+            ':id': 'someReadModelID',
+          },
+          ConsistentRead: true,
+        })
       })
-    )
+    })
 
-    await expect(fetchReadModel(db, config, logger, 'SomeReadModel', 'someReadModelID')).to.be.eventually.rejectedWith(
-      'not found'
-    )
+    context('when sequenceMetadata is defined', () => {
+      it('responds with an error querying both by partition and sort keys', async () => {
+        const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
+        const config = new BoosterConfig('test')
+        replace(
+          db,
+          'query',
+          fake.returns({
+            promise: fake.rejects('not found'),
+          })
+        )
 
-    expect(db.get).to.have.been.calledOnceWith({
-      TableName: 'new-booster-app-app-SomeReadModel',
-      ConsistentRead: true,
-      Key: { id: 'someReadModelID' },
+        await expect(
+          fetchReadModel(db, config, logger, 'SomeReadModel', 'someReadModelID', { name: 'asdf', value: '42' })
+        ).to.be.eventually.rejectedWith('not found')
+
+        expect(db.query).to.have.been.calledOnceWith({
+          TableName: 'new-booster-app-app-SomeReadModel',
+          KeyConditionExpression: '#id = :id AND #asdf = :asdf',
+          ExpressionAttributeNames: {
+            '#id': 'id',
+            '#asdf': 'asdf',
+          },
+          ExpressionAttributeValues: {
+            ':id': 'someReadModelID',
+            ':asdf': '42',
+          },
+          ConsistentRead: true,
+        })
+      })
     })
   })
 
-  it('responds with a read model when it exist', async () => {
-    const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
-    const config = new BoosterConfig('test')
-    replace(
-      db,
-      'get',
-      fake.returns({
-        promise: fake.resolves({ Item: { some: 'object' } }),
+  context('when the read model exists', () => {
+    context('when no sequenceMetadata is defined', () => {
+      it('gets the read model by partition key and responds with a read model', async () => {
+        const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
+        const config = new BoosterConfig('test')
+        replace(
+          db,
+          'query',
+          fake.returns({
+            promise: fake.resolves({ Items: [{ some: 'object' }] }),
+          })
+        )
+
+        const results = await fetchReadModel(db, config, logger, 'SomeReadModel', 'someReadModelID')
+
+        expect(db.query).to.have.been.calledOnceWith({
+          TableName: 'new-booster-app-app-SomeReadModel',
+          KeyConditionExpression: '#id = :id',
+          ExpressionAttributeNames: {
+            '#id': 'id',
+          },
+          ExpressionAttributeValues: {
+            ':id': 'someReadModelID',
+          },
+          ConsistentRead: true,
+        })
+        expect(results).to.deep.equal([{ some: 'object' }])
       })
-    )
-
-    const result = await fetchReadModel(db, config, logger, 'SomeReadModel', 'someReadModelID')
-
-    expect(db.get).to.have.been.calledOnceWithExactly({
-      TableName: 'new-booster-app-app-SomeReadModel',
-      ConsistentRead: true,
-      Key: { id: 'someReadModelID' },
     })
-    expect(result).to.deep.equal({ some: 'object' })
+
+    context('when sequenceMetadata is defined', () => {
+      it('gets the read model by partition and sort key and responds with a read model', async () => {
+        const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
+        const config = new BoosterConfig('test')
+        replace(
+          db,
+          'query',
+          fake.returns({
+            promise: fake.resolves({ Items: [{ some: 'object', time: '42' }] }),
+          })
+        )
+
+        const results = await fetchReadModel(db, config, logger, 'SomeReadModel', 'someReadModelID', {
+          name: 'time',
+          value: '42',
+        })
+
+        expect(db.query).to.have.been.calledOnceWith({
+          TableName: 'new-booster-app-app-SomeReadModel',
+          KeyConditionExpression: '#id = :id AND #time = :time',
+          ExpressionAttributeNames: {
+            '#id': 'id',
+            '#time': 'time',
+          },
+          ExpressionAttributeValues: {
+            ':id': 'someReadModelID',
+            ':time': '42',
+          },
+          ConsistentRead: true,
+        })
+        expect(results).to.deep.equal([{ some: 'object', time: '42' }])
+      })
+    })
   })
 })
 
@@ -204,24 +290,51 @@ describe('the "storeReadModel" method', () => {
 })
 
 describe('the "deleteReadModel"', () => {
-  it('deletes an existing read model', async () => {
-    const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
-    const config = new BoosterConfig('test')
-    replace(
-      db,
-      'delete',
-      fake.returns({
-        promise: fake.resolves({
-          $response: {},
-        }),
+  context('when the read model is not sequenced', () => {
+    it('deletes an existing read model by the partition key', async () => {
+      const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
+      const config = new BoosterConfig('test')
+      replace(
+        db,
+        'delete',
+        fake.returns({
+          promise: fake.resolves({
+            $response: {},
+          }),
+        })
+      )
+
+      await deleteReadModel(db, config, logger, 'SomeReadModel', { id: 777, some: 'object' } as any)
+
+      expect(db.delete).to.have.been.calledOnceWithExactly({
+        TableName: 'new-booster-app-app-SomeReadModel',
+        Key: { id: 777 },
       })
-    )
+    })
+  })
 
-    await deleteReadModel(db, config, logger, 'SomeReadModel', { id: 777, some: 'object' } as any)
+  context('when the read model is sequenced', () => {
+    it('deletes an existing read model by both the partition and the sort keys', async () => {
+      const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
+      const config = new BoosterConfig('test')
+      const readModelName = 'SomeReadModel'
+      config.readModelSequenceKeys[readModelName] = 'time'
+      replace(
+        db,
+        'delete',
+        fake.returns({
+          promise: fake.resolves({
+            $response: {},
+          }),
+        })
+      )
 
-    expect(db.delete).to.have.been.calledOnceWithExactly({
-      TableName: 'new-booster-app-app-SomeReadModel',
-      Key: { id: 777 },
+      await deleteReadModel(db, config, logger, readModelName, { id: '777', time: '42', some: 'object' } as any)
+
+      expect(db.delete).to.have.been.calledOnceWithExactly({
+        TableName: 'new-booster-app-app-SomeReadModel',
+        Key: { id: '777', time: '42' },
+      })
     })
   })
 })

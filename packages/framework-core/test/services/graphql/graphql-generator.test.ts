@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { replace, restore, SinonStub, stub } from 'sinon'
+import { fake, replace, restore, SinonStub, spy, stub } from 'sinon'
 import { BoosterCommandDispatcher } from '../../../src/booster-command-dispatcher'
 import { BoosterReadModelsReader } from '../../../src/booster-read-models-reader'
 import { GraphQLGenerator } from '../../../src/services/graphql/graphql-generator'
@@ -11,7 +11,7 @@ import {
   EventSearchRequest,
   EventSearchResponse,
   ReadModelRequestArgs,
-  ReadModelPropertyFilter,
+  ReadModelRequestProperties,
 } from '@boostercloud/framework-types'
 import { expect } from '../../expect'
 import { GraphQLQueryGenerator } from '../../../src/services/graphql/graphql-query-generator'
@@ -147,13 +147,13 @@ describe('GraphQL generator', () => {
     })
 
     describe('readModelResolverBuilder', () => {
-      let fetchStub: SinonStub
+      let fakeSearch: SinonStub
 
-      let returnedFunction: GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestArgs>
+      let returnedFunction: GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestArgs<ReadModelInterface>>
 
       beforeEach(() => {
-        fetchStub = stub().resolves(mockFetchResult)
-        replace(BoosterReadModelsReader.prototype, 'fetch', fetchStub)
+        fakeSearch = stub().resolves(mockFetchResult)
+        replace(BoosterReadModelsReader.prototype, 'search', fakeSearch)
 
         returnedFunction = GraphQLGenerator.readModelResolverBuilder(mockType)
       })
@@ -167,7 +167,8 @@ describe('GraphQL generator', () => {
           },
           filters: {},
           requestID: mockRequestId,
-          typeName: mockType.name,
+          class: mockType,
+          className: mockType.name,
           limit: undefined,
           afterCursor: undefined,
           paginatedVersion: false,
@@ -176,7 +177,7 @@ describe('GraphQL generator', () => {
 
         await returnedFunction('', {}, mockResolverContext, {} as any)
 
-        expect(fetchStub).to.have.been.calledOnceWithExactly(expectedFetchPayload)
+        expect(fakeSearch).to.have.been.calledOnceWithExactly(expectedFetchPayload)
       })
 
       it('should return expected result', async () => {
@@ -187,40 +188,75 @@ describe('GraphQL generator', () => {
     })
 
     describe('readModelByIDResolverBuilder', () => {
-      let mockReadModels: Array<ReadModelInterface>
+      class SomeReadModel {
+        public constructor(readonly id: string, readonly timestamp: string) {}
+      }
 
-      let readModelResolverBuilderStub: SinonStub
+      context('when the read model is non sequenced', () => {
+        const config = new BoosterConfig('test')
 
-      let returnedFunction: GraphQLFieldResolver<unknown, GraphQLResolverContext, any>
+        it('builds a function that perform requests by id', async () => {
+          const toReadModelByIdRequestEnvelopeSpy = spy(GraphQLGenerator as any, 'toReadModelByIdRequestEnvelope')
 
-      beforeEach(() => {
-        mockReadModels = []
+          const fakeFindById = fake()
+          replace((GraphQLGenerator as any).readModelsReader, 'findById', fakeFindById)
 
-        for (let i = 0; i < random.number({ min: 1, max: 10 }); i++) {
-          mockReadModels.push({
-            id: random.uuid(),
-            testKey: random.number(),
-          })
-        }
+          const returnedFunction = GraphQLGenerator.readModelByIDResolverBuilder(config, SomeReadModel)
 
-        readModelResolverBuilderStub = stub().returns(() => {
-          return mockReadModels
+          const fakeArgs = { id: '42' }
+          const fakeUser = { a: 'user' }
+          const fakeContext: any = { user: fakeUser, requestID: '314' }
+          await returnedFunction({}, fakeArgs, fakeContext, {} as any)
+
+          expect(toReadModelByIdRequestEnvelopeSpy).to.have.been.calledOnceWith(SomeReadModel, fakeArgs, fakeContext)
+
+          const envelope = toReadModelByIdRequestEnvelopeSpy.returnValues[0]
+          expect(envelope).to.have.property('currentUser', fakeUser)
+          expect(envelope).to.have.property('requestID', '314')
+          expect(envelope).to.have.property('class', SomeReadModel)
+          expect(envelope).to.have.property('className', 'SomeReadModel')
+          expect(envelope.key).to.be.deep.equal({ id: '42' })
+          expect(envelope.key.sequenceKey).to.be.undefined
+          expect(envelope).to.have.property('version', 1)
+
+          expect(fakeFindById).to.have.been.calledOnceWith(envelope)
         })
-        replace(GraphQLGenerator, 'readModelResolverBuilder', readModelResolverBuilderStub)
-
-        returnedFunction = GraphQLGenerator.readModelByIDResolverBuilder(mockType)
       })
 
-      it('should call readModelByIDResolverBuilder', async () => {
-        await returnedFunction('', {}, mockResolverContext, mockResolverInfo)
+      context('when the read model is sequenced', () => {
+        const config = new BoosterConfig('test')
+        config.readModelSequenceKeys['SomeReadModel'] = 'timestamp'
 
-        expect(readModelResolverBuilderStub).to.have.been.calledOnce
-      })
+        it('builds a function that perform requests by id and sequence key', async () => {
+          const toReadModelByIdRequestEnvelopeSpy = spy(GraphQLGenerator as any, 'toReadModelByIdRequestEnvelope')
 
-      it('should return expected result', async () => {
-        const result = await returnedFunction('', {}, mockResolverContext, mockResolverInfo)
+          const fakeFindById = fake()
+          replace((GraphQLGenerator as any).readModelsReader, 'findById', fakeFindById)
 
-        expect(result).to.be.equal(mockReadModels[0])
+          const returnedFunction = GraphQLGenerator.readModelByIDResolverBuilder(config, SomeReadModel)
+
+          const fakeArgs = { id: '42', timestamp: '1000' }
+          const fakeUser = { a: 'user' }
+          const fakeContext: any = { user: fakeUser, requestID: '314' }
+          await returnedFunction({}, fakeArgs, fakeContext, {} as any)
+
+          expect(toReadModelByIdRequestEnvelopeSpy).to.have.been.calledOnceWith(
+            SomeReadModel,
+            fakeArgs,
+            fakeContext,
+            'timestamp'
+          )
+
+          const envelope = toReadModelByIdRequestEnvelopeSpy.returnValues[0]
+          expect(envelope).to.have.property('currentUser', fakeUser)
+          expect(envelope).to.have.property('requestID', '314')
+          expect(envelope).to.have.property('class', SomeReadModel)
+          expect(envelope).to.have.property('className', 'SomeReadModel')
+          expect(envelope.key).to.be.deep.equal({ id: '42', sequenceKey: { name: 'timestamp', value: '1000' } })
+          expect(envelope).to.have.property('version', 1)
+
+          expect(fakeFindById).to.have.been.calledOnceWith(envelope)
+        })
       })
     })
 
@@ -284,7 +320,11 @@ describe('GraphQL generator', () => {
 
       let subscriptionResolverBuilderStub: SinonStub
 
-      let returnedFunction: GraphQLFieldResolver<any, GraphQLResolverContext, Record<string, ReadModelPropertyFilter>>
+      let returnedFunction: GraphQLFieldResolver<
+        any,
+        GraphQLResolverContext,
+        ReadModelRequestProperties<ReadModelInterface>
+      >
 
       beforeEach(() => {
         mockResolverResult = random.alphaNumeric(10)
@@ -313,7 +353,7 @@ describe('GraphQL generator', () => {
     describe('subscriptionResolverBuilder', () => {
       let mockContextConnectionID: string
       let subscribeStub: SinonStub
-      let returnedFunction: GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestArgs>
+      let returnedFunction: GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestArgs<ReadModelInterface>>
 
       beforeEach(() => {
         mockContextConnectionID = random.uuid()
@@ -376,7 +416,8 @@ describe('GraphQL generator', () => {
           },
           filters: {},
           requestID: mockRequestId,
-          typeName: mockType.name,
+          class: mockType,
+          className: mockType.name,
           limit: undefined,
           afterCursor: undefined,
           paginatedVersion: false,
