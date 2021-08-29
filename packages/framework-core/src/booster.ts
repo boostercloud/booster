@@ -146,7 +146,7 @@ export class Booster {
   ): Promise<TEntity | undefined> {
     const eventStore = new EventStore(this.config, this.logger)
     const entitySnapshotEnvelope = await eventStore.fetchEntitySnapshot(entityClass.name, entityID)
-    return entitySnapshotEnvelope ? createInstance(entityClass, entitySnapshotEnvelope) : undefined
+    return entitySnapshotEnvelope ? createInstance(entityClass, entitySnapshotEnvelope.value) : undefined
   }
 
   /**
