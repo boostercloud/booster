@@ -8,12 +8,12 @@ import {
   UserEnvelope,
 } from '@boostercloud/framework-types'
 
-export const getReadModelFilters = (
+export const getReadModelFilters = async (
   filters: FilterFor<Class<ReadModelInterface>>,
   beforeHooks: Array<ReadModelBeforeFunction>,
   user?: UserEnvelope
-): FilterFor<ReadModelInterface> => {
-  return beforeHooks.reduce((currentFilter, before) => before(currentFilter, user), filters)
+): Promise<FilterFor<ReadModelInterface>> => {
+  return beforeHooks.reduce(async (currentFilter, before) => before(await currentFilter, user), filters)
 }
 
 export const applyBeforeFunctions = async (
@@ -21,8 +21,5 @@ export const applyBeforeFunctions = async (
   beforeHooks: Array<CommandBeforeFunction>,
   currentUser?: UserEnvelope
 ): Promise<CommandInput> => {
-  return beforeHooks.reduce(async (currentInputPromise, before) => {
-    const currentInput = await currentInputPromise
-    return Promise.resolve(before(currentInput, currentUser))
-  }, Promise.resolve(commandInput))
+  return beforeHooks.reduce(async (currentInput, before) => before(await currentInput, currentUser), commandInput)
 }

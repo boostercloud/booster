@@ -13,23 +13,23 @@ export interface ReadModelPubSub {
   asyncIterator(
     readModelRequestEnvelope: ReadModelRequestEnvelope,
     config: BoosterConfig
-  ): AsyncIterator<ReadModelInterface>
+  ): AsyncIterator<ReadModelInterface> | Promise<AsyncIterator<ReadModelInterface>>
 }
 
 export class FilteredReadModelPubSub implements ReadModelPubSub {
   constructor(private readModels: Array<ReadModelInterface & Instance>) {}
 
-  public asyncIterator(
+  public async asyncIterator(
     readModelRequestEnvelope: ReadModelRequestEnvelope,
     config: BoosterConfig
-  ): AsyncIterator<ReadModelInterface> {
+  ): Promise<AsyncIterator<ReadModelInterface>> {
     const readModelMetadata = config.readModels[readModelRequestEnvelope.typeName]
 
-    const filters = getReadModelFilters(
+    const filters = (await getReadModelFilters(
       readModelRequestEnvelope.filters,
       readModelMetadata.before,
       readModelRequestEnvelope.currentUser
-    ) as Record<string, ReadModelPropertyFilter>
+    )) as Record<string, ReadModelPropertyFilter>
 
     return createAsyncIterator(
       this.readModels

@@ -60,7 +60,7 @@ export class BoosterReadModelsReader {
     const readModelMetadata = this.config.readModels[readModelRequest.typeName]
     const searcher = Booster.readModel(readModelMetadata.class)
 
-    const filters = getReadModelFilters(
+    const filters = await getReadModelFilters(
       readModelRequest.filters,
       readModelMetadata.before,
       readModelRequest.currentUser
@@ -91,11 +91,11 @@ export class BoosterReadModelsReader {
     // FilterFor<unknown> is already an object itself, and contains keys and the filters as values, but right now
     // the ReadModelRequestEnvelope property is typed as Record<string, ReadModelPropertyFilter>.
     // Apparently these two types are compatible by accident, which made us think that this could be a bug.
-    readModelRequest.filters = getReadModelFilters(
+    readModelRequest.filters = (await getReadModelFilters(
       readModelRequest.filters,
       readModelMetadata.before,
       readModelRequest.currentUser
-    ) as Record<string, ReadModelPropertyFilter>
+    )) as Record<string, ReadModelPropertyFilter>
 
     const nowEpoch = Math.floor(new Date().getTime() / 1000)
     const subscription: SubscriptionEnvelope = {

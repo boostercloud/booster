@@ -8,7 +8,10 @@ export interface CommandFilterHooks {
   readonly before?: Array<CommandBeforeFunction>
 }
 
-export type CommandBeforeFunction = (input: CommandInput, currentUser?: UserEnvelope) => CommandInput
+export type CommandBeforeFunction = (
+  input: CommandInput,
+  currentUser?: UserEnvelope
+) => CommandInput | Promise<CommandInput>
 
 export interface ReadModelFilterHooks {
   readonly before?: Array<ReadModelBeforeFunction>
@@ -17,4 +20,4 @@ export interface ReadModelFilterHooks {
 export type ReadModelBeforeFunction = (
   filter: FilterFor<Class<ReadModelInterface>>,
   currentUser?: UserEnvelope
-) => FilterFor<Class<ReadModelInterface>>
+) => FilterFor<Class<ReadModelInterface>> | Promise<FilterFor<Class<ReadModelInterface>>>
