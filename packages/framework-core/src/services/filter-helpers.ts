@@ -10,10 +10,11 @@ import {
 export const applyReadModelRequestBeforeFunctions = async (
   readModelRequestEnvelope: ReadModelRequestEnvelope<ReadModelInterface>,
   beforeHooks: Array<ReadModelBeforeFunction>
-): ReadModelRequestEnvelope<ReadModelInterface> => {
-  return beforeHooks.reduce(
-    async (currentReadModelRequestEnvelope, beforeFunction) => beforeFunction(await currentReadModelRequestEnvelope),
-    readModelRequestEnvelope
+): Promise<ReadModelRequestEnvelope<ReadModelInterface>> => {
+  return beforeHooks.reduce<Promise<ReadModelRequestEnvelope<ReadModelInterface>>>(
+    async (currentReadModelRequestEnvelopePromise, beforeFunction) =>
+      beforeFunction(await currentReadModelRequestEnvelopePromise),
+    Promise.resolve(readModelRequestEnvelope)
   )
 }
 
@@ -22,5 +23,8 @@ export const applyBeforeFunctions = async (
   beforeHooks: Array<CommandBeforeFunction>,
   currentUser?: UserEnvelope
 ): Promise<CommandInput> => {
-  return beforeHooks.reduce(async (currentInput, before) => before(await currentInput, currentUser), commandInput)
+  return beforeHooks.reduce(
+    async (currentInputPromise, before) => before(await currentInputPromise, currentUser),
+    Promise.resolve(commandInput)
+  )
 }
