@@ -32,3 +32,7 @@ export function toClassTitle(instance: Instance): string {
     .replace(/([a-z])([A-Z])/g, '$1 $2')
     .trim()
 }
+
+export type ReadOnlyNonEmptyArray<TElement> = {
+  readonly 0: TElement
+} & ReadonlyArray<TElement>

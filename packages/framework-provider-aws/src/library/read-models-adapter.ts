@@ -2,15 +2,18 @@
 import {
   BoosterConfig,
   Logger,
-  ReadModelInterface,
-  UUID,
-  ReadModelEnvelope,
   OptimisticConcurrencyUnexpectedVersionError,
+  ReadModelEnvelope,
+  ReadModelInterface,
+  ReadOnlyNonEmptyArray,
+  SequenceKey,
+  TimeKey,
+  UUID,
 } from '@boostercloud/framework-types'
-import { DynamoDB } from 'aws-sdk'
 import { DynamoDBRecord, DynamoDBStreamEvent } from 'aws-lambda'
-import { Arn } from './arn'
+import { DynamoDB } from 'aws-sdk'
 import { Converter } from 'aws-sdk/clients/dynamodb'
+import { Arn } from './arn'
 
 export async function rawReadModelEventsToEnvelopes(
   config: BoosterConfig,
@@ -25,19 +28,48 @@ export async function fetchReadModel(
   config: BoosterConfig,
   logger: Logger,
   readModelName: string,
-  readModelID: UUID
-): Promise<ReadModelInterface> {
-  const params: DynamoDB.DocumentClient.GetItemInput = {
+  readModelID: UUID,
+  sequenceKey?: SequenceKey
+): Promise<ReadOnlyNonEmptyArray<ReadModelInterface>> {
+  // We're using query for get single read models too as the difference in performance
+  // between get-item and query is none for a single item.
+  // Source: https://forums.aws.amazon.com/thread.jspa?threadID=93743
+  const sequenceKeyCondition = sequenceKey?.value ? ` AND #${sequenceKey.name} = :${sequenceKey.name}` : ''
+  const sequenceAttributeNames = sequenceKey?.value ? { [`#${sequenceKey.name}`]: sequenceKey.name } : {}
+  const sequenceAttributeValues = sequenceKey?.value ? { [`:${sequenceKey.name}`]: sequenceKey.value } : {}
+  logger.debug(
+    `[ReadModelAdapter#fetchReadModel] Performing query for ${readModelName}, with ID ${readModelID} and sequenceKey`,
+    sequenceKey
+  )
+  const queryParams: DynamoDB.DocumentClient.QueryInput = {
     TableName: config.resourceNames.forReadModel(readModelName),
-    Key: { id: readModelID },
+    KeyConditionExpression: '#id = :id' + sequenceKeyCondition,
+    ExpressionAttributeNames: {
+      '#id': 'id',
+      ...sequenceAttributeNames,
+    },
+    ExpressionAttributeValues: {
+      ':id': readModelID,
+      ...sequenceAttributeValues,
+    },
+    /*
+     * TODO: We need to have consistent reads active here to manage the case when we write a new version of the read model
+     * and read it in the same lambda execution. For instance, when we're processing the event stream and updating the entities,
+     * then read models are updated. We need to make sure that the second time we read it we get the same object we stored in
+     * the previous iteration.
+     *
+     * Still, it would be interesting to make eventual consistent reads for requests coming from the API, as they're faster.
+     * One possible solution would be having an extra optional parameter that defaults to `true`, but can be set to `false` in
+     * that scenario.
+     */
     ConsistentRead: true,
   }
-  const response = await db.get(params).promise()
+  const response = await db.query(queryParams).promise()
   logger.debug(
     `[ReadModelAdapter#fetchReadModel] Loaded read model ${readModelName} with ID ${readModelID} with result:`,
-    response.Item
+    response.Items
   )
-  return response.Item as ReadModelInterface
+  return response.Items as unknown as ReadOnlyNonEmptyArray<ReadModelInterface>
 }
 
 export async function storeReadModel(
@@ -76,10 +108,11 @@ export async function deleteReadModel(
   readModelName: string,
   readModel: ReadModelInterface
 ): Promise<void> {
+  const sequenceKeyName = config.readModelSequenceKeys[readModelName]
   await db
     .delete({
       TableName: config.resourceNames.forReadModel(readModelName),
-      Key: { id: readModel.id },
+      Key: buildKey(readModel.id, sequenceKeyName, readModel[sequenceKeyName]),
     })
     .promise()
   logger.debug(`[ReadModelAdapter#deleteReadModel] Read model deleted. ID = ${readModel.id}`)
@@ -98,4 +131,13 @@ function toReadModelEnvelope(config: BoosterConfig, record: DynamoDBRecord): Rea
     typeName: config.readModelNameFromResourceName(readModelTableName),
     value: Converter.unmarshall(record.dynamodb.NewImage) as ReadModelInterface,
   }
+}
+
+function buildKey(
+  readModelID: UUID,
+  sequenceKeyName?: string,
+  sequenceKeyValue?: TimeKey
+): DynamoDB.DocumentClient.Key {
+  if (sequenceKeyName && sequenceKeyValue) return { id: readModelID, [sequenceKeyName]: sequenceKeyValue }
+  else return { id: readModelID }
 }

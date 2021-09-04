@@ -515,14 +515,28 @@ mutation {
 
 ### Adding before hooks to your read models
 
-When you send queries or subscriptions to your read models, you can tell Booster to execute some code before executing the operation. These are called `before` hooks, and they receive two parameters: the read model filter sent with the request and an object with information about the currently signed-in user.
+When you send queries or subscriptions to your read models, you can tell Booster to execute some code before executing the operation. These are called `before` hooks, and they receive a `ReadModelRequestEnvelope` object representing the current request.
 
-These `before` hooks are useful for many things, but mainly:
-- To add fine-grained access control. For example, to allow user `A` access to its Cart read models, but not the ones belonging to user `B`.
-- Modify the read model filters sent with the request based on some criteria. For example, you can narrow the results the users will get by adding extra filters based on the season of the year.
-  From inside a `before` hook, you can either throw an exception, in which case the query or subscription will be aborted, and the error will be sent back to the user, or return final filters to be used in the operation. 
+```typescript
+interface ReadModelRequestEnvelope<TReadModel> {
+  currentUser?: UserEnvelope // The current authenticated user
+  requestID: UUID // An ID assigned to this request
+  key?: { // If present, contains the id and sequenceKey that identify a specific read model 
+    id: UUID
+    sequenceKey?: SequenceKey
+  }
+  className: string // The read model class name
+  filters: ReadModelRequestProperties<TReadModel> // Filters set in the GraphQL query
+  limit?: number // Query limit if set
+  afterCursor?: unknown // For paginated requests, id to start reading from
+}
+```
 
-This is an example of how you would define a before hook in a read model:
+In before hooks, you can either abort the request or alter and return the request object to change the behavior of your request. Before hooks are useful for many use cases, but they're especially useful to add fine-grained access control. For example, to enforce a filter that restrict a logged in user to access only read models objects they own.
+  
+When a `before` hook throws an exception, the request is aborted and the error is sent back to the user. In order to continue with the request, it's required that the request object is returned.
+
+In order to define a before hook you pass a list of functions with the right signature to the read model decorator `before` parameter:
 
 ```typescript
 @ReadModel({
@@ -537,13 +551,13 @@ export class CartReadModel {
   // Your projections go here
 }
 
-function validateUser(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
-  if (filter?.userId !== currentUser.id) throw NotAuthorizedError("...")
+function validateUser(request: ReadModelRequestEnvelope<CartReadModel>): ReadModelRequestEnvelope<CartReadModel> {
+  if (request.filters?.userId?.eq !== request.currentUser?.id) throw NotAuthorizedError("...")
   return filter
 }
 ```
 
-You can also define more than one `before` hook for a read model. The filter resulting from the call to one hook will be used as a parameter for the next one.
+You can also define more than one `before` hook for a read model, and they will be chained, sending the resulting request object from a hook to the next one.
 
 > [!NOTE] The order in which filters are specified matters.
 
@@ -563,14 +577,14 @@ export class CartReadModel {
   // Your projections go here
 }
 
-function validateUser(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
-  if (filter.userId !== currentUser.id) throw NotAuthorizedError("...")
-  return filter // This filter will be passed as a parameter to the validateEmail function
+function validateUser(request: ReadModelRequestEnvelope<CartReadModel>): ReadModelRequestEnvelope<CartReadModel> {
+  if (request.filters?.userId?.eq !== request.currentUser?.id) throw NotAuthorizedError("...")
+  return request
 }
 
-function validateEmail(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
-  if (!filter.email.includes('myCompanyDomain.com')) throw NotAuthorizedError("...")
-  return filter
+function validateEmail(request: ReadModelRequestEnvelope<CartReadModel>): ReadModelRequestEnvelope<CartReadModel> {
+  if (!request.filters.email.includes('myCompanyDomain.com')) throw NotAuthorizedError("...")
+  return request
 }
 ```
 

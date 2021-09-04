@@ -737,6 +737,39 @@ subscription CartReadModels(id: UUIDPropertyFilter!): CartReadModel
 
 For more information about queries and how to use them, please check the [GraphQL API](chapters/04_features#reading-read-models) section.
 
+## Time Sequenced Read Models
+
+There are some use cases when it's desirable to model your read models as time sequences. An example could be building a chat app where all messages are identified by a specific channelID and a timestamp of when it was sent. Booster provides a special decorator to tag a specific property as a sequence key for a read model:
+
+```typescript
+export class MessageReadModel {
+  public constructor(
+    readonly id: UUID, // A channel ID
+    @sequencedBy readonly timestamp: string,
+    readonly contents: string
+  )
+
+  @Projects(Message, 'id')
+  public static projectMessage(entity: Message, currentReadModel: MessageReadModel): ProjectionResult<MessageReadModel> {
+    return new MessageReadModel(entity.id, entity.timestamp, entity.contents)
+  }
+}
+```
+
+### Querying time sequences
+
+Adding a sequence key to a read model changes the behavior of the singular query, which now accepts the sequence key as an optional parameter:
+
+```graphQL
+query MessageReadModel(id: ID!, timestamp: string): [MessageReadModel]
+```
+
+Using this query, when only the id is provided, you get an array of all the messages in the channel ordered by timestamp in ascending order (from older to newer). When you also provide an specific timestam, you still get an array, but it will only contain the message sent in that exact moment.
+
+As the timestamp field is used as an index, it is important to guarantee that two messages never have the same timestamp value. In order to make it easier to generate unique timestamps, you can use the method `TimeKey.generate()`, which will generate timestamps with an UUID as a suffix to resolve any coincidences.
+
+For more information about queries and how to use them, please check the [GraphQL API](chapters/04_features#reading-read-models) section.
+
 ##  Getting real-time updates for a read model
 
 Booster GraphQL API also provides support for real-time updates using subscriptions and a web-socket. To get more information about it go to the [GraphQL API](chapters/04_features#subscribing-to-read-models) section.

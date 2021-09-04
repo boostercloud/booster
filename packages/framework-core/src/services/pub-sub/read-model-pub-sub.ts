@@ -2,55 +2,61 @@ import { createAsyncIterator } from 'iterall'
 import {
   ReadModelRequestEnvelope,
   ReadModelInterface,
-  ReadModelPropertyFilter,
   Instance,
   Operation,
   BoosterConfig,
+  ReadModelRequestProperties,
+  FilterFor,
 } from '@boostercloud/framework-types'
-import { getReadModelFilters } from '../filter-helpers'
+import { applyReadModelRequestBeforeFunctions } from '../filter-helpers'
 
-export interface ReadModelPubSub {
+export interface ReadModelPubSub<TReadModel extends ReadModelInterface> {
   asyncIterator(
-    readModelRequestEnvelope: ReadModelRequestEnvelope,
+    readModelRequestEnvelope: ReadModelRequestEnvelope<TReadModel>,
     config: BoosterConfig
   ): AsyncIterator<ReadModelInterface> | Promise<AsyncIterator<ReadModelInterface>>
 }
 
-export class FilteredReadModelPubSub implements ReadModelPubSub {
+export class FilteredReadModelPubSub<TReadModel extends ReadModelInterface> implements ReadModelPubSub<TReadModel> {
   constructor(private readModels: Array<ReadModelInterface & Instance>) {}
 
   public async asyncIterator(
-    readModelRequestEnvelope: ReadModelRequestEnvelope,
+    readModelRequestEnvelope: ReadModelRequestEnvelope<TReadModel>,
     config: BoosterConfig
   ): Promise<AsyncIterator<ReadModelInterface>> {
-    const readModelMetadata = config.readModels[readModelRequestEnvelope.typeName]
+    const readModelMetadata = config.readModels[readModelRequestEnvelope.class.name]
 
-    const filters = (await getReadModelFilters(
-      readModelRequestEnvelope.filters,
-      readModelMetadata.before,
-      readModelRequestEnvelope.currentUser
-    )) as Record<string, ReadModelPropertyFilter>
+    const newReadModelRequestEnvelope = await applyReadModelRequestBeforeFunctions(
+      readModelRequestEnvelope,
+      readModelMetadata.before
+    )
 
     return createAsyncIterator(
       this.readModels
-        .filter((readModel) => readModelRequestEnvelope.typeName == readModel.constructor.name)
-        .filter((readModel) => filterReadModel(readModel, filters))
+        .filter((readModel) => newReadModelRequestEnvelope.class.name == readModel.constructor.name)
+        .filter((readModel) => filterReadModel(readModel, newReadModelRequestEnvelope.filters))
     )
   }
 }
 
-function filterReadModel(readModel: Record<string, any>, filters?: Record<string, ReadModelPropertyFilter>): boolean {
+function filterReadModel<TReadModel extends ReadModelInterface>(
+  readModel: TReadModel,
+  filters?: ReadModelRequestProperties<TReadModel>
+): boolean {
   if (!filters) {
     return true
   }
   for (const filteredProp in filters) {
     const readModelPropValue = readModel[filteredProp]
-    return filterByOperation(filters[filteredProp], readModelPropValue)
+    return filterByOperation<TReadModel>(filters[filteredProp], readModelPropValue)
   }
   return true
 }
 
-function filterByOperation(filter: ReadModelPropertyFilter, readModelPropValue: any): boolean {
+function filterByOperation<TReadModel extends ReadModelInterface>(
+  filter: FilterFor<TReadModel>,
+  readModelPropValue: any
+): boolean {
   for (const [operation, value] of Object.entries(filter as Operation<any>)) {
     switch (operation) {
       case 'eq':

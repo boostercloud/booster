@@ -1,8 +1,6 @@
-import { UserEnvelope } from '../envelope'
+import { ReadModelInterface } from '.'
+import { UserEnvelope, ReadModelRequestEnvelope } from '../envelope'
 import { CommandInput } from './command'
-import { FilterFor } from '../searcher'
-import { Class } from '../typelevel'
-import { ReadModelInterface } from './read-model'
 
 export interface CommandFilterHooks {
   readonly before?: Array<CommandBeforeFunction>
@@ -18,6 +16,6 @@ export interface ReadModelFilterHooks {
 }
 
 export type ReadModelBeforeFunction = (
-  filter: FilterFor<Class<ReadModelInterface>>,
+  readModelRequestEnvelope: ReadModelRequestEnvelope<ReadModelInterface>,
   currentUser?: UserEnvelope
-) => FilterFor<Class<ReadModelInterface>> | Promise<FilterFor<Class<ReadModelInterface>>>
+) => ReadModelRequestEnvelope<ReadModelInterface> | Promise<ReadModelRequestEnvelope<ReadModelInterface>>
