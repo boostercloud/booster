@@ -14,7 +14,7 @@ export const eventsStoreAttributes = {
 } as const
 
 export const subscriptionsStoreAttributes = {
-  partitionKey: 'typeName',
+  partitionKey: 'className',
   sortKey: 'connectionID_subscriptionID',
   ttl: 'expirationTime',
   indexByConnectionIDPartitionKey: 'connectionID',

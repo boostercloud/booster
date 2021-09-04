@@ -73,13 +73,9 @@ describe('read-models-adapter', () => {
 
     it('should call read model registry query and return a value', async () => {
       queryStub.resolves([mockReadModel])
-      const result: ReadModelInterface = await fetchReadModel(
-        mockReadModelRegistry,
-        mockConfig,
-        mockLogger,
-        mockReadModelTypeName,
-        mockReadModelID
-      )
+      const result: ReadModelInterface = (
+        await fetchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModelTypeName, mockReadModelID)
+      )[0]
 
       expect(queryStub).to.have.been.calledOnceWithExactly({
         'value.id': mockReadModelID,
@@ -96,13 +92,9 @@ describe('read-models-adapter', () => {
 
     it('should call read model registry query and no results', async () => {
       queryStub.resolves([])
-      const result = await fetchReadModel(
-        mockReadModelRegistry,
-        mockConfig,
-        mockLogger,
-        mockReadModelTypeName,
-        mockReadModelID
-      )
+      const result = (
+        await fetchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModelTypeName, mockReadModelID)
+      )[0]
 
       expect(queryStub).to.have.been.calledOnceWithExactly({
         'value.id': mockReadModelID,

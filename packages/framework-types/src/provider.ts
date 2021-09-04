@@ -1,19 +1,20 @@
+import { ReadModelInterface, SequenceKey, UUID } from './concepts'
+import { BoosterConfig } from './config'
 import {
-  EventEnvelope,
-  GraphQLRequestEnvelope,
-  SubscriptionEnvelope,
-  ReadModelEnvelope,
   ConnectionDataEnvelope,
-  GraphQLRequestEnvelopeError,
-  ScheduledCommandEnvelope,
+  EventEnvelope,
   EventFilter,
   EventSearchResponse,
+  GraphQLRequestEnvelope,
+  GraphQLRequestEnvelopeError,
+  ReadModelEnvelope,
   ReadModelListResult,
+  ScheduledCommandEnvelope,
+  SubscriptionEnvelope,
 } from './envelope'
-import { BoosterConfig } from './config'
 import { Logger } from './logger'
-import { ReadModelInterface, UUID } from './concepts'
 import { FilterFor } from './searcher'
+import { ReadOnlyNonEmptyArray } from './typelevel'
 
 export interface ProviderLibrary {
   events: ProviderEventsLibrary
@@ -46,7 +47,13 @@ export interface ProviderEventsLibrary {
 }
 export interface ProviderReadModelsLibrary {
   rawToEnvelopes(config: BoosterConfig, logger: Logger, rawEvents: unknown): Promise<Array<ReadModelEnvelope>>
-  fetch(config: BoosterConfig, logger: Logger, readModelName: string, readModelID: UUID): Promise<ReadModelInterface>
+  fetch(
+    config: BoosterConfig,
+    logger: Logger,
+    readModelName: string,
+    readModelID: UUID,
+    sequenceKey?: SequenceKey
+  ): Promise<ReadOnlyNonEmptyArray<ReadModelInterface>>
   search<TReadModel extends ReadModelInterface>(
     config: BoosterConfig,
     logger: Logger,
@@ -55,7 +62,7 @@ export interface ProviderReadModelsLibrary {
     limit?: number,
     afterCursor?: unknown,
     paginatedVersion?: boolean
-  ): Promise<Array<TReadModel> | ReadModelListResult>
+  ): Promise<Array<TReadModel> | ReadModelListResult<TReadModel>>
   /**
    * If "expectedCurrentVersion" is provided, the underlying provider must throw the error OptimisticConcurrencyUnexpectedVersionError
    * if the current stored read model contains a version that's different from the provided one

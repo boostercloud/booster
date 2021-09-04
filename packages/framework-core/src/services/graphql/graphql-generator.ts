@@ -1,110 +1,109 @@
 import {
   AnyClass,
-  Logger,
   BoosterConfig,
+  Class,
   CommandEnvelope,
-  ReadModelPropertyFilter,
-  ReadModelRequestEnvelope,
-  EventSearchRequest,
   EventFilter,
+  EventSearchRequest,
   EventSearchResponse,
+  Logger,
+  ReadModelByIdRequestArgs,
+  ReadModelInterface,
   ReadModelRequestArgs,
+  ReadModelRequestEnvelope,
+  ReadModelRequestProperties,
+  TimeKey,
 } from '@boostercloud/framework-types'
 import { GraphQLFieldResolver, GraphQLResolveInfo, GraphQLSchema } from 'graphql'
 import { pluralize } from 'inflected'
-import { GraphQLTypeInformer } from './graphql-type-informer'
-import { GraphQLQueryGenerator } from './graphql-query-generator'
-import { GraphQLMutationGenerator } from './graphql-mutation-generator'
-import { GraphQLSubscriptionGenerator } from './graphql-subcriptions-generator'
 import { BoosterCommandDispatcher } from '../../booster-command-dispatcher'
-import { BoosterReadModelsReader } from '../../booster-read-models-reader'
 import { BoosterEventsReader } from '../../booster-events-reader'
+import { BoosterReadModelsReader } from '../../booster-read-models-reader'
 import { GraphQLResolverContext } from './common'
+import { GraphQLMutationGenerator } from './graphql-mutation-generator'
+import { GraphQLQueryGenerator } from './graphql-query-generator'
+import { GraphQLSubscriptionGenerator } from './graphql-subcriptions-generator'
+import { GraphQLTypeInformer } from './graphql-type-informer'
 
 export class GraphQLGenerator {
-  private readonly queryGenerator: GraphQLQueryGenerator
-  private readonly mutationGenerator: GraphQLMutationGenerator
-  private readonly subscriptionGenerator: GraphQLSubscriptionGenerator
-  private readonly typeInformer: GraphQLTypeInformer
+  private static commandsDispatcher: BoosterCommandDispatcher
+  private static readModelsReader: BoosterReadModelsReader
+  private static eventsReader: BoosterEventsReader
+  private static schema: GraphQLSchema
 
-  private static singleton: GraphQLGenerator | undefined
+  public static generateSchema(config: BoosterConfig, logger: Logger): GraphQLSchema {
+    if (!this.schema) {
+      this.commandsDispatcher = new BoosterCommandDispatcher(config, logger)
+      this.readModelsReader = new BoosterReadModelsReader(config, logger)
+      this.eventsReader = new BoosterEventsReader(config, logger)
 
-  public static build(config: BoosterConfig, logger: Logger): GraphQLGenerator {
-    this.singleton =
-      this.singleton ??
-      new GraphQLGenerator(
+      const typeInformer = new GraphQLTypeInformer({
+        ...config.readModels,
+        ...config.commandHandlers,
+      })
+
+      const queryGenerator = new GraphQLQueryGenerator(
         config,
-        new BoosterCommandDispatcher(config, logger),
-        new BoosterReadModelsReader(config, logger),
-        new BoosterEventsReader(config, logger)
+        config.readModels,
+        typeInformer,
+        this.readModelByIDResolverBuilder.bind(this, config),
+        this.readModelResolverBuilder.bind(this),
+        this.eventResolver.bind(this)
       )
-    return this.singleton
+
+      const mutationGenerator = new GraphQLMutationGenerator(
+        config.commandHandlers,
+        typeInformer,
+        this.commandResolverBuilder.bind(this)
+      )
+
+      const subscriptionGenerator = new GraphQLSubscriptionGenerator(
+        config.readModels,
+        typeInformer,
+        queryGenerator,
+        this.subscriptionByIDResolverBuilder.bind(this, config),
+        this.subscriptionResolverBuilder.bind(this, config)
+      )
+
+      this.schema = new GraphQLSchema({
+        query: queryGenerator.generate(),
+        mutation: mutationGenerator.generate(),
+        subscription: subscriptionGenerator.generate(),
+      })
+    }
+    return this.schema
   }
 
-  private constructor(
-    config: BoosterConfig,
-    private commandsDispatcher: BoosterCommandDispatcher,
-    private readModelsReader: BoosterReadModelsReader,
-    private eventsReader: BoosterEventsReader
-  ) {
-    this.typeInformer = new GraphQLTypeInformer({
-      ...config.readModels,
-      ...config.commandHandlers,
-    })
-    this.queryGenerator = new GraphQLQueryGenerator(
-      config,
-      config.readModels,
-      this.typeInformer,
-      this.readModelByIDResolverBuilder.bind(this),
-      this.readModelResolverBuilder.bind(this),
-      this.eventResolver.bind(this)
-    )
-    this.mutationGenerator = new GraphQLMutationGenerator(
-      config.commandHandlers,
-      this.typeInformer,
-      this.commandResolverBuilder.bind(this)
-    )
-    this.subscriptionGenerator = new GraphQLSubscriptionGenerator(
-      config.readModels,
-      this.typeInformer,
-      this.queryGenerator,
-      this.subscriptionByIDResolverBuilder.bind(this, config),
-      this.subscriptionResolverBuilder.bind(this, config)
-    )
-  }
-
-  public generateSchema(): GraphQLSchema {
-    return new GraphQLSchema({
-      query: this.queryGenerator.generate(),
-      mutation: this.mutationGenerator.generate(),
-      subscription: this.subscriptionGenerator.generate(),
-    })
-  }
-
-  public readModelResolverBuilder(
+  public static readModelResolverBuilder(
     readModelClass: AnyClass
-  ): GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestArgs> {
+  ): GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestArgs<ReadModelInterface>> {
     return (parent, args, context, info) => {
       let isPaginated = false
       if (info?.fieldName === `List${pluralize(readModelClass.name)}`) {
         isPaginated = true
       }
-      const readModelEnvelope = toReadModelRequestEnvelope(readModelClass.name, args, context, isPaginated)
-      return this.readModelsReader.fetch(readModelEnvelope)
+      const readModelEnvelope = toReadModelRequestEnvelope(readModelClass, args, context, isPaginated)
+      return this.readModelsReader.search(readModelEnvelope)
     }
   }
 
-  public readModelByIDResolverBuilder(
+  public static readModelByIDResolverBuilder(
+    config: BoosterConfig,
     readModelClass: AnyClass
-  ): GraphQLFieldResolver<unknown, GraphQLResolverContext, { id: string }> {
+  ): GraphQLFieldResolver<unknown, GraphQLResolverContext, ReadModelByIdRequestArgs> {
+    const sequenceKeyName = config.readModelSequenceKeys[readModelClass.name]
     return async (parent, args, context, info) => {
-      const filterArgs = { filter: { id: { eq: args.id } } }
-      const result = await this.readModelResolverBuilder(readModelClass)(parent, filterArgs, context, info)
-      return result[0]
+      const readModelRequestEnvelope = this.toReadModelByIdRequestEnvelope(
+        readModelClass,
+        args,
+        context,
+        sequenceKeyName
+      )
+      return await this.readModelsReader.findById(readModelRequestEnvelope)
     }
   }
 
-  public eventResolver(
+  public static eventResolver(
     parent: unknown,
     args: EventFilter,
     context: GraphQLResolverContext,
@@ -114,7 +113,7 @@ export class GraphQLGenerator {
     return this.eventsReader.fetch(eventsRequestEnvelope)
   }
 
-  public commandResolverBuilder(
+  public static commandResolverBuilder(
     commandClass: AnyClass
   ): GraphQLFieldResolver<any, GraphQLResolverContext, { input: any }> {
     return async (parent, args, context, info) => {
@@ -126,26 +125,26 @@ export class GraphQLGenerator {
     }
   }
 
-  public subscriptionByIDResolverBuilder(
+  public static subscriptionByIDResolverBuilder(
     config: BoosterConfig,
     readModelClass: AnyClass
-  ): GraphQLFieldResolver<any, GraphQLResolverContext, Record<string, ReadModelPropertyFilter>> {
+  ): GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestProperties<ReadModelInterface>> {
     return async (parent, args, context, info) => {
       const filterArgs = { filter: { id: { eq: args.id } } }
       return this.subscriptionResolverBuilder(config, readModelClass)(parent, filterArgs, context, info)
     }
   }
 
-  public subscriptionResolverBuilder(
+  public static subscriptionResolverBuilder(
     config: BoosterConfig,
     readModelClass: AnyClass
-  ): GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestArgs> {
+  ): GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestArgs<ReadModelInterface>> {
     return async (parent, args, context, info) => {
       if (!context.connectionID) {
         throw new Error('Missing "connectionID". It is required for subscriptions')
       }
 
-      const readModelRequestEnvelope = toReadModelRequestEnvelope(readModelClass.name, args, context)
+      const readModelRequestEnvelope = toReadModelRequestEnvelope(readModelClass, args, context)
       if (context.storeSubscriptions) {
         await this.readModelsReader.subscribe(context.connectionID, readModelRequestEnvelope, context.operation)
       }
@@ -153,18 +152,45 @@ export class GraphQLGenerator {
       return context.pubSub.asyncIterator(readModelRequestEnvelope, config)
     }
   }
+
+  private static toReadModelByIdRequestEnvelope(
+    readModelClass: Class<ReadModelInterface>,
+    args: ReadModelByIdRequestArgs,
+    context: GraphQLResolverContext,
+    sequenceKeyName?: string
+  ): ReadModelRequestEnvelope<ReadModelInterface> {
+    const key = sequenceKeyName
+      ? {
+          id: args.id,
+          sequenceKey: {
+            name: sequenceKeyName,
+            value: args[sequenceKeyName] as TimeKey,
+          },
+        }
+      : { id: args.id }
+    return {
+      currentUser: context.user,
+      requestID: context.requestID,
+      class: readModelClass,
+      className: readModelClass.name,
+      key,
+      version: 1, // TODO: How to pass the version through GraphQL?
+      filters: {},
+    }
+  }
 }
 
 function toReadModelRequestEnvelope(
-  readModelName: string,
-  args: ReadModelRequestArgs,
+  readModelClass: Class<ReadModelInterface>,
+  args: ReadModelRequestArgs<ReadModelInterface>,
   context: GraphQLResolverContext,
   paginatedVersion = false
-): ReadModelRequestEnvelope {
+): ReadModelRequestEnvelope<ReadModelInterface> {
   return {
     requestID: context.requestID,
     currentUser: context.user,
-    typeName: readModelName,
+    class: readModelClass,
+    className: readModelClass.name,
     filters: args.filter ?? {},
     limit: args.limit,
     afterCursor: args.afterCursor,
