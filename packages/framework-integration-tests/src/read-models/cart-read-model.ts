@@ -1,5 +1,5 @@
 import { Projects, ReadModel } from '@boostercloud/framework-core'
-import { FilterFor, ProjectionResult, UserEnvelope, UUID } from '@boostercloud/framework-types'
+import { ProjectionResult, ReadModelInterface, ReadModelRequestEnvelope, UUID } from '@boostercloud/framework-types'
 import { CartItem } from '../common/cart-item'
 import { Address } from '../common/address'
 import { Cart } from '../entities/cart'
@@ -20,18 +20,38 @@ export class CartReadModel {
     public cartItemsIds?: Array<string>
   ) {}
 
-  public getChecks() {
+  public getChecks(): number {
     return this.checks
   }
 
-  public static beforeFn(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
-    if (filter.id && filter.id.eq === throwExceptionId) throw new Error(beforeHookException)
-    return filter
+  public static beforeFn(
+    request: ReadModelRequestEnvelope<ReadModelInterface>
+  ): ReadModelRequestEnvelope<ReadModelInterface> {
+    const id = request?.key?.id
+    if (id && id === throwExceptionId) throw new Error(beforeHookException)
+    return request
   }
 
-  public static beforeFnV2(filter: FilterFor<CartReadModel>, currentUser?: UserEnvelope): FilterFor<CartReadModel> {
-    if (!filter.id || filter.id?.eq !== 'before-fn-test') return filter
-    return { id: { eq: filter.id.eq + '-modified' } } as FilterFor<CartReadModel>
+  public static beforeFnV2(
+    request: ReadModelRequestEnvelope<ReadModelInterface>
+  ): ReadModelRequestEnvelope<ReadModelInterface> {
+    const id = request.key?.id || request.filters?.id?.eq
+    console.log(`Running \`beforeFnV2\` with ID = ${id}, and request = ${JSON.stringify(request)}`)
+    if (!id || id !== 'before-fn-test') return request
+    const newId = id + '-modified'
+    if (request.key?.id) {
+      return {
+        ...request,
+        key: {
+          id: newId,
+        },
+      }
+    } else {
+      return {
+        ...request,
+        filters: { id: { eq: newId } },
+      }
+    }
   }
 
   @Projects(Cart, 'id')

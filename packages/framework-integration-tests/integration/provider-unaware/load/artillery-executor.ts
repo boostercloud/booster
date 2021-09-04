@@ -48,12 +48,12 @@ export class ArtilleryExecutor {
       }
       console.info(`Serverless Artillery stack is in a wrong state: ${slsartStack?.StackStatus}. Redeploying.`)
     }
-    await runCommand('.', `slsart deploy --stage ${this.stage}`)
+    await runCommand('.', `slsart deploy --stage ${this.stage} -D`)
   }
 
   public async executeScript(scriptName: string, overrideOptions: OverrideOptions = {}): Promise<void> {
     const scriptContent = this.getScriptContent(scriptName, overrideOptions)
-    await runCommand('.', `slsart invoke --stage ${this.stage} --data '${scriptContent}'`)
+    await runCommand('.', `slsart invoke --stage ${this.stage} --data '${scriptContent}' -D`)
   }
 
   private getScriptContent(scriptName: string, options: OverrideOptions): string {

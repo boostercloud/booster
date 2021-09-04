@@ -1,5 +1,5 @@
 import { GraphQLList, GraphQLScalarType, GraphQLObjectType, GraphQLType } from 'graphql/type/definition'
-import { AnyClass, UserEnvelope, UUID, GraphQLOperation } from '@boostercloud/framework-types'
+import { AnyClass, UserEnvelope, UUID, GraphQLOperation, ReadModelInterface } from '@boostercloud/framework-types'
 import { GraphQLFieldResolver, Kind } from 'graphql'
 import { ReadModelPubSub } from '../pub-sub/read-model-pub-sub'
 import { PropertyMetadata } from 'metadata-booster'
@@ -21,7 +21,7 @@ export interface GraphQLResolverContext {
   requestID: UUID
   user?: UserEnvelope
   storeSubscriptions: boolean
-  pubSub: ReadModelPubSub
+  pubSub: ReadModelPubSub<ReadModelInterface>
 }
 
 export const graphQLWebsocketSubprotocolHeaders = {

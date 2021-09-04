@@ -115,7 +115,7 @@ export class GraphQLTypeInformer {
       return new GraphQLList(this.toInputType(graphQLType.ofType))
     }
     if (graphQLType instanceof GraphQLNonNull) {
-      return new GraphQLNonNull(graphQLType.ofType)
+      return new GraphQLNonNull(this.toInputType(graphQLType.ofType))
     }
     if (graphQLType instanceof GraphQLObjectType) {
       return new GraphQLInputObjectType({

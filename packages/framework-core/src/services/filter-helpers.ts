@@ -1,19 +1,20 @@
 import {
   ReadModelBeforeFunction,
-  Class,
   CommandBeforeFunction,
   CommandInput,
-  FilterFor,
-  ReadModelInterface,
   UserEnvelope,
+  ReadModelRequestEnvelope,
+  ReadModelInterface,
 } from '@boostercloud/framework-types'
 
-export const getReadModelFilters = (
-  filters: FilterFor<Class<ReadModelInterface>>,
-  beforeHooks: Array<ReadModelBeforeFunction>,
-  user?: UserEnvelope
-): FilterFor<ReadModelInterface> => {
-  return beforeHooks.reduce((currentFilter, before) => before(currentFilter, user), filters)
+export const applyReadModelRequestBeforeFunctions = (
+  readModelRequestEnvelope: ReadModelRequestEnvelope<ReadModelInterface>,
+  beforeHooks: Array<ReadModelBeforeFunction>
+): ReadModelRequestEnvelope<ReadModelInterface> => {
+  return beforeHooks.reduce(
+    (currentReadModelRequestEnvelope, beforeFunction) => beforeFunction(currentReadModelRequestEnvelope),
+    readModelRequestEnvelope
+  )
 }
 
 export const applyBeforeFunctions = (

@@ -5,6 +5,7 @@ import {
   Logger,
   ReadModelEnvelope,
   ReadModelInterface,
+  ReadOnlyNonEmptyArray,
   SubscriptionEnvelope,
   UUID,
 } from '@boostercloud/framework-types'
@@ -22,11 +23,11 @@ export const fetch = async (
   logger: Logger,
   readModelName: string,
   readModelID: UUID
-): Promise<ReadModelInterface> => {
+): Promise<ReadOnlyNonEmptyArray<ReadModelInterface>> => {
   logger.debug('readModelAdapter#fetch: getting readModel')
   const value = (await registry.fetch(readModelName, readModelID, logger)) as ReadModelInterface
   logger.debug('readModelAdapter#fetch: ' + JSON.stringify(value))
-  return value
+  return [value]
 }
 
 export const search = async (

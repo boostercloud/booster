@@ -6,7 +6,7 @@ import { applicationUnderTest } from './setup'
 describe('Scheduled commands', () => {
   it('scheduled command ran and created a product', async () => {
     const client = await applicationUnderTest.graphql.client()
-    const checkedCartSku = 'the-checked-cart'
+    const checkedCartId = 'the-checked-cart'
 
     // Check that scheduled command created the new product
     const cartData = await waitForIt(
@@ -14,7 +14,7 @@ describe('Scheduled commands', () => {
         return client.query({
           query: gql`
             query {
-              CartReadModel(id: "${checkedCartSku}") {
+              CartReadModel(id: "${checkedCartId}") {
                 id
                 checks
               }
@@ -29,7 +29,7 @@ describe('Scheduled commands', () => {
 
     const cartReadModel = cartData?.data?.CartReadModel
     expect(cartReadModel).not.to.be.null
-    expect(cartReadModel.id).to.equal(checkedCartSku)
+    expect(cartReadModel.id).to.equal(checkedCartId)
     expect(cartReadModel.checks).to.be.greaterThan(0)
   })
 })

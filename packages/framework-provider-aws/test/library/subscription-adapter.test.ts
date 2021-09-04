@@ -45,7 +45,7 @@ describe('The "subscribeToReadModel" method', () => {
           values: [lorem.word()],
         },
       },
-      typeName: lorem.word(),
+      className: lorem.word(),
       expirationTime: random.number(10e6),
       version: 1,
     }
@@ -184,10 +184,9 @@ describe('The "deleteSubscription" method', () => {
 
   it('deletes the right subscription', async () => {
     const foundSubscription: SubscriptionIndexRecord = {
-      typeName: random.alphaNumeric(10),
+      className: random.alphaNumeric(10),
       connectionID,
       subscriptionID,
-      // eslint-disable-next-line @typescript-eslint/camelcase
       connectionID_subscriptionID: sortKeyForSubscription(connectionID, subscriptionID),
     }
     dbQueryStub.withArgs(queryArguments).returns({
@@ -202,7 +201,7 @@ describe('The "deleteSubscription" method', () => {
     expect(dbDeleteFake).to.have.been.calledWithExactly({
       TableName: config.resourceNames.subscriptionsStore,
       Key: {
-        [subscriptionsStoreAttributes.partitionKey]: foundSubscription.typeName,
+        [subscriptionsStoreAttributes.partitionKey]: foundSubscription.className,
         [subscriptionsStoreAttributes.sortKey]: foundSubscription.connectionID_subscriptionID,
       },
     })
@@ -250,17 +249,15 @@ describe('The "deleteAllSubscription" method', () => {
     const subscriptionIDTwo = random.uuid()
     const foundSubscriptions: Array<SubscriptionIndexRecord> = [
       {
-        typeName: random.alphaNumeric(10),
+        className: random.alphaNumeric(10),
         connectionID,
         subscriptionID: subscriptionIDOne,
-        // eslint-disable-next-line @typescript-eslint/camelcase
         connectionID_subscriptionID: sortKeyForSubscription(connectionID, subscriptionIDOne),
       },
       {
-        typeName: random.alphaNumeric(10),
+        className: random.alphaNumeric(10),
         connectionID,
         subscriptionID: subscriptionIDTwo,
-        // eslint-disable-next-line @typescript-eslint/camelcase
         connectionID_subscriptionID: sortKeyForSubscription(connectionID, subscriptionIDTwo),
       },
     ]
@@ -278,7 +275,7 @@ describe('The "deleteAllSubscription" method', () => {
         [config.resourceNames.subscriptionsStore]: foundSubscriptions.map((subscriptionRecord) => ({
           DeleteRequest: {
             Key: {
-              [subscriptionsStoreAttributes.partitionKey]: subscriptionRecord.typeName,
+              [subscriptionsStoreAttributes.partitionKey]: subscriptionRecord.className,
               [subscriptionsStoreAttributes.sortKey]: subscriptionRecord.connectionID_subscriptionID,
             },
           },

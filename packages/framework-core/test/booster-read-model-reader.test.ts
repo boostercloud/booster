@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from './expect'
 import {
   Logger,
@@ -7,15 +8,15 @@ import {
   GraphQLOperation,
   NotFoundError,
   NotAuthorizedError,
-  ProviderLibrary,
   SubscriptionEnvelope,
   FilterFor,
-  UserEnvelope,
+  BoosterConfig,
 } from '@boostercloud/framework-types'
-import { restore, fake, match, spy } from 'sinon'
+import { restore, fake, match, spy, replace } from 'sinon'
 import { BoosterReadModelsReader } from '../src/booster-read-models-reader'
-import { Booster } from '../src/booster'
 import { random, internet } from 'faker'
+import { BoosterAuth } from '../src/booster-auth'
+import { Booster } from '../src/booster'
 
 const logger: Logger = {
   debug() {},
@@ -24,61 +25,211 @@ const logger: Logger = {
 }
 
 describe('BoosterReadModelReader', () => {
+  const config = new BoosterConfig('test')
+  config.provider = {
+    readModels: {
+      search: fake(),
+      subscribe: fake(),
+      deleteSubscription: fake(),
+      deleteAllSubscriptions: fake(),
+    },
+  } as any
+
   afterEach(() => {
     restore()
   })
 
   class TestReadModel {
-    public id: UUID = ''
+    public id: UUID = '∂'
   }
+
+  class SequencedReadModel {
+    public id: UUID = 'π'
+  }
+
   class UserRole {}
 
-  let readModelDispatcher: BoosterReadModelsReader
-  Booster.configureCurrentEnv((config) => {
-    config.provider = {} as unknown as ProviderLibrary
-    config.readModels[TestReadModel.name] = {
-      class: TestReadModel,
-      authorizedRoles: [UserRole],
-      properties: [],
-      before: [],
-    }
-    readModelDispatcher = new BoosterReadModelsReader(config, logger)
-  })
+  // Why sorting by salmon? Salmons are fun! https://youtu.be/dDj7DuHVV9E
+  config.readModelSequenceKeys[SequencedReadModel.name] = 'salmon'
+
+  const readModelReader = new BoosterReadModelsReader(config, logger)
 
   const noopGraphQLOperation: GraphQLOperation = {
     query: '',
   }
 
-  describe('the validation for methods `fetch` and `subscribe`', () => {
+  context('requests by Id', () => {
+    beforeEach(() => {
+      config.readModels[TestReadModel.name] = {
+        class: TestReadModel,
+        authorizedRoles: [UserRole],
+        properties: [],
+        before: [],
+      }
+      config.readModels[SequencedReadModel.name] = {
+        class: SequencedReadModel,
+        authorizedRoles: [UserRole],
+        properties: [],
+        before: [],
+      }
+    })
+
+    afterEach(() => {
+      delete config.readModels[TestReadModel.name]
+      delete config.readModels[SequencedReadModel.name]
+    })
+
+    describe('the `validateByIdRequest', () => {
+      const validateByIdRequest = (readModelReader as any).validateByIdRequest.bind(readModelReader)
+
+      it('throws an invalid parameter error when the version is not present in a request', () => {
+        expect(() => {
+          validateByIdRequest({})
+        }).to.throw('"version" was not present')
+      })
+
+      it("throws a not found error when it can't find the read model metadata", () => {
+        expect(() => {
+          validateByIdRequest({ version: 1, class: { name: 'NonexistentReadModel' } })
+        }).to.throw(/Could not find read model/)
+      })
+
+      it('throws a non authorized error when the current user is not allowed to perform the request', () => {
+        expect(() => {
+          validateByIdRequest({ version: 1, class: TestReadModel })
+        }).to.throw(/Access denied/)
+      })
+
+      it('throws an invalid parameter error when the request receives a sequence key but it cannot be found in the Booster metadata', () => {
+        replace(BoosterAuth, 'isUserAuthorized', fake.returns(true))
+        expect(() => {
+          validateByIdRequest({
+            version: 1,
+            class: TestReadModel,
+            currentUser: { id: '666', username: 'root', role: 'root' },
+            key: {
+              id: 'π',
+              sequenceKey: { name: 'salmon', value: 'sammy' },
+            },
+          })
+        }).to.throw(/Could not find a sort key/)
+      })
+
+      it('does not throw an error when there is no sequence key and everything else is ok', () => {
+        replace(BoosterAuth, 'isUserAuthorized', fake.returns(true))
+        expect(() => {
+          validateByIdRequest({
+            version: 1,
+            class: TestReadModel,
+            currentUser: { id: '666', username: 'root', role: 'root' },
+          })
+        }).not.to.throw()
+      })
+
+      it('does not throw an error when there is a valid sequence key and everything else is ok', () => {
+        replace(BoosterAuth, 'isUserAuthorized', fake.returns(true))
+        expect(() => {
+          validateByIdRequest({
+            version: 1,
+            class: SequencedReadModel,
+            currentUser: { id: '666', username: 'root', role: 'root' },
+            key: {
+              id: '§',
+              sequenceKey: { name: 'salmon', value: 'sammy' },
+            },
+          })
+        }).not.to.throw()
+      })
+    })
+
+    describe('the `findById` method', () => {
+      beforeEach(() => {
+        config.readModels['SomeReadModel'] = {
+          before: [],
+        } as any
+      })
+
+      afterEach(() => {
+        delete config.readModels['SomeReadModel']
+      })
+
+      it('validates and uses the searcher to find a read model by id', async () => {
+        const fakeValidateByIdRequest = fake()
+        replace(readModelReader as any, 'validateByIdRequest', fakeValidateByIdRequest)
+        const fakeSearcher = { findById: fake() }
+        replace(Booster, 'readModel', fake.returns(fakeSearcher))
+
+        const currentUser = {
+          id: 'a user',
+        } as any
+        const sequenceKey = {
+          name: 'salmon',
+          value: 'sammy',
+        }
+        const readModelRequestEnvelope = {
+          key: {
+            id: '42',
+            sequenceKey,
+          },
+          class: { name: 'SomeReadModel' },
+          className: 'SomeReadModel',
+          currentUser,
+          version: 1,
+          requestID: 'my request!',
+        } as any
+
+        await readModelReader.findById(readModelRequestEnvelope)
+
+        expect(fakeValidateByIdRequest).to.have.been.calledOnceWith(readModelRequestEnvelope)
+        expect(fakeSearcher.findById).to.have.been.calledOnceWith('42')
+      })
+    })
+  })
+
+  describe('the validation for methods `search` and `subscribe`', () => {
+    beforeEach(() => {
+      config.readModels[TestReadModel.name] = {
+        class: TestReadModel,
+        authorizedRoles: [UserRole],
+        properties: [],
+        before: [],
+      }
+    })
+
+    afterEach(() => {
+      delete config.readModels[TestReadModel.name]
+    })
+
     it('throws the right error when request is missing "version"', async () => {
       const envelope = {
-        typeName: 'anyReadModel',
+        class: { name: 'anyReadModel' },
         requestID: random.uuid(),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any // To avoid the compilation failure of "missing version field"
 
-      await expect(readModelDispatcher.fetch(envelope)).to.eventually.be.rejectedWith(InvalidParameterError)
+      await expect(readModelReader.search(envelope)).to.eventually.be.rejectedWith(InvalidParameterError)
       await expect(
-        readModelDispatcher.subscribe(envelope.requestID, envelope, noopGraphQLOperation)
+        readModelReader.subscribe(envelope.requestID, envelope, noopGraphQLOperation)
       ).to.eventually.be.rejectedWith(InvalidParameterError)
     })
 
     it('throws the right error when the read model does not exist', async () => {
-      const envelope: ReadModelRequestEnvelope = {
-        typeName: 'nonExistentReadModel',
+      const envelope: ReadModelRequestEnvelope<any> = {
+        class: { name: 'nonExistentReadModel' },
         filters: {},
         requestID: random.uuid(),
         version: 1,
-      }
-      await expect(readModelDispatcher.fetch(envelope)).to.eventually.be.rejectedWith(NotFoundError)
+      } as any
+      await expect(readModelReader.search(envelope)).to.eventually.be.rejectedWith(NotFoundError)
       await expect(
-        readModelDispatcher.subscribe(envelope.requestID.toString(), envelope, noopGraphQLOperation)
+        readModelReader.subscribe(envelope.requestID.toString(), envelope, noopGraphQLOperation)
       ).to.eventually.be.rejectedWith(NotFoundError)
     })
 
     it('throws the right error when the user is not authorized', async () => {
-      const envelope: ReadModelRequestEnvelope = {
-        typeName: TestReadModel.name,
+      const envelope: ReadModelRequestEnvelope<TestReadModel> = {
+        class: TestReadModel,
+        className: TestReadModel.name,
         requestID: random.uuid(),
         filters: {},
         version: 1,
@@ -88,14 +239,14 @@ describe('BoosterReadModelReader', () => {
           claims: {},
         },
       }
-      await expect(readModelDispatcher.fetch(envelope)).to.eventually.be.rejectedWith(NotAuthorizedError)
+      await expect(readModelReader.search(envelope)).to.eventually.be.rejectedWith(NotAuthorizedError)
       await expect(
-        readModelDispatcher.subscribe(envelope.requestID.toString(), envelope, noopGraphQLOperation)
+        readModelReader.subscribe(envelope.requestID.toString(), envelope, noopGraphQLOperation)
       ).to.eventually.be.rejectedWith(NotAuthorizedError)
     })
   })
 
-  describe("The logic of 'fetch' and 'subscribe'  methods", () => {
+  context("The logic of 'search' and 'subscribe'  methods", () => {
     const filters = {
       id: {
         operation: 'eq',
@@ -113,33 +264,45 @@ describe('BoosterReadModelReader', () => {
       claims: {},
     }
 
-    const envelope: ReadModelRequestEnvelope = {
-      typeName: TestReadModel.name,
+    const envelope: ReadModelRequestEnvelope<TestReadModel> = {
+      class: TestReadModel,
+      className: TestReadModel.name,
       requestID: random.uuid(),
       version: 1,
       filters,
       currentUser,
+    } as any
+
+    const beforeFn = (request: ReadModelRequestEnvelope<any>): ReadModelRequestEnvelope<any> => {
+      return { ...request, filters: { id: { eq: request.filters.id } } }
     }
 
-    const beforeFn = (filter: FilterFor<TestReadModel>, currentUser?: UserEnvelope): FilterFor<TestReadModel> => {
-      return { id: { eq: filter.id } } as FilterFor<TestReadModel>
+    const beforeFnV2 = (request: ReadModelRequestEnvelope<any>): ReadModelRequestEnvelope<any> => {
+      return { ...request, filters: { id: { eq: request.currentUser?.username } } }
     }
 
-    const beforeFnV2 = (filter: FilterFor<TestReadModel>, currentUser?: UserEnvelope): FilterFor<TestReadModel> => {
-      return { id: { eq: currentUser?.username } } as FilterFor<TestReadModel>
-    }
+    describe('the "search" method', () => {
+      beforeEach(() => {
+        config.readModels[TestReadModel.name] = {
+          class: TestReadModel,
+          authorizedRoles: [UserRole],
+          properties: [],
+          before: [],
+        }
+      })
 
-    context('the "fetch" method', () => {
+      afterEach(() => {
+        delete config.readModels[TestReadModel.name]
+      })
+
       it('calls the provider search function and returns its results', async () => {
         const expectedReadModels = [new TestReadModel(), new TestReadModel()]
         const providerSearcherFunctionFake = fake.returns(expectedReadModels)
-        Booster.configureCurrentEnv((config) => {
-          config.provider.readModels = {
-            search: providerSearcherFunctionFake,
-          } as any
-        })
+        replace(config.provider.readModels, 'search', providerSearcherFunctionFake)
 
-        const result = await readModelDispatcher.fetch(envelope)
+        replace(Booster, 'config', config) // Needed because the function `Booster.readModel` references `this.config` from `searchFunction`
+
+        const result = await readModelReader.search(envelope)
 
         expect(providerSearcherFunctionFake).to.have.been.calledOnceWithExactly(
           match.any,
@@ -153,109 +316,141 @@ describe('BoosterReadModelReader', () => {
         expect(result).to.be.deep.equal(expectedReadModels)
       })
 
-      it('calls the before hook function when there is only one', async () => {
-        const providerSearcherFunctionFake = fake.returns([])
-
+      context('when there is only one before hook function', () => {
         const beforeFnSpy = spy(beforeFn)
 
-        Booster.configureCurrentEnv((config) => {
+        beforeEach(() => {
+          const providerSearcherFunctionFake = fake.returns([])
+
           config.readModels[TestReadModel.name] = {
-            ...config.readModels[TestReadModel.name],
+            class: TestReadModel,
+            authorizedRoles: [UserRole],
+            properties: [],
             before: [beforeFnSpy],
           }
-          config.provider.readModels = {
-            search: providerSearcherFunctionFake,
-          } as any
+
+          replace(Booster, 'config', config) // Needed because the function `Booster.readModel` references `this.config` from `searchFunction`
+          replace(config.provider.readModels, 'search', providerSearcherFunctionFake)
         })
 
-        await readModelDispatcher.fetch(envelope)
+        afterEach(() => {
+          delete config.readModels[TestReadModel.name]
+        })
 
-        expect(beforeFnSpy).to.have.returned({ id: { eq: filters.id } })
-        expect(beforeFnSpy).to.have.been.calledOnceWithExactly(filters, currentUser)
+        it('calls the before hook function', async () => {
+          await readModelReader.search(envelope)
+
+          expect(beforeFnSpy).to.have.been.calledOnceWithExactly(envelope)
+          expect(beforeFnSpy).to.have.returned({ ...envelope, filters: { id: { eq: envelope.filters.id } } })
+        })
       })
 
-      it('chains the before hook functions when there is more than one', async () => {
-        const providerSearcherFunctionFake = fake.returns([])
-
+      context('when there are more than one before hook functions', () => {
         const beforeFnSpy = spy(beforeFn)
         const beforeFnV2Spy = spy(beforeFnV2)
 
-        Booster.configureCurrentEnv((config) => {
+        beforeEach(() => {
+          const providerSearcherFunctionFake = fake.returns([])
+
           config.readModels[TestReadModel.name] = {
-            ...config.readModels[TestReadModel.name],
+            class: TestReadModel,
+            authorizedRoles: [UserRole],
+            properties: [],
             before: [beforeFnSpy, beforeFnV2Spy],
           }
-          config.provider.readModels = {
-            search: providerSearcherFunctionFake,
-          } as any
+
+          replace(Booster, 'config', config) // Needed because the function `Booster.readModel` references `this.config` from `searchFunction`
+
+          replace(config.provider.readModels, 'search', providerSearcherFunctionFake)
         })
 
-        await readModelDispatcher.fetch(envelope)
+        afterEach(() => {
+          delete config.readModels[TestReadModel.name]
+        })
 
-        expect(beforeFnV2Spy).to.have.been.calledAfter(beforeFnSpy)
-        expect(beforeFnSpy).to.have.returned({ id: { eq: filters.id } })
-        expect(beforeFnSpy).to.have.been.calledOnceWithExactly(filters, currentUser)
-        expect(beforeFnV2Spy).to.have.returned({ id: { eq: currentUser.username } })
-        expect(beforeFnV2Spy).to.have.been.calledOnceWithExactly(beforeFnSpy.returnValues[0], currentUser)
+        it('chains the before hook functions when there is more than one', async () => {
+          await readModelReader.search(envelope)
+
+          expect(beforeFnSpy).to.have.been.calledOnceWithExactly(envelope)
+          expect(beforeFnSpy).to.have.returned({ ...envelope, filters: { id: { eq: envelope.filters.id } } })
+
+          const returnedEnvelope = beforeFnSpy.returnValues[0]
+          expect(beforeFnV2Spy).to.have.been.calledAfter(beforeFnSpy)
+          expect(beforeFnV2Spy).to.have.been.calledOnceWithExactly(returnedEnvelope)
+          expect(beforeFnV2Spy).to.have.returned({
+            ...returnedEnvelope,
+            filters: { id: { eq: returnedEnvelope.currentUser?.username } },
+          })
+        })
       })
     })
 
-    context('the "subscribe" method', () => {
-      it('calls the provider subscribe function and returns its results', async () => {
+    describe('the "subscribe" method', () => {
+      context('with no before hooks defined', () => {
         const providerSubscribeFunctionFake = fake()
-        Booster.configureCurrentEnv((config) => {
-          config.provider.readModels = {
-            subscribe: providerSubscribeFunctionFake,
-          } as any
+
+        beforeEach(() => {
           config.readModels[TestReadModel.name] = {
-            ...config.readModels[TestReadModel.name],
+            class: TestReadModel,
+            authorizedRoles: [UserRole],
+            properties: [],
             before: [],
           }
+
+          replace(config.provider.readModels, 'subscribe', providerSubscribeFunctionFake)
         })
-        const connectionID = random.uuid()
-        const expectedSubscriptionEnvelope: SubscriptionEnvelope = {
-          ...envelope,
-          connectionID,
-          operation: noopGraphQLOperation,
-          expirationTime: 1,
-        }
 
-        await readModelDispatcher.subscribe(connectionID, envelope, noopGraphQLOperation)
+        it('calls the provider subscribe function and returns its results', async () => {
+          const connectionID = random.uuid()
+          const expectedSubscriptionEnvelope: SubscriptionEnvelope = {
+            ...envelope,
+            connectionID,
+            operation: noopGraphQLOperation,
+            expirationTime: 1,
+          }
 
-        expect(providerSubscribeFunctionFake).to.have.been.calledOnce
-        const gotSubscriptionEnvelope = providerSubscribeFunctionFake.getCall(0).lastArg
-        expect(gotSubscriptionEnvelope).to.include.keys('expirationTime')
-        gotSubscriptionEnvelope.expirationTime = expectedSubscriptionEnvelope.expirationTime // We don't care now about the value
-        expect(gotSubscriptionEnvelope).to.be.deep.equal(expectedSubscriptionEnvelope)
+          await readModelReader.subscribe(connectionID, envelope, noopGraphQLOperation)
+
+          expect(providerSubscribeFunctionFake).to.have.been.calledOnce
+          const gotSubscriptionEnvelope = providerSubscribeFunctionFake.getCall(0).lastArg
+          expect(gotSubscriptionEnvelope).to.include.keys('expirationTime')
+          gotSubscriptionEnvelope.expirationTime = expectedSubscriptionEnvelope.expirationTime // We don't care now about the value
+          expect(gotSubscriptionEnvelope).to.be.deep.equal(expectedSubscriptionEnvelope)
+        })
       })
 
-      it('calls the provider subscribe function when setting before hooks and returns the new filter in the result', async () => {
+      context('with before hooks', () => {
         const providerSubscribeFunctionFake = fake()
-        Booster.configureCurrentEnv((config) => {
-          config.provider.readModels = {
-            subscribe: providerSubscribeFunctionFake,
-          } as any
+
+        beforeEach(() => {
           config.readModels[TestReadModel.name] = {
-            ...config.readModels[TestReadModel.name],
+            class: TestReadModel,
+            authorizedRoles: [UserRole],
+            properties: [],
             before: [beforeFn, beforeFnV2],
           }
+
+          replace(config.provider.readModels, 'subscribe', providerSubscribeFunctionFake)
         })
-        const connectionID = random.uuid()
-        envelope.filters = { id: { eq: currentUser?.username } } as Record<string, FilterFor<unknown>>
-        const expectedSubscriptionEnvelope: SubscriptionEnvelope = {
-          ...envelope,
-          connectionID,
-          operation: noopGraphQLOperation,
-          expirationTime: 1,
-        }
 
-        await readModelDispatcher.subscribe(connectionID, envelope, noopGraphQLOperation)
+        it('calls the provider subscribe function when setting before hooks and returns the new filter in the result', async () => {
+          const connectionID = random.uuid()
+          envelope.filters = { id: { eq: currentUser?.username } } as Record<string, FilterFor<unknown>>
+          const expectedSubscriptionEnvelope: SubscriptionEnvelope = {
+            ...envelope,
+            connectionID,
+            operation: noopGraphQLOperation,
+            expirationTime: 1,
+          }
 
-        expect(providerSubscribeFunctionFake).to.have.been.calledOnce
-        const gotSubscriptionEnvelope = providerSubscribeFunctionFake.getCall(0).lastArg
-        expect(gotSubscriptionEnvelope).to.include.keys('expirationTime')
-        gotSubscriptionEnvelope.expirationTime = expectedSubscriptionEnvelope.expirationTime // We don't care now about the value
-        expect(gotSubscriptionEnvelope).to.be.deep.equal(expectedSubscriptionEnvelope)
+          await readModelReader.subscribe(connectionID, envelope, noopGraphQLOperation)
+
+          expect(providerSubscribeFunctionFake).to.have.been.calledOnce
+          const gotSubscriptionEnvelope = providerSubscribeFunctionFake.getCall(0).lastArg
+          expect(gotSubscriptionEnvelope).to.include.keys('expirationTime')
+          gotSubscriptionEnvelope.expirationTime = expectedSubscriptionEnvelope.expirationTime // We don't care now about the value
+          expect(gotSubscriptionEnvelope).to.be.deep.equal(expectedSubscriptionEnvelope)
+        })
       })
     })
   })
@@ -263,14 +458,10 @@ describe('BoosterReadModelReader', () => {
   describe("The 'unsubscribe' method", () => {
     it('calls the provider "deleteSubscription" method with the right data', async () => {
       const deleteSubscriptionFake = fake()
-      Booster.configureCurrentEnv((config) => {
-        config.provider.readModels = {
-          deleteSubscription: deleteSubscriptionFake,
-        } as any
-      })
+      replace(config.provider.readModels, 'deleteSubscription', deleteSubscriptionFake)
       const connectionID = random.uuid()
       const subscriptionID = random.uuid()
-      await readModelDispatcher.unsubscribe(connectionID, subscriptionID)
+      await readModelReader.unsubscribe(connectionID, subscriptionID)
 
       expect(deleteSubscriptionFake).to.have.been.calledOnceWithExactly(
         match.any,
@@ -284,13 +475,9 @@ describe('BoosterReadModelReader', () => {
   describe("The 'unsubscribeAll' method", () => {
     it('calls the provider "deleteAllSubscription" method with the right data', async () => {
       const deleteAllSubscriptionsFake = fake()
-      Booster.configureCurrentEnv((config) => {
-        config.provider.readModels = {
-          deleteAllSubscriptions: deleteAllSubscriptionsFake,
-        } as any
-      })
+      replace(config.provider.readModels, 'deleteAllSubscriptions', deleteAllSubscriptionsFake)
       const connectionID = random.uuid()
-      await readModelDispatcher.unsubscribeAll(connectionID)
+      await readModelReader.unsubscribeAll(connectionID)
 
       expect(deleteAllSubscriptionsFake).to.have.been.calledOnceWithExactly(match.any, match.any, connectionID)
     })
