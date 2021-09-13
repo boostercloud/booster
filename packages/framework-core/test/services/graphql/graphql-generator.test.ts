@@ -168,7 +168,7 @@ describe('GraphQL generator', () => {
           filters: {},
           requestID: mockRequestId,
           class: mockType,
-          className: mockType.name,
+          typeName: mockType.name,
           limit: undefined,
           afterCursor: undefined,
           paginatedVersion: false,
@@ -214,7 +214,7 @@ describe('GraphQL generator', () => {
           expect(envelope).to.have.property('currentUser', fakeUser)
           expect(envelope).to.have.property('requestID', '314')
           expect(envelope).to.have.property('class', SomeReadModel)
-          expect(envelope).to.have.property('className', 'SomeReadModel')
+          expect(envelope).to.have.property('typeName', 'SomeReadModel')
           expect(envelope.key).to.be.deep.equal({ id: '42' })
           expect(envelope.key.sequenceKey).to.be.undefined
           expect(envelope).to.have.property('version', 1)
@@ -251,7 +251,7 @@ describe('GraphQL generator', () => {
           expect(envelope).to.have.property('currentUser', fakeUser)
           expect(envelope).to.have.property('requestID', '314')
           expect(envelope).to.have.property('class', SomeReadModel)
-          expect(envelope).to.have.property('className', 'SomeReadModel')
+          expect(envelope).to.have.property('typeName', 'SomeReadModel')
           expect(envelope.key).to.be.deep.equal({ id: '42', sequenceKey: { name: 'timestamp', value: '1000' } })
           expect(envelope).to.have.property('version', 1)
 
@@ -417,7 +417,7 @@ describe('GraphQL generator', () => {
           filters: {},
           requestID: mockRequestId,
           class: mockType,
-          className: mockType.name,
+          typeName: mockType.name,
           limit: undefined,
           afterCursor: undefined,
           paginatedVersion: false,

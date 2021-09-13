@@ -45,7 +45,7 @@ describe('The "subscribeToReadModel" method', () => {
           values: [lorem.word()],
         },
       },
-      className: lorem.word(),
+      typeName: lorem.word(),
       expirationTime: random.number(10e6),
       version: 1,
     }
@@ -184,7 +184,7 @@ describe('The "deleteSubscription" method', () => {
 
   it('deletes the right subscription', async () => {
     const foundSubscription: SubscriptionIndexRecord = {
-      className: random.alphaNumeric(10),
+      typeName: random.alphaNumeric(10),
       connectionID,
       subscriptionID,
       connectionID_subscriptionID: sortKeyForSubscription(connectionID, subscriptionID),
@@ -201,7 +201,7 @@ describe('The "deleteSubscription" method', () => {
     expect(dbDeleteFake).to.have.been.calledWithExactly({
       TableName: config.resourceNames.subscriptionsStore,
       Key: {
-        [subscriptionsStoreAttributes.partitionKey]: foundSubscription.className,
+        [subscriptionsStoreAttributes.partitionKey]: foundSubscription.typeName,
         [subscriptionsStoreAttributes.sortKey]: foundSubscription.connectionID_subscriptionID,
       },
     })
@@ -249,13 +249,13 @@ describe('The "deleteAllSubscription" method', () => {
     const subscriptionIDTwo = random.uuid()
     const foundSubscriptions: Array<SubscriptionIndexRecord> = [
       {
-        className: random.alphaNumeric(10),
+        typeName: random.alphaNumeric(10),
         connectionID,
         subscriptionID: subscriptionIDOne,
         connectionID_subscriptionID: sortKeyForSubscription(connectionID, subscriptionIDOne),
       },
       {
-        className: random.alphaNumeric(10),
+        typeName: random.alphaNumeric(10),
         connectionID,
         subscriptionID: subscriptionIDTwo,
         connectionID_subscriptionID: sortKeyForSubscription(connectionID, subscriptionIDTwo),
@@ -275,7 +275,7 @@ describe('The "deleteAllSubscription" method', () => {
         [config.resourceNames.subscriptionsStore]: foundSubscriptions.map((subscriptionRecord) => ({
           DeleteRequest: {
             Key: {
-              [subscriptionsStoreAttributes.partitionKey]: subscriptionRecord.className,
+              [subscriptionsStoreAttributes.partitionKey]: subscriptionRecord.typeName,
               [subscriptionsStoreAttributes.sortKey]: subscriptionRecord.connectionID_subscriptionID,
             },
           },

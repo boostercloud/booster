@@ -521,11 +521,11 @@ When you send queries or subscriptions to your read models, you can tell Booster
 interface ReadModelRequestEnvelope<TReadModel> {
   currentUser?: UserEnvelope // The current authenticated user
   requestID: UUID // An ID assigned to this request
-  key?: { // If present, contains the id and sequenceKey that identify a specific read model 
+  key?: { // If present, contains the id and sequenceKey that identify a specific read model
     id: UUID
     sequenceKey?: SequenceKey
   }
-  className: string // The read model class name
+  typeName: string // The read model class name
   filters: ReadModelRequestProperties<TReadModel> // Filters set in the GraphQL query
   limit?: number // Query limit if set
   afterCursor?: unknown // For paginated requests, id to start reading from
@@ -533,7 +533,7 @@ interface ReadModelRequestEnvelope<TReadModel> {
 ```
 
 In before hooks, you can either abort the request or alter and return the request object to change the behavior of your request. Before hooks are useful for many use cases, but they're especially useful to add fine-grained access control. For example, to enforce a filter that restrict a logged in user to access only read models objects they own.
-  
+
 When a `before` hook throws an exception, the request is aborted and the error is sent back to the user. In order to continue with the request, it's required that the request object is returned.
 
 In order to define a before hook you pass a list of functions with the right signature to the read model decorator `before` parameter:

@@ -261,8 +261,8 @@ describe('ReadModelStore', () => {
         replace(
           readModelStore,
           'fetchReadModel',
-          fake((className: string, id: UUID) => {
-            if (className == SomeReadModel.name) {
+          fake((typeName: string, id: UUID) => {
+            if (typeName == SomeReadModel.name) {
               return { id: id, kind: 'some', count: 77, boosterMetadata: { version: someReadModelStoredVersion } }
             } else {
               return {
@@ -411,13 +411,13 @@ describe('ReadModelStore', () => {
 
         expect(fakeApplyProjectionToReadModel).to.have.been.calledThrice
         for (const projectionMetadata of config.projections[AnImportantEntity.name]) {
-          const readModelClassName = projectionMetadata.class.name
+          const readModeltypeName = projectionMetadata.class.name
           expect(fakeApplyProjectionToReadModel).to.have.been.calledWith(
             anEntityInstance,
             projectionMetadata,
-            readModelClassName,
+            readModeltypeName,
             anEntityInstance[projectionMetadata.joinKey],
-            readModelClassName === 'AnotherReadModel' ? { name: 'count', value: 123 } : undefined
+            readModeltypeName === 'AnotherReadModel' ? { name: 'count', value: 123 } : undefined
           )
         }
       })

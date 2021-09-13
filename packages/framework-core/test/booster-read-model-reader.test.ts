@@ -172,7 +172,7 @@ describe('BoosterReadModelReader', () => {
             sequenceKey,
           },
           class: { name: 'SomeReadModel' },
-          className: 'SomeReadModel',
+          typeName: 'SomeReadModel',
           currentUser,
           version: 1,
           requestID: 'my request!',
@@ -229,7 +229,7 @@ describe('BoosterReadModelReader', () => {
     it('throws the right error when the user is not authorized', async () => {
       const envelope: ReadModelRequestEnvelope<TestReadModel> = {
         class: TestReadModel,
-        className: TestReadModel.name,
+        typeName: TestReadModel.name,
         requestID: random.uuid(),
         filters: {},
         version: 1,
@@ -266,7 +266,7 @@ describe('BoosterReadModelReader', () => {
 
     const envelope: ReadModelRequestEnvelope<TestReadModel> = {
       class: TestReadModel,
-      className: TestReadModel.name,
+      typeName: TestReadModel.name,
       requestID: random.uuid(),
       version: 1,
       filters,

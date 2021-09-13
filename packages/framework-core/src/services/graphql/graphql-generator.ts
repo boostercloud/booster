@@ -172,7 +172,7 @@ export class GraphQLGenerator {
       currentUser: context.user,
       requestID: context.requestID,
       class: readModelClass,
-      className: readModelClass.name,
+      typeName: readModelClass.name,
       key,
       version: 1, // TODO: How to pass the version through GraphQL?
       filters: {},
@@ -190,7 +190,7 @@ function toReadModelRequestEnvelope(
     requestID: context.requestID,
     currentUser: context.user,
     class: readModelClass,
-    className: readModelClass.name,
+    typeName: readModelClass.name,
     filters: args.filter ?? {},
     limit: args.limit,
     afterCursor: args.afterCursor,

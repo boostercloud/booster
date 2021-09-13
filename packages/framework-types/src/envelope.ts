@@ -81,7 +81,7 @@ export interface ReadModelRequestEnvelope<TReadModel extends ReadModelInterface>
     sequenceKey?: SequenceKey
   }
   class: Class<TReadModel>
-  className: string
+  typeName: string
   version: number
   filters: ReadModelRequestProperties<TReadModel>
   limit?: number

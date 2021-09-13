@@ -4,7 +4,7 @@ import { ReadModelListResult } from './envelope'
 import { Class, ReadOnlyNonEmptyArray } from './typelevel'
 
 export type SearcherFunction<TObject> = (
-  className: string,
+  typeName: string,
   filters: FilterFor<TObject>,
   limit?: number,
   afterCursor?: any,
@@ -12,13 +12,13 @@ export type SearcherFunction<TObject> = (
 ) => Promise<Array<TObject> | ReadModelListResult<TObject>>
 
 export type FinderByKeyFunction<TObject> = (
-  className: string,
+  typeName: string,
   id: UUID,
   sequenceKey?: SequenceKey
 ) => Promise<TObject | ReadOnlyNonEmptyArray<TObject>>
 
 export type SequenceFinderByKeyFunction<TObject> = (
-  className: string,
+  typeName: string,
   id: UUID,
   sequenceKey?: SequenceKey
 ) => Promise<TObject>
