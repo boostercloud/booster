@@ -12,6 +12,8 @@ export const template = `{
     "{{{providerPackageName}}}": "*"
   },
   "devDependencies": {
+    "@boostercloud/framework-provider-local": "^${VERSION}",
+    "@boostercloud/framework-provider-local-infrastructure": "^${VERSION}",
     "{{{providerPackageName}}}-infrastructure": "*",
     "rimraf": "^3.0.1",
     "@typescript-eslint/eslint-plugin": "4.22.1",
