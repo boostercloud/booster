@@ -42,6 +42,15 @@ export class BoosterCommandDispatcher {
     const commandInstance = createInstance(commandClass, commandInput)
 
     const register = new Register(commandEnvelope.requestID, commandEnvelope.currentUser)
+
+    if (commandMetadata.functionIdentifier && this.config.provider.interprocess) {
+      return this.config.provider.interprocess.callExternalFunction(
+        commandMetadata.functionIdentifier,
+        commandInstance,
+        register
+      )
+    }
+
     this.logger.debug('Calling "handle" method on command: ', commandClass)
     const result = await commandClass.handle(commandInstance, register)
     this.logger.debug('Command dispatched with register: ', register)

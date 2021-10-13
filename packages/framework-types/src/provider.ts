@@ -24,6 +24,7 @@ export interface ProviderLibrary {
   connections: ProviderConnectionsLibrary
   scheduled: ScheduledCommandsLibrary
   infrastructure: () => ProviderInfrastructure
+  interprocess?: Interprocess
 }
 
 export interface ProviderEventsLibrary {
@@ -119,4 +120,8 @@ export interface ProviderInfrastructure {
 
 export interface ScheduledCommandsLibrary {
   rawToEnvelope(rawMessage: unknown, logger: Logger): Promise<ScheduledCommandEnvelope>
+}
+
+export interface Interprocess {
+  callExternalFunction(functionIdentifier: string, ...params: Array<unknown>): Promise<unknown>
 }

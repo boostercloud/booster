@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ProviderInfrastructure, ProviderLibrary, RocketDescriptor } from '@boostercloud/framework-types'
-import { DynamoDB } from 'aws-sdk'
+import {
+  ProviderInfrastructure,
+  ProviderLibrary,
+  RocketDescriptor,
+} from '@boostercloud/framework-types'
+import { DynamoDB, Lambda } from 'aws-sdk'
 import { requestFailed, requestSucceeded } from './library/api-gateway-io'
 import {
   deleteConnectionData,
@@ -114,6 +118,22 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
       }
 
       return infrastructure.Infrastructure(rockets)
+    },
+    // Interprocess. TODO: Move this functions to another module inside "library" folder
+    interprocess: {
+      callExternalFunction: async (functionIdentifier: string, ...params: Array<unknown>): Promise<unknown> => {
+        console.log('calling external function: ', functionIdentifier, params)
+        const response = await new Lambda()
+          .invoke({
+            FunctionName: 'booster-java-command', // the lambda function we are going to invoke
+            InvocationType: 'RequestResponse',
+            LogType: 'Tail',
+            Payload: 'Hello from Booster',
+          })
+          .promise()
+        console.log('Response: ', response)
+        return response.$response.data
+      },
     },
   }
 }

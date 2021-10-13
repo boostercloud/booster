@@ -26,6 +26,7 @@ export function Command(
         before: attributes.before ?? [],
         properties: getPropertiesMetadata(commandClass),
         returnClass,
+        functionIdentifier: 'arn:aws:lambda:us-east-1:515849006004:function:booster-java-command',
       }
     })
   }
