@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ProviderInfrastructure, ProviderLibrary, UserApp } from '@boostercloud/framework-types'
+import { ProviderInfrastructure, ProviderLibrary, UserApp, RocketDescriptor } from '@boostercloud/framework-types'
 import { EventRegistry } from './services/event-registry'
 import { ReadModelRegistry } from './services/read-model-registry'
 import * as EventsAdapter from './library/events-adapter'
@@ -18,6 +18,18 @@ const eventRegistry = new EventRegistry(storageUrl)
 const readModelRegistry = new ReadModelRegistry(storageUrl)
 const userApp: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
 const redisDB = RedisAdapter.build()
+
+interface HasInfrastructure {
+  Infrastructure: (rockets?: RocketDescriptor[]) => ProviderInfrastructure
+}
+
+/* We load the infrastructure package dynamically here to avoid including it in the
+ * dependencies that are deployed in the lambda functions. The infrastructure
+ * package is only used during the deploy.
+ */
+export function loadInfrastructurePackage(packageName: string): HasInfrastructure {
+  return require(packageName)
+}
 
 export const Provider = (): ProviderLibrary => ({
   // ProviderEventsLibrary
@@ -62,6 +74,20 @@ export const Provider = (): ProviderLibrary => ({
     rawToEnvelope: ScheduledAdapter.rawToEnvelope,
   },
   // ProviderInfrastructureGetter
-  infrastructure: () =>
-    require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
+  infrastructure: () => {
+    const infrastructurePackageName = require('../package.json').name + '-infrastructure'
+    let infrastructure: HasInfrastructure | undefined
+
+    try {
+      infrastructure = loadInfrastructurePackage(infrastructurePackageName)
+    } catch (e) {
+      throw new Error(
+        `The Kubernetes infrastructure package could not be loaded. The following error was thrown: ${e.message}. Please ensure that one of the following actions has been done:\n` +
+          `  - It has been specified in your "devDependencies" section of your "package.json" file. You can do so by running 'npm install --save-dev ${infrastructurePackageName}'\n` +
+          `  - Or it has been installed globally. You can do so by running 'npm install -g ${infrastructurePackageName}'`
+      )
+    }
+
+    return infrastructure.Infrastructure()
+  },
 })

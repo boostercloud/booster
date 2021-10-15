@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ProviderInfrastructure, ProviderLibrary } from '@boostercloud/framework-types'
+import { ProviderInfrastructure, ProviderLibrary, RocketDescriptor } from '@boostercloud/framework-types'
 import { requestFailed, requestSucceeded } from './library/api-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import {
@@ -18,6 +18,18 @@ if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefi
   cosmosClient = {} as any
 } else {
   cosmosClient = new CosmosClient(process.env[environmentVarNames.cosmosDbConnectionString] as string)
+}
+
+interface HasInfrastructure {
+  Infrastructure: (rockets?: RocketDescriptor[]) => ProviderInfrastructure
+}
+
+/* We load the infrastructure package dynamically here to avoid including it in the
+ * dependencies that are deployed in the lambda functions. The infrastructure
+ * package is only used during the deploy.
+ */
+export function loadInfrastructurePackage(packageName: string): HasInfrastructure {
+  return require(packageName)
 }
 
 export const Provider = (): ProviderLibrary => ({
@@ -62,8 +74,22 @@ export const Provider = (): ProviderLibrary => ({
     rawToEnvelope: undefined as any,
   },
   // ProviderInfrastructureGetter
-  infrastructure: () =>
-    require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
+  infrastructure: () => {
+    const infrastructurePackageName = require('../package.json').name + '-infrastructure'
+    let infrastructure: HasInfrastructure | undefined
+
+    try {
+      infrastructure = loadInfrastructurePackage(infrastructurePackageName)
+    } catch (e) {
+      throw new Error(
+        `The Azure infrastructure package could not be loaded. The following error was thrown: ${e.message}. Please ensure that one of the following actions has been done:\n` +
+          `  - It has been specified in your "devDependencies" section of your "package.json" file. You can do so by running 'npm install --save-dev ${infrastructurePackageName}'\n` +
+          `  - Or it has been installed globally. You can do so by running 'npm install -g ${infrastructurePackageName}'`
+      )
+    }
+
+    return infrastructure.Infrastructure()
+  },
 })
 
 function notImplemented(): void {}
