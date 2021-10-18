@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ProviderInfrastructure, ProviderLibrary, UserApp, RocketDescriptor } from '@boostercloud/framework-types'
+import { HasInfrastructure, ProviderLibrary, UserApp } from '@boostercloud/framework-types'
 import { EventRegistry } from './services/event-registry'
 import { ReadModelRegistry } from './services/read-model-registry'
 import * as EventsAdapter from './library/events-adapter'
@@ -18,10 +18,6 @@ const eventRegistry = new EventRegistry(storageUrl)
 const readModelRegistry = new ReadModelRegistry(storageUrl)
 const userApp: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
 const redisDB = RedisAdapter.build()
-
-interface HasInfrastructure {
-  Infrastructure: (rockets?: RocketDescriptor[]) => ProviderInfrastructure
-}
 
 /* We load the infrastructure package dynamically here to avoid including it in the
  * dependencies that are deployed in the lambda functions. The infrastructure

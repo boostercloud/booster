@@ -1,4 +1,4 @@
-import { ProviderLibrary, ProviderInfrastructure, UserApp, RocketDescriptor } from '@boostercloud/framework-types'
+import { HasInfrastructure, ProviderLibrary, UserApp } from '@boostercloud/framework-types'
 import {
   rawEventsToEnvelopes,
   readEntityEventsSince,
@@ -24,10 +24,6 @@ export * from './services'
 const eventRegistry = new EventRegistry()
 const readModelRegistry = new ReadModelRegistry()
 const userApp: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
-
-interface HasInfrastructure {
-  Infrastructure: (rockets?: RocketDescriptor[]) => ProviderInfrastructure
-}
 
 /* We load the infrastructure package dynamically here to avoid including it in the
  * dependencies that are deployed in the lambda functions. The infrastructure

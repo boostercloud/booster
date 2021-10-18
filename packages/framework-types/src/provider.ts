@@ -15,6 +15,7 @@ import {
 import { Logger } from './logger'
 import { FilterFor } from './searcher'
 import { ReadOnlyNonEmptyArray } from './typelevel'
+import { RocketDescriptor } from './rocket-descriptor'
 
 export interface ProviderLibrary {
   events: ProviderEventsLibrary
@@ -119,4 +120,8 @@ export interface ProviderInfrastructure {
 
 export interface ScheduledCommandsLibrary {
   rawToEnvelope(rawMessage: unknown, logger: Logger): Promise<ScheduledCommandEnvelope>
+}
+
+export interface HasInfrastructure {
+  Infrastructure: (rockets?: RocketDescriptor[]) => ProviderInfrastructure
 }

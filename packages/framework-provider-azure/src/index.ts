@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ProviderInfrastructure, ProviderLibrary, RocketDescriptor } from '@boostercloud/framework-types'
+import { HasInfrastructure, ProviderLibrary } from '@boostercloud/framework-types'
 import { requestFailed, requestSucceeded } from './library/api-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import {
@@ -18,10 +18,6 @@ if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefi
   cosmosClient = {} as any
 } else {
   cosmosClient = new CosmosClient(process.env[environmentVarNames.cosmosDbConnectionString] as string)
-}
-
-interface HasInfrastructure {
-  Infrastructure: (rockets?: RocketDescriptor[]) => ProviderInfrastructure
 }
 
 /* We load the infrastructure package dynamically here to avoid including it in the
