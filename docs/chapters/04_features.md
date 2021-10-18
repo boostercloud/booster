@@ -553,7 +553,7 @@ export class CartReadModel {
 
 function validateUser(request: ReadModelRequestEnvelope<CartReadModel>): ReadModelRequestEnvelope<CartReadModel> {
   if (request.filters?.userId?.eq !== request.currentUser?.id) throw NotAuthorizedError("...")
-  return filter
+  return request
 }
 ```
 
