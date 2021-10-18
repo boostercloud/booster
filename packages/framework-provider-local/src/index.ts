@@ -1,4 +1,4 @@
-import { ProviderLibrary, ProviderInfrastructure, UserApp } from '@boostercloud/framework-types'
+import { HasInfrastructure, ProviderLibrary, UserApp } from '@boostercloud/framework-types'
 import {
   rawEventsToEnvelopes,
   readEntityEventsSince,
@@ -24,6 +24,14 @@ export * from './services'
 const eventRegistry = new EventRegistry()
 const readModelRegistry = new ReadModelRegistry()
 const userApp: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
+
+/* We load the infrastructure package dynamically here to avoid including it in the
+ * dependencies that are deployed in the lambda functions. The infrastructure
+ * package is only used during the deploy.
+ */
+export function loadInfrastructurePackage(packageName: string): HasInfrastructure {
+  return require(packageName)
+}
 
 export const Provider = (): ProviderLibrary => ({
   // ProviderEventsLibrary
@@ -78,8 +86,22 @@ export const Provider = (): ProviderLibrary => ({
     rawToEnvelope: undefined as any,
   },
   // ProviderInfrastructureGetter
-  infrastructure: () =>
-    require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
+  infrastructure: () => {
+    const infrastructurePackageName = require('../package.json').name + '-infrastructure'
+    let infrastructure: HasInfrastructure | undefined
+
+    try {
+      infrastructure = loadInfrastructurePackage(infrastructurePackageName)
+    } catch (e) {
+      throw new Error(
+        `The Local infrastructure package could not be loaded. The following error was thrown: ${e.message}. Please ensure that one of the following actions has been done:\n` +
+          `  - It has been specified in your "devDependencies" section of your "package.json" file. You can do so by running 'npm install --save-dev ${infrastructurePackageName}'\n` +
+          `  - Or it has been installed globally. You can do so by running 'npm install -g ${infrastructurePackageName}'`
+      )
+    }
+
+    return infrastructure.Infrastructure()
+  },
 })
 
 function notImplemented(): void {}
