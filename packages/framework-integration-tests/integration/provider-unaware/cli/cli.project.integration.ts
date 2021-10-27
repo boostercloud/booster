@@ -208,7 +208,6 @@ describe('Project', () => {
     const cartDemoMochaRcContent = fileContents('.mocharc.yml')
     expect(cartDemoMochaRcContent).to.equal(expectedCartDemoMochaRc)
 
-
     const defaults = flags?.includes('--default')
     const expectedCartDemoPackageJson = loadFixture('cart-demo/package.json', [
       ['project_name_placeholder', projectName],
@@ -237,7 +236,7 @@ describe('Project', () => {
   context('Valid project', () => {
     describe('using flags', () => {
       it('should create a new project using short flags to configure it', async () => {
-        const projectName = 'cart_demo_short_flags'
+        const projectName = 'cart-demo-short-flags'
         const flags = [
           `-a "${AUTHOR}"`,
           `-d "${DESCRIPTION}"`,
@@ -256,7 +255,7 @@ describe('Project', () => {
       }).timeout(TEST_TIMEOUT)
 
       it('should create a new project using long flags to configure it', async () => {
-        const projectName = 'cart_demo_long_flags'
+        const projectName = 'cart-demo-long-flags'
         const flags = [
           `--author "${AUTHOR}"`,
           `--description "${DESCRIPTION}"`,
@@ -324,7 +323,7 @@ describe('Project', () => {
 
     describe('using command prompt', () => {
       it('should create a new project', async () => {
-        const projectName = 'cart_demo_command_prompt'
+        const projectName = 'cart-demo-command-prompt'
         const promptAnswers = {
           description: DESCRIPTION,
           version: VERSION,
@@ -341,7 +340,7 @@ describe('Project', () => {
       }).timeout(TEST_TIMEOUT)
 
       it('should create a new project using a custom provider', async () => {
-        const projectName = 'cart_demo_custom_provider'
+        const projectName = 'cart-demo-custom-provider'
         const promptAnswers = {
           description: DESCRIPTION,
           version: VERSION,
@@ -360,7 +359,7 @@ describe('Project', () => {
 
     describe('using flags and command prompt', () => {
       it('should create a new project', async () => {
-        const projectName = 'cart_demo_flags_and_command_prompt'
+        const projectName = 'cart-demo-flags-and-command-prompt'
         const promptAnswers = {
           description: DESCRIPTION,
           version: VERSION,
@@ -409,7 +408,7 @@ describe('Project', () => {
           '--skipInstall',
           '--skipGit',
         ]
-        const stdout = await execNewProject('cart_demo_invalid_provider', flags)
+        const stdout = await execNewProject('cart-demo-invalid-provider', flags)
 
         expect(stdout).to.match(expectedOutputRegex)
       }).timeout(TEST_TIMEOUT)
