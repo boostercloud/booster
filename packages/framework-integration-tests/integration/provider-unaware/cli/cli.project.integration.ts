@@ -408,7 +408,7 @@ describe('Project', () => {
           '--skipInstall',
           '--skipGit',
         ]
-        const stdout = await execNewProject('cart_demo_invalid_provider', flags)
+        const stdout = await execNewProject('cart-demo-invalid-provider', flags)
 
         expect(stdout).to.match(expectedOutputRegex)
       }).timeout(TEST_TIMEOUT)
