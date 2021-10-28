@@ -34,7 +34,8 @@
   },
   "dependencies": {
     "@boostercloud/framework-types": "^0.21.4",
-    "tslib": "2.3.0"
+    "tslib": "2.3.0",
+    "child-process-promise": "^2.2.1"
   },
   "devDependencies": {
     "@types/uuid": "8.3.0",
