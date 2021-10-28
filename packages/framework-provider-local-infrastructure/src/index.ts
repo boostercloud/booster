@@ -51,6 +51,6 @@ export const Infrastructure = (): ProviderInfrastructure => {
       expressServer.use(router)
       expressServer.use(defaultErrorHandler)
       expressServer.listen(port)
-    },
+  },
   }
 }
