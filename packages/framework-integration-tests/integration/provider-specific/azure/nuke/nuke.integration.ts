@@ -3,10 +3,10 @@ import { applicationName } from '../../../helper/app-helper'
 import { expect } from '../../../helper/expect'
 
 describe('After nuke', () => {
-  describe('the stack', () => {
+  describe('the resource group', () => {
     it('is deleted successfully', async () => {
-      await expect(AzureTestHelper.build(applicationName())).to.be.eventually.rejectedWith(
-        new RegExp(`Stack with id ${applicationName()}[^\\s]+ does not exist`)
+      await expect(AzureTestHelper.checkResourceGroup(applicationName())).to.be.eventually.rejectedWith(
+        'ResourceGroupNotFound'
       )
     })
   })
