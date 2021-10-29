@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ProviderInfrastructure, ProviderLibrary, RocketDescriptor } from '@boostercloud/framework-types'
+import {
+  ProviderContext,
+  ProviderInfrastructure,
+  ProviderLibrary,
+  RocketDescriptor,
+} from '@boostercloud/framework-types'
 import { requestFailed, requestSucceeded } from './library/api-gateway-io'
 
 /**
@@ -8,7 +13,7 @@ import { requestFailed, requestSucceeded } from './library/api-gateway-io'
  * The rocket names are passed to the infrastructure package, which loads them dynamically
  * to extend the AWS functionality. Rockets are typically distributed in separate node packages.
  */
-export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
+export const Provider = (rockets?: RocketDescriptor<ProviderContext>[]): ProviderLibrary => {
   try {
     require('aws-sdk')
     const { Provider } = require('./setup')

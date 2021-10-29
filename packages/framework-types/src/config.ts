@@ -15,6 +15,7 @@ import { Level } from './logger'
 import * as path from 'path'
 import { RocketDescriptor } from './rocket-descriptor'
 import { CommandHandlerReturnTypeMetadata } from './concepts/command-handler-metadata'
+import { ProviderContext } from './provider-context'
 
 /**
  * Class used by external packages that needs to get a representation of
@@ -24,7 +25,7 @@ export class BoosterConfig {
   public logLevel: Level = Level.debug
   private _provider?: ProviderLibrary
   public providerPackage?: string
-  public rockets?: Array<RocketDescriptor>
+  public rockets?: Array<RocketDescriptor<ProviderContext>>
   public appName = 'new-booster-app'
   public assets?: Array<string>
   public readonly subscriptions = {

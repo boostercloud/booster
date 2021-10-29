@@ -1,58 +1,66 @@
 import { BoosterConfig, Logger } from '@boostercloud/framework-types'
-import { ISDK } from 'aws-cdk'
-import { emptyS3Bucket } from './s3utils'
 import * as colors from 'colors'
-import {
-  getStackNames,
-  getStackServiceConfiguration,
-  getStackToolkitBucketName,
-  getStackToolkitName,
-} from './stack-tools'
-import { CdkToolkit } from 'aws-cdk/lib/cdk-toolkit'
-import { InfrastructureRocket } from '../rockets/infrastructure-rocket'
-import { buildRocketUtils } from '../rockets/rocket-utils'
+import { Rocket } from '@boostercloud/rockets-base'
+import { AWSProviderContext } from './provider-context/aws-provider-context'
 
 /**
  * Nuke all the resources used in the "AppStacks"
  */
-export async function nuke(config: BoosterConfig, logger: Logger, rockets?: InfrastructureRocket[]): Promise<void> {
+export async function nuke(
+  config: BoosterConfig,
+  logger: Logger,
+  rockets?: Rocket<AWSProviderContext>[]
+): Promise<void> {
   logger.info(colors.yellow('Destroying application') + ' ' + colors.blue(config.appName))
-  const { sdk, cdkToolkit } = await getStackServiceConfiguration(config, [])
-
-  await nukeToolkit(logger, config, sdk)
-  if (rockets) await nukeRockets(logger, sdk, rockets)
-  await nukeApplication(logger, config, cdkToolkit)
+  const awsProviderContext = await AWSProviderContext.build(logger, config, rockets)
+  await nukeToolkit(logger, config, awsProviderContext)
+  if (rockets) await nukeRockets(logger, awsProviderContext, rockets)
+  await nukeApplication(logger, config, awsProviderContext)
   logger.info('✅  ' + colors.blue(config.appName) + colors.red(': DESTROYED'))
 }
 
 /**
  * Nuke all the resources used in the "Toolkit Stack"
  */
-async function nukeToolkit(logger: Logger, config: BoosterConfig, sdk: ISDK): Promise<void> {
-  const stackToolkitName = getStackToolkitName(config)
+async function nukeToolkit(
+  logger: Logger,
+  config: BoosterConfig,
+  awsProviderContext: AWSProviderContext
+): Promise<void> {
+  const stackToolkitName = awsProviderContext.utils.stack.toolkitName
   logger.info(colors.blue(stackToolkitName) + colors.yellow(': destroying...'))
-  await emptyS3Bucket(sdk, logger, getStackToolkitBucketName(config))
+  await awsProviderContext.utils.s3.emptyBucket(awsProviderContext.utils.stack.toolkitBucketName)
 
-  await sdk.cloudFormation().deleteStack({ StackName: stackToolkitName }).promise()
+  await awsProviderContext.sdk.cloudFormation().deleteStack({ StackName: stackToolkitName }).promise()
   logger.info('✅  ' + colors.blue(stackToolkitName) + colors.red(': DESTROYED'))
 }
 
 /**
  * Calls to the rockets unmount method to allow them remove any resources that can't be automatically deleted by the stack (like non-empty S3 buckets)
  */
-async function nukeRockets(logger: Logger, sdk: ISDK, rockets: InfrastructureRocket[]): Promise<void> {
+async function nukeRockets(
+  logger: Logger,
+  awsProviderContext: AWSProviderContext,
+  rockets: Rocket<AWSProviderContext>[]
+): Promise<void> {
   logger.info('Deleting rockets resources...')
-  const rocketUtils = buildRocketUtils(sdk, logger)
-  rockets.forEach((rocket) => rocket.unmountStack?.(rocketUtils))
+  rockets.forEach((rocket) => rocket.unmount?.(awsProviderContext))
 }
 
 /**
  * Nuke the application resources
  */
-async function nukeApplication(logger: Logger, config: BoosterConfig, cdkToolkit: CdkToolkit): Promise<void> {
+async function nukeApplication(
+  logger: Logger,
+  config: BoosterConfig,
+  awsProviderContext: AWSProviderContext
+): Promise<void> {
   logger.info('Destroying the application stack...')
-  await cdkToolkit.destroy({
-    stackNames: getStackNames(config),
+  if (!awsProviderContext.cdkToolkit) {
+    throw 'It was not possible to initialize '
+  }
+  await awsProviderContext.cdkToolkit.destroy({
+    stackNames: awsProviderContext.utils.stack.names,
     exclusively: false,
     force: true,
   })

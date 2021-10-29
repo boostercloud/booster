@@ -2,7 +2,7 @@ import { Logger, ProviderInfrastructure } from '@boostercloud/framework-types'
 import { fake, replace, restore } from 'sinon'
 import { expect } from './expect'
 import * as infra from '../src/infrastructure'
-import * as infrastructureRocket from '../src/rockets/infrastructure-rocket'
+import * as infrastructureRocket from '../src/rockets/rockets-context'
 
 const rewire = require('rewire')
 const infrastructure = rewire('../src/index')

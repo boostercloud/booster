@@ -1,13 +1,13 @@
-import { ISDK } from 'aws-cdk'
 import { ObjectIdentifier, ObjectIdentifierList } from 'aws-sdk/clients/s3'
 import * as AWS from 'aws-sdk'
 import { Logger } from '@boostercloud/framework-types'
+import { ISDK } from 'aws-cdk'
 
-export async function emptyS3Bucket(sdk: ISDK, logger: Logger, bucketName: string): Promise<void> {
+export async function emptyBucket(logger: Logger, sdk: ISDK, bucketName: string): Promise<void> {
   logger.info(bucketName + ': DELETE_IN_PROGRESS')
-  const s3: AWS.S3 = await sdk.s3()
+  const s3: AWS.S3 = sdk.s3()
 
-  if (await s3BucketExists(bucketName, s3)) {
+  if (await bucketExists(s3, bucketName)) {
     const listedObjects = await s3.listObjectVersions({ Bucket: bucketName }).promise()
     const contents = (listedObjects.Versions || []).concat(listedObjects.DeleteMarkers || [])
     if (contents.length > 0) {
@@ -19,7 +19,7 @@ export async function emptyS3Bucket(sdk: ISDK, logger: Logger, bucketName: strin
           } as ObjectIdentifier)
       )
       await s3.deleteObjects({ Bucket: bucketName, Delete: { Objects: records } }).promise()
-      if (listedObjects.IsTruncated) await emptyS3Bucket(sdk, logger, bucketName)
+      if (listedObjects.IsTruncated) await emptyBucket(logger, sdk, bucketName)
     }
     logger.info(bucketName + ': DELETE_COMPLETE')
   } else {
@@ -27,7 +27,7 @@ export async function emptyS3Bucket(sdk: ISDK, logger: Logger, bucketName: strin
   }
 }
 
-export async function s3BucketExists(bucketName: string, s3: AWS.S3): Promise<boolean> {
+export async function bucketExists(s3: AWS.S3, bucketName: string): Promise<boolean> {
   try {
     await s3.headBucket({ Bucket: bucketName }).promise()
     return true

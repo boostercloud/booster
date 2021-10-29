@@ -3,7 +3,7 @@ import { BoosterConfig, Logger } from '@boostercloud/framework-types'
 import { CdkToolkit } from 'aws-cdk/lib/cdk-toolkit'
 import { fake, replace, restore } from 'sinon'
 import * as StackServiceConfiguration from '../../src/infrastructure/stack-tools'
-import * as S3Tools from '../../src/infrastructure/s3utils'
+import * as S3Tools from '../../src/infrastructure/provider-context/s3utils'
 import * as rocketUtils from '../../src/rockets/rocket-utils'
 
 const rewire = require('rewire')
@@ -224,7 +224,7 @@ describe('the nuke module', () => {
 
       await nukeToolkit(logger, config, fakeSDK)
 
-      expect(S3Tools.emptyS3Bucket).to.have.been.calledWithMatch(fakeSDK, logger, 'test-app-toolkit-bucket')
+      expect(S3Tools.emptyBucket).to.have.been.calledWithMatch(fakeSDK, logger, 'test-app-toolkit-bucket')
     })
 
     it('deletes the toolkit stack', async () => {

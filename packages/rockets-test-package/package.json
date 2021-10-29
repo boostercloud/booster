@@ -1,0 +1,48 @@
+{
+  "name": "@boostercloud/rockets-test-package",
+  "version": "0.21.4",
+  "description": "Booster rockets Test Package",
+  "keywords": [
+    "rockets-test-package"
+  ],
+  "author": "Booster Cloud",
+  "homepage": "https://booster.cloud",
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boostercloud/booster.git"
+  },
+  "scripts": {
+    "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
+    "lint:check": "eslint --ext '.js,.ts' **/*.ts",
+    "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
+    "compile": "tsc -b tsconfig.json",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "test:types": "npm run test",
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
+    "prepack": "tsc -b tsconfig.json"
+  },
+  "bugs": {
+    "url": "https://github.com/boostercloud/booster/issues"
+  },
+  "dependencies": {
+    "tslib": "2.3.0",
+    "@boostercloud/framework-types": "^0.21.4",
+    "@boostercloud/rockets-base": "^0.21.4"
+  },
+  "devDependencies": {
+    "chai": "4.2.0",
+    "chai-as-promised": "7.1.1",
+    "fast-check": "2.17.0",
+    "mocha": "8.4.0",
+    "sinon": "9.2.3",
+    "sinon-chai": "3.5.0"
+  }
+}

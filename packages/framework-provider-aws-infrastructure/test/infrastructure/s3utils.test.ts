@@ -1,5 +1,5 @@
 import { random } from 'faker'
-import { s3BucketExists } from '../../src/infrastructure/s3utils'
+import { bucketExists } from '../../src/infrastructure/provider-context/s3utils'
 import { SinonStub, stub } from 'sinon'
 import { expect } from '../expect'
 
@@ -33,7 +33,7 @@ describe('s3 utils', () => {
       })
 
       it('should return true', async () => {
-        const result = await s3BucketExists(bucketName, s3)
+        const result = await bucketExists(bucketName, s3)
 
         expect(headBucketStub).to.have.been.calledOnceWith({ Bucket: bucketName })
         expect(result).to.be.true
@@ -54,7 +54,7 @@ describe('s3 utils', () => {
       })
 
       it('should return false', async () => {
-        const result = await s3BucketExists(bucketName, s3)
+        const result = await bucketExists(bucketName, s3)
 
         expect(headBucketStub).to.have.been.calledOnceWith({ Bucket: bucketName })
         expect(result).to.be.false

@@ -5,7 +5,7 @@ import { App, StackProps, Stack } from '@aws-cdk/core'
 import { Function } from '@aws-cdk/aws-lambda'
 import { RestApi } from '@aws-cdk/aws-apigateway'
 import { CfnApi } from '@aws-cdk/aws-apigatewayv2'
-import { InfrastructureRocket } from '../../../src/rockets/infrastructure-rocket'
+import { InfrastructureRocket } from '../../../src/rockets/rockets-context'
 import { fake } from 'sinon'
 
 const rewire = require('rewire')

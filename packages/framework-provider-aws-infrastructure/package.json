@@ -32,6 +32,7 @@
     "@aws-cdk/aws-s3-deployment": "1.91.0",
     "@boostercloud/framework-provider-aws": "^0.21.4",
     "@boostercloud/framework-types": "^0.21.4",
+    "@boostercloud/rockets-base": "^0.21.4",
     "aws-cdk": "1.91.0",
     "aws-sdk": "2.853.0",
     "colors": "^1.4.0"

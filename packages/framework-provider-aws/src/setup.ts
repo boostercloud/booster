@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { HasInfrastructure, ProviderLibrary, RocketDescriptor } from '@boostercloud/framework-types'
+import { HasInfrastructure, ProviderContext, ProviderLibrary, RocketDescriptor } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { requestFailed, requestSucceeded } from './library/api-gateway-io'
 import {
@@ -53,7 +53,7 @@ export function loadInfrastructurePackage(packageName: string): HasInfrastructur
  * The rocket names are passed to the infrastructure package, which loads them dynamically
  * to extend the AWS functionality. Rockets are typically distributed in separate node packages.
  */
-export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
+export const Provider = (rockets?: RocketDescriptor<ProviderContext>[]): ProviderLibrary => {
   return {
     // ProviderEventsLibrary
     events: {

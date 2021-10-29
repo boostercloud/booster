@@ -16,6 +16,7 @@ import { Logger } from './logger'
 import { FilterFor } from './searcher'
 import { ReadOnlyNonEmptyArray } from './typelevel'
 import { RocketDescriptor } from './rocket-descriptor'
+import { ProviderContext } from './provider-context'
 
 export interface ProviderLibrary {
   events: ProviderEventsLibrary
@@ -123,5 +124,5 @@ export interface ScheduledCommandsLibrary {
 }
 
 export interface HasInfrastructure {
-  Infrastructure: (rockets?: RocketDescriptor[]) => ProviderInfrastructure
+  Infrastructure: (rockets?: RocketDescriptor<ProviderContext>[]) => ProviderInfrastructure
 }
