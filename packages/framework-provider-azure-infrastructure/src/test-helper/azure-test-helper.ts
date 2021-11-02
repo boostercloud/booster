@@ -1,29 +1,8 @@
 import { configuration } from '../infrastructure/params'
-import {
-  createServicePrincipal,
-  ensureAzCli,
-  ensureServicePrincipal,
-  exportAzureConfiguration,
-  getResourceGroup,
-} from '../infrastructure/helper/az-cli-helper'
+import { getResourceGroup } from '../infrastructure/helper/az-cli-helper'
 import { ResourceGroup } from '../infrastructure/types/resource-group'
 
 export class AzureTestHelper {
-  public static async preBuild(servicePrincipalName: string) {
-    console.log('Azure Integration test preBuild')
-    await ensureAzCli()
-    const servicePrincipal = await createServicePrincipal(servicePrincipalName)
-    await ensureServicePrincipal(servicePrincipalName)
-    await exportAzureConfiguration(servicePrincipal)
-  }
-
-  public static async preNuke(servicePrincipalName: string) {
-    console.log('Azure Integration Test preNuke')
-    await ensureAzCli()
-    const servicePrincipal = await createServicePrincipal(servicePrincipalName)
-    await exportAzureConfiguration(servicePrincipal)
-  }
-
   public static async checkResourceGroup(applicationName: string): Promise<ResourceGroup> {
     console.log('Check resource group')
     return getResourceGroup(applicationName)
