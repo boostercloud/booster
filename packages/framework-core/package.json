@@ -42,7 +42,7 @@
     "jwks-rsa": "2.0.3",
     "reflect-metadata": "0.1.13",
     "tslib": "2.3.0",
-    "validator": "13.6.0"
+    "validator": "13.7.0"
   },
   "devDependencies": {
     "@types/faker": "5.1.5",
