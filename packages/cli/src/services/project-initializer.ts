@@ -14,6 +14,7 @@ import * as prettierRc from '../templates/project/prettierrc-yaml'
 import * as mochaRc from '../templates/project/mocharc-yml'
 import { wrapExecError } from '../common/errors'
 import { installAllDependencies } from './dependencies'
+import Brand from '../common/brand'
 
 export async function generateConfigFiles(config: ProjectInitializerConfig): Promise<void> {
   await Promise.all(filesToGenerate.map(renderToFile(config)))
@@ -42,7 +43,7 @@ export async function initializeGit(config: ProjectInitializerConfig): Promise<v
   try {
     await exec('git init && git add -A && git commit -m "Initial commit"', { cwd: projectDir(config) })
   } catch (e) {
-    throw wrapExecError(e, 'Could not initialize git repository')
+    throw wrapExecError(e, Brand.dangerize('Could not initialize git repository'))
   }
 }
 
