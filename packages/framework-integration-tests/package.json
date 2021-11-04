@@ -64,7 +64,7 @@
     "compile": "ttsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "postinstall": "rimraf ../../node_modules/serverless/node_modules/archiver && echo 'Deleted buggy \"archiver\" module from \"serveless\" dependencies to use the newer hoisted one'",
-    "integration": "npm run integration/cli && npm run integration/local && npm run integration/aws",
+    "integration": "npm run integration/cli && npm run integration/local && npm run integration/aws && npm run integration/azure",
     "integration/cli": "mocha --forbid-only --exit --config \"integration/provider-unaware/cli/.mocharc.yml\" \"integration/provider-unaware/cli/**/*.integration.ts\"",
     "integration/aws": "npm run integration/aws-deploy && npm run integration/aws-func && npm run integration/aws-end-to-end && npm run integration/aws-load && npm run integration/aws-nuke",
     "integration/aws-deploy": "AWS_SDK_LOAD_CONFIG=true BOOSTER_ENV=production mocha --forbid-only --exit --config \"integration/provider-specific/aws/deployment/.mocharc.yml\" \"integration/provider-specific/aws/deployment/**/*.integration.ts\"",
