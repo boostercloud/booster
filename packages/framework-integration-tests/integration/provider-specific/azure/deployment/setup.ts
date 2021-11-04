@@ -17,5 +17,5 @@ before(async () => {
   AzureTestHelper.ensureAzureConfiguration()
   console.log('Deploying sandbox project...')
   await deploy(sandboxedProject, 'azure')
-  console.log('...sleep finished. Let the tests begin 🔥!')
+  console.log('Finished! Let the tests begin 🔥!')
 })
