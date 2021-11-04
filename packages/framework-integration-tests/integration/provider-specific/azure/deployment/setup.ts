@@ -16,7 +16,7 @@ before(async () => {
   await overrideWithBoosterLocalDependencies(sandboxedProject)
 
   AzureTestHelper.ensureAzureConfiguration()
-  console.log('Deploying sandbox project')
+  console.log('Deploying sandbox project...')
   await deploy(sandboxedProject, 'azure')
   console.log('Waiting 30 seconds after deployment to let the ARM finish its initialization...')
   await sleep(30000)
