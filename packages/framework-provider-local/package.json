@@ -21,7 +21,6 @@
   },
   "dependencies": {
     "@boostercloud/framework-common-helpers": "^0.21.4",
-    "@boostercloud/framework-core": "^0.21.4",
     "@boostercloud/framework-types": "^0.21.4",
     "@types/nedb": "^1.8.11",
     "nedb": "^1.8.0",
