@@ -54,8 +54,6 @@ export class SchedulesFunctions {
    */
   private static createCronExpression(scheduledCommandMetadata: ScheduleInterface): string {
     const { minute = '*', hour = '*', day = '*', month = '*', weekDay = '*' } = scheduledCommandMetadata
-    const expression = `0 ${minute} ${hour} ${day} ${month} ${weekDay}`
-    const neverRunByDefault = '0 0 5 31 2 ? *'
-    return `${expression !== '* * * ? * *' ? expression : neverRunByDefault}`
+    return `0 ${minute} ${hour} ${day} ${month} ${weekDay}`
   }
 }
