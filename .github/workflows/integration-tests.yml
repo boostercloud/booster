@@ -68,7 +68,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 12.x
+          node-version: 16.x
       - run: npx lerna bootstrap
       - run: npx lerna run compile
       - run: npx lerna run integration/aws-load --stream
@@ -133,7 +133,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 14.x
+          node-version: 16.x
       - run: npx lerna bootstrap
       - run: npx lerna run compile
       - run: npx lerna run integration/azure-deploy --stream
@@ -162,7 +162,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 14.x
+          node-version: 16.x
       - run: npx lerna bootstrap
       - run: npx lerna run compile
       - run: npx lerna run integration/azure-nuke --stream
