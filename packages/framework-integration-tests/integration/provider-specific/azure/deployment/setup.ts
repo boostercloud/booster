@@ -1,5 +1,4 @@
 import { deploy } from '../../../helper/cli-helper'
-import { sleep } from '../../../helper/sleep'
 import { sandboxPathFor } from '../../../helper/file-helper'
 import { overrideWithBoosterLocalDependencies } from '../../../helper/deps-helper'
 // Imported from another package to avoid duplication
@@ -18,7 +17,5 @@ before(async () => {
   AzureTestHelper.ensureAzureConfiguration()
   console.log('Deploying sandbox project...')
   await deploy(sandboxedProject, 'azure')
-  console.log('Waiting 30 seconds after deployment to let the ARM finish its initialization...')
-  await sleep(30000)
   console.log('...sleep finished. Let the tests begin 🔥!')
 })
