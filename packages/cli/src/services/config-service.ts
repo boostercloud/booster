@@ -29,7 +29,8 @@ export async function compileProjectAndLoadConfig(userProjectPath: string): Prom
 export async function compileProject(projectPath: string): Promise<void> {
   try {
     await exec('npm run clean && npm run compile', { cwd: projectPath })
-  } catch (e) {
+  } catch (err) {
+    const e = err as Error
     throw wrapExecError(e, 'Project contains compilation errors')
   }
 }
@@ -37,7 +38,8 @@ export async function compileProject(projectPath: string): Promise<void> {
 export async function cleanProject(projectPath: string): Promise<void> {
   try {
     await exec('npm run clean', { cwd: projectPath })
-  } catch (e) {
+  } catch (err) {
+    const e = err as Error
     throw wrapExecError(e, 'Error cleaning project')
   }
 }

@@ -126,7 +126,8 @@ export class Script<TContext> {
           throw err
         }, constVoid)
       )
-    } catch (err) {
+    } catch (error) {
+      const err = error as Error
       const defaultHandler = (e: Error): string => e.stack || e.message || JSON.stringify(e)
       const handler = this.errorHandlers[err.name] || defaultHandler
       throw new Error(handler(err))

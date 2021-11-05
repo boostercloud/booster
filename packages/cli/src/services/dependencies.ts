@@ -4,7 +4,8 @@ import { wrapExecError } from '../common/errors'
 export async function installProductionDependencies(projectPath: string): Promise<void> {
   try {
     await exec('npm install --production --no-bin-links --no-optional', { cwd: projectPath })
-  } catch (e) {
+  } catch (err) {
+    const e = err as Error
     throw wrapExecError(e, 'Could not install production dependencies')
   }
 }
@@ -12,7 +13,8 @@ export async function installProductionDependencies(projectPath: string): Promis
 export async function installAllDependencies(path?: string): Promise<void> {
   try {
     await exec('npm install', { cwd: path ?? process.cwd() })
-  } catch (e) {
+  } catch (err) {
+    const e = err as Error
     throw wrapExecError(e, 'Could not install dependencies')
   }
 }

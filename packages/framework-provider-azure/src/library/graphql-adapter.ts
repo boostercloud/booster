@@ -20,7 +20,8 @@ export async function rawGraphQLRequestToEnvelope(
       eventType,
       value: graphQLValue,
     }
-  } catch (e) {
+  } catch (err) {
+    const e = err as Error
     return {
       error: e,
       requestID,

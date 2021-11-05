@@ -66,7 +66,8 @@ export class BoosterGraphQLDispatcher {
       try {
         this.logger.debug(`Decoding current user from auth token: ${envelope.token}`)
         envelope.currentUser = await this.boosterTokenVerifier.verify(envelope.token)
-      } catch (e) {
+      } catch (err) {
+        const e = err as string
         envelope = {
           ...envelope,
           error: new InvalidParameterError(e),
@@ -134,7 +135,8 @@ export class BoosterGraphQLDispatcher {
         case 'subscription':
           return await this.handleSubscription(queryDocument, resolverContext)
       }
-    } catch (e) {
+    } catch (err) {
+      const e = err as Error
       this.logger.error(e)
       const errors = Array.isArray(e) ? e : [new GraphQLError(e.message)]
       return { errors }

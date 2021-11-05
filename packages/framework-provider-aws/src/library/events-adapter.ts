@@ -135,7 +135,8 @@ async function persistEvent(
         },
       })
       .promise()
-  } catch (e) {
+  } catch (err) {
+    const e = err as Error
     if (e.name == 'ConditionalCheckFailedException') {
       throw new OptimisticConcurrencyUnexpectedVersionError(e.message)
     }

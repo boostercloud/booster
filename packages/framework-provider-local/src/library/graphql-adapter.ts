@@ -17,7 +17,8 @@ export async function rawGraphQLRequestToEnvelope(
       token: request.headers.authorization,
       value: request.body,
     }
-  } catch (e) {
+  } catch (err) {
+    const e = err as Error
     return {
       error: e,
       requestID,

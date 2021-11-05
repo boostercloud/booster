@@ -12,7 +12,8 @@ export class GraphQLController {
     try {
       const response = await this.graphQLService.handleGraphQLRequest(req)
       res.status(HttpCodes.Ok).json(response.result)
-    } catch (e) {
+    } catch (err) {
+      const e = err as Error
       await requestFailed(e, res)
       next(e)
     }

@@ -22,7 +22,8 @@ export async function rawGraphQLRequestToEnvelope(
       token: request.headers?.Authorization,
       value: graphQLValue,
     }
-  } catch (e) {
+  } catch (err) {
+    const e = err as Error
     return {
       error: e,
       requestID,

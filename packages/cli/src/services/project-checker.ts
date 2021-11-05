@@ -29,7 +29,8 @@ export async function checkItIsABoosterProject(projectPath: string): Promise<voi
       path.join(projectAbsolutePath, tsConfigJsonContents.compilerOptions.rootDir, 'index.ts')
     )
     checkIndexFileIsBooster(indexFilePath)
-  } catch (e) {
+  } catch (err) {
+    const e = err as Error
     throw new Error(
       `There was an error when recognizing the application. Make sure you are in the root path of a Booster project:\n${e.message}`
     )
@@ -88,7 +89,8 @@ async function getBoosterVersion(projectPath: string): Promise<string> {
     const version = packageJsonContents.dependencies['@boostercloud/framework-core']
     const versionParts = version.replace('^', '').replace('.tgz', '').split('-')
     return versionParts[versionParts.length - 1]
-  } catch (e) {
+  } catch (err) {
+    const e = err as Error
     throw new Error(
       `There was an error when recognizing the application. Make sure you are in the root path of a Booster project:\n${e.message}`
     )

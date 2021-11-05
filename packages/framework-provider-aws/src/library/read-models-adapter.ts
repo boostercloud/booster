@@ -91,7 +91,8 @@ export async function storeReadModel(
         },
       })
       .promise()
-  } catch (e) {
+  } catch (err) {
+    const e = err as Error
     // The error will be thrown, but in case of a conditional check, we throw the expected error type by the core
     if (e.name == 'ConditionalCheckFailedException') {
       throw new OptimisticConcurrencyUnexpectedVersionError(e.message)

@@ -51,9 +51,10 @@ export async function storeReadModel(
   logger.debug('[ReadModelAdapter#storeReadModel] Storing readModel ' + JSON.stringify(readModel))
   try {
     await db.store({ typeName: readModelName, value: readModel } as ReadModelEnvelope)
-  } catch (e) {
+  } catch (err) {
     // The error will be thrown, but in case of a conditional check, we throw the expected error type by the core
     // TODO: verify the name of the exception thrown in Local Provider
+    const e = err as Error
     if (e.name == 'TODO') {
       throw new OptimisticConcurrencyUnexpectedVersionError(e.message)
     }
