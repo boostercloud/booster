@@ -96,7 +96,9 @@ describe('Cart end-to-end tests', () => {
             }
           `,
         })
-      } catch (e) {
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (e: any) {
         expect(e.graphQLErrors[0].message).to.be.eq(beforeHookException)
         expect(e.graphQLErrors[0].path).to.deep.eq(['ChangeCartItem'])
       }

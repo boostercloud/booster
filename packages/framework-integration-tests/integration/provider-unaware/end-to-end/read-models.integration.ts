@@ -128,7 +128,8 @@ describe('Read models end-to-end tests', () => {
             },
             (_) => true
           )
-        } catch (e) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (e: any) {
           expect(e.graphQLErrors[0].message).to.be.eq(beforeHookException)
           expect(e.graphQLErrors[0].path).to.deep.eq(['CartReadModel'])
         }
