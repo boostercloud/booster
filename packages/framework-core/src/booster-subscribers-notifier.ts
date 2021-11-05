@@ -36,7 +36,8 @@ export class BoosterSubscribersNotifier {
 
       const pubSub = this.getPubSub(readModelEnvelopes)
       await Promises.allSettledAndFulfilled(subscriptions.map(this.runSubscriptionAndNotify.bind(this, pubSub)))
-    } catch (e) {
+    } catch (err) {
+      const e = err as Error
       this.logger.error(e)
     }
   }

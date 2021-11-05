@@ -111,7 +111,8 @@ describe('new', (): void => {
         let exceptionMessage = ''
         try {
           await new Type([typeName, '--fields'], {} as IConfig).run()
-        } catch (e) {
+        } catch (err) {
+          const e = err as Error
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -124,7 +125,8 @@ describe('new', (): void => {
         let exceptionMessage = ''
         try {
           await new Type([typeName, '--fields', 'title'], {} as IConfig).run()
-        } catch (e) {
+        } catch (err) {
+          const e = err as Error
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -139,7 +141,8 @@ describe('new', (): void => {
         let exceptionMessage = ''
         try {
           await new Type([typeName, '--fields', 'title:'], {} as IConfig).run()
-        } catch(e) {
+        } catch(err) {
+          const e = err as Error
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -153,7 +156,8 @@ describe('new', (): void => {
         let exceptionMessage = ''
         try {
           await new Type([typeName, '--fields', 'title:string', 'title:string', 'quantity:number'], {} as IConfig).run()
-        } catch(e) {
+        } catch(err) {
+          const e = err as Error
           exceptionThrown = true
           exceptionMessage = e.message
         }

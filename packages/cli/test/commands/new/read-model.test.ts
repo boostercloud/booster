@@ -199,7 +199,8 @@ describe('new', (): void => {
         let exceptionMessage = ''
         try {
           await new ReadModel([readModelName, '--fields'], {} as IConfig).run()
-        } catch (e) {
+        } catch (err) {
+          const e = err as Error
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -212,7 +213,8 @@ describe('new', (): void => {
         let exceptionMessage = ''
         try {
           await new ReadModel([readModelName, '--fields', 'title:string', '--projects'], {} as IConfig).run()
-        } catch (e) {
+        } catch (err) {
+          const e = err as Error
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -225,7 +227,8 @@ describe('new', (): void => {
         let exceptionMessage = ''
         try {
           await new ReadModel([readModelName, '--fields', '--projects'], {} as IConfig).run()
-        } catch (e) {
+        } catch (err) {
+          const e = err as Error
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -240,7 +243,8 @@ describe('new', (): void => {
         let exceptionMessage = ''
         try {
           await new ReadModel([readModelName, '--fields', 'title'], {} as IConfig).run()
-        } catch (e) {
+        } catch (err) {
+          const e = err as Error
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -255,7 +259,8 @@ describe('new', (): void => {
         let exceptionMessage = ''
         try {
           await new ReadModel([readModelName, '--fields', 'title:'], {} as IConfig).run()
-        } catch(e) {
+        } catch(err) {
+          const e = err as Error
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -269,7 +274,8 @@ describe('new', (): void => {
         let exceptionMessage = ''
         try {
           await new ReadModel([readModelName, '--fields', 'title:string', '--projects', 'Post'], {} as IConfig).run()
-        } catch (e) {
+        } catch (err) {
+          const e = err as Error
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -285,7 +291,8 @@ describe('new', (): void => {
         let exceptionMessage = ''
         try {
           await new ReadModel([readModelName, '--fields', 'title:string', '--projects', 'Post:'], {} as IConfig).run()
-        } catch (e) {
+        } catch (err) {
+          const e = err as Error
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -301,7 +308,8 @@ describe('new', (): void => {
         let exceptionMessage = ''
         try {
           await new ReadModel([readModelName, '--fields', 'title:string', '--projects', ':id'], {} as IConfig).run()
-        } catch (e) {
+        } catch (err) {
+          const e = err as Error
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -320,7 +328,8 @@ describe('new', (): void => {
             [readModelName, '--fields', 'title:string', 'title:string', 'quantity:number'],
             {} as IConfig
           ).run()
-        } catch(e) {
+        } catch(err) {
+          const e = err as Error
           exceptionThrown = true
           exceptionMessage = e.message
         }

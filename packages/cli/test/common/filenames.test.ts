@@ -27,7 +27,8 @@ describe('filenames', () => {
 
       try {
         checkResourceNameIsValid(resourceName)
-      } catch (e) {
+      } catch (err) {
+        const e = err as Error
         exceptionThrown = true
         exceptionMessage = e.message
       }

@@ -369,7 +369,8 @@ describe('new', (): void => {
             let exceptionMessage = ''
             try {
               await new Project.default([projectName,'--nonexistingoption'], {} as IConfig).run()
-            } catch(e) {
+            } catch(err) {
+              const e = err as Error
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -387,7 +388,8 @@ describe('new', (): void => {
             let exceptionMessage = ''
             try {
               await new Project.default([projectName,'--homepage'], {} as IConfig).run()
-            } catch(e) {
+            } catch(err) {
+              const e = err as Error
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -402,7 +404,8 @@ describe('new', (): void => {
             let exceptionMessage = ''
             try {
               await new Project.default([projectName,'-H'], {} as IConfig).run()
-            } catch(e) {
+            } catch(err) {
+              const e = err as Error
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -419,7 +422,8 @@ describe('new', (): void => {
             let exceptionMessage = ''
             try {
               await new Project.default([projectName,'--author'], {} as IConfig).run()
-            } catch(e) {
+            } catch(err) {
+              const e = err as Error
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -434,7 +438,8 @@ describe('new', (): void => {
             let exceptionMessage = ''
             try {
               await new Project.default([projectName,'-a'], {} as IConfig).run()
-            } catch(e) {
+            } catch(err) {
+              const e = err as Error
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -451,7 +456,8 @@ describe('new', (): void => {
             let exceptionMessage = ''
             try {
               await new Project.default([projectName,'--description'], {} as IConfig).run()
-            } catch(e) {
+            } catch(err) {
+              const e = err as Error
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -466,7 +472,8 @@ describe('new', (): void => {
             let exceptionMessage = ''
             try {
               await new Project.default([projectName,'-d'], {} as IConfig).run()
-            } catch(e) {
+            } catch(err) {
+              const e = err as Error
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -483,7 +490,8 @@ describe('new', (): void => {
             let exceptionMessage = ''
             try {
               await new Project.default([projectName,'--license'], {} as IConfig).run()
-            } catch(e) {
+            } catch(err) {
+              const e = err as Error
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -498,7 +506,8 @@ describe('new', (): void => {
             let exceptionMessage = ''
             try {
               await new Project.default([projectName,'-l'], {} as IConfig).run()
-            } catch(e) {
+            } catch(err) {
+              const e = err as Error
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -515,7 +524,8 @@ describe('new', (): void => {
             let exceptionMessage = ''
             try {
               await new Project.default([projectName,'--providerPackageName'], {} as IConfig).run()
-            } catch(e) {
+            } catch(err) {
+              const e = err as Error
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -530,7 +540,8 @@ describe('new', (): void => {
             let exceptionMessage = ''
             try {
               await new Project.default([projectName,'-p'], {} as IConfig).run()
-            } catch(e) {
+            } catch(err) {
+              const e = err as Error
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -547,7 +558,8 @@ describe('new', (): void => {
             let exceptionMessage = ''
             try {
               await new Project.default([projectName,'--repository'], {} as IConfig).run()
-            } catch(e) {
+            } catch(err) {
+              const e = err as Error
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -562,7 +574,8 @@ describe('new', (): void => {
             let exceptionMessage = ''
             try {
               await new Project.default([projectName,'-r'], {} as IConfig).run()
-            } catch(e) {
+            } catch(err) {
+              const e = err as Error
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -579,7 +592,8 @@ describe('new', (): void => {
             let exceptionMessage = ''
             try {
               await new Project.default([projectName,'--version'], {} as IConfig).run()
-            } catch(e) {
+            } catch(err) {
+              const e = err as Error
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -594,7 +608,8 @@ describe('new', (): void => {
             let exceptionMessage = ''
             try {
               await new Project.default([projectName,'-v'], {} as IConfig).run()
-            } catch(e) {
+            } catch(err) {
+              const e = err as Error
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -613,7 +628,8 @@ describe('new', (): void => {
             let exceptionMessage = ''
             try {
               await new Project.default([projectName,'--providerPackageName','nonexistingProvider'], {} as IConfig).run()
-            } catch(e) {
+            } catch(err) {
+              const e = err as Error
               exceptionThrown = true
               exceptionMessage = e.message
             }
@@ -630,7 +646,8 @@ describe('new', (): void => {
               let exceptionMessage = ''
               try {
                 await new Project.default([projectName,'--repository','invalidUrl'], {} as IConfig).run()
-              } catch(e) {
+              } catch(err) {
+                const e = err as Error
                 exceptionThrown = true
                 exceptionMessage = e.message
               }

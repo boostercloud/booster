@@ -375,8 +375,8 @@ describe('GraphQL generator', () => {
 
           try {
             await returnedFunction('', {}, mockResolverContext, mockResolverInfo)
-          } catch (e) {
-            error = e
+          } catch (err) {
+            error = err as Error
           } finally {
             expect(error.message).to.be.equal('Missing "connectionID". It is required for subscriptions')
           }

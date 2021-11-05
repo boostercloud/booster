@@ -95,12 +95,13 @@ export async function storeEvents(
 async function persistEvent(eventRegistry: EventRegistry, eventEnvelope: EventEnvelope): Promise<void> {
   try {
     await eventRegistry.store(eventEnvelope)
-  } catch (e) {
+  } catch (err) {
     //TODO check the exception raised when there is a write error,
     //to implement Optimistic Concurrency approach
     //if (e.name == 'TODO') {
     //  throw new OptimisticConcurrencyUnexpectedVersionError(e.message)
     //}
+    const e = err as Error
     throw e
   }
 }

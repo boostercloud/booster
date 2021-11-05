@@ -153,7 +153,8 @@ export class GraphQLWebsocketHandler {
     this.logger.debug('Stop operation finished')
     try {
       await this.connectionManager.sendMessage(this.config, connectionID, new GraphQLComplete(message.id))
-    } catch (e) {
+    } catch (err) {
+      const e = err as Error
       // It could be the case that the client already closed the connection without waiting for stop operation to finish
       // Log this but ignore it
       this.logger.info(

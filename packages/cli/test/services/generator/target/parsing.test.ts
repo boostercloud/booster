@@ -28,7 +28,8 @@ describe('parsing',() => {
             let exceptionMessage = ''
             try {
                 await parseFields(['title'])
-            } catch (e) {
+            } catch (err) {
+                const e = err as Error
                 exceptionThrown = true
                 exceptionMessage = e.message
             }
@@ -43,7 +44,8 @@ describe('parsing',() => {
             let exceptionMessage = ''
             try {
                 await parseFields(['title:string','content'])
-            } catch (e) {
+            } catch (err) {
+                const e = err as Error
                 exceptionThrown = true
                 exceptionMessage = e.message
             }
@@ -58,7 +60,8 @@ describe('parsing',() => {
             let exceptionMessage = ''
             try {
                 await parseFields(['title:'])
-            } catch (e) {
+            } catch (err) {
+                const e = err as Error
                 exceptionThrown = true
                 exceptionMessage = e.message
             }
@@ -73,7 +76,8 @@ describe('parsing',() => {
             let exceptionMessage = ''
             try {
                 await parseFields(['title:string','content:'])
-            } catch (e) {
+            } catch (err) {
+                const e = err as Error
                 exceptionThrown = true
                 exceptionMessage = e.message
             }
@@ -88,7 +92,8 @@ describe('parsing',() => {
             let exceptionMessage = ''
             try {
                 await parseFields([':string'])
-            } catch (e) {
+            } catch (err) {
+                const e = err as Error
                 exceptionThrown = true
                 exceptionMessage = e.message
             }
@@ -103,7 +108,8 @@ describe('parsing',() => {
             let exceptionMessage = ''
             try {
                 await parseFields(['title:string',':string'])
-            } catch (e) {
+            } catch (err) {
+                const e = err as Error
                 exceptionThrown = true
                 exceptionMessage = e.message
             }
@@ -118,7 +124,8 @@ describe('parsing',() => {
             let exceptionMessage = ''
             try {
                 await parseFields(['title:string','content:string','title:number'])
-            } catch (e) {
+            } catch (err) {
+                const e = err as Error
                 exceptionThrown = true
                 exceptionMessage = e.message
             }
@@ -133,7 +140,8 @@ describe('parsing',() => {
             let exceptionMessage = ''
             try {
                 await parseFields(['title:string','content:string','title:number','content:string'])
-            } catch (e) {
+            } catch (err) {
+                const e = err as Error
                 exceptionThrown = true
                 exceptionMessage = e.message
             }
@@ -148,7 +156,8 @@ describe('parsing',() => {
             let exceptionMessage = ''
             try {
                 await parseFields(['title:string','content','title:number'])
-            } catch (e) {
+            } catch (err) {
+                const e = err as Error
                 exceptionThrown = true
                 exceptionMessage = e.message
             }
@@ -163,7 +172,8 @@ describe('parsing',() => {
             let exceptionMessage = ''
             try {
                 await parseFields(['title:string','content:string','title:number','category'])
-            } catch (e) {
+            } catch (err) {
+                const e = err as Error
                 exceptionThrown = true
                 exceptionMessage = e.message
             }
@@ -197,7 +207,8 @@ describe('parsing',() => {
             let exceptionMessage = ''
             try {
                 await parseProjections(['Post'])
-            } catch (e) {
+            } catch (err) {
+                const e = err as Error
                 exceptionThrown = true
                 exceptionMessage = e.message
             }
@@ -212,7 +223,8 @@ describe('parsing',() => {
             let exceptionMessage = ''
             try {
                 await parseProjections(['Post:id','Comment'])
-            } catch (e) {
+            } catch (err) {
+                const e = err as Error
                 exceptionThrown = true
                 exceptionMessage = e.message
             }
@@ -227,7 +239,8 @@ describe('parsing',() => {
             let exceptionMessage = ''
             try {
                 await parseProjections(['Post:'])
-            } catch (e) {
+            } catch (err) {
+                const e = err as Error
                 exceptionThrown = true
                 exceptionMessage = e.message
             }
@@ -242,7 +255,8 @@ describe('parsing',() => {
             let exceptionMessage = ''
             try {
                 await parseProjections(['Post:id','Comment:'])
-            } catch (e) {
+            } catch (err) {
+                const e = err as Error
                 exceptionThrown = true
                 exceptionMessage = e.message
             }
@@ -257,7 +271,8 @@ describe('parsing',() => {
             let exceptionMessage = ''
             try {
                 await parseProjections([':id'])
-            } catch (e) {
+            } catch (err) {
+                const e = err as Error
                 exceptionThrown = true
                 exceptionMessage = e.message
             }
@@ -272,7 +287,8 @@ describe('parsing',() => {
             let exceptionMessage = ''
             try {
                 await parseProjections(['Post:id',':id'])
-            } catch (e) {
+            } catch (err) {
+                const e = err as Error
                 exceptionThrown = true
                 exceptionMessage = e.message
             }

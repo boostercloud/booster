@@ -82,7 +82,8 @@ describe('start', () => {
       let exceptionMessage = ''
       try {
         await new Start.default(['-e'], {} as IConfig).run()
-      } catch (e) {
+      } catch (err) {
+        const e = err as Error
         exceptionThrown = true
         exceptionMessage = e.message
       }
@@ -97,7 +98,8 @@ describe('start', () => {
       let exceptionMessage = ''
       try {
         await new Start.default(['--environment'], {} as IConfig).run()
-      } catch (e) {
+      } catch (err) {
+        const e = err as Error
         exceptionThrown = true
         exceptionMessage = e.message
       }
@@ -137,7 +139,8 @@ describe('start', () => {
         let exceptionMessage = ''
         try {
           await new Start.default(['-e', 'fake_environment', '--nonexistingoption'], {} as IConfig).run()
-        } catch (e) {
+        } catch (err) {
+          const e = err as Error
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -153,7 +156,8 @@ describe('start', () => {
         let exceptionMessage = ''
         try {
           await new Start.default(['-e', 'fake_environment', '--port'], {} as IConfig).run()
-        } catch (e) {
+        } catch (err) {
+          const e = err as Error
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -169,7 +173,8 @@ describe('start', () => {
         let exceptionMessage = ''
         try {
           await new Start.default(['-e', 'fake_environment', '-p'], {} as IConfig).run()
-        } catch (e) {
+        } catch (err) {
+          const e = err as Error
           exceptionThrown = true
           exceptionMessage = e.message
         }

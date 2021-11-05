@@ -126,7 +126,8 @@ describe('deploy', () => {
       let exceptionMessage = ''
       try {
         await new Deploy.default(['-e'], {} as IConfig).run()
-      } catch (e) {
+      } catch (err) {
+        const e = err as Error
         exceptionThrown = true
         exceptionMessage = e.message
       }
@@ -141,7 +142,8 @@ describe('deploy', () => {
       let exceptionMessage = ''
       try {
         await new Deploy.default(['--environment'], {} as IConfig).run()
-      } catch (e) {
+      } catch (err) {
+        const e = err as Error
         exceptionThrown = true
         exceptionMessage = e.message
       }
@@ -165,7 +167,8 @@ describe('deploy', () => {
         let exceptionMessage = ''
         try {
           await new Deploy.default(['-e', 'fake_environment', '--nonexistingoption'], {} as IConfig).run()
-        } catch (e) {
+        } catch (err) {
+          const e = err as Error
           exceptionThrown = true
           exceptionMessage = e.message
         }

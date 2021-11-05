@@ -74,7 +74,8 @@ describe('new', (): void => {
         let exceptionMessage = ''
         try {
           await new EventHandler([eventHandlerName, '--event'], {} as IConfig).run()
-        } catch(e) {
+        } catch(err) {
+          const e = err as Error
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -88,7 +89,8 @@ describe('new', (): void => {
         let exceptionMessage = ''
         try {
           await new EventHandler([eventHandlerName, '--event', 'CommentPosted','ArticlePosted'], {} as IConfig).run()
-        } catch(e) {
+        } catch(err) {
+          const e = err as Error
           exceptionThrown = true
           exceptionMessage = e.message
         }

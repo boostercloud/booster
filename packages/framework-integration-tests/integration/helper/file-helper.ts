@@ -19,7 +19,8 @@ export const removeFiles = (filePaths: Array<string>, ignoreErrors = false): voi
   filePaths.map((file: string) => {
     try {
       unlinkSync(file)
-    } catch (e) {
+    } catch (err) {
+      const e = err as Error
       if (!ignoreErrors) throw e
     }
   })

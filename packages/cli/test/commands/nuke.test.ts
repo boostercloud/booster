@@ -157,7 +157,8 @@ describe('nuke', () => {
       let exceptionMessage = ''
       try {
         await new Nuke.default(['-e'], {} as IConfig).run()
-      } catch (e) {
+      } catch (err) {
+        const e = err as Error
         exceptionThrown = true
         exceptionMessage = e.message
       }
@@ -172,7 +173,8 @@ describe('nuke', () => {
       let exceptionMessage = ''
       try {
         await new Nuke.default(['--environment'], {} as IConfig).run()
-      } catch (e) {
+      } catch (err) {
+        const e = err as Error
         exceptionThrown = true
         exceptionMessage = e.message
       }
@@ -214,7 +216,8 @@ describe('nuke', () => {
         let exceptionMessage = ''
         try {
           await new Nuke.default(['-e', 'fake_environment'], {} as IConfig).run()
-        } catch (e) {
+        } catch (err) {
+          const e = err as Error
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -230,7 +233,8 @@ describe('nuke', () => {
         let exceptionMessage = ''
         try {
           await new Nuke.default(['-e', 'fake_environment', '--nonexistingoption'], {} as IConfig).run()
-        } catch (e) {
+        } catch (err) {
+          const e = err as Error
           exceptionThrown = true
           exceptionMessage = e.message
         }

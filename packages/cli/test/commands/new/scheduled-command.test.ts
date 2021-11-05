@@ -64,7 +64,8 @@ describe('new', (): void => {
         let exceptionMessage = ''
         try {
           await new ScheduledCommand([scheduledCommandName, 'AnotherName'], {} as IConfig).run()
-        } catch (e) {
+        } catch (err) {
+          const e = err as Error
           exceptionThrown = true
           exceptionMessage = e.message
         }

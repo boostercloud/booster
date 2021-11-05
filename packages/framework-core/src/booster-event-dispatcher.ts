@@ -30,7 +30,8 @@ export class BoosterEventDispatcher {
         rawEvents,
         BoosterEventDispatcher.eventProcessor(eventStore, readModelStore, logger)
       )
-    } catch (e) {
+    } catch (err) {
+      const e = err as Error
       logger.error('[BoosterEventDispatcher#dispatch] Unhandled error while dispatching event: ', e)
     }
   }

@@ -120,7 +120,8 @@ export class EventStore {
       }
       this.logger.debug('[EventStore#entityReducer]: Reducer result: ', newSnapshot)
       return newSnapshot
-    } catch (e) {
+    } catch (err) {
+      const e = err as Error
       this.logger.error('Error when calling reducer', e)
       throw e
     }
