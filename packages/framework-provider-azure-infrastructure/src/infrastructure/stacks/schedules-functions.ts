@@ -1,20 +1,9 @@
-import { BoosterConfig, ScheduleInterface } from '@boostercloud/framework-types'
-import { FunctionDefinition } from '../types/functionDefinition'
+import { BoosterConfig, ScheduledCommandMetadata, ScheduleInterface } from '@boostercloud/framework-types'
+import { FunctionDefinition, ScheduleFunctionDefinition } from '../types/functionDefinition'
 
-interface TimeTriggerFunction {
+interface ScheduledCommandInfo {
   name: string
-  config: {
-    bindings: [
-      {
-        type: string
-        name: string
-        direction: string
-        schedule: string
-      }
-    ]
-    scriptFile: string
-    entryPoint: string
-  }
+  metadata: ScheduledCommandMetadata
 }
 
 export class SchedulesFunctions {
@@ -22,27 +11,46 @@ export class SchedulesFunctions {
 
   public getFunctionDefinitions(): Array<FunctionDefinition> | undefined {
     if (Object.keys(this.config.scheduledCommandHandlers).length) {
-      return Object.keys(this.config.scheduledCommandHandlers).map((scheduledCommandName) => {
-        const scheduledCommandMetadata = this.config.scheduledCommandHandlers[scheduledCommandName]
-        const cronExpression = SchedulesFunctions.createCronExpression(scheduledCommandMetadata.scheduledOn)
-        return {
-          name: `scheduleFunction-${scheduledCommandName}`,
-          config: {
-            bindings: [
-              {
-                type: 'timerTrigger',
-                name: `${scheduledCommandName}`,
-                direction: 'in',
-                schedule: `${cronExpression}`,
-              },
-            ],
-            scriptFile: '../dist/index.js',
-            entryPoint: this.config.scheduledTaskHandler.split('.')[1],
-          },
-        } as TimeTriggerFunction
-      }) as Array<FunctionDefinition>
+      return Object.keys(this.config.scheduledCommandHandlers)
+        .map((scheduledCommandName) => this.buildScheduledCommandInfo(scheduledCommandName))
+        .filter((scheduledCommandInfo) => !SchedulesFunctions.isEmpty(scheduledCommandInfo.metadata.scheduledOn))
+        .map((scheduledCommandInfo) =>
+          this.scheduledCommandInfoToTimeTriggerFunction(scheduledCommandInfo)
+        ) as Array<FunctionDefinition>
     }
     return undefined
+  }
+
+  private scheduledCommandInfoToTimeTriggerFunction(
+    scheduledCommandInfo: ScheduledCommandInfo
+  ): ScheduleFunctionDefinition {
+    const cronExpression = SchedulesFunctions.createCronExpression(scheduledCommandInfo.metadata.scheduledOn)
+    return {
+      name: `scheduleFunction-${scheduledCommandInfo.name}`,
+      config: {
+        bindings: [
+          {
+            type: 'timerTrigger',
+            name: `${scheduledCommandInfo.name}`,
+            direction: 'in',
+            schedule: `${cronExpression}`,
+          },
+        ],
+        scriptFile: '../dist/index.js',
+        entryPoint: this.config.scheduledTaskHandler.split('.')[1],
+      },
+    }
+  }
+
+  private static isEmpty(value: ScheduleInterface): boolean {
+    return !Object.keys(value).length
+  }
+
+  private buildScheduledCommandInfo(scheduledCommandName: string): ScheduledCommandInfo {
+    return {
+      name: scheduledCommandName,
+      metadata: this.config.scheduledCommandHandlers[scheduledCommandName],
+    }
   }
 
   /**

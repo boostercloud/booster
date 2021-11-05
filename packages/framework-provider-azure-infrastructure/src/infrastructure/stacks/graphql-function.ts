@@ -1,10 +1,10 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { FunctionDefinition } from '../types/functionDefinition'
+import { GraphQLFunctionDefinition } from '../types/functionDefinition'
 
 export class GraphqlFunction {
   public constructor(readonly config: BoosterConfig) {}
 
-  public getFunctionDefinition(): FunctionDefinition {
+  public getFunctionDefinition(): GraphQLFunctionDefinition {
     return {
       name: 'graphql',
       config: {
