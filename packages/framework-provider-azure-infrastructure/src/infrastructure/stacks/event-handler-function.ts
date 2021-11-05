@@ -1,10 +1,10 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { FunctionDefinition } from '../types/functionDefinition'
+import { EventHandlerFunctionDefinition } from '../types/functionDefinition'
 
 export class EventHandlerFunction {
   public constructor(readonly config: BoosterConfig) {}
 
-  public getFunctionDefinition(): FunctionDefinition {
+  public getFunctionDefinition(): EventHandlerFunctionDefinition {
     return {
       name: 'eventHandler',
       config: {
