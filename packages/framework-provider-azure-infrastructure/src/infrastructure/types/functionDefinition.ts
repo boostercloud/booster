@@ -1,19 +1,19 @@
-export interface IBinding {
+export interface Binding {
   type: string
   name: string
   direction: string
 }
 
-export interface IScheduleBinding extends IBinding {
+export type ScheduleBinding = Binding & {
   schedule: string
 }
 
-export interface IGraphQLBinding extends IBinding {
+export type GraphQLBinding = Binding & {
   authLevel?: string
   methods?: Array<string>
 }
 
-export interface IEventHandlerBinding extends IBinding {
+export type EventHandlerBinding = Binding & {
   leaseCollectionName: string
   connectionStringSetting: string
   databaseName: string
@@ -21,7 +21,7 @@ export interface IEventHandlerBinding extends IBinding {
   createLeaseCollectionIfNotExists: string
 }
 
-export interface FunctionDefinition<T extends IBinding = IBinding> {
+export interface FunctionDefinition<T extends Binding = Binding> {
   name: string
   config: {
     bindings: Array<T>
@@ -30,8 +30,8 @@ export interface FunctionDefinition<T extends IBinding = IBinding> {
   }
 }
 
-export type ScheduleFunctionDefinition = FunctionDefinition<IScheduleBinding>
+export type ScheduleFunctionDefinition = FunctionDefinition<ScheduleBinding>
 
-export type GraphQLFunctionDefinition = FunctionDefinition<IGraphQLBinding>
+export type GraphQLFunctionDefinition = FunctionDefinition<GraphQLBinding>
 
-export type EventHandlerFunctionDefinition = FunctionDefinition<IEventHandlerBinding>
+export type EventHandlerFunctionDefinition = FunctionDefinition<EventHandlerBinding>

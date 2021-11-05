@@ -10,15 +10,13 @@ export class SchedulesFunctions {
   public constructor(readonly config: BoosterConfig) {}
 
   public getFunctionDefinitions(): Array<FunctionDefinition> | undefined {
-    if (Object.keys(this.config.scheduledCommandHandlers).length) {
-      return Object.keys(this.config.scheduledCommandHandlers)
-        .map((scheduledCommandName) => this.buildScheduledCommandInfo(scheduledCommandName))
-        .filter((scheduledCommandInfo) => !SchedulesFunctions.isEmpty(scheduledCommandInfo.metadata.scheduledOn))
-        .map((scheduledCommandInfo) =>
-          this.scheduledCommandInfoToTimeTriggerFunction(scheduledCommandInfo)
-        ) as Array<FunctionDefinition>
-    }
-    return undefined
+    if (SchedulesFunctions.isEmpty(this.config.scheduledCommandHandlers)) return
+    return Object.keys(this.config.scheduledCommandHandlers)
+      .map((scheduledCommandName) => this.buildScheduledCommandInfo(scheduledCommandName))
+      .filter((scheduledCommandInfo) => !SchedulesFunctions.isEmpty(scheduledCommandInfo.metadata.scheduledOn))
+      .map((scheduledCommandInfo) =>
+        this.scheduledCommandInfoToTimeTriggerFunction(scheduledCommandInfo)
+      ) as Array<FunctionDefinition>
   }
 
   private scheduledCommandInfoToTimeTriggerFunction(
@@ -42,7 +40,7 @@ export class SchedulesFunctions {
     }
   }
 
-  private static isEmpty(value: ScheduleInterface): boolean {
+  private static isEmpty(value: Record<string, unknown> | ScheduleInterface): boolean {
     return !Object.keys(value).length
   }
 

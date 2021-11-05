@@ -2,7 +2,7 @@ import { Logger, ScheduledCommandEnvelope, UUID } from '@boostercloud/framework-
 
 interface AzureScheduledCommandEnvelope {
   bindings: {
-    [name: string]: object
+    [name: string]: unknown
   }
 }
 

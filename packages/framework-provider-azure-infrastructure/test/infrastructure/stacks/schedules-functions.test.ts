@@ -4,7 +4,7 @@ import { BoosterConfig, ScheduledCommandInterface, ScheduleInterface } from '@bo
 import { describe } from 'mocha'
 import { ScheduleFunctionDefinition } from '../../../src/infrastructure/types/functionDefinition'
 
-describe('Creating schedules-functions', () => {
+describe('Creating scheduled-functions', () => {
   describe('without scheduledCommandHandlers', () => {
     const config = new BoosterConfig('test')
 
