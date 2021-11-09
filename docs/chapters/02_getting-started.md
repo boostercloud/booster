@@ -601,7 +601,7 @@ You can check that code compiles correctly by running the build command:
 boost build
 ```
 
-You can also clean the co≤mpiled code by running:
+You can also clean the compiled code by running:
 
 ```bash
 boost clean
