@@ -67,10 +67,10 @@ export class BoosterGraphQLDispatcher {
         this.logger.debug(`Decoding current user from auth token: ${envelope.token}`)
         envelope.currentUser = await this.boosterTokenVerifier.verify(envelope.token)
       } catch (err) {
-        const e = err as string
+        const e = err as Error
         envelope = {
           ...envelope,
-          error: new InvalidParameterError(e),
+          error: new InvalidParameterError(e.message),
         } as GraphQLRequestEnvelopeError
         this.logger.debug('Unable to decode auth token')
       }
