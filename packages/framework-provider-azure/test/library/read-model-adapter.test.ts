@@ -26,6 +26,7 @@ describe('Read Model adapter', () => {
               fetchAll: fake.resolves({ resources: [] }) as any,
             }),
             upsert: stub().returns(fake.resolves({})),
+            create: stub().returns(fake.resolves({})),
           },
           item: stub().returns({
             read: stub().returns(fake.resolves({})),
@@ -80,7 +81,7 @@ describe('Read Model adapter', () => {
       expect(
         mockCosmosDbClient
           .database(mockConfig.resourceNames.applicationStack)
-          .container(`${mockConfig.resourceNames.applicationStack}-${mockReadModelName}`).items.upsert
+          .container(`${mockConfig.resourceNames.applicationStack}-${mockReadModelName}`).items.create
       ).to.have.been.calledWithExactly(match(mockReadModel))
       expect(something).not.to.be.null
     })
