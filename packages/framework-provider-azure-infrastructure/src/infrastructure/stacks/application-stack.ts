@@ -7,9 +7,14 @@ import { EventsStack } from './events-stack'
 import { ReadModelsStack } from './read-models-stack'
 import { DeploymentExtended } from 'azure-arm-resource/lib/resource/models'
 import { armTemplates } from '../arm-templates'
+<<<<<<< HEAD
 import { GraphqlFunction } from './graphql-function'
 import { EventHandlerFunction } from './event-handler-function'
 import { SchedulesFunctions } from './schedules-functions'
+=======
+import { InfrastructureRocket } from '../..'
+import { RocketsStack } from './rockets-stack'
+>>>>>>> 947eae9c (started to add support for azure rockets)
 
 export class ApplicationStackBuilder {
   public constructor(readonly config: BoosterConfig) {}
@@ -18,7 +23,8 @@ export class ApplicationStackBuilder {
     logger: Logger,
     resourceManagementClient: ResourceManagementClient,
     webSiteManagementClient: webSiteManagement,
-    resourceGroupName: string
+    resourceGroupName: string,
+    rockets?: InfrastructureRocket[]
   ): Promise<void> {
     logger.info('Creating Storage and Cosmos DB accounts...')
     const accountCreationResults: Array<DeploymentExtended> = await Promise.all([
@@ -56,8 +62,16 @@ export class ApplicationStackBuilder {
     )
     const eventsStack = new EventsStack(this.config, cosmosDbConnectionString)
     const readModelsStack = new ReadModelsStack(this.config, cosmosDbConnectionString)
+    const rocketsStack = new RocketsStack(
+      this.config,
+      resourceManagementClient,
+      resourceGroupName,
+      functionAppDeployment.properties?.outputs.functionAppName.value,
+      rockets
+    )
 
     logger.info('Creating API Management Service and Cosmos DB containers...')
+
     const buildResults = await Promise.all([
       apiStack.build(),
       eventsStack.build(),
@@ -70,6 +84,7 @@ export class ApplicationStackBuilder {
         resourceGroupName,
         functionAppDeployment.properties?.outputs.functionAppName.value
       ),
+      rocketsStack.build(),
     ])
 
     // get Function App settings and API Management Service name

@@ -7,15 +7,18 @@ import {
   createResourceManagementClient,
   createWebSiteManagementClient,
 } from './setup'
+import { InfrastructureRocket } from '..'
 
-export const deploy = (configuration: BoosterConfig, logger: Logger): Promise<void> => deployApp(logger, configuration)
+export const deploy = (configuration: BoosterConfig, logger: Logger, rockets?: InfrastructureRocket[]): Promise<void> =>
+  deployApp(logger, configuration, rockets)
 
-export const nuke = (configuration: BoosterConfig, logger: Logger): Promise<void> => nukeApp(logger, configuration)
+export const nuke = (configuration: BoosterConfig, logger: Logger, rockets?: InfrastructureRocket[]): Promise<void> =>
+  nukeApp(logger, configuration, rockets)
 
 /**
  * Deploys the application in Azure
  */
-async function deployApp(logger: Logger, config: BoosterConfig): Promise<void> {
+async function deployApp(logger: Logger, config: BoosterConfig, rockets?: InfrastructureRocket[]): Promise<void> {
   const credentials = await azureCredentials()
   const [resourceManagementClient, webSiteManagementClient] = await Promise.all([
     createResourceManagementClient(credentials),
@@ -24,13 +27,19 @@ async function deployApp(logger: Logger, config: BoosterConfig): Promise<void> {
   const resourceGroupName = createResourceGroupName(config)
   await createResourceGroup(resourceGroupName, resourceManagementClient)
   const applicationBuilder = new ApplicationStackBuilder(config)
-  await applicationBuilder.buildOn(logger, resourceManagementClient, webSiteManagementClient, resourceGroupName)
+  await applicationBuilder.buildOn(
+    logger,
+    resourceManagementClient,
+    webSiteManagementClient,
+    resourceGroupName,
+    rockets
+  )
 }
 
 /**
  * Nuke all the resources used in the Resource Group
  */
-async function nukeApp(_logger: Logger, config: BoosterConfig): Promise<void> {
+async function nukeApp(_logger: Logger, config: BoosterConfig, rockets?: InfrastructureRocket[]): Promise<void> {
   const credentials = await azureCredentials()
   const resourceManagementClient = await createResourceManagementClient(credentials)
 
