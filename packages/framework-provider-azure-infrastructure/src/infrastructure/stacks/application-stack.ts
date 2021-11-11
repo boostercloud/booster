@@ -7,9 +7,6 @@ import { EventsStack } from './events-stack'
 import { ReadModelsStack } from './read-models-stack'
 import { DeploymentExtended } from 'azure-arm-resource/lib/resource/models'
 import { armTemplates } from '../arm-templates'
-import { GraphqlFunction } from './graphql-function'
-import { EventHandlerFunction } from './event-handler-function'
-import { SchedulesFunctions } from './schedules-functions'
 
 export class ApplicationStackBuilder {
   public constructor(readonly config: BoosterConfig) {}
@@ -95,14 +92,48 @@ export class ApplicationStackBuilder {
     )
 
     logger.info('Packaging Booster project for deployment...')
-    const graphqlFunctionDefinition = new GraphqlFunction(this.config).getFunctionDefinition()
-    const eventHandlerFunctionDefinition = new EventHandlerFunction(this.config).getFunctionDefinition()
-    let featuresDefinitions = [graphqlFunctionDefinition, eventHandlerFunctionDefinition]
-    const schedulesFunctionsDefinition = new SchedulesFunctions(this.config).getFunctionDefinitions()
-    if (schedulesFunctionsDefinition) {
-      featuresDefinitions = featuresDefinitions.concat(schedulesFunctionsDefinition)
-    }
-    const zipPath = await packageAzureFunction(featuresDefinitions)
+    const zipPath = await packageAzureFunction([
+      {
+        name: 'graphql',
+        config: {
+          bindings: [
+            {
+              authLevel: 'anonymous',
+              type: 'httpTrigger',
+              direction: 'in',
+              name: 'rawRequest',
+              methods: ['post'],
+            },
+            {
+              type: 'http',
+              direction: 'out',
+              name: '$return',
+            },
+          ],
+          scriptFile: '../dist/index.js',
+          entryPoint: this.config.serveGraphQLHandler.split('.')[1],
+        },
+      },
+      {
+        name: 'eventHandler',
+        config: {
+          bindings: [
+            {
+              type: 'cosmosDBTrigger',
+              name: 'rawEvent',
+              direction: 'in',
+              leaseCollectionName: 'leases',
+              connectionStringSetting: 'COSMOSDB_CONNECTION_STRING',
+              databaseName: this.config.resourceNames.applicationStack,
+              collectionName: this.config.resourceNames.eventsStore,
+              createLeaseCollectionIfNotExists: 'true',
+            },
+          ],
+          scriptFile: '../dist/index.js',
+          entryPoint: this.config.eventDispatcherHandler.split('.')[1],
+        },
+      },
+    ])
 
     logger.info('Deploying Zip...')
     await deployFunctionPackage(

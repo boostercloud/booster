@@ -12,7 +12,6 @@ import { CosmosClient } from '@azure/cosmos'
 import { environmentVarNames } from './constants'
 import { fetchReadModel, storeReadModel } from './library/read-model-adapter'
 import { searchReadModel } from './library/searcher-adapter'
-import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
 
 let cosmosClient: CosmosClient
 if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefined') {
@@ -68,7 +67,7 @@ export const Provider = (): ProviderLibrary => ({
   },
   // ScheduledCommandsLibrary
   scheduled: {
-    rawToEnvelope: rawScheduledInputToEnvelope,
+    rawToEnvelope: undefined as any,
   },
   // ProviderInfrastructureGetter
   infrastructure: () => {

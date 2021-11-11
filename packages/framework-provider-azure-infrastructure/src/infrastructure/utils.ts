@@ -7,7 +7,11 @@ import * as uuid from 'uuid'
 import * as path from 'path'
 import * as archiver from 'archiver'
 import * as needle from 'needle'
-import { FunctionDefinition } from './types/functionDefinition'
+
+interface FunctionDefinition {
+  name: string
+  config: object
+}
 
 /**
  * Deploys an Azure resource to a resource group.
