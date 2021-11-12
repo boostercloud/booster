@@ -32,9 +32,9 @@
   "devDependencies": {
     "@oclif/dev-cli": "^1",
     "@oclif/test": "^1",
-    "@types/child-process-promise": "^2.2.1",
+    "@types/child-process-promise": "^2.2.2",
     "@types/faker": "5.1.5",
-    "@types/fs-extra": "^8.0.0",
+    "@types/fs-extra": "^9.0.13",
     "@types/inflected": "1.1.29",
     "@types/inquirer": "^6.5.0",
     "@types/mustache": "4.1.0",

@@ -1,5 +1,6 @@
 import { deploy, nuke } from './infrastructure'
 import { BoosterConfig, Logger, ProviderInfrastructure, RocketDescriptor } from '@boostercloud/framework-types'
+
 export * from './test-helper/azure-test-helper'
 
 export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): ProviderInfrastructure => {
