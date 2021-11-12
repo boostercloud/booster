@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-azure",
-  "version": "0.21.5",
+  "version": "0.21.6",
   "description": "Handle Booster's integration with Azure",
   "keywords": [
     "framework-provider-azure"
@@ -22,7 +22,7 @@
   "dependencies": {
     "@azure/cosmos": "3.7.3",
     "@azure/functions": "^1.2.2",
-    "@boostercloud/framework-types": "^0.21.5",
+    "@boostercloud/framework-types": "^0.21.6",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
     "mocha": "8.4.0",
