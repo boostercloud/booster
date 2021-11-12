@@ -7,6 +7,7 @@ import {
   ReadOnlyNonEmptyArray,
   UUID,
 } from '@boostercloud/framework-types'
+import { AZURE_CONFLICT_ERROR_CODE, AZURE_PRECONDITION_FAILED_ERROR } from '../constants'
 
 export async function fetchReadModel(
   db: CosmosClient,
@@ -58,7 +59,7 @@ async function insertReadModel(
     logger.debug('[ReadModelAdapter#insertReadModel] Read model inserted')
   } catch (err) {
     // In case of conflict (The ID provided for a resource on a PUT or POST operation has been taken by an existing resource) we should retry it
-    if (err.code == 409) {
+    if (err.code == AZURE_CONFLICT_ERROR_CODE) {
       logger.debug('[ReadModelAdapter#insertReadModel] Read model insert failed with a conflict failure')
       throw new OptimisticConcurrencyUnexpectedVersionError(err.message)
     }
@@ -85,7 +86,7 @@ async function updateReadModel(
     logger.debug('[ReadModelAdapter#updateReadModel] Read model updated')
   } catch (err) {
     // If there is a precondition failure then we should retry it
-    if (err.code == 412) {
+    if (err.code == AZURE_PRECONDITION_FAILED_ERROR) {
       logger.debug('[ReadModelAdapter#updateReadModel] Read model update failed with a pre-condition failure')
       throw new OptimisticConcurrencyUnexpectedVersionError(err.message)
     }
@@ -100,7 +101,7 @@ export async function storeReadModel(
   readModelName: string,
   readModel: ReadModelInterface
 ): Promise<void> {
-  const version = readModel.boosterMetadata?.version || 0
+  const version = readModel.boosterMetadata?.version ?? 0
   if (version === 0) {
     await insertReadModel(logger, readModel, db, config, readModelName)
   }

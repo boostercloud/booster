@@ -80,7 +80,7 @@ export async function fetchReadModel(
       ...value,
       boosterMetadata: {
         ...value?.boosterMetadata,
-        optimisticConcurrencyValue: optimisticConcurrencyValue,
+        optimisticConcurrencyValue,
       },
     } as ReadModelInterface
   }) as unknown as ReadOnlyNonEmptyArray<ReadModelInterface>
@@ -156,9 +156,5 @@ function buildKey(
 }
 
 function generateOptimisticConcurrencyValue(value: ReadModelInterface): number {
-  let optimisticConcurrencyValue = 1 // if there is not version then we need to persist the first one
-  if (value.boosterMetadata?.version) {
-    optimisticConcurrencyValue = value.boosterMetadata?.version + 1 // the next version number that we are going to persist
-  }
-  return optimisticConcurrencyValue
+  return (value.boosterMetadata?.version ?? 0) + 1 // the next version number that we are going to persist
 }
