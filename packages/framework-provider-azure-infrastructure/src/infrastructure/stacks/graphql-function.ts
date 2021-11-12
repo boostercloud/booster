@@ -1,5 +1,6 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { GraphQLFunctionDefinition } from '../types/functionDefinition'
+import { functionPath } from '../utils'
 
 export class GraphqlFunction {
   public constructor(readonly config: BoosterConfig) {}
@@ -22,7 +23,7 @@ export class GraphqlFunction {
             name: '$return',
           },
         ],
-        scriptFile: '../dist/index.js',
+        scriptFile: functionPath(this.config),
         entryPoint: this.config.serveGraphQLHandler.split('.')[1],
       },
     }

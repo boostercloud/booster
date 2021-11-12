@@ -8,6 +8,7 @@ import * as path from 'path'
 import * as archiver from 'archiver'
 import * as needle from 'needle'
 import { FunctionDefinition } from './types/functionDefinition'
+import { BoosterConfig } from '@boostercloud/framework-types'
 
 /**
  * Deploys an Azure resource to a resource group.
@@ -97,4 +98,8 @@ export async function deployFunctionPackage(
       password: password,
     }
   )
+}
+
+export function functionPath(config: BoosterConfig): string {
+  return path.join('..', config.codeRelativePath, 'index.js')
 }

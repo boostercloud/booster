@@ -1,5 +1,6 @@
 import { BoosterConfig, ScheduledCommandMetadata, ScheduleInterface } from '@boostercloud/framework-types'
 import { FunctionDefinition, ScheduleFunctionDefinition } from '../types/functionDefinition'
+import { functionPath } from '../utils'
 
 interface ScheduledCommandInfo {
   name: string
@@ -34,7 +35,7 @@ export class SchedulesFunctions {
             schedule: `${cronExpression}`,
           },
         ],
-        scriptFile: '../dist/index.js',
+        scriptFile: functionPath(this.config),
         entryPoint: this.config.scheduledTaskHandler.split('.')[1],
       },
     }

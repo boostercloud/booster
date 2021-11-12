@@ -6,7 +6,7 @@ import { ScheduleFunctionDefinition } from '../../../src/infrastructure/types/fu
 
 describe('Creating scheduled-functions', () => {
   describe('without scheduledCommandHandlers', () => {
-    const config = new BoosterConfig('test')
+    const config = buildConfig()
 
     it('is an undefined object', async () => {
       const definitions = new SchedulesFunctions(config).getFunctionDefinitions()
@@ -15,7 +15,7 @@ describe('Creating scheduled-functions', () => {
   })
 
   describe('with one scheduledCommandHandlers', () => {
-    const config = new BoosterConfig('test')
+    const config = buildConfig()
     const scheduleCommandInterface = {} as ScheduledCommandInterface
     const scheduleInterface = { day: '1' } as ScheduleInterface
 
@@ -34,7 +34,7 @@ describe('Creating scheduled-functions', () => {
   })
 
   describe('with two scheduledCommandHandlers', () => {
-    const config = new BoosterConfig('test')
+    const config = buildConfig()
     const scheduleCommandInterface = {} as ScheduledCommandInterface
     const scheduleInterface = { day: '1' } as ScheduleInterface
 
@@ -60,7 +60,7 @@ describe('Creating scheduled-functions', () => {
   })
 
   describe('with all scheduled fields', () => {
-    const config = new BoosterConfig('test')
+    const config = buildConfig()
     const scheduleCommandInterface = {} as ScheduledCommandInterface
     const scheduleInterface = {
       day: 'day',
@@ -84,7 +84,7 @@ describe('Creating scheduled-functions', () => {
   })
 
   describe('without scheduled fields', () => {
-    const config = new BoosterConfig('test')
+    const config = buildConfig()
     const scheduleCommandInterface = {} as ScheduledCommandInterface
     const scheduleInterface = {} as ScheduleInterface
 
@@ -113,5 +113,9 @@ describe('Creating scheduled-functions', () => {
     expect(definition.config.bindings[0].schedule).to.be.equal(nCronTabExpression)
     expect(definition.config.scriptFile).to.be.equal('../dist/index.js')
     expect(definition.config.entryPoint).to.be.equal('boosterTriggerScheduledCommand')
+  }
+
+  function buildConfig(): BoosterConfig {
+    return new BoosterConfig('test')
   }
 })
