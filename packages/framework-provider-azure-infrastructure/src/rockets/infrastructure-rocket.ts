@@ -1,12 +1,12 @@
 import { BoosterConfig, RocketDescriptor } from '@boostercloud/framework-types'
 import ResourceManagementClient from 'azure-arm-resource/lib/resource/resourceManagementClient'
+import { CoreAzureStackConfig } from '../infrastructure/stacks/rockets-stack'
 
 export interface InfrastructureRocket {
   mountStack: (
     config: BoosterConfig,
-    resourceManagementClient: ResourceManagementClient,
-    resourceGroupName: string,
-    functionAppName: string
+    stackCurrentConfig: CoreAzureStackConfig,
+    resourceManagementClient: ResourceManagementClient
   ) => Promise<void>
   unmountStack?: () => void
 }

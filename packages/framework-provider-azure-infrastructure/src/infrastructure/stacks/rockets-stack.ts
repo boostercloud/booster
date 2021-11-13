@@ -1,20 +1,27 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { InfrastructureRocket } from '../../rockets/infrastructure-rocket'
 import ResourceManagementClient from 'azure-arm-resource/lib/resource/resourceManagementClient'
+import { User } from 'azure-arm-website/lib/models'
+import { InfrastructureRocket } from '../../rockets/infrastructure-rocket'
 
-export class RocketsStack {
+export interface CoreAzureStackConfig {
+  resourceGroupName: string
+  storageAccountName: string
+  cosmosDbConnectionString: string
+  credentials: User
+}
+
+export class RocketsStackBuilder {
   public constructor(
     readonly config: BoosterConfig,
-    private resourceManagementClient: ResourceManagementClient,
-    private resourceGroupName: string,
-    private readonly functionAppName: string,
-    private readonly rockets?: InfrastructureRocket[]
+    readonly stackCurrentConfig: CoreAzureStackConfig,
+    readonly resourceManagementClient: ResourceManagementClient,
+    readonly rockets?: InfrastructureRocket[]
   ) {}
 
   public async build(): Promise<void> {
     const rocketsInfraestructure = this.rockets
       ? this.rockets.map((rocket: InfrastructureRocket) =>
-          rocket.mountStack(this.config, this.resourceManagementClient, this.resourceGroupName, this.functionAppName)
+          rocket.mountStack(this.config, this.stackCurrentConfig, this.resourceManagementClient)
         )
       : []
 

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { HasInfrastructure, ProviderLibrary } from '@boostercloud/framework-types'
+import { HasInfrastructure, ProviderLibrary, RocketDescriptor } from '@boostercloud/framework-types'
 import { requestFailed, requestSucceeded } from './library/api-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import {
@@ -29,7 +29,7 @@ export function loadInfrastructurePackage(packageName: string): HasInfrastructur
   return require(packageName)
 }
 
-export const Provider = (): ProviderLibrary => ({
+export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
   // ProviderEventsLibrary
   events: {
     rawToEnvelopes: rawEventsToEnvelopes,
@@ -85,7 +85,7 @@ export const Provider = (): ProviderLibrary => ({
       )
     }
 
-    return infrastructure.Infrastructure()
+    return infrastructure.Infrastructure(rockets)
   },
 })
 

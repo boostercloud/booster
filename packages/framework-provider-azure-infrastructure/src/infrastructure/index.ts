@@ -8,6 +8,7 @@ import {
   createWebSiteManagementClient,
 } from './setup'
 import { InfrastructureRocket } from '..'
+import { RocketsStackBuilder } from './stacks/rockets-stack'
 
 export const deploy = (configuration: BoosterConfig, logger: Logger, rockets?: InfrastructureRocket[]): Promise<void> =>
   deployApp(logger, configuration, rockets)
@@ -27,13 +28,14 @@ async function deployApp(logger: Logger, config: BoosterConfig, rockets?: Infras
   const resourceGroupName = createResourceGroupName(config)
   await createResourceGroup(resourceGroupName, resourceManagementClient)
   const applicationBuilder = new ApplicationStackBuilder(config)
-  await applicationBuilder.buildOn(
+  const applicationBuilderConfig = await applicationBuilder.buildOn(
     logger,
     resourceManagementClient,
     webSiteManagementClient,
-    resourceGroupName,
-    rockets
+    resourceGroupName
   )
+  const rocketsBuilder = new RocketsStackBuilder(config, applicationBuilderConfig, resourceManagementClient, rockets)
+  await rocketsBuilder.build()
 }
 
 /**
