@@ -1,4 +1,4 @@
-import { configuration } from '../infrastructure/params'
+import { configuration } from '../infrastructure/helper/params'
 import {
   getResourceGroup,
   showResourceInfo,

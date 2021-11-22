@@ -7,6 +7,7 @@ export function runCommand(
 ): ChildProcessPromise<PromiseResult<string>> {
   const subprocess = exec(command, {
     cwd: path,
+    maxBuffer: 1024 * 1024 * 1024,
   })
 
   if (!ignoreLogs && subprocess.childProcess && process) {
