@@ -127,8 +127,8 @@ describe('Entities end-to-end tests', () => {
         `,
       })
 
-      console.log('Waiting 1 second for deletion to complete...')
-      await sleep(1000)
+      console.log('Waiting 4 second for deletion to complete...')
+      await sleep(4000)
 
       client = applicationUnderTest.graphql.client(userToken)
       // Retrieve updated entity

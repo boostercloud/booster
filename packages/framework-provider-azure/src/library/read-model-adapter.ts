@@ -107,3 +107,19 @@ export async function storeReadModel(
   }
   await updateReadModel(readModel, db, config, readModelName, logger)
 }
+
+export async function deleteReadModel(
+  db: CosmosClient,
+  config: BoosterConfig,
+  logger: Logger,
+  readModelName: string,
+  readModel: ReadModelInterface
+): Promise<void> {
+  logger.debug(`[ReadModelAdapter#deleteReadModel] Entering to Read model deleted. ID = ${readModel.id}`)
+  await db
+    .database(config.resourceNames.applicationStack)
+    .container(config.resourceNames.forReadModel(readModelName))
+    .item(readModel.id as string, readModel.id)
+    .delete()
+  logger.debug(`[ReadModelAdapter#deleteReadModel] Read model deleted. ID = ${readModel.id}`)
+}

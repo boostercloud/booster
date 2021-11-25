@@ -10,7 +10,7 @@ import {
 } from './library/events-adapter'
 import { CosmosClient } from '@azure/cosmos'
 import { environmentVarNames } from './constants'
-import { fetchReadModel, storeReadModel } from './library/read-model-adapter'
+import { deleteReadModel, fetchReadModel, storeReadModel } from './library/read-model-adapter'
 import { searchReadModel } from './library/searcher-adapter'
 import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
 
@@ -46,7 +46,7 @@ export const Provider = (): ProviderLibrary => ({
     rawToEnvelopes: undefined as any,
     fetchSubscriptions: undefined as any,
     store: storeReadModel.bind(null, cosmosClient),
-    delete: undefined as any,
+    delete: deleteReadModel.bind(null, cosmosClient),
     deleteSubscription: undefined as any,
     deleteAllSubscriptions: undefined as any,
   },
