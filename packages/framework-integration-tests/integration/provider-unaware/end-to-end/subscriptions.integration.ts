@@ -8,10 +8,19 @@ import { FilterFor } from '@boostercloud/framework-types'
 import { DisconnectableApolloClient } from '@boostercloud/application-tester'
 import { applicationUnderTest } from './setup'
 import { beforeHookProductId } from '../../../src/constants'
+import * as path from 'path'
 
 chai.use(require('chai-as-promised'))
 
 describe('subscriptions', () => {
+  //TODO: Azure provider doesn't support subscription Interface so these tests are skipped for Azure
+  if (process.env.TESTED_PROVIDER === 'AZURE') {
+    console.log('****************** Warning **********************')
+    console.log(`${path.join(process.cwd(), 'subscriptions.integration.ts')} ignored`)
+    console.log('Azure provider do not implement the subscription Interface')
+    console.log('*************************************************')
+    return
+  }
   let countSubscriptions: () => Promise<number>
   let countConnections: () => Promise<number>
   before(async () => {

@@ -491,7 +491,11 @@ describe('Read models end-to-end tests', () => {
           cursor = queryResult.data.ListCartReadModels.cursor
 
           if (cursor) {
-            expect(cursor.id).to.equal(currentPageCartData[0].id)
+            if (process.env.TESTED_PROVIDER === 'AZURE') {
+              expect(cursor.id).to.equal((i + 1).toString())
+            } else {
+              expect(cursor.id).to.equal(currentPageCartData[0].id)
+            }
           }
           expect(currentPageCartData).to.be.an('array')
           expect(currentPageCartData.length).to.equal(1)

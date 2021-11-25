@@ -333,7 +333,6 @@ describe('Cart end-to-end tests', () => {
         const adminEmail: string = internet.email()
         const adminAuthToken = applicationUnderTest.token.forUser(adminEmail, 'Admin')
         client = applicationUnderTest.graphql.client(adminAuthToken)
-
         // Delete a product given an id
         await client.mutate({
           variables: {
@@ -346,8 +345,8 @@ describe('Cart end-to-end tests', () => {
           `,
         })
 
-        console.log('Waiting 1 second for deletion to complete...')
-        await sleep(1000)
+        console.log('Waiting 4 second for deletion to complete...')
+        await sleep(4000)
 
         client = applicationUnderTest.graphql.client(authToken)
         // Retrieve updated entity
@@ -379,7 +378,6 @@ describe('Cart end-to-end tests', () => {
         )
 
         const productData = queryResult.data.ProductReadModel
-
         expect(productData).to.be.null
       })
     })

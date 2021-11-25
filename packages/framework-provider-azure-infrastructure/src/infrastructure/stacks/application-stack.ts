@@ -77,6 +77,7 @@ export class ApplicationStackBuilder {
     // add new app settings with the Booster environment variables and Cosmos DB connection string
     appSettings.properties = {
       ...appSettings.properties,
+      ...this.config.env,
       BOOSTER_ENV: this.config.environmentName,
       BOOSTER_REST_API_URL: `https://${apiManagementServiceName}.azure-api.net/${this.config.environmentName}`,
       COSMOSDB_CONNECTION_STRING: cosmosDbConnectionString,
