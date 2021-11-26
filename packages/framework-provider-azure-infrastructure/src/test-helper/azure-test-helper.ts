@@ -15,9 +15,9 @@ interface ApplicationOutputs {
 
 export class AzureTestHelper {
   private constructor(
-      readonly outputs: ApplicationOutputs,
-      readonly counters: AzureCounters,
-      readonly queries: AzureQueries
+    readonly outputs: ApplicationOutputs,
+    readonly counters: AzureCounters,
+    readonly queries: AzureQueries
   ) {}
 
   public static async checkResourceGroup(applicationName: string, environmentName: string): Promise<ResourceGroup> {
@@ -25,9 +25,9 @@ export class AzureTestHelper {
     return getResourceGroup(applicationName, environmentName)
   }
 
-  public static async build(appName: string): Promise<AzureTestHelper> {
+  public static async build(appName: string, environmentName: string): Promise<AzureTestHelper> {
     console.log('Application name: ', appName)
-    const resourceGroup = await this.checkResourceGroup(appName)
+    const resourceGroup = await this.checkResourceGroup(appName, environmentName)
     this.ensureAzureConfiguration()
     return new AzureTestHelper(
       {

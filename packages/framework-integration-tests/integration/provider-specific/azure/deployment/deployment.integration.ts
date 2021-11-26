@@ -8,7 +8,7 @@ describe('After deployment', () => {
       // The project must have been deployed by the cliHelper hook in setup.ts
       // that scripts uses the cli to do the deployment, so we just check here
       // that the resource group exists
-      const environmentName = process.env.BOOSTER_ENV || ''
+      const environmentName = process.env.BOOSTER_ENV ?? 'azure'
       await expect(AzureTestHelper.checkResourceGroup(applicationName(), environmentName)).to.be.eventually.fulfilled
     })
   })
