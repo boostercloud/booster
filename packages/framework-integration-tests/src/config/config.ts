@@ -32,12 +32,14 @@ Booster.configure('production', (config: BoosterConfig): void => {
   config.appName = 'my-store-' + appNameSuffix
   config.providerPackage = '@boostercloud/framework-provider-aws'
   config.assets = ['assets']
-  config.tokenVerifier = {
-    issuer: 'booster',
-    // Read the content of the public RS256 cert, used to sign the JWT tokens
-    publicKey: fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8'),
-    rolesClaim: 'booster:role',
-  }
+  config.tokenVerifiers = [
+    {
+      issuer: 'booster',
+      // Read the content of the public RS256 cert, used to sign the JWT tokens
+      publicKey: fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8'),
+      rolesClaim: 'booster:role',
+    },
+  ]
 })
 
 Booster.configure('azure', (config: BoosterConfig): void => {
@@ -52,10 +54,12 @@ Booster.configure('azure', (config: BoosterConfig): void => {
   config.appName = 'my-store-' + appNameSuffix
   config.providerPackage = '@boostercloud/framework-provider-azure'
   config.assets = ['assets']
-  config.tokenVerifier = {
-    issuer: 'booster',
-    // Read the content of the public RS256 cert, used to sign the JWT tokens
-    publicKey: fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8'),
-    rolesClaim: 'booster:role',
-  }
+  config.tokenVerifiers = [
+    {
+      issuer: 'booster',
+      // Read the content of the public RS256 cert, used to sign the JWT tokens
+      publicKey: fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8'),
+      rolesClaim: 'booster:role',
+    },
+  ]
 })
