@@ -116,6 +116,7 @@ export interface ProviderInfrastructure {
   deploy?: (configuration: BoosterConfig, logger: Logger) => Promise<void>
   nuke?: (configuration: BoosterConfig, logger: Logger) => Promise<void>
   start?: (configuration: BoosterConfig, port: number) => Promise<void>
+  synth?: (configuration: BoosterConfig, logger: Logger) => Promise<void>
 }
 
 export interface ScheduledCommandsLibrary {

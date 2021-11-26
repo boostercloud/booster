@@ -1,20 +1,19 @@
 import { BoosterConfig, ScheduledCommandMetadata, ScheduleInterface } from '@boostercloud/framework-types'
 import { FunctionDefinition, ScheduleFunctionDefinition } from '../types/functionDefinition'
-import { functionPath } from '../utils'
 
 interface ScheduledCommandInfo {
   name: string
   metadata: ScheduledCommandMetadata
 }
 
-export class SchedulesFunctions {
+export class ScheduledFunctions {
   public constructor(readonly config: BoosterConfig) {}
 
   public getFunctionDefinitions(): Array<FunctionDefinition> | undefined {
-    if (SchedulesFunctions.isEmpty(this.config.scheduledCommandHandlers)) return
+    if (ScheduledFunctions.isEmpty(this.config.scheduledCommandHandlers)) return
     return Object.keys(this.config.scheduledCommandHandlers)
       .map((scheduledCommandName) => this.buildScheduledCommandInfo(scheduledCommandName))
-      .filter((scheduledCommandInfo) => !SchedulesFunctions.isEmpty(scheduledCommandInfo.metadata.scheduledOn))
+      .filter((scheduledCommandInfo) => !ScheduledFunctions.isEmpty(scheduledCommandInfo.metadata.scheduledOn))
       .map((scheduledCommandInfo) =>
         this.scheduledCommandInfoToTimeTriggerFunction(scheduledCommandInfo)
       ) as Array<FunctionDefinition>
@@ -23,7 +22,7 @@ export class SchedulesFunctions {
   private scheduledCommandInfoToTimeTriggerFunction(
     scheduledCommandInfo: ScheduledCommandInfo
   ): ScheduleFunctionDefinition {
-    const cronExpression = SchedulesFunctions.createCronExpression(scheduledCommandInfo.metadata.scheduledOn)
+    const cronExpression = ScheduledFunctions.createCronExpression(scheduledCommandInfo.metadata.scheduledOn)
     return {
       name: `scheduleFunction-${scheduledCommandInfo.name}`,
       config: {
@@ -35,7 +34,7 @@ export class SchedulesFunctions {
             schedule: `${cronExpression}`,
           },
         ],
-        scriptFile: functionPath(this.config),
+        scriptFile: this.config.functionRelativePath,
         entryPoint: this.config.scheduledTaskHandler.split('.')[1],
       },
     }

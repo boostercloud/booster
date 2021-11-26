@@ -1,4 +1,4 @@
-import { configuration } from '../infrastructure/params'
+import { configuration } from '../infrastructure/helper/params'
 import {
   getResourceGroup,
   showResourceInfo,
@@ -20,14 +20,14 @@ export class AzureTestHelper {
     readonly queries: AzureQueries
   ) {}
 
-  public static async checkResourceGroup(applicationName: string): Promise<ResourceGroup> {
+  public static async checkResourceGroup(applicationName: string, environmentName: string): Promise<ResourceGroup> {
     console.log('Check resource group')
-    return getResourceGroup(applicationName)
+    return getResourceGroup(applicationName, environmentName)
   }
 
-  public static async build(appName: string): Promise<AzureTestHelper> {
+  public static async build(appName: string, environmentName: string): Promise<AzureTestHelper> {
     console.log('Application name: ', appName)
-    const resourceGroup = await this.checkResourceGroup(appName)
+    const resourceGroup = await this.checkResourceGroup(appName, environmentName)
     this.ensureAzureConfiguration()
     return new AzureTestHelper(
       {

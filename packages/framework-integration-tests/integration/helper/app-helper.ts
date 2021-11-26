@@ -12,9 +12,10 @@ export function applicationName(): string {
 
 export async function getProviderTestHelper(): Promise<ProviderTestHelper> {
   const provider = process.env.TESTED_PROVIDER
+  const environmentName = process.env.BOOSTER_ENV ?? 'azure'
   const providerHelpers: Record<string, () => Promise<ProviderTestHelper>> = {
     AWS: () => AWSTestHelper.build(applicationName()),
-    AZURE: () => AzureTestHelper.build(applicationName()),
+    AZURE: () => AzureTestHelper.build(applicationName(), environmentName),
     LOCAL: () => LocalTestHelper.build(applicationName()),
   }
   const supportedProviders = Object.keys(providerHelpers)

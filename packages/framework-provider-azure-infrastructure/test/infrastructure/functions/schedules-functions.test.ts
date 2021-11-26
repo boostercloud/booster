@@ -1,7 +1,7 @@
-import { expect } from '../../expect'
-import { SchedulesFunctions } from '../../../src/infrastructure/stacks/schedules-functions'
 import { BoosterConfig, ScheduledCommandInterface, ScheduleInterface } from '@boostercloud/framework-types'
+import { expect } from '../../expect'
 import { describe } from 'mocha'
+import { ScheduledFunctions } from '../../../src/infrastructure/functions/scheduled-functions'
 import { ScheduleFunctionDefinition } from '../../../src/infrastructure/types/functionDefinition'
 
 describe('Creating scheduled-functions', () => {
@@ -9,7 +9,7 @@ describe('Creating scheduled-functions', () => {
     const config = buildConfig()
 
     it('is an undefined object', async () => {
-      const definitions = new SchedulesFunctions(config).getFunctionDefinitions()
+      const definitions = new ScheduledFunctions(config).getFunctionDefinitions()
       expect(definitions).to.be.undefined
     })
   })
@@ -26,7 +26,7 @@ describe('Creating scheduled-functions', () => {
     }
 
     it('is one definition with the proper fields', () => {
-      const definitions = new SchedulesFunctions(config).getFunctionDefinitions() as Array<ScheduleFunctionDefinition>
+      const definitions = new ScheduledFunctions(config).getFunctionDefinitions() as Array<ScheduleFunctionDefinition>
       expect(definitions).not.to.be.null
       expect(definitions.length).to.be.equal(1)
       expectDefinition(definitions[0], scheduleCommandName, '0 * * 1 * *')
@@ -51,7 +51,7 @@ describe('Creating scheduled-functions', () => {
     }
 
     it('is two definitions with the proper fields', () => {
-      const definitions = new SchedulesFunctions(config).getFunctionDefinitions() as Array<ScheduleFunctionDefinition>
+      const definitions = new ScheduledFunctions(config).getFunctionDefinitions() as Array<ScheduleFunctionDefinition>
       expect(definitions).not.to.be.null
       expect(definitions.length).to.be.equal(2)
       expectDefinition(definitions[0], scheduleCommandName1, '0 * * 1 * *')
@@ -78,7 +78,7 @@ describe('Creating scheduled-functions', () => {
     }
 
     it('create the expected nCronTab', () => {
-      const definitions = new SchedulesFunctions(config).getFunctionDefinitions() as Array<ScheduleFunctionDefinition>
+      const definitions = new ScheduledFunctions(config).getFunctionDefinitions() as Array<ScheduleFunctionDefinition>
       expectDefinition(definitions[0], scheduleCommandName, '0 minute hour day month weekDay')
     })
   })
@@ -95,7 +95,7 @@ describe('Creating scheduled-functions', () => {
     }
 
     it('skip the function', () => {
-      const definitions = new SchedulesFunctions(config).getFunctionDefinitions() as Array<ScheduleFunctionDefinition>
+      const definitions = new ScheduledFunctions(config).getFunctionDefinitions() as Array<ScheduleFunctionDefinition>
       expect(definitions.length).to.be.equal(0)
     })
   })
@@ -104,7 +104,7 @@ describe('Creating scheduled-functions', () => {
     definition: ScheduleFunctionDefinition,
     scheduleCommandName: string,
     nCronTabExpression = '0 * * * * *'
-  ) {
+  ): void {
     expect(definition.name).to.be.equal(`scheduleFunction-${scheduleCommandName}`)
     expect(definition.config.bindings.length).to.be.equal(1)
     expect(definition.config.bindings[0].type).to.be.equal('timerTrigger')
