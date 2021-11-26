@@ -1,16 +1,20 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { buildAppPrefix, readProjectConfig } from '../helper/utils'
+import {
+  buildAppPrefix,
+  readProjectConfig,
+  createFunctionResourceGroupName,
+  createResourceGroupName,
+} from '../helper/utils'
 import { AzurermProvider } from '@cdktf/provider-azurerm'
 import { TerraformStack } from 'cdktf'
-import { TerraformApplicationServicePlan } from './TerraformApplicationServicePlan'
-import { TerraformResourceGroup } from './TerraformResourceGroup'
-import { TerraformStorageAccount } from './TerraformStorageAccount'
-import { createFunctionResourceGroupName, createResourceGroupName } from '../helper/setup'
-import { TerraformFunctionApp } from './TerraformFunctionApp'
-import { TerraformCosmosdbSqlDatabase } from './TerraformCosmosdbSqlDatabase'
-import { TerraformContainers } from './TerraformContainers'
-import { TerraformCosmosdbDatabase } from './TerraformCosmosdbDatabase'
-import { TerraformApiManagement } from './TerraformApiManagement'
+import { TerraformApplicationServicePlan } from './terraform-application-service-plan'
+import { TerraformResourceGroup } from './terraform-resource-group'
+import { TerraformStorageAccount } from './terraform-storage-account'
+import { TerraformFunctionApp } from './terraform-function-app'
+import { TerraformCosmosdbSqlDatabase } from './terraform-cosmosdb-sql-database'
+import { TerraformContainers } from './terraform-containers'
+import { TerraformCosmosdbDatabase } from './terraform-cosmosdb-database'
+import { TerraformApiManagement } from './terraform-api-management'
 
 export class ApplicationSynth {
   readonly config: BoosterConfig
@@ -22,7 +26,7 @@ export class ApplicationSynth {
   }
 
   public async synth(terraformStack: TerraformStack): Promise<void> {
-    const resourceGroupName = createResourceGroupName(this.config)
+    const resourceGroupName = createResourceGroupName(this.config.appName, this.config.environmentName)
     const functionAppName = createFunctionResourceGroupName(resourceGroupName)
     new AzurermProvider(terraformStack, 'azureFeature', {
       features: {},

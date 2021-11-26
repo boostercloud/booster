@@ -3,9 +3,14 @@ import { App } from 'cdktf'
 import { AzureStack } from './azure-stack'
 import { ZipResource } from './types/zip-resource'
 import { FunctionZip } from './helper/function-zip'
-import { createFunctionResourceGroupName, createResourceGroupName } from './helper/setup'
-import { runCommand } from '@boostercloud/framework-common-helpers'
-import { renderToFile } from './helper/utils'
+import {
+  azureCredentials,
+  createFunctionResourceGroupName,
+  createResourceGroupName,
+  createResourceManagementClient,
+  renderToFile,
+} from './helper/utils'
+import { runCommand, Promises } from '@boostercloud/framework-common-helpers'
 import * as ckdtfTemplate from './templates/cdktf'
 
 export const synth = (configuration: BoosterConfig, logger: Logger): Promise<void> => synthApp(logger, configuration)
@@ -23,7 +28,7 @@ async function synthApp(logger: Logger, config: BoosterConfig): Promise<void> {
 
 async function uploadFile(logger: Logger, config: BoosterConfig, zipResource: ZipResource): Promise<void> {
   logger.info('Uploading zip file')
-  const resourceGroupName = createResourceGroupName(config)
+  const resourceGroupName = createResourceGroupName(config.appName, config.environmentName)
   const functionAppName = createFunctionResourceGroupName(resourceGroupName)
   await FunctionZip.deployZip(functionAppName, resourceGroupName, zipResource)
   logger.info('Zip file uploaded')
@@ -35,8 +40,8 @@ async function uploadFile(logger: Logger, config: BoosterConfig, zipResource: Zi
 async function deployApp(logger: Logger, config: BoosterConfig): Promise<void> {
   logger.info(`Deploying app ${config.appName}`)
   const zipResource = await terraformSynth(logger, config)
-  const command = await runCommand(process.cwd(), 'cdktf deploy --auto-approve')
-  if (command?.stdout.includes('non-zero exit code')) {
+  const command = await runCommand(process.cwd(), 'npx cdktf deploy --auto-approve')
+  if (command.childProcess.exitCode !== 0) {
     return Promise.reject(`Deploy application ${config.appName} failed. Check cdktf logs`)
   }
   await uploadFile(logger, config, zipResource)
@@ -46,17 +51,19 @@ async function deployApp(logger: Logger, config: BoosterConfig): Promise<void> {
  * Nuke all the resources used in the Resource Group
  */
 async function nukeApp(_logger: Logger, config: BoosterConfig): Promise<void> {
-  const command = await runCommand(process.cwd(), 'cdktf destroy --auto-approve')
+  const credentials = await azureCredentials()
+  const resourceManagementClient = await createResourceManagementClient(credentials)
 
-  if (command?.stdout.includes('non-zero exit code')) {
-    return Promise.reject(`Destroy application ${config.appName} failed. Check cdktf logs`)
-  }
+  // By deleting the resource group we are deleting all the resources within it.
+  await resourceManagementClient.resourceGroups.deleteMethod(
+    createResourceGroupName(config.appName, config.environmentName)
+  )
 }
 
 async function generateSynthFiles(logger: Logger, config: BoosterConfig): Promise<void> {
-  logger.info('Generating synth files')
+  logger.info('Generating cdktf files')
   const filesToGenerate: Array<[Array<string>, string]> = [[['cdktf.json'], ckdtfTemplate.template]]
-  await Promise.all(filesToGenerate.map(renderToFile(config)))
+  await Promises.allSettledAndFulfilled(filesToGenerate.map(renderToFile(config)))
 }
 
 async function generateZipFile(logger: Logger, config: BoosterConfig): Promise<ZipResource> {

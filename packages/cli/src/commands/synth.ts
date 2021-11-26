@@ -23,7 +23,7 @@ const runTasks = async (
     .done()
 
 export default class Synth extends BaseCommand {
-  public static description = 'Synth the current application as configured in your `index.ts` file.'
+  public static description = 'Generate the required cloud templates to deploy your app manually.'
 
   public static flags = {
     help: flags.help({ char: 'h' }),

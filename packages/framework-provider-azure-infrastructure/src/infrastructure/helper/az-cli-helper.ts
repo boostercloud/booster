@@ -1,12 +1,12 @@
 import { ResourceGroup } from '../types/resource-group'
 import { runCommand } from '../../../../framework-common-helpers'
 import { Resource } from '../types/resource'
+import { createResourceGroupName } from './utils'
 
 const azCommand = 'az'
 
-export async function getResourceGroup(appName: string): Promise<ResourceGroup> {
-  const environment = process.env.BOOSTER_ENV ?? 'azure'
-  const resourceGroupName = `resource-group-${appName}-${environment}`
+export async function getResourceGroup(appName: string, environmentName: string): Promise<ResourceGroup> {
+  const resourceGroupName = createResourceGroupName(appName, environmentName)
   console.log(`Get resource group ${resourceGroupName}`)
   const command = await runCommand('.', `${azCommand} group show --name ${resourceGroupName}`, true)
   if (command?.stdout.includes('could not be found')) {

@@ -1,15 +1,15 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { GraphqlFunction } from '../functions/graphql-function'
 import { EventHandlerFunction } from '../functions/event-handler-function'
-import { SchedulesFunctions } from '../functions/schedules-functions'
+import { ScheduledFunctions } from '../functions/scheduled-functions'
 import { FunctionDefinition } from '../types/functionDefinition'
-import archiver = require('archiver')
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
 import { ZipResource } from '../types/zip-resource'
-import needle = require('needle')
-import { azureCredentials, createWebSiteManagementClient } from './setup'
+import * as archiver from 'archiver'
+import * as needle from 'needle'
+import { azureCredentials, createWebSiteManagementClient } from './utils'
 import { User } from 'azure-arm-website/lib/models'
 
 export class FunctionZip {
@@ -53,24 +53,19 @@ export class FunctionZip {
       open_timeout: 0,
     })
 
-    return needle(
-      'post',
-      `https://${functionAppName}.scm.azurewebsites.net/api/zipDeploy`,
-      fs.createReadStream(packagePath),
-      {
-        username: username,
-        password: password,
-      }
-    )
+    return needle('post', this.getZipDeployUrl(functionAppName), fs.createReadStream(packagePath), {
+      username: username,
+      password: password,
+    })
   }
 
   private static async zipAzureFunction(config: BoosterConfig): Promise<any> {
     const graphqlFunctionDefinition = new GraphqlFunction(config).getFunctionDefinition()
     const eventHandlerFunctionDefinition = new EventHandlerFunction(config).getFunctionDefinition()
     let featuresDefinitions = [graphqlFunctionDefinition, eventHandlerFunctionDefinition]
-    const schedulesFunctionsDefinition = new SchedulesFunctions(config).getFunctionDefinitions()
-    if (schedulesFunctionsDefinition) {
-      featuresDefinitions = featuresDefinitions.concat(schedulesFunctionsDefinition)
+    const scheduledFunctionsDefinition = new ScheduledFunctions(config).getFunctionDefinitions()
+    if (scheduledFunctionsDefinition) {
+      featuresDefinitions = featuresDefinitions.concat(scheduledFunctionsDefinition)
     }
 
     return await this.createZip(featuresDefinitions)
@@ -113,5 +108,9 @@ export class FunctionZip {
         reject(err)
       })
     })
+  }
+
+  private static getZipDeployUrl(functionAppName: string): string {
+    return `https://${functionAppName}.scm.azurewebsites.net/api/zipDeploy`
   }
 }

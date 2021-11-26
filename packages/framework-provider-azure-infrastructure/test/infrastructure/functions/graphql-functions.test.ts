@@ -1,7 +1,7 @@
-import { expect } from '../../expect'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { describe } from 'mocha'
-import { GraphqlFunction } from '../../../src/infrastructure/stacks/graphql-function'
+import { GraphqlFunction } from '../../../src/infrastructure/functions/graphql-function'
+import { expect } from '../../expect'
 
 describe('Creating graphql-functions', () => {
   const config = new BoosterConfig('test')

@@ -15,14 +15,14 @@ interface ApplicationOutputs {
 
 export class AzureTestHelper {
   private constructor(
-    readonly outputs: ApplicationOutputs,
-    readonly counters: AzureCounters,
-    readonly queries: AzureQueries
+      readonly outputs: ApplicationOutputs,
+      readonly counters: AzureCounters,
+      readonly queries: AzureQueries
   ) {}
 
-  public static async checkResourceGroup(applicationName: string): Promise<ResourceGroup> {
+  public static async checkResourceGroup(applicationName: string, environmentName: string): Promise<ResourceGroup> {
     console.log('Check resource group')
-    return getResourceGroup(applicationName)
+    return getResourceGroup(applicationName, environmentName)
   }
 
   public static async build(appName: string): Promise<AzureTestHelper> {

@@ -145,6 +145,10 @@ jobs:
           REGION: East US
           publisherEmail: noreply@booster.cloud
           publisherName: Booster App
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENTID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
 
   azure-nuke-integration-tests:
     name: Azure Nuke Integration Test
@@ -174,6 +178,10 @@ jobs:
           REGION: East US
           publisherEmail: noreply@booster.cloud
           publisherName: Booster App
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENTID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
 
   # Kubernetes tests started failing on June 2021. We should fix them if adding more kubernetes features.
   # issue: https://github.com/boostercloud/booster/issues/885

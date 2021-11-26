@@ -20,7 +20,7 @@ export class TerraformApiManagement {
     environmentName: string,
     functionApp: FunctionApp,
     resourceGroupName: string
-  ): ApiManagementApi {
+  ): ApiManagement {
     const idApiManagement = toTerraformName(appPrefix, 'am')
     const apiManagement = new ApiManagement(terraformStack, idApiManagement, {
       name: `${resourceGroupName}apis`,
@@ -70,6 +70,6 @@ export class TerraformApiManagement {
       xmlContent: policyContent,
     })
 
-    return apiManagementApi
+    return apiManagement
   }
 }

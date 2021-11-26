@@ -29,9 +29,7 @@ export const template = `{
     "ts-node": "9.1.1",
     "@types/node": "15.0.2",
     "ttypescript": "1.5.12",
-    "metadata-booster": "0.3.1",
-    "cdktf": "0.7.0",
-    "cdktf-cli": "^0.7.0"
+    "metadata-booster": "0.3.1"
   },
   "engines": {
     "node": ">=14.0.0"

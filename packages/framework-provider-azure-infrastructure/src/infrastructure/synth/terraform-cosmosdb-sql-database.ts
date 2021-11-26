@@ -16,7 +16,9 @@ export class TerraformCosmosdbSqlDatabase {
       name: config.resourceNames.applicationStack,
       resourceGroupName: resourceGroup.name,
       accountName: cosmosdbAccount.name,
-      throughput: 400,
+      autoscaleSettings: {
+        maxThroughput: 10000,
+      },
     })
   }
 }

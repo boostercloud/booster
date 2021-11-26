@@ -22,7 +22,7 @@ export class TerraformFunctionApp {
         FUNCTIONS_WORKER_RUNTIME: 'node',
         AzureWebJobsStorage: storageAccount.primaryConnectionString,
         WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: storageAccount.primaryConnectionString,
-        WEBSITE_RUN_FROM_PACKAGE: 'ThisWillBeSetToAnURLByAzureDevOpsDeploy',
+        WEBSITE_RUN_FROM_PACKAGE: '',
         WEBSITE_CONTENTSHARE: id,
         WEBSITE_NODE_DEFAULT_VERSION: '~14',
       },
@@ -31,10 +31,9 @@ export class TerraformFunctionApp {
       storageAccountAccessKey: storageAccount.primaryAccessKey,
       version: '~3',
       dependsOn: [resourceGroup],
-      tags: { local: 'tags' },
     })
     functionApp.lifecycle = {
-      ignoreChanges: ['app_settings["WEBSITE_RUN_FROM_PACKAGE"]', 'app_settings["WEBSITE_ENABLE_SYNC_UPDATE_SITE"]'],
+      ignoreChanges: ['app_settings["WEBSITE_RUN_FROM_PACKAGE"]'],
     }
     return functionApp
   }

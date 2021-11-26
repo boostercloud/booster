@@ -29,6 +29,7 @@
     "@types/archiver": "5.1.0",
     "@types/needle": "^2.0.4",
     "archiver": "5.3.0",
+    "azure-arm-resource": "^7.3.0",
     "azure-arm-website": "^5.7.0",
     "cdktf": "0.7.0",
     "@cdktf/provider-azurerm": "0.2.179",
@@ -43,7 +44,8 @@
     "sinon-chai": "3.5.0",
     "uuid": "8.3.2",
     "fs-extra": "^8.1.0",
-    "ora": "^3.4.0"
+    "ora": "^3.4.0",
+    "cdktf-cli": "0.8.0-pre.10"
   },
   "scripts": {
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
@@ -53,8 +55,7 @@
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",
     "test:provider-azure-infrastructure": "npm run test",
-    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
-    "terraform:compile": "tsc --pretty"
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
   },
   "bugs": {
     "url": "https://github.com/boostercloud/booster/issues"
