@@ -15,7 +15,7 @@ describe('Events end-to-end tests', () => {
   if (process.env.TESTED_PROVIDER === 'AZURE') {
     console.log('****************** Warning **********************')
     console.log(`${path.join(process.cwd(), 'events.integration.ts')} ignored`)
-    console.log('Azure provider do not implement the Event Interface')
+    console.log('Azure provider does not implement the Event Interface')
     console.log('*************************************************')
     return
   }

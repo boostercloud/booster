@@ -17,7 +17,7 @@ describe('subscriptions', () => {
   if (process.env.TESTED_PROVIDER === 'AZURE') {
     console.log('****************** Warning **********************')
     console.log(`${path.join(process.cwd(), 'subscriptions.integration.ts')} ignored`)
-    console.log('Azure provider do not implement the subscription Interface')
+    console.log('Azure provider does not implement the subscription Interface')
     console.log('*************************************************')
     return
   }
