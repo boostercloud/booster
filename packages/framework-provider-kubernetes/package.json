@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-kubernetes",
-  "version": "0.21.7",
+  "version": "0.22.0",
   "description": "Handle Booster's integration with Kubernetes",
   "keywords": [
     "framework-provider-kubernetes"
@@ -20,7 +20,7 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@boostercloud/framework-types": "^0.21.7",
+    "@boostercloud/framework-types": "^0.22.0",
     "body-parser": "^1.18.3",
     "cors": "2.8.5",
     "express": "^4.17.1",
