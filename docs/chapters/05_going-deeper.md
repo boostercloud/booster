@@ -170,7 +170,7 @@ Now just let the magic happen, Booster will create everything for you and give y
 
 Azure provider implement the experimental **Booster** `synth` command. This command will generate [Terrafom](https://www.terraform.io/) templates from your code. It will also generate needed files to deploy your Booster application using [cdktf](https://learn.hashicorp.com/tutorials/terraform/cdktf).
 
-Running `synth` command, for example `Booster synth -e production` will generate following files:
+Running `synth` command, for example `boost synth -e production` will generate following files:
 
 * A file `cdktf.json`: A basic json file to deploy your application using `cdktf`
 * A folder `cdktf.out`: with the Terraform templates.
