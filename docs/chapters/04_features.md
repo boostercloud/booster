@@ -141,13 +141,14 @@ In that way, you can use different authentication providers, like Auth0, Firebas
 
 ### JWT Configuration
 
-In order to use the JWT authorization you will need to set a `tokenVerifier` property which contains the following properties:
+In order to use the JWT authorization you will need to configure at least one token verifier. To do this you can add a `TokenVerifierConfig` entry to the `tokenVerifiers` property which contains the following properties:
 
-- jwksUri: Public uri with the public keys the auth server used to sign in the JWT tokens, commonly known as a key sets.
-- issuer: Identifies the principal that issued the JWT tokens.
-- rolesClaim: Field where provider contains the token. As an example Cognito uses `cognito:groups`.
+- `jwksUri`: URI pointing to a [JWKS](https://datatracker.ietf.org/doc/html/rfc7517#section-4) object containing the public keys provided by the auth provider that signed the JWT tokens.
+- `publicKey`: Alternatively, you can manually provide a public key using this parameter.
+- `issuer`: Identifies the principal that issued the JWT tokens.
+- `rolesClaim`: Field where provider contains the token. As an example Cognito uses `cognito:groups`.
 
-Auth sample configuration:
+This is a config sample for an application that uses Firebase as the auth provider:
 
 ```typescript
 import { Booster } from '@boostercloud/framework-core'
@@ -156,11 +157,36 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 Booster.configure('production', (config: BoosterConfig): void => {
   config.appName = 'demoapp'
   config.providerPackage = '@boostercloud/framework-provider-aws'
-  config.tokenVerifier = {
-    jwksUri: 'https://demoapp.firebase.com/.well-known/jwks.json',
-    issuer: 'https://securetoken.google.com/demoapp',
-    rolesClaim: 'firebase:groups',
-  }
+  config.tokenVerifiers = [
+    {
+      jwksUri: 'https://demoapp.firebase.com/.well-known/jwks.json',
+      issuer: 'https://securetoken.google.com/demoapp',
+      rolesClaim: 'firebase:groups',
+    }
+  ]
+})
+```
+
+And this is an extended configuration that accepts both firebase emitted tokens and self-signed tokens that use a certificate stored in a local file:
+
+```typescript
+Booster.configure('production', (config: BoosterConfig): void => {
+  config.appName = 'my-app'
+  config.providerPackage = '@boostercloud/framework-provider-aws'
+  config.tokenVerifiers = [
+    // Accepts tokens signed with a local certificate (For instance, tokens generated for confirmation emails)
+    { 
+      issuer: 'booster',
+      publicKey: fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8'),
+      rolesClaim: 'booster:role',
+    },
+    // Also accepts tokens signed by Firebase
+    {
+      jwksUri: 'https://myapp.firebase.com/.well-known/jwks.json',
+      issuer: 'https://securetoken.google.com/myapp',
+      rolesClaim: 'firebase:groups',
+    }
+  ]
 })
 ```
 

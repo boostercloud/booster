@@ -9,6 +9,7 @@ import {
   EventHandlerInterface,
   ScheduledCommandMetadata,
   EventMetadata,
+  TokenVerifierConfig,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
@@ -58,7 +59,7 @@ export class BoosterConfig {
   /** Environment variables set at deployment time on the target lambda functions */
   public readonly env: Record<string, string> = {}
 
-  private _tokenVerifier?: TokenVerifier
+  private _tokenVerifiers?: Array<TokenVerifierConfig>
 
   public constructor(public readonly environmentName: string) {}
 
@@ -148,24 +149,39 @@ export class BoosterConfig {
     return value
   }
 
-  public get tokenVerifier(): TokenVerifier | undefined {
-    if (this._tokenVerifier) return this._tokenVerifier
-    if (
-      process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER] &&
-      process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI] &&
-      process.env[JWT_ENV_VARS.BOOSTER_ROLES_CLAIM]
-    ) {
-      return {
-        issuer: process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER] as string,
-        jwksUri: process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI] as string,
-        rolesClaim: process.env[JWT_ENV_VARS.BOOSTER_ROLES_CLAIM] as string,
+  public get tokenVerifiers(): Array<TokenVerifierConfig> {
+    /*
+     * TODO: Leaving this lazy initializer to load tokenVerifier options from environment
+     * variables here for backwards compatibility reasons, but we should consider forcing
+     * users to always set these options manually in the config.ts file. They can still
+     * load the config from env variables manually, but we don't need to decide this for them.
+     */
+    if (!this._tokenVerifiers) {
+      if (
+        process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER] &&
+        process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI] &&
+        process.env[JWT_ENV_VARS.BOOSTER_ROLES_CLAIM]
+      ) {
+        console.warn(
+          'Deprecation notice: Implicitly loading the JWT token verifier options from default environment variables is deprecated.' +
+            " Please set your application's `config.tokenVerifiers` options explicitly in your `src/config/config.ts` file."
+        )
+        this._tokenVerifiers = [
+          {
+            issuer: process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER] as string,
+            jwksUri: process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI] as string,
+            rolesClaim: process.env[JWT_ENV_VARS.BOOSTER_ROLES_CLAIM] as string,
+          },
+        ]
+      } else {
+        this._tokenVerifiers = []
       }
     }
-    return undefined
+    return this._tokenVerifiers
   }
 
-  public set tokenVerifier(tokenVerifier: TokenVerifier | undefined) {
-    this._tokenVerifier = tokenVerifier
+  public set tokenVerifiers(tokenVerifiers: Array<TokenVerifierConfig>) {
+    this._tokenVerifiers = tokenVerifiers
   }
 
   private validateAllMigrations(): void {
@@ -210,9 +226,3 @@ type RoleName = string
 type ConceptName = string
 type Version = number
 type ScheduledCommandName = string
-type TokenVerifier = {
-  issuer: string
-  jwksUri?: string
-  publicKey?: string
-  rolesClaim?: string
-}
