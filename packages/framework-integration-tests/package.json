@@ -1,7 +1,7 @@
 {
   "name": "@boostercloud/framework-integration-tests",
   "description": "Example project for Booster",
-  "version": "0.21.7",
+  "version": "0.23.0",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
   "private": true,
@@ -10,21 +10,21 @@
   },
   "bugs": "https://github.com/boostercloud/booster/issues",
   "dependencies": {
-    "@boostercloud/framework-common-helpers": "^0.21.7",
-    "@boostercloud/framework-core": "^0.21.7",
-    "@boostercloud/framework-provider-aws": "^0.21.7",
-    "@boostercloud/framework-provider-azure": "^0.21.7",
-    "@boostercloud/framework-provider-kubernetes": "^0.21.7",
-    "@boostercloud/framework-provider-local": "^0.21.7",
-    "@boostercloud/framework-types": "^0.21.7",
+    "@boostercloud/framework-common-helpers": "^0.23.0",
+    "@boostercloud/framework-core": "^0.23.0",
+    "@boostercloud/framework-provider-aws": "^0.23.0",
+    "@boostercloud/framework-provider-azure": "^0.23.0",
+    "@boostercloud/framework-provider-kubernetes": "^0.23.0",
+    "@boostercloud/framework-provider-local": "^0.23.0",
+    "@boostercloud/framework-types": "^0.23.0",
     "aws-sdk": "2.853.0"
   },
   "devDependencies": {
-    "@boostercloud/application-tester": "^0.21.7",
-    "@boostercloud/framework-provider-aws-infrastructure": "^0.21.7",
-    "@boostercloud/framework-provider-azure-infrastructure": "^0.21.7",
-    "@boostercloud/framework-provider-kubernetes-infrastructure": "^0.21.7",
-    "@boostercloud/framework-provider-local-infrastructure": "^0.21.7",
+    "@boostercloud/application-tester": "^0.23.0",
+    "@boostercloud/framework-provider-aws-infrastructure": "^0.23.0",
+    "@boostercloud/framework-provider-azure-infrastructure": "^0.23.0",
+    "@boostercloud/framework-provider-kubernetes-infrastructure": "^0.23.0",
+    "@boostercloud/framework-provider-local-infrastructure": "^0.23.0",
     "@kubernetes/client-node": "0.14.3",
     "@types/aws-lambda": "8.10.48",
     "@types/chai-arrays": "2.0.0",
@@ -44,6 +44,7 @@
     "jwks-rsa": "2.0.3",
     "metadata-booster": "0.3.1",
     "mocha": "8.4.0",
+    "mocha-skip-if": "0.0.3",
     "serverless": "1.83.3",
     "serverless-artillery": "0.5.2",
     "subscriptions-transport-ws": "0.9.18",
@@ -83,7 +84,8 @@
     "integration/local-stop": "BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/provider-specific/local/stop/.mocharc.yml\" \"integration/provider-specific/local/stop/*.integration.ts\"",
     "integration/azure": "npm run integration/azure-deploy && npm run integration/azure-nuke",
     "integration/azure-deploy": "BOOSTER_ENV=azure mocha --forbid-only --exit --config \"integration/provider-specific/azure/deployment/.mocharc.yml\" \"integration/provider-specific/azure/deployment/**/*.integration.ts\"",
-    "integration/azure-nuke": "BOOSTER_ENV=azure mocha --forbid-only --exit --config \"integration/provider-specific/azure/nuke/.mocharc.yml\" \"integration/provider-specific/azure/nuke/**/*.integration.ts\""
+    "integration/azure-nuke": "BOOSTER_ENV=azure mocha --forbid-only --exit --config \"integration/provider-specific/azure/nuke/.mocharc.yml\" \"integration/provider-specific/azure/nuke/**/*.integration.ts\"",
+    "integration/azure-end-to-end": "TESTED_PROVIDER=AZURE BOOSTER_ENV=azure mocha --forbid-only --exit --config \"integration/provider-unaware/end-to-end/.mocharc.yml\" \"integration/provider-unaware/end-to-end/**/*.integration.ts\""
   },
   "types": "dist/index.d.ts"
 }

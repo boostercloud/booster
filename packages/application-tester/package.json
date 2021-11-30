@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/application-tester",
-  "version": "0.21.7",
+  "version": "0.23.0",
   "description": "Contains Booster types related to the information extracted from the user project",
   "keywords": [
     "application-tester"

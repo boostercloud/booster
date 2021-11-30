@@ -1,7 +1,7 @@
 {
   "name": "@boostercloud/cli",
   "description": "CLI of the Booster Cloud Framework, the next level of abstraction for cloud-native applications",
-  "version": "0.21.7",
+  "version": "0.23.0",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
   "publishConfig": {
@@ -12,8 +12,8 @@
   },
   "bugs": "https://github.com/boostercloud/booster/issues",
   "dependencies": {
-    "@boostercloud/framework-core": "^0.21.7",
-    "@boostercloud/framework-types": "^0.21.7",
+    "@boostercloud/framework-core": "^0.23.0",
+    "@boostercloud/framework-types": "^0.23.0",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/errors": "^1",
@@ -27,7 +27,7 @@
     "inquirer": "^7.0.0",
     "mustache": "4.1.0",
     "ora": "^3.4.0",
-    "ts-morph": "12.2.0",
+    "ts-morph": "13.0.2",
     "tslib": "2.3.0"
   },
   "devDependencies": {

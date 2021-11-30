@@ -1,6 +1,5 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { EventHandlerFunctionDefinition } from '../types/functionDefinition'
-import { functionPath } from '../utils'
 
 export class EventHandlerFunction {
   public constructor(readonly config: BoosterConfig) {}
@@ -21,7 +20,7 @@ export class EventHandlerFunction {
             createLeaseCollectionIfNotExists: 'true',
           },
         ],
-        scriptFile: functionPath(this.config),
+        scriptFile: this.config.functionRelativePath,
         entryPoint: this.config.eventDispatcherHandler.split('.')[1],
       },
     }
