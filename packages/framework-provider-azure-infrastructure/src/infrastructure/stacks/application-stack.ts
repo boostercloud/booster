@@ -10,7 +10,7 @@ import { armTemplates } from '../arm-templates'
 import { GraphqlFunction } from './graphql-function'
 import { EventHandlerFunction } from './event-handler-function'
 import { SchedulesFunctions } from './schedules-functions'
-import { CoreAzureStackConfig } from './rockets-stack'
+import { CoreAzureStackConfig, RocketsStackBuilder } from './rockets-stack'
 
 export class ApplicationStackBuilder {
   public constructor(readonly config: BoosterConfig) {}
@@ -19,7 +19,8 @@ export class ApplicationStackBuilder {
     logger: Logger,
     resourceManagementClient: ResourceManagementClient,
     webSiteManagementClient: webSiteManagement,
-    resourceGroupName: string
+    resourceGroupName: string,
+    rocketStackBuilder?: RocketsStackBuilder
   ): Promise<CoreAzureStackConfig> {
     logger.info('Creating Storage and Cosmos DB accounts...')
     const accountCreationResults: Array<DeploymentExtended> = await Promise.all([
@@ -103,6 +104,11 @@ export class ApplicationStackBuilder {
     if (schedulesFunctionsDefinition) {
       featuresDefinitions = featuresDefinitions.concat(schedulesFunctionsDefinition)
     }
+    const rocketsFunctionDefinition = rocketStackBuilder?.getFunctionDefinitions()
+    if (rocketsFunctionDefinition) {
+      featuresDefinitions = featuresDefinitions.concat(rocketsFunctionDefinition)
+    }
+    logger.info(featuresDefinitions)
     const zipPath = await packageAzureFunction(featuresDefinitions)
 
     logger.info('Deploying Zip...')

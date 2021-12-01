@@ -28,13 +28,14 @@ async function deployApp(logger: Logger, config: BoosterConfig, rockets?: Infras
   const resourceGroupName = createResourceGroupName(config)
   await createResourceGroup(resourceGroupName, resourceManagementClient)
   const applicationBuilder = new ApplicationStackBuilder(config)
-  const applicationBuilderConfig = await applicationBuilder.buildOn(
+  const rocketsBuilder = new RocketsStackBuilder(logger, config, rockets)
+  await applicationBuilder.buildOn(
     logger,
     resourceManagementClient,
     webSiteManagementClient,
-    resourceGroupName
+    resourceGroupName,
+    rocketsBuilder
   )
-  const rocketsBuilder = new RocketsStackBuilder(config, applicationBuilderConfig, resourceManagementClient, rockets)
   await rocketsBuilder.build()
 }
 

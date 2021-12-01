@@ -1,13 +1,10 @@
 import { BoosterConfig, RocketDescriptor } from '@boostercloud/framework-types'
-import ResourceManagementClient from 'azure-arm-resource/lib/resource/resourceManagementClient'
-import { CoreAzureStackConfig } from '../infrastructure/stacks/rockets-stack'
+import { Binding, FunctionDefinition } from '../infrastructure/types/functionDefinition'
 
 export interface InfrastructureRocket {
-  mountStack: (
-    config: BoosterConfig,
-    stackCurrentConfig: CoreAzureStackConfig,
-    resourceManagementClient: ResourceManagementClient
-  ) => Promise<void>
+  packageName?: string
+  mountStack: (config: BoosterConfig) => Promise<void>
+  getFunctionDefinitions: (config: BoosterConfig) => FunctionDefinition<Binding>[]
   unmountStack?: () => void
 }
 
@@ -30,5 +27,6 @@ export function loadRocket(rocketDescriptor: RocketDescriptor): InfrastructureRo
     throw new Error(
       `The package ${rocketDescriptor.packageName} doesn't seem to implement the required interface 'InfrastructureProvider' defined in package '@boostercloud/framework-provider-azure-infrastructure'.`
     )
+  rocket.packageName = rocketDescriptor.packageName
   return rocket
 }
