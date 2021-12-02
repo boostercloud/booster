@@ -112,7 +112,7 @@ export class ReadModelStore {
     }
     // Increment the read model version in 1 before storing
     newReadModel.boosterMetadata = {
-      ...newReadModel.boosterMetadata,
+      ...readModel?.boosterMetadata,
       version: currentReadModelVersion + 1,
     }
     this.logger.debug(

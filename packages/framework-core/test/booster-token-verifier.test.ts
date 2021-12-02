@@ -17,10 +17,12 @@ describe('the "verifyToken" method', () => {
   const config = new BoosterConfig('test')
   let boosterTokenVerifier: BoosterTokenVerifier
 
-  config.tokenVerifier = {
-    issuer,
-    jwksUri: auth0VerifierUri + '.well-known/jwks.json',
-  }
+  config.tokenVerifiers = [
+    {
+      issuer,
+      jwksUri: auth0VerifierUri + '.well-known/jwks.json',
+    },
+  ]
 
   beforeEach(() => {
     jwks.start()

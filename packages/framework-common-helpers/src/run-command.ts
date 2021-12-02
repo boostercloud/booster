@@ -6,7 +6,8 @@ export function runCommand(
   ignoreLogs = false
 ): ChildProcessPromise<PromiseResult<string>> {
   const subprocess = exec(command, {
-    cwd: path, // Commands are run in the integration tests package root
+    cwd: path,
+    maxBuffer: 1024 * 1024 * 1024,
   })
 
   if (!ignoreLogs && subprocess.childProcess && process) {

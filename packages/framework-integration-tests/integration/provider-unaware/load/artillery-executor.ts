@@ -2,9 +2,9 @@ import * as fs from 'fs'
 import * as yaml from 'yaml'
 import * as path from 'path'
 import { ProviderTestHelper } from '@boostercloud/application-tester'
-import { runCommand } from '../../helper/run-command'
 import { CloudFormation } from 'aws-sdk'
 import { Stack } from 'aws-sdk/clients/cloudformation'
+import { runCommand } from '@boostercloud/framework-common-helpers'
 
 const cloudFormation = new CloudFormation()
 

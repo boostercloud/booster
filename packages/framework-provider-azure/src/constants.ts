@@ -8,3 +8,6 @@ export const environmentVarNames = {
   websocketAPIURL: 'BOOSTER_WEBSOCKET_API_URL',
   cosmosDbConnectionString: 'COSMOSDB_CONNECTION_STRING',
 } as const
+
+export const AZURE_CONFLICT_ERROR_CODE = 409
+export const AZURE_PRECONDITION_FAILED_ERROR = 412

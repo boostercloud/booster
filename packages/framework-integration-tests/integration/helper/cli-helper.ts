@@ -1,6 +1,6 @@
 import * as path from 'path'
-import { runCommand } from './run-command'
 import { ChildProcess } from 'child_process'
+import { runCommand } from '@boostercloud/framework-common-helpers'
 
 // Path to the CLI binary compiled by lerna
 const cliBinaryPath = path.join('..', '..', 'cli', 'bin', 'run')

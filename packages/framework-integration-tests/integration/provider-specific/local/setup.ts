@@ -4,10 +4,10 @@ import { ChildProcess } from 'child_process'
 import { removeFolders, sandboxPathFor } from '../../helper/file-helper'
 import { overrideWithBoosterLocalDependencies } from '../../helper/deps-helper'
 import { sandboxName } from './constants'
-import { runCommand } from '../../helper/run-command'
 // Imported from another package to avoid duplication
 // It is OK-ish, since integration tests are always run in the context of the whole monorepo
 import { createSandboxProject } from '../../../../cli/src/common/sandbox'
+import { runCommand } from '@boostercloud/framework-common-helpers'
 
 let serverProcess: ChildProcess
 let sandboxPath: string

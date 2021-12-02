@@ -7,9 +7,19 @@ import * as chai from 'chai'
 import { sleep, waitForIt } from '../../helper/sleep'
 import { EventSearchResponse, EventTimeFilter } from '@boostercloud/framework-types'
 import { applicationUnderTest } from './setup'
+import * as path from 'path'
 chai.use(require('chai-as-promised'))
 
 describe('Events end-to-end tests', () => {
+  //TODO: Azure provider doesn't support event Interface so these tests are skipped for Azure
+  if (process.env.TESTED_PROVIDER === 'AZURE') {
+    console.log('****************** Warning **********************')
+    console.log(`${path.join(process.cwd(), 'events.integration.ts')} ignored`)
+    console.log('Azure provider does not implement the Event Interface')
+    console.log('*************************************************')
+    return
+  }
+
   let anonymousClient: ApolloClient<NormalizedCacheObject>
   let loggedClient: ApolloClient<NormalizedCacheObject>
 

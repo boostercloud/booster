@@ -1,26 +1,24 @@
-import { BoosterConfig, UserEnvelope } from '@boostercloud/framework-types'
+import { BoosterConfig, UserEnvelope, TokenVerifierConfig } from '@boostercloud/framework-types'
 
 import * as jwksRSA from 'jwks-rsa'
 import * as jwt from 'jsonwebtoken'
 
-export class BoosterTokenVerifier {
+class TokenVerifierClient {
   private client?: jwksRSA.JwksClient
   private options?: jwt.VerifyOptions
 
-  public constructor(private config: BoosterConfig) {
-    if (this.config.tokenVerifier) {
-      if (this.config.tokenVerifier.jwksUri) {
-        this.client = jwksRSA({
-          jwksUri: this.config.tokenVerifier.jwksUri,
-          cache: true,
-          cacheMaxAge: 15 * 60 * 1000, // 15 Minutes, at least to be equal to AWS max lambda limit runtime
-        })
-      }
+  public constructor(private tokenVerifierConfig: TokenVerifierConfig) {
+    if (this.tokenVerifierConfig.jwksUri) {
+      this.client = jwksRSA({
+        jwksUri: this.tokenVerifierConfig.jwksUri,
+        cache: true,
+        cacheMaxAge: 15 * 60 * 1000, // 15 Minutes, at least to be equal to AWS max lambda limit runtime
+      })
+    }
 
-      this.options = {
-        algorithms: ['RS256'],
-        issuer: this.config.tokenVerifier.issuer,
-      }
+    this.options = {
+      algorithms: ['RS256'],
+      issuer: this.tokenVerifierConfig.issuer,
     }
   }
 
@@ -44,8 +42,8 @@ export class BoosterTokenVerifier {
 
       let key: jwt.Secret | jwt.GetPublicKeyOrSecret = getKey
       if (!this.client) {
-        if (this.config.tokenVerifier?.publicKey) {
-          key = this.config.tokenVerifier.publicKey
+        if (this.tokenVerifierConfig.publicKey) {
+          key = this.tokenVerifierConfig.publicKey
         } else {
           throw new Error('Token verifier not well configured')
         }
@@ -64,7 +62,7 @@ export class BoosterTokenVerifier {
   private tokenToUserEnvelope(decodedToken: any): UserEnvelope {
     const username = decodedToken?.email || decodedToken?.phone_number || decodedToken.sub
     const id = decodedToken.sub
-    const rolesClaim = this.config.tokenVerifier?.rolesClaim || 'custom:role'
+    const rolesClaim = this.tokenVerifierConfig.rolesClaim || 'custom:role'
     const role = decodedToken[rolesClaim]
     const roleValue = Array.isArray(role) ? role[0] : role
 
@@ -78,5 +76,24 @@ export class BoosterTokenVerifier {
 
   private sanitizeToken(token: string): string {
     return token.replace('Bearer ', '')
+  }
+}
+
+export class BoosterTokenVerifier {
+  private tokenVerifierClients: Array<TokenVerifierClient>
+
+  public constructor(config: BoosterConfig) {
+    this.tokenVerifierClients = config.tokenVerifiers.map(
+      (tokenVerifierConfig) => new TokenVerifierClient(tokenVerifierConfig)
+    )
+  }
+
+  public async verify(token: string): Promise<UserEnvelope> {
+    const results = await Promise.allSettled(
+      this.tokenVerifierClients.map((tokenVerifierClient) => tokenVerifierClient.verify(token))
+    )
+    const winner = results.find((result) => result.status === 'fulfilled')
+    if (winner) return Promise.resolve((winner as PromiseFulfilledResult<UserEnvelope>).value)
+    return Promise.reject(new Error(results.map((result) => (result as PromiseRejectedResult).reason).join('\n')))
   }
 }

@@ -12,6 +12,8 @@ export const template = `{
     "{{{providerPackageName}}}": "*"
   },
   "devDependencies": {
+    "@boostercloud/framework-provider-local": "^${VERSION}",
+    "@boostercloud/framework-provider-local-infrastructure": "^${VERSION}",
     "{{{providerPackageName}}}-infrastructure": "*",
     "rimraf": "^3.0.1",
     "@typescript-eslint/eslint-plugin": "4.22.1",
@@ -40,7 +42,6 @@ export const template = `{
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "ttsc -b tsconfig.json",
-    "deploy": "boost deploy",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "test": "AWS_SDK_LOAD_CONFIG=true BOOSTER_ENV=test nyc --extension .ts mocha --forbid-only \\"test/**/*.test.ts\\""
   },

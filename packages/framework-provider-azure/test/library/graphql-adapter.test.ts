@@ -8,6 +8,7 @@ describe('GraphQL adapter', () => {
   describe('The "rawGraphQLRequestToEnvelope"', () => {
     it('Generates an envelope correctly from an Azure event', async () => {
       const expectedQuery = 'GraphQL query'
+      const expectedToken = 'token'
       const expectedVariables = {
         varOne: 3,
         varTwo: 'test',
@@ -18,6 +19,9 @@ describe('GraphQL adapter', () => {
             query: expectedQuery,
             variables: expectedVariables,
           },
+          headers: {
+            authorization: expectedToken,
+          },
         },
         executionContext: {
           invocationId: '123',
@@ -27,6 +31,7 @@ describe('GraphQL adapter', () => {
       const expectedOutput: GraphQLRequestEnvelope = {
         requestID: '123',
         eventType: 'MESSAGE',
+        token: expectedToken,
         value: {
           query: expectedQuery,
           variables: expectedVariables,

@@ -7,24 +7,28 @@ export function assertNameIsCorrect(name: string): void {
   // `-app` prefix is added to application stack
   // which is 64 - 23 - 4 = 37
   const maxProjectNameLength = 37
+
   if (name.length > maxProjectNameLength)
-    throw new Error(`Project name cannot be longer than ${maxProjectNameLength} chars long:
+    throw new ForbiddenProjectName(name, `be longer than ${maxProjectNameLength} characters`)
 
-    Found: '${name}'`)
+  if (name.includes(' ')) throw new ForbiddenProjectName(name, 'contain spaces')
 
-  if (name.includes(' '))
-    throw new Error(`Project name cannot contain spaces:
+  if (name.toLowerCase() !== name) throw new ForbiddenProjectName(name, 'contain uppercase letters')
 
-    Found: '${name}'`)
+  if (name.includes('_')) throw new ForbiddenProjectName(name, 'contain underscore')
+}
 
-  if (name.toLowerCase() != name)
-    throw new Error(`Project name cannot contain uppercase letters:
-
-    Found: '${name}'`)
+class ForbiddenProjectName extends Error {
+  constructor(public name: string, public restrictionText: string) {
+    super(`Project name cannot ${restrictionText}:\n\n    Found: '${name}'`)
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function supportedInfrastructureMethodOrDie(methodName: 'deploy' | 'nuke' | 'start', config: BoosterConfig): any {
+function supportedInfrastructureMethodOrDie(
+  methodName: 'deploy' | 'nuke' | 'start' | 'synth',
+  config: BoosterConfig
+): any {
   assertNameIsCorrect(config.appName)
   const method = config.provider.infrastructure()[methodName]
   if (!method) {
@@ -37,6 +41,10 @@ function supportedInfrastructureMethodOrDie(methodName: 'deploy' | 'nuke' | 'sta
 
 export function deployToCloudProvider(config: BoosterConfig, logger: Logger): Promise<void> {
   return supportedInfrastructureMethodOrDie('deploy', config)(config, logger)
+}
+
+export function synthToProvider(config: BoosterConfig, logger: Logger): Promise<void> {
+  return supportedInfrastructureMethodOrDie('synth', config)(config, logger)
 }
 
 export function nukeCloudProviderResources(config: BoosterConfig, logger: Logger): Promise<void> {
