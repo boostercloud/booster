@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ProviderInfrastructure, ProviderLibrary, RocketDescriptor } from '@boostercloud/framework-types'
+import { HasInfrastructure, ProviderLibrary, RocketDescriptor } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { requestFailed, requestSucceeded } from './library/api-gateway-io'
 import {
@@ -38,12 +38,8 @@ const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient({
   },
 })
 
-interface HasInfrastructure {
-  Infrastructure: (rockets?: RocketDescriptor[]) => ProviderInfrastructure
-}
-
 /* We load the infrastructure package dynamically here to avoid including it in the
- * dependences that are deployed in the lambda functions. The infrastructure
+ * dependencies that are deployed in the lambda functions. The infrastructure
  * package is only used during the deploy.
  * Notice that this is done in a separate function to ease testing
  */

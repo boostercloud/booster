@@ -257,7 +257,8 @@ describe('Searcher adapter', () => {
           .container(`${mockConfig.resourceNames.applicationStack}-${mockReadModelName}`).items.query
       ).to.have.been.calledWith(
         match({
-          query: 'SELECT * FROM c WHERE CONTAINS(c["days"], @days_0) AND CONTAINS(c["items"], @items_0)',
+          query:
+            'SELECT * FROM c WHERE ARRAY_CONTAINS(c["days"], @days_0, true) AND ARRAY_CONTAINS(c["items"], @items_0, true)',
           parameters: [
             {
               name: '@days_0',

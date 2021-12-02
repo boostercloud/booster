@@ -4,8 +4,8 @@ import { ChildProcess } from 'child_process'
 import { sandboxPathFor, storePIDFor } from '../../../helper/file-helper'
 import { overrideWithBoosterLocalDependencies } from '../../../helper/deps-helper'
 import { sandboxName } from '../constants'
-import { runCommand } from '../../../helper/run-command'
 import { createSandboxProject } from '../../../../../cli/src/common/sandbox'
+import { runCommand } from '@boostercloud/framework-common-helpers'
 
 let serverProcess: ChildProcess
 let sandboxPath: string

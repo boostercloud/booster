@@ -576,7 +576,7 @@ Edit the `post-read-model.ts` file to look like this:
 export class PostReadModel {
   public constructor(public id: UUID, readonly title: string, readonly author: string) {}
 
-  @Projects(Post, 'postId')
+  @Projects(Post, 'id')
   public static projectPost(entity: Post, currentPostReadModel?: PostReadModel): ProjectionResult<PostReadModel> {
     return new PostReadModel(entity.id, entity.title, entity.author)
   }

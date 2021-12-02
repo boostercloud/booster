@@ -69,7 +69,21 @@ export async function fetchReadModel(
     `[ReadModelAdapter#fetchReadModel] Loaded read model ${readModelName} with ID ${readModelID} with result:`,
     response.Items
   )
-  return response.Items as unknown as ReadOnlyNonEmptyArray<ReadModelInterface>
+
+  if (!response.Items || response.Items?.length === 0) {
+    return response.Items as unknown as ReadOnlyNonEmptyArray<ReadModelInterface>
+  }
+
+  return (response.Items as unknown as ReadOnlyNonEmptyArray<ReadModelInterface>).map((value) => {
+    const optimisticConcurrencyValue = generateOptimisticConcurrencyValue(value)
+    return {
+      ...value,
+      boosterMetadata: {
+        ...value?.boosterMetadata,
+        optimisticConcurrencyValue,
+      },
+    } as ReadModelInterface
+  }) as unknown as ReadOnlyNonEmptyArray<ReadModelInterface>
 }
 
 export async function storeReadModel(
@@ -85,10 +99,9 @@ export async function storeReadModel(
       .put({
         TableName: config.resourceNames.forReadModel(readModelName),
         Item: readModel,
-        ConditionExpression: 'attribute_not_exists(boosterMetadata.version) OR boosterMetadata.version = :version',
-        ExpressionAttributeValues: {
-          ':version': expectedCurrentVersion,
-        },
+        ConditionExpression:
+          'attribute_not_exists(boosterMetadata.optimisticConcurrencyValue) OR boosterMetadata.optimisticConcurrencyValue = :optimisticConcurrencyValue',
+        ExpressionAttributeValues: { ':optimisticConcurrencyValue': expectedCurrentVersion },
       })
       .promise()
   } catch (e) {
@@ -140,4 +153,8 @@ function buildKey(
 ): DynamoDB.DocumentClient.Key {
   if (sequenceKeyName && sequenceKeyValue) return { id: readModelID, [sequenceKeyName]: sequenceKeyValue }
   else return { id: readModelID }
+}
+
+function generateOptimisticConcurrencyValue(value: ReadModelInterface): number {
+  return (value.boosterMetadata?.version ?? 0) + 1 // the next version number that we are going to persist
 }
