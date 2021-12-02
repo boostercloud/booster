@@ -15,6 +15,7 @@ import {
 import { Logger } from './logger'
 import { FilterFor } from './searcher'
 import { ReadOnlyNonEmptyArray } from './typelevel'
+import { RocketDescriptor } from './rocket-descriptor'
 
 export interface ProviderLibrary {
   events: ProviderEventsLibrary
@@ -115,8 +116,13 @@ export interface ProviderInfrastructure {
   deploy?: (configuration: BoosterConfig, logger: Logger) => Promise<void>
   nuke?: (configuration: BoosterConfig, logger: Logger) => Promise<void>
   start?: (configuration: BoosterConfig, port: number) => Promise<void>
+  synth?: (configuration: BoosterConfig, logger: Logger) => Promise<void>
 }
 
 export interface ScheduledCommandsLibrary {
   rawToEnvelope(rawMessage: unknown, logger: Logger): Promise<ScheduledCommandEnvelope>
+}
+
+export interface HasInfrastructure {
+  Infrastructure: (rockets?: RocketDescriptor[]) => ProviderInfrastructure
 }

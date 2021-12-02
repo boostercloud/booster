@@ -201,7 +201,14 @@ describe('the "fetchReadModel" method', () => {
           },
           ConsistentRead: true,
         })
-        expect(results).to.deep.equal([{ some: 'object' }])
+        expect(results).to.deep.equal([
+          {
+            boosterMetadata: {
+              optimisticConcurrencyValue: 1,
+            },
+            some: 'object',
+          },
+        ])
       })
     })
 
@@ -235,7 +242,15 @@ describe('the "fetchReadModel" method', () => {
           },
           ConsistentRead: true,
         })
-        expect(results).to.deep.equal([{ some: 'object', time: '42' }])
+        expect(results).to.deep.equal([
+          {
+            boosterMetadata: {
+              optimisticConcurrencyValue: 1,
+            },
+            some: 'object',
+            time: '42',
+          },
+        ])
       })
     })
   })
@@ -264,8 +279,9 @@ describe('the "storeReadModel" method', () => {
     expect(db.put).to.have.been.calledOnceWithExactly({
       TableName: 'new-booster-app-app-SomeReadModel',
       Item: { id: 777, some: 'object' },
-      ConditionExpression: 'attribute_not_exists(boosterMetadata.version) OR boosterMetadata.version = :version',
-      ExpressionAttributeValues: { ':version': 0 },
+      ConditionExpression:
+        'attribute_not_exists(boosterMetadata.optimisticConcurrencyValue) OR boosterMetadata.optimisticConcurrencyValue = :optimisticConcurrencyValue',
+      ExpressionAttributeValues: { ':optimisticConcurrencyValue': 0 },
     })
     expect(something).not.to.be.null
   })

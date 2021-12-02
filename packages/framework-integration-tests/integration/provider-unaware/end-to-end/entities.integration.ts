@@ -6,6 +6,8 @@ import gql from 'graphql-tag'
 import { sleep, waitForIt } from '../../helper/sleep'
 import { applicationUnderTest } from './setup'
 
+const secs = 4
+
 describe('Entities end-to-end tests', () => {
   let client: ApolloClient<NormalizedCacheObject>
   let userToken: string
@@ -127,8 +129,8 @@ describe('Entities end-to-end tests', () => {
         `,
       })
 
-      console.log('Waiting 1 second for deletion to complete...')
-      await sleep(1000)
+      console.log(`Waiting ${secs} second${secs > 1 ? 's' : ''} for deletion to complete...`)
+      await sleep(secs * 1000)
 
       client = applicationUnderTest.graphql.client(userToken)
       // Retrieve updated entity

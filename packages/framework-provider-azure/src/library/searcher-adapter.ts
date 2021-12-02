@@ -1,29 +1,47 @@
 import { CosmosClient, SqlParameter, SqlQuerySpec } from '@azure/cosmos'
-import { BoosterConfig, Logger, InvalidParameterError, FilterFor, Operation } from '@boostercloud/framework-types'
+import {
+  BoosterConfig,
+  Logger,
+  InvalidParameterError,
+  FilterFor,
+  Operation,
+  ReadModelListResult,
+} from '@boostercloud/framework-types'
 
 export async function searchReadModel(
   cosmosDb: CosmosClient,
   config: BoosterConfig,
   logger: Logger,
   readModelName: string,
-  filters: FilterFor<unknown>
-): Promise<Array<any>> {
+  filters: FilterFor<unknown>,
+  limit?: number,
+  afterCursor?: Record<string, string> | undefined,
+  paginatedVersion = false
+): Promise<Array<any> | ReadModelListResult<any>> {
   const filterExpression = buildFilterExpression(filters)
+  const queryDefinition = `SELECT * FROM c ${filterExpression !== '' ? `WHERE ${filterExpression}` : filterExpression}`
+  const queryWithPagination =
+    queryDefinition + (paginatedVersion && limit ? ` OFFSET ${afterCursor?.id || 0} LIMIT ${limit}` : '')
   const querySpec: SqlQuerySpec = {
-    query: `SELECT * FROM c ${filterExpression !== '' ? `WHERE ${filterExpression}` : filterExpression}`,
+    query: queryWithPagination,
     parameters: buildExpressionAttributeValues(filters),
   }
   logger.debug('Running search with the following params: \n', querySpec)
-
   const { resources } = await cosmosDb
     .database(config.resourceNames.applicationStack)
     .container(config.resourceNames.forReadModel(readModelName))
     .items.query(querySpec)
     .fetchAll()
 
-  logger.debug('Search result: ', resources)
-
-  return resources ?? []
+  if (paginatedVersion) {
+    return {
+      items: resources ?? [],
+      count: resources.length,
+      cursor: { id: ((limit ? limit : 1) + (afterCursor?.id ? parseInt(afterCursor?.id) : 0)).toString() },
+    }
+  } else {
+    return resources ?? []
+  }
 }
 
 function buildFilterExpression(filters: FilterFor<any>, usedPlaceholders: Array<string> = []): string {
@@ -73,8 +91,9 @@ function buildOperation(
           return `CONTAINS(${propName}, ${holder(index)})`
         case 'beginsWith':
           return `STARTSWITH(${propName}, ${holder(index)})`
-        case 'includes':
-          return `CONTAINS(${propName}, ${holder(index)})`
+        case 'includes': {
+          return `ARRAY_CONTAINS(${propName}, ${holder(index)}, true)`
+        }
         default:
           if (typeof value === 'object') {
             return buildOperation(operation, value, usedPlaceholders, propName)
