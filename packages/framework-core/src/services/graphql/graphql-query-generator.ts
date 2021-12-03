@@ -1,4 +1,4 @@
-import { AnyClass, BoosterConfig } from '@boostercloud/framework-types'
+import { AnyClass, BoosterConfig, UUID } from '@boostercloud/framework-types'
 import {
   GraphQLBoolean,
   GraphQLEnumType,
@@ -22,9 +22,9 @@ import {
 } from 'graphql'
 import { GraphQLJSONObject } from 'graphql-type-json'
 import * as inflected from 'inflected'
-import { PropertyMetadata } from 'metadata-booster'
-import { getPropertiesMetadata } from './../../decorators/metadata'
-import { DateScalar, GraphQLResolverContext, ResolverBuilder, TargetTypeMetadata, TargetTypesMap } from './common'
+import { PropertyMetadata, TypeGroup, TypeMetadata } from '../../metadata-types'
+import { getClassMetadata } from './../../decorators/metadata'
+import { DateScalar, GraphQLResolverContext, isExternalType, ResolverBuilder } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
 
 export class GraphQLQueryGenerator {
@@ -32,7 +32,7 @@ export class GraphQLQueryGenerator {
 
   public constructor(
     private readonly config: BoosterConfig,
-    private readonly readModelsMetadata: TargetTypesMap,
+    private readonly readModels: AnyClass[],
     private readonly typeInformer: GraphQLTypeInformer,
     private readonly byIDResolverBuilder: ResolverBuilder,
     private readonly filterResolverBuilder: ResolverBuilder,
@@ -52,54 +52,52 @@ export class GraphQLQueryGenerator {
 
   private generateByKeysQueries(): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {
     const queries: GraphQLFieldConfigMap<unknown, GraphQLResolverContext> = {}
-    for (const readModelName in this.readModelsMetadata) {
+    for (const readModel of this.readModels) {
+      const readModelName = readModel.name
       const sequenceKeyName = this.config.readModelSequenceKeys[readModelName]
       if (sequenceKeyName) {
-        queries[readModelName] = this.generateByIdAndSequenceKeyQuery(readModelName, sequenceKeyName)
+        queries[readModelName] = this.generateByIdAndSequenceKeyQuery(readModel, sequenceKeyName)
       } else {
-        queries[readModelName] = this.generateByIdQuery(readModelName)
+        queries[readModelName] = this.generateByIdQuery(readModel)
       }
     }
     return queries
   }
 
-  private generateByIdQuery(readModelName: string): GraphQLFieldConfig<unknown, GraphQLResolverContext> {
-    const readModelMetadata = this.readModelsMetadata[readModelName]
-    const graphQLType = this.typeInformer.getGraphQLTypeFor(readModelMetadata.class)
+  private generateByIdQuery(readModel: AnyClass): GraphQLFieldConfig<unknown, GraphQLResolverContext> {
+    const graphQLType = this.typeInformer.generateGraphQLTypeForClass(readModel)
     return {
       type: graphQLType,
       args: {
         id: { type: new GraphQLNonNull(GraphQLID) },
       },
-      resolve: this.byIDResolverBuilder(readModelMetadata.class),
+      resolve: this.byIDResolverBuilder(readModel),
     }
   }
 
   private generateByIdAndSequenceKeyQuery(
-    readModelName: string,
+    readModel: AnyClass,
     sequenceKeyName: string
   ): GraphQLFieldConfig<unknown, GraphQLResolverContext> {
-    const readModelMetadata = this.readModelsMetadata[readModelName]
-    const graphQLType = this.typeInformer.getGraphQLTypeFor(readModelMetadata.class)
+    const graphQLType = this.typeInformer.generateGraphQLTypeForClass(readModel)
     return {
       type: new GraphQLList(graphQLType),
       args: {
         id: { type: new GraphQLNonNull(GraphQLID) },
         [sequenceKeyName]: { type: GraphQLID },
       },
-      resolve: this.byIDResolverBuilder(readModelMetadata.class),
+      resolve: this.byIDResolverBuilder(readModel),
     }
   }
 
   private generateFilterQueries(): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {
     const queries: GraphQLFieldConfigMap<unknown, GraphQLResolverContext> = {}
-    for (const name in this.readModelsMetadata) {
-      const type = this.readModelsMetadata[name]
-      const graphQLType = this.typeInformer.getGraphQLTypeFor(type.class)
-      queries[inflected.pluralize(name)] = {
-        type: new GraphQLList(graphQLType),
-        args: this.generateFilterQueriesFields(name, type),
-        resolve: this.filterResolverBuilder(type.class),
+    for (const readModel of this.readModels) {
+      const graphQLType = this.typeInformer.generateGraphQLTypeForClass(readModel)
+      queries[inflected.pluralize(readModel.name)] = {
+        type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(graphQLType))),
+        args: this.generateFilterQueriesFields(readModel.name, readModel),
+        resolve: this.filterResolverBuilder(readModel),
       }
     }
     return queries
@@ -107,19 +105,21 @@ export class GraphQLQueryGenerator {
 
   private generateListedQueries(): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {
     const queries: GraphQLFieldConfigMap<unknown, GraphQLResolverContext> = {}
-    for (const name in this.readModelsMetadata) {
-      const type = this.readModelsMetadata[name]
-      const graphQLType = this.typeInformer.getGraphQLTypeFor(type.class)
-      queries[`List${inflected.pluralize(name)}`] = {
-        type: new GraphQLObjectType({
-          name: `${name}Connection`,
-          fields: {
-            items: { type: new GraphQLList(graphQLType) },
-            cursor: { type: GraphQLJSONObject },
-          },
-        }),
-        args: this.generateListedQueriesFields(name, type),
-        resolve: this.filterResolverBuilder(type.class),
+    for (const readModel of this.readModels) {
+      const graphQLType = this.typeInformer.generateGraphQLTypeForClass(readModel)
+      queries[`List${inflected.pluralize(readModel.name)}`] = {
+        type: new GraphQLNonNull(
+          new GraphQLObjectType({
+            name: `${readModel.name}Connection`,
+            fields: {
+              items: { type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(graphQLType))) },
+              count: { type: GraphQLInt },
+              cursor: { type: GraphQLJSONObject },
+            },
+          })
+        ),
+        args: this.generateListedQueriesFields(readModel),
+        resolve: this.filterResolverBuilder(readModel),
       }
     }
     return queries
@@ -180,7 +180,7 @@ export class GraphQLQueryGenerator {
     )
   }
 
-  public generateFilterQueriesFields(name: string, type: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
+  public generateFilterQueriesFields(name: string, type: AnyClass): GraphQLFieldConfigArgumentMap {
     const filterArguments = this.generateFilterArguments(type)
     const filter: GraphQLInputObjectType = new GraphQLInputObjectType({
       name: `${name}Filter`,
@@ -194,10 +194,10 @@ export class GraphQLQueryGenerator {
     return { filter: { type: filter } }
   }
 
-  public generateListedQueriesFields(name: string, type: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
+  public generateListedQueriesFields(type: AnyClass): GraphQLFieldConfigArgumentMap {
     const filterArguments = this.generateFilterArguments(type)
     const filter: GraphQLInputObjectType = new GraphQLInputObjectType({
-      name: `List${name}Filter`,
+      name: `List${type.name}Filter`,
       fields: () => ({
         ...filterArguments,
         and: { type: new GraphQLList(filter) },
@@ -212,9 +212,10 @@ export class GraphQLQueryGenerator {
     }
   }
 
-  public generateFilterArguments(typeMetadata: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
+  public generateFilterArguments(type: AnyClass): GraphQLFieldConfigArgumentMap {
+    const metadata = getClassMetadata(type)
     const args: GraphQLFieldConfigArgumentMap = {}
-    typeMetadata.properties.forEach((prop: PropertyMetadata) => {
+    metadata.fields.forEach((prop: PropertyMetadata) => {
       args[prop.name] = {
         type: this.generateFilterFor(prop),
       }
@@ -222,26 +223,61 @@ export class GraphQLQueryGenerator {
     return args
   }
 
+  private generateFilterFor(prop: PropertyMetadata): GraphQLInputObjectType | GraphQLScalarType {
+    if (!prop.typeInfo.type || prop.typeInfo.type.name === 'Object') return GraphQLJSONObject
+
+    let filterName = `${prop.typeInfo.name}PropertyFilter`
+    filterName = filterName.charAt(0).toUpperCase() + filterName.substr(1)
+
+    if (this.generatedFiltersByTypeName[filterName]) return this.generatedFiltersByTypeName[filterName]
+    if (prop.typeInfo.typeGroup === TypeGroup.Array) return this.generateArrayFilterFor(prop)
+    let fields: Thunk<GraphQLInputFieldConfigMap> = {}
+
+    if (prop.typeInfo.typeGroup === TypeGroup.Class && prop.typeInfo.name !== 'UUID') {
+      if (isExternalType(prop.typeInfo)) return GraphQLJSONObject
+      let nestedProperties: GraphQLInputFieldConfigMap = {}
+      const metadata = getClassMetadata(prop.typeInfo.type)
+      if (metadata.fields.length === 0) return GraphQLJSONObject
+
+      this.typeInformer.generateGraphQLTypeForClass(prop.typeInfo.type, true)
+
+      for (const prop of metadata.fields) {
+        const property = { [prop.name]: { type: this.generateFilterFor(prop) } }
+        nestedProperties = { ...nestedProperties, ...property }
+      }
+      fields = () => ({
+        ...nestedProperties,
+        and: { type: new GraphQLList(this.generatedFiltersByTypeName[filterName]) },
+        or: { type: new GraphQLList(this.generatedFiltersByTypeName[filterName]) },
+        not: { type: this.generatedFiltersByTypeName[filterName] },
+      })
+    } else {
+      fields = this.generateFilterInputTypes(prop.typeInfo)
+    }
+    this.generatedFiltersByTypeName[filterName] = new GraphQLInputObjectType({ name: filterName, fields })
+    return this.generatedFiltersByTypeName[filterName]
+  }
+
   private generateArrayFilterFor(property: PropertyMetadata): GraphQLInputObjectType {
-    const filterName = `${property.name}PropertyFilter`
+    let filterName = `${property.typeInfo.parameters[0].name}ArrayPropertyFilter`
+    filterName = filterName.charAt(0).toUpperCase() + filterName.substr(1)
 
     if (!this.generatedFiltersByTypeName[filterName]) {
       const propFilters: GraphQLInputFieldConfigMap = {}
       property.typeInfo.parameters.forEach((param) => {
-        const primitiveType = this.typeInformer.getOriginalAncestor(param.type)
         let graphqlType: GraphQLScalarType
-        switch (primitiveType) {
-          case Boolean:
+        switch (param.typeGroup) {
+          case TypeGroup.Boolean:
             graphqlType = GraphQLBoolean
             break
-          case String:
+          case TypeGroup.String:
             graphqlType = GraphQLString
             break
-          case Number:
+          case TypeGroup.Number:
             graphqlType = GraphQLFloat
             break
           default:
-            graphqlType = GraphQLJSONObject
+            graphqlType = param.type === UUID ? GraphQLID : GraphQLJSONObject
             break
         }
         propFilters.includes = { type: graphqlType }
@@ -255,87 +291,60 @@ export class GraphQLQueryGenerator {
     return this.generatedFiltersByTypeName[filterName]
   }
 
-  private generateFilterFor(prop: PropertyMetadata): GraphQLInputObjectType | GraphQLScalarType {
-    const filterName = `${prop.typeInfo.name}PropertyFilter`
-
-    if (!prop.typeInfo.type || typeof prop.typeInfo.type === 'object') return GraphQLJSONObject
-
-    if (!this.generatedFiltersByTypeName[filterName]) {
-      const primitiveType = this.typeInformer.getOriginalAncestor(prop.typeInfo.type)
-      if (primitiveType === Array) return this.generateArrayFilterFor(prop)
-      const graphQLPropType = this.typeInformer.getGraphQLTypeFor(primitiveType)
-      let fields: Thunk<GraphQLInputFieldConfigMap> = {}
-
-      if (!this.typeInformer.isGraphQLScalarType(graphQLPropType)) {
-        let nestedProperties: GraphQLInputFieldConfigMap = {}
-        const properties = getPropertiesMetadata(prop.typeInfo.type)
-        if (properties.length > 0) {
-          this.typeInformer.generateGraphQLTypeFromMetadata({ class: prop.typeInfo.type, properties })
-
-          for (const prop of properties) {
-            const property = { [prop.name]: { type: this.generateFilterFor(prop) } }
-            nestedProperties = { ...nestedProperties, ...property }
-          }
-        } else {
-          return GraphQLJSONObject
-        }
-        fields = () => ({
-          ...nestedProperties,
-          and: { type: new GraphQLList(this.generatedFiltersByTypeName[filterName]) },
-          or: { type: new GraphQLList(this.generatedFiltersByTypeName[filterName]) },
-          not: { type: this.generatedFiltersByTypeName[filterName] },
-        })
-      } else {
-        fields = this.generateFilterInputTypes(prop.typeInfo.type)
+  private generateFilterInputTypes(typeMetadata: TypeMetadata): GraphQLInputFieldConfigMap {
+    const { type, typeGroup } = typeMetadata
+    if (typeGroup === TypeGroup.Boolean)
+      return {
+        eq: { type: GraphQLBoolean },
+        ne: { type: GraphQLBoolean },
       }
-      this.generatedFiltersByTypeName[filterName] = new GraphQLInputObjectType({ name: filterName, fields })
+    if (typeGroup === TypeGroup.Number)
+      return {
+        eq: { type: GraphQLFloat },
+        ne: { type: GraphQLFloat },
+        lte: { type: GraphQLFloat },
+        lt: { type: GraphQLFloat },
+        gte: { type: GraphQLFloat },
+        gt: { type: GraphQLFloat },
+        in: { type: GraphQLList(GraphQLFloat) },
+      }
+    if (typeGroup === TypeGroup.String)
+      return {
+        eq: { type: GraphQLString },
+        ne: { type: GraphQLString },
+        lte: { type: GraphQLString },
+        lt: { type: GraphQLString },
+        gte: { type: GraphQLString },
+        gt: { type: GraphQLString },
+        in: { type: GraphQLList(GraphQLString) },
+        beginsWith: { type: GraphQLString },
+        contains: { type: GraphQLString },
+      }
+    if (type === UUID)
+      return {
+        eq: { type: GraphQLID },
+        ne: { type: GraphQLID },
+        in: { type: GraphQLList(GraphQLID) },
+      }
+    if (type === Date)
+      return {
+        eq: { type: DateScalar },
+        ne: { type: DateScalar },
+        lte: { type: DateScalar },
+        lt: { type: DateScalar },
+        gte: { type: DateScalar },
+        gt: { type: DateScalar },
+        in: { type: GraphQLList(DateScalar) },
+      }
+    if (typeGroup === TypeGroup.Enum) {
+      const EnumType = this.typeInformer.getOrCreateGraphQLType(typeMetadata, true)
+      return {
+        eq: { type: EnumType },
+        ne: { type: EnumType },
+      }
     }
-    return this.generatedFiltersByTypeName[filterName]
-  }
 
-  private generateFilterInputTypes(type: AnyClass): GraphQLInputFieldConfigMap {
-    const primitiveType = this.typeInformer.getOriginalAncestor(type)
-    switch (primitiveType) {
-      case Boolean:
-        return {
-          eq: { type: GraphQLBoolean },
-          ne: { type: GraphQLBoolean },
-        }
-      case Number:
-        return {
-          eq: { type: GraphQLFloat },
-          ne: { type: GraphQLFloat },
-          lte: { type: GraphQLFloat },
-          lt: { type: GraphQLFloat },
-          gte: { type: GraphQLFloat },
-          gt: { type: GraphQLFloat },
-          in: { type: GraphQLList(GraphQLFloat) },
-        }
-      case String:
-        return {
-          eq: { type: GraphQLString },
-          ne: { type: GraphQLString },
-          lte: { type: GraphQLString },
-          lt: { type: GraphQLString },
-          gte: { type: GraphQLString },
-          gt: { type: GraphQLString },
-          in: { type: GraphQLList(GraphQLString) },
-          beginsWith: { type: GraphQLString },
-          contains: { type: GraphQLString },
-        }
-      case Date:
-        return {
-          eq: { type: DateScalar },
-          ne: { type: DateScalar },
-          lte: { type: DateScalar },
-          lt: { type: DateScalar },
-          gte: { type: DateScalar },
-          gt: { type: DateScalar },
-          in: { type: GraphQLList(DateScalar) },
-        }
-      default:
-        throw new Error(`Type ${type.name} is not supported in search filters`)
-    }
+    throw new Error(`Type ${type?.name} is not supported in search filters`)
   }
 
   private buildGraphqlSimpleEnumFor(enumName: string, values: Array<string>): GraphQLEnumType {

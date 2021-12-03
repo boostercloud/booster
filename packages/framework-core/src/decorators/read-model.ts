@@ -1,6 +1,6 @@
 import { Class, ReadModelFilterHooks, ReadModelInterface, RoleAccess } from '@boostercloud/framework-types'
 import { Booster } from '../booster'
-import { getPropertiesMetadata } from './metadata'
+import { getClassMetadata } from './metadata'
 
 /**
  * Decorator to register a class as a ReadModel
@@ -18,7 +18,7 @@ export function ReadModel(
 
       config.readModels[readModelClass.name] = {
         class: readModelClass,
-        properties: getPropertiesMetadata(readModelClass),
+        properties: getClassMetadata(readModelClass).fields as any, // TODO: remove once metadata-booster is updated
         authorizedRoles: attributes.authorize,
         before: attributes.before ?? [],
       }
