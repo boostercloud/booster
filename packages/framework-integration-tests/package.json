@@ -42,7 +42,7 @@
     "graphql-tag": "2.12.4",
     "jsonwebtoken": "8.5.1",
     "jwks-rsa": "2.0.3",
-    "metadata-booster": "0.3.1",
+    "metadata-booster": "npm:@advantitge/metadata-booster@0.4.0-beta.2",
     "mocha": "8.4.0",
     "mocha-skip-if": "0.0.3",
     "serverless": "1.83.3",

@@ -2,7 +2,7 @@ import { GraphQLScalarType } from 'graphql/type/definition'
 import { AnyClass, UserEnvelope, UUID, GraphQLOperation, ReadModelInterface } from '@boostercloud/framework-types'
 import { GraphQLFieldResolver, Kind } from 'graphql'
 import { ReadModelPubSub } from '../pub-sub/read-model-pub-sub'
-import { PropertyMetadata, TypeMetadata } from '../../metadata-types'
+import { PropertyMetadata, TypeMetadata } from 'metadata-booster'
 
 export type TargetTypesMap = Record<string, TargetTypeMetadata>
 export interface TargetTypeMetadata {

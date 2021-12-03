@@ -22,7 +22,7 @@ import {
 } from 'graphql'
 import { GraphQLJSONObject } from 'graphql-type-json'
 import * as inflected from 'inflected'
-import { PropertyMetadata, TypeGroup, TypeMetadata } from '../../metadata-types'
+import { PropertyMetadata, TypeGroup, TypeMetadata } from 'metadata-booster'
 import { getClassMetadata } from './../../decorators/metadata'
 import { DateScalar, GraphQLResolverContext, isExternalType, ResolverBuilder } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'

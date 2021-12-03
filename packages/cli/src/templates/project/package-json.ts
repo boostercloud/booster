@@ -29,7 +29,7 @@ export const template = `{
     "ts-node": "9.1.1",
     "@types/node": "15.0.2",
     "ttypescript": "1.5.12",
-    "metadata-booster": "0.3.1"
+    "metadata-booster": "npm:@advantitge/metadata-booster@0.4.0-beta.2"
   },
   "engines": {
     "node": ">=14.0.0"

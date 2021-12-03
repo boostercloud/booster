@@ -1,7 +1,7 @@
 import { ResolverBuilder, TargetTypesMap } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
 import { GraphQLFieldConfigMap, GraphQLObjectType, GraphQLNonNull } from 'graphql'
-import { TypeGroup, TypeMetadata } from '../../metadata-types'
+import { TypeGroup, TypeMetadata } from 'metadata-booster'
 
 export class GraphQLMutationGenerator {
   public constructor(

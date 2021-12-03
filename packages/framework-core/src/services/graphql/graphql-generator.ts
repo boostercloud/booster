@@ -50,7 +50,7 @@ export class GraphQLGenerator {
       )
 
       const mutationGenerator = new GraphQLMutationGenerator(
-        config.commandHandlers as any /* TODO: remove casting once new metadata-booster types are merged */,
+        config.commandHandlers,
         typeInformer,
         this.commandResolverBuilder.bind(this)
       )
