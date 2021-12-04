@@ -25,7 +25,7 @@ export function Command(
         before: attributes.before ?? [],
         properties: metadata.fields,
         methods: metadata.methods,
-      }
+      } as any // TODO: remove cast after package framework-types is updated
     })
   }
 }
