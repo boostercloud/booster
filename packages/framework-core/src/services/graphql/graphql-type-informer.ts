@@ -23,6 +23,7 @@ import { getPropertiesMetadata } from './../../decorators/metadata'
 
 export class GraphQLTypeInformer {
   private graphQLTypesByName: Record<string, GraphQLNonInputType> = {}
+  private graphQLInputTypesByName: Record<string, GraphQLInputType> = {}
 
   public constructor(private readonly typesByName: TargetTypesMap) {
     for (const name in this.typesByName) {
@@ -117,10 +118,14 @@ export class GraphQLTypeInformer {
       return new GraphQLNonNull(this.toInputType(graphQLType.ofType))
     }
     if (graphQLType instanceof GraphQLObjectType) {
-      return new GraphQLInputObjectType({
-        name: `${graphQLType.name}Input`,
-        fields: () => this.toInputFields(graphQLType.getFields()),
-      })
+      const name = `${graphQLType.name}Input`
+      if (!this.graphQLInputTypesByName[name]) {
+        this.graphQLInputTypesByName[name] = new GraphQLInputObjectType({
+          name,
+          fields: () => this.toInputFields(graphQLType.getFields()),
+        })
+      }
+      return this.graphQLInputTypesByName[name]
     }
     throw new Error(
       `Types '${GraphQLEnumType.name}' and '${GraphQLInterfaceType}' are not allowed as input type, ` +
