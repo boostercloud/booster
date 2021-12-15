@@ -1,5 +1,5 @@
 export type TokenVerifierConfig = {
-  issuer: string
+  issuer?: string
   jwksUri?: string
   publicKey?: string
   rolesClaim?: string
