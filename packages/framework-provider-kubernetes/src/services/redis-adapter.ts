@@ -1,4 +1,4 @@
-import { Logger } from 'framework-types/dist'
+import { Logger } from '@boostercloud/framework-types'
 import fetch from 'node-fetch'
 import * as redis from 'redis'
 

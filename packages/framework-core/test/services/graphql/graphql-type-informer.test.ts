@@ -17,6 +17,7 @@ import { GraphQLJSONObject } from 'graphql-type-json'
 import { random } from 'faker'
 import { SinonStub, stub, restore } from 'sinon'
 import { GraphQLNonInputType } from '../../../src/services/graphql/common'
+import { GraphQLInputObjectType } from 'graphql/type/definition'
 
 describe('GraphQLTypeInformer', () => {
   let sut: GraphQLTypeInformer
@@ -212,9 +213,22 @@ describe('GraphQLTypeInformer', () => {
             name: 'randomObjectType',
             fields: {},
           })
-        )
+        ) as GraphQLInputObjectType
 
-        expect(result.toString()).to.be.deep.equal('randomObjectTypeInput')
+        expect(result.name).to.be.deep.equal('randomObjectTypeInput')
+      })
+
+      context('when called two times with the same type', () => {
+        it('should return EXACTLY the same instance of custom input type', () => {
+          const graphqlType = new GraphQLObjectType({
+            name: 'randomObjectType',
+            fields: {},
+          })
+          const firstResult = sut.toInputType(graphqlType) as GraphQLInputObjectType
+          const secondResult = sut.toInputType(graphqlType) as GraphQLInputObjectType
+
+          expect(firstResult).to.be.equal(secondResult, 'Expected the two results to be EXACTLY the same instance')
+        })
       })
     })
 
