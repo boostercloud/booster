@@ -28,8 +28,8 @@ export class FunctionZip {
     return zipResource
   }
 
-  static async copyZip(config: BoosterConfig): Promise<ZipResource> {
-    const zipPath = await this.zipAzureFunction(config)
+  static async copyZip(featuresDefinitions: Array<FunctionDefinition>): Promise<ZipResource> {
+    const zipPath = await this.createZip(featuresDefinitions)
     const originFile = path.basename(zipPath)
     const destinationFile = path.join(process.cwd(), originFile)
     fs.copyFileSync(zipPath, destinationFile)
@@ -59,7 +59,7 @@ export class FunctionZip {
     })
   }
 
-  private static async zipAzureFunction(config: BoosterConfig): Promise<any> {
+  static buildAzureFunctions(config: BoosterConfig): Array<FunctionDefinition> {
     const graphqlFunctionDefinition = new GraphqlFunction(config).getFunctionDefinition()
     const eventHandlerFunctionDefinition = new EventHandlerFunction(config).getFunctionDefinition()
     let featuresDefinitions = [graphqlFunctionDefinition, eventHandlerFunctionDefinition]
@@ -67,8 +67,7 @@ export class FunctionZip {
     if (scheduledFunctionsDefinition) {
       featuresDefinitions = featuresDefinitions.concat(scheduledFunctionsDefinition)
     }
-
-    return await this.createZip(featuresDefinitions)
+    return featuresDefinitions
   }
 
   private static async createZip(functionDefinitions: Array<FunctionDefinition>): Promise<any> {
