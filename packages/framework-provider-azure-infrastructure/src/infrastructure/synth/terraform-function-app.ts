@@ -10,7 +10,11 @@ export class TerraformFunctionApp {
     applicationServicePlan: AppServicePlan,
     storageAccount: StorageAccount,
     appPrefix: string,
-    functionAppName: string
+    functionAppName: string,
+    cosmosDatabaseName: string,
+    apiManagementServiceName: string,
+    cosmosDbConnectionString: string,
+    config: BoosterConfig
   ): FunctionApp {
     const id = toTerraformName(appPrefix, 'func')
     const functionApp = new FunctionApp(terraformStack, id, {
@@ -25,6 +29,10 @@ export class TerraformFunctionApp {
         WEBSITE_RUN_FROM_PACKAGE: '',
         WEBSITE_CONTENTSHARE: id,
         WEBSITE_NODE_DEFAULT_VERSION: '~14',
+        ...config.env,
+        BOOSTER_ENV: config.environmentName,
+        BOOSTER_REST_API_URL: `https://${apiManagementServiceName}.azure-api.net/${config.environmentName}`,
+        COSMOSDB_CONNECTION_STRING: `AccountEndpoint=https://${cosmosDatabaseName}.documents.azure.com:443/;AccountKey=${cosmosDbConnectionString};`,
       },
       osType: 'linux',
       storageAccountName: storageAccount.name,

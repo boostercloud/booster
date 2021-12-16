@@ -4,6 +4,7 @@ import {
   readProjectConfig,
   createFunctionResourceGroupName,
   createResourceGroupName,
+  createApiManagementName,
 } from '../helper/utils'
 import { AzurermProvider } from '@cdktf/provider-azurerm'
 import { TerraformStack } from 'cdktf'
@@ -34,6 +35,7 @@ export class ApplicationSynth {
   public synth(): ApplicationSynthStack {
     const resourceGroupName = createResourceGroupName(this.config.appName, this.config.environmentName)
     const functionAppName = createFunctionResourceGroupName(resourceGroupName)
+    const apiManagementName = createApiManagementName(resourceGroupName)
     new AzurermProvider(this.terraformStack, 'azureFeature', {
       features: {},
     })
@@ -50,21 +52,44 @@ export class ApplicationSynth {
       this.appPrefix,
       resourceGroupName
     )
+    const cosmosdbDatabase = TerraformCosmosdbDatabase.build(
+      this.terraformStack,
+      resourceGroup,
+      this.appPrefix,
+      resourceGroupName
+    )
+    const cosmosdbSqlDatabase = TerraformCosmosdbSqlDatabase.build(
+      this.terraformStack,
+      resourceGroup,
+      this.appPrefix,
+      cosmosdbDatabase,
+      this.config
+    )
+    const containers = TerraformContainers.build(
+      this.terraformStack,
+      resourceGroup,
+      this.appPrefix,
+      cosmosdbDatabase,
+      cosmosdbSqlDatabase,
+      this.config
+    )
     const functionApp = TerraformFunctionApp.build(
       this.terraformStack,
       resourceGroup,
       applicationServicePlan,
       storageAccount,
       this.appPrefix,
-      functionAppName
+      functionAppName,
+      cosmosdbDatabase.name,
+      apiManagementName,
+      cosmosdbDatabase.primaryKey,
+      this.config
     )
     const apiManagement = TerraformApiManagement.build(
       this.terraformStack,
       resourceGroup,
-      this.appPrefix,
-      this.config.environmentName,
-      functionApp,
-      resourceGroupName
+      apiManagementName,
+      this.appPrefix
     )
     const apiManagementApi = TerraformApiManagementApi.build(
       this.terraformStack,
@@ -89,34 +114,6 @@ export class ApplicationSynth {
       this.config.environmentName,
       functionApp
     )
-    const cosmosdbDatabase = TerraformCosmosdbDatabase.build(
-      this.terraformStack,
-      resourceGroup,
-      this.appPrefix,
-      resourceGroupName
-    )
-    const cosmosdbSqlDatabase = TerraformCosmosdbSqlDatabase.build(
-      this.terraformStack,
-      resourceGroup,
-      this.appPrefix,
-      cosmosdbDatabase,
-      this.config
-    )
-    const containers = TerraformContainers.build(
-      this.terraformStack,
-      resourceGroup,
-      this.appPrefix,
-      cosmosdbDatabase,
-      cosmosdbSqlDatabase,
-      this.config
-    )
-    const updatedFunction = TerraformFunctionApp.updateFunction(
-      functionApp,
-      cosmosdbDatabase.name,
-      apiManagement.name,
-      cosmosdbDatabase.primaryKey,
-      this.config
-    )
 
     return {
       appPrefix: this.appPrefix,
@@ -134,7 +131,6 @@ export class ApplicationSynth {
       cosmosdbDatabase: cosmosdbDatabase,
       cosmosdbSqlDatabase: cosmosdbSqlDatabase,
       containers: containers,
-      updatedFunction: updatedFunction,
     } as ApplicationSynthStack
   }
 }
