@@ -30,7 +30,6 @@ export interface ApplicationSynthStack {
   cosmosdbDatabase: CosmosdbAccount | undefined
   cosmosdbSqlDatabase: CosmosdbSqlDatabase | undefined
   containers: Array<CosmosdbSqlContainer> | undefined
-  updatedFunction: FunctionApp | undefined
   functionDefinitions?: Array<FunctionDefinition>
   rocketStack?: Array<TerraformResource>
 }

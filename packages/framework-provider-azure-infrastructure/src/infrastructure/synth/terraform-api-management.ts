@@ -1,5 +1,5 @@
 import { TerraformStack } from 'cdktf'
-import { ApiManagement, FunctionApp, ResourceGroup } from '@cdktf/provider-azurerm'
+import { ApiManagement, ResourceGroup } from '@cdktf/provider-azurerm'
 import { toTerraformName } from '../helper/utils'
 import { configuration } from '../helper/params'
 
@@ -7,14 +7,12 @@ export class TerraformApiManagement {
   static build(
     terraformStack: TerraformStack,
     resourceGroup: ResourceGroup,
-    appPrefix: string,
-    environmentName: string,
-    functionApp: FunctionApp,
-    resourceGroupName: string
+    apiManagementName: string,
+    appPrefix: string
   ): ApiManagement {
     const idApiManagement = toTerraformName(appPrefix, 'am')
     return new ApiManagement(terraformStack, idApiManagement, {
-      name: `${resourceGroupName}apis`,
+      name: apiManagementName,
       location: resourceGroup.location,
       resourceGroupName: resourceGroup.name,
       publisherName: configuration.publisherName,
