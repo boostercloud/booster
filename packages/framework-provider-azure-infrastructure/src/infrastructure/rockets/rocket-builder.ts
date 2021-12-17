@@ -16,11 +16,7 @@ export class RocketBuilder {
   public async mount(): Promise<void> {
     const rocketsInfrastructure = this.rockets
       ? this.rockets.map((rocket: InfrastructureRocket) =>
-          rocket.mountStack(
-            this.config,
-            this.applicationSynthStack,
-            buildRocketUtils(rocket.packageName ?? '', this.config.appName, this.config.environmentName)
-          )
+          rocket.mountStack(this.config, this.applicationSynthStack, buildRocketUtils(rocket.packageName ?? ''))
         )
       : []
 
@@ -38,11 +34,7 @@ export class RocketBuilder {
   private mountRocketFunctions(): Array<FunctionDefinition> | undefined {
     return this.rockets?.flatMap((rocket: InfrastructureRocket) => {
       this.logger.info(`Rocket package: ${rocket.packageName}`)
-      return rocket.mountFunctions(
-        this.config,
-        this.applicationSynthStack,
-        buildRocketUtils(rocket.packageName ?? '', this.config.appName, this.config.environmentName)
-      )
+      return rocket.mountFunctions(this.config, this.applicationSynthStack, buildRocketUtils(rocket.packageName ?? ''))
     })
   }
 }
