@@ -57,6 +57,7 @@
     "chai-as-promised": "7.1.1",
     "faker": "5.1.0",
     "mocha": "8.4.0",
+    "rimraf": "3.0.2",
     "sinon-chai": "3.5.0"
   }
 }

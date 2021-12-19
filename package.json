@@ -1,14 +1,17 @@
 {
   "name": "root",
-  "version": "0.0.7",
+  "version": "0.23.0",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
   "bugs": "https://github.com/boostercloud/booster/issues",
   "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "build": "lerna run compile",
-    "clean-compile": "lerna run clean && lerna clean --yes && lerna bootstrap && lerna run compile",
-    "update-tocs": "npm run update-documentation-toc && npm run update-contributing-toc",
+    "build": "yarn workspaces foreach -t run compile",
+    "clean-compile": "yarn workspaces foreach run clean && yarn run build",
+    "update-tocs": "yarn run update-documentation-toc && yarn run update-contributing-toc",
     "update-documentation-toc": "markdown-toc -i --maxdepth 4 docs/README.md",
     "update-contributing-toc": "markdown-toc -i --bullets=- --maxdepth 4 CONTRIBUTING.md"
   },
@@ -28,6 +31,7 @@
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-import": "2.22.1",
     "eslint-plugin-prettier": "3.4.0",
+    "has-tostringtag": "^1.0.0",
     "husky": "6.0.0",
     "lerna": "4.0.0",
     "lint-staged": "11.0.0",
@@ -38,12 +42,12 @@
     "rimraf": "3.0.2",
     "ts-node": "9.1.1",
     "typescript": "4.2.4",
-    "yargs": "17.0.1",
-    "has-tostringtag": "^1.0.0"
+    "yargs": "17.0.1"
   },
   "license": "Apache-2.0",
   "lint-staged": {
     "*.{js,ts,md}": "prettier --single-quote --write",
     "**/*.{ts,md}": "prettier --single-quote --write"
-  }
+  },
+  "packageManager": "yarn@3.1.1"
 }

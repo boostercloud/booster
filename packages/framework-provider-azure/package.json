@@ -28,6 +28,9 @@
     "mocha": "8.4.0",
     "sinon-chai": "3.5.0"
   },
+  "devDependencies": {
+    "rimraf": "3.0.2"
+  },
   "scripts": {
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
