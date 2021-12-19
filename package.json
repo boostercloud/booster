@@ -9,7 +9,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "yarn workspaces foreach -t run compile",
+    "build": "yarn workspaces foreach -t -v run compile",
     "clean-compile": "yarn workspaces foreach run clean && yarn run build",
     "update-tocs": "yarn run update-documentation-toc && yarn run update-contributing-toc",
     "update-documentation-toc": "markdown-toc -i --maxdepth 4 docs/README.md",
