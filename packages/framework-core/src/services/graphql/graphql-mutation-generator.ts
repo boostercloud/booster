@@ -1,7 +1,7 @@
 import { ResolverBuilder, TargetTypesMap } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
 import { GraphQLFieldConfigMap, GraphQLObjectType, GraphQLNonNull } from 'graphql'
-import { TypeGroup, TypeMetadata } from 'metadata-booster'
+import { TypeMetadata } from 'metadata-booster'
 
 export class GraphQLMutationGenerator {
   public constructor(
@@ -28,7 +28,7 @@ export class GraphQLMutationGenerator {
       let handleMethodMetadata = metadata.methods.find((m) => m.name === 'handle')?.typeInfo
       let returnMetadata: TypeMetadata = {
         name: 'Boolean',
-        typeGroup: TypeGroup.Boolean,
+        typeGroup: 'Boolean',
         typeName: 'Boolean',
         isNullable: false,
         parameters: [],

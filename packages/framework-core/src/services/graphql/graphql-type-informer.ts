@@ -14,7 +14,7 @@ import {
   GraphQLType,
 } from 'graphql'
 import { GraphQLJSONObject } from 'graphql-type-json'
-import { ClassMetadata, ClassType, TypeGroup, TypeMetadata } from 'metadata-booster'
+import { ClassMetadata, ClassType, TypeMetadata } from 'metadata-booster'
 import { DateScalar, isExternalType } from './common'
 import { Logger } from '@boostercloud/framework-types'
 
@@ -59,10 +59,10 @@ export class GraphQLTypeInformer {
       // Date is an interface which has no `type`, so we need to use `name` instead
       return typeMetadata.name
     }
-    if (typeMetadata.typeGroup === TypeGroup.Array) {
+    if (typeMetadata.typeGroup === 'Array') {
       return this.getGraphQLName(typeMetadata.parameters[0], inputType) + 'List' + (inputType ? 'Input' : '')
     }
-    if (typeMetadata.typeName && typeMetadata.typeGroup === TypeGroup.Class) {
+    if (typeMetadata.typeName && typeMetadata.typeGroup === 'Class') {
       return typeMetadata.typeName + (inputType ? 'Input' : '')
     }
     return typeMetadata.typeName || null
@@ -74,12 +74,12 @@ export class GraphQLTypeInformer {
 
     if (name === 'Date') return DateScalar
     if (name === 'UUID') return GraphQLID
-    if (typeGroup === TypeGroup.String) return GraphQLString
-    if (typeGroup === TypeGroup.Number) return GraphQLFloat
-    if (typeGroup === TypeGroup.Boolean) return GraphQLBoolean
-    if (typeGroup === TypeGroup.Enum) return this.createEnumType(typeMetadata)
-    if (typeGroup === TypeGroup.Array) return this.createArrayType(typeMetadata, inputType)
-    if (typeGroup === TypeGroup.Class && typeMetadata.type && !isExternalType(typeMetadata)) {
+    if (typeGroup === 'String') return GraphQLString
+    if (typeGroup === 'Number') return GraphQLFloat
+    if (typeGroup === 'Boolean') return GraphQLBoolean
+    if (typeGroup === 'Enum') return this.createEnumType(typeMetadata)
+    if (typeGroup === 'Array') return this.createArrayType(typeMetadata, inputType)
+    if (typeGroup === 'Class' && typeMetadata.type && !isExternalType(typeMetadata)) {
       const metadata = getClassMetadata(typeMetadata.type)
       return this.createObjectType(metadata, inputType)
     }

@@ -46,7 +46,7 @@
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
     "fast-check": "2.17.0",
-    "metadata-booster": "npm:@advantitge/metadata-booster@0.4.0-beta.2",
+    "metadata-booster": "npm:@advantitge/metadata-booster@0.4.0-beta.5",
     "sinon-chai": "3.5.0"
   }
 }
