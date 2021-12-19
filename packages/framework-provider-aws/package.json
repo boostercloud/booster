@@ -20,8 +20,8 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@boostercloud/framework-common-helpers": "^0.23.0",
-    "@boostercloud/framework-types": "^0.23.0"
+    "@boostercloud/framework-common-helpers": "0.23.0",
+    "@boostercloud/framework-types": "0.23.0"
   },
   "scripts": {
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",

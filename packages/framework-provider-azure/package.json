@@ -22,7 +22,7 @@
   "dependencies": {
     "@azure/cosmos": "3.7.3",
     "@azure/functions": "^1.2.2",
-    "@boostercloud/framework-types": "^0.23.0",
+    "@boostercloud/framework-types": "0.23.0",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
     "mocha": "8.4.0",
