@@ -26,6 +26,7 @@
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
     "mocha": "8.4.0",
+    "sinon": "9.2.3",
     "sinon-chai": "3.5.0"
   },
   "devDependencies": {

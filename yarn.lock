@@ -1705,9 +1705,11 @@ __metadata:
     chai-as-promised: 7.1.1
     cross-fetch: 3.1.4
     fast-check: 2.17.0
+    graphql: 15.8.0
     jsonwebtoken: 8.5.1
     metadata-booster: 0.3.1
     rimraf: 3.0.2
+    sinon: 9.2.3
     sinon-chai: 3.5.0
     subscriptions-transport-ws: 0.9.18
     ws: 7.4.5
@@ -1839,6 +1841,7 @@ __metadata:
     aws-sdk: 2.853.0
     cross-fetch: 3.1.4
     faker: 5.1.0
+    graphql: 15.8.0
     graphql-tag: 2.12.4
     jsonwebtoken: 8.5.1
     jwks-rsa: 2.0.3
@@ -1948,6 +1951,7 @@ __metadata:
     needle: ^2.5.0
     ora: ^3.4.0
     rimraf: 3.0.2
+    sinon: 9.2.3
     sinon-chai: 3.5.0
     uuid: 8.3.2
   languageName: unknown
@@ -1964,6 +1968,7 @@ __metadata:
     chai-as-promised: 7.1.1
     mocha: 8.4.0
     rimraf: 3.0.2
+    sinon: 9.2.3
     sinon-chai: 3.5.0
   languageName: unknown
   linkType: soft
@@ -1995,6 +2000,7 @@ __metadata:
     mustache: 4.1.0
     rimraf: 3.0.2
     semver: ^7.3.2
+    sinon: 9.2.3
     sinon-chai: 3.5.0
   languageName: unknown
   linkType: soft
@@ -10677,19 +10683,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"graphql@npm:15.8.0, graphql@npm:^15.5.1":
+  version: 15.8.0
+  resolution: "graphql@npm:15.8.0"
+  checksum: 423325271db8858428641b9aca01699283d1fe5b40ef6d4ac622569ecca927019fce8196208b91dd1d8eb8114f00263fe661d241d0eb40c10e5bfd650f86ec5e
+  languageName: node
+  linkType: hard
+
 "graphql@npm:^14.5.3":
   version: 14.7.0
   resolution: "graphql@npm:14.7.0"
   dependencies:
     iterall: ^1.2.2
   checksum: e5f4e60799421a573904f390e1ec0aa76360f751688dbbe62e9c35baa0d3727c8d59a659bfc524f126dffe3518da87fd8ecaa78c94fd5c0fe4e035c670745242
-  languageName: node
-  linkType: hard
-
-"graphql@npm:^15.5.1":
-  version: 15.8.0
-  resolution: "graphql@npm:15.8.0"
-  checksum: 423325271db8858428641b9aca01699283d1fe5b40ef6d4ac622569ecca927019fce8196208b91dd1d8eb8114f00263fe661d241d0eb40c10e5bfd650f86ec5e
   languageName: node
   linkType: hard
 
