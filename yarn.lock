@@ -1790,7 +1790,7 @@ __metadata:
     chai-as-promised: 7.1.1
     faker: 5.1.0
     fp-ts: 2.10.5
-    graphql: 15.5.1
+    graphql: 15.8.0
     graphql-subscriptions: 1.2.1
     graphql-type-json: 0.3.2
     inflected: 2.1.0
@@ -10680,13 +10680,6 @@ __metadata:
   version: 16.1.0
   resolution: "graphql@npm:16.1.0"
   checksum: fa393f0e3d284a681606a3296aaa902e730036af89ae0142f91d72f7053c59627df65fc5fdac48f46d6c1f07f4406411ac4948b317621de729e3ccc8980dec1f
-  languageName: node
-  linkType: hard
-
-"graphql@npm:15.5.1":
-  version: 15.5.1
-  resolution: "graphql@npm:15.5.1"
-  checksum: 7e45ae27021e5bafd2a3ce557e708606ff28504aae705654764fa6239b0151d014a90cbd4c68300f4f95a9074820aaee9b1f25b560ff089c8db0b49563e34080
   languageName: node
   linkType: hard
 
