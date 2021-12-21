@@ -17,7 +17,7 @@ export class TerraformFunctionApp {
     config: BoosterConfig
   ): FunctionApp {
     const id = toTerraformName(appPrefix, 'func')
-    const functionApp = new FunctionApp(terraformStack, id, {
+    return new FunctionApp(terraformStack, id, {
       name: functionAppName,
       location: resourceGroup.location,
       resourceGroupName: resourceGroup.name,
@@ -39,26 +39,9 @@ export class TerraformFunctionApp {
       storageAccountAccessKey: storageAccount.primaryAccessKey,
       version: '~3',
       dependsOn: [resourceGroup],
+      lifecycle: {
+        ignoreChanges: ['app_settings["WEBSITE_RUN_FROM_PACKAGE"]'],
+      },
     })
-    functionApp.lifecycle = {
-      ignoreChanges: ['app_settings["WEBSITE_RUN_FROM_PACKAGE"]'],
-    }
-    return functionApp
-  }
-
-  static updateFunction(
-    functionApp: FunctionApp,
-    functionAppName: string,
-    apiManagementServiceName: string,
-    cosmosDbConnectionString: string,
-    config: BoosterConfig
-  ): FunctionApp {
-    functionApp.addOverride('app_settings', {
-      ...config.env,
-      BOOSTER_ENV: config.environmentName,
-      BOOSTER_REST_API_URL: `https://${apiManagementServiceName}.azure-api.net/${config.environmentName}`,
-      COSMOSDB_CONNECTION_STRING: `AccountEndpoint=https://${functionAppName}.documents.azure.com:443/;AccountKey=${cosmosDbConnectionString};`,
-    })
-    return functionApp
   }
 }
