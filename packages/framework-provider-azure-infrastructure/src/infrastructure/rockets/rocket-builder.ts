@@ -85,7 +85,6 @@ export class RocketBuilder {
 
   private deployRocketZip(rocket: InfrastructureRocket, resourceGroupName: string, zipResource: ZipResource): void {
     rocket.getFunctionsAppNames(this.applicationSynthStack).flatMap(async (functionAppName) => {
-      this.logger.info(`Deploying Rocket function: ${functionAppName}`)
       await FunctionZip.deployZip(functionAppName, resourceGroupName, zipResource)
     })
   }
