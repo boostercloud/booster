@@ -28,8 +28,8 @@ export class FunctionZip {
     return zipResource
   }
 
-  static async copyZip(featuresDefinitions: Array<FunctionDefinition>): Promise<ZipResource> {
-    const zipPath = await this.createZip(featuresDefinitions)
+  static async copyZip(featuresDefinitions: Array<FunctionDefinition>, fileName: string): Promise<ZipResource> {
+    const zipPath = await this.createZip(featuresDefinitions, fileName)
     const originFile = path.basename(zipPath)
     const destinationFile = path.join(process.cwd(), originFile)
     fs.copyFileSync(zipPath, destinationFile)
@@ -70,8 +70,8 @@ export class FunctionZip {
     return featuresDefinitions
   }
 
-  private static async createZip(functionDefinitions: Array<FunctionDefinition>): Promise<any> {
-    const output = fs.createWriteStream(path.join(os.tmpdir(), 'functionApp.zip'))
+  private static async createZip(functionDefinitions: Array<FunctionDefinition>, fileName: string): Promise<any> {
+    const output = fs.createWriteStream(path.join(os.tmpdir(), fileName))
 
     const archive = archiver('zip', {
       zlib: { level: 9 }, // Sets the compression level.

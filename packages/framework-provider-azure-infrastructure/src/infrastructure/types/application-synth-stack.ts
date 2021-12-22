@@ -19,6 +19,7 @@ export interface ApplicationSynthStack {
   terraformStack: TerraformStack
   resourceGroupName: string | undefined
   functionAppName: string | undefined
+  apiManagementName: string | undefined
   resourceGroup: ResourceGroup | undefined
   applicationServicePlan: AppServicePlan | undefined
   storageAccount: StorageAccount | undefined

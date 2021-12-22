@@ -3,6 +3,7 @@ import { azureCredentials, createResourceGroupName, createResourceManagementClie
 import { runCommand } from '@boostercloud/framework-common-helpers'
 import { InfrastructureRocket } from './rockets/infrastructure-rocket'
 import { ApplicationBuilder } from './application-builder'
+import { RocketBuilder } from './rockets/rocket-builder'
 
 export const synth = (configuration: BoosterConfig, logger: Logger, rockets?: InfrastructureRocket[]): Promise<void> =>
   synthApp(logger, configuration, rockets)
@@ -26,13 +27,16 @@ async function synthApp(logger: Logger, config: BoosterConfig, rockets?: Infrast
 async function deployApp(logger: Logger, config: BoosterConfig, rockets?: InfrastructureRocket[]): Promise<void> {
   logger.info(`Deploying app ${config.appName}`)
   const applicationBuilder = new ApplicationBuilder(logger, config, rockets)
-  const zipResource = await applicationBuilder.buildApplication()
+  const applicationBuild = await applicationBuilder.buildApplication()
 
   const command = await runCommand(process.cwd(), 'npx cdktf deploy --auto-approve')
   if (command.childProcess.exitCode !== 0) {
     return Promise.reject(`Deploy application ${config.appName} failed. Check cdktf logs`)
   }
-  await applicationBuilder.uploadFile(zipResource)
+  const rocketBuilder = new RocketBuilder(logger, config, applicationBuild.azureStack.applicationStack, rockets)
+
+  await applicationBuilder.uploadFile(applicationBuild.zipResource)
+  await rocketBuilder.uploadRocketsFiles(applicationBuild.rocketZipResource)
 }
 
 /**

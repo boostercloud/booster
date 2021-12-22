@@ -119,6 +119,7 @@ export class ApplicationSynth {
       appPrefix: this.appPrefix,
       terraformStack: this.terraformStack,
       resourceGroupName: resourceGroupName,
+      apiManagementName: apiManagementName,
       functionAppName: functionAppName,
       resourceGroup: resourceGroup,
       applicationServicePlan: applicationServicePlan,
