@@ -8,12 +8,12 @@ import { App } from 'cdktf'
 import { ZipResource } from './types/zip-resource'
 import { FunctionZip } from './helper/function-zip'
 import { FunctionDefinition } from './types/functionDefinition'
-import { RocketBuilder } from './rockets/rocket-builder'
+import { RocketBuilder, RocketZipResource } from './rockets/rocket-builder'
 
 export interface ApplicationBuild {
   azureStack: AzureStack
   zipResource: ZipResource
-  rocketZipResource: ZipResource
+  rocketsZipResources?: RocketZipResource[] | undefined
 }
 
 export class ApplicationBuilder {
@@ -29,15 +29,14 @@ export class ApplicationBuilder {
     app.synth()
 
     const featureDefinitions = this.mountFeatureDefinitions(azureStack)
-    const rocketFeaturesDefinitions = rocketBuilder.mountRocketFeatureDefinitions()
+    const zipResource = await FunctionZip.copyZip(featureDefinitions, 'functionApp.zip')
 
-    const zipResource = await this.generateFunctionsZipFile(featureDefinitions, 'functionApp.zip')
-    const rocketZipResource = await this.generateFunctionsZipFile(rocketFeaturesDefinitions, 'rocketApp.zip')
+    const rocketsZipResources = await rocketBuilder.mountRocketZipResources()
 
     return {
       azureStack,
       zipResource,
-      rocketZipResource,
+      rocketsZipResources,
     }
   }
 
@@ -64,13 +63,5 @@ export class ApplicationBuilder {
     this.logger.info('Generating cdktf files')
     const filesToGenerate: Array<[Array<string>, string]> = [[['cdktf.json'], ckdtfTemplate.template]]
     await Promises.allSettledAndFulfilled(filesToGenerate.map(renderToFile(this.config)))
-  }
-
-  private async generateFunctionsZipFile(
-    functionDefinitions: Array<FunctionDefinition>,
-    fileName: string
-  ): Promise<ZipResource> {
-    this.logger.info('Generating zip file')
-    return await FunctionZip.copyZip(functionDefinitions, fileName)
   }
 }

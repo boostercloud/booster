@@ -33,10 +33,10 @@ async function deployApp(logger: Logger, config: BoosterConfig, rockets?: Infras
   if (command.childProcess.exitCode !== 0) {
     return Promise.reject(`Deploy application ${config.appName} failed. Check cdktf logs`)
   }
-  const rocketBuilder = new RocketBuilder(logger, config, applicationBuild.azureStack.applicationStack, rockets)
 
   await applicationBuilder.uploadFile(applicationBuild.zipResource)
-  await rocketBuilder.uploadRocketsFiles(applicationBuild.rocketZipResource)
+  const rocketBuilder = new RocketBuilder(logger, config, applicationBuild.azureStack.applicationStack, rockets)
+  rocketBuilder.uploadRocketsFiles(applicationBuild.rocketsZipResources)
 }
 
 /**
