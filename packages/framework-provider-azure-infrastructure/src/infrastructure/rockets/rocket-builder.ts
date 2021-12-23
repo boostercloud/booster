@@ -58,22 +58,22 @@ export class RocketBuilder {
     }
     this.logger.info('Generating Rocket zip resources')
     return await Promise.all(
-      this.rockets?.map(async (rocket: InfrastructureRocket) => {
-        const packageName = rocket.packageName?.replace(/(\W+)/gi, '_')
-        const fileName = `rocket_${packageName}.zip`
-        this.logger.info(`Generating Rocket ${rocket.packageName} functions`)
-        const rocketFeaturesDefinitions = rocket.mountFunctions(
-          this.config,
-          this.applicationSynthStack,
-          buildRocketUtils()
-        )
-        this.logger.info(`Generating Rocket ${rocket.packageName} zip file ${fileName}`)
-        const rocketZipResource = await FunctionZip.copyZip(rocketFeaturesDefinitions, fileName)
-        return {
-          packageName: rocket.packageName,
-          zip: rocketZipResource,
-        } as RocketZipResource
-      })
+      this.rockets
+        ?.filter((value) => value.mountFunctions)
+        .map(async (rocket: InfrastructureRocket) => {
+          const packageName = rocket.packageName?.replace(/(\W+)/gi, '_')
+          const fileName = `rocket_${packageName}.zip`
+          this.logger.info(`Generating Rocket ${rocket.packageName} functions`)
+          const rocketFeaturesDefinitions = rocket.mountFunctions
+            ? rocket.mountFunctions(this.config, this.applicationSynthStack, buildRocketUtils())
+            : []
+          this.logger.info(`Generating Rocket ${rocket.packageName} zip file ${fileName}`)
+          const rocketZipResource = await FunctionZip.copyZip(rocketFeaturesDefinitions, fileName)
+          return {
+            packageName: rocket.packageName,
+            zip: rocketZipResource,
+          } as RocketZipResource
+        })
     )
   }
 
@@ -83,9 +83,12 @@ export class RocketBuilder {
       : []
   }
 
-  private deployRocketZip(rocket: InfrastructureRocket, resourceGroupName: string, zipResource: ZipResource): void {
-    rocket.getFunctionsAppNames(this.applicationSynthStack).flatMap(async (functionAppName) => {
-      await FunctionZip.deployZip(functionAppName, resourceGroupName, zipResource)
-    })
+  private async deployRocketZip(
+    rocket: InfrastructureRocket,
+    resourceGroupName: string,
+    zipResource: ZipResource
+  ): Promise<void> {
+    const functionAppName = rocket.getFunctionAppName ? rocket.getFunctionAppName(this.applicationSynthStack) : ''
+    await FunctionZip.deployZip(functionAppName, resourceGroupName, zipResource)
   }
 }

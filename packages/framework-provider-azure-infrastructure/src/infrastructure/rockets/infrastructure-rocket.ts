@@ -11,8 +11,8 @@ export interface InfrastructureRocket {
     utils: RocketUtils
   ) => ApplicationSynthStack
   unmountStack?: () => void
-  getFunctionsAppNames: (applicationSynthStack: ApplicationSynthStack) => Array<string>
-  mountFunctions: (
+  getFunctionAppName?: (applicationSynthStack: ApplicationSynthStack) => string
+  mountFunctions?: (
     config: BoosterConfig,
     applicationSynthStack: ApplicationSynthStack,
     utils: RocketUtils
