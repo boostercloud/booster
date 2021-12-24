@@ -1,12 +1,14 @@
 import * as express from 'express'
 import { GraphQLService } from '@boostercloud/framework-provider-local'
-import { BoosterConfig, ProviderInfrastructure, UserApp } from '@boostercloud/framework-types'
+import { BoosterConfig, ProviderInfrastructure, RocketDescriptor, UserApp } from '@boostercloud/framework-types'
 import * as path from 'path'
 import { requestFailed } from './http'
 import { GraphQLController } from './controllers/graphql'
 import * as cors from 'cors'
+import { loadRocket } from './infrastructure-rocket'
 
 export * from './test-helper/local-test-helper'
+export * from './infrastructure-rocket'
 
 /**
  * Default error handling middleware. Instead of performing a try/catch in all endpoints
@@ -26,7 +28,8 @@ async function defaultErrorHandler(
   await requestFailed(err, res)
 }
 
-export const Infrastructure = (): ProviderInfrastructure => {
+export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): ProviderInfrastructure => {
+  const rockets = rocketDescriptors?.map(loadRocket)
   return {
     /**
      * `run` serves as the entry point for the local provider. It starts the required infrastructure
@@ -41,6 +44,11 @@ export const Infrastructure = (): ProviderInfrastructure => {
       const userProject: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
       const graphQLService = new GraphQLService(userProject)
       router.use('/graphql', new GraphQLController(graphQLService).router)
+      if (rockets && rockets.length > 0) {
+        rockets.map((rocket) => {
+          rocket.mountStack(config, router)
+        })
+      }
       expressServer.use(express.json())
       expressServer.use(cors())
       expressServer.use(function (req, res, next) {
