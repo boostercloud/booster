@@ -35,8 +35,10 @@ async function deployApp(logger: Logger, config: BoosterConfig, rockets?: Infras
   }
 
   await applicationBuilder.uploadFile(applicationBuild.zipResource)
-  const rocketBuilder = new RocketBuilder(logger, config, applicationBuild.azureStack.applicationStack, rockets)
-  rocketBuilder.uploadRocketsFiles(applicationBuild.rocketsZipResources)
+  if (applicationBuild.rocketsZipResources && applicationBuild.rocketsZipResources.length > 0) {
+    const rocketBuilder = new RocketBuilder(logger, config, applicationBuild.azureStack.applicationStack, rockets)
+    rocketBuilder.uploadRocketsFiles(applicationBuild.rocketsZipResources)
+  }
 }
 
 /**
