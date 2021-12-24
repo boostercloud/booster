@@ -31,7 +31,7 @@ export function loadRocket(rocketDescriptor: RocketDescriptor): InfrastructureRo
     )
   if (typeof rocketBuilder !== 'function')
     throw new Error(
-      `Could not initialize rocket package ${rocketDescriptor.packageName}. It doesn't seem to implement a rocket builder method as default export.`
+      `Could not initialize rocket infrastructure package ${rocketDescriptor.packageName}. It doesn't seem to implement a rocket builder method as default export.`
     )
   const rocket = rocketBuilder(rocketDescriptor.parameters)
   if (!rocket?.mountStack)
