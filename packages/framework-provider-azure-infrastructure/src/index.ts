@@ -13,7 +13,7 @@ export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): Provider
   const rockets = rocketDescriptors?.map(loadRocket)
   return {
     deploy: async (config: BoosterConfig, logger: Logger) => await deploy(config, logger, rockets),
-    nuke: async (config: BoosterConfig, logger: Logger) => await nuke(config, logger),
+    nuke: async (config: BoosterConfig, logger: Logger) => await nuke(config, logger, rockets),
     synth: async (config: BoosterConfig, logger: Logger) => await synth(config, logger, rockets),
   }
 }

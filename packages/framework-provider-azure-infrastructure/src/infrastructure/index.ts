@@ -11,7 +11,8 @@ export const synth = (configuration: BoosterConfig, logger: Logger, rockets?: In
 export const deploy = (configuration: BoosterConfig, logger: Logger, rockets?: InfrastructureRocket[]): Promise<void> =>
   deployApp(logger, configuration, rockets)
 
-export const nuke = (configuration: BoosterConfig, logger: Logger): Promise<void> => nukeApp(logger, configuration)
+export const nuke = (configuration: BoosterConfig, logger: Logger, rockets?: InfrastructureRocket[]): Promise<void> =>
+  nukeApp(logger, configuration, rockets)
 
 /**
  * Synth the application for Azure
@@ -44,9 +45,13 @@ async function deployApp(logger: Logger, config: BoosterConfig, rockets?: Infras
 /**
  * Nuke all the resources used in the Resource Group
  */
-async function nukeApp(_logger: Logger, config: BoosterConfig): Promise<void> {
+async function nukeApp(_logger: Logger, config: BoosterConfig, rockets?: InfrastructureRocket[]): Promise<void> {
   const credentials = await azureCredentials()
   const resourceManagementClient = await createResourceManagementClient(credentials)
+
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  rockets?.filter((rocket) => rocket.unmountStack).map((rocket) => rocket.unmountStack())
 
   // By deleting the resource group we are deleting all the resources within it.
   await resourceManagementClient.resourceGroups.deleteMethod(
