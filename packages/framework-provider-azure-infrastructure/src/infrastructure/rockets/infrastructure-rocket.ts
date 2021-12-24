@@ -27,7 +27,7 @@ export function loadRocket(rocketDescriptor: RocketDescriptor): InfrastructureRo
   const rocketBuilder = requireRocket(rocketDescriptor.packageName)
   if (!rocketBuilder)
     throw new Error(
-      `Could not load the rocket package ${rocketDescriptor.packageName}. Make sure you installed it in your project devDependencies.`
+      `Could not load the rocket infrastructure package ${rocketDescriptor.packageName}. Make sure you installed it in your project devDependencies.`
     )
   if (typeof rocketBuilder !== 'function')
     throw new Error(
