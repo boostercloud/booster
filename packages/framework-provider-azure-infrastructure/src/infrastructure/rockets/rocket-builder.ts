@@ -6,9 +6,10 @@ import { FunctionZip } from '../helper/function-zip'
 import { buildRocketUtils } from './rocket-utils'
 import { Promises } from '@boostercloud/framework-common-helpers'
 import { ApplicationSynthStack } from '../types/application-synth-stack'
+import { FunctionDefinition } from '../types/functionDefinition'
 
 export interface RocketZipResource {
-  packageName: string
+  functionAppName: string
   zip: ZipResource
 }
 
@@ -35,7 +36,7 @@ export class RocketBuilder {
     if (this.rockets) {
       this.rockets.map(async (rocket) => {
         const rocketZipResource = rocketsZipResources?.find(
-          (rocketZipResource) => rocketZipResource.packageName === rocket.packageName
+          (rocketZipResource) => rocketZipResource.functionAppName === this.getFunctionAppName(rocket)
         )
         if (rocketZipResource) {
           const zip = rocketZipResource?.zip
@@ -52,29 +53,28 @@ export class RocketBuilder {
     this.logger.info('Rocket zip files uploaded')
   }
 
-  public async mountRocketZipResources(): Promise<Array<RocketZipResource> | undefined> {
+  public async mountRocketsZipResources(): Promise<Array<RocketZipResource> | undefined> {
     if (!this.rockets) {
       return
     }
-    this.logger.info('Generating Rocket zip resources')
     return await Promise.all(
       this.rockets
         ?.filter((value) => value.mountFunctions)
-        .map(async (rocket: InfrastructureRocket) => {
-          const packageName = rocket.packageName?.replace(/(\W+)/gi, '_')
-          const fileName = `rocket_${packageName}.zip`
-          this.logger.info(`Generating Rocket ${rocket.packageName} functions`)
-          const rocketFeaturesDefinitions = rocket.mountFunctions
-            ? rocket.mountFunctions(this.config, this.applicationSynthStack, buildRocketUtils())
-            : []
-          this.logger.info(`Generating Rocket ${rocket.packageName} zip file ${fileName}`)
-          const rocketZipResource = await FunctionZip.copyZip(rocketFeaturesDefinitions, fileName)
-          return {
-            packageName: rocket.packageName,
-            zip: rocketZipResource,
-          } as RocketZipResource
-        })
+        .map(async (rocket: InfrastructureRocket) => await this.mountRocketZipResource(rocket))
     )
+  }
+
+  private async mountRocketZipResource(rocket: InfrastructureRocket): Promise<RocketZipResource> {
+    const rocketFunctionAppName = this.getFunctionAppName(rocket)
+    const functionAppName = rocketFunctionAppName.replace(/(\W+)/gi, '_')
+    const fileName = `rocket_${functionAppName}.zip`
+    const rocketFeaturesDefinitions = this.mountFunction(rocket)
+    this.logger.info(`Generating Rocket zip file ${fileName}`)
+    const rocketZipResource = await FunctionZip.copyZip(rocketFeaturesDefinitions, fileName)
+    return {
+      functionAppName: rocketFunctionAppName,
+      zip: rocketZipResource,
+    } as RocketZipResource
   }
 
   private deployRocketsZips(resourceGroupName: string, zipResource: ZipResource): void {
@@ -88,7 +88,21 @@ export class RocketBuilder {
     resourceGroupName: string,
     zipResource: ZipResource
   ): Promise<void> {
-    const functionAppName = rocket.getFunctionAppName ? rocket.getFunctionAppName(this.applicationSynthStack) : ''
+    const functionAppName = this.getFunctionAppName(rocket)
     await FunctionZip.deployZip(functionAppName, resourceGroupName, zipResource)
+  }
+
+  private mountFunction(rocket: InfrastructureRocket): Array<FunctionDefinition> {
+    if (!rocket.mountFunctions) {
+      throw new Error(`MountFunctions method not found on rocket ${rocket}`)
+    }
+    return rocket.mountFunctions(this.config, this.applicationSynthStack, buildRocketUtils())
+  }
+
+  private getFunctionAppName(rocket: InfrastructureRocket): string {
+    if (!rocket.getFunctionAppName) {
+      throw new Error(`FunctionAppName not found on rocket ${rocket}`)
+    }
+    return rocket.getFunctionAppName(this.applicationSynthStack)
   }
 }

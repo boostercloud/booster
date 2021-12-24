@@ -31,7 +31,7 @@ export class ApplicationBuilder {
     const featureDefinitions = this.mountFeatureDefinitions(azureStack)
     const zipResource = await FunctionZip.copyZip(featureDefinitions, 'functionApp.zip')
 
-    const rocketsZipResources = await rocketBuilder.mountRocketZipResources()
+    const rocketsZipResources = await rocketBuilder.mountRocketsZipResources()
 
     return {
       azureStack,

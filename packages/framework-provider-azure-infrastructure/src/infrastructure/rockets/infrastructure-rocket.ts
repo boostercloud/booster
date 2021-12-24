@@ -4,7 +4,6 @@ import { ApplicationSynthStack } from '../types/application-synth-stack'
 import { RocketUtils } from './rocket-utils'
 
 export interface InfrastructureRocket {
-  packageName?: string
   mountStack: (
     config: BoosterConfig,
     applicationSynthStack: ApplicationSynthStack,
@@ -38,6 +37,5 @@ export function loadRocket(rocketDescriptor: RocketDescriptor): InfrastructureRo
     throw new Error(
       `The package ${rocketDescriptor.packageName} doesn't seem to implement the required interface 'InfrastructureProvider' defined in package '@boostercloud/framework-provider-azure-infrastructure'.`
     )
-  rocket.packageName = rocketDescriptor.packageName
   return rocket
 }
