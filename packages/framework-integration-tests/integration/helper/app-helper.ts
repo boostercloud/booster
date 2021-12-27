@@ -12,7 +12,7 @@ export function applicationName(): string {
 
 export async function getProviderTestHelper(): Promise<ProviderTestHelper> {
   const provider = process.env.TESTED_PROVIDER
-  const environmentName = process.env.BOOSTER_ENV ?? 'azure'
+  const environmentName = checkAndGetCurrentEnv()
   const providerHelpers: Record<string, () => Promise<ProviderTestHelper>> = {
     AWS: () => AWSTestHelper.build(applicationName()),
     AZURE: () => AzureTestHelper.build(applicationName(), environmentName),
@@ -37,4 +37,14 @@ export async function setEnv(): Promise<void> {
     process.env['BOOSTER_APP_SUFFIX'] = stdout.trim().substring(0, 6)
     console.log('setting BOOSTER_APP_SUFFIX=' + process.env.BOOSTER_APP_SUFFIX)
   }
+}
+
+export function checkAndGetCurrentEnv(): string {
+  const env = process.env.BOOSTER_ENV
+  if (!env || env.trim().length == 0) {
+    throw new Error(
+      'Booster environment is missing. You need to provide an environment to configure your Booster project'
+    )
+  }
+  return env
 }
