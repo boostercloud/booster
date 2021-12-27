@@ -45,7 +45,7 @@ export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): Provider
       const graphQLService = new GraphQLService(userProject)
       router.use('/graphql', new GraphQLController(graphQLService).router)
       if (rockets && rockets.length > 0) {
-        rockets.map((rocket) => {
+        rockets.forEach((rocket) => {
           rocket.mountStack(config, router)
         })
       }
