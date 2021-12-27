@@ -1,6 +1,14 @@
 export type TokenVerifierConfig = {
   issuer?: string
-  jwksUri?: string
-  publicKey?: string
   rolesClaim?: string
-}
+} & (
+  | {
+      jwksUri: string
+    }
+  | {
+      publicKey: string | { algorithm: string; payload: string }
+    }
+  | {
+      decryptionKey: Uint8Array
+    }
+)
