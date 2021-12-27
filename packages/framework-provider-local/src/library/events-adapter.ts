@@ -88,6 +88,8 @@ export async function storeEvents(
     )
   }
   logger.debug('[EventsAdapter#storeEvents] EventEnvelopes stored')
+
+  await userApp.boosterEventDispatcher(eventEnvelopes)
 }
 
 async function persistEvent(eventRegistry: EventRegistry, eventEnvelope: EventEnvelope): Promise<void> {
