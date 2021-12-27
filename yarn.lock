@@ -1720,8 +1720,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@boostercloud/cli@workspace:packages/cli"
   dependencies:
-    "@boostercloud/framework-core": 0.23.0
-    "@boostercloud/framework-types": 0.23.0
+    "@boostercloud/framework-core": "link:../framework-core"
+    "@boostercloud/framework-types": "link:../framework-types"
     "@oclif/command": ^1
     "@oclif/config": ^1
     "@oclif/dev-cli": ^1
@@ -1763,7 +1763,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-common-helpers@workspace:packages/framework-common-helpers"
   dependencies:
-    "@boostercloud/framework-types": 0.23.0
+    "@boostercloud/framework-types": "link:../framework-types"
     "@types/uuid": 8.3.0
     chai: 4.2.0
     chai-as-promised: 7.1.1
@@ -1775,12 +1775,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@boostercloud/framework-common-helpers@link:../framework-common-helpers::locator=%40boostercloud%2Fframework-core%40workspace%3Apackages%2Fframework-core":
+  version: 0.0.0-use.local
+  resolution: "@boostercloud/framework-common-helpers@link:../framework-common-helpers::locator=%40boostercloud%2Fframework-core%40workspace%3Apackages%2Fframework-core"
+  languageName: node
+  linkType: soft
+
 "@boostercloud/framework-core@0.23.0, @boostercloud/framework-core@workspace:packages/framework-core":
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-core@workspace:packages/framework-core"
   dependencies:
-    "@boostercloud/framework-common-helpers": 0.23.0
-    "@boostercloud/framework-types": 0.23.0
+    "@boostercloud/framework-common-helpers": "link:../framework-common-helpers"
+    "@boostercloud/framework-types": "link:../framework-types"
     "@types/faker": 5.1.5
     "@types/graphql-type-json": 0.3.2
     "@types/inflected": 1.1.29
@@ -1806,8 +1812,15 @@ __metadata:
     sinon: 9.2.3
     sinon-chai: 3.5.0
     tslib: 2.3.0
+    typescript: 4.2.4
     validator: 13.6.0
   languageName: unknown
+  linkType: soft
+
+"@boostercloud/framework-core@link:../framework-core::locator=%40boostercloud%2Fcli%40workspace%3Apackages%2Fcli":
+  version: 0.0.0-use.local
+  resolution: "@boostercloud/framework-core@link:../framework-core::locator=%40boostercloud%2Fcli%40workspace%3Apackages%2Fcli"
+  languageName: node
   linkType: soft
 
 "@boostercloud/framework-integration-tests@workspace:packages/framework-integration-tests":
@@ -2099,8 +2112,27 @@ __metadata:
     sinon: 9.2.3
     sinon-chai: 3.5.0
     tslib: 2.3.0
+    typescript: 4.2.4
     uuid: 8.3.2
   languageName: unknown
+  linkType: soft
+
+"@boostercloud/framework-types@link:../framework-types::locator=%40boostercloud%2Fcli%40workspace%3Apackages%2Fcli":
+  version: 0.0.0-use.local
+  resolution: "@boostercloud/framework-types@link:../framework-types::locator=%40boostercloud%2Fcli%40workspace%3Apackages%2Fcli"
+  languageName: node
+  linkType: soft
+
+"@boostercloud/framework-types@link:../framework-types::locator=%40boostercloud%2Fframework-common-helpers%40workspace%3Apackages%2Fframework-common-helpers":
+  version: 0.0.0-use.local
+  resolution: "@boostercloud/framework-types@link:../framework-types::locator=%40boostercloud%2Fframework-common-helpers%40workspace%3Apackages%2Fframework-common-helpers"
+  languageName: node
+  linkType: soft
+
+"@boostercloud/framework-types@link:../framework-types::locator=%40boostercloud%2Fframework-core%40workspace%3Apackages%2Fframework-core":
+  version: 0.0.0-use.local
+  resolution: "@boostercloud/framework-types@link:../framework-types::locator=%40boostercloud%2Fframework-core%40workspace%3Apackages%2Fframework-core"
+  languageName: node
   linkType: soft
 
 "@cdktf/hcl2cdk@npm:0.8.0-pre.10":
