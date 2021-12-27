@@ -1,5 +1,8 @@
 export class AzureCounters {
-  constructor() {}
+  resourceGroupName: string
+  constructor(resourceGroupName: string) {
+    this.resourceGroupName = resourceGroupName
+  }
   //TODO Azure Does not support Subscriptions
   public async subscriptions(): Promise<number> {
     return 0

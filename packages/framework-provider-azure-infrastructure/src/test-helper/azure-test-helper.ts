@@ -7,6 +7,7 @@ import {
 import { ResourceGroup } from '../infrastructure/types/resource-group'
 import { AzureCounters } from './azure-counters'
 import { AzureQueries } from './azure-queries'
+import { Resource } from '../infrastructure/types/resource'
 
 interface ApplicationOutputs {
   graphqlURL: string
@@ -29,13 +30,15 @@ export class AzureTestHelper {
     console.log('Application name: ', appName)
     const resourceGroup = await this.checkResourceGroup(appName, environmentName)
     this.ensureAzureConfiguration()
+    const cosmosConnectionString = await this.getCosmosConnection(resourceGroup)
+
     return new AzureTestHelper(
       {
         graphqlURL: await this.graphqlURL(resourceGroup),
         websocketURL: await this.websocketURL(),
       },
-      new AzureCounters(),
-      new AzureQueries()
+      new AzureCounters(appName),
+      new AzureQueries(appName, cosmosConnectionString)
     )
   }
 
@@ -51,14 +54,19 @@ export class AzureTestHelper {
     }
   }
 
+  private static async getCosmosConnection(resourceGroup: ResourceGroup): Promise<string> {
+    const resourceType = 'Microsoft.DocumentDB/databaseAccounts'
+    const cosmosResource = await AzureTestHelper.getResourceWithType(resourceGroup, resourceType)
+    console.log(cosmosResource)
+    if (!cosmosResource.properties?.gatewayUrl) {
+      throw new Error('Unable to get the Base HTTP URL from the current resource group')
+    }
+    return ''
+  }
   private static async graphqlURL(resourceGroup: ResourceGroup): Promise<string> {
     const environment = process.env.BOOSTER_ENV ?? 'azure'
     const resourceType = 'Microsoft.ApiManagement/service'
-    const resources = await showResourcesInResourceGroup(resourceGroup.name)
-    const apiResource = await resources.find((element) => element.type === resourceType)
-    if (!apiResource) {
-      throw new Error('Unable to find a valid api gateway in the resource group')
-    }
+    const apiResource = await AzureTestHelper.getResourceWithType(resourceGroup, resourceType)
     const apiGateway = await showResourceInfo(resourceGroup.name, apiResource.name, resourceType)
     if (!apiGateway.properties?.gatewayUrl) {
       throw new Error('Unable to get the Base HTTP URL from the current resource group')
@@ -66,6 +74,15 @@ export class AzureTestHelper {
     const url = `${apiGateway.properties?.gatewayUrl}/${environment}/graphql`
     console.log(`service Url: ${url}`)
     return url
+  }
+
+  private static async getResourceWithType(resourceGroup: ResourceGroup, resourceType: string): Promise<Resource> {
+    const resources = await showResourcesInResourceGroup(resourceGroup.name)
+    const resourceWithType = await resources.find((element) => element.type === resourceType)
+    if (!resourceWithType) {
+      throw new Error('Unable to find a valid resource in the resource group')
+    }
+    return resourceWithType
   }
 
   // TODO: Currently websocket are not supported on Azure

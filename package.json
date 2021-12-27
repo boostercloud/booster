@@ -28,6 +28,7 @@
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-import": "2.22.1",
     "eslint-plugin-prettier": "3.4.0",
+    "has-tostringtag": "^1.0.0",
     "husky": "6.0.0",
     "lerna": "4.0.0",
     "lint-staged": "11.0.0",
@@ -38,12 +39,14 @@
     "rimraf": "3.0.2",
     "ts-node": "9.1.1",
     "typescript": "4.2.4",
-    "yargs": "17.0.1",
-    "has-tostringtag": "^1.0.0"
+    "yargs": "17.0.1"
   },
   "license": "Apache-2.0",
   "lint-staged": {
     "*.{js,ts,md}": "prettier --single-quote --write",
     "**/*.{ts,md}": "prettier --single-quote --write"
+  },
+  "dependencies": {
+    "xmldom": "^0.6.0"
   }
 }
