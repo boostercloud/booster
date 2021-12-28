@@ -6,6 +6,7 @@ export {
   boosterServeGraphQL,
   boosterNotifySubscribers,
   boosterTriggerScheduledCommand,
+  boosterRocketDispatcher,
 } from './booster'
 
 export const Booster: BoosterApp = boosterModule.Booster
