@@ -49,9 +49,7 @@ async function nukeApp(_logger: Logger, config: BoosterConfig, rockets?: Infrast
   const credentials = await azureCredentials()
   const resourceManagementClient = await createResourceManagementClient(credentials)
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  rockets?.filter((rocket) => rocket.unmountStack).map((rocket) => rocket.unmountStack())
+  rockets?.forEach((rocket) => rocket.unmountStack?.())
 
   // By deleting the resource group we are deleting all the resources within it.
   await resourceManagementClient.resourceGroups.deleteMethod(
