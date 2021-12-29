@@ -49,7 +49,13 @@ export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): Provider
           rocket.mountStack(config, router)
         })
       }
-      expressServer.use(express.json())
+      expressServer.use(
+        express.json({
+          verify: (req, res, buf) => {
+            req.rawBody = buf
+          },
+        })
+      )
       expressServer.use(cors())
       expressServer.use(function (req, res, next) {
         res.header('Access-Control-Allow-Origin', '*')
@@ -60,5 +66,11 @@ export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): Provider
       expressServer.use(defaultErrorHandler)
       expressServer.listen(port)
     },
+  }
+}
+
+declare module 'http' {
+  export interface IncomingMessage {
+    rawBody: Buffer
   }
 }
