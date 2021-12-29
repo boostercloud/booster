@@ -30,8 +30,8 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "dependencies": {
-    "@boostercloud/framework-common-helpers": "link:../framework-common-helpers",
-    "@boostercloud/framework-types": "link:../framework-types",
+    "@boostercloud/framework-common-helpers": "0.23.0",
+    "@boostercloud/framework-types": "0.23.0",
     "fp-ts": "2.10.5",
     "graphql": "15.8.0",
     "graphql-subscriptions": "1.2.1",
