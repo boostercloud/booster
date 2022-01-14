@@ -1759,7 +1759,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@boostercloud/framework-common-helpers@0.23.0, @boostercloud/framework-common-helpers@workspace:packages/framework-common-helpers":
+"@boostercloud/framework-common-helpers@portal:packages/framework-common-helpers::locator=root%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@boostercloud/framework-common-helpers@portal:packages/framework-common-helpers::locator=root%40workspace%3A."
+  dependencies:
+    "@boostercloud/framework-types": 0.23.0
+    child-process-promise: ^2.2.1
+    tslib: 2.3.0
+  languageName: node
+  linkType: soft
+
+"@boostercloud/framework-common-helpers@workspace:packages/framework-common-helpers":
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-common-helpers@workspace:packages/framework-common-helpers"
   dependencies:
@@ -2085,7 +2095,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@boostercloud/framework-types@0.23.0, @boostercloud/framework-types@workspace:packages/framework-types":
+"@boostercloud/framework-types@portal:packages/framework-types::locator=root%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@boostercloud/framework-types@portal:packages/framework-types::locator=root%40workspace%3A."
+  dependencies:
+    "@types/graphql": 14.5.0
+    tslib: 2.3.0
+    uuid: 8.3.2
+  languageName: node
+  linkType: soft
+
+"@boostercloud/framework-types@workspace:packages/framework-types":
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-types@workspace:packages/framework-types"
   dependencies:

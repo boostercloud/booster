@@ -49,5 +49,9 @@
     "*.{js,ts,md}": "prettier --single-quote --write",
     "**/*.{ts,md}": "prettier --single-quote --write"
   },
+  "resolutions": {
+    "@boostercloud/framework-common-helpers": "portal:packages/framework-common-helpers",
+    "@boostercloud/framework-types": "portal:packages/framework-types"
+  },
   "packageManager": "yarn@3.1.1"
 }
