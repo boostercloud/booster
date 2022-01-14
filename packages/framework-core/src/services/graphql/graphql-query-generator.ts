@@ -113,8 +113,8 @@ export class GraphQLQueryGenerator {
             name: `${readModel.name}Connection`,
             fields: {
               items: { type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(graphQLType))) },
-              count: { type: GraphQLInt },
-              cursor: { type: GraphQLJSONObject },
+              count: { type: new GraphQLNonNull(GraphQLInt) },
+              cursor: { type: new GraphQLNonNull(GraphQLJSONObject) },
             },
           })
         ),
