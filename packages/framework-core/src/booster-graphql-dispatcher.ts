@@ -125,6 +125,7 @@ export class BoosterGraphQLDispatcher {
         },
         pubSub: new NoopReadModelPubSub(),
         storeSubscriptions: true,
+        rawRequest: envelope.rawRequest,
       }
 
       switch (operationData.operation) {

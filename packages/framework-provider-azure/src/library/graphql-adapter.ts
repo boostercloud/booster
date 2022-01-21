@@ -20,6 +20,7 @@ export async function rawGraphQLRequestToEnvelope(
       eventType,
       token: context.req?.headers?.authorization,
       value: graphQLValue,
+      rawRequest: context.req,
     }
   } catch (e) {
     return {
@@ -27,6 +28,7 @@ export async function rawGraphQLRequestToEnvelope(
       requestID,
       connectionID,
       eventType,
+      rawRequest: context.req,
     }
   }
 }

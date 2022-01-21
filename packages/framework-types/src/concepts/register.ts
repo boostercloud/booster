@@ -25,7 +25,7 @@ import { UUID } from './uuid'
 export class Register {
   public readonly eventList: Array<EventInterface> = []
 
-  public constructor(readonly requestID: UUID, readonly currentUser?: UserEnvelope) {}
+  public constructor(readonly requestID: UUID, readonly currentUser?: UserEnvelope, readonly rawRequest?: unknown) {}
 
   /**
    * Register a list of events to be added to the event-store on handler completion

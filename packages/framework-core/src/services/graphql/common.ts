@@ -22,6 +22,7 @@ export interface GraphQLResolverContext {
   user?: UserEnvelope
   storeSubscriptions: boolean
   pubSub: ReadModelPubSub<ReadModelInterface>
+  rawRequest?: unknown
 }
 
 export const graphQLWebsocketSubprotocolHeaders = {

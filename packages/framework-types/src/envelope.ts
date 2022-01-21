@@ -11,6 +11,7 @@ import { Class } from './typelevel'
 export interface Envelope {
   currentUser?: UserEnvelope
   requestID: UUID
+  rawRequest?: unknown
 }
 
 export interface CommandEnvelope extends Envelope {
