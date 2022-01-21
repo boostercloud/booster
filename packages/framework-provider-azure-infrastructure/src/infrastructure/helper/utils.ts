@@ -104,6 +104,10 @@ export function createFunctionResourceGroupName(resourceGroupName: string): stri
   return `${resourceGroupName}func`
 }
 
+export function createApiManagementName(resourceGroupName: string): string {
+  return `${resourceGroupName}apis`
+}
+
 function loadUserProject(userProjectPath: string): { Booster: BoosterApp } {
   const projectIndexJSPath = path.resolve(path.join(userProjectPath, 'dist', 'index.js'))
   return require(projectIndexJSPath)

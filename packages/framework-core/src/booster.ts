@@ -22,6 +22,7 @@ import { BoosterScheduledCommandDispatcher } from './booster-scheduled-command-d
 import { BoosterSubscribersNotifier } from './booster-subscribers-notifier'
 import { Importer } from './importer'
 import { EventStore } from './services/event-store'
+import { BoosterRocketDispatcher } from './booster-rocket-dispatcher'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -167,6 +168,10 @@ export class Booster {
   public static notifySubscribers(request: unknown): Promise<unknown> {
     return new BoosterSubscribersNotifier(this.config, this.logger).dispatch(request)
   }
+
+  public static dispatchRocket(request: unknown): Promise<unknown> {
+    return new BoosterRocketDispatcher(this.config, this.logger).dispatch(request)
+  }
 }
 
 function checkAndGetCurrentEnv(): string {
@@ -193,4 +198,8 @@ export async function boosterTriggerScheduledCommand(rawRequest: unknown): Promi
 
 export async function boosterNotifySubscribers(rawRequest: unknown): Promise<unknown> {
   return Booster.notifySubscribers(rawRequest)
+}
+
+export async function boosterRocketDispatcher(rawRequest: unknown): Promise<unknown> {
+  return Booster.dispatchRocket(rawRequest)
 }

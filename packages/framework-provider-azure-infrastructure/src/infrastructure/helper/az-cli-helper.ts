@@ -1,7 +1,7 @@
 import { ResourceGroup } from '../types/resource-group'
-import { runCommand } from '../../../../framework-common-helpers'
 import { Resource } from '../types/resource'
 import { createResourceGroupName } from './utils'
+import { runCommand } from '@boostercloud/framework-common-helpers'
 
 const azCommand = 'az'
 

@@ -10,12 +10,12 @@ import {
   ScheduledCommandMetadata,
   EventMetadata,
   TokenVerifierConfig,
+  CommandHandlerReturnTypeMetadata,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
 import * as path from 'path'
-import { RocketDescriptor } from './rocket-descriptor'
-import { CommandHandlerReturnTypeMetadata } from './concepts/command-handler-metadata'
+import { RocketDescriptor, RocketFunction } from './rocket-descriptor'
 
 /**
  * Class used by external packages that needs to get a representation of
@@ -41,6 +41,7 @@ export class BoosterConfig {
     'index.boosterTriggerScheduledCommand'
   )
   public readonly notifySubscribersHandler: string = path.join(this.codeRelativePath, 'index.boosterNotifySubscribers')
+  public readonly rocketDispatcherHandler: string = path.join(this.codeRelativePath, 'index.boosterRocketDispatcher')
 
   public readonly functionRelativePath: string = path.join('..', this.codeRelativePath, 'index.js')
   public readonly events: Record<EventName, EventMetadata> = {}
@@ -55,6 +56,20 @@ export class BoosterConfig {
   public readonly roles: Record<RoleName, RoleMetadata> = {}
   public readonly migrations: Record<ConceptName, Map<Version, MigrationMetadata>> = {}
   public readonly scheduledCommandHandlers: Record<ScheduledCommandName, ScheduledCommandMetadata> = {}
+
+  private rocketFunctionMap: Record<string, RocketFunction> = {}
+  public registerRocketFunction(id: string, func: RocketFunction): void {
+    const currentFunction = this.rocketFunctionMap[id]
+    if (currentFunction) {
+      throw new Error(
+        `Error registering rocket function with id ${id}: There is already a rocket function registered under the same ID, "${currentFunction.name}"`
+      )
+    }
+    this.rocketFunctionMap[id] = func
+  }
+  public getRegisteredRocketFunction(id: string): RocketFunction | undefined {
+    return this.rocketFunctionMap[id]
+  }
 
   /** Environment variables set at deployment time on the target lambda functions */
   public readonly env: Record<string, string> = {}

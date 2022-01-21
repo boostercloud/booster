@@ -1,4 +1,4 @@
-import { HasInfrastructure, ProviderLibrary, UserApp } from '@boostercloud/framework-types'
+import { HasInfrastructure, ProviderLibrary, RocketDescriptor, UserApp } from '@boostercloud/framework-types'
 import {
   rawEventsToEnvelopes,
   readEntityEventsSince,
@@ -10,7 +10,7 @@ import { EventRegistry } from './services'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 
 import * as path from 'path'
-import { ReadModelRegistry } from './services/read-model-registry'
+import { ReadModelRegistry } from './services'
 import {
   fetchReadModel,
   rawReadModelEventsToEnvelopes,
@@ -33,7 +33,7 @@ export function loadInfrastructurePackage(packageName: string): HasInfrastructur
   return require(packageName)
 }
 
-export const Provider = (): ProviderLibrary => ({
+export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrary => ({
   // ProviderEventsLibrary
   events: {
     rawToEnvelopes: rawEventsToEnvelopes,
@@ -100,7 +100,7 @@ export const Provider = (): ProviderLibrary => ({
       )
     }
 
-    return infrastructure.Infrastructure()
+    return infrastructure.Infrastructure(rocketDescriptors)
   },
 })
 

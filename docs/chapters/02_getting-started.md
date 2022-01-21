@@ -145,9 +145,11 @@ aws_secret_access_key = <YOUR SECRET ACCESS KEY>
 
 #### Multiple AWS Accounts
 
-If you are using multiple AWS accounts and don't want to use the default profile,
-you will need to set a `region` option to let the AWS SDK know which region you want your application to be deployed to.
-To do so, we have two possible solutions:
+**Declaring Region**
+
+If you'd like to use multiple AWS account profiles (in place of or in addition to your 
+default profile) you will need to also set a `region` option for each one to let the AWS SDK 
+know which region to deploy to. To do this, you have two options:
 
 - Add the region to the profile of your choice in your `~/.aws/credentials` file
 
@@ -164,7 +166,7 @@ aws_secret_access_key = <YOUR SECRET ACCESS KEY>
 region=<REGION FOR YOUR BOOSTER APP>
 ```
 
-- Or creating a `~/.aws/config` file
+- Or create a `~/.aws/config` file
 
 ```ini
   ~/.aws/config
@@ -175,18 +177,72 @@ region=<DEFAULT REGION>
 region=<REGION FOR YOUR BOOSTER APP>
 ```
 
-When using multiple profiles make sure to export the `AWS_PROFILE` environment variable to deploy or nuke
-the application with the selected profile.
+**Switching Profiles**
+
+To change the AWS profile you use to deploy or nuke you need to export 
+the profile in your current `AWS_PROFILE` environment variable. This is done
+within your current terminal session with the following command –
 
 ```shell
-export AWS_PROFILE=other_profile
+$ export AWS_PROFILE=other_profile
 ```
 
 > [!WARNING]
-> If you want to use multiple profiles by setting the `AWS_PROFILE` environment variable, first ensure that the 
-> `AWS_SECRET_ACCESS_KEY` and `AWS_ACCESS_KEY_ID` are **not** set. Otherwise, the AWS SDK will ignore the credentials 
-> associated with the profile assigned to the `AWS_PROFILE` variable and use the credentials set to the other 
-> environment variables instead.
+> When you are switching profiles by setting the `AWS_PROFILE` environment variable, 
+> you will need to ensure you **do not** have values curently set for either the
+> `AWS_SECRET_ACCESS_KEY` or `AWS_ACCESS_KEY_ID` variables. If these have values assigned, 
+> they will take precedence over any keys set within the current `AWS_PROFILE` profile.
+> 
+> You can check if `AWS_SECRET_ACCESS_KEY` or `AWS_ACCESS_KEY_ID` have variables assigned
+> by checking all current AWS variables -
+> 
+> ```shell
+> $ env | grep AWS
+> ```
+> 
+> Or by checking these variables explicitly –
+> 
+> ```shell
+> $ echo $AWS_ACCESS_KEY_ID
+> $ echo $AWS_SECRET_ACCESS_KEY
+> ```
+> 
+> If values are present for `AWS_SECRET_ACCESS_KEY` or `AWS_ACCESS_KEY_ID` you can 
+> clear them by unsetting them –
+> 
+> ```shell
+> $ unset AWS_SECRET_ACCESS_KEY
+> $ unset AWS_ACCESS_KEY_ID
+> ```
+
+Selecting different profiles can be done manually, for each deploy or nuke, as 
+shown above, or you can create scripts within your package.json to set these 
+values at the same time as you deploy or nuke an environment. For example, below 
+we are creating scripts that set a different AWS profile to be used for 'development' 
+and 'production environments –
+
+```json
+~/package.json
+...
+"scripts": {
+    "deploy-dev": "AWS_PROFILE=profileOne boost deploy -e development",
+    "deploy-prod": "AWS_PROFILE=profileTwo boost deploy -e production",
+    "nuke-dev": "AWS_PROFILE=profileOne boost nuke -e development",
+    "nuke-prod": "AWS_PROFILE=profileTwo boost nuke -e production",
+    "lint:check": "eslint --ext '.js,.ts' **/*.ts",
+    "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
+    "compile": "ttsc -b tsconfig.json",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "test": "AWS_SDK_LOAD_CONFIG=true BOOSTER_ENV=test nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+  },
+...
+```
+
+These custom scripts are used in the same fashion as other scripts, for example –
+
+```shell
+npm run deploy-dev
+```
 
 ### Azure Provider Prerequisites
 
