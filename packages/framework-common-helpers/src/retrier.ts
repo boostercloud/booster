@@ -15,8 +15,8 @@ export async function retryIfError<TReturn>(
       logger.debug(`[retrier] Logic succeeded after ${tryNumber} retries`)
       return result
     } catch (e) {
-      checkRetryError(e, errorClassThatRetries, logger)
-      errorAfterMaxTries = e
+      checkRetryError(e as Error, errorClassThatRetries, logger)
+      errorAfterMaxTries = e as Error
     }
   }
   throw new Error(
