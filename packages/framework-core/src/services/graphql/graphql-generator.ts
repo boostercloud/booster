@@ -215,6 +215,6 @@ function toCommandEnvelope(commandName: string, value: any, context: GraphQLReso
     typeName: commandName,
     value,
     version: 1, // TODO: How to pass the version through GraphQL?
-    rawRequest: context.rawRequest,
+    request: context.request,
   }
 }

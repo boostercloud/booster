@@ -66,6 +66,10 @@ describe('Local provider graphql-adapter', () => {
         connectionID: undefined,
         token: mockUserToken,
         value: mockBody,
+        request: {
+          headers: mockRequest.headers,
+          body: mockRequest.body,
+        },
       })
     })
   })

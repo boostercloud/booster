@@ -36,6 +36,15 @@ describe('GraphQL adapter', () => {
           query: expectedQuery,
           variables: expectedVariables,
         },
+        request: {
+          body: {
+            query: expectedQuery,
+            variables: expectedVariables,
+          },
+          headers: {
+            authorization: expectedToken,
+          },
+        },
       }
       const gotOutput = await rawGraphQLRequestToEnvelope(request, console)
 

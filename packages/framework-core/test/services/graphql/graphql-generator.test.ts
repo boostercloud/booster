@@ -142,6 +142,14 @@ describe('GraphQL generator', () => {
           asyncIterator: (x: any) => asyncIteratorStub(x),
         },
         storeSubscriptions: false,
+        request: {
+          headers: {
+            authorization: 'Bearer 123',
+          },
+          body: {
+            query: 'Test query',
+          },
+        }
       }
       mockResolverInfo = {}
     })
@@ -298,6 +306,7 @@ describe('GraphQL generator', () => {
           typeName: mockType.name,
           value: mockInput,
           version: 1,
+          request: mockResolverContext.request,
         })
       })
 

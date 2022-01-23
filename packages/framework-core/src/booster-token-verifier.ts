@@ -19,6 +19,7 @@ class TokenVerifierClient {
     this.options = {
       algorithms: ['RS256'],
       issuer: this.tokenVerifierConfig.issuer,
+      complete: true, // To return headers, payload and other useful token information
     }
   }
 
@@ -54,12 +55,20 @@ class TokenVerifierClient {
         if (err) {
           return reject(err)
         }
-        return resolve(this.tokenToUserEnvelope(decoded))
+        const jwtToken = decoded as any
+        if (this.tokenVerifierConfig?.extraValidation) {
+          try {
+            this.tokenVerifierConfig?.extraValidation(jwtToken?.header, jwtToken?.payload)
+          } catch (err) {
+            reject(err)
+          }
+        }
+        return resolve(this.tokenPayloadToUserEnvelope(jwtToken?.payload))
       })
     })
   }
 
-  private tokenToUserEnvelope(decodedToken: any): UserEnvelope {
+  private tokenPayloadToUserEnvelope(decodedToken: any): UserEnvelope {
     const username = decodedToken?.email || decodedToken?.phone_number || decodedToken.sub
     const id = decodedToken.sub
     const rolesClaim = this.tokenVerifierConfig.rolesClaim || 'custom:role'

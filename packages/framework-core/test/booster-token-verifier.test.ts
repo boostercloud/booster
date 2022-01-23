@@ -40,8 +40,8 @@ describe('the "verifyToken" method', () => {
       'custom:role': 'User',
       extraParam: 'claims',
       anotherParam: 111,
-      email: email,
-      phone_number: phoneNumber,
+      email,
+      phoneNumber,
     })
 
     const expectedUser: UserEnvelope = {
@@ -54,8 +54,8 @@ describe('the "verifyToken" method', () => {
         'custom:role': 'User',
         extraParam: 'claims',
         anotherParam: 111,
-        email: email,
-        phone_number: phoneNumber,
+        email,
+        phoneNumber,
       },
     }
 
@@ -69,8 +69,8 @@ describe('the "verifyToken" method', () => {
       sub: userId,
       iss: issuer,
       'custom:role': 'User',
-      email: email,
-      phone_number: phoneNumber,
+      email,
+      phoneNumber,
     })
 
     const expectedUser: UserEnvelope = {
@@ -81,8 +81,8 @@ describe('the "verifyToken" method', () => {
         sub: userId,
         iss: issuer,
         'custom:role': 'User',
-        email: email,
-        phone_number: phoneNumber,
+        email,
+        phoneNumber,
       },
     }
 
@@ -107,7 +107,7 @@ describe('the "verifyToken" method', () => {
       iss: issuer,
       'custom:role': 'User',
       email: email,
-      phone_number: phoneNumber,
+      phoneNumber,
       exp: 0,
     })
 
@@ -115,4 +115,58 @@ describe('the "verifyToken" method', () => {
 
     await expect(verifyFunction).to.eventually.be.rejected
   })
+
+  it("fails if extra validation doesn't match", async () => {
+    const token = jwks.token({
+      sub: userId,
+      iss: issuer,
+      'custom:role': 'User',
+      email: email,
+      phoneNumber,
+    })
+
+    const configWithExtraValidation = new BoosterConfig('test with extra validation')
+    configWithExtraValidation.tokenVerifiers = [
+      {
+        issuer,
+        jwksUri: auth0VerifierUri + '.well-known/jwks.json',
+        extraValidation: (_headers, payload) => {
+          if ((payload as any)?.['custom:role'] !== 'Admin') {
+            throw 'Unauthorized'
+          }
+        },
+      },
+    ]
+
+    const tokenVerifier = new BoosterTokenVerifier(configWithExtraValidation)
+    const verifyFunction = tokenVerifier.verify(token)
+
+    await expect(verifyFunction).to.eventually.be.rejectedWith('Unauthorized')
+  })
+
+  it("fails if extra validation for token headers doesn't match", async () => {
+    const token = jwks.token({
+      sub: userId,
+      iss: issuer,
+    })
+
+    const configWithExtraValidation = new BoosterConfig('test with extra validation')
+    configWithExtraValidation.tokenVerifiers = [
+      {
+        issuer,
+        jwksUri: auth0VerifierUri + '.well-known/jwks.json',
+        extraValidation: (headers) => {
+          if ((headers as any)?.alg !== 'RS512') {
+            throw 'Invalid token encoding'
+          }
+        },
+      },
+    ]
+
+    const tokenVerifier = new BoosterTokenVerifier(configWithExtraValidation)
+    const verifyFunction = tokenVerifier.verify(token)
+
+    await expect(verifyFunction).to.eventually.be.rejectedWith('Invalid token encoding')
+  })
+
 })

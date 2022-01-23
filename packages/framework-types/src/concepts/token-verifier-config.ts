@@ -3,4 +3,5 @@ export type TokenVerifierConfig = {
   jwksUri?: string
   publicKey?: string
   rolesClaim?: string
+  extraValidation?: (headers: unknown, payload: unknown) => void
 }
