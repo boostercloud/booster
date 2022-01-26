@@ -57,11 +57,15 @@ describe('the "verifyToken" method', () => {
         email,
         phoneNumber,
       },
+      header: {
+        alg: 'RS256',
+      },
     }
 
     const user = await boosterTokenVerifier.verify(token)
 
-    expect(user).to.deep.equals(expectedUser)
+    expect(user.claims).to.deep.equals(expectedUser.claims)
+    expect(user.header?.alg).equals(expectedUser.header?.alg)
   })
 
   it('decode and verify an auth token with the custom roles', async () => {
@@ -84,11 +88,15 @@ describe('the "verifyToken" method', () => {
         email,
         phoneNumber,
       },
+      header: {
+        alg: 'RS256',
+      },
     }
 
     const user = await boosterTokenVerifier.verify(token)
 
-    expect(user).to.deep.equals(expectedUser)
+    expect(user.claims).to.deep.equals(expectedUser.claims)
+    expect(user.header?.alg).equals(expectedUser.header?.alg)
   })
 
   it('fails if a different issuer emitted the token', async () => {
@@ -130,8 +138,9 @@ describe('the "verifyToken" method', () => {
       {
         issuer,
         jwksUri: auth0VerifierUri + '.well-known/jwks.json',
-        extraValidation: (_headers, payload) => {
-          if ((payload as any)?.['custom:role'] !== 'Admin') {
+        extraValidation: (jwtToken, _rawToken) => {
+          const payload = jwtToken.payload as any
+          if (payload['custom:role'] !== 'Admin') {
             throw 'Unauthorized'
           }
         },
@@ -155,8 +164,9 @@ describe('the "verifyToken" method', () => {
       {
         issuer,
         jwksUri: auth0VerifierUri + '.well-known/jwks.json',
-        extraValidation: (headers) => {
-          if ((headers as any)?.alg !== 'RS512') {
+        extraValidation: (jwtToken, _rawToken) => {
+          const header = jwtToken.header as any
+          if (header.alg !== 'RS512') {
             throw 'Invalid token encoding'
           }
         },
@@ -168,5 +178,4 @@ describe('the "verifyToken" method', () => {
 
     await expect(verifyFunction).to.eventually.be.rejectedWith('Invalid token encoding')
   })
-
 })

@@ -78,7 +78,7 @@ export class BoosterGraphQLDispatcher {
   }
 
   private async handleMessage(envelope: GraphQLRequestEnvelope | GraphQLRequestEnvelopeError): Promise<DispatchResult> {
-    this.logger.debug(`Starting GraphQL operation: ${JSON.stringify(envelope)}`)
+    this.logger.debug('Starting GraphQL operation:', envelope)
 
     const envelopeOrError = await this.verifyTokenFromEnvelop(envelope)
 
@@ -125,7 +125,7 @@ export class BoosterGraphQLDispatcher {
         },
         pubSub: new NoopReadModelPubSub(),
         storeSubscriptions: true,
-        request: envelope.request,
+        context: envelope.context,
       }
 
       switch (operationData.operation) {

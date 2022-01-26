@@ -54,14 +54,17 @@ describe('AWS Provider graphql-adapter', () => {
           query: expectedQuery,
           variables: expectedVariables,
         },
-        request: {
-          headers: {
-            Authorization: mockToken,
+        context: {
+          request: {
+            headers: {
+              Authorization: mockToken,
+            },
+            body: JSON.stringify({
+              query: expectedQuery,
+              variables: expectedVariables,
+            }),
           },
-          body: JSON.stringify({
-            query: expectedQuery,
-            variables: expectedVariables,
-          }),
+          rawContext: request,
         },
       }
     })

@@ -142,14 +142,17 @@ describe('GraphQL generator', () => {
           asyncIterator: (x: any) => asyncIteratorStub(x),
         },
         storeSubscriptions: false,
-        request: {
-          headers: {
-            authorization: 'Bearer 123',
+        context: {
+          request: {
+            headers: {
+              authorization: 'Bearer 123',
+            },
+            body: {
+              query: 'Test query',
+            },
           },
-          body: {
-            query: 'Test query',
-          },
-        }
+          rawContext: {},
+        },
       }
       mockResolverInfo = {}
     })
@@ -295,8 +298,7 @@ describe('GraphQL generator', () => {
           mockResolverContext,
           mockResolverInfo
         )
-
-        expect(dispatchCommandStub).to.have.been.calledOnceWithExactly({
+        expect(dispatchCommandStub).to.have.been.calledWithMatch({
           requestID: mockRequestId,
           currentUser: {
             username: mockEmail,
@@ -306,7 +308,16 @@ describe('GraphQL generator', () => {
           typeName: mockType.name,
           value: mockInput,
           version: 1,
-          request: mockResolverContext.request,
+          context: {
+            request: {
+              headers: {
+                authorization: 'Bearer 123',
+              },
+              body: {
+                query: 'Test query',
+              },
+            },
+          },
         })
       })
 
