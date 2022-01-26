@@ -11,6 +11,7 @@ import { Class } from './typelevel'
 export interface Envelope {
   currentUser?: UserEnvelope
   requestID: UUID
+  context?: ContextEnvelope
 }
 
 export interface CommandEnvelope extends Envelope {
@@ -136,4 +137,13 @@ export interface UserEnvelope {
   username: string
   role: string
   claims: Record<string, unknown>
+  header?: Record<string, unknown>
+}
+
+export interface ContextEnvelope {
+  request: {
+    headers: unknown
+    body: unknown
+  }
+  rawContext: unknown
 }

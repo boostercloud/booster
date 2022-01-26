@@ -40,8 +40,8 @@ describe('the "verifyToken" method', () => {
       'custom:role': 'User',
       extraParam: 'claims',
       anotherParam: 111,
-      email: email,
-      phone_number: phoneNumber,
+      email,
+      phoneNumber,
     })
 
     const expectedUser: UserEnvelope = {
@@ -54,14 +54,18 @@ describe('the "verifyToken" method', () => {
         'custom:role': 'User',
         extraParam: 'claims',
         anotherParam: 111,
-        email: email,
-        phone_number: phoneNumber,
+        email,
+        phoneNumber,
+      },
+      header: {
+        alg: 'RS256',
       },
     }
 
     const user = await boosterTokenVerifier.verify(token)
 
-    expect(user).to.deep.equals(expectedUser)
+    expect(user.claims).to.deep.equals(expectedUser.claims)
+    expect(user.header?.alg).equals(expectedUser.header?.alg)
   })
 
   it('decode and verify an auth token with the custom roles', async () => {
@@ -69,8 +73,8 @@ describe('the "verifyToken" method', () => {
       sub: userId,
       iss: issuer,
       'custom:role': 'User',
-      email: email,
-      phone_number: phoneNumber,
+      email,
+      phoneNumber,
     })
 
     const expectedUser: UserEnvelope = {
@@ -81,14 +85,18 @@ describe('the "verifyToken" method', () => {
         sub: userId,
         iss: issuer,
         'custom:role': 'User',
-        email: email,
-        phone_number: phoneNumber,
+        email,
+        phoneNumber,
+      },
+      header: {
+        alg: 'RS256',
       },
     }
 
     const user = await boosterTokenVerifier.verify(token)
 
-    expect(user).to.deep.equals(expectedUser)
+    expect(user.claims).to.deep.equals(expectedUser.claims)
+    expect(user.header?.alg).equals(expectedUser.header?.alg)
   })
 
   it('fails if a different issuer emitted the token', async () => {
@@ -107,12 +115,67 @@ describe('the "verifyToken" method', () => {
       iss: issuer,
       'custom:role': 'User',
       email: email,
-      phone_number: phoneNumber,
+      phoneNumber,
       exp: 0,
     })
 
     const verifyFunction = boosterTokenVerifier.verify(token)
 
     await expect(verifyFunction).to.eventually.be.rejected
+  })
+
+  it("fails if extra validation doesn't match", async () => {
+    const token = jwks.token({
+      sub: userId,
+      iss: issuer,
+      'custom:role': 'User',
+      email: email,
+      phoneNumber,
+    })
+
+    const configWithExtraValidation = new BoosterConfig('test with extra validation')
+    configWithExtraValidation.tokenVerifiers = [
+      {
+        issuer,
+        jwksUri: auth0VerifierUri + '.well-known/jwks.json',
+        extraValidation: (jwtToken, _rawToken) => {
+          const payload = jwtToken.payload as any
+          if (payload['custom:role'] !== 'Admin') {
+            throw 'Unauthorized'
+          }
+        },
+      },
+    ]
+
+    const tokenVerifier = new BoosterTokenVerifier(configWithExtraValidation)
+    const verifyFunction = tokenVerifier.verify(token)
+
+    await expect(verifyFunction).to.eventually.be.rejectedWith('Unauthorized')
+  })
+
+  it("fails if extra validation for token headers doesn't match", async () => {
+    const token = jwks.token({
+      sub: userId,
+      iss: issuer,
+    })
+
+    const configWithExtraValidation = new BoosterConfig('test with extra validation')
+    configWithExtraValidation.tokenVerifiers = [
+      {
+        issuer,
+        jwksUri: auth0VerifierUri + '.well-known/jwks.json',
+        extraValidation: (jwtToken, _rawToken) => {
+          const header = jwtToken.header as any
+          if (header.alg !== 'RS512') {
+            throw 'Invalid token encoding'
+          }
+        },
+      },
+    ]
+
+    const tokenVerifier = new BoosterTokenVerifier(configWithExtraValidation)
+    const verifyFunction = tokenVerifier.verify(token)
+
+    await expect(verifyFunction).to.eventually.be.rejectedWith('Invalid token encoding')
   })
 })

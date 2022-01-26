@@ -41,7 +41,7 @@ export class BoosterCommandDispatcher {
 
     const commandInstance = createInstance(commandClass, commandInput)
 
-    const register = new Register(commandEnvelope.requestID, commandEnvelope.currentUser)
+    const register = new Register(commandEnvelope.requestID, commandEnvelope.currentUser, commandEnvelope.context)
     this.logger.debug('Calling "handle" method on command: ', commandClass)
     const result = await commandClass.handle(commandInstance, register)
     this.logger.debug('Command dispatched with register: ', register)
