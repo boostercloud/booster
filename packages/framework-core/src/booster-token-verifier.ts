@@ -1,4 +1,4 @@
-import { BoosterConfig, TokenVerifierConfig, UserEnvelope } from '@boostercloud/framework-types'
+import { BoosterConfig, UserEnvelope, TokenVerifierConfig } from '@boostercloud/framework-types'
 
 import * as jwksRSA from 'jwks-rsa'
 import * as jwt from 'jsonwebtoken'
@@ -50,7 +50,7 @@ class TokenVerifierClient {
         }
       }
 
-      token = TokenVerifierClient.sanitizeToken(token)
+      token = this.sanitizeToken(token)
       jwt.verify(token, key, this.options, (err?: Error | null, decoded?: unknown) => {
         if (err) {
           return reject(err)
@@ -63,11 +63,7 @@ class TokenVerifierClient {
             reject(err)
           }
         }
-        try {
-          return resolve(this.tokenToUserEnvelope(jwtToken))
-        } catch (err) {
-          reject(err)
-        }
+        return resolve(this.tokenToUserEnvelope(jwtToken))
       })
     })
   }
@@ -78,36 +74,19 @@ class TokenVerifierClient {
     const id = payload.sub
     const rolesClaim = this.tokenVerifierConfig.rolesClaim || 'custom:role'
     const role = payload[rolesClaim]
-    const roleValues = TokenVerifierClient.rolesFromTokenRole(role)
+    const roleValue = Array.isArray(role) ? role[0] : role
+
     return {
       id,
       username,
-      roles: roleValues,
+      role: roleValue?.trim() ?? '',
       claims: decodedToken.payload,
       header: decodedToken.header,
     }
   }
 
-  private static sanitizeToken(token: string): string {
+  private sanitizeToken(token: string): string {
     return token.replace('Bearer ', '')
-  }
-
-  private static rolesFromTokenRole(role: unknown): Array<string> {
-    const roleValues = []
-    if (Array.isArray(role)) {
-      role.forEach((r) => TokenVerifierClient.validateRoleFormat(r))
-      roleValues.push(...role)
-    } else {
-      TokenVerifierClient.validateRoleFormat(role)
-      roleValues.push((role as string)?.trim() ?? '')
-    }
-    return roleValues
-  }
-
-  private static validateRoleFormat(role: unknown): void {
-    if (typeof role !== 'string') {
-      throw new Error(`Invalid role format ${role}. Valid format are Array<string> or string`)
-    }
   }
 }
 

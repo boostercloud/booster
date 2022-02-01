@@ -18,5 +18,5 @@ export class BoosterAuth {
 }
 
 function userHasSomeRole(user: UserEnvelope, authorizedRoles: Array<Class<RoleInterface>>): boolean {
-  return authorizedRoles.some((roleClass) => user.roles?.includes(roleClass.name))
+  return authorizedRoles.some((roleClass) => user.role === roleClass.name)
 }

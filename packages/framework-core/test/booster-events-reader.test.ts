@@ -130,7 +130,7 @@ describe('BoosterEventsReader', () => {
     it('user has no permissions', async () => {
       const request: EventSearchRequest = {
         currentUser: {
-          roles: ['NonValidRole'],
+          role: 'NonValidRole',
           username: internet.email(),
           claims: {},
         },
@@ -147,7 +147,7 @@ describe('BoosterEventsReader', () => {
     context('for a "byEntity" search', () => {
       const request: EventSearchRequest = {
         currentUser: {
-          roles: [CanReadEventsRole.name],
+          role: CanReadEventsRole.name,
           username: internet.email(),
           claims: {},
         },

@@ -257,7 +257,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
 
           const currentUser: UserEnvelope = {
             username: internet.email(),
-            roles: [random.word()],
+            role: random.word(),
             claims: {},
           }
 
