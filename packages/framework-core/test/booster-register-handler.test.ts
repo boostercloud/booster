@@ -2,10 +2,9 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from './expect'
 import { Register, BoosterConfig, Level, UserEnvelope } from '@boostercloud/framework-types'
-import { replace, fake, restore } from 'sinon'
-import { RegisterHandler } from '../src/booster-register-handler'
+import { replace, fake, restore, spy } from 'sinon'
+import { RegisterHandler } from '../src'
 import { buildLogger } from '../src/booster-logger'
-import { spy } from 'sinon'
 
 class SomeEntity {}
 
@@ -123,7 +122,7 @@ describe('the `RegisterHandler` class', () => {
     }
     const user: UserEnvelope = {
       username: 'paco@example.com',
-      role: 'Paco',
+      roles: ['Paco'],
       claims: {},
     }
     const register = new Register('1234', user)
