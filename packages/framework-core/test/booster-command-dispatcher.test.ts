@@ -5,8 +5,8 @@ import { fake, replace, restore } from 'sinon'
 import { expect } from './expect'
 import { BoosterCommandDispatcher } from '../src/booster-command-dispatcher'
 import { CommandBeforeFunction, Logger, Register } from '@boostercloud/framework-types'
-import { Command } from '../src/decorators'
-import { RegisterHandler } from '../src/booster-register-handler'
+import { Command } from '../src'
+import { RegisterHandler } from '../src'
 import { random } from 'faker'
 
 describe('the `BoosterCommandsDispatcher`', () => {
@@ -67,7 +67,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
         typeName: 'UnauthorizedCommand',
         version: 'π', // JS doesn't care, and π is a number after all xD...
         currentUser: {
-          role: 'Loki',
+          roles: ['Loki'],
         },
       }
 
@@ -102,7 +102,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
         typeName: 'ProperlyHandledCommand',
         version: 'π', // JS doesn't care, and π is a number after all xD...
         currentUser: {
-          role: 'Loki',
+          roles: ['Loki'],
         },
         value: commandValue,
         requestID: '42',
@@ -151,7 +151,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
         typeName: 'ProperlyHandledCommand',
         version: 'π', // JS doesn't care, and π is a number after all xD...
         currentUser: {
-          role: 'Loki',
+          roles: ['Loki'],
         },
         value: commandValue,
         requestID: '42',

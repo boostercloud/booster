@@ -132,7 +132,7 @@ describe('GraphQL generator', () => {
         requestID: mockRequestId,
         user: {
           username: mockEmail,
-          role: mockRole,
+          roles: [mockRole],
           claims: {},
         },
         operation: {
@@ -173,7 +173,7 @@ describe('GraphQL generator', () => {
         const expectedFetchPayload = {
           currentUser: {
             username: mockEmail,
-            role: mockRole,
+            roles: [mockRole],
             claims: {},
           },
           filters: {},
@@ -302,7 +302,7 @@ describe('GraphQL generator', () => {
           requestID: mockRequestId,
           currentUser: {
             username: mockEmail,
-            role: mockRole,
+            roles: [mockRole],
             claims: {},
           },
           typeName: mockType.name,
@@ -431,7 +431,7 @@ describe('GraphQL generator', () => {
         expect(asyncIteratorStub).to.be.calledOnceWithExactly({
           currentUser: {
             username: mockEmail,
-            role: mockRole,
+            roles: [mockRole],
             claims: {},
           },
           filters: {},
@@ -468,7 +468,7 @@ describe('GraphQL generator', () => {
         const expectedFetchEventsPayload: EventSearchRequest = {
           currentUser: {
             username: mockEmail,
-            role: mockRole,
+            roles: [mockRole],
             claims: {},
           },
           filters,
