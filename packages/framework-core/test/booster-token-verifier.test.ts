@@ -66,6 +66,7 @@ describe('the "verifyToken" method', () => {
 
     expect(user.claims).to.deep.equals(expectedUser.claims)
     expect(user.header?.alg).equals(expectedUser.header?.alg)
+    expect(user.roles).to.have.all.members(expectedUser.roles)
   })
 
   it('decode and verify an auth token with the custom roles', async () => {
@@ -97,6 +98,7 @@ describe('the "verifyToken" method', () => {
 
     expect(user.claims).to.deep.equals(expectedUser.claims)
     expect(user.header?.alg).equals(expectedUser.header?.alg)
+    expect(user.roles).to.have.all.members(expectedUser.roles)
   })
 
   it('decode and verify an auth token with an empty custom role', async () => {
@@ -111,7 +113,7 @@ describe('the "verifyToken" method', () => {
     const expectedUser: UserEnvelope = {
       id: userId,
       username: email,
-      roles: ['User'],
+      roles: [''],
       claims: {
         sub: userId,
         iss: issuer,
@@ -128,6 +130,7 @@ describe('the "verifyToken" method', () => {
 
     expect(user.claims).to.deep.equals(expectedUser.claims)
     expect(user.header?.alg).equals(expectedUser.header?.alg)
+    expect(user.roles).to.have.all.members(expectedUser.roles)
   })
 
   it('decode and verify an auth token with a list of custom roles', async () => {
@@ -142,7 +145,7 @@ describe('the "verifyToken" method', () => {
     const expectedUser: UserEnvelope = {
       id: userId,
       username: email,
-      roles: ['User'],
+      roles: ['User', 'Other'],
       claims: {
         sub: userId,
         iss: issuer,
@@ -159,6 +162,7 @@ describe('the "verifyToken" method', () => {
 
     expect(user.claims).to.deep.equals(expectedUser.claims)
     expect(user.header?.alg).equals(expectedUser.header?.alg)
+    expect(user.roles).to.have.all.members(expectedUser.roles)
   })
 
   it('fails if role is a number', async () => {
