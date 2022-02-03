@@ -169,7 +169,7 @@ export class GraphQLQueryGenerator {
               fields: {
                 id: { type: GraphQLString },
                 username: { type: new GraphQLNonNull(GraphQLString) },
-                roles: { type: new GraphQLNonNull(GraphQLString) },
+                roles: { type: new GraphQLList(new GraphQLNonNull(GraphQLString)) },
               },
             }),
           },
