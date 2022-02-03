@@ -85,7 +85,7 @@ describe('Event handlers', () => {
             typ: 'JWT',
           },
           username: adminEmail,
-          role: ['Admin'],
+          roles: ['Admin'],
           id: adminEmail,
         },
       }
@@ -121,7 +121,7 @@ describe('Event handlers', () => {
             typ: 'JWT',
           },
           username: adminEmail,
-          role: ['Admin'],
+          roles: ['Admin'],
           id: adminEmail,
         },
       }
