@@ -673,7 +673,7 @@ describe('GraphQLQueryGenerator', () => {
             new Set(['type', 'entity', 'requestID', 'entityID', 'user', 'createdAt', 'value'])
           )
           const userType = returnElementType.getFields()['user'].type as GraphQLObjectType
-          expect(new Set(Object.keys(userType.getFields()))).to.be.deep.equal(new Set(['id', 'username', 'role']))
+          expect(new Set(Object.keys(userType.getFields()))).to.be.deep.equal(new Set(['id', 'username', 'roles']))
         }
       })
 
