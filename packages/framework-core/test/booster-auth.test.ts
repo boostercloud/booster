@@ -6,6 +6,7 @@ import { BoosterAuth } from '../src/booster-auth'
 describe('the "isUserAuthorized" method', () => {
   class Admin {}
   class Developer {}
+  class Reader {}
 
   it('returns true when the "authorizedRoles" is "all"', () => {
     const authorizedRoles: RoleAccess['authorize'] = 'all'
@@ -57,6 +58,28 @@ describe('the "isUserAuthorized" method', () => {
     const userEnvelope: UserEnvelope = {
       username: 'user@test.com',
       roles: ['Reader', 'Developer'],
+      claims: { 'custom:role': 'User' },
+    }
+
+    expect(BoosterAuth.isUserAuthorized(authorizedRoles, userEnvelope)).to.eq(true)
+  })
+
+  it('returns true when the user has more than one "authorizedRoles" on the roles', () => {
+    const authorizedRoles: RoleAccess['authorize'] = [Admin, Developer, Reader]
+    const userEnvelope: UserEnvelope = {
+      username: 'user@test.com',
+      roles: ['Admin', 'Reader'],
+      claims: { 'custom:role': 'User' },
+    }
+
+    expect(BoosterAuth.isUserAuthorized(authorizedRoles, userEnvelope)).to.eq(true)
+  })
+
+  it('returns true when the user has a validr role in the middle of the "authorizedRoles" list', () => {
+    const authorizedRoles: RoleAccess['authorize'] = [Admin, Developer, Reader]
+    const userEnvelope: UserEnvelope = {
+      username: 'user@test.com',
+      roles: ['Developer'],
       claims: { 'custom:role': 'User' },
     }
 
