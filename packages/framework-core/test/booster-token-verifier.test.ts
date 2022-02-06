@@ -47,7 +47,7 @@ describe('the "verifyToken" method', () => {
     const expectedUser: UserEnvelope = {
       id: userId,
       username: email,
-      role: 'User',
+      roles: ['User'],
       claims: {
         sub: userId,
         iss: issuer,
@@ -66,6 +66,7 @@ describe('the "verifyToken" method', () => {
 
     expect(user.claims).to.deep.equals(expectedUser.claims)
     expect(user.header?.alg).equals(expectedUser.header?.alg)
+    expect(user.roles).to.have.all.members(expectedUser.roles)
   })
 
   it('decode and verify an auth token with the custom roles', async () => {
@@ -80,7 +81,7 @@ describe('the "verifyToken" method', () => {
     const expectedUser: UserEnvelope = {
       id: userId,
       username: email,
-      role: 'User',
+      roles: ['User'],
       claims: {
         sub: userId,
         iss: issuer,
@@ -97,6 +98,103 @@ describe('the "verifyToken" method', () => {
 
     expect(user.claims).to.deep.equals(expectedUser.claims)
     expect(user.header?.alg).equals(expectedUser.header?.alg)
+    expect(user.roles).to.have.all.members(expectedUser.roles)
+  })
+
+  it('decode and verify an auth token with an empty custom role', async () => {
+    const token = jwks.token({
+      sub: userId,
+      iss: issuer,
+      'custom:role': '',
+      email,
+      phoneNumber,
+    })
+
+    const expectedUser: UserEnvelope = {
+      id: userId,
+      username: email,
+      roles: [''],
+      claims: {
+        sub: userId,
+        iss: issuer,
+        'custom:role': '',
+        email,
+        phoneNumber,
+      },
+      header: {
+        alg: 'RS256',
+      },
+    }
+
+    const user = await boosterTokenVerifier.verify(token)
+
+    expect(user.claims).to.deep.equals(expectedUser.claims)
+    expect(user.header?.alg).equals(expectedUser.header?.alg)
+    expect(user.roles).to.have.all.members(expectedUser.roles)
+  })
+
+  it('decode and verify an auth token with a list of custom roles', async () => {
+    const token = jwks.token({
+      sub: userId,
+      iss: issuer,
+      'custom:role': ['User', 'Other'],
+      email,
+      phoneNumber,
+    })
+
+    const expectedUser: UserEnvelope = {
+      id: userId,
+      username: email,
+      roles: ['User', 'Other'],
+      claims: {
+        sub: userId,
+        iss: issuer,
+        'custom:role': ['User', 'Other'],
+        email,
+        phoneNumber,
+      },
+      header: {
+        alg: 'RS256',
+      },
+    }
+
+    const user = await boosterTokenVerifier.verify(token)
+
+    expect(user.claims).to.deep.equals(expectedUser.claims)
+    expect(user.header?.alg).equals(expectedUser.header?.alg)
+    expect(user.roles).to.have.all.members(expectedUser.roles)
+  })
+
+  it('fails if role is a number', async () => {
+    const token = jwks.token({
+      sub: userId,
+      iss: issuer,
+      'custom:role': 123,
+      email,
+      phoneNumber,
+    })
+
+    const verifyFunction = boosterTokenVerifier.verify(token)
+
+    await expect(verifyFunction).to.eventually.be.rejectedWith(
+      'Error: Invalid role format 123. Valid format are Array<string> or string'
+    )
+  })
+
+  it('fails if role is not a list of strings', async () => {
+    const token = jwks.token({
+      sub: userId,
+      iss: issuer,
+      'custom:role': ['a', 'b', 123],
+      email,
+      phoneNumber,
+    })
+
+    const user = boosterTokenVerifier.verify(token)
+
+    await expect(user).to.eventually.be.rejectedWith(
+      'Error: Invalid role format 123. Valid format are Array<string> or string'
+    )
   })
 
   it('fails if a different issuer emitted the token', async () => {

@@ -106,7 +106,7 @@ describe('BoosterReadModelReader', () => {
           validateByIdRequest({
             version: 1,
             class: TestReadModel,
-            currentUser: { id: '666', username: 'root', role: 'root' },
+            currentUser: { id: '666', username: 'root', roles: ['root'] },
             key: {
               id: 'π',
               sequenceKey: { name: 'salmon', value: 'sammy' },
@@ -121,7 +121,7 @@ describe('BoosterReadModelReader', () => {
           validateByIdRequest({
             version: 1,
             class: TestReadModel,
-            currentUser: { id: '666', username: 'root', role: 'root' },
+            currentUser: { id: '666', username: 'root', roles: ['root'] },
           })
         }).not.to.throw()
       })
@@ -132,7 +132,7 @@ describe('BoosterReadModelReader', () => {
           validateByIdRequest({
             version: 1,
             class: SequencedReadModel,
-            currentUser: { id: '666', username: 'root', role: 'root' },
+            currentUser: { id: '666', username: 'root', roles: ['root'] },
             key: {
               id: '§',
               sequenceKey: { name: 'salmon', value: 'sammy' },
@@ -235,7 +235,7 @@ describe('BoosterReadModelReader', () => {
         version: 1,
         currentUser: {
           username: internet.email(),
-          role: '',
+          roles: [''],
           claims: {},
         },
       }
@@ -260,7 +260,7 @@ describe('BoosterReadModelReader', () => {
 
     const currentUser = {
       username: internet.email(),
-      role: UserRole.name,
+      roles: [UserRole.name],
       claims: {},
     }
 
