@@ -219,9 +219,6 @@ describe('Cart end-to-end tests', () => {
               })
             },
             (result) => {
-              console.log(
-                `cartItems: ${result?.data?.CartReadModel?.cartItems?.length} should be ${mockCartItemsCount}`
-              )
               return result?.data?.CartReadModel?.cartItems?.length == mockCartItemsCount
             }
           )
@@ -273,7 +270,7 @@ describe('Cart end-to-end tests', () => {
         // Add one item
         await client.mutate({
           variables: {
-            sku: { value: mockSku },
+            sku: mockSku,
             displayName: mockDisplayName,
             description: mockDescription,
             priceInCents: mockPriceInCents,
@@ -281,7 +278,7 @@ describe('Cart end-to-end tests', () => {
           },
           mutation: gql`
             mutation CreateProduct(
-              $sku: SKUInput!
+              $sku: String!
               $displayName: String!
               $description: String!
               $priceInCents: Float!
@@ -308,9 +305,7 @@ describe('Cart end-to-end tests', () => {
                 query {
                   ProductReadModels {
                     id
-                    sku {
-                      value
-                    }
+                    sku
                     displayName
                     description
                     price {
@@ -325,10 +320,6 @@ describe('Cart end-to-end tests', () => {
             })
           },
           (result) => {
-            console.log(
-              `expected to includes: ${mockSku}`,
-              result?.data?.ProductReadModels.map((p: any) => p.sku)
-            )
             return result?.data?.ProductReadModels?.some((product: any) => product.sku === mockSku)
           }
         )
@@ -371,7 +362,7 @@ describe('Cart end-to-end tests', () => {
         })
 
         console.log(`Waiting ${secs} second${secs > 1 ? 's' : ''} for deletion to complete...`)
-        await sleep(secs * 2000)
+        await sleep(secs * 1000)
 
         client = applicationUnderTest.graphql.client(authToken)
         // Retrieve updated entity

@@ -111,7 +111,7 @@ export class GraphQLTypeInformer {
     if (inputType) {
       return new GraphQLInputObjectType({
         name: classMetadata.name + 'Input',
-        fields: classMetadata.fields.reduce((obj, prop) => {
+        fields: classMetadata.fields?.reduce((obj, prop) => {
           this.logger.debug(`Get or create GraphQL input type for property ${prop.name}`)
           return {
             ...obj,
@@ -122,7 +122,7 @@ export class GraphQLTypeInformer {
     }
     return new GraphQLObjectType({
       name: classMetadata.name,
-      fields: classMetadata.fields.reduce((obj, prop) => {
+      fields: classMetadata.fields?.reduce((obj, prop) => {
         this.logger.debug(`Get or create GraphQL output type for property ${prop.name}`)
         return {
           ...obj,
