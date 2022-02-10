@@ -146,6 +146,7 @@ async function createProductAndWaitForIt(
     },
     mutation: gql`
       mutation CreateProduct(
+        $productID: ID!
         $sku: String!
         $displayName: String!
         $description: String!

@@ -65,6 +65,7 @@ describe('Read models end-to-end tests', () => {
         expect(cartData.id).to.be.equal(mockCartId)
         expect(cartData.cartItems).to.have.length(1)
         expect(cartData.cartItems[0]).to.deep.equal({
+          __typename: 'CartItem',
           productId: mockProductId,
           quantity: mockQuantity,
         })
@@ -569,6 +570,7 @@ describe('Read models end-to-end tests', () => {
         id: mockCartId,
         cartItems: [
           {
+            __typename: 'CartItem',
             productId: mockProductId,
             quantity: mockQuantity,
           },
@@ -625,6 +627,7 @@ describe('Read models end-to-end tests', () => {
         id: mockCartId,
         cartItems: [
           {
+            __typename: 'CartItem',
             productId: mockProductId,
             quantity: mockQuantity,
           },
