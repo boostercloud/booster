@@ -31,7 +31,7 @@ describe('entities', async () => {
         quantity: mockQuantity,
       },
       mutation: gql`
-        mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+        mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
           ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
         }
       `,
@@ -50,7 +50,7 @@ describe('entities', async () => {
         confirmationToken: mockConfirmationToken,
       },
       mutation: gql`
-        mutation ConfirmPayment($paymentId: ID!, $cartId: ID!, $confirmationToken: String) {
+        mutation ConfirmPayment($paymentId: ID!, $cartId: ID!, $confirmationToken: String!) {
           ConfirmPayment(input: { paymentId: $paymentId, cartId: $cartId, confirmationToken: $confirmationToken })
         }
       `,

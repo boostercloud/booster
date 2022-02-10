@@ -29,7 +29,7 @@ describe('events', async () => {
         quantity: mockQuantity,
       },
       mutation: gql`
-        mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+        mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
           ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
         }
       `,

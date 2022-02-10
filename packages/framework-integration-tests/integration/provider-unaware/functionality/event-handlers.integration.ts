@@ -1,7 +1,7 @@
 import gql from 'graphql-tag'
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
-import { random, address, internet } from 'faker'
+import { random, address, internet, lorem, commerce, finance } from 'faker'
 import { expect } from 'chai'
 import { waitForIt } from '../../helper/sleep'
 import { applicationUnderTest } from './setup'
@@ -35,7 +35,7 @@ describe('Event handlers', () => {
           quantity: mockQuantity,
         },
         mutation: gql`
-          mutation MoveStock($productID: String!, $origin: String, $destination: String, $quantity: Float) {
+          mutation MoveStock($productID: String!, $origin: String, $destination: String, $quantity: Float!) {
             MoveStock(input: { productID: $productID, origin: $origin, destination: $destination, quantity: $quantity })
           }
         `,
@@ -139,10 +139,29 @@ async function createProductAndWaitForIt(
     variables: {
       productID: mockProductId,
       sku: random.alpha({ count: 10 }),
+      displayName: commerce.productName(),
+      description: lorem.paragraph(),
+      priceInCents: random.number({ min: 1 }),
+      currency: finance.currencyCode(),
     },
     mutation: gql`
-      mutation CreateProduct($productID: ID!, $sku: String) {
-        CreateProduct(input: { productID: $productID, sku: $sku })
+      mutation CreateProduct(
+        $sku: String!
+        $displayName: String!
+        $description: String!
+        $priceInCents: Float!
+        $currency: String!
+      ) {
+        CreateProduct(
+          input: {
+            sku: $sku
+            productID: $productID
+            displayName: $displayName
+            description: $description
+            priceInCents: $priceInCents
+            currency: $currency
+          }
+        )
       }
     `,
   })
