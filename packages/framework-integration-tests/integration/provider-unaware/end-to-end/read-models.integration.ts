@@ -587,7 +587,7 @@ describe('Read models end-to-end tests', () => {
           confirmationToken: mockConfirmationToken,
         },
         mutation: gql`
-          mutation ConfirmPayment($paymentId: ID!, $cartId: ID!, $confirmationToken: String) {
+          mutation ConfirmPayment($paymentId: ID!, $cartId: ID!, $confirmationToken: String!) {
             ConfirmPayment(input: { paymentId: $paymentId, cartId: $cartId, confirmationToken: $confirmationToken })
           }
         `,

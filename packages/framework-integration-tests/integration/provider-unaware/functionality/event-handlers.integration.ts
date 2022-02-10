@@ -35,7 +35,7 @@ describe('Event handlers', () => {
           quantity: mockQuantity,
         },
         mutation: gql`
-          mutation MoveStock($productID: String!, $origin: String, $destination: String, $quantity: Float!) {
+          mutation MoveStock($productID: String!, $origin: String!, $destination: String!, $quantity: Float!) {
             MoveStock(input: { productID: $productID, origin: $origin, destination: $destination, quantity: $quantity })
           }
         `,
