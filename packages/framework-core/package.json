@@ -41,7 +41,7 @@
     "jsonwebtoken": "8.5.1",
     "jwks-rsa": "2.0.3",
     "reflect-metadata": "0.1.13",
-    "tslib": "2.3.0",
+    "tslib": "2.3.1",
     "validator": "13.6.0"
   },
   "devDependencies": {
