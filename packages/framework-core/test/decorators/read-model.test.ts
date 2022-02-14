@@ -22,8 +22,7 @@ describe('the `ReadModel` decorator', () => {
         readonly id: UUID,
         readonly aStringProp: string,
         readonly aNumberProp: number,
-        readonly aReadonlyArray: ReadonlyArray<string>,
-        readonly aPromise: Promise<string>
+        readonly aReadonlyArray: ReadonlyArray<string>
       ) {}
     }
 
@@ -88,26 +87,6 @@ describe('the `ReadModel` decorator', () => {
             type: undefined,
             typeGroup: 'Object',
             typeName: 'ReadonlyArray',
-          },
-        },
-        {
-          name: 'aPromise',
-          typeInfo: {
-            isNullable: false,
-            name: 'Promise<string>',
-            parameters: [
-              {
-                isNullable: false,
-                name: 'string',
-                parameters: [],
-                type: String,
-                typeGroup: 'String',
-                typeName: 'String',
-              },
-            ],
-            type: Function,
-            typeGroup: 'Object',
-            typeName: 'Promise',
           },
         },
       ],
