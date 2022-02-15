@@ -79,8 +79,13 @@ describe('Event handlers', () => {
             iss: 'booster',
             sub: adminEmail,
           },
+          header: {
+            alg: 'RS256',
+            kid: 'booster',
+            typ: 'JWT',
+          },
           username: adminEmail,
-          role: 'Admin',
+          roles: ['Admin'],
           id: adminEmail,
         },
       }
@@ -110,8 +115,13 @@ describe('Event handlers', () => {
             iss: 'booster',
             sub: adminEmail,
           },
+          header: {
+            alg: 'RS256',
+            kid: 'booster',
+            typ: 'JWT',
+          },
           username: adminEmail,
-          role: 'Admin',
+          roles: ['Admin'],
           id: adminEmail,
         },
       }

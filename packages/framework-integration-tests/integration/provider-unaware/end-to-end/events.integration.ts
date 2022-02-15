@@ -349,7 +349,7 @@ function queryByType(
             type
             user {
                 id
-                role
+                roles
                 username
             }
             value
@@ -378,7 +378,7 @@ function queryByEntity(
             type
             user {
                 id
-                role
+                roles
                 username
             }
             value

@@ -1,4 +1,4 @@
-import { BoosterConfig, UserEnvelope, TokenVerifierConfig } from '@boostercloud/framework-types'
+import { BoosterConfig, TokenVerifierConfig, UserEnvelope } from '@boostercloud/framework-types'
 
 import * as jwksRSA from 'jwks-rsa'
 import * as jwt from 'jsonwebtoken'
@@ -19,6 +19,7 @@ class TokenVerifierClient {
     this.options = {
       algorithms: ['RS256'],
       issuer: this.tokenVerifierConfig.issuer,
+      complete: true, // To return headers, payload and other useful token information
     }
   }
 
@@ -49,33 +50,64 @@ class TokenVerifierClient {
         }
       }
 
-      token = this.sanitizeToken(token)
+      token = TokenVerifierClient.sanitizeToken(token)
       jwt.verify(token, key, this.options, (err?: Error | null, decoded?: unknown) => {
         if (err) {
           return reject(err)
         }
-        return resolve(this.tokenToUserEnvelope(decoded))
+        const jwtToken = decoded as any
+        if (this.tokenVerifierConfig?.extraValidation) {
+          try {
+            this.tokenVerifierConfig?.extraValidation(jwtToken, token)
+          } catch (err) {
+            reject(err)
+          }
+        }
+        try {
+          return resolve(this.tokenToUserEnvelope(jwtToken))
+        } catch (err) {
+          reject(err)
+        }
       })
     })
   }
 
   private tokenToUserEnvelope(decodedToken: any): UserEnvelope {
-    const username = decodedToken?.email || decodedToken?.phone_number || decodedToken.sub
-    const id = decodedToken.sub
+    const payload = decodedToken.payload
+    const username = payload?.email || payload?.phone_number || payload.sub
+    const id = payload.sub
     const rolesClaim = this.tokenVerifierConfig.rolesClaim || 'custom:role'
-    const role = decodedToken[rolesClaim]
-    const roleValue = Array.isArray(role) ? role[0] : role
-
+    const role = payload[rolesClaim]
+    const roleValues = TokenVerifierClient.rolesFromTokenRole(role)
     return {
       id,
       username,
-      role: roleValue?.trim() ?? '',
-      claims: decodedToken,
+      roles: roleValues,
+      claims: decodedToken.payload,
+      header: decodedToken.header,
     }
   }
 
-  private sanitizeToken(token: string): string {
+  private static sanitizeToken(token: string): string {
     return token.replace('Bearer ', '')
+  }
+
+  private static rolesFromTokenRole(role: unknown): Array<string> {
+    const roleValues = []
+    if (Array.isArray(role)) {
+      role.forEach((r) => TokenVerifierClient.validateRoleFormat(r))
+      roleValues.push(...role)
+    } else {
+      TokenVerifierClient.validateRoleFormat(role)
+      roleValues.push((role as string)?.trim() ?? '')
+    }
+    return roleValues
+  }
+
+  private static validateRoleFormat(role: unknown): void {
+    if (typeof role !== 'string') {
+      throw new Error(`Invalid role format ${role}. Valid format are Array<string> or string`)
+    }
   }
 }
 

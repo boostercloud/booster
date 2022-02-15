@@ -132,7 +132,7 @@ describe('GraphQL generator', () => {
         requestID: mockRequestId,
         user: {
           username: mockEmail,
-          role: mockRole,
+          roles: [mockRole],
           claims: {},
         },
         operation: {
@@ -142,6 +142,17 @@ describe('GraphQL generator', () => {
           asyncIterator: (x: any) => asyncIteratorStub(x),
         },
         storeSubscriptions: false,
+        context: {
+          request: {
+            headers: {
+              authorization: 'Bearer 123',
+            },
+            body: {
+              query: 'Test query',
+            },
+          },
+          rawContext: {},
+        },
       }
       mockResolverInfo = {}
     })
@@ -162,7 +173,7 @@ describe('GraphQL generator', () => {
         const expectedFetchPayload = {
           currentUser: {
             username: mockEmail,
-            role: mockRole,
+            roles: [mockRole],
             claims: {},
           },
           filters: {},
@@ -287,17 +298,26 @@ describe('GraphQL generator', () => {
           mockResolverContext,
           mockResolverInfo
         )
-
-        expect(dispatchCommandStub).to.have.been.calledOnceWithExactly({
+        expect(dispatchCommandStub).to.have.been.calledWithMatch({
           requestID: mockRequestId,
           currentUser: {
             username: mockEmail,
-            role: mockRole,
+            roles: [mockRole],
             claims: {},
           },
           typeName: mockType.name,
           value: mockInput,
           version: 1,
+          context: {
+            request: {
+              headers: {
+                authorization: 'Bearer 123',
+              },
+              body: {
+                query: 'Test query',
+              },
+            },
+          },
         })
       })
 
@@ -411,7 +431,7 @@ describe('GraphQL generator', () => {
         expect(asyncIteratorStub).to.be.calledOnceWithExactly({
           currentUser: {
             username: mockEmail,
-            role: mockRole,
+            roles: [mockRole],
             claims: {},
           },
           filters: {},
@@ -448,7 +468,7 @@ describe('GraphQL generator', () => {
         const expectedFetchEventsPayload: EventSearchRequest = {
           currentUser: {
             username: mockEmail,
-            role: mockRole,
+            roles: [mockRole],
             claims: {},
           },
           filters,
