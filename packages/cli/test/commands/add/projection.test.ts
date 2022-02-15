@@ -1,6 +1,6 @@
-import { fake, replace, restore, stub, spy } from 'sinon'
+import { fake, replace, restore, spy, stub } from 'sinon'
 import { IConfig } from '@oclif/config'
-import { Project, MethodDeclarationStructure, SourceFile, ClassDeclaration } from 'ts-morph'
+import { ClassDeclaration, MethodDeclarationStructure, Project, SourceFile } from 'ts-morph'
 import * as ProjectChecker from '../../../src/services/project-checker'
 import { expect } from '../../expect'
 import Projection from '../../../src/commands/add/projection'

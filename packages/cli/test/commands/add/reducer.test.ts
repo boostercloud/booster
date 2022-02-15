@@ -1,12 +1,12 @@
 import { fake, replace, restore, spy, stub } from 'sinon'
 import { IConfig } from '@oclif/config'
-import { Project, SourceFile, ClassDeclaration, MethodDeclarationStructure } from 'ts-morph'
+import { ClassDeclaration, MethodDeclarationStructure, Project, SourceFile } from 'ts-morph'
 import * as ProjectChecker from '../../../src/services/project-checker'
 import { expect } from '../../expect'
 import Reducer from '../../../src/commands/add/reducer'
 import * as MethodGenerator from '../../../src/services/method-generator'
 import * as Filenames from '../../../src/common/filenames'
-import {oraLogger} from "../../../src/services/logger";
+import { oraLogger } from '../../../src/services/logger'
 
 describe('add', async () => {
   describe('reducer', async () => {

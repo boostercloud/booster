@@ -1,9 +1,9 @@
 import { HasName, HasProjection, HasReaction } from '../../src/services/generator/target'
 import { expect } from '../expect'
 import { generateProjection, generateReducers, getResourceSourceFile } from '../../src/services/method-generator'
-import { replace, stub, fake, restore } from 'sinon'
-import { fileNameWithExtension } from '../../src/common/filenames'
+import { fake, replace, restore, stub } from 'sinon'
 import * as Filenames from '../../src/common/filenames'
+import { fileNameWithExtension } from '../../src/common/filenames'
 import { Project } from 'ts-morph'
 
 describe('method generator', (): void => {
