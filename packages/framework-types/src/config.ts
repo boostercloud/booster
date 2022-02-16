@@ -16,6 +16,7 @@ import { ProviderLibrary } from './provider'
 import { Level } from './logger'
 import * as path from 'path'
 import { RocketDescriptor, RocketFunction } from './rocket-descriptor'
+import { Logger } from '.'
 
 /**
  * Class used by external packages that needs to get a representation of
@@ -23,6 +24,8 @@ import { RocketDescriptor, RocketFunction } from './rocket-descriptor'
  */
 export class BoosterConfig {
   public logLevel: Level = Level.debug
+  public logPrefix?: string
+  public logger?: Logger
   private _provider?: ProviderLibrary
   public providerPackage?: string
   public rockets?: Array<RocketDescriptor>

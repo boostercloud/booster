@@ -23,7 +23,8 @@ describe('ReadModelStore', () => {
     restore()
   })
 
-  const logger = buildLogger(Level.error)
+  const testConfig = new BoosterConfig('Test')
+  const logger = buildLogger(Level.error, testConfig)
 
   class AnImportantEntity {
     public constructor(readonly id: UUID, readonly someKey: UUID, readonly count: number) {}

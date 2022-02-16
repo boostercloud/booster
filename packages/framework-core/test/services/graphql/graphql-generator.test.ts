@@ -12,6 +12,7 @@ import {
   EventSearchResponse,
   ReadModelRequestArgs,
   ReadModelRequestProperties,
+  Logger,
 } from '@boostercloud/framework-types'
 import { expect } from '../../expect'
 import { GraphQLQueryGenerator } from '../../../src/services/graphql/graphql-query-generator'
@@ -27,11 +28,12 @@ import { GraphQLFieldResolver } from 'graphql'
 describe('GraphQL generator', () => {
   let mockEnvironmentName: string
   let mockConfig: BoosterConfig
-  const mockLogger = buildLogger(Level.error)
+  let mockLogger: Logger
 
   beforeEach(() => {
     mockEnvironmentName = random.alphaNumeric(10)
     mockConfig = new BoosterConfig(mockEnvironmentName)
+    mockLogger = buildLogger(Level.error, mockConfig)
   })
 
   afterEach(() => {
