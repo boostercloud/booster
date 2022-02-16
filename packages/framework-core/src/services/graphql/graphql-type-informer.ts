@@ -78,7 +78,7 @@ export class GraphQLTypeInformer {
     if (typeGroup === 'Number') return GraphQLFloat
     if (typeGroup === 'Boolean') return GraphQLBoolean
     if (typeGroup === 'Enum') return this.createEnumType(typeMetadata)
-    if (typeGroup === 'Array') return this.createArrayType(typeMetadata, inputType)
+    if (typeGroup === 'Array' || typeGroup === 'ReadonlyArray') return this.createArrayType(typeMetadata, inputType)
     if (typeGroup === 'Class' && typeMetadata.type && !isExternalType(typeMetadata)) {
       const metadata = getClassMetadata(typeMetadata.type)
       return this.createObjectType(metadata, inputType)
