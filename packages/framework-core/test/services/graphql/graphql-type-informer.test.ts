@@ -162,9 +162,7 @@ describe('GraphQLTypeInformer', () => {
           } as TypeMetadata)
 
           expect(result).to.be.deep.equal(GraphQLNonNull(GraphQLJSONObject))
-    })
         })
-    })
       })
     })
   })

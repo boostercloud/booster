@@ -26,9 +26,7 @@ export class ChangeCartItem {
     return input
   }
 
-  public static async handle(command: ChangeCartItem, register: Register): Promise<ReadonlyArray<string>> {
+  public static async handle(command: ChangeCartItem, register: Register): Promise<void> {
     register.events(new CartItemChanged(command.cartId, command.productId, command.quantity))
-    const value = [command.cartId.toString()] as ReadonlyArray<string>
-    return Promise.resolve(value)
   }
 }
