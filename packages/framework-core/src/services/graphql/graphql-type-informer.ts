@@ -59,7 +59,7 @@ export class GraphQLTypeInformer {
       // Date is an interface which has no `type`, so we need to use `name` instead
       return typeMetadata.name
     }
-    if (typeMetadata.typeGroup === 'Array') {
+    if (typeMetadata.typeGroup === 'Array' || typeMetadata.typeGroup === 'ReadonlyArray') {
       return this.getGraphQLName(typeMetadata.parameters[0], inputType) + 'List' + (inputType ? 'Input' : '')
     }
     if (typeMetadata.typeName && typeMetadata.typeGroup === 'Class') {
