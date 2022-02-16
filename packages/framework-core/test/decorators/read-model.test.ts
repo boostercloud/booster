@@ -85,7 +85,7 @@ describe('the `ReadModel` decorator', () => {
               },
             ],
             type: undefined,
-            typeGroup: 'Object',
+            typeGroup: 'ReadonlyArray',
             typeName: 'ReadonlyArray',
           },
         },
