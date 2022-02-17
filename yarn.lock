@@ -1785,7 +1785,27 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@boostercloud/framework-core@0.23.0, @boostercloud/framework-core@workspace:packages/framework-core":
+"@boostercloud/framework-core@portal:packages/framework-core::locator=root%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@boostercloud/framework-core@portal:packages/framework-core::locator=root%40workspace%3A."
+  dependencies:
+    "@boostercloud/framework-common-helpers": 0.23.0
+    "@boostercloud/framework-types": 0.23.0
+    fp-ts: 2.10.5
+    graphql: 15.8.0
+    graphql-subscriptions: 1.2.1
+    graphql-type-json: 0.3.2
+    inflected: 2.1.0
+    iterall: 1.3.0
+    jsonwebtoken: 8.5.1
+    jwks-rsa: 2.0.3
+    reflect-metadata: 0.1.13
+    tslib: 2.3.0
+    validator: 13.6.0
+  languageName: node
+  linkType: soft
+
+"@boostercloud/framework-core@workspace:packages/framework-core":
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-core@workspace:packages/framework-core"
   dependencies:
@@ -2087,14 +2107,14 @@ __metadata:
 
 "@boostercloud/framework-provider-local@file:packages/framework-provider-local::locator=root%40workspace%3A.":
   version: 0.23.0
-  resolution: "@boostercloud/framework-provider-local@file:packages/framework-provider-local#packages/framework-provider-local::hash=65982f&locator=root%40workspace%3A."
+  resolution: "@boostercloud/framework-provider-local@file:packages/framework-provider-local#packages/framework-provider-local::hash=766fd7&locator=root%40workspace%3A."
   dependencies:
     "@boostercloud/framework-common-helpers": 0.23.0
     "@boostercloud/framework-types": 0.23.0
     "@types/nedb": ^1.8.11
     nedb: ^1.8.0
     tslib: 2.3.0
-  checksum: ad74e249c1e618b1813abf210741a0355bda90f437fd7372e982a268715622e4a7b0fc848f0af87803682e08d9c84389f515bd18230f70a0737eada07fa2de7a
+  checksum: 39a74ae0a0d2d40e67694fa1c354bef46ca581a20c031b91df662771954c8ba80b41dc2d08d1d086e719361c129d66842e24bab79ab805f98edd73b1a780c111
   languageName: node
   linkType: hard
 
