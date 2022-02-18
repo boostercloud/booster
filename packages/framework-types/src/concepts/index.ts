@@ -1,5 +1,4 @@
 export * from './command'
-export * from './command-handler-metadata'
 export * from './event'
 export * from './entity'
 export * from './event-handler'
