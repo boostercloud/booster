@@ -1,9 +1,17 @@
-export class InvalidParameterError extends Error {}
-export class InvalidProtocolError extends Error {}
-export class NotAuthorizedError extends Error {}
-export class NotFoundError extends Error {}
-export class InvalidVersionError extends Error {}
-export class OptimisticConcurrencyUnexpectedVersionError extends Error {}
+export class BoosterError extends Error {
+  readonly code: string
+  constructor(message: string, code?: string, readonly data?: Record<string, unknown>) {
+    super(message)
+    this.code = code ?? this.constructor.name
+  }
+}
+
+export class InvalidParameterError extends BoosterError {}
+export class InvalidProtocolError extends BoosterError {}
+export class NotAuthorizedError extends BoosterError {}
+export class NotFoundError extends BoosterError {}
+export class InvalidVersionError extends BoosterError {}
+export class OptimisticConcurrencyUnexpectedVersionError extends BoosterError {}
 
 export function httpStatusCodeFor(error: Error): number {
   const errorToHTTPCode: Record<string, number> = {

@@ -6,6 +6,7 @@ import {
   InvalidProtocolError,
   GraphQLOperation,
   GraphQLRequestEnvelopeError,
+  NotAuthorizedError,
 } from '@boostercloud/framework-types'
 import { GraphQLSchema, DocumentNode, ExecutionResult, GraphQLError } from 'graphql'
 import * as graphql from 'graphql'
@@ -69,7 +70,7 @@ export class BoosterGraphQLDispatcher {
       } catch (e) {
         envelope = {
           ...envelope,
-          error: new InvalidParameterError(e),
+          error: new NotAuthorizedError(e),
         } as GraphQLRequestEnvelopeError
         this.logger.debug('Unable to decode auth token')
       }
@@ -137,7 +138,7 @@ export class BoosterGraphQLDispatcher {
       }
     } catch (e) {
       this.logger.error(e)
-      const errors = Array.isArray(e) ? e : [new GraphQLError(e.message)]
+      const errors = Array.isArray(e) ? e : [toGraphQLError(e)]
       return { errors }
     }
   }
@@ -191,4 +192,11 @@ export class BoosterGraphQLDispatcher {
 
 function cameThroughSocket(withConnectionID: { connectionID?: string }): boolean {
   return withConnectionID.connectionID != undefined
+}
+
+function toGraphQLError(e: Error & { code?: unknown; data?: unknown }): GraphQLError {
+  return new GraphQLError(e.message, undefined, undefined, undefined, undefined, e, {
+    code: e.code,
+    data: e.data,
+  })
 }
