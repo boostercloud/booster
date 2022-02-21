@@ -59,7 +59,7 @@ export class GraphQLTypeInformer {
       // Date is an interface which has no `type`, so we need to use `name` instead
       return typeMetadata.name
     }
-    if (typeMetadata.typeGroup === 'Array') {
+    if (typeMetadata.typeGroup === 'Array' || typeMetadata.typeGroup === 'ReadonlyArray') {
       return this.getGraphQLName(typeMetadata.parameters[0], inputType) + 'List' + (inputType ? 'Input' : '')
     }
     if (typeMetadata.typeName && typeMetadata.typeGroup === 'Class') {
@@ -78,7 +78,7 @@ export class GraphQLTypeInformer {
     if (typeGroup === 'Number') return GraphQLFloat
     if (typeGroup === 'Boolean') return GraphQLBoolean
     if (typeGroup === 'Enum') return this.createEnumType(typeMetadata)
-    if (typeGroup === 'Array') return this.createArrayType(typeMetadata, inputType)
+    if (typeGroup === 'Array' || typeGroup === 'ReadonlyArray') return this.createArrayType(typeMetadata, inputType)
     if (typeGroup === 'Class' && typeMetadata.type && !isExternalType(typeMetadata)) {
       const metadata = getClassMetadata(typeMetadata.type)
       return this.createObjectType(metadata, inputType)
@@ -111,7 +111,7 @@ export class GraphQLTypeInformer {
     if (inputType) {
       return new GraphQLInputObjectType({
         name: classMetadata.name + 'Input',
-        fields: classMetadata.fields.reduce((obj, prop) => {
+        fields: classMetadata.fields?.reduce((obj, prop) => {
           this.logger.debug(`Get or create GraphQL input type for property ${prop.name}`)
           return {
             ...obj,
@@ -122,7 +122,7 @@ export class GraphQLTypeInformer {
     }
     return new GraphQLObjectType({
       name: classMetadata.name,
-      fields: classMetadata.fields.reduce((obj, prop) => {
+      fields: classMetadata.fields?.reduce((obj, prop) => {
         this.logger.debug(`Get or create GraphQL output type for property ${prop.name}`)
         return {
           ...obj,

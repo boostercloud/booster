@@ -254,7 +254,10 @@ function cartSubscription(client: DisconnectableApolloClient, cartID: string): O
       subscription CartReadModel($cartId: ID!) {
         CartReadModel(id: $cartId) {
           id
-          cartItems
+          cartItems {
+            productId
+            quantity
+          }
         }
       }
     `,
@@ -268,7 +271,10 @@ function cartFilteredSubscription(client: DisconnectableApolloClient, filter: Fi
       subscription CartReadModels($filter: CartReadModelSubscriptionFilter) {
         CartReadModels(filter: $filter) {
           id
-          cartItems
+          cartItems {
+            productId
+            quantity
+          }
           cartItemsIds
         }
       }
@@ -283,7 +289,10 @@ function cartFilteredSingleIDSubscription(client: DisconnectableApolloClient, ca
       subscription CartReadModel($cartId: ID!) {
         CartReadModel(id: $cartId) {
           id
-          cartItems
+          cartItems {
+            productId
+            quantity
+          }
           cartItemsIds
         }
       }

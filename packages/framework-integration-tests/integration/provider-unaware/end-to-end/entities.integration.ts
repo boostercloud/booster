@@ -46,10 +46,10 @@ describe('Entities end-to-end tests', () => {
         mutation: gql`
           mutation CreateProduct(
             $sku: String!
-            $displayName: String
-            $description: String
-            $priceInCents: Float
-            $currency: String
+            $displayName: String!
+            $description: String!
+            $priceInCents: Float!
+            $currency: String!
           ) {
             CreateProduct(
               input: {

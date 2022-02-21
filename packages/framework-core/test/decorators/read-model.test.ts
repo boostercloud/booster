@@ -18,7 +18,12 @@ describe('the `ReadModel` decorator', () => {
       authorize: 'all',
     })
     class SomeReadModel {
-      public constructor(readonly id: UUID, readonly aStringProp: string, readonly aNumberProp: number) {}
+      public constructor(
+        readonly id: UUID,
+        readonly aStringProp: string,
+        readonly aNumberProp: number,
+        readonly aReadonlyArray: ReadonlyArray<string>
+      ) {}
     }
 
     // Make Booster be of any type to access private members
@@ -33,25 +38,55 @@ describe('the `ReadModel` decorator', () => {
         {
           name: 'id',
           typeInfo: {
+            importPath: '@boostercloud/framework-types',
+            isNullable: false,
             name: 'UUID',
             parameters: [],
             type: UUID,
+            typeGroup: 'Class',
+            typeName: 'UUID',
           },
         },
         {
           name: 'aStringProp',
           typeInfo: {
-            name: 'String',
+            isNullable: false,
+            name: 'string',
             parameters: [],
             type: String,
+            typeGroup: 'String',
+            typeName: 'String',
           },
         },
         {
           name: 'aNumberProp',
           typeInfo: {
-            name: 'Number',
+            isNullable: false,
+            name: 'number',
             parameters: [],
             type: Number,
+            typeGroup: 'Number',
+            typeName: 'Number',
+          },
+        },
+        {
+          name: 'aReadonlyArray',
+          typeInfo: {
+            isNullable: false,
+            name: 'readonly string[]',
+            parameters: [
+              {
+                isNullable: false,
+                name: 'string',
+                parameters: [],
+                type: String,
+                typeGroup: 'String',
+                typeName: 'String',
+              },
+            ],
+            type: undefined,
+            typeGroup: 'ReadonlyArray',
+            typeName: 'ReadonlyArray',
           },
         },
       ],

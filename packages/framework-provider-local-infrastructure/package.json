@@ -25,7 +25,7 @@
     "cors": "2.8.5",
     "express": "^4.17.1",
     "nedb": "^1.8.0",
-    "tslib": "2.3.0"
+    "tslib": "2.3.1"
   },
   "scripts": {
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",

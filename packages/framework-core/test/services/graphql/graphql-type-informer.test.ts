@@ -1,300 +1,194 @@
 import { GraphQLTypeInformer } from '../../../src/services/graphql/graphql-type-informer'
-import { AnyClass, UUID } from '@boostercloud/framework-types'
+import { AnyClass, Logger } from '@boostercloud/framework-types'
+import { expect } from '../../expect'
 import {
   GraphQLBoolean,
   GraphQLEnumType,
   GraphQLFloat,
   GraphQLID,
-  GraphQLInputType,
-  GraphQLInterfaceType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLString,
 } from 'graphql'
-import { expect } from '../../expect'
+import { TypeMetadata } from 'metadata-booster'
 import { GraphQLJSONObject } from 'graphql-type-json'
 import { random } from 'faker'
-import { SinonStub, stub, restore } from 'sinon'
-import { GraphQLNonInputType } from '../../../src/services/graphql/common'
-import { GraphQLInputObjectType } from 'graphql/type/definition'
+import { GraphQLEnumValueConfig, GraphQLEnumValueConfigMap } from 'graphql/type/definition'
+import { DateScalar } from '../../../src/services/graphql/common'
 
 describe('GraphQLTypeInformer', () => {
   let sut: GraphQLTypeInformer
+  const logger: Logger = {
+    debug() {},
+    info() {},
+    error() {},
+  }
 
   beforeEach(() => {
-    sut = new GraphQLTypeInformer({
-      testClass: {
-        class: {
-          name: 'testClass',
-        } as AnyClass,
-        properties: {
-          someProperty: {
-            name: 'someProperty',
-            type: String,
-          },
-        } as any,
-      },
-      anotherTestClass: {
-        class: {
-          name: 'anotherTestClass',
-        } as AnyClass,
-        properties: {
-          someProperty: {
-            name: 'someProperty',
-            type: String,
-          },
-        } as any,
-      },
-    })
+    sut = new GraphQLTypeInformer(logger)
   })
 
-  describe('getGraphQLTypeFor', () => {
-    describe('existing graphQLTypesByName', () => {
-      it('should return expected GraphQL Type', () => {
-        const result = sut.getGraphQLTypeFor({
-          name: 'anotherTestClass',
-        } as AnyClass)
+  describe('generateGraphQLTypeForClass', () => {
+    interface Parameters {
+      value: string
+    }
 
-        expect(result.toString()).to.be.equal('anotherTestClass')
-      })
+    class TestClass {
+      public someProperty: string
+      public someParameters: ReadonlyArray<Array<Parameters>>
+      public otherParameter: readonly Parameters[]
+
+      constructor(
+        someProperty: string,
+        someParameters: ReadonlyArray<Array<Parameters>>,
+        otherParameter: readonly Parameters[]
+      ) {
+        this.someProperty = someProperty
+        this.someParameters = someParameters
+        this.otherParameter = otherParameter
+      }
+    }
+
+    it('should return expected GraphQL Type', () => {
+      const result = sut.generateGraphQLTypeForClass(TestClass as AnyClass)
+      expect(result.toString()).to.be.deep.equal('TestClass')
     })
 
-    describe('not existing graphQLTypesByName', () => {
-      it('should return expected GraphQL Type', () => {
-        const result = sut.getGraphQLTypeFor({
-          name: 'unknownClass',
-        } as AnyClass)
-
-        expect(result).to.be.equal(GraphQLJSONObject)
-      })
+    it('should process complex ReadonlyArray', () => {
+      const result = sut.generateGraphQLTypeForClass(TestClass as AnyClass)
+      const someParametersValue =
+        result instanceof GraphQLObjectType ? result.getFields()['someParameters'].type : undefined
+      const otherParameterValue =
+        result instanceof GraphQLObjectType ? result.getFields()['otherParameter'].type : undefined
+      expect(someParametersValue).to.be.deep.equal(
+        GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLJSONObject)))))
+      )
+      expect(otherParameterValue).to.be.deep.equal(GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLJSONObject))))
     })
 
-    context('without types by name', () => {
+    describe('Get or create GraphQLType', () => {
       beforeEach(() => {
-        sut = new GraphQLTypeInformer({})
+        sut = new GraphQLTypeInformer(logger)
       })
 
-      it('should return GraphQLID', () => {
-        const result = sut.getGraphQLTypeFor(UUID)
+      it('should return GraphQLID!', () => {
+        const result = sut.getOrCreateGraphQLType({
+          name: 'UUID', // UUID and Date types are by name
+        } as TypeMetadata)
 
-        expect(result).to.be.equal(GraphQLID)
+        expect(result).to.be.deep.equal(GraphQLNonNull(GraphQLID))
+      })
+
+      it('should return Date!', () => {
+        const result = sut.getOrCreateGraphQLType({
+          name: 'Date', // UUID and Date types are by name
+        } as TypeMetadata)
+
+        expect(result).to.be.deep.equal(GraphQLNonNull(DateScalar))
       })
 
       it('should return GraphQLString', () => {
-        const result = sut.getGraphQLTypeFor(String)
+        const result = sut.getOrCreateGraphQLType({
+          name: 'string',
+          typeGroup: 'String', // by typeGroup
+        } as TypeMetadata)
 
-        expect(result).to.be.equal(GraphQLString)
+        expect(result).to.be.deep.equal(GraphQLNonNull(GraphQLString))
       })
 
       it('should return GraphQLFloat', () => {
-        const result = sut.getGraphQLTypeFor(Number)
-
-        expect(result).to.be.equal(GraphQLFloat)
-      })
-
-      it('should return GraphQLBoolean', () => {
-        const result = sut.getGraphQLTypeFor(Boolean)
-
-        expect(result).to.be.equal(GraphQLBoolean)
-      })
-
-      it('should return GraphQLJSONObject', () => {
-        const result = sut.getGraphQLTypeFor(Array)
-
-        expect(result).to.be.deep.equal(GraphQLJSONObject)
-      })
-
-      it('should return GraphQLJSONObject', () => {
-        const result = sut.getGraphQLTypeFor(Object)
-
-        expect(result).to.be.deep.equal(GraphQLJSONObject)
-      })
-
-      describe('default', () => {
-        let mockType: AnyClass
-
-        beforeEach(() => {
-          mockType = random.arrayElement([Float32Array, Float32Array, Uint8Array])
-        })
-
-        it('should return GraphQLJSONObject', () => {
-          const result = sut.getGraphQLTypeFor(mockType)
-
-          expect(result).to.be.deep.equal(GraphQLJSONObject)
-        })
-      })
-    })
-  })
-
-  describe('getGraphQLInputTypeFor', () => {
-    let mockType: AnyClass
-    let mockGraphQLOutputType: GraphQLNonInputType
-    let mockInputType: GraphQLInputType
-
-    let toInputTypeStub: SinonStub
-    let getGraphQLTypeForStub: SinonStub
-
-    beforeEach(() => {
-      mockType = random.arrayElement([String, Boolean, UUID, Object, Array])
-      mockGraphQLOutputType = random.arrayElement([
-        GraphQLID,
-        GraphQLString,
-        GraphQLFloat,
-        GraphQLBoolean,
-        GraphQLJSONObject,
-      ])
-      mockInputType = random.arrayElement([GraphQLString, GraphQLID, GraphQLFloat, GraphQLJSONObject, GraphQLBoolean])
-
-      toInputTypeStub = stub(GraphQLTypeInformer.prototype, 'toInputType').returns(mockInputType)
-      getGraphQLTypeForStub = stub(GraphQLTypeInformer.prototype, 'getGraphQLTypeFor').returns(mockGraphQLOutputType)
-    })
-
-    afterEach(() => {
-      restore()
-    })
-
-    it('should call toInputType', () => {
-      sut.getGraphQLInputTypeFor(mockType)
-
-      expect(toInputTypeStub).to.be.calledOnce.and.calledWith(mockGraphQLOutputType)
-    })
-
-    it('should call getGraphQLTypeFor', () => {
-      sut.getGraphQLInputTypeFor(mockType)
-
-      expect(getGraphQLTypeForStub).to.be.calledOnce.and.calledWith(mockType)
-    })
-
-    it('should return expected result', () => {
-      const result = sut.getGraphQLInputTypeFor(mockType)
-
-      expect(result).to.be.equal(mockInputType)
-    })
-  })
-
-  describe('toInputType', () => {
-    describe('instance of GraphQLFloat', () => {
-      it('should return the same input type', () => {
-        const result = sut.toInputType(GraphQLFloat)
-
-        expect(result).to.be.equal(GraphQLFloat)
-      })
-    })
-
-    describe('instance of GraphQLJSONObject', () => {
-      it('should return the same input type', () => {
-        const result = sut.toInputType(GraphQLJSONObject)
-
-        expect(result).to.be.equal(GraphQLJSONObject)
-      })
-    })
-
-    describe('instance of GraphQLList', () => {
-      it('should return the same input type', () => {
-        const result = sut.toInputType(GraphQLList(GraphQLFloat))
-
-        expect(result).to.be.deep.equal(GraphQLList(GraphQLFloat))
-      })
-    })
-
-    describe('instance of GraphQLNonNull', () => {
-      it('should return the same input type', () => {
-        const result = sut.toInputType(GraphQLNonNull(GraphQLFloat))
+        const result = sut.getOrCreateGraphQLType({
+          name: 'number',
+          typeGroup: 'Number', // by typeGroup
+        } as TypeMetadata)
 
         expect(result).to.be.deep.equal(GraphQLNonNull(GraphQLFloat))
       })
-    })
 
-    describe('instance of GraphQLObjectType', () => {
-      it('should return custom input type', () => {
-        const result = sut.toInputType(
-          new GraphQLObjectType({
-            name: 'randomObjectType',
-            fields: {},
-          })
-        ) as GraphQLInputObjectType
+      it('should return GraphQLBoolean', () => {
+        const result = sut.getOrCreateGraphQLType({
+          name: 'boolean',
+          typeGroup: 'Boolean', // by typeGroup
+        } as TypeMetadata)
 
-        expect(result.name).to.be.deep.equal('randomObjectTypeInput')
+        expect(result).to.be.deep.equal(GraphQLNonNull(GraphQLBoolean))
       })
 
-      context('when called two times with the same type', () => {
-        it('should return EXACTLY the same instance of custom input type', () => {
-          const graphqlType = new GraphQLObjectType({
-            name: 'randomObjectType',
-            fields: {},
-          })
-          const firstResult = sut.toInputType(graphqlType) as GraphQLInputObjectType
-          const secondResult = sut.toInputType(graphqlType) as GraphQLInputObjectType
+      it('should return GraphQLEnumType', () => {
+        const result = sut.getOrCreateGraphQLType({
+          name: 'enum',
+          typeGroup: 'Enum', // by typeGroup
+          parameters: [
+            {
+              name: 'key',
+              typeGroup: 'Boolean',
+              parameters: [],
+              isNullable: false,
+            },
+          ],
+          isNullable: false,
+        } as TypeMetadata)
 
-          expect(firstResult).to.be.equal(secondResult, 'Expected the two results to be EXACTLY the same instance')
+        const expectedResult = GraphQLNonNull(
+          new GraphQLEnumType({
+            name: 'enum',
+            values: {
+              key: {
+                value: 'key',
+              } as GraphQLEnumValueConfig,
+            } as GraphQLEnumValueConfigMap,
+          })
+        )
+
+        expect(result).to.be.deep.equal(expectedResult)
+      })
+
+      it('should return GraphQLList of GraphQLBoolean', () => {
+        const result = sut.getOrCreateGraphQLType({
+          name: 'MyArray[]',
+          typeGroup: 'Array', // by typeGroup
+          parameters: [
+            {
+              name: 'boolean',
+              typeGroup: 'Boolean',
+              parameters: [],
+              isNullable: false,
+            },
+          ],
+          isNullable: false,
+        } as TypeMetadata)
+
+        expect(result).to.be.deep.equal(GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLBoolean))))
+      })
+
+      it('should return GraphQLJSONObject', () => {
+        const result = sut.getOrCreateGraphQLType({
+          name: 'MyObject',
+          typeGroup: 'Object',
+        } as TypeMetadata)
+
+        expect(result).to.be.deep.equal(GraphQLNonNull(GraphQLJSONObject))
+      })
+
+      describe('default', () => {
+        let mockType: string
+
+        beforeEach(() => {
+          mockType = random.arrayElement(['Float32Array', 'Float32Array', 'Uint8Array', 'Promise'])
+        })
+
+        it('should return GraphQLJSONObject', () => {
+          const result = sut.getOrCreateGraphQLType({
+            name: `MyObject${mockType}`,
+            typeGroup: mockType,
+            parameters: [],
+            isNullable: false,
+          } as TypeMetadata)
+
+          expect(result).to.be.deep.equal(GraphQLNonNull(GraphQLJSONObject))
         })
       })
-    })
-
-    describe('instance of GraphQLEnumType', () => {
-      it('should return custom input type', () => {
-        expect(() => sut.toInputType({ name: 'myEnumGraphQLType' } as GraphQLEnumType)).to.throw(
-          `Types '${GraphQLEnumType.name}' and '${GraphQLInterfaceType}' are not allowed as input type, ` +
-            "and 'myEnumGraphQLType' was found"
-        )
-      })
-    })
-
-    describe('instance of GraphQLInterfaceType', () => {
-      it('should return custom input type', () => {
-        expect(() => sut.toInputType({ name: 'myGraphQLInterfaceType' } as GraphQLInterfaceType)).to.throw(
-          `Types '${GraphQLEnumType.name}' and '${GraphQLInterfaceType}' are not allowed as input type, ` +
-            "and 'myGraphQLInterfaceType' was found"
-        )
-      })
-    })
-
-    describe('instance of unknown GraphQL type', () => {
-      it('should return custom input type', () => {
-        expect(() => sut.toInputType({ name: 'unknownGraphQLType' } as any)).to.throw(
-          `Types '${GraphQLEnumType.name}' and '${GraphQLInterfaceType}' are not allowed as input type, ` +
-            "and 'unknownGraphQLType' was found"
-        )
-      })
-    })
-  })
-
-  describe('getOriginalAncestor', () => {
-    class CustomClass {}
-
-    class ExtendedClass extends CustomClass {}
-
-    it('should return CustomClass', () => {
-      expect(sut.getOriginalAncestor(CustomClass)).to.equal(CustomClass)
-    })
-
-    it('should return CustomClass from ExtendedClass', () => {
-      expect(sut.getOriginalAncestor(ExtendedClass)).to.equal(CustomClass)
-    })
-
-    it('should return String', () => {
-      class StringCustom extends String {}
-      expect(sut.getOriginalAncestor(StringCustom)).to.equal(String)
-    })
-
-    it('should return Number', () => {
-      class NumberExtended extends Number {}
-      expect(sut.getOriginalAncestor(NumberExtended)).to.equal(Number)
-    })
-
-    it('should return Array', () => {
-      class ArrayOfA extends Array<CustomClass> {}
-      class IndirectArrayOfA extends ArrayOfA {}
-
-      expect(sut.getOriginalAncestor(Array)).to.equal(Array)
-      expect(sut.getOriginalAncestor(ArrayOfA)).to.equal(Array)
-      expect(sut.getOriginalAncestor(IndirectArrayOfA)).to.equal(Array)
-    })
-
-    it('should return Set', () => {
-      class SetOfB extends Set<ExtendedClass> {}
-      expect(sut.getOriginalAncestor(SetOfB)).to.equal(Set)
     })
   })
 })
