@@ -8,6 +8,7 @@ import {
   GraphQLID,
   GraphQLList,
   GraphQLNonNull,
+  GraphQLObjectType,
   GraphQLString,
 } from 'graphql'
 import { TypeMetadata } from 'metadata-booster'
@@ -29,20 +30,44 @@ describe('GraphQLTypeInformer', () => {
   })
 
   describe('generateGraphQLTypeForClass', () => {
-    it('should return expected GraphQL Type', () => {
-      class TestClass {
-        public someProperty: string
+    interface Parameters {
+      value: string
+    }
 
-        constructor(someProperty: string) {
-          this.someProperty = someProperty
-        }
+    class TestClass {
+      public someProperty: string
+      public someParameters: ReadonlyArray<Array<Parameters>>
+      public otherParameter: readonly Parameters[]
+
+      constructor(
+        someProperty: string,
+        someParameters: ReadonlyArray<Array<Parameters>>,
+        otherParameter: readonly Parameters[]
+      ) {
+        this.someProperty = someProperty
+        this.someParameters = someParameters
+        this.otherParameter = otherParameter
       }
+    }
 
+    it('should return expected GraphQL Type', () => {
       const result = sut.generateGraphQLTypeForClass(TestClass as AnyClass)
       expect(result.toString()).to.be.deep.equal('TestClass')
     })
 
-    context('types by name', () => {
+    it('should process complex ReadonlyArray', () => {
+      const result = sut.generateGraphQLTypeForClass(TestClass as AnyClass)
+      const someParametersValue =
+        result instanceof GraphQLObjectType ? result.getFields()['someParameters'].type : undefined
+      const otherParameterValue =
+        result instanceof GraphQLObjectType ? result.getFields()['otherParameter'].type : undefined
+      expect(someParametersValue).to.be.deep.equal(
+        GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLJSONObject)))))
+      )
+      expect(otherParameterValue).to.be.deep.equal(GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLJSONObject))))
+    })
+
+    describe('Get or create GraphQLType', () => {
       beforeEach(() => {
         sut = new GraphQLTypeInformer(logger)
       })
