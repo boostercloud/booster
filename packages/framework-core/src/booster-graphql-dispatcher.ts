@@ -200,8 +200,8 @@ function toGraphQLErrorWithExtensions(e: BoosterError | GraphQLError): GraphQLEr
   if (e instanceof GraphQLError) {
     const originalError = e.originalError as BoosterError
     return new GraphQLError(e.message, e.nodes, e.source, e.positions, e.path, originalError, {
-      code: originalError.code,
-      data: originalError.data,
+      code: originalError?.code,
+      data: originalError?.data,
     })
   }
   return new GraphQLError(e.message, undefined, undefined, undefined, undefined, e, {
