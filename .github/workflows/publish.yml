@@ -77,7 +77,7 @@ jobs:
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
         # This is not running the integration tests of other providers. Think how this could be done, as they require some other configuration
         # (as an example, check the k8s tests in "integration-test.yml", it requires a minicube environment)
-        # Maybe running them in different jobs
+        # Maybe running them in different jobs.
         run: npx lerna run integration --stream
 
       - name: Discard all the changes after integration tests
