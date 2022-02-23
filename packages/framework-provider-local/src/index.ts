@@ -17,6 +17,7 @@ import {
   searchReadModel,
   storeReadModel,
 } from './library/read-model-adapter'
+import { searchEvents } from './library/events-search-adapter'
 
 export * from './paths'
 export * from './services'
@@ -40,7 +41,7 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
     forEntitySince: readEntityEventsSince.bind(null, eventRegistry),
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, eventRegistry),
     store: storeEvents.bind(null, userApp, eventRegistry),
-    search: undefined as any,
+    search: searchEvents.bind(null, eventRegistry),
   },
   // ProviderReadModelsLibrary
   readModels: {

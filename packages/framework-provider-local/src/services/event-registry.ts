@@ -8,11 +8,11 @@ export class EventRegistry {
     this.events.loadDatabase()
   }
 
-  public async query(query: object): Promise<Array<EventEnvelope>> {
+  public async query(query: object, createdAt = 1): Promise<Array<EventEnvelope>> {
     const queryPromise = new Promise((resolve, reject) =>
       this.events
         .find(query)
-        .sort({ createdAt: 1 }) // sort in ascending order (older timestamps first)
+        .sort({ createdAt: createdAt })
         .exec((err, docs) => {
           if (err) reject(err)
           else resolve(docs)

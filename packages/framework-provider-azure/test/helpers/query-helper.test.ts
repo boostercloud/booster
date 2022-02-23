@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
-import { searchReadModel } from '../../src/library/searcher-adapter'
+import { search } from '../../src/helpers/query-helper'
 import { createStubInstance, fake, match, restore, stub, SinonStubbedInstance } from 'sinon'
 import { CosmosClient } from '@azure/cosmos'
 import { BoosterConfig, FilterFor, Logger } from '@boostercloud/framework-types'
 import { random } from 'faker'
 
-describe('Searcher adapter', () => {
-  describe('The "searchReadModel" method', () => {
+describe('Query helper', () => {
+  describe('The "search" method', () => {
     let mockLogger: Logger
     let mockConfig: BoosterConfig
 
@@ -60,16 +60,15 @@ describe('Searcher adapter', () => {
     })
 
     it('Executes a SQL query without filters in the read model table', async () => {
-      await searchReadModel(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, {})
+      await search(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, {})
 
       expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
       expect(
         mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container
-      ).to.have.been.calledWithExactly(`${mockConfig.resourceNames.applicationStack}-${mockReadModelName}`)
+      ).to.have.been.calledWithExactly(`${mockReadModelName}`)
       expect(
-        mockCosmosDbClient
-          .database(mockConfig.resourceNames.applicationStack)
-          .container(`${mockConfig.resourceNames.applicationStack}-${mockReadModelName}`).items.query
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
+          .query
       ).to.have.been.calledWith(
         match({
           query: 'SELECT * FROM c ',
@@ -84,16 +83,15 @@ describe('Searcher adapter', () => {
         stock: { gt: 0, lte: 10 },
       }
 
-      await searchReadModel(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, filters)
+      await search(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, filters)
 
       expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
       expect(
         mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container
-      ).to.have.been.calledWithExactly(`${mockConfig.resourceNames.applicationStack}-${mockReadModelName}`)
+      ).to.have.been.calledWithExactly(`${mockReadModelName}`)
       expect(
-        mockCosmosDbClient
-          .database(mockConfig.resourceNames.applicationStack)
-          .container(`${mockConfig.resourceNames.applicationStack}-${mockReadModelName}`).items.query
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
+          .query
       ).to.have.been.calledWith(
         match({
           query:
@@ -136,12 +134,11 @@ describe('Searcher adapter', () => {
         not: { id: { eq: '333' } },
       }
 
-      await searchReadModel(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, filters)
+      await search(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, filters)
 
       expect(
-        mockCosmosDbClient
-          .database(mockConfig.resourceNames.applicationStack)
-          .container(`${mockConfig.resourceNames.applicationStack}-${mockReadModelName}`).items.query
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
+          .query
       ).to.have.been.calledWith(
         match({
           query: 'SELECT * FROM c WHERE CONTAINS(c["id"], @id_0) AND NOT (c["id"] = @id_1)',
@@ -166,12 +163,11 @@ describe('Searcher adapter', () => {
         and: [{ id: { contains: '3' } }, { id: { contains: '4' } }],
       }
 
-      await searchReadModel(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, filters)
+      await search(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, filters)
 
       expect(
-        mockCosmosDbClient
-          .database(mockConfig.resourceNames.applicationStack)
-          .container(`${mockConfig.resourceNames.applicationStack}-${mockReadModelName}`).items.query
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
+          .query
       ).to.have.been.calledWith(
         match({
           query:
@@ -214,12 +210,11 @@ describe('Searcher adapter', () => {
         },
       }
 
-      await searchReadModel(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, filters)
+      await search(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, filters)
 
       expect(
-        mockCosmosDbClient
-          .database(mockConfig.resourceNames.applicationStack)
-          .container(`${mockConfig.resourceNames.applicationStack}-${mockReadModelName}`).items.query
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
+          .query
       ).to.have.been.calledWith(
         match({
           query:
@@ -249,12 +244,11 @@ describe('Searcher adapter', () => {
         items: { includes: { sku: 'test', price: { cents: 1000, currency: 'EUR' } } },
       }
 
-      await searchReadModel(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, filters)
+      await search(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, filters)
 
       expect(
-        mockCosmosDbClient
-          .database(mockConfig.resourceNames.applicationStack)
-          .container(`${mockConfig.resourceNames.applicationStack}-${mockReadModelName}`).items.query
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
+          .query
       ).to.have.been.calledWith(
         match({
           query:
@@ -273,6 +267,58 @@ describe('Searcher adapter', () => {
       )
     })
 
+    it('Supports order for 1 field', async () => {
+      const filters: FilterFor<Product> = {}
+      const order = { sku: 'DESC' }
+      await search(
+        mockCosmosDbClient as any,
+        mockConfig,
+        mockLogger,
+        mockReadModelName,
+        filters,
+        undefined,
+        undefined,
+        undefined,
+        order
+      )
+
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
+          .query
+      ).to.have.been.calledWith(
+        match({
+          query: 'SELECT * FROM c  ORDER BY c.sku DESC',
+          parameters: [],
+        })
+      )
+    })
+
+    it('Supports order for any number of fields', async () => {
+      const filters: FilterFor<Product> = {}
+      const order = { sku: 'DESC', price: 'ASC' }
+      await search(
+        mockCosmosDbClient as any,
+        mockConfig,
+        mockLogger,
+        mockReadModelName,
+        filters,
+        undefined,
+        undefined,
+        undefined,
+        order
+      )
+
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
+          .query
+      ).to.have.been.calledWith(
+        match({
+          query: 'SELECT * FROM c  ORDER BY c.sku DESC, c.price ASC',
+          parameters: [],
+        })
+      )
+    })
+
     it('Throws an error with non supported filters', async () => {
       const unknownOperator = 'existsIn'
       const filters: FilterFor<any> = {
@@ -281,7 +327,7 @@ describe('Searcher adapter', () => {
 
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       expect(
-        searchReadModel(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, filters)
+        search(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, filters)
       ).to.be.eventually.rejectedWith(`Operator "${unknownOperator}" is not supported`)
     })
   })
