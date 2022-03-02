@@ -24,50 +24,45 @@ class TokenVerifierClient {
   }
 
   public async verify(token: string): Promise<UserEnvelope> {
-    return new Promise((resolve, reject) => {
-      const getKey = (header: jwt.JwtHeader, callback: jwt.SigningKeyCallback): void => {
-        if (!header.kid) {
-          callback(new Error('JWT kid not found'))
+    const getKey = (header: jwt.JwtHeader, callback: jwt.SigningKeyCallback): void => {
+      if (!header.kid) {
+        callback(new Error('JWT kid not found'))
+        return
+      }
+      this.client?.getSigningKey(header.kid, function (err: Error | null, key: jwksRSA.SigningKey) {
+        if (err) {
+          // This callback doesn't accept null so an empty string is enough here
+          callback(err, '')
           return
         }
-        this.client?.getSigningKey(header.kid, function (err: Error | null, key: jwksRSA.SigningKey) {
-          if (err) {
-            // This callback doesn't accept null so an empty string is enough here
-            callback(err, '')
-            return
-          }
-          const signingKey = key.getPublicKey()
-          callback(null, signingKey)
-        })
-      }
+        const signingKey = key.getPublicKey()
+        callback(null, signingKey)
+      })
+    }
 
-      let key: jwt.Secret | jwt.GetPublicKeyOrSecret = getKey
-      if (!this.client) {
-        if (this.tokenVerifierConfig.publicKey) {
-          key = this.tokenVerifierConfig.publicKey
-        } else {
-          throw new Error('Token verifier not well configured')
-        }
+    let key: jwt.Secret | jwt.GetPublicKeyOrSecret = getKey
+    if (!this.client) {
+      if (this.tokenVerifierConfig.publicKey) {
+        key = this.tokenVerifierConfig.publicKey
+      } else {
+        throw new Error('Token verifier not well configured')
       }
+    }
 
-      token = TokenVerifierClient.sanitizeToken(token)
-      jwt.verify(token, key, this.options, (err?: Error | null, decoded?: unknown) => {
+    token = TokenVerifierClient.sanitizeToken(token)
+
+    return new Promise((resolve, reject) => {
+      jwt.verify(token, key, this.options, (err, decoded) => {
         if (err) {
           return reject(err)
         }
         const jwtToken = decoded as any
-        if (this.tokenVerifierConfig?.extraValidation) {
-          try {
-            this.tokenVerifierConfig?.extraValidation(jwtToken, token)
-          } catch (err) {
-            reject(err)
-          }
-        }
-        try {
-          return resolve(this.tokenToUserEnvelope(jwtToken))
-        } catch (err) {
-          reject(err)
-        }
+        const extraValidation = this.tokenVerifierConfig?.extraValidation ?? (() => Promise.resolve())
+        extraValidation(jwtToken, token)
+          .then(() => {
+            resolve(this.tokenToUserEnvelope(jwtToken))
+          })
+          .catch(reject)
       })
     })
   }

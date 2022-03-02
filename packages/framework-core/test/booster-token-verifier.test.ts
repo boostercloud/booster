@@ -236,8 +236,10 @@ describe('the "verifyToken" method', () => {
       {
         issuer,
         jwksUri: auth0VerifierUri + '.well-known/jwks.json',
-        extraValidation: (jwtToken, _rawToken) => {
+        extraValidation: async (jwtToken, _rawToken) => {
           const payload = jwtToken.payload as any
+          const promiseSolved = await Promise.resolve()
+          console.log(promiseSolved)
           if (payload['custom:role'] !== 'Admin') {
             throw 'Unauthorized'
           }
@@ -262,8 +264,10 @@ describe('the "verifyToken" method', () => {
       {
         issuer,
         jwksUri: auth0VerifierUri + '.well-known/jwks.json',
-        extraValidation: (jwtToken, _rawToken) => {
+        extraValidation: async (jwtToken, _rawToken) => {
           const header = jwtToken.header as any
+          const promiseSolved = await Promise.resolve()
+          console.log(promiseSolved)
           if (header.alg !== 'RS512') {
             throw 'Invalid token encoding'
           }

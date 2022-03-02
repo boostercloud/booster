@@ -5,8 +5,7 @@ import { fake, replace, restore } from 'sinon'
 import { expect } from './expect'
 import { BoosterCommandDispatcher } from '../src/booster-command-dispatcher'
 import { CommandBeforeFunction, Logger, Register } from '@boostercloud/framework-types'
-import { Command } from '../src'
-import { RegisterHandler } from '../src'
+import { Command, RegisterHandler } from '../src'
 import { random } from 'faker'
 
 describe('the `BoosterCommandsDispatcher`', () => {
@@ -199,13 +198,17 @@ describe('the `BoosterCommandsDispatcher`', () => {
     context('when before hook functions are passed', () => {
       const newComment = 'Look, I changed the message'
       const newCommentV2 = 'Yes, I changed it for a second time'
-      const beforeFn: CommandBeforeFunction = (input, currentUser) => {
+      const beforeFn: CommandBeforeFunction = async (input, currentUser) => {
         input.comment = newComment
+        const result = await Promise.resolve()
+        console.log(result)
         return input
       }
-      const beforeFnV2: CommandBeforeFunction = (input, currentUser) => {
+      const beforeFnV2: CommandBeforeFunction = async (input, currentUser) => {
         // To double-check it's really chained
         if (input.comment === newComment) input.comment = newCommentV2
+        const result = await Promise.resolve()
+        console.log(result)
         return input
       }
 

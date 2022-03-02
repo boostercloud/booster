@@ -1,5 +1,11 @@
 import { Projects, ReadModel } from '@boostercloud/framework-core'
-import { ProjectionResult, ReadModelInterface, ReadModelRequestEnvelope, UUID } from '@boostercloud/framework-types'
+import {
+  ProjectionResult,
+  ReadModelInterface,
+  ReadModelRequestEnvelope,
+  UserEnvelope,
+  UUID,
+} from '@boostercloud/framework-types'
 import { CartItem } from '../common/cart-item'
 import { Address } from '../common/address'
 import { Cart } from '../entities/cart'
@@ -24,17 +30,18 @@ export class CartReadModel {
     return this.checks
   }
 
-  public static beforeFn(
-    request: ReadModelRequestEnvelope<ReadModelInterface>
-  ): ReadModelRequestEnvelope<ReadModelInterface> {
+  public static async beforeFn(
+    request: ReadModelRequestEnvelope<ReadModelInterface>,
+    currentUser?: UserEnvelope
+  ): Promise<ReadModelRequestEnvelope<ReadModelInterface>> {
     const id = request?.key?.id
     if (id && id === throwExceptionId) throw new Error(beforeHookException)
     return request
   }
 
-  public static beforeFnV2(
+  public static async beforeFnV2(
     request: ReadModelRequestEnvelope<ReadModelInterface>
-  ): ReadModelRequestEnvelope<ReadModelInterface> {
+  ): Promise<ReadModelRequestEnvelope<ReadModelInterface>> {
     const id = request.key?.id || request.filters?.id?.eq
     console.log(`Running \`beforeFnV2\` with ID = ${id}, and request = ${JSON.stringify(request)}`)
     if (!id || id !== 'before-fn-test') return request
