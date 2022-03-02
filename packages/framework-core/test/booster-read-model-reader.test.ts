@@ -340,8 +340,10 @@ describe('BoosterReadModelReader', () => {
         it('calls the before hook function', async () => {
           await readModelReader.search(envelope)
 
-          expect(beforeFnSpy).to.have.been.calledOnceWithExactly(envelope)
-          expect(beforeFnSpy).to.have.returned({ ...envelope, filters: { id: { eq: envelope.filters.id } } })
+          const currentUser = envelope.currentUser
+          expect(beforeFnSpy).to.have.been.calledOnceWithExactly(envelope, currentUser)
+          const expectedReturn = Promise.resolve({ ...envelope, filters: { id: { eq: envelope.filters.id } } })
+          expect(beforeFnSpy).to.have.returned(expectedReturn)
         })
       })
 
@@ -371,16 +373,18 @@ describe('BoosterReadModelReader', () => {
         it('chains the before hook functions when there is more than one', async () => {
           await readModelReader.search(envelope)
 
-          expect(beforeFnSpy).to.have.been.calledOnceWithExactly(envelope)
-          expect(beforeFnSpy).to.have.returned({ ...envelope, filters: { id: { eq: envelope.filters.id } } })
+          expect(beforeFnSpy).to.have.been.calledOnceWithExactly(envelope, envelope.currentUser)
+          const expectedReturn = Promise.resolve({ ...envelope, filters: { id: { eq: envelope.filters.id } } })
+          expect(beforeFnSpy).to.have.returned(expectedReturn)
 
-          const returnedEnvelope = beforeFnSpy.returnValues[0]
+          const returnedEnvelope = await beforeFnSpy.returnValues[0]
           expect(beforeFnV2Spy).to.have.been.calledAfter(beforeFnSpy)
-          expect(beforeFnV2Spy).to.have.been.calledOnceWithExactly(returnedEnvelope)
-          expect(beforeFnV2Spy).to.have.returned({
+          expect(beforeFnV2Spy).to.have.been.calledOnceWithExactly(returnedEnvelope, returnedEnvelope.currentUser)
+          const expectedReturnEnvelope = Promise.resolve({
             ...returnedEnvelope,
-            filters: { id: { eq: (await returnedEnvelope).currentUser?.username } },
+            filters: { id: { eq: returnedEnvelope.currentUser?.username } },
           })
+          expect(beforeFnV2Spy).to.have.returned(expectedReturnEnvelope)
         })
       })
     })
