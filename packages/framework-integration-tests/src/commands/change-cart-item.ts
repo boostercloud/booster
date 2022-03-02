@@ -10,19 +10,23 @@ import { beforeHookException, beforeHookMutationID, beforeHookQuantity, throwExc
 export class ChangeCartItem {
   public constructor(readonly cartId: UUID, readonly productId: UUID, readonly quantity: number) {}
 
-  public static beforeFn(input: CommandInput, currentUser?: UserEnvelope): CommandInput {
+  public static async beforeFn(input: CommandInput, currentUser?: UserEnvelope): Promise<CommandInput> {
     if (input.cartId === beforeHookMutationID) {
       input.quantity = beforeHookQuantity
     } else if (input.cartId === throwExceptionId) {
       throw new Error(beforeHookException)
     }
+    const result = await Promise.resolve()
+    console.log(result)
     return input
   }
 
-  public static beforeFnV2(input: CommandInput, currentUser?: UserEnvelope): CommandInput {
+  public static async beforeFnV2(input: CommandInput, currentUser?: UserEnvelope): Promise<CommandInput> {
     if (input.cartId === beforeHookMutationID) {
       input.cartId += '-modified'
     }
+    const result = await Promise.resolve()
+    console.log(result)
     return input
   }
 

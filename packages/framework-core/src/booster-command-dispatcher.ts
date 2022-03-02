@@ -33,7 +33,7 @@ export class BoosterCommandDispatcher {
     const commandClass = commandMetadata.class
     this.logger.debug('Found the following command:', commandClass.name)
 
-    const commandInput = applyBeforeFunctions(
+    const commandInput = await applyBeforeFunctions(
       commandEnvelope.value,
       commandMetadata.before,
       commandEnvelope.currentUser

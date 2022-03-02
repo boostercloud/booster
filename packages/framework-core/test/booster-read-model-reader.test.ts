@@ -273,11 +273,11 @@ describe('BoosterReadModelReader', () => {
       currentUser,
     } as any
 
-    const beforeFn = (request: ReadModelRequestEnvelope<any>): ReadModelRequestEnvelope<any> => {
+    const beforeFn = async (request: ReadModelRequestEnvelope<any>): Promise<ReadModelRequestEnvelope<any>> => {
       return { ...request, filters: { id: { eq: request.filters.id } } }
     }
 
-    const beforeFnV2 = (request: ReadModelRequestEnvelope<any>): ReadModelRequestEnvelope<any> => {
+    const beforeFnV2 = async (request: ReadModelRequestEnvelope<any>): Promise<ReadModelRequestEnvelope<any>> => {
       return { ...request, filters: { id: { eq: request.currentUser?.username } } }
     }
 
@@ -379,7 +379,7 @@ describe('BoosterReadModelReader', () => {
           expect(beforeFnV2Spy).to.have.been.calledOnceWithExactly(returnedEnvelope)
           expect(beforeFnV2Spy).to.have.returned({
             ...returnedEnvelope,
-            filters: { id: { eq: returnedEnvelope.currentUser?.username } },
+            filters: { id: { eq: (await returnedEnvelope).currentUser?.username } },
           })
         })
       })
