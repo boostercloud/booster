@@ -50,11 +50,21 @@ class TokenVerifierClient {
     }
 
     token = TokenVerifierClient.sanitizeToken(token)
-    const jwtToken = jwt.verify(token, key, this.options) as any
-    if (this.tokenVerifierConfig?.extraValidation) {
-      await this.tokenVerifierConfig?.extraValidation(jwtToken, token)
-    }
-    return this.tokenToUserEnvelope(jwtToken)
+
+    return new Promise((resolve, reject) => {
+      jwt.verify(token, key, this.options, (err, decoded) => {
+        if (err) {
+          return reject(err)
+        }
+        const jwtToken = decoded as any
+        const extraValidation = this.tokenVerifierConfig?.extraValidation ?? (() => Promise.resolve())
+        extraValidation(jwtToken, token)
+          .then(() => {
+            resolve(this.tokenToUserEnvelope(jwtToken))
+          })
+          .catch(reject)
+      })
+    })
   }
 
   private tokenToUserEnvelope(decodedToken: any): UserEnvelope {
