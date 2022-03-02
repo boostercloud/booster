@@ -4,6 +4,8 @@ import { toTerraformName } from '../helper/utils'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { eventsStoreAttributes } from '@boostercloud/framework-provider-azure'
 
+const MAX_CONTAINER_THROUGHPUT = 4000
+
 export class TerraformContainers {
   static build(
     terraformStack: TerraformStack,
@@ -42,7 +44,7 @@ export class TerraformContainers {
       partitionKeyPath: `/${eventsStoreAttributes.partitionKey}`,
       partitionKeyVersion: 2,
       autoscaleSettings: {
-        maxThroughput: 10000,
+        maxThroughput: MAX_CONTAINER_THROUGHPUT,
       },
     })
   }
@@ -64,7 +66,7 @@ export class TerraformContainers {
       partitionKeyPath: '/id',
       partitionKeyVersion: 2,
       autoscaleSettings: {
-        maxThroughput: 10000,
+        maxThroughput: MAX_CONTAINER_THROUGHPUT,
       },
     })
   }
