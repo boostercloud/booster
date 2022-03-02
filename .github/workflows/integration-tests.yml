@@ -2,6 +2,8 @@ name: Integration
 on:
   pull_request:
     types: [locked] # All integration tests are run every time the PR is locked
+  pull_request_target: # The event runs against the workflow and code from the base of the pull request
+    types: [locked] # All integration tests are run every time the PR is locked
 
 permissions:
   id-token: write
