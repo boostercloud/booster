@@ -51,14 +51,14 @@ class TokenVerifierClient {
       }
 
       token = TokenVerifierClient.sanitizeToken(token)
-      jwt.verify(token, key, this.options, (err?: Error | null, decoded?: unknown) => {
+      jwt.verify(token, key, this.options, async (err?: Error | null, decoded?: unknown) => {
         if (err) {
           return reject(err)
         }
         const jwtToken = decoded as any
         if (this.tokenVerifierConfig?.extraValidation) {
           try {
-            this.tokenVerifierConfig?.extraValidation(jwtToken, token)
+            await this.tokenVerifierConfig?.extraValidation(jwtToken, token)
           } catch (err) {
             reject(err)
           }

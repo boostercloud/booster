@@ -3,5 +3,5 @@ export type TokenVerifierConfig = {
   jwksUri?: string
   publicKey?: string
   rolesClaim?: string
-  extraValidation?: (jwtToken: Record<string, unknown>, rawToken: string) => void
+  extraValidation?: (jwtToken: Record<string, unknown>, rawToken: string) => Promise<void>
 }
