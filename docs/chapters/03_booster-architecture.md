@@ -202,7 +202,7 @@ In this case, the command operation can still be completed. An event handler wil
 
 ###  Reading entities
 
-Event handlers are a good place to make decisions and, to make better decisions, you need information. There is a Booster function called `fetchEntitySnapshots` within the `Booster` package and allows you to inspect the application state. This function receives two arguments, the `Entity` to fetch and the `entityID`. Here is an example of fetching an entity called `Stock`:
+Event handlers are a good place to make decisions and, to make better decisions, you need information. There is a Booster function called `entity` within the `Booster` package and allows you to inspect the application state. This function receives two arguments, the `Entity` to fetch and the `entityID`. Here is an example of fetching an entity called `Stock`:
 
 ```typescript
 @Command({
@@ -217,7 +217,7 @@ export class MoveStock {
   ) {}
 
   public static async handle(command: MoveStock, register: Register): Promise<void> {
-    const stock = await Booster.fetchEntitySnapshot(Stock, command.productID)
+    const stock = await Booster.entity(Stock, command.productID)
     if (!command.enoughStock(command.origin, command.quantity, stock)) {
       register.events(new ErrorEvent(`There is not enough stock for ${command.productID} at ${command.origin}`))
     }
@@ -483,11 +483,11 @@ register.events(new ProductAvailabilityChanged(event.productID, -event.quantity)
 
 Just as we do in command handlers, we can also retrieve entities information to make decisions based on their current state.
 
-Let's say that we want to check the status of a product before we trigger its availability update. In that case we would call the `Booster.fetchEntitySnapshot` function, which will return information about the entity.
+Let's say that we want to check the status of a product before we trigger its availability update. In that case we would call the `Booster.entity` function, which will return information about the entity.
 
 ```typescript
 public static async handle(event: StockMoved, register: Register): Promise<void> {
-  const productSnapshot = await Booster.fetchEntitySnapshot(Product, event.productID)
+  const productSnapshot = await Booster.entity(Product, event.productID)
   ...
 }
 ```
