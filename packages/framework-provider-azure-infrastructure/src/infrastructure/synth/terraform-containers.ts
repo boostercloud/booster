@@ -3,8 +3,7 @@ import { CosmosdbAccount, CosmosdbSqlContainer, CosmosdbSqlDatabase, ResourceGro
 import { toTerraformName } from '../helper/utils'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { eventsStoreAttributes } from '@boostercloud/framework-provider-azure'
-
-const MAX_CONTAINER_THROUGHPUT = 2000
+import { MAX_CONTAINER_THROUGHPUT } from '../constants'
 
 export class TerraformContainers {
   static build(
