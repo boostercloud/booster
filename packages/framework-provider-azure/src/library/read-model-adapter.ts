@@ -59,10 +59,11 @@ async function insertReadModel(
     logger.debug('[ReadModelAdapter#insertReadModel] Read model inserted')
   } catch (err) {
     // In case of conflict (The ID provided for a resource on a PUT or POST operation has been taken by an existing resource) we should retry it
-    if (err.code == AZURE_CONFLICT_ERROR_CODE) {
+    if (err?.code == AZURE_CONFLICT_ERROR_CODE) {
       logger.debug('[ReadModelAdapter#insertReadModel] Read model insert failed with a conflict failure')
-      throw new OptimisticConcurrencyUnexpectedVersionError(err.message)
+      throw new OptimisticConcurrencyUnexpectedVersionError(err?.message)
     }
+    logger.error('[ReadModelAdapter#insertReadModel] Read model insert failed without a conflict failure')
     throw err
   }
 }
@@ -86,10 +87,11 @@ async function updateReadModel(
     logger.debug('[ReadModelAdapter#updateReadModel] Read model updated')
   } catch (err) {
     // If there is a precondition failure then we should retry it
-    if (err.code == AZURE_PRECONDITION_FAILED_ERROR) {
+    if (err?.code == AZURE_PRECONDITION_FAILED_ERROR) {
       logger.debug('[ReadModelAdapter#updateReadModel] Read model update failed with a pre-condition failure')
-      throw new OptimisticConcurrencyUnexpectedVersionError(err.message)
+      throw new OptimisticConcurrencyUnexpectedVersionError(err?.message)
     }
+    logger.error('[ReadModelAdapter#updateReadModel] Read model update failed without a pre-condition failure')
     throw err
   }
 }
@@ -102,10 +104,11 @@ export async function storeReadModel(
   readModel: ReadModelInterface
 ): Promise<void> {
   const version = readModel.boosterMetadata?.version ?? 0
-  if (version === 0) {
+  if (version === 1) {
     await insertReadModel(logger, readModel, db, config, readModelName)
+  } else {
+    await updateReadModel(readModel, db, config, readModelName, logger)
   }
-  await updateReadModel(readModel, db, config, readModelName, logger)
 }
 
 export async function deleteReadModel(
