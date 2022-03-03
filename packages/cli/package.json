@@ -27,6 +27,7 @@
     "inquirer": "^7.0.0",
     "mustache": "4.1.0",
     "ora": "^3.4.0",
+    "ts-morph": "13.0.2",
     "tslib": "2.3.0"
   },
   "devDependencies": {
