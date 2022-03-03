@@ -13,7 +13,7 @@ interface ProductIDWithPrice {
 export class ProductsBySKU {
   public constructor(
     public id: UUID,
-    readonly products: Array<ProductIDWithPrice>,
+    readonly products: Array<ProductIDWithPrice> = [],
     readonly firstProduct?: ProductIDWithPrice,
     readonly record?: Record<string, number>
   ) {}
