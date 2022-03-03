@@ -1,8 +1,13 @@
+import { CosmosClient } from '@azure/cosmos'
+
 export class AzureCounters {
-  resourceGroupName: string
-  constructor(resourceGroupName: string) {
-    this.resourceGroupName = resourceGroupName
+  appName: string
+  db: CosmosClient
+  constructor(appName: string, cosmosConnectionString: string) {
+    this.appName = appName
+    this.db = new CosmosClient(cosmosConnectionString)
   }
+
   //TODO Azure Does not support Subscriptions
   public async subscriptions(): Promise<number> {
     return 0
@@ -13,13 +18,16 @@ export class AzureCounters {
     return 0
   }
 
-  //TODO we should implement this for provider unaware functionality tests
   public async events(): Promise<number> {
-    return 0
+    return await this.itemsCount(`${this.appName}-app-events-store`, 'SELECT * FROM c WHERE c.kind="event"')
   }
 
-  //TODO we should implement this for provider unaware functionality tests
-  public async readModels(): Promise<number> {
-    return 0
+  public async readModels(readModelName: string): Promise<number> {
+    return await this.itemsCount(`${this.appName}-app-${readModelName}`, 'SELECT * FROM c')
+  }
+
+  private async itemsCount(table: string, query: string): Promise<number> {
+    const { resources } = await this.db.database(`${this.appName}-app`).container(table).items.query(query).fetchAll()
+    return resources.length
   }
 }

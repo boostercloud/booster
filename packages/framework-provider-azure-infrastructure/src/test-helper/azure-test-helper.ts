@@ -3,6 +3,7 @@ import {
   getResourceGroup,
   showResourceInfo,
   showResourcesInResourceGroup,
+  getCosmosConnectionStrings,
 } from '../infrastructure/helper/az-cli-helper'
 import { ResourceGroup } from '../infrastructure/types/resource-group'
 import { AzureCounters } from './azure-counters'
@@ -22,22 +23,20 @@ export class AzureTestHelper {
   ) {}
 
   public static async checkResourceGroup(applicationName: string, environmentName: string): Promise<ResourceGroup> {
-    console.log('Check resource group')
     return getResourceGroup(applicationName, environmentName)
   }
 
   public static async build(appName: string, environmentName: string): Promise<AzureTestHelper> {
-    console.log('Application name: ', appName)
     const resourceGroup = await this.checkResourceGroup(appName, environmentName)
     this.ensureAzureConfiguration()
-    const cosmosConnectionString = await this.getCosmosConnection(resourceGroup)
+    const cosmosConnectionString = await this.getCosmosConnection(appName, environmentName)
 
     return new AzureTestHelper(
       {
         graphqlURL: await this.graphqlURL(resourceGroup),
         websocketURL: await this.websocketURL(),
       },
-      new AzureCounters(appName),
+      new AzureCounters(appName, cosmosConnectionString),
       new AzureQueries(appName, cosmosConnectionString)
     )
   }
@@ -54,14 +53,13 @@ export class AzureTestHelper {
     }
   }
 
-  private static async getCosmosConnection(resourceGroup: ResourceGroup): Promise<string> {
-    const resourceType = 'Microsoft.DocumentDB/databaseAccounts'
-    const cosmosResource = await AzureTestHelper.getResourceWithType(resourceGroup, resourceType)
-    console.log(cosmosResource)
-    if (!cosmosResource.properties?.gatewayUrl) {
-      throw new Error('Unable to get the Base HTTP URL from the current resource group')
+  private static async getCosmosConnection(appName: string, environmentName: string): Promise<string> {
+    const connectionDetails = await getCosmosConnectionStrings(appName, environmentName)
+    const mainDbConnection = connectionDetails.connectionStrings[0]
+    if (!mainDbConnection) {
+      throw new Error('Unable to get cosmos connection details from current resource group')
     }
-    return ''
+    return mainDbConnection.connectionString
   }
   private static async graphqlURL(resourceGroup: ResourceGroup): Promise<string> {
     const environment = process.env.BOOSTER_ENV ?? 'azure'
