@@ -4,6 +4,10 @@ export function classNameToFileName(name: string): string {
   return inflected.dasherize(inflected.underscore(name))
 }
 
+export function fileNameWithExtension(name: string, extension = 'ts'): string {
+  return (classNameToFileName(name) + '.' + extension).toLowerCase()
+}
+
 export function checkResourceNameIsValid(name: string): void {
   if (!hasValidResourceName(name))
     throw new Error(`'${name}' is not valid resource name. Please use PascalCase name with valid characters.`)
