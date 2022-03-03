@@ -4,7 +4,7 @@ import { toTerraformName } from '../helper/utils'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { eventsStoreAttributes } from '@boostercloud/framework-provider-azure'
 
-const MAX_CONTAINER_THROUGHPUT = 4000
+const MAX_CONTAINER_THROUGHPUT = 2000
 
 export class TerraformContainers {
   static build(
