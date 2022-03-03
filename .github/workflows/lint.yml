@@ -36,3 +36,4 @@ jobs:
       - name: Fail if ESLint made changes
         if: steps.eslint-fix.outputs.exit-code != 0
         run: exit 1
+
