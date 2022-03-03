@@ -65,7 +65,7 @@ export class Booster {
     const projectRootPath = codeRootPath.replace(new RegExp(this.config.codeRelativePath + '$'), '')
     this.config.userProjectRootPath = projectRootPath
     Importer.importUserProjectFiles(codeRootPath)
-    this.logger = buildLogger(this.config.logLevel)
+    this.logger = buildLogger(this.config.logLevel, this.config)
     this.config.validate()
   }
 

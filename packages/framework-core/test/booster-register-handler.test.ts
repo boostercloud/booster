@@ -16,7 +16,8 @@ class SomeEvent {
 }
 
 describe('the `RegisterHandler` class', () => {
-  const logger = buildLogger(Level.debug)
+  const testConfig = new BoosterConfig('Test')
+  const logger = buildLogger(Level.debug, testConfig)
 
   afterEach(() => {
     restore()

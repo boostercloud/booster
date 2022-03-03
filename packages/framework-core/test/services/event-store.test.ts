@@ -18,8 +18,8 @@ describe('EventStore', () => {
   afterEach(() => {
     restore()
   })
-
-  const logger = buildLogger(Level.error)
+  const testConfig = new BoosterConfig('Test')
+  const logger = buildLogger(Level.error, testConfig)
 
   class AnEvent {
     public constructor(readonly id: UUID, readonly entityId: string, readonly delta: number) {}
