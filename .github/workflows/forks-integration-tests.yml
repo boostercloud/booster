@@ -1,7 +1,7 @@
 name: Integration
 on:
-  pull_request:
-    types: [locked] # All integration tests are run every time the PR is locked
+  pull_request_target: # The event runs against the workflow and code from the base of the pull request
+    types: [labeled] # Fork PR are run when labeled
 
 permissions:
   id-token: write
@@ -10,6 +10,7 @@ jobs:
   aws-deploy-integration-tests:
     name: AWS Deployment Integration Tests
     runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'safe to test')
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
@@ -28,6 +29,7 @@ jobs:
     needs:
       - aws-deploy-integration-tests
     runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'safe to test')
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
@@ -46,6 +48,7 @@ jobs:
     needs:
       - aws-func-integration-tests
     runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'safe to test')
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
@@ -64,6 +67,7 @@ jobs:
     needs:
       - aws-end-to-end-tests
     runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'safe to test')
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
@@ -79,7 +83,7 @@ jobs:
 
   aws-nuke-integration-tests:
     name: AWS Nuke Integration Tests
-    if: always() && needs.aws-deploy-integration-tests.result == 'success'
+    if: always() && needs.aws-deploy-integration-tests.result == 'success' && contains(github.event.pull_request.labels.*.name, 'safe to test')
     continue-on-error: true
     needs:
       - aws-load-tests
@@ -100,6 +104,7 @@ jobs:
   cli-integration-tests:
     name: CLI Integration Tests
     runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'safe to test')
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
@@ -112,6 +117,7 @@ jobs:
   local-integration-tests:
     name: Local Environment Integration Tests
     runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'safe to test')
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
@@ -124,6 +130,7 @@ jobs:
   azure-deploy-integration-tests:
     name: Azure Deployment Integration Test
     runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'safe to test')
     steps:
       - name: 'Az CLI login'
         uses: azure/login@v1.4.0
@@ -152,7 +159,7 @@ jobs:
 
   azure-nuke-integration-tests:
     name: Azure Nuke Integration Test
-    if: always() && needs.azure-deploy-integration-tests.result == 'success'
+    if: always() && needs.azure-deploy-integration-tests.result == 'success' && contains(github.event.pull_request.labels.*.name, 'safe to test')
     continue-on-error: true
     needs:
       - azure-deploy-integration-tests
@@ -182,30 +189,3 @@ jobs:
           ARM_CLIENT_SECRET: ${{ secrets.AZURE_SECRET }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
-
-  # Kubernetes tests started failing on June 2021. We should fix them if adding more kubernetes features.
-  # issue: https://github.com/boostercloud/booster/issues/885
-  #kubernetes-integration-tests:
-  #  name: Kubernetes integration tests
-  #  runs-on: ubuntu-latest
-  #  env:
-  #    KUBECONFIG: '/home/runner/.kube/config'
-  #  steps:
-  #    - uses: actions/checkout@v2
-  #    - uses: manusa/actions-setup-minikube@v2.3.1
-  #      with:
-  #        minikube version: 'v1.18.1'
-  #        kubernetes version: 'v1.19.7'
-  #        driver: 'docker'
-  #    - uses: actions/setup-node@v1
-  #      with:
-  #        node-version: 16.x
-  #    - run: sudo snap install helm --classic
-  #    - run: kubectl create ns booster-my-store-kubernetes
-  #    - run: kubectl config set-context --current --namespace=booster-my-store-kubernetes
-  #    - run: minikube start --namespace=booster-my-store-kubernetes
-  #    - run: npx lerna bootstrap
-  #    - run: npx lerna run compile
-  #    - run: npx lerna run integration/k8s-deploy --stream
-  #    - run: npx lerna run integration/k8s-nuke --stream
-
