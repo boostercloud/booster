@@ -335,7 +335,7 @@ The only thing you need to do to deploy a whole new completely-independent copy 
 
 You can extend Booster by creating rockets. A rocket is just a node package that implements the public Booster rocket interfaces. You can use them for many things:
 
-1. Extend your infrastructure (Currently, only in AWS): You can write a rocket that adds provider resources to your application stack.
+1. Extend your infrastructure (Currently supported in AWS, and under experimental support in Azure and Local): You can write a rocket that adds provider resources to your application stack.
 2. Runtime extensions (Not yet implemented): Add new annotations and interfaces, which combined with infrastructure extensions, could implement new abstractions on top of highly requested use cases.
 3. Deploy and init hooks (Not yet implemented): Run custom scripts before or after deployment, or before a Booster application is loaded.
 
@@ -346,9 +346,12 @@ This extension mechanism is very new, but we're planning to port most of the fun
 
 ### Create your own Rocket
 
-> [!NOTE] Currently, Rockets work in AWS, we are working on porting them to other providers.
+> [!NOTE] Currently Rockets work in AWS. 
+> In Azure and Local, Rockets are under experimental support. We are working on porting them to other providers.
 
-A rocket is nothing more than an npm package that extends your current Booster architecture. The structure is simple, and it mainly has 2 methods: `mountStack` and `unmountStack`. We'll explain what they are in shortly.
+A rocket is nothing more than an npm package that extends your current Booster architecture. The structure is simple, and it mainly has 2 methods: `mountStack` and `unmountStack`. We'll explain what they are shortly.
+
+Rockets are usually composed of many packages, so we recommend using [Lerna](https://lerna.js.org) for development and publishing.
 
 *Infrastructure Rocket* interfaces are provider-dependant, so *Infrastructure Rockets* must import the corresponding booster infrastructure package for their chosen provider. For AWS, that's `@boostercloud/framework-provider-aws-infrastructure`. Notice that, as the only thing we use of that package is the `InfrastructureRocket` interface, you can import it as a dev dependency to avoid including that big package in your deployed lambdas.
 
@@ -451,6 +454,26 @@ If you want to support the same functionality in several providers, it could be 
 - `rocket-file-uploader-azure`: Implements the API calls to Azure Storage to get the uploaded files.
 - `rocket-file-uploader-azure-infrastructure`: Configures file storage.
 
+### How to publish a Rocket
+
+1. Upload your rocket to a git repository.
+2. Run :
+    ```shell
+        > lerna bootstrap
+    ```
+    This will bootstrap the packages, install all their dependencies and link any cross-dependencies.
+3. Ensure you have the option `publishConfig.access` set to `public` in the `package.json` file of every package.
+4. Make sure you are logged into NPM by running:
+   ```shell
+        > npm login
+    ```
+5. Run :
+    ```shell
+        > lerna publish
+    ```
+    Creates a new release of the packages that have been updated. It will update all the packages in git and npm, and it will prompt for a new version of the rocket package.
+6. If the previous step finished successfully, the package will be available in NPM.
+
 ### Booster Rockets list
 
 Here you can check out the official Booster Rockets developed at this time:
@@ -458,3 +481,4 @@ Here you can check out the official Booster Rockets developed at this time:
 - [Authentication Booster Rocket for AWS](https://github.com/boostercloud/rocket-auth-aws-infrastructure)
 - [Backup Booster Rocket for AWS](https://github.com/boostercloud/rocket-backup-aws-infrastructure)
 - [Static Sites Booster Rocket for AWS](https://github.com/boostercloud/rocket-static-sites-aws-infrastructure)
+- [Webhook Booster Rocket for Azure and Local](https://github.com/boostercloud/rocket-webhook)
