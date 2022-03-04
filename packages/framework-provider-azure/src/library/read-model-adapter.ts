@@ -1,4 +1,4 @@
-import { CosmosClient, ItemDefinition, RequestOptions } from '@azure/cosmos'
+import { CosmosClient, RequestOptions } from '@azure/cosmos'
 import {
   BoosterConfig,
   Logger,
@@ -40,34 +40,6 @@ export async function fetchReadModel(
   ]
 }
 
-async function insertReadModel(
-  logger: Logger,
-  readModel: ReadModelInterface,
-  db: CosmosClient,
-  config: BoosterConfig,
-  readModelName: string
-): Promise<void> {
-  const itemModel = {
-    ...readModel,
-    id: readModel.id.toString(),
-  } as ItemDefinition
-  try {
-    await db
-      .database(config.resourceNames.applicationStack)
-      .container(config.resourceNames.forReadModel(readModelName))
-      .items.create(itemModel)
-    logger.debug('[ReadModelAdapter#insertReadModel] Read model inserted')
-  } catch (err) {
-    // In case of conflict (The ID provided for a resource on a PUT or POST operation has been taken by an existing resource) we should retry it
-    if (err?.code == AZURE_CONFLICT_ERROR_CODE) {
-      logger.debug('[ReadModelAdapter#insertReadModel] Read model insert failed with a conflict failure')
-      throw new OptimisticConcurrencyUnexpectedVersionError(err?.message)
-    }
-    logger.error('[ReadModelAdapter#insertReadModel] Read model insert failed without a conflict failure')
-    throw err
-  }
-}
-
 async function updateReadModel(
   readModel: ReadModelInterface,
   db: CosmosClient,
@@ -87,7 +59,7 @@ async function updateReadModel(
     logger.debug('[ReadModelAdapter#updateReadModel] Read model updated')
   } catch (err) {
     // If there is a precondition failure then we should retry it
-    if (err?.code == AZURE_PRECONDITION_FAILED_ERROR) {
+    if (err?.code === AZURE_PRECONDITION_FAILED_ERROR || err?.code === AZURE_CONFLICT_ERROR_CODE) {
       logger.debug('[ReadModelAdapter#updateReadModel] Read model update failed with a pre-condition failure')
       throw new OptimisticConcurrencyUnexpectedVersionError(err?.message)
     }
@@ -103,12 +75,7 @@ export async function storeReadModel(
   readModelName: string,
   readModel: ReadModelInterface
 ): Promise<void> {
-  const version = readModel.boosterMetadata?.version ?? 0
-  if (version === 1) {
-    await insertReadModel(logger, readModel, db, config, readModelName)
-  } else {
-    await updateReadModel(readModel, db, config, readModelName, logger)
-  }
+  await updateReadModel(readModel, db, config, readModelName, logger)
 }
 
 export async function deleteReadModel(
