@@ -48,10 +48,15 @@ async function insertReadModel(
   readModelName: string
 ): Promise<void> {
   try {
+    const itemModel = {
+      ...readModel,
+      id: readModel?.id?.toString(),
+    } as ItemDefinition
+
     await db
       .database(config.resourceNames.applicationStack)
       .container(config.resourceNames.forReadModel(readModelName))
-      .items.create(readModel as ItemDefinition)
+      .items.create(itemModel)
     logger.debug('[ReadModelAdapter#insertReadModel] Read model inserted')
   } catch (err) {
     // In case of conflict (The ID provided for a resource on a PUT or POST operation has been taken by an existing resource) we should retry it
