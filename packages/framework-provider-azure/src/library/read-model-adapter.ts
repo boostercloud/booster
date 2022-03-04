@@ -47,15 +47,11 @@ async function insertReadModel(
   config: BoosterConfig,
   readModelName: string
 ): Promise<void> {
-  const itemModel = {
-    ...readModel,
-  } as ItemDefinition
-
   try {
     await db
       .database(config.resourceNames.applicationStack)
       .container(config.resourceNames.forReadModel(readModelName))
-      .items.create(itemModel)
+      .items.create(readModel as ItemDefinition)
     logger.debug('[ReadModelAdapter#insertReadModel] Read model inserted')
   } catch (err) {
     // In case of conflict (The ID provided for a resource on a PUT or POST operation has been taken by an existing resource) we should retry it
