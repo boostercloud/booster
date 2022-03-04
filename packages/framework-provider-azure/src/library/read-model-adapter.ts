@@ -49,8 +49,8 @@ async function insertReadModel(
 ): Promise<void> {
   const itemModel = {
     ...readModel,
-    id: readModel.id.toString(),
   } as ItemDefinition
+
   try {
     await db
       .database(config.resourceNames.applicationStack)
@@ -103,12 +103,11 @@ export async function storeReadModel(
   readModelName: string,
   readModel: ReadModelInterface
 ): Promise<void> {
-  const version = readModel.boosterMetadata?.version ?? 0
+  const version = readModel.boosterMetadata?.version ?? 1
   if (version === 1) {
-    await insertReadModel(logger, readModel, db, config, readModelName)
-  } else {
-    await updateReadModel(readModel, db, config, readModelName, logger)
+    return await insertReadModel(logger, readModel, db, config, readModelName)
   }
+  return await updateReadModel(readModel, db, config, readModelName, logger)
 }
 
 export async function deleteReadModel(
