@@ -144,7 +144,6 @@ describe('Events searcher adapter', () => {
         queryWithFromTimeAdditions = getQuery()
         queryWithFromTimeAdditions.KeyConditionExpression += ` AND ${eventsStoreAttributes.sortKey} >= :fromTime`
         queryWithFromTimeAdditions.ExpressionAttributeValues![':fromTime'] = filterWithFrom.from
-        queryWithFromTimeAdditions.Limit = 3
       })
 
       it('does the right query', async () => {
