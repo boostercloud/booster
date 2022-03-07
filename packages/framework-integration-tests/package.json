@@ -86,7 +86,7 @@
     "integration/azure-deploy": "BOOSTER_ENV=azure mocha --forbid-only --exit --config \"integration/provider-specific/azure/deployment/.mocharc.yml\" \"integration/provider-specific/azure/deployment/**/*.integration.ts\"",
     "integration/azure-nuke": "BOOSTER_ENV=azure mocha --forbid-only --exit --config \"integration/provider-specific/azure/nuke/.mocharc.yml\" \"integration/provider-specific/azure/nuke/**/*.integration.ts\"",
     "integration/azure-end-to-end": "TESTED_PROVIDER=AZURE BOOSTER_ENV=azure mocha --forbid-only --exit --config \"integration/provider-unaware/end-to-end/.mocharc.yml\" \"integration/provider-unaware/end-to-end/**/*.integration.ts\"",
-    "integration/azure-func": "TESTED_PROVIDER=AZURE BOOSTER_ENV=azure mocha --forbid-only --exit --config \"integration/provider-unaware/end-to-end/.mocharc.yml\" \"integration/provider-unaware/functionality/**/event-handlers.integration.ts\""
+    "integration/azure-func": "TESTED_PROVIDER=AZURE BOOSTER_ENV=azure mocha --forbid-only --exit --config \"integration/provider-unaware/end-to-end/.mocharc.yml\" \"integration/provider-unaware/functionality/**/*end-to-end.integration.ts\""
   },
   "types": "dist/index.d.ts"
 }
