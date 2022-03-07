@@ -150,7 +150,7 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
     
-    azure-end-to-end-integration-tests:
+  azure-end-to-end-integration-tests:
     name: Azure End to End Integration Test
     runs-on: ubuntu-latest
     steps:
@@ -207,6 +207,7 @@ jobs:
           ARM_CLIENT_SECRET: ${{ secrets.AZURE_SECRET }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
+          
   azure-nuke-integration-tests:
     name: Azure Nuke Integration Test
     if: always() && needs.azure-deploy-integration-tests.result == 'success'
