@@ -184,7 +184,7 @@ jobs:
   azure-func-integration-tests:
     name: Azure Func Integration Test
     needs:
-      - azure-deploy-integration-tests
+      - azure-end-to-end-integration-tests
     runs-on: ubuntu-latest
     steps:
       - name: 'Az CLI login'
@@ -217,7 +217,7 @@ jobs:
     if: always() && needs.azure-deploy-integration-tests.result == 'success'
     continue-on-error: true
     needs:
-      - azure-deploy-integration-tests
+      - azure-func-integration-tests
     runs-on: ubuntu-latest
     steps:
       - name: 'Az CLI login'
