@@ -152,6 +152,8 @@ jobs:
     
   azure-end-to-end-integration-tests:
     name: Azure End to End Integration Test
+    needs:
+      - azure-deploy-integration-tests
     runs-on: ubuntu-latest
     steps:
       - name: 'Az CLI login'
@@ -181,6 +183,8 @@ jobs:
     
   azure-func-integration-tests:
     name: Azure Func Integration Test
+    needs:
+      - azure-deploy-integration-tests
     runs-on: ubuntu-latest
     steps:
       - name: 'Az CLI login'
