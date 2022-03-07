@@ -179,7 +179,7 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
     
-    azure-func-integration-tests:
+  azure-func-integration-tests:
     name: Azure Func Integration Test
     runs-on: ubuntu-latest
     steps:
