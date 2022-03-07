@@ -62,7 +62,6 @@ describe('Events searcher adapter', () => {
           return {
             TableName: config.resourceNames.eventsStore,
             ConsistentRead: true,
-            Limit: undefined,
             ScanIndexForward: false,
             KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey`,
             ExpressionAttributeValues: { ':partitionKey': partitionKeyForEvent(filter.entity, entityID) },
@@ -85,7 +84,6 @@ describe('Events searcher adapter', () => {
           return {
             TableName: config.resourceNames.eventsStore,
             IndexName: eventsStoreAttributes.indexByEntity.name(config),
-            Limit: undefined,
             ScanIndexForward: false,
             KeyConditionExpression: `${eventsStoreAttributes.indexByEntity.partitionKey} = :partitionKey`,
             ExpressionAttributeValues: {
@@ -111,7 +109,6 @@ describe('Events searcher adapter', () => {
           return {
             TableName: config.resourceNames.eventsStore,
             IndexName: eventsStoreAttributes.indexByType.name(config),
-            Limit: undefined,
             ScanIndexForward: false,
             KeyConditionExpression: `${eventsStoreAttributes.indexByType.partitionKey} = :partitionKey`,
             ExpressionAttributeValues: {
@@ -142,6 +139,7 @@ describe('Events searcher adapter', () => {
       beforeEach(() => {
         filterWithFrom = getFilters()
         filterWithFrom.from = date.recent().toISOString()
+        filterWithFrom.limit = 3
 
         queryWithFromTimeAdditions = getQuery()
         queryWithFromTimeAdditions.KeyConditionExpression += ` AND ${eventsStoreAttributes.sortKey} >= :fromTime`
@@ -150,8 +148,7 @@ describe('Events searcher adapter', () => {
       })
 
       it('does the right query', async () => {
-        const limit = 3
-        await searchEvents(db, config, logger, filterWithFrom, limit)
+        await searchEvents(db, config, logger, filterWithFrom)
         expect(db.query).to.have.been.calledWithExactly(queryWithFromTimeAdditions)
       })
     })

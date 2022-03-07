@@ -7,7 +7,7 @@ import {
   BoosterConfig,
   ReadModelInterface,
   Level,
-  EventFilterByEntity,
+  EventParametersFilterByEntity,
   EventSearchRequest,
   EventSearchResponse,
   ReadModelRequestArgs,
@@ -457,7 +457,7 @@ describe('GraphQL generator', () => {
     describe('eventResolver', () => {
       let fetchEventsStub: SinonStub
       const fetchEventsResult: Array<EventSearchResponse> = []
-      const filters: EventFilterByEntity = {
+      const parameters: EventParametersFilterByEntity = {
         entity: 'TestEntity',
       }
 
@@ -473,33 +473,17 @@ describe('GraphQL generator', () => {
             roles: [mockRole],
             claims: {},
           },
-          filters,
+          parameters,
           requestID: mockRequestId,
-          limit: 3,
         }
 
-        await GraphQLGenerator.eventResolver('', expectedFetchEventsPayload, mockResolverContext, {} as never)
+        await GraphQLGenerator.eventResolver('', parameters, mockResolverContext, {} as never)
 
         expect(fetchEventsStub).to.have.been.calledOnceWithExactly(expectedFetchEventsPayload)
       })
 
       it('should return expected result', async () => {
-        const expectedFetchEventsPayload: EventSearchRequest = {
-          currentUser: {
-            username: mockEmail,
-            roles: [mockRole],
-            claims: {},
-          },
-          filters,
-          requestID: mockRequestId,
-        }
-
-        const result = await GraphQLGenerator.eventResolver(
-          '',
-          expectedFetchEventsPayload,
-          mockResolverContext,
-          {} as never
-        )
+        const result = await GraphQLGenerator.eventResolver('', parameters, mockResolverContext, {} as never)
 
         expect(result).to.be.deep.equal(fetchEventsResult)
       })
