@@ -62,6 +62,7 @@ describe('Events searcher adapter', () => {
           return {
             TableName: config.resourceNames.eventsStore,
             ConsistentRead: true,
+            Limit: undefined,
             ScanIndexForward: false,
             KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey`,
             ExpressionAttributeValues: { ':partitionKey': partitionKeyForEvent(filter.entity, entityID) },
@@ -84,6 +85,7 @@ describe('Events searcher adapter', () => {
           return {
             TableName: config.resourceNames.eventsStore,
             IndexName: eventsStoreAttributes.indexByEntity.name(config),
+            Limit: undefined,
             ScanIndexForward: false,
             KeyConditionExpression: `${eventsStoreAttributes.indexByEntity.partitionKey} = :partitionKey`,
             ExpressionAttributeValues: {
@@ -109,6 +111,7 @@ describe('Events searcher adapter', () => {
           return {
             TableName: config.resourceNames.eventsStore,
             IndexName: eventsStoreAttributes.indexByType.name(config),
+            Limit: undefined,
             ScanIndexForward: false,
             KeyConditionExpression: `${eventsStoreAttributes.indexByType.partitionKey} = :partitionKey`,
             ExpressionAttributeValues: {
@@ -130,6 +133,26 @@ describe('Events searcher adapter', () => {
       it('does the right query', async () => {
         await searchEvents(db, config, logger, getFilters())
         expect(db.query).to.have.been.calledWithExactly(getQuery())
+      })
+    })
+
+    context('with "from" time filter and limit', () => {
+      let filterWithFrom: EventFilter
+      let queryWithFromTimeAdditions: DocumentClient.QueryInput
+      beforeEach(() => {
+        filterWithFrom = getFilters()
+        filterWithFrom.from = date.recent().toISOString()
+
+        queryWithFromTimeAdditions = getQuery()
+        queryWithFromTimeAdditions.KeyConditionExpression += ` AND ${eventsStoreAttributes.sortKey} >= :fromTime`
+        queryWithFromTimeAdditions.ExpressionAttributeValues![':fromTime'] = filterWithFrom.from
+        queryWithFromTimeAdditions.Limit = 3
+      })
+
+      it('does the right query', async () => {
+        const limit = 3
+        await searchEvents(db, config, logger, filterWithFrom, limit)
+        expect(db.query).to.have.been.calledWithExactly(queryWithFromTimeAdditions)
       })
     })
 

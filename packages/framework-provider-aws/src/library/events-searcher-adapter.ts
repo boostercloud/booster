@@ -17,14 +17,15 @@ export async function searchEvents(
   dynamoDB: DynamoDB.DocumentClient,
   config: BoosterConfig,
   logger: Logger,
-  filters: EventFilter
+  filters: EventFilter,
+  limit?: number
 ): Promise<Array<EventSearchResponse>> {
   logger.debug('Initiating an events search. Filters: ', filters)
   const timeFilterQuery = buildSearchEventsTimeQuery(filters.from, filters.to)
   const eventEnvelopes = await executeSearch(dynamoDB, config, logger, filters, timeFilterQuery)
 
   logger.debug('Events search result: ', eventEnvelopes)
-  return convertToSearchResult(eventEnvelopes)
+  return convertToSearchResult(eventEnvelopes, limit)
 }
 
 interface TimeQueryData {
@@ -211,7 +212,7 @@ async function performBatchGet(
   return (result.Responses?.[config.resourceNames.eventsStore] as Array<EventEnvelope>) ?? []
 }
 
-function convertToSearchResult(eventEnvelopes: Array<EventEnvelope>): Array<EventSearchResponse> {
+function convertToSearchResult(eventEnvelopes: Array<EventEnvelope>, limit?: number): Array<EventSearchResponse> {
   // "eventEnvelopes" represent a result page. That page is absolutely ordered among all the items in the
   // database. BUT! the local order within the page is been messed up, so we need to sort the items.
   // Why the order is messed up? Because we are doing two queries to DynamoDB:
@@ -219,7 +220,8 @@ function convertToSearchResult(eventEnvelopes: Array<EventEnvelope>): Array<Even
   // The result of this query is paginated and the absolute order of items is respected.
   // - Another one to the master table to get the items data. This query is made with "batchQueryItems", which
   // does not preserve the order in which we specify the keys. This is why we need to sort the final result.
-  return eventEnvelopes
+  // It affects also to the limit that could only be applied to the ordered elements
+  const sort = eventEnvelopes
     .map((eventEnvelope) => {
       return {
         type: eventEnvelope.typeName,
@@ -236,4 +238,8 @@ function convertToSearchResult(eventEnvelopes: Array<EventEnvelope>): Array<Even
       if (a.createdAt < b.createdAt) return 1
       return 0
     })
+  if (limit) {
+    return sort?.slice(0, limit)
+  }
+  return sort
 }

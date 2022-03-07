@@ -22,10 +22,16 @@ export async function search(
   const filterExpression = buildFilterExpression(filters)
   const queryDefinition = `SELECT * FROM c ${filterExpression !== '' ? `WHERE ${filterExpression}` : filterExpression}`
   const queryWithOrder = queryDefinition + buildOrderExpression(order)
-  const queryWithPagination =
-    queryWithOrder + (paginatedVersion && limit ? ` OFFSET ${afterCursor?.id || 0} LIMIT ${limit}` : '')
+  let finalQuery = queryWithOrder
+  if (paginatedVersion && limit) {
+    finalQuery += ` OFFSET ${afterCursor?.id || 0} LIMIT ${limit} `
+  } else {
+    if (limit) {
+      finalQuery += ` OFFSET 0 LIMIT ${limit} `
+    }
+  }
   const querySpec: SqlQuerySpec = {
-    query: queryWithPagination,
+    query: finalQuery,
     parameters: buildExpressionAttributeValues(filters),
   }
 

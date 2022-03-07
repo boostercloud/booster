@@ -37,13 +37,17 @@ export interface EventEnvelope extends Envelope {
 
 export interface EventSearchRequest extends Envelope {
   filters: EventFilter
+  limit?: number
 }
+
+export type EventRequestEnvelope = EventFilter
 
 export type EventFilter = EventFilterByEntity | EventFilterByType
 
 export interface EventTimeFilter {
   from?: string
   to?: string
+  limit?: number
 }
 
 export interface EventFilterByEntity extends EventTimeFilter {

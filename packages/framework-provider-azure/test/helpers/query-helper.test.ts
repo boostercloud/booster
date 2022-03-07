@@ -319,6 +319,84 @@ describe('Query helper', () => {
       )
     })
 
+    it('Supports limited results', async () => {
+      const filters: FilterFor<Product> = {
+        days: { includes: 2 },
+        items: { includes: { sku: 'test', price: { cents: 1000, currency: 'EUR' } } },
+      }
+      const order = { sku: 'DESC', price: 'ASC' }
+      await search(
+        mockCosmosDbClient as any,
+        mockConfig,
+        mockLogger,
+        mockReadModelName,
+        filters,
+        3,
+        undefined,
+        false,
+        order
+      )
+
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
+          .query
+      ).to.have.been.calledWith(
+        match({
+          query:
+            'SELECT * FROM c WHERE ARRAY_CONTAINS(c["days"], @days_0, true) AND ARRAY_CONTAINS(c["items"], @items_0, true) ORDER BY c.sku DESC, c.price ASC OFFSET 0 LIMIT 3 ',
+          parameters: [
+            {
+              name: '@days_0',
+              value: 2,
+            },
+            {
+              name: '@items_0',
+              value: { sku: 'test', price: { cents: 1000, currency: 'EUR' } },
+            },
+          ],
+        })
+      )
+    })
+
+    it('Supports paginated and limited results', async () => {
+      const filters: FilterFor<Product> = {
+        days: { includes: 2 },
+        items: { includes: { sku: 'test', price: { cents: 1000, currency: 'EUR' } } },
+      }
+      const order = { sku: 'DESC', price: 'ASC' }
+      await search(
+        mockCosmosDbClient as any,
+        mockConfig,
+        mockLogger,
+        mockReadModelName,
+        filters,
+        3,
+        { id: '3' },
+        true,
+        order
+      )
+
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
+          .query
+      ).to.have.been.calledWith(
+        match({
+          query:
+            'SELECT * FROM c WHERE ARRAY_CONTAINS(c["days"], @days_0, true) AND ARRAY_CONTAINS(c["items"], @items_0, true) ORDER BY c.sku DESC, c.price ASC OFFSET 3 LIMIT 3 ',
+          parameters: [
+            {
+              name: '@days_0',
+              value: 2,
+            },
+            {
+              name: '@items_0',
+              value: { sku: 'test', price: { cents: 1000, currency: 'EUR' } },
+            },
+          ],
+        })
+      )
+    })
+
     it('Throws an error with non supported filters', async () => {
       const unknownOperator = 'existsIn'
       const filters: FilterFor<any> = {

@@ -7,7 +7,8 @@ export async function searchEvents(
   cosmosDb: CosmosClient,
   config: BoosterConfig,
   logger: Logger,
-  filters: EventFilter
+  filters: EventFilter,
+  limit?: number
 ): Promise<Array<EventSearchResponse>> {
   logger.debug('Initiating an events search. Filters: ', filters)
 
@@ -15,7 +16,7 @@ export async function searchEvents(
   const timeFilterQuery = buildFiltersForByTime(filters.from, filters.to)
   const eventFilterQuery = buildFiltersForByFilters(filters)
   const filterQuery = { ...eventFilterQuery, ...timeFilterQuery, kind: { eq: 'event' } }
-  const result = (await search(cosmosDb, config, logger, eventStore, filterQuery, undefined, undefined, undefined, {
+  const result = (await search(cosmosDb, config, logger, eventStore, filterQuery, limit, undefined, undefined, {
     createdAt: 'DESC',
   })) as any[]
   const eventEnvelopes = resultToEventSearchResponse(result)

@@ -6,13 +6,14 @@ export async function searchEvents(
   eventRegistry: EventRegistry,
   config: BoosterConfig,
   logger: Logger,
-  filters: EventFilter
+  filters: EventFilter,
+  limit?: number
 ): Promise<Array<EventSearchResponse>> {
   logger.debug('Initiating an events search. Filters: ', filters)
   const timeFilterQuery = buildFiltersForByTime(filters.from, filters.to)
   const eventFilterQuery = buildFiltersForByFilters(filters)
   const filterQuery = { ...eventFilterQuery, ...timeFilterQuery, kind: 'event' }
-  const result = await eventRegistry.query(filterQuery, -1)
+  const result = await eventRegistry.query(filterQuery, -1, limit)
   const eventsSearchResponses = resultToEventSearchResponse(result)
   logger.debug('Events search result: ', eventsSearchResponses)
   return eventsSearchResponses

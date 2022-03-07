@@ -68,6 +68,38 @@ describe('Events Searcher adapter', () => {
       )
     })
 
+    it('Generate filters for entity, entityId and time when EventFilter has all fields and limited', async () => {
+      const filters: EventFilter = {
+        from: 'from',
+        to: 'to',
+        entity: 'entity',
+        entityID: 'entityID',
+        type: 'type',
+      }
+      const limit = 3
+      const mockSearch = stub(searchModule, 'search').returns(Promise.resolve([]))
+      const eventStoreName = 'new-booster-app-app-events-store'
+      await searchEvents(mockCosmosDbClient as any, mockConfig, mockLogger, filters, limit)
+
+      expect(mockSearch).to.have.been.calledWithExactly(
+        mockCosmosDbClient,
+        mockConfig,
+        mockLogger,
+        eventStoreName,
+        {
+          entityTypeName_entityID_kind: { eq: 'entity-entityID-event' },
+          createdAt: { gte: 'from', lte: 'to' },
+          kind: { eq: 'event' },
+        },
+        3,
+        undefined,
+        undefined,
+        {
+          createdAt: 'DESC',
+        }
+      )
+    })
+
     it('Generate filters for entity, entityId when EventFilter has entity and entityID fields', async () => {
       const filters: EventFilter = {
         entity: 'entity',

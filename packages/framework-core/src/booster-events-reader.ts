@@ -32,7 +32,7 @@ export class BoosterEventsReader {
   }
 
   private entityMetadataFromRequest(eventRequest: EventSearchRequest): EntityMetadata {
-    const { filters } = eventRequest
+    const { filters: filters } = eventRequest
     if (!isByEntitySearch(filters) && !isByEventTypeSearch(filters)) {
       throw new InvalidParameterError(
         'Invalid event search request. It should contain either "type" or "entity" field, but it included none'
@@ -72,7 +72,7 @@ export class BoosterEventsReader {
   }
 
   private async processFetch(eventRequest: EventSearchRequest): Promise<Array<EventSearchResponse>> {
-    return Booster.events(eventRequest.filters)
+    return Booster.events(eventRequest)
   }
 }
 

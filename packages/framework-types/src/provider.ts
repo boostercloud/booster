@@ -42,7 +42,12 @@ export interface ProviderEventsLibrary {
     entityTypeName: string,
     entityID: UUID
   ): Promise<EventEnvelope | null>
-  search(config: BoosterConfig, logger: Logger, filters: EventFilter): Promise<Array<EventSearchResponse>>
+  search(
+    config: BoosterConfig,
+    logger: Logger,
+    filters: EventFilter,
+    limit?: number
+  ): Promise<Array<EventSearchResponse>>
   /** Streams an event to the corresponding event handler */
   store(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig, logger: Logger): Promise<void>
 }
