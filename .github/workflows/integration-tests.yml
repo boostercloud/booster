@@ -151,7 +151,7 @@ jobs:
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
     
     azure-end-to-end-integration-tests:
-    name: Azure Deployment Integration Test
+    name: Azure End to End Integration Test
     runs-on: ubuntu-latest
     steps:
       - name: 'Az CLI login'
@@ -180,7 +180,7 @@ jobs:
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
     
     azure-func-integration-tests:
-    name: Azure Deployment Integration Test
+    name: Azure Func Integration Test
     runs-on: ubuntu-latest
     steps:
       - name: 'Az CLI login'
