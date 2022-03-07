@@ -75,7 +75,7 @@ describe('BoosterEventsReader', () => {
     it('it is a "byEntity" search and entity metadata is not found', async () => {
       const request: EventSearchRequest = {
         requestID: random.uuid(),
-        filters: {
+        parameters: {
           entity: 'NonExistingEntity',
         },
       }
@@ -87,7 +87,7 @@ describe('BoosterEventsReader', () => {
     it('it is a "byType" search and the associated entity is not found', async () => {
       const request: EventSearchRequest = {
         requestID: random.uuid(),
-        filters: {
+        parameters: {
           type: 'NonExistingEventType',
         },
       }
@@ -99,7 +99,7 @@ describe('BoosterEventsReader', () => {
     it('it is a "byEvent" search and the associated entity metadata is not found', async () => {
       const request: EventSearchRequest = {
         requestID: random.uuid(),
-        filters: {
+        parameters: {
           type: TestEventReducedByNonRegisteredEntity.name,
         },
       }
@@ -111,7 +111,7 @@ describe('BoosterEventsReader', () => {
     it('it is an invalid type of event search: it is not a "byEntity" or a "byType" search', async () => {
       const request: EventSearchRequest = {
         requestID: random.uuid(),
-        filters: {} as never,
+        parameters: {} as never,
       }
       await expect(eventsReader.fetch(request)).to.be.rejectedWith(/Invalid event search request/)
     })
@@ -119,7 +119,7 @@ describe('BoosterEventsReader', () => {
     it('it is an invalid type of event search: it is both a "byEntity" and a "byType" search', async () => {
       const request: EventSearchRequest = {
         requestID: random.uuid(),
-        filters: {
+        parameters: {
           entity: TestEntity.name,
           type: TestEvent.name,
         },
@@ -135,7 +135,7 @@ describe('BoosterEventsReader', () => {
           claims: {},
         },
         requestID: random.uuid(),
-        filters: {
+        parameters: {
           entity: TestEntity.name,
         },
       }
@@ -152,7 +152,7 @@ describe('BoosterEventsReader', () => {
           claims: {},
         },
         requestID: random.uuid(),
-        filters: {
+        parameters: {
           entity: TestEntity.name,
           from: 'fromTime',
           to: 'toTime',
@@ -161,7 +161,7 @@ describe('BoosterEventsReader', () => {
 
       it('calls the provider search function with the right parameters and returns correctly', async () => {
         const result = await eventsReader.fetch(request)
-        expect(providerEventsSearch).to.have.been.calledWith(match.any, match.any, request.filters)
+        expect(providerEventsSearch).to.have.been.calledWith(match.any, match.any, request.parameters)
         expect(result).to.be.deep.equal(searchResult)
       })
     })
