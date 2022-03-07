@@ -127,8 +127,7 @@ export class Booster {
     const events: Array<EventSearchResponse> = await this.config.provider.events.search(
       this.config,
       this.logger,
-      request.filters,
-      request.limit
+      request.parameters
     )
     return events.map((event) => {
       const eventMetadata = this.config.events[event.type]

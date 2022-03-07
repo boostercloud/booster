@@ -1,8 +1,8 @@
 import {
   BoosterConfig,
   EventEnvelope,
-  EventFilter,
   EventInterface,
+  EventSearchParameters,
   EventSearchResponse,
   Logger,
   UUID,
@@ -17,15 +17,14 @@ export async function searchEvents(
   dynamoDB: DynamoDB.DocumentClient,
   config: BoosterConfig,
   logger: Logger,
-  filters: EventFilter,
-  limit?: number
+  parameters: EventSearchParameters
 ): Promise<Array<EventSearchResponse>> {
-  logger.debug('Initiating an events search. Filters: ', filters)
-  const timeFilterQuery = buildSearchEventsTimeQuery(filters.from, filters.to)
-  const eventEnvelopes = await executeSearch(dynamoDB, config, logger, filters, timeFilterQuery)
+  logger.debug('Initiating an events search. Filters: ', parameters)
+  const timeFilterQuery = buildSearchEventsTimeQuery(parameters.from, parameters.to)
+  const eventEnvelopes = await executeSearch(dynamoDB, config, logger, parameters, timeFilterQuery)
 
   logger.debug('Events search result: ', eventEnvelopes)
-  return convertToSearchResult(eventEnvelopes, limit)
+  return convertToSearchResult(eventEnvelopes, parameters.limit)
 }
 
 interface TimeQueryData {
@@ -64,7 +63,7 @@ async function executeSearch(
   dynamoDB: DynamoDB.DocumentClient,
   config: BoosterConfig,
   logger: Logger,
-  filters: EventFilter,
+  filters: EventSearchParameters,
   timeFilterQuery: TimeQueryData
 ): Promise<Array<EventEnvelope>> {
   if ('entity' in filters) {

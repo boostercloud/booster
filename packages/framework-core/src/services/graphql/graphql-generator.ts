@@ -3,8 +3,7 @@ import {
   BoosterConfig,
   Class,
   CommandEnvelope,
-  EventFilter,
-  EventRequestEnvelope,
+  EventSearchParameters,
   EventSearchRequest,
   EventSearchResponse,
   Logger,
@@ -106,7 +105,7 @@ export class GraphQLGenerator {
 
   public static eventResolver(
     parent: unknown,
-    args: EventRequestEnvelope,
+    args: EventSearchParameters,
     context: GraphQLResolverContext,
     info: GraphQLResolveInfo
   ): Promise<Array<EventSearchResponse>> {
@@ -200,34 +199,11 @@ function toReadModelRequestEnvelope(
   }
 }
 
-function toEventSearchRequest(args: EventRequestEnvelope, context: GraphQLResolverContext): EventSearchRequest {
-  const requestFilters = buildRequestFilters(args)
+function toEventSearchRequest(args: EventSearchParameters, context: GraphQLResolverContext): EventSearchRequest {
   return {
     requestID: context.requestID,
     currentUser: context.user,
-    filters: requestFilters,
-    limit: args.limit,
-  }
-}
-
-function buildRequestFilters(args: EventRequestEnvelope): EventFilter {
-  if ('type' in args && args.type) {
-    return {
-      from: args.from,
-      to: args.to,
-      type: args.type,
-    }
-  } else {
-    if ('entity' in args && args.entity) {
-      return {
-        entity: args.entity,
-        entityID: args.entityID,
-        from: args.from,
-        to: args.to,
-      }
-    } else {
-      throw new Error(`Unexpected event search filters ${args}`)
-    }
+    parameters: args,
   }
 }
 

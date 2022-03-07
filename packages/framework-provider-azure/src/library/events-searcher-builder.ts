@@ -1,7 +1,7 @@
 import {
   EventEnvelope,
-  EventFilterByEntity,
-  EventFilterByType,
+  EventParametersFilterByEntity,
+  EventParametersFilterByType,
   EventSearchResponse,
   FilterFor,
   UUID,
@@ -31,14 +31,16 @@ export function buildFiltersForByTime(fromValue?: string, toValue?: string): Fil
   return {}
 }
 
-export function buildFiltersForByFilters(filters: EventFilterByEntity | EventFilterByType): FilterFor<QueryFields> {
-  if ('entity' in filters) {
-    if (filters.entityID) {
-      return buildByEntityAndID(filters.entity, filters.entityID)
+export function buildFiltersForByFilters(
+  parameters: EventParametersFilterByEntity | EventParametersFilterByType
+): FilterFor<QueryFields> {
+  if ('entity' in parameters) {
+    if (parameters.entityID) {
+      return buildByEntityAndID(parameters.entity, parameters.entityID)
     }
-    return buildByEntity(filters.entity)
-  } else if ('type' in filters) {
-    return buildByType(filters.type)
+    return buildByEntity(parameters.entity)
+  } else if ('type' in parameters) {
+    return buildByType(parameters.type)
   } else {
     throw new Error('Invalid search event query. It is neither an search by "entity" nor a search by "type"')
   }

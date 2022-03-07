@@ -1,7 +1,7 @@
 import {
   EventEnvelope,
-  EventFilterByEntity,
-  EventFilterByType,
+  EventParametersFilterByEntity,
+  EventParametersFilterByType,
   EventSearchResponse,
   UUID,
 } from '@boostercloud/framework-types'
@@ -30,7 +30,9 @@ export function buildFiltersForByTime(fromValue?: string, toValue?: string): Que
   return {}
 }
 
-export function buildFiltersForByFilters(filters: EventFilterByEntity | EventFilterByType): QueryFields {
+export function buildFiltersForByFilters(
+  filters: EventParametersFilterByEntity | EventParametersFilterByType
+): QueryFields {
   if ('entity' in filters) {
     if (filters.entityID) {
       return buildByEntityAndID(filters.entity, filters.entityID)

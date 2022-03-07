@@ -2,7 +2,7 @@
 import { expect } from '../expect'
 import { createStubInstance, fake, restore, stub, SinonStubbedInstance } from 'sinon'
 import { CosmosClient } from '@azure/cosmos'
-import { BoosterConfig, EventFilter, Logger } from '@boostercloud/framework-types'
+import { BoosterConfig, EventSearchParameters, Logger } from '@boostercloud/framework-types'
 import { searchEvents } from '../../src/library/events-searcher-adapter'
 import * as searchModule from '../../src/helpers/query-helper'
 
@@ -37,8 +37,8 @@ describe('Events Searcher adapter', () => {
       restore()
     })
 
-    it('Generate filters for entity, entityId and time when EventFilter has all fields', async () => {
-      const filters: EventFilter = {
+    it('Generate filters for entity, entityId and time when EventSearchParameters has all fields', async () => {
+      const filters: EventSearchParameters = {
         from: 'from',
         to: 'to',
         entity: 'entity',
@@ -68,18 +68,18 @@ describe('Events Searcher adapter', () => {
       )
     })
 
-    it('Generate filters for entity, entityId and time when EventFilter has all fields and limited', async () => {
-      const filters: EventFilter = {
+    it('Generate filters for entity, entityId and time when EventSearchParameters has all fields and limited', async () => {
+      const filters: EventSearchParameters = {
         from: 'from',
         to: 'to',
         entity: 'entity',
         entityID: 'entityID',
         type: 'type',
+        limit: 3,
       }
-      const limit = 3
       const mockSearch = stub(searchModule, 'search').returns(Promise.resolve([]))
       const eventStoreName = 'new-booster-app-app-events-store'
-      await searchEvents(mockCosmosDbClient as any, mockConfig, mockLogger, filters, limit)
+      await searchEvents(mockCosmosDbClient as any, mockConfig, mockLogger, filters)
 
       expect(mockSearch).to.have.been.calledWithExactly(
         mockCosmosDbClient,
@@ -100,8 +100,8 @@ describe('Events Searcher adapter', () => {
       )
     })
 
-    it('Generate filters for entity, entityId when EventFilter has entity and entityID fields', async () => {
-      const filters: EventFilter = {
+    it('Generate filters for entity, entityId when EventSearchParameters has entity and entityID fields', async () => {
+      const filters: EventSearchParameters = {
         entity: 'entity',
         entityID: 'entityID',
       }
@@ -127,8 +127,8 @@ describe('Events Searcher adapter', () => {
       )
     })
 
-    it('Generate filters for type when EventFilter has type field', async () => {
-      const filters: EventFilter = {
+    it('Generate filters for type when EventSearchParameters has type field', async () => {
+      const filters: EventSearchParameters = {
         type: 'type',
       }
       const mockSearch = stub(searchModule, 'search').returns(Promise.resolve([]))
@@ -153,13 +153,13 @@ describe('Events Searcher adapter', () => {
       )
     })
 
-    it('Generate filters for entity when EventFilter has only entity field', async () => {
-      const filters: EventFilter = {
+    it('Generate filters for entity when EventSearchParameters has only entity field', async () => {
+      const parameters: EventSearchParameters = {
         entity: 'entity',
       }
       const mockSearch = stub(searchModule, 'search').returns(Promise.resolve([]))
       const eventStoreName = 'new-booster-app-app-events-store'
-      await searchEvents(mockCosmosDbClient as any, mockConfig, mockLogger, filters)
+      await searchEvents(mockCosmosDbClient as any, mockConfig, mockLogger, parameters)
 
       expect(mockSearch).to.have.been.calledWithExactly(
         mockCosmosDbClient,

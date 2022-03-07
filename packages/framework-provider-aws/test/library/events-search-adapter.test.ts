@@ -4,9 +4,9 @@ import { createStubInstance, restore, SinonStubbedInstance, fake, replace } from
 import {
   BoosterConfig,
   EventEnvelope,
-  EventFilter,
-  EventFilterByEntity,
-  EventFilterByType,
+  EventParametersFilterByEntity,
+  EventParametersFilterByType,
+  EventSearchParameters,
   EventSearchResponse,
   Logger,
 } from '@boostercloud/framework-types'
@@ -46,7 +46,7 @@ describe('Events searcher adapter', () => {
     })
 
     describe('for a search by entity with ID', () => {
-      let filter: EventFilterByEntity
+      let filter: EventParametersFilterByEntity
       let entityID: string
       beforeEach(() => {
         entityID = random.uuid()
@@ -72,7 +72,7 @@ describe('Events searcher adapter', () => {
     })
 
     describe('for a search by entity and no ID', () => {
-      let filter: EventFilterByEntity
+      let filter: EventParametersFilterByEntity
       beforeEach(() => {
         filter = {
           entity: random.alpha(),
@@ -98,7 +98,7 @@ describe('Events searcher adapter', () => {
     })
 
     describe('for a search by type', () => {
-      let filter: EventFilterByType
+      let filter: EventParametersFilterByType
       beforeEach(() => {
         filter = {
           type: random.alpha(),
@@ -125,7 +125,7 @@ describe('Events searcher adapter', () => {
   })
 
   function runQueryTestsWithTimeFiltersVariants(
-    getFilters: () => EventFilter,
+    getFilters: () => EventSearchParameters,
     getQuery: () => DocumentClient.QueryInput,
     requiresExtraQueryToMainTable = false
   ): void {
@@ -137,7 +137,7 @@ describe('Events searcher adapter', () => {
     })
 
     context('with "from" time filter and limit', () => {
-      let filterWithFrom: EventFilter
+      let filterWithFrom: EventSearchParameters
       let queryWithFromTimeAdditions: DocumentClient.QueryInput
       beforeEach(() => {
         filterWithFrom = getFilters()
@@ -157,7 +157,7 @@ describe('Events searcher adapter', () => {
     })
 
     context('with "from" time filter', () => {
-      let filterWithFrom: EventFilter
+      let filterWithFrom: EventSearchParameters
       let queryWithFromTimeAdditions: DocumentClient.QueryInput
       beforeEach(() => {
         filterWithFrom = getFilters()
@@ -175,7 +175,7 @@ describe('Events searcher adapter', () => {
     })
 
     context('with "to" time filters', () => {
-      let filterWithTo: EventFilter
+      let filterWithTo: EventSearchParameters
       let queryWithToTimeAdditions: DocumentClient.QueryInput
       beforeEach(() => {
         filterWithTo = getFilters()
@@ -193,7 +193,7 @@ describe('Events searcher adapter', () => {
     })
 
     context('with both time filters', () => {
-      let fullFilter: EventFilter
+      let fullFilter: EventSearchParameters
       let fullQuery: DocumentClient.QueryInput
       beforeEach(() => {
         fullFilter = getFilters()
