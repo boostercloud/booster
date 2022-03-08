@@ -112,3 +112,41 @@ function loadUserProject(userProjectPath: string): { Booster: BoosterApp } {
   const projectIndexJSPath = path.resolve(path.join(userProjectPath, 'dist', 'index.js'))
   return require(projectIndexJSPath)
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function sleep(ms: number): Promise<any> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+/**
+ * wait for a resource to be ready or reject if not ready after a timeout
+ */
+export async function waitForIt<TResult>(
+  tryFunction: () => Promise<TResult>,
+  checkResult: (result: TResult) => boolean,
+  errorMessage: string,
+  timeoutMs = 180000,
+  tryEveryMs = 1000
+): Promise<TResult> {
+  console.debug('[waitForIt] start')
+  const start = Date.now()
+  return doWaitFor()
+
+  async function doWaitFor(): Promise<TResult> {
+    console.debug('.')
+    const res = await tryFunction()
+    const expectedResult = checkResult(res)
+    if (expectedResult) {
+      console.debug('[waitForIt] match')
+      return res
+    }
+    const elapsed = Date.now() - start
+
+    if (elapsed > timeoutMs) {
+      throw new Error(errorMessage)
+    }
+    const nextExecutionDelay = (timeoutMs - elapsed) % tryEveryMs
+    await sleep(nextExecutionDelay)
+    return doWaitFor()
+  }
+}
