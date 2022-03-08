@@ -5,7 +5,7 @@ import gql from 'graphql-tag'
 import { expect } from 'chai'
 import * as chai from 'chai'
 import { sleep, waitForIt } from '../../helper/sleep'
-import { EventSearchResponse, EventTimeFilter } from '@boostercloud/framework-types'
+import { EventSearchResponse, EventTimeParameterFilter } from '@boostercloud/framework-types'
 import { applicationUnderTest } from './setup'
 chai.use(require('chai-as-promised'))
 
@@ -343,7 +343,7 @@ describe('Events end-to-end tests', () => {
 function queryByType(
   client: ApolloClient<unknown>,
   type: string,
-  timeFilters?: EventTimeFilter,
+  timeFilters?: EventTimeParameterFilter,
   limit?: number
 ): Promise<ApolloQueryResult<any>> {
   const queryTimeFilters = timeFilters ? `, from:"${timeFilters.from}" to:"${timeFilters.to}"` : ''
@@ -372,7 +372,7 @@ function queryByType(
 function queryByEntity(
   client: ApolloClient<unknown>,
   entity: string,
-  timeFilters?: EventTimeFilter,
+  timeFilters?: EventTimeParameterFilter,
   entityID?: string,
   limit?: number
 ): Promise<ApolloQueryResult<any>> {
