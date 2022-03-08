@@ -18,15 +18,18 @@ export class AzureCounters {
   }
 
   public async events(): Promise<number> {
-    return await this.itemsCount(`${this.appName}-app-events-store`, 'SELECT * FROM c WHERE c.kind="event"')
+    return await this.itemsCount(
+      `${this.appName}-app-events-store`,
+      'SELECT COUNT(1) as total FROM c WHERE c.kind="event"'
+    )
   }
 
   public async readModels(readModelName: string): Promise<number> {
-    return await this.itemsCount(`${this.appName}-app-${readModelName}`, 'SELECT * FROM c')
+    return await this.itemsCount(`${this.appName}-app-${readModelName}`, 'SELECT COUNT(1) as total FROM c')
   }
 
   private async itemsCount(table: string, query: string): Promise<number> {
     const { resources } = await this.db.database(`${this.appName}-app`).container(table).items.query(query).fetchAll()
-    return resources.length
+    return resources[0]?.total
   }
 }
