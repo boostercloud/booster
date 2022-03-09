@@ -18,17 +18,19 @@ import {
   GraphQLOutputType,
   GraphQLScalarType,
   GraphQLString,
+  GraphQLType,
   Thunk,
 } from 'graphql'
 import { GraphQLJSONObject } from 'graphql-type-json'
 import * as inflected from 'inflected'
 import { PropertyMetadata, TypeMetadata } from 'metadata-booster'
-import { getClassMetadata } from './../../decorators/metadata'
+import { getClassMetadata } from '../../decorators/metadata'
 import { DateScalar, GraphQLResolverContext, isExternalType, ResolverBuilder } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
 
 export class GraphQLQueryGenerator {
   private generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
+  private orderType = new GraphQLNonNull(this.buildGraphqlSimpleEnumFor('orderProperty', ['ASC', 'DESC']))
 
   public constructor(
     private readonly config: BoosterConfig,
@@ -98,6 +100,7 @@ export class GraphQLQueryGenerator {
         type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(graphQLType))),
         args: this.generateFilterQueriesFields(readModel.name, readModel),
         resolve: this.filterResolverBuilder(readModel),
+        deprecationReason: 'Method is deprecated. Use List* methods',
       }
     }
     return queries
@@ -205,11 +208,25 @@ export class GraphQLQueryGenerator {
         not: { type: filter },
       }),
     })
+    const sortArguments = this.generateSortArguments(type)
     return {
       filter: { type: filter },
       limit: { type: GraphQLInt },
+      sortBy: { type: sortArguments },
       afterCursor: { type: GraphQLJSONObject },
     }
+  }
+
+  public generateSortArguments(type: AnyClass): GraphQLList<GraphQLType> {
+    const metadata = getClassMetadata(type)
+    const fieldInputObjectType = new GraphQLInputObjectType({
+      name: `${metadata.name}SortBy`,
+      fields: {
+        field: { type: new GraphQLNonNull(GraphQLString) },
+        order: { type: this.orderType },
+      },
+    })
+    return new GraphQLList(fieldInputObjectType)
   }
 
   public generateFilterArguments(type: AnyClass): GraphQLFieldConfigArgumentMap {

@@ -228,7 +228,9 @@ describe('GraphQLQueryGenerator', () => {
             expect(config.fields[`${mockTargetTypeName}s`].type.toString()).to.be.equal(`[${mockGraphQLType}!]!`)
             expect(config.fields[`${mockTargetTypeName}s`].resolve).to.be.undefined
             expect(config.fields[`${mockTargetTypeName}s`].subscribe).to.be.undefined
-            expect(config.fields[`${mockTargetTypeName}s`].deprecationReason).to.be.undefined
+            expect(config.fields[`${mockTargetTypeName}s`].deprecationReason).to.be.equal(
+              'Method is deprecated. Use List* methods'
+            )
             expect(config.fields[`${mockTargetTypeName}s`].extensions).to.be.undefined
             expect(config.fields[`${mockTargetTypeName}s`].astNode).to.be.undefined
           })
@@ -505,7 +507,9 @@ describe('GraphQLQueryGenerator', () => {
         it('should return expected result', () => {
           const result = sut.generate().toConfig()
           expect(result.name).to.be.equal('Query')
-          expect(new Set(Object.keys(result.fields))).to.be.deep.equal(new Set(['Boolean', 'Booleans', 'ListBooleans', 'eventsByEntity', 'eventsByType']))
+          expect(new Set(Object.keys(result.fields))).to.be.deep.equal(
+            new Set(['Boolean', 'Booleans', 'ListBooleans', 'eventsByEntity', 'eventsByType'])
+          )
 
           const eventsByEntityField = result.fields['eventsByEntity']
           expect(new Set(Object.keys(eventsByEntityField.args!))).to.be.deep.equal(
