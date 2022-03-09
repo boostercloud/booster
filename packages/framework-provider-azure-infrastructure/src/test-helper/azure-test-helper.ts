@@ -88,7 +88,9 @@ export class AzureTestHelper {
         return resources.find((element) => element.type === resourceType)
       },
       (result) => result != null,
-      'Unable to find a valid resource in the resource group'
+      'Unable to find a valid resource in the resource group',
+      600000,
+      30000
     )
     return resourceWithType
   }
