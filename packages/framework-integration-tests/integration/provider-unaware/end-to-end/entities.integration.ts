@@ -6,7 +6,7 @@ import gql from 'graphql-tag'
 import { sleep, waitForIt } from '../../helper/sleep'
 import { applicationUnderTest } from './setup'
 
-const secs = 4
+const secs = 10
 
 describe('Entities end-to-end tests', () => {
   let client: ApolloClient<NormalizedCacheObject>
