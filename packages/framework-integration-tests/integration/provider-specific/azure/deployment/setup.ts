@@ -6,19 +6,13 @@ import { overrideWithBoosterLocalDependencies } from '../../../helper/deps-helpe
 import { createSandboxProject } from '../../../../../cli/src/common/sandbox'
 import { setEnv } from '../../../helper/app-helper'
 import { AzureTestHelper } from '@boostercloud/framework-provider-azure-infrastructure'
-import { sleep } from '../../../helper/sleep'
 
 before(async () => {
   await setEnv()
   const configuredAssets = ['assets', 'assetFile.txt']
   const sandboxedProject = createSandboxProject(sandboxPathFor('deploy'), configuredAssets)
-
   await overrideWithBoosterLocalDependencies(sandboxedProject)
-
   AzureTestHelper.ensureAzureConfiguration()
   console.log('Deploying sandbox project...')
   await deploy(sandboxedProject, 'azure')
-  console.log('Waiting 3 min after deployment to let the stack finish its initialization...')
-  await sleep(180000)
-  console.log('...sleep finished. Let the tests begin 🔥!')
 })

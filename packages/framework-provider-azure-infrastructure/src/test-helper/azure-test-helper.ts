@@ -1,15 +1,8 @@
 import { configuration } from '../infrastructure/helper/params'
-import {
-  getResourceGroup,
-  showResourceInfo,
-  showResourcesInResourceGroup,
-  getCosmosConnectionStrings,
-} from '../infrastructure/helper/az-cli-helper'
+import { getResourceGroup, getCosmosConnectionStrings } from '../infrastructure/helper/az-cli-helper'
 import { ResourceGroup } from '../infrastructure/types/resource-group'
 import { AzureCounters } from './azure-counters'
 import { AzureQueries } from './azure-queries'
-import { Resource } from '../infrastructure/types/resource'
-import { waitForIt } from '../infrastructure/helper/utils'
 
 interface ApplicationOutputs {
   graphqlURL: string
@@ -62,37 +55,11 @@ export class AzureTestHelper {
     }
     return mainDbConnection.connectionString
   }
-  private static async graphqlURL(resourceGroup: ResourceGroup): Promise<string> {
+  public static async graphqlURL(resourceGroup: ResourceGroup): Promise<string> {
     const environment = process.env.BOOSTER_ENV ?? 'azure'
-    const resourceType = 'Microsoft.ApiManagement/service'
-    const apiResource = await AzureTestHelper.getResourceWithType(resourceGroup, resourceType)
-    if (!apiResource?.name) {
-      throw new Error('Unable to find a valid name for the resource group')
-    }
-    const apiGateway = await showResourceInfo(resourceGroup.name, apiResource?.name, resourceType)
-    if (!apiGateway.properties?.gatewayUrl) {
-      throw new Error('Unable to get the Base HTTP URL from the current resource group')
-    }
-    const url = `${apiGateway.properties?.gatewayUrl}/${environment}/graphql`
+    const url = `https://${resourceGroup.name}apis.azure-api.net/${environment}/graphql`
     console.log(`service Url: ${url}`)
     return url
-  }
-
-  private static async getResourceWithType(
-    resourceGroup: ResourceGroup,
-    resourceType: string
-  ): Promise<Resource | undefined> {
-    const resourceWithType = await waitForIt(
-      async () => {
-        const resources = await showResourcesInResourceGroup(resourceGroup.name)
-        return resources.find((element) => element.type === resourceType)
-      },
-      (result) => result != null,
-      'Unable to find a valid resource in the resource group',
-      600000,
-      30000
-    )
-    return resourceWithType
   }
 
   // TODO: Currently websocket are not supported on Azure
