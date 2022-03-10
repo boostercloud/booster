@@ -212,38 +212,38 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
           
-  # azure-nuke-integration-tests:
-  #   name: Azure Nuke Integration Test
-  #   if: always() && needs.azure-deploy-integration-tests.result == 'success'
-  #   continue-on-error: true
-  #   needs:
-  #     - azure-func-integration-tests
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: 'Az CLI login'
-  #       uses: azure/login@v1.4.0
-  #       with:
-  #         creds: '${{ secrets.AZURE_CREDENTIALS }}'
+  azure-nuke-integration-tests:
+    name: Azure Nuke Integration Test
+    if: always() && needs.azure-deploy-integration-tests.result == 'success'
+    continue-on-error: true
+    needs:
+      - azure-func-integration-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Az CLI login'
+        uses: azure/login@v1.4.0
+        with:
+          creds: '${{ secrets.AZURE_CREDENTIALS }}'
 
-  #     - uses: actions/checkout@v2
-  #     - uses: actions/setup-node@v1
-  #       with:
-  #         node-version: 16.x
-  #     - run: npx lerna bootstrap
-  #     - run: npx lerna run compile
-  #     - run: npx lerna run integration/azure-nuke --stream
-  #       env:
-  #         AZURE_APP_ID: ${{ secrets.AZURE_CLIENTID }}
-  #         AZURE_SECRET: ${{ secrets.AZURE_SECRET }}
-  #         AZURE_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
-  #         AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
-  #         REGION: East US
-  #         publisherEmail: noreply@booster.cloud
-  #         publisherName: Booster App
-  #         ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENTID }}
-  #         ARM_CLIENT_SECRET: ${{ secrets.AZURE_SECRET }}
-  #         ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
-  #         ARM_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+      - run: npx lerna bootstrap
+      - run: npx lerna run compile
+      - run: npx lerna run integration/azure-nuke --stream
+        env:
+          AZURE_APP_ID: ${{ secrets.AZURE_CLIENTID }}
+          AZURE_SECRET: ${{ secrets.AZURE_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
+          REGION: East US
+          publisherEmail: noreply@booster.cloud
+          publisherName: Booster App
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENTID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
 
   # Kubernetes tests started failing on June 2021. We should fix them if adding more kubernetes features.
   # issue: https://github.com/boostercloud/booster/issues/885
