@@ -1,6 +1,10 @@
-import { ReadModelEnvelope, UUID } from '@boostercloud/framework-types'
+import { ReadModelEnvelope, SortFor, UUID } from '@boostercloud/framework-types'
 import * as DataStore from 'nedb'
 import { readModelsDatabase } from '../paths'
+
+interface LocalSortedFor {
+  [key: string]: number
+}
 
 export class ReadModelRegistry {
   public readonly readModels: DataStore<ReadModelEnvelope> = new DataStore(readModelsDatabase)
@@ -8,9 +12,25 @@ export class ReadModelRegistry {
     this.readModels.loadDatabase()
   }
 
-  public async query(query: object): Promise<Array<ReadModelEnvelope>> {
+  public async query(
+    query: object,
+    sortBy?: Array<SortFor>,
+    skip?: number,
+    limit?: number
+  ): Promise<Array<ReadModelEnvelope>> {
+    let cursor = this.readModels.find(query)
+    const sortByList = this.toLocalSortFor(sortBy)
+    if (sortByList) {
+      cursor = cursor.sort(sortByList)
+    }
+    if (skip) {
+      cursor = cursor.skip(skip)
+    }
+    if (limit) {
+      cursor = cursor.limit(limit)
+    }
     const queryPromise = new Promise((resolve, reject) =>
-      this.readModels.find(query).exec((err, docs) => {
+      cursor.exec((err, docs) => {
         if (err) reject(err)
         else resolve(docs)
       })
@@ -42,5 +62,13 @@ export class ReadModelRegistry {
     )
 
     return deletePromise as Promise<number>
+  }
+
+  private toLocalSortFor(sortByList?: Array<SortFor>): undefined | LocalSortedFor {
+    return sortByList?.reduce((a, v) => ({ ...a, [`value.${v.field}`]: ReadModelRegistry.toSortValue(v.order) }), {})
+  }
+
+  private static toSortValue(order: string): number {
+    return order === 'ASC' ? 1 : -1
   }
 }

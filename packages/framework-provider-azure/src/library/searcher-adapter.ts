@@ -6,6 +6,7 @@ import {
   FilterFor,
   Operation,
   ReadModelListResult,
+  SortFor,
 } from '@boostercloud/framework-types'
 
 export async function searchReadModel(
@@ -14,6 +15,7 @@ export async function searchReadModel(
   logger: Logger,
   readModelName: string,
   filters: FilterFor<unknown>,
+  sortByList?: Array<SortFor>,
   limit?: number,
   afterCursor?: Record<string, string> | undefined,
   paginatedVersion = false

@@ -1,6 +1,6 @@
 import { CommandInput, EntityInterface, EventInterface, ReadModelInterface, SequenceKey, UUID } from './concepts'
 import { GraphQLClientMessage } from './graphql-websocket-messages'
-import { FilterFor } from './searcher'
+import { FilterFor, SortFor } from './searcher'
 import { Class } from './typelevel'
 
 /**
@@ -85,6 +85,7 @@ export interface ReadModelRequestEnvelope<TReadModel extends ReadModelInterface>
   className: string
   version: number
   filters: ReadModelRequestProperties<TReadModel>
+  sortBy: Array<SortFor>
   limit?: number
   afterCursor?: unknown
   paginatedVersion?: boolean // Used only for retrocompatibility
@@ -92,6 +93,7 @@ export interface ReadModelRequestEnvelope<TReadModel extends ReadModelInterface>
 
 export interface ReadModelRequestArgs<TReadModel extends ReadModelInterface> {
   filter?: ReadModelRequestProperties<TReadModel>
+  sortBy?: Array<SortFor>
   limit?: number
   afterCursor?: unknown
 }

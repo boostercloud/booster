@@ -13,7 +13,7 @@ import {
   SubscriptionEnvelope,
 } from './envelope'
 import { Logger } from './logger'
-import { FilterFor } from './searcher'
+import { FilterFor, SortFor } from './searcher'
 import { ReadOnlyNonEmptyArray } from './typelevel'
 import { RocketDescriptor } from './rocket-descriptor'
 
@@ -60,6 +60,7 @@ export interface ProviderReadModelsLibrary {
     logger: Logger,
     entityTypeName: string,
     filters: FilterFor<unknown>,
+    sortByList?: Array<SortFor>,
     limit?: number,
     afterCursor?: unknown,
     paginatedVersion?: boolean

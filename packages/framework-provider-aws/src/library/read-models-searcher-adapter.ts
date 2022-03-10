@@ -6,6 +6,7 @@ import {
   Logger,
   Operation,
   ReadModelListResult,
+  SortFor,
 } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
@@ -18,6 +19,7 @@ export async function searchReadModel(
   logger: Logger,
   readModelName: string,
   filters: FilterFor<unknown>,
+  sortByList?: Array<SortFor>,
   limit?: number,
   afterCursor?: DynamoDB.DocumentClient.Key | undefined,
   paginatedVersion = false

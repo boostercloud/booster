@@ -44,6 +44,7 @@ export class BoosterReadModelsReader {
 
     return Booster.readModel(readModelMetadata.class)
       .filter(readModelTransformedRequest.filters)
+      .sortByList(readModelTransformedRequest.sortBy)
       .limit(readModelTransformedRequest.limit)
       .afterCursor(readModelTransformedRequest.afterCursor)
       .paginatedVersion(readModelTransformedRequest.paginatedVersion)
