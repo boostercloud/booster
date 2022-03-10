@@ -38,3 +38,19 @@ export async function showResourceInfo(
   }
   return JSON.parse(command?.stdout)
 }
+
+export async function getCosmosConnectionStrings(
+  appName: string,
+  environmentName: string
+): Promise<{ [key: string]: any }> {
+  const resourceGroupName = createResourceGroupName(appName, environmentName)
+  const command = await runCommand(
+    '.',
+    `${azCommand} cosmosdb list-connection-strings --resource-group ${resourceGroupName} --name ${resourceGroupName}cdba`,
+    true
+  )
+  if (command?.stdout.includes('could not be found')) {
+    return Promise.reject(`Resource ${resourceGroupName} does not exist`)
+  }
+  return JSON.parse(command?.stdout)
+}

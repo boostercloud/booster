@@ -1,9 +1,5 @@
 import { configuration } from '../infrastructure/helper/params'
-import {
-  getResourceGroup,
-  showResourceInfo,
-  showResourcesInResourceGroup,
-} from '../infrastructure/helper/az-cli-helper'
+import { getResourceGroup, getCosmosConnectionStrings } from '../infrastructure/helper/az-cli-helper'
 import { ResourceGroup } from '../infrastructure/types/resource-group'
 import { AzureCounters } from './azure-counters'
 import { AzureQueries } from './azure-queries'
@@ -21,21 +17,21 @@ export class AzureTestHelper {
   ) {}
 
   public static async checkResourceGroup(applicationName: string, environmentName: string): Promise<ResourceGroup> {
-    console.log('Check resource group')
     return getResourceGroup(applicationName, environmentName)
   }
 
   public static async build(appName: string, environmentName: string): Promise<AzureTestHelper> {
-    console.log('Application name: ', appName)
     const resourceGroup = await this.checkResourceGroup(appName, environmentName)
     this.ensureAzureConfiguration()
+    const cosmosConnectionString = await this.getCosmosConnection(appName, environmentName)
+
     return new AzureTestHelper(
       {
         graphqlURL: await this.graphqlURL(resourceGroup),
         websocketURL: await this.websocketURL(),
       },
-      new AzureCounters(),
-      new AzureQueries()
+      new AzureCounters(appName, cosmosConnectionString),
+      new AzureQueries(appName, cosmosConnectionString)
     )
   }
 
@@ -51,19 +47,17 @@ export class AzureTestHelper {
     }
   }
 
-  private static async graphqlURL(resourceGroup: ResourceGroup): Promise<string> {
+  private static async getCosmosConnection(appName: string, environmentName: string): Promise<string> {
+    const connectionDetails = await getCosmosConnectionStrings(appName, environmentName)
+    const mainDbConnection = connectionDetails.connectionStrings[0]
+    if (!mainDbConnection) {
+      throw new Error('Unable to get cosmos connection details from current resource group')
+    }
+    return mainDbConnection.connectionString
+  }
+  public static async graphqlURL(resourceGroup: ResourceGroup): Promise<string> {
     const environment = process.env.BOOSTER_ENV ?? 'azure'
-    const resourceType = 'Microsoft.ApiManagement/service'
-    const resources = await showResourcesInResourceGroup(resourceGroup.name)
-    const apiResource = await resources.find((element) => element.type === resourceType)
-    if (!apiResource) {
-      throw new Error('Unable to find a valid api gateway in the resource group')
-    }
-    const apiGateway = await showResourceInfo(resourceGroup.name, apiResource.name, resourceType)
-    if (!apiGateway.properties?.gatewayUrl) {
-      throw new Error('Unable to get the Base HTTP URL from the current resource group')
-    }
-    const url = `${apiGateway.properties?.gatewayUrl}/${environment}/graphql`
+    const url = `https://${resourceGroup.name}apis.azure-api.net/${environment}/graphql`
     console.log(`service Url: ${url}`)
     return url
   }
