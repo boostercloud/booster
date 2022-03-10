@@ -14,7 +14,7 @@ import {
   throwExceptionId,
 } from '../../../src/constants'
 
-const secs = 4
+const secs = 10
 
 describe('Cart end-to-end tests', () => {
   let client: ApolloClient<NormalizedCacheObject>
