@@ -247,6 +247,32 @@ describe('Events end-to-end tests', () => {
             // we used should have given us less events than what we provisioned
             expect(events.length).to.be.within(1, numberOfProvisionedEvents - 1)
           })
+
+          it('returns the expected events in the right order if we include limit and time filters and the "to" is reached before the limit', async () => {
+            // Let's use a time filter that tries to get half of the events we provisioned. We can't be sure we will get
+            // exactly half of them, because possible clock differences, but we will check using inequalities
+            const from = new Date(eventsProvisionedStartedAt)
+            from.setSeconds(from.getSeconds() - 1)
+            const halfTheDuration = (eventsProvisionedFinishedAt.getTime() - eventsProvisionedStartedAt.getTime()) / 2
+            const to = new Date(eventsProvisionedStartedAt.getTime() + halfTheDuration)
+
+            const result = await queryByEntity(
+              anonymousClient,
+              'Cart',
+              {
+                from: from.toISOString(),
+                to: to.toISOString(),
+              },
+              mockCartId,
+              numberOfProvisionedEvents * 2
+            )
+            const events: Array<EventSearchResponse> = result.data['eventsByEntity']
+            // First check the order and structure
+            checkOrderAndStructureOfEvents(events)
+            // Now we check that we have received more than 0 events and less than number we provisioned, as time filters
+            // we used should have given us less events than what we provisioned
+            expect(events.length).to.be.within(1, numberOfProvisionedEvents - 1)
+          })
         })
       })
 

@@ -72,7 +72,7 @@ export class BoosterEventsReader {
   }
 
   private async processFetch(eventRequest: EventSearchRequest): Promise<Array<EventSearchResponse>> {
-    return Booster.events(eventRequest)
+    return Booster.events(eventRequest.parameters)
   }
 }
 

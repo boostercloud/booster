@@ -8,7 +8,6 @@ import {
   BoosterConfig,
   EventParametersFilterByType,
   EventInterface,
-  EventSearchRequest,
   EventSearchResponse,
   ProviderLibrary,
   UUID,
@@ -161,11 +160,8 @@ describe('the `Booster` class', () => {
       const eventFilterByType: EventParametersFilterByType = {
         type: TestEvent.name,
       }
-      const eventSearchRequest: EventSearchRequest = {
-        requestID: 'undefined',
-        parameters: eventFilterByType,
-      }
-      const events = await Booster.events(eventSearchRequest)
+
+      const events = await Booster.events(eventFilterByType)
 
       for (const event of events) {
         let eventValue
