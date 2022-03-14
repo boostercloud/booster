@@ -82,7 +82,7 @@
     "integration/local-func": "TESTED_PROVIDER=LOCAL BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/provider-unaware/functionality/.mocharc.yml\" \"integration/provider-unaware/functionality/**/*.integration.ts\"",
     "integration/local-end-to-end": "TESTED_PROVIDER=LOCAL BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/provider-unaware/end-to-end/.mocharc.yml\" \"integration/provider-unaware/end-to-end/**/*.integration.ts\"",
     "integration/local-stop": "BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/provider-specific/local/stop/.mocharc.yml\" \"integration/provider-specific/local/stop/*.integration.ts\"",
-    "integration/azure": "npm run integration/azure-deploy && npm run integration/azure-nuke",
+    "integration/azure": "npm run integration/azure-deploy && npm run integration/azure-end-to-end && npm run integration/azure-func && npm run integration/azure-nuke",
     "integration/azure-deploy": "TESTED_PROVIDER=AZURE BOOSTER_ENV=azure mocha --forbid-only --exit --config \"integration/provider-specific/azure/deployment/.mocharc.yml\" \"integration/provider-specific/azure/deployment/**/*.integration.ts\"",
     "integration/azure-nuke": "TESTED_PROVIDER=AZURE BOOSTER_ENV=azure mocha --forbid-only --exit --config \"integration/provider-specific/azure/nuke/.mocharc.yml\" \"integration/provider-specific/azure/nuke/**/*.integration.ts\"",
     "integration/azure-end-to-end": "TESTED_PROVIDER=AZURE BOOSTER_ENV=azure mocha --forbid-only --exit --config \"integration/provider-unaware/end-to-end/.mocharc.yml\" \"integration/provider-unaware/end-to-end/**/*.integration.ts\"",

@@ -6,6 +6,14 @@ import * as path from 'path'
 Booster.configure('local', (config: BoosterConfig): void => {
   config.appName = 'my-store'
   config.providerPackage = '@boostercloud/framework-provider-local'
+  config.tokenVerifiers = [
+    {
+      issuer: 'booster',
+      // Read the content of the public RS256 cert, used to sign the JWT tokens
+      publicKey: fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8'),
+      rolesClaim: 'booster:role',
+    },
+  ]
 })
 
 Booster.configure('kubernetes', (config: BoosterConfig): void => {

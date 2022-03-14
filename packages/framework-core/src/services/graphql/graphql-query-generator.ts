@@ -23,7 +23,7 @@ import {
 import { GraphQLJSONObject } from 'graphql-type-json'
 import * as inflected from 'inflected'
 import { PropertyMetadata } from 'metadata-booster'
-import { getPropertiesMetadata } from './../../decorators/metadata'
+import { getPropertiesMetadata } from '../../decorators/metadata'
 import { GraphQLResolverContext, ResolverBuilder, TargetTypeMetadata, TargetTypesMap } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
 
@@ -137,6 +137,7 @@ export class GraphQLQueryGenerator {
           entityID: { type: GraphQLID },
           from: { type: GraphQLString },
           to: { type: GraphQLString },
+          limit: { type: GraphQLInt },
         },
         resolve: this.eventsResolver,
       },
@@ -148,6 +149,7 @@ export class GraphQLQueryGenerator {
           },
           from: { type: GraphQLString },
           to: { type: GraphQLString },
+          limit: { type: GraphQLInt },
         },
         resolve: this.eventsResolver,
       },

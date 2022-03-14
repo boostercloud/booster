@@ -36,22 +36,26 @@ export interface EventEnvelope extends Envelope {
 }
 
 export interface EventSearchRequest extends Envelope {
-  filters: EventFilter
+  parameters: EventSearchParameters
 }
 
-export type EventFilter = EventFilterByEntity | EventFilterByType
+export type EventSearchParameters = EventParametersFilterByEntity | EventParametersFilterByType
 
-export interface EventTimeFilter {
+export interface EventLimitParameter {
+  limit?: number
+}
+
+export interface EventTimeParameterFilter extends EventLimitParameter {
   from?: string
   to?: string
 }
 
-export interface EventFilterByEntity extends EventTimeFilter {
+export interface EventParametersFilterByEntity extends EventTimeParameterFilter {
   entity: string
   entityID?: string
 }
 
-export interface EventFilterByType extends EventTimeFilter {
+export interface EventParametersFilterByType extends EventTimeParameterFilter {
   type: string
 }
 

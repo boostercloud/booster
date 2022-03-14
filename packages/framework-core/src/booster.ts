@@ -3,7 +3,7 @@ import {
   BoosterConfig,
   Class,
   EntityInterface,
-  EventFilter,
+  EventSearchParameters,
   EventSearchResponse,
   FilterFor,
   FinderByKeyFunction,
@@ -123,11 +123,11 @@ export class Booster {
     return new Searcher(readModelClass, searchFunction, finderByIdFunction)
   }
 
-  public static async events(filters: EventFilter): Promise<Array<EventSearchResponse>> {
+  public static async events(request: EventSearchParameters): Promise<Array<EventSearchResponse>> {
     const events: Array<EventSearchResponse> = await this.config.provider.events.search(
       this.config,
       this.logger,
-      filters
+      request
     )
     return events.map((event) => {
       const eventMetadata = this.config.events[event.type]

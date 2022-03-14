@@ -652,14 +652,14 @@ describe('GraphQLQueryGenerator', () => {
 
           const eventsByEntityField = result.fields['eventsByEntity']
           expect(new Set(Object.keys(eventsByEntityField.args!))).to.be.deep.equal(
-            new Set(['entity', 'entityID', 'from', 'to'])
+            new Set(['entity', 'entityID', 'from', 'to', 'limit'])
           )
           const entityEnumType = (eventsByEntityField.args!['entity'].type as GraphQLNonNull<GraphQLEnumType>).ofType
           expect(new Set(entityEnumType.getValues().map((v) => v.value))).to.be.deep.equal(new Set(entityNames))
           assertEventSearchQueryReturnType(eventsByEntityField.type)
 
           const eventsByType = result.fields['eventsByType']
-          expect(new Set(Object.keys(eventsByType.args!))).to.be.deep.equal(new Set(['type', 'from', 'to']))
+          expect(new Set(Object.keys(eventsByType.args!))).to.be.deep.equal(new Set(['type', 'from', 'to', 'limit']))
           const eventTypeEnumType = (eventsByType.args!['type'].type as GraphQLNonNull<GraphQLEnumType>).ofType
           expect(new Set(eventTypeEnumType.getValues().map((v) => v.value))).to.be.deep.equal(new Set(eventTypeNames))
           assertEventSearchQueryReturnType(eventsByType.type)

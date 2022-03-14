@@ -5,21 +5,11 @@ import gql from 'graphql-tag'
 import { expect } from 'chai'
 import * as chai from 'chai'
 import { sleep, waitForIt } from '../../helper/sleep'
-import { EventSearchResponse, EventTimeFilter } from '@boostercloud/framework-types'
+import { EventSearchResponse, EventTimeParameterFilter } from '@boostercloud/framework-types'
 import { applicationUnderTest } from './setup'
-import * as path from 'path'
 chai.use(require('chai-as-promised'))
 
 describe('Events end-to-end tests', () => {
-  //TODO: Azure provider doesn't support event Interface so these tests are skipped for Azure
-  if (process.env.TESTED_PROVIDER === 'AZURE') {
-    console.log('****************** Warning **********************')
-    console.log(`${path.join(process.cwd(), 'events.integration.ts')} ignored`)
-    console.log('Azure provider does not implement the Event Interface')
-    console.log('*************************************************')
-    return
-  }
-
   let anonymousClient: ApolloClient<NormalizedCacheObject>
   let loggedClient: ApolloClient<NormalizedCacheObject>
 
@@ -214,6 +204,24 @@ describe('Events end-to-end tests', () => {
           })
         })
 
+        context('with limit', () => {
+          it('returns the expected events in the right order', async () => {
+            const limit = 3
+            const result = await queryByEntity(anonymousClient, 'Cart', undefined, mockCartId, limit)
+            const events: Array<EventSearchResponse> = result.data['eventsByEntity']
+            // As now the query included the entityId, we can be sure that ONLY the provisioned events were returned
+            expect(events.length).to.be.equal(limit)
+            checkOrderAndStructureOfEvents(events)
+            for (const event of events) {
+              expect(event.type).to.be.equal('CartItemChanged')
+              expect(event.entityID).to.be.equal(mockCartId)
+              const value: Record<string, string> = event.value as any
+              expect(value.productId).to.be.equal(mockProductId)
+              expect(value.quantity).to.be.equal(mockQuantity)
+            }
+          })
+        })
+
         context('with time filters', () => {
           it('returns the expected events in the right order', async () => {
             // Let's use a time filter that tries to get half of the events we provisioned. We can't be sure we will get
@@ -231,6 +239,32 @@ describe('Events end-to-end tests', () => {
                 to: to.toISOString(),
               },
               mockCartId
+            )
+            const events: Array<EventSearchResponse> = result.data['eventsByEntity']
+            // First check the order and structure
+            checkOrderAndStructureOfEvents(events)
+            // Now we check that we have received more than 0 events and less than number we provisioned, as time filters
+            // we used should have given us less events than what we provisioned
+            expect(events.length).to.be.within(1, numberOfProvisionedEvents - 1)
+          })
+
+          it('returns the expected events in the right order if we include limit and time filters and the "to" is reached before the limit', async () => {
+            // Let's use a time filter that tries to get half of the events we provisioned. We can't be sure we will get
+            // exactly half of them, because possible clock differences, but we will check using inequalities
+            const from = new Date(eventsProvisionedStartedAt)
+            from.setSeconds(from.getSeconds() - 1)
+            const halfTheDuration = (eventsProvisionedFinishedAt.getTime() - eventsProvisionedStartedAt.getTime()) / 2
+            const to = new Date(eventsProvisionedStartedAt.getTime() + halfTheDuration)
+
+            const result = await queryByEntity(
+              anonymousClient,
+              'Cart',
+              {
+                from: from.toISOString(),
+                to: to.toISOString(),
+              },
+              mockCartId,
+              numberOfProvisionedEvents * 2
             )
             const events: Array<EventSearchResponse> = result.data['eventsByEntity']
             // First check the order and structure
@@ -335,13 +369,15 @@ describe('Events end-to-end tests', () => {
 function queryByType(
   client: ApolloClient<unknown>,
   type: string,
-  timeFilters?: EventTimeFilter
+  timeFilters?: EventTimeParameterFilter,
+  limit?: number
 ): Promise<ApolloQueryResult<any>> {
   const queryTimeFilters = timeFilters ? `, from:"${timeFilters.from}" to:"${timeFilters.to}"` : ''
+  const queryLimit = limit ? `, limit:${limit}` : ''
   return client.query({
     query: gql`
       query {
-        eventsByType(type: ${type}${queryTimeFilters}) {
+        eventsByType(type: ${type}${queryTimeFilters}${queryLimit}) {
             createdAt
             entity
             entityID
@@ -362,15 +398,17 @@ function queryByType(
 function queryByEntity(
   client: ApolloClient<unknown>,
   entity: string,
-  timeFilters?: EventTimeFilter,
-  entityID?: string
+  timeFilters?: EventTimeParameterFilter,
+  entityID?: string,
+  limit?: number
 ): Promise<ApolloQueryResult<any>> {
   const queryTimeFilters = timeFilters ? `, from:"${timeFilters.from}" to:"${timeFilters.to}"` : ''
   const queryEntityID = entityID ? `, entityID:"${entityID}"` : ''
+  const queryLimit = limit ? `, limit:${limit}` : ''
   return client.query({
     query: gql`
       query {
-        eventsByEntity(entity: ${entity}${queryEntityID}${queryTimeFilters}) {
+        eventsByEntity(entity: ${entity}${queryEntityID}${queryTimeFilters}${queryLimit}) {
             createdAt
             entity
             entityID
