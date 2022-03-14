@@ -183,7 +183,7 @@ function buildAttributeValue(
 }
 
 function buildOrderExpression(order: Record<string, string> | undefined): string {
-  if (!order) return ''
+  if (!order || !Object.keys(order).length) return ''
   let orderQuery = ' ORDER BY'
   orderQuery += Object.entries(order)
     .map(([key, value]) => ` c.${key} ${value}`)
