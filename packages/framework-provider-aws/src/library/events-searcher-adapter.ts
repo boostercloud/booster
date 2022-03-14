@@ -21,10 +21,10 @@ export async function searchEvents(
 ): Promise<Array<EventSearchResponse>> {
   logger.debug('Initiating an events search. Filters: ', parameters)
   const timeFilterQuery = buildSearchEventsTimeQuery(parameters.from, parameters.to)
-  const eventEnvelopes = await executeSearch(dynamoDB, config, logger, parameters, timeFilterQuery)
+  const eventEnvelopes = await executeSearch(dynamoDB, config, logger, parameters, timeFilterQuery, parameters.limit)
 
   logger.debug('Events search result: ', eventEnvelopes)
-  return convertToSearchResult(eventEnvelopes, parameters.limit)
+  return convertToSearchResult(eventEnvelopes)
 }
 
 interface TimeQueryData {
@@ -64,7 +64,8 @@ async function executeSearch(
   config: BoosterConfig,
   logger: Logger,
   filters: EventSearchParameters,
-  timeFilterQuery: TimeQueryData
+  timeFilterQuery: TimeQueryData,
+  limit?: number
 ): Promise<Array<EventEnvelope>> {
   if ('entity' in filters) {
     if (filters.entityID) {
@@ -74,13 +75,14 @@ async function executeSearch(
         logger,
         filters.entity,
         filters.entityID,
-        timeFilterQuery
+        timeFilterQuery,
+        limit
       )
     } else {
-      return await searchEventsByEntity(dynamoDB, config, logger, filters.entity, timeFilterQuery)
+      return await searchEventsByEntity(dynamoDB, config, logger, filters.entity, timeFilterQuery, limit)
     }
   } else if ('type' in filters) {
-    return await searchEventsByType(dynamoDB, config, logger, filters.type, timeFilterQuery)
+    return await searchEventsByType(dynamoDB, config, logger, filters.type, timeFilterQuery, limit)
   } else {
     throw new Error('Invalid search event query. It is neither an search by "entity" nor a search by "type"')
   }
@@ -92,13 +94,15 @@ async function searchEventsByEntityAndID(
   logger: Logger,
   entity: string,
   entityID: UUID,
-  timeQuery: TimeQueryData
+  timeQuery: TimeQueryData,
+  limit?: number
 ): Promise<Array<EventEnvelope>> {
   // TODO: Manage pagination
   const params: DocumentClient.QueryInput = {
     TableName: config.resourceNames.eventsStore,
     ConsistentRead: true,
     ScanIndexForward: false, // Descending order (newer timestamps first)
+    Limit: limit,
     KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey${timeQuery.expression}`,
     ExpressionAttributeValues: {
       ...timeQuery.attributeValues,
@@ -121,7 +125,8 @@ async function searchEventsByEntity(
   config: BoosterConfig,
   logger: Logger,
   entity: string,
-  timeQuery: TimeQueryData
+  timeQuery: TimeQueryData,
+  limit?: number
 ): Promise<Array<EventEnvelope>> {
   // TODO: manage pagination
   // First query the index
@@ -129,6 +134,7 @@ async function searchEventsByEntity(
     TableName: config.resourceNames.eventsStore,
     IndexName: eventsStoreAttributes.indexByEntity.name(config),
     ScanIndexForward: false, // Descending order (newer timestamps first)
+    Limit: limit,
     KeyConditionExpression: `${eventsStoreAttributes.indexByEntity.partitionKey} = :partitionKey${timeQuery.expression}`,
     ExpressionAttributeValues: {
       ...timeQuery.attributeValues,
@@ -147,7 +153,8 @@ async function searchEventsByType(
   config: BoosterConfig,
   logger: Logger,
   type: string,
-  timeQuery: TimeQueryData
+  timeQuery: TimeQueryData,
+  limit?: number
 ): Promise<Array<EventEnvelope>> {
   // TODO: manage pagination
   // Fist query the index
@@ -155,6 +162,7 @@ async function searchEventsByType(
     TableName: config.resourceNames.eventsStore,
     IndexName: eventsStoreAttributes.indexByType.name(config),
     ScanIndexForward: false, // Descending order (newer timestamps first)
+    Limit: limit,
     KeyConditionExpression: `${eventsStoreAttributes.indexByType.partitionKey} = :partitionKey${timeQuery.expression}`,
     ExpressionAttributeValues: {
       ...timeQuery.attributeValues,
@@ -211,7 +219,7 @@ async function performBatchGet(
   return (result.Responses?.[config.resourceNames.eventsStore] as Array<EventEnvelope>) ?? []
 }
 
-function convertToSearchResult(eventEnvelopes: Array<EventEnvelope>, limit?: number): Array<EventSearchResponse> {
+function convertToSearchResult(eventEnvelopes: Array<EventEnvelope>): Array<EventSearchResponse> {
   // "eventEnvelopes" represent a result page. That page is absolutely ordered among all the items in the
   // database. BUT! the local order within the page is been messed up, so we need to sort the items.
   // Why the order is messed up? Because we are doing two queries to DynamoDB:
@@ -220,7 +228,7 @@ function convertToSearchResult(eventEnvelopes: Array<EventEnvelope>, limit?: num
   // - Another one to the master table to get the items data. This query is made with "batchQueryItems", which
   // does not preserve the order in which we specify the keys. This is why we need to sort the final result.
   // It affects also to the limit that could only be applied to the ordered elements
-  const sort = eventEnvelopes
+  return eventEnvelopes
     .map((eventEnvelope) => {
       return {
         type: eventEnvelope.typeName,
@@ -237,8 +245,4 @@ function convertToSearchResult(eventEnvelopes: Array<EventEnvelope>, limit?: num
       if (a.createdAt < b.createdAt) return 1
       return 0
     })
-  if (limit) {
-    return sort?.slice(0, limit)
-  }
-  return sort
 }
