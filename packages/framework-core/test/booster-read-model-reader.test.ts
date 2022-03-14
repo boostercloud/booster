@@ -309,6 +309,7 @@ describe('BoosterReadModelReader', () => {
           match.any,
           TestReadModel.name,
           filters,
+          [],
           undefined,
           undefined,
           false

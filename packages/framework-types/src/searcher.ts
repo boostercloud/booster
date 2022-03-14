@@ -64,8 +64,8 @@ export class Searcher<TObject> {
     return this
   }
 
-  public sortByList(sortBy: Array<SortFor>): this {
-    this._sortByList = sortBy
+  public sortByList(sortBy?: Array<SortFor>): this {
+    if (sortBy) this._sortByList = sortBy
     return this
   }
 
