@@ -245,7 +245,7 @@ describe('Read models end-to-end tests', () => {
         })
       })
 
-      it('should retrieve a list of carts', async () => {
+      it('should retrieve a list of carts using deprecated methods', async () => {
         const queryResult = await waitForIt(
           () => {
             return client.query({
@@ -267,7 +267,7 @@ describe('Read models end-to-end tests', () => {
         expect(cartData.length).to.be.gte(1)
       })
 
-      it('should retrieve a specific cart using filters', async () => {
+      it('should retrieve a specific cart using filters using deprecated methods', async () => {
         const filter = { id: { eq: mockCartId } }
         const queryResult = await waitForIt(
           () => {
@@ -294,7 +294,7 @@ describe('Read models end-to-end tests', () => {
         expect(cartData[0].id).to.equal(mockCartId)
       })
 
-      it('should retrieve a list of carts using  complex filters', async () => {
+      it('should retrieve a list of carts using  complex filters and deprecated methods', async () => {
         const filter = { cartItems: { includes: { productId: mockProductId, quantity: 2 } } }
         const queryResult = await waitForIt(
           () => {
@@ -345,6 +345,35 @@ describe('Read models end-to-end tests', () => {
         expect(cartData.length).to.be.gte(1)
       })
 
+      it('should retrieve a sorted list of carts using paginated read model', async () => {
+        const sortBy = { field: 'quantity', order: 'ASC' }
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                sortBy: sortBy,
+              },
+              query: gql`
+                query ListCartReadModels($sortBy: [CartReadModelSortBy]) {
+                  ListCartReadModels(sortBy: $sortBy) {
+                    items {
+                      id
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels?.items.length >= 1
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.be.gte(1)
+        // AWS doesn't support "sortBy" so we can only check that the search function is still working with a sort parameter
+      })
+
       it('should retrieve a specific cart using filters using paginated read model', async () => {
         const filter = { id: { eq: mockCartId } }
         const queryResult = await waitForIt(
@@ -374,6 +403,37 @@ describe('Read models end-to-end tests', () => {
         expect(cartData[0].id).to.equal(mockCartId)
       })
 
+      it('should retrieve a specific cart using filters and sortBy using paginated read model', async () => {
+        const filter = { id: { eq: mockCartId } }
+        const sortBy = { field: 'quantity', order: 'ASC' }
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: filter,
+                sortBy: sortBy,
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter, $sortBy: [CartReadModelSortBy]) {
+                  ListCartReadModels(filter: $filter, sortBy: $sortBy) {
+                    items {
+                      id
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels?.items.length >= 1
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.equal(1)
+        // AWS doesn't support "sortBy" so we can only check that the search function is still working with a sort parameter
+      })
+
       it('should retrieve a list of carts using complex filters using paginated read model', async () => {
         const filter = { cartItems: { includes: { productId: mockProductId, quantity: 2 } } }
         const queryResult = await waitForIt(
@@ -401,6 +461,59 @@ describe('Read models end-to-end tests', () => {
         expect(cartData).to.be.an('array')
         expect(cartData.length).to.equal(1)
         expect(cartData[0].id).to.equal(mockCartId)
+      })
+
+      it('should not fail if search a list of carts with empty results', async () => {
+        const filter = { cartItems: { includes: { productId: mockProductId, quantity: 200 } } }
+        const queryResult = await client.query({
+          variables: {
+            filter: filter,
+          },
+          query: gql`
+            query ListCartReadModels($filter: ListCartReadModelFilter) {
+              ListCartReadModels(filter: $filter) {
+                items {
+                  id
+                }
+              }
+            }
+          `,
+        })
+
+        const cartData = queryResult?.data?.ListCartReadModels.items
+
+        expect(cartData.length).to.equal(0)
+      })
+
+      it('should retrieve a sort list of carts using complex filters using paginated read model', async () => {
+        const filter = { cartItems: { includes: { productId: mockProductId, quantity: 2 } } }
+        const sortBy = { field: 'quantity', order: 'ASC' }
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: filter,
+                sortBy: sortBy,
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter, $sortBy: [CartReadModelSortBy]) {
+                  ListCartReadModels(filter: $filter, sortBy: $sortBy) {
+                    items {
+                      id
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels?.items.length >= 1
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.equal(1)
+        // AWS doesn't support "sortBy" so we can only check that the search function is still working with a sort parameter
       })
     })
 

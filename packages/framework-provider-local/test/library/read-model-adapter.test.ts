@@ -8,6 +8,7 @@ import {
   ReadModelEnvelope,
   ReadModelInterface,
   ReadOnlyNonEmptyArray,
+  SortFor,
   UUID,
 } from '@boostercloud/framework-types'
 import { expect } from '../expect'
@@ -47,10 +48,22 @@ async function searchMock(
   mockConfig: BoosterConfig,
   mockLogger: Logger,
   mockReadModel: ReadModelEnvelope,
-  filters: FilterFor<any>
+  filters: FilterFor<any>,
+  sortBy?: Array<SortFor>,
+  limit?: number,
+  afterCursor?: Record<string, string> | undefined
 ) {
   // @ts-ignore
-  await searchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel.typeName, filters)
+  await searchReadModel(
+    mockReadModelRegistry as any,
+    mockConfig,
+    mockLogger,
+    mockReadModel.typeName,
+    filters,
+    sortBy,
+    limit,
+    afterCursor
+  )
 }
 
 describe('read-models-adapter', () => {
@@ -400,6 +413,43 @@ describe('read-models-adapter', () => {
           undefined,
           0,
           undefined
+        )
+      })
+    })
+
+    describe('Sort fields', () => {
+      it('query should call read model registry store with sort fields, limits and skip', async () => {
+        const mockReadModel = createMockReadModelEnvelope()
+        await searchMock(
+          mockReadModelRegistry,
+          mockConfig,
+          mockLogger,
+          mockReadModel,
+          {},
+          [
+            {
+              field: 'ID',
+              order: 'DESC',
+            },
+            {
+              field: 'anotherField',
+              order: 'ASC',
+            },
+          ],
+          3,
+          { id: '5' }
+        )
+        expect(queryStub).to.have.been.calledWithExactly(
+          { typeName: mockReadModel.typeName },
+          [
+            { field: 'ID', order: 'DESC' },
+            {
+              field: 'anotherField',
+              order: 'ASC',
+            },
+          ],
+          5,
+          3
         )
       })
     })
