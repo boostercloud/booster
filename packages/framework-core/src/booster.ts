@@ -17,7 +17,7 @@ import {
 } from '@boostercloud/framework-types'
 import { BoosterEventDispatcher } from './booster-event-dispatcher'
 import { BoosterGraphQLDispatcher } from './booster-graphql-dispatcher'
-import { buildLogger } from './booster-logger'
+import { getLogger } from './booster-logger'
 import { BoosterScheduledCommandDispatcher } from './booster-scheduled-command-dispatcher'
 import { BoosterSubscribersNotifier } from './booster-subscribers-notifier'
 import { Importer } from './importer'
@@ -34,12 +34,15 @@ import { BoosterRocketDispatcher } from './booster-rocket-dispatcher'
  */
 export class Booster {
   public static readonly configuredEnvironments: Set<string> = new Set<string>()
-  private static logger: Logger
   public static readonly config = new BoosterConfig(checkAndGetCurrentEnv())
   /**
    * Avoid creating instances of this class
    */
   private constructor() {}
+
+  public static get logger(): Logger {
+    return getLogger(this.config)
+  }
 
   public static configureCurrentEnv(configurator: (config: BoosterConfig) => void): void {
     configurator(this.config)
@@ -65,7 +68,6 @@ export class Booster {
     const projectRootPath = codeRootPath.replace(new RegExp(this.config.codeRelativePath + '$'), '')
     this.config.userProjectRootPath = projectRootPath
     Importer.importUserProjectFiles(codeRootPath)
-    this.logger = buildLogger(this.config.logLevel, this.config)
     this.config.validate()
   }
 
