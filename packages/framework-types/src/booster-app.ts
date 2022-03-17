@@ -1,4 +1,13 @@
-import { BoosterConfig, UUID, EntityInterface, Class, ReadModelInterface, Searcher } from '.'
+import {
+  BoosterConfig,
+  UUID,
+  EntityInterface,
+  Class,
+  ReadModelInterface,
+  Searcher,
+  EventSearchParameters,
+  EventSearchResponse,
+} from '.'
 
 /**
  * `BoosterApp` is the interface of the user-facing functions that
@@ -11,5 +20,6 @@ export interface BoosterApp {
   configureCurrentEnv(configurator: (config: BoosterConfig) => void): void
   entity<TEntity extends EntityInterface>(entityName: Class<TEntity>, entityID: UUID): Promise<TEntity | undefined>
   readModel<TReadModel extends ReadModelInterface>(readModelClass: Class<TReadModel>): Searcher<TReadModel>
+  events(request: EventSearchParameters): Promise<Array<EventSearchResponse>>
   configuredEnvironments: Set<string>
 }

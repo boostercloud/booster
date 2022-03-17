@@ -1,7 +1,14 @@
-import { BoosterConfig, TokenVerifierConfig, UserEnvelope } from '@boostercloud/framework-types'
+import {
+  BoosterConfig,
+  NotAuthorizedError,
+  TokenExpiredOrNotBeforeError,
+  TokenVerifierConfig,
+  UserEnvelope,
+} from '@boostercloud/framework-types'
 
 import * as jwksRSA from 'jwks-rsa'
 import * as jwt from 'jsonwebtoken'
+import { NotBeforeError, TokenExpiredError } from 'jsonwebtoken'
 
 class TokenVerifierClient {
   private client?: jwksRSA.JwksClient
@@ -54,6 +61,9 @@ class TokenVerifierClient {
     return new Promise((resolve, reject) => {
       jwt.verify(token, key, this.options, (err, decoded) => {
         if (err) {
+          if (err instanceof TokenExpiredError || err instanceof NotBeforeError) {
+            return reject(new TokenExpiredOrNotBeforeError(err.message))
+          }
           return reject(err)
         }
         const jwtToken = decoded as any
@@ -121,6 +131,16 @@ export class BoosterTokenVerifier {
     )
     const winner = results.find((result) => result.status === 'fulfilled')
     if (winner) return Promise.resolve((winner as PromiseFulfilledResult<UserEnvelope>).value)
-    return Promise.reject(new Error(results.map((result) => (result as PromiseRejectedResult).reason).join('\n')))
+    const tokenExpiredOrNotBeforeErrors = results
+      .filter((result) => result?.status && result?.status !== 'fulfilled')
+      .map((result) => result as PromiseRejectedResult)
+      .filter((result) => result.reason instanceof TokenExpiredOrNotBeforeError)
+    if (tokenExpiredOrNotBeforeErrors && tokenExpiredOrNotBeforeErrors.length > 0) {
+      const reasons = tokenExpiredOrNotBeforeErrors.map((error) => error.reason).join('\n')
+      return Promise.reject(new TokenExpiredOrNotBeforeError(reasons))
+    }
+    return Promise.reject(
+      new NotAuthorizedError(results.map((result) => (result as PromiseRejectedResult).reason).join('\n'))
+    )
   }
 }
