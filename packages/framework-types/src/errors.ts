@@ -9,6 +9,7 @@ export class BoosterError extends Error {
 export class InvalidParameterError extends BoosterError {}
 export class InvalidProtocolError extends BoosterError {}
 export class NotAuthorizedError extends BoosterError {}
+export class TokenExpiredOrNotBeforeError extends BoosterError {}
 export class NotFoundError extends BoosterError {}
 export class InvalidVersionError extends BoosterError {}
 export class OptimisticConcurrencyUnexpectedVersionError extends BoosterError {}
@@ -18,6 +19,7 @@ export function httpStatusCodeFor(error: Error): number {
     [InvalidParameterError.name]: 400,
     [InvalidProtocolError.name]: 400,
     [NotAuthorizedError.name]: 401,
+    [TokenExpiredOrNotBeforeError.name]: 401,
     [NotFoundError.name]: 404,
     [InvalidVersionError.name]: 422,
   }

@@ -6,7 +6,6 @@ import {
   InvalidProtocolError,
   GraphQLOperation,
   GraphQLRequestEnvelopeError,
-  NotAuthorizedError,
 } from '@boostercloud/framework-types'
 import { GraphQLSchema, DocumentNode, ExecutionResult, GraphQLError } from 'graphql'
 import * as graphql from 'graphql'
@@ -70,7 +69,7 @@ export class BoosterGraphQLDispatcher {
       } catch (e) {
         envelope = {
           ...envelope,
-          error: new NotAuthorizedError(e),
+          error: e,
         } as GraphQLRequestEnvelopeError
         this.logger.debug('Unable to decode auth token')
       }
