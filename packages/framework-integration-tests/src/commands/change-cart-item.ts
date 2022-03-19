@@ -1,5 +1,5 @@
 import { Command } from '@boostercloud/framework-core'
-import { CommandInput, Register, UserEnvelope, UUID } from '@boostercloud/framework-types'
+import { CommandInput, Register, UUID } from '@boostercloud/framework-types'
 import { CartItemChanged } from '../events/cart-item-changed'
 import { beforeHookException, beforeHookMutationID, beforeHookQuantity, throwExceptionId } from '../constants'
 
@@ -10,7 +10,7 @@ import { beforeHookException, beforeHookMutationID, beforeHookQuantity, throwExc
 export class ChangeCartItem {
   public constructor(readonly cartId: UUID, readonly productId: UUID, readonly quantity: number) {}
 
-  public static async beforeFn(input: CommandInput, currentUser?: UserEnvelope): Promise<CommandInput> {
+  public static async beforeFn(input: CommandInput, register?: Register): Promise<CommandInput> {
     if (input.cartId === beforeHookMutationID) {
       input.quantity = beforeHookQuantity
     } else if (input.cartId === throwExceptionId) {
@@ -21,7 +21,7 @@ export class ChangeCartItem {
     return input
   }
 
-  public static async beforeFnV2(input: CommandInput, currentUser?: UserEnvelope): Promise<CommandInput> {
+  public static async beforeFnV2(input: CommandInput, register?: Register): Promise<CommandInput> {
     if (input.cartId === beforeHookMutationID) {
       input.cartId += '-modified'
     }

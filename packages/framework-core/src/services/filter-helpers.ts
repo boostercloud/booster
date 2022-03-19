@@ -3,6 +3,8 @@ import {
   CommandBeforeFunction,
   CommandInput,
   UserEnvelope,
+  Register,
+  CommandAfterFunction,
   ReadModelRequestEnvelope,
   ReadModelInterface,
 } from '@boostercloud/framework-types'
@@ -22,11 +24,23 @@ export const applyReadModelRequestBeforeFunctions = async (
 export const applyBeforeFunctions = async (
   commandInput: CommandInput,
   beforeHooks: Array<CommandBeforeFunction>,
-  currentUser?: UserEnvelope
+  register: Register
 ): Promise<CommandInput> => {
   let result = commandInput
   for (const beforeHook of beforeHooks) {
-    result = await beforeHook(result, currentUser)
+    result = await beforeHook(result, register)
   }
   return result
+}
+
+export const applyAfterFunctions = async (
+  result: unknown,
+  commandInput: CommandInput,
+  afterHooks: Array<CommandAfterFunction>,
+  register: Register
+): Promise<void> => {
+  let previousResult = result
+  for (const afterHook of afterHooks) {
+    previousResult = await afterHook(previousResult, commandInput, register)
+  }
 }

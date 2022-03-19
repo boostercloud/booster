@@ -24,6 +24,7 @@ export function Command(
         class: commandClass,
         authorizedRoles: attributes.authorize,
         before: attributes.before ?? [],
+        after: attributes.after ?? [],
         properties: getPropertiesMetadata(commandClass),
         returnClass,
       }

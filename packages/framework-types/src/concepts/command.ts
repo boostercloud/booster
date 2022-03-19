@@ -25,5 +25,6 @@ export interface CommandMetadata<TCommand = unknown> {
   readonly properties: Array<PropertyMetadata>
   readonly authorizedRoles: RoleAccess['authorize']
   readonly before: NonNullable<CommandFilterHooks['before']>
+  readonly after: NonNullable<CommandFilterHooks['after']>
   readonly returnClass: AnyClass
 }
