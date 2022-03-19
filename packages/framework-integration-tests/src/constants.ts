@@ -3,5 +3,6 @@ export const beforeHookProductId = 'before-hook-product-id'
 export const throwExceptionId = 'throw-exception-id'
 export const beforeHookException = 'Before hook throwing exception'
 export const beforeHookMutationID = 'mutation-but-with-input-changes'
+export const afterHookMutationID = 'mutation-but-with-output-changes'
 export const beforeHookMutationIDModified = beforeHookMutationID + '-modified'
 export const beforeHookQuantity = 21

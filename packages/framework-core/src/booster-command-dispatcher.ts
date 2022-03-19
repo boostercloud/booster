@@ -6,11 +6,12 @@ import {
   InvalidParameterError,
   NotAuthorizedError,
   NotFoundError,
+  CommandInterface,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
 import { RegisterHandler } from './booster-register-handler'
 import { createInstance } from '@boostercloud/framework-common-helpers'
-import { applyBeforeFunctions } from './services/filter-helpers'
+import { applyAfterFunctions, applyBeforeFunctions } from './services/filter-helpers'
 
 export class BoosterCommandDispatcher {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
@@ -33,19 +34,17 @@ export class BoosterCommandDispatcher {
     const commandClass = commandMetadata.class
     this.logger.debug('Found the following command:', commandClass.name)
 
-    const commandInput = await applyBeforeFunctions(
-      commandEnvelope.value,
-      commandMetadata.before,
-      commandEnvelope.currentUser
-    )
-
-    const commandInstance = createInstance(commandClass, commandInput)
-
     const register = new Register(commandEnvelope.requestID, commandEnvelope.currentUser, commandEnvelope.context)
+    const commandInput = await applyBeforeFunctions(commandEnvelope.value, commandMetadata.before, register)
+
+    const commandInstance = createInstance(commandClass, commandInput) as CommandInterface
     this.logger.debug('Calling "handle" method on command: ', commandClass)
+
     const result = await commandClass.handle(commandInstance, register)
     this.logger.debug('Command dispatched with register: ', register)
     await RegisterHandler.handle(this.config, this.logger, register)
+    this.logger.debug('Calling "after" methods on command: ', commandClass)
+    await applyAfterFunctions(result, commandEnvelope.value, commandMetadata.after, register)
     return result
   }
 }

@@ -2,8 +2,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from '../expect'
 import { Register } from '@boostercloud/framework-types'
-import { Command } from '../../src/decorators'
-import { Booster } from '../../src'
+import { Command, Booster } from '../../src'
 
 describe('the `Command` decorator', () => {
   afterEach(() => {
@@ -30,5 +29,22 @@ describe('the `Command` decorator', () => {
     const booster = Booster as any
 
     expect(booster.config.commandHandlers[PostComment.constructor.name]).to.contain(PostComment)
+    expect(booster.config.commandHandlers['PostComment']).to.be.deep.equal({
+      class: PostComment,
+      authorizedRoles: 'all',
+      before: [],
+      after: [],
+      returnClass: Boolean,
+      properties: [
+        {
+          name: 'comment',
+          typeInfo: {
+            name: 'String',
+            parameters: [],
+            type: String,
+          },
+        },
+      ],
+    })
   })
 })

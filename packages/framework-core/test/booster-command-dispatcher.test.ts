@@ -4,7 +4,7 @@ import { Booster } from '../src/booster'
 import { fake, replace, restore } from 'sinon'
 import { expect } from './expect'
 import { BoosterCommandDispatcher } from '../src/booster-command-dispatcher'
-import { CommandBeforeFunction, Logger, Register } from '@boostercloud/framework-types'
+import { CommandAfterFunction, CommandBeforeFunction, Logger, Register } from '@boostercloud/framework-types'
 import { Command, RegisterHandler } from '../src'
 import { random } from 'faker'
 
@@ -90,6 +90,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
           ProperlyHandledCommand: {
             authorizedRoles: 'all',
             before: [],
+            after: [],
             class: ProperlyHandledCommand,
           },
         },
@@ -139,6 +140,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
           ProperlyHandledCommand: {
             authorizedRoles: 'all',
             before: [],
+            after: [],
             class: ProperlyHandledCommand,
           },
         },
@@ -199,13 +201,13 @@ describe('the `BoosterCommandsDispatcher`', () => {
     context('when before hook functions are passed', () => {
       const newComment = 'Look, I changed the message'
       const newCommentV2 = 'Yes, I changed it for a second time'
-      const beforeFn: CommandBeforeFunction = async (input, currentUser) => {
+      const beforeFn: CommandBeforeFunction = async (input, register) => {
         input.comment = newComment
         const result = await Promise.resolve()
         console.log(result)
         return input
       }
-      const beforeFnV2: CommandBeforeFunction = async (input, currentUser) => {
+      const beforeFnV2: CommandBeforeFunction = async (input, register) => {
         // To double-check it's really chained
         if (input.comment === newComment) input.comment = newCommentV2
         const result = await Promise.resolve()
@@ -267,6 +269,77 @@ describe('the `BoosterCommandsDispatcher`', () => {
         })
 
         expect(transformedInput).to.deep.equal(new PostComment(newCommentV2))
+      })
+    })
+
+    context('when after hook functions are passed', () => {
+      it('call after if an after hook function is passed', async () => {
+        let expectedResult = 0
+
+        const afterFn: CommandAfterFunction = async (previousResult, input, register) => {
+          expectedResult = 1
+          await Promise.resolve()
+        }
+
+        @Command({ authorize: 'all', after: [afterFn] })
+        class PostComment {
+          public constructor(readonly comment: string) {}
+          public static async handle(command: PostComment): Promise<void> {}
+        }
+
+        const command = new PostComment('This test is good!')
+        replace(RegisterHandler, 'handle', fake())
+
+        let boosterConfig: any
+        Booster.configure('test', (config) => {
+          boosterConfig = config
+        })
+
+        await new BoosterCommandDispatcher(boosterConfig, logger).dispatchCommand({
+          requestID: '1234',
+          version: 1,
+          typeName: 'PostComment',
+          value: command,
+        })
+
+        expect(expectedResult).to.be.eq(1)
+      })
+
+      it('call register more than one when more than one after hook function is passed', async () => {
+        let expectedResult = 0
+
+        const afterFn: CommandAfterFunction = async (previousResult, input, register) => {
+          expectedResult = 2
+          await Promise.resolve()
+        }
+
+        const afterFn2: CommandAfterFunction = async (previousResult, input, register) => {
+          expectedResult = expectedResult * 3
+          await Promise.resolve()
+        }
+
+        @Command({ authorize: 'all', after: [afterFn, afterFn2] })
+        class PostComment {
+          public constructor(readonly comment: string) {}
+          public static async handle(command: PostComment): Promise<void> {}
+        }
+
+        const command = new PostComment('This test is good!')
+        replace(RegisterHandler, 'handle', fake())
+
+        let boosterConfig: any
+        Booster.configure('test', (config) => {
+          boosterConfig = config
+        })
+
+        await new BoosterCommandDispatcher(boosterConfig, logger).dispatchCommand({
+          requestID: '1234',
+          version: 1,
+          typeName: 'PostComment',
+          value: command,
+        })
+
+        expect(expectedResult).to.be.eq(6)
       })
     })
   })

@@ -7,6 +7,7 @@ import { CartItem } from '../../../src/common/cart-item'
 import { sleep, waitForIt } from '../../helper/sleep'
 import { applicationUnderTest } from './setup'
 import {
+  afterHookMutationID,
   beforeHookException,
   beforeHookMutationID,
   beforeHookMutationIDModified,
@@ -17,10 +18,14 @@ import {
 const secs = 10
 
 describe('Cart end-to-end tests', () => {
+  let userEmail: string
+  let authToken: string
   let client: ApolloClient<NormalizedCacheObject>
 
   before(async () => {
-    client = applicationUnderTest.graphql.client()
+    userEmail = internet.email()
+    authToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail')
+    client = applicationUnderTest.graphql.client(authToken)
   })
 
   describe('Commands', () => {
@@ -102,6 +107,55 @@ describe('Cart end-to-end tests', () => {
         expect(e.graphQLErrors[0].message).to.be.eq(beforeHookException)
         expect(e.graphQLErrors[0].path).to.deep.eq(['ChangeCartItem'])
       }
+    })
+
+    it('call register after calling handle', async () => {
+      const response = await client.mutate({
+        variables: {
+          productId: afterHookMutationID,
+        },
+        mutation: gql`
+          mutation DeleteProduct($productId: ID!) {
+            DeleteProduct(input: { productId: $productId })
+          }
+        `,
+      })
+
+      expect(response).not.to.be.null
+      expect(response?.data?.DeleteProduct).to.be.true
+
+      const queryResult = await waitForIt(
+        () => {
+          return client.query({
+            variables: {
+              id: afterHookMutationID,
+            },
+            query: gql`
+              query ProductReadModel($id: ID!) {
+                ProductReadModel(id: $id) {
+                  id
+                  sku
+                  displayName
+                  description
+                  availability
+                  deleted
+                  price {
+                    cents
+                    currency
+                  }
+                }
+              }
+            `,
+          })
+        },
+        (result) => result?.data?.ProductReadModel != null
+      )
+
+      const product = queryResult.data.ProductReadModel
+
+      expect(product.id).to.be.equal(beforeHookMutationIDModified)
+      expect(product.deleted).to.be.equal(true)
+      expect(product.availability).to.be.equal(0)
     })
 
     describe('Query read models', () => {
