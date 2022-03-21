@@ -109,51 +109,46 @@ describe('Cart end-to-end tests', () => {
       }
     })
 
-    context(' with After methods', async () => {
+    it('call register after calling handle', async () => {
       const mockCartId: string = afterHookMutationID
       const mockProductId: string = random.uuid()
       const mockQuantity: number = random.number({ min: 1 })
-
-      beforeEach(async () => {})
-
-      it('call register after calling handle', async () => {
-        // provisioning a cart
-        await client.mutate({
-          variables: {
-            cartId: mockCartId,
-            productId: mockProductId,
-            quantity: mockQuantity,
-          },
-          mutation: gql`
-            mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
-              ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
-            }
-          `,
-        })
-
-        const queryResult = await waitForIt(
-          () => {
-            return client.query({
-              variables: {
-                cartId: mockCartId,
-              },
-              query: gql`
-                query CartReadModel($cartId: ID!) {
-                  CartReadModel(id: $cartId) {
-                    id
-                    checks
-                  }
-                }
-              `,
-            })
-          },
-          (result) => result?.data?.CartReadModel != null
-        )
-
-        const cartData = queryResult.data.CartReadModel
-        expect(cartData.id).to.be.equal(afterHookMutationID)
-        expect(cartData.cartItems[0].checks).to.be.equal(1)
+      // provisioning a cart
+      await client.mutate({
+        variables: {
+          cartId: mockCartId,
+          productId: mockProductId,
+          quantity: mockQuantity,
+        },
+        mutation: gql`
+          mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+            ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+          }
+        `,
       })
+
+      const queryResult = await waitForIt(
+        () => {
+          return client.query({
+            variables: {
+              cartId: mockCartId,
+            },
+            query: gql`
+              query CartReadModel($cartId: ID!) {
+                CartReadModel(id: $cartId) {
+                  id
+                  checks
+                }
+              }
+            `,
+          })
+        },
+        (result) => result?.data?.CartReadModel != null
+      )
+
+      const cartData = queryResult.data.CartReadModel
+      expect(cartData.id).to.be.equal(afterHookMutationID)
+      expect(cartData.checks).to.be.equal(1)
     })
 
     describe('Query read models', () => {

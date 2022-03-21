@@ -6,7 +6,6 @@ import {
   InvalidParameterError,
   NotAuthorizedError,
   NotFoundError,
-  CommandInterface,
 } from '@boostercloud/framework-types'
 import { BoosterAuth } from './booster-auth'
 import { RegisterHandler } from './booster-register-handler'
@@ -37,10 +36,11 @@ export class BoosterCommandDispatcher {
     const register = new Register(commandEnvelope.requestID, commandEnvelope.currentUser, commandEnvelope.context)
     const commandInput = await applyBeforeFunctions(commandEnvelope.value, commandMetadata.before, register)
 
-    const commandInstance = createInstance(commandClass, commandInput) as CommandInterface
-    this.logger.debug('Calling "handle" method on command: ', commandClass)
+    const commandInstance = createInstance(commandClass, commandInput)
 
+    this.logger.debug('Calling "handle" method on command: ', commandClass)
     const result = await commandClass.handle(commandInstance, register)
+
     this.logger.debug('Calling "after" methods on command: ', commandClass)
     await applyAfterFunctions(result, commandEnvelope.value, commandMetadata.after, register)
 
