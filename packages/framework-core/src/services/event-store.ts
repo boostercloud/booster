@@ -80,14 +80,18 @@ export class EventStore {
     return this.provider.events.store([snapshot], this.config, this.logger)
   }
 
-  private loadLatestSnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | null> {
+  private async loadLatestSnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | null> {
     this.logger.debug(
       `[EventStore#loadLatestSnapshot] Loading latest snapshot for entity ${entityName} and ID ${entityID}`
     )
     return this.provider.events.latestEntitySnapshot(this.config, this.logger, entityName, entityID)
   }
 
-  private loadEventStreamSince(entityTypeName: string, entityID: UUID, timestamp: string): Promise<EventEnvelope[]> {
+  private async loadEventStreamSince(
+    entityTypeName: string,
+    entityID: UUID,
+    timestamp: string
+  ): Promise<EventEnvelope[]> {
     this.logger.debug(
       `[EventStore#loadEventStreamSince] Loading list of pending events for entity ${entityTypeName} with ID ${entityID} since ${timestamp}`
     )
