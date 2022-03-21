@@ -628,15 +628,47 @@ export class ChangeCartItem {
   }
 }
 
-function beforeFn(input: CommandInput, currentUser?: UserEnvelope): CommandInput {
-  if (input.cartUserId !== currentUser.id) {
+function beforeFn(input: CommandInput, register: Register): CommandInput {
+  if (input.cartUserId !== register.currentUser.id) {
     throw NonAuthorizedUserException() // We don't let this user to trigger the command
   }
   return input
 }
 ```
 
-As you can see, we just check if the `cartUserId` is equal to the `currentUser.id`, which is the user id extracted from the auth token. This way, we can throw an exception and avoid this user to call this command.
+As you can see, we just check if the `cartUserId` is equal to the `register.currentUser.id`, which is the user id extracted from the auth token. This way, we can throw an exception and avoid this user to call this command.
+
+### Adding after hooks to your commands
+
+When you send a command to your command handler, you can tell Booster to execute some code after executing the operation. These are called `after` hooks, and they receive the result of the previous handler o the one from the previour after hook plus the command input.
+
+In after hooks, you can register new events that will be processed after the events registered on the handler method.
+
+
+In order to define an after hook you pass a list of functions with the right signature to the command decorator `after` parameter:
+
+```typescript
+@Command({
+  authorize: 'all',
+  before: [],
+  after: [ChangeCartItem.afterFn],
+})
+export class ChangeCartItem {
+  public constructor(readonly cartId: UUID, readonly productId: UUID, readonly quantity: number) {}
+
+  public static async handle(command: ChangeCartItem, register: Register): Promise<void> {
+    register.events(new CartItemChanged(command.cartId, command.productId, command.quantity))
+  }
+
+  public static async afterFn(previousResult: unknown, input: CommandInput, register: Register): Promise<void> {
+    register.events(new CartChecked(input.cartId))
+  }
+}
+```
+
+You can also define more than one `after` hook for a command, and they will be chained, sending the resulting request object from a hook to the next one.
+
+> [!NOTE] The order in which filters are specified matters.
 
 ### Reading events
 

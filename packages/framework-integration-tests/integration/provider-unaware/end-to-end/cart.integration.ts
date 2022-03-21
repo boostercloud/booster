@@ -18,14 +18,10 @@ import {
 const secs = 10
 
 describe('Cart end-to-end tests', () => {
-  let userEmail: string
-  let authToken: string
   let client: ApolloClient<NormalizedCacheObject>
 
   before(async () => {
-    userEmail = internet.email()
-    authToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail')
-    client = applicationUnderTest.graphql.client(authToken)
+    client = applicationUnderTest.graphql.client()
   })
 
   describe('Commands', () => {
