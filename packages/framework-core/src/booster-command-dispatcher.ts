@@ -41,10 +41,11 @@ export class BoosterCommandDispatcher {
     this.logger.debug('Calling "handle" method on command: ', commandClass)
 
     const result = await commandClass.handle(commandInstance, register)
-    this.logger.debug('Command dispatched with register: ', register)
-    await RegisterHandler.handle(this.config, this.logger, register)
     this.logger.debug('Calling "after" methods on command: ', commandClass)
     await applyAfterFunctions(result, commandEnvelope.value, commandMetadata.after, register)
+
+    this.logger.debug('Command dispatched with register: ', register)
+    await RegisterHandler.handle(this.config, this.logger, register)
     return result
   }
 }

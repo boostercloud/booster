@@ -109,53 +109,51 @@ describe('Cart end-to-end tests', () => {
       }
     })
 
-    it('call register after calling handle', async () => {
-      const response = await client.mutate({
-        variables: {
-          productId: afterHookMutationID,
-        },
-        mutation: gql`
-          mutation DeleteProduct($productId: ID!) {
-            DeleteProduct(input: { productId: $productId })
-          }
-        `,
-      })
+    context(' with After methods', async () => {
+      const mockCartId: string = afterHookMutationID
+      const mockProductId: string = random.uuid()
+      const mockQuantity: number = random.number({ min: 1 })
 
-      expect(response).not.to.be.null
-      expect(response?.data?.DeleteProduct).to.be.true
+      beforeEach(async () => {})
 
-      const queryResult = await waitForIt(
-        () => {
-          return client.query({
-            variables: {
-              id: afterHookMutationID,
-            },
-            query: gql`
-              query ProductReadModel($id: ID!) {
-                ProductReadModel(id: $id) {
-                  id
-                  sku
-                  displayName
-                  description
-                  availability
-                  deleted
-                  price {
-                    cents
-                    currency
+      it('call register after calling handle', async () => {
+        // provisioning a cart
+        await client.mutate({
+          variables: {
+            cartId: mockCartId,
+            productId: mockProductId,
+            quantity: mockQuantity,
+          },
+          mutation: gql`
+            mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+              ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+            }
+          `,
+        })
+
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                cartId: mockCartId,
+              },
+              query: gql`
+                query CartReadModel($cartId: ID!) {
+                  CartReadModel(id: $cartId) {
+                    id
+                    checks
                   }
                 }
-              }
-            `,
-          })
-        },
-        (result) => result?.data?.ProductReadModel != null
-      )
+              `,
+            })
+          },
+          (result) => result?.data?.CartReadModel != null
+        )
 
-      const product = queryResult.data.ProductReadModel
-
-      expect(product.id).to.be.equal(beforeHookMutationIDModified)
-      expect(product.deleted).to.be.equal(true)
-      expect(product.availability).to.be.equal(0)
+        const cartData = queryResult.data.CartReadModel
+        expect(cartData.id).to.be.equal(afterHookMutationID)
+        expect(cartData.cartItems[0].checks).to.be.equal(1)
+      })
     })
 
     describe('Query read models', () => {
