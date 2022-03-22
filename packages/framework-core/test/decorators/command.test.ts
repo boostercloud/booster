@@ -34,6 +34,7 @@ describe('the `Command` decorator', () => {
       authorizedRoles: 'all',
       before: [],
       after: [],
+      onError: undefined,
       returnClass: Boolean,
       properties: [
         {

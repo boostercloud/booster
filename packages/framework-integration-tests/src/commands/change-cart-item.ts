@@ -6,6 +6,8 @@ import {
   beforeHookException,
   beforeHookMutationID,
   beforeHookQuantity,
+  handleException,
+  onErrorMutationID,
   throwExceptionId,
 } from '../constants'
 import { CartChecked } from '../events/cart-checked'
@@ -14,6 +16,7 @@ import { CartChecked } from '../events/cart-checked'
   authorize: 'all',
   before: [ChangeCartItem.beforeFn, ChangeCartItem.beforeFnV2],
   after: [ChangeCartItem.afterFn],
+  onError: ChangeCartItem.onErrorChangeCartItem,
 })
 export class ChangeCartItem {
   public constructor(readonly cartId: UUID, readonly productId: UUID, readonly quantity: number) {}
@@ -39,6 +42,9 @@ export class ChangeCartItem {
   }
 
   public static async handle(command: ChangeCartItem, register: Register): Promise<void> {
+    if (command.cartId === onErrorMutationID) {
+      throw new Error(handleException)
+    }
     register.events(new CartItemChanged(command.cartId, command.productId, command.quantity))
   }
 
@@ -46,5 +52,12 @@ export class ChangeCartItem {
     if (input.cartId === afterHookMutationID) {
       register.events(new CartChecked(input.cartId))
     }
+  }
+
+  public static async onErrorChangeCartItem(error: Error, input: CommandInput, register: Register): Promise<Error> {
+    if (input.cartId === onErrorMutationID) {
+      return new Error(error.message + '-onErrorChangeCartItem')
+    }
+    return error
   }
 }
