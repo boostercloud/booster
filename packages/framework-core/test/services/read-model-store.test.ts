@@ -2,7 +2,7 @@
 import { describe } from 'mocha'
 import { restore, fake, replace, spy } from 'sinon'
 import { ReadModelStore } from '../../src/services/read-model-store'
-import { buildLogger } from '../../src/booster-logger'
+import { getLogger } from '../../src/booster-logger'
 import {
   Level,
   Logger,
@@ -24,7 +24,8 @@ describe('ReadModelStore', () => {
   })
 
   const testConfig = new BoosterConfig('Test')
-  const logger = buildLogger(Level.error, testConfig)
+  testConfig.logLevel = Level.error
+  const logger = getLogger(testConfig)
 
   class AnImportantEntity {
     public constructor(readonly id: UUID, readonly someKey: UUID, readonly count: number) {}

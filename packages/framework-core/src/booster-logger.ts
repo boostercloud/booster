@@ -2,7 +2,7 @@ import { BoosterConfig, Level, Logger } from '@boostercloud/framework-types'
 
 const logPrefix = '[Booster] '
 
-export function buildLogger(level: Level, config: BoosterConfig): Logger {
+export function getLogger(config: BoosterConfig): Logger {
   const debug = config.logger?.debug ?? console.debug
   const info = config.logger?.info ?? console.info
   const error = config.logger?.error ?? console.error
@@ -14,8 +14,8 @@ export function buildLogger(level: Level, config: BoosterConfig): Logger {
   const prefixedErrFunction = error.bind(null, prefix)
 
   return {
-    debug: level <= Level.debug ? prefixedDebugFunction : noopLog,
-    info: level <= Level.info ? prefixedInfoFunction : noopLog,
+    debug: config.logLevel <= Level.debug ? prefixedDebugFunction : noopLog,
+    info: config.logLevel <= Level.info ? prefixedInfoFunction : noopLog,
     error: prefixedErrFunction,
   }
 }

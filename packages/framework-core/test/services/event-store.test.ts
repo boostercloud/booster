@@ -12,14 +12,15 @@ import {
 import { replace, fake, stub, restore } from 'sinon'
 import { EventStore } from '../../src/services/event-store'
 import { expect } from '../expect'
-import { buildLogger } from '../../src/booster-logger'
+import { getLogger } from '../../src/booster-logger'
 
 describe('EventStore', () => {
   afterEach(() => {
     restore()
   })
   const testConfig = new BoosterConfig('Test')
-  const logger = buildLogger(Level.error, testConfig)
+  testConfig.logLevel = Level.error
+  const logger = getLogger(testConfig)
 
   class AnEvent {
     public constructor(readonly id: UUID, readonly entityId: string, readonly delta: number) {}

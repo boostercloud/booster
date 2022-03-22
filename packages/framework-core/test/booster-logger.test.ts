@@ -5,10 +5,10 @@
 
 import { expect } from './expect'
 import { fake, replace, restore } from 'sinon'
-import { buildLogger } from '../src/booster-logger'
+import { getLogger } from '../src/booster-logger'
 import { BoosterConfig, Level, Logger } from '@boostercloud/framework-types'
 
-describe('the `buildLogger method`', () => {
+describe('the `getLogger method`', () => {
   const config = new BoosterConfig('Test Logger')
 
   afterEach(() => {
@@ -23,7 +23,8 @@ describe('the `buildLogger method`', () => {
     replace(console, 'info', fakeConsoleInfo)
     replace(console, 'error', fakeConsoleError)
 
-    const logger = buildLogger(Level.debug, config)
+    config.logLevel = Level.debug
+    const logger = getLogger(config)
     logger.debug('a')
     logger.info('b')
     logger.error('c')
@@ -41,7 +42,8 @@ describe('the `buildLogger method`', () => {
     replace(console, 'info', fakeConsoleInfo)
     replace(console, 'error', fakeConsoleError)
 
-    const logger = buildLogger(Level.info, config)
+    config.logLevel = Level.info
+    const logger = getLogger(config)
     logger.debug('a')
     logger.info('b')
     logger.error('c')
@@ -59,7 +61,8 @@ describe('the `buildLogger method`', () => {
     replace(console, 'info', fakeConsoleInfo)
     replace(console, 'error', fakeConsoleError)
 
-    const logger = buildLogger(Level.error, config)
+    config.logLevel = Level.error
+    const logger = getLogger(config)
     logger.debug('a')
     logger.info('b')
     logger.error('c')
@@ -84,7 +87,8 @@ describe('the `buildLogger method`', () => {
     replace(customLogger, 'debug', fakeCustomDebug)
     configWithLogger.logger = customLogger
 
-    const logger = buildLogger(Level.debug, configWithLogger)
+    config.logLevel = Level.debug
+    const logger = getLogger(configWithLogger)
     logger.debug('a')
 
     expect(fakeConsoleDebug).to.not.have.been.called
