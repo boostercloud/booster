@@ -670,6 +670,32 @@ You can also define more than one `after` hook for a command, and they will be c
 
 > [!NOTE] The order in which filters are specified matters.
 
+### Adding onError hooks to your commands
+
+When you send a command to your command handler, you can tell Booster to capture any error that the handle and the after hooks thrown. This is called `onError` hooks, and they receive the result the error plus the command input.
+
+In error, you can throw a new error.
+
+In order to define an onError hook you pass a functions with the right signature to the command decorator `onError` parameter:
+
+```typescript
+@Command({
+  authorize: 'all',
+  onError: ChangeCartItem.onErrorChangeCartItem,
+})
+export class ChangeCartItem {
+  public constructor(readonly cartId: UUID, readonly productId: UUID, readonly quantity: number) {}
+
+  public static async handle(command: ChangeCartItem, register: Register): Promise<void> {
+    register.events(new CartItemChanged(command.cartId, command.productId, command.quantity))
+  }
+
+  public static async onErrorChangeCartItem(error: Error, input: CommandInput, register: Register): Promise<Error> {
+    return new Error(error.message + '-onErrorChangeCartItem')
+  }
+}
+```
+
 ### Reading events
 
 You can also fetch events directly if you need. To do so, there are two kind of queries that have the following structure:
