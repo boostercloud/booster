@@ -49,7 +49,7 @@
     "serverless-artillery": "0.5.2",
     "subscriptions-transport-ws": "0.9.18",
     "ttypescript": "1.5.12",
-    "ws": "7.4.5",
+    "ws": "7.4.6",
     "yaml": "1.10.2"
   },
   "engines": {
