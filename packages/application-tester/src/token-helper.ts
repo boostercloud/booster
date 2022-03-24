@@ -11,7 +11,7 @@ export class TokenHelper {
   constructor() {
     this.privateKey = fs.readFileSync(path.join(__dirname, '..', 'keys', 'private.key'))
   }
-  public forUser(email: string, role: string, expiresIn?: number, nbf?: number): string {
+  public forUser(email: string, role: string, expiresIn?: number, notBefore?: number): string {
     const keyid = 'booster'
     const issuer = 'booster'
     const options = {
@@ -23,8 +23,8 @@ export class TokenHelper {
     if (expiresIn || expiresIn === 0) {
       options['expiresIn'] = expiresIn
     }
-    if (nbf) {
-      options['notBefore'] = nbf
+    if (notBefore) {
+      options['notBefore'] = notBefore
     }
     return jwt.sign(
       {

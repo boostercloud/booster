@@ -1,7 +1,8 @@
 import {
   BoosterConfig,
   NotAuthorizedError,
-  TokenExpiredOrNotBeforeError,
+  BoosterTokenExpiredError,
+  BoosterTokenNotBeforeError,
   TokenVerifierConfig,
   UserEnvelope,
 } from '@boostercloud/framework-types'
@@ -61,8 +62,12 @@ class TokenVerifierClient {
     return new Promise((resolve, reject) => {
       jwt.verify(token, key, this.options, (err, decoded) => {
         if (err) {
-          if (err instanceof TokenExpiredError || err instanceof NotBeforeError) {
-            return reject(new TokenExpiredOrNotBeforeError(err.message))
+          if (err instanceof TokenExpiredError) {
+            return reject(new BoosterTokenExpiredError(err.message))
+          }
+
+          if (err instanceof NotBeforeError) {
+            return reject(new BoosterTokenNotBeforeError(err.message))
           }
           return reject(err)
         }
@@ -131,16 +136,42 @@ export class BoosterTokenVerifier {
     )
     const winner = results.find((result) => result.status === 'fulfilled')
     if (winner) return Promise.resolve((winner as PromiseFulfilledResult<UserEnvelope>).value)
-    const tokenExpiredOrNotBeforeErrors = results
+
+    return this.rejectVerification(results)
+  }
+
+  private rejectVerification(results: Array<PromiseSettledResult<UserEnvelope>>): Promise<UserEnvelope> {
+    const tokenExpiredErrors = this.getTokenExpiredErrors(results)
+    if (tokenExpiredErrors && tokenExpiredErrors.length > 0) {
+      const reasons = BoosterTokenVerifier.joinReasons(tokenExpiredErrors)
+      return Promise.reject(new BoosterTokenExpiredError(reasons))
+    }
+
+    const tokenNotBeforeErrors = this.getTokenNotBeforeErrors(results)
+    if (tokenNotBeforeErrors && tokenNotBeforeErrors.length > 0) {
+      const reasons = BoosterTokenVerifier.joinReasons(tokenNotBeforeErrors)
+      return Promise.reject(new BoosterTokenNotBeforeError(reasons))
+    }
+
+    const reasons = BoosterTokenVerifier.joinReasons(results as Array<PromiseRejectedResult>)
+    return Promise.reject(new NotAuthorizedError(reasons))
+  }
+
+  private getTokenNotBeforeErrors(results: Array<PromiseSettledResult<UserEnvelope>>): Array<PromiseRejectedResult> {
+    return this.getErrors(results).filter((result) => result.reason instanceof BoosterTokenNotBeforeError)
+  }
+
+  private getTokenExpiredErrors(results: Array<PromiseSettledResult<UserEnvelope>>): Array<PromiseRejectedResult> {
+    return this.getErrors(results).filter((result) => result.reason instanceof BoosterTokenExpiredError)
+  }
+
+  private getErrors(results: Array<PromiseSettledResult<UserEnvelope>>): Array<PromiseRejectedResult> {
+    return results
       .filter((result) => result?.status && result?.status !== 'fulfilled')
       .map((result) => result as PromiseRejectedResult)
-      .filter((result) => result.reason instanceof TokenExpiredOrNotBeforeError)
-    if (tokenExpiredOrNotBeforeErrors && tokenExpiredOrNotBeforeErrors.length > 0) {
-      const reasons = tokenExpiredOrNotBeforeErrors.map((error) => error.reason).join('\n')
-      return Promise.reject(new TokenExpiredOrNotBeforeError(reasons))
-    }
-    return Promise.reject(
-      new NotAuthorizedError(results.map((result) => (result as PromiseRejectedResult).reason).join('\n'))
-    )
+  }
+
+  private static joinReasons(errors: Array<PromiseRejectedResult>): string {
+    return errors.map((error) => error.reason).join('\n')
   }
 }

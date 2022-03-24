@@ -222,14 +222,14 @@ describe('the "verifyToken" method', () => {
     await expect(verifyFunction).to.eventually.be.rejectedWith('jwt expired')
   })
 
-  it('fails if current time is before the nbf claim of the token ', async () => {
+  it('fails if current time is before the notBefore claim of the token ', async () => {
     const token = jwks.token({
       sub: userId,
       iss: issuer,
       'custom:role': ['User', 'Other'],
       email,
       phoneNumber,
-      nbf: Math.floor(Date.now() / 1000) + 999999,
+      notBefore: Math.floor(Date.now() / 1000) + 999999,
     })
 
     const verifyFunction = boosterTokenVerifier.verify(token)
