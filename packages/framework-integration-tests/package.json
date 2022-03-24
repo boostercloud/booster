@@ -45,7 +45,7 @@
     "metadata-booster": "0.3.1",
     "mocha": "8.4.0",
     "mocha-skip-if": "0.0.3",
-    "serverless": "1.83.3",
+    "serverless": "3.8.0",
     "serverless-artillery": "0.5.2",
     "subscriptions-transport-ws": "0.9.18",
     "ttypescript": "1.5.12",

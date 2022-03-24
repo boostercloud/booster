@@ -27,7 +27,7 @@
     "form-data": "^3.0.0",
     "isomorphic-fetch": "^2.2.1",
     "mustache": "4.1.0",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^2.6.7",
     "redis": "^3.0.2"
   },
   "scripts": {
