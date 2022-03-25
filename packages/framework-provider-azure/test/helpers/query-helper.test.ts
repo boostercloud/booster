@@ -38,6 +38,7 @@ describe('Query helper', () => {
       mockConfig = new BoosterConfig('test')
       mockLogger = {
         info: fake(),
+        warn: fake(),
         error: fake(),
         debug: fake(),
       }

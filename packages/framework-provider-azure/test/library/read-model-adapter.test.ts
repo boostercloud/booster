@@ -36,6 +36,7 @@ describe('Read Model adapter', () => {
     })
     mockLogger = {
       info: fake(),
+      warn: fake(),
       error: fake(),
       debug: fake(),
     }

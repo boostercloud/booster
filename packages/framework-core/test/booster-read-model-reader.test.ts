@@ -20,6 +20,7 @@ import { Booster } from '../src/booster'
 
 const logger: Logger = {
   debug() {},
+  warn() {},
   info() {},
   error() {},
 }

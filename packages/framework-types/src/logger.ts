@@ -2,6 +2,7 @@ export enum Level {
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers
   debug = 0,
   info,
+  warn,
   error,
 }
 
@@ -10,6 +11,8 @@ export interface Logger {
   debug(message?: any, ...optionalParams: any[]): void
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   info(message?: any, ...optionalParams: any[]): void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  warn(message?: any, ...optionalParams: any[]): void
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error(message?: any, ...optionalParams: any[]): void
 }

@@ -9,6 +9,7 @@ const infrastructure = rewire('../src/index')
 
 const logger = {
   info: fake(),
+  warn: fake(),
   debug: fake(),
   error: fake(),
 } as Logger

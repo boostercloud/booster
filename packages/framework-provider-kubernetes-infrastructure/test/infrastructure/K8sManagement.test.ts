@@ -115,6 +115,7 @@ describe('Users interaction with K8s cluster', () => {
 
     const fakeLogger: Logger = {
       info: fake(),
+      warn: fake(),
       error: fake(),
       debug: fake(),
     }

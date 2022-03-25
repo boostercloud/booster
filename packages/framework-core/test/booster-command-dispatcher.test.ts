@@ -21,6 +21,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
 
   const logger: Logger = {
     debug() {},
+    warn() {},
     info() {},
     error() {},
   }

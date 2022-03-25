@@ -18,6 +18,7 @@ import { DynamoDBStreamEvent } from 'aws-lambda'
 
 const logger: Logger = {
   info: fake(),
+  warn: fake(),
   error: fake(),
   debug: fake(),
 }
