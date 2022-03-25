@@ -62,7 +62,7 @@ Booster.configure('production', (config: BoosterConfig): void => {
       publicKey: fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8'),
       rolesClaim: 'booster:role',
       extraValidation: async (jwtToken, _rawToken) => {
-        throw 'Unauthorized'
+        throw new Error('Unauthorized')
       },
     },
   ]
@@ -93,7 +93,7 @@ Booster.configure('azure', (config: BoosterConfig): void => {
       publicKey: fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8'),
       rolesClaim: 'booster:role',
       extraValidation: async (jwtToken, _rawToken) => {
-        throw 'Unauthorized'
+        throw new Error('Unauthorized')
       },
     },
   ]

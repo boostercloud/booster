@@ -14,6 +14,7 @@ describe('Events end-to-end tests', () => {
   let loggedClient: ApolloClient<NormalizedCacheObject>
   let expiredClient: ApolloClient<NormalizedCacheObject>
   let beforeClient: ApolloClient<NormalizedCacheObject>
+  let expiredAndBeforeClient: ApolloClient<NormalizedCacheObject>
 
   before(async () => {
     anonymousClient = applicationUnderTest.graphql.client()
@@ -26,6 +27,8 @@ describe('Events end-to-end tests', () => {
     const notBefore = Math.floor(Date.now() / 1000) + 999999
     const beforeToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail', undefined, notBefore)
     beforeClient = applicationUnderTest.graphql.client(beforeToken)
+    const expiredAndBeforeToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail', 0, notBefore)
+    expiredAndBeforeClient = applicationUnderTest.graphql.client(expiredAndBeforeToken)
   })
 
   describe('Query events', () => {
@@ -70,6 +73,19 @@ describe('Events end-to-end tests', () => {
                 {
                   message: 'Error: jwt not active\nError: jwt not active',
                   extensions: { code: 'BoosterTokenNotBeforeError' },
+                },
+              ])
+          })
+
+          // jwt.verify check NotBefore before Expired. If we have a token NotBefore and Expired we will get a BoosterTokenExpiredError error
+          it('return BoosterTokenNotBeforeError with a token expired and not before', async () => {
+            await expect(queryByType(expiredAndBeforeClient, 'CartItemChanged'))
+              .to.eventually.be.rejected.and.be.an.instanceOf(Error)
+              .and.have.property('graphQLErrors')
+              .and.have.to.be.deep.equal([
+                {
+                  message: 'Error: jwt not active\nError: jwt not active',
+                  extensions: { code: 'BoosterTokenExpiredError' },
                 },
               ])
           })
