@@ -29,7 +29,7 @@ export class GraphqlQueryListedGenerator {
       typeInformer,
       generatedFiltersByTypeName
     )
-    this.graphqlQuerySortBuilder = new GraphqlQuerySortBuilder()
+    this.graphqlQuerySortBuilder = new GraphqlQuerySortBuilder(typeInformer)
   }
 
   public generateListedQueries(): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {
@@ -66,10 +66,16 @@ export class GraphqlQueryListedGenerator {
       }),
     })
     const sortArguments = this.graphqlQuerySortBuilder.generateSortArguments(type)
+    const sort: GraphQLInputObjectType = new GraphQLInputObjectType({
+      name: `${type.name}SortBy`,
+      fields: () => ({
+        ...sortArguments,
+      }),
+    })
     return {
       filter: { type: filter },
       limit: { type: GraphQLInt },
-      sortBy: { type: sortArguments },
+      sortBy: { type: sort },
       afterCursor: { type: GraphQLJSONObject },
     }
   }
