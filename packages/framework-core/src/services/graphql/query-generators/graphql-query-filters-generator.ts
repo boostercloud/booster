@@ -1,9 +1,9 @@
-import { GraphQLFieldConfigMap, GraphQLList, GraphQLNonNull } from 'graphql'
+import { GraphQLFieldConfigMap, GraphQLInputObjectType, GraphQLList, GraphQLNonNull } from 'graphql'
 import { GraphQLResolverContext, ResolverBuilder } from '../common'
 import * as inflected from 'inflected'
 import { AnyClass } from '@boostercloud/framework-types'
 import { GraphQLTypeInformer } from '../graphql-type-informer'
-import { GraphqlQueryFilterFieldsBuilder } from './builders/graphql-query-filter-fields-builder'
+import { GraphqlQueryFilterFieldsBuilder } from '../query-helpers/graphql-query-filter-fields-builder'
 
 export class GraphqlQueryFiltersGenerator {
   private graphqlQueryFilterFieldsBuilder: GraphqlQueryFilterFieldsBuilder
@@ -11,9 +11,10 @@ export class GraphqlQueryFiltersGenerator {
   public constructor(
     private readonly readModels: AnyClass[],
     private readonly typeInformer: GraphQLTypeInformer,
-    private readonly filterResolverBuilder: ResolverBuilder
+    private readonly filterResolverBuilder: ResolverBuilder,
+    protected generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
   ) {
-    this.graphqlQueryFilterFieldsBuilder = new GraphqlQueryFilterFieldsBuilder(typeInformer)
+    this.graphqlQueryFilterFieldsBuilder = new GraphqlQueryFilterFieldsBuilder(typeInformer, generatedFiltersByTypeName)
   }
 
   public generateFilterQueries(): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {

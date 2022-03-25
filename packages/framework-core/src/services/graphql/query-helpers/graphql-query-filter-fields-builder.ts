@@ -1,13 +1,19 @@
 import { AnyClass } from '@boostercloud/framework-types'
 import { GraphQLFieldConfigArgumentMap, GraphQLInputObjectType, GraphQLList } from 'graphql'
-import { GraphQLTypeInformer } from '../../graphql-type-informer'
+import { GraphQLTypeInformer } from '../graphql-type-informer'
 import { GraphqlQueryFilterArgumentsBuilder } from './graphql-query-filter-arguments-builder'
 
 export class GraphqlQueryFilterFieldsBuilder {
   private graphqlQueryFilterArgumentsBuilder: GraphqlQueryFilterArgumentsBuilder
 
-  public constructor(protected readonly typeInformer: GraphQLTypeInformer) {
-    this.graphqlQueryFilterArgumentsBuilder = new GraphqlQueryFilterArgumentsBuilder(typeInformer)
+  public constructor(
+    protected readonly typeInformer: GraphQLTypeInformer,
+    protected generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
+  ) {
+    this.graphqlQueryFilterArgumentsBuilder = new GraphqlQueryFilterArgumentsBuilder(
+      typeInformer,
+      generatedFiltersByTypeName
+    )
   }
 
   public generateFilterQueriesFields(name: string, type: AnyClass): GraphQLFieldConfigArgumentMap {

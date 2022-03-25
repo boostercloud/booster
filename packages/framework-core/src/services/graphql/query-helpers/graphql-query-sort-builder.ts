@@ -1,7 +1,7 @@
 import { AnyClass } from '@boostercloud/framework-types'
 import { GraphQLInputObjectType, GraphQLList, GraphQLNonNull, GraphQLString, GraphQLType } from 'graphql'
-import { getClassMetadata } from '../../../../decorators/metadata'
-import { buildGraphqlSimpleEnumFor } from '../../common'
+import { getClassMetadata } from '../../../decorators/metadata'
+import { buildGraphqlSimpleEnumFor } from '../common'
 
 export class GraphqlQuerySortBuilder {
   private orderType = new GraphQLNonNull(buildGraphqlSimpleEnumFor('orderProperty', ['ASC', 'DESC']))

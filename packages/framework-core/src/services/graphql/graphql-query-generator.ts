@@ -1,5 +1,5 @@
 import { AnyClass, BoosterConfig } from '@boostercloud/framework-types'
-import { GraphQLFieldResolver, GraphQLObjectType } from 'graphql'
+import { GraphQLFieldResolver, GraphQLInputObjectType, GraphQLObjectType } from 'graphql'
 import { GraphQLResolverContext, ResolverBuilder } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
 import { GraphqlQueryByKeysGenerator } from './query-generators/graphql-query-by-keys-generator'
@@ -19,16 +19,27 @@ export class GraphQLQueryGenerator {
     protected readonly typeInformer: GraphQLTypeInformer,
     protected readonly byIDResolverBuilder: ResolverBuilder,
     protected readonly filterResolverBuilder: ResolverBuilder,
-    protected readonly eventsResolver: GraphQLFieldResolver<unknown, GraphQLResolverContext, any>
+    protected readonly eventsResolver: GraphQLFieldResolver<unknown, GraphQLResolverContext, any>,
+    protected generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
   ) {
-    this.generateFiltersQueries = new GraphqlQueryFiltersGenerator(readModels, typeInformer, filterResolverBuilder)
+    this.generateFiltersQueries = new GraphqlQueryFiltersGenerator(
+      readModels,
+      typeInformer,
+      filterResolverBuilder,
+      generatedFiltersByTypeName
+    )
     this.graphqlQueryByKeysGenerator = new GraphqlQueryByKeysGenerator(
       config,
       readModels,
       byIDResolverBuilder,
       typeInformer
     )
-    this.graphqlQueryListGenerator = new GraphqlQueryListedGenerator(readModels, typeInformer, filterResolverBuilder)
+    this.graphqlQueryListGenerator = new GraphqlQueryListedGenerator(
+      readModels,
+      typeInformer,
+      filterResolverBuilder,
+      generatedFiltersByTypeName
+    )
     this.graphqlQueryEventsGenerator = new GraphqlQueryEventsGenerator(config, eventsResolver)
   }
 

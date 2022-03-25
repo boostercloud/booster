@@ -12,8 +12,8 @@ import * as inflected from 'inflected'
 import { AnyClass } from '@boostercloud/framework-types'
 import { GraphQLTypeInformer } from '../graphql-type-informer'
 import { GraphQLJSONObject } from 'graphql-type-json'
-import { GraphqlQuerySortBuilder } from './builders/graphql-query-sort-builder'
-import { GraphqlQueryFilterArgumentsBuilder } from './builders/graphql-query-filter-arguments-builder'
+import { GraphqlQueryFilterArgumentsBuilder } from '../query-helpers/graphql-query-filter-arguments-builder'
+import { GraphqlQuerySortBuilder } from '../query-helpers/graphql-query-sort-builder'
 
 export class GraphqlQueryListedGenerator {
   private graphqlQueryFilterArgumentsBuilder: GraphqlQueryFilterArgumentsBuilder
@@ -22,9 +22,13 @@ export class GraphqlQueryListedGenerator {
   public constructor(
     private readonly readModels: AnyClass[],
     private readonly typeInformer: GraphQLTypeInformer,
-    private readonly filterResolverBuilder: ResolverBuilder
+    private readonly filterResolverBuilder: ResolverBuilder,
+    protected generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
   ) {
-    this.graphqlQueryFilterArgumentsBuilder = new GraphqlQueryFilterArgumentsBuilder(typeInformer)
+    this.graphqlQueryFilterArgumentsBuilder = new GraphqlQueryFilterArgumentsBuilder(
+      typeInformer,
+      generatedFiltersByTypeName
+    )
     this.graphqlQuerySortBuilder = new GraphqlQuerySortBuilder()
   }
 

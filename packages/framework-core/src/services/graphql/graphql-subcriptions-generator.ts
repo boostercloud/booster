@@ -1,19 +1,21 @@
-import { GraphQLFieldConfigMap, GraphQLID, GraphQLNonNull, GraphQLObjectType } from 'graphql'
+import { GraphQLFieldConfigMap, GraphQLID, GraphQLInputObjectType, GraphQLNonNull, GraphQLObjectType } from 'graphql'
 import { ResolverBuilder } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
 import * as inflected from 'inflected'
 import { AnyClass } from '@boostercloud/framework-types'
-import { GraphqlQueryFilterFieldsBuilder } from './query-generators/builders/graphql-query-filter-fields-builder'
+import { GraphqlQueryFilterFieldsBuilder } from './query-helpers/graphql-query-filter-fields-builder'
 
 export class GraphQLSubscriptionGenerator {
   private graphqlQueryFilterFieldsBuilder: GraphqlQueryFilterFieldsBuilder
+
   public constructor(
     private readonly readModels: AnyClass[],
     private readonly typeInformer: GraphQLTypeInformer,
     private readonly byIDResolverBuilder: ResolverBuilder,
-    private readonly filterResolverBuilder: ResolverBuilder
+    private readonly filterResolverBuilder: ResolverBuilder,
+    protected generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
   ) {
-    this.graphqlQueryFilterFieldsBuilder = new GraphqlQueryFilterFieldsBuilder(typeInformer)
+    this.graphqlQueryFilterFieldsBuilder = new GraphqlQueryFilterFieldsBuilder(typeInformer, generatedFiltersByTypeName)
   }
 
   public generate(): GraphQLObjectType | undefined {

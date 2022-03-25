@@ -12,15 +12,16 @@ import {
   Thunk,
 } from 'graphql'
 import { PropertyMetadata, TypeMetadata } from 'metadata-booster'
-import { getClassMetadata } from '../../../../decorators/metadata'
-import { DateScalar, isExternalType } from '../../common'
+import { getClassMetadata } from '../../../decorators/metadata'
+import { DateScalar, isExternalType } from '../common'
 import { GraphQLJSONObject } from 'graphql-type-json'
-import { GraphQLTypeInformer } from '../../graphql-type-informer'
+import { GraphQLTypeInformer } from '../graphql-type-informer'
 
 export class GraphqlQueryFilterArgumentsBuilder {
-  private generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
-
-  public constructor(private readonly typeInformer: GraphQLTypeInformer) {}
+  public constructor(
+    private readonly typeInformer: GraphQLTypeInformer,
+    private generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
+  ) {}
 
   public generateFilterArguments(type: AnyClass): GraphQLFieldConfigArgumentMap {
     const metadata = getClassMetadata(type)

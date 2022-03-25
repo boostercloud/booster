@@ -14,7 +14,7 @@ import {
   ReadModelRequestProperties,
   TimeKey,
 } from '@boostercloud/framework-types'
-import { GraphQLFieldResolver, GraphQLResolveInfo, GraphQLSchema } from 'graphql'
+import { GraphQLFieldResolver, GraphQLInputObjectType, GraphQLResolveInfo, GraphQLSchema } from 'graphql'
 import { pluralize } from 'inflected'
 import { BoosterCommandDispatcher } from '../../booster-command-dispatcher'
 import { BoosterEventsReader } from '../../booster-events-reader'
@@ -40,13 +40,16 @@ export class GraphQLGenerator {
 
       const typeInformer = new GraphQLTypeInformer(logger)
 
+      const generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
+
       const queryGenerator = new GraphQLQueryGenerator(
         config,
         Object.values(config.readModels).map((m) => m.class),
         typeInformer,
         this.readModelByIDResolverBuilder.bind(this, config),
         this.readModelResolverBuilder.bind(this),
-        this.eventResolver.bind(this)
+        this.eventResolver.bind(this),
+        generatedFiltersByTypeName
       )
 
       const mutationGenerator = new GraphQLMutationGenerator(
@@ -59,7 +62,8 @@ export class GraphQLGenerator {
         Object.values(config.readModels).map((m) => m.class),
         typeInformer,
         this.subscriptionByIDResolverBuilder.bind(this, config),
-        this.subscriptionResolverBuilder.bind(this, config)
+        this.subscriptionResolverBuilder.bind(this, config),
+        generatedFiltersByTypeName
       )
 
       this.schema = new GraphQLSchema({
