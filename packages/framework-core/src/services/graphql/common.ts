@@ -7,7 +7,7 @@ import {
   ReadModelInterface,
   ContextEnvelope,
 } from '@boostercloud/framework-types'
-import { GraphQLFieldResolver, Kind } from 'graphql'
+import { GraphQLEnumType, GraphQLEnumValueConfigMap, GraphQLFieldResolver, Kind } from 'graphql'
 import { ReadModelPubSub } from '../pub-sub/read-model-pub-sub'
 import { PropertyMetadata, TypeMetadata } from 'metadata-booster'
 
@@ -53,4 +53,14 @@ export const DateScalar = new GraphQLScalarType({
 
 export function isExternalType(typeMetadata: Pick<TypeMetadata, 'importPath'>): boolean {
   return !!typeMetadata.importPath && !typeMetadata.importPath.startsWith('.')
+}
+
+export function buildGraphqlSimpleEnumFor(enumName: string, values: Array<string>): GraphQLEnumType {
+  return new GraphQLEnumType({
+    name: enumName,
+    values: values.reduce((valuesRecord, value) => {
+      valuesRecord[value] = { value }
+      return valuesRecord
+    }, {} as GraphQLEnumValueConfigMap),
+  })
 }

@@ -58,7 +58,6 @@ export class GraphQLGenerator {
       const subscriptionGenerator = new GraphQLSubscriptionGenerator(
         Object.values(config.readModels).map((m) => m.class),
         typeInformer,
-        queryGenerator,
         this.subscriptionByIDResolverBuilder.bind(this, config),
         this.subscriptionResolverBuilder.bind(this, config)
       )

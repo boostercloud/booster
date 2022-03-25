@@ -1,17 +1,15 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/ban-ts-comment */
 import { GraphQLQueryGenerator } from '../../../src/services/graphql/graphql-query-generator'
-import { SinonStub, stub, replace, SinonStubbedInstance, restore, fake } from 'sinon'
+import { SinonStub, stub, replace, SinonStubbedInstance, restore } from 'sinon'
 import { expect } from '../../expect'
 import { GraphQLTypeInformer } from '../../../src/services/graphql/graphql-type-informer'
 import sinon = require('sinon')
-import { GraphQLResolverContext } from '../../../src/services/graphql/common'
 import {
   GraphQLBoolean,
   GraphQLFloat,
   GraphQLID,
   GraphQLInt,
   GraphQLString,
-  GraphQLFieldConfigMap,
   GraphQLNonNull,
   GraphQLEnumType,
   GraphQLOutputType,
@@ -20,25 +18,9 @@ import {
 } from 'graphql'
 import { random } from 'faker'
 import GraphQLJSON from 'graphql-type-json'
-import { AnyClass, BoosterConfig, Logger } from '@boostercloud/framework-types'
+import { AnyClass, BoosterConfig } from '@boostercloud/framework-types'
 import { ClassMetadata } from 'metadata-booster'
 import * as metadata from '../../../src/decorators/metadata'
-
-function buildFakeGraphQLFielConfigMap(name: string): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {
-  return {
-    [name]: {
-      type: GraphQLString,
-      args: {},
-      resolve: fake(),
-    },
-  }
-}
-
-const logger: Logger = {
-  debug() {},
-  info() {},
-  error() {},
-}
 
 describe('GraphQLQueryGenerator', () => {
   afterEach(() => {
@@ -47,87 +29,6 @@ describe('GraphQLQueryGenerator', () => {
 
   describe('the `generate` public method', () => {
     const simpleConfig = new BoosterConfig('test')
-
-    class SomeReadModel {}
-
-    const typeInformer = new GraphQLTypeInformer(logger)
-
-    const graphQLQueryGenerator = new GraphQLQueryGenerator(
-      simpleConfig,
-      [SomeReadModel],
-      typeInformer,
-      () => fake(),
-      () => fake(),
-      fake()
-    )
-
-    it('generates by Key queries', () => {
-      const fakegenerateByKeysQueries = fake()
-      replace(graphQLQueryGenerator as any, 'generateByKeysQueries', fakegenerateByKeysQueries)
-      replace(graphQLQueryGenerator as any, 'generateFilterQueries', fake())
-      replace(graphQLQueryGenerator as any, 'generateListedQueries', fake())
-      replace(graphQLQueryGenerator as any, 'generateEventQueries', fake())
-
-      graphQLQueryGenerator.generate()
-
-      expect(fakegenerateByKeysQueries).to.have.been.calledOnce
-    })
-
-    it('generates filter queries', () => {
-      replace(graphQLQueryGenerator as any, 'generateByKeysQueries', fake())
-      const fakeGenerateFilterQueries = fake()
-      replace(graphQLQueryGenerator as any, 'generateFilterQueries', fakeGenerateFilterQueries)
-      replace(graphQLQueryGenerator as any, 'generateListedQueries', fake())
-      replace(graphQLQueryGenerator as any, 'generateEventQueries', fake())
-
-      graphQLQueryGenerator.generate()
-
-      expect(fakeGenerateFilterQueries).to.have.been.calledOnce
-    })
-
-    it('generates listed queries', () => {
-      replace(graphQLQueryGenerator as any, 'generateByKeysQueries', fake())
-      replace(graphQLQueryGenerator as any, 'generateFilterQueries', fake())
-      const fakeGenerateListedQueries = fake()
-      replace(graphQLQueryGenerator as any, 'generateListedQueries', fakeGenerateListedQueries)
-      replace(graphQLQueryGenerator as any, 'generateEventQueries', fake())
-
-      graphQLQueryGenerator.generate()
-
-      expect(fakeGenerateListedQueries).to.have.been.calledOnce
-    })
-
-    it('generates event queries', () => {
-      replace(graphQLQueryGenerator as any, 'generateByKeysQueries', fake())
-      replace(graphQLQueryGenerator as any, 'generateFilterQueries', fake())
-      replace(graphQLQueryGenerator as any, 'generateListedQueries', fake())
-      const fakeGenerateEventQueries = fake()
-      replace(graphQLQueryGenerator as any, 'generateEventQueries', fakeGenerateEventQueries)
-
-      graphQLQueryGenerator.generate()
-
-      expect(fakeGenerateEventQueries).to.have.been.calledOnce
-    })
-
-    it('returns a well-formed GraphQL Query Object Type', () => {
-      const fakeIDQueries = buildFakeGraphQLFielConfigMap('IDQuery')
-      replace(graphQLQueryGenerator as any, 'generateByKeysQueries', fake.returns(fakeIDQueries))
-      const fakeFilterQueries = buildFakeGraphQLFielConfigMap('FilterQuery')
-      replace(graphQLQueryGenerator as any, 'generateFilterQueries', fake.returns(fakeFilterQueries))
-      const fakeListedQueries = buildFakeGraphQLFielConfigMap('ListedQuery')
-      replace(graphQLQueryGenerator as any, 'generateListedQueries', fake.returns(fakeListedQueries))
-      const fakeEventQueries = buildFakeGraphQLFielConfigMap('EventQuery')
-      replace(graphQLQueryGenerator as any, 'generateEventQueries', fake.returns(fakeEventQueries))
-
-      const result = graphQLQueryGenerator.generate()
-
-      expect(result).to.have.property('name', 'Query')
-      const fieldNames = Object.keys(result.getFields())
-      expect(fieldNames).to.include('IDQuery')
-      expect(fieldNames).to.include('FilterQuery')
-      expect(fieldNames).to.include('ListedQuery')
-      expect(fieldNames).to.include('EventQuery')
-    })
 
     context('black box tests', () => {
       let mockGraphQLType: any
@@ -163,7 +64,7 @@ describe('GraphQLQueryGenerator', () => {
         context('1 target type', () => {
           let mockTargetTypeClass: BooleanConstructor | StringConstructor | NumberConstructor | ArrayConstructor
           let mockTargetTypeName: string
-          let sut: GraphQLQueryGenerator
+          let graphQLQueryGenerator: GraphQLQueryGenerator
           let getClassMetadataStub: SinonStub<[classType: AnyClass], ClassMetadata>
 
           beforeEach(() => {
@@ -177,7 +78,7 @@ describe('GraphQLQueryGenerator', () => {
               methods: [],
             } as ClassMetadata
 
-            sut = new GraphQLQueryGenerator(
+            graphQLQueryGenerator = new GraphQLQueryGenerator(
               simpleConfig,
               [mockTargetTypeClass],
               mockTypeInformer as any,
@@ -193,13 +94,13 @@ describe('GraphQLQueryGenerator', () => {
           })
 
           it('should call typeInformer.getGraphQLTypeFor thrice', () => {
-            sut.generate()
+            graphQLQueryGenerator.generate()
 
             expect(getGraphQLTypeForStub).calledThrice.and.calledWith(mockTargetTypeClass)
           })
 
           it('should call filterResolverBuilder once with expected argument', () => {
-            sut.generate()
+            graphQLQueryGenerator.generate()
 
             expect(mockByIdResolverBuilder).calledOnce.and.calledWith(mockTargetTypeClass)
             // @ts-ignore
@@ -207,7 +108,7 @@ describe('GraphQLQueryGenerator', () => {
           })
 
           it('should return expected result', () => {
-            const result = sut.generate()
+            const result = graphQLQueryGenerator.generate()
 
             expect(result.name).to.be.equal('Query')
             expect(result.description).to.be.undefined
@@ -279,7 +180,7 @@ describe('GraphQLQueryGenerator', () => {
 
             context('Property GraphQL Type is scalar', () => {
               beforeEach(() => {
-                sut = new GraphQLQueryGenerator(
+                graphQLQueryGenerator = new GraphQLQueryGenerator(
                   simpleConfig,
                   [mockTargetType],
                   mockTypeInformer as any,
@@ -290,13 +191,13 @@ describe('GraphQLQueryGenerator', () => {
               })
 
               it('should call typeInformer.getGraphQLTypeFor 3 times', () => {
-                sut.generate()
+                graphQLQueryGenerator.generate()
 
                 expect(getGraphQLTypeForStub).callCount(3).and.calledWith(mockTargetType)
               })
 
               it('should call filterResolverBuilder once with expected arguments', () => {
-                sut.generate()
+                graphQLQueryGenerator.generate()
 
                 expect(mockByIdResolverBuilder).to.be.calledOnce.and.calledWith(mockTargetType)
                 // @ts-ignore
@@ -305,7 +206,7 @@ describe('GraphQLQueryGenerator', () => {
 
               context('should have expected args', () => {
                 it('When Boolean', () => {
-                  const result = sut.generate()
+                  const result = graphQLQueryGenerator.generate()
 
                   const config: any = result.toConfig()
                   expect(config.fields[mockTargetTypeName].args['id'].type.toString()).to.be.equal('ID!')
@@ -329,6 +230,23 @@ describe('GraphQLQueryGenerator', () => {
                     expect(booleansTypeFilterConfig.type.getFields()[fieldKey].extensions).to.be.undefined
                     expect(booleansTypeFilterConfig.type.getFields()[fieldKey].astNode).to.be.undefined
                   })
+
+                  const sortBy = config.fields[`List${mockTargetTypeName}s`].args.sortBy
+                  expect(sortBy.description).to.be.undefined
+                  expect(sortBy.defaultValue).to.be.undefined
+                  expect(sortBy.deprecationReason).to.be.undefined
+                  expect(sortBy.extensions).to.be.undefined
+                  expect(sortBy.astNode).to.be.undefined
+                  const sortByType = sortBy.type
+                  expect(sortByType.toString()).to.be.equal(`[${mockTargetTypeName}SortBy]`)
+                  expect(sortByType.ofType.getFields().field.name).to.be.equal('field')
+                  expect(sortByType.ofType.getFields().field.type.toString()).to.be.equal('String!')
+                  expect(sortByType.ofType.getFields().order.name).to.be.equal('order')
+                  expect(sortByType.ofType.getFields().order.type.toString()).to.be.equal('orderProperty!')
+                  const orderType = sortByType.ofType.getFields().order.type.ofType
+                  expect(orderType.name).to.be.equal('orderProperty')
+                  expect(orderType.getValue('ASC').name).to.be.equal('ASC')
+                  expect(orderType.getValue('DESC').name).to.be.equal('DESC')
                 })
 
                 it('When Number', () => {
@@ -355,7 +273,7 @@ describe('GraphQLQueryGenerator', () => {
                   } as ClassMetadata
                   getClassMetadataStub.withArgs(mockTargetType).returns(mockedClassMetadata as ClassMetadata)
 
-                  sut = new GraphQLQueryGenerator(
+                  graphQLQueryGenerator = new GraphQLQueryGenerator(
                     simpleConfig,
                     [mockTargetType],
                     mockTypeInformer as any,
@@ -363,7 +281,7 @@ describe('GraphQLQueryGenerator', () => {
                     mockFilterResolverBuilder,
                     mockEventsResolver
                   )
-                  const result = sut.generate()
+                  const result = graphQLQueryGenerator.generate()
 
                   const config: any = result.toConfig()
                   expect(config.fields[mockTargetTypeName].args['id'].type.toString()).to.be.equal('ID!')
@@ -388,6 +306,23 @@ describe('GraphQLQueryGenerator', () => {
                     expect(TypeFilterConfig.type.getFields()[fieldKey].extensions).to.be.undefined
                     expect(TypeFilterConfig.type.getFields()[fieldKey].astNode).to.be.undefined
                   })
+
+                  const sortBy = config.fields[`List${mockTargetTypeName}s`].args.sortBy
+                  expect(sortBy.description).to.be.undefined
+                  expect(sortBy.defaultValue).to.be.undefined
+                  expect(sortBy.deprecationReason).to.be.undefined
+                  expect(sortBy.extensions).to.be.undefined
+                  expect(sortBy.astNode).to.be.undefined
+                  const sortByType = sortBy.type
+                  expect(sortByType.toString()).to.be.equal(`[${mockTargetTypeName}SortBy]`)
+                  expect(sortByType.ofType.getFields().field.name).to.be.equal('field')
+                  expect(sortByType.ofType.getFields().field.type.toString()).to.be.equal('String!')
+                  expect(sortByType.ofType.getFields().order.name).to.be.equal('order')
+                  expect(sortByType.ofType.getFields().order.type.toString()).to.be.equal('orderProperty!')
+                  const orderType = sortByType.ofType.getFields().order.type.ofType
+                  expect(orderType.name).to.be.equal('orderProperty')
+                  expect(orderType.getValue('ASC').name).to.be.equal('ASC')
+                  expect(orderType.getValue('DESC').name).to.be.equal('DESC')
                 })
 
                 it('When String', () => {
@@ -414,7 +349,7 @@ describe('GraphQLQueryGenerator', () => {
                   } as ClassMetadata
                   getClassMetadataStub.withArgs(mockTargetType).returns(mockedClassMetadata as ClassMetadata)
 
-                  sut = new GraphQLQueryGenerator(
+                  graphQLQueryGenerator = new GraphQLQueryGenerator(
                     simpleConfig,
                     [mockTargetType],
                     mockTypeInformer as any,
@@ -422,7 +357,7 @@ describe('GraphQLQueryGenerator', () => {
                     mockFilterResolverBuilder,
                     mockEventsResolver
                   )
-                  const result = sut.generate()
+                  const result = graphQLQueryGenerator.generate()
 
                   const config: any = result.toConfig()
                   expect(config.fields[mockTargetTypeName].args['id'].type.toString()).to.be.equal('ID!')
@@ -457,6 +392,23 @@ describe('GraphQLQueryGenerator', () => {
                     expect(TypeFilterConfig.type.getFields()[fieldKey].extensions).to.be.undefined
                     expect(TypeFilterConfig.type.getFields()[fieldKey].astNode).to.be.undefined
                   })
+
+                  const sortBy = config.fields[`List${mockTargetTypeName}s`].args.sortBy
+                  expect(sortBy.description).to.be.undefined
+                  expect(sortBy.defaultValue).to.be.undefined
+                  expect(sortBy.deprecationReason).to.be.undefined
+                  expect(sortBy.extensions).to.be.undefined
+                  expect(sortBy.astNode).to.be.undefined
+                  const sortByType = sortBy.type
+                  expect(sortByType.toString()).to.be.equal(`[${mockTargetTypeName}SortBy]`)
+                  expect(sortByType.ofType.getFields().field.name).to.be.equal('field')
+                  expect(sortByType.ofType.getFields().field.type.toString()).to.be.equal('String!')
+                  expect(sortByType.ofType.getFields().order.name).to.be.equal('order')
+                  expect(sortByType.ofType.getFields().order.type.toString()).to.be.equal('orderProperty!')
+                  const orderType = sortByType.ofType.getFields().order.type.ofType
+                  expect(orderType.name).to.be.equal('orderProperty')
+                  expect(orderType.getValue('ASC').name).to.be.equal('ASC')
+                  expect(orderType.getValue('DESC').name).to.be.equal('DESC')
                 })
               })
             })
