@@ -85,7 +85,7 @@ describe('Events end-to-end tests', () => {
               .and.have.to.be.deep.equal([
                 {
                   message: 'Error: jwt not active\nError: jwt not active',
-                  extensions: { code: 'BoosterTokenExpiredError' },
+                  extensions: { code: 'BoosterTokenNotBeforeError' },
                 },
               ])
           })
