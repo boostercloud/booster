@@ -85,7 +85,7 @@ export interface ReadModelRequestEnvelope<TReadModel extends ReadModelInterface>
   className: string
   version: number
   filters: ReadModelRequestProperties<TReadModel>
-  sortBy?: Array<SortFor>
+  sortBy?: ReadModelSortProperties<TReadModel>
   limit?: number
   afterCursor?: unknown
   paginatedVersion?: boolean // Used only for retrocompatibility
@@ -93,7 +93,7 @@ export interface ReadModelRequestEnvelope<TReadModel extends ReadModelInterface>
 
 export interface ReadModelRequestArgs<TReadModel extends ReadModelInterface> {
   filter?: ReadModelRequestProperties<TReadModel>
-  sortBy?: Array<SortFor>
+  sortBy?: ReadModelSortProperties<TReadModel>
   limit?: number
   afterCursor?: unknown
 }
@@ -104,6 +104,8 @@ export interface ReadModelByIdRequestArgs {
 }
 
 export type ReadModelRequestProperties<TReadModel> = Record<string, FilterFor<TReadModel>>
+
+export type ReadModelSortProperties<TReadModel> = Record<string, SortFor<TReadModel>>
 
 export interface GraphQLRequestEnvelope extends Envelope {
   eventType: 'CONNECT' | 'MESSAGE' | 'DISCONNECT'

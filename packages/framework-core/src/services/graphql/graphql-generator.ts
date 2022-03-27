@@ -178,7 +178,7 @@ export class GraphQLGenerator {
       key,
       version: 1, // TODO: How to pass the version through GraphQL?
       filters: {},
-      sortBy: [],
+      sortBy: {},
     }
   }
 }
@@ -195,7 +195,7 @@ function toReadModelRequestEnvelope(
     class: readModelClass,
     className: readModelClass.name,
     filters: args.filter ?? {},
-    sortBy: args.sortBy ?? [],
+    sortBy: args.sortBy ?? {},
     limit: args.limit,
     afterCursor: args.afterCursor,
     paginatedVersion,

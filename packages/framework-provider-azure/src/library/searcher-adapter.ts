@@ -8,12 +8,11 @@ export async function searchReadModel(
   logger: Logger,
   readModelName: string,
   filters: FilterFor<unknown>,
-  sortByList?: Array<SortFor>,
+  sortBy?: SortFor<unknown>,
   limit?: number,
   afterCursor?: Record<string, string> | undefined,
   paginatedVersion = false
 ): Promise<Array<any> | ReadModelListResult<any>> {
-  const order = sortByList?.reduce((a, v) => ({ ...a, [v.field]: v.order }), {})
   return await queryHelper.search(
     cosmosDb,
     config,
@@ -23,6 +22,6 @@ export async function searchReadModel(
     limit,
     afterCursor,
     paginatedVersion,
-    order
+    sortBy
   )
 }

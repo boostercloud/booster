@@ -4,7 +4,11 @@ import { expect } from '../expect'
 import * as faker from 'faker'
 import { stub, restore } from 'sinon'
 import { ReadModelRegistry } from '../../src/services'
-import { createMockReadModelEnvelope } from '../helpers/read-model-helper'
+import {
+  assertOrderByAgeAndIdDesc,
+  assertOrderByAgeDesc,
+  createMockReadModelEnvelope,
+} from '../helpers/read-model-helper'
 import { random } from 'faker'
 
 describe('the read model registry', () => {
@@ -93,6 +97,35 @@ describe('the read model registry', () => {
       expect(result.length).to.be.equal(initialReadModelsCount + 1)
     })
 
+    it('should return all results sorted by Age', async () => {
+      const result = await readModelRegistry.query(
+        {},
+        {
+          value: {
+            age: 'DESC',
+          },
+        }
+      )
+
+      expect(result.length).to.be.equal(initialReadModelsCount + 1)
+      assertOrderByAgeDesc(result)
+    })
+
+    it('should return all results sorted by Age and ID', async () => {
+      const result = await readModelRegistry.query(
+        {},
+        {
+          value: {
+            age: 'DESC',
+            id: 'DESC',
+          },
+        }
+      )
+
+      expect(result.length).to.be.equal(initialReadModelsCount + 1)
+      assertOrderByAgeAndIdDesc(result)
+    })
+
     it('should return 1 result when age is less than or equal than max age', async () => {
       const result = await readModelRegistry.query({
         'value.age': { $lte: 40 },
@@ -178,7 +211,7 @@ describe('the read model registry', () => {
 
       readModelRegistry.readModels.update = stub().yields(error, null)
 
-      expect(readModelRegistry.store(readModel)).to.be.rejectedWith(error)
+      void expect(readModelRegistry.store(readModel)).to.be.rejectedWith(error)
     })
   })
 })

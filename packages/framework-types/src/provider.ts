@@ -60,7 +60,7 @@ export interface ProviderReadModelsLibrary {
     logger: Logger,
     entityTypeName: string,
     filters: FilterFor<unknown>,
-    sortByList?: Array<SortFor>,
+    sortBy?: SortFor<unknown>,
     limit?: number,
     afterCursor?: unknown,
     paginatedVersion?: boolean

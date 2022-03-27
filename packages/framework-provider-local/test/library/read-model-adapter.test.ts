@@ -49,7 +49,7 @@ async function searchMock(
   mockLogger: Logger,
   mockReadModel: ReadModelEnvelope,
   filters: FilterFor<any>,
-  sortBy?: Array<SortFor>,
+  sortBy?: SortFor<unknown>,
   limit?: number,
   afterCursor?: Record<string, string> | undefined
 ) {

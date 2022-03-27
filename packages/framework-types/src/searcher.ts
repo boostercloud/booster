@@ -6,7 +6,7 @@ import { Class, ReadOnlyNonEmptyArray } from './typelevel'
 export type SearcherFunction<TObject> = (
   className: string,
   filters: FilterFor<TObject>,
-  sortBy: Array<SortFor>,
+  sortBy: SortFor<TObject>,
   limit?: number,
   afterCursor?: any,
   paginatedVersion?: boolean
@@ -34,7 +34,7 @@ export class Searcher<TObject> {
   private _limit?: number
   private _afterCursor?: any
   private filters: FilterFor<TObject> = {}
-  private _sortByList: Array<SortFor> = []
+  private _sortByList: SortFor<TObject> = {}
   private _paginatedVersion = false
 
   /**
@@ -64,7 +64,7 @@ export class Searcher<TObject> {
     return this
   }
 
-  public sortByList(sortBy?: Array<SortFor>): this {
+  public sortBy(sortBy?: SortFor<TObject>): this {
     if (sortBy) this._sortByList = sortBy
     return this
   }
@@ -116,9 +116,8 @@ export class Searcher<TObject> {
   }
 }
 
-export type SortFor = {
-  field: string
-  order: string
+export type SortFor<TType> = {
+  [TProp in keyof TType]?: SortFor<TType[TProp]> | 'ASC' | 'DESC'
 }
 
 export type FilterFor<TType> = {

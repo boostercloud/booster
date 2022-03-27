@@ -14,7 +14,7 @@ export class ReadModelRegistry {
 
   public async query(
     query: object,
-    sortBy?: Array<SortFor>,
+    sortBy?: SortFor<unknown>,
     skip?: number,
     limit?: number
   ): Promise<Array<ReadModelEnvelope>> {
@@ -64,11 +64,21 @@ export class ReadModelRegistry {
     return deletePromise as Promise<number>
   }
 
-  private toLocalSortFor(sortByList?: Array<SortFor>): undefined | LocalSortedFor {
-    return sortByList?.reduce((a, v) => ({ ...a, [`value.${v.field}`]: ReadModelRegistry.toSortValue(v.order) }), {})
-  }
+  toLocalSortFor(
+    sortBy?: SortFor<unknown>,
+    parentKey = '',
+    sortedList: LocalSortedFor = {}
+  ): undefined | LocalSortedFor {
+    if (!sortBy || Object.keys(sortBy).length === 0) return
+    const elements = sortBy!
 
-  private static toSortValue(order: string): number {
-    return order === 'ASC' ? 1 : -1
+    Object.entries(elements).forEach(([key, value]) => {
+      if (typeof value === 'string') {
+        sortedList[`${parentKey}${key}`] = (value as string) === 'ASC' ? 1 : -1
+      } else {
+        this.toLocalSortFor(value as SortFor<unknown>, `${parentKey}${key}.`, sortedList)
+      }
+    })
+    return sortedList
   }
 }

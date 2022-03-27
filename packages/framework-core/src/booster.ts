@@ -81,7 +81,7 @@ export class Booster {
     const searchFunction: SearcherFunction<TReadModel> = async (
       readModelName: string,
       filters: FilterFor<unknown>,
-      sort?: Array<SortFor>,
+      sort?: SortFor<unknown>,
       limit?: number,
       afterCursor?: any,
       paginatedVersion?: boolean

@@ -19,12 +19,12 @@ export async function searchReadModel(
   logger: Logger,
   readModelName: string,
   filters: FilterFor<unknown>,
-  sortByList?: Array<SortFor>,
+  sortBy?: SortFor<unknown>,
   limit?: number,
   afterCursor?: DynamoDB.DocumentClient.Key | undefined,
   paginatedVersion = false
 ): Promise<Array<any> | ReadModelListResult<any>> {
-  if (sortByList) {
+  if (sortBy) {
     logger.info('AWS provider does not support SortBy. It will be ignored')
   }
   let params: DocumentClient.ScanInput = {

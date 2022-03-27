@@ -6,6 +6,7 @@ import {
   Logger,
   Operation,
   ReadModelListResult,
+  SortFor,
 } from '@boostercloud/framework-types'
 
 export async function search(
@@ -17,7 +18,7 @@ export async function search(
   limit?: number | undefined,
   afterCursor?: Record<string, string> | undefined,
   paginatedVersion = false,
-  order?: Record<string, string>
+  order?: SortFor<unknown>
 ): Promise<Array<any> | ReadModelListResult<any>> {
   const filterExpression = buildFilterExpression(filters)
   const queryDefinition = `SELECT * FROM c ${filterExpression !== '' ? `WHERE ${filterExpression}` : filterExpression}`

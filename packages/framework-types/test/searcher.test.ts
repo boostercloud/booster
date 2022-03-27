@@ -91,7 +91,7 @@ describe('the `Searcher` class', () => {
         const filters = { someField: { gt: '200' } }
         const result = await searcher.filter(filters).afterCursor('30').limit(50).paginatedVersion(true).searchOne()
 
-        expect(searcherFunction).to.have.been.calledWithMatch('SomeModel', filters, [], 1, '30', false)
+        expect(searcherFunction).to.have.been.calledWithMatch('SomeModel', filters, {}, 1, '30', false)
         expect(result).not.to.be.an('Array')
       })
     })
@@ -101,7 +101,7 @@ describe('the `Searcher` class', () => {
         const filters = { someField: { gt: '200' } }
         await searcher.filter(filters).afterCursor('30').limit(50).paginatedVersion(true).search()
 
-        expect(searcherFunction).to.have.been.calledWithMatch('SomeModel', filters, [], 50, '30', true)
+        expect(searcherFunction).to.have.been.calledWithMatch('SomeModel', filters, {}, 50, '30', true)
       })
     })
   })

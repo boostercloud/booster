@@ -237,16 +237,18 @@ describe('GraphQLQueryGenerator', () => {
                   expect(sortBy.deprecationReason).to.be.undefined
                   expect(sortBy.extensions).to.be.undefined
                   expect(sortBy.astNode).to.be.undefined
-                  const sortByType = sortBy.type
-                  expect(sortByType.toString()).to.be.equal(`[${mockTargetTypeName}SortBy]`)
-                  expect(sortByType.ofType.getFields().field.name).to.be.equal('field')
-                  expect(sortByType.ofType.getFields().field.type.toString()).to.be.equal('String!')
-                  expect(sortByType.ofType.getFields().order.name).to.be.equal('order')
-                  expect(sortByType.ofType.getFields().order.type.toString()).to.be.equal('orderProperty!')
-                  const orderType = sortByType.ofType.getFields().order.type.ofType
-                  expect(orderType.name).to.be.equal('orderProperty')
-                  expect(orderType.getValue('ASC').name).to.be.equal('ASC')
-                  expect(orderType.getValue('DESC').name).to.be.equal('DESC')
+                  const booleansTypeSortConfig = sortBy.type.getFields()[mockPropertyName]
+                  expect(booleansTypeSortConfig.type.toString()).to.not.be.undefined
+                  expect(sortBy.type.name.toString()).to.be.eq(`${mockTargetTypeName}SortBy`)
+                  const sortKeys = Object.keys(sortBy.type.getFields())
+                  sortKeys.forEach((fieldKey) => {
+                    expect(sortBy.type.getFields()[fieldKey].type.toString()).to.be.equal('orderProperty')
+                    const values = sortBy.type
+                      .getFields()
+                      [fieldKey].type.getValues()
+                      .map((value: { name: any }) => value.name)
+                    expect(values).to.be.eql(['ASC', 'DESC'])
+                  })
                 })
 
                 it('When Number', () => {
@@ -313,16 +315,18 @@ describe('GraphQLQueryGenerator', () => {
                   expect(sortBy.deprecationReason).to.be.undefined
                   expect(sortBy.extensions).to.be.undefined
                   expect(sortBy.astNode).to.be.undefined
-                  const sortByType = sortBy.type
-                  expect(sortByType.toString()).to.be.equal(`[${mockTargetTypeName}SortBy]`)
-                  expect(sortByType.ofType.getFields().field.name).to.be.equal('field')
-                  expect(sortByType.ofType.getFields().field.type.toString()).to.be.equal('String!')
-                  expect(sortByType.ofType.getFields().order.name).to.be.equal('order')
-                  expect(sortByType.ofType.getFields().order.type.toString()).to.be.equal('orderProperty!')
-                  const orderType = sortByType.ofType.getFields().order.type.ofType
-                  expect(orderType.name).to.be.equal('orderProperty')
-                  expect(orderType.getValue('ASC').name).to.be.equal('ASC')
-                  expect(orderType.getValue('DESC').name).to.be.equal('DESC')
+                  const booleansTypeSortConfig = sortBy.type.getFields()[mockPropertyName]
+                  expect(booleansTypeSortConfig.type.toString()).to.not.be.undefined
+                  expect(sortBy.type.name.toString()).to.be.eq(`${mockTargetTypeName}SortBy`)
+                  const sortKeys = Object.keys(sortBy.type.getFields())
+                  sortKeys.forEach((fieldKey) => {
+                    expect(sortBy.type.getFields()[fieldKey].type.toString()).to.be.equal('orderProperty')
+                    const values = sortBy.type
+                      .getFields()
+                      [fieldKey].type.getValues()
+                      .map((value: { name: any }) => value.name)
+                    expect(values).to.be.eql(['ASC', 'DESC'])
+                  })
                 })
 
                 it('When String', () => {
@@ -399,16 +403,18 @@ describe('GraphQLQueryGenerator', () => {
                   expect(sortBy.deprecationReason).to.be.undefined
                   expect(sortBy.extensions).to.be.undefined
                   expect(sortBy.astNode).to.be.undefined
-                  const sortByType = sortBy.type
-                  expect(sortByType.toString()).to.be.equal(`[${mockTargetTypeName}SortBy]`)
-                  expect(sortByType.ofType.getFields().field.name).to.be.equal('field')
-                  expect(sortByType.ofType.getFields().field.type.toString()).to.be.equal('String!')
-                  expect(sortByType.ofType.getFields().order.name).to.be.equal('order')
-                  expect(sortByType.ofType.getFields().order.type.toString()).to.be.equal('orderProperty!')
-                  const orderType = sortByType.ofType.getFields().order.type.ofType
-                  expect(orderType.name).to.be.equal('orderProperty')
-                  expect(orderType.getValue('ASC').name).to.be.equal('ASC')
-                  expect(orderType.getValue('DESC').name).to.be.equal('DESC')
+                  const booleansTypeSortConfig = sortBy.type.getFields()[mockPropertyName]
+                  expect(booleansTypeSortConfig.type.toString()).to.not.be.undefined
+                  expect(sortBy.type.name.toString()).to.be.eq(`${mockTargetTypeName}SortBy`)
+                  const sortKeys = Object.keys(sortBy.type.getFields())
+                  sortKeys.forEach((fieldKey) => {
+                    expect(sortBy.type.getFields()[fieldKey].type.toString()).to.be.equal('orderProperty')
+                    const values = sortBy.type
+                      .getFields()
+                      [fieldKey].type.getValues()
+                      .map((value: { name: any }) => value.name)
+                    expect(values).to.be.eql(['ASC', 'DESC'])
+                  })
                 })
               })
             })
