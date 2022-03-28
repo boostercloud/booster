@@ -59,7 +59,7 @@ describe('Events end-to-end tests', () => {
               .and.have.property('graphQLErrors')
               .and.have.to.be.deep.equal([
                 {
-                  message: 'Error: jwt expired\nError: jwt expired',
+                  message: 'TokenExpiredError: jwt expired\nError: jwt expired',
                   extensions: { code: 'BoosterTokenExpiredError' },
                 },
               ])
@@ -71,7 +71,7 @@ describe('Events end-to-end tests', () => {
               .and.have.property('graphQLErrors')
               .and.have.to.be.deep.equal([
                 {
-                  message: 'Error: jwt not active\nError: jwt not active',
+                  message: 'NotBeforeError: jwt not active\nError: jwt not active',
                   extensions: { code: 'BoosterTokenNotBeforeError' },
                 },
               ])
@@ -84,7 +84,7 @@ describe('Events end-to-end tests', () => {
               .and.have.property('graphQLErrors')
               .and.have.to.be.deep.equal([
                 {
-                  message: 'Error: jwt not active\nError: jwt not active',
+                  message: 'NotBeforeError: jwt not active\nError: jwt not active',
                   extensions: { code: 'BoosterTokenNotBeforeError' },
                 },
               ])
