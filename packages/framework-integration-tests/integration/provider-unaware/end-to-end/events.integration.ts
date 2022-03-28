@@ -210,7 +210,7 @@ describe('Events end-to-end tests', () => {
             // and that's that we will check
             //
             // The "one second before and after" is to leave enough room for possible misalignment between the
-            // clocks (remember we are using the ISO format, so we can forget about timezones and all that complicated stuff)
+            // clocks (remember we are using the ISO format, so we can forget about timezones and all that complicated stuff).
             const from = new Date(eventsProvisionedStartedAt)
             from.setSeconds(from.getSeconds() - 1)
             const to = new Date(eventsProvisionedFinishedAt)
