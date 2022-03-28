@@ -4,7 +4,7 @@ import { expect } from './expect'
 import { Register, BoosterConfig, Level, UserEnvelope } from '@boostercloud/framework-types'
 import { replace, fake, restore, spy } from 'sinon'
 import { RegisterHandler } from '../src'
-import { buildLogger } from '../src/booster-logger'
+import { getLogger } from '../src/booster-logger'
 
 class SomeEntity {}
 
@@ -17,7 +17,8 @@ class SomeEvent {
 
 describe('the `RegisterHandler` class', () => {
   const testConfig = new BoosterConfig('Test')
-  const logger = buildLogger(Level.debug, testConfig)
+  testConfig.logLevel = Level.debug
+  const logger = getLogger(testConfig)
 
   afterEach(() => {
     restore()

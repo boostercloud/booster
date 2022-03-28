@@ -19,7 +19,7 @@ import { GraphQLQueryGenerator } from '../../../src/services/graphql/graphql-que
 import { GraphQLMutationGenerator } from '../../../src/services/graphql/graphql-mutation-generator'
 import { GraphQLSubscriptionGenerator } from '../../../src/services/graphql/graphql-subcriptions-generator'
 import { random, internet, lorem } from 'faker'
-import { buildLogger } from '../../../src/booster-logger'
+import { getLogger } from '../../../src/booster-logger'
 import { BoosterEventsReader } from '../../../src/booster-events-reader'
 
 import { GraphQLResolverContext } from '../../../src/services/graphql/common'
@@ -33,7 +33,8 @@ describe('GraphQL generator', () => {
   beforeEach(() => {
     mockEnvironmentName = random.alphaNumeric(10)
     mockConfig = new BoosterConfig(mockEnvironmentName)
-    mockLogger = buildLogger(Level.error, mockConfig)
+    mockConfig.logLevel = Level.error
+    mockLogger = getLogger(mockConfig)
   })
 
   afterEach(() => {

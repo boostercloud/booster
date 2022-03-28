@@ -47,6 +47,6 @@
     "**/*.{ts,md}": "prettier --single-quote --write"
   },
   "dependencies": {
-    "xmldom": "^0.6.0"
+    "@xmldom/xmldom": "^0.7.0"
   }
 }
