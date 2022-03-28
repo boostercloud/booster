@@ -62,13 +62,6 @@ class TokenVerifierClient {
     return new Promise((resolve, reject) => {
       jwt.verify(token, key, this.options, (err, decoded) => {
         if (err) {
-          if (err instanceof TokenExpiredError) {
-            return reject(new BoosterTokenExpiredError(err.message))
-          }
-
-          if (err instanceof NotBeforeError) {
-            return reject(new BoosterTokenNotBeforeError(err.message))
-          }
           return reject(err)
         }
         const jwtToken = decoded as any
@@ -158,11 +151,11 @@ export class BoosterTokenVerifier {
   }
 
   private getTokenNotBeforeErrors(results: Array<PromiseSettledResult<UserEnvelope>>): Array<PromiseRejectedResult> {
-    return this.getErrors(results).filter((result) => result.reason instanceof BoosterTokenNotBeforeError)
+    return this.getErrors(results).filter((result) => result.reason instanceof NotBeforeError)
   }
 
   private getTokenExpiredErrors(results: Array<PromiseSettledResult<UserEnvelope>>): Array<PromiseRejectedResult> {
-    return this.getErrors(results).filter((result) => result.reason instanceof BoosterTokenExpiredError)
+    return this.getErrors(results).filter((result) => result.reason instanceof TokenExpiredError)
   }
 
   private getErrors(results: Array<PromiseSettledResult<UserEnvelope>>): Array<PromiseRejectedResult> {
