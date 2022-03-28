@@ -681,7 +681,7 @@ In order to define an onError hook you pass a functions with the right signature
 ```typescript
 @Command({
   authorize: 'all',
-  onError: ChangeCartItem.onErrorChangeCartItem,
+  onError: ChangeCartItem.errorHandler,
 })
 export class ChangeCartItem {
   public constructor(readonly cartId: UUID, readonly productId: UUID, readonly quantity: number) {}
@@ -690,7 +690,7 @@ export class ChangeCartItem {
     register.events(new CartItemChanged(command.cartId, command.productId, command.quantity))
   }
 
-  public static async onErrorChangeCartItem(error: Error, input: CommandInput, register: Register): Promise<Error> {
+  public static async errorHandler(error: Error, input: CommandInput, register: Register): Promise<Error> {
     return new Error(error.message + '-onErrorChangeCartItem')
   }
 }
