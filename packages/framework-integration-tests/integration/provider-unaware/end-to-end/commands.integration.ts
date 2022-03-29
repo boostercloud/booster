@@ -29,4 +29,18 @@ describe('Commands end-to-end tests', () => {
     expect(response).not.to.be.null
     expect(response?.data?.ChangeCartItem).to.be.true
   })
+
+  it('accepts an empty command', async () => {
+    const response = await client.mutate({
+      variables: {},
+      mutation: gql`
+        mutation {
+          EmptyCommand
+        }
+      `,
+    })
+
+    expect(response).not.to.be.null
+    expect(response?.data?.EmptyCommand).to.be.equal('Empty command executed')
+  })
 })
