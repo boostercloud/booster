@@ -17,6 +17,7 @@ import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
 
 const logger: Logger = {
   info: fake(),
+  warn: fake(),
   error: fake(),
   debug: fake(),
 }

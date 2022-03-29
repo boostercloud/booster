@@ -12,6 +12,7 @@ import { DocumentClient, Converter } from 'aws-sdk/clients/dynamodb'
 
 const fakeLogger: Logger = {
   info: fake(),
+  warn: fake(),
   error: fake(),
   debug: fake(),
 }

@@ -73,6 +73,7 @@ describe('BoosterEventDispatcher', () => {
 
   const logger: Logger = {
     debug() {},
+    warn() {},
     info() {},
     error() {},
   }

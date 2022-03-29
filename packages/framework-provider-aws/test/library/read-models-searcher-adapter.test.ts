@@ -11,6 +11,7 @@ describe('Read models searcher adapter', () => {
     const config: BoosterConfig = new BoosterConfig('test')
     const logger: Logger = {
       info: fake(),
+      warn: fake(),
       error: fake(),
       debug: fake(),
     }
