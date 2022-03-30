@@ -1305,6 +1305,88 @@ boost nuke -e <environment name>
 For a force delete without asking for confirmation, you can run `boost nuke -e <environment name> -f`.
 
 > [!ATTENTION] Be EXTRA CAUTIOUS with this option, all your application data will be irreversibly DELETED without confirmation.
+ 
+
+## Error handling
+
+Booster includes a global error handler annotation `@GlobalErrorHandler` that will catch all errors that are thrown by:
+  * **Command handle errors**: Errors thrown on the Command `handle` method.
+  * **Schedule handle errors**: Errors thrown on the ScheduledCommand `handle` method.
+  * **Event handler errors**: Errors thrown on the Event `handle` method.
+  * **Reducer errors**: Errors thrown on the ReadModel `@Reduces` method.
+  * **Projections errors**: Errors thrown on the Entity `@Projects` method.
+  * **All errors**: Errors thrown on any of the above methods. This method will be called if always, also when any of the above methods are called.
+
+You can catch and throw new errors on any of those methods annotating a class with `@GlobalErrorHandler` and implementing the following methods:
+
+**Command handle errors**:
+```typescript
+onCommandHandlerError?(error: Error, command: CommandEnvelope): Promise<Error>
+```
+
+**Schedule handle errors**:
+```typescript
+onScheduledCommandHandlerError?(error: Error): Promise<Error>
+```
+
+**Event handler errors**:
+```typescript
+onDispatchEventHandlerError?(error: Error, eventInstance: EventInterface): Promise<Error>
+```
+
+**Reducer errors**:
+```typescript
+onReducerError?(error: Error, eventInstance: EventInterface, snapshotInstance: EntityInterface | null): Promise<Error>
+```
+
+**Projections errors**:
+```typescript
+onProjectionError?(error: Error, entity: EntityInterface, readModel: ReadModelInterface | undefined): Promise<Error>
+```
+
+**All errors**
+```typescript
+  onError?(error: Error): Promise<Error>
+```
+
+Example:
+```typescript
+@GlobalErrorHandler()
+export class AppErrorHandler {
+  public static async onCommandHandlerError(error: Error, command: CommandEnvelope): Promise<Error> {
+    return error
+  }
+
+  public static async onScheduledCommandHandlerError(error: Error): Promise<Error> {
+    return error
+  }
+
+  public static async onDispatchEventHandlerError(error: Error, eventInstance: EventInterface): Promise<Error> {
+    return error
+  }
+
+  public static async onReducerError(
+    error: Error,
+    eventInstance: EventInterface,
+    snapshotInstance: EntityInterface | null
+  ): Promise<Error> {
+    return error
+  }
+
+  public static async onProjectionError(
+    error: Error,
+    entity: EntityInterface,
+    readModel: ReadModelInterface | undefined
+  ): Promise<Error> {
+    return error
+  }
+
+  public static async onError(error: Error): Promise<Error> {
+    return error
+  }
+}
+```
+
 
 ## Provider feature matrix
 
