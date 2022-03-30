@@ -23,6 +23,7 @@ const logger: Logger = {
   debug() {},
   info() {},
   error() {},
+  warn() {},
 }
 
 describe('BoosterGlobalErrorDispatcher', () => {
