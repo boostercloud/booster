@@ -13,7 +13,6 @@ import {
   ReadModelAction,
   OptimisticConcurrencyUnexpectedVersionError,
   ProjectionResult,
-  InvalidParameterError,
 } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 import { createInstance } from '@boostercloud/framework-common-helpers'
@@ -496,14 +495,11 @@ describe('ReadModelStore', () => {
     })
 
     context('when the joinkey does not exist', () => {
-      it('throws an `InvalidParameterError', () => {
+      it('should not throw and error an skip', () => {
         const anEntitySnapshot = eventEnvelopeFor(AnImportantEntity.name)
         const anEntityInstance = createInstance(AnImportantEntity, anEntitySnapshot.value) as any
         const readModelStore = new ReadModelStore(config, logger) as any
-
-        expect(() => {
-          readModelStore.joinKeyForProjection(anEntityInstance, { joinKey: 'whatever' })
-        }).to.throw(InvalidParameterError)
+        expect(readModelStore.joinKeyForProjection(anEntityInstance, { joinKey: 'whatever' })).to.be.undefined
       })
     })
   })
