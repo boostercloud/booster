@@ -12,8 +12,10 @@ import {
   ReadModelAction,
   OptimisticConcurrencyUnexpectedVersionError,
   SequenceKey,
+  ProjectionGlobalError,
 } from '@boostercloud/framework-types'
 import { Promises, retryIfError, createInstance } from '@boostercloud/framework-common-helpers'
+import { BoosterGlobalErrorDispatcher } from '../booster-global-error-dispatcher'
 
 export class ReadModelStore {
   private config: BoosterConfig
@@ -95,7 +97,14 @@ export class ReadModelStore {
   ): Promise<unknown> {
     const readModel = await this.fetchReadModel(readModelName, readModelID, sequenceKey)
     const currentReadModelVersion: number = readModel?.boosterMetadata?.version ?? 0
-    const newReadModel = this.projectionFunction(projectionMetadata)(entity, readModel)
+
+    let newReadModel: any
+    try {
+      newReadModel = this.projectionFunction(projectionMetadata)(entity, readModel)
+    } catch (e) {
+      const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config, this.logger)
+      throw await globalErrorDispatcher.dispatch(new ProjectionGlobalError(entity, readModel, e))
+    }
 
     if (newReadModel === ReadModelAction.Delete) {
       this.logger.debug(

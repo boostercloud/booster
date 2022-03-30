@@ -5,8 +5,10 @@ import {
   UUID,
   EventEnvelope,
   InvalidParameterError,
+  ReducerGlobalError,
 } from '@boostercloud/framework-types'
 import { createInstance } from '@boostercloud/framework-common-helpers'
+import { BoosterGlobalErrorDispatcher } from '../booster-global-error-dispatcher'
 
 const originOfTime = new Date(0).toISOString() // Unix epoch
 
@@ -35,7 +37,11 @@ export class EventStore {
       this.logger.debug(
         `[EventStore#fetchEntitySnapshot] Looking for the reducer for entity ${entityName} with ID ${entityID}`
       )
-      const newEntitySnapshot = pendingEvents.reduce(this.entityReducer.bind(this), latestSnapshotEnvelope)
+      let newEntitySnapshot = latestSnapshotEnvelope
+      for (const pendingEvent of pendingEvents) {
+        newEntitySnapshot = await this.entityReducer(newEntitySnapshot, pendingEvent)
+      }
+
       this.logger.debug(
         `[EventStore#fetchEntitySnapshot] Reduced new snapshot for entity ${entityName} with ID ${entityID}: `,
         newEntitySnapshot
@@ -59,7 +65,11 @@ export class EventStore {
     this.logger.debug(
       `[EventStore#calculateAndStoreEntitySnapshot] Looking for the reducer for entity ${entityName} with ID ${entityID}`
     )
-    const newEntitySnapshot = pendingEnvelopes.reduce(this.entityReducer.bind(this), latestSnapshotEnvelope)
+    let newEntitySnapshot = latestSnapshotEnvelope
+    for (const pendingEvent of pendingEnvelopes) {
+      newEntitySnapshot = await this.entityReducer(newEntitySnapshot, pendingEvent)
+    }
+
     this.logger.debug(
       `[EventStore#calculateAndStoreEntitySnapshot] Reduced new snapshot for entity ${entityName} with ID ${entityID}: `,
       newEntitySnapshot
@@ -94,7 +104,10 @@ export class EventStore {
     return this.provider.events.forEntitySince(this.config, this.logger, entityTypeName, entityID, timestamp)
   }
 
-  private entityReducer(latestSnapshot: EventEnvelope | null, eventEnvelope: EventEnvelope): EventEnvelope {
+  private async entityReducer(
+    latestSnapshot: EventEnvelope | null,
+    eventEnvelope: EventEnvelope
+  ): Promise<EventEnvelope> {
     try {
       this.logger.debug(
         '[EventStore#entityReducer]: Calling reducer with event: ',
@@ -106,7 +119,14 @@ export class EventStore {
       const eventInstance = createInstance(eventMetadata.class, eventEnvelope.value)
       const entityMetadata = this.config.entities[eventEnvelope.entityTypeName]
       const snapshotInstance = latestSnapshot ? createInstance(entityMetadata.class, latestSnapshot.value) : null
-      const newEntity = this.reducerForEvent(eventEnvelope.typeName)(eventInstance, snapshotInstance)
+      let newEntity: any
+      try {
+        newEntity = this.reducerForEvent(eventEnvelope.typeName)(eventInstance, snapshotInstance)
+      } catch (e) {
+        const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config, this.logger)
+        throw await globalErrorDispatcher.dispatch(new ReducerGlobalError(eventInstance, snapshotInstance, e))
+      }
+
       const newSnapshot: EventEnvelope = {
         version: this.config.currentVersionFor(eventEnvelope.entityTypeName),
         kind: 'snapshot',

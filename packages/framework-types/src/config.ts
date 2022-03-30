@@ -11,6 +11,7 @@ import {
   EventMetadata,
   TokenVerifierConfig,
   CommandHandlerReturnTypeMetadata,
+  GlobalErrorHandlerMetadata,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
@@ -59,6 +60,7 @@ export class BoosterConfig {
   public readonly roles: Record<RoleName, RoleMetadata> = {}
   public readonly migrations: Record<ConceptName, Map<Version, MigrationMetadata>> = {}
   public readonly scheduledCommandHandlers: Record<ScheduledCommandName, ScheduledCommandMetadata> = {}
+  public globalErrorsHandler: GlobalErrorHandlerMetadata | undefined
 
   private rocketFunctionMap: Record<string, RocketFunction> = {}
   public registerRocketFunction(id: string, func: RocketFunction): void {

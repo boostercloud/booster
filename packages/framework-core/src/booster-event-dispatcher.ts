@@ -5,12 +5,14 @@ import {
   Register,
   EventHandlerInterface,
   UUID,
+  EventHandlerGlobalError,
 } from '@boostercloud/framework-types'
 import { EventStore } from './services/event-store'
 import { EventsStreamingCallback, RawEventsParser } from './services/raw-events-parser'
 import { ReadModelStore } from './services/read-model-store'
 import { RegisterHandler } from './booster-register-handler'
 import { createInstance, Promises } from '@boostercloud/framework-common-helpers'
+import { BoosterGlobalErrorDispatcher } from './booster-global-error-dispatcher'
 
 export class BoosterEventDispatcher {
   /**
@@ -96,7 +98,12 @@ export class BoosterEventDispatcher {
           const eventInstance = createInstance(eventClass.class, eventEnvelope.value)
           const register = new Register(eventEnvelope.requestID, eventEnvelope.currentUser)
           logger.debug('Calling "handle" method on event handler: ', eventHandler)
-          await eventHandler.handle(eventInstance, register)
+          try {
+            await eventHandler.handle(eventInstance, register)
+          } catch (e) {
+            const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(config, logger)
+            throw await globalErrorDispatcher.dispatch(new EventHandlerGlobalError(eventInstance, e))
+          }
           return RegisterHandler.handle(config, logger, register)
         })
       )
