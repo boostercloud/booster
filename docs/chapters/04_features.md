@@ -1313,8 +1313,8 @@ Booster includes a global error handler annotation `@GlobalErrorHandler` that wi
   * **Command handle errors**: Errors thrown on the Command `handle` method.
   * **Schedule handle errors**: Errors thrown on the ScheduledCommand `handle` method.
   * **Event handler errors**: Errors thrown on the Event `handle` method.
-  * **Reducer errors**: Errors thrown on the ReadModel `@Reduces` method.
-  * **Projections errors**: Errors thrown on the Entity `@Projects` method.
+  * **Reducer errors**: Errors thrown on the Entity `@Reduces` method.
+  * **Projections errors**: Errors thrown on the ReadModel `@Projects` method.
   * **All errors**: Errors thrown on any of the above methods. This method will be called if always, also when any of the above methods are called.
 
 You can catch and throw new errors on any of those methods annotating a class with `@GlobalErrorHandler` and implementing the following methods:
