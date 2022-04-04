@@ -8,7 +8,6 @@ import {
   ProjectionMetadata,
   UUID,
   EntityInterface,
-  InvalidParameterError,
   ReadModelAction,
   OptimisticConcurrencyUnexpectedVersionError,
   SequenceKey,
@@ -41,6 +40,12 @@ export class ReadModelStore {
         const entityInstance = createInstance(entityMetadata.class, entitySnapshotEnvelope.value)
         const readModelID = this.joinKeyForProjection(entityInstance, projectionMetadata)
         const sequenceKey = this.sequenceKeyForProjection(entityInstance, projectionMetadata)
+        if (!readModelID) {
+          this.logger.warn(
+            `Couldn't find the joinKey named ${projectionMetadata.joinKey} in entity snapshot of ${entityMetadata.class.name}. Skipping...`
+          )
+          return
+        }
         this.logger.debug(
           '[ReadModelStore#project] Projecting entity snapshot ',
           entitySnapshotEnvelope,
@@ -65,13 +70,7 @@ export class ReadModelStore {
   }
 
   private joinKeyForProjection(entity: EntityInterface, projectionMetadata: ProjectionMetadata): UUID {
-    const joinKey = (entity as any)[projectionMetadata.joinKey]
-    if (!joinKey) {
-      throw new InvalidParameterError(
-        `Couldn't find the joinKey named ${projectionMetadata.joinKey} in entity snapshot: ${entity}`
-      )
-    }
-    return joinKey
+    return (entity as any)[projectionMetadata.joinKey]
   }
 
   private sequenceKeyForProjection(
@@ -152,7 +151,7 @@ export class ReadModelStore {
     if (rawReadModels?.length) {
       if (rawReadModels.length > 1) {
         throw 'Got multiple objects for a request by Id. If this is a sequenced read model you should also specify the sequenceKey field.'
-      } else if (rawReadModels.length === 1) {
+      } else if (rawReadModels.length === 1 && rawReadModels[0]) {
         const readModelMetadata = this.config.readModels[readModelName]
         return createInstance(readModelMetadata.class, rawReadModels[0])
       }
