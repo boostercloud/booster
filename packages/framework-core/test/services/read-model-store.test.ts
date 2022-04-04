@@ -443,6 +443,22 @@ describe('ReadModelStore', () => {
         expect(result).to.be.undefined
       })
 
+      it("returns `undefined` when the read model doesn't exist and provider returns [undefined]", async () => {
+        replace(config.provider.readModels, 'fetch', fake.returns([undefined]))
+        const readModelStore = new ReadModelStore(config, logger)
+
+        const result = await readModelStore.fetchReadModel(SomeReadModel.name, 'joinColumnID')
+
+        expect(config.provider.readModels.fetch).to.have.been.calledOnceWithExactly(
+          config,
+          logger,
+          SomeReadModel.name,
+          'joinColumnID',
+          undefined
+        )
+        expect(result).to.be.undefined
+      })
+
       it('returns an instance of the current read model value when it exists', async () => {
         replace(config.provider.readModels, 'fetch', fake.returns([{ id: 'joinColumnID' }]))
         const readModelStore = new ReadModelStore(config, logger)

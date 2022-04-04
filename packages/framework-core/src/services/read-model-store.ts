@@ -41,7 +41,7 @@ export class ReadModelStore {
         const readModelID = this.joinKeyForProjection(entityInstance, projectionMetadata)
         const sequenceKey = this.sequenceKeyForProjection(entityInstance, projectionMetadata)
         if (!readModelID) {
-          this.logger.debug(
+          this.logger.warn(
             `Couldn't find the joinKey named ${projectionMetadata.joinKey} in entity snapshot of ${entityMetadata.class.name}. Skipping...`
           )
           return
