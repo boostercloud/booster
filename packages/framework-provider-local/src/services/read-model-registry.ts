@@ -8,9 +8,16 @@ export class ReadModelRegistry {
     this.readModels.loadDatabase()
   }
 
-  public async query(query: object): Promise<Array<ReadModelEnvelope>> {
+  public async query(query: object, skip?: number, limit?: number): Promise<Array<ReadModelEnvelope>> {
+    let cursor = this.readModels.find(query)
+    if (skip) {
+      cursor = cursor.skip(skip)
+    }
+    if (limit) {
+      cursor = cursor.limit(limit)
+    }
     const queryPromise = new Promise((resolve, reject) =>
-      this.readModels.find(query).exec((err, docs) => {
+      cursor.exec((err, docs) => {
         if (err) reject(err)
         else resolve(docs)
       })

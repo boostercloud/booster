@@ -50,6 +50,19 @@ describe('searcher-adapter', () => {
       expect(result).to.deep.equal({ 'value.field': { $regex: new RegExp('one') }, typeName })
     })
 
+    it('converts the "includes" operator with objects', () => {
+      const result = queryRecordFor(typeName, { parentField: { includes: { children1: 'abc', children2: 2 } } })
+      expect(result).to.deep.equal({
+        'value.parentField': { $elemMatch: { children1: 'abc', children2: 2 } },
+        typeName,
+      })
+    })
+
+    it('converts nested operator with objects', () => {
+      const result = queryRecordFor(typeName, { parentField: { children1: { eq: 'one' } } })
+      expect(result).to.deep.equal({ 'value.parentField.children1': 'one', typeName })
+    })
+
     it('converts the "beginsWith" operator', () => {
       const result = queryRecordFor(typeName, { field: { beginsWith: 'one' } })
       expect(result).to.deep.equal({ 'value.field': { $regex: new RegExp('^one') }, typeName })
