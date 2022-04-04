@@ -219,7 +219,22 @@ describe('the "verifyToken" method', () => {
 
     const verifyFunction = boosterTokenVerifier.verify(token)
 
-    await expect(verifyFunction).to.eventually.be.rejected
+    await expect(verifyFunction).to.eventually.be.rejectedWith('jwt expired')
+  })
+
+  it('fails if current time is before the notBefore claim of the token ', async () => {
+    const token = jwks.token({
+      sub: userId,
+      iss: issuer,
+      'custom:role': ['User', 'Other'],
+      email,
+      phoneNumber,
+      nbf: Math.floor(Date.now() / 1000) + 999999,
+    })
+
+    const verifyFunction = boosterTokenVerifier.verify(token)
+
+    await expect(verifyFunction).to.eventually.be.rejectedWith('jwt not active')
   })
 
   it("fails if extra validation doesn't match", async () => {

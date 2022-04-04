@@ -12,6 +12,9 @@ chai.use(require('chai-as-promised'))
 describe('Events end-to-end tests', () => {
   let anonymousClient: ApolloClient<NormalizedCacheObject>
   let loggedClient: ApolloClient<NormalizedCacheObject>
+  let expiredClient: ApolloClient<NormalizedCacheObject>
+  let beforeClient: ApolloClient<NormalizedCacheObject>
+  let expiredAndBeforeClient: ApolloClient<NormalizedCacheObject>
 
   before(async () => {
     anonymousClient = applicationUnderTest.graphql.client()
@@ -19,6 +22,13 @@ describe('Events end-to-end tests', () => {
     const userEmail = internet.email()
     const userToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail')
     loggedClient = applicationUnderTest.graphql.client(userToken)
+    const expiredToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail', 0)
+    expiredClient = applicationUnderTest.graphql.client(expiredToken)
+    const notBefore = Math.floor(Date.now() / 1000) + 999999
+    const beforeToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail', undefined, notBefore)
+    beforeClient = applicationUnderTest.graphql.client(beforeToken)
+    const expiredAndBeforeToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail', 0, notBefore)
+    expiredAndBeforeClient = applicationUnderTest.graphql.client(expiredAndBeforeToken)
   })
 
   describe('Query events', () => {
@@ -39,6 +49,45 @@ describe('Events end-to-end tests', () => {
 
           it('can read events belonging to an entity authorized for "all"', async () => {
             await expect(queryByType(anonymousClient, 'CartItemChanged')).to.eventually.be.fulfilled
+          })
+        })
+
+        context('with an expired or not before token', () => {
+          it('can not read events belonging to an entity with an expired token', async () => {
+            await expect(queryByType(expiredClient, 'CartItemChanged'))
+              .to.eventually.be.rejected.and.be.an.instanceOf(Error)
+              .and.have.property('graphQLErrors')
+              .and.have.to.be.deep.equal([
+                {
+                  message: 'TokenExpiredError: jwt expired\nTokenExpiredError: jwt expired',
+                  extensions: { code: 'BoosterTokenExpiredError' },
+                },
+              ])
+          })
+
+          it('can not read events belonging to an entity with a token not before', async () => {
+            await expect(queryByType(beforeClient, 'CartItemChanged'))
+              .to.eventually.be.rejected.and.be.an.instanceOf(Error)
+              .and.have.property('graphQLErrors')
+              .and.have.to.be.deep.equal([
+                {
+                  message: 'NotBeforeError: jwt not active\nNotBeforeError: jwt not active',
+                  extensions: { code: 'BoosterTokenNotBeforeError' },
+                },
+              ])
+          })
+
+          // jwt.verify check NotBefore before Expired. If we have a token NotBefore and Expired we will get a BoosterTokenExpiredError error
+          it('return BoosterTokenNotBeforeError with a token expired and not before', async () => {
+            await expect(queryByType(expiredAndBeforeClient, 'CartItemChanged'))
+              .to.eventually.be.rejected.and.be.an.instanceOf(Error)
+              .and.have.property('graphQLErrors')
+              .and.have.to.be.deep.equal([
+                {
+                  message: 'NotBeforeError: jwt not active\nNotBeforeError: jwt not active',
+                  extensions: { code: 'BoosterTokenNotBeforeError' },
+                },
+              ])
           })
         })
 
