@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
           node-version: 16.x
       - run: npx lerna bootstrap
@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
           node-version: 16.x
       - run: npx lerna bootstrap
@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
           node-version: 16.x
       - run: npx lerna bootstrap
@@ -66,7 +66,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
           node-version: 16.x
       - run: npx lerna bootstrap
@@ -86,7 +86,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
           node-version: 16.x
       - run: npx lerna bootstrap
@@ -102,7 +102,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
           node-version: 16.x
       - run: npx lerna bootstrap
@@ -114,7 +114,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
           node-version: 16.x
       - run: npx lerna bootstrap
@@ -131,7 +131,7 @@ jobs:
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
 
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
           node-version: 16.x
       - run: npx lerna bootstrap
@@ -149,7 +149,7 @@ jobs:
           ARM_CLIENT_SECRET: ${{ secrets.AZURE_SECRET }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
-    
+
   azure-end-to-end-integration-tests:
     name: Azure End to End Integration Test
     needs:
@@ -162,7 +162,7 @@ jobs:
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
 
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
           node-version: 16.x
       - run: npx lerna bootstrap
@@ -180,7 +180,7 @@ jobs:
           ARM_CLIENT_SECRET: ${{ secrets.AZURE_SECRET }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
-    
+
   azure-func-integration-tests:
     name: Azure Func Integration Test
     needs:
@@ -193,7 +193,7 @@ jobs:
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
 
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
           node-version: 16.x
       - run: npx lerna bootstrap
@@ -211,7 +211,7 @@ jobs:
           ARM_CLIENT_SECRET: ${{ secrets.AZURE_SECRET }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
-          
+
   azure-nuke-integration-tests:
     name: Azure Nuke Integration Test
     if: always() && needs.azure-deploy-integration-tests.result == 'success'
@@ -226,7 +226,7 @@ jobs:
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
 
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
           node-version: 16.x
       - run: npx lerna bootstrap
@@ -259,7 +259,7 @@ jobs:
   #        minikube version: 'v1.18.1'
   #        kubernetes version: 'v1.19.7'
   #        driver: 'docker'
-  #    - uses: actions/setup-node@v1
+  #    - uses: actions/setup-node@v3
   #      with:
   #        node-version: 16.x
   #    - run: sudo snap install helm --classic
