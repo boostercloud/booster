@@ -140,7 +140,7 @@ describe('read-models-adapter', () => {
     it('empty query should call read model registry store', async () => {
       const mockReadModel = createMockReadModelEnvelope()
       await searchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel.typeName, {})
-      expect(queryStub).to.have.been.calledWithExactly({ typeName: mockReadModel.typeName })
+      expect(queryStub).to.have.been.calledWithExactly({ typeName: mockReadModel.typeName }, 0, undefined)
     })
 
     describe('query by one field', () => {
@@ -149,7 +149,11 @@ describe('read-models-adapter', () => {
         await searchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel.typeName, {
           foo: { eq: 1 },
         })
-        expect(queryStub).to.have.been.calledWithExactly({ typeName: mockReadModel.typeName, 'value.foo': 1 })
+        expect(queryStub).to.have.been.calledWithExactly(
+          { typeName: mockReadModel.typeName, 'value.foo': 1 },
+          0,
+          undefined
+        )
       })
 
       it('ne query should call read model registry store with the appropriate operation converted', async () => {
@@ -157,7 +161,11 @@ describe('read-models-adapter', () => {
         await searchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel.typeName, {
           foo: { ne: 1 },
         })
-        expect(queryStub).to.have.been.calledWithExactly({ typeName: mockReadModel.typeName, 'value.foo': { $ne: 1 } })
+        expect(queryStub).to.have.been.calledWithExactly(
+          { typeName: mockReadModel.typeName, 'value.foo': { $ne: 1 } },
+          0,
+          undefined
+        )
       })
 
       it('lt query should call read model registry store with the appropriate operation converted', async () => {
@@ -165,7 +173,11 @@ describe('read-models-adapter', () => {
         await searchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel.typeName, {
           foo: { lt: 1 },
         })
-        expect(queryStub).to.have.been.calledWithExactly({ typeName: mockReadModel.typeName, 'value.foo': { $lt: 1 } })
+        expect(queryStub).to.have.been.calledWithExactly(
+          { typeName: mockReadModel.typeName, 'value.foo': { $lt: 1 } },
+          0,
+          undefined
+        )
       })
 
       it('gt query should call read model registry store with the appropriate operation converted', async () => {
@@ -173,7 +185,11 @@ describe('read-models-adapter', () => {
         await searchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel.typeName, {
           foo: { gt: 1 },
         })
-        expect(queryStub).to.have.been.calledWithExactly({ typeName: mockReadModel.typeName, 'value.foo': { $gt: 1 } })
+        expect(queryStub).to.have.been.calledWithExactly(
+          { typeName: mockReadModel.typeName, 'value.foo': { $gt: 1 } },
+          0,
+          undefined
+        )
       })
 
       it('lte query should call read model registry store with the appropriate operation converted', async () => {
@@ -181,7 +197,11 @@ describe('read-models-adapter', () => {
         await searchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel.typeName, {
           foo: { lte: 1 },
         })
-        expect(queryStub).to.have.been.calledWithExactly({ typeName: mockReadModel.typeName, 'value.foo': { $lte: 1 } })
+        expect(queryStub).to.have.been.calledWithExactly(
+          { typeName: mockReadModel.typeName, 'value.foo': { $lte: 1 } },
+          0,
+          undefined
+        )
       })
 
       it('gte query should call read model registry store with the appropriate operation converted', async () => {
@@ -189,7 +209,11 @@ describe('read-models-adapter', () => {
         await searchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel.typeName, {
           foo: { gte: 1 },
         })
-        expect(queryStub).to.have.been.calledWithExactly({ typeName: mockReadModel.typeName, 'value.foo': { $gte: 1 } })
+        expect(queryStub).to.have.been.calledWithExactly(
+          { typeName: mockReadModel.typeName, 'value.foo': { $gte: 1 } },
+          0,
+          undefined
+        )
       })
 
       it('gte query should call read model registry store with the appropriate operation converted', async () => {
@@ -197,10 +221,14 @@ describe('read-models-adapter', () => {
         await searchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel.typeName, {
           foo: { in: [1, 2, 3] },
         })
-        expect(queryStub).to.have.been.calledWithExactly({
-          typeName: mockReadModel.typeName,
-          'value.foo': { $in: [1, 2, 3] },
-        })
+        expect(queryStub).to.have.been.calledWithExactly(
+          {
+            typeName: mockReadModel.typeName,
+            'value.foo': { $in: [1, 2, 3] },
+          },
+          0,
+          undefined
+        )
       })
 
       it('contains query should call read model registry store with the appropriate operation converted', async () => {
@@ -208,10 +236,14 @@ describe('read-models-adapter', () => {
         await searchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel.typeName, {
           foo: { contains: 'bar' },
         })
-        expect(queryStub).to.have.been.calledWithExactly({
-          typeName: mockReadModel.typeName,
-          'value.foo': { $regex: new RegExp('bar') },
-        })
+        expect(queryStub).to.have.been.calledWithExactly(
+          {
+            typeName: mockReadModel.typeName,
+            'value.foo': { $regex: new RegExp('bar') },
+          },
+          0,
+          undefined
+        )
       })
 
       it('includes query should call read model registry store with the appropriate operation converted', async () => {
@@ -219,10 +251,29 @@ describe('read-models-adapter', () => {
         await searchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel.typeName, {
           foo: { includes: 'bar' },
         })
-        expect(queryStub).to.have.been.calledWithExactly({
-          typeName: mockReadModel.typeName,
-          'value.foo': { $regex: new RegExp('bar') },
+        expect(queryStub).to.have.been.calledWithExactly(
+          {
+            typeName: mockReadModel.typeName,
+            'value.foo': { $regex: new RegExp('bar') },
+          },
+          0,
+          undefined
+        )
+      })
+
+      it('includes object query should call read model registry store with the appropriate operation converted', async () => {
+        const mockReadModel = createMockReadModelEnvelope()
+        await searchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel.typeName, {
+          foo: { includes: { bar: 'baz' } },
         })
+        expect(queryStub).to.have.been.calledWithExactly(
+          {
+            typeName: mockReadModel.typeName,
+            'value.foo': { $elemMatch: { bar: 'baz' } },
+          },
+          0,
+          undefined
+        )
       })
 
       it('beginsWith query should call read model registry store with the appropriate operation converted', async () => {
@@ -230,10 +281,14 @@ describe('read-models-adapter', () => {
         await searchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel.typeName, {
           foo: { beginsWith: 'bar' },
         })
-        expect(queryStub).to.have.been.calledWithExactly({
-          typeName: mockReadModel.typeName,
-          'value.foo': { $regex: new RegExp('^bar') },
-        })
+        expect(queryStub).to.have.been.calledWithExactly(
+          {
+            typeName: mockReadModel.typeName,
+            'value.foo': { $regex: new RegExp('^bar') },
+          },
+          0,
+          undefined
+        )
       })
 
       it('NOT beginsWith query should call read model registry store with the appropriate operation converted', async () => {
@@ -241,10 +296,14 @@ describe('read-models-adapter', () => {
         await searchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel.typeName, {
           not: { foo: { beginsWith: 'bar' } },
         })
-        expect(queryStub).to.have.been.calledWithExactly({
-          typeName: mockReadModel.typeName,
-          $not: { 'value.foo': { $regex: new RegExp('^bar') }, typeName: mockReadModel.typeName },
-        })
+        expect(queryStub).to.have.been.calledWithExactly(
+          {
+            typeName: mockReadModel.typeName,
+            $not: { 'value.foo': { $regex: new RegExp('^bar') }, typeName: mockReadModel.typeName },
+          },
+          0,
+          undefined
+        )
       })
     })
 
@@ -254,13 +313,17 @@ describe('read-models-adapter', () => {
         await searchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel.typeName, {
           and: [{ foo: { gt: 1 } }, { foo: { lt: 10 } }],
         })
-        expect(queryStub).to.have.been.calledWithExactly({
-          typeName: mockReadModel.typeName,
-          $and: [
-            { 'value.foo': { $gt: 1 }, typeName: mockReadModel.typeName },
-            { 'value.foo': { $lt: 10 }, typeName: mockReadModel.typeName },
-          ],
-        })
+        expect(queryStub).to.have.been.calledWithExactly(
+          {
+            typeName: mockReadModel.typeName,
+            $and: [
+              { 'value.foo': { $gt: 1 }, typeName: mockReadModel.typeName },
+              { 'value.foo': { $lt: 10 }, typeName: mockReadModel.typeName },
+            ],
+          },
+          0,
+          undefined
+        )
       })
 
       it('gte lte AND query should call read model registry store with the appropriate operation converted', async () => {
@@ -268,13 +331,17 @@ describe('read-models-adapter', () => {
         await searchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel.typeName, {
           and: [{ foo: { gte: 1 } }, { foo: { lte: 10 } }],
         })
-        expect(queryStub).to.have.been.calledWithExactly({
-          typeName: mockReadModel.typeName,
-          $and: [
-            { 'value.foo': { $gte: 1 }, typeName: mockReadModel.typeName },
-            { 'value.foo': { $lte: 10 }, typeName: mockReadModel.typeName },
-          ],
-        })
+        expect(queryStub).to.have.been.calledWithExactly(
+          {
+            typeName: mockReadModel.typeName,
+            $and: [
+              { 'value.foo': { $gte: 1 }, typeName: mockReadModel.typeName },
+              { 'value.foo': { $lte: 10 }, typeName: mockReadModel.typeName },
+            ],
+          },
+          0,
+          undefined
+        )
       })
 
       it('OR query should call read model registry store with the appropriate operation converted', async () => {
@@ -282,13 +349,17 @@ describe('read-models-adapter', () => {
         await searchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel.typeName, {
           or: [{ foo: { eq: 1 } }, { bar: { lt: 10 } }],
         })
-        expect(queryStub).to.have.been.calledWithExactly({
-          typeName: mockReadModel.typeName,
-          $or: [
-            { 'value.foo': 1, typeName: mockReadModel.typeName },
-            { 'value.bar': { $lt: 10 }, typeName: mockReadModel.typeName },
-          ],
-        })
+        expect(queryStub).to.have.been.calledWithExactly(
+          {
+            typeName: mockReadModel.typeName,
+            $or: [
+              { 'value.foo': 1, typeName: mockReadModel.typeName },
+              { 'value.bar': { $lt: 10 }, typeName: mockReadModel.typeName },
+            ],
+          },
+          0,
+          undefined
+        )
       })
     })
   })

@@ -29,7 +29,7 @@ export function queryRecordFor(
           if (!Object.keys(queryOperatorTable).includes(Object.keys(filter)[0])) {
             return queryRecordFor(readModelName, filter, propName)
           } else {
-            queryFromFilters[`value.${key}`] = filterToQuery(filter) as FilterFor<QueryValue>
+            queryFromFilters[`value.${propName}`] = filterToQuery(filter) as FilterFor<QueryValue>
           }
           break
       }
@@ -66,6 +66,10 @@ type QueryOperation<TValue> =
   | {
       [TKey in '$regex' | '$nin']?: RegExp
     }
+  // `elemMatch`
+  | {
+      [TKey in '$elemMatch']?: TValue
+    }
 
 /**
  * Table of equivalences between a GraphQL operation and the NeDB
@@ -84,7 +88,15 @@ const queryOperatorTable: Record<string, (values: Array<QueryValue>) => QueryOpe
   in: (values) => ({ $in: values }),
   contains: buildRegexQuery.bind(null, 'contains'),
   beginsWith: buildRegexQuery.bind(null, 'begins-with'),
-  includes: buildRegexQuery.bind(null, 'contains'),
+  includes: buildIncludes.bind(null, 'contains'),
+}
+
+function buildIncludes(operation: string, values: Array<QueryValue>): QueryOperation<QueryValue> {
+  const matcher = values[0]
+  if (typeof matcher === 'string') {
+    return { $regex: new RegExp(matcher) }
+  }
+  return { $elemMatch: matcher }
 }
 
 /**
