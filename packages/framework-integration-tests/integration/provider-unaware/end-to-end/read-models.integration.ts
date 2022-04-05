@@ -260,7 +260,7 @@ describe('Read models end-to-end tests', () => {
               `,
             })
           },
-          (result) => result?.data?.CartReadModel.id !== undefined
+          (result) => result?.data?.CartReadModel?.id === mockCartId
         )
 
         mockAddress = {
