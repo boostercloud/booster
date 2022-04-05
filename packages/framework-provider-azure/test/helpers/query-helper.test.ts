@@ -219,8 +219,8 @@ describe('Query helper', () => {
       ).to.have.been.calledWith(
         match({
           query:
-            'SELECT * FROM c WHERE c["mainItem"].c["sku"] = @sku_0 ' +
-            'AND c["mainItem"].c["price"].c["cents"] >= @cents_0 AND c["mainItem"].c["price"].c["cents"] < @cents_1',
+            'SELECT * FROM c WHERE c["mainItem"]["sku"] = @sku_0 ' +
+            'AND c["mainItem"]["price"]["cents"] >= @cents_0 AND c["mainItem"]["price"]["cents"] < @cents_1',
           parameters: [
             {
               name: '@sku_0',
