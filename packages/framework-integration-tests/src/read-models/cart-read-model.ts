@@ -10,7 +10,7 @@ import { CartItem } from '../common/cart-item'
 import { Address } from '../common/address'
 import { Cart } from '../entities/cart'
 import { Payment } from '../entities/payment'
-import { beforeHookException, throwExceptionId } from '../constants'
+import { beforeHookException, projectionErrorCartId, projectionErrorCartMessage, throwExceptionId } from '../constants'
 
 @ReadModel({
   authorize: 'all',
@@ -63,6 +63,9 @@ export class CartReadModel {
 
   @Projects(Cart, 'id')
   public static updateWithCart(cart: Cart, oldCartReadModel?: CartReadModel): ProjectionResult<CartReadModel> {
+    if (cart.id === projectionErrorCartId) {
+      throw new Error(projectionErrorCartMessage)
+    }
     const cartProductIds = cart?.cartItems.map((item) => item.productId as string)
     // This method calls are here to ensure they work. More info: https://github.com/boostercloud/booster/issues/797
     cart.getId()
