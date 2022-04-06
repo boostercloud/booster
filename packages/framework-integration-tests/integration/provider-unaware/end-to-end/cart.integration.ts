@@ -8,11 +8,13 @@ import { sleep, waitForIt } from '../../helper/sleep'
 import { applicationUnderTest } from './setup'
 import {
   afterHookMutationID,
-  beforeHookException,
   beforeHookMutationID,
+  beforeHookException,
+  throwExceptionId,
   beforeHookMutationIDModified,
   beforeHookQuantity,
-  throwExceptionId,
+  handleException,
+  onErrorMutationID,
 } from '../../../src/constants'
 
 const secs = 10
@@ -101,6 +103,26 @@ describe('Cart end-to-end tests', () => {
         })
       } catch (e) {
         expect(e.graphQLErrors[0].message).to.be.eq(beforeHookException)
+        expect(e.graphQLErrors[0].path).to.deep.eq(['ChangeCartItem'])
+      }
+    })
+
+    it('throws a new exception when handle throws and onError change it', async () => {
+      try {
+        await client.mutate({
+          variables: {
+            cartId: onErrorMutationID,
+            productId: random.uuid(),
+            quantity: random.number({ min: 1 }),
+          },
+          mutation: gql`
+            mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+              ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+            }
+          `,
+        })
+      } catch (e) {
+        expect(e.graphQLErrors[0].message).to.be.eq(handleException + '-onErrorChangeCartItem')
         expect(e.graphQLErrors[0].path).to.deep.eq(['ChangeCartItem'])
       }
     })

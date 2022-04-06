@@ -342,5 +342,36 @@ describe('the `BoosterCommandsDispatcher`', () => {
         expect(expectedResult).to.be.eq(6)
       })
     })
+
+    context('when there is an error the onError is processed', () => {
+      it('call the onError method when there is an error on handle method', async () => {
+        const onErrorFn = fake.rejects('Error on errorFn')
+
+        @Command({ authorize: 'all', onError: onErrorFn })
+        class PostComment {
+          public constructor(readonly comment: string) {}
+          public static async handle(command: PostComment): Promise<void> {
+            await Promise.reject('Error on command')
+          }
+        }
+
+        const command = new PostComment('This test is good!')
+
+        let boosterConfig: any
+        Booster.configure('test', (config) => {
+          boosterConfig = config
+        })
+
+        await expect(
+          new BoosterCommandDispatcher(boosterConfig, logger).dispatchCommand({
+            requestID: '1234',
+            version: 1,
+            typeName: 'PostComment',
+            value: command,
+          })
+        ).to.be.eventually.rejectedWith('Error on errorFn')
+        expect(onErrorFn).calledOnceWith('Error on command')
+      })
+    })
   })
 })

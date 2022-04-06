@@ -7,6 +7,7 @@ import {
   CommandAfterFunction,
   ReadModelRequestEnvelope,
   ReadModelInterface,
+  CommandErrorFunction,
 } from '@boostercloud/framework-types'
 
 export const applyReadModelRequestBeforeFunctions = async (
@@ -43,4 +44,16 @@ export const applyAfterFunctions = async (
   for (const afterHook of afterHooks) {
     previousResult = await afterHook(previousResult, commandInput, register)
   }
+}
+
+export const applyOnErrorFunctions = async (
+  e: Error,
+  commandInstance: CommandInput,
+  onErrorHook: CommandErrorFunction | undefined,
+  register: Register
+): Promise<Error> => {
+  if (!onErrorHook) {
+    return e
+  }
+  return await onErrorHook(e, commandInstance, register)
 }
