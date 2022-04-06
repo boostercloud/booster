@@ -640,7 +640,7 @@ As you can see, we just check if the `cartUserId` is equal to the `register.curr
 
 ### Adding after hooks to your commands
 
-When you send a command to your command handler, you can tell Booster to execute some code after executing the operation. These are called `after` hooks, and they receive the result of the previous handler o the one from the previour after hook plus the command input.
+When you send a command to your command handler, you can tell Booster to execute some code after executing the operation. These are called `after` hooks, and they receive the result of the previous handler or the one from the previous after hook plus the command input.
 
 In after hooks, you can register new events that will be processed after the events registered on the handler method.
 
