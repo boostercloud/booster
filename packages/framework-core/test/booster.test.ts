@@ -79,6 +79,7 @@ describe('the `Booster` class', () => {
         match.any,
         TestReadModel.name,
         match.any,
+        {},
         undefined,
         undefined,
         false

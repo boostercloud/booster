@@ -6,6 +6,7 @@ import {
   Logger,
   Operation,
   ReadModelListResult,
+  SortFor,
 } from '@boostercloud/framework-types'
 
 export async function search(
@@ -14,10 +15,10 @@ export async function search(
   logger: Logger,
   containerName: string,
   filters: FilterFor<unknown>,
-  limit?: number,
+  limit?: number | undefined,
   afterCursor?: Record<string, string> | undefined,
   paginatedVersion = false,
-  order?: Record<string, string>
+  order?: SortFor<unknown>
 ): Promise<Array<any> | ReadModelListResult<any>> {
   const filterExpression = buildFilterExpression(filters)
   const queryDefinition = `SELECT * FROM c ${filterExpression !== '' ? `WHERE ${filterExpression}` : filterExpression}`
@@ -182,11 +183,26 @@ function buildAttributeValue(
   return attributeValues
 }
 
-function buildOrderExpression(order: Record<string, string> | undefined): string {
-  if (!order || !Object.keys(order).length) return ''
-  let orderQuery = ' ORDER BY'
-  orderQuery += Object.entries(order)
-    .map(([key, value]) => ` c.${key} ${value}`)
-    .join(',')
+function buildOrderExpression(sortFor: SortFor<unknown> | undefined): string {
+  if (!sortFor || !Object.keys(sortFor).length) return ''
+  let orderQuery = ' ORDER BY '
+  orderQuery += toLocalSortFor(sortFor)?.join(', ')
   return orderQuery
+}
+
+function toLocalSortFor(
+  sortBy?: SortFor<unknown>,
+  parentKey = '',
+  sortedList: Array<string> = []
+): undefined | Array<string> {
+  if (!sortBy || Object.keys(sortBy).length === 0) return
+  const elements = sortBy!
+  Object.entries(elements).forEach(([key, value]) => {
+    if (typeof value === 'string') {
+      sortedList.push(`c.${parentKey}${key} ${value}`)
+    } else {
+      toLocalSortFor(value as SortFor<unknown>, `${parentKey}${key}.`, sortedList)
+    }
+  })
+  return sortedList
 }

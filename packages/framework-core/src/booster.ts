@@ -13,6 +13,7 @@ import {
   Searcher,
   SearcherFunction,
   SequenceKey,
+  SortFor,
   UUID,
 } from '@boostercloud/framework-types'
 import { BoosterEventDispatcher } from './booster-event-dispatcher'
@@ -82,6 +83,7 @@ export class Booster {
     const searchFunction: SearcherFunction<TReadModel> = async (
       readModelName: string,
       filters: FilterFor<unknown>,
+      sort?: SortFor<unknown>,
       limit?: number,
       afterCursor?: any,
       paginatedVersion?: boolean
@@ -91,6 +93,7 @@ export class Booster {
         this.logger,
         readModelName,
         filters,
+        sort,
         limit,
         afterCursor,
         paginatedVersion

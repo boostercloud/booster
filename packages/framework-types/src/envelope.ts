@@ -1,6 +1,6 @@
 import { CommandInput, EntityInterface, EventInterface, ReadModelInterface, SequenceKey, UUID } from './concepts'
 import { GraphQLClientMessage } from './graphql-websocket-messages'
-import { FilterFor } from './searcher'
+import { FilterFor, SortFor } from './searcher'
 import { Class } from './typelevel'
 
 /**
@@ -89,6 +89,7 @@ export interface ReadModelRequestEnvelope<TReadModel extends ReadModelInterface>
   className: string
   version: number
   filters: ReadModelRequestProperties<TReadModel>
+  sortBy?: ReadModelSortProperties<TReadModel>
   limit?: number
   afterCursor?: unknown
   paginatedVersion?: boolean // Used only for retrocompatibility
@@ -96,6 +97,7 @@ export interface ReadModelRequestEnvelope<TReadModel extends ReadModelInterface>
 
 export interface ReadModelRequestArgs<TReadModel extends ReadModelInterface> {
   filter?: ReadModelRequestProperties<TReadModel>
+  sortBy?: ReadModelSortProperties<TReadModel>
   limit?: number
   afterCursor?: unknown
 }
@@ -106,6 +108,8 @@ export interface ReadModelByIdRequestArgs {
 }
 
 export type ReadModelRequestProperties<TReadModel> = Record<string, FilterFor<TReadModel>>
+
+export type ReadModelSortProperties<TReadModel> = Record<string, SortFor<TReadModel>>
 
 export interface GraphQLRequestEnvelope extends Envelope {
   eventType: 'CONNECT' | 'MESSAGE' | 'DISCONNECT'

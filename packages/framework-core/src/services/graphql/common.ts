@@ -7,7 +7,7 @@ import {
   ReadModelInterface,
   ContextEnvelope,
 } from '@boostercloud/framework-types'
-import { GraphQLFieldResolver } from 'graphql'
+import { GraphQLEnumType, GraphQLEnumValueConfigMap, GraphQLFieldResolver } from 'graphql'
 import { ReadModelPubSub } from '../pub-sub/read-model-pub-sub'
 import { PropertyMetadata } from 'metadata-booster'
 
@@ -34,4 +34,14 @@ export interface GraphQLResolverContext {
 
 export const graphQLWebsocketSubprotocolHeaders = {
   'Sec-WebSocket-Protocol': 'graphql-ws',
+}
+
+export const buildGraphqlSimpleEnumFor = (enumName: string, values: Array<string>): GraphQLEnumType => {
+  return new GraphQLEnumType({
+    name: enumName,
+    values: values.reduce((valuesRecord, value) => {
+      valuesRecord[value] = { value }
+      return valuesRecord
+    }, {} as GraphQLEnumValueConfigMap),
+  })
 }
