@@ -5,7 +5,9 @@ import { random } from 'faker'
 import { expect } from 'chai'
 import gql from 'graphql-tag'
 import { waitForIt } from '../../helper/sleep'
+import { CartItem } from '../../../src/common/cart-item'
 import { applicationUnderTest } from './setup'
+import { beforeHookException, beforeHookProductId, throwExceptionId } from '../../../src/constants'
 
 describe('Read models end-to-end tests', () => {
   let client: ApolloClient<NormalizedCacheObject>
