@@ -77,7 +77,8 @@ export async function searchReadModel(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<Array<any> | ReadModelListResult<any>> {
   logger.debug('Converting filter to query')
-  const query = queryRecordFor(readModelName, filters)
+  const queryFor = queryRecordFor(filters)
+  const query = { ...queryFor, typeName: readModelName }
   logger.debug('Got query ', query)
   const skipId = afterCursor?.id ? parseInt(afterCursor?.id) : 0
   const result = await db.query(query, sortBy, skipId, limit)
