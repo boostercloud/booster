@@ -35,42 +35,52 @@ export class ReadModelStore {
     }
     const entityMetadata = this.config.entities[entitySnapshotEnvelope.entityTypeName]
     await Promises.allSettledAndFulfilled(
-      projections.map(async (projectionMetadata: ProjectionMetadata) => {
+      projections.flatMap((projectionMetadata: ProjectionMetadata) => {
         const readModelName = projectionMetadata.class.name
         const entityInstance = createInstance(entityMetadata.class, entitySnapshotEnvelope.value)
-        const readModelID = this.joinKeyForProjection(entityInstance, projectionMetadata)
+        const readModelIDList = this.joinKeyForProjection(entityInstance, projectionMetadata)
         const sequenceKey = this.sequenceKeyForProjection(entityInstance, projectionMetadata)
-        if (!readModelID) {
+        if (!readModelIDList) {
           this.logger.warn(
             `Couldn't find the joinKey named ${projectionMetadata.joinKey} in entity snapshot of ${entityMetadata.class.name}. Skipping...`
           )
           return
         }
-        this.logger.debug(
-          '[ReadModelStore#project] Projecting entity snapshot ',
-          entitySnapshotEnvelope,
-          ` to build new state of read model ${readModelName} with ID ${readModelID}`,
-          sequenceKey ? ` sequencing by ${sequenceKey.name} with value ${sequenceKey.value}` : ''
-        )
 
-        return await retryIfError(
-          this.logger,
-          () =>
-            this.applyProjectionToReadModel(
-              entityInstance,
-              projectionMetadata,
-              readModelName,
-              readModelID,
-              sequenceKey
-            ),
-          OptimisticConcurrencyUnexpectedVersionError
-        )
+        return readModelIDList.map(async (readModelID: UUID) => {
+          this.logger.debug(
+            '[ReadModelStore#project] Projecting entity snapshot ',
+            entitySnapshotEnvelope,
+            ` to build new state of read model ${readModelName} with ID ${readModelID}`,
+            sequenceKey ? ` sequencing by ${sequenceKey.name} with value ${sequenceKey.value}` : ''
+          )
+
+          return await retryIfError(
+            this.logger,
+            () =>
+              this.applyProjectionToReadModel(
+                entityInstance,
+                projectionMetadata,
+                readModelName,
+                readModelID,
+                sequenceKey
+              ),
+            OptimisticConcurrencyUnexpectedVersionError
+          )
+        })
       })
     )
   }
 
-  private joinKeyForProjection(entity: EntityInterface, projectionMetadata: ProjectionMetadata): UUID {
-    return (entity as any)[projectionMetadata.joinKey]
+  private joinKeyForProjection(
+    entity: EntityInterface,
+    projectionMetadata: ProjectionMetadata
+  ): Array<UUID> | undefined {
+    const joinKey = (entity as any)[projectionMetadata.joinKey]
+    if (!joinKey) {
+      return undefined
+    }
+    return Array.isArray(joinKey) ? joinKey : [joinKey]
   }
 
   private sequenceKeyForProjection(
@@ -94,7 +104,7 @@ export class ReadModelStore {
   ): Promise<unknown> {
     const readModel = await this.fetchReadModel(readModelName, readModelID, sequenceKey)
     const currentReadModelVersion: number = readModel?.boosterMetadata?.version ?? 0
-    const newReadModel = this.projectionFunction(projectionMetadata)(entity, readModel)
+    const newReadModel = this.projectionFunction(projectionMetadata)(entity, readModel, readModelID)
 
     if (newReadModel === ReadModelAction.Delete) {
       this.logger.debug(

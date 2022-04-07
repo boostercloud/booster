@@ -13,6 +13,7 @@ import {
   ReadModelAction,
   OptimisticConcurrencyUnexpectedVersionError,
   ProjectionResult,
+  ReadModelInterface,
 } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 import { createInstance } from '@boostercloud/framework-common-helpers'
@@ -34,15 +35,23 @@ describe('ReadModelStore', () => {
     }
   }
 
+  class AnImportantEntityWithArray {
+    public constructor(readonly id: UUID, readonly someKey: Array<UUID>, readonly count: number) {}
+
+    public getPrefixedKey(prefix: string): string {
+      return `${prefix}-${this.someKey.join('-')}`
+    }
+  }
+
   class AnEntity {
     public constructor(readonly id: UUID, readonly someKey: UUID, readonly count: number) {}
   }
 
   class SomeReadModel {
     public constructor(readonly id: UUID) {}
-    public static someObserver(entity: AnImportantEntity, obj: any): any {
+    public static someObserver(entity: AnImportantEntity, obj: any, readModelID?: UUID): any {
       const count = (obj?.count || 0) + entity.count
-      return { id: entity.someKey, kind: 'some', count: count }
+      return { id: readModelID, kind: 'some', count: count }
     }
     public getId(): UUID {
       return this.id
@@ -83,6 +92,7 @@ describe('ReadModelStore', () => {
   } as unknown as ProviderLibrary
   config.entities[AnImportantEntity.name] = { class: AnImportantEntity, authorizeReadEvents: [] }
   config.entities[AnEntity.name] = { class: AnEntity, authorizeReadEvents: [] }
+  config.entities[AnImportantEntityWithArray.name] = { class: AnImportantEntityWithArray, authorizeReadEvents: [] }
   config.readModels[SomeReadModel.name] = {
     class: SomeReadModel,
     authorizedRoles: 'all',
@@ -112,6 +122,13 @@ describe('ReadModelStore', () => {
       joinKey: 'someKey',
     },
   ]
+  config.projections[AnImportantEntityWithArray.name] = [
+    {
+      class: SomeReadModel,
+      methodName: 'someObserver',
+      joinKey: 'someKey',
+    },
+  ]
   config.projections['AnEntity'] = [
     {
       class: SomeReadModel,
@@ -121,6 +138,10 @@ describe('ReadModelStore', () => {
   ]
 
   function eventEnvelopeFor(entityName: string): EventEnvelope {
+    let someKeyValue: any = 'joinColumnID'
+    if (AnImportantEntityWithArray.name == entityName) {
+      someKeyValue = ['joinColumnID', 'anotherJoinColumnID']
+    }
     return {
       version: 1,
       kind: 'snapshot',
@@ -128,7 +149,7 @@ describe('ReadModelStore', () => {
       entityTypeName: entityName,
       value: {
         id: 'importantEntityID',
-        someKey: 'joinColumnID',
+        someKey: someKeyValue,
         count: 123,
       } as any,
       requestID: 'whatever',
@@ -392,6 +413,149 @@ describe('ReadModelStore', () => {
       })
     })
 
+    context('when multiple read models are projected from Array joinKey', () => {
+      it('creates non-existent read models and updates existing read models', async () => {
+        replace(config.provider.readModels, 'store', fake())
+        const readModelStore = new ReadModelStore(config, logger)
+        const someReadModelStoredVersion = 10
+        replace(
+          readModelStore,
+          'fetchReadModel',
+          fake((className: string, id: UUID) => {
+            if (className == SomeReadModel.name) {
+              if (id == 'anotherJoinColumnID') {
+                return null
+              } else {
+                return { id: id, kind: 'some', count: 77, boosterMetadata: { version: someReadModelStoredVersion } }
+              }
+            }
+            return null
+          })
+        )
+        spy(SomeReadModel, 'someObserver')
+        const anEntitySnapshot = eventEnvelopeFor(AnImportantEntityWithArray.name)
+        const entityValue: any = anEntitySnapshot.value
+        const anEntityInstance = new AnImportantEntityWithArray(entityValue.id, entityValue.someKey, entityValue.count)
+        await readModelStore.project(anEntitySnapshot)
+
+        expect(readModelStore.fetchReadModel).to.have.been.calledTwice
+        expect(readModelStore.fetchReadModel).to.have.been.calledWith(SomeReadModel.name, 'joinColumnID')
+        expect(readModelStore.fetchReadModel).to.have.been.calledWith(SomeReadModel.name, 'anotherJoinColumnID')
+        expect(SomeReadModel.someObserver).to.have.been.calledWithMatch(
+          anEntityInstance,
+          {
+            id: 'joinColumnID',
+            kind: 'some',
+            count: 77,
+            boosterMetadata: { version: someReadModelStoredVersion },
+          },
+          'joinColumnID'
+        )
+        expect(SomeReadModel.someObserver).to.have.returned({
+          id: 'joinColumnID',
+          kind: 'some',
+          count: 200,
+          boosterMetadata: { version: someReadModelStoredVersion + 1 },
+        })
+        expect(SomeReadModel.someObserver).to.have.been.calledWithMatch(anEntityInstance, null, 'anotherJoinColumnID')
+        expect(SomeReadModel.someObserver).to.have.returned({
+          id: 'anotherJoinColumnID',
+          kind: 'some',
+          count: 123,
+          boosterMetadata: { version: 1 },
+        })
+
+        expect(config.provider.readModels.store).to.have.been.calledTwice
+        expect(config.provider.readModels.store).to.have.been.calledWith(
+          config,
+          logger,
+          SomeReadModel.name,
+          {
+            id: 'joinColumnID',
+            kind: 'some',
+            count: 200,
+            boosterMetadata: { version: someReadModelStoredVersion + 1 },
+          },
+          someReadModelStoredVersion
+        )
+        expect(config.provider.readModels.store).to.have.been.calledWith(
+          config,
+          logger,
+          SomeReadModel.name,
+          {
+            id: 'anotherJoinColumnID',
+            kind: 'some',
+            count: 123,
+            boosterMetadata: { version: 1 },
+          },
+          0
+        )
+      })
+    })
+
+    context('when there is high contention and optimistic concurrency is needed for Array joinKey projections', () => {
+      it('The retries are independent for all Read Models in the array, retries 5 times when the error OptimisticConcurrencyUnexpectedVersionError happens 4 times', async () => {
+        let tryNumber = 1
+        const expectedAnotherJoinColumnIDTries = 5
+        const expectedJoinColumnIDTries = 1
+        const fakeStore = fake(
+          (
+            config: BoosterConfig,
+            logger: Logger,
+            readModelName: string,
+            readModel: ReadModelInterface
+          ): Promise<unknown> => {
+            if (readModelName === SomeReadModel.name) {
+              if (readModel.id == 'anotherJoinColumnID' && tryNumber < expectedAnotherJoinColumnIDTries) {
+                tryNumber++
+                throw new OptimisticConcurrencyUnexpectedVersionError('test error')
+              }
+            }
+            return Promise.resolve()
+          }
+        )
+        replace(config.provider.readModels, 'store', fakeStore)
+
+        const readModelStore = new ReadModelStore(config, logger)
+        await readModelStore.project(eventEnvelopeFor(AnImportantEntityWithArray.name))
+
+        const someReadModelStoreCalls = fakeStore.getCalls().filter((call) => call.args[2] === SomeReadModel.name)
+        expect(someReadModelStoreCalls).to.be.have.length(expectedJoinColumnIDTries + expectedAnotherJoinColumnIDTries)
+        someReadModelStoreCalls
+          .filter((call) => call.args[3].id == 'joinColumnID')
+          .forEach((call) => {
+            expect(call.args).to.be.deep.equal([
+              config,
+              logger,
+              SomeReadModel.name,
+              {
+                id: 'joinColumnID',
+                kind: 'some',
+                count: 123,
+                boosterMetadata: { version: 1 },
+              },
+              0,
+            ])
+          })
+        someReadModelStoreCalls
+          .filter((call) => call.args[3].id == 'anotherJoinColumnID')
+          .forEach((call) => {
+            expect(call.args).to.be.deep.equal([
+              config,
+              logger,
+              SomeReadModel.name,
+              {
+                id: 'anotherJoinColumnID',
+                kind: 'some',
+                count: 123,
+                boosterMetadata: { version: 1 },
+              },
+              0,
+            ])
+          })
+      })
+    })
+
     context('for read models with defined sequenceKeys', () => {
       beforeEach(() => {
         config.readModelSequenceKeys['AnotherReadModel'] = 'count'
@@ -504,9 +668,9 @@ describe('ReadModelStore', () => {
         const anEntityInstance = createInstance(AnImportantEntity, anEntitySnapshot.value) as any
         const readModelStore = new ReadModelStore(config, logger) as any
 
-        expect(readModelStore.joinKeyForProjection(anEntityInstance, { joinKey: 'someKey' })).to.be.equal(
-          'joinColumnID'
-        )
+        expect(readModelStore.joinKeyForProjection(anEntityInstance, { joinKey: 'someKey' })).to.be.deep.equal([
+          'joinColumnID',
+        ])
       })
     })
 
