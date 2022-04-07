@@ -14,7 +14,7 @@ import {
   ReadModelRequestProperties,
   TimeKey,
 } from '@boostercloud/framework-types'
-import { GraphQLFieldResolver, GraphQLResolveInfo, GraphQLSchema } from 'graphql'
+import { GraphQLFieldResolver, GraphQLInputObjectType, GraphQLResolveInfo, GraphQLSchema } from 'graphql'
 import { pluralize } from 'inflected'
 import { BoosterCommandDispatcher } from '../../booster-command-dispatcher'
 import { BoosterEventsReader } from '../../booster-events-reader'
@@ -42,13 +42,16 @@ export class GraphQLGenerator {
         ...config.commandHandlers,
       })
 
+      const generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
+
       const queryGenerator = new GraphQLQueryGenerator(
         config,
         config.readModels,
         typeInformer,
         this.readModelByIDResolverBuilder.bind(this, config),
         this.readModelResolverBuilder.bind(this),
-        this.eventResolver.bind(this)
+        this.eventResolver.bind(this),
+        generatedFiltersByTypeName
       )
 
       const mutationGenerator = new GraphQLMutationGenerator(
@@ -60,9 +63,9 @@ export class GraphQLGenerator {
       const subscriptionGenerator = new GraphQLSubscriptionGenerator(
         config.readModels,
         typeInformer,
-        queryGenerator,
         this.subscriptionByIDResolverBuilder.bind(this, config),
-        this.subscriptionResolverBuilder.bind(this, config)
+        this.subscriptionResolverBuilder.bind(this, config),
+        generatedFiltersByTypeName
       )
 
       this.schema = new GraphQLSchema({
@@ -176,6 +179,7 @@ export class GraphQLGenerator {
       key,
       version: 1, // TODO: How to pass the version through GraphQL?
       filters: {},
+      sortBy: {},
     }
   }
 }
@@ -192,6 +196,7 @@ function toReadModelRequestEnvelope(
     class: readModelClass,
     className: readModelClass.name,
     filters: args.filter ?? {},
+    sortBy: args.sortBy ?? {},
     limit: args.limit,
     afterCursor: args.afterCursor,
     paginatedVersion,

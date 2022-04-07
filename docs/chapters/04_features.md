@@ -961,6 +961,47 @@ export class GetProductsCount {
 
 > **Warning**: Notice that `ReadModel`s are eventually consistent objects that are calculated as all events in all entities that affect the read model are settled. You should not assume that a read model is a proper source of truth, so you shouldn't use this feature for data validations. If you need to query the most up-to-date current state, consider fetching your Entities, instead of ReadModels, with `Booster.entity`
 
+#### Using sorting
+
+Booster allows you to sort your read models data in your commands handlers and event handlers using the `Booster.readModel` method.
+
+For example, you can sort and get the products in your commands like this:
+
+```graphql
+{
+  ListCartReadModels(filter: {}, limit: 5, sortBy: {
+    shippingAddress: {
+      firstName: ASC
+    }
+  }) {
+    items {
+      id
+      cartItems 
+      checks
+      shippingAddress {
+        firstName
+      }
+      payment {
+        cartId
+      }
+      cartItemsIds
+    }
+    cursor
+  }
+}
+```
+
+This is a preview feature available only for some Providers and with some limitations:
+* Azure: 
+  * Sort by one field supported. 
+  * Nested fields supported. 
+  * Sort by more than one file: **unsupported**.
+* Local:
+  * Sort by one field supported.
+  * Nested fields supported.
+  * Sort by more than one file: **unsupported**.
+
+> **Warning**: It is not possible to sort by fields defined as Interface, only classes or primitives types.
 
 
 #### Using pagination

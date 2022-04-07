@@ -5,6 +5,7 @@ import {
   InvalidParameterError,
   Logger,
   Operation,
+  SortFor,
   ReadModelListResult,
 } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
@@ -18,10 +19,14 @@ export async function searchReadModel(
   logger: Logger,
   readModelName: string,
   filters: FilterFor<unknown>,
+  sortBy?: SortFor<unknown>,
   limit?: number,
   afterCursor?: DynamoDB.DocumentClient.Key | undefined,
   paginatedVersion = false
 ): Promise<Array<any> | ReadModelListResult<any>> {
+  if (sortBy) {
+    logger.info('SortBy not implemented for AWS provider. It will be ignored')
+  }
   let params: DocumentClient.ScanInput = {
     TableName: config.resourceNames.forReadModel(readModelName),
     ConsistentRead: true,

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { random } from 'faker'
@@ -308,7 +309,7 @@ describe('Read models end-to-end tests', () => {
         )
       })
 
-      it('should retrieve a list of carts', async () => {
+      it('should retrieve a list of carts using deprecated methods', async () => {
         const queryResult = await waitForIt(
           () => {
             return client.query({
@@ -330,7 +331,7 @@ describe('Read models end-to-end tests', () => {
         expect(cartData.length).to.be.gte(1)
       })
 
-      it('should retrieve a specific cart using filters', async () => {
+      it('should retrieve a specific cart using filters using deprecated methods', async () => {
         const filter = { id: { eq: mockCartId } }
         const queryResult = await waitForIt(
           () => {
@@ -384,7 +385,7 @@ describe('Read models end-to-end tests', () => {
         expect(cartData[0].id).to.equal(mockCartId)
       })
 
-      it('should retrieve a list of carts using  complex filters', async () => {
+      it('should retrieve a list of carts using  complex filters and deprecated methods', async () => {
         const filter = { cartItems: { includes: { productId: mockProductId, quantity: 2 } } }
         const queryResult = await waitForIt(
           () => {
@@ -491,6 +492,246 @@ describe('Read models end-to-end tests', () => {
         expect(cartData).to.be.an('array')
         expect(cartData.length).to.equal(1)
         expect(cartData[0].id).to.equal(mockCartId)
+      })
+
+      it('should not fail if search a list of carts with empty results', async () => {
+        const filter = { cartItems: { includes: { productId: mockProductId, quantity: 200 } } }
+        const queryResult = await client.query({
+          variables: {
+            filter: filter,
+          },
+          query: gql`
+            query ListCartReadModels($filter: ListCartReadModelFilter) {
+              ListCartReadModels(filter: $filter) {
+                items {
+                  id
+                }
+              }
+            }
+          `,
+        })
+
+        const cartData = queryResult?.data?.ListCartReadModels.items
+
+        expect(cartData.length).to.equal(0)
+      })
+    })
+
+    context('query sorted lists of carts', () => {
+      const mockCartItems: Array<{ id: string; productId: string; quantity: number; firstName: string }> = []
+      const cartItems = 5
+
+      beforeEach(async () => {
+        for (let i = 0; i < cartItems; i++) {
+          const mockQuantity: number = i
+          const mockProductId: string = random.uuid()
+          const mockCartId: string = random.uuid()
+          const mockFirstName = String.fromCharCode(i + 65)
+          mockCartItems.push({
+            id: mockCartId,
+            productId: mockProductId,
+            quantity: mockQuantity,
+            firstName: mockFirstName,
+          })
+
+          await client.mutate({
+            variables: {
+              cartId: mockCartId,
+              productId: mockProductId,
+              quantity: mockQuantity,
+            },
+            mutation: gql`
+              mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+                ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+              }
+            `,
+          })
+
+          await waitForIt(
+            () => {
+              return client.query({
+                variables: {
+                  cartId: mockCartId,
+                },
+                query: gql`
+                  query CartReadModel($cartId: ID!) {
+                    CartReadModel(id: $cartId) {
+                      id
+                      cartItems
+                    }
+                  }
+                `,
+              })
+            },
+            (result) => result?.data?.CartReadModel != null
+          )
+
+          await client.mutate({
+            variables: {
+              cartId: mockCartId,
+              firstName: mockFirstName,
+            },
+            mutation: gql`
+              mutation UpdateShippingAddress($cartId: ID, $firstName: String) {
+                UpdateShippingAddress(input: { cartId: $cartId, address: { firstName: $firstName } })
+              }
+            `,
+          })
+
+          await waitForIt(
+            () => {
+              return client.query({
+                variables: {
+                  cartId: mockCartId,
+                },
+                query: gql`
+                  query CartReadModel($cartId: ID!) {
+                    CartReadModel(id: $cartId) {
+                      id
+                      cartItems
+                      shippingAddress {
+                        firstName
+                      }
+                    }
+                  }
+                `,
+              })
+            },
+            (result) => result?.data?.CartReadModel?.shippingAddress?.firstName != null
+          )
+        }
+      })
+
+      afterEach(async () => {
+        mockCartItems.length = 0
+      })
+
+      it('should retrieve a sorted list of carts using paginated read model', async () => {
+        if (process.env.TESTED_PROVIDER !== 'AZURE' && process.env.TESTED_PROVIDER !== 'LOCAL') {
+          console.log('****************** Warning **********************')
+          console.log('Only Azure and Local provider implement the sort option')
+          console.log('*************************************************')
+          return
+        }
+
+        const expectedIds = mockCartItems.map((item) => item.id)
+        const mockedSortBy = { id: 'DESC' }
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filterBy: { id: { in: expectedIds } },
+                sortBy: mockedSortBy,
+              },
+              query: gql`
+                query ListCartReadModels($filterBy: ListCartReadModelFilter, $sortBy: CartReadModelSortBy) {
+                  ListCartReadModels(filter: $filterBy, sortBy: $sortBy) {
+                    items {
+                      id
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels?.items.length === cartItems
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        const reverseExpectedIds = expectedIds.sort((a, b) => {
+          return a > b ? -1 : a < b ? 1 : 0
+        })
+        // @ts-ignore
+        expect(cartData.map((item: unknown) => item.id)).to.be.eql(reverseExpectedIds)
+      })
+
+      it('should retrieve a sorted list of carts using nested fields', async () => {
+        if (process.env.TESTED_PROVIDER !== 'AZURE' && process.env.TESTED_PROVIDER !== 'LOCAL') {
+          console.log('****************** Warning **********************')
+          console.log('Only Azure and Local provider implement the sort option')
+          console.log('*************************************************')
+          return
+        }
+
+        const expectedIds = mockCartItems.map((item) => item.id)
+        const mockedSortBy = { shippingAddress: { firstName: 'DESC' } }
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filterBy: { id: { in: expectedIds } },
+                sortBy: mockedSortBy,
+              },
+              query: gql`
+                query ListCartReadModels($filterBy: ListCartReadModelFilter, $sortBy: CartReadModelSortBy) {
+                  ListCartReadModels(filter: $filterBy, sortBy: $sortBy) {
+                    items {
+                      id
+                      shippingAddress {
+                        firstName
+                      }
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels?.items.length === cartItems
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        const expectedFirstNames = mockCartItems.map((item) => item.firstName)
+        const reverseExpectedFirstNames = expectedFirstNames.sort((a, b) => {
+          return a > b ? -1 : a < b ? 1 : 0
+        })
+        // @ts-ignore
+        const names = cartData.map((item: unknown) => item.shippingAddress.firstName)
+        expect(names).to.be.eql(reverseExpectedFirstNames)
+      })
+
+      it('should retrieve a sorted list of carts using two fields', async () => {
+        if (process.env.TESTED_PROVIDER !== 'LOCAL') {
+          console.log('****************** Warning **********************')
+          console.log('Only Local provider implement the sort option for more than one sort field')
+          console.log('*************************************************')
+          return
+        }
+
+        const expectedIds = mockCartItems.map((item) => item.id)
+        const mockedSortBy = { id: 'DESC', shippingAddress: { firstName: 'ASC' } }
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filterBy: { id: { in: expectedIds } },
+                sortBy: mockedSortBy,
+              },
+              query: gql`
+                query ListCartReadModels($filterBy: ListCartReadModelFilter, $sortBy: CartReadModelSortBy) {
+                  ListCartReadModels(filter: $filterBy, sortBy: $sortBy) {
+                    items {
+                      id
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels?.items.length === cartItems
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        const reverseExpectedIds = expectedIds.sort((a, b) => {
+          return a > b ? -1 : a < b ? 1 : 0
+        })
+        // @ts-ignore
+        expect(cartData.map((item: unknown) => item.id)).to.be.eql(reverseExpectedIds)
       })
     })
 

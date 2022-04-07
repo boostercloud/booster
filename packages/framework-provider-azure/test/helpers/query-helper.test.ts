@@ -320,6 +320,32 @@ describe('Query helper', () => {
       )
     })
 
+    it('Supports order for nested fields', async () => {
+      const filters: FilterFor<Product> = {}
+      const order = { sku: 'DESC', address: { street: 'ASC' } }
+      await search(
+        mockCosmosDbClient as any,
+        mockConfig,
+        mockLogger,
+        mockReadModelName,
+        filters,
+        undefined,
+        undefined,
+        undefined,
+        order
+      )
+
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
+          .query
+      ).to.have.been.calledWith(
+        match({
+          query: 'SELECT * FROM c  ORDER BY c.sku DESC, c.address.street ASC',
+          parameters: [],
+        })
+      )
+    })
+
     it('Supports limited results', async () => {
       const filters: FilterFor<Product> = {
         days: { includes: 2 },

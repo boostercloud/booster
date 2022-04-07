@@ -7,9 +7,10 @@ import {
   ReadModelInterface,
   ReadModelListResult,
   ReadOnlyNonEmptyArray,
+  SortFor,
   UUID,
 } from '@boostercloud/framework-types'
-import { ReadModelRegistry } from '../services/read-model-registry'
+import { ReadModelRegistry } from '../services'
 import { queryRecordFor } from './searcher-adapter'
 
 export async function rawReadModelEventsToEnvelopes(
@@ -68,7 +69,8 @@ export async function searchReadModel(
   _config: BoosterConfig,
   logger: Logger,
   readModelName: string,
-  filters: FilterFor<any>,
+  filters: FilterFor<unknown>,
+  sortBy?: SortFor<unknown>,
   limit?: number,
   afterCursor?: Record<string, string> | undefined,
   paginatedVersion = false
@@ -78,9 +80,8 @@ export async function searchReadModel(
   const query = queryRecordFor(readModelName, filters)
   logger.debug('Got query ', query)
   const skipId = afterCursor?.id ? parseInt(afterCursor?.id) : 0
-  const result = await db.query(query, skipId, limit)
+  const result = await db.query(query, sortBy, skipId, limit)
   logger.debug('[ReadModelAdapter#searchReadModel] Search result: ', result)
-
   const items = result?.map((envelope) => envelope.value) ?? []
   if (paginatedVersion) {
     return {
