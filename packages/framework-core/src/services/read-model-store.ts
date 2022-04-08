@@ -47,7 +47,7 @@ export class ReadModelStore {
           return
         }
 
-        return readModelIDList.map(async (readModelID: UUID) => {
+        return readModelIDList.map((readModelID: UUID) => {
           this.logger.debug(
             '[ReadModelStore#project] Projecting entity snapshot ',
             entitySnapshotEnvelope,
@@ -55,7 +55,7 @@ export class ReadModelStore {
             sequenceKey ? ` sequencing by ${sequenceKey.name} with value ${sequenceKey.value}` : ''
           )
 
-          return await retryIfError(
+          return retryIfError(
             this.logger,
             () =>
               this.applyProjectionToReadModel(
