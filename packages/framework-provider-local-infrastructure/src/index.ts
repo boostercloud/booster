@@ -1,11 +1,18 @@
 import * as express from 'express'
 import { GraphQLService } from '@boostercloud/framework-provider-local'
-import { BoosterConfig, ProviderInfrastructure, RocketDescriptor, UserApp } from '@boostercloud/framework-types'
+import {
+  BoosterConfig,
+  ProviderInfrastructure,
+  RocketDescriptor,
+  ScheduledCommandMetadata,
+  UserApp,
+} from '@boostercloud/framework-types'
 import * as path from 'path'
 import { requestFailed } from './http'
 import { GraphQLController } from './controllers/graphql'
 import * as cors from 'cors'
 import { loadRocket } from './infrastructure-rocket'
+import * as scheduler from 'node-schedule'
 
 export * from './test-helper/local-test-helper'
 export * from './infrastructure-rocket'
@@ -26,6 +33,29 @@ async function defaultErrorHandler(
   }
   console.error(err)
   await requestFailed(err, res)
+}
+
+interface ScheduledCommandInfo {
+  name: string
+  metadata: ScheduledCommandMetadata
+}
+
+function configureScheduler(config: BoosterConfig): void {
+  Object.keys(config.scheduledCommandHandlers)
+    .map((scheduledCommandName) => buildScheduledCommandInfo(config, scheduledCommandName))
+    .filter((scheduledCommandInfo) => scheduledCommandInfo.metadata.scheduledOn)
+    .forEach((scheduledCommandInfo) => {
+      scheduler.scheduleJob(scheduledCommandInfo.name, scheduledCommandInfo.metadata.scheduledOn, () => {
+        console.log('AQUI QUE HACEMOS')
+      })
+    })
+}
+
+function buildScheduledCommandInfo(config: BoosterConfig, scheduledCommandName: string): ScheduledCommandInfo {
+  return {
+    name: scheduledCommandName,
+    metadata: config.scheduledCommandHandlers[scheduledCommandName],
+  }
 }
 
 export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): ProviderInfrastructure => {
@@ -64,7 +94,9 @@ export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): Provider
       })
       expressServer.use(router)
       expressServer.use(defaultErrorHandler)
-      expressServer.listen(port)
+      expressServer.listen(port, () => {
+        configureScheduler(config)
+      })
     },
   }
 }
