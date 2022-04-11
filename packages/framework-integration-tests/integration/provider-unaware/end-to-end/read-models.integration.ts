@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
-import { random } from 'faker'
+import { commerce, finance, internet, lorem, random } from 'faker'
 import { expect } from 'chai'
 import gql from 'graphql-tag'
 import { waitForIt } from '../../helper/sleep'
 import { CartItem } from '../../../src/common/cart-item'
 import { applicationUnderTest } from './setup'
 import { beforeHookException, beforeHookProductId, throwExceptionId } from '../../../src/constants'
+import { UUID } from '@boostercloud/framework-types'
 
 describe('Read models end-to-end tests', () => {
   let client: ApolloClient<NormalizedCacheObject>
@@ -1018,6 +1019,186 @@ describe('Read models end-to-end tests', () => {
       }
 
       expect(updatedCartData).to.be.deep.equal(expectedUpdatedResult)
+    })
+  })
+
+  describe('projecting two entities with array joinKey', () => {
+    let client: ApolloClient<NormalizedCacheObject>
+    let userToken: string
+
+    before(async () => {
+      const userEmail = internet.email()
+      userToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail')
+      client = applicationUnderTest.graphql.client(userToken)
+    })
+
+    const oneMockProductId: string = random.uuid()
+    const twoMockProductId: string = random.uuid()
+
+    beforeEach(async () => {
+      // Add item one
+      await client.mutate({
+        variables: {
+          productID: oneMockProductId,
+          sku: random.uuid(),
+          displayName: commerce.productName(),
+          description: lorem.paragraph(),
+          priceInCents: random.number({ min: 1 }),
+          currency: finance.currencyCode(),
+        },
+        mutation: gql`
+          mutation CreateProduct(
+            $productID: ID!
+            $sku: String!
+            $displayName: String
+            $description: String
+            $priceInCents: Float
+            $currency: String
+          ) {
+            CreateProduct(
+              input: {
+                productID: $productID
+                sku: $sku
+                displayName: $displayName
+                description: $description
+                priceInCents: $priceInCents
+                currency: $currency
+              }
+            )
+          }
+        `,
+      })
+
+      // Add item two
+      await client.mutate({
+        variables: {
+          productID: twoMockProductId,
+          sku: random.uuid(),
+          displayName: commerce.productName(),
+          description: lorem.paragraph(),
+          priceInCents: random.number({ min: 1 }),
+          currency: finance.currencyCode(),
+        },
+        mutation: gql`
+          mutation CreateProduct(
+            $productID: ID!
+            $sku: String!
+            $displayName: String
+            $description: String
+            $priceInCents: Float
+            $currency: String
+          ) {
+            CreateProduct(
+              input: {
+                productID: $productID
+                sku: $sku
+                displayName: $displayName
+                description: $description
+                priceInCents: $priceInCents
+                currency: $currency
+              }
+            )
+          }
+        `,
+      })
+    })
+
+    it('should project changes for both entities', async () => {
+      // Check that new product is available in read model
+      const products = await waitForIt(
+        () => {
+          return client.query({
+            variables: {
+              products: [oneMockProductId, twoMockProductId],
+            },
+            query: gql`
+              query ProductReadModels($products: [String]) {
+                ProductReadModels(filter: { id: { in: $products } }) {
+                  id
+                  sku
+                  displayName
+                  description
+                  price {
+                    cents
+                    currency
+                  }
+                  availability
+                  deleted
+                  packs
+                }
+              }
+            `,
+          })
+        },
+        (result) =>
+          result?.data?.ProductReadModels?.every(
+            (product: any) => Array.isArray(product.packs) && product.packs.length == 0
+          )
+      )
+
+      expect(products.data.ProductReadModels.length).to.be.equal(2)
+
+      const mockPackId: string = random.uuid()
+      const mockPackName: string = commerce.productName()
+      const mockPackProducts: Array<UUID> = [oneMockProductId, twoMockProductId]
+
+      // Create Pack
+      await client.mutate({
+        variables: {
+          packID: mockPackId,
+          name: mockPackName,
+          products: mockPackProducts,
+        },
+        mutation: gql`
+          mutation CreatePack($packID: ID!, $name: String, $products: [ID!]) {
+            CreatePack(input: { packID: $packID, name: $name, products: $products })
+          }
+        `,
+      })
+
+      const updatedQueryResults = await waitForIt(
+        () => {
+          return client.query({
+            variables: {
+              products: [oneMockProductId, twoMockProductId],
+            },
+            query: gql`
+              query ProductReadModels($products: [String]) {
+                ProductReadModels(filter: { id: { in: $products } }) {
+                  id
+                  sku
+                  displayName
+                  description
+                  price {
+                    cents
+                    currency
+                  }
+                  availability
+                  deleted
+                  packs
+                }
+              }
+            `,
+          })
+        },
+        (result) =>
+          result?.data?.ProductReadModels?.every(
+            (product: any) => Array.isArray(product.packs) && product.packs.length == 1
+          )
+      )
+
+      const updatedProducts = updatedQueryResults.data.ProductReadModels
+      expect(updatedProducts.length).to.be.equal(2)
+
+      updatedProducts.forEach((product: { packs: Array<any> }) => {
+        expect(product.packs).to.be.deep.equal([
+          {
+            id: mockPackId,
+            name: mockPackName,
+            products: mockPackProducts,
+          },
+        ])
+      })
     })
   })
 })

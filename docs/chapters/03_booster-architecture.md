@@ -675,14 +675,24 @@ export class UserReadModel {
   public constructor(readonly username: string, /* ...(other interesting fields from users)... */) {}
 
   @Projects(User, 'id')
-  public static projectUser(entity: User, current?: ProjectionResult<UserReadModel>) { // Here we update the user fields}
+  public static projectUser(entity: User, current?: ProjectionResult<UserReadModel>, readModelID?: UUID) { // Here we update the user fields}
 
   @Projects(Post, 'ownerId')
-  public static projectUserPost(entity: Post, current?: ProjectionResult<UserReadModel>) { //Here we can adapt the read model to show specific user information related with the Post entity}
+  public static projectUserPost(entity: Post, current?: ProjectionResult<UserReadModel>, readModelID?: UUID) { //Here we can adapt the read model to show specific user information related with the Post entity}
 }
 ```
 
 In the previous example we are projecting the `User` entity using the user `id` and also we are projecting the `User` entity based on the `ownerId` of the `Post` entity. Notice that both join keys are references to the `User` identifier, but it's not required that the join key is an identifier.
+
+You can even select arrays of UUIDs as `joinKey`, Booster will execute the projection for all the read models corresponding to those ids contained in the array (projections are completely isolated from each other). So, for example, if we would have a `Group` with an array of users in that group (`users: Array<UUID>`), we can have the following to update each `UserReadModel` accordingly:
+
+```typescript
+  @Projects(Group, 'users')
+  public static projectUserGroup(entity: Group, current?: ProjectionResult<UserReadModel>, readModelID?: UUID) { 
+    //Here we can update the read models with group information
+    //This logic will be executed for each read model id in the array 
+  }
+```
 
 As you may have notice from the `ProjectionResult` type, projections can also return `ReadModelAction`, which includes:
 
