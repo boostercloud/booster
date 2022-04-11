@@ -93,6 +93,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
             class: ProperlyHandledCommand,
           },
         },
+        currentVersionFor: fake.returns(1),
       }
       const commandValue = {
         something: 'to handle',
@@ -142,6 +143,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
             class: ProperlyHandledCommand,
           },
         },
+        currentVersionFor: fake.returns(1),
       }
       const commandValue = {
         something: 'to handle',

@@ -11,6 +11,7 @@ import { BoosterAuth } from './booster-auth'
 import { RegisterHandler } from './booster-register-handler'
 import { createInstance } from '@boostercloud/framework-common-helpers'
 import { applyBeforeFunctions } from './services/filter-helpers'
+import { Migrator } from './migrator'
 
 export class BoosterCommandDispatcher {
   public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
@@ -33,15 +34,20 @@ export class BoosterCommandDispatcher {
     const commandClass = commandMetadata.class
     this.logger.debug('Found the following command:', commandClass.name)
 
+    const migratedCommandEnvelope = new Migrator(this.config, this.logger).migrate<CommandEnvelope>(commandEnvelope)
     const commandInput = await applyBeforeFunctions(
-      commandEnvelope.value,
+      migratedCommandEnvelope.value,
       commandMetadata.before,
-      commandEnvelope.currentUser
+      migratedCommandEnvelope.currentUser
     )
 
     const commandInstance = createInstance(commandClass, commandInput)
 
-    const register = new Register(commandEnvelope.requestID, commandEnvelope.currentUser, commandEnvelope.context)
+    const register = new Register(
+      migratedCommandEnvelope.requestID,
+      migratedCommandEnvelope.currentUser,
+      migratedCommandEnvelope.context
+    )
     this.logger.debug('Calling "handle" method on command: ', commandClass)
     const result = await commandClass.handle(commandInstance, register)
     this.logger.debug('Command dispatched with register: ', register)
