@@ -1,18 +1,12 @@
 import * as express from 'express'
 import { GraphQLService } from '@boostercloud/framework-provider-local'
-import {
-  BoosterConfig,
-  ProviderInfrastructure,
-  RocketDescriptor,
-  ScheduledCommandMetadata,
-  UserApp,
-} from '@boostercloud/framework-types'
+import { BoosterConfig, ProviderInfrastructure, RocketDescriptor, UserApp } from '@boostercloud/framework-types'
 import * as path from 'path'
 import { requestFailed } from './http'
 import { GraphQLController } from './controllers/graphql'
 import * as cors from 'cors'
 import { loadRocket } from './infrastructure-rocket'
-import * as scheduler from 'node-schedule'
+import { configureScheduler } from './scheduler'
 
 export * from './test-helper/local-test-helper'
 export * from './infrastructure-rocket'
@@ -35,29 +29,6 @@ async function defaultErrorHandler(
   await requestFailed(err, res)
 }
 
-interface ScheduledCommandInfo {
-  name: string
-  metadata: ScheduledCommandMetadata
-}
-
-function configureScheduler(config: BoosterConfig): void {
-  Object.keys(config.scheduledCommandHandlers)
-    .map((scheduledCommandName) => buildScheduledCommandInfo(config, scheduledCommandName))
-    .filter((scheduledCommandInfo) => scheduledCommandInfo.metadata.scheduledOn)
-    .forEach((scheduledCommandInfo) => {
-      scheduler.scheduleJob(scheduledCommandInfo.name, scheduledCommandInfo.metadata.scheduledOn, () => {
-        console.log('AQUI QUE HACEMOS')
-      })
-    })
-}
-
-function buildScheduledCommandInfo(config: BoosterConfig, scheduledCommandName: string): ScheduledCommandInfo {
-  return {
-    name: scheduledCommandName,
-    metadata: config.scheduledCommandHandlers[scheduledCommandName],
-  }
-}
-
 export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): ProviderInfrastructure => {
   const rockets = rocketDescriptors?.map(loadRocket)
   return {
@@ -71,8 +42,8 @@ export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): Provider
     start: async (config: BoosterConfig, port: number): Promise<void> => {
       const expressServer = express()
       const router = express.Router()
-      const userProject: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
-      const graphQLService = new GraphQLService(userProject)
+      const userProject = require(path.join(process.cwd(), 'dist', 'index.js'))
+      const graphQLService = new GraphQLService(userProject as UserApp)
       router.use('/graphql', new GraphQLController(graphQLService).router)
       if (rockets && rockets.length > 0) {
         rockets.forEach((rocket) => {
@@ -95,7 +66,7 @@ export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): Provider
       expressServer.use(router)
       expressServer.use(defaultErrorHandler)
       expressServer.listen(port, () => {
-        configureScheduler(config)
+        configureScheduler(config, userProject)
       })
     },
   }
