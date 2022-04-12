@@ -31,9 +31,9 @@ describe('Data consistency on entities', () => {
 
     it('adds stock to all of them with many events without corrupting data', async () => {
       const durationWarmup = 10
-      const arrivalRateWarmup = 500
+      const arrivalRateWarmup = process.env.TESTED_PROVIDER === 'AZURE' ? 200 : 500
       const durationBurst = 10
-      const arrivalRateBurst = process.env.TESTED_PROVIDER === 'AZURE' ? 500 : 1200
+      const arrivalRateBurst = process.env.TESTED_PROVIDER === 'AZURE' ? 400 : 1200
       const expectedStock = durationWarmup * arrivalRateWarmup + durationBurst * arrivalRateBurst
       await scriptExecutor.executeScript('move-product-stock.yml', {
         variables: { token, productID: productIDs, destinationWarehouse },
