@@ -98,7 +98,7 @@ describe('the `Searcher` class', () => {
 
     describe('the method `search`', () => {
       it('calls the `searcherFunction` forwarding the configured parameters', async () => {
-        const filters = { someField: { gt: '200' } }
+        const filters = { someField: { gt: '200' }, field: { otherField: { isDefined: true } } } as FilterFor<any>
         await searcher.filter(filters).afterCursor('30').limit(50).paginatedVersion(true).search()
 
         expect(searcherFunction).to.have.been.calledWithMatch('SomeModel', filters, {}, 50, '30', true)

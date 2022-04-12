@@ -1,5 +1,6 @@
 import { expect } from '../expect'
 import { queryRecordFor } from '../../src/library/searcher-adapter'
+import { FilterFor } from '@boostercloud/framework-types'
 
 describe('searcher-adapter', () => {
   describe('converts simple operators', () => {
@@ -72,6 +73,18 @@ describe('searcher-adapter', () => {
         'value.field': { $regex: new RegExp('one') },
         'value.field2': { $regex: new RegExp('two') },
       })
+    })
+
+    it('converts the "isDefined" operator', () => {
+      const filters = { field: { isDefined: true } } as FilterFor<any>
+      const result = queryRecordFor(typeName, filters)
+      expect(result).to.deep.equal({ 'value.field': { $exists: true }, typeName })
+    })
+
+    it('converts the "isDefined" operator on nested fields', () => {
+      const filters = { field: { otherField: { isDefined: true } } } as FilterFor<any>
+      const result = queryRecordFor(typeName, filters)
+      expect(result).to.deep.equal({ 'value.field.otherField': { $exists: true }, typeName })
     })
   })
 })

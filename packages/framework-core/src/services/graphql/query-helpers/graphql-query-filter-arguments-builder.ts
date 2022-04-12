@@ -34,7 +34,6 @@ export class GraphqlQueryFilterArgumentsBuilder {
 
   private generateFilterFor(prop: PropertyMetadata): GraphQLInputObjectType | GraphQLScalarType {
     const filterName = `${prop.typeInfo.name}PropertyFilter`
-
     if (!prop.typeInfo.type || typeof prop.typeInfo.type === 'object') return GraphQLJSONObject
 
     if (!this.generatedFiltersByTypeName[filterName]) {
@@ -61,6 +60,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
           and: { type: new GraphQLList(this.generatedFiltersByTypeName[filterName]) },
           or: { type: new GraphQLList(this.generatedFiltersByTypeName[filterName]) },
           not: { type: this.generatedFiltersByTypeName[filterName] },
+          isDefined: { type: GraphQLBoolean },
         })
       } else {
         fields = this.generateFilterInputTypes(prop.typeInfo.type)
@@ -94,6 +94,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
         }
         propFilters.includes = { type: graphqlType }
       })
+      propFilters.isDefined = { type: GraphQLBoolean }
 
       this.generatedFiltersByTypeName[filterName] = new GraphQLInputObjectType({
         name: filterName,
@@ -110,6 +111,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
         return {
           eq: { type: GraphQLBoolean },
           ne: { type: GraphQLBoolean },
+          isDefined: { type: GraphQLBoolean },
         }
       case Number:
         return {
@@ -120,6 +122,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
           gte: { type: GraphQLFloat },
           gt: { type: GraphQLFloat },
           in: { type: GraphQLList(GraphQLFloat) },
+          isDefined: { type: GraphQLBoolean },
         }
       case String:
         return {
@@ -132,6 +135,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
           in: { type: GraphQLList(GraphQLString) },
           beginsWith: { type: GraphQLString },
           contains: { type: GraphQLString },
+          isDefined: { type: GraphQLBoolean },
         }
       default:
         throw new Error(`Type ${type.name} is not supported in search filters`)

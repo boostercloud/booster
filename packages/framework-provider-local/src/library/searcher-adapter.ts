@@ -55,7 +55,7 @@ type QueryOperation<TValue> =
   | TValue
   // For these, the value must be single as a result
   | {
-      [TKey in '$lt' | '$lte' | '$gt' | '$gte' | '$ne']?: TValue
+      [TKey in '$lt' | '$lte' | '$gt' | '$gte' | '$ne' | '$exists']?: TValue
     }
   // `in` operators must have an array as a result
   | {
@@ -85,6 +85,7 @@ const queryOperatorTable: Record<string, (values: Array<QueryValue>) => QueryOpe
   lte: (values) => ({ $lte: values[0] }),
   gte: (values) => ({ $gte: values[0] }),
   in: (values) => ({ $in: values }),
+  isDefined: (values) => ({ $exists: values[0] }),
   contains: buildRegexQuery.bind(null, 'contains'),
   beginsWith: buildRegexQuery.bind(null, 'begins-with'),
   includes: buildIncludes.bind(null, 'contains'),

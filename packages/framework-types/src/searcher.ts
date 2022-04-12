@@ -140,13 +140,18 @@ export type Operation<TType> = TType extends Array<infer TElementType>
   : TType extends boolean
   ? BooleanOperators<TType>
   : TType extends Record<string, any>
-  ? FilterFor<TType>
+  ? FilterFor<TType> & IsDefinedOperator
   : never
 
-interface BooleanOperators<TType> {
+interface IsDefinedOperator {
+  isDefined?: boolean
+}
+
+interface BooleanOperators<TType> extends IsDefinedOperator {
   eq?: TType
   ne?: TType
 }
+
 interface ScalarOperators<TType> extends BooleanOperators<TType> {
   gt?: TType
   gte?: TType
@@ -162,4 +167,5 @@ interface StringOperators<TType> extends ScalarOperators<TType> {
 
 interface ArrayOperators<TElementType> {
   includes?: TElementType
+  isDefined?: boolean
 }
