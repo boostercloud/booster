@@ -14,6 +14,7 @@ import {
   OptimisticConcurrencyUnexpectedVersionError,
   ProjectionResult,
   ReadModelInterface,
+  ProjectionMetadata,
 } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 import { createInstance } from '@boostercloud/framework-common-helpers'
@@ -49,7 +50,11 @@ describe('ReadModelStore', () => {
 
   class SomeReadModel {
     public constructor(readonly id: UUID) {}
-    public static someObserver(entity: AnImportantEntity, readModelID: UUID, obj: any): any {
+    public static someObserver(entity: AnImportantEntity, obj: any): any {
+      const count = (obj?.count || 0) + entity.count
+      return { id: entity.someKey, kind: 'some', count: count }
+    }
+    public static someObserverArray(entity: AnImportantEntity, readModelID: UUID, obj: any): any {
       const count = (obj?.count || 0) + entity.count
       return { id: readModelID, kind: 'some', count: count }
     }
@@ -110,31 +115,31 @@ describe('ReadModelStore', () => {
       class: SomeReadModel,
       methodName: 'someObserver',
       joinKey: 'someKey',
-    },
+    } as ProjectionMetadata<any>,
     {
       class: SomeReadModel,
       methodName: 'projectionThatCallsEntityMethod',
       joinKey: 'someKey',
-    },
+    } as ProjectionMetadata<any>,
     {
       class: AnotherReadModel,
       methodName: 'anotherObserver',
       joinKey: 'someKey',
-    },
+    } as ProjectionMetadata<any>,
   ]
   config.projections[AnImportantEntityWithArray.name] = [
     {
       class: SomeReadModel,
-      methodName: 'someObserver',
+      methodName: 'someObserverArray',
       joinKey: 'someKey',
-    },
+    } as ProjectionMetadata<any>,
   ]
   config.projections['AnEntity'] = [
     {
       class: SomeReadModel,
       methodName: 'projectionThatCallsReadModelMethod',
       joinKey: 'someKey',
-    },
+    } as ProjectionMetadata<any>,
   ]
 
   function eventEnvelopeFor(entityName: string): EventEnvelope {
@@ -433,6 +438,7 @@ describe('ReadModelStore', () => {
           })
         )
         spy(SomeReadModel, 'someObserver')
+        spy(SomeReadModel, 'someObserverArray')
         const anEntitySnapshot = eventEnvelopeFor(AnImportantEntityWithArray.name)
         const entityValue: any = anEntitySnapshot.value
         const anEntityInstance = new AnImportantEntityWithArray(entityValue.id, entityValue.someKey, entityValue.count)
@@ -441,24 +447,24 @@ describe('ReadModelStore', () => {
         expect(readModelStore.fetchReadModel).to.have.been.calledTwice
         expect(readModelStore.fetchReadModel).to.have.been.calledWith(SomeReadModel.name, 'joinColumnID')
         expect(readModelStore.fetchReadModel).to.have.been.calledWith(SomeReadModel.name, 'anotherJoinColumnID')
-        expect(SomeReadModel.someObserver).to.have.been.calledWithMatch(
-          anEntityInstance,
-          {
-            id: 'joinColumnID',
-            kind: 'some',
-            count: 77,
-            boosterMetadata: { version: someReadModelStoredVersion },
-          },
-          'joinColumnID'
-        )
-        expect(SomeReadModel.someObserver).to.have.returned({
+        expect(SomeReadModel.someObserverArray).to.have.been.calledWithMatch(anEntityInstance, 'joinColumnID', {
+          id: 'joinColumnID',
+          kind: 'some',
+          count: 77,
+          boosterMetadata: { version: someReadModelStoredVersion },
+        })
+        expect(SomeReadModel.someObserverArray).to.have.returned({
           id: 'joinColumnID',
           kind: 'some',
           count: 200,
           boosterMetadata: { version: someReadModelStoredVersion + 1 },
         })
-        expect(SomeReadModel.someObserver).to.have.been.calledWithMatch(anEntityInstance, null, 'anotherJoinColumnID')
-        expect(SomeReadModel.someObserver).to.have.returned({
+        expect(SomeReadModel.someObserverArray).to.have.been.calledWithMatch(
+          anEntityInstance,
+          'anotherJoinColumnID',
+          null
+        )
+        expect(SomeReadModel.someObserverArray).to.have.returned({
           id: 'anotherJoinColumnID',
           kind: 'some',
           count: 123,
