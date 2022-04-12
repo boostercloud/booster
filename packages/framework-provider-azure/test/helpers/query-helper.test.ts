@@ -424,6 +424,39 @@ describe('Query helper', () => {
       )
     })
 
+    it('supports isDefine filters', async () => {
+      const filters: FilterFor<Product> = {
+        and: [
+          { days: { isDefined: true } },
+          { mainItem: { isDefined: false } },
+          { mainItem: { sku: { isDefined: true } } },
+        ],
+      }
+      await search(
+        mockCosmosDbClient as any,
+        mockConfig,
+        mockLogger,
+        mockReadModelName,
+        filters,
+        undefined,
+        undefined,
+        undefined,
+        undefined
+      )
+
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
+          .query
+      ).to.have.been.calledWith(
+        match({
+          query:
+            'SELECT * FROM c WHERE (IS_DEFINED(c["days"]) and NOT IS_DEFINED(c["mainItem"]) and IS_DEFINED(c["mainItem"]["sku"]))',
+          parameters: [
+          ],
+        })
+      )
+    })
+
     it('Throws an error with non supported filters', async () => {
       const unknownOperator = 'existsIn'
       const filters: FilterFor<any> = {
