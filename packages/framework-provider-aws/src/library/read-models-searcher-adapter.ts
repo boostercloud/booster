@@ -110,6 +110,12 @@ function buildOperation(
           return `begins_with(#${propName}, ${holder(index)})`
         case 'includes':
           return `contains(#${propName}, ${holder(index)})`
+        case 'isDefined':
+          if (value) {
+            return `attribute_exists(#${propName})`
+          } else {
+            return `attribute_not_exists(#${propName})`
+          }
         default:
           if (typeof value === 'object') {
             return buildOperation(operation, value, usedPlaceholders, propName)
@@ -147,6 +153,9 @@ function buildExpressionAttributeNames(filters: FilterFor<any>): ExpressionAttri
         break
       case 'includes':
         // In case of includes, avoid the default behaviour
+        break
+      case 'isDefined':
+        // In case of isDefined, avoid the default behaviour
         break
       default:
         Object.entries(filters[propName] as FilterFor<any>).forEach(([prop, value]) => {
@@ -203,6 +212,8 @@ function buildAttributeValue(
       })
     } else if (typeof value === 'object' && key !== 'includes') {
       Object.assign(attributeValues, buildExpressionAttributeValues({ [key]: value }, usedPlaceholders))
+    } else if (key === 'isDefined') {
+      // skip this parameter
     } else {
       attributeValues[holder(index)] = value
     }
