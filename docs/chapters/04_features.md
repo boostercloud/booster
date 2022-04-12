@@ -883,6 +883,8 @@ query {
 }
 ```
 
+Note: `eq` and `ne` are valid filters for checking if a field value is null or not null.
+
 ##### Array filters
 
 | Filter   | Value  |             Description |
@@ -918,6 +920,25 @@ Example:
 ```graphql
 query {
   CartReadModels(filter: { or: [{ id: { contains: "a" } }, { id: { contains: "b" } }] }) {
+    id
+    price
+    itemsIds
+  }
+}
+```
+
+##### IsDefined operator
+
+
+| Filter    |    Value    |         Description |
+|:----------|:-----------:|--------------------:|
+| isDefined | true/false  | field exists or not |
+
+Example:
+
+```graphql
+query {
+  CartReadModels(filter: { price: { isDefined: true } }) {
     id
     price
     itemsIds
