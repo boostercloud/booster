@@ -10,7 +10,7 @@ export let applicationUnderTest: ApplicationTester
 before(async () => {
   await setEnv()
   const providerTestHelper = await getProviderTestHelper()
-  scriptExecutor = new ArtilleryExecutor(loadTestsFolder, providerTestHelper)
+  scriptExecutor = new ArtilleryExecutor(loadTestsFolder, providerTestHelper.outputs.graphqlURL)
   await scriptExecutor.ensureDeployed()
   applicationUnderTest = new ApplicationTester(providerTestHelper)
 })

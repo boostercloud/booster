@@ -33,7 +33,7 @@ describe('Data consistency on entities', () => {
       const durationWarmup = 10
       const arrivalRateWarmup = 500
       const durationBurst = 10
-      const arrivalRateBurst = 1200
+      const arrivalRateBurst = process.env.TESTED_PROVIDER === 'AZURE' ? 500 : 1200
       const expectedStock = durationWarmup * arrivalRateWarmup + durationBurst * arrivalRateBurst
       await scriptExecutor.executeScript('move-product-stock.yml', {
         variables: { token, productID: productIDs, destinationWarehouse },
@@ -57,7 +57,9 @@ describe('Data consistency on entities', () => {
           ).reduce((stockProductA: number, stockProductB: number) => stockProductA + stockProductB, 0)
           console.debug(`Total stock. Got: ${totalStock}, expected: ${expectedStock}`)
           return totalStock === expectedStock
-        }
+        },
+        10000,
+        900000
       )
     })
   })

@@ -45,7 +45,9 @@ describe('Data consistency on read models', () => {
           const currentProducts = result.data.ProductsBySKU?.products.length
           console.debug(`Products with the same SKU. Got: ${currentProducts}, expected: ${expectedProductsBySku}`)
           return currentProducts === expectedProductsBySku
-        }
+        },
+        10000,
+        900000
       )
       expect(result.data.ProductsBySKU.id).to.be.equal(sku)
       expect(result.data.ProductsBySKU.products.length).to.be.equal(expectedProductsBySku)
