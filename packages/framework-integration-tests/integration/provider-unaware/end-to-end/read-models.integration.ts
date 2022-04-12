@@ -661,13 +661,13 @@ describe('Read models end-to-end tests', () => {
 
       it('should retrieve a list of carts when filter by isDefined with complex queries', async () => {
         const mockPaymentId: string = random.uuid()
-        const mockConfirmationToken: string = random.alphaNumeric(10)
+        // const mockConfirmationToken: string = random.alphaNumeric(10)
         // Make payment
         await client.mutate({
           variables: {
             paymentId: mockPaymentId,
             cartId: mockCartId,
-            confirmationToken: mockConfirmationToken,
+            confirmationToken: null,
           },
           mutation: gql`
             mutation ConfirmPayment($paymentId: ID!, $cartId: ID!, $confirmationToken: String) {
@@ -701,6 +701,16 @@ describe('Read models end-to-end tests', () => {
                   },
                 },
               ],
+            },
+            {
+              payment: {
+                confirmationToken: { eq: null },
+              },
+            },
+            {
+              payment: {
+                id: { ne: null },
+              },
             },
           ],
         }
