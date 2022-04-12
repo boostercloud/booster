@@ -43,6 +43,7 @@ export class ProductReadModel {
   @Projects(Pack, 'products')
   public static updateWithPack(
     pack: Pack,
+    readModelID: UUID,
     currentProductReadModel?: ProductReadModel
   ): ProjectionResult<ProductReadModel> {
     if (!currentProductReadModel) {

@@ -49,7 +49,7 @@ describe('ReadModelStore', () => {
 
   class SomeReadModel {
     public constructor(readonly id: UUID) {}
-    public static someObserver(entity: AnImportantEntity, obj: any, readModelID?: UUID): any {
+    public static someObserver(entity: AnImportantEntity, readModelID: UUID, obj: any): any {
       const count = (obj?.count || 0) + entity.count
       return { id: readModelID, kind: 'some', count: count }
     }

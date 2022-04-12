@@ -35,7 +35,7 @@ export class ReadModelStore {
     }
     const entityMetadata = this.config.entities[entitySnapshotEnvelope.entityTypeName]
     await Promises.allSettledAndFulfilled(
-      projections.flatMap((projectionMetadata: ProjectionMetadata) => {
+      projections.flatMap((projectionMetadata: ProjectionMetadata<EntityInterface>) => {
         const readModelName = projectionMetadata.class.name
         const entityInstance = createInstance(entityMetadata.class, entitySnapshotEnvelope.value)
         const readModelIDList = this.joinKeyForProjection(entityInstance, projectionMetadata)
@@ -74,7 +74,7 @@ export class ReadModelStore {
 
   private joinKeyForProjection(
     entity: EntityInterface,
-    projectionMetadata: ProjectionMetadata
+    projectionMetadata: ProjectionMetadata<EntityInterface>
   ): Array<UUID> | undefined {
     const joinKey = (entity as any)[projectionMetadata.joinKey]
     if (!joinKey) {
@@ -85,7 +85,7 @@ export class ReadModelStore {
 
   private sequenceKeyForProjection(
     entity: EntityInterface,
-    projectionMetadata: ProjectionMetadata
+    projectionMetadata: ProjectionMetadata<EntityInterface>
   ): SequenceKey | undefined {
     const sequenceKeyName = this.config.readModelSequenceKeys[projectionMetadata.class.name]
     const sequenceKeyValue = (entity as any)[sequenceKeyName]
@@ -97,14 +97,16 @@ export class ReadModelStore {
 
   private async applyProjectionToReadModel(
     entity: EntityInterface,
-    projectionMetadata: ProjectionMetadata,
+    projectionMetadata: ProjectionMetadata<EntityInterface>,
     readModelName: string,
     readModelID: UUID,
     sequenceKey?: SequenceKey
   ): Promise<unknown> {
     const readModel = await this.fetchReadModel(readModelName, readModelID, sequenceKey)
     const currentReadModelVersion: number = readModel?.boosterMetadata?.version ?? 0
-    const newReadModel = this.projectionFunction(projectionMetadata)(entity, readModel, readModelID)
+    const newReadModel = Array.isArray(entity[projectionMetadata.joinKey])
+      ? this.projectionFunction(projectionMetadata)(entity, readModelID, readModel)
+      : this.projectionFunction(projectionMetadata)(entity, readModel)
 
     if (newReadModel === ReadModelAction.Delete) {
       this.logger.debug(
@@ -169,7 +171,7 @@ export class ReadModelStore {
     return undefined
   }
 
-  public projectionFunction(projectionMetadata: ProjectionMetadata): Function {
+  public projectionFunction(projectionMetadata: ProjectionMetadata<EntityInterface>): Function {
     try {
       return (projectionMetadata.class as any)[projectionMetadata.methodName]
     } catch {
