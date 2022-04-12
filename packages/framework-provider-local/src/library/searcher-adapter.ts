@@ -6,28 +6,27 @@ import { FilterFor } from '@boostercloud/framework-types'
  * method of the read model registry.
  */
 export function queryRecordFor(
-  readModelName: string,
   filters: FilterFor<any>,
-  nested?: string
+  nested?: string,
+  queryFromFilters: Record<string, object> = {}
 ): Record<string, QueryOperation<QueryValue>> {
-  const queryFromFilters: Record<string, object> = {}
   if (Object.keys(filters).length != 0) {
     for (const key in filters) {
       const propName = nested ? `${nested}.${key}` : key
       const filter = filters[key] as FilterFor<any>
       switch (key) {
         case 'not':
-          queryFromFilters[`$${propName}`] = queryRecordFor(readModelName, filter)
+          queryFromFilters[`$${propName}`] = queryRecordFor(filter)
           break
         case 'or':
         case 'and':
           queryFromFilters[`$${propName}`] = (filters[key] as Array<FilterFor<any>>).map((filter) =>
-            queryRecordFor(readModelName, filter)
+            queryRecordFor(filter)
           )
           break
         default:
           if (!Object.keys(queryOperatorTable).includes(Object.keys(filter)[0])) {
-            return queryRecordFor(readModelName, filter, propName)
+            queryRecordFor(filter, propName, queryFromFilters)
           } else {
             queryFromFilters[`value.${propName}`] = filterToQuery(filter) as FilterFor<QueryValue>
           }
@@ -35,7 +34,7 @@ export function queryRecordFor(
       }
     }
   }
-  return { ...queryFromFilters, typeName: readModelName }
+  return { ...queryFromFilters }
 }
 
 /**

@@ -494,6 +494,60 @@ describe('Read models end-to-end tests', () => {
         expect(cartData[0].id).to.equal(mockCartId)
       })
 
+      it('should retrieve a list of carts using AND by default with paginated read model', async () => {
+        const filter = {
+          shippingAddress: {
+            firstName: {
+              eq: mockAddress.firstName,
+            },
+          },
+          cartItems: {
+            includes: {
+              productId: mockProductId,
+              quantity: mockQuantity,
+            },
+          },
+          cartItemsIds: {
+            includes: mockProductId,
+          },
+        }
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: filter,
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter) {
+                  ListCartReadModels(filter: $filter) {
+                    items {
+                      id
+                      cartItems
+                      checks
+                      shippingAddress {
+                        firstName
+                      }
+                      payment {
+                        cartId
+                      }
+                      cartItemsIds
+                    }
+                    cursor
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels?.items?.length === 1
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.equal(1)
+        expect(cartData[0].id).to.equal(mockCartId)
+      })
+
       it('should not fail if search a list of carts with empty results', async () => {
         const filter = { cartItems: { includes: { productId: mockProductId, quantity: 200 } } }
         const queryResult = await client.query({

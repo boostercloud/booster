@@ -366,7 +366,7 @@ describe('read-models-adapter', () => {
         expect(queryStub).to.have.been.calledWithExactly(
           {
             typeName: mockReadModel.typeName,
-            $not: { 'value.foo': { $regex: new RegExp('^bar') }, typeName: mockReadModel.typeName },
+            $not: { 'value.foo': { $regex: new RegExp('^bar') } },
           },
           undefined,
           0,
@@ -376,6 +376,32 @@ describe('read-models-adapter', () => {
     })
 
     describe('multiple queries', () => {
+      it('only fields query should use AND and call read model registry store with the appropriate operation converted', async () => {
+        const mockReadModel = createMockReadModelEnvelope()
+        await searchMock(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel, {
+          foo: {
+            subFooField: { eq: 'subFooField' },
+          },
+          bar: {
+            subBarField: { eq: 'subBarField' },
+          },
+          other: {
+            subOtherField: { ne: true },
+          },
+        })
+        expect(queryStub).to.have.been.calledWithExactly(
+          {
+            'value.foo.subFooField': 'subFooField',
+            'value.bar.subBarField': 'subBarField',
+            'value.other.subOtherField': { $ne: true },
+            typeName: mockReadModel.typeName,
+          },
+          undefined,
+          0,
+          undefined
+        )
+      })
+
       it('gt lt AND query should call read model registry store with the appropriate operation converted', async () => {
         const mockReadModel = createMockReadModelEnvelope()
         await searchMock(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel, {
@@ -384,10 +410,7 @@ describe('read-models-adapter', () => {
         expect(queryStub).to.have.been.calledWithExactly(
           {
             typeName: mockReadModel.typeName,
-            $and: [
-              { 'value.foo': { $gt: 1 }, typeName: mockReadModel.typeName },
-              { 'value.foo': { $lt: 10 }, typeName: mockReadModel.typeName },
-            ],
+            $and: [{ 'value.foo': { $gt: 1 } }, { 'value.foo': { $lt: 10 } }],
           },
           undefined,
           0,
@@ -403,10 +426,7 @@ describe('read-models-adapter', () => {
         expect(queryStub).to.have.been.calledWithExactly(
           {
             typeName: mockReadModel.typeName,
-            $and: [
-              { 'value.foo': { $gte: 1 }, typeName: mockReadModel.typeName },
-              { 'value.foo': { $lte: 10 }, typeName: mockReadModel.typeName },
-            ],
+            $and: [{ 'value.foo': { $gte: 1 } }, { 'value.foo': { $lte: 10 } }],
           },
           undefined,
           0,
@@ -422,10 +442,7 @@ describe('read-models-adapter', () => {
         expect(queryStub).to.have.been.calledWithExactly(
           {
             typeName: mockReadModel.typeName,
-            $or: [
-              { 'value.foo': 1, typeName: mockReadModel.typeName },
-              { 'value.bar': { $lt: 10 }, typeName: mockReadModel.typeName },
-            ],
+            $or: [{ 'value.foo': 1 }, { 'value.bar': { $lt: 10 } }],
           },
           undefined,
           0,
