@@ -675,10 +675,14 @@ export class UserReadModel {
   public constructor(readonly username: string, /* ...(other interesting fields from users)... */) {}
 
   @Projects(User, 'id')
-  public static projectUser(entity: User, current?: ProjectionResult<UserReadModel>, readModelID?: UUID) { // Here we update the user fields}
+  public static projectUser(entity: User, current?: UserReadModel, readModelID?: UUID): ProjectionResult<UserReadModel> { 
+    // Here we update the user fields
+  }
 
   @Projects(Post, 'ownerId')
-  public static projectUserPost(entity: Post, current?: ProjectionResult<UserReadModel>, readModelID?: UUID) { //Here we can adapt the read model to show specific user information related with the Post entity}
+  public static projectUserPost(entity: Post, current?: UserReadModel, readModelID?: UUID): ProjectionResult<UserReadModel> { 
+    //Here we can adapt the read model to show specific user information related with the Post entity
+  }
 }
 ```
 
@@ -688,7 +692,7 @@ You can even select arrays of UUIDs as `joinKey`, Booster will execute the proje
 
 ```typescript
   @Projects(Group, 'users')
-  public static projectUserGroup(entity: Group, current?: ProjectionResult<UserReadModel>, readModelID?: UUID) { 
+  public static projectUserGroup(entity: Group, current?: UserReadModel, readModelID?: UUID): ProjectionResult<UserReadModel> { 
     //Here we can update the read models with group information
     //This logic will be executed for each read model id in the array 
   }
