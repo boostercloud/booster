@@ -6,11 +6,11 @@ import {
   storeEvents,
 } from './library/events-adapter'
 import { requestSucceeded, requestFailed } from './library/api-adapter'
-import { EventRegistry } from './services'
+import { EventRegistry, ReadModelRegistry } from './services'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 
 import * as path from 'path'
-import { ReadModelRegistry } from './services'
+
 import {
   fetchReadModel,
   rawReadModelEventsToEnvelopes,
@@ -18,6 +18,7 @@ import {
   storeReadModel,
 } from './library/read-model-adapter'
 import { searchEvents } from './library/events-search-adapter'
+import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
 
 export * from './paths'
 export * from './services'
@@ -83,8 +84,7 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
   },
   // ScheduledCommandsLibrary
   scheduled: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rawToEnvelope: undefined as any,
+    rawToEnvelope: rawScheduledInputToEnvelope,
   },
   // ProviderInfrastructureGetter
   infrastructure: () => {
