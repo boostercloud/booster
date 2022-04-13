@@ -5,8 +5,8 @@ import {
   InvalidParameterError,
   Logger,
   Operation,
-  SortFor,
   ReadModelListResult,
+  SortFor,
 } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
@@ -160,7 +160,7 @@ function buildExpressionAttributeNames(filters: FilterFor<any>): ExpressionAttri
       default:
         Object.entries(filters[propName] as FilterFor<any>).forEach(([prop, value]) => {
           attributeNames[`#${propName}`] = propName
-          if (typeof value === 'object' && !Array.isArray(value)) {
+          if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
             Object.assign(attributeNames, buildExpressionAttributeNames({ [prop]: value }))
           }
         })
@@ -210,7 +210,7 @@ function buildAttributeValue(
       value.forEach((element, subIndex) => {
         attributeValues[holder(index, subIndex)] = element
       })
-    } else if (typeof value === 'object' && key !== 'includes') {
+    } else if (typeof value === 'object' && key !== 'includes' && value !== null) {
       Object.assign(attributeValues, buildExpressionAttributeValues({ [key]: value }, usedPlaceholders))
     } else if (key === 'isDefined') {
       // skip this parameter

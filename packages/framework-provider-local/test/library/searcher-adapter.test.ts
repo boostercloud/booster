@@ -86,5 +86,54 @@ describe('searcher-adapter', () => {
       const result = queryRecordFor(typeName, filters)
       expect(result).to.deep.equal({ 'value.field.otherField': { $exists: true }, typeName })
     })
+
+    it('converts the "isDefined" operator for complex filters', () => {
+      const filters = {
+        and: [
+          {
+            id: { eq: '3' },
+          },
+          {
+            mainItem: {
+              sku: {
+                eq: 'test',
+              },
+            },
+          },
+          {
+            or: [
+              {
+                days: { isDefined: true },
+              },
+              {
+                items: { includes: { sku: 'test', price: { cents: 1000, currency: 'EUR' } } },
+              },
+            ],
+          },
+          { mainItem: { sku: { eq: null } } },
+          { mainItem: { price: { cents: { ne: null } } } },
+        ],
+      } as FilterFor<any>
+      const result = queryRecordFor(typeName, filters)
+      expect(result).to.deep.equal({
+        $and: [
+          { 'value.id': '3', typeName: 'SomeReadModel' },
+          { 'value.mainItem.sku': 'test', typeName: 'SomeReadModel' },
+          {
+            $or: [
+              { 'value.days': { $exists: true }, typeName: 'SomeReadModel' },
+              {
+                'value.items': { $elemMatch: { sku: 'test', price: { cents: 1000, currency: 'EUR' } } },
+                typeName: 'SomeReadModel',
+              },
+            ],
+            typeName: 'SomeReadModel',
+          },
+          { 'value.mainItem.sku': null, typeName: 'SomeReadModel' },
+          { 'value.mainItem.price.cents': { $ne: null }, typeName: 'SomeReadModel' },
+        ],
+        typeName: 'SomeReadModel',
+      })
+    })
   })
 })
