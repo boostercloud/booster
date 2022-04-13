@@ -75,17 +75,17 @@ describe('searcher-adapter', () => {
     })
 
     it('converts the "isDefined" operator', () => {
-      const result = queryRecordFor(readModelName, { field: { isDefined: true } })
-      expect(result).to.deep.equal({ 'value.field': { $exists: true }, typeName: readModelName })
+      const result = queryRecordFor({ field: { isDefined: true } })
+      expect(result).to.deep.equal({ 'value.field': { $exists: true } })
     })
 
     it('converts the "isDefined" operator on nested fields', () => {
-      const result = queryRecordFor(readModelName, { field: { otherField: { isDefined: true } } })
-      expect(result).to.deep.equal({ 'value.field.otherField': { $exists: true }, typeName: readModelName })
+      const result = queryRecordFor({ field: { otherField: { isDefined: true } } })
+      expect(result).to.deep.equal({ 'value.field.otherField': { $exists: true } })
     })
 
     it('converts the "isDefined" operator for complex filters', () => {
-      const result = queryRecordFor(readModelName, {
+      const result = queryRecordFor({
         and: [
           {
             id: { eq: '3' },
@@ -113,22 +113,19 @@ describe('searcher-adapter', () => {
       })
       expect(result).to.deep.equal({
         $and: [
-          { 'value.id': '3', typeName: 'SomeReadModel' },
-          { 'value.mainItem.sku': 'test', typeName: 'SomeReadModel' },
+          { 'value.id': '3' },
+          { 'value.mainItem.sku': 'test' },
           {
             $or: [
-              { 'value.days': { $exists: true }, typeName: 'SomeReadModel' },
+              { 'value.days': { $exists: true } },
               {
                 'value.items': { $elemMatch: { sku: 'test', price: { cents: 1000, currency: 'EUR' } } },
-                typeName: 'SomeReadModel',
               },
             ],
-            typeName: 'SomeReadModel',
           },
-          { 'value.mainItem.sku': null, typeName: 'SomeReadModel' },
-          { 'value.mainItem.price.cents': { $ne: null }, typeName: 'SomeReadModel' },
+          { 'value.mainItem.sku': null },
+          { 'value.mainItem.price.cents': { $ne: null } },
         ],
-        typeName: 'SomeReadModel',
       })
     })
   })
