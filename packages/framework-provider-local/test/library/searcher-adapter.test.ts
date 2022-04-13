@@ -1,6 +1,5 @@
 import { expect } from '../expect'
 import { queryRecordFor } from '../../src/library/searcher-adapter'
-import { FilterFor } from '@boostercloud/framework-types'
 
 describe('searcher-adapter', () => {
   describe('converts simple operators', () => {
@@ -76,19 +75,17 @@ describe('searcher-adapter', () => {
     })
 
     it('converts the "isDefined" operator', () => {
-      const filters = { field: { isDefined: true } } as FilterFor<any>
-      const result = queryRecordFor(typeName, filters)
-      expect(result).to.deep.equal({ 'value.field': { $exists: true }, typeName })
+      const result = queryRecordFor(readModelName, { field: { isDefined: true } })
+      expect(result).to.deep.equal({ 'value.field': { $exists: true }, typeName: readModelName })
     })
 
     it('converts the "isDefined" operator on nested fields', () => {
-      const filters = { field: { otherField: { isDefined: true } } } as FilterFor<any>
-      const result = queryRecordFor(typeName, filters)
-      expect(result).to.deep.equal({ 'value.field.otherField': { $exists: true }, typeName })
+      const result = queryRecordFor(readModelName, { field: { otherField: { isDefined: true } } })
+      expect(result).to.deep.equal({ 'value.field.otherField': { $exists: true }, typeName: readModelName })
     })
 
     it('converts the "isDefined" operator for complex filters', () => {
-      const filters = {
+      const result = queryRecordFor(readModelName, {
         and: [
           {
             id: { eq: '3' },
@@ -113,8 +110,7 @@ describe('searcher-adapter', () => {
           { mainItem: { sku: { eq: null } } },
           { mainItem: { price: { cents: { ne: null } } } },
         ],
-      } as FilterFor<any>
-      const result = queryRecordFor(typeName, filters)
+      })
       expect(result).to.deep.equal({
         $and: [
           { 'value.id': '3', typeName: 'SomeReadModel' },
