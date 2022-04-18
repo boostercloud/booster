@@ -3,7 +3,7 @@ import { UUID } from '@boostercloud/framework-types'
 import { PackCreated } from '../events/pack-created'
 
 /**
- * An order object represents a completed order that's ready to be delivered
+ * A pack object represents a group of products that works great together
  */
 @Entity
 export class Pack {
