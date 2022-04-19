@@ -1131,6 +1131,7 @@ describe('Read models end-to-end tests', () => {
           })
         },
         (result) =>
+          result?.data?.ProductReadModels?.length == 2 &&
           result?.data?.ProductReadModels?.every(
             (product: any) => Array.isArray(product.packs) && product.packs.length == 0
           )
@@ -1182,6 +1183,7 @@ describe('Read models end-to-end tests', () => {
           })
         },
         (result) =>
+          result?.data?.ProductReadModels?.length == 2 &&
           result?.data?.ProductReadModels?.every(
             (product: any) => Array.isArray(product.packs) && product.packs.length == 1
           )
