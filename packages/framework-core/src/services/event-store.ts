@@ -7,6 +7,7 @@ import {
   InvalidParameterError,
 } from '@boostercloud/framework-types'
 import { createInstance } from '@boostercloud/framework-common-helpers'
+import { Migrator } from '../migrator'
 
 const originOfTime = new Date(0).toISOString() // Unix epoch
 
@@ -103,20 +104,27 @@ export class EventStore {
         latestSnapshot
       )
       const eventMetadata = this.config.events[eventEnvelope.typeName]
-      const eventInstance = createInstance(eventMetadata.class, eventEnvelope.value)
-      const entityMetadata = this.config.entities[eventEnvelope.entityTypeName]
-      const snapshotInstance = latestSnapshot ? createInstance(entityMetadata.class, latestSnapshot.value) : null
-      const newEntity = this.reducerForEvent(eventEnvelope.typeName)(eventInstance, snapshotInstance)
+      const migratedEventEnvelope = new Migrator(this.config, this.logger).migrate(eventEnvelope)
+      const eventInstance = createInstance(eventMetadata.class, migratedEventEnvelope.value)
+      const entityMetadata = this.config.entities[migratedEventEnvelope.entityTypeName]
+      let migratedLatestSnapshot: EventEnvelope | null = null
+      if (latestSnapshot) {
+        migratedLatestSnapshot = new Migrator(this.config, this.logger).migrate(latestSnapshot)
+      }
+      const snapshotInstance = migratedLatestSnapshot
+        ? createInstance(entityMetadata.class, migratedLatestSnapshot.value)
+        : null
+      const newEntity = this.reducerForEvent(migratedEventEnvelope.typeName)(eventInstance, snapshotInstance)
       const newSnapshot: EventEnvelope = {
         version: this.config.currentVersionFor(eventEnvelope.entityTypeName),
         kind: 'snapshot',
-        requestID: eventEnvelope.requestID,
-        entityID: eventEnvelope.entityID,
-        entityTypeName: eventEnvelope.entityTypeName,
-        typeName: eventEnvelope.entityTypeName,
+        requestID: migratedEventEnvelope.requestID,
+        entityID: migratedEventEnvelope.entityID,
+        entityTypeName: migratedEventEnvelope.entityTypeName,
+        typeName: migratedEventEnvelope.entityTypeName,
         value: newEntity,
         createdAt: new Date().toISOString(), // TODO: This could be overridden by the provider. We should not set it. Ensure all providers set it
-        snapshottedEventCreatedAt: eventEnvelope.createdAt,
+        snapshottedEventCreatedAt: migratedEventEnvelope.createdAt,
       }
       this.logger.debug('[EventStore#entityReducer]: Reducer result: ', newSnapshot)
       return newSnapshot
