@@ -109,6 +109,14 @@ export class BoosterGraphQLDispatcher {
         throw errors
       }
       const operationData = graphql.getOperationAST(queryDocument, operation.operationName)
+      const isIntrospectionQuery =
+        operation.operationName === 'IntrospectionQuery' || operation.query.includes('__schema')
+      if (isIntrospectionQuery && !this.config.enableGraphQLIntrospection) {
+        throw new InvalidProtocolError(
+          'Instrospection queries are disabled. Check the configuration if you want to enable them.'
+        )
+      }
+
       if (!operationData) {
         throw new InvalidParameterError(
           'Could not extract GraphQL operation. ' +

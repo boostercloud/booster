@@ -26,6 +26,68 @@ describe('the `BoosterGraphQLDispatcher`', () => {
     restore()
   })
 
+  describe('Introspection in graphQL API', () => {
+    context('on introspection message', () => {
+      it('with default config introspection is enabled', async () => {
+        const graphQLResult = { data: 'the result' }
+        const messageEnvelope: GraphQLRequestEnvelope = {
+          requestID: random.uuid(),
+          eventType: 'MESSAGE',
+          value: {
+            query: '{__schema {queryType {name},mutationType { name }  }}',
+            variables: {},
+            operationName: undefined,
+          },
+        }
+
+        const config = mockConfigForGraphQLEnvelope(messageEnvelope)
+        const dispatcher = new BoosterGraphQLDispatcher(config, logger)
+        const parseSpy = spy(gqlParser.parse)
+        replace(gqlParser, 'parse', parseSpy)
+        replace(gqlValidator, 'validate', fake.returns([]))
+        const executeFake = fake.returns(graphQLResult)
+        replace(gqlExecutor, 'execute', executeFake)
+
+        await dispatcher.dispatch({})
+
+        expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly(graphQLResult)
+      })
+
+      it('override the introspection configuration and disable it', async () => {
+        const graphQLResult = { data: 'the result' }
+        const messageEnvelope: GraphQLRequestEnvelope = {
+          requestID: random.uuid(),
+          eventType: 'MESSAGE',
+          value: {
+            query: '{__schema {queryType {name},mutationType { name }  }}',
+            variables: {},
+            operationName: undefined,
+          },
+        }
+
+        const config = mockConfigForGraphQLEnvelope(messageEnvelope)
+        config.enableGraphQLIntrospection = false
+        const dispatcher = new BoosterGraphQLDispatcher(config, logger)
+        const parseSpy = spy(gqlParser.parse)
+        replace(gqlParser, 'parse', parseSpy)
+        replace(gqlValidator, 'validate', fake.returns([]))
+        const executeFake = fake.returns(graphQLResult)
+        replace(gqlExecutor, 'execute', executeFake)
+
+        await dispatcher.dispatch({})
+
+        expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly(
+          match((result) => {
+            return (
+              result.errors[0].message ==
+              'Instrospection queries are disabled. Check the configuration if you want to enable them.'
+            )
+          })
+        )
+      })
+    })
+  })
+
   describe('the `dispatch` method', () => {
     context('on CONNECT message', () => {
       it('calls the provider "handleGraphQLResult" with the GraphQL websocket subprotocol headers', async () => {
