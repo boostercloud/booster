@@ -1,5 +1,5 @@
 import { TargetTypeMetadata } from '../common'
-import { GraphQLFieldConfigArgumentMap, GraphQLInputObjectType, GraphQLList } from 'graphql'
+import { GraphQLBoolean, GraphQLFieldConfigArgumentMap, GraphQLInputObjectType, GraphQLList } from 'graphql'
 import { GraphQLTypeInformer } from '../graphql-type-informer'
 import { GraphqlQueryFilterArgumentsBuilder } from './graphql-query-filter-arguments-builder'
 
@@ -25,6 +25,7 @@ export class GraphqlQueryFilterFieldsBuilder {
         and: { type: new GraphQLList(filter) },
         or: { type: new GraphQLList(filter) },
         not: { type: filter },
+        isDefined: { type: GraphQLBoolean },
       }),
     })
     return { filter: { type: filter } }

@@ -104,6 +104,9 @@ function buildOperation(
         case 'includes': {
           return `ARRAY_CONTAINS(${propName}, ${holder(index)}, true)`
         }
+        case 'isDefined': {
+          return value ? `IS_DEFINED(${propName})` : `NOT IS_DEFINED(${propName})`
+        }
         default:
           if (typeof value === 'object') {
             return buildOperation(operation, value, usedPlaceholders, propName)
@@ -171,9 +174,9 @@ function buildAttributeValue(
           value: element,
         })
       })
-    } else if (typeof value === 'object' && key !== 'includes') {
+    } else if (typeof value === 'object' && key !== 'includes' && value !== null) {
       attributeValues = [...attributeValues, ...buildExpressionAttributeValues({ [key]: value }, usedPlaceholders)]
-    } else {
+    } else if (key !== 'isDefined') {
       attributeValues.push({
         name: holder(index),
         value: value as {},

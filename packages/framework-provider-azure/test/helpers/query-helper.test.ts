@@ -15,11 +15,11 @@ describe('Query helper', () => {
 
     let mockCosmosDbClient: SinonStubbedInstance<CosmosClient>
     class Money {
-      constructor(public cents: number, public currency: string) {}
+      constructor(public cents: number | null, public currency: string) {}
     }
 
     class Item {
-      constructor(public sku: string, public price: Money) {}
+      constructor(public sku: string | null, public price: Money) {}
     }
 
     class Product {
@@ -419,6 +419,95 @@ describe('Query helper', () => {
               name: '@items_0',
               value: { sku: 'test', price: { cents: 1000, currency: 'EUR' } },
             },
+          ],
+        })
+      )
+    })
+
+    it('supports isDefine filters', async () => {
+      const filters: FilterFor<Product> = {
+        and: [
+          { days: { isDefined: true } },
+          { mainItem: { isDefined: false } },
+          { mainItem: { sku: { isDefined: true } } },
+        ],
+      }
+      await search(
+        mockCosmosDbClient as any,
+        mockConfig,
+        mockLogger,
+        mockReadModelName,
+        filters,
+        undefined,
+        undefined,
+        undefined,
+        undefined
+      )
+
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
+          .query
+      ).to.have.been.calledWith(
+        match({
+          query:
+            'SELECT * FROM c WHERE (IS_DEFINED(c["days"]) and NOT IS_DEFINED(c["mainItem"]) and IS_DEFINED(c["mainItem"]["sku"]))',
+          parameters: [],
+        })
+      )
+    })
+
+    it('supports isDefine filters with complex filters', async () => {
+      const filters: FilterFor<Product> = {
+        and: [
+          {
+            id: { eq: '3' },
+          },
+          {
+            mainItem: {
+              sku: {
+                eq: 'test',
+              },
+            },
+          },
+          {
+            or: [
+              {
+                days: { isDefined: true },
+              },
+              {
+                items: { includes: { sku: 'test', price: { cents: 1000, currency: 'EUR' } } },
+              },
+            ],
+          },
+          { mainItem: { sku: { eq: null } } },
+          { mainItem: { price: { cents: { ne: null } } } },
+        ],
+      }
+      await search(
+        mockCosmosDbClient as any,
+        mockConfig,
+        mockLogger,
+        mockReadModelName,
+        filters,
+        undefined,
+        undefined,
+        undefined,
+        undefined
+      )
+
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
+          .query
+      ).to.have.been.calledWith(
+        match({
+          query:
+            'SELECT * FROM c WHERE (c["id"] = @id_0 and c["mainItem"]["sku"] = @sku_0 and (IS_DEFINED(c["days"]) or ARRAY_CONTAINS(c["items"], @items_0, true)) and c["mainItem"]["sku"] = @sku_1 and c["mainItem"]["price"]["cents"] <> @cents_0)',
+          parameters: [
+            { name: '@id_0', value: '3' },
+            { name: '@sku_0', value: 'test' },
+            { name: '@items_0', value: { sku: 'test', price: { cents: 1000, currency: 'EUR' } } },
+            { name: '@sku_1', value: null },
+            { name: '@cents_0', value: null },
           ],
         })
       )

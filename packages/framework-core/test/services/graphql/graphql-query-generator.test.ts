@@ -205,8 +205,8 @@ describe('GraphQLQueryGenerator', () => {
                   expect(booleansTypeFilterConfig.type.toString()).to.be.equal('BooleanPropertyFilter')
 
                   const fieldsKeys = Object.keys(booleansTypeFilterConfig.type.getFields())
-                  expect(fieldsKeys).to.be.deep.equal(['eq', 'ne'])
-                  expect(fieldsKeys.length).to.equal(2)
+                  expect(fieldsKeys).to.be.deep.equal(['eq', 'ne', 'isDefined'])
+                  expect(fieldsKeys.length).to.equal(3)
 
                   fieldsKeys.forEach((fieldKey) => {
                     expect(booleansTypeFilterConfig.type.getFields()[fieldKey].description).to.be.undefined
@@ -276,12 +276,19 @@ describe('GraphQLQueryGenerator', () => {
                   expect(TypeFilterConfig.type.toString()).to.be.equal('NumberPropertyFilter')
 
                   const fieldsKeys = Object.keys(TypeFilterConfig.type.getFields())
-                  expect(fieldsKeys).to.be.deep.equal(['eq', 'ne', 'lte', 'lt', 'gte', 'gt', 'in'])
-                  expect(fieldsKeys.length).to.equal(7)
+                  expect(fieldsKeys).to.be.deep.equal(['eq', 'ne', 'lte', 'lt', 'gte', 'gt', 'in', 'isDefined'])
+                  expect(fieldsKeys.length).to.equal(8)
 
                   fieldsKeys.forEach((fieldKey) => {
                     expect(TypeFilterConfig.type.getFields()[fieldKey].description).to.be.undefined
-                    const type = fieldKey === 'in' ? '[Float]' : 'Float' // The in filter expects an array of the element
+                    let type: string
+                    if (fieldKey === 'in') {
+                      type = '[Float]'
+                    } else if (fieldKey === 'isDefined') {
+                      type = 'Boolean'
+                    } else {
+                      type = 'Float'
+                    } // The in filter expects an array of the element
                     expect(TypeFilterConfig.type.getFields()[fieldKey].type.toString()).to.be.equal(type)
                     expect(TypeFilterConfig.type.getFields()[fieldKey].defaultValue).to.be.undefined
                     expect(TypeFilterConfig.type.getFields()[fieldKey].extensions).to.be.undefined
@@ -358,12 +365,20 @@ describe('GraphQLQueryGenerator', () => {
                     'in',
                     'beginsWith',
                     'contains',
+                    'isDefined',
                   ])
-                  expect(fieldsKeys.length).to.equal(9)
+                  expect(fieldsKeys.length).to.equal(10)
 
                   fieldsKeys.forEach((fieldKey) => {
                     expect(TypeFilterConfig.type.getFields()[fieldKey].description).to.be.undefined
-                    const type = fieldKey === 'in' ? '[String]' : 'String' // The in filter expects an array of the element
+                    let type: string
+                    if (fieldKey === 'in') {
+                      type = '[String]'
+                    } else if (fieldKey === 'isDefined') {
+                      type = 'Boolean'
+                    } else {
+                      type = 'String'
+                    } // The in filter expects an array of the element
                     expect(TypeFilterConfig.type.getFields()[fieldKey].type.toString()).to.be.equal(type)
                     expect(TypeFilterConfig.type.getFields()[fieldKey].defaultValue).to.be.undefined
                     expect(TypeFilterConfig.type.getFields()[fieldKey].extensions).to.be.undefined

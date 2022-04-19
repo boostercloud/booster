@@ -73,5 +73,60 @@ describe('searcher-adapter', () => {
         'value.field2': { $regex: new RegExp('two') },
       })
     })
+
+    it('converts the "isDefined" operator', () => {
+      const result = queryRecordFor({ field: { isDefined: true } })
+      expect(result).to.deep.equal({ 'value.field': { $exists: true } })
+    })
+
+    it('converts the "isDefined" operator on nested fields', () => {
+      const result = queryRecordFor({ field: { otherField: { isDefined: true } } })
+      expect(result).to.deep.equal({ 'value.field.otherField': { $exists: true } })
+    })
+
+    it('converts the "isDefined" operator for complex filters', () => {
+      const result = queryRecordFor({
+        and: [
+          {
+            id: { eq: '3' },
+          },
+          {
+            mainItem: {
+              sku: {
+                eq: 'test',
+              },
+            },
+          },
+          {
+            or: [
+              {
+                days: { isDefined: true },
+              },
+              {
+                items: { includes: { sku: 'test', price: { cents: 1000, currency: 'EUR' } } },
+              },
+            ],
+          },
+          { mainItem: { sku: { eq: null } } },
+          { mainItem: { price: { cents: { ne: null } } } },
+        ],
+      })
+      expect(result).to.deep.equal({
+        $and: [
+          { 'value.id': '3' },
+          { 'value.mainItem.sku': 'test' },
+          {
+            $or: [
+              { 'value.days': { $exists: true } },
+              {
+                'value.items': { $elemMatch: { sku: 'test', price: { cents: 1000, currency: 'EUR' } } },
+              },
+            ],
+          },
+          { 'value.mainItem.sku': null },
+          { 'value.mainItem.price.cents': { $ne: null } },
+        ],
+      })
+    })
   })
 })

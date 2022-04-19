@@ -413,6 +413,420 @@ describe('Read models end-to-end tests', () => {
         expect(cartData[0].id).to.equal(mockCartId)
       })
 
+      it('should retrieve a list of carts when filter by isDefined true', async () => {
+        const filter = {
+          and: [
+            {
+              id: { eq: mockCartId },
+            },
+            {
+              shippingAddress: {
+                firstName: {
+                  isDefined: true,
+                },
+              },
+            },
+          ],
+        }
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: filter,
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter) {
+                  ListCartReadModels(filter: $filter) {
+                    items {
+                      id
+                      shippingAddress {
+                        firstName
+                      }
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels?.items.length >= 1
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.equal(1)
+        expect(cartData[0].id).to.equal(mockCartId)
+        expect(cartData[0].shippingAddress.firstName).to.be.eq(mockAddress.firstName)
+      })
+
+      it('should retrieve a list of carts when filter by isDefined false', async () => {
+        const filter = {
+          and: [
+            {
+              id: { eq: mockCartId },
+            },
+            {
+              payment: {
+                id: {
+                  isDefined: false,
+                },
+              },
+            },
+          ],
+        }
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: filter,
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter) {
+                  ListCartReadModels(filter: $filter) {
+                    items {
+                      id
+                      shippingAddress {
+                        firstName
+                      }
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels?.items.length >= 1
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.equal(1)
+        expect(cartData[0].id).to.equal(mockCartId)
+        expect(cartData[0].shippingAddress.firstName).to.be.eq(mockAddress.firstName)
+      })
+
+      it('should retrieve a list of carts when filter by isDefined true with AND', async () => {
+        const filter = {
+          and: [
+            {
+              id: { eq: mockCartId },
+            },
+            {
+              and: [
+                {
+                  shippingAddress: {
+                    firstName: {
+                      isDefined: true,
+                    },
+                  },
+                },
+                {
+                  shippingAddress: {
+                    firstName: { eq: mockAddress.firstName },
+                  },
+                },
+              ],
+            },
+          ],
+        }
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: filter,
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter) {
+                  ListCartReadModels(filter: $filter) {
+                    items {
+                      id
+                      shippingAddress {
+                        firstName
+                      }
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels?.items.length >= 1
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.equal(1)
+        expect(cartData[0].id).to.equal(mockCartId)
+        expect(cartData[0].shippingAddress.firstName).to.be.eq(mockAddress.firstName)
+      })
+
+      it('should retrieve a list of carts when filter by isDefined true with OR', async () => {
+        const filter = {
+          and: [
+            {
+              id: { eq: mockCartId },
+            },
+            {
+              or: [
+                {
+                  shippingAddress: {
+                    lastName: {
+                      isDefined: false,
+                    },
+                  },
+                },
+                {
+                  shippingAddress: {
+                    firstName: { eq: mockAddress.firstName },
+                  },
+                },
+              ],
+            },
+          ],
+        }
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: filter,
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter) {
+                  ListCartReadModels(filter: $filter) {
+                    items {
+                      id
+                      shippingAddress {
+                        firstName
+                      }
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels?.items.length >= 1
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.equal(1)
+        expect(cartData[0].id).to.equal(mockCartId)
+        expect(cartData[0].shippingAddress.firstName).to.be.eq(mockAddress.firstName)
+      })
+
+      it('should retrieve a list of carts when filter by isDefined for Objects', async () => {
+        const filter = {
+          and: [
+            {
+              id: { eq: mockCartId },
+            },
+            {
+              payment: {
+                isDefined: false,
+              },
+            },
+          ],
+        }
+
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: filter,
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter) {
+                  ListCartReadModels(filter: $filter) {
+                    items {
+                      id
+                      shippingAddress {
+                        firstName
+                      }
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels?.items.length >= 1
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.equal(1)
+        expect(cartData[0].id).to.equal(mockCartId)
+        expect(cartData[0].shippingAddress.firstName).to.be.eq(mockAddress.firstName)
+      })
+
+      it('should retrieve a list of carts when filter by isDefined with complex queries', async () => {
+        const mockPaymentId: string = random.uuid()
+        await client.mutate({
+          variables: {
+            paymentId: mockPaymentId,
+            cartId: mockCartId,
+            confirmationToken: null,
+          },
+          mutation: gql`
+            mutation ConfirmPayment($paymentId: ID!, $cartId: ID!, $confirmationToken: String) {
+              ConfirmPayment(input: { paymentId: $paymentId, cartId: $cartId, confirmationToken: $confirmationToken })
+            }
+          `,
+        })
+
+        const filter = {
+          and: [
+            {
+              id: { eq: mockCartId },
+            },
+            {
+              shippingAddress: {
+                firstName: {
+                  eq: mockAddress.firstName,
+                },
+              },
+            },
+            {
+              or: [
+                {
+                  cartItems: {
+                    isDefined: false,
+                  },
+                },
+                {
+                  cartItems: {
+                    includes: { productId: mockProductId, quantity: 2 },
+                  },
+                },
+              ],
+            },
+            {
+              payment: {
+                confirmationToken: { eq: null },
+              },
+            },
+            {
+              payment: {
+                id: { ne: null },
+              },
+            },
+          ],
+        }
+
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: filter,
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter) {
+                  ListCartReadModels(filter: $filter) {
+                    items {
+                      id
+                      cartItems
+                      shippingAddress {
+                        firstName
+                      }
+                      payment {
+                        id
+                        confirmationToken
+                      }
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) =>
+            result?.data?.ListCartReadModels?.items.length >= 1 &&
+            result?.data?.ListCartReadModels?.items[0]?.payment?.id !== undefined
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.equal(1)
+        expect(cartData[0].id).to.equal(mockCartId)
+        expect(cartData[0].shippingAddress.firstName).to.be.eq(mockAddress.firstName)
+        expect(cartData[0].cartItems[0].productId).to.be.eq(mockProductId)
+        expect(cartData[0].payment.id).to.be.eq(mockPaymentId)
+      })
+
+      it('should retrieve a list of carts when filter by null', async () => {
+        const mockPaymentId: string = random.uuid()
+        await client.mutate({
+          variables: {
+            paymentId: mockPaymentId,
+            cartId: mockCartId,
+            confirmationToken: null,
+          },
+          mutation: gql`
+            mutation ConfirmPayment($paymentId: ID!, $cartId: ID!, $confirmationToken: String) {
+              ConfirmPayment(input: { paymentId: $paymentId, cartId: $cartId, confirmationToken: $confirmationToken })
+            }
+          `,
+        })
+
+        const filter = {
+          and: [
+            {
+              id: { eq: mockCartId },
+            },
+            {
+              payment: {
+                confirmationToken: { eq: null },
+              },
+            },
+            {
+              payment: {
+                id: { ne: null },
+              },
+            },
+          ],
+        }
+
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: filter,
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter) {
+                  ListCartReadModels(filter: $filter) {
+                    items {
+                      id
+                      cartItems
+                      shippingAddress {
+                        firstName
+                      }
+                      payment {
+                        id
+                        confirmationToken
+                      }
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) =>
+            result?.data?.ListCartReadModels?.items.length >= 1 &&
+            result?.data?.ListCartReadModels?.items[0]?.payment?.id !== undefined
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.equal(1)
+        expect(cartData[0].id).to.equal(mockCartId)
+        expect(cartData[0].shippingAddress.firstName).to.be.eq(mockAddress.firstName)
+        expect(cartData[0].cartItems[0].productId).to.be.eq(mockProductId)
+        expect(cartData[0].payment.id).to.be.eq(mockPaymentId)
+      })
+
       it('should retrieve a list of carts using paginated read model', async () => {
         const queryResult = await waitForIt(
           () => {

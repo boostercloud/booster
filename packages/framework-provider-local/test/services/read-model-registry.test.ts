@@ -63,6 +63,17 @@ describe('the read model registry', () => {
       expect(result[0]).to.deep.include(mockReadModel)
     })
 
+    it('should return expected read model when field does not exist', async () => {
+      const result = await readModelRegistry.query({
+        'value.id': mockReadModel.value.id,
+        'value.other': { $exists: false },
+        typeName: mockReadModel.typeName,
+      })
+
+      expect(result.length).to.be.equal(1)
+      expect(result[0]).to.deep.include(mockReadModel)
+    })
+
     it('should return no results when id do not match', async () => {
       const result = await readModelRegistry.query({
         'value.id': random.uuid(),

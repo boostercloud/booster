@@ -123,7 +123,8 @@ export type SortFor<TType> = {
 export type FilterFor<TType> = {
   [TProp in keyof TType]?: Operation<TType[TProp]>
 } &
-  FilterCombinators<TType>
+  FilterCombinators<TType> &
+  IsDefinedOperator
 
 interface FilterCombinators<TType> {
   and?: Array<FilterFor<TType>>
@@ -143,10 +144,15 @@ export type Operation<TType> = TType extends Array<infer TElementType>
   ? FilterFor<TType>
   : never
 
-interface BooleanOperators<TType> {
-  eq?: TType
-  ne?: TType
+interface IsDefinedOperator {
+  isDefined?: boolean
 }
+
+interface BooleanOperators<TType> extends IsDefinedOperator {
+  eq?: TType | null
+  ne?: TType | null
+}
+
 interface ScalarOperators<TType> extends BooleanOperators<TType> {
   gt?: TType
   gte?: TType
@@ -162,4 +168,5 @@ interface StringOperators<TType> extends ScalarOperators<TType> {
 
 interface ArrayOperators<TElementType> {
   includes?: TElementType
+  isDefined?: boolean
 }
