@@ -176,9 +176,7 @@ function buildAttributeValue(
       })
     } else if (typeof value === 'object' && key !== 'includes' && value !== null) {
       attributeValues = [...attributeValues, ...buildExpressionAttributeValues({ [key]: value }, usedPlaceholders)]
-    } else if (key === 'isDefined') {
-      // skip this parameter
-    } else {
+    } else if (key !== 'isDefined') {
       attributeValues.push({
         name: holder(index),
         value: value as {},
