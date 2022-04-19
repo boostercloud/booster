@@ -152,10 +152,8 @@ function buildExpressionAttributeNames(filters: FilterFor<any>): ExpressionAttri
         }
         break
       case 'includes':
-        // In case of includes, avoid the default behaviour
-        break
       case 'isDefined':
-        // In case of isDefined, avoid the default behaviour
+        // Avoid the default behaviour
         break
       default:
         Object.entries(filters[propName] as FilterFor<any>).forEach(([prop, value]) => {
@@ -212,9 +210,7 @@ function buildAttributeValue(
       })
     } else if (typeof value === 'object' && key !== 'includes' && value !== null) {
       Object.assign(attributeValues, buildExpressionAttributeValues({ [key]: value }, usedPlaceholders))
-    } else if (key === 'isDefined') {
-      // skip this parameter
-    } else {
+    } else if (key !== 'isDefined') {
       attributeValues[holder(index)] = value
     }
   })
