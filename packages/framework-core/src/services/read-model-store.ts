@@ -35,47 +35,57 @@ export class ReadModelStore {
     }
     const entityMetadata = this.config.entities[entitySnapshotEnvelope.entityTypeName]
     await Promises.allSettledAndFulfilled(
-      projections.map(async (projectionMetadata: ProjectionMetadata) => {
+      projections.flatMap((projectionMetadata: ProjectionMetadata<EntityInterface>) => {
         const readModelName = projectionMetadata.class.name
         const entityInstance = createInstance(entityMetadata.class, entitySnapshotEnvelope.value)
-        const readModelID = this.joinKeyForProjection(entityInstance, projectionMetadata)
+        const readModelIDList = this.joinKeyForProjection(entityInstance, projectionMetadata)
         const sequenceKey = this.sequenceKeyForProjection(entityInstance, projectionMetadata)
-        if (!readModelID) {
+        if (!readModelIDList) {
           this.logger.warn(
             `Couldn't find the joinKey named ${projectionMetadata.joinKey} in entity snapshot of ${entityMetadata.class.name}. Skipping...`
           )
           return
         }
-        this.logger.debug(
-          '[ReadModelStore#project] Projecting entity snapshot ',
-          entitySnapshotEnvelope,
-          ` to build new state of read model ${readModelName} with ID ${readModelID}`,
-          sequenceKey ? ` sequencing by ${sequenceKey.name} with value ${sequenceKey.value}` : ''
-        )
 
-        return await retryIfError(
-          this.logger,
-          () =>
-            this.applyProjectionToReadModel(
-              entityInstance,
-              projectionMetadata,
-              readModelName,
-              readModelID,
-              sequenceKey
-            ),
-          OptimisticConcurrencyUnexpectedVersionError
-        )
+        return readModelIDList.map((readModelID: UUID) => {
+          this.logger.debug(
+            '[ReadModelStore#project] Projecting entity snapshot ',
+            entitySnapshotEnvelope,
+            ` to build new state of read model ${readModelName} with ID ${readModelID}`,
+            sequenceKey ? ` sequencing by ${sequenceKey.name} with value ${sequenceKey.value}` : ''
+          )
+
+          return retryIfError(
+            this.logger,
+            () =>
+              this.applyProjectionToReadModel(
+                entityInstance,
+                projectionMetadata,
+                readModelName,
+                readModelID,
+                sequenceKey
+              ),
+            OptimisticConcurrencyUnexpectedVersionError
+          )
+        })
       })
     )
   }
 
-  private joinKeyForProjection(entity: EntityInterface, projectionMetadata: ProjectionMetadata): UUID {
-    return (entity as any)[projectionMetadata.joinKey]
+  private joinKeyForProjection(
+    entity: EntityInterface,
+    projectionMetadata: ProjectionMetadata<EntityInterface>
+  ): Array<UUID> | undefined {
+    const joinKey = (entity as any)[projectionMetadata.joinKey]
+    if (!joinKey) {
+      return undefined
+    }
+    return Array.isArray(joinKey) ? joinKey : [joinKey]
   }
 
   private sequenceKeyForProjection(
     entity: EntityInterface,
-    projectionMetadata: ProjectionMetadata
+    projectionMetadata: ProjectionMetadata<EntityInterface>
   ): SequenceKey | undefined {
     const sequenceKeyName = this.config.readModelSequenceKeys[projectionMetadata.class.name]
     const sequenceKeyValue = (entity as any)[sequenceKeyName]
@@ -87,14 +97,16 @@ export class ReadModelStore {
 
   private async applyProjectionToReadModel(
     entity: EntityInterface,
-    projectionMetadata: ProjectionMetadata,
+    projectionMetadata: ProjectionMetadata<EntityInterface>,
     readModelName: string,
     readModelID: UUID,
     sequenceKey?: SequenceKey
   ): Promise<unknown> {
     const readModel = await this.fetchReadModel(readModelName, readModelID, sequenceKey)
     const currentReadModelVersion: number = readModel?.boosterMetadata?.version ?? 0
-    const newReadModel = this.projectionFunction(projectionMetadata)(entity, readModel)
+    const newReadModel = Array.isArray(entity[projectionMetadata.joinKey])
+      ? this.projectionFunction(projectionMetadata)(entity, readModelID, readModel)
+      : this.projectionFunction(projectionMetadata)(entity, readModel)
 
     if (newReadModel === ReadModelAction.Delete) {
       this.logger.debug(
@@ -159,7 +171,7 @@ export class ReadModelStore {
     return undefined
   }
 
-  public projectionFunction(projectionMetadata: ProjectionMetadata): Function {
+  public projectionFunction(projectionMetadata: ProjectionMetadata<EntityInterface>): Function {
     try {
       return (projectionMetadata.class as any)[projectionMetadata.methodName]
     } catch {

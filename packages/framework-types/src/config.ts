@@ -11,6 +11,7 @@ import {
   EventMetadata,
   TokenVerifierConfig,
   CommandHandlerReturnTypeMetadata,
+  EntityInterface,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
@@ -54,7 +55,7 @@ export class BoosterConfig {
   public readonly commandHandlerReturnTypes: Record<CommandName, CommandHandlerReturnTypeMetadata> = {}
   public readonly eventHandlers: Record<EventName, Array<EventHandlerInterface>> = {}
   public readonly readModels: Record<ReadModelName, ReadModelMetadata> = {}
-  public readonly projections: Record<EntityName, Array<ProjectionMetadata>> = {}
+  public readonly projections: Record<EntityName, Array<ProjectionMetadata<EntityInterface>>> = {}
   public readonly readModelSequenceKeys: Record<EntityName, string> = {}
   public readonly roles: Record<RoleName, RoleMetadata> = {}
   public readonly migrations: Record<ConceptName, Map<Version, MigrationMetadata>> = {}
