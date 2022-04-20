@@ -99,7 +99,7 @@ describe('Cart end-to-end tests', () => {
           `,
         })
       } catch (e) {
-        expect(e.graphQLErrors[0].message).to.be.eq(beforeHookException)
+        expect(e.graphQLErrors[0].message).to.be.eq(`${beforeHookException}-onError`)
         expect(e.graphQLErrors[0].path).to.deep.eq(['ChangeCartItem'])
       }
     })
