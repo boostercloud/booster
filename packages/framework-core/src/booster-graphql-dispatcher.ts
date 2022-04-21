@@ -59,7 +59,7 @@ export class BoosterGraphQLDispatcher {
     }
   }
 
-  private async verifyTokenFromEnvelop(
+  private async verifyTokenFromEnvelope(
     envelope: GraphQLRequestEnvelope
   ): Promise<GraphQLRequestEnvelope | GraphQLRequestEnvelopeError> {
     const logger = getLogger(this.config, 'BoosterGraphQLDispatcher#verifyTokenFromEnvelop')
@@ -82,7 +82,7 @@ export class BoosterGraphQLDispatcher {
     const logger = getLogger(this.config, 'BoosterGraphQLDispatcher#handleMessage')
     logger.debug('Starting GraphQL operation:', envelope)
 
-    const envelopeOrError = await this.verifyTokenFromEnvelop(envelope)
+    const envelopeOrError = await this.verifyTokenFromEnvelope(envelope)
 
     if (cameThroughSocket(envelopeOrError)) {
       return this.websocketHandler.handle(envelopeOrError)
