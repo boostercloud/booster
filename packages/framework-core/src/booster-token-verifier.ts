@@ -51,7 +51,7 @@ class TokenVerifierClient {
     let key: jwt.Secret | jwt.GetPublicKeyOrSecret = getKey
     if (!this.client) {
       if (this.tokenVerifierConfig.publicKey) {
-        key = this.tokenVerifierConfig.publicKey
+        key = await this.tokenVerifierConfig.publicKey
       } else {
         throw new Error('Token verifier not well configured')
       }

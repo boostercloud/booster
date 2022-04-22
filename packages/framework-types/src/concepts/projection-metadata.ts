@@ -1,4 +1,4 @@
-import { AnyClass } from '@boostercloud/framework-types'
+import { AnyClass } from '../typelevel'
 
 export interface ProjectionMetadata<TEntity> {
   class: AnyClass
