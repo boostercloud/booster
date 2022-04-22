@@ -10,13 +10,15 @@ Booster.configure('local', (config: BoosterConfig): void => {
     {
       issuer: 'booster',
       // Read the content of the public RS256 cert, used to sign the JWT tokens
-      publicKey: fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8'),
+      publicKey: fs.readFile(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8'),
       rolesClaim: 'booster:role',
     },
     {
       issuer: 'booster',
       // Read the content of the public RS256 cert, used to sign the JWT tokens
-      publicKey: fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8'),
+      publicKey: Promise.resolve(
+        fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8')
+      ),
       rolesClaim: 'booster:role',
       extraValidation: async (jwtToken, _rawToken) => {
         throw new Error('Unauthorized')
@@ -53,13 +55,17 @@ Booster.configure('production', (config: BoosterConfig): void => {
     {
       issuer: 'booster',
       // Read the content of the public RS256 cert, used to sign the JWT tokens
-      publicKey: fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8'),
+      publicKey: Promise.resolve(
+        fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8')
+      ),
       rolesClaim: 'booster:role',
     },
     {
       issuer: 'booster',
       // Read the content of the public RS256 cert, used to sign the JWT tokens
-      publicKey: fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8'),
+      publicKey: Promise.resolve(
+        fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8')
+      ),
       rolesClaim: 'booster:role',
       extraValidation: async (jwtToken, _rawToken) => {
         throw new Error('Unauthorized')
@@ -84,13 +90,17 @@ Booster.configure('azure', (config: BoosterConfig): void => {
     {
       issuer: 'booster',
       // Read the content of the public RS256 cert, used to sign the JWT tokens
-      publicKey: fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8'),
+      publicKey: Promise.resolve(
+        fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8')
+      ),
       rolesClaim: 'booster:role',
     },
     {
       issuer: 'booster',
       // Read the content of the public RS256 cert, used to sign the JWT tokens
-      publicKey: fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8'),
+      publicKey: Promise.resolve(
+        fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8')
+      ),
       rolesClaim: 'booster:role',
       extraValidation: async (jwtToken, _rawToken) => {
         throw new Error('Unauthorized')
