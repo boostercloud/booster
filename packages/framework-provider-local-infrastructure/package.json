@@ -26,7 +26,7 @@
     "express": "^4.17.1",
     "nedb": "^1.8.0",
     "node-schedule": "^2.1.0",
-    "tslib": "2.3.0"
+    "tslib": "2.3.1"
   },
   "scripts": {
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",

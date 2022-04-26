@@ -1,54 +1,53 @@
 import { GraphQLFieldConfig, GraphQLFieldConfigMap, GraphQLID, GraphQLList, GraphQLNonNull } from 'graphql'
-import { GraphQLResolverContext, ResolverBuilder, TargetTypesMap } from '../common'
+import { GraphQLResolverContext, ResolverBuilder } from '../common'
+import { AnyClass, BoosterConfig } from '@boostercloud/framework-types'
 import { GraphQLTypeInformer } from '../graphql-type-informer'
-import { BoosterConfig } from '@boostercloud/framework-types'
 
 export class GraphqlQueryByKeysGenerator {
   public constructor(
     private readonly config: BoosterConfig,
-    private readonly readModelsMetadata: TargetTypesMap,
+    private readonly readModels: AnyClass[],
     private readonly typeInformer: GraphQLTypeInformer,
     private readonly byIDResolverBuilder: ResolverBuilder
   ) {}
 
   public generateByKeysQueries(): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {
     const queries: GraphQLFieldConfigMap<unknown, GraphQLResolverContext> = {}
-    for (const readModelName in this.readModelsMetadata) {
+    for (const readModel of this.readModels) {
+      const readModelName = readModel.name
       const sequenceKeyName = this.config.readModelSequenceKeys[readModelName]
       if (sequenceKeyName) {
-        queries[readModelName] = this.generateByIdAndSequenceKeyQuery(readModelName, sequenceKeyName)
+        queries[readModelName] = this.generateByIdAndSequenceKeyQuery(readModel, sequenceKeyName)
       } else {
-        queries[readModelName] = this.generateByIdQuery(readModelName)
+        queries[readModelName] = this.generateByIdQuery(readModel)
       }
     }
     return queries
   }
 
-  private generateByIdQuery(readModelName: string): GraphQLFieldConfig<unknown, GraphQLResolverContext> {
-    const readModelMetadata = this.readModelsMetadata[readModelName]
-    const graphQLType = this.typeInformer.getGraphQLTypeFor(readModelMetadata.class)
+  private generateByIdQuery(readModel: AnyClass): GraphQLFieldConfig<unknown, GraphQLResolverContext> {
+    const graphQLType = this.typeInformer.generateGraphQLTypeForClass(readModel)
     return {
       type: graphQLType,
       args: {
         id: { type: new GraphQLNonNull(GraphQLID) },
       },
-      resolve: this.byIDResolverBuilder(readModelMetadata.class),
+      resolve: this.byIDResolverBuilder(readModel),
     }
   }
 
   private generateByIdAndSequenceKeyQuery(
-    readModelName: string,
+    readModel: AnyClass,
     sequenceKeyName: string
   ): GraphQLFieldConfig<unknown, GraphQLResolverContext> {
-    const readModelMetadata = this.readModelsMetadata[readModelName]
-    const graphQLType = this.typeInformer.getGraphQLTypeFor(readModelMetadata.class)
+    const graphQLType = this.typeInformer.generateGraphQLTypeForClass(readModel)
     return {
       type: new GraphQLList(graphQLType),
       args: {
         id: { type: new GraphQLNonNull(GraphQLID) },
         [sequenceKeyName]: { type: GraphQLID },
       },
-      resolve: this.byIDResolverBuilder(readModelMetadata.class),
+      resolve: this.byIDResolverBuilder(readModel),
     }
   }
 }

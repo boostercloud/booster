@@ -1,9 +1,9 @@
-import { BoosterConfig } from '@boostercloud/framework-types'
+import { AnyClass, BoosterConfig } from '@boostercloud/framework-types'
 import { GraphQLFieldResolver, GraphQLInputObjectType, GraphQLObjectType } from 'graphql'
-import { GraphQLResolverContext, ResolverBuilder, TargetTypesMap } from './common'
+import { GraphQLResolverContext, ResolverBuilder } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
-import { GraphqlQueryByKeysGenerator } from './query-generators/graphql-query-by-keys-generator'
 import { GraphqlQueryEventsGenerator } from './query-generators/graphql-query-events-generator'
+import { GraphqlQueryByKeysGenerator } from './query-generators/graphql-query-by-keys-generator'
 import { GraphqlQueryFiltersGenerator } from './query-generators/graphql-query-filters-generator'
 import { GraphqlQueryListedGenerator } from './query-generators/graphql-query-listed-generator'
 
@@ -15,7 +15,7 @@ export class GraphQLQueryGenerator {
 
   public constructor(
     protected readonly config: BoosterConfig,
-    protected readonly readModelsMetadata: TargetTypesMap,
+    protected readonly readModels: AnyClass[],
     protected readonly typeInformer: GraphQLTypeInformer,
     protected readonly byIDResolverBuilder: ResolverBuilder,
     protected readonly filterResolverBuilder: ResolverBuilder,
@@ -24,18 +24,18 @@ export class GraphQLQueryGenerator {
   ) {
     this.graphqlQueryByKeysGenerator = new GraphqlQueryByKeysGenerator(
       config,
-      readModelsMetadata,
+      readModels,
       typeInformer,
       byIDResolverBuilder
     )
     this.graphqlQueryFiltersGenerator = new GraphqlQueryFiltersGenerator(
-      readModelsMetadata,
+      readModels,
       typeInformer,
       filterResolverBuilder,
       generatedFiltersByTypeName
     )
     this.graphqlQueryListedGenerator = new GraphqlQueryListedGenerator(
-      readModelsMetadata,
+      readModels,
       typeInformer,
       filterResolverBuilder,
       generatedFiltersByTypeName

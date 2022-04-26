@@ -1,5 +1,4 @@
 import { Entity, Reduces } from '@boostercloud/framework-core'
-import { SKU } from '../common/sku'
 import { ProductCreated } from '../events/product-created'
 import { ProductUpdated } from '../events/product-updated'
 import { ProductDeleted } from '../events/product-deleted'
@@ -18,7 +17,7 @@ import { UserWithEmail } from '../roles'
 export class Product {
   public constructor(
     public id: UUID,
-    readonly sku: SKU,
+    readonly sku: string,
     readonly displayName: string,
     readonly description: string,
     readonly price: Money,

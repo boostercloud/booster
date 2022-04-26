@@ -33,20 +33,18 @@ export class GraphQLGenerator {
 
   public static generateSchema(config: BoosterConfig, logger: Logger): GraphQLSchema {
     if (!this.schema) {
+      logger.debug('Generating GraphQL schema...')
       this.commandsDispatcher = new BoosterCommandDispatcher(config, logger)
       this.readModelsReader = new BoosterReadModelsReader(config, logger)
       this.eventsReader = new BoosterEventsReader(config, logger)
 
-      const typeInformer = new GraphQLTypeInformer({
-        ...config.readModels,
-        ...config.commandHandlers,
-      })
+      const typeInformer = new GraphQLTypeInformer(logger)
 
       const generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
 
       const queryGenerator = new GraphQLQueryGenerator(
         config,
-        config.readModels,
+        Object.values(config.readModels).map((m) => m.class),
         typeInformer,
         this.readModelByIDResolverBuilder.bind(this, config),
         this.readModelResolverBuilder.bind(this),
@@ -61,7 +59,7 @@ export class GraphQLGenerator {
       )
 
       const subscriptionGenerator = new GraphQLSubscriptionGenerator(
-        config.readModels,
+        Object.values(config.readModels).map((m) => m.class),
         typeInformer,
         this.subscriptionByIDResolverBuilder.bind(this, config),
         this.subscriptionResolverBuilder.bind(this, config),
@@ -73,6 +71,7 @@ export class GraphQLGenerator {
         mutation: mutationGenerator.generate(),
         subscription: subscriptionGenerator.generate(),
       })
+      logger.debug('GraphQL schema generated')
     }
     return this.schema
   }
