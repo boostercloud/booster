@@ -83,6 +83,8 @@ Each command class must have a method called `handle`. This function is the comm
 
 ### Returning a value
 
+> [!WARN] As of version 0.26.1 this annotation is deprecated. You may return any type without annotating the method
+
 By default, the command handler function is generated with `void` as a return type,
 and in consequence, it will return `true` when called through the GraphQL.
 
@@ -91,6 +93,7 @@ and in consequence, it will return `true` when called through the GraphQL.
 If you want to return something back to the client, you have to decorate this
 function with the `@Returns` decorator, passing the **class** that you want to
 return.
+
 
 > [!NOTE] For primitive types like `number`, `string`. The class is the name of the type but with the first letter in uppercase. E.g. `Number`, `String`
 

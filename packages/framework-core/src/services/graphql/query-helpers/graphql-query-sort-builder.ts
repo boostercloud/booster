@@ -1,9 +1,10 @@
 import { GraphQLEnumType, GraphQLFieldConfigArgumentMap, GraphQLInputObjectType, Thunk } from 'graphql'
 import { PropertyMetadata } from 'metadata-booster'
-import { getPropertiesMetadata } from '../../../decorators/metadata'
-import { buildGraphqlSimpleEnumFor, TargetTypeMetadata } from '../common'
+import { getClassMetadata } from '../../../decorators/metadata'
+import { buildGraphqlSimpleEnumFor, isExternalType } from '../common'
 import { GraphQLInputFieldConfigMap } from 'graphql/type/definition'
 import { GraphQLTypeInformer } from '../graphql-type-informer'
+import { AnyClass } from '@boostercloud/framework-types'
 
 export class GraphqlQuerySortBuilder {
   private generatedSortByByTypeName: Record<string, GraphQLInputObjectType> = {}
@@ -11,9 +12,10 @@ export class GraphqlQuerySortBuilder {
 
   constructor(protected readonly typeInformer: GraphQLTypeInformer) {}
 
-  public generateSortArguments(typeMetadata: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
+  public generateSortArguments(type: AnyClass): GraphQLFieldConfigArgumentMap {
+    const metadata = getClassMetadata(type)
     const args: GraphQLFieldConfigArgumentMap = {}
-    typeMetadata.properties.forEach((prop: PropertyMetadata) => {
+    metadata.fields.forEach((prop: PropertyMetadata) => {
       args[prop.name] = {
         type: this.generateSortFor(prop),
       }
@@ -25,22 +27,21 @@ export class GraphqlQuerySortBuilder {
     let sortByName = `${prop.typeInfo.name}PropertySortBy`
     sortByName = sortByName.charAt(0).toUpperCase() + sortByName.substr(1).replace(/\[]/g, '')
 
-    if (!prop.typeInfo.type || typeof prop.typeInfo.type === 'object') return this.orderType
     if (this.generatedSortByByTypeName[sortByName]) return this.generatedSortByByTypeName[sortByName]
+    if (!prop.typeInfo.type || typeof prop.typeInfo.type === 'object') return this.orderType
+    if (prop.typeInfo.typeGroup === 'Array') return this.orderType
 
-    const primitiveType = this.typeInformer.getOriginalAncestor(prop.typeInfo.type)
-    if (primitiveType === Array) return this.orderType
-    const graphQLPropType = this.typeInformer.getGraphQLTypeFor(primitiveType)
     let fields: Thunk<GraphQLInputFieldConfigMap> = {}
 
-    if (!this.typeInformer.isGraphQLScalarType(graphQLPropType)) {
+    if (prop.typeInfo.type && prop.typeInfo.typeGroup === 'Class') {
+      if (isExternalType(prop.typeInfo)) return this.orderType
       let nestedProperties: GraphQLInputFieldConfigMap = {}
-      const properties = getPropertiesMetadata(prop.typeInfo.type)
-      if (properties.length === 0) return this.orderType
+      const metadata = getClassMetadata(prop.typeInfo.type)
+      if (metadata.fields.length === 0) return this.orderType
 
-      this.typeInformer.generateGraphQLTypeFromMetadata({ class: prop.typeInfo.type, properties })
+      this.typeInformer.generateGraphQLTypeForClass(prop.typeInfo.type, true)
 
-      for (const prop of properties) {
+      for (const prop of metadata.fields) {
         const property = { [prop.name]: { type: this.generateSortFor(prop) } }
         nestedProperties = { ...nestedProperties, ...property }
       }

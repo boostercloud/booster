@@ -1,4 +1,4 @@
-import { Command, Returns } from '@boostercloud/framework-core'
+import { Command } from '@boostercloud/framework-core'
 import { Register } from '@boostercloud/framework-types'
 
 @Command({
@@ -7,7 +7,6 @@ import { Register } from '@boostercloud/framework-types'
 export class EmptyCommand {
   public constructor() {}
 
-  @Returns(String)
   public static async handle(_command: EmptyCommand, _register: Register): Promise<string> {
     return 'Empty command executed'
   }

@@ -1,4 +1,4 @@
-import { TargetTypeMetadata } from '../common'
+import { AnyClass } from '@boostercloud/framework-types'
 import { GraphQLBoolean, GraphQLFieldConfigArgumentMap, GraphQLInputObjectType, GraphQLList } from 'graphql'
 import { GraphQLTypeInformer } from '../graphql-type-informer'
 import { GraphqlQueryFilterArgumentsBuilder } from './graphql-query-filter-arguments-builder'
@@ -16,7 +16,7 @@ export class GraphqlQueryFilterFieldsBuilder {
     )
   }
 
-  public generateFilterQueriesFields(name: string, type: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
+  public generateFilterQueriesFields(name: string, type: AnyClass): GraphQLFieldConfigArgumentMap {
     const filterArguments = this.graphqlQueryFilterArgumentsBuilder.generateFilterArguments(type)
     const filter: GraphQLInputObjectType = new GraphQLInputObjectType({
       name: `${name}Filter`,

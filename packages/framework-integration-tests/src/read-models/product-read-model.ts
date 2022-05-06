@@ -2,7 +2,6 @@ import { Projects, ReadModel } from '@boostercloud/framework-core'
 import { UserWithEmail } from '../roles'
 import { ProjectionResult, ReadModelAction, UUID } from '@boostercloud/framework-types'
 import { Product } from '../entities/product'
-import { SKU } from '../common/sku'
 import { Money } from '../common/money'
 import { Pack } from '../entities/pack'
 
@@ -13,7 +12,7 @@ import { Pack } from '../entities/pack'
 export class ProductReadModel {
   public constructor(
     readonly id: UUID,
-    readonly sku: SKU,
+    readonly sku: string,
     readonly displayName: string,
     readonly description: string,
     readonly availability: number,

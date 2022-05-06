@@ -24,7 +24,7 @@
     "@boostercloud/framework-types": "^0.27.1",
     "@types/nedb": "^1.8.11",
     "nedb": "^1.8.0",
-    "tslib": "2.3.0"
+    "tslib": "2.3.1"
   },
   "scripts": {
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
