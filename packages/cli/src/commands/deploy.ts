@@ -31,6 +31,10 @@ export default class Deploy extends BaseCommand {
       char: 'e',
       description: 'environment configuration to run',
     }),
+    verbose: flags.boolean({
+      description: 'display full error messages',
+      default: false,
+    }),
   }
 
   public async run(): Promise<void> {
@@ -40,5 +44,15 @@ export default class Deploy extends BaseCommand {
       const deploymentProjectPath = await createDeploymentSandbox()
       await runTasks(compileProjectAndLoadConfig(deploymentProjectPath), deployToCloudProvider)
     }
+  }
+
+  async catch(fullError: Error) {
+    const { flags: { verbose } } = this.parse(Deploy)
+
+    if (verbose) {
+      console.error(fullError.message)
+    }
+ 
+    return super.catch(fullError)
   }
 }
