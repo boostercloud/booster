@@ -13,7 +13,7 @@ describe('providerService', () => {
   describe('assertNameIsCorrect', () => {
     it('should throw an error on surpassing project name max length', () => {
       const inputString = random.alphaNumeric(random.number({ min: 38 }))
-      const errorString = `Project name cannot be longer than 37 chars long:\n\n    Found: '${inputString}'`
+      const errorString = `Project name cannot be longer than 37 characters:\n\n    Found: '${inputString}'`
 
       expect(() => providerService.assertNameIsCorrect(inputString)).to.throw(errorString)
     })
@@ -28,6 +28,13 @@ describe('providerService', () => {
     it('should throw an error if project name includes an uppercase letter', () => {
       const inputString = random.alphaNumeric(37).toUpperCase()
       const errorString = `Project name cannot contain uppercase letters:\n\n    Found: '${inputString}'`
+
+      expect(() => providerService.assertNameIsCorrect(inputString)).to.throw(errorString)
+    })
+
+    it('should throw an error if project name includes an underscore', () => {
+      const inputString = 'test_project_name'
+      const errorString = `Project name cannot contain underscore:\n\n    Found: '${inputString}'`
 
       expect(() => providerService.assertNameIsCorrect(inputString)).to.throw(errorString)
     })

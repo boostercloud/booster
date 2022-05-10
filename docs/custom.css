@@ -1,0 +1,73 @@
+:root {
+    --link-color: var(--theme-color);
+    --code-inline-color: #d22778 !important;
+    --code-inline-background: var(--code-theme-background) !important;
+    --sidebar-toggle-icon-color: var(--theme-color) !important;
+    --navbar-root-color--hover: var(--theme-color);
+    --content-max-width: 90% !important;
+    --link-text-decoration: none !important;
+    --heading-h5-font-size: 16px !important;
+}
+
+#docsify-darklight-theme {
+    position: absolute;
+    right: 45px;
+    top: 75px;
+    width: 25px;
+    height: 25px;
+    background-repeat: no-repeat;
+    background-image: var(--toogleImage);
+    background-size: cover;
+    cursor: pointer;
+    transition: background-image .15s ease-in-out .15s
+}
+
+.markdown-section h1 {
+    margin-top: 20px !important;
+}
+
+.markdown-section p, li {
+    text-align: justify;
+}
+
+.markdown-section img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.alert.callout.warning {
+    background: var(--warningBackground);
+}
+
+.alert.callout.tip {
+    background: var(--tipBackground);
+}
+
+.alert.callout.note {
+    background: var(--noteBackground);
+}
+
+.alert.callout.attention {
+    background: var(--attentionBackground);
+}
+
+@media screen and (min-width: 1024px) {
+    :root {
+        --sidebar-width: 20rem !important;
+    }
+}
+
+@media screen and (min-width: 768px) {
+    .sidebar-toggle .sidebar-toggle-button {
+        display: none;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    #docsify-darklight-theme {
+        right: 20px;
+        top: 25px;
+    }
+
+}

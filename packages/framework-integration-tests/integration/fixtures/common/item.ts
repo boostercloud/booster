@@ -1,2 +1,4 @@
-export interface Item {
+export class Item {
+  public constructor(
+  ) {}
 }

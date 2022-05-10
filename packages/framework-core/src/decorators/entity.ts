@@ -1,22 +1,60 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Booster } from '../booster'
-import { Class, EntityInterface, ReducerMetadata, EventInterface } from '@boostercloud/framework-types'
+import {
+  Class,
+  EntityInterface,
+  ReducerMetadata,
+  EventInterface,
+  RoleAccess,
+  AnyClass,
+} from '@boostercloud/framework-types'
 import 'reflect-metadata'
+
+interface EntityAttributes {
+  authorizeReadEvents: RoleAccess['authorize']
+}
+
+// The craziness with the following both types (the param and return types of the @Entity decorator) is to achieve that either:
+// - The @Entity decorator doesn't have parenthesis: THEN the decorator needs to accept a class as a parameter and return void
+// - The @Entity decorator have parenthesis: THEN it needs to accept an object with attributes and return a function accepting a class as a parameter
+type EntityDecoratorParam = AnyClass | EntityAttributes
+type EntityDecoratorResult<TEntity, TParam> = TParam extends EntityAttributes
+  ? (entityClass: Class<TEntity>) => void
+  : void
+
 /**
  * Decorator to register a class as an Entity
  * @constructor
  */
-export function Entity<TEntity extends EntityInterface>(entityClass: Class<TEntity>): void {
-  Booster.configureCurrentEnv((config): void => {
-    if (config.entities[entityClass.name]) {
-      throw new Error(`An entity called ${entityClass.name} is already registered
+export function Entity<TEntity extends EntityInterface, TParam extends EntityDecoratorParam>(
+  classOrAttributes: TParam
+): EntityDecoratorResult<TEntity, TParam> {
+  let authorizeReadEvents: RoleAccess['authorize'] = []
+  // This function will be either returned or executed, depending on the parameters passed to the decorator
+  const mainLogicFunction = (entityClass: Class<TEntity>) => {
+    Booster.configureCurrentEnv((config): void => {
+      if (config.entities[entityClass.name]) {
+        throw new Error(`An entity called ${entityClass.name} is already registered
         If you think that this is an error, try performing a clean build..`)
-    }
+      }
 
-    config.entities[entityClass.name] = {
-      class: entityClass,
-    }
-  })
+      config.entities[entityClass.name] = {
+        class: entityClass,
+        authorizeReadEvents,
+      }
+    })
+  }
+
+  if (isEntityAttributes(classOrAttributes)) {
+    authorizeReadEvents = classOrAttributes.authorizeReadEvents
+    return mainLogicFunction as EntityDecoratorResult<TEntity, TParam>
+  }
+
+  return mainLogicFunction(classOrAttributes as Class<TEntity>) as EntityDecoratorResult<TEntity, TParam>
+}
+
+function isEntityAttributes(param: EntityDecoratorParam): param is EntityAttributes {
+  return 'authorizeReadEvents' in param
 }
 
 /**
@@ -40,7 +78,7 @@ export function Reduces<TEvent extends EventInterface>(
   }
 }
 
-function registerReducer(eventName: string, reducerMethod: ReducerMetadata): void {
+function registerReducer(eventName: string, reducerMetadata: ReducerMetadata): void {
   Booster.configureCurrentEnv((config): void => {
     const reducerPath = config.reducers[eventName]
     if (reducerPath) {
@@ -50,7 +88,7 @@ function registerReducer(eventName: string, reducerMethod: ReducerMetadata): voi
       )
     }
 
-    config.reducers[eventName] = reducerMethod
+    config.reducers[eventName] = reducerMetadata
   })
 }
 

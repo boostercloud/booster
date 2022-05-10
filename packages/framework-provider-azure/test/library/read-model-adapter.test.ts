@@ -26,6 +26,7 @@ describe('Read Model adapter', () => {
               fetchAll: fake.resolves({ resources: [] }) as any,
             }),
             upsert: stub().returns(fake.resolves({})),
+            create: stub().returns(fake.resolves({})),
           },
           item: stub().returns({
             read: stub().returns(fake.resolves({})),
@@ -35,6 +36,7 @@ describe('Read Model adapter', () => {
     })
     mockLogger = {
       info: fake(),
+      warn: fake(),
       error: fake(),
       debug: fake(),
     }
@@ -46,13 +48,9 @@ describe('Read Model adapter', () => {
 
   describe('The "fetchReadModel" method', () => {
     it('Responds with a read model when it exists', async () => {
-      const result = await fetchReadModel(
-        mockCosmosDbClient as any,
-        mockConfig,
-        mockLogger,
-        mockReadModelName,
-        mockReadModelId
-      )
+      const result = (
+        await fetchReadModel(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, mockReadModelId)
+      )[0]
 
       expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
       expect(
@@ -84,7 +82,7 @@ describe('Read Model adapter', () => {
       expect(
         mockCosmosDbClient
           .database(mockConfig.resourceNames.applicationStack)
-          .container(`${mockConfig.resourceNames.applicationStack}-${mockReadModelName}`).items.upsert
+          .container(`${mockConfig.resourceNames.applicationStack}-${mockReadModelName}`).items.create
       ).to.have.been.calledWithExactly(match(mockReadModel))
       expect(something).not.to.be.null
     })

@@ -14,12 +14,13 @@ import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { FilteredReadModelPubSub, ReadModelPubSub } from './services/pub-sub/read-model-pub-sub'
 import { GraphQLResolverContext } from './services/graphql/common'
 import { ExecutionResult } from 'graphql/execution/execute'
+import { Promises } from '@boostercloud/framework-common-helpers'
 
 export class BoosterSubscribersNotifier {
   private readonly graphQLSchema: GraphQLSchema
 
   public constructor(private config: BoosterConfig, private logger: Logger) {
-    this.graphQLSchema = GraphQLGenerator.build(config, logger).generateSchema()
+    this.graphQLSchema = GraphQLGenerator.generateSchema(config, logger)
   }
 
   public async dispatch(request: unknown): Promise<void> {
@@ -34,7 +35,7 @@ export class BoosterSubscribersNotifier {
       )
 
       const pubSub = this.getPubSub(readModelEnvelopes)
-      await Promise.allSettled(subscriptions.map(this.runSubscriptionAndNotify.bind(this, pubSub)))
+      await Promises.allSettledAndFulfilled(subscriptions.map(this.runSubscriptionAndNotify.bind(this, pubSub)))
     } catch (e) {
       this.logger.error(e)
     }
@@ -61,13 +62,13 @@ export class BoosterSubscribersNotifier {
     return subscriptionSets.flat()
   }
 
-  private getPubSub(readModelEnvelopes: Array<ReadModelEnvelope>): ReadModelPubSub {
+  private getPubSub(readModelEnvelopes: Array<ReadModelEnvelope>): ReadModelPubSub<ReadModelInterface> {
     const readModelInstances = readModelEnvelopes.map(this.getReadModelInstance, this)
     return new FilteredReadModelPubSub(readModelInstances)
   }
 
   private async runSubscriptionAndNotify(
-    pubSub: ReadModelPubSub,
+    pubSub: ReadModelPubSub<ReadModelInterface>,
     subscription: SubscriptionEnvelope
   ): Promise<unknown> {
     const context: GraphQLResolverContext = {

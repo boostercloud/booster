@@ -38,9 +38,9 @@ jobs:
           USER_NAME: ${{ secrets.DEPLOYING_USER_NAME }}
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN_ACTION }} # Token for pushing
 
-      - uses: actions/setup-node@main
+      - uses: actions/setup-node@v3
         with:
-          node-version: 12
+          node-version: 16.x
           registry-url: https://registry.npmjs.org/
 
       - run: npx lerna bootstrap
@@ -54,11 +54,30 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: 'Az CLI login'
+        uses: azure/login@v1.4.0
+        with:
+          creds: '${{ secrets.AZURE_CREDENTIALS }}'
+
       - name: Running integration tests before release
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
+          AZURE_APP_ID: ${{ secrets.AZURE_CLIENTID }}
+          AZURE_SECRET: ${{ secrets.AZURE_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
+          REGION: East US
+          publisherEmail: noreply@booster.cloud
+          publisherName: Booster App
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENTID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
+        # This is not running the integration tests of other providers. Think how this could be done, as they require some other configuration
+        # (as an example, check the k8s tests in "integration-test.yml", it requires a minicube environment)
+        # Maybe running them in different jobs.
         run: npx lerna run integration --stream
 
       - name: Discard all the changes after integration tests

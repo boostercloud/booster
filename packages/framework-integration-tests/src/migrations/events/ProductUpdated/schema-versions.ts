@@ -1,7 +1,6 @@
 import { UUID } from '@boostercloud/framework-types'
 import { ProductUpdated } from '../../../events/product-updated'
 import { ProductUpdateReason } from '../../../events/product-updated'
-import { SKU } from '../../../common/sku'
 import { Money } from '../../../common/money'
 import { Picture } from '../../../common/picture'
 
@@ -10,7 +9,7 @@ import { Picture } from '../../../common/picture'
 // this schema to keep everything compiling and avoid depending on the Product entity
 interface Product {
   readonly id: UUID
-  readonly sku: SKU
+  readonly sku: string
   readonly name: string
   readonly description: string
   readonly price: Money

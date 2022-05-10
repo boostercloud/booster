@@ -1,5 +1,5 @@
 import { EventEnvelope } from '@boostercloud/framework-types'
-import { CosmosClient, ItemResponse, SqlQuerySpec } from '@azure/cosmos'
+import { CosmosClient, SqlQuerySpec } from '@azure/cosmos'
 import { BoosterConfig, Logger, UUID } from '@boostercloud/framework-types'
 import { eventsStoreAttributes } from '../constants'
 import { partitionKeyForEvent } from './partition-keys'
@@ -24,7 +24,7 @@ export async function readEntityEventsSince(
   const querySpec: SqlQuerySpec = {
     query:
       `SELECT * FROM c WHERE c["${eventsStoreAttributes.partitionKey}"] = @partitionKey ` +
-      `AND c["${eventsStoreAttributes.sortKey}"] > @fromTime ORDER BY c["${eventsStoreAttributes.sortKey}"] DESC`,
+      `AND c["${eventsStoreAttributes.sortKey}"] > @fromTime ORDER BY c["${eventsStoreAttributes.sortKey}"] ASC`,
     parameters: [
       {
         name: '@partitionKey',
@@ -89,8 +89,8 @@ export async function storeEvents(
   logger: Logger
 ): Promise<void> {
   logger.debug('[EventsAdapter#storeEvents] Storing EventEnvelopes with eventEnvelopes:', eventEnvelopes)
-  const events: Array<Promise<ItemResponse<any>>> = eventEnvelopes.map((eventEnvelope) => {
-    return cosmosDb
+  for (const eventEnvelope of eventEnvelopes) {
+    await cosmosDb
       .database(config.resourceNames.applicationStack)
       .container(config.resourceNames.eventsStore)
       .items.create({
@@ -102,7 +102,6 @@ export async function storeEvents(
         ),
         [eventsStoreAttributes.sortKey]: new Date().toISOString(),
       })
-  })
-  await Promise.all(events)
+  }
   logger.debug('[EventsAdapter#storeEvents] EventEnvelope stored')
 }

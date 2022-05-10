@@ -1,6 +1,7 @@
-import { EntityInterface, EventInterface, ReadModelInterface, UUID } from './concepts'
+import { CommandInput, EntityInterface, EventInterface, ReadModelInterface, SequenceKey, UUID } from './concepts'
 import { GraphQLClientMessage } from './graphql-websocket-messages'
-import { FilterFor } from './searcher'
+import { FilterFor, SortFor } from './searcher'
+import { Class } from './typelevel'
 
 /**
  * An `Envelope` carries a command/event body together with the name
@@ -10,12 +11,13 @@ import { FilterFor } from './searcher'
 export interface Envelope {
   currentUser?: UserEnvelope
   requestID: UUID
+  context?: ContextEnvelope
 }
 
 export interface CommandEnvelope extends Envelope {
   typeName: string
   version: number
-  value: unknown
+  value: CommandInput
 }
 
 export interface ScheduledCommandEnvelope extends Envelope {
@@ -30,6 +32,41 @@ export interface EventEnvelope extends Envelope {
   entityTypeName: string
   value: EventInterface | EntityInterface
   createdAt: string
+  snapshottedEventCreatedAt?: string
+}
+
+export interface EventSearchRequest extends Envelope {
+  parameters: EventSearchParameters
+}
+
+export type EventSearchParameters = EventParametersFilterByEntity | EventParametersFilterByType
+
+export interface EventLimitParameter {
+  limit?: number
+}
+
+export interface EventTimeParameterFilter extends EventLimitParameter {
+  from?: string
+  to?: string
+}
+
+export interface EventParametersFilterByEntity extends EventTimeParameterFilter {
+  entity: string
+  entityID?: string
+}
+
+export interface EventParametersFilterByType extends EventTimeParameterFilter {
+  type: string
+}
+
+export interface EventSearchResponse {
+  type: string
+  entity: string
+  entityID: UUID
+  requestID: UUID
+  user?: UserEnvelope
+  createdAt: string
+  value: EventInterface
 }
 
 export interface ReadModelEnvelope {
@@ -37,13 +74,42 @@ export interface ReadModelEnvelope {
   value: ReadModelInterface
 }
 
-export interface ReadModelRequestEnvelope extends Envelope {
-  typeName: string
-  version: number
-  filters?: Record<string, ReadModelPropertyFilter>
+export interface ReadModelListResult<TReadModel> {
+  items: Array<TReadModel>
+  count?: number
+  cursor?: Record<string, string>
 }
 
-export type ReadModelPropertyFilter = FilterFor<unknown>
+export interface ReadModelRequestEnvelope<TReadModel extends ReadModelInterface> extends Envelope {
+  key?: {
+    id: UUID
+    sequenceKey?: SequenceKey
+  }
+  class: Class<TReadModel>
+  className: string
+  version: number
+  filters: ReadModelRequestProperties<TReadModel>
+  sortBy?: ReadModelSortProperties<TReadModel>
+  limit?: number
+  afterCursor?: unknown
+  paginatedVersion?: boolean // Used only for retrocompatibility
+}
+
+export interface ReadModelRequestArgs<TReadModel extends ReadModelInterface> {
+  filter?: ReadModelRequestProperties<TReadModel>
+  sortBy?: ReadModelSortProperties<TReadModel>
+  limit?: number
+  afterCursor?: unknown
+}
+
+export interface ReadModelByIdRequestArgs {
+  id: string
+  [sequenceKey: string]: string | undefined
+}
+
+export type ReadModelRequestProperties<TReadModel> = Record<string, FilterFor<TReadModel>>
+
+export type ReadModelSortProperties<TReadModel> = Record<string, SortFor<TReadModel>>
 
 export interface GraphQLRequestEnvelope extends Envelope {
   eventType: 'CONNECT' | 'MESSAGE' | 'DISCONNECT'
@@ -55,7 +121,7 @@ export type GraphQLRequestEnvelopeError = Pick<GraphQLRequestEnvelope, 'eventTyp
   error: Error
 }
 
-export interface SubscriptionEnvelope extends ReadModelRequestEnvelope {
+export interface SubscriptionEnvelope extends ReadModelRequestEnvelope<ReadModelInterface> {
   expirationTime: number // In Epoch format
   connectionID: string
   operation: GraphQLOperation
@@ -77,5 +143,15 @@ export interface ConnectionDataEnvelope {
 export interface UserEnvelope {
   id?: string
   username: string
-  role: string
+  roles: Array<string>
+  claims: Record<string, unknown>
+  header?: Record<string, unknown>
+}
+
+export interface ContextEnvelope {
+  request: {
+    headers: unknown
+    body: unknown
+  }
+  rawContext: unknown
 }

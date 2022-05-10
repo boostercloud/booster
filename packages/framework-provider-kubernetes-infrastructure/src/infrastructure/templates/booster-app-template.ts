@@ -26,15 +26,21 @@ spec:
         booster/deployed: "{{ timestamp }}"
         {{/timestamp}}
         dapr.io/enabled: "true"
-        dapr.io/id: "booster"
+        dapr.io/app-id: "booster"
         dapr.io/port: "3000"
     spec:
       containers:
       - name: booster
-        image: boostercloud/boosterkubernetes:latest
+        image: boostercloud/boosterkubernetes:1.0.0
         env:
         - name: BOOSTER_ENV
           value: {{ environment }}
+        - name: DB_HOST
+          value: {{ dbHost }}
+        - name: DB_USER
+          value: {{ dbUser }}
+        - name: DB_PASSWORD
+          value: {{ dbPass }}
         ports:
         - containerPort: 3000
         readinessProbe:
@@ -44,7 +50,7 @@ spec:
           initialDelaySeconds: 15
           periodSeconds: 5
           successThreshold: 1
-        volumeMounts: 
+        volumeMounts:
           - mountPath: /data/appCode
             name: app-code
         imagePullPolicy: Always
@@ -55,11 +61,11 @@ spec:
           - name: BOOSTER_ENV
             value: {{ environment }}
           command: ['sh', '-c', "while [ ! -f /data/appCode/boosterCode.zip ]; do echo Waiting for user code tobe uploaded to the storage; sleep 5; done"]
-          volumeMounts: 
+          volumeMounts:
             - mountPath: /data/appCode
               name: app-code
-      volumes: 
+      volumes:
       - name: app-code
-        persistentVolumeClaim: 
+        persistentVolumeClaim:
           claimName: {{ clusterVolume }} `,
 }

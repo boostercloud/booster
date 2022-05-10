@@ -1,155 +1,56 @@
-import {
-  GraphQLEnumType,
-  GraphQLEnumValueConfigMap,
-  GraphQLFieldConfigArgumentMap,
-  GraphQLFieldConfigMap,
-  GraphQLID,
-  GraphQLInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLObjectType,
-  GraphQLScalarType,
-  GraphQLString
-} from 'graphql'
-import { GraphQLNonInputType, ResolverBuilder, TargetTypeMetadata, TargetTypesMap } from './common'
+import { AnyClass, BoosterConfig } from '@boostercloud/framework-types'
+import { GraphQLFieldResolver, GraphQLInputObjectType, GraphQLObjectType } from 'graphql'
+import { GraphQLResolverContext, ResolverBuilder } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
-import * as inflected from 'inflected'
-import { GraphQLJSONObject } from 'graphql-type-json'
-import {
-  AnyClass,
-  BooleanOperations,
-  NumberOperations,
-  PropertyMetadata,
-  StringOperations,
-  UUID,
-} from '@boostercloud/framework-types'
+import { GraphqlQueryEventsGenerator } from './query-generators/graphql-query-events-generator'
+import { GraphqlQueryByKeysGenerator } from './query-generators/graphql-query-by-keys-generator'
+import { GraphqlQueryFiltersGenerator } from './query-generators/graphql-query-filters-generator'
+import { GraphqlQueryListedGenerator } from './query-generators/graphql-query-listed-generator'
 
 export class GraphQLQueryGenerator {
-  private generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
-  private generatedOperationEnumsByTypeName: Record<string, GraphQLEnumType> = {}
+  private graphqlQueryByKeysGenerator: GraphqlQueryByKeysGenerator
+  private graphqlQueryFiltersGenerator: GraphqlQueryFiltersGenerator
+  private graphqlQueryListedGenerator: GraphqlQueryListedGenerator
+  private graphqlQueryEventsGenerator: GraphqlQueryEventsGenerator
 
   public constructor(
-    private readonly targetTypes: TargetTypesMap,
-    private readonly typeInformer: GraphQLTypeInformer,
-    private readonly byIDResolverBuilder: ResolverBuilder,
-    private readonly filterResolverBuilder: ResolverBuilder
-  ) {}
+    protected readonly config: BoosterConfig,
+    protected readonly readModels: AnyClass[],
+    protected readonly typeInformer: GraphQLTypeInformer,
+    protected readonly byIDResolverBuilder: ResolverBuilder,
+    protected readonly filterResolverBuilder: ResolverBuilder,
+    protected readonly eventsResolver: GraphQLFieldResolver<unknown, GraphQLResolverContext, any>,
+    protected generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
+  ) {
+    this.graphqlQueryByKeysGenerator = new GraphqlQueryByKeysGenerator(
+      config,
+      readModels,
+      typeInformer,
+      byIDResolverBuilder
+    )
+    this.graphqlQueryFiltersGenerator = new GraphqlQueryFiltersGenerator(
+      readModels,
+      typeInformer,
+      filterResolverBuilder,
+      generatedFiltersByTypeName
+    )
+    this.graphqlQueryListedGenerator = new GraphqlQueryListedGenerator(
+      readModels,
+      typeInformer,
+      filterResolverBuilder,
+      generatedFiltersByTypeName
+    )
+    this.graphqlQueryEventsGenerator = new GraphqlQueryEventsGenerator(config, byIDResolverBuilder, eventsResolver)
+  }
 
   public generate(): GraphQLObjectType {
-    const byIDQueries = this.generateByIDQueries()
-    const filterQueries = this.generateFilterQueries()
-    const fields = {...byIDQueries, ...filterQueries}
-    if (Object.keys(fields).length === 0) {
-      return new GraphQLObjectType({
-        name: 'Query',
-        fields: {
-          NoQueriesDefined: { type: GraphQLString }
-        }
-      })
-    }
+    const byIDQueries = this.graphqlQueryByKeysGenerator.generateByKeysQueries()
+    const filterQueries = this.graphqlQueryFiltersGenerator.generateFilterQueries()
+    const listedQueries = this.graphqlQueryListedGenerator.generateListedQueries()
+    const eventQueries = this.graphqlQueryEventsGenerator.generateEventQueries()
     return new GraphQLObjectType({
       name: 'Query',
-      fields: fields,
+      fields: { ...byIDQueries, ...filterQueries, ...listedQueries, ...eventQueries },
     })
-  }
-
-  private generateByIDQueries(): GraphQLFieldConfigMap<any, any> {
-    const queries: GraphQLFieldConfigMap<any, any> = {}
-    for (const name in this.targetTypes) {
-      const type = this.targetTypes[name]
-      const graphQLType = this.typeInformer.getGraphQLTypeFor(type.class)
-      queries[name] = {
-        type: graphQLType,
-        args: {
-          id: { type: new GraphQLNonNull(GraphQLID) },
-        },
-        resolve: this.byIDResolverBuilder(type.class),
-      }
-    }
-    return queries
-  }
-
-  private generateFilterQueries(): GraphQLFieldConfigMap<any, any> {
-    const queries: GraphQLFieldConfigMap<any, any> = {}
-    for (const name in this.targetTypes) {
-      const type = this.targetTypes[name]
-      const graphQLType = this.typeInformer.getGraphQLTypeFor(type.class)
-      queries[inflected.pluralize(name)] = {
-        type: new GraphQLList(graphQLType),
-        args: this.generateFilterArguments(type),
-        resolve: this.filterResolverBuilder(type.class),
-      }
-    }
-    return queries
-  }
-
-  public generateFilterArguments(typeMetadata: TargetTypeMetadata): GraphQLFieldConfigArgumentMap {
-    const args: GraphQLFieldConfigArgumentMap = {}
-    typeMetadata.properties.forEach((prop: PropertyMetadata) => {
-      const graphQLPropType = this.typeInformer.getGraphQLTypeFor(prop.type)
-      if (!this.canFilter(graphQLPropType)) {
-        // TODO: We still don't handle filtering by complex properties
-        return
-      }
-      args[prop.name] = {
-        type: this.generateFilterFor(prop.type),
-      }
-    })
-    return args
-  }
-
-  private canFilter(graphQLType: GraphQLNonInputType): boolean {
-    return graphQLType instanceof GraphQLScalarType && graphQLType != GraphQLJSONObject
-  }
-
-  private generateFilterFor(type: AnyClass): GraphQLInputObjectType {
-    const filterName = `${type.name}PropertyFilter`
-    if (!this.generatedFiltersByTypeName[filterName]) {
-      const graphQLValueType = this.typeInformer.getGraphQLTypeFor(type)
-      this.generatedFiltersByTypeName[filterName] = new GraphQLInputObjectType({
-        name: filterName,
-        fields: {
-          operation: { type: new GraphQLNonNull(this.operationEnumFor(type)) },
-          values: { type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(graphQLValueType))) },
-        },
-      })
-    }
-    return this.generatedFiltersByTypeName[filterName]
-  }
-
-  private operationEnumFor(type: AnyClass): GraphQLEnumType {
-    const operationEnumName = `${type.name}Operations`
-    if (!this.generatedOperationEnumsByTypeName[operationEnumName]) {
-      this.generatedOperationEnumsByTypeName[operationEnumName] = new GraphQLEnumType({
-        name: operationEnumName,
-        values: this.generateOperationEnumValuesFor(type),
-      })
-    }
-    return this.generatedOperationEnumsByTypeName[operationEnumName]
-  }
-
-  private generateOperationEnumValuesFor(type: AnyClass): GraphQLEnumValueConfigMap {
-    let operationsEnum: typeof StringOperations | typeof NumberOperations | typeof BooleanOperations
-    switch (type) {
-      case UUID:
-      case String:
-        operationsEnum = StringOperations
-        break
-      case Number:
-        operationsEnum = NumberOperations
-        break
-      case Boolean:
-        operationsEnum = BooleanOperations
-        break
-      default:
-        throw new Error(`Type ${type.name} is not supported in search filters`)
-    }
-
-    const enumValuesConfig: GraphQLEnumValueConfigMap = {}
-    for (const opSymbol in operationsEnum) {
-      const opName = (operationsEnum as any)[opSymbol]
-      enumValuesConfig[opName] = { value: opSymbol }
-    }
-    return enumValuesConfig
   }
 }

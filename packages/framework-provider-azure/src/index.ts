@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ProviderInfrastructure, ProviderLibrary } from '@boostercloud/framework-types'
+import { HasInfrastructure, ProviderLibrary, RocketDescriptor } from '@boostercloud/framework-types'
 import { requestFailed, requestSucceeded } from './library/api-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import {
@@ -10,21 +10,34 @@ import {
 } from './library/events-adapter'
 import { CosmosClient } from '@azure/cosmos'
 import { environmentVarNames } from './constants'
-import { fetchReadModel, storeReadModel } from './library/read-model-adapter'
+import { deleteReadModel, fetchReadModel, storeReadModel } from './library/read-model-adapter'
 import { searchReadModel } from './library/searcher-adapter'
+import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
+import { searchEvents } from './library/events-searcher-adapter'
 
+let cosmosClient: CosmosClient
 if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefined') {
-  throw new Error('No Cosmos DB connection string has been found')
+  cosmosClient = {} as any
+} else {
+  cosmosClient = new CosmosClient(process.env[environmentVarNames.cosmosDbConnectionString] as string)
 }
-const cosmosClient = new CosmosClient(process.env[environmentVarNames.cosmosDbConnectionString] as string)
 
-export const Provider = (): ProviderLibrary => ({
+/* We load the infrastructure package dynamically here to avoid including it in the
+ * dependencies that are deployed in the lambda functions. The infrastructure
+ * package is only used during the deploy.
+ */
+export function loadInfrastructurePackage(packageName: string): HasInfrastructure {
+  return require(packageName)
+}
+
+export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
   // ProviderEventsLibrary
   events: {
     rawToEnvelopes: rawEventsToEnvelopes,
     store: storeEvents.bind(null, cosmosClient),
     forEntitySince: readEntityEventsSince.bind(null, cosmosClient),
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, cosmosClient),
+    search: searchEvents.bind(null, cosmosClient),
   },
   // ProviderReadModelsLibrary
   readModels: {
@@ -34,7 +47,7 @@ export const Provider = (): ProviderLibrary => ({
     rawToEnvelopes: undefined as any,
     fetchSubscriptions: undefined as any,
     store: storeReadModel.bind(null, cosmosClient),
-    delete: undefined as any,
+    delete: deleteReadModel.bind(null, cosmosClient),
     deleteSubscription: undefined as any,
     deleteAllSubscriptions: undefined as any,
   },
@@ -42,12 +55,6 @@ export const Provider = (): ProviderLibrary => ({
   graphQL: {
     rawToEnvelope: rawGraphQLRequestToEnvelope,
     handleResult: requestSucceeded,
-  },
-  // ProviderAuthLibrary
-  auth: {
-    rawToEnvelope: undefined as any,
-    fromAuthToken: undefined as any,
-    handleSignUpResult: (() => {}) as any,
   },
   // ProviderAPIHandling
   api: {
@@ -62,11 +69,25 @@ export const Provider = (): ProviderLibrary => ({
   },
   // ScheduledCommandsLibrary
   scheduled: {
-    rawToEnvelope: undefined as any,
+    rawToEnvelope: rawScheduledInputToEnvelope,
   },
   // ProviderInfrastructureGetter
-  infrastructure: () =>
-    require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
+  infrastructure: () => {
+    const infrastructurePackageName = require('../package.json').name + '-infrastructure'
+    let infrastructure: HasInfrastructure | undefined
+
+    try {
+      infrastructure = loadInfrastructurePackage(infrastructurePackageName)
+    } catch (e) {
+      throw new Error(
+        `The Azure infrastructure package could not be loaded. The following error was thrown: ${e.message}. Please ensure that one of the following actions has been done:\n` +
+          `  - It has been specified in your "devDependencies" section of your "package.json" file. You can do so by running 'npm install --save-dev ${infrastructurePackageName}'\n` +
+          `  - Or it has been installed globally. You can do so by running 'npm install -g ${infrastructurePackageName}'`
+      )
+    }
+
+    return infrastructure.Infrastructure(rockets)
+  },
 })
 
 function notImplemented(): void {}

@@ -86,7 +86,7 @@ async function getBoosterVersion(projectPath: string): Promise<string> {
     const packageJsonContents = require(path.join(projectAbsolutePath, 'package.json'))
     const version = packageJsonContents.dependencies['@boostercloud/framework-core']
     const versionParts = version.replace('^', '').replace('.tgz', '').split('-')
-    return versionParts[versionParts.length-1]    
+    return versionParts[versionParts.length - 1]
   } catch (e) {
     throw new Error(
       `There was an error when recognizing the application. Make sure you are in the root path of a Booster project:\n${e.message}`
@@ -96,33 +96,46 @@ async function getBoosterVersion(projectPath: string): Promise<string> {
 
 class HigherCliVersionError extends Error {
   constructor(public cliVersion: string, public projectVersion: string, public section: string) {
-    super(`CLI version ${cliVersion} is higher than your project Booster version ${projectVersion} in the '${section}' section. Please upgrade your project Booster dependencies.`)
+    super(
+      `CLI version ${cliVersion} is higher than your project Booster version ${projectVersion} in the '${section}' section. Please upgrade your project Booster dependencies.`
+    )
   }
 }
 
 class LowerCliVersionError extends Error {
   constructor(public cliVersion: string, public projectVersion: string, public section: string) {
-    super(`CLI version ${cliVersion} is lower than your project Booster version ${projectVersion}. Please upgrade your @boostercloud/cli to the same version with "npm install -g @boostercloud/cli@${projectVersion}"`)
+    super(
+      `CLI version ${cliVersion} is lower than your project Booster version ${projectVersion}. Please upgrade your @boostercloud/cli to the same version with "npm install -g @boostercloud/cli@${projectVersion}"`
+    )
   }
 }
 
 async function compareVersionsAndDisplayMessages(cliVersion: string, projectVersion: string): Promise<void> {
   const cliSemVersion = new Semver(cliVersion)
   const projectSemVersion = new Semver(projectVersion)
-  if (cliSemVersion.equals(projectSemVersion)) { return }
+  if (cliSemVersion.equals(projectSemVersion)) {
+    return
+  }
   if (cliSemVersion.equalsInBreakingSection(projectSemVersion)) {
     if (cliSemVersion.equalsInFeatureSection(projectSemVersion)) {
-      if (!cliSemVersion.equalsInFixSection(projectSemVersion)) { //differences in the 'fix' part
-        logger.info(`WARNING: Project Booster version differs in the 'fix' section. CLI version: ${cliVersion}. Project Booster version: ${projectVersion}`)
+      if (!cliSemVersion.equalsInFixSection(projectSemVersion)) {
+        //differences in the 'fix' part
+        logger.info(
+          `WARNING: Project Booster version differs in the 'fix' section. CLI version: ${cliVersion}. Project Booster version: ${projectVersion}`
+        )
       }
-    } else if (cliSemVersion.greaterInFeatureSectionThan(projectSemVersion)) { //cli higher than project in 'feat' section
+    } else if (cliSemVersion.greaterInFeatureSectionThan(projectSemVersion)) {
+      //cli higher than project in 'feat' section
       throw new HigherCliVersionError(cliVersion, projectVersion, 'feature')
-    } else { //cli lower than project in 'feat' section
+    } else {
+      //cli lower than project in 'feat' section
       throw new LowerCliVersionError(cliVersion, projectVersion, 'feature')
     }
-  } else if (cliSemVersion.greaterInBreakingSectionThan(projectSemVersion)) { //cli higher than project in 'breaking' section
+  } else if (cliSemVersion.greaterInBreakingSectionThan(projectSemVersion)) {
+    //cli higher than project in 'breaking' section
     throw new HigherCliVersionError(cliVersion, projectVersion, 'breaking')
-  } else { //cli lower than project in 'breaking' section
+  } else {
+    //cli lower than project in 'breaking' section
     throw new LowerCliVersionError(cliVersion, projectVersion, 'breaking')
   }
 }

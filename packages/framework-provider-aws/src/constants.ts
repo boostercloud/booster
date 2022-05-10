@@ -3,10 +3,18 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 export const eventsStoreAttributes = {
   partitionKey: 'entityTypeName_entityID_kind',
   sortKey: 'createdAt',
+  indexByEntity: {
+    name: (config: BoosterConfig) => config.resourceNames.eventsStore + '-index-by-entity',
+    partitionKey: 'entityTypeName_kind',
+  },
+  indexByType: {
+    name: (config: BoosterConfig) => config.resourceNames.eventsStore + '-index-by-type',
+    partitionKey: 'typeName',
+  },
 } as const
 
 export const subscriptionsStoreAttributes = {
-  partitionKey: 'typeName',
+  partitionKey: 'className',
   sortKey: 'connectionID_subscriptionID',
   ttl: 'expirationTime',
   indexByConnectionIDPartitionKey: 'connectionID',
@@ -23,3 +31,6 @@ export const environmentVarNames = {
   restAPIURL: 'BOOSTER_REST_API_URL',
   websocketAPIURL: 'BOOSTER_WEBSOCKET_API_URL',
 } as const
+
+export const dynamoDbBatchGetLimit = 100
+export const dynamoDbBatchWriteLimit = 25

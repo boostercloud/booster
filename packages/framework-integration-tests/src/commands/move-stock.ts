@@ -17,7 +17,7 @@ export class MoveStock {
   ) {}
 
   public static async handle(command: MoveStock, register: Register): Promise<void> {
-    const stock = await Booster.fetchEntitySnapshot(Stock, command.productID)
+    const stock = await Booster.entity(Stock, command.productID)
     if (command.enoughStock(stock)) {
       register.events(new StockMoved(command.productID, command.origin, command.destination, command.quantity))
     } else {

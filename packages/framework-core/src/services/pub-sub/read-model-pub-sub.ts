@@ -2,57 +2,80 @@ import { createAsyncIterator } from 'iterall'
 import {
   ReadModelRequestEnvelope,
   ReadModelInterface,
-  ReadModelPropertyFilter,
   Instance,
   Operation,
+  BoosterConfig,
+  ReadModelRequestProperties,
+  FilterFor,
 } from '@boostercloud/framework-types'
+import { applyReadModelRequestBeforeFunctions } from '../filter-helpers'
 
-export interface ReadModelPubSub {
-  asyncIterator(readModelRequestEnvelope: ReadModelRequestEnvelope): AsyncIterator<ReadModelInterface>
+export interface ReadModelPubSub<TReadModel extends ReadModelInterface> {
+  asyncIterator(
+    readModelRequestEnvelope: ReadModelRequestEnvelope<TReadModel>,
+    config: BoosterConfig
+  ): Promise<AsyncIterator<ReadModelInterface>>
 }
 
-export class FilteredReadModelPubSub implements ReadModelPubSub {
+export class FilteredReadModelPubSub<TReadModel extends ReadModelInterface> implements ReadModelPubSub<TReadModel> {
   constructor(private readModels: Array<ReadModelInterface & Instance>) {}
 
-  public asyncIterator(readModelRequestEnvelope: ReadModelRequestEnvelope): AsyncIterator<ReadModelInterface> {
+  public async asyncIterator(
+    readModelRequestEnvelope: ReadModelRequestEnvelope<TReadModel>,
+    config: BoosterConfig
+  ): Promise<AsyncIterator<ReadModelInterface>> {
+    const readModelMetadata = config.readModels[readModelRequestEnvelope.class.name]
+
+    const newReadModelRequestEnvelope = await applyReadModelRequestBeforeFunctions(
+      readModelRequestEnvelope,
+      readModelMetadata.before,
+      readModelRequestEnvelope.currentUser
+    )
+
     return createAsyncIterator(
       this.readModels
-        .filter((readModel) => readModelRequestEnvelope.typeName == readModel.constructor.name)
-        .filter((readModel) => filterReadModel(readModel, readModelRequestEnvelope.filters))
+        .filter((readModel) => newReadModelRequestEnvelope.class.name == readModel.constructor.name)
+        .filter((readModel) => filterReadModel(readModel, newReadModelRequestEnvelope.filters))
     )
   }
 }
 
-function filterReadModel(readModel: Record<string, any>, filters?: Record<string, ReadModelPropertyFilter>): boolean {
+function filterReadModel<TReadModel extends ReadModelInterface>(
+  readModel: TReadModel,
+  filters?: ReadModelRequestProperties<TReadModel>
+): boolean {
   if (!filters) {
     return true
   }
   for (const filteredProp in filters) {
     const readModelPropValue = readModel[filteredProp]
-    return filterByOperation(filters[filteredProp], readModelPropValue)
+    return filterByOperation<TReadModel>(filters[filteredProp], readModelPropValue)
   }
   return true
 }
 
-function filterByOperation(filter: ReadModelPropertyFilter, readModelPropValue: any): boolean {
+function filterByOperation<TReadModel extends ReadModelInterface>(
+  filter: FilterFor<TReadModel>,
+  readModelPropValue: any
+): boolean {
   for (const [operation, value] of Object.entries(filter as Operation<any>)) {
     switch (operation) {
-      case '=':
+      case 'eq':
         if (readModelPropValue !== value) return false
         break
-      case '!=':
+      case 'ne':
         if (readModelPropValue === value) return false
         break
-      case '<':
+      case 'lt':
         if (readModelPropValue >= value) return false
         break
-      case '>':
+      case 'gt':
         if (readModelPropValue <= value) return false
         break
-      case '>=':
+      case 'gte':
         if (readModelPropValue < value) return false
         break
-      case '<=':
+      case 'lte':
         if (readModelPropValue > value) return false
         break
       case 'in':
@@ -61,12 +84,15 @@ function filterByOperation(filter: ReadModelPropertyFilter, readModelPropValue: 
       case 'contains':
         if (!contains(readModelPropValue, value)) return false
         break
-      case 'not-contains':
-        if (contains(readModelPropValue, value)) return false
-        break
-      case 'begins-with':
+      case 'beginsWith':
         if (!beginWith(readModelPropValue, value as string)) return false
         break
+      case 'includes':
+        return includes(readModelPropValue, value)
+      default:
+        if (typeof value === 'object') {
+          return filterByOperation(value, readModelPropValue[operation])
+        }
     }
   }
   return true
@@ -84,4 +110,10 @@ function beginWith(readModelPropValue: any, element: string): boolean {
     return readModelPropValue.startsWith(element)
   }
   return false
+}
+
+function includes(readModelPropValue: any, element: any): boolean {
+  if (!Array.isArray(readModelPropValue)) return false
+  if (readModelPropValue.includes(element)) return true
+  return readModelPropValue.some((prop: any) => Object.keys(prop).some((key) => prop[key] === element[key]))
 }

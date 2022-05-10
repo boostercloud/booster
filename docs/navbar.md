@@ -1,0 +1,4 @@
+- [Homepage](https://booster.cloud)
+- [GitHub](https://github.com/boostercloud/booster)
+- [Learn more](https://www.booster.cloud/learn-more)
+- [Discord](https://discord.gg/bDY8MKx)

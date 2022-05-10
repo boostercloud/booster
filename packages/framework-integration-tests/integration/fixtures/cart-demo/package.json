@@ -21,10 +21,12 @@
     "typescript": "whatever",
     "ts-node": "whatever",
     "@types/node": "whatever",
-    "@boostercloud/framework-provider-aws-infrastructure": "whatever"
+    "@boostercloud/framework-provider-aws-infrastructure": "whatever",
+    "ttypescript": "whatever",
+    "metadata-booster": "whatever"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=14.0.0"
   },
   "homepage": "homepage_placeholder",
   "license": "license_placeholder",
@@ -33,10 +35,9 @@
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "compile": "npx tsc -b tsconfig.json",
-    "deploy": "boost deploy",
-    "clean": "npx rimraf ./dist tsconfig.tsbuildinfo",
-    "test": "npx nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+    "compile": "ttsc -b tsconfig.json",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "test": "AWS_SDK_LOAD_CONFIG=true BOOSTER_ENV=test nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
   },
   "types": "lib/index.d.ts"
 }

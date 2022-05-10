@@ -1,6 +1,11 @@
 import { createStubInstance, fake, SinonStub, SinonStubbedInstance, replace, stub } from 'sinon'
 import { EventRegistry } from '../../src/services'
-import { readEntityEventsSince, readEntityLatestSnapshot, storeEvents } from '../../src/library/events-adapter'
+import {
+  readEntityEventsSince,
+  readEntityLatestSnapshot,
+  storeEvents,
+  rawEventsToEnvelopes,
+} from '../../src/library/events-adapter'
 import { UserApp, EventEnvelope, UUID, BoosterConfig, Logger } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 import { createMockEventEnvelop, createMockSnapshot } from '../helpers/event-helper'
@@ -36,6 +41,7 @@ describe('events-adapter', () => {
 
     mockLogger = {
       info: fake(),
+      warn: fake(),
       error: fake(),
       debug: loggerDebugStub,
     }
@@ -47,6 +53,23 @@ describe('events-adapter', () => {
     replace(mockEventRegistry, 'store', storeStub as any)
     replace(mockEventRegistry, 'query', queryStub as any)
     replace(mockEventRegistry, 'queryLatest', queryLatestStub as any)
+  })
+
+  describe('rawEventsToEnvelopes', () => {
+    it('should return an empty array of envelopes', async () => {
+      const results = rawEventsToEnvelopes([])
+      const expected: EventEnvelope[] = []
+      expect(results).to.deep.equal(expected)
+    })
+
+    it('should return an array of envelopes', async () => {
+      const value1: EventEnvelope = createMockEventEnvelop()
+      const value2: EventEnvelope = createMockEventEnvelop()
+      const rawEvents: unknown[] = [value1 as unknown, value2 as unknown]
+      const results = rawEventsToEnvelopes(rawEvents)
+      const expected: EventEnvelope[] = [value1, value2]
+      expect(results).to.deep.equal(expected)
+    })
   })
 
   describe('readEntityEventsSince', () => {
@@ -68,8 +91,10 @@ describe('events-adapter', () => {
         mockEntityTypeName,
         mockEntityID
       )
+      const expectedLogMessage = `[EventsAdapter#readEntityEventsSince] Loaded events for entity ${mockEntityTypeName} with ID ${mockEntityID} with result:`
 
       expect(result).to.be.deep.equal([mockEventEnvelop])
+      expect(mockLogger.debug).to.be.calledWith(expectedLogMessage, [mockEventEnvelop])
     })
 
     context('date provided', () => {
@@ -93,9 +118,15 @@ describe('events-adapter', () => {
           createdAt: {
             $gt: dateStr,
           },
+          kind: 'event',
           entityID: mockEntityID,
           entityTypeName: mockEntityTypeName,
         })
+      })
+
+      it('should call logger with message', async () => {
+        const expectedLogMessage = `[EventsAdapter#readEntityEventsSince] Loaded events for entity ${mockEntityTypeName} with ID ${mockEntityID} with result:`
+        expect(mockLogger.debug).to.be.calledWith(expectedLogMessage, [mockEventEnvelop])
       })
     })
 
@@ -109,9 +140,15 @@ describe('events-adapter', () => {
           createdAt: {
             $gt: new Date(0).toISOString(),
           },
+          kind: 'event',
           entityID: mockEntityID,
           entityTypeName: mockEntityTypeName,
         })
+      })
+
+      it('should call logger with message', async () => {
+        const expectedLogMessage = `[EventsAdapter#readEntityEventsSince] Loaded events for entity ${mockEntityTypeName} with ID ${mockEntityID} with result:`
+        expect(mockLogger.debug).to.be.calledWith(expectedLogMessage, [mockEventEnvelop])
       })
     })
   })
@@ -166,7 +203,7 @@ describe('events-adapter', () => {
 
     context('without snapshot', () => {
       beforeEach(async () => {
-        queryLatestStub.resolves(undefined)
+        queryLatestStub.resolves(null)
       })
 
       it('should log expected message', async () => {

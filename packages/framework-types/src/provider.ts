@@ -1,22 +1,25 @@
-import {
-  EventEnvelope,
-  GraphQLRequestEnvelope,
-  SubscriptionEnvelope,
-  UserEnvelope,
-  ReadModelEnvelope,
-  ConnectionDataEnvelope,
-  GraphQLRequestEnvelopeError,
-  ScheduledCommandEnvelope,
-} from './envelope'
+import { ReadModelInterface, SequenceKey, UUID } from './concepts'
 import { BoosterConfig } from './config'
+import {
+  ConnectionDataEnvelope,
+  EventEnvelope,
+  EventSearchParameters,
+  EventSearchResponse,
+  GraphQLRequestEnvelope,
+  GraphQLRequestEnvelopeError,
+  ReadModelEnvelope,
+  ReadModelListResult,
+  ScheduledCommandEnvelope,
+  SubscriptionEnvelope,
+} from './envelope'
 import { Logger } from './logger'
-import { ReadModelInterface, UUID } from './concepts'
-import { FilterFor } from './searcher'
+import { FilterFor, SortFor } from './searcher'
+import { ReadOnlyNonEmptyArray } from './typelevel'
+import { RocketDescriptor } from './rocket-descriptor'
 
 export interface ProviderLibrary {
   events: ProviderEventsLibrary
   readModels: ProviderReadModelsLibrary
-  auth: ProviderAuthLibrary
   graphQL: ProviderGraphQLLibrary
   api: ProviderAPIHandling
   connections: ProviderConnectionsLibrary
@@ -39,20 +42,46 @@ export interface ProviderEventsLibrary {
     entityTypeName: string,
     entityID: UUID
   ): Promise<EventEnvelope | null>
+  search(config: BoosterConfig, logger: Logger, parameters: EventSearchParameters): Promise<Array<EventSearchResponse>>
   /** Streams an event to the corresponding event handler */
   store(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig, logger: Logger): Promise<void>
 }
 export interface ProviderReadModelsLibrary {
   rawToEnvelopes(config: BoosterConfig, logger: Logger, rawEvents: unknown): Promise<Array<ReadModelEnvelope>>
-  fetch(config: BoosterConfig, logger: Logger, readModelName: string, readModelID: UUID): Promise<ReadModelInterface>
+  fetch(
+    config: BoosterConfig,
+    logger: Logger,
+    readModelName: string,
+    readModelID: UUID,
+    sequenceKey?: SequenceKey
+  ): Promise<ReadOnlyNonEmptyArray<ReadModelInterface>>
   search<TReadModel extends ReadModelInterface>(
     config: BoosterConfig,
     logger: Logger,
     entityTypeName: string,
-    filters: FilterFor<unknown>
-  ): Promise<Array<TReadModel>>
-  store(config: BoosterConfig, logger: Logger, readModelName: string, readModel: ReadModelInterface): Promise<unknown>
-  delete(config: BoosterConfig, logger: Logger, readModelName: string, readModel: ReadModelInterface): Promise<any>
+    filters: FilterFor<unknown>,
+    sortBy?: SortFor<unknown>,
+    limit?: number,
+    afterCursor?: unknown,
+    paginatedVersion?: boolean
+  ): Promise<Array<TReadModel> | ReadModelListResult<TReadModel>>
+  /**
+   * If "expectedCurrentVersion" is provided, the underlying provider must throw the error OptimisticConcurrencyUnexpectedVersionError
+   * if the current stored read model contains a version that's different from the provided one
+   */
+  store(
+    config: BoosterConfig,
+    logger: Logger,
+    readModelName: string,
+    readModel: ReadModelInterface,
+    expectedCurrentVersion?: number
+  ): Promise<unknown>
+  delete(
+    config: BoosterConfig,
+    logger: Logger,
+    readModelName: string,
+    readModel: ReadModelInterface | undefined
+  ): Promise<any>
   subscribe(config: BoosterConfig, logger: Logger, subscriptionEnvelope: SubscriptionEnvelope): Promise<void>
   fetchSubscriptions(
     config: BoosterConfig,
@@ -79,13 +108,6 @@ export interface ProviderConnectionsLibrary {
   sendMessage(config: BoosterConfig, connectionID: string, data: unknown): Promise<void>
 }
 
-export interface ProviderAuthLibrary {
-  rawToEnvelope(rawMessage: unknown): UserEnvelope
-  fromAuthToken(token: string): Promise<UserEnvelope | undefined>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleSignUpResult(config: BoosterConfig, request: any, userEnvelope: UserEnvelope): any
-}
-
 export interface ProviderAPIHandling {
   requestSucceeded(body?: unknown): Promise<unknown>
   requestFailed(error: Error): Promise<unknown>
@@ -95,8 +117,13 @@ export interface ProviderInfrastructure {
   deploy?: (configuration: BoosterConfig, logger: Logger) => Promise<void>
   nuke?: (configuration: BoosterConfig, logger: Logger) => Promise<void>
   start?: (configuration: BoosterConfig, port: number) => Promise<void>
+  synth?: (configuration: BoosterConfig, logger: Logger) => Promise<void>
 }
 
 export interface ScheduledCommandsLibrary {
   rawToEnvelope(rawMessage: unknown, logger: Logger): Promise<ScheduledCommandEnvelope>
+}
+
+export interface HasInfrastructure {
+  Infrastructure: (rockets?: RocketDescriptor[]) => ProviderInfrastructure
 }

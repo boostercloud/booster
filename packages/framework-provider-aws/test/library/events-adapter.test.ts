@@ -2,17 +2,17 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { expect } from '../expect'
 import * as Library from '../../src/library/events-adapter'
-import { restore, fake, match } from 'sinon'
+import { restore, fake, match, createStubInstance } from 'sinon'
 import { EventEnvelope, BoosterConfig, UUID, Logger } from '@boostercloud/framework-types'
 import { DynamoDBStreamEvent } from 'aws-lambda'
-import { createStubInstance } from 'sinon'
 import { DynamoDB } from 'aws-sdk'
 import { eventsStoreAttributes } from '../../src'
-import { partitionKeyForEvent } from '../../src/library/partition-keys'
+import { partitionKeyForEvent, partitionKeyForIndexByEntity } from '../../src/library/keys-helper'
 import { DocumentClient, Converter } from 'aws-sdk/clients/dynamodb'
 
 const fakeLogger: Logger = {
   info: fake(),
+  warn: fake(),
   error: fake(),
   debug: fake(),
 }
@@ -36,7 +36,11 @@ describe('the events-adapter', () => {
   describe('the `readEntityEventsSince` method', () => {
     it('queries the events table to find all events related to a specific entity', async () => {
       const dynamoDB = createStubInstance(DynamoDB.DocumentClient)
-      dynamoDB.query = fake.returns({ promise: fake.resolves('') }) as any
+      dynamoDB.query = fake.returns({
+        promise: fake.resolves({
+          Items: [],
+        }),
+      }) as any
       const config = new BoosterConfig('test')
       config.appName = 'nuke-button'
 
@@ -86,7 +90,6 @@ describe('the events-adapter', () => {
       const config = new BoosterConfig('test')
       config.appName = 'test-app'
       const requestID = 'request-id'
-      const streamName = config.resourceNames.eventsStore
       const events = [
         {
           entityID(): UUID {
@@ -100,35 +103,53 @@ describe('the events-adapter', () => {
         },
       ]
 
-      const fakeBatchWrite = fake.returns({
+      const fakePut = fake.returns({
         promise: fake.resolves(''),
       })
-      const fakeDynamo: DocumentClient = { batchWrite: fakeBatchWrite } as any
+      const fakeDynamo: DocumentClient = { put: fakePut } as any
 
-      const eventEnvelopes = events.map(
-        (e): EventEnvelope => {
-          return {
-            version: 1,
-            kind: 'event',
-            requestID,
-            entityID: e.entityID(),
-            entityTypeName: 'fake-entity-name',
-            typeName: 'fake-type-name',
-            value: {
-              entityID: e.entityID,
-            },
-            createdAt: new Date().toISOString(),
-          }
+      const eventEnvelopes = events.map((e): EventEnvelope => {
+        return {
+          version: 1,
+          kind: 'event',
+          requestID,
+          entityID: e.entityID(),
+          entityTypeName: 'fake-entity-name',
+          typeName: 'fake-type-name',
+          value: {
+            entityID: e.entityID,
+          },
+          createdAt: new Date().toISOString(),
         }
-      )
+      })
 
       await Library.storeEvents(fakeDynamo, eventEnvelopes, config, fakeLogger)
 
-      expect(fakeBatchWrite).to.be.calledWith(
-        match({
-          RequestItems: match.has(streamName, match.has('length', 2)),
+      expect(fakePut).to.be.calledTwice
+      for (const eventEnvelope of eventEnvelopes) {
+        const partitionKey = partitionKeyForEvent(
+          eventEnvelope.entityTypeName,
+          eventEnvelope.entityID,
+          eventEnvelope.kind
+        )
+        expect(fakePut).to.be.calledWithExactly({
+          TableName: config.resourceNames.eventsStore,
+          ConditionExpression: `${eventsStoreAttributes.partitionKey} <> :partitionKey AND ${eventsStoreAttributes.sortKey} <> :sortKey`,
+          ExpressionAttributeValues: {
+            ':partitionKey': partitionKey,
+            ':sortKey': match.string,
+          },
+          Item: {
+            ...eventEnvelope,
+            [eventsStoreAttributes.partitionKey]: partitionKey,
+            [eventsStoreAttributes.sortKey]: match.string,
+            [eventsStoreAttributes.indexByEntity.partitionKey]: partitionKeyForIndexByEntity(
+              eventEnvelope.entityTypeName,
+              eventEnvelope.kind
+            ),
+          },
         })
-      )
+      }
     })
   })
 })

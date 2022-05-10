@@ -13,4 +13,8 @@ export class StockMoved {
   public entityID(): UUID {
     return this.productID
   }
+
+  public getOrigin(): string {
+    return this.origin
+  }
 }

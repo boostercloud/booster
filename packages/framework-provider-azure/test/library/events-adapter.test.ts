@@ -40,6 +40,7 @@ describe('Events adapter', () => {
     mockConfig = new BoosterConfig('test')
     mockLogger = {
       info: fake(),
+      warn: fake(),
       error: fake(),
       debug: fake(),
     }
@@ -85,7 +86,7 @@ describe('Events adapter', () => {
         match({
           query:
             `SELECT * FROM c WHERE c["${eventsStoreAttributes.partitionKey}"] = @partitionKey ` +
-            `AND c["${eventsStoreAttributes.sortKey}"] > @fromTime ORDER BY c["${eventsStoreAttributes.sortKey}"] DESC`,
+            `AND c["${eventsStoreAttributes.sortKey}"] > @fromTime ORDER BY c["${eventsStoreAttributes.sortKey}"] ASC`,
           parameters: [
             {
               name: '@partitionKey',

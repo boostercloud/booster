@@ -1,6 +1,5 @@
 import { Event } from '@boostercloud/framework-core'
 import { UUID } from '@boostercloud/framework-types'
-import { SKU } from '../common/sku'
 import { Money } from '../common/money'
 import { Picture } from '../common/picture'
 
@@ -14,7 +13,7 @@ export enum ProductUpdateReason {
 export class ProductUpdated {
   public constructor(
     readonly id: UUID,
-    readonly sku: SKU,
+    readonly sku: string,
     readonly name: string,
     readonly description: string,
     readonly price: Money,

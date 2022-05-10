@@ -15,7 +15,6 @@ const start = rewire('../../src/commands/start')
 const runTasks = start.__get__('runTasks')
 
 describe('start', () => {
-
   beforeEach(() => {
     delete process.env.BOOSTER_ENV
   })
@@ -56,10 +55,10 @@ describe('start', () => {
   describe('start class', () => {
     beforeEach(() => {
       const config = new BoosterConfig('fake_environment')
-      replace(configService,'compileProjectAndLoadConfig', fake.resolves(config))
-      replace(providerService,'startProvider', fake.resolves({}))
-      replace(projectChecker,'checkCurrentDirBoosterVersion', fake.resolves({}))
-      replace(oraLogger,'fail', fake.resolves({}))
+      replace(configService, 'compileProjectAndLoadConfig', fake.resolves(config))
+      replace(providerService, 'startProvider', fake.resolves({}))
+      replace(projectChecker, 'checkCurrentDirBoosterVersion', fake.resolves({}))
+      replace(oraLogger, 'fail', fake.resolves({}))
       replace(oraLogger, 'info', fake.resolves({}))
       replace(oraLogger, 'start', fake.resolves({}))
       replace(oraLogger, 'succeed', fake.resolves({}))
@@ -109,26 +108,25 @@ describe('start', () => {
     })
 
     describe('inside a booster project', () => {
-    
       it('entering correct environment', async () => {
-        await new Start.default(['-e','fake_environment'], {} as IConfig).run()
-  
+        await new Start.default(['-e', 'fake_environment'], {} as IConfig).run()
+
         expect(configService.compileProjectAndLoadConfig).to.have.been.called
         expect(providerService.startProvider).to.have.been.called
         expect(oraLogger.start).to.have.been.calledWithMatch(/Starting debug server on port/)
       })
 
       it('entering correct environment and --port flag', async () => {
-        await new Start.default(['-e','fake_environment','--port','5000'], {} as IConfig).run()
-  
+        await new Start.default(['-e', 'fake_environment', '--port', '5000'], {} as IConfig).run()
+
         expect(configService.compileProjectAndLoadConfig).to.have.been.called
         expect(providerService.startProvider).to.have.been.called
         expect(oraLogger.start).to.have.been.calledWithMatch(/Starting debug server on port 5000/)
       })
 
       it('entering correct environment and -p flag', async () => {
-        await new Start.default(['-e','fake_environment','-p','5000'], {} as IConfig).run()
-  
+        await new Start.default(['-e', 'fake_environment', '-p', '5000'], {} as IConfig).run()
+
         expect(configService.compileProjectAndLoadConfig).to.have.been.called
         expect(providerService.startProvider).to.have.been.called
         expect(oraLogger.start).to.have.been.calledWithMatch(/Starting debug server on port 5000/)
@@ -138,8 +136,8 @@ describe('start', () => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Start.default(['-e','fake_environment','--nonexistingoption'], {} as IConfig).run()
-        } catch(e) {
+          await new Start.default(['-e', 'fake_environment', '--nonexistingoption'], {} as IConfig).run()
+        } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -154,8 +152,8 @@ describe('start', () => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Start.default(['-e','fake_environment','--port'], {} as IConfig).run()
-        } catch(e) {
+          await new Start.default(['-e', 'fake_environment', '--port'], {} as IConfig).run()
+        } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -170,8 +168,8 @@ describe('start', () => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Start.default(['-e','fake_environment','-p'], {} as IConfig).run()
-        } catch(e) {
+          await new Start.default(['-e', 'fake_environment', '-p'], {} as IConfig).run()
+        } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -183,8 +181,8 @@ describe('start', () => {
       })
 
       it('without defining environment and -p', async () => {
-        await new Start.default(['-p','5000'], {} as IConfig).run()
-  
+        await new Start.default(['-p', '5000'], {} as IConfig).run()
+
         expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
         expect(providerService.startProvider).to.have.not.been.called
         expect(oraLogger.fail).to.have.been.calledWithMatch(/No environment set/)

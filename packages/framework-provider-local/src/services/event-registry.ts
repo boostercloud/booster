@@ -8,22 +8,30 @@ export class EventRegistry {
     this.events.loadDatabase()
   }
 
-  public async query(query: object): Promise<Array<EventEnvelope>> {
-    const queryPromise = new Promise((resolve, reject) =>
-      this.events.find(query).exec((err, docs) => {
+  getCursor(query: object, createdAt = 1) {
+    return this.events.find(query).sort({ createdAt: createdAt })
+  }
+
+  public async query(query: object, createdAt = 1, limit?: number): Promise<Array<EventEnvelope>> {
+    const queryPromise = new Promise((resolve, reject) => {
+      const cursor = this.getCursor(query, createdAt)
+      if (limit) {
+        cursor.limit(Number(limit))
+      }
+      cursor.exec((err, docs) => {
         if (err) reject(err)
         else resolve(docs)
       })
-    )
+    })
 
     return (await queryPromise) as Array<EventEnvelope>
   }
 
-  public async queryLatest(query: object): Promise<EventEnvelope> {
+  public async queryLatest(query: object): Promise<EventEnvelope | null> {
     const queryPromise = new Promise((resolve, reject) =>
       this.events
         .find(query)
-        .sort({ createdAt: -1 }) // Sort in descending order
+        .sort({ createdAt: -1 }) // Sort in descending order (newer timestamps first)
         .exec((err, docs) => {
           if (err) reject(err)
           else resolve(docs)
@@ -31,7 +39,9 @@ export class EventRegistry {
     )
 
     const events = (await queryPromise) as Array<EventEnvelope>
-
+    if (events.length <= 0) {
+      return null
+    }
     return events[0]
   }
 

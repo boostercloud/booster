@@ -1,8 +1,28 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/indent */
-import { UUID } from './concepts'
-import { Class } from './typelevel'
+import { SequenceKey, UUID } from './concepts'
+import { ReadModelListResult } from './envelope'
+import { Class, ReadOnlyNonEmptyArray } from './typelevel'
 
-export type SearcherFunction<TObject> = (className: string, filters: FilterFor<TObject>) => Promise<Array<any>>
+export type SearcherFunction<TObject> = (
+  className: string,
+  filters: FilterFor<TObject>,
+  sortBy: SortFor<TObject>,
+  limit?: number,
+  afterCursor?: any,
+  paginatedVersion?: boolean
+) => Promise<Array<TObject> | ReadModelListResult<TObject>>
+
+export type FinderByKeyFunction<TObject> = (
+  className: string,
+  id: UUID,
+  sequenceKey?: SequenceKey
+) => Promise<TObject | ReadOnlyNonEmptyArray<TObject>>
+
+export type SequenceFinderByKeyFunction<TObject> = (
+  className: string,
+  id: UUID,
+  sequenceKey?: SequenceKey
+) => Promise<TObject>
 
 /**
  * This class represents a search intended to be run by any search provider. They way you use it
@@ -11,118 +31,100 @@ export type SearcherFunction<TObject> = (className: string, filters: FilterFor<T
  */
 export class Searcher<TObject> {
   // private offset?: number
-  // private limit?: number
+  private _limit?: number
+  private _afterCursor?: any
   private filters: FilterFor<TObject> = {}
-  /** @deprecated */
-  readonly filtersOld: Record<string, FilterOld<any>> = {}
+  private _sortByList: SortFor<TObject> = {}
+  private _paginatedVersion = false
 
   /**
    * @param objectClass The class of the object you want to run the search for.
    * @param searcherFunction The function that will receive all the filters and run the actual search
+   * @param finderByKeyFunction Function that performs a find by Key operation (Either simple or compound keys)
    */
   public constructor(
     private readonly objectClass: Class<TObject>,
-    private readonly searcherFunction: SearcherFunction<TObject>
+    private readonly searcherFunction: SearcherFunction<TObject>,
+    private readonly finderByKeyFunction: FinderByKeyFunction<TObject>
   ) {}
-
-  public filter(filters: FilterFor<TObject>): this {
-    this.filters = filters
-    return this
-  }
 
   /**
    * Adds a filter for the search. For example: If you want to search for people whose age is greater than 30
    * and their height is between 1.80m and 2.00m, you would do:
    * ```
-   * searcher.filter('age', 'gt', 30)
-   *         .filter('height', 'between', 1.8, 2)
-   *         .search()
+   * searcher.filter({
+   *  age: { gt: 30 },
+   *  height: { gte: 1.8, lte: 2 }
+   * }).search()
    * ```
-   * @param property The property the filter will act upon
-   * @param operation The filter operation.
-   * @param values The values for the filter. Depending on the operation, you can specify here one or many values
-   * @deprecated Use "filter" instead
+   * @param filters An object with the property filters
    */
-  public filterOld<TPropName extends keyof TObject, TPropType extends TObject[TPropName]>(
-    property: TPropName,
-    operation: OperationOld<TPropType>,
-    ...values: Array<TPropType>
-  ): this {
-    this.filtersOld[property as string] = {
-      operation,
-      values,
-    }
+  public filter(filters: FilterFor<TObject>): this {
+    this.filters = filters
     return this
   }
 
+  public sortBy(sortBy?: SortFor<TObject>): this {
+    if (sortBy) this._sortByList = sortBy
+    return this
+  }
+
+  public limit(limit?: number): this {
+    if (limit) this._limit = limit
+    return this
+  }
+
+  public afterCursor(afterCursor?: unknown): this {
+    if (afterCursor) this._afterCursor = afterCursor
+    return this
+  }
+
+  public paginatedVersion(paginatedVersion?: boolean): this {
+    if (paginatedVersion) this._paginatedVersion = paginatedVersion
+    return this
+  }
+
+  public async findById(id: UUID, sequenceKey?: SequenceKey): Promise<TObject | ReadOnlyNonEmptyArray<TObject>> {
+    return this.finderByKeyFunction(this.objectClass.name, id, sequenceKey)
+  }
+
   public async searchOne(): Promise<TObject> {
-    // Optimize if there is only an ID filter with one value
-    // this.provider.fetchEntitySnapshot(this.entityClass.name, id)
-    return (await this.search())[0]
+    // TODO: If there is only an ID filter with one value, this should call to `findById`
+    const searchResult = await this.searcherFunction(
+      this.objectClass.name,
+      this.filters,
+      this._sortByList,
+      1, // Forces limit 1
+      this._afterCursor,
+      false // It doesn't make sense to paginate a single result, as pagination metadata would be discarded
+    )
+    return (searchResult as TObject[])[0]
   }
 
   /**
    * Do the actual search by sending all the configured filters to the provided search function
    */
-  public async search(): Promise<Array<TObject>> {
-    const searchResult = await this.searcherFunction(this.objectClass.name, this.filters)
-    return searchResult as Array<TObject>
+  public async search(): Promise<Array<TObject> | ReadModelListResult<TObject>> {
+    return this.searcherFunction(
+      this.objectClass.name,
+      this.filters,
+      this._sortByList,
+      this._limit,
+      this._afterCursor,
+      this._paginatedVersion
+    )
   }
 }
 
-// ---------------- DEPRECATED ----------------------
-export interface FilterOld<TType> {
-  operation: OperationOld<TType>
-  values: Array<TType>
+export type SortFor<TType> = {
+  [TProp in keyof TType]?: SortFor<TType[TProp]> | 'ASC' | 'DESC'
 }
-
-export enum NumberOperations {
-  '=' = 'eq',
-  '!=' = 'not_eq',
-  '<' = 'less',
-  '>' = 'greater',
-  '<=' = 'less_eq',
-  '>=' = 'greater_eq',
-  'in' = 'in',
-  'between' = 'between',
-}
-
-export enum StringOperations {
-  '=' = 'eq',
-  '!=' = 'notEq',
-  '<' = 'less',
-  '>' = 'greater',
-  '<=' = 'less_eq',
-  '>=' = 'greater_eq',
-  'in' = 'in',
-  'between' = 'between',
-  'contains' = 'contains',
-  'not-contains' = 'not_contains',
-  'begins-with' = 'begins_with',
-}
-
-export enum BooleanOperations {
-  '=' = 'equal',
-  '!=' = 'not_equal',
-}
-
-// eslint-disable-next-line prettier/prettier
-type OperationOld<TType> = TType extends number
-  ? EnumToUnion<typeof NumberOperations>
-  : TType extends string
-  ? EnumToUnion<typeof StringOperations>
-  : TType extends boolean
-  ? EnumToUnion<typeof BooleanOperations>
-  : never
-
-type EnumToUnion<TEnum> = keyof TEnum
-
-// ----------------------------------------------------------------------------------------------------
 
 export type FilterFor<TType> = {
   [TProp in keyof TType]?: Operation<TType[TProp]>
 } &
-  FilterCombinators<TType>
+  FilterCombinators<TType> &
+  IsDefinedOperator
 
 interface FilterCombinators<TType> {
   and?: Array<FilterFor<TType>>
@@ -142,10 +144,15 @@ export type Operation<TType> = TType extends Array<infer TElementType>
   ? FilterFor<TType>
   : never
 
-interface BooleanOperators<TType> {
-  eq?: TType
-  ne?: TType
+interface IsDefinedOperator {
+  isDefined?: boolean
 }
+
+interface BooleanOperators<TType> extends IsDefinedOperator {
+  eq?: TType | null
+  ne?: TType | null
+}
+
 interface ScalarOperators<TType> extends BooleanOperators<TType> {
   gt?: TType
   gte?: TType
@@ -161,4 +168,5 @@ interface StringOperators<TType> extends ScalarOperators<TType> {
 
 interface ArrayOperators<TElementType> {
   includes?: TElementType
+  isDefined?: boolean
 }

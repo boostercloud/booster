@@ -25,11 +25,11 @@ describe('the nuke module', () => {
       )
       replace(CdkToolkit.prototype, 'destroy', fake())
 
-      const config = ({ hello: 'world' } as unknown) as BoosterConfig
-      const logger = ({
+      const config = { hello: 'world' } as unknown as BoosterConfig
+      const logger = {
         info: fake(),
         error: console.error,
-      } as unknown) as Logger
+      } as unknown as Logger
 
       await nukeModule.nuke(config, logger)
 
@@ -46,10 +46,10 @@ describe('the nuke module', () => {
       const fakeStackServiceConfiguration = { sdk: 'here goes the SDK', appStacks: '', cdkToolkit: '' }
       replace(StackServiceConfiguration, 'getStackServiceConfiguration', fake.resolves(fakeStackServiceConfiguration))
 
-      const config = ({ hello: 'world' } as unknown) as BoosterConfig
-      const logger = ({
+      const config = { hello: 'world' } as unknown as BoosterConfig
+      const logger = {
         info: fake(),
-      } as unknown) as Logger
+      } as unknown as Logger
 
       await nukeModule.nuke(config, logger)
 
@@ -68,10 +68,10 @@ describe('the nuke module', () => {
       }
       replace(StackServiceConfiguration, 'getStackServiceConfiguration', fake.resolves(fakeStackServiceConfiguration))
 
-      const config = ({ hello: 'world' } as unknown) as BoosterConfig
-      const logger = ({
+      const config = { hello: 'world' } as unknown as BoosterConfig
+      const logger = {
         info: fake(),
-      } as unknown) as Logger
+      } as unknown as Logger
 
       await nukeModule.nuke(config, logger)
 
@@ -91,10 +91,10 @@ describe('the nuke module', () => {
       }
       replace(StackServiceConfiguration, 'getStackServiceConfiguration', fake.resolves(fakeStackServiceConfiguration))
 
-      const config = ({ hello: 'world' } as unknown) as BoosterConfig
-      const logger = ({
+      const config = { hello: 'world' } as unknown as BoosterConfig
+      const logger = {
         info: fake(),
-      } as unknown) as Logger
+      } as unknown as Logger
 
       await nukeModule.nuke(config, logger)
 
@@ -111,11 +111,11 @@ describe('the nuke module', () => {
       replace(StackServiceConfiguration, 'getStackServiceConfiguration', fake.rejects(error))
       replace(CdkToolkit.prototype, 'destroy', fake())
 
-      const config = ({ hello: 'world' } as unknown) as BoosterConfig
-      const logger = ({
+      const config = { hello: 'world' } as unknown as BoosterConfig
+      const logger = {
         info: fake(),
         error: console.error,
-      } as unknown) as Logger
+      } as unknown as Logger
 
       await expect(nukeModule.nuke(config, logger)).to.be.eventually.rejectedWith(error)
 
@@ -135,11 +135,11 @@ describe('the nuke module', () => {
       replace(StackServiceConfiguration, 'getStackServiceConfiguration', fake.resolves(fakeStackServiceConfiguration))
       replace(CdkToolkit.prototype, 'destroy', fake())
 
-      const config = ({ hello: 'world' } as unknown) as BoosterConfig
-      const logger = ({
+      const config = { hello: 'world' } as unknown as BoosterConfig
+      const logger = {
         info: fake(),
         error: console.error,
-      } as unknown) as Logger
+      } as unknown as Logger
 
       await expect(nukeModule.nuke(config, logger)).to.be.eventually.rejectedWith(error)
 
@@ -159,11 +159,11 @@ describe('the nuke module', () => {
       replace(StackServiceConfiguration, 'getStackServiceConfiguration', fake.resolves(fakeStackServiceConfiguration))
       replace(CdkToolkit.prototype, 'destroy', fake())
 
-      const config = ({ hello: 'world' } as unknown) as BoosterConfig
-      const logger = ({
+      const config = { hello: 'world' } as unknown as BoosterConfig
+      const logger = {
         info: fake(),
         error: console.error,
-      } as unknown) as Logger
+      } as unknown as Logger
 
       await expect(nukeModule.nuke(config, logger)).to.be.eventually.rejectedWith(error)
 
@@ -184,10 +184,10 @@ describe('the nuke module', () => {
         }
         replace(StackServiceConfiguration, 'getStackServiceConfiguration', fake.resolves(fakeStackServiceConfiguration))
 
-        const config = ({ hello: 'world' } as unknown) as BoosterConfig
-        const logger = ({
+        const config = { hello: 'world' } as unknown as BoosterConfig
+        const logger = {
           info: fake(),
-        } as unknown) as Logger
+        } as unknown as Logger
 
         const fakeRockets = [
           {
@@ -212,10 +212,10 @@ describe('the nuke module', () => {
       const nukeToolkit = nukeModule.__get__('nukeToolkit')
       replace(S3Tools, 'emptyS3Bucket', fake())
 
-      const config = ({ appName: 'test-app' } as unknown) as BoosterConfig
-      const logger = ({
+      const config = { appName: 'test-app' } as unknown as BoosterConfig
+      const logger = {
         info: fake(),
-      } as unknown) as Logger
+      } as unknown as Logger
 
       const fakeCloudformation = { deleteStack: fake.returns({ promise: fake.resolves(true) }) }
       const fakeSDK = {
@@ -231,10 +231,10 @@ describe('the nuke module', () => {
       const nukeToolkit = nukeModule.__get__('nukeToolkit')
       replace(S3Tools, 'emptyS3Bucket', fake())
 
-      const config = ({ appName: 'test-app' } as unknown) as BoosterConfig
-      const logger = ({
+      const config = { appName: 'test-app' } as unknown as BoosterConfig
+      const logger = {
         info: fake(),
-      } as unknown) as Logger
+      } as unknown as Logger
 
       const fakeCloudformation = { deleteStack: fake.returns({ promise: fake.resolves(true) }) }
       const fakeSDK = {
@@ -258,9 +258,9 @@ describe('the nuke module', () => {
       const fakeBuildRocketUtils = fake.returns(fakeRocketUtils)
       replace(rocketUtils, 'buildRocketUtils', fakeBuildRocketUtils)
 
-      const logger = ({
+      const logger = {
         info: fake(),
-      } as unknown) as Logger
+      } as unknown as Logger
 
       const fakeSDK = { fake: 'aws' }
 
@@ -282,20 +282,20 @@ describe('the nuke module', () => {
     it('destroys the application stack', async () => {
       const nukeApplication = nukeModule.__get__('nukeApplication')
 
-      const config = ({
+      const config = {
         appName: 'test-app',
         resourceNames: {
           applicationStack: 'stack-name',
         },
-      } as unknown) as BoosterConfig
+      } as unknown as BoosterConfig
 
       const cdkToolkit = {
         destroy: fake(),
       }
 
-      const logger = ({
+      const logger = {
         info: fake(),
-      } as unknown) as Logger
+      } as unknown as Logger
 
       await nukeApplication(logger, config, cdkToolkit)
 

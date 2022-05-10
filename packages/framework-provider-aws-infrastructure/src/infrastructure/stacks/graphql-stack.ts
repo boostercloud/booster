@@ -10,11 +10,10 @@ import { Cors } from '@aws-cdk/aws-apigateway/lib/cors'
 import { AttributeType, BillingMode, ProjectionType, Table } from '@aws-cdk/aws-dynamodb'
 import { connectionsStoreAttributes, subscriptionsStoreAttributes } from '@boostercloud/framework-provider-aws'
 import { DynamoEventSource } from '@aws-cdk/aws-lambda-event-sources'
-import { UserPool } from '@aws-cdk/aws-cognito'
 
 export interface GraphQLStackMembers {
   graphQLLambda: Function
-  subscriptionDispatcherLambda: Function
+  subscriptionNotifier: Function
   subscriptionsStore: Table
   connectionsStore: Table
 }
@@ -24,14 +23,13 @@ export class GraphQLStack {
     private readonly config: BoosterConfig,
     private readonly stack: Stack,
     private readonly apis: APIs,
-    private readonly readModelTables: Array<Table>,
-    private readonly userPool?: UserPool
+    private readonly readModelTables: Array<Table>
   ) {}
 
   public build(): GraphQLStackMembers {
     const graphQLLambda = this.buildLambda('graphql-handler', this.config.serveGraphQLHandler)
     const readModelsEventSources = this.buildEventSourcesForTables(this.readModelTables)
-    const subscriptionDispatcherLambda = this.buildLambda(
+    const subscriptionNotifier = this.buildLambda(
       'subscriptions-notifier',
       this.config.notifySubscribersHandler,
       readModelsEventSources
@@ -42,12 +40,12 @@ export class GraphQLStack {
     const subscriptionsStore = this.buildSubscriptionsTable()
     const connectionsStore = this.buildConnectionsTable()
 
-    return { graphQLLambda, subscriptionDispatcherLambda, subscriptionsStore, connectionsStore }
+    return { graphQLLambda, subscriptionNotifier, subscriptionsStore, connectionsStore }
   }
 
   private buildLambda(name: string, handler: string, eventSources?: Array<IEventSource>): Function {
     const lambda = new Function(this.stack, name, {
-      ...params.lambda(this.config, this.stack, this.apis, this.userPool),
+      ...params.lambda(this.config, this.stack, this.apis),
       functionName: `${this.config.resourceNames.applicationStack}-${name}`,
       handler: handler,
       code: Code.fromAsset(this.config.userProjectRootPath),

@@ -4,7 +4,6 @@ import { random, lorem, internet } from 'faker'
 import { expect } from './expect'
 import {
   BoosterConfig,
-  Logger,
   GraphQLRequestEnvelope,
   GraphQLRequestEnvelopeError,
   UserEnvelope,
@@ -20,8 +19,7 @@ import { GraphQLWebsocketHandler } from '../src/services/graphql/websocket-proto
 import { ExecutionResult } from 'graphql/execution/execute'
 import { GraphQLError } from 'graphql'
 import { BoosterTokenVerifier } from '../src/booster-token-verifier'
-
-const logger: Logger = console
+import { noopLogger as logger } from './helpers/logger-helper'
 
 describe('the `BoosterGraphQLDispatcher`', () => {
   afterEach(() => {
@@ -155,6 +153,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
             eventType: 'MESSAGE',
             value: {
               query: undefined,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } as any, // If not, the compiler does not allow us to provide an empty query
           })
           const dispatcher = new BoosterGraphQLDispatcher(config, logger)
@@ -258,7 +257,8 @@ describe('the `BoosterGraphQLDispatcher`', () => {
 
           const currentUser: UserEnvelope = {
             username: internet.email(),
-            role: random.word(),
+            roles: [random.word()],
+            claims: {},
           }
 
           const config = mockConfigForGraphQLEnvelope(graphQLEnvelope)

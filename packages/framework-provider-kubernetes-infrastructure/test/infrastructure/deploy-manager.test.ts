@@ -4,16 +4,22 @@ import { HelmManager } from '../../src/infrastructure/helm-manager'
 import { DaprManager } from '../../src/infrastructure/dapr-manager'
 import { DeployManager } from '../../src/infrastructure/deploy-manager'
 import { stub, restore, replace, fake } from 'sinon'
-import { BoosterConfig } from '@boostercloud/framework-types'
+import { BoosterConfig, Logger } from '@boostercloud/framework-types'
 import * as utils from '../../src/infrastructure/utils'
 import { CoreV1Api, KubeConfig, KubernetesObjectApi } from '@kubernetes/client-node'
 
 describe('User interaction during the deploy:', async () => {
-  const k8sManager = new K8sManagement()
+  const fakeLogger: Logger = {
+    info: fake(),
+    warn: fake(),
+    error: fake(),
+    debug: fake(),
+  }
+  const k8sManager = new K8sManagement(fakeLogger)
   const configuration = new BoosterConfig('production')
-  const helmManager = new HelmManager()
-  const daprManager = new DaprManager(configuration, k8sManager, helmManager)
-  const deployManager = new DeployManager(configuration, k8sManager, daprManager, helmManager)
+  const helmManager = new HelmManager(fakeLogger)
+  const daprManager = new DaprManager(fakeLogger, configuration, k8sManager, helmManager)
+  const deployManager = new DeployManager(fakeLogger, configuration, k8sManager, daprManager, helmManager)
 
   beforeEach(() => {
     replace(KubeConfig.prototype, 'makeApiClient', fake.returns(new CoreV1Api()))
@@ -40,6 +46,7 @@ describe('User interaction during the deploy:', async () => {
     stub(k8sManager, 'getPodFromNamespace').resolves(undefined)
     stub(helmManager, 'exec').resolves()
     stub(k8sManager, 'waitForPodToBeReady').resolves()
+    stub(daprManager, 'allowDaprToReadSecrets').resolves()
     await expect(deployManager.ensureDaprExists()).to.eventually.be.fulfilled
   })
 
@@ -144,7 +151,8 @@ describe('User interaction during the deploy:', async () => {
   })
 
   it('allows verifying that the upload code works', async () => {
-    stub(k8sManager, 'waitForServiceToBeReady').resolves()
+    stub(k8sManager, 'waitForServiceToBeReady').resolves({ ip: 'http://ip_mock.com' })
+    replace(utils, 'waitForIt', fake.resolves(200))
     replace(utils, 'uploadFile', fake.resolves({ statusCode: 200 }))
     replace(utils, 'createProjectZipFile', fake.resolves('path'))
     await expect(deployManager.uploadUserCode()).to.eventually.be.fulfilled

@@ -5,12 +5,14 @@ import { rawGraphQLRequestToEnvelope } from '../../src/library/graphql-adapter'
 import { expect } from '../expect'
 import { UUID } from '@boostercloud/framework-types'
 import { random } from 'faker'
+import { Request } from 'express'
 
 describe('Local provider graphql-adapter', () => {
   describe('rawGraphQLRequestToEnvelope', () => {
     let mockUuid: string
     let mockBody: any
-    let mockRequest: any
+    let mockRequest: Request
+    let mockUserToken: string
 
     let debugStub: SinonStub
     let generateStub: SinonStub
@@ -19,12 +21,16 @@ describe('Local provider graphql-adapter', () => {
 
     beforeEach(() => {
       mockUuid = random.uuid()
+      mockUserToken = random.uuid()
       mockBody = {
         query: '',
         variables: {},
       }
       mockRequest = mockReq()
       mockRequest.body = mockBody
+      mockRequest.headers = {
+        authorization: mockUserToken,
+      }
 
       debugStub = stub()
       generateStub = stub().returns(mockUuid)
@@ -53,16 +59,19 @@ describe('Local provider graphql-adapter', () => {
 
     it('should generate expected envelop', async () => {
       const result = await rawGraphQLRequestToEnvelope(mockRequest, logger)
-
       expect(result).to.be.deep.equal({
         requestID: mockUuid,
         eventType: 'MESSAGE',
         connectionID: undefined,
-        currentUser: {
-          username: 'test@test.com',
-          role: '',
-        },
+        token: mockUserToken,
         value: mockBody,
+        context: {
+          request: {
+            headers: mockRequest.headers,
+            body: mockRequest.body,
+          },
+          rawContext: mockRequest,
+        },
       })
     })
   })

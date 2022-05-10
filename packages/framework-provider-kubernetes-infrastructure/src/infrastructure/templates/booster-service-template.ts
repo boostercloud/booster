@@ -14,5 +14,5 @@ spec:
   - protocol: TCP
     port: 80
     targetPort: 3000
-  type: LoadBalancer`,
+  type: {{ serviceType }}`,
 }

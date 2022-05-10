@@ -1,20 +1,29 @@
+import { createInstance, createInstances } from '@boostercloud/framework-common-helpers'
 import {
   BoosterConfig,
-  Logger,
-  EntityInterface,
-  ReadModelInterface,
-  UUID,
   Class,
+  EntityInterface,
+  EventSearchParameters,
+  EventSearchResponse,
+  FilterFor,
+  FinderByKeyFunction,
+  Logger,
+  ReadModelInterface,
+  ReadOnlyNonEmptyArray,
   Searcher,
+  SearcherFunction,
+  SequenceKey,
+  SortFor,
+  UUID,
 } from '@boostercloud/framework-types'
-import { Importer } from './importer'
-import { buildLogger } from './booster-logger'
 import { BoosterEventDispatcher } from './booster-event-dispatcher'
-import { BoosterAuth } from './booster-auth'
-import { fetchEntitySnapshot } from './entity-snapshot-fetcher'
 import { BoosterGraphQLDispatcher } from './booster-graphql-dispatcher'
-import { BoosterSubscribersNotifier } from './booster-subscribers-notifier'
+import { getLogger } from './booster-logger'
 import { BoosterScheduledCommandDispatcher } from './booster-scheduled-command-dispatcher'
+import { BoosterSubscribersNotifier } from './booster-subscribers-notifier'
+import { Importer } from './importer'
+import { EventStore } from './services/event-store'
+import { BoosterRocketDispatcher } from './booster-rocket-dispatcher'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -26,12 +35,15 @@ import { BoosterScheduledCommandDispatcher } from './booster-scheduled-command-d
  */
 export class Booster {
   public static readonly configuredEnvironments: Set<string> = new Set<string>()
-  private static logger: Logger
   public static readonly config = new BoosterConfig(checkAndGetCurrentEnv())
   /**
    * Avoid creating instances of this class
    */
   private constructor() {}
+
+  public static get logger(): Logger {
+    return getLogger(this.config)
+  }
 
   public static configureCurrentEnv(configurator: (config: BoosterConfig) => void): void {
     configurator(this.config)
@@ -56,7 +68,6 @@ export class Booster {
   public static start(codeRootPath: string): void {
     const projectRootPath = codeRootPath.replace(new RegExp(this.config.codeRelativePath + '$'), '')
     this.config.userProjectRootPath = projectRootPath
-    this.logger = buildLogger(this.config.logLevel)
     Importer.importUserProjectFiles(codeRootPath)
     this.config.validate()
   }
@@ -69,15 +80,79 @@ export class Booster {
   public static readModel<TReadModel extends ReadModelInterface>(
     readModelClass: Class<TReadModel>
   ): Searcher<TReadModel> {
-    const searchFunction = this.config.provider.readModels.search.bind(null, this.config, this.logger)
-    return new Searcher(readModelClass, searchFunction)
+    const searchFunction: SearcherFunction<TReadModel> = async (
+      readModelName: string,
+      filters: FilterFor<unknown>,
+      sort?: SortFor<unknown>,
+      limit?: number,
+      afterCursor?: any,
+      paginatedVersion?: boolean
+    ) => {
+      const searchResult = await this.config.provider.readModels.search(
+        this.config,
+        this.logger,
+        readModelName,
+        filters,
+        sort,
+        limit,
+        afterCursor,
+        paginatedVersion
+      )
+
+      if (!Array.isArray(searchResult)) {
+        return {
+          ...searchResult,
+          items: createInstances(readModelClass, searchResult.items),
+        }
+      }
+      return createInstances(readModelClass, searchResult)
+    }
+
+    const finderByIdFunction: FinderByKeyFunction<TReadModel> = async (
+      readModelName: string,
+      id: UUID,
+      sequenceKey?: SequenceKey
+    ) => {
+      const readModels = await this.config.provider.readModels.fetch(
+        this.config,
+        this.logger,
+        readModelName,
+        id,
+        sequenceKey
+      )
+      if (sequenceKey) {
+        return readModels as ReadOnlyNonEmptyArray<TReadModel>
+      }
+      return readModels[0] as TReadModel
+    }
+    return new Searcher(readModelClass, searchFunction, finderByIdFunction)
+  }
+
+  public static async events(request: EventSearchParameters): Promise<Array<EventSearchResponse>> {
+    const events: Array<EventSearchResponse> = await this.config.provider.events.search(
+      this.config,
+      this.logger,
+      request
+    )
+    return events.map((event) => {
+      const eventMetadata = this.config.events[event.type]
+      event.value = createInstance(eventMetadata.class, event.value)
+      return event
+    })
   }
 
   /**
-   * Entry point to validate users upon sign up
+   * Fetches the last known version of an entity
+   * @param entityClass Name of the entity class
+   * @param entityID
    */
-  public static async checkSignUp(signUpRequest: unknown): Promise<unknown> {
-    return BoosterAuth.checkSignUp(signUpRequest, this.config, this.logger)
+  public static async entity<TEntity extends EntityInterface>(
+    entityClass: Class<TEntity>,
+    entityID: UUID
+  ): Promise<TEntity | undefined> {
+    const eventStore = new EventStore(this.config, this.logger)
+    const entitySnapshotEnvelope = await eventStore.fetchEntitySnapshot(entityClass.name, entityID)
+    return entitySnapshotEnvelope ? createInstance(entityClass, entitySnapshotEnvelope.value) : undefined
   }
 
   /**
@@ -99,16 +174,8 @@ export class Booster {
     return new BoosterSubscribersNotifier(this.config, this.logger).dispatch(request)
   }
 
-  /**
-   * Fetches the last known version of an entity
-   * @param entityName Name of the entity class
-   * @param entityID
-   */
-  public static fetchEntitySnapshot<TEntity extends EntityInterface>(
-    entityClass: Class<TEntity>,
-    entityID: UUID
-  ): Promise<TEntity | undefined> {
-    return fetchEntitySnapshot(this.config, this.logger, entityClass, entityID)
+  public static dispatchRocket(request: unknown): Promise<unknown> {
+    return new BoosterRocketDispatcher(this.config, this.logger).dispatch(request)
   }
 }
 
@@ -126,10 +193,6 @@ export async function boosterEventDispatcher(rawEvent: unknown): Promise<unknown
   return Booster.dispatchEvent(rawEvent)
 }
 
-export async function boosterPreSignUpChecker(rawMessage: unknown): Promise<unknown> {
-  return Booster.checkSignUp(rawMessage)
-}
-
 export async function boosterServeGraphQL(rawRequest: unknown): Promise<unknown> {
   return Booster.serveGraphQL(rawRequest)
 }
@@ -140,4 +203,8 @@ export async function boosterTriggerScheduledCommand(rawRequest: unknown): Promi
 
 export async function boosterNotifySubscribers(rawRequest: unknown): Promise<unknown> {
   return Booster.notifySubscribers(rawRequest)
+}
+
+export async function boosterRocketDispatcher(rawRequest: unknown): Promise<unknown> {
+  return Booster.dispatchRocket(rawRequest)
 }

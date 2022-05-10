@@ -11,9 +11,7 @@ export class Importer {
   }
 
   private static getImportFiles(codeRootPath: string): Array<string> {
-    return Importer.walkDir(codeRootPath)
-      .filter(Importer.isJavaScriptFile)
-      .filter(Importer.isNotIndexJs)
+    return Importer.walkDir(codeRootPath).filter(Importer.isJavaScriptFile).filter(Importer.isNotIndexJs)
   }
 
   private static walkDir(dir: string): Array<string> {

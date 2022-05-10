@@ -1,11 +1,15 @@
 import * as express from 'express'
-import { GraphQLService, UserRegistry } from '@boostercloud/framework-provider-local'
-import { AuthController } from './controllers/auth'
-import { BoosterConfig } from '@boostercloud/framework-types'
+import { GraphQLService } from '@boostercloud/framework-provider-local'
+import { BoosterConfig, ProviderInfrastructure, RocketDescriptor, UserApp } from '@boostercloud/framework-types'
 import * as path from 'path'
 import { requestFailed } from './http'
 import { GraphQLController } from './controllers/graphql'
-import { UserApp } from '@boostercloud/framework-types'
+import * as cors from 'cors'
+import { loadRocket } from './infrastructure-rocket'
+import { configureScheduler } from './scheduler'
+
+export * from './test-helper/local-test-helper'
+export * from './infrastructure-rocket'
 
 /**
  * Default error handling middleware. Instead of performing a try/catch in all endpoints
@@ -25,25 +29,51 @@ async function defaultErrorHandler(
   await requestFailed(err, res)
 }
 
-export const Infrastructure = {
-  /**
-   * `run` serves as the entry point for the local provider. It starts the required infrastructure
-   * locally, which is running an `express` server.
-   *
-   * @param config The user's project config
-   * @param port Port on which the express server will listen
-   */
-  start: (config: BoosterConfig, port: number): void => {
-    const expressServer = express()
-    const router = express.Router()
-    const userProject: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
-    const userRegistry = new UserRegistry()
-    const graphQLService = new GraphQLService(userProject)
-    router.use('/auth', new AuthController(port, userRegistry, userProject).router)
-    router.use('/graphql', new GraphQLController(graphQLService).router)
-    expressServer.use(express.json())
-    expressServer.use(router)
-    expressServer.use(defaultErrorHandler)
-    expressServer.listen(port)
-  },
+export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): ProviderInfrastructure => {
+  const rockets = rocketDescriptors?.map(loadRocket)
+  return {
+    /**
+     * `run` serves as the entry point for the local provider. It starts the required infrastructure
+     * locally, which is running an `express` server.
+     *
+     * @param config The user's project config
+     * @param port Port on which the express server will listen
+     */
+    start: async (config: BoosterConfig, port: number): Promise<void> => {
+      const expressServer = express()
+      const router = express.Router()
+      const userProject = require(path.join(process.cwd(), 'dist', 'index.js'))
+      const graphQLService = new GraphQLService(userProject as UserApp)
+      router.use('/graphql', new GraphQLController(graphQLService).router)
+      if (rockets && rockets.length > 0) {
+        rockets.forEach((rocket) => {
+          rocket.mountStack(config, router)
+        })
+      }
+      expressServer.use(
+        express.json({
+          verify: (req, res, buf) => {
+            req.rawBody = buf
+          },
+        })
+      )
+      expressServer.use(cors())
+      expressServer.use(function (req, res, next) {
+        res.header('Access-Control-Allow-Origin', '*')
+        res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+        next()
+      })
+      expressServer.use(router)
+      expressServer.use(defaultErrorHandler)
+      expressServer.listen(port, () => {
+        configureScheduler(config, userProject)
+      })
+    },
+  }
+}
+
+declare module 'http' {
+  export interface IncomingMessage {
+    rawBody: Buffer
+  }
 }

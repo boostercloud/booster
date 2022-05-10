@@ -10,7 +10,7 @@ import {
 import { GraphQLSchema, DocumentNode, ExecutionResult, GraphQLError } from 'graphql'
 import * as graphql from 'graphql'
 import { GraphQLGenerator } from './services/graphql/graphql-generator'
-import { BoosterReadModelDispatcher } from './booster-read-model-dispatcher'
+import { BoosterReadModelsReader } from './booster-read-models-reader'
 import { GraphQLResolverContext, graphQLWebsocketSubprotocolHeaders } from './services/graphql/common'
 import { NoopReadModelPubSub } from './services/pub-sub/noop-read-model-pub-sub'
 import { GraphQLWebsocketHandler } from './services/graphql/websocket-protocol/graphql-websocket-protocol'
@@ -21,12 +21,12 @@ type DispatchResult = AsyncIterableIterator<ExecutionResult> | ExecutionResult |
 export class BoosterGraphQLDispatcher {
   private readonly graphQLSchema: GraphQLSchema
   private readonly websocketHandler: GraphQLWebsocketHandler
-  private readonly readModelDispatcher: BoosterReadModelDispatcher
+  private readonly readModelDispatcher: BoosterReadModelsReader
   private readonly boosterTokenVerifier: BoosterTokenVerifier
 
   public constructor(private config: BoosterConfig, private logger: Logger) {
-    this.readModelDispatcher = new BoosterReadModelDispatcher(config, logger)
-    this.graphQLSchema = GraphQLGenerator.build(config, logger).generateSchema()
+    this.readModelDispatcher = new BoosterReadModelsReader(config, logger)
+    this.graphQLSchema = GraphQLGenerator.generateSchema(config, logger)
     this.boosterTokenVerifier = new BoosterTokenVerifier(config)
     this.websocketHandler = new GraphQLWebsocketHandler(
       config,
@@ -69,7 +69,7 @@ export class BoosterGraphQLDispatcher {
       } catch (e) {
         envelope = {
           ...envelope,
-          error: new InvalidParameterError(e),
+          error: e,
         } as GraphQLRequestEnvelopeError
         this.logger.debug('Unable to decode auth token')
       }
@@ -78,7 +78,7 @@ export class BoosterGraphQLDispatcher {
   }
 
   private async handleMessage(envelope: GraphQLRequestEnvelope | GraphQLRequestEnvelopeError): Promise<DispatchResult> {
-    this.logger.debug(`Starting GraphQL operation: ${JSON.stringify(envelope)}`)
+    this.logger.debug('Starting GraphQL operation:', envelope)
 
     const envelopeOrError = await this.verifyTokenFromEnvelop(envelope)
 
@@ -125,6 +125,7 @@ export class BoosterGraphQLDispatcher {
         },
         pubSub: new NoopReadModelPubSub(),
         storeSubscriptions: true,
+        context: envelope.context,
       }
 
       switch (operationData.operation) {
@@ -136,7 +137,7 @@ export class BoosterGraphQLDispatcher {
       }
     } catch (e) {
       this.logger.error(e)
-      const errors = Array.isArray(e) ? e : [new GraphQLError(e.message)]
+      const errors = Array.isArray(e) ? e.map(toGraphQLErrorWithExtensions) : [toGraphQLErrorWithExtensions(e)]
       return { errors }
     }
   }
@@ -152,6 +153,7 @@ export class BoosterGraphQLDispatcher {
       variableValues: resolverContext.operation.variables,
       operationName: resolverContext.operation.operationName,
     })
+    result.errors = result.errors?.map(toGraphQLErrorWithExtensions)
     this.logger.debug('GraphQL result: ', result)
     return result
   }
@@ -190,4 +192,19 @@ export class BoosterGraphQLDispatcher {
 
 function cameThroughSocket(withConnectionID: { connectionID?: string }): boolean {
   return withConnectionID.connectionID != undefined
+}
+
+type BoosterError = Error & { code?: unknown; data?: unknown }
+function toGraphQLErrorWithExtensions(e: BoosterError | GraphQLError): GraphQLError {
+  if (e instanceof GraphQLError) {
+    const originalError = e.originalError as BoosterError
+    return new GraphQLError(e.message, e.nodes, e.source, e.positions, e.path, originalError, {
+      code: originalError?.code,
+      data: originalError?.data,
+    })
+  }
+  return new GraphQLError(e.message, undefined, undefined, undefined, undefined, e, {
+    code: e.code,
+    data: e.data,
+  })
 }

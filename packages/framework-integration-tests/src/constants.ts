@@ -1,0 +1,18 @@
+// Both used in Cart entity and read-model-integration.ts
+export const beforeHookProductId = 'before-hook-product-id'
+export const throwExceptionId = 'throw-exception-id'
+export const beforeHookException = 'Before hook throwing exception'
+export const beforeHookMutationID = 'mutation-but-with-input-changes'
+export const beforeHookMutationIDModified = beforeHookMutationID + '-modified'
+export const beforeHookQuantity = 21
+export const commandHandlerErrorCartId = 'commandHandlerErrorCartId'
+export const commandHandlerErrorIgnoredCartId = 'commandHandlerErrorIgnoredCartId'
+export const commandHandlerErrorCartMessage = 'commandHandlerErrorCartMessage'
+export const commandHandlerBeforeErrorCartId = 'commandHandlerBeforeErrorCartId'
+export const commandHandlerBeforeErrorCartMessage = 'commandHandlerBeforeErrorCartMessage'
+export const dispatchEventErrorCartId = 'dispatchEventErrorCartId'
+export const dispatchErrorCartMessage = 'dispatchErrorCartMessage'
+export const projectionErrorCartId = 'projectionErrorCartId'
+export const projectionErrorCartMessage = 'projectionErrorCartMessage'
+export const reducerErrorCartId = 'reducerErrorCartId'
+export const reducerErrorCartMessage = 'reducerErrorCartMessage'

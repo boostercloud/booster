@@ -26,14 +26,13 @@ export interface Instance {
   }
 }
 
-export interface PropertyMetadata {
-  readonly name: string
-  readonly type: AnyClass
-}
-
 export function toClassTitle(instance: Instance): string {
   return instance.constructor.name
     .replace(/([A-Z])([a-z])/g, ' $1$2')
     .replace(/([a-z])([A-Z])/g, '$1 $2')
     .trim()
 }
+
+export type ReadOnlyNonEmptyArray<TElement> = {
+  readonly 0: TElement
+} & ReadonlyArray<TElement>

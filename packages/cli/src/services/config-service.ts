@@ -43,7 +43,6 @@ export async function cleanProject(projectPath: string): Promise<void> {
 }
 
 function readProjectConfig(userProjectPath: string): Promise<BoosterConfig> {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const userProject = loadUserProject(userProjectPath)
   return new Promise((resolve): void => {
     const app: BoosterApp = userProject.Booster

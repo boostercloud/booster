@@ -22,7 +22,10 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
-      "runtimeArgs": ["--preserve-symlinks"]
+      "runtimeArgs": ["--preserve-symlinks"],
+      "env": {
+        "BOOSTER_ENV": "test"
+      }
     },
     {
       "type": "node",
@@ -239,8 +242,8 @@
         "--colors",
         "--forbid-only",
         "--config",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/end-to-end/.mocharc.yml",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/end-to-end/**/*.integration.ts"
+        "${workspaceFolder}/packages/framework-integration-tests/integration/provider-unaware/end-to-end/.mocharc.yml",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/provider-unaware/end-to-end/**/*.integration.ts"
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",

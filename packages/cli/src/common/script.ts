@@ -55,7 +55,10 @@ export class Script<TContext> {
                 await action(ctx)
                 Script.logger.succeed(message)
               },
-              (err) => err as Error
+              (err) => {
+                Script.logger.fail(message)
+                return err as Error
+              }
             )
           )
         )
@@ -127,7 +130,7 @@ export class Script<TContext> {
         }, constVoid)
       )
     } catch (err) {
-      const defaultHandler = (e: Error): string => e.stack || e.message
+      const defaultHandler = (e: Error): string => e.stack || e.message || JSON.stringify(e)
       const handler = this.errorHandlers[err.name] || defaultHandler
       throw new Error(handler(err))
     }

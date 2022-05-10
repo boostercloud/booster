@@ -8,10 +8,16 @@ import {
   ReadModelMetadata,
   EventHandlerInterface,
   ScheduledCommandMetadata,
+  EventMetadata,
+  TokenVerifierConfig,
+  GlobalErrorHandlerMetadata,
+  EntityInterface,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
 import * as path from 'path'
+import { RocketDescriptor, RocketFunction } from './rocket-descriptor'
+import { Logger } from '.'
 
 /**
  * Class used by external packages that needs to get a representation of
@@ -19,7 +25,11 @@ import * as path from 'path'
  */
 export class BoosterConfig {
   public logLevel: Level = Level.debug
+  public logPrefix?: string
+  public logger?: Logger
   private _provider?: ProviderLibrary
+  public providerPackage?: string
+  public rockets?: Array<RocketDescriptor>
   public appName = 'new-booster-app'
   public assets?: Array<string>
   public readonly subscriptions = {
@@ -29,28 +39,46 @@ export class BoosterConfig {
   private _userProjectRootPath?: string
   public readonly codeRelativePath: string = 'dist'
   public readonly eventDispatcherHandler: string = path.join(this.codeRelativePath, 'index.boosterEventDispatcher')
-  public readonly preSignUpHandler: string = path.join(this.codeRelativePath, 'index.boosterPreSignUpChecker')
   public readonly serveGraphQLHandler: string = path.join(this.codeRelativePath, 'index.boosterServeGraphQL')
   public readonly scheduledTaskHandler: string = path.join(
     this.codeRelativePath,
     'index.boosterTriggerScheduledCommand'
   )
   public readonly notifySubscribersHandler: string = path.join(this.codeRelativePath, 'index.boosterNotifySubscribers')
+  public readonly rocketDispatcherHandler: string = path.join(this.codeRelativePath, 'index.boosterRocketDispatcher')
 
+  public readonly functionRelativePath: string = path.join('..', this.codeRelativePath, 'index.js')
+  public readonly events: Record<EventName, EventMetadata> = {}
   public readonly entities: Record<EntityName, EntityMetadata> = {}
   public readonly reducers: Record<EventName, ReducerMetadata> = {}
   public readonly commandHandlers: Record<CommandName, CommandMetadata> = {}
   public readonly eventHandlers: Record<EventName, Array<EventHandlerInterface>> = {}
   public readonly readModels: Record<ReadModelName, ReadModelMetadata> = {}
-  public readonly projections: Record<EntityName, Array<ProjectionMetadata>> = {}
+  public readonly projections: Record<EntityName, Array<ProjectionMetadata<EntityInterface>>> = {}
+  public readonly readModelSequenceKeys: Record<EntityName, string> = {}
   public readonly roles: Record<RoleName, RoleMetadata> = {}
   public readonly migrations: Record<ConceptName, Map<Version, MigrationMetadata>> = {}
   public readonly scheduledCommandHandlers: Record<ScheduledCommandName, ScheduledCommandMetadata> = {}
+  public globalErrorsHandler: GlobalErrorHandlerMetadata | undefined
+
+  private rocketFunctionMap: Record<string, RocketFunction> = {}
+  public registerRocketFunction(id: string, func: RocketFunction): void {
+    const currentFunction = this.rocketFunctionMap[id]
+    if (currentFunction) {
+      throw new Error(
+        `Error registering rocket function with id ${id}: There is already a rocket function registered under the same ID, "${currentFunction.name}"`
+      )
+    }
+    this.rocketFunctionMap[id] = func
+  }
+  public getRegisteredRocketFunction(id: string): RocketFunction | undefined {
+    return this.rocketFunctionMap[id]
+  }
 
   /** Environment variables set at deployment time on the target lambda functions */
   public readonly env: Record<string, string> = {}
 
-  private _tokenVerifier?: { issuer: string; jwksUri: string }
+  private _tokenVerifiers?: Array<TokenVerifierConfig>
 
   public constructor(public readonly environmentName: string) {}
 
@@ -78,9 +106,9 @@ export class BoosterConfig {
   }
 
   /**
-   * This is a convenient property to easily check if the application has defined some roles.
+   * This is a convenience property to easily check if the application has defined any roles.
    * Only in that case we will create a user pool and an authorization API.
-   * If there are no roles defined, it means that the app is completely public and users
+   * If there are no roles defined, it means that all app endpoints are public and users
    * won't be registered (they are all anonymous)
    */
   public get thereAreRoles(): boolean {
@@ -101,11 +129,24 @@ export class BoosterConfig {
   }
 
   public get provider(): ProviderLibrary {
+    if (!this._provider && this.providerPackage) {
+      const rockets = this.rockets ?? []
+      const provider = require(this.providerPackage)
+      this._provider = provider.Provider(rockets)
+    }
     if (!this._provider) throw new Error('It is required to set a valid provider runtime in your configuration files')
     return this._provider
   }
 
   public set provider(provider: ProviderLibrary) {
+    console.warn(`
+      The usage of the 'config.provider' field is deprecated,
+      please use 'config.providerPackage' instead.
+
+      For more information, check out the docs:
+
+      https://docs.booster.cloud/chapters/05_going-deeper?id=configuration-and-environments
+    `)
     this._provider = provider
   }
 
@@ -127,19 +168,39 @@ export class BoosterConfig {
     return value
   }
 
-  public get tokenVerifier(): { issuer: string; jwksUri: string } | undefined {
-    if (this._tokenVerifier) return this._tokenVerifier
-    if (process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER] && process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI]) {
-      return {
-        issuer: process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER] as string,
-        jwksUri: process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI] as string,
+  public get tokenVerifiers(): Array<TokenVerifierConfig> {
+    /*
+     * TODO: Leaving this lazy initializer to load tokenVerifier options from environment
+     * variables here for backwards compatibility reasons, but we should consider forcing
+     * users to always set these options manually in the config.ts file. They can still
+     * load the config from env variables manually, but we don't need to decide this for them.
+     */
+    if (!this._tokenVerifiers) {
+      if (
+        process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER] &&
+        process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI] &&
+        process.env[JWT_ENV_VARS.BOOSTER_ROLES_CLAIM]
+      ) {
+        console.warn(
+          'Deprecation notice: Implicitly loading the JWT token verifier options from default environment variables is deprecated.' +
+            " Please set your application's `config.tokenVerifiers` options explicitly in your `src/config/config.ts` file."
+        )
+        this._tokenVerifiers = [
+          {
+            issuer: process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER] as string,
+            jwksUri: process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI] as string,
+            rolesClaim: process.env[JWT_ENV_VARS.BOOSTER_ROLES_CLAIM] as string,
+          },
+        ]
+      } else {
+        this._tokenVerifiers = []
       }
     }
-    return undefined
+    return this._tokenVerifiers
   }
 
-  public set tokenVerifier(tokenVerifier: { issuer: string; jwksUri: string } | undefined) {
-    this._tokenVerifier = tokenVerifier
+  public set tokenVerifiers(tokenVerifiers: Array<TokenVerifierConfig>) {
+    this._tokenVerifiers = tokenVerifiers
   }
 
   private validateAllMigrations(): void {
@@ -165,6 +226,7 @@ export class BoosterConfig {
 export const JWT_ENV_VARS = {
   BOOSTER_JWT_ISSUER: 'BOOSTER_JWT_ISSUER',
   BOOSTER_JWKS_URI: 'BOOSTER_JWKS_URI',
+  BOOSTER_ROLES_CLAIM: 'BOOSTER_ROLES_CLAIM',
 }
 
 interface ResourceNames {

@@ -5,11 +5,17 @@ import {
   Register,
   NotFoundError,
   ScheduledCommandInterface,
+  ScheduleCommandGlobalError,
 } from '@boostercloud/framework-types'
 import { RegisterHandler } from './booster-register-handler'
+import { BoosterGlobalErrorDispatcher } from './booster-global-error-dispatcher'
 
 export class BoosterScheduledCommandDispatcher {
-  public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
+  private readonly globalErrorDispatcher: BoosterGlobalErrorDispatcher
+
+  public constructor(readonly config: BoosterConfig, readonly logger: Logger) {
+    this.globalErrorDispatcher = new BoosterGlobalErrorDispatcher(config, logger)
+  }
 
   public async dispatchCommand(commandEnvelope: ScheduledCommandEnvelope): Promise<void> {
     this.logger.debug('Dispatching the following scheduled command envelope: ', commandEnvelope)
@@ -22,9 +28,14 @@ export class BoosterScheduledCommandDispatcher {
     const commandClass = commandMetadata.class
     this.logger.debug('Found the following command:', commandClass.name)
     const command = commandClass as ScheduledCommandInterface
-    const register = new Register(commandEnvelope.requestID)
-    this.logger.debug('Calling "handle" method on command: ', command)
-    await command.handle(register)
+    const register = new Register(commandEnvelope.requestID, undefined, commandEnvelope.context)
+    try {
+      this.logger.debug('Calling "handle" method on command: ', command)
+      await command.handle(register)
+    } catch (e) {
+      const error = await this.globalErrorDispatcher.dispatch(new ScheduleCommandGlobalError(e))
+      if (error) throw error
+    }
     this.logger.debug('Command dispatched with register: ', register)
     await RegisterHandler.handle(this.config, this.logger, register)
   }
@@ -36,7 +47,6 @@ export class BoosterScheduledCommandDispatcher {
   public async dispatch(request: unknown): Promise<void> {
     const envelopeOrError = await this.config.provider.scheduled.rawToEnvelope(request, this.logger)
     this.logger.debug('Received ScheduledCommand envelope...', envelopeOrError)
-
     await this.dispatchCommand(envelopeOrError)
   }
 }

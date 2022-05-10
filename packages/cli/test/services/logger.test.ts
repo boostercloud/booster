@@ -5,7 +5,6 @@ import { restore, replace, fake } from 'sinon'
 import { expect } from '../expect'
 
 describe('Booster logger', (): void => {
-    
     afterEach(() => {
        restore()
     }) 
@@ -48,5 +47,4 @@ describe('Booster logger', (): void => {
             expect(fs.appendFileSync).to.have.been.calledWithMatch(errorsFile, /separated with new line/)
         })
     })
-    
 })

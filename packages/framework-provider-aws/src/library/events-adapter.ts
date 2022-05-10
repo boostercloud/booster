@@ -1,22 +1,28 @@
-import { DynamoDBStreamEvent, DynamoDBRecord } from 'aws-lambda'
-import { BoosterConfig, EventEnvelope, Logger, UUID } from '@boostercloud/framework-types'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { DynamoDBRecord, DynamoDBStreamEvent } from 'aws-lambda'
+import {
+  BoosterConfig,
+  EventEnvelope,
+  Logger,
+  OptimisticConcurrencyUnexpectedVersionError,
+  UUID,
+} from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { eventsStoreAttributes } from '../constants'
-import { partitionKeyForEvent } from './partition-keys'
+import { partitionKeyForEvent, partitionKeyForIndexByEntity } from './keys-helper'
 import { Converter } from 'aws-sdk/clients/dynamodb'
+import { retryIfError } from '@boostercloud/framework-common-helpers'
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const originOfTime = new Date(0).toISOString()
 
 export function rawEventsToEnvelopes(rawEvents: DynamoDBStreamEvent): Array<EventEnvelope> {
-  return rawEvents.Records.map(
-    (record: DynamoDBRecord): EventEnvelope => {
-      if (!record.dynamodb?.NewImage) {
-        throw new Error('Received a DynamoDB stream event without "NewImage" field. It is required')
-      }
-      return Converter.unmarshall(record.dynamodb?.NewImage) as EventEnvelope
+  return rawEvents.Records.map((record: DynamoDBRecord): EventEnvelope => {
+    if (!record.dynamodb?.NewImage) {
+      throw new Error('Received a DynamoDB stream event without "NewImage" field. It is required')
     }
-  )
+    return Converter.unmarshall(record.dynamodb?.NewImage) as EventEnvelope
+  })
 }
 
 export async function readEntityEventsSince(
@@ -88,25 +94,51 @@ export async function storeEvents(
   config: BoosterConfig,
   logger: Logger
 ): Promise<void> {
-  // TODO: Manage query pagination and db.batchWrite limit of 25 operations at a time
-  logger.debug('[EventsAdapter#storeEvents] Storing EventEnvelopes with eventEnvelopes:', eventEnvelopes)
-  const params: DynamoDB.DocumentClient.BatchWriteItemInput = {
-    RequestItems: {
-      [config.resourceNames.eventsStore]: eventEnvelopes.map((eventEnvelope) => ({
-        PutRequest: {
-          Item: {
-            ...eventEnvelope,
-            [eventsStoreAttributes.partitionKey]: partitionKeyForEvent(
-              eventEnvelope.entityTypeName,
-              eventEnvelope.entityID,
-              eventEnvelope.kind
-            ),
-            [eventsStoreAttributes.sortKey]: new Date().toISOString(),
-          },
-        },
-      })),
-    },
+  logger.debug('[EventsAdapter#storeEvents] Storing the following event envelopes:', eventEnvelopes)
+  // const putRequests = []
+  for (const eventEnvelope of eventEnvelopes) {
+    await retryIfError(
+      logger,
+      () => persistEvent(dynamoDB, config, eventEnvelope),
+      OptimisticConcurrencyUnexpectedVersionError
+    )
   }
-  await dynamoDB.batchWrite(params).promise()
-  logger.debug('[EventsAdapter#storeEvents] EventEnvelope stored')
+  logger.debug('[EventsAdapter#storeEvents] EventEnvelopes stored')
+}
+
+async function persistEvent(
+  dynamoDB: DynamoDB.DocumentClient,
+  config: BoosterConfig,
+  eventEnvelope: EventEnvelope
+): Promise<void> {
+  try {
+    const partitionKey = partitionKeyForEvent(eventEnvelope.entityTypeName, eventEnvelope.entityID, eventEnvelope.kind)
+    // Generate a new timestamp as sorting key on every try until we can persist the event.
+    // This way we guarantee ordering even with events that are stored in the same millisecond
+    const sortKey = new Date().toISOString()
+    await dynamoDB
+      .put({
+        TableName: config.resourceNames.eventsStore,
+        ConditionExpression: `${eventsStoreAttributes.partitionKey} <> :partitionKey AND ${eventsStoreAttributes.sortKey} <> :sortKey`,
+        ExpressionAttributeValues: {
+          ':partitionKey': partitionKey,
+          ':sortKey': sortKey,
+        },
+        Item: {
+          ...eventEnvelope,
+          [eventsStoreAttributes.partitionKey]: partitionKey,
+          [eventsStoreAttributes.sortKey]: sortKey,
+          [eventsStoreAttributes.indexByEntity.partitionKey]: partitionKeyForIndexByEntity(
+            eventEnvelope.entityTypeName,
+            eventEnvelope.kind
+          ),
+        },
+      })
+      .promise()
+  } catch (e) {
+    if (e.name == 'ConditionalCheckFailedException') {
+      throw new OptimisticConcurrencyUnexpectedVersionError(e.message)
+    }
+    throw e
+  }
 }

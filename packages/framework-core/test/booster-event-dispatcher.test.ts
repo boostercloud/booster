@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { describe } from 'mocha'
 import { BoosterEventDispatcher } from '../src/booster-event-dispatcher'
 import { fake, replace, restore, createStubInstance } from 'sinon'
 import {
@@ -20,6 +19,22 @@ import { EventStore } from '../src/services/event-store'
 import { RegisterHandler } from '../src/booster-register-handler'
 import { random } from 'faker'
 
+class SomeEvent {
+  public constructor(readonly id: UUID) {}
+
+  public entityID(): UUID {
+    return this.id
+  }
+  public getPrefixedId(prefix: string): string {
+    return `${prefix}-${this.id}`
+  }
+}
+
+class AnEventHandler {
+  public static async handle(event: SomeEvent, register: Register): Promise<void> {
+    event.getPrefixedId('prefix')
+  }
+}
 const someEvent: EventEnvelope = {
   version: 1,
   kind: 'event',
@@ -29,6 +44,7 @@ const someEvent: EventEnvelope = {
     entityID: (): UUID => {
       return '42'
     },
+    id: '42',
   },
   requestID: '123',
   typeName: 'SomeEvent',
@@ -57,27 +73,28 @@ describe('BoosterEventDispatcher', () => {
 
   const logger: Logger = {
     debug() {},
+    warn() {},
     info() {},
     error() {},
   }
 
   const config = new BoosterConfig('test')
   config.provider = {} as ProviderLibrary
+  config.events[SomeEvent.name] = { class: SomeEvent }
 
   context('with a configured provider', () => {
     describe('the `dispatch` method', () => {
       it('calls the raw events parser once and processes all messages', async () => {
-        replace(RawEventsParser, 'streamEvents', fake())
-
-        const boosterEventDispatcher = BoosterEventDispatcher as any
+        replace(RawEventsParser, 'streamPerEntityEvents', fake())
 
         const rawEvents = [{ some: 'raw event' }, { some: 'other raw event' }]
-        await boosterEventDispatcher.dispatch(rawEvents, config, logger)
+        await BoosterEventDispatcher.dispatch(rawEvents, config, logger)
 
-        expect(RawEventsParser.streamEvents).to.have.been.calledWithMatch(
+        expect(RawEventsParser.streamPerEntityEvents).to.have.been.calledWithMatch(
+          logger,
           config,
           rawEvents,
-          boosterEventDispatcher.eventProcessor
+          (BoosterEventDispatcher as any).eventProcessor
         )
       })
     })
@@ -89,14 +106,16 @@ describe('BoosterEventDispatcher', () => {
 
         const boosterEventDispatcher = BoosterEventDispatcher as any
         replace(boosterEventDispatcher, 'snapshotAndUpdateReadModels', fake())
-        replace(boosterEventDispatcher, 'handleEvent', fake())
+        replace(boosterEventDispatcher, 'dispatchEntityEventsToEventHandlers', fake())
 
         const callback = boosterEventDispatcher.eventProcessor(stubEventStore, stubReadModelStore, logger)
 
-        await callback(someEvent, config)
+        await callback(someEvent.entityTypeName, someEvent.entityID, [someEvent], config)
 
         expect(boosterEventDispatcher.snapshotAndUpdateReadModels).to.have.been.calledOnceWith(
-          someEvent,
+          someEvent.entityTypeName,
+          someEvent.entityID,
+          [someEvent],
           stubEventStore,
           stubReadModelStore,
           logger
@@ -109,13 +128,17 @@ describe('BoosterEventDispatcher', () => {
 
         const boosterEventDispatcher = BoosterEventDispatcher as any
         replace(boosterEventDispatcher, 'snapshotAndUpdateReadModels', fake())
-        replace(boosterEventDispatcher, 'handleEvent', fake())
+        replace(boosterEventDispatcher, 'dispatchEntityEventsToEventHandlers', fake())
 
         const callback = boosterEventDispatcher.eventProcessor(stubEventStore, stubReadModelStore, logger)
 
-        await callback(someEvent, config)
+        await callback(someEvent.entityTypeName, someEvent.entityID, [someEvent], config)
 
-        expect(boosterEventDispatcher.handleEvent).to.have.been.calledOnceWith(someEvent, config, logger)
+        expect(boosterEventDispatcher.dispatchEntityEventsToEventHandlers).to.have.been.calledOnceWith(
+          [someEvent],
+          config,
+          logger
+        )
       })
     })
 
@@ -125,55 +148,76 @@ describe('BoosterEventDispatcher', () => {
         const eventStore = createStubInstance(EventStore)
         const readModelStore = createStubInstance(ReadModelStore)
 
-        await boosterEventDispatcher.snapshotAndUpdateReadModels(someEvent, eventStore, readModelStore, logger)
+        await boosterEventDispatcher.snapshotAndUpdateReadModels(
+          someEvent.entityTypeName,
+          someEvent.entityID,
+          [someEvent],
+          eventStore,
+          readModelStore,
+          logger
+        )
 
-        expect(eventStore.fetchEntitySnapshot).to.have.been.called
-        expect(eventStore.fetchEntitySnapshot).to.have.been.calledOnceWith(someEvent.entityTypeName, someEvent.entityID)
+        expect(eventStore.calculateAndStoreEntitySnapshot).to.have.been.called
+        expect(eventStore.calculateAndStoreEntitySnapshot).to.have.been.calledOnceWith(
+          someEvent.entityTypeName,
+          someEvent.entityID,
+          [someEvent]
+        )
       })
 
       it('projects the entity state to the corresponding read models', async () => {
         const boosterEventDispatcher = BoosterEventDispatcher as any
         const eventStore = createStubInstance(EventStore)
-        eventStore.fetchEntitySnapshot = fake.resolves(someEntitySnapshot) as any
+        eventStore.calculateAndStoreEntitySnapshot = fake.resolves(someEntitySnapshot) as any
 
         const readModelStore = createStubInstance(ReadModelStore)
 
-        await boosterEventDispatcher.snapshotAndUpdateReadModels(someEvent, eventStore, readModelStore, logger)
-
+        await boosterEventDispatcher.snapshotAndUpdateReadModels(
+          someEvent.entityTypeName,
+          someEvent.entityID,
+          [someEvent],
+          eventStore,
+          readModelStore,
+          logger
+        )
         expect(readModelStore.project).to.have.been.calledOnce
         expect(readModelStore.project).to.have.been.calledWith(someEntitySnapshot)
       })
     })
 
-    describe('the `handleEvent` method', () => {
+    describe('the `dispatchEntityEventsToEventHandlers` method', () => {
       afterEach(() => {
-        config.eventHandlers['SomeEvent'] = []
+        config.eventHandlers[SomeEvent.name] = []
       })
 
       it('does nothing and does not throw if there are no event handlers', async () => {
         replace(RegisterHandler, 'handle', fake())
         const boosterEventDispatcher = BoosterEventDispatcher as any
         // We try first with null array of event handlers
-        config.eventHandlers['SomeEvent'] = null as any
-        await boosterEventDispatcher.handleEvent(someEvent, config, logger)
+        config.eventHandlers[SomeEvent.name] = null as any
+        await boosterEventDispatcher.dispatchEntityEventsToEventHandlers([someEvent], config, logger)
         // And now with an empty array
-        config.eventHandlers['SomeEvent'] = []
-        await boosterEventDispatcher.handleEvent(someEvent, config, logger)
+        config.eventHandlers[SomeEvent.name] = []
+        await boosterEventDispatcher.dispatchEntityEventsToEventHandlers([someEvent], config, logger)
         // It should not throw any errors
       })
 
       it('calls all the handlers for the current event', async () => {
         const fakeHandler1 = fake()
         const fakeHandler2 = fake()
-        config.eventHandlers['SomeEvent'] = [{ handle: fakeHandler1 }, { handle: fakeHandler2 }]
+        config.eventHandlers[SomeEvent.name] = [{ handle: fakeHandler1 }, { handle: fakeHandler2 }]
 
         replace(RegisterHandler, 'handle', fake())
 
         const boosterEventDispatcher = BoosterEventDispatcher as any
-        await boosterEventDispatcher.handleEvent(someEvent, config, logger)
+        await boosterEventDispatcher.dispatchEntityEventsToEventHandlers([someEvent], config, logger)
 
-        expect(fakeHandler1).to.have.been.calledOnceWith(someEvent.value)
-        expect(fakeHandler2).to.have.been.calledOnceWith(someEvent.value)
+        const eventValue: any = someEvent.value
+        const anEventInstance = new SomeEvent(eventValue.id)
+        anEventInstance.entityID = eventValue.entityID
+
+        expect(fakeHandler1).to.have.been.calledOnceWith(anEventInstance)
+        expect(fakeHandler2).to.have.been.calledOnceWith(anEventInstance)
       })
 
       it('calls the register handler for all the published events', async () => {
@@ -185,12 +229,12 @@ describe('BoosterEventDispatcher', () => {
         const fakeHandler2 = fake((event: EventInterface, register: Register) => {
           capturedRegister2 = register
         })
-        config.eventHandlers['SomeEvent'] = [{ handle: fakeHandler1 }, { handle: fakeHandler2 }]
+        config.eventHandlers[SomeEvent.name] = [{ handle: fakeHandler1 }, { handle: fakeHandler2 }]
 
         replace(RegisterHandler, 'handle', fake())
 
         const boosterEventDispatcher = BoosterEventDispatcher as any
-        await boosterEventDispatcher.handleEvent(someEvent, config, logger)
+        await boosterEventDispatcher.dispatchEntityEventsToEventHandlers([someEvent], config, logger)
 
         expect(RegisterHandler.handle).to.have.been.calledTwice
         expect(RegisterHandler.handle).to.have.been.calledWith(config, logger, capturedRegister1)
@@ -204,16 +248,25 @@ describe('BoosterEventDispatcher', () => {
           register.events(someEvent.value as EventInterface)
           capturedRegister = register
         })
-        config.eventHandlers['SomeEvent'] = [{ handle: fakeHandler }]
+        config.eventHandlers[SomeEvent.name] = [{ handle: fakeHandler }]
 
         replace(RegisterHandler, 'handle', fake())
 
         const boosterEventDispatcher = BoosterEventDispatcher as any
-        await boosterEventDispatcher.handleEvent(someEvent, config, logger)
+        await boosterEventDispatcher.dispatchEntityEventsToEventHandlers([someEvent], config, logger)
 
         expect(RegisterHandler.handle).to.have.been.calledWith(config, logger, capturedRegister)
         expect(capturedRegister.eventList[0]).to.be.deep.equal(someEvent.value)
       })
+    })
+
+    it('calls an instance method in the event and it is executed without failing', async () => {
+      config.eventHandlers[SomeEvent.name] = [{ handle: AnEventHandler.handle }]
+      const boosterEventDispatcher = BoosterEventDispatcher as any
+      const getPrefixedIdFake = fake()
+      replace(SomeEvent.prototype, 'getPrefixedId', getPrefixedIdFake)
+      await boosterEventDispatcher.dispatchEntityEventsToEventHandlers([someEvent], config, logger)
+      expect(getPrefixedIdFake).to.have.been.called
     })
   })
 })

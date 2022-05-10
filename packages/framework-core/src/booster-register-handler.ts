@@ -43,7 +43,7 @@ export class RegisterHandler {
       entityTypeName: reducerInfo.class.name,
       typeName: eventTypeName,
       value: event,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(), // TODO: This could be overridden by the provider. We should not set it. Ensure all providers set it
     }
   }
 }

@@ -2,10 +2,14 @@ import { EventEnvelope } from '@boostercloud/framework-types'
 import { random, date } from 'faker'
 
 export function createMockEventEnvelop(): EventEnvelope {
+  return createMockEventEnvelopForEntity(random.word(), random.uuid())
+}
+
+export function createMockEventEnvelopForEntity(entityTypeName: string, entityID: string): EventEnvelope {
   return {
     kind: 'event',
-    entityID: random.uuid(),
-    entityTypeName: random.word(),
+    entityID: entityID,
+    entityTypeName: entityTypeName,
     value: {
       id: random.uuid(),
     },

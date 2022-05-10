@@ -1,11 +1,20 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "emitDecoratorMetadata": true,
     "outDir": "./dist",
     "rootDir": "./src"
   },
   "include": [
     "src/**/*"
-  ]
+  ],
+  "ts-node": {
+    "compiler": "ttypescript",
+    "compilerOptions": {
+      "plugins": [
+        {
+          "transform": "metadata-booster"
+        }
+      ]
+    }
+  }
 }

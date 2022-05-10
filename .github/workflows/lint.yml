@@ -1,10 +1,5 @@
-name: Lint
+name: Lint and Format
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - '**.md'
   pull_request:
     branches:
       - main
@@ -13,11 +8,32 @@ on:
 
 jobs:
   lint:
+    if: startsWith(github.head_ref, 'eslint-patches') == false && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
         with:
-          node-version: 12.x
-      - run: npx lerna bootstrap
-      - run: npx lerna run lint:check --stream
+          ref: ${{ github.head_ref }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+      - name: Bootstrapping project
+        run: npx lerna bootstrap
+      - name: Fixing linting and formatting issues
+        id: eslint-fix
+        run: npx lerna run lint:fix --stream
+      - name: Set branch name
+        id: vars
+        run: echo ::set-output name=branch-name::"eslint-patches/${{ github.head_ref }}"
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          commit-message: Fix ESLint and Prettier issues
+          title: Fixes by ESLint automatic action
+          body: This is an auto-generated PR
+          branch: ${{ steps.vars.outputs.branch-name }}
+          token: ${{ secrets.GITHUB_TOKEN_ACTION }}
+      - name: Fail if ESLint made changes
+        if: steps.eslint-fix.outputs.exit-code != 0
+        run: exit 1
+
