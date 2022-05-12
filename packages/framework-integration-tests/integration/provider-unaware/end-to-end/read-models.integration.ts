@@ -318,12 +318,18 @@ describe('Read models end-to-end tests', () => {
                 query CartReadModels($filter: CartReadModelFilter) {
                   CartReadModels(filter: $filter) {
                     id
+                    shippingAddress {
+                      firstName
+                    }
                   }
                 }
               `,
             })
           },
-          (result) => result?.data?.CartReadModels?.length >= 1
+          (result) => {
+            const carts = result?.data?.CartReadModels
+            return carts?.length >= 1 && carts[0].shippingAddress?.firstName === mockAddress.firstName
+          }
         )
       })
 
