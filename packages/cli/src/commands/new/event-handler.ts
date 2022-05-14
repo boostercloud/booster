@@ -70,12 +70,12 @@ function generateImports(info: EventHandlerInfo): Array<ImportDeclaration> {
   ]
 }
 
-const generateEventHandler = async (info: EventHandlerInfo): Promise<void> =>
+const generateEventHandler = (info: EventHandlerInfo): Promise<void> =>
   generate({
     name: info.name,
     extension: '.ts',
     placementDir: path.join('src', 'event-handlers'),
-    template: await template('eventHandler'),
+    template: template('event-handler'),
     info: {
       imports: generateImports(info),
       ...info,

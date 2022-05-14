@@ -43,12 +43,12 @@ const run = async (name: string, rawFields: Array<string>): Promise<void> =>
     .info('Type generated!')
     .done()
 
-const generateType = async (info: TypeInfo): Promise<void> =>
+const generateType = (info: TypeInfo): Promise<void> =>
   generate({
     name: info.name,
     extension: '.ts',
     placementDir: path.join('src', 'common'),
-    template: await template('type'),
+    template: template('type'),
     info: {
       imports: [],
       ...info,

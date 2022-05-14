@@ -89,12 +89,12 @@ function generateImports(info: ReadModelInfo): Array<ImportDeclaration> {
   ]
 }
 
-const generateReadModel = async (info: ReadModelInfo): Promise<void> =>
+const generateReadModel = (info: ReadModelInfo): Promise<void> =>
   generate({
     name: info.name,
     extension: '.ts',
     placementDir: path.join('src', 'read-models'),
-    template: await template('readModel'),
+    template: template('read-model'),
     info: {
       imports: generateImports(info),
       ...info,

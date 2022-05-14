@@ -62,12 +62,12 @@ function generateImports(): Array<ImportDeclaration> {
   ]
 }
 
-const generateEvent = async (info: EventInfo): Promise<void> =>
+const generateEvent = (info: EventInfo): Promise<void> =>
   generate({
     name: info.name,
     extension: '.ts',
     placementDir: path.join('src', 'events'),
-    template: await template('event'),
+    template: template('event'),
     info: {
       imports: generateImports(),
       ...info,

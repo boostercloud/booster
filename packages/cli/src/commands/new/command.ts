@@ -69,12 +69,12 @@ function generateImports(info: CommandInfo): Array<ImportDeclaration> {
   ]
 }
 
-const generateCommand = async (info: CommandInfo): Promise<void> =>
+const generateCommand = (info: CommandInfo): Promise<void> =>
   generate({
     name: info.name,
     extension: '.ts',
     placementDir: path.join('src', 'commands'),
-    template: await template('command'),
+    template: template('command'),
     info: {
       imports: generateImports(info),
       ...info,

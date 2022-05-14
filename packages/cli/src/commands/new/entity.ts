@@ -88,12 +88,12 @@ function generateImports(info: EntityInfo): Array<ImportDeclaration> {
   ]
 }
 
-const generateEntity = async (info: EntityInfo): Promise<void> =>
+const generateEntity = (info: EntityInfo): Promise<void> =>
   generate({
     name: info.name,
     extension: '.ts',
     placementDir: path.join('src', 'entities'),
-    template: await template('entity'),
+    template: template('entity'),
     info: {
       imports: generateImports(info),
       ...info,

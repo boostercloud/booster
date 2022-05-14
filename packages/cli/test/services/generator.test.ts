@@ -3,8 +3,7 @@ import * as fs from 'fs-extra'
 import * as Mustache from 'mustache'
 import { Target, HasName, HasFields, HasReaction, HasEvent, HasProjections } from '../../src/services/generator/target'
 import * as projectChecker from '../../src/services/project-checker'
-import { generate } from '../../src/services/generator'
-import { templates } from '../../src/templates'
+import { generate, template } from '../../src/services/generator'
 import { restore, replace, fake } from 'sinon'
 import { expect } from '../expect'
 
@@ -32,7 +31,7 @@ describe('generate service', (): void => {
       name: info.name,
       extension: '.ts',
       placementDir: path.join('src', 'commands'),
-      template: templates.command,
+      template: template('command'),
       info: info,
     }
     const rendered = Mustache.render(target.template, { ...target.info })
@@ -57,7 +56,7 @@ describe('generate service', (): void => {
       name: info.name,
       extension: '.ts',
       placementDir: path.join('src', 'entities'),
-      template: templates.entity,
+      template: template('entity'),
       info: info,
     }
     const rendered = Mustache.render(target.template, { ...target.info })
@@ -79,7 +78,7 @@ describe('generate service', (): void => {
       name: info.name,
       extension: '.ts',
       placementDir: path.join('src', 'event-handlers'),
-      template: templates.eventHandler,
+      template: template('event-handler'),
       info: info,
     }
     const rendered = Mustache.render(target.template, { ...target.info })
@@ -104,7 +103,7 @@ describe('generate service', (): void => {
       name: info.name,
       extension: '.ts',
       placementDir: path.join('src', 'events'),
-      template: templates.event,
+      template: template('event'),
       info: info,
     }
     const rendered = Mustache.render(target.template, { ...target.info })
@@ -130,7 +129,7 @@ describe('generate service', (): void => {
       name: info.name,
       extension: '.ts',
       placementDir: path.join('src', 'read-models'),
-      template: templates.readModel,
+      template: template('read-model'),
       info: info,
     }
     const rendered = Mustache.render(target.template, { ...target.info })
@@ -151,7 +150,7 @@ describe('generate service', (): void => {
       name: info.name,
       extension: '.ts',
       placementDir: path.join('src', 'scheduled-commands'),
-      template: templates.scheduledCommand,
+      template: template('scheduled-command'),
       info: info,
     }
     const rendered = Mustache.render(target.template, { ...target.info })
@@ -176,7 +175,7 @@ describe('generate service', (): void => {
       name: info.name,
       extension: '.ts',
       placementDir: path.join('src', 'common'),
-      template: templates.type,
+      template: template('type'),
       info: info,
     }
     const rendered = Mustache.render(target.template, { ...target.info })

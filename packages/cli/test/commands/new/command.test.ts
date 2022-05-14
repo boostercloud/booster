@@ -1,11 +1,11 @@
 import * as ProjectChecker from '../../../src/services/project-checker'
 import { restore, replace, fake, stub } from 'sinon'
 import Command from '../../../src/commands/new/command'
-import { templates } from '../../../src/templates'
 import Mustache = require('mustache')
 import * as fs from 'fs-extra'
 import { IConfig } from '@oclif/config'
 import { expect } from '../../expect'
+import { template } from '../../../src/services/generator'
 
 describe('new', (): void => {
   describe('Command', () => {
@@ -34,7 +34,7 @@ describe('new', (): void => {
     ]
 
     const renderCommand = (imports: any[], name: string, fields: any[]): string => {
-      return Mustache.render(templates.command, {
+      return Mustache.render(template('command'), {
         imports: imports,
         name: name,
         fields: fields,
@@ -44,7 +44,7 @@ describe('new', (): void => {
     beforeEach(() => {
       stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
       replace(fs, 'outputFile', fake.resolves({}))
-      replace(ProjectChecker,'checkCurrentDirBoosterVersion', fake.resolves({}))
+      replace(ProjectChecker, 'checkCurrentDirBoosterVersion', fake.resolves({}))
     })
 
     afterEach(() => {
@@ -101,9 +101,7 @@ describe('new', (): void => {
         replace(console, 'error', fake.resolves({}))
         await new Command([], {} as IConfig).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(commandsRoot)
-        expect(console.error).to.have.been.calledWithMatch(
-          /You haven't provided a command name/
-        )
+        expect(console.error).to.have.been.calledWithMatch(/You haven't provided a command name/)
       })
 
       it('with empty fields', async () => {
@@ -129,9 +127,7 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain(
-          'Error parsing field title'
-        )
+        expect(exceptionMessage).to.contain('Error parsing field title')
       })
 
       it('with no field type after :', async () => {
@@ -139,7 +135,7 @@ describe('new', (): void => {
         let exceptionMessage = ''
         try {
           await new Command([command, '--fields', 'title:'], {} as IConfig).run()
-        } catch(e) {
+        } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -152,8 +148,11 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Command([command, '--fields', 'title:string', 'title:string', 'quantity:number'], {} as IConfig).run()
-        } catch(e) {
+          await new Command(
+            [command, '--fields', 'title:string', 'title:string', 'quantity:number'],
+            {} as IConfig
+          ).run()
+        } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
         }

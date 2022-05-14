@@ -51,12 +51,12 @@ function generateImports(): Array<ImportDeclaration> {
   ]
 }
 
-const generateScheduledCommand = async (info: ScheduledCommandInfo): Promise<void> =>
+const generateScheduledCommand = (info: ScheduledCommandInfo): Promise<void> =>
   generate({
     name: info.name,
     extension: '.ts',
     placementDir: path.join('src', 'scheduled-commands'),
-    template: await template('scheduledCommand'),
+    template: template('scheduled-command'),
     info: {
       imports: generateImports(),
       ...info,

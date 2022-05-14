@@ -19,14 +19,14 @@ export async function generate<TInfo>(target: Target<TInfo>): Promise<void> {
   await fs.outputFile(renderPath, rendered)
 }
 
-export async function template(name: string): Promise<string> {
+export function template(name: string): string {
   const stubFileName = resourceStubFilePath(`${name}.ts`)
 
   if (checkStubsFolderExists() && checkResourceStubFileExists(stubFileName)) {
-    return await import(stubFileName).then(({ template }) => template)
+    return require(stubFileName).template
   }
 
-  return await import(resourceTemplateFilePath(name)).then(({ template }) => template)
+  return require(resourceTemplateFilePath(name)).template
 }
 
 export function filePath<TInfo>(target: FileDir<TInfo>): string {

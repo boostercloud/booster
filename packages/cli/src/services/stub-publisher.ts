@@ -20,7 +20,7 @@ export const createStubsFolder = (): void => mkdirSync(stubFolderPath)
 export async function publishStubFiles(): Promise<void> {
   const files: Dirent[] = readdirSync(resourceTemplatesPath, { withFileTypes: true })
   const templateFilesMap = files
-    .filter((file: Dirent) => file.isFile() && file.name !== 'index.ts')
+    .filter((file: Dirent) => file.isFile())
     .reduce((files: Record<string, string>, file: Dirent) => {
       const resourceTemplatePath: string = join(resourceTemplatesPath, file.name)
 
