@@ -17,9 +17,8 @@ export const checkResourceStubFileExists = (filePath: string): boolean => exists
 
 export const createStubsFolder = (): void => mkdirSync(stubFolderPath)
 
-export async function publishStubFiles(): Promise<void> {
-  const files: Dirent[] = readdirSync(resourceTemplatesPath, { withFileTypes: true })
-  const templateFilesMap = files
+export const createTemplateFileMap = (files: Dirent[]): Record<string, string> =>
+  files
     .filter((file: Dirent) => file.isFile())
     .reduce((files: Record<string, string>, file: Dirent) => {
       const resourceTemplatePath: string = join(resourceTemplatesPath, file.name)
@@ -28,6 +27,10 @@ export async function publishStubFiles(): Promise<void> {
 
       return files
     }, {})
+
+export async function publishStubFiles(): Promise<void> {
+  const files: Dirent[] = readdirSync(resourceTemplatesPath, { withFileTypes: true })
+  const templateFilesMap = createTemplateFileMap(files)
 
   try {
     for (const [from, to] of Object.entries(templateFilesMap)) {
