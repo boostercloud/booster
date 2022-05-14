@@ -11,7 +11,6 @@ import {
   resourceStubFilePath,
   resourceTemplateFilePath,
   resourceTemplatesPath,
-  stubFolderPath,
 } from '../../src/services/stub-publisher'
 const rewire = require('rewire')
 
@@ -67,7 +66,7 @@ describe('stub publisher', () => {
     it('should return path to stub file', () => {
       const fileName = 'test-command.ts'
       const stubFilePath = resourceStubFilePath(fileName)
-      const expectedStubFilePath = join(stubFolderPath, fileName)
+      const expectedStubFilePath = join(process.cwd(), 'stubs', fileName)
 
       expect(stubFilePath).to.be.equal(expectedStubFilePath)
     })
@@ -89,7 +88,7 @@ describe('stub publisher', () => {
 
       expect(result).to.be.true
       expect(fs.existsSync).to.have.been.calledOnce
-      expect(fs.existsSync).to.be.calledOnceWith(stubFolderPath)
+      expect(fs.existsSync).to.be.calledOnceWith(join(process.cwd(), 'stubs'))
     })
 
     it('should return false if `/stubs` folder does not exists', () => {
@@ -99,7 +98,7 @@ describe('stub publisher', () => {
 
       expect(result).to.be.false
       expect(fs.existsSync).to.have.been.calledOnce
-      expect(fs.existsSync).to.be.calledOnceWith(stubFolderPath)
+      expect(fs.existsSync).to.be.calledOnceWith(join(process.cwd(), 'stubs'))
     })
   })
 
@@ -135,7 +134,7 @@ describe('stub publisher', () => {
       createStubsFolder()
 
       expect(fakeMkdirSync).to.have.been.calledOnce
-      expect(fakeMkdirSync).to.have.been.calledOnceWith(stubFolderPath)
+      expect(fakeMkdirSync).to.have.been.calledOnceWith(join(process.cwd(), 'stubs'))
     })
   })
 
@@ -197,8 +196,8 @@ describe('stub publisher', () => {
 
       expect(Object.keys(filteredFiles)).to.have.lengthOf(2)
       expect(filteredFiles).to.deep.equal({
-        [join(resourceTemplatesPath, 'fake-command.ts')]: join(stubFolderPath, 'fake-command.ts'),
-        [join(resourceTemplatesPath, 'fake-event.ts')]: join(stubFolderPath, 'fake-event.ts'),
+        [join(resourceTemplatesPath, 'fake-command.ts')]: join(process.cwd(), 'stubs', 'fake-command.ts'),
+        [join(resourceTemplatesPath, 'fake-event.ts')]: join(process.cwd(), 'stubs', 'fake-event.ts'),
       })
     })
   })

@@ -1,11 +1,12 @@
 import { IConfig } from '@oclif/config'
 import * as fs from 'fs-extra'
+import { join } from 'path'
 import { restore, replace, fake, stub, SinonSpy, spy } from 'sinon'
 import * as ProjectChecker from '../../../src/services/project-checker'
 import { expect } from '../../expect'
 import Publish from '../../../src/commands/stub/publish'
 import Prompter from '../../../src/services/user-prompt'
-import { resourceTemplatesPath, stubFolderPath } from '../../../src/services/stub-publisher'
+import { resourceTemplatesPath } from '../../../src/services/stub-publisher'
 import inquirer = require('inquirer')
 
 describe('stub', async () => {
@@ -80,10 +81,10 @@ describe('stub', async () => {
 
         expect(fs.existsSync).to.have.been.calledOnce
         expect(fs.existsSync).to.have.been.returned(false)
-        expect(fs.existsSync).to.have.been.calledWithMatch(stubFolderPath)
+        expect(fs.existsSync).to.have.been.calledWithMatch(join(process.cwd(), 'stubs'))
 
         expect(fakeMkdirSync).to.have.been.calledOnce
-        expect(fakeMkdirSync).to.have.been.calledOnceWith(stubFolderPath)
+        expect(fakeMkdirSync).to.have.been.calledOnceWith(join(process.cwd(), 'stubs'))
 
         expect(ProjectChecker.checkCurrentDirIsABoosterProject).to.have.been.calledOnce
         expect(Prompter.confirmPrompt).not.to.have.been.called
@@ -104,10 +105,10 @@ describe('stub', async () => {
 
         expect(fs.existsSync).to.have.been.calledOnce
         expect(fs.existsSync).to.have.been.returned(true)
-        expect(fs.existsSync).to.have.been.calledWithMatch(stubFolderPath)
+        expect(fs.existsSync).to.have.been.calledWithMatch(join(process.cwd(), 'stubs'))
 
         expect(fakeMkdirSync).not.to.have.been.calledOnce
-        expect(fakeMkdirSync).not.to.have.been.calledOnceWith(stubFolderPath)
+        expect(fakeMkdirSync).not.to.have.been.calledOnceWith(join(process.cwd(), 'stubs'))
 
         expect(ProjectChecker.checkCurrentDirIsABoosterProject).to.have.been.calledOnce
 
@@ -128,10 +129,10 @@ describe('stub', async () => {
 
         expect(fs.existsSync).to.have.been.calledOnce
         expect(fs.existsSync).to.have.been.returned(true)
-        expect(fs.existsSync).to.have.been.calledWithMatch(stubFolderPath)
+        expect(fs.existsSync).to.have.been.calledWithMatch(join(process.cwd(), 'stubs'))
 
         expect(fakeMkdirSync).not.to.have.been.calledOnce
-        expect(fakeMkdirSync).not.to.have.been.calledOnceWith(stubFolderPath)
+        expect(fakeMkdirSync).not.to.have.been.calledOnceWith(join(process.cwd(), 'stubs'))
 
         expect(ProjectChecker.checkCurrentDirIsABoosterProject).to.have.been.calledOnce
 
