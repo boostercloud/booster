@@ -2,10 +2,9 @@ import * as Oclif from '@oclif/command'
 import BaseCommand from '../../common/base-command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
-import { generate } from '../../services/generator'
+import { generate, template } from '../../services/generator'
 import { HasName, joinParsers, parseName, ImportDeclaration } from '../../services/generator/target'
 import * as path from 'path'
-import { templates } from '../../templates'
 import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 
 export default class ScheduledCommand extends BaseCommand {
@@ -52,12 +51,12 @@ function generateImports(): Array<ImportDeclaration> {
   ]
 }
 
-const generateScheduledCommand = (info: ScheduledCommandInfo): Promise<void> =>
+const generateScheduledCommand = async (info: ScheduledCommandInfo): Promise<void> =>
   generate({
     name: info.name,
     extension: '.ts',
     placementDir: path.join('src', 'scheduled-commands'),
-    template: templates.scheduledCommand,
+    template: await template('scheduledCommand'),
     info: {
       imports: generateImports(),
       ...info,

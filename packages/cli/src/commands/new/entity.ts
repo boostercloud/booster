@@ -13,8 +13,7 @@ import {
   ImportDeclaration,
 } from '../../services/generator/target'
 import * as path from 'path'
-import { generate } from '../../services/generator'
-import { templates } from '../../templates'
+import { generate, template } from '../../services/generator'
 import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 import { classNameToFileName } from '../../common/filenames'
 
@@ -38,7 +37,7 @@ export default class Entity extends BaseCommand {
 
   public async run(): Promise<void> {
     const { args, flags } = this.parse(Entity)
-    
+
     try {
       const fields = flags.fields || []
       const events = flags.reduces || []
@@ -89,12 +88,12 @@ function generateImports(info: EntityInfo): Array<ImportDeclaration> {
   ]
 }
 
-const generateEntity = (info: EntityInfo): Promise<void> =>
+const generateEntity = async (info: EntityInfo): Promise<void> =>
   generate({
     name: info.name,
     extension: '.ts',
     placementDir: path.join('src', 'entities'),
-    template: templates.entity,
+    template: await template('entity'),
     info: {
       imports: generateImports(info),
       ...info,

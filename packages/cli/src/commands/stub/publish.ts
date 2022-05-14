@@ -2,7 +2,7 @@ import { flags } from '@oclif/command'
 import BaseCommand from '../../common/base-command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
-import { createStubsFolder, publishStubFiles, stubsFolderExists } from '../../services/stub-publisher'
+import { createStubsFolder, publishStubFiles, checkStubsFolderExists } from '../../services/stub-publisher'
 import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 import Prompter from '../../services/user-prompt'
 
@@ -24,7 +24,11 @@ export default class Publish extends BaseCommand {
     const { flags } = this.parse(Publish)
 
     try {
-      const stubFolderExists: boolean = stubsFolderExists()
+      const stubFolderExists: boolean = checkStubsFolderExists()
+
+      if (!stubFolderExists) {
+        createStubsFolder()
+      }
 
       if (stubFolderExists && !flags.force) {
         await Prompter.confirmPrompt({
@@ -32,8 +36,6 @@ export default class Publish extends BaseCommand {
         }).then((confirm: boolean) => {
           if (!confirm) throw new Error('Stubs folder already exists. Use --force option to overwrite files in it')
         })
-      } else {
-        createStubsFolder()
       }
 
       await run()

@@ -1,17 +1,23 @@
 import type { Dirent } from 'fs-extra'
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'fs-extra'
-import { wrapExecError } from '../common/errors'
 import { join } from 'path'
+import { wrapExecError } from '../common/errors'
 
 export const stubFolderPath: string = join(process.cwd(), 'stubs')
 
-export const stubsFolderExists = (): boolean => existsSync(stubFolderPath)
+export const resourceTemplatesPath: string = join(__dirname, '..', 'templates')
+
+export const resourceStubFilePath = (fileName: string): string => join(stubFolderPath, fileName)
+
+export const resourceTemplateFilePath = (fileName: string): string => join(resourceTemplatesPath, fileName)
+
+export const checkStubsFolderExists = (): boolean => existsSync(stubFolderPath)
+
+export const checkResourceStubFileExists = (filePath: string): boolean => existsSync(filePath)
 
 export const createStubsFolder = (): void => mkdirSync(stubFolderPath)
 
 export async function publishStubFiles(): Promise<void> {
-  const resourceTemplatesPath = join(__dirname, '..', 'templates')
-
   const files: Dirent[] = readdirSync(resourceTemplatesPath, { withFileTypes: true })
   const templateFilesMap = files
     .filter((file: Dirent) => file.isFile() && file.name !== 'index.ts')
