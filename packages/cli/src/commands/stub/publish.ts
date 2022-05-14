@@ -23,30 +23,28 @@ export default class Publish extends BaseCommand {
   public async run(): Promise<void> {
     const { flags } = this.parse(Publish)
 
-    try {
-      const stubFolderExists: boolean = checkStubsFolderExists()
+    const stubFolderExists: boolean = checkStubsFolderExists()
 
-      if (!stubFolderExists) {
-        createStubsFolder()
-      }
-
-      if (stubFolderExists && !flags.force) {
-        await Prompter.confirmPrompt({
-          message: Brand.dangerize('Stubs folder already exists. Do you want to overwrite it?'),
-        }).then((confirm: boolean) => {
-          if (!confirm) throw new Error('Stubs folder already exists. Use --force option to overwrite files in it')
-        })
-      }
-
-      await run()
-    } catch (error) {
-      console.error(error)
+    if (!stubFolderExists) {
+      createStubsFolder()
     }
+
+    if (stubFolderExists && !flags.force) {
+      await Prompter.confirmPrompt({
+        message: Brand.dangerize('Stubs folder already exists. Do you want to overwrite it?'),
+      }).then((confirm: boolean) => {
+        if (!confirm) {
+          throw new Error(Brand.dangerize('Stubs folder already exists. Use --force option to overwrite files in it'))
+        }
+      })
+    }
+
+    await run()
   }
 }
 
 const run = async (): Promise<void> =>
-  Script.init(`boost ${Brand.energize('stub:publish')} 🚧`, Promise.resolve(process.cwd()))
+  Script.init(`boost ${Brand.energize('stub:publish')} 🗄`, Promise.resolve(process.cwd()))
     .step('Verifying project', checkCurrentDirIsABoosterProject)
     .step('Publishing stubs', publishStubFiles)
     .info('Resource template stubs published!')
