@@ -51,6 +51,10 @@ export default class Nuke extends BaseCommand {
       description:
         'Run nuke without asking for confirmation. Be EXTRA CAUTIOUS with this option, all your application data will be irreversibly DELETED without confirmation.',
     }),
+    verbose: flags.boolean({
+      description: 'display full error messages',
+      default: false,
+    }),
   }
 
   public async run(): Promise<void> {
@@ -62,5 +66,15 @@ export default class Nuke extends BaseCommand {
         nukeCloudProviderResources
       )
     }
+  }
+
+  async catch(fullError: Error) {
+    const { flags: { verbose } } = this.parse(Nuke)
+
+    if (verbose) {
+      console.error(fullError.message)
+    }
+ 
+    return super.catch(fullError)
   }
 }
