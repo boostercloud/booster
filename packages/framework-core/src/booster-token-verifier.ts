@@ -15,8 +15,8 @@ import {
   jwtVerify,
   KeyLike,
   jwtDecrypt,
+  errors,
 } from 'jose'
-import { JWTClaimValidationFailed, JWTExpired } from 'jose/dist/types/util/errors'
 import { URL } from 'url'
 
 class TokenVerifierClient {
@@ -140,12 +140,12 @@ export class BoosterTokenVerifier {
 
   private getTokenNotBeforeErrors(results: Array<PromiseSettledResult<UserEnvelope>>): Array<PromiseRejectedResult> {
     return this.getErrors(results).filter(
-      (result) => result.reason instanceof JWTClaimValidationFailed && result.reason.claim === 'nbf'
+      (result) => result.reason instanceof errors.JWTClaimValidationFailed && result.reason.claim === 'nbf'
     )
   }
 
   private getTokenExpiredErrors(results: Array<PromiseSettledResult<UserEnvelope>>): Array<PromiseRejectedResult> {
-    return this.getErrors(results).filter((result) => result.reason instanceof JWTExpired)
+    return this.getErrors(results).filter((result) => result.reason instanceof errors.JWTExpired)
   }
 
   private getErrors(results: Array<PromiseSettledResult<UserEnvelope>>): Array<PromiseRejectedResult> {
