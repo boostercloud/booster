@@ -6,6 +6,7 @@ import {
   Logger,
   Operation,
   ReadModelListResult,
+  SortFor,
 } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
@@ -18,10 +19,14 @@ export async function searchReadModel(
   logger: Logger,
   readModelName: string,
   filters: FilterFor<unknown>,
+  sortBy?: SortFor<unknown>,
   limit?: number,
   afterCursor?: DynamoDB.DocumentClient.Key | undefined,
   paginatedVersion = false
 ): Promise<Array<any> | ReadModelListResult<any>> {
+  if (sortBy) {
+    logger.info('SortBy not implemented for AWS provider. It will be ignored')
+  }
   let params: DocumentClient.ScanInput = {
     TableName: config.resourceNames.forReadModel(readModelName),
     ConsistentRead: true,
@@ -105,6 +110,12 @@ function buildOperation(
           return `begins_with(#${propName}, ${holder(index)})`
         case 'includes':
           return `contains(#${propName}, ${holder(index)})`
+        case 'isDefined':
+          if (value) {
+            return `attribute_exists(#${propName})`
+          } else {
+            return `attribute_not_exists(#${propName})`
+          }
         default:
           if (typeof value === 'object') {
             return buildOperation(operation, value, usedPlaceholders, propName)
@@ -141,12 +152,13 @@ function buildExpressionAttributeNames(filters: FilterFor<any>): ExpressionAttri
         }
         break
       case 'includes':
-        // In case of includes, avoid the default behaviour
+      case 'isDefined':
+        // Avoid the default behaviour
         break
       default:
         Object.entries(filters[propName] as FilterFor<any>).forEach(([prop, value]) => {
           attributeNames[`#${propName}`] = propName
-          if (typeof value === 'object' && !Array.isArray(value)) {
+          if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
             Object.assign(attributeNames, buildExpressionAttributeNames({ [prop]: value }))
           }
         })
@@ -196,9 +208,9 @@ function buildAttributeValue(
       value.forEach((element, subIndex) => {
         attributeValues[holder(index, subIndex)] = element
       })
-    } else if (typeof value === 'object' && key !== 'includes') {
+    } else if (typeof value === 'object' && key !== 'includes' && value !== null) {
       Object.assign(attributeValues, buildExpressionAttributeValues({ [key]: value }, usedPlaceholders))
-    } else {
+    } else if (key !== 'isDefined') {
       attributeValues[holder(index)] = value
     }
   })

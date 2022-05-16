@@ -1,10 +1,16 @@
 import { Projects, ReadModel } from '@boostercloud/framework-core'
-import { ProjectionResult, ReadModelInterface, ReadModelRequestEnvelope, UUID } from '@boostercloud/framework-types'
+import {
+  ProjectionResult,
+  ReadModelInterface,
+  ReadModelRequestEnvelope,
+  UserEnvelope,
+  UUID,
+} from '@boostercloud/framework-types'
 import { CartItem } from '../common/cart-item'
 import { Address } from '../common/address'
 import { Cart } from '../entities/cart'
 import { Payment } from '../entities/payment'
-import { beforeHookException, throwExceptionId } from '../constants'
+import { beforeHookException, projectionErrorCartId, projectionErrorCartMessage, throwExceptionId } from '../constants'
 
 @ReadModel({
   authorize: 'all',
@@ -24,17 +30,18 @@ export class CartReadModel {
     return this.checks
   }
 
-  public static beforeFn(
-    request: ReadModelRequestEnvelope<ReadModelInterface>
-  ): ReadModelRequestEnvelope<ReadModelInterface> {
+  public static async beforeFn(
+    request: ReadModelRequestEnvelope<ReadModelInterface>,
+    currentUser?: UserEnvelope
+  ): Promise<ReadModelRequestEnvelope<ReadModelInterface>> {
     const id = request?.key?.id
     if (id && id === throwExceptionId) throw new Error(beforeHookException)
     return request
   }
 
-  public static beforeFnV2(
+  public static async beforeFnV2(
     request: ReadModelRequestEnvelope<ReadModelInterface>
-  ): ReadModelRequestEnvelope<ReadModelInterface> {
+  ): Promise<ReadModelRequestEnvelope<ReadModelInterface>> {
     const id = request.key?.id || request.filters?.id?.eq
     console.log(`Running \`beforeFnV2\` with ID = ${id}, and request = ${JSON.stringify(request)}`)
     if (!id || id !== 'before-fn-test') return request
@@ -56,6 +63,9 @@ export class CartReadModel {
 
   @Projects(Cart, 'id')
   public static updateWithCart(cart: Cart, oldCartReadModel?: CartReadModel): ProjectionResult<CartReadModel> {
+    if (cart.id === projectionErrorCartId) {
+      throw new Error(projectionErrorCartMessage)
+    }
     const cartProductIds = cart?.cartItems.map((item) => item.productId as string)
     // This method calls are here to ensure they work. More info: https://github.com/boostercloud/booster/issues/797
     cart.getId()
