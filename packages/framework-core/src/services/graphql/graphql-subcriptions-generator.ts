@@ -1,18 +1,22 @@
-import { GraphQLFieldConfigMap, GraphQLID, GraphQLNonNull, GraphQLObjectType } from 'graphql'
+import { GraphQLFieldConfigMap, GraphQLID, GraphQLInputObjectType, GraphQLNonNull, GraphQLObjectType } from 'graphql'
 import { ResolverBuilder } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
-import { GraphQLQueryGenerator } from './graphql-query-generator'
 import * as inflected from 'inflected'
 import { AnyClass } from '@boostercloud/framework-types'
+import { GraphqlQueryFilterFieldsBuilder } from './query-helpers/graphql-query-filter-fields-builder'
 
 export class GraphQLSubscriptionGenerator {
+  private graphqlQueryFilterFieldsBuilder: GraphqlQueryFilterFieldsBuilder
+
   public constructor(
     private readonly readModels: AnyClass[],
     private readonly typeInformer: GraphQLTypeInformer,
-    private readonly queryGenerator: GraphQLQueryGenerator,
     private readonly byIDResolverBuilder: ResolverBuilder,
-    private readonly filterResolverBuilder: ResolverBuilder
-  ) {}
+    private readonly filterResolverBuilder: ResolverBuilder,
+    protected generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
+  ) {
+    this.graphqlQueryFilterFieldsBuilder = new GraphqlQueryFilterFieldsBuilder(typeInformer, generatedFiltersByTypeName)
+  }
 
   public generate(): GraphQLObjectType | undefined {
     const byIDSubscriptions = this.generateByIDSubscriptions()
@@ -49,7 +53,10 @@ export class GraphQLSubscriptionGenerator {
       const graphQLType = this.typeInformer.generateGraphQLTypeForClass(readModel)
       subscriptions[inflected.pluralize(readModel.name)] = {
         type: graphQLType,
-        args: this.queryGenerator.generateFilterQueriesFields(`${readModel.name}Subscription`, readModel),
+        args: this.graphqlQueryFilterFieldsBuilder.generateFilterQueriesFields(
+          `${readModel.name}Subscription`,
+          readModel
+        ),
         resolve: (source) => source,
         subscribe: this.filterResolverBuilder(readModel),
       }

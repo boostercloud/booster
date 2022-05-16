@@ -7,18 +7,19 @@ import {
   BoosterConfig,
   ReadModelInterface,
   Level,
-  EventFilterByEntity,
+  EventParametersFilterByEntity,
   EventSearchRequest,
   EventSearchResponse,
   ReadModelRequestArgs,
   ReadModelRequestProperties,
+  Logger,
 } from '@boostercloud/framework-types'
 import { expect } from '../../expect'
 import { GraphQLQueryGenerator } from '../../../src/services/graphql/graphql-query-generator'
 import { GraphQLMutationGenerator } from '../../../src/services/graphql/graphql-mutation-generator'
 import { GraphQLSubscriptionGenerator } from '../../../src/services/graphql/graphql-subcriptions-generator'
 import { random, internet, lorem } from 'faker'
-import { buildLogger } from '../../../src/booster-logger'
+import { getLogger } from '../../../src/booster-logger'
 import { BoosterEventsReader } from '../../../src/booster-events-reader'
 
 import { GraphQLResolverContext } from '../../../src/services/graphql/common'
@@ -27,11 +28,13 @@ import { GraphQLFieldResolver } from 'graphql'
 describe('GraphQL generator', () => {
   let mockEnvironmentName: string
   let mockConfig: BoosterConfig
-  const mockLogger = buildLogger(Level.error)
+  let mockLogger: Logger
 
   beforeEach(() => {
     mockEnvironmentName = random.alphaNumeric(10)
     mockConfig = new BoosterConfig(mockEnvironmentName)
+    mockConfig.logLevel = Level.error
+    mockLogger = getLogger(mockConfig)
   })
 
   afterEach(() => {
@@ -132,7 +135,7 @@ describe('GraphQL generator', () => {
         requestID: mockRequestId,
         user: {
           username: mockEmail,
-          role: mockRole,
+          roles: [mockRole],
           claims: {},
         },
         operation: {
@@ -142,6 +145,17 @@ describe('GraphQL generator', () => {
           asyncIterator: (x: any) => asyncIteratorStub(x),
         },
         storeSubscriptions: false,
+        context: {
+          request: {
+            headers: {
+              authorization: 'Bearer 123',
+            },
+            body: {
+              query: 'Test query',
+            },
+          },
+          rawContext: {},
+        },
       }
       mockResolverInfo = {}
     })
@@ -162,10 +176,11 @@ describe('GraphQL generator', () => {
         const expectedFetchPayload = {
           currentUser: {
             username: mockEmail,
-            role: mockRole,
+            roles: [mockRole],
             claims: {},
           },
           filters: {},
+          sortBy: {},
           requestID: mockRequestId,
           class: mockType,
           className: mockType.name,
@@ -287,17 +302,26 @@ describe('GraphQL generator', () => {
           mockResolverContext,
           mockResolverInfo
         )
-
-        expect(dispatchCommandStub).to.have.been.calledOnceWithExactly({
+        expect(dispatchCommandStub).to.have.been.calledWithMatch({
           requestID: mockRequestId,
           currentUser: {
             username: mockEmail,
-            role: mockRole,
+            roles: [mockRole],
             claims: {},
           },
           typeName: mockType.name,
           value: mockInput,
           version: 1,
+          context: {
+            request: {
+              headers: {
+                authorization: 'Bearer 123',
+              },
+              body: {
+                query: 'Test query',
+              },
+            },
+          },
         })
       })
 
@@ -411,10 +435,11 @@ describe('GraphQL generator', () => {
         expect(asyncIteratorStub).to.be.calledOnceWithExactly({
           currentUser: {
             username: mockEmail,
-            role: mockRole,
+            roles: [mockRole],
             claims: {},
           },
           filters: {},
+          sortBy: {},
           requestID: mockRequestId,
           class: mockType,
           className: mockType.name,
@@ -435,7 +460,7 @@ describe('GraphQL generator', () => {
     describe('eventResolver', () => {
       let fetchEventsStub: SinonStub
       const fetchEventsResult: Array<EventSearchResponse> = []
-      const filters: EventFilterByEntity = {
+      const parameters: EventParametersFilterByEntity = {
         entity: 'TestEntity',
       }
 
@@ -448,20 +473,20 @@ describe('GraphQL generator', () => {
         const expectedFetchEventsPayload: EventSearchRequest = {
           currentUser: {
             username: mockEmail,
-            role: mockRole,
+            roles: [mockRole],
             claims: {},
           },
-          filters,
+          parameters,
           requestID: mockRequestId,
         }
 
-        await GraphQLGenerator.eventResolver('', filters, mockResolverContext, {} as never)
+        await GraphQLGenerator.eventResolver('', parameters, mockResolverContext, {} as never)
 
         expect(fetchEventsStub).to.have.been.calledOnceWithExactly(expectedFetchEventsPayload)
       })
 
       it('should return expected result', async () => {
-        const result = await GraphQLGenerator.eventResolver('', filters, mockResolverContext, {} as never)
+        const result = await GraphQLGenerator.eventResolver('', parameters, mockResolverContext, {} as never)
 
         expect(result).to.be.deep.equal(fetchEventsResult)
       })

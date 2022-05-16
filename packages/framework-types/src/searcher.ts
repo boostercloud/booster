@@ -6,6 +6,7 @@ import { Class, ReadOnlyNonEmptyArray } from './typelevel'
 export type SearcherFunction<TObject> = (
   className: string,
   filters: FilterFor<TObject>,
+  sortBy: SortFor<TObject>,
   limit?: number,
   afterCursor?: any,
   paginatedVersion?: boolean
@@ -33,6 +34,7 @@ export class Searcher<TObject> {
   private _limit?: number
   private _afterCursor?: any
   private filters: FilterFor<TObject> = {}
+  private _sortByList: SortFor<TObject> = {}
   private _paginatedVersion = false
 
   /**
@@ -62,6 +64,11 @@ export class Searcher<TObject> {
     return this
   }
 
+  public sortBy(sortBy?: SortFor<TObject>): this {
+    if (sortBy) this._sortByList = sortBy
+    return this
+  }
+
   public limit(limit?: number): this {
     if (limit) this._limit = limit
     return this
@@ -86,6 +93,7 @@ export class Searcher<TObject> {
     const searchResult = await this.searcherFunction(
       this.objectClass.name,
       this.filters,
+      this._sortByList,
       1, // Forces limit 1
       this._afterCursor,
       false // It doesn't make sense to paginate a single result, as pagination metadata would be discarded
@@ -100,6 +108,7 @@ export class Searcher<TObject> {
     return this.searcherFunction(
       this.objectClass.name,
       this.filters,
+      this._sortByList,
       this._limit,
       this._afterCursor,
       this._paginatedVersion
@@ -107,10 +116,15 @@ export class Searcher<TObject> {
   }
 }
 
+export type SortFor<TType> = {
+  [TProp in keyof TType]?: SortFor<TType[TProp]> | 'ASC' | 'DESC'
+}
+
 export type FilterFor<TType> = {
   [TProp in keyof TType]?: Operation<TType[TProp]>
 } &
-  FilterCombinators<TType>
+  FilterCombinators<TType> &
+  IsDefinedOperator
 
 interface FilterCombinators<TType> {
   and?: Array<FilterFor<TType>>
@@ -130,10 +144,15 @@ export type Operation<TType> = TType extends Array<infer TElementType>
   ? FilterFor<TType>
   : never
 
-interface BooleanOperators<TType> {
-  eq?: TType
-  ne?: TType
+interface IsDefinedOperator {
+  isDefined?: boolean
 }
+
+interface BooleanOperators<TType> extends IsDefinedOperator {
+  eq?: TType | null
+  ne?: TType | null
+}
+
 interface ScalarOperators<TType> extends BooleanOperators<TType> {
   gt?: TType
   gte?: TType
@@ -149,4 +168,5 @@ interface StringOperators<TType> extends ScalarOperators<TType> {
 
 interface ArrayOperators<TElementType> {
   includes?: TElementType
+  isDefined?: boolean
 }

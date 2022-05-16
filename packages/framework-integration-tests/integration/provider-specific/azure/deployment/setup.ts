@@ -11,11 +11,8 @@ before(async () => {
   await setEnv()
   const configuredAssets = ['assets', 'assetFile.txt']
   const sandboxedProject = createSandboxProject(sandboxPathFor('deploy'), configuredAssets)
-
   await overrideWithBoosterLocalDependencies(sandboxedProject)
-
   AzureTestHelper.ensureAzureConfiguration()
   console.log('Deploying sandbox project...')
   await deploy(sandboxedProject, 'azure')
-  console.log('Finished! Let the tests begin 🔥!')
 })

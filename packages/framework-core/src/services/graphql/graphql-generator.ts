@@ -3,7 +3,7 @@ import {
   BoosterConfig,
   Class,
   CommandEnvelope,
-  EventFilter,
+  EventSearchParameters,
   EventSearchRequest,
   EventSearchResponse,
   Logger,
@@ -14,7 +14,7 @@ import {
   ReadModelRequestProperties,
   TimeKey,
 } from '@boostercloud/framework-types'
-import { GraphQLFieldResolver, GraphQLResolveInfo, GraphQLSchema } from 'graphql'
+import { GraphQLFieldResolver, GraphQLInputObjectType, GraphQLResolveInfo, GraphQLSchema } from 'graphql'
 import { pluralize } from 'inflected'
 import { BoosterCommandDispatcher } from '../../booster-command-dispatcher'
 import { BoosterEventsReader } from '../../booster-events-reader'
@@ -40,13 +40,16 @@ export class GraphQLGenerator {
 
       const typeInformer = new GraphQLTypeInformer(logger)
 
+      const generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
+
       const queryGenerator = new GraphQLQueryGenerator(
         config,
         Object.values(config.readModels).map((m) => m.class),
         typeInformer,
         this.readModelByIDResolverBuilder.bind(this, config),
         this.readModelResolverBuilder.bind(this),
-        this.eventResolver.bind(this)
+        this.eventResolver.bind(this),
+        generatedFiltersByTypeName
       )
 
       const mutationGenerator = new GraphQLMutationGenerator(
@@ -58,9 +61,9 @@ export class GraphQLGenerator {
       const subscriptionGenerator = new GraphQLSubscriptionGenerator(
         Object.values(config.readModels).map((m) => m.class),
         typeInformer,
-        queryGenerator,
         this.subscriptionByIDResolverBuilder.bind(this, config),
-        this.subscriptionResolverBuilder.bind(this, config)
+        this.subscriptionResolverBuilder.bind(this, config),
+        generatedFiltersByTypeName
       )
 
       this.schema = new GraphQLSchema({
@@ -104,7 +107,7 @@ export class GraphQLGenerator {
 
   public static eventResolver(
     parent: unknown,
-    args: EventFilter,
+    args: EventSearchParameters,
     context: GraphQLResolverContext,
     info: GraphQLResolveInfo
   ): Promise<Array<EventSearchResponse>> {
@@ -175,6 +178,7 @@ export class GraphQLGenerator {
       key,
       version: 1, // TODO: How to pass the version through GraphQL?
       filters: {},
+      sortBy: {},
     }
   }
 }
@@ -191,6 +195,7 @@ function toReadModelRequestEnvelope(
     class: readModelClass,
     className: readModelClass.name,
     filters: args.filter ?? {},
+    sortBy: args.sortBy ?? {},
     limit: args.limit,
     afterCursor: args.afterCursor,
     paginatedVersion,
@@ -198,11 +203,11 @@ function toReadModelRequestEnvelope(
   }
 }
 
-function toEventSearchRequest(args: EventFilter, context: GraphQLResolverContext): EventSearchRequest {
+function toEventSearchRequest(args: EventSearchParameters, context: GraphQLResolverContext): EventSearchRequest {
   return {
     requestID: context.requestID,
     currentUser: context.user,
-    filters: args,
+    parameters: args,
   }
 }
 
@@ -214,5 +219,12 @@ function toCommandEnvelope(commandName: string, value: any, context: GraphQLReso
     typeName: commandName,
     value,
     version: 1, // TODO: How to pass the version through GraphQL?
+    context: {
+      request: {
+        body: context.context?.request.body,
+        headers: context.context?.request.headers,
+      },
+      rawContext: context,
+    },
   }
 }

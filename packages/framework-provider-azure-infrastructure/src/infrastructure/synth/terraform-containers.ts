@@ -3,6 +3,7 @@ import { CosmosdbAccount, CosmosdbSqlContainer, CosmosdbSqlDatabase, ResourceGro
 import { toTerraformName } from '../helper/utils'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { eventsStoreAttributes } from '@boostercloud/framework-provider-azure'
+import { MAX_CONTAINER_THROUGHPUT } from '../constants'
 
 export class TerraformContainers {
   static build(
@@ -42,7 +43,7 @@ export class TerraformContainers {
       partitionKeyPath: `/${eventsStoreAttributes.partitionKey}`,
       partitionKeyVersion: 2,
       autoscaleSettings: {
-        maxThroughput: 10000,
+        maxThroughput: MAX_CONTAINER_THROUGHPUT,
       },
     })
   }
@@ -64,7 +65,7 @@ export class TerraformContainers {
       partitionKeyPath: '/id',
       partitionKeyVersion: 2,
       autoscaleSettings: {
-        maxThroughput: 10000,
+        maxThroughput: MAX_CONTAINER_THROUGHPUT,
       },
     })
   }

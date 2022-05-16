@@ -6,36 +6,35 @@ import { FilterFor } from '@boostercloud/framework-types'
  * method of the read model registry.
  */
 export function queryRecordFor(
-  readModelName: string,
   filters: FilterFor<any>,
-  nested?: string
+  nested?: string,
+  queryFromFilters: Record<string, object> = {}
 ): Record<string, QueryOperation<QueryValue>> {
-  const queryFromFilters: Record<string, object> = {}
   if (Object.keys(filters).length != 0) {
     for (const key in filters) {
       const propName = nested ? `${nested}.${key}` : key
       const filter = filters[key] as FilterFor<any>
       switch (key) {
         case 'not':
-          queryFromFilters[`$${propName}`] = queryRecordFor(readModelName, filter)
+          queryFromFilters[`$${propName}`] = queryRecordFor(filter)
           break
         case 'or':
         case 'and':
           queryFromFilters[`$${propName}`] = (filters[key] as Array<FilterFor<any>>).map((filter) =>
-            queryRecordFor(readModelName, filter)
+            queryRecordFor(filter)
           )
           break
         default:
           if (!Object.keys(queryOperatorTable).includes(Object.keys(filter)[0])) {
-            return queryRecordFor(readModelName, filter, propName)
+            queryRecordFor(filter, propName, queryFromFilters)
           } else {
-            queryFromFilters[`value.${key}`] = filterToQuery(filter) as FilterFor<QueryValue>
+            queryFromFilters[`value.${propName}`] = filterToQuery(filter) as FilterFor<QueryValue>
           }
           break
       }
     }
   }
-  return { ...queryFromFilters, typeName: readModelName }
+  return { ...queryFromFilters }
 }
 
 /**
@@ -56,7 +55,7 @@ type QueryOperation<TValue> =
   | TValue
   // For these, the value must be single as a result
   | {
-      [TKey in '$lt' | '$lte' | '$gt' | '$gte' | '$ne']?: TValue
+      [TKey in '$lt' | '$lte' | '$gt' | '$gte' | '$ne' | '$exists']?: TValue
     }
   // `in` operators must have an array as a result
   | {
@@ -65,6 +64,10 @@ type QueryOperation<TValue> =
   // `regex` must have a RegExp as a result
   | {
       [TKey in '$regex' | '$nin']?: RegExp
+    }
+  // `elemMatch`
+  | {
+      [TKey in '$elemMatch']?: TValue
     }
 
 /**
@@ -82,9 +85,18 @@ const queryOperatorTable: Record<string, (values: Array<QueryValue>) => QueryOpe
   lte: (values) => ({ $lte: values[0] }),
   gte: (values) => ({ $gte: values[0] }),
   in: (values) => ({ $in: values }),
+  isDefined: (values) => ({ $exists: values[0] }),
   contains: buildRegexQuery.bind(null, 'contains'),
   beginsWith: buildRegexQuery.bind(null, 'begins-with'),
-  includes: buildRegexQuery.bind(null, 'contains'),
+  includes: buildIncludes.bind(null, 'contains'),
+}
+
+function buildIncludes(operation: string, values: Array<QueryValue>): QueryOperation<QueryValue> {
+  const matcher = values[0]
+  if (typeof matcher === 'string') {
+    return { $regex: new RegExp(matcher) }
+  }
+  return { $elemMatch: matcher }
 }
 
 /**

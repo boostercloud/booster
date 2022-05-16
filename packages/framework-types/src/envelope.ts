@@ -1,6 +1,6 @@
 import { CommandInput, EntityInterface, EventInterface, ReadModelInterface, SequenceKey, UUID } from './concepts'
 import { GraphQLClientMessage } from './graphql-websocket-messages'
-import { FilterFor } from './searcher'
+import { FilterFor, SortFor } from './searcher'
 import { Class } from './typelevel'
 
 /**
@@ -11,6 +11,7 @@ import { Class } from './typelevel'
 export interface Envelope {
   currentUser?: UserEnvelope
   requestID: UUID
+  context?: ContextEnvelope
 }
 
 export interface CommandEnvelope extends Envelope {
@@ -35,22 +36,26 @@ export interface EventEnvelope extends Envelope {
 }
 
 export interface EventSearchRequest extends Envelope {
-  filters: EventFilter
+  parameters: EventSearchParameters
 }
 
-export type EventFilter = EventFilterByEntity | EventFilterByType
+export type EventSearchParameters = EventParametersFilterByEntity | EventParametersFilterByType
 
-export interface EventTimeFilter {
+export interface EventLimitParameter {
+  limit?: number
+}
+
+export interface EventTimeParameterFilter extends EventLimitParameter {
   from?: string
   to?: string
 }
 
-export interface EventFilterByEntity extends EventTimeFilter {
+export interface EventParametersFilterByEntity extends EventTimeParameterFilter {
   entity: string
   entityID?: string
 }
 
-export interface EventFilterByType extends EventTimeFilter {
+export interface EventParametersFilterByType extends EventTimeParameterFilter {
   type: string
 }
 
@@ -84,6 +89,7 @@ export interface ReadModelRequestEnvelope<TReadModel extends ReadModelInterface>
   className: string
   version: number
   filters: ReadModelRequestProperties<TReadModel>
+  sortBy?: ReadModelSortProperties<TReadModel>
   limit?: number
   afterCursor?: unknown
   paginatedVersion?: boolean // Used only for retrocompatibility
@@ -91,6 +97,7 @@ export interface ReadModelRequestEnvelope<TReadModel extends ReadModelInterface>
 
 export interface ReadModelRequestArgs<TReadModel extends ReadModelInterface> {
   filter?: ReadModelRequestProperties<TReadModel>
+  sortBy?: ReadModelSortProperties<TReadModel>
   limit?: number
   afterCursor?: unknown
 }
@@ -101,6 +108,8 @@ export interface ReadModelByIdRequestArgs {
 }
 
 export type ReadModelRequestProperties<TReadModel> = Record<string, FilterFor<TReadModel>>
+
+export type ReadModelSortProperties<TReadModel> = Record<string, SortFor<TReadModel>>
 
 export interface GraphQLRequestEnvelope extends Envelope {
   eventType: 'CONNECT' | 'MESSAGE' | 'DISCONNECT'
@@ -134,6 +143,15 @@ export interface ConnectionDataEnvelope {
 export interface UserEnvelope {
   id?: string
   username: string
-  role: string
+  roles: Array<string>
   claims: Record<string, unknown>
+  header?: Record<string, unknown>
+}
+
+export interface ContextEnvelope {
+  request: {
+    headers: unknown
+    body: unknown
+  }
+  rawContext: unknown
 }

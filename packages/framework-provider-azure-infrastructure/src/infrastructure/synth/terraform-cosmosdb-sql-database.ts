@@ -2,6 +2,7 @@ import { TerraformStack } from 'cdktf'
 import { CosmosdbAccount, CosmosdbSqlDatabase, ResourceGroup } from '@cdktf/provider-azurerm'
 import { toTerraformName } from '../helper/utils'
 import { BoosterConfig } from '@boostercloud/framework-types'
+import { MAX_DATABASE_THROUGHPUT } from '../constants'
 
 export class TerraformCosmosdbSqlDatabase {
   static build(
@@ -17,7 +18,7 @@ export class TerraformCosmosdbSqlDatabase {
       resourceGroupName: resourceGroup.name,
       accountName: cosmosdbAccount.name,
       autoscaleSettings: {
-        maxThroughput: 10000,
+        maxThroughput: MAX_DATABASE_THROUGHPUT,
       },
     })
   }

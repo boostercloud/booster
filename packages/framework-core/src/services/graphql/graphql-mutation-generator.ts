@@ -1,6 +1,6 @@
-import { ResolverBuilder, TargetTypesMap } from './common'
+import { ResolverBuilder, TargetTypeMetadata, TargetTypesMap } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
-import { GraphQLFieldConfigMap, GraphQLObjectType, GraphQLNonNull } from 'graphql'
+import { GraphQLFieldConfigMap, GraphQLNonNull, GraphQLObjectType } from 'graphql'
 import { TypeMetadata } from 'metadata-booster'
 
 export class GraphQLMutationGenerator {
@@ -25,34 +25,50 @@ export class GraphQLMutationGenerator {
     const mutations: GraphQLFieldConfigMap<any, any> = {}
     for (const name in this.targetTypes) {
       const metadata = this.targetTypes[name]
-      let handleMethodMetadata = metadata.methods.find((m) => m.name === 'handle')?.typeInfo
-      let returnMetadata: TypeMetadata = {
+      const handleMethodMetadata = GraphQLMutationGenerator.getHandleMethodMetadata(metadata)
+      const returnMetadata = GraphQLMutationGenerator.getReturnMetadata(handleMethodMetadata)
+      const type = this.typeInformer.getOrCreateGraphQLType(returnMetadata, false)
+      mutations[name] = {
+        type: type,
+        resolve: this.mutationResolver(metadata.class),
+      }
+      const input = this.generateInputForType(metadata)
+      if (input) {
+        mutations[name].args = { ...input }
+      }
+    }
+    return mutations
+  }
+
+  private generateInputForType(metadata: TargetTypeMetadata): any {
+    if (metadata.properties.length === 0) return undefined
+    return {
+      input: {
+        type: new GraphQLNonNull(this.typeInformer.generateGraphQLTypeForClass(metadata.class, true)),
+      },
+    }
+  }
+
+  private static getHandleMethodMetadata(metadata: TargetTypeMetadata): TypeMetadata | undefined {
+    let handleMethodMetadata = metadata.methods.find((m) => m.name === 'handle')?.typeInfo
+    if (handleMethodMetadata && handleMethodMetadata.typeName === 'Promise') {
+      // If async function, return type is wrapped in a Promise
+      handleMethodMetadata = handleMethodMetadata.parameters[0]
+    }
+    return handleMethodMetadata
+  }
+
+  private static getReturnMetadata(handleMethodMetadata: TypeMetadata | undefined): TypeMetadata {
+    // `never` means the return type is `void`, otherwise we've returned something ourselves
+    if (!handleMethodMetadata || handleMethodMetadata.name === 'never') {
+      return {
         name: 'Boolean',
         typeGroup: 'Boolean',
         typeName: 'Boolean',
         isNullable: false,
         parameters: [],
-      }
-      if (handleMethodMetadata) {
-        if (handleMethodMetadata.typeName === 'Promise') {
-          // If async function, return type is wrapped in a Promise
-          handleMethodMetadata = handleMethodMetadata.parameters[0]
-        }
-        if (handleMethodMetadata.name !== 'never') {
-          // `never` means the return type is `void`, otherwise we've returned something ourselves
-          returnMetadata = handleMethodMetadata
-        }
-      }
-      mutations[name] = {
-        type: this.typeInformer.getOrCreateGraphQLType(returnMetadata, false),
-        args: {
-          input: {
-            type: new GraphQLNonNull(this.typeInformer.generateGraphQLTypeForClass(metadata.class, true)),
-          },
-        },
-        resolve: this.mutationResolver(metadata.class),
-      }
+      } as TypeMetadata
     }
-    return mutations
+    return handleMethodMetadata
   }
 }

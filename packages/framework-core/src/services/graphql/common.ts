@@ -1,6 +1,21 @@
 import { GraphQLScalarType } from 'graphql/type/definition'
-import { AnyClass, UserEnvelope, UUID, GraphQLOperation, ReadModelInterface } from '@boostercloud/framework-types'
-import { GraphQLFieldResolver, Kind } from 'graphql'
+import {
+  AnyClass,
+  UserEnvelope,
+  UUID,
+  GraphQLOperation,
+  ReadModelInterface,
+  ContextEnvelope,
+} from '@boostercloud/framework-types'
+import {
+  GraphQLEnumType,
+  GraphQLEnumValueConfigMap,
+  GraphQLFieldResolver,
+  GraphQLList,
+  GraphQLObjectType,
+  GraphQLType,
+  Kind,
+} from 'graphql'
 import { ReadModelPubSub } from '../pub-sub/read-model-pub-sub'
 import { PropertyMetadata, TypeMetadata } from 'metadata-booster'
 
@@ -11,6 +26,8 @@ export interface TargetTypeMetadata {
   methods: Array<PropertyMetadata>
 }
 
+export type GraphQLNonInputType = GraphQLObjectType | GraphQLScalarType | GraphQLList<GraphQLType>
+
 export type ResolverBuilder = (objectClass: AnyClass) => GraphQLFieldResolver<unknown, GraphQLResolverContext, any>
 
 export interface GraphQLResolverContext {
@@ -20,6 +37,7 @@ export interface GraphQLResolverContext {
   user?: UserEnvelope
   storeSubscriptions: boolean
   pubSub: ReadModelPubSub<ReadModelInterface>
+  context?: ContextEnvelope
 }
 
 export const graphQLWebsocketSubprotocolHeaders = {
@@ -45,4 +63,14 @@ export const DateScalar = new GraphQLScalarType({
 
 export function isExternalType(typeMetadata: Pick<TypeMetadata, 'importPath'>): boolean {
   return !!typeMetadata.importPath && !typeMetadata.importPath.startsWith('.')
+}
+
+export const buildGraphqlSimpleEnumFor = (enumName: string, values: Array<string>): GraphQLEnumType => {
+  return new GraphQLEnumType({
+    name: enumName,
+    values: values.reduce((valuesRecord, value) => {
+      valuesRecord[value] = { value }
+      return valuesRecord
+    }, {} as GraphQLEnumValueConfigMap),
+  })
 }

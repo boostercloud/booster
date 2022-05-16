@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
 import { searchReadModel } from '../../src/library/read-models-searcher-adapter'
-import { createStubInstance, fake, restore, stub, SinonStubbedInstance } from 'sinon'
+import { createStubInstance, fake, restore, SinonStubbedInstance, stub } from 'sinon'
 import { BoosterConfig, FilterFor, Logger } from '@boostercloud/framework-types'
 import { random } from 'faker'
 import { DynamoDB } from 'aws-sdk'
@@ -11,6 +11,7 @@ describe('Read models searcher adapter', () => {
     const config: BoosterConfig = new BoosterConfig('test')
     const logger: Logger = {
       info: fake(),
+      warn: fake(),
       error: fake(),
       debug: fake(),
     }
@@ -25,11 +26,11 @@ describe('Read models searcher adapter', () => {
     }
 
     class Money {
-      constructor(public cents: number, public currency: string) {}
+      constructor(public cents: number | null, public currency: string) {}
     }
 
     class Item {
-      constructor(public sku: string, public price: Money) {}
+      constructor(public sku: string | null, public price: Money) {}
     }
 
     class Product {
@@ -184,6 +185,98 @@ describe('Read models searcher adapter', () => {
       const filters: FilterFor<Product> = {
         days: { includes: 2 },
         items: { includes: { sku: 'test', price: { cents: 1000, currency: 'EUR' } } },
+      }
+
+      await searchReadModel(database, config, logger, readModelName, filters as FilterFor<any>)
+
+      expect(database.scan).to.have.been.calledWithExactly(expectedInput)
+    })
+
+    it('Executes query using isDefined filters', async () => {
+      const expectedInput = {
+        ...expectedParams,
+        FilterExpression:
+          '(attribute_exists(#days) and attribute_not_exists(#mainItem) and attribute_exists(#mainItem.#sku) and attribute_exists(#mainItem.#sku.#price))',
+        ExpressionAttributeNames: {
+          '#days': 'days',
+          '#mainItem': 'mainItem',
+          '#sku': 'sku',
+          '#price': 'price',
+        },
+        ExpressionAttributeValues: {},
+      }
+      const filters: FilterFor<Product> = {
+        and: [
+          { days: { isDefined: true } },
+          { mainItem: { isDefined: false } },
+          { mainItem: { sku: { isDefined: true } } },
+          { mainItem: { sku: { price: { isDefined: true } } } },
+        ],
+      }
+
+      await searchReadModel(database, config, logger, readModelName, filters as FilterFor<any>)
+
+      expect(database.scan).to.have.been.calledWithExactly(expectedInput)
+    })
+
+    it('Throws an error with non supported filters', async () => {
+      const unknownOperator = 'existsIn'
+      const filters: FilterFor<any> = {
+        id: { [unknownOperator]: 'test' },
+      }
+
+      await expect(searchReadModel(database, config, logger, readModelName, filters)).to.be.eventually.rejectedWith(
+        `Operator "${unknownOperator}" is not supported`
+      )
+    })
+
+    it('Executes query using isDefined filters with complex filters', async () => {
+      const expectedInput = {
+        ...expectedParams,
+        FilterExpression:
+          '(#id = :id_0 and #mainItem.#sku = :sku_0 and (attribute_exists(#days) or contains(#items, :items_0)) and #mainItem.#sku = :sku_1 and #mainItem.#price.#cents <> :cents_0)',
+        ExpressionAttributeNames: {
+          '#id': 'id',
+          '#mainItem': 'mainItem',
+          '#sku': 'sku',
+          '#days': 'days',
+          '#items': 'items',
+          '#price': 'price',
+          '#cents': 'cents',
+        },
+        ExpressionAttributeValues: {
+          ':id_0': '3',
+          ':sku_0': 'test',
+          ':items_0': { sku: 'test', price: { cents: 1000, currency: 'EUR' } },
+          ':sku_1': null,
+          ':cents_0': null,
+        },
+      }
+      const filters: FilterFor<Product> = {
+        and: [
+          {
+            id: { eq: '3' },
+          },
+          {
+            mainItem: {
+              sku: {
+                eq: 'test',
+              },
+            },
+          },
+          {
+            or: [
+              {
+                days: { isDefined: true },
+              },
+              {
+                items: { includes: { sku: 'test', price: { cents: 1000, currency: 'EUR' } } },
+              },
+            ],
+          },
+          { mainItem: { sku: { eq: null } } },
+          { mainItem: { price: { cents: { ne: null } } } },
+        ],
       }
 
       await searchReadModel(database, config, logger, readModelName, filters as FilterFor<any>)
