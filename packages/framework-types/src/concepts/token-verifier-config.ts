@@ -7,7 +7,7 @@ export type TokenVerifierConfig = {
       jwksUri: string
     }
   | {
-      publicKey: string | { algorithm: string; payload: string }
+      publicKey: string | { algorithm: string; payload: string } | Promise<string>
     }
   | {
       decryptionKey: Uint8Array

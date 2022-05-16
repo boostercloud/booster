@@ -35,10 +35,11 @@ class TokenVerifierClient {
   private async importKey(): Promise<void> {
     if (!('publicKey' in this.tokenVerifierConfig))
       throw new Error('Cannot import key as publicKey is not defined in config')
-    if (typeof this.tokenVerifierConfig.publicKey === 'string') {
-      this.publicKey = await importSPKI(this.tokenVerifierConfig.publicKey, 'RS256')
+    const publicKey = await Promise.resolve(this.tokenVerifierConfig.publicKey)
+    if (typeof publicKey === 'string') {
+      this.publicKey = await importSPKI(publicKey, 'RS256')
     } else {
-      const { payload, algorithm } = this.tokenVerifierConfig.publicKey
+      const { payload, algorithm } = publicKey
       this.publicKey = await importSPKI(payload, algorithm)
     }
   }
