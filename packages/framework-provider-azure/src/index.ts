@@ -13,7 +13,7 @@ import { environmentVarNames } from './constants'
 import { deleteReadModel, fetchReadModel, storeReadModel } from './library/read-model-adapter'
 import { searchReadModel } from './library/searcher-adapter'
 import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
-import { searchEvents } from './library/events-searcher-adapter'
+import { searchEvents, searchEventsIds } from './library/events-searcher-adapter'
 
 let cosmosClient: CosmosClient
 if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefined') {
@@ -38,6 +38,7 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
     forEntitySince: readEntityEventsSince.bind(null, cosmosClient),
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, cosmosClient),
     search: searchEvents.bind(null, cosmosClient),
+    searchEventsIds: searchEventsIds.bind(null, cosmosClient),
   },
   // ProviderReadModelsLibrary
   readModels: {

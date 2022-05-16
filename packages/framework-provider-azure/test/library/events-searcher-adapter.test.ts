@@ -3,7 +3,7 @@ import { expect } from '../expect'
 import { createStubInstance, fake, restore, stub, SinonStubbedInstance } from 'sinon'
 import { CosmosClient } from '@azure/cosmos'
 import { BoosterConfig, EventSearchParameters } from '@boostercloud/framework-types'
-import { searchEvents } from '../../src/library/events-searcher-adapter'
+import { searchEvents, searchEventsIds } from '../../src/library/events-searcher-adapter'
 import * as searchModule from '../../src/helpers/query-helper'
 
 describe('Events Searcher adapter', () => {
@@ -165,6 +165,72 @@ describe('Events Searcher adapter', () => {
         {
           createdAt: 'DESC',
         }
+      )
+    })
+  })
+
+  describe('The "searchEventsIds" method', () => {
+    let mockConfig: BoosterConfig
+
+    let mockCosmosDbClient: SinonStubbedInstance<CosmosClient>
+
+    beforeEach(() => {
+      mockConfig = new BoosterConfig('test')
+      mockCosmosDbClient = createStubInstance(CosmosClient, {
+        database: stub().returns({
+          container: stub().returns({
+            items: {
+              query: stub().returns({
+                fetchAll: fake.resolves({ resources: [] }) as any,
+              }),
+            },
+          }),
+        }) as any,
+      })
+    })
+
+    afterEach(() => {
+      restore()
+    })
+
+    it('Generate query for entityTypeName, limit and afterCursor has all fields', async () => {
+      const mockSearch = stub(searchModule, 'search').returns(Promise.resolve([]))
+      const eventStoreName = 'new-booster-app-app-events-store'
+      const limit = 1
+      const afterCursor = { id: '1' }
+      const entityTypeName = 'entity'
+      await searchEventsIds(mockCosmosDbClient as any, mockConfig, limit, afterCursor, entityTypeName)
+
+      expect(mockSearch).to.have.been.calledWithExactly(
+        mockCosmosDbClient,
+        mockConfig,
+        eventStoreName,
+        { kind: { eq: 'event' }, entityTypeName: { eq: 'entity' } },
+        1,
+        { id: '1' },
+        true,
+        undefined,
+        'DISTINCT c.entityID'
+      )
+    })
+
+    it('Generate query for entityTypeName, limit has all fields', async () => {
+      const mockSearch = stub(searchModule, 'search').returns(Promise.resolve([]))
+      const eventStoreName = 'new-booster-app-app-events-store'
+      const limit = 1
+      const entityTypeName = 'entity'
+      await searchEventsIds(mockCosmosDbClient as any, mockConfig, limit, undefined, entityTypeName)
+
+      expect(mockSearch).to.have.been.calledWithExactly(
+        mockCosmosDbClient,
+        mockConfig,
+        eventStoreName,
+        { kind: { eq: 'event' }, entityTypeName: { eq: 'entity' } },
+        1,
+        undefined,
+        true,
+        undefined,
+        'DISTINCT c.entityID'
       )
     })
   })

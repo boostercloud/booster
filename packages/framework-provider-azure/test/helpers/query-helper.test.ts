@@ -71,6 +71,35 @@ describe('Query helper', () => {
       )
     })
 
+    it('Executes a SQL query with a projection in the read model table', async () => {
+      await search(
+        mockCosmosDbClient as any,
+        mockConfig,
+        mockLogger,
+        mockReadModelName,
+        {},
+        undefined,
+        undefined,
+        false,
+        undefined,
+        'DISTINCT field'
+      )
+
+      expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container
+      ).to.have.been.calledWithExactly(`${mockReadModelName}`)
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
+          .query
+      ).to.have.been.calledWith(
+        match({
+          query: 'SELECT DISTINCT field FROM c ',
+          parameters: [],
+        })
+      )
+    })
+
     it('Executes a SQL query with filters in the read model table', async () => {
       const filters: FilterFor<Product> = {
         id: { eq: '3', in: ['test1', 'test2', 'test3'] },

@@ -102,6 +102,20 @@ describe('the `Booster` class', () => {
       expect(searcherFunctionFake).to.have.been.calledOnce
     })
   })
+  describe('the `eventsIds` method', () => {
+    it('has an instance method', async () => {
+      const providerSearchEventsIds = fake.returns([])
+      Booster.configureCurrentEnv((config) => {
+        config.provider = {
+          events: {
+            searchEventsIds: providerSearchEventsIds,
+          },
+        } as unknown as ProviderLibrary
+      })
+      await Booster.eventsIds('TestEvent', 1, undefined)
+      expect(providerSearchEventsIds).to.have.been.calledOnce
+    })
+  })
   describe('the `event` method', () => {
     class TestEvent {
       public constructor(readonly id: UUID) {}
