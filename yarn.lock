@@ -1883,7 +1883,7 @@ __metadata:
     sinon: 9.2.3
     sinon-chai: 3.5.0
     tslib: 2.3.1
-    typescript: 4.2.4
+    typescript: 4.5.4
     validator: 13.7.0
   languageName: unknown
   linkType: soft
@@ -2153,14 +2153,14 @@ __metadata:
 
 "@boostercloud/framework-provider-local@file:packages/framework-provider-local::locator=root%40workspace%3A.":
   version: 0.28.1
-  resolution: "@boostercloud/framework-provider-local@file:packages/framework-provider-local#packages/framework-provider-local::hash=90dd02&locator=root%40workspace%3A."
+  resolution: "@boostercloud/framework-provider-local@file:packages/framework-provider-local#packages/framework-provider-local::hash=4abe61&locator=root%40workspace%3A."
   dependencies:
     "@boostercloud/framework-common-helpers": ^0.28.1
     "@boostercloud/framework-types": ^0.28.1
     "@types/nedb": ^1.8.11
     nedb: ^1.8.0
     tslib: 2.3.1
-  checksum: 348228a8736c953a7aeed5abf2277f4a788a448036cc4020b70fe3dc964dd2ec9cfb2456d03b8ff74334e3ccfa68052f7df19371fb8fa6a2cc23bc4887a54b4b
+  checksum: ae19f32ab072b79a5d87f73ed6f3e0916e131ecc545f47cdcce4824957fee76df387627e71e10aaef01628e66648d072a2f5f04b141c049bfadf83f5e0b6e66c
   languageName: node
   linkType: hard
 
@@ -2189,7 +2189,7 @@ __metadata:
     sinon: 9.2.3
     sinon-chai: 3.5.0
     tslib: 2.3.1
-    typescript: 4.2.4
+    typescript: 4.5.4
     uuid: 8.3.2
   languageName: unknown
   linkType: soft
@@ -17460,16 +17460,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:4.2.4":
-  version: 4.2.4
-  resolution: "typescript@npm:4.2.4"
-  bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: 89c397df192f239359ad798b96d8e8d552e12c0c189ac5676cec4c20c410d6eec636b8e59a88f2aef0a56d961a9678d99c400099be9b7cae2f7b062eb4b7b171
-  languageName: node
-  linkType: hard
-
 "typescript@npm:4.5.4":
   version: 4.5.4
   resolution: "typescript@npm:4.5.4"
@@ -17487,16 +17477,6 @@ __metadata:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 46c842e2cd4797b88b66ef06c9c41dd21da48b95787072ccf39d5f2aa3124361bc4c966aa1c7f709fae0509614d76751455b5231b12dbb72eb97a31369e1ff92
-  languageName: node
-  linkType: hard
-
-"typescript@patch:typescript@4.2.4#~builtin<compat/typescript>":
-  version: 4.2.4
-  resolution: "typescript@patch:typescript@npm%3A4.2.4#~builtin<compat/typescript>::version=4.2.4&hash=493e53"
-  bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: bafcad6990f5d8ea9ccff09e440ce42630b2e42a5752dde5455b55c806ae43f8726a03770577d4fc6c2aa624597f796725cc6fe2c173f558a753a2f23a5198a4
   languageName: node
   linkType: hard
 
