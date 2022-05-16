@@ -14,6 +14,10 @@ export interface HasProjections {
   projections: Array<Projection>
 }
 
+export interface HasProjection {
+  projection: Projection
+}
+
 export interface Projection {
   entityName: string
   entityId: string

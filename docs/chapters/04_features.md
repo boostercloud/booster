@@ -883,6 +883,8 @@ query {
 }
 ```
 
+Note: `eq` and `ne` are valid filters for checking if a field value is null or not null.
+
 ##### Array filters
 
 | Filter   | Value  |             Description |
@@ -918,6 +920,25 @@ Example:
 ```graphql
 query {
   CartReadModels(filter: { or: [{ id: { contains: "a" } }, { id: { contains: "b" } }] }) {
+    id
+    price
+    itemsIds
+  }
+}
+```
+
+##### IsDefined operator
+
+
+| Filter    |    Value    |         Description |
+|:----------|:-----------:|--------------------:|
+| isDefined | true/false  | field exists or not |
+
+Example:
+
+```graphql
+query {
+  CartReadModels(filter: { price: { isDefined: true } }) {
     id
     price
     itemsIds
@@ -961,6 +982,47 @@ export class GetProductsCount {
 
 > **Warning**: Notice that `ReadModel`s are eventually consistent objects that are calculated as all events in all entities that affect the read model are settled. You should not assume that a read model is a proper source of truth, so you shouldn't use this feature for data validations. If you need to query the most up-to-date current state, consider fetching your Entities, instead of ReadModels, with `Booster.entity`
 
+#### Using sorting
+
+Booster allows you to sort your read models data in your commands handlers and event handlers using the `Booster.readModel` method.
+
+For example, you can sort and get the products in your commands like this:
+
+```graphql
+{
+  ListCartReadModels(filter: {}, limit: 5, sortBy: {
+    shippingAddress: {
+      firstName: ASC
+    }
+  }) {
+    items {
+      id
+      cartItems 
+      checks
+      shippingAddress {
+        firstName
+      }
+      payment {
+        cartId
+      }
+      cartItemsIds
+    }
+    cursor
+  }
+}
+```
+
+This is a preview feature available only for some Providers and with some limitations:
+* Azure: 
+  * Sort by one field supported. 
+  * Nested fields supported. 
+  * Sort by more than one file: **unsupported**.
+* Local:
+  * Sort by one field supported.
+  * Nested fields supported.
+  * Sort by more than one file: **unsupported**.
+
+> **Warning**: It is not possible to sort by fields defined as Interface, only classes or primitives types.
 
 
 #### Using pagination
@@ -1305,6 +1367,90 @@ boost nuke -e <environment name>
 For a force delete without asking for confirmation, you can run `boost nuke -e <environment name> -f`.
 
 > [!ATTENTION] Be EXTRA CAUTIOUS with this option, all your application data will be irreversibly DELETED without confirmation.
+ 
+
+## Error handling
+
+Booster includes a global error handler annotation `@GlobalErrorHandler` that will catch all errors that are thrown by:
+* **Command Handling Errors**: Errors thrown by the `handle` method of the command.
+  **Program handling errors**: Errors thrown by the ScheduledCommand `handle` method.
+  **Event Handle errors**: Errors thrown by the `Event Handle` method.
+* **Reducer errors**: Errors thrown by the `@Reduces` method of the entity.
+* **Projection errors**: Errors thrown in the ReadModel `@Projects` method.
+* All errors: Errors thrown in any of the previous methods. This method will always be called, also when calling any of the above methods.
+
+You can trap and return new errors in any of these methods annotating a class with `@GlobalErrorHandler` and implementing the following methods:
+
+**Command handle errors**:
+```typescript
+onCommandHandlerError?(error: Error, command: CommandEnvelope): Promise<Error | undefined>
+```
+
+**Schedule handle errors**:
+```typescript
+onScheduledCommandHandlerError?(error: Error): Promise<Error | undefined>
+```
+
+**Event handler errors**:
+```typescript
+onDispatchEventHandlerError?(error: Error, eventInstance: EventInterface): Promise<Error | undefined>
+```
+
+**Reducer errors**:
+```typescript
+onReducerError?(error: Error, eventInstance: EventInterface, snapshotInstance: EntityInterface | null): Promise<Error | undefined>
+```
+
+**Projections errors**:
+```typescript
+onProjectionError?(error: Error, entity: EntityInterface, readModel: ReadModelInterface | undefined): Promise<Error | undefined>
+```
+
+**All errors**
+```typescript
+  onError?(error: Error | undefined): Promise<Error | undefined>
+```
+
+Example:
+```typescript
+@GlobalErrorHandler()
+export class AppErrorHandler {
+  public static async onCommandHandlerError(error: Error, command: CommandEnvelope): Promise<Error | undefined> {
+    return error
+  }
+
+  public static async onScheduledCommandHandlerError(error: Error): Promise<Error | undefined> {
+    return error
+  }
+
+  public static async onDispatchEventHandlerError(error: Error, eventInstance: EventInterface): Promise<Error | undefined> {
+    return error
+  }
+
+  public static async onReducerError(
+    error: Error,
+    eventInstance: EventInterface,
+    snapshotInstance: EntityInterface | null
+  ): Promise<Error | undefined> {
+    return error
+  }
+
+  public static async onProjectionError(
+    error: Error,
+    entity: EntityInterface,
+    readModel: ReadModelInterface | undefined
+  ): Promise<Error | undefined> {
+    return error
+  }
+
+  public static async onError(error: Error | undefined): Promise<Error | undefined> {
+    return error
+  }
+}
+```
+
+**Note**: if you want to ignore the error thrown, you can simply return `undefined` from the error handler.
+
 
 ## Provider feature matrix
 

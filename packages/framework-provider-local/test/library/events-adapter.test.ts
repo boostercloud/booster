@@ -41,6 +41,7 @@ describe('events-adapter', () => {
 
     mockLogger = {
       info: fake(),
+      warn: fake(),
       error: fake(),
       debug: loggerDebugStub,
     }

@@ -2,7 +2,7 @@
 import {
   BoosterConfig,
   EventEnvelope,
-  EventFilter,
+  EventSearchParameters,
   EventSearchResponse,
   Logger,
   UserApp,
@@ -86,7 +86,7 @@ export const search = (
   _registry: EventRegistry,
   _config: BoosterConfig,
   _logger: Logger,
-  _filters: EventFilter
+  _filters: EventSearchParameters
 ): Promise<Array<EventSearchResponse>> => {
   throw new Error('eventsAdapter#search: Not implemented yet')
 }

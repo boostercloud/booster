@@ -3,7 +3,7 @@ import { BoosterConfig } from './config'
 import {
   ConnectionDataEnvelope,
   EventEnvelope,
-  EventFilter,
+  EventSearchParameters,
   EventSearchResponse,
   GraphQLRequestEnvelope,
   GraphQLRequestEnvelopeError,
@@ -13,7 +13,7 @@ import {
   SubscriptionEnvelope,
 } from './envelope'
 import { Logger } from './logger'
-import { FilterFor } from './searcher'
+import { FilterFor, SortFor } from './searcher'
 import { ReadOnlyNonEmptyArray } from './typelevel'
 import { RocketDescriptor } from './rocket-descriptor'
 
@@ -42,7 +42,7 @@ export interface ProviderEventsLibrary {
     entityTypeName: string,
     entityID: UUID
   ): Promise<EventEnvelope | null>
-  search(config: BoosterConfig, logger: Logger, filters: EventFilter): Promise<Array<EventSearchResponse>>
+  search(config: BoosterConfig, logger: Logger, parameters: EventSearchParameters): Promise<Array<EventSearchResponse>>
   /** Streams an event to the corresponding event handler */
   store(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig, logger: Logger): Promise<void>
 }
@@ -60,6 +60,7 @@ export interface ProviderReadModelsLibrary {
     logger: Logger,
     entityTypeName: string,
     filters: FilterFor<unknown>,
+    sortBy?: SortFor<unknown>,
     limit?: number,
     afterCursor?: unknown,
     paginatedVersion?: boolean

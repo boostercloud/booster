@@ -1,10 +1,9 @@
-import { Class } from '..'
+import { AnyClass } from '../typelevel'
 
-export interface ProjectionMetadata {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  class: Class<any>
+export interface ProjectionMetadata<TEntity> {
+  class: AnyClass
   methodName: string
-  joinKey: string
+  joinKey: keyof TEntity
 }
 
 export type ProjectionResult<TReadModel> = TReadModel | ReadModelAction
