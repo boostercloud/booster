@@ -25,11 +25,12 @@ export class GraphqlQuerySortBuilder {
 
   private generateSortFor(prop: PropertyMetadata): GraphQLInputObjectType | GraphQLEnumType {
     let sortByName = `${prop.typeInfo.name}PropertySortBy`
-    sortByName = sortByName.charAt(0).toUpperCase() + sortByName.substr(1).replace(/\[]/g, '')
+    sortByName = sortByName.charAt(0).toUpperCase() + sortByName.substring(1).replace(/\[]/g, '')
 
     if (this.generatedSortByByTypeName[sortByName]) return this.generatedSortByByTypeName[sortByName]
     if (!prop.typeInfo.type || typeof prop.typeInfo.type === 'object') return this.orderType
     if (prop.typeInfo.typeGroup === 'Array') return this.orderType
+    if (prop.typeInfo.name === 'UUID' || prop.typeInfo.name === 'Date') return this.orderType
 
     let fields: Thunk<GraphQLInputFieldConfigMap> = {}
 
