@@ -14,7 +14,7 @@ import {
   throwExceptionId,
 } from '../../../src/constants'
 
-const secs = 4
+const secs = 10
 
 describe('Cart end-to-end tests', () => {
   let client: ApolloClient<NormalizedCacheObject>
@@ -32,7 +32,7 @@ describe('Cart end-to-end tests', () => {
           quantity: random.number({ min: 1 }),
         },
         mutation: gql`
-          mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+          mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
             ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
           }
         `,
@@ -50,7 +50,7 @@ describe('Cart end-to-end tests', () => {
           quantity: random.number({ min: 1 }),
         },
         mutation: gql`
-          mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+          mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
             ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
           }
         `,
@@ -69,7 +69,10 @@ describe('Cart end-to-end tests', () => {
               query CartReadModel($cartId: ID!) {
                 CartReadModel(id: $cartId) {
                   id
-                  cartItems
+                  cartItems {
+                    productId
+                    quantity
+                  }
                 }
               }
             `,
@@ -93,13 +96,13 @@ describe('Cart end-to-end tests', () => {
             quantity: random.number({ min: 1 }),
           },
           mutation: gql`
-            mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+            mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
               ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
             }
           `,
         })
       } catch (e) {
-        expect(e.graphQLErrors[0].message).to.be.eq(beforeHookException)
+        expect(e.graphQLErrors[0].message).to.be.eq(`${beforeHookException}-onError`)
         expect(e.graphQLErrors[0].path).to.deep.eq(['ChangeCartItem'])
       }
     })
@@ -119,7 +122,7 @@ describe('Cart end-to-end tests', () => {
               quantity: mockQuantity,
             },
             mutation: gql`
-              mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+              mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
                 ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
               }
             `,
@@ -137,7 +140,10 @@ describe('Cart end-to-end tests', () => {
                   query CartReadModel($cartId: ID!) {
                     CartReadModel(id: $cartId) {
                       id
-                      cartItems
+                      cartItems {
+                        productId
+                        quantity
+                      }
                     }
                   }
                 `,
@@ -151,6 +157,7 @@ describe('Cart end-to-end tests', () => {
           expect(cartData.id).to.be.equal(mockCartId)
           expect(cartData.cartItems).to.have.length(1)
           expect(cartData.cartItems[0]).to.deep.equal({
+            __typename: 'CartItem',
             productId: mockProductId,
             quantity: mockQuantity,
           })
@@ -180,7 +187,7 @@ describe('Cart end-to-end tests', () => {
                   quantity: mockQuantity,
                 },
                 mutation: gql`
-                  mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+                  mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
                     ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
                   }
                 `,
@@ -202,13 +209,18 @@ describe('Cart end-to-end tests', () => {
                   query CartReadModel($cartId: ID!) {
                     CartReadModel(id: $cartId) {
                       id
-                      cartItems
+                      cartItems {
+                        productId
+                        quantity
+                      }
                     }
                   }
                 `,
               })
             },
-            (result) => result?.data?.CartReadModel?.cartItems?.length == mockCartItemsCount
+            (result) => {
+              return result?.data?.CartReadModel?.cartItems?.length == mockCartItemsCount
+            }
           )
 
           const cartData = queryResult.data.CartReadModel
@@ -267,10 +279,10 @@ describe('Cart end-to-end tests', () => {
           mutation: gql`
             mutation CreateProduct(
               $sku: String!
-              $displayName: String
-              $description: String
-              $priceInCents: Float
-              $currency: String
+              $displayName: String!
+              $description: String!
+              $priceInCents: Float!
+              $currency: String!
             ) {
               CreateProduct(
                 input: {
@@ -307,7 +319,9 @@ describe('Cart end-to-end tests', () => {
               `,
             })
           },
-          (result) => result?.data?.ProductReadModels?.some((product: any) => product.sku === mockSku)
+          (result) => {
+            return result?.data?.ProductReadModels?.some((product: any) => product.sku === mockSku)
+          }
         )
 
         const product = products.data.ProductReadModels.find((product: any) => product.sku === mockSku)
@@ -402,7 +416,7 @@ describe('Cart end-to-end tests', () => {
             quantity: mockQuantity,
           },
           mutation: gql`
-            mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+            mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
               ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
             }
           `,
@@ -420,7 +434,10 @@ describe('Cart end-to-end tests', () => {
                 query CartReadModel($cartId: ID!) {
                   CartReadModel(id: $cartId) {
                     id
-                    cartItems
+                    cartItems {
+                      productId
+                      quantity
+                    }
                   }
                 }
               `,
@@ -435,6 +452,7 @@ describe('Cart end-to-end tests', () => {
           id: mockCartId,
           cartItems: [
             {
+              __typename: 'CartItem',
               productId: mockProductId,
               quantity: mockQuantity,
             },
@@ -451,7 +469,7 @@ describe('Cart end-to-end tests', () => {
             confirmationToken: mockConfirmationToken,
           },
           mutation: gql`
-            mutation ConfirmPayment($paymentId: ID!, $cartId: ID!, $confirmationToken: String) {
+            mutation ConfirmPayment($paymentId: ID!, $cartId: ID!, $confirmationToken: String!) {
               ConfirmPayment(input: { paymentId: $paymentId, cartId: $cartId, confirmationToken: $confirmationToken })
             }
           `,
@@ -468,7 +486,10 @@ describe('Cart end-to-end tests', () => {
                 query CartReadModel($cartId: ID!) {
                   CartReadModel(id: $cartId) {
                     id
-                    cartItems
+                    cartItems {
+                      productId
+                      quantity
+                    }
                     payment {
                       confirmationToken
                       id
@@ -488,6 +509,7 @@ describe('Cart end-to-end tests', () => {
           id: mockCartId,
           cartItems: [
             {
+              __typename: 'CartItem',
               productId: mockProductId,
               quantity: mockQuantity,
             },

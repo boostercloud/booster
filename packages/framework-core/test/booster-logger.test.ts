@@ -1,13 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 
 import { expect } from './expect'
 import { fake, replace, restore } from 'sinon'
-import { buildLogger } from '../src/booster-logger'
-import { Level } from '@boostercloud/framework-types'
+import { getLogger } from '../src/booster-logger'
+import { BoosterConfig, Level, Logger } from '@boostercloud/framework-types'
 
-describe('the `buildLogger method`', () => {
+describe('the `getLogger method`', () => {
+  const config = new BoosterConfig('Test Logger')
+
   afterEach(() => {
     restore()
   })
@@ -20,7 +23,8 @@ describe('the `buildLogger method`', () => {
     replace(console, 'info', fakeConsoleInfo)
     replace(console, 'error', fakeConsoleError)
 
-    const logger = buildLogger(Level.debug)
+    config.logLevel = Level.debug
+    const logger = getLogger(config)
     logger.debug('a')
     logger.info('b')
     logger.error('c')
@@ -38,7 +42,8 @@ describe('the `buildLogger method`', () => {
     replace(console, 'info', fakeConsoleInfo)
     replace(console, 'error', fakeConsoleError)
 
-    const logger = buildLogger(Level.info)
+    config.logLevel = Level.info
+    const logger = getLogger(config)
     logger.debug('a')
     logger.info('b')
     logger.error('c')
@@ -56,7 +61,8 @@ describe('the `buildLogger method`', () => {
     replace(console, 'info', fakeConsoleInfo)
     replace(console, 'error', fakeConsoleError)
 
-    const logger = buildLogger(Level.error)
+    config.logLevel = Level.error
+    const logger = getLogger(config)
     logger.debug('a')
     logger.info('b')
     logger.error('c')
@@ -64,5 +70,29 @@ describe('the `buildLogger method`', () => {
     expect(fakeConsoleDebug).to.not.have.been.called
     expect(fakeConsoleInfo).to.not.have.been.calledOnce
     expect(fakeConsoleError).to.have.been.calledOnce
+  })
+
+  it('use custom logger when is defined at config level', () => {
+    const fakeConsoleDebug = fake()
+    const fakeCustomDebug = fake()
+    replace(console, 'debug', fakeConsoleDebug)
+    const configWithLogger = new BoosterConfig('TestLogger')
+
+    const customLogger: Logger = {
+      debug: (message?: any, ...optionalParams: any[]) => {},
+      warn: (message?: any, ...optionalParams: any[]) => {},
+      info: (message?: any, ...optionalParams: any[]) => {},
+      error: (message?: any, ...optionalParams: any[]) => {},
+    }
+
+    replace(customLogger, 'debug', fakeCustomDebug)
+    configWithLogger.logger = customLogger
+
+    config.logLevel = Level.debug
+    const logger = getLogger(configWithLogger)
+    logger.debug('a')
+
+    expect(fakeConsoleDebug).to.not.have.been.called
+    expect(fakeCustomDebug).to.have.been.calledOnce
   })
 })

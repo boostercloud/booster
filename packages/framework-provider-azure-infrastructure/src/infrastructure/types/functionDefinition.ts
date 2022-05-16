@@ -19,6 +19,7 @@ export type EventHandlerBinding = Binding & {
   databaseName: string
   collectionName: string
   createLeaseCollectionIfNotExists: string
+  [key: string]: any
 }
 
 export interface FunctionDefinition<T extends Binding = Binding> {

@@ -6,6 +6,7 @@ import { Logger } from '@boostercloud/framework-types'
 describe('The user interaction with Helm', async () => {
   const fakeLogger: Logger = {
     info: fake(),
+    warn: fake(),
     error: fake(),
     debug: fake(),
   }

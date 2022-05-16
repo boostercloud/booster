@@ -6,7 +6,7 @@ import { replace, fake, restore, match, replaceGetter } from 'sinon'
 import { Importer } from '../src/importer'
 import {
   BoosterConfig,
-  EventFilterByType,
+  EventParametersFilterByType,
   EventInterface,
   EventSearchResponse,
   ProviderLibrary,
@@ -79,6 +79,7 @@ describe('the `Booster` class', () => {
         match.any,
         TestReadModel.name,
         match.any,
+        {},
         undefined,
         undefined,
         false
@@ -157,9 +158,10 @@ describe('the `Booster` class', () => {
         config.events[BestEvent.name] = { class: BestEvent }
       })
 
-      const eventFilterByType: EventFilterByType = {
+      const eventFilterByType: EventParametersFilterByType = {
         type: TestEvent.name,
       }
+
       const events = await Booster.events(eventFilterByType)
 
       for (const event of events) {

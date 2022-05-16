@@ -1,4 +1,14 @@
-import { HasName, HasFields, Field, HasReaction, ReactionEvent, Projection, HasProjections, HasEvent } from './types'
+import {
+  HasName,
+  HasFields,
+  Field,
+  HasReaction,
+  ReactionEvent,
+  Projection,
+  HasProjections,
+  HasEvent,
+  HasProjection,
+} from './types'
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/generic-type-naming */
@@ -17,7 +27,7 @@ export const parseFields = async (fields: Array<string>): Promise<HasFields> => 
   }
   return { fields: parsedFields }
 }
-  
+
 function parseField(rawField: string): Promise<Field> {
   const splitInput = rawField.split(':')
   if (splitInput.length != 2 || splitInput[0].length === 0 || splitInput[1].length === 0) {
@@ -32,6 +42,9 @@ function parseField(rawField: string): Promise<Field> {
 
 export const parseProjections = (fields: Array<string>): Promise<HasProjections> =>
   Promise.all(fields.map(parseProjection)).then((projections) => ({ projections }))
+
+export const parseProjectionField = (field: string): Promise<HasProjection> =>
+  parseProjection(field).then((projection) => ({ projection }))
 
 async function parseProjection(rawProjection: string): Promise<Projection> {
   const splitInput = rawProjection.split(':')

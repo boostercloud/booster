@@ -11,6 +11,7 @@ import { CoreV1Api, KubeConfig, KubernetesObjectApi } from '@kubernetes/client-n
 describe('User interaction during the deploy:', async () => {
   const fakeLogger: Logger = {
     info: fake(),
+    warn: fake(),
     error: fake(),
     debug: fake(),
   }

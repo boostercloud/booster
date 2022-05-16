@@ -12,14 +12,15 @@ import {
 import { replace, fake, stub, restore } from 'sinon'
 import { EventStore } from '../../src/services/event-store'
 import { expect } from '../expect'
-import { buildLogger } from '../../src/booster-logger'
+import { getLogger } from '../../src/booster-logger'
 
 describe('EventStore', () => {
   afterEach(() => {
     restore()
   })
-
-  const logger = buildLogger(Level.error)
+  const testConfig = new BoosterConfig('Test')
+  testConfig.logLevel = Level.error
+  const logger = getLogger(testConfig)
 
   class AnEvent {
     public constructor(readonly id: UUID, readonly entityId: string, readonly delta: number) {}
@@ -457,7 +458,7 @@ describe('EventStore', () => {
     describe('entityReducer', () => {
       context('when an entity reducer has been registered for the event', () => {
         context('given a snapshot and a new event', () => {
-          it('calculates the new snapshot value using the proper reducer for the event and the entity types', () => {
+          it('calculates the new snapshot value using the proper reducer for the event and the entity types', async () => {
             const snapshot = snapshotEnvelopeFor(someEntity)
             const eventEnvelope = eventEnvelopeFor(someEvent, AnEvent.name, 'fakeTimeStamp')
             const fakeReducer = fake.returns({
@@ -466,7 +467,7 @@ describe('EventStore', () => {
             })
             replace(eventStore, 'reducerForEvent', fake.returns(fakeReducer))
 
-            const newSnapshot = eventStore.entityReducer(snapshot, eventEnvelope)
+            const newSnapshot = await eventStore.entityReducer(snapshot, eventEnvelope)
             delete newSnapshot.createdAt
 
             const eventInstance = new AnEvent(someEvent.id, someEvent.entityId, someEvent.delta)
@@ -493,7 +494,7 @@ describe('EventStore', () => {
         })
 
         context('given no snapshot and an event', () => {
-          it('generates a new snapshot value using the proper reducer for the event and the entity types', () => {
+          it('generates a new snapshot value using the proper reducer for the event and the entity types', async () => {
             const eventEnvelope = eventEnvelopeFor(someEvent, AnEvent.name, 'fakeTimeStamp')
             const fakeReducer = fake.returns({
               id: '42',
@@ -501,7 +502,7 @@ describe('EventStore', () => {
             })
             replace(eventStore, 'reducerForEvent', fake.returns(fakeReducer))
 
-            const newSnapshot = eventStore.entityReducer(null, eventEnvelope)
+            const newSnapshot = await eventStore.entityReducer(null, eventEnvelope)
             delete newSnapshot.createdAt
 
             const eventInstance = new AnEvent(someEvent.id, someEvent.entityId, someEvent.delta)
