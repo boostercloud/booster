@@ -59,13 +59,19 @@ describe('Local provider graphql-adapter', () => {
 
     it('should generate expected envelop', async () => {
       const result = await rawGraphQLRequestToEnvelope(mockRequest, logger)
-
       expect(result).to.be.deep.equal({
         requestID: mockUuid,
         eventType: 'MESSAGE',
         connectionID: undefined,
         token: mockUserToken,
         value: mockBody,
+        context: {
+          request: {
+            headers: mockRequest.headers,
+            body: mockRequest.body,
+          },
+          rawContext: mockRequest,
+        },
       })
     })
   })

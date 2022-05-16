@@ -9,13 +9,14 @@ import {
 
 export const applyReadModelRequestBeforeFunctions = async (
   readModelRequestEnvelope: ReadModelRequestEnvelope<ReadModelInterface>,
-  beforeHooks: Array<ReadModelBeforeFunction>
+  beforeHooks: Array<ReadModelBeforeFunction>,
+  currentUser?: UserEnvelope
 ): Promise<ReadModelRequestEnvelope<ReadModelInterface>> => {
-  return beforeHooks.reduce<Promise<ReadModelRequestEnvelope<ReadModelInterface>>>(
-    async (currentReadModelRequestEnvelopePromise, beforeFunction) =>
-      beforeFunction(await currentReadModelRequestEnvelopePromise),
-    Promise.resolve(readModelRequestEnvelope)
-  )
+  let result = readModelRequestEnvelope
+  for (const beforeHook of beforeHooks) {
+    result = await beforeHook(result, currentUser)
+  }
+  return result
 }
 
 export const applyBeforeFunctions = async (
@@ -23,8 +24,9 @@ export const applyBeforeFunctions = async (
   beforeHooks: Array<CommandBeforeFunction>,
   currentUser?: UserEnvelope
 ): Promise<CommandInput> => {
-  return beforeHooks.reduce(
-    async (currentInputPromise, before) => before(await currentInputPromise, currentUser),
-    Promise.resolve(commandInput)
-  )
+  let result = commandInput
+  for (const beforeHook of beforeHooks) {
+    result = await beforeHook(result, currentUser)
+  }
+  return result
 }

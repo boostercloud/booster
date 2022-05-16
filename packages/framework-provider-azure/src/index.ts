@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { HasInfrastructure, ProviderLibrary } from '@boostercloud/framework-types'
+import { HasInfrastructure, ProviderLibrary, RocketDescriptor } from '@boostercloud/framework-types'
 import { requestFailed, requestSucceeded } from './library/api-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import {
@@ -13,6 +13,7 @@ import { environmentVarNames } from './constants'
 import { deleteReadModel, fetchReadModel, storeReadModel } from './library/read-model-adapter'
 import { searchReadModel } from './library/searcher-adapter'
 import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
+import { searchEvents } from './library/events-searcher-adapter'
 
 let cosmosClient: CosmosClient
 if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefined') {
@@ -29,14 +30,14 @@ export function loadInfrastructurePackage(packageName: string): HasInfrastructur
   return require(packageName)
 }
 
-export const Provider = (): ProviderLibrary => ({
+export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
   // ProviderEventsLibrary
   events: {
     rawToEnvelopes: rawEventsToEnvelopes,
     store: storeEvents.bind(null, cosmosClient),
     forEntitySince: readEntityEventsSince.bind(null, cosmosClient),
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, cosmosClient),
-    search: undefined as any,
+    search: searchEvents.bind(null, cosmosClient),
   },
   // ProviderReadModelsLibrary
   readModels: {
@@ -85,7 +86,7 @@ export const Provider = (): ProviderLibrary => ({
       )
     }
 
-    return infrastructure.Infrastructure()
+    return infrastructure.Infrastructure(rockets)
   },
 })
 

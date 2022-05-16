@@ -25,11 +25,11 @@ export const template = `{
     "@types/mocha": "8.2.2",
     "nyc": "15.1.0",
     "prettier":  "2.3.0",
-    "typescript": "4.2.4",
+    "typescript": "4.5.4",
     "ts-node": "9.1.1",
     "@types/node": "15.0.2",
-    "ttypescript": "1.5.12",
-    "metadata-booster": "0.3.1"
+    "ttypescript": "1.5.13",
+    "metadata-booster": "0.4.1"
   },
   "engines": {
     "node": ">=14.0.0"

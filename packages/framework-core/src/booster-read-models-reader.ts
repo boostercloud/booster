@@ -27,7 +27,8 @@ export class BoosterReadModelsReader {
     const readModelMetadata = this.config.readModels[readModelRequest.class.name]
     const readModelTransformedRequest = await applyReadModelRequestBeforeFunctions(
       readModelRequest,
-      readModelMetadata.before
+      readModelMetadata.before,
+      readModelRequest.currentUser
     )
 
     const key = readModelTransformedRequest.key
@@ -45,11 +46,13 @@ export class BoosterReadModelsReader {
     const readModelMetadata = this.config.readModels[readModelRequest.class.name]
     const readModelTransformedRequest = await applyReadModelRequestBeforeFunctions(
       readModelRequest,
-      readModelMetadata.before
+      readModelMetadata.before,
+      readModelRequest.currentUser
     )
 
     return Booster.readModel(readModelMetadata.class)
       .filter(readModelTransformedRequest.filters)
+      .sortBy(readModelTransformedRequest.sortBy)
       .limit(readModelTransformedRequest.limit)
       .afterCursor(readModelTransformedRequest.afterCursor)
       .paginatedVersion(readModelTransformedRequest.paginatedVersion)
@@ -125,7 +128,11 @@ export class BoosterReadModelsReader {
     )
     const readModelMetadata = this.config.readModels[readModelRequest.class.name]
 
-    const newReadModelRequest = await applyReadModelRequestBeforeFunctions(readModelRequest, readModelMetadata.before)
+    const newReadModelRequest = await applyReadModelRequestBeforeFunctions(
+      readModelRequest,
+      readModelMetadata.before,
+      readModelRequest.currentUser
+    )
 
     const nowEpoch = Math.floor(new Date().getTime() / 1000)
     const subscription: SubscriptionEnvelope = {

@@ -14,7 +14,7 @@ export interface ReadModelPubSub<TReadModel extends ReadModelInterface> {
   asyncIterator(
     readModelRequestEnvelope: ReadModelRequestEnvelope<TReadModel>,
     config: BoosterConfig
-  ): AsyncIterator<ReadModelInterface> | Promise<AsyncIterator<ReadModelInterface>>
+  ): Promise<AsyncIterator<ReadModelInterface>>
 }
 
 export class FilteredReadModelPubSub<TReadModel extends ReadModelInterface> implements ReadModelPubSub<TReadModel> {
@@ -28,7 +28,8 @@ export class FilteredReadModelPubSub<TReadModel extends ReadModelInterface> impl
 
     const newReadModelRequestEnvelope = await applyReadModelRequestBeforeFunctions(
       readModelRequestEnvelope,
-      readModelMetadata.before
+      readModelMetadata.before,
+      readModelRequestEnvelope.currentUser
     )
 
     return createAsyncIterator(

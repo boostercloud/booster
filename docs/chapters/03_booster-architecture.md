@@ -83,6 +83,8 @@ Each command class must have a method called `handle`. This function is the comm
 
 ### Returning a value
 
+> [!WARN] As of version 0.26.1 this annotation is deprecated. You may return any type without annotating the method
+
 By default, the command handler function is generated with `void` as a return type,
 and in consequence, it will return `true` when called through the GraphQL.
 
@@ -91,6 +93,7 @@ and in consequence, it will return `true` when called through the GraphQL.
 If you want to return something back to the client, you have to decorate this
 function with the `@Returns` decorator, passing the **class** that you want to
 return.
+
 
 > [!NOTE] For primitive types like `number`, `string`. The class is the name of the type but with the first letter in uppercase. E.g. `Number`, `String`
 
@@ -202,7 +205,7 @@ In this case, the command operation can still be completed. An event handler wil
 
 ###  Reading entities
 
-Event handlers are a good place to make decisions and, to make better decisions, you need information. There is a Booster function called `fetchEntitySnapshots` within the `Booster` package and allows you to inspect the application state. This function receives two arguments, the `Entity` to fetch and the `entityID`. Here is an example of fetching an entity called `Stock`:
+Event handlers are a good place to make decisions and, to make better decisions, you need information. There is a Booster function called `entity` within the `Booster` package and allows you to inspect the application state. This function receives two arguments, the `Entity` to fetch and the `entityID`. Here is an example of fetching an entity called `Stock`:
 
 ```typescript
 @Command({
@@ -217,7 +220,7 @@ export class MoveStock {
   ) {}
 
   public static async handle(command: MoveStock, register: Register): Promise<void> {
-    const stock = await Booster.fetchEntitySnapshot(Stock, command.productID)
+    const stock = await Booster.entity(Stock, command.productID)
     if (!command.enoughStock(command.origin, command.quantity, stock)) {
       register.events(new ErrorEvent(`There is not enough stock for ${command.productID} at ${command.origin}`))
     }
@@ -483,11 +486,11 @@ register.events(new ProductAvailabilityChanged(event.productID, -event.quantity)
 
 Just as we do in command handlers, we can also retrieve entities information to make decisions based on their current state.
 
-Let's say that we want to check the status of a product before we trigger its availability update. In that case we would call the `Booster.fetchEntitySnapshot` function, which will return information about the entity.
+Let's say that we want to check the status of a product before we trigger its availability update. In that case we would call the `Booster.entity` function, which will return information about the entity.
 
 ```typescript
 public static async handle(event: StockMoved, register: Register): Promise<void> {
-  const productSnapshot = await Booster.fetchEntitySnapshot(Product, event.productID)
+  const productSnapshot = await Booster.entity(Product, event.productID)
   ...
 }
 ```
@@ -675,14 +678,29 @@ export class UserReadModel {
   public constructor(readonly username: string, /* ...(other interesting fields from users)... */) {}
 
   @Projects(User, 'id')
-  public static projectUser(entity: User, current?: ProjectionResult<UserReadModel>) { // Here we update the user fields}
+  public static projectUser(entity: User, current?: UserReadModel): ProjectionResult<UserReadModel> { 
+    // Here we update the user fields
+  }
 
   @Projects(Post, 'ownerId')
-  public static projectUserPost(entity: Post, current?: ProjectionResult<UserReadModel>) { //Here we can adapt the read model to show specific user information related with the Post entity}
+  public static projectUserPost(entity: Post, current?: UserReadModel): ProjectionResult<UserReadModel> { 
+    //Here we can adapt the read model to show specific user information related with the Post entity
+  }
 }
 ```
 
 In the previous example we are projecting the `User` entity using the user `id` and also we are projecting the `User` entity based on the `ownerId` of the `Post` entity. Notice that both join keys are references to the `User` identifier, but it's not required that the join key is an identifier.
+
+You can even select arrays of UUIDs as `joinKey`, Booster will execute the projection for all the read models corresponding to those ids contained in the array (projections are completely isolated from each other). A subtle difference with non-array `joinKey` is the projection method signature. With array join keys, sometimes, we need extra information to know which is the read model we are projecting (especially for not yet existent read models, where the current argument is not present)
+So, for example, if we would have a `Group` with an array of users in that group (`users: Array<UUID>`), we can have the following to update each `UserReadModel` accordingly:
+
+```typescript
+  @Projects(Group, 'users')
+  public static projectUserGroup(entity: Group, readModelID: UUID, current?: UserReadModel): ProjectionResult<UserReadModel> { 
+    //Here we can update the read models with group information
+    //This logic will be executed for each read model id in the array 
+  }
+```
 
 As you may have notice from the `ProjectionResult` type, projections can also return `ReadModelAction`, which includes:
 

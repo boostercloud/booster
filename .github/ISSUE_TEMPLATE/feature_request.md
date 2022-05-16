@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Use this template to suggest an idea for this project
+about: Use this template to suggest an idea for this project.
 ---
 
 ## Feature Request

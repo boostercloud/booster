@@ -1,7 +1,6 @@
 import { Command } from '@boostercloud/framework-core'
 import { Register } from '@boostercloud/framework-types'
 import { ProductUpdated, ProductUpdateReason } from '../events/product-updated'
-import { SKU } from '../common/sku'
 import { Money } from '../common/money'
 import { UUID } from '@boostercloud/framework-types'
 import { Picture } from '../common/picture'
@@ -12,7 +11,7 @@ import { Picture } from '../common/picture'
 export class UpdateProduct {
   public constructor(
     readonly id: UUID,
-    readonly sku: SKU,
+    readonly sku: string,
     readonly name: string,
     readonly shortDescription: string,
     readonly longDescription: string,

@@ -3,7 +3,7 @@ import {
   BoosterConfig,
   Class,
   EntityInterface,
-  EventFilter,
+  EventSearchParameters,
   EventSearchResponse,
   FilterFor,
   FinderByKeyFunction,
@@ -13,15 +13,17 @@ import {
   Searcher,
   SearcherFunction,
   SequenceKey,
+  SortFor,
   UUID,
 } from '@boostercloud/framework-types'
 import { BoosterEventDispatcher } from './booster-event-dispatcher'
 import { BoosterGraphQLDispatcher } from './booster-graphql-dispatcher'
-import { buildLogger } from './booster-logger'
+import { getLogger } from './booster-logger'
 import { BoosterScheduledCommandDispatcher } from './booster-scheduled-command-dispatcher'
 import { BoosterSubscribersNotifier } from './booster-subscribers-notifier'
 import { Importer } from './importer'
 import { EventStore } from './services/event-store'
+import { BoosterRocketDispatcher } from './booster-rocket-dispatcher'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -33,12 +35,15 @@ import { EventStore } from './services/event-store'
  */
 export class Booster {
   public static readonly configuredEnvironments: Set<string> = new Set<string>()
-  private static logger: Logger
   public static readonly config = new BoosterConfig(checkAndGetCurrentEnv())
   /**
    * Avoid creating instances of this class
    */
   private constructor() {}
+
+  public static get logger(): Logger {
+    return getLogger(this.config)
+  }
 
   public static configureCurrentEnv(configurator: (config: BoosterConfig) => void): void {
     configurator(this.config)
@@ -64,7 +69,6 @@ export class Booster {
     const projectRootPath = codeRootPath.replace(new RegExp(this.config.codeRelativePath + '$'), '')
     this.config.userProjectRootPath = projectRootPath
     Importer.importUserProjectFiles(codeRootPath)
-    this.logger = buildLogger(this.config.logLevel)
     this.config.validate()
   }
 
@@ -79,6 +83,7 @@ export class Booster {
     const searchFunction: SearcherFunction<TReadModel> = async (
       readModelName: string,
       filters: FilterFor<unknown>,
+      sort?: SortFor<unknown>,
       limit?: number,
       afterCursor?: any,
       paginatedVersion?: boolean
@@ -88,6 +93,7 @@ export class Booster {
         this.logger,
         readModelName,
         filters,
+        sort,
         limit,
         afterCursor,
         paginatedVersion
@@ -122,11 +128,11 @@ export class Booster {
     return new Searcher(readModelClass, searchFunction, finderByIdFunction)
   }
 
-  public static async events(filters: EventFilter): Promise<Array<EventSearchResponse>> {
+  public static async events(request: EventSearchParameters): Promise<Array<EventSearchResponse>> {
     const events: Array<EventSearchResponse> = await this.config.provider.events.search(
       this.config,
       this.logger,
-      filters
+      request
     )
     return events.map((event) => {
       const eventMetadata = this.config.events[event.type]
@@ -167,6 +173,10 @@ export class Booster {
   public static notifySubscribers(request: unknown): Promise<unknown> {
     return new BoosterSubscribersNotifier(this.config, this.logger).dispatch(request)
   }
+
+  public static dispatchRocket(request: unknown): Promise<unknown> {
+    return new BoosterRocketDispatcher(this.config, this.logger).dispatch(request)
+  }
 }
 
 function checkAndGetCurrentEnv(): string {
@@ -193,4 +203,8 @@ export async function boosterTriggerScheduledCommand(rawRequest: unknown): Promi
 
 export async function boosterNotifySubscribers(rawRequest: unknown): Promise<unknown> {
   return Booster.notifySubscribers(rawRequest)
+}
+
+export async function boosterRocketDispatcher(rawRequest: unknown): Promise<unknown> {
+  return Booster.dispatchRocket(rawRequest)
 }
