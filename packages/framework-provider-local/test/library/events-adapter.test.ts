@@ -124,7 +124,7 @@ describe('events-adapter', () => {
         })
       })
 
-      it('should call logger with message', async () => {
+      it('should call logger with message.', async () => {
         const expectedLogMessage = `[EventsAdapter#readEntityEventsSince] Loaded events for entity ${mockEntityTypeName} with ID ${mockEntityID} with result:`
         expect(mockLogger.debug).to.be.calledWith(expectedLogMessage, [mockEventEnvelop])
       })
