@@ -695,6 +695,8 @@ only need to pick the output ending in `httpURL`, e.g.:
 https://<some random number>.execute-api.us-east-1.amazonaws.com/production
 ```
 
+> [!NOTE] By default, the full error stack trace is send to a local file, `./errors.log`. To see the full error stack trace directly from the console, use the `--verbose` flag.
+
 ### 7. Testing
 
 Let's get started testing the project. We will perform three actions:
