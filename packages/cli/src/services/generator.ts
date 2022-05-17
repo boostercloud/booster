@@ -10,6 +10,7 @@ import {
   checkStubsFolderExists,
   resourceTemplateFilePath,
 } from './stub-publisher'
+import type { TemplateType } from './stub-publisher'
 
 export async function generate<TInfo>(target: Target<TInfo>): Promise<void> {
   await checkResourceExists(target.name, target.placementDir, target.extension)
@@ -19,7 +20,7 @@ export async function generate<TInfo>(target: Target<TInfo>): Promise<void> {
   await fs.outputFile(renderPath, rendered)
 }
 
-export function template(name: string): string {
+export function template(name: TemplateType): string {
   const stubFileName = resourceStubFilePath(`${name}.ts`)
 
   if (checkStubsFolderExists() && checkResourceStubFileExists(stubFileName)) {

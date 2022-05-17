@@ -3,6 +3,15 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { join } from 'path'
 import { wrapExecError } from '../common/errors'
 
+export type TemplateType =
+  | 'command'
+  | 'entity'
+  | 'event'
+  | 'event-handler'
+  | 'read-model'
+  | 'scheduled-command'
+  | 'type'
+
 export const resourceTemplatesPath: string = join(__dirname, '..', 'templates')
 
 export const resourceStubFilePath = (fileName: string): string => join(process.cwd(), 'stubs', fileName)
