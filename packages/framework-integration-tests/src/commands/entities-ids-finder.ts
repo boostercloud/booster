@@ -8,7 +8,7 @@ export class EntitiesIdsFinder {
   constructor(
     readonly entityName: string,
     readonly limit: number,
-    readonly afterCursor: Record<string, string> | undefined
+    readonly afterCursor?: Record<string, string>
   ) {}
 
   public static async handle(command: EntitiesIdsFinder, register: Register): Promise<PaginatedEventsIdsResult> {
