@@ -3,8 +3,10 @@ import {
   NotAuthorizedError,
   BoosterTokenExpiredError,
   BoosterTokenNotBeforeError,
-  TokenVerifierConfig,
   UserEnvelope,
+  TokenVerifier,
+  isJwskUriTokenVerifier,
+  isPublicKeyTokenVerifier,
 } from '@boostercloud/framework-types'
 
 import * as jwksRSA from 'jwks-rsa'
@@ -14,19 +16,22 @@ import { NotBeforeError, TokenExpiredError } from 'jsonwebtoken'
 class TokenVerifierClient {
   private client?: jwksRSA.JwksClient
   private options?: jwt.VerifyOptions
+  private publicKey?: Promise<string>
 
-  public constructor(private tokenVerifierConfig: TokenVerifierConfig) {
-    if (this.tokenVerifierConfig.jwksUri) {
+  public constructor(private tokenVerifier: TokenVerifier) {
+    if (isJwskUriTokenVerifier(tokenVerifier)) {
       this.client = jwksRSA({
-        jwksUri: this.tokenVerifierConfig.jwksUri,
+        jwksUri: tokenVerifier.jwksUri,
         cache: true,
         cacheMaxAge: 15 * 60 * 1000, // 15 Minutes, at least to be equal to AWS max lambda limit runtime
       })
+    } else if (isPublicKeyTokenVerifier(tokenVerifier)) {
+      this.publicKey = tokenVerifier.publicKey
     }
 
     this.options = {
       algorithms: ['RS256'],
-      issuer: this.tokenVerifierConfig.issuer,
+      issuer: this.tokenVerifier.issuer,
       complete: true, // To return headers, payload and other useful token information
     }
   }
@@ -50,8 +55,8 @@ class TokenVerifierClient {
 
     let key: jwt.Secret | jwt.GetPublicKeyOrSecret = getKey
     if (!this.client) {
-      if (this.tokenVerifierConfig.publicKey) {
-        key = await this.tokenVerifierConfig.publicKey
+      if (this.publicKey) {
+        key = await this.publicKey
       } else {
         throw new Error('Token verifier not well configured')
       }
@@ -65,7 +70,7 @@ class TokenVerifierClient {
           return reject(err)
         }
         const jwtToken = decoded as any
-        const extraValidation = this.tokenVerifierConfig?.extraValidation ?? (() => Promise.resolve())
+        const extraValidation = this.tokenVerifier?.extraValidation ?? (() => Promise.resolve())
         extraValidation(jwtToken, token)
           .then(() => {
             resolve(this.tokenToUserEnvelope(jwtToken))
@@ -79,7 +84,7 @@ class TokenVerifierClient {
     const payload = decodedToken.payload
     const username = payload?.email || payload?.phone_number || payload.sub
     const id = payload.sub
-    const rolesClaim = this.tokenVerifierConfig.rolesClaim || 'custom:role'
+    const rolesClaim = this.tokenVerifier.rolesClaim || 'custom:role'
     const role = payload[rolesClaim]
     const roleValues = TokenVerifierClient.rolesFromTokenRole(role)
     return {
@@ -115,17 +120,18 @@ class TokenVerifierClient {
 }
 
 export class BoosterTokenVerifier {
-  private tokenVerifierClients: Array<TokenVerifierClient>
+  private tokenVerifierClients: Array<TokenVerifierClient | TokenVerifier>
 
   public constructor(config: BoosterConfig) {
-    this.tokenVerifierClients = config.tokenVerifiers.map(
-      (tokenVerifierConfig) => new TokenVerifierClient(tokenVerifierConfig)
+    this.tokenVerifierClients = config.tokenVerifiers.map((tokenVerifier) =>
+      tokenVerifier.verify ? tokenVerifier : new TokenVerifierClient(tokenVerifier)
     )
   }
 
   public async verify(token: string): Promise<UserEnvelope> {
     const results = await Promise.allSettled(
-      this.tokenVerifierClients.map((tokenVerifierClient) => tokenVerifierClient.verify(token))
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      this.tokenVerifierClients.map((tokenVerifierClient) => tokenVerifierClient.verify!(token))
     )
     const winner = results.find((result) => result.status === 'fulfilled')
     if (winner) return Promise.resolve((winner as PromiseFulfilledResult<UserEnvelope>).value)
