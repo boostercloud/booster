@@ -8,7 +8,7 @@ import { sleep, waitForIt } from '../../helper/sleep'
 import {
   EventSearchResponse,
   EventTimeParameterFilter,
-  PaginatedEventsIdsResult,
+  PaginatedEntitiesIdsResult,
   UUID,
 } from '@boostercloud/framework-types'
 import { applicationUnderTest } from './setup'
@@ -533,7 +533,7 @@ describe('Events end-to-end tests', () => {
           `,
         })
 
-        const events: PaginatedEventsIdsResult = result?.data?.EntitiesIdsFinder
+        const events: PaginatedEntitiesIdsResult = result?.data?.EntitiesIdsFinder
 
         // counter with same id should be only 1
         const sameCounterIdEvents = events.items.filter((event) => event.entityID === mockSameCounterId)

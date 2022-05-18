@@ -74,12 +74,12 @@ export interface ReadModelEnvelope {
   value: ReadModelInterface
 }
 
-export interface PaginatedEventIdResult {
+export interface PaginatedEntityIdResult {
   entityID: UUID
 }
 
-export interface PaginatedEventsIdsResult {
-  items: Array<PaginatedEventIdResult>
+export interface PaginatedEntitiesIdsResult {
+  items: Array<PaginatedEntityIdResult>
   count?: number
   cursor?: Record<string, string>
 }

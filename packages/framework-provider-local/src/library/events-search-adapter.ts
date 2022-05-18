@@ -3,8 +3,8 @@ import {
   EventEnvelope,
   EventSearchParameters,
   EventSearchResponse,
-  PaginatedEventIdResult,
-  PaginatedEventsIdsResult,
+  PaginatedEntitiesIdsResult,
+  PaginatedEntityIdResult,
 } from '@boostercloud/framework-types'
 import { getLogger, unique } from '@boostercloud/framework-common-helpers'
 import { EventRegistry } from '..'
@@ -33,14 +33,14 @@ export async function searchEvents(
   return eventsSearchResponses
 }
 
-export async function searchEventsIds(
+export async function searchEntitiesIds(
   eventRegistry: EventRegistry,
   config: BoosterConfig,
   limit: number,
   afterCursor: Record<string, string> | undefined,
   entityTypeName: string
-): Promise<PaginatedEventsIdsResult> {
-  const logger = getLogger(config, 'events-searcher-adapter#searchEventsIds')
+): Promise<PaginatedEntitiesIdsResult> {
+  const logger = getLogger(config, 'events-searcher-adapter#searchEntitiesIds')
   logger.debug(
     `Initiating a paginated events search. limit: ${limit}, afterCursor: ${JSON.stringify(
       afterCursor
@@ -50,7 +50,7 @@ export async function searchEventsIds(
 
   const result = (await eventRegistry.query(filterQuery, DEFAULT_CREATED_AT_SORT_ORDER, undefined, {
     entityID: 1,
-  })) as Array<PaginatedEventIdResult>
+  })) as Array<PaginatedEntityIdResult>
 
   // Nedb doesn't support DISTINCT, so we need to paginate the results manually
   const entitiesIds = result ? result?.map((v) => v.entityID) : []
@@ -63,5 +63,5 @@ export async function searchEventsIds(
     items: paginatedResult,
     count: paginatedResult?.length ?? 0,
     cursor: { id: ((limit ? limit : 1) + skipId).toString() },
-  } as PaginatedEventsIdsResult
+  } as PaginatedEntitiesIdsResult
 }

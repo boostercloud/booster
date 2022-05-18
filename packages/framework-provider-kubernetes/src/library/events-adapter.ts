@@ -4,6 +4,7 @@ import {
   EventEnvelope,
   EventSearchParameters,
   EventSearchResponse,
+  PaginatedEntitiesIdsResult,
   UserApp,
   UUID,
 } from '@boostercloud/framework-types'
@@ -87,4 +88,14 @@ export const search = (
   _filters: EventSearchParameters
 ): Promise<Array<EventSearchResponse>> => {
   throw new Error('eventsAdapter#search: Not implemented yet')
+}
+
+export async function searchEntitiesIds(
+  eventRegistry: EventRegistry,
+  config: BoosterConfig,
+  limit: number,
+  afterCursor: Record<string, string> | undefined,
+  entityTypeName: string
+): Promise<PaginatedEntitiesIdsResult> {
+  throw new Error('eventsAdapter#searchEntitiesIds: Not implemented yet')
 }

@@ -1,10 +1,10 @@
 import { BoosterConfig, Logger } from '@boostercloud/framework-types'
 import { createStubInstance, fake, replace, restore, SinonStub, SinonStubbedInstance, stub } from 'sinon'
 import { EventRegistry } from '../../src'
-import { searchEventsIds } from '../../dist/library/events-search-adapter'
+import { searchEntitiesIds } from '../../dist/library/events-search-adapter'
 import { expect } from '../expect'
 
-describe('The "searchEventsIds" method', () => {
+describe('The "searchEntitiesIDs" method', () => {
   let mockLogger: Logger
   let mockConfig: BoosterConfig
   let queryStub: SinonStub
@@ -34,7 +34,7 @@ describe('The "searchEventsIds" method', () => {
     const limit = 1
     const afterCursor = { id: '1' }
     const entityTypeName = 'entity'
-    await searchEventsIds(mockEventRegistry as any, mockConfig, mockLogger, limit, afterCursor, entityTypeName)
+    await searchEntitiesIds(mockEventRegistry as any, mockConfig, mockLogger, limit, afterCursor, entityTypeName)
 
     expect(queryStub).to.have.been.calledWithExactly({ kind: 'event', entityTypeName: 'entity' }, -1, undefined, {
       entityID: 1,
@@ -44,7 +44,7 @@ describe('The "searchEventsIds" method', () => {
   it('Generate query for entityTypeName, limit has all fields', async () => {
     const limit = 1
     const entityTypeName = 'entity'
-    await searchEventsIds(mockEventRegistry as any, mockConfig, mockLogger, limit, undefined, entityTypeName)
+    await searchEntitiesIds(mockEventRegistry as any, mockConfig, mockLogger, limit, undefined, entityTypeName)
 
     expect(queryStub).to.have.been.calledWithExactly({ kind: 'event', entityTypeName: 'entity' }, -1, undefined, {
       entityID: 1,
