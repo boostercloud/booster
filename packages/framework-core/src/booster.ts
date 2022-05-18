@@ -128,7 +128,7 @@ export class Booster {
   public static async eventsIds(
     entityTypeName: string,
     limit: number,
-    afterCursor: Record<string, string> | undefined
+    afterCursor?: Record<string, string>
   ): Promise<PaginatedEventsIdsResult> {
     if (!this.config.provider.events.searchEventsIds) {
       throw new Error('Paginated search not supported by the provider')
