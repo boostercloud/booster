@@ -1,11 +1,11 @@
 import * as ProjectChecker from '../../../src/services/project-checker'
 import { restore, replace, fake, stub } from 'sinon'
 import ReadModel from '../../../src/commands/new/read-model'
-import { templates } from '../../../src/templates'
 import Mustache = require('mustache')
 import * as fs from 'fs-extra'
 import { IConfig } from '@oclif/config'
 import { expect } from '../../expect'
+import { template } from '../../../src/services/generator'
 
 describe('new', (): void => {
   describe('ReadModel', () => {
@@ -56,7 +56,7 @@ describe('new', (): void => {
     ]
 
     const renderReadModel = (imports: any[], name: string, fields: any[], projections: any[]): string => {
-      return Mustache.render(templates.readModel, {
+      return Mustache.render(template('read-model'), {
         imports: imports,
         name: name,
         fields: fields,
@@ -67,7 +67,7 @@ describe('new', (): void => {
     beforeEach(() => {
       stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
       replace(fs, 'outputFile', fake.resolves({}))
-      replace(ProjectChecker,'checkCurrentDirBoosterVersion', fake.resolves({}))
+      replace(ProjectChecker, 'checkCurrentDirBoosterVersion', fake.resolves({}))
     })
 
     afterEach(() => {
@@ -88,19 +88,34 @@ describe('new', (): void => {
 
       it('creates ReadModel with a string field', async () => {
         await new ReadModel([readModelName, '--fields', 'title:string'], {} as IConfig).run()
-        const renderedReadModel = renderReadModel(defaultReadModelImports, readModelName, [{ name: 'title', type: 'string' }], [])
+        const renderedReadModel = renderReadModel(
+          defaultReadModelImports,
+          readModelName,
+          [{ name: 'title', type: 'string' }],
+          []
+        )
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
       })
 
       it('creates ReadModel with a string field projecting Post:id', async () => {
         await new ReadModel([readModelName, '--fields', 'title:string', '--projects', 'Post:id'], {} as IConfig).run()
-        const renderedReadModel = renderReadModel(projectingReadModelImports, readModelName, [{ name: 'title', type: 'string' }], [{ entityName: 'Post', entityId: 'id' }])
+        const renderedReadModel = renderReadModel(
+          projectingReadModelImports,
+          readModelName,
+          [{ name: 'title', type: 'string' }],
+          [{ entityName: 'Post', entityId: 'id' }]
+        )
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
       })
 
       it('creates ReadModel with a number field', async () => {
         await new ReadModel([readModelName, '--fields', 'quantity:number'], {} as IConfig).run()
-        const renderedReadModel = renderReadModel(defaultReadModelImports, readModelName, [{ name: 'quantity', type: 'number' }], [])
+        const renderedReadModel = renderReadModel(
+          defaultReadModelImports,
+          readModelName,
+          [{ name: 'quantity', type: 'number' }],
+          []
+        )
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
       })
 
@@ -109,13 +124,23 @@ describe('new', (): void => {
           [readModelName, '--fields', 'quantity:number', '--projects', 'Post:id'],
           {} as IConfig
         ).run()
-        const renderedReadModel = renderReadModel(projectingReadModelImports, readModelName, [{ name: 'quantity', type: 'number' }], [{ entityName: 'Post', entityId: 'id' }])
+        const renderedReadModel = renderReadModel(
+          projectingReadModelImports,
+          readModelName,
+          [{ name: 'quantity', type: 'number' }],
+          [{ entityName: 'Post', entityId: 'id' }]
+        )
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
       })
 
       it('creates ReadModel with UUID field', async () => {
         await new ReadModel([readModelName, '--fields', 'identifier:UUID'], {} as IConfig).run()
-        const renderedReadModel = renderReadModel(defaultReadModelImports, readModelName, [{ name: 'identifier', type: 'UUID' }], [])
+        const renderedReadModel = renderReadModel(
+          defaultReadModelImports,
+          readModelName,
+          [{ name: 'identifier', type: 'UUID' }],
+          []
+        )
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
       })
 
@@ -124,7 +149,12 @@ describe('new', (): void => {
           [readModelName, '--fields', 'identifier:UUID', '--projects', 'Post:id'],
           {} as IConfig
         ).run()
-        const renderedReadModel = renderReadModel(projectingReadModelImports, readModelName, [{ name: 'identifier', type: 'UUID' }], [{ entityName: 'Post', entityId: 'id' }])
+        const renderedReadModel = renderReadModel(
+          projectingReadModelImports,
+          readModelName,
+          [{ name: 'identifier', type: 'UUID' }],
+          [{ entityName: 'Post', entityId: 'id' }]
+        )
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
       })
 
@@ -152,7 +182,9 @@ describe('new', (): void => {
           { name: 'quantity', type: 'number' },
           { name: 'identifier', type: 'UUID' },
         ]
-        const renderedReadModel = renderReadModel(projectingReadModelImports, readModelName, fields, [{ entityName: 'Post', entityId: 'id' }])
+        const renderedReadModel = renderReadModel(projectingReadModelImports, readModelName, fields, [
+          { entityName: 'Post', entityId: 'id' },
+        ])
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
       })
 
@@ -189,9 +221,7 @@ describe('new', (): void => {
         replace(console, 'error', fake.resolves({}))
         await new ReadModel([], {} as IConfig).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(readModelsRoot)
-        expect(console.error).to.have.been.calledWithMatch(
-          /You haven't provided a read model name/
-        )
+        expect(console.error).to.have.been.calledWithMatch(/You haven't provided a read model name/)
       })
 
       it('with empty fields', async () => {
@@ -230,9 +260,7 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain(
-          'Error parsing field --projects'
-        )
+        expect(exceptionMessage).to.contain('Error parsing field --projects')
       })
 
       it('with field with no type', async () => {
@@ -245,9 +273,7 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain(
-          'Error parsing field title'
-        )
+        expect(exceptionMessage).to.contain('Error parsing field title')
       })
 
       it('with no field type after :', async () => {
@@ -255,7 +281,7 @@ describe('new', (): void => {
         let exceptionMessage = ''
         try {
           await new ReadModel([readModelName, '--fields', 'title:'], {} as IConfig).run()
-        } catch(e) {
+        } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
         }
@@ -274,9 +300,7 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain(
-          'Error parsing projection Post'
-        )
+        expect(exceptionMessage).to.contain('Error parsing projection Post')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(readModelPath)
       })
 
@@ -290,9 +314,7 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain(
-          'Error parsing projection Post'
-        )
+        expect(exceptionMessage).to.contain('Error parsing projection Post')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(readModelPath)
       })
 
@@ -306,9 +328,7 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain(
-          'Error parsing projection :id'
-        )
+        expect(exceptionMessage).to.contain('Error parsing projection :id')
         expect(fs.outputFile).to.have.not.been.calledWithMatch(readModelPath)
       })
 
@@ -320,7 +340,7 @@ describe('new', (): void => {
             [readModelName, '--fields', 'title:string', 'title:string', 'quantity:number'],
             {} as IConfig
           ).run()
-        } catch(e) {
+        } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
         }

@@ -3,8 +3,7 @@ import BaseCommand from '../../common/base-command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
 import { HasFields, HasName, joinParsers, parseName, parseFields } from '../../services/generator/target'
-import { templates } from '../../templates'
-import { generate } from '../../services/generator'
+import { generate, template } from '../../services/generator'
 import * as path from 'path'
 import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 
@@ -24,7 +23,7 @@ export default class Type extends BaseCommand {
 
   public async run(): Promise<void> {
     const { args, flags } = this.parse(Type)
-    
+
     try {
       const fields = flags.fields || []
       if (!args.typeName) throw "You haven't provided a type name, but it is required, run with --help for usage"
@@ -49,7 +48,7 @@ const generateType = (info: TypeInfo): Promise<void> =>
     name: info.name,
     extension: '.ts',
     placementDir: path.join('src', 'common'),
-    template: templates.type,
+    template: template('type'),
     info: {
       imports: [],
       ...info,
