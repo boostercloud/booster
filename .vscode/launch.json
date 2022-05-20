@@ -5,6 +5,7 @@
   "version": "0.2.0",
   "configurations": [
 
+
     {
       "type": "node",
       "request": "launch",
@@ -327,6 +328,24 @@
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
       "runtimeArgs": ["--preserve-symlinks"]
-    }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Server in debug mode",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests/local-project-integration-sandbox",
+      "skipFiles": [
+      ],
+      "program": "${workspaceFolder}/packages/cli/bin/run",
+      "args": [
+          "start",
+          "-e",
+          "local"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"]
+  }
   ]
 }

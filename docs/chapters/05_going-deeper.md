@@ -67,6 +67,8 @@ The following is the list of the fields you can configure:
 
 - **providerPackage:** This field contains the name of the provider package that Booster will use when deploying or running your application.
 
+-**enableGraphQLIntrospection** This field allows to enable/disable get information about the GraphQL schema of your application from client side. By default is enabled but it is recommended to disable for security reasons in production applications.  
+
 - **assets**: This is an array of _relative_ paths from the root of the project pointing to files and folders with static assets. They will be included among the deployed files to the cloud provider.
   For example, imagine you are using the `dotenv` module so that all the environment variables you have in your `.env` files are loaded into memory in runtime. In order for this to work, you need to include your `.env` files as assets of your project, so that they are included when deploying. Assuming you only have a `.env` file in the root of your project, you should add the following to your configuration:
   ```typescript
