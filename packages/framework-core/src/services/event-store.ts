@@ -117,12 +117,12 @@ export class EventStore {
         latestSnapshot
       )
       const eventMetadata = this.config.events[eventEnvelope.typeName]
-      const migratedEventEnvelope = new Migrator(this.config, this.logger).migrate(eventEnvelope)
+      const migratedEventEnvelope = await new Migrator(this.config, this.logger).migrate(eventEnvelope)
       const eventInstance = createInstance(eventMetadata.class, migratedEventEnvelope.value)
       const entityMetadata = this.config.entities[migratedEventEnvelope.entityTypeName]
       let migratedLatestSnapshot: EventEnvelope | null = null
       if (latestSnapshot) {
-        migratedLatestSnapshot = new Migrator(this.config, this.logger).migrate(latestSnapshot)
+        migratedLatestSnapshot = await new Migrator(this.config, this.logger).migrate(latestSnapshot)
       }
       const snapshotInstance = migratedLatestSnapshot
         ? createInstance(entityMetadata.class, migratedLatestSnapshot.value)

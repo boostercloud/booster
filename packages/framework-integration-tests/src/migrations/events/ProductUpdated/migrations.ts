@@ -5,7 +5,7 @@ import { Migrates, ToVersion } from '@boostercloud/framework-core'
 @Migrates(ProductUpdated)
 export class ProductUpdatedMigration {
   @ToVersion(2, { fromSchema: ProductUpdatedV1, toSchema: ProductUpdatedV2 })
-  public addReasonField(oldEvent: ProductUpdatedV1): ProductUpdatedV2 {
+  public async addReasonField(oldEvent: ProductUpdatedV1): Promise<ProductUpdatedV2> {
     // The previous ProductUpdate schema only had one field: "product"
     // Version 2 has now an extra "reason" field so that we know why the product was updated
     const defaultReason = 'CatalogChange'
@@ -13,7 +13,7 @@ export class ProductUpdatedMigration {
   }
 
   @ToVersion(3, { fromSchema: ProductUpdatedV2, toSchema: ProductUpdatedV3 })
-  public changeReasonFieldToEnum(oldEvent: ProductUpdatedV2): ProductUpdatedV3 {
+  public async changeReasonFieldToEnum(oldEvent: ProductUpdatedV2): Promise<ProductUpdatedV3> {
     // The ProductUpdated.reason field was changed to be an enum instead of a string.
     // We try to convert the string to one of the possible enum values. If not, we just fall back to
     // the default reason 'CatalogChange'
@@ -27,7 +27,7 @@ export class ProductUpdatedMigration {
   }
 
   @ToVersion(4, { fromSchema: ProductUpdatedV3, toSchema: ProductUpdatedV4 })
-  public expandProductFields(oldEvent: ProductUpdatedV3): ProductUpdatedV4 {
+  public async expandProductFields(oldEvent: ProductUpdatedV3): Promise<ProductUpdatedV4> {
     return new ProductUpdatedV4(
       oldEvent.product.id,
       oldEvent.product.sku,

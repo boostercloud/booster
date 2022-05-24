@@ -82,4 +82,4 @@ export function ToVersion<TOldSchema, TNewSchema>(
   }
 }
 
-type MigrationMethod<TOldSchema, TNewSchema> = TypedPropertyDescriptor<(old: TOldSchema) => TNewSchema>
+type MigrationMethod<TOldSchema, TNewSchema> = TypedPropertyDescriptor<(old: TOldSchema) => Promise<TNewSchema>>

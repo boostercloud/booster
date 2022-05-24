@@ -54,8 +54,8 @@ describe('Migrator', () => {
   config.migrations['TestConcept'] = migrations
   const migrator = new Migrator(config, logger)
 
-  describe('migrate', () => {
-    it('throws when the version of the concept to migrate is lower than 1', () => {
+  describe('migrate', async () => {
+    it('throws when the version of the concept to migrate is lower than 1', async () => {
       const toMigrate: CommandEnvelope = {
         requestID: 'requestID',
         typeName: 'TestConcept',
@@ -63,10 +63,12 @@ describe('Migrator', () => {
         value: {} as any,
       }
 
-      expect(() => migrator.migrate(toMigrate)).to.throw(/Received an invalid version value, 0, for TestConcept/)
+      await expect(migrator.migrate(toMigrate)).to.be.rejectedWith(
+        /Received an invalid version value, 0, for TestConcept/
+      )
     })
 
-    it('throws when the version of the concept to migrate is higher than the current version', () => {
+    it('throws when the version of the concept to migrate is higher than the current version', async () => {
       const toMigrate: CommandEnvelope = {
         requestID: 'requestID',
         typeName: 'TestConcept',
@@ -74,12 +76,12 @@ describe('Migrator', () => {
         value: {} as any,
       }
 
-      expect(() => migrator.migrate(toMigrate)).to.throw(
+      await expect(migrator.migrate(toMigrate)).to.be.rejectedWith(
         /The current version of TestConcept is 3, which is lower than the received version 4/
       )
     })
 
-    it('does not migrate when the received version is the same as the current version', () => {
+    it('does not migrate when the received version is the same as the current version', async () => {
       const toMigrate: CommandEnvelope = {
         requestID: 'requestID',
         typeName: 'TestConcept',
@@ -87,10 +89,10 @@ describe('Migrator', () => {
         value: {} as any,
       }
 
-      expect(migrator.migrate(toMigrate)).to.equal(toMigrate)
+      expect(await migrator.migrate(toMigrate)).to.equal(toMigrate)
     })
 
-    it('migrates when the received version is lower than the current one', () => {
+    it('migrates when the received version is lower than the current one', async () => {
       const toMigrate: CommandEnvelope = {
         requestID: 'requestID',
         typeName: 'TestConcept',
@@ -111,7 +113,7 @@ describe('Migrator', () => {
         } as any,
       }
 
-      const got = migrator.migrate(toMigrate) as CommandEnvelope
+      const got = (await migrator.migrate(toMigrate)) as CommandEnvelope
       const value = got.value as TestConceptV3
       expect(got).not.to.be.equal(toMigrate) // This checks the reference is not the same (i.e. a different object is returned)
       expect(got).to.be.deep.equal(expected)

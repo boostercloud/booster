@@ -532,7 +532,7 @@ describe('EventStore', () => {
           const eventEnvelope = eventEnvelopeFor(someEvent, AnotherEvent.name, 'fakeTimeStamp')
           const getIdFake = fake()
           replace(AnotherEvent.prototype, 'getPrefixedId', getIdFake)
-          eventStore.entityReducer(null, eventEnvelope)
+          await eventStore.entityReducer(null, eventEnvelope)
           expect(getIdFake).to.have.been.called
         })
       })
@@ -542,7 +542,7 @@ describe('EventStore', () => {
           const eventEnvelope = eventEnvelopeFor(someEvent, AnEvent.name, 'fakeTimeStamp')
           const getIdFake = fake()
           replace(AnEntity.prototype, 'getId', getIdFake)
-          eventStore.entityReducer(snapshot, eventEnvelope)
+          await eventStore.entityReducer(snapshot, eventEnvelope)
           expect(getIdFake).to.have.been.called
         })
       })

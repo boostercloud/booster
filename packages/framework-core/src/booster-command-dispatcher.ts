@@ -39,7 +39,9 @@ export class BoosterCommandDispatcher {
     const commandClass = commandMetadata.class
     this.logger.debug('Found the following command:', commandClass.name)
 
-    const migratedCommandEnvelope = new Migrator(this.config, this.logger).migrate<CommandEnvelope>(commandEnvelope)
+    const migratedCommandEnvelope = await new Migrator(this.config, this.logger).migrate<CommandEnvelope>(
+      commandEnvelope
+    )
     let result: unknown
     const register: Register = new Register(
       migratedCommandEnvelope.requestID,
