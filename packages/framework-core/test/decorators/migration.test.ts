@@ -27,7 +27,7 @@ describe('the `ToVersion` decorator', () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       class MigrateProduct {
         @ToVersion(1, { fromSchema: ProductV1, toSchema: ProductV2 })
-        public changeField2(x: ProductV1): ProductV2 {
+        public async changeField2(x: ProductV1): Promise<ProductV2> {
           return {} as any
         }
       }
@@ -37,12 +37,12 @@ describe('the `ToVersion` decorator', () => {
   it('adds migrations as metadata to the migration class', () => {
     class MigrateProduct {
       @ToVersion(2, { fromSchema: ProductV1, toSchema: ProductV2 })
-      public changeField2(x: ProductV1): ProductV2 {
+      public async changeField2(x: ProductV1): Promise<ProductV2> {
         return {} as any
       }
 
       @ToVersion(3, { fromSchema: ProductV2, toSchema: ProductV3 })
-      public changeField3(x: ProductV2): ProductV3 {
+      public async changeField3(x: ProductV2): Promise<ProductV3> {
         return {} as any
       }
     }
@@ -84,12 +84,12 @@ describe('the `Migrates` annotation', () => {
     @Migrates(Product)
     class MigrateProductFrom1To3 {
       @ToVersion(2, { fromSchema: ProductV1, toSchema: ProductV2 })
-      public changeField2(x: ProductV1): ProductV2 {
+      public async changeField2(x: ProductV1): Promise<ProductV2> {
         return {} as any
       }
 
       @ToVersion(3, { fromSchema: ProductV2, toSchema: ProductV3 })
-      public changeField3(x: ProductV2): ProductV3 {
+      public async changeField3(x: ProductV2): Promise<ProductV3> {
         return {} as any
       }
     }
@@ -97,12 +97,12 @@ describe('the `Migrates` annotation', () => {
     @Migrates(Product)
     class MigrateProductFrom3To5 {
       @ToVersion(5, { fromSchema: ProductV4, toSchema: ProductV5 })
-      public changeField5(x: ProductV4): ProductV5 {
+      public async changeField5(x: ProductV4): Promise<ProductV5> {
         return {} as any
       }
 
       @ToVersion(4, { fromSchema: ProductV3, toSchema: ProductV4 })
-      public changeField4(x: ProductV3): ProductV4 {
+      public async changeField4(x: ProductV3): Promise<ProductV4> {
         return {} as any
       }
     }
@@ -148,12 +148,12 @@ describe('the `Migrates` annotation', () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     class MigrateProductFrom1To3 {
       @ToVersion(2, { fromSchema: ProductV1, toSchema: ProductV2 })
-      public changeField2(x: ProductV1): ProductV2 {
+      public async changeField2(x: ProductV1): Promise<ProductV2> {
         return {} as any
       }
 
       @ToVersion(3, { fromSchema: ProductV2, toSchema: ProductV3 })
-      public changeField3(x: ProductV2): ProductV3 {
+      public async changeField3(x: ProductV2): Promise<ProductV3> {
         return {} as any
       }
     }
@@ -164,7 +164,7 @@ describe('the `Migrates` annotation', () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       class MigrateProductFrom3To5 {
         @ToVersion(3, { fromSchema: ProductV2, toSchema: ProductV3 })
-        public changeField5(x: ProductV2): ProductV3 {
+        public async changeField5(x: ProductV2): Promise<ProductV3> {
           return {} as any
         }
       }
@@ -177,7 +177,7 @@ describe('the `Migrates` annotation', () => {
       // @ts-ignore: Unused class
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       class MigrateProductFrom3To5 {
-        public changeField5(x: Record<string, any>): string {
+        public async changeField5(x: Record<string, any>): Promise<string> {
           return {} as any
         }
       }
