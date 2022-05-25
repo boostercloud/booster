@@ -12,7 +12,7 @@ export async function deploy(projectPath: string, environmentName = 'production'
 
 export async function nuke(projectPath: string, environmentName = 'production'): Promise<void> {
   // Dependencies should be installed before running the nuke command
-  await runCommand(projectPath, 'npm install')
+  await runCommand(projectPath, 'npm install --production --no-bin-links --no-optional')
   await runCommand(projectPath, `${cliBinaryPath} nuke -e ${environmentName} --force`)
 }
 
