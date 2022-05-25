@@ -1,7 +1,8 @@
-{{#imports}}
+export const template = `{{#imports}}
 import { {{commaSeparatedComponents}} } from '{{{packagePath}}}'
 {{/imports}}
 
+// -> Custom code in the read model!
 @ReadModel({
   authorize: // Specify authorized roles here. Use 'all' to authorize anyone
 })
@@ -21,3 +22,4 @@ export class {{{name}}} {
 
   {{/projections}}
 }
+`
