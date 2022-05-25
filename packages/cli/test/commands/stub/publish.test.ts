@@ -17,7 +17,7 @@ describe('stub', async () => {
 
     const directoryFileMocks: fs.Dirent[] = [
       {
-        name: 'fake-command.stub',
+        name: 'fake-command.ts',
         isFile: () => true,
         isDirectory: () => false,
         isBlockDevice: () => false,
@@ -27,7 +27,7 @@ describe('stub', async () => {
         isSocket: () => false,
       },
       {
-        name: 'fake-event.stub',
+        name: 'fake-event.ts',
         isFile: () => true,
         isDirectory: () => false,
         isBlockDevice: () => false,

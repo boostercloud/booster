@@ -1,7 +1,8 @@
-{{#imports}}
+export const template = `{{#imports}}
 import { {{commaSeparatedComponents}} } from '{{{packagePath}}}'
 {{/imports}}
 
+// -> Custom code in the event!
 @Event
 export class {{{ name }}} {
   public constructor(
@@ -14,3 +15,4 @@ export class {{{ name }}} {
     return /* the associated entity ID */
   }
 }
+`

@@ -1,4 +1,4 @@
-{{#imports}}
+export const template = `{{#imports}}
 import { {{commaSeparatedComponents}} } from '{{{packagePath}}}'
 {{/imports}}
 
@@ -7,3 +7,4 @@ import { {{commaSeparatedComponents}} } from '{{{packagePath}}}'
 export class {{{ name }}} {
   public static async handle(event: {{{ event }}}, register: Register): Promise<void> {}
 }
+`

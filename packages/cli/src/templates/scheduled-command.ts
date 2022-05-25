@@ -1,4 +1,4 @@
-{{#imports}}
+export const template = `{{#imports}}
 import { {{commaSeparatedComponents}} } from '{{{packagePath}}}'
 {{/imports}}
 
@@ -11,3 +11,4 @@ export class {{{ name }}} {
     /* YOUR CODE HERE */
   }
 }
+`

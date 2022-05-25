@@ -1,8 +1,8 @@
-// -> Custom code in the type!
-export class {{{ name }}} {
+export const template = `export class {{{ name }}} {
   public constructor(
     {{#fields}}
     public {{{name}}}: {{{type}}},
     {{/fields}}
   ) {}
 }
+`

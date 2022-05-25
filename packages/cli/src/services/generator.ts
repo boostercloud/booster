@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { outputFile, readFileSync } from 'fs-extra'
+import * as fs from 'fs-extra'
 import * as Mustache from 'mustache'
 import { Target, FileDir } from './generator/target'
 import { classNameToFileName, checkResourceNameIsValid } from '../common/filenames'
@@ -17,18 +17,17 @@ export async function generate<TInfo>(target: Target<TInfo>): Promise<void> {
   checkResourceNameIsValid(target.name)
   const rendered = Mustache.render(target.template, { ...target.info })
   const renderPath = filePath<TInfo>(target)
-  await outputFile(renderPath, rendered)
+  await fs.outputFile(renderPath, rendered)
 }
 
 export function template(name: TemplateType): string {
-  const fileName = `${name}.stub`
-  const stubFile = resourceStubFilePath(fileName)
+  const stubFileName = resourceStubFilePath(`${name}.ts`)
 
-  if (checkStubsFolderExists() && checkResourceStubFileExists(stubFile)) {
-    return readFileSync(stubFile).toString()
+  if (checkStubsFolderExists() && checkResourceStubFileExists(stubFileName)) {
+    return require(stubFileName).template
   }
 
-  return readFileSync(resourceTemplateFilePath(fileName)).toString()
+  return require(resourceTemplateFilePath(name)).template
 }
 
 export function filePath<TInfo>(target: FileDir<TInfo>): string {
