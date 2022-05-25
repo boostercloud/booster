@@ -1,4 +1,4 @@
-export const template = `{{#imports}}
+{{#imports}}
 import { {{commaSeparatedComponents}} } from '{{{packagePath}}}'
 {{/imports}}
 
@@ -20,4 +20,3 @@ export class {{{name}}} {
 
   {{/events}}
 }
-`
