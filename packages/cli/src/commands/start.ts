@@ -46,12 +46,14 @@ export default class Start extends BaseCommand {
   }
 
   async catch(fullError: Error) {
-    const { flags: { verbose } } = this.parse(Start)
+    const {
+      flags: { verbose },
+    } = this.parse(Start)
 
     if (verbose) {
       console.error(fullError.message)
     }
- 
+
     return super.catch(fullError)
   }
 }

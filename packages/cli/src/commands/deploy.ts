@@ -47,12 +47,14 @@ export default class Deploy extends BaseCommand {
   }
 
   async catch(fullError: Error) {
-    const { flags: { verbose } } = this.parse(Deploy)
+    const {
+      flags: { verbose },
+    } = this.parse(Deploy)
 
     if (verbose) {
       console.error(fullError.message)
     }
- 
+
     return super.catch(fullError)
   }
 }

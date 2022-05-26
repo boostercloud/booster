@@ -69,12 +69,14 @@ export default class Nuke extends BaseCommand {
   }
 
   async catch(fullError: Error) {
-    const { flags: { verbose } } = this.parse(Nuke)
+    const {
+      flags: { verbose },
+    } = this.parse(Nuke)
 
     if (verbose) {
       console.error(fullError.message)
     }
- 
+
     return super.catch(fullError)
   }
 }

@@ -76,7 +76,7 @@ export async function checkCurrentDirBoosterVersion(version: string): Promise<vo
 }
 
 async function checkBoosterVersion(cliVersion: string, projectPath: string): Promise<void> {
-  const projectVersion = await getBoosterVersion(projectPath)  
+  const projectVersion = await getBoosterVersion(projectPath)
   await compareVersionsAndDisplayMessages(cliVersion, projectVersion)
 }
 
