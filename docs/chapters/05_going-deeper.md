@@ -529,7 +529,7 @@ export class CartItem {
 You did it, we just updated our resource template file! Now when you run `boost new:type', it will contain the comment you added earlier 🚀
 Of course, this is a simple example, and you may want to add new methods, import something, you name it!
 
-Now you may have questions about this feature, here are some answers to questions you may have:
+Here are some answers to questions you may have:
 
 #### QA
 <details>
@@ -549,7 +549,8 @@ Now you may have questions about this feature, here are some answers to question
 <details>
     <summary>Can I adjust the command template and leave the other resources as they are?</summary>
 
-    Yes. You can only have the `command.stub` file in the `/stubs` folder and customize it. The generator will use the default templates for the other resources.
+    Yes. You can only have the `command.stub` file in the `/stubs` folder and customize it.
+    The generator will use the default templates for the other resources.
 </details>
 
 <details>
@@ -561,11 +562,19 @@ Now you may have questions about this feature, here are some answers to question
 <details>
     <summary>What are these strange {{{name}}, {{#fields}}, etc. things????</summary>
 
-    These are the variables and sections used by the [mustache.js] templating engine (https://mustache.github.io/). They allow us to dynamically generate new resources.
+    These are the variables and sections used by the mustache.js templating engine.
+    They allow us to dynamically generate new resources.
 </details>
 
 <details>
     <summary>How do I change what `new:project` command generates?</summary>
 
-    At the moment there is no way to do this. But in the future we will move the new project template from the CLI package( https://github.com/boostercloud/booster/issues/1078 ), and then you will be able to create and use your own templates for new projects
+    At the moment there is no way to do this. 
+    But in the future we will move the new project template from the CLI package( https://github.com/boostercloud/booster/issues/1078 ), and then you will be able to create and use your own templates for new projects.
+</details>
+
+<details>
+    <summary>I have another question!</summary>
+
+    You can ask questions on our Discord channel or create discussion on Github.
 </details>
