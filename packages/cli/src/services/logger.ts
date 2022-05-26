@@ -14,6 +14,9 @@ export const logger: Logger = {
 
 export function appendOnErrorsFile(data: string): void {
   const errorsFile = path.join(process.cwd(), 'errors.log')
-  const transformedData = data.split("\n").map(line => `[${new Date().toISOString()}] ${line}`).join("\n")
+  const transformedData = data
+    .split('\n')
+    .map((line) => `[${new Date().toISOString()}] ${line}`)
+    .join('\n')
   appendFileSync(errorsFile, transformedData)
 }

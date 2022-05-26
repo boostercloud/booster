@@ -28,12 +28,14 @@ export default class Build extends BaseCommand {
   }
 
   async catch(fullError: Error) {
-    const { flags: { verbose } } = this.parse(Build)
+    const {
+      flags: { verbose },
+    } = this.parse(Build)
 
     if (verbose) {
       console.error(fullError.message)
     }
- 
+
     return super.catch(fullError)
   }
 }

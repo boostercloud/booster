@@ -47,12 +47,14 @@ export default class Synth extends BaseCommand {
   }
 
   async catch(fullError: Error) {
-    const { flags: { verbose } } = this.parse(Synth)
+    const {
+      flags: { verbose },
+    } = this.parse(Synth)
 
     if (verbose) {
       console.error(fullError.message)
     }
- 
+
     return super.catch(fullError)
   }
 }
