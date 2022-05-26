@@ -484,3 +484,97 @@ Here you can check out the official Booster Rockets developed at this time:
 - [Backup Booster Rocket for AWS](https://github.com/boostercloud/rocket-backup-aws-infrastructure)
 - [Static Sites Booster Rocket for AWS](https://github.com/boostercloud/rocket-static-sites-aws-infrastructure)
 - [Webhook Booster Rocket for Azure and Local](https://github.com/boostercloud/rocket-webhook)
+
+## Customizing CLI resource templates
+
+You can change what the newly created Booster resources will contain by customizing the resource template files.
+
+To do this, you first need to publish the resource templates by running the `boost stub:publish` command. This will create a folder `stubs` in the root directory of the project, and it will contain all the resources that you can customize:
+
+```
+stubs/
+├─ command.stub
+├─ entity.stub
+├─ event.stub
+├─ event-handler.stub
+├─ read-model.stub
+├─ scheduled-command.stub
+└─ type.stub
+```
+
+After that, Booster CLI will start using your local templates instead of the default ones.
+Let's try this by adding a simple comment to the `type.stub` file.
+
+```
+// Look I am a comment that will now appear in every new type file 🐙
+export class {{{ name }}} {
+  public constructor(
+    {{#fields}}
+    public {{{name}}}: {{{type}}},
+    {{/fields}}
+  ) {}
+}
+```
+
+Now if you run `boost new:type CartItem --fields sku:string` command, you will get `common/cart-item.ts` file with following content:
+```typescript
+// Look I am a comment that will now appear in every new type file 🐙
+export class CartItem {
+  public constructor(
+      public sku: string,
+  ) {}
+}
+```
+
+You did it, we just updated our resource template file! Now when you run `boost new:type', it will contain the comment you added earlier 🚀
+Of course, this is a simple example, and you may want to add new methods, import something, you name it!
+
+Here are some answers to questions you may have:
+
+#### QA
+<details>
+    <summary>Can I have only one stub for a certain resource?</summary>
+
+    Yes! The resource generator will check if you have a custom template or it will use the default template
+</details>
+
+<details>
+    <summary>How can I keep up with new template updates?</summary>
+
+    1. Run `boost stub:publish --force` command
+    2. Review changes
+    3. Done!
+</details>
+
+<details>
+    <summary>Can I adjust the command template and leave the other resources as they are?</summary>
+
+    Yes. You can only have the `command.stub` file in the `/stubs` folder and customize it.
+    The generator will use the default templates for the other resources.
+</details>
+
+<details>
+    <summary>How can I use the default templates again!?</summary>
+
+    Simply delete the `/stubs` folder or a specific resource file.
+</details>
+
+<details>
+    <summary>What are these strange {{{name}}, {{#fields}}, etc. things????</summary>
+
+    These are the variables and sections used by the mustache.js templating engine.
+    They allow us to dynamically generate new resources.
+</details>
+
+<details>
+    <summary>How do I change what `new:project` command generates?</summary>
+
+    At the moment there is no way to do this. 
+    But in the future we will move the new project template from the CLI package( https://github.com/boostercloud/booster/issues/1078 ), and then you will be able to create and use your own templates for new projects.
+</details>
+
+<details>
+    <summary>I have another question!</summary>
+
+    You can ask questions on our Discord channel or create discussion on Github.
+</details>

@@ -28,12 +28,14 @@ export default class Clean extends BaseCommand {
   }
 
   async catch(fullError: Error) {
-    const { flags: { verbose } } = this.parse(Clean)
+    const {
+      flags: { verbose },
+    } = this.parse(Clean)
 
     if (verbose) {
       console.error(fullError.message)
     }
- 
+
     return super.catch(fullError)
   }
 }

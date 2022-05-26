@@ -26,7 +26,7 @@ export const createStubsFolder = (): void => mkdirSync(join(process.cwd(), 'stub
 
 export const createTemplateFileMap = (files: Dirent[]): Record<string, string> =>
   files
-    .filter((file: Dirent) => file.isFile())
+    .filter((file: Dirent) => file.isFile() && file.name.includes('.stub'))
     .reduce((files: Record<string, string>, file: Dirent) => {
       const resourceTemplatePath: string = join(resourceTemplatesPath, file.name)
 

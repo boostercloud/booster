@@ -17,7 +17,7 @@ const rewire = require('rewire')
 describe('stub publisher', () => {
   const directoryFileMocks: fs.Dirent[] = [
     {
-      name: 'fake-command.ts',
+      name: 'fake-command.stub',
       isFile: () => true,
       isDirectory: () => false,
       isBlockDevice: () => false,
@@ -27,7 +27,17 @@ describe('stub publisher', () => {
       isSocket: () => false,
     },
     {
-      name: 'fake-event.ts',
+      name: 'fake-event.stub',
+      isFile: () => true,
+      isDirectory: () => false,
+      isBlockDevice: () => false,
+      isCharacterDevice: () => false,
+      isSymbolicLink: () => false,
+      isFIFO: () => false,
+      isSocket: () => false,
+    },
+    {
+      name: 'fake-stub.ts',
       isFile: () => true,
       isDirectory: () => false,
       isBlockDevice: () => false,
@@ -64,7 +74,7 @@ describe('stub publisher', () => {
 
   describe('resourceStubFilePath and resourceTemplateFilePath', () => {
     it('should return path to stub file', () => {
-      const fileName = 'test-command.ts'
+      const fileName = 'test-command.stub'
       const stubFilePath = resourceStubFilePath(fileName)
       const expectedStubFilePath = join(process.cwd(), 'stubs', fileName)
 
@@ -72,7 +82,7 @@ describe('stub publisher', () => {
     })
 
     it('should return path to template file', () => {
-      const fileName = 'test-command.ts'
+      const fileName = 'test-command.stub'
       const stubFilePath = resourceTemplateFilePath(fileName)
       const expectedTemplateFilePath = join(resourceTemplatesPath, fileName)
 
@@ -105,7 +115,7 @@ describe('stub publisher', () => {
   describe('checkResourceStubFileExists', () => {
     it('should return true if given file exists in `/stubs` folder', () => {
       stub(fs, 'existsSync').returns(true)
-      const filePath = resourceStubFilePath('command.ts')
+      const filePath = resourceStubFilePath('command.stub')
 
       const fileExists = checkResourceStubFileExists(filePath)
 
@@ -116,7 +126,7 @@ describe('stub publisher', () => {
 
     it('should return false if given file exists in `/stubs` folder', () => {
       stub(fs, 'existsSync').returns(false)
-      const filePath = resourceStubFilePath('command.ts')
+      const filePath = resourceStubFilePath('command.stub')
 
       const fileExists = checkResourceStubFileExists(filePath)
 
@@ -143,7 +153,7 @@ describe('stub publisher', () => {
       it('when has no directory', () => {
         const filteredFiles = createTemplateFileMap([
           {
-            name: 'fake-file-1',
+            name: 'fake-file-1.stub',
             isFile: () => true,
             isDirectory: () => false,
             isBlockDevice: () => false,
@@ -153,7 +163,7 @@ describe('stub publisher', () => {
             isSocket: () => false,
           },
           {
-            name: 'fake-file-2',
+            name: 'fake-file-2.stub',
             isFile: () => true,
             isDirectory: () => false,
             isBlockDevice: () => false,
@@ -189,6 +199,23 @@ describe('stub publisher', () => {
 
         expect(Object.keys(filteredFiles)).to.have.lengthOf(0)
       })
+
+      it('when there are files other than .stub', () => {
+        const filteredFiles = createTemplateFileMap([
+          {
+            name: 'fake-stub.ts',
+            isFile: () => true,
+            isDirectory: () => false,
+            isBlockDevice: () => false,
+            isCharacterDevice: () => false,
+            isSymbolicLink: () => false,
+            isFIFO: () => false,
+            isSocket: () => false,
+          },
+        ])
+
+        expect(Object.keys(filteredFiles)).to.have.lengthOf(0)
+      })
     })
 
     it('generates template file map', () => {
@@ -196,8 +223,8 @@ describe('stub publisher', () => {
 
       expect(Object.keys(filteredFiles)).to.have.lengthOf(2)
       expect(filteredFiles).to.deep.equal({
-        [join(resourceTemplatesPath, 'fake-command.ts')]: join(process.cwd(), 'stubs', 'fake-command.ts'),
-        [join(resourceTemplatesPath, 'fake-event.ts')]: join(process.cwd(), 'stubs', 'fake-event.ts'),
+        [join(resourceTemplatesPath, 'fake-command.stub')]: join(process.cwd(), 'stubs', 'fake-command.stub'),
+        [join(resourceTemplatesPath, 'fake-event.stub')]: join(process.cwd(), 'stubs', 'fake-event.stub'),
       })
     })
   })
@@ -241,8 +268,8 @@ describe('stub publisher', () => {
     const copyStubFile = filenames.__get__('copyStubFile')
 
     it('should copy stub file', () => {
-      const from = 'from/test.ts'
-      const to = 'to/test.ts'
+      const from = 'from/test.stub'
+      const to = 'to/test.stub'
       const fakeContent = 'file content!'
 
       const fakeWriteFileSync: SinonSpy = fake()
