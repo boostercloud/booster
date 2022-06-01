@@ -17,28 +17,31 @@ export class EventStore {
   private config: BoosterConfig
   private provider: ProviderLibrary
   private logger: Logger
+  private migrator: Migrator
 
   public constructor(config: BoosterConfig, logger: Logger) {
     this.config = config
     this.provider = config.provider
     this.logger = logger
+    this.migrator = new Migrator(this.config, this.logger)
   }
 
   public async fetchEntitySnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | null> {
     this.logger.debug(`[EventStore#fetchEntitySnapshot] Fetching snapshot for entity ${entityName} with ID ${entityID}`)
     const latestSnapshotEnvelope = await this.loadLatestSnapshot(entityName, entityID)
+    const migrateSnapshotEnvelope = await this.migrateSnapshot(latestSnapshotEnvelope)
 
     // eslint-disable-next-line @typescript-eslint/no-extra-parens
-    const lastVisitedTime = latestSnapshotEnvelope?.snapshottedEventCreatedAt ?? originOfTime
+    const lastVisitedTime = migrateSnapshotEnvelope?.snapshottedEventCreatedAt ?? originOfTime
     const pendingEvents = await this.loadEventStreamSince(entityName, entityID, lastVisitedTime)
 
     if (pendingEvents.length <= 0) {
-      return latestSnapshotEnvelope
+      return migrateSnapshotEnvelope
     } else {
       this.logger.debug(
         `[EventStore#fetchEntitySnapshot] Looking for the reducer for entity ${entityName} with ID ${entityID}`
       )
-      let newEntitySnapshot = latestSnapshotEnvelope
+      let newEntitySnapshot = migrateSnapshotEnvelope
       for (const pendingEvent of pendingEvents) {
         newEntitySnapshot = await this.entityReducer(newEntitySnapshot, pendingEvent)
       }
@@ -62,11 +65,12 @@ export class EventStore {
       `[EventStore#calculateAndStoreEntitySnapshot] Fetching snapshot for entity ${entityName} with ID ${entityID}`
     )
     const latestSnapshotEnvelope = await this.loadLatestSnapshot(entityName, entityID)
+    const migrateSnapshotEnvelope = await this.migrateSnapshot(latestSnapshotEnvelope)
 
     this.logger.debug(
       `[EventStore#calculateAndStoreEntitySnapshot] Looking for the reducer for entity ${entityName} with ID ${entityID}`
     )
-    let newEntitySnapshot = latestSnapshotEnvelope
+    let newEntitySnapshot = migrateSnapshotEnvelope
     for (const pendingEvent of pendingEnvelopes) {
       newEntitySnapshot = await this.entityReducer(newEntitySnapshot, pendingEvent)
     }
@@ -78,7 +82,7 @@ export class EventStore {
 
     if (!newEntitySnapshot) {
       this.logger.debug('New entity snapshot is null. Returning old one (which can also be null)')
-      return latestSnapshotEnvelope
+      return migrateSnapshotEnvelope
     }
 
     await this.storeSnapshot(newEntitySnapshot)
@@ -117,16 +121,10 @@ export class EventStore {
         latestSnapshot
       )
       const eventMetadata = this.config.events[eventEnvelope.typeName]
-      const migratedEventEnvelope = await new Migrator(this.config, this.logger).migrate(eventEnvelope)
+      const migratedEventEnvelope = await this.migrator.migrate(eventEnvelope)
       const eventInstance = createInstance(eventMetadata.class, migratedEventEnvelope.value)
       const entityMetadata = this.config.entities[migratedEventEnvelope.entityTypeName]
-      let migratedLatestSnapshot: EventEnvelope | null = null
-      if (latestSnapshot) {
-        migratedLatestSnapshot = await new Migrator(this.config, this.logger).migrate(latestSnapshot)
-      }
-      const snapshotInstance = migratedLatestSnapshot
-        ? createInstance(entityMetadata.class, migratedLatestSnapshot.value)
-        : null
+      const snapshotInstance = latestSnapshot ? createInstance(entityMetadata.class, latestSnapshot.value) : null
       let newEntity: any
       try {
         newEntity = this.reducerForEvent(migratedEventEnvelope.typeName)(eventInstance, snapshotInstance)
@@ -171,5 +169,16 @@ export class EventStore {
         throw new Error(`Couldn't load the Entity class ${reducerMetadata.class.name}`)
       }
     }
+  }
+
+  private async migrateSnapshot(eventEnvelope: EventEnvelope | null): Promise<EventEnvelope | null> {
+    if (eventEnvelope) {
+      const migratedEventEnvelope = await this.migrator.migrate(eventEnvelope)
+      if (eventEnvelope.version !== migratedEventEnvelope.version) {
+        await this.storeSnapshot(migratedEventEnvelope)
+      }
+      return migratedEventEnvelope
+    }
+    return null
   }
 }
