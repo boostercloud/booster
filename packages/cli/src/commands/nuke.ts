@@ -2,7 +2,7 @@ import { flags } from '@oclif/command'
 import BaseCommand from '../common/base-command'
 import { nukeCloudProviderResources } from '../services/provider-service'
 import { compileProjectAndLoadConfig } from '../services/config-service'
-import { BoosterConfig, Logger } from '@boostercloud/framework-types'
+import { BoosterConfig } from '@boostercloud/framework-types'
 import { Script } from '../common/script'
 import Brand from '../common/brand'
 import Prompter from '../services/user-prompt'
@@ -11,10 +11,10 @@ import { currentEnvironment, initializeEnvironment } from '../services/environme
 
 const runTasks = async (
   compileAndLoad: Promise<BoosterConfig>,
-  nuke: (config: BoosterConfig, logger: Logger) => Promise<void>
+  nuke: (config: BoosterConfig) => Promise<void>
 ): Promise<void> =>
   Script.init(`boost ${Brand.dangerize('nuke')} [${currentEnvironment()}] 🧨`, compileAndLoad)
-    .step('Removing', (config) => nuke(config, logger))
+    .step('Removing', (config) => nuke(config))
     .info('Removal complete!')
     .done()
 

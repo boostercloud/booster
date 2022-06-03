@@ -9,15 +9,15 @@ import { Script } from '../common/script'
 import Brand from '../common/brand'
 import { currentEnvironment, initializeEnvironment } from '../services/environment'
 import { logger } from '../services/logger'
-import { BoosterConfig, Logger } from '@boostercloud/framework-types'
+import { BoosterConfig } from '@boostercloud/framework-types'
 import { synthToProvider } from '../services/provider-service'
 
 const runTasks = async (
   compileAndLoad: Promise<BoosterConfig>,
-  synther: (config: BoosterConfig, logger: Logger) => Promise<void>
+  synther: (config: BoosterConfig) => Promise<void>
 ): Promise<void> =>
   Script.init(`boost ${Brand.dangerize('synth')} [${currentEnvironment()}] 🚀`, compileAndLoad)
-    .step('Synth', (config) => synther(config, logger))
+    .step('Synth', (config) => synther(config))
     .step('Cleaning up temporal files', cleanDeploymentSandbox)
     .info('Synth complete!')
     .done()

@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { stub, match, SinonStub, fake, replace } from 'sinon'
 import { random, lorem, internet } from 'faker'
 import {
-  Logger,
   GraphQLRequestEnvelope,
   GraphQLStart,
   GraphQLStop,
@@ -26,12 +26,17 @@ describe('the `GraphQLWebsocketHandler`', () => {
   ) => Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult>
   let onStopCallback: (connectionID: string, messageID: string) => Promise<void>
   let onTerminateCallback: (connectionID: string) => Promise<void>
-  let logger: Logger
   let envelope: GraphQLRequestEnvelope
   let boosterTokenVerifier: BoosterTokenVerifier
 
   beforeEach(() => {
     config = new BoosterConfig('test')
+    config.logger = {
+      debug: fake(),
+      info: fake(),
+      warn: fake(),
+      error: fake(),
+    }
     boosterTokenVerifier = new BoosterTokenVerifier(config)
     connectionsManager = {
       sendMessage: stub(),
@@ -42,11 +47,9 @@ describe('the `GraphQLWebsocketHandler`', () => {
     onStartCallback = stub()
     onStopCallback = stub()
     onTerminateCallback = stub()
-    logger = console
 
     websocketHandler = new GraphQLWebsocketHandler(
       config,
-      logger,
       connectionsManager,
       {
         onStartOperation: onStartCallback,
@@ -81,10 +84,9 @@ describe('the `GraphQLWebsocketHandler`', () => {
       })
 
       it('just logs an error', async () => {
-        logger.error = stub()
         resultPromise = websocketHandler.handle(envelope)
         await resultPromise
-        expect(logger.error).to.be.calledOnceWithExactly('Missing websocket connectionID')
+        expect(config.logger?.error).to.be.calledOnceWithExactly(match.any, 'Missing websocket connectionID')
       })
     })
 
@@ -299,7 +301,6 @@ describe('the `GraphQLWebsocketHandler`', () => {
             onStartCallback = stub().returns({ next: () => {} })
             websocketHandler = new GraphQLWebsocketHandler(
               config,
-              logger,
               connectionsManager,
               {
                 onStartOperation: onStartCallback,
@@ -325,7 +326,6 @@ describe('the `GraphQLWebsocketHandler`', () => {
             onStartCallback = stub().returns(result)
             websocketHandler = new GraphQLWebsocketHandler(
               config,
-              logger,
               connectionsManager,
               {
                 onStartOperation: onStartCallback,

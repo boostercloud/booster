@@ -4,8 +4,6 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
-
-
     {
       "type": "node",
       "request": "launch",
@@ -107,6 +105,88 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "framework-provider-kubernetes tests",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "999999",
+        "--colors",
+        "--forbid-only",
+        "${workspaceFolder}/packages/framework-provider-kubernetes/test/**/*.test.ts"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "framework-provider-kubernetes-infrastructure tests",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "999999",
+        "--colors",
+        "--forbid-only",
+        "${workspaceFolder}/packages/framework-provider-kubernetes-infrastructure/test/**/*.test.ts"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "framework-provider-local tests",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "999999",
+        "--colors",
+        "--forbid-only",
+        "${workspaceFolder}/packages/framework-provider-local/test/**/*.test.ts"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"],
+      "env": {
+        "BOOSTER_ENV": "test"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "framework-provider-local-infrastructure tests",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "999999",
+        "--colors",
+        "--forbid-only",
+        "${workspaceFolder}/packages/framework-provider-local-infrastructure/test/**/*.test.ts"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "runtimeArgs": ["--preserve-symlinks"],
+      "env": {
+        "BOOSTER_ENV": "test"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "cli tests",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [
@@ -140,7 +220,10 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
-      "runtimeArgs": ["--preserve-symlinks"]
+      "runtimeArgs": ["--preserve-symlinks"],
+      "env": {
+        "BOOSTER_ENV": "test"
+      }
     },
     {
       "type": "node",
@@ -346,6 +429,6 @@
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
       "runtimeArgs": ["--preserve-symlinks"]
-  }
+    }
   ]
 }

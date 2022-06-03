@@ -1,10 +1,10 @@
-import { BoosterConfig, Logger } from '@boostercloud/framework-types'
+import { BoosterConfig } from '@boostercloud/framework-types'
 import { InfrastructureRocket } from './infrastructure-rocket'
 import { createResourceGroupName } from '../helper/utils'
 import { ZipResource } from '../types/zip-resource'
 import { FunctionZip } from '../helper/function-zip'
 import { buildRocketUtils } from './rocket-utils'
-import { Promises } from '@boostercloud/framework-common-helpers'
+import { getLogger, Promises } from '@boostercloud/framework-common-helpers'
 import { ApplicationSynthStack } from '../types/application-synth-stack'
 import { FunctionDefinition } from '../types/functionDefinition'
 
@@ -15,14 +15,14 @@ export interface RocketZipResource {
 
 export class RocketBuilder {
   constructor(
-    readonly logger: Logger,
     readonly config: BoosterConfig,
     readonly applicationSynthStack: ApplicationSynthStack,
     readonly rockets?: InfrastructureRocket[]
   ) {}
 
   public async synthRocket(): Promise<void> {
-    this.logger.info('Synth rockets...')
+    const logger = getLogger(this.config, 'RocketBuilder#synthRocket')
+    logger.info('Synth rockets...')
     const rocketsInfrastructure = this.rockets
       ? this.rockets.map((rocket: InfrastructureRocket) =>
           rocket.mountStack(this.config, this.applicationSynthStack, buildRocketUtils())
@@ -47,10 +47,11 @@ export class RocketBuilder {
   }
 
   private async uploadRocketFile(zipResource: ZipResource): Promise<void> {
-    this.logger.info('Uploading rockets zip file')
+    const logger = getLogger(this.config, 'RocketBuilder#uploadRocketFile')
+    logger.info('Uploading rockets zip file')
     const resourceGroupName = createResourceGroupName(this.config.appName, this.config.environmentName)
     this.deployRocketsZips(resourceGroupName, zipResource)
-    this.logger.info('Rocket zip files uploaded')
+    logger.info('Rocket zip files uploaded')
   }
 
   public async mountRocketsZipResources(): Promise<Array<RocketZipResource> | undefined> {
@@ -65,11 +66,12 @@ export class RocketBuilder {
   }
 
   private async mountRocketZipResource(rocket: InfrastructureRocket): Promise<RocketZipResource> {
+    const logger = getLogger(this.config, 'RocketBuilder#mountRocketZipResource')
     const rocketFunctionAppName = this.getFunctionAppName(rocket)
     const functionAppName = rocketFunctionAppName.replace(/(\W+)/gi, '_')
     const fileName = `rocket_${functionAppName}.zip`
     const rocketFeaturesDefinitions = this.mountFunction(rocket)
-    this.logger.info(`Generating Rocket zip file ${fileName}`)
+    logger.info(`Generating Rocket zip file ${fileName}`)
     const rocketZipResource = await FunctionZip.copyZip(rocketFeaturesDefinitions, fileName)
     return {
       functionAppName: rocketFunctionAppName,

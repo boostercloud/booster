@@ -1,33 +1,33 @@
-import { BoosterConfig, Logger } from '@boostercloud/framework-types'
+import { BoosterConfig } from '@boostercloud/framework-types'
 import { azureCredentials, createResourceGroupName, createResourceManagementClient } from './helper/utils'
-import { runCommand } from '@boostercloud/framework-common-helpers'
+import { runCommand, getLogger } from '@boostercloud/framework-common-helpers'
 import { InfrastructureRocket } from './rockets/infrastructure-rocket'
 import { ApplicationBuilder } from './application-builder'
 import { RocketBuilder } from './rockets/rocket-builder'
 
-export const synth = (configuration: BoosterConfig, logger: Logger, rockets?: InfrastructureRocket[]): Promise<void> =>
-  synthApp(logger, configuration, rockets)
+export const synth = (config: BoosterConfig, rockets?: InfrastructureRocket[]): Promise<void> =>
+  synthApp(config, rockets)
 
-export const deploy = (configuration: BoosterConfig, logger: Logger, rockets?: InfrastructureRocket[]): Promise<void> =>
-  deployApp(logger, configuration, rockets)
+export const deploy = (config: BoosterConfig, rockets?: InfrastructureRocket[]): Promise<void> =>
+  deployApp(config, rockets)
 
-export const nuke = (configuration: BoosterConfig, logger: Logger, rockets?: InfrastructureRocket[]): Promise<void> =>
-  nukeApp(logger, configuration, rockets)
+export const nuke = (config: BoosterConfig, rockets?: InfrastructureRocket[]): Promise<void> => nukeApp(config, rockets)
 
 /**
  * Synth the application for Azure
  */
-async function synthApp(logger: Logger, config: BoosterConfig, rockets?: InfrastructureRocket[]): Promise<void> {
-  const applicationBuilder = new ApplicationBuilder(logger, config, rockets)
+async function synthApp(config: BoosterConfig, rockets?: InfrastructureRocket[]): Promise<void> {
+  const applicationBuilder = new ApplicationBuilder(config, rockets)
   await applicationBuilder.buildApplication()
 }
 
 /**
  * Deploys the application in Azure
  */
-async function deployApp(logger: Logger, config: BoosterConfig, rockets?: InfrastructureRocket[]): Promise<void> {
+async function deployApp(config: BoosterConfig, rockets?: InfrastructureRocket[]): Promise<void> {
+  const logger = getLogger(config, 'index#deployApp')
   logger.info(`Deploying app ${config.appName}`)
-  const applicationBuilder = new ApplicationBuilder(logger, config, rockets)
+  const applicationBuilder = new ApplicationBuilder(config, rockets)
   const applicationBuild = await applicationBuilder.buildApplication()
 
   const command = await runCommand(process.cwd(), 'npx cdktf deploy --auto-approve')
@@ -37,7 +37,7 @@ async function deployApp(logger: Logger, config: BoosterConfig, rockets?: Infras
 
   await applicationBuilder.uploadFile(applicationBuild.zipResource)
   if (applicationBuild.rocketsZipResources && applicationBuild.rocketsZipResources.length > 0) {
-    const rocketBuilder = new RocketBuilder(logger, config, applicationBuild.azureStack.applicationStack, rockets)
+    const rocketBuilder = new RocketBuilder(config, applicationBuild.azureStack.applicationStack, rockets)
     rocketBuilder.uploadRocketsFiles(applicationBuild.rocketsZipResources)
   }
 }
@@ -45,7 +45,7 @@ async function deployApp(logger: Logger, config: BoosterConfig, rockets?: Infras
 /**
  * Nuke all the resources used in the Resource Group
  */
-async function nukeApp(_logger: Logger, config: BoosterConfig, rockets?: InfrastructureRocket[]): Promise<void> {
+async function nukeApp(config: BoosterConfig, rockets?: InfrastructureRocket[]): Promise<void> {
   const credentials = await azureCredentials()
   const resourceManagementClient = await createResourceManagementClient(credentials)
 

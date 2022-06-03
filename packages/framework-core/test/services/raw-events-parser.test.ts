@@ -1,11 +1,9 @@
 import { describe } from 'mocha'
 import { fake, restore, SinonSpy } from 'sinon'
-import { ProviderLibrary, BoosterConfig, EventEnvelope, Logger } from '@boostercloud/framework-types'
+import { ProviderLibrary, BoosterConfig, EventEnvelope } from '@boostercloud/framework-types'
 import { RawEventsParser } from '../../src/services/raw-events-parser'
 import { expect } from '../expect'
 import { random } from 'faker'
-
-const logger: Logger = console
 
 describe('RawEventsParser', () => {
   afterEach(() => {
@@ -69,13 +67,13 @@ describe('RawEventsParser', () => {
   describe('streamPerEntityEvents', () => {
     it('strips all snapshots', async () => {
       const callbackFunction = fake()
-      await RawEventsParser.streamPerEntityEvents(logger, config, rawEvents, callbackFunction)
+      await RawEventsParser.streamPerEntityEvents(config, rawEvents, callbackFunction)
       expect(callbackFunction).not.to.have.been.calledWith(snapshottedEntityName)
     })
 
     it('calls the callback function with ordered groups of event envelopes per entity name and ID', async () => {
       const callbackFunction = fake()
-      await RawEventsParser.streamPerEntityEvents(logger, config, rawEvents, callbackFunction)
+      await RawEventsParser.streamPerEntityEvents(config, rawEvents, callbackFunction)
       expect(callbackFunction).to.have.been.calledTwice
       expect(callbackFunction).to.have.been.calledWithExactly(
         entityAName,

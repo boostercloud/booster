@@ -130,9 +130,10 @@ export class Script<TContext> {
         }, constVoid)
       )
     } catch (err) {
+      const error = err as Error
       const defaultHandler = (e: Error): string => e.stack || e.message || JSON.stringify(e)
-      const handler = this.errorHandlers[err.name] || defaultHandler
-      throw new Error(handler(err))
+      const handler = this.errorHandlers[error.name] || defaultHandler
+      throw new Error(handler(error))
     }
   }
 

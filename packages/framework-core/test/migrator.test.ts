@@ -2,15 +2,8 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 
 import { expect } from './expect'
-import { BoosterConfig, CommandEnvelope, Logger, MigrationMetadata } from '@boostercloud/framework-types'
+import { BoosterConfig, CommandEnvelope, MigrationMetadata } from '@boostercloud/framework-types'
 import { Migrator } from '../src/migrator'
-
-const logger: Logger = {
-  debug() {},
-  warn() {},
-  info() {},
-  error() {},
-}
 
 class TestConceptV1 {
   public constructor(readonly field1: string) {}
@@ -52,7 +45,7 @@ describe('Migrator', () => {
   })
   const config = new BoosterConfig('test')
   config.migrations['TestConcept'] = migrations
-  const migrator = new Migrator(config, logger)
+  const migrator = new Migrator(config)
 
   describe('migrate', async () => {
     it('throws when the version of the concept to migrate is lower than 1', async () => {

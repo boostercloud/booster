@@ -4,7 +4,6 @@ import { expect } from './expect'
 import { Register, BoosterConfig, Level, UserEnvelope } from '@boostercloud/framework-types'
 import { replace, fake, restore, spy } from 'sinon'
 import { RegisterHandler } from '../src'
-import { getLogger } from '../src/booster-logger'
 
 class SomeEntity {}
 
@@ -18,7 +17,6 @@ class SomeEvent {
 describe('the `RegisterHandler` class', () => {
   const testConfig = new BoosterConfig('Test')
   testConfig.logLevel = Level.debug
-  const logger = getLogger(testConfig)
 
   afterEach(() => {
     restore()
@@ -41,7 +39,7 @@ describe('the `RegisterHandler` class', () => {
     const registerHandler = RegisterHandler as any
     spy(registerHandler, 'wrapEvent')
 
-    await RegisterHandler.handle(config, logger, register)
+    await RegisterHandler.handle(config, register)
 
     expect(registerHandler.wrapEvent).to.have.been.calledTwice
     expect(registerHandler.wrapEvent).to.have.been.calledWith(register, config, event1)
@@ -59,7 +57,7 @@ describe('the `RegisterHandler` class', () => {
     config.reducers['SomeEvent'] = { class: SomeEntity, methodName: 'whatever' }
 
     const register = new Register('1234')
-    await RegisterHandler.handle(config, logger, register)
+    await RegisterHandler.handle(config, register)
 
     expect(config.provider.events.store).to.not.have.been.called
   })
@@ -83,7 +81,7 @@ describe('the `RegisterHandler` class', () => {
     const event2 = new SomeEvent('b')
     register.events(event1, event2)
 
-    await RegisterHandler.handle(config, logger, register)
+    await RegisterHandler.handle(config, register)
 
     expect(config.provider.events.store).to.have.been.calledOnce
     expect(config.provider.events.store).to.have.been.calledWithMatch(
@@ -111,8 +109,7 @@ describe('the `RegisterHandler` class', () => {
           version: 1,
         },
       ],
-      config,
-      logger
+      config
     )
   })
 

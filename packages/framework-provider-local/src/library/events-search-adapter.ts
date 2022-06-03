@@ -1,13 +1,14 @@
-import { Logger, BoosterConfig, EventSearchParameters, EventSearchResponse } from '@boostercloud/framework-types'
+import { BoosterConfig, EventSearchParameters, EventSearchResponse } from '@boostercloud/framework-types'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 import { EventRegistry } from '..'
 import { buildFiltersForByFilters, buildFiltersForByTime, resultToEventSearchResponse } from './events-searcher-builder'
 
 export async function searchEvents(
   eventRegistry: EventRegistry,
   config: BoosterConfig,
-  logger: Logger,
   parameters: EventSearchParameters
 ): Promise<Array<EventSearchResponse>> {
+  const logger = getLogger(config, 'events-searcher-adapter#searchEvents')
   logger.debug('Initiating an events search. Filters: ', parameters)
   const timeFilterQuery = buildFiltersForByTime(parameters.from, parameters.to)
   const eventFilterQuery = buildFiltersForByFilters(parameters)

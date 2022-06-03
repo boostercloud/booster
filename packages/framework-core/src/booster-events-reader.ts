@@ -1,7 +1,6 @@
 import {
   EventSearchRequest,
   BoosterConfig,
-  Logger,
   NotAuthorizedError,
   EventSearchResponse,
   NotFoundError,
@@ -11,11 +10,12 @@ import {
   EventParametersFilterByEntity,
   EventParametersFilterByType,
 } from '@boostercloud/framework-types'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 import { BoosterAuth } from './booster-auth'
 import { Booster } from './booster'
 
 export class BoosterEventsReader {
-  public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
+  public constructor(readonly config: BoosterConfig) {}
 
   public async fetch(eventRequest: EventSearchRequest): Promise<Array<EventSearchResponse>> {
     this.validateRequest(eventRequest)
@@ -23,7 +23,8 @@ export class BoosterEventsReader {
   }
 
   private validateRequest(eventRequest: EventSearchRequest): void {
-    this.logger.debug('Validating the following event request: ', eventRequest)
+    const logger = getLogger(this.config, 'BoosterEventsReader#validateRequest')
+    logger.debug('Validating the following event request: ', eventRequest)
     const entityMetadata = this.entityMetadataFromRequest(eventRequest)
 
     if (!BoosterAuth.isUserAuthorized(entityMetadata.authorizeReadEvents, eventRequest.currentUser)) {

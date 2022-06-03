@@ -12,7 +12,6 @@ import {
   ScheduledCommandEnvelope,
   SubscriptionEnvelope,
 } from './envelope'
-import { Logger } from './logger'
 import { FilterFor, SortFor } from './searcher'
 import { ReadOnlyNonEmptyArray } from './typelevel'
 import { RocketDescriptor } from './rocket-descriptor'
@@ -31,33 +30,25 @@ export interface ProviderEventsLibrary {
   rawToEnvelopes(rawEvents: unknown): Array<EventEnvelope>
   forEntitySince(
     config: BoosterConfig,
-    logger: Logger,
     entityTypeName: string,
     entityID: UUID,
     since?: string
   ): Promise<Array<EventEnvelope>>
-  latestEntitySnapshot(
-    config: BoosterConfig,
-    logger: Logger,
-    entityTypeName: string,
-    entityID: UUID
-  ): Promise<EventEnvelope | null>
-  search(config: BoosterConfig, logger: Logger, parameters: EventSearchParameters): Promise<Array<EventSearchResponse>>
+  latestEntitySnapshot(config: BoosterConfig, entityTypeName: string, entityID: UUID): Promise<EventEnvelope | null>
+  search(config: BoosterConfig, parameters: EventSearchParameters): Promise<Array<EventSearchResponse>>
   /** Streams an event to the corresponding event handler */
-  store(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig, logger: Logger): Promise<void>
+  store(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig): Promise<void>
 }
 export interface ProviderReadModelsLibrary {
-  rawToEnvelopes(config: BoosterConfig, logger: Logger, rawEvents: unknown): Promise<Array<ReadModelEnvelope>>
+  rawToEnvelopes(config: BoosterConfig, rawEvents: unknown): Promise<Array<ReadModelEnvelope>>
   fetch(
     config: BoosterConfig,
-    logger: Logger,
     readModelName: string,
     readModelID: UUID,
     sequenceKey?: SequenceKey
   ): Promise<ReadOnlyNonEmptyArray<ReadModelInterface>>
   search<TReadModel extends ReadModelInterface>(
     config: BoosterConfig,
-    logger: Logger,
     entityTypeName: string,
     filters: FilterFor<unknown>,
     sortBy?: SortFor<unknown>,
@@ -71,32 +62,21 @@ export interface ProviderReadModelsLibrary {
    */
   store(
     config: BoosterConfig,
-    logger: Logger,
     readModelName: string,
     readModel: ReadModelInterface,
     expectedCurrentVersion?: number
   ): Promise<unknown>
-  delete(
-    config: BoosterConfig,
-    logger: Logger,
-    readModelName: string,
-    readModel: ReadModelInterface | undefined
-  ): Promise<any>
-  subscribe(config: BoosterConfig, logger: Logger, subscriptionEnvelope: SubscriptionEnvelope): Promise<void>
-  fetchSubscriptions(
-    config: BoosterConfig,
-    logger: Logger,
-    subscriptionName: string
-  ): Promise<Array<SubscriptionEnvelope>>
-  deleteSubscription(config: BoosterConfig, logger: Logger, connectionID: string, subscriptionID: string): Promise<void>
-  deleteAllSubscriptions(config: BoosterConfig, logger: Logger, connectionID: string): Promise<void>
+  delete(config: BoosterConfig, readModelName: string, readModel: ReadModelInterface | undefined): Promise<any>
+  subscribe(config: BoosterConfig, subscriptionEnvelope: SubscriptionEnvelope): Promise<void>
+  fetchSubscriptions(config: BoosterConfig, subscriptionName: string): Promise<Array<SubscriptionEnvelope>>
+  deleteSubscription(config: BoosterConfig, connectionID: string, subscriptionID: string): Promise<void>
+  deleteAllSubscriptions(config: BoosterConfig, connectionID: string): Promise<void>
 }
 
 export interface ProviderGraphQLLibrary {
   rawToEnvelope(
-    rawGraphQLRequest: unknown,
-    logger: Logger,
-    config: BoosterConfig
+    config: BoosterConfig,
+    rawGraphQLRequest: unknown
   ): Promise<GraphQLRequestEnvelope | GraphQLRequestEnvelopeError>
   handleResult(result?: unknown, headers?: Record<string, string>): Promise<unknown>
 }
@@ -114,14 +94,14 @@ export interface ProviderAPIHandling {
 }
 
 export interface ProviderInfrastructure {
-  deploy?: (configuration: BoosterConfig, logger: Logger) => Promise<void>
-  nuke?: (configuration: BoosterConfig, logger: Logger) => Promise<void>
-  start?: (configuration: BoosterConfig, port: number) => Promise<void>
-  synth?: (configuration: BoosterConfig, logger: Logger) => Promise<void>
+  deploy?: (config: BoosterConfig) => Promise<void>
+  nuke?: (config: BoosterConfig) => Promise<void>
+  start?: (config: BoosterConfig, port: number) => Promise<void>
+  synth?: (config: BoosterConfig) => Promise<void>
 }
 
 export interface ScheduledCommandsLibrary {
-  rawToEnvelope(rawMessage: unknown, logger: Logger): Promise<ScheduledCommandEnvelope>
+  rawToEnvelope(config: BoosterConfig, rawMessage: unknown): Promise<ScheduledCommandEnvelope>
 }
 
 export interface HasInfrastructure {

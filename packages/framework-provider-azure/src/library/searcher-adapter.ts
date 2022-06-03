@@ -1,11 +1,10 @@
 import { CosmosClient } from '@azure/cosmos'
-import { BoosterConfig, FilterFor, Logger, ReadModelListResult, SortFor } from '@boostercloud/framework-types'
+import { BoosterConfig, FilterFor, ReadModelListResult, SortFor } from '@boostercloud/framework-types'
 import * as queryHelper from '../helpers/query-helper'
 
 export async function searchReadModel(
   cosmosDb: CosmosClient,
   config: BoosterConfig,
-  logger: Logger,
   readModelName: string,
   filters: FilterFor<unknown>,
   sortBy?: SortFor<unknown>,
@@ -16,7 +15,6 @@ export async function searchReadModel(
   return await queryHelper.search(
     cosmosDb,
     config,
-    logger,
     config.resourceNames.forReadModel(readModelName),
     filters,
     limit,

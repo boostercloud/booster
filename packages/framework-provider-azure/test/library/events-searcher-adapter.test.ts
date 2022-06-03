@@ -2,25 +2,18 @@
 import { expect } from '../expect'
 import { createStubInstance, fake, restore, stub, SinonStubbedInstance } from 'sinon'
 import { CosmosClient } from '@azure/cosmos'
-import { BoosterConfig, EventSearchParameters, Logger } from '@boostercloud/framework-types'
+import { BoosterConfig, EventSearchParameters } from '@boostercloud/framework-types'
 import { searchEvents } from '../../src/library/events-searcher-adapter'
 import * as searchModule from '../../src/helpers/query-helper'
 
 describe('Events Searcher adapter', () => {
   describe('The "searchEvents" method', () => {
-    let mockLogger: Logger
     let mockConfig: BoosterConfig
 
     let mockCosmosDbClient: SinonStubbedInstance<CosmosClient>
 
     beforeEach(() => {
       mockConfig = new BoosterConfig('test')
-      mockLogger = {
-        info: fake(),
-        warn: fake(),
-        error: fake(),
-        debug: fake(),
-      }
       mockCosmosDbClient = createStubInstance(CosmosClient, {
         database: stub().returns({
           container: stub().returns({
@@ -48,12 +41,11 @@ describe('Events Searcher adapter', () => {
       }
       const mockSearch = stub(searchModule, 'search').returns(Promise.resolve([]))
       const eventStoreName = 'new-booster-app-app-events-store'
-      await searchEvents(mockCosmosDbClient as any, mockConfig, mockLogger, filters)
+      await searchEvents(mockCosmosDbClient as any, mockConfig, filters)
 
       expect(mockSearch).to.have.been.calledWithExactly(
         mockCosmosDbClient,
         mockConfig,
-        mockLogger,
         eventStoreName,
         {
           entityTypeName_entityID_kind: { eq: 'entity-entityID-event' },
@@ -80,12 +72,11 @@ describe('Events Searcher adapter', () => {
       }
       const mockSearch = stub(searchModule, 'search').returns(Promise.resolve([]))
       const eventStoreName = 'new-booster-app-app-events-store'
-      await searchEvents(mockCosmosDbClient as any, mockConfig, mockLogger, filters)
+      await searchEvents(mockCosmosDbClient as any, mockConfig, filters)
 
       expect(mockSearch).to.have.been.calledWithExactly(
         mockCosmosDbClient,
         mockConfig,
-        mockLogger,
         eventStoreName,
         {
           entityTypeName_entityID_kind: { eq: 'entity-entityID-event' },
@@ -108,12 +99,11 @@ describe('Events Searcher adapter', () => {
       }
       const mockSearch = stub(searchModule, 'search').returns(Promise.resolve([]))
       const eventStoreName = 'new-booster-app-app-events-store'
-      await searchEvents(mockCosmosDbClient as any, mockConfig, mockLogger, filters)
+      await searchEvents(mockCosmosDbClient as any, mockConfig, filters)
 
       expect(mockSearch).to.have.been.calledWithExactly(
         mockCosmosDbClient,
         mockConfig,
-        mockLogger,
         eventStoreName,
         {
           entityTypeName_entityID_kind: { eq: 'entity-entityID-event' },
@@ -134,12 +124,11 @@ describe('Events Searcher adapter', () => {
       }
       const mockSearch = stub(searchModule, 'search').returns(Promise.resolve([]))
       const eventStoreName = 'new-booster-app-app-events-store'
-      await searchEvents(mockCosmosDbClient as any, mockConfig, mockLogger, filters)
+      await searchEvents(mockCosmosDbClient as any, mockConfig, filters)
 
       expect(mockSearch).to.have.been.calledWithExactly(
         mockCosmosDbClient,
         mockConfig,
-        mockLogger,
         eventStoreName,
         {
           typeName: { eq: 'type' },
@@ -160,12 +149,11 @@ describe('Events Searcher adapter', () => {
       }
       const mockSearch = stub(searchModule, 'search').returns(Promise.resolve([]))
       const eventStoreName = 'new-booster-app-app-events-store'
-      await searchEvents(mockCosmosDbClient as any, mockConfig, mockLogger, parameters)
+      await searchEvents(mockCosmosDbClient as any, mockConfig, parameters)
 
       expect(mockSearch).to.have.been.calledWithExactly(
         mockCosmosDbClient,
         mockConfig,
-        mockLogger,
         eventStoreName,
         {
           entityTypeName: { eq: 'entity' },

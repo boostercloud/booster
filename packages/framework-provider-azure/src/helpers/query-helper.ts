@@ -3,23 +3,23 @@ import {
   BoosterConfig,
   FilterFor,
   InvalidParameterError,
-  Logger,
   Operation,
   ReadModelListResult,
   SortFor,
 } from '@boostercloud/framework-types'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 
-export async function search(
+export async function search<TResult>(
   cosmosDb: CosmosClient,
   config: BoosterConfig,
-  logger: Logger,
   containerName: string,
   filters: FilterFor<unknown>,
   limit?: number | undefined,
   afterCursor?: Record<string, string> | undefined,
   paginatedVersion = false,
   order?: SortFor<unknown>
-): Promise<Array<any> | ReadModelListResult<any>> {
+): Promise<Array<TResult> | ReadModelListResult<TResult>> {
+  const logger = getLogger(config, 'query-helper#search')
   const filterExpression = buildFilterExpression(filters)
   const queryDefinition = `SELECT * FROM c ${filterExpression !== '' ? `WHERE ${filterExpression}` : filterExpression}`
   const queryWithOrder = queryDefinition + buildOrderExpression(order)

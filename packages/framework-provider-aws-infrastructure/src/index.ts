@@ -1,4 +1,4 @@
-import { ProviderInfrastructure, RocketDescriptor, BoosterConfig, Logger } from '@boostercloud/framework-types'
+import { ProviderInfrastructure, RocketDescriptor, BoosterConfig } from '@boostercloud/framework-types'
 import { loadRocket } from './rockets/infrastructure-rocket'
 import { deploy, nuke } from './infrastructure'
 
@@ -9,7 +9,7 @@ export * from './test-helper/aws-test-helper'
 export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): ProviderInfrastructure => {
   const rockets = rocketDescriptors?.map(loadRocket)
   return {
-    deploy: async (config: BoosterConfig, logger: Logger) => await deploy(config, logger, rockets),
-    nuke: async (config: BoosterConfig, logger: Logger) => await nuke(config, logger, rockets),
+    deploy: async (config: BoosterConfig) => await deploy(config, rockets),
+    nuke: async (config: BoosterConfig) => await nuke(config, rockets),
   }
 }

@@ -1,7 +1,7 @@
-import { BoosterConfig, Logger, rocketFunctionIDEnvVar } from '@boostercloud/framework-types'
+import { BoosterConfig, rocketFunctionIDEnvVar } from '@boostercloud/framework-types'
 
 export class BoosterRocketDispatcher {
-  constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
+  constructor(readonly config: BoosterConfig) {}
 
   public dispatch(request: unknown): Promise<unknown> {
     const rocketFunctionID = process.env[rocketFunctionIDEnvVar]
