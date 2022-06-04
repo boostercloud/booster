@@ -1,20 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
 import { searchReadModel } from '../../src/library/read-models-searcher-adapter'
-import { createStubInstance, fake, restore, SinonStubbedInstance, stub } from 'sinon'
-import { BoosterConfig, FilterFor, Logger } from '@boostercloud/framework-types'
+import { createStubInstance, restore, SinonStubbedInstance, stub } from 'sinon'
+import { BoosterConfig, FilterFor } from '@boostercloud/framework-types'
 import { random } from 'faker'
 import { DynamoDB } from 'aws-sdk'
 
 describe('Read models searcher adapter', () => {
   describe('The "searchReadModel" method', () => {
     const config: BoosterConfig = new BoosterConfig('test')
-    const logger: Logger = {
-      info: fake(),
-      warn: fake(),
-      error: fake(),
-      debug: fake(),
-    }
     const readModelName: string = random.word()
 
     let database: SinonStubbedInstance<DynamoDB.DocumentClient>
@@ -59,7 +53,7 @@ describe('Read models searcher adapter', () => {
     })
 
     it('Executes query without filters', async () => {
-      const result = await searchReadModel(database, config, logger, readModelName, {})
+      const result = await searchReadModel(database, config, readModelName, {})
 
       expect(database.scan).to.have.been.calledWithExactly(expectedParams)
       expect(result).to.be.deep.equal([])
@@ -89,7 +83,7 @@ describe('Read models searcher adapter', () => {
         stock: { gt: 0, lte: 10 },
       }
 
-      await searchReadModel(database, config, logger, readModelName, filters as FilterFor<any>)
+      await searchReadModel(database, config, readModelName, filters as FilterFor<any>)
 
       expect(database.scan).to.have.been.calledWithExactly(expectedInput)
     })
@@ -109,7 +103,7 @@ describe('Read models searcher adapter', () => {
         not: { id: { eq: '333' } },
       }
 
-      await searchReadModel(database, config, logger, readModelName, filters as FilterFor<any>)
+      await searchReadModel(database, config, readModelName, filters as FilterFor<any>)
 
       expect(database.scan).to.have.been.calledWithExactly(expectedInput)
     })
@@ -137,7 +131,7 @@ describe('Read models searcher adapter', () => {
         and: [{ id: { contains: '3' } }, { id: { contains: '4' } }],
       }
 
-      await searchReadModel(database as any, config, logger, readModelName, filters as FilterFor<any>)
+      await searchReadModel(database as any, config, readModelName, filters as FilterFor<any>)
 
       expect(database.scan).to.have.been.calledWithExactly(expectedInput)
     })
@@ -164,7 +158,7 @@ describe('Read models searcher adapter', () => {
         },
       }
 
-      await searchReadModel(database, config, logger, readModelName, filters as FilterFor<any>)
+      await searchReadModel(database, config, readModelName, filters as FilterFor<any>)
 
       expect(database.scan).to.have.been.calledWithExactly(expectedInput)
     })
@@ -187,7 +181,7 @@ describe('Read models searcher adapter', () => {
         items: { includes: { sku: 'test', price: { cents: 1000, currency: 'EUR' } } },
       }
 
-      await searchReadModel(database, config, logger, readModelName, filters as FilterFor<any>)
+      await searchReadModel(database, config, readModelName, filters as FilterFor<any>)
 
       expect(database.scan).to.have.been.calledWithExactly(expectedInput)
     })
@@ -214,7 +208,7 @@ describe('Read models searcher adapter', () => {
         ],
       }
 
-      await searchReadModel(database, config, logger, readModelName, filters as FilterFor<any>)
+      await searchReadModel(database, config, readModelName, filters as FilterFor<any>)
 
       expect(database.scan).to.have.been.calledWithExactly(expectedInput)
     })
@@ -225,7 +219,7 @@ describe('Read models searcher adapter', () => {
         id: { [unknownOperator]: 'test' },
       }
 
-      await expect(searchReadModel(database, config, logger, readModelName, filters)).to.be.eventually.rejectedWith(
+      await expect(searchReadModel(database, config, readModelName, filters)).to.be.eventually.rejectedWith(
         `Operator "${unknownOperator}" is not supported`
       )
     })
@@ -279,7 +273,7 @@ describe('Read models searcher adapter', () => {
         ],
       }
 
-      await searchReadModel(database, config, logger, readModelName, filters as FilterFor<any>)
+      await searchReadModel(database, config, readModelName, filters as FilterFor<any>)
 
       expect(database.scan).to.have.been.calledWithExactly(expectedInput)
     })
@@ -290,7 +284,7 @@ describe('Read models searcher adapter', () => {
         id: { [unknownOperator]: 'test' },
       }
 
-      await expect(searchReadModel(database, config, logger, readModelName, filters)).to.be.eventually.rejectedWith(
+      await expect(searchReadModel(database, config, readModelName, filters)).to.be.eventually.rejectedWith(
         `Operator "${unknownOperator}" is not supported`
       )
     })

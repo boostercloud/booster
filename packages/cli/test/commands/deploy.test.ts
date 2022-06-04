@@ -2,7 +2,7 @@
 import { expect } from '../expect'
 import { fancy } from 'fancy-test'
 import { restore, fake, replace } from 'sinon'
-import { ProviderLibrary, Logger, BoosterConfig } from '@boostercloud/framework-types'
+import { ProviderLibrary, BoosterConfig } from '@boostercloud/framework-types'
 import { test } from '@oclif/test'
 import * as Deploy from '../../src/commands/deploy'
 import * as providerService from '../../src/services/provider-service'
@@ -68,8 +68,8 @@ describe('deploy', () => {
           entities: {},
         })
 
-        const fakeDeployer = fake((_config: unknown, logger: Logger) => {
-          logger.info('this is a progress update')
+        const fakeDeployer = fake((config: BoosterConfig) => {
+          config.logger?.info('this is a progress update')
         })
 
         replace(environment, 'currentEnvironment', fake.returns('test-env'))

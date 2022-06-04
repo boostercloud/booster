@@ -2,13 +2,12 @@
 import { expect } from '../expect'
 import { createStubInstance, fake, match, SinonStubbedInstance, stub } from 'sinon'
 import { fetchReadModel, storeReadModel } from '../../src/library/read-model-adapter'
-import { BoosterConfig, Logger, ReadModelInterface, UUID } from '@boostercloud/framework-types'
+import { BoosterConfig, ReadModelInterface, UUID } from '@boostercloud/framework-types'
 import { CosmosClient } from '@azure/cosmos'
 import { random } from 'faker'
 import { createMockReadModel } from '../helpers/read-model-helper'
 
 describe('Read Model adapter', () => {
-  let mockLogger: Logger
   let mockConfig: BoosterConfig
   let mockReadModel: ReadModelInterface
 
@@ -34,12 +33,6 @@ describe('Read Model adapter', () => {
         }),
       }) as any,
     })
-    mockLogger = {
-      info: fake(),
-      warn: fake(),
-      error: fake(),
-      debug: fake(),
-    }
     mockConfig = new BoosterConfig('test')
     mockReadModelName = random.word()
     mockReadModelId = random.uuid()
@@ -49,7 +42,7 @@ describe('Read Model adapter', () => {
   describe('The "fetchReadModel" method', () => {
     it('Responds with a read model when it exists', async () => {
       const result = (
-        await fetchReadModel(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, mockReadModelId)
+        await fetchReadModel(mockCosmosDbClient as any, mockConfig, mockReadModelName, mockReadModelId)
       )[0]
 
       expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
@@ -70,7 +63,6 @@ describe('Read Model adapter', () => {
       const something = await storeReadModel(
         mockCosmosDbClient as any,
         mockConfig,
-        mockLogger,
         mockReadModelName,
         mockReadModel as any
       )

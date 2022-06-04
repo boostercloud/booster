@@ -4,7 +4,6 @@ import {
   EventInterface,
   EventSearchParameters,
   EventSearchResponse,
-  Logger,
   UUID,
 } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
@@ -12,16 +11,17 @@ import { dynamoDbBatchGetLimit, eventsStoreAttributes } from '../constants'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import { partitionKeyForEvent, partitionKeyForIndexByEntity } from './keys-helper'
 import { inChunksOf } from '../pagination-helpers'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 
 export async function searchEvents(
   dynamoDB: DynamoDB.DocumentClient,
   config: BoosterConfig,
-  logger: Logger,
   parameters: EventSearchParameters
 ): Promise<Array<EventSearchResponse>> {
+  const logger = getLogger(config, 'events-searcher-adapter#searchEvents')
   logger.debug('Initiating an events search. Filters: ', parameters)
   const timeFilterQuery = buildSearchEventsTimeQuery(parameters.from, parameters.to)
-  const eventEnvelopes = await executeSearch(dynamoDB, config, logger, parameters, timeFilterQuery, parameters.limit)
+  const eventEnvelopes = await executeSearch(dynamoDB, config, parameters, timeFilterQuery, parameters.limit)
 
   logger.debug('Events search result: ', eventEnvelopes)
   return convertToSearchResult(eventEnvelopes)
@@ -62,27 +62,18 @@ function buildSearchEventsTimeQuery(from?: string, to?: string): TimeQueryData {
 async function executeSearch(
   dynamoDB: DynamoDB.DocumentClient,
   config: BoosterConfig,
-  logger: Logger,
   filters: EventSearchParameters,
   timeFilterQuery: TimeQueryData,
   limit?: number
 ): Promise<Array<EventEnvelope>> {
   if ('entity' in filters) {
     if (filters.entityID) {
-      return await searchEventsByEntityAndID(
-        dynamoDB,
-        config,
-        logger,
-        filters.entity,
-        filters.entityID,
-        timeFilterQuery,
-        limit
-      )
+      return await searchEventsByEntityAndID(dynamoDB, config, filters.entity, filters.entityID, timeFilterQuery, limit)
     } else {
-      return await searchEventsByEntity(dynamoDB, config, logger, filters.entity, timeFilterQuery, limit)
+      return await searchEventsByEntity(dynamoDB, config, filters.entity, timeFilterQuery, limit)
     }
   } else if ('type' in filters) {
-    return await searchEventsByType(dynamoDB, config, logger, filters.type, timeFilterQuery, limit)
+    return await searchEventsByType(dynamoDB, config, filters.type, timeFilterQuery, limit)
   } else {
     throw new Error('Invalid search event query. It is neither an search by "entity" nor a search by "type"')
   }
@@ -91,12 +82,12 @@ async function executeSearch(
 async function searchEventsByEntityAndID(
   dynamoDB: DynamoDB.DocumentClient,
   config: BoosterConfig,
-  logger: Logger,
   entity: string,
   entityID: UUID,
   timeQuery: TimeQueryData,
   limit?: number
 ): Promise<Array<EventEnvelope>> {
+  const logger = getLogger(config, 'events-searcher-adapter#searchEventsByEntityAndID')
   // TODO: Manage pagination
   const params: DocumentClient.QueryInput = {
     TableName: config.resourceNames.eventsStore,
@@ -123,11 +114,11 @@ interface EventStoreKeys {
 async function searchEventsByEntity(
   dynamoDB: DynamoDB.DocumentClient,
   config: BoosterConfig,
-  logger: Logger,
   entity: string,
   timeQuery: TimeQueryData,
   limit?: number
 ): Promise<Array<EventEnvelope>> {
+  const logger = getLogger(config, 'events-searcher-adapter#searchEventsByEntity')
   // TODO: manage pagination
   // First query the index
   const params: DocumentClient.QueryInput = {
@@ -145,17 +136,17 @@ async function searchEventsByEntity(
   logger.debug('Searching events by entity. Index query params: ', params)
   const partialResult = await dynamoDB.query(params).promise()
   const indexRecords = (partialResult.Items as Array<EventStoreKeys>) ?? []
-  return findEventsDataWithKeys(dynamoDB, config, logger, indexRecords)
+  return findEventsDataWithKeys(dynamoDB, config, indexRecords)
 }
 
 async function searchEventsByType(
   dynamoDB: DynamoDB.DocumentClient,
   config: BoosterConfig,
-  logger: Logger,
   type: string,
   timeQuery: TimeQueryData,
   limit?: number
 ): Promise<Array<EventEnvelope>> {
+  const logger = getLogger(config, 'events-searcher-adapter#searchEventsByType')
   // TODO: manage pagination
   // Fist query the index
   const params: DocumentClient.QueryInput = {
@@ -173,21 +164,21 @@ async function searchEventsByType(
   logger.debug('Searching events by type. Index query params: ', params)
   const partialResult = await dynamoDB.query(params).promise()
   const indexRecords = (partialResult.Items as Array<EventStoreKeys>) ?? []
-  return findEventsDataWithKeys(dynamoDB, config, logger, indexRecords)
+  return findEventsDataWithKeys(dynamoDB, config, indexRecords)
 }
 
 async function findEventsDataWithKeys(
   dynamoDB: DynamoDB.DocumentClient,
   config: BoosterConfig,
-  logger: Logger,
   keys: Array<EventStoreKeys>
 ): Promise<Array<EventEnvelope>> {
+  const logger = getLogger(config, 'events-searcher-adapter#findEventsDataWithKeys')
   const result: Array<EventEnvelope> = []
 
   const keysBatches = inChunksOf(dynamoDbBatchGetLimit, keys)
   logger.debug(`Performing batch get for ${keysBatches.length} batches`)
   for (const keysBatch of keysBatches) {
-    const batchResult = await performBatchGet(dynamoDB, config, logger, keysBatch)
+    const batchResult = await performBatchGet(dynamoDB, config, keysBatch)
     result.push(...batchResult)
   }
 
@@ -197,9 +188,9 @@ async function findEventsDataWithKeys(
 async function performBatchGet(
   dynamoDB: DynamoDB.DocumentClient,
   config: BoosterConfig,
-  logger: Logger,
   keys: Array<EventStoreKeys>
 ): Promise<Array<EventEnvelope>> {
+  const logger = getLogger(config, 'events-searcher-adapter#performBatchGet')
   const params: DocumentClient.BatchGetItemInput = {
     RequestItems: {
       [config.resourceNames.eventsStore]: {

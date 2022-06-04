@@ -2,19 +2,19 @@ import {
   BoosterConfig,
   CommandEnvelope,
   EventEnvelope,
-  Logger,
   MigrationMetadata,
   CommandInterface,
   EntityInterface,
   EventInterface,
   InvalidVersionError,
 } from '@boostercloud/framework-types'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 
 type MigrableEnvelope = CommandEnvelope | EventEnvelope
 type MigrableValue = CommandInterface | EventInterface | EntityInterface
 
 export class Migrator {
-  public constructor(private config: BoosterConfig, private logger: Logger) {}
+  public constructor(private config: BoosterConfig) {}
 
   public async migrate<TMigrableEnvelope extends MigrableEnvelope>(
     conceptEnvelope: TMigrableEnvelope
@@ -52,10 +52,11 @@ export class Migrator {
   private async applyAllMigrations<TMigrableEnvelope extends MigrableEnvelope>(
     oldConceptEnvelope: TMigrableEnvelope
   ): Promise<TMigrableEnvelope> {
+    const logger = getLogger(this.config, 'Migrator#applyAllMigrations')
     const currentVersion = this.config.currentVersionFor(oldConceptEnvelope.typeName)
     const oldVersion = oldConceptEnvelope.version
-    this.logger.info(`Migrating ${oldConceptEnvelope.typeName} from version ${oldVersion} to version ${currentVersion}`)
-    this.logger.debug('Envelope before migration:\n', oldConceptEnvelope)
+    logger.info(`Migrating ${oldConceptEnvelope.typeName} from version ${oldVersion} to version ${currentVersion}`)
+    logger.debug('Envelope before migration:\n', oldConceptEnvelope)
 
     const migrations = this.config.migrations[oldConceptEnvelope.typeName]
     let migratedConceptValue = oldConceptEnvelope.value as MigrableValue
@@ -68,7 +69,7 @@ export class Migrator {
       value: migratedConceptValue,
       version: currentVersion,
     }
-    this.logger.debug('Envelope after migration:\n', newConceptEnvelope)
+    logger.debug('Envelope after migration:\n', newConceptEnvelope)
     return newConceptEnvelope
   }
 
@@ -76,6 +77,7 @@ export class Migrator {
     oldValue: TMigrableValue,
     migration: MigrationMetadata | undefined
   ): Promise<TMigrableValue> {
+    const logger = getLogger(this.config, 'Migrator#applyMigration')
     if (!migration) {
       throw new InvalidVersionError(
         'Received an undefined migration value. Are there "gaps" between the versions of the migrations?'
@@ -84,7 +86,7 @@ export class Migrator {
     const oldConcept = Object.assign(new migration.fromSchema(), oldValue)
     const migrationMethod = new migration.migrationClass()[migration.methodName]
     const newConcept = await migrationMethod(oldConcept)
-    this.logger.debug(`Partial migration finished. Migrated from oldValue=${oldConcept} to newValue=${newConcept}`)
+    logger.debug(`Partial migration finished. Migrated from oldValue=${oldConcept} to newValue=${newConcept}`)
     return newConcept
   }
 }

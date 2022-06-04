@@ -4,7 +4,6 @@ import { random, internet } from 'faker'
 import { BoosterEventsReader } from '../src/booster-events-reader'
 import { expect } from './expect'
 import { Booster } from '../src'
-import { noopLogger as logger } from './helpers/logger-helper'
 
 describe('BoosterEventsReader', () => {
   class TestEntity {
@@ -63,7 +62,7 @@ describe('BoosterEventsReader', () => {
         methodName: 'testReducerMethod',
       }
       config.events[TestEvent.name] = { class: TestEvent }
-      eventsReader = new BoosterEventsReader(config, logger)
+      eventsReader = new BoosterEventsReader(config)
     })
   })
 
@@ -161,7 +160,7 @@ describe('BoosterEventsReader', () => {
 
       it('calls the provider search function with the right parameters and returns correctly', async () => {
         const result = await eventsReader.fetch(request)
-        expect(providerEventsSearch).to.have.been.calledWith(match.any, match.any, request.parameters)
+        expect(providerEventsSearch).to.have.been.calledWith(match.any, request.parameters)
         expect(result).to.be.deep.equal(searchResult)
       })
     })

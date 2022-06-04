@@ -1,23 +1,23 @@
 import { RedisAdapter } from './../services/redis-adapter'
 import {
   BoosterConfig,
-  Logger,
   InvalidParameterError,
   FilterFor,
   Operation,
   ReadModelEnvelope,
 } from '@boostercloud/framework-types'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 
 export async function searchReadModel(
   redis: RedisAdapter,
   config: BoosterConfig,
-  logger: Logger,
   readModelName: string,
   filters: FilterFor<unknown>
 ): Promise<Array<any>> {
+  const logger = getLogger(config, 'searcher-adapter#search')
   logger.debug('Running search with the following filters: \n', filters)
 
-  const keys = await redis.keys(['rm', readModelName, '*'].join(RedisAdapter.keySeparator), logger)
+  const keys = await redis.keys(config, ['rm', readModelName, '*'].join(RedisAdapter.keySeparator))
   logger.debug(`Obtainer following keys for query: ${keys}`)
   const results: Array<unknown> = []
   await Promise.all(

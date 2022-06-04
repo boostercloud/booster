@@ -76,7 +76,6 @@ describe('the `Booster` class', () => {
       await Booster.readModel(TestReadModel).search()
       expect(searcherFunctionFake).to.have.been.calledOnceWithExactly(
         match.any,
-        match.any,
         TestReadModel.name,
         match.any,
         {},

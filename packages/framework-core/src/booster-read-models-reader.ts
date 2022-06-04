@@ -3,7 +3,6 @@ import {
   BoosterConfig,
   GraphQLOperation,
   InvalidParameterError,
-  Logger,
   NotAuthorizedError,
   NotFoundError,
   ReadModelInterface,
@@ -12,12 +11,13 @@ import {
   ReadOnlyNonEmptyArray,
   SubscriptionEnvelope,
 } from '@boostercloud/framework-types'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 import { Booster } from './booster'
 import { BoosterAuth } from './booster-auth'
 import { applyReadModelRequestBeforeFunctions } from './services/filter-helpers'
 
 export class BoosterReadModelsReader {
-  public constructor(readonly config: BoosterConfig, readonly logger: Logger) {}
+  public constructor(readonly config: BoosterConfig) {}
 
   public async findById(
     readModelRequest: ReadModelRequestEnvelope<ReadModelInterface>
@@ -69,15 +69,16 @@ export class BoosterReadModelsReader {
   }
 
   public async unsubscribe(connectionID: string, subscriptionID: string): Promise<void> {
-    return this.config.provider.readModels.deleteSubscription(this.config, this.logger, connectionID, subscriptionID)
+    return this.config.provider.readModels.deleteSubscription(this.config, connectionID, subscriptionID)
   }
 
   public async unsubscribeAll(connectionID: string): Promise<void> {
-    return this.config.provider.readModels.deleteAllSubscriptions(this.config, this.logger, connectionID)
+    return this.config.provider.readModels.deleteAllSubscriptions(this.config, connectionID)
   }
 
   private validateByIdRequest(readModelByIdRequest: ReadModelRequestEnvelope<ReadModelInterface>): void {
-    this.logger.debug('Validating the following read model by id request: ', readModelByIdRequest)
+    const logger = getLogger(this.config, 'BoosterReadModelsReader#validateByIdRequest')
+    logger.debug('Validating the following read model by id request: ', readModelByIdRequest)
     if (!readModelByIdRequest.version) {
       throw new InvalidParameterError('The required request "version" was not present')
     }
@@ -102,7 +103,8 @@ export class BoosterReadModelsReader {
   }
 
   private validateRequest(readModelRequest: ReadModelRequestEnvelope<ReadModelInterface>): void {
-    this.logger.debug('Validating the following read model request: ', readModelRequest)
+    const logger = getLogger(this.config, 'BoosterReadModelsReader#validateRequest')
+    logger.debug('Validating the following read model request: ', readModelRequest)
     if (!readModelRequest.version) {
       throw new InvalidParameterError('The required request "version" was not present')
     }
@@ -122,7 +124,8 @@ export class BoosterReadModelsReader {
     readModelRequest: ReadModelRequestEnvelope<ReadModelInterface>,
     operation: GraphQLOperation
   ): Promise<void> {
-    this.logger.info(
+    const logger = getLogger(this.config, 'BoosterReadModelsReader#processSubscription')
+    logger.info(
       `Processing subscription of connection '${connectionID}' to read model '${readModelRequest.class.name}' with the following data: `,
       readModelRequest
     )
@@ -141,6 +144,6 @@ export class BoosterReadModelsReader {
       connectionID,
       operation,
     }
-    return this.config.provider.readModels.subscribe(this.config, this.logger, subscription)
+    return this.config.provider.readModels.subscribe(this.config, subscription)
   }
 }

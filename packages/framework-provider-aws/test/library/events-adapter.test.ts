@@ -3,19 +3,12 @@
 import { expect } from '../expect'
 import * as Library from '../../src/library/events-adapter'
 import { restore, fake, match, createStubInstance } from 'sinon'
-import { EventEnvelope, BoosterConfig, UUID, Logger } from '@boostercloud/framework-types'
+import { EventEnvelope, BoosterConfig, UUID } from '@boostercloud/framework-types'
 import { DynamoDBStreamEvent } from 'aws-lambda'
 import { DynamoDB } from 'aws-sdk'
 import { eventsStoreAttributes } from '../../src'
 import { partitionKeyForEvent, partitionKeyForIndexByEntity } from '../../src/library/keys-helper'
 import { DocumentClient, Converter } from 'aws-sdk/clients/dynamodb'
-
-const fakeLogger: Logger = {
-  info: fake(),
-  warn: fake(),
-  error: fake(),
-  debug: fake(),
-}
 
 describe('the events-adapter', () => {
   afterEach(() => {
@@ -44,7 +37,7 @@ describe('the events-adapter', () => {
       const config = new BoosterConfig('test')
       config.appName = 'nuke-button'
 
-      await Library.readEntityEventsSince(dynamoDB, config, fakeLogger, 'SomeEntity', 'someSpecialID')
+      await Library.readEntityEventsSince(dynamoDB, config, 'SomeEntity', 'someSpecialID')
 
       expect(dynamoDB.query).to.have.been.calledWith(
         match({
@@ -68,7 +61,7 @@ describe('the events-adapter', () => {
       const config = new BoosterConfig('test')
       config.appName = 'nuke-button'
 
-      await Library.readEntityLatestSnapshot(dynamoDB, config, fakeLogger, 'SomeEntity', 'someSpecialID')
+      await Library.readEntityLatestSnapshot(dynamoDB, config, 'SomeEntity', 'someSpecialID')
 
       expect(dynamoDB.query).to.have.been.calledWith(
         match({
@@ -123,7 +116,7 @@ describe('the events-adapter', () => {
         }
       })
 
-      await Library.storeEvents(fakeDynamo, eventEnvelopes, config, fakeLogger)
+      await Library.storeEvents(fakeDynamo, eventEnvelopes, config)
 
       expect(fakePut).to.be.calledTwice
       for (const eventEnvelope of eventEnvelopes) {

@@ -1,11 +1,11 @@
-import { BoosterConfig, Logger } from '@boostercloud/framework-types'
+import { BoosterConfig } from '@boostercloud/framework-types'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 import * as fs from 'fs'
 import * as archiver from 'archiver'
 import * as os from 'os'
 import * as FormData from 'form-data'
 import { IncomingMessage } from 'http'
 import * as path from 'path'
-import { scopeLogger } from '../helpers/logger'
 
 /**
  * get cluster namespace from Booster configuration
@@ -52,33 +52,33 @@ export async function waitForIt<TResult>(
 /**
  * create a zip file with the project content
  */
-export async function createProjectZipFile(logger: Logger): Promise<string> {
-  const l = scopeLogger('createProjectZipFile', logger)
-  l.debug('Creating zip archive')
+export async function createProjectZipFile(config: BoosterConfig): Promise<string> {
+  const logger = getLogger(config, 'utils#createProjectZipFile')
+  logger.debug('Creating zip archive')
   const output = fs.createWriteStream(path.join(os.tmpdir(), 'boosterCode.zip'))
   const archive = archiver('zip', { zlib: { level: 9 } })
-  l.debug('Putting contents into zip file')
+  logger.debug('Putting contents into zip file')
   archive.pipe(output)
   archive.directory('.deploy', false)
   await archive.finalize()
   return new Promise((resolve, reject) => {
     output.on('close', () => {
-      l.debug('Closed file')
+      logger.debug('Closed file')
       resolve(output.path.toString())
     })
 
     output.on('end', () => {
-      l.debug('Ended file')
+      logger.debug('Ended file')
       resolve(output.path.toString())
     })
 
-    archive.on('warning', (err: any) => {
-      l.debug('Warning', err.code)
+    archive.on('warning', (err: Error & { code: string }) => {
+      logger.debug('Warning', err.code)
       err.code === 'ENOENT' ? resolve(output.path.toString()) : reject(err)
     })
 
-    archive.on('error', (err: any) => {
-      l.debug('ERROR', err)
+    archive.on('error', (err: Error) => {
+      logger.debug('ERROR', err)
       reject(err)
     })
   })
@@ -88,27 +88,27 @@ export async function createProjectZipFile(logger: Logger): Promise<string> {
  * upload file into the cluster using the uploader file service
  */
 export async function uploadFile(
-  logger: Logger,
+  config: BoosterConfig,
   serviceIp: string | undefined,
   filepath: string
 ): Promise<IncomingMessage> {
-  const l = scopeLogger('uploadFile', logger)
+  const logger = getLogger(config, 'utils#uploadFile')
   if (!serviceIp) {
-    l.debug('serviceIp not provided, throwing')
+    logger.debug('serviceIp not provided, throwing')
     throw new Error('Undefined upload service IP, please check the uploadService in your cluster for more information')
   }
   return new Promise((resolve) => {
-    l.debug('Creating form data')
+    logger.debug('Creating form data')
     const formData = new FormData()
-    l.debug('Appending file stream')
+    logger.debug('Appending file stream')
     formData.append('myfile', fs.createReadStream(filepath))
-    l.debug('Submitting form')
+    logger.debug('Submitting form')
     formData.submit(`http://${serviceIp}/uploadFile`, (err, res) => {
       if (err) {
-        l.debug('Error when submitting, throwing', err)
+        logger.debug('Error when submitting, throwing', err)
         throw err
       }
-      l.debug('Submission successful')
+      logger.debug('Submission successful')
       resolve(res)
     })
   })

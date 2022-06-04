@@ -12,14 +12,12 @@ import {
   EventSearchResponse,
   ReadModelRequestArgs,
   ReadModelRequestProperties,
-  Logger,
 } from '@boostercloud/framework-types'
 import { expect } from '../../expect'
 import { GraphQLQueryGenerator } from '../../../src/services/graphql/graphql-query-generator'
 import { GraphQLMutationGenerator } from '../../../src/services/graphql/graphql-mutation-generator'
 import { GraphQLSubscriptionGenerator } from '../../../src/services/graphql/graphql-subcriptions-generator'
 import { random, internet, lorem } from 'faker'
-import { getLogger } from '../../../src/booster-logger'
 import { BoosterEventsReader } from '../../../src/booster-events-reader'
 
 import { GraphQLResolverContext } from '../../../src/services/graphql/common'
@@ -28,13 +26,11 @@ import { GraphQLFieldResolver } from 'graphql'
 describe('GraphQL generator', () => {
   let mockEnvironmentName: string
   let mockConfig: BoosterConfig
-  let mockLogger: Logger
 
   beforeEach(() => {
     mockEnvironmentName = random.alphaNumeric(10)
     mockConfig = new BoosterConfig(mockEnvironmentName)
     mockConfig.logLevel = Level.error
-    mockLogger = getLogger(mockConfig)
   })
 
   afterEach(() => {
@@ -68,25 +64,25 @@ describe('GraphQL generator', () => {
     })
 
     it('should call QueryGenerator', () => {
-      GraphQLGenerator.generateSchema(mockConfig, mockLogger)
+      GraphQLGenerator.generateSchema(mockConfig)
 
       expect(fakeQueryGenerator).to.have.been.calledOnceWithExactly()
     })
 
     it('should call MutationGenerator', () => {
-      GraphQLGenerator.generateSchema(mockConfig, mockLogger)
+      GraphQLGenerator.generateSchema(mockConfig)
 
       expect(fakeMutationGenerator).to.have.been.calledOnceWithExactly()
     })
 
     it('should call SubscriptionGenerator', () => {
-      GraphQLGenerator.generateSchema(mockConfig, mockLogger)
+      GraphQLGenerator.generateSchema(mockConfig)
 
       expect(fakeSubscriptionGenerator).to.have.been.calledOnceWithExactly()
     })
 
     it('should return a GraphQL schema', () => {
-      const result = GraphQLGenerator.generateSchema(mockConfig, mockLogger)
+      const result = GraphQLGenerator.generateSchema(mockConfig)
 
       const expectedTypes = {
         _queryType: {
@@ -480,13 +476,13 @@ describe('GraphQL generator', () => {
           requestID: mockRequestId,
         }
 
-        await GraphQLGenerator.eventResolver('', parameters, mockResolverContext, {} as never)
+        await GraphQLGenerator.eventResolver('', parameters, mockResolverContext)
 
         expect(fetchEventsStub).to.have.been.calledOnceWithExactly(expectedFetchEventsPayload)
       })
 
       it('should return expected result', async () => {
-        const result = await GraphQLGenerator.eventResolver('', parameters, mockResolverContext, {} as never)
+        const result = await GraphQLGenerator.eventResolver('', parameters, mockResolverContext)
 
         expect(result).to.be.deep.equal(fetchEventsResult)
       })

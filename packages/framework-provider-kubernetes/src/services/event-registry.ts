@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { EventEnvelope, Logger, UUID } from '@boostercloud/framework-types'
+import { BoosterConfig, EventEnvelope, UUID } from '@boostercloud/framework-types'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 import fetch from 'node-fetch'
 import { RedisAdapter } from './redis-adapter'
 
@@ -16,7 +17,8 @@ export class EventRegistry {
     this.redis = RedisAdapter.build()
   }
 
-  public async store(event: EventEnvelope, logger: Logger): Promise<void> {
+  public async store(config: BoosterConfig, event: EventEnvelope): Promise<void> {
+    const logger = getLogger(config, 'event-registry#store')
     const stateUrl = `${this.url}/v1.0/state/statestore`
     logger.debug('About to post', event)
     const data = [{ key: this.eventKey(event), value: event }]
@@ -34,9 +36,10 @@ export class EventRegistry {
     }
   }
 
-  public async query(query: Query, logger: Logger): Promise<Array<EventEnvelope>> {
+  public async query(config: BoosterConfig, query: Query): Promise<Array<EventEnvelope>> {
+    const logger = getLogger(config, 'event-registry#query')
     logger.debug('Getting redis keys')
-    const redisKeys = await this.redis.keys(query.keyQuery, logger)
+    const redisKeys = await this.redis.keys(config, query.keyQuery)
     logger.debug(`Got redis keys: ${JSON.stringify(redisKeys)}`)
     if (!redisKeys) {
       return []
@@ -53,8 +56,8 @@ export class EventRegistry {
     return envelopes
   }
 
-  public async queryLatest(query: Query, logger: Logger): Promise<EventEnvelope | null> {
-    const result = await this.query(query, logger)
+  public async queryLatest(config: BoosterConfig, query: Query): Promise<EventEnvelope | null> {
+    const result = await this.query(config, query)
     if (result.length <= 0) {
       return null
     }

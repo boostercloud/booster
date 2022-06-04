@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createStubInstance, fake, SinonStub, SinonStubbedInstance, replace, stub } from 'sinon'
 import { EventRegistry } from '../../src/services'
 import {
@@ -6,14 +7,13 @@ import {
   storeEvents,
   rawEventsToEnvelopes,
 } from '../../src/library/events-adapter'
-import { UserApp, EventEnvelope, UUID, BoosterConfig, Logger } from '@boostercloud/framework-types'
+import { UserApp, EventEnvelope, UUID, BoosterConfig } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 import { createMockEventEnvelop, createMockSnapshot } from '../helpers/event-helper'
 import { random, date } from 'faker'
 
 describe('events-adapter', () => {
   let mockConfig: BoosterConfig
-  let mockLogger: Logger
   let mockEventEnvelop: EventEnvelope
   let mockSnapshot: EventEnvelope
 
@@ -39,7 +39,7 @@ describe('events-adapter', () => {
     queryStub = stub()
     queryLatestStub = stub()
 
-    mockLogger = {
+    mockConfig.logger = {
       info: fake(),
       warn: fake(),
       error: fake(),
@@ -84,17 +84,15 @@ describe('events-adapter', () => {
     })
 
     it('should return expected result', async () => {
-      const result = await readEntityEventsSince(
-        mockEventRegistry,
-        mockConfig,
-        mockLogger,
-        mockEntityTypeName,
-        mockEntityID
-      )
-      const expectedLogMessage = `[EventsAdapter#readEntityEventsSince] Loaded events for entity ${mockEntityTypeName} with ID ${mockEntityID} with result:`
+      const result = await readEntityEventsSince(mockEventRegistry, mockConfig, mockEntityTypeName, mockEntityID)
+      const expectedLogMessage = `Loaded events for entity ${mockEntityTypeName} with ID ${mockEntityID} with result:`
 
       expect(result).to.be.deep.equal([mockEventEnvelop])
-      expect(mockLogger.debug).to.be.calledWith(expectedLogMessage, [mockEventEnvelop])
+      expect(mockConfig.logger?.debug).to.be.calledWith(
+        '[Booster]|events-adapter#readEntityEventsSince: ',
+        expectedLogMessage,
+        [mockEventEnvelop]
+      )
     })
 
     context('date provided', () => {
@@ -103,14 +101,7 @@ describe('events-adapter', () => {
       beforeEach(async () => {
         dateStr = date.recent().toISOString()
 
-        await readEntityEventsSince(
-          mockEventRegistry,
-          mockConfig,
-          mockLogger,
-          mockEntityTypeName,
-          mockEntityID,
-          dateStr
-        )
+        await readEntityEventsSince(mockEventRegistry, mockConfig, mockEntityTypeName, mockEntityID, dateStr)
       })
 
       it('should call event registry query with expected input', async () => {
@@ -124,15 +115,19 @@ describe('events-adapter', () => {
         })
       })
 
-      it('should call logger with message.', async () => {
-        const expectedLogMessage = `[EventsAdapter#readEntityEventsSince] Loaded events for entity ${mockEntityTypeName} with ID ${mockEntityID} with result:`
-        expect(mockLogger.debug).to.be.calledWith(expectedLogMessage, [mockEventEnvelop])
+      it('should call logger with message', async () => {
+        const expectedLogMessage = `Loaded events for entity ${mockEntityTypeName} with ID ${mockEntityID} with result:`
+        expect(mockConfig.logger?.debug).to.be.calledWith(
+          '[Booster]|events-adapter#readEntityEventsSince: ',
+          expectedLogMessage,
+          [mockEventEnvelop]
+        )
       })
     })
 
     context('date not provided', () => {
       beforeEach(async () => {
-        await readEntityEventsSince(mockEventRegistry, mockConfig, mockLogger, mockEntityTypeName, mockEntityID)
+        await readEntityEventsSince(mockEventRegistry, mockConfig, mockEntityTypeName, mockEntityID)
       })
 
       it('should call event registry query with expected input', () => {
@@ -147,8 +142,12 @@ describe('events-adapter', () => {
       })
 
       it('should call logger with message', async () => {
-        const expectedLogMessage = `[EventsAdapter#readEntityEventsSince] Loaded events for entity ${mockEntityTypeName} with ID ${mockEntityID} with result:`
-        expect(mockLogger.debug).to.be.calledWith(expectedLogMessage, [mockEventEnvelop])
+        const expectedLogMessage = `Loaded events for entity ${mockEntityTypeName} with ID ${mockEntityID} with result:`
+        expect(mockConfig.logger?.debug).to.be.calledWith(
+          '[Booster]|events-adapter#readEntityEventsSince: ',
+          expectedLogMessage,
+          [mockEventEnvelop]
+        )
       })
     })
   })
@@ -165,7 +164,7 @@ describe('events-adapter', () => {
     })
 
     it('should call event registry queryLatest', async () => {
-      await readEntityLatestSnapshot(mockEventRegistry, mockConfig, mockLogger, mockEntityTypeName, mockEntityID)
+      await readEntityLatestSnapshot(mockEventRegistry, mockConfig, mockEntityTypeName, mockEntityID)
 
       expect(queryLatestStub).to.have.been.calledOnceWithExactly({
         entityID: mockEntityID,
@@ -180,22 +179,17 @@ describe('events-adapter', () => {
       })
 
       it('should log expected message', async () => {
-        await readEntityLatestSnapshot(mockEventRegistry, mockConfig, mockLogger, mockEntityTypeName, mockEntityID)
+        await readEntityLatestSnapshot(mockEventRegistry, mockConfig, mockEntityTypeName, mockEntityID)
 
         expect(loggerDebugStub).to.have.been.calledOnceWithExactly(
-          `[EventsAdapter#readEntityLatestSnapshot] Snapshot found for entity ${mockEntityTypeName} with ID ${mockEntityID}:`,
+          '[Booster]|events-adapter#readEntityLatestSnapshot: ',
+          `Snapshot found for entity ${mockEntityTypeName} with ID ${mockEntityID}:`,
           mockSnapshot
         )
       })
 
       it('should return expected result', async () => {
-        const result = await readEntityLatestSnapshot(
-          mockEventRegistry,
-          mockConfig,
-          mockLogger,
-          mockEntityTypeName,
-          mockEntityID
-        )
+        const result = await readEntityLatestSnapshot(mockEventRegistry, mockConfig, mockEntityTypeName, mockEntityID)
 
         expect(result).to.be.deep.equal(mockSnapshot)
       })
@@ -207,21 +201,16 @@ describe('events-adapter', () => {
       })
 
       it('should log expected message', async () => {
-        await readEntityLatestSnapshot(mockEventRegistry, mockConfig, mockLogger, mockEntityTypeName, mockEntityID)
+        await readEntityLatestSnapshot(mockEventRegistry, mockConfig, mockEntityTypeName, mockEntityID)
 
         expect(loggerDebugStub).to.have.been.calledOnceWithExactly(
-          `[EventsAdapter#readEntityLatestSnapshot] No snapshot found for entity ${mockEntityTypeName} with ID ${mockEntityID}.`
+          '[Booster]|events-adapter#readEntityLatestSnapshot: ',
+          `No snapshot found for entity ${mockEntityTypeName} with ID ${mockEntityID}.`
         )
       })
 
       it('should return null', async () => {
-        const result = await readEntityLatestSnapshot(
-          mockEventRegistry,
-          mockConfig,
-          mockLogger,
-          mockEntityTypeName,
-          mockEntityID
-        )
+        const result = await readEntityLatestSnapshot(mockEventRegistry, mockConfig, mockEntityTypeName, mockEntityID)
 
         expect(result).to.be.deep.equal(null)
       })
@@ -231,7 +220,7 @@ describe('events-adapter', () => {
   describe('storeEvents', () => {
     context('no event envelopes', () => {
       beforeEach(async () => {
-        await storeEvents(mockUserApp, mockEventRegistry, [], mockConfig, mockLogger)
+        await storeEvents(mockUserApp, mockEventRegistry, [], mockConfig)
       })
 
       it('should not call event registry store', () => {
@@ -249,7 +238,7 @@ describe('events-adapter', () => {
       beforeEach(async () => {
         mockEventEnvelop = createMockEventEnvelop()
 
-        await storeEvents(mockUserApp, mockEventRegistry, [mockEventEnvelop], mockConfig, mockLogger)
+        await storeEvents(mockUserApp, mockEventRegistry, [mockEventEnvelop], mockConfig)
       })
 
       it('should call event registry store', () => {

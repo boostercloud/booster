@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
-import { GraphQLRequestEnvelope } from '@boostercloud/framework-types'
+import { BoosterConfig, GraphQLRequestEnvelope } from '@boostercloud/framework-types'
 import { rawGraphQLRequestToEnvelope } from '../../src/library/graphql-adapter'
 import { Context } from '@azure/functions'
 
 describe('GraphQL adapter', () => {
   describe('The "rawGraphQLRequestToEnvelope"', () => {
     it('Generates an envelope correctly from an Azure event', async () => {
+      const config = new BoosterConfig('test')
+      config.logger = console
       const expectedQuery = 'GraphQL query'
       const expectedToken = 'token'
       const expectedVariables = {
@@ -49,7 +51,7 @@ describe('GraphQL adapter', () => {
           rawContext: request,
         },
       }
-      const gotOutput = await rawGraphQLRequestToEnvelope(request, console)
+      const gotOutput = await rawGraphQLRequestToEnvelope(config, request)
       expect(gotOutput).to.be.deep.equal(expectedOutput)
     })
   })
