@@ -30,7 +30,7 @@ If no configuration is provided, Booster uses the default JavaScript logging cap
 If you need advanced logging capabilities such as redirecting your logs to a log aggregator, Booster also supports overriding the default behavior by providing custom loggers. The only thing you need to do is to provide an object that implements the `Logger` interface at config time:
 
 _The Logger interface (In package `@boostercloud/framework-types`):_
-```typescrypt
+```typescript
 interface Logger {
   debug(message?: any, ...optionalParams: any[]): void
   info(message?: any, ...optionalParams: any[]): void
@@ -64,7 +64,7 @@ All framework's components will use this logger by default and will generate log
 You can get a custom logger instance that extends the configured logger by adding your moduleName and optionally overriding the configured prefix with the `getLogger` helper function. It's a good practice to build and use a separate logger instance built with this method for each context, as this will make it easier to filter your logs when you need to investigate a problem.
 
 _Example: Obtaining a logger for your command:_
-```typescrypt
+```typescript
 @Command({
   authorize: [User],
 })
