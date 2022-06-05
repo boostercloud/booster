@@ -55,6 +55,7 @@
     "@types/aws-lambda": "8.10.48",
     "@types/aws-sdk": "2.7.0",
     "@types/faker": "5.1.5",
+    "@types/rewire": "^2.5.28",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
     "faker": "5.1.0",

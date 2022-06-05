@@ -14,7 +14,7 @@ import {
 } from './envelope'
 import { FilterFor, SortFor } from './searcher'
 import { ReadOnlyNonEmptyArray } from './typelevel'
-import { RocketDescriptor } from './rocket-descriptor'
+import { RocketDescriptor } from './rockets'
 
 export interface ProviderLibrary {
   events: ProviderEventsLibrary

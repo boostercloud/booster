@@ -2,19 +2,18 @@ import { ProviderInfrastructure } from '@boostercloud/framework-types'
 import { fake, replace, restore } from 'sinon'
 import { expect } from './expect'
 import * as infra from '../src/infrastructure'
-import * as infrastructureRocket from '../src/rockets/infrastructure-rocket'
-
-const rewire = require('rewire')
-const infrastructure = rewire('../src/index')
+import { Infrastructure } from '../src/index'
+import { RocketLoader } from '@boostercloud/framework-common-helpers'
 
 describe('the `framework-provider-aws-infrastructure` package', () => {
+  // eslint-disable-next-line @typescript-eslint/ban-types
   afterEach(() => {
     restore()
   })
 
   describe('the `Infrastructure` function', () => {
     context('with no rockets', () => {
-      const providerInfrastructure: ProviderInfrastructure = infrastructure.Infrastructure()
+      const providerInfrastructure: ProviderInfrastructure = Infrastructure()
 
       it('returns a `ProviderInfrastructure` object', () => {
         expect(providerInfrastructure).to.be.an('object')
@@ -75,8 +74,8 @@ describe('the `framework-provider-aws-infrastructure` package', () => {
       ]
 
       it('returns a `ProviderInfrastructure` object', () => {
-        replace(infrastructureRocket, 'loadRocket', fake())
-        const providerInfrastructure: ProviderInfrastructure = infrastructure.Infrastructure(fakePackageList)
+        replace(RocketLoader, 'loadRocket', fake())
+        const providerInfrastructure: ProviderInfrastructure = Infrastructure(fakePackageList)
 
         expect(providerInfrastructure).to.be.an('object')
         expect(providerInfrastructure.deploy).to.be.a('function')
@@ -87,9 +86,9 @@ describe('the `framework-provider-aws-infrastructure` package', () => {
         it('is called with rockets', async () => {
           const fakeLoadedRocket = { thisIs: 'aRocket' }
           const fakeLoadRocket = fake.returns(fakeLoadedRocket)
-          replace(infrastructureRocket, 'loadRocket', fakeLoadRocket)
+          replace(RocketLoader, 'loadRocket', fakeLoadRocket)
 
-          const providerInfrastructure: ProviderInfrastructure = infrastructure.Infrastructure(fakePackageList)
+          const providerInfrastructure: ProviderInfrastructure = Infrastructure(fakePackageList)
           replace(infra, 'deploy', fake())
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -108,9 +107,9 @@ describe('the `framework-provider-aws-infrastructure` package', () => {
         it('is called with rockets', async () => {
           const fakeLoadedRocket = { thisIs: 'aRocket' }
           const fakeLoadRocket = fake.returns(fakeLoadedRocket)
-          replace(infrastructureRocket, 'loadRocket', fakeLoadRocket)
+          replace(RocketLoader, 'loadRocket', fakeLoadRocket)
 
-          const providerInfrastructure: ProviderInfrastructure = infrastructure.Infrastructure(fakePackageList)
+          const providerInfrastructure: ProviderInfrastructure = Infrastructure(fakePackageList)
           replace(infra, 'nuke', fake())
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
