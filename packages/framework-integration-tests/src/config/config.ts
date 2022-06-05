@@ -110,3 +110,8 @@ Booster.configure('azure', (config: BoosterConfig): void => {
     },
   ]
 })
+
+Booster.configure('test', (config: BoosterConfig): void => {
+  config.appName = 'my-store'
+  config.providerPackage = '@boostercloud/application-tester'
+})

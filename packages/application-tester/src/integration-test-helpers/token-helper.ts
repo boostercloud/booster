@@ -4,7 +4,7 @@ import * as path from 'path'
 
 /**
  * This helper will create a valid token using a real private key for testing
- * The keyset file is expecgted to be located in "<package root>/keys/private.key file"
+ * The keyset file is expected to be located in "<package root>/keys/private.key file"
  */
 export class TokenHelper {
   private privateKey: Buffer
