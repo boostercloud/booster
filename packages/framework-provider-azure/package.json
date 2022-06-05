@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-azure",
-  "version": "0.28.4",
+  "version": "0.28.5",
   "description": "Handle Booster's integration with Azure",
   "keywords": [
     "framework-provider-azure"
@@ -22,16 +22,16 @@
   "dependencies": {
     "@azure/cosmos": "3.7.3",
     "@azure/functions": "^1.2.2",
-    "@boostercloud/framework-types": "^0.28.4",
-    "@boostercloud/framework-common-helpers": "^0.28.4"
+    "@boostercloud/framework-common-helpers": "^0.28.5",
+    "@boostercloud/framework-types": "^0.28.5"
   },
   "devDependencies": {
-    "faker": "5.1.0",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
+    "faker": "5.1.0",
     "mocha": "8.4.0",
-    "sinon-chai": "3.5.0",
-    "sinon": "9.2.3"
+    "sinon": "9.2.3",
+    "sinon-chai": "3.5.0"
   },
   "scripts": {
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",

@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-aws-infrastructure",
-  "version": "0.28.4",
+  "version": "0.28.5",
   "description": "Handle the Booster deployment process to AWS",
   "keywords": [
     "framework-provider-aws-infrastructure"
@@ -30,10 +30,10 @@
     "@aws-cdk/aws-lambda-event-sources": "1.99.0",
     "@aws-cdk/aws-s3": "1.99.0",
     "@aws-cdk/aws-s3-deployment": "1.99.0",
-    "@boostercloud/framework-provider-aws": "^0.28.4",
-    "@boostercloud/framework-types": "^0.28.4",
-    "@boostercloud/framework-common-helpers": "^0.28.4",
     "@aws-cdk/cx-api": "1.99.0",
+    "@boostercloud/framework-common-helpers": "^0.28.5",
+    "@boostercloud/framework-provider-aws": "^0.28.5",
+    "@boostercloud/framework-types": "^0.28.5",
     "aws-cdk": "1.99.0",
     "aws-sdk": "2.853.0",
     "colors": "^1.4.0"
