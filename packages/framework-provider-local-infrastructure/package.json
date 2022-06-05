@@ -22,6 +22,7 @@
   "dependencies": {
     "@boostercloud/framework-provider-local": "^0.28.5",
     "@boostercloud/framework-types": "^0.28.5",
+    "@boostercloud/framework-common-helpers": "^0.28.5",
     "cors": "2.8.5",
     "express": "^4.17.1",
     "nedb": "^1.8.0",

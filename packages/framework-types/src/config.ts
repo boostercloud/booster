@@ -16,7 +16,7 @@ import {
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
 import * as path from 'path'
-import { RocketDescriptor, RocketFunction } from './rocket-descriptor'
+import { RocketDescriptor, RocketFunction } from './rockets'
 import { Logger } from '.'
 
 /**
