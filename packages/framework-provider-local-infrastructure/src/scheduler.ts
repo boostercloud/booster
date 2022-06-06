@@ -6,24 +6,38 @@ interface ScheduledCommandInfo {
   metadata: ScheduledCommandMetadata
 }
 
-export function configureScheduler(config: BoosterConfig, userProject: any): void {
+export function configureScheduler(config: BoosterConfig, userProject: any): scheduler.Job[] {
   const triggerScheduleCommand = userProject['boosterTriggerScheduledCommand']
+  const cronJobs: scheduler.Job[] = []
   Object.keys(config.scheduledCommandHandlers)
     .map((scheduledCommandName) => buildScheduledCommandInfo(config, scheduledCommandName))
     .filter((scheduledCommandInfo) => scheduledCommandInfo.metadata.scheduledOn)
     .forEach((scheduledCommandInfo) => {
-      scheduler.scheduleJob(scheduledCommandInfo.name, createCronExpression(scheduledCommandInfo.metadata), () => {
-        triggerScheduleCommand({ typeName: scheduledCommandInfo.name })
-      })
+      const cronJob = scheduler.scheduleJob(
+        scheduledCommandInfo.name,
+        createCronExpression(scheduledCommandInfo.metadata),
+        () => {
+          triggerScheduleCommand({ typeName: scheduledCommandInfo.name })
+        }
+      )
+      cronJobs.push(cronJob)
     })
+  return cronJobs
 }
 
-function createCronExpression(scheduledCommandMetadata: ScheduledCommandMetadata): string {
-  const { minute = '*', hour = '*', day = '*', month = '*', weekDay = '*' } = scheduledCommandMetadata.scheduledOn
-  return `${minute} ${hour} ${day} ${month} ${weekDay}`
+export function createCronExpression(scheduledCommandMetadata: ScheduledCommandMetadata): string {
+  const {
+    second = '*',
+    minute = '*',
+    hour = '*',
+    day = '*',
+    month = '*',
+    weekDay = '*',
+  } = scheduledCommandMetadata.scheduledOn
+  return `${second} ${minute} ${hour} ${day} ${month} ${weekDay}`
 }
 
-function buildScheduledCommandInfo(config: BoosterConfig, scheduledCommandName: string): ScheduledCommandInfo {
+export function buildScheduledCommandInfo(config: BoosterConfig, scheduledCommandName: string): ScheduledCommandInfo {
   return {
     name: scheduledCommandName,
     metadata: config.scheduledCommandHandlers[scheduledCommandName],
