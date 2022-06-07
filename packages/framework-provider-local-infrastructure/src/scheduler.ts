@@ -6,26 +6,19 @@ interface ScheduledCommandInfo {
   metadata: ScheduledCommandMetadata
 }
 
-export function configureScheduler(config: BoosterConfig, userProject: any): scheduler.Job[] {
+export function configureScheduler(config: BoosterConfig, userProject: any): void {
   const triggerScheduleCommand = userProject['boosterTriggerScheduledCommand']
-  const cronJobs: scheduler.Job[] = []
   Object.keys(config.scheduledCommandHandlers)
     .map((scheduledCommandName) => buildScheduledCommandInfo(config, scheduledCommandName))
     .filter((scheduledCommandInfo) => scheduledCommandInfo.metadata.scheduledOn)
     .forEach((scheduledCommandInfo) => {
-      const cronJob = scheduler.scheduleJob(
-        scheduledCommandInfo.name,
-        createCronExpression(scheduledCommandInfo.metadata),
-        () => {
-          triggerScheduleCommand({ typeName: scheduledCommandInfo.name })
-        }
-      )
-      cronJobs.push(cronJob)
+      scheduler.scheduleJob(scheduledCommandInfo.name, createCronExpression(scheduledCommandInfo.metadata), () => {
+        triggerScheduleCommand({ typeName: scheduledCommandInfo.name })
+      })
     })
-  return cronJobs
 }
 
-export function createCronExpression(scheduledCommandMetadata: ScheduledCommandMetadata): string {
+function createCronExpression(scheduledCommandMetadata: ScheduledCommandMetadata): string {
   const {
     second = '*',
     minute = '*',
@@ -37,7 +30,7 @@ export function createCronExpression(scheduledCommandMetadata: ScheduledCommandM
   return `${second} ${minute} ${hour} ${day} ${month} ${weekDay}`
 }
 
-export function buildScheduledCommandInfo(config: BoosterConfig, scheduledCommandName: string): ScheduledCommandInfo {
+function buildScheduledCommandInfo(config: BoosterConfig, scheduledCommandName: string): ScheduledCommandInfo {
   return {
     name: scheduledCommandName,
     metadata: config.scheduledCommandHandlers[scheduledCommandName],
