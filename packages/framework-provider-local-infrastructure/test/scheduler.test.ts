@@ -1,21 +1,27 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { restore, SinonStub, SinonStubbedInstance, createStubInstance, replace, stub, useFakeTimers } from 'sinon'
-import { configureScheduler, createCronExpression, buildScheduledCommandInfo } from '../src/scheduler'
+import { restore, SinonStubbedInstance, createStubInstance, replace, fake } from 'sinon'
+import { configureScheduler } from '../src/scheduler'
 import { expect } from './expect'
 import { describe } from 'mocha'
 import { random } from 'faker'
+import * as scheduler from 'node-schedule'
 
+const rewire = require('rewire')
+const schedule = rewire('../src/scheduler')
+const createCronExpression = schedule.__get__('createCronExpression')
+const buildScheduledCommandInfo = schedule.__get__('buildScheduledCommandInfo')
+interface ScheduledCommandInfo {
+  typeName: string
+}
 declare class UserProject {
   constructor()
   boosterTriggerScheduledCommand: (rawRequest: unknown) => void
 }
+
 describe('Local Scheduler', () => {
   let mockUserProjectStub: SinonStubbedInstance<UserProject>
-  let mockScheduledCommand: any
   let mockConfig: BoosterConfig
   let mockScheduledCommandName: string
-  let queryStub: SinonStub
-  let clock: any
 
   beforeEach(() => {
     class CheckCart {
@@ -29,21 +35,15 @@ describe('Local Scheduler', () => {
       }
     }
 
-    clock = useFakeTimers()
-
     mockScheduledCommandName = random.word()
-    queryStub = stub()
 
     mockUserProjectStub = createStubInstance(UserProject)
-    replace(mockUserProjectStub, 'boosterTriggerScheduledCommand', queryStub as any)
 
     mockConfig = buildConfig()
     mockConfig.scheduledCommandHandlers[mockScheduledCommandName] = {
       class: CheckCart,
       scheduledOn: {},
     }
-
-    mockScheduledCommand = buildScheduledCommandInfo(mockConfig, mockScheduledCommandName)
   })
 
   afterEach(() => {
@@ -61,20 +61,38 @@ describe('Local Scheduler', () => {
   })
 
   describe('createCronExpression', () => {
-    it('should return expected cron expression', async () => {
-      const result = await createCronExpression(mockScheduledCommand.metadata)
+    it('should return default cron expression', async () => {
+      const result = await createCronExpression({ scheduledOn: {} })
       expect(result).to.be.equal('* * * * * *')
+    })
+
+    it('should return expected cron expression', async () => {
+      const result = await createCronExpression({
+        scheduledOn: {
+          minute: '30',
+          hour: '14',
+          weekDay: '0',
+        },
+      })
+      expect(result).to.be.equal('* 30 14 * * 0')
     })
   })
 
   describe('configureScheduler', () => {
     it('should call scedule job', async () => {
-      const results = configureScheduler(mockConfig, mockUserProjectStub)
-      clock.tick(3250)
-      setTimeout(() => {
-        results.forEach((result) => result.cancel())
-      }, 3250)
-      expect(queryStub).to.have.callCount(3)
+      const fakeScheduleJob = fake((name: string, cronExpression: string, scheduledFunction: () => void) => {
+        scheduledFunction()
+      })
+      const fakeTriggerScheduleCommand = fake((command: ScheduledCommandInfo) => {})
+      replace(scheduler, 'scheduleJob', fakeScheduleJob)
+      replace(mockUserProjectStub, 'boosterTriggerScheduledCommand', fakeTriggerScheduleCommand as any)
+
+      configureScheduler(mockConfig, mockUserProjectStub)
+
+      expect(scheduler.scheduleJob).to.have.been.calledWith(mockScheduledCommandName, '* * * * * *')
+      expect(mockUserProjectStub.boosterTriggerScheduledCommand).to.have.been.calledWith({
+        typeName: mockScheduledCommandName,
+      })
     })
   })
 
