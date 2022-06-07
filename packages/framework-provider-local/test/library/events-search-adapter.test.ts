@@ -1,11 +1,10 @@
-import { BoosterConfig, Logger } from '@boostercloud/framework-types'
-import { createStubInstance, fake, replace, restore, SinonStub, SinonStubbedInstance, stub } from 'sinon'
+import { BoosterConfig } from '@boostercloud/framework-types'
+import { createStubInstance, replace, restore, SinonStub, SinonStubbedInstance, stub } from 'sinon'
 import { EventRegistry } from '../../src'
 import { searchEntitiesIds } from '../../dist/library/events-search-adapter'
 import { expect } from '../expect'
 
 describe('The "searchEntitiesIDs" method', () => {
-  let mockLogger: Logger
   let mockConfig: BoosterConfig
   let queryStub: SinonStub
   type StubbedClass<T> = SinonStubbedInstance<T> & T
@@ -13,12 +12,6 @@ describe('The "searchEntitiesIDs" method', () => {
 
   beforeEach(() => {
     mockConfig = new BoosterConfig('test')
-    mockLogger = {
-      info: fake(),
-      warn: fake(),
-      error: fake(),
-      debug: fake(),
-    }
     queryStub = stub()
 
     mockEventRegistry = createStubInstance(EventRegistry) as StubbedClass<EventRegistry>
@@ -34,7 +27,7 @@ describe('The "searchEntitiesIDs" method', () => {
     const limit = 1
     const afterCursor = { id: '1' }
     const entityTypeName = 'entity'
-    await searchEntitiesIds(mockEventRegistry as any, mockConfig, mockLogger, limit, afterCursor, entityTypeName)
+    await searchEntitiesIds(mockEventRegistry as any, mockConfig, limit, afterCursor, entityTypeName)
 
     expect(queryStub).to.have.been.calledWithExactly({ kind: 'event', entityTypeName: 'entity' }, -1, undefined, {
       entityID: 1,
@@ -44,7 +37,7 @@ describe('The "searchEntitiesIDs" method', () => {
   it('Generate query for entityTypeName, limit has all fields', async () => {
     const limit = 1
     const entityTypeName = 'entity'
-    await searchEntitiesIds(mockEventRegistry as any, mockConfig, mockLogger, limit, undefined, entityTypeName)
+    await searchEntitiesIds(mockEventRegistry as any, mockConfig, limit, undefined, entityTypeName)
 
     expect(queryStub).to.have.been.calledWithExactly({ kind: 'event', entityTypeName: 'entity' }, -1, undefined, {
       entityID: 1,

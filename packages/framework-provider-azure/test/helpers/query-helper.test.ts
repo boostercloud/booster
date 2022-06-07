@@ -75,7 +75,6 @@ describe('Query helper', () => {
       await search(
         mockCosmosDbClient as any,
         mockConfig,
-        mockLogger,
         mockReadModelName,
         {},
         undefined,
