@@ -130,12 +130,7 @@ export class Booster {
     limit: number,
     afterCursor?: Record<string, string>
   ): Promise<PaginatedEntitiesIdsResult> {
-    return await this.config.provider.events.searchEntitiesIDs(
-      this.config,
-      limit,
-      afterCursor,
-      entityTypeName
-    )
+    return await this.config.provider.events.searchEntitiesIDs(this.config, limit, afterCursor, entityTypeName)
   }
 
   /**
