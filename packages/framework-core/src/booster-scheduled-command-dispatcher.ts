@@ -29,7 +29,7 @@ export class BoosterScheduledCommandDispatcher {
     const commandClass = commandMetadata.class
     logger.debug('Found the following command:', commandClass.name)
     const command = commandClass as ScheduledCommandInterface
-    const register = new Register(commandEnvelope.requestID, undefined, commandEnvelope.context)
+    const register = new Register(commandEnvelope.requestID, {}, undefined, commandEnvelope.context)
     try {
       logger.debug('Calling "handle" method on command: ', command)
       await command.handle(register)

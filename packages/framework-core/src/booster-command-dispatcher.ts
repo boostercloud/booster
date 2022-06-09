@@ -44,6 +44,7 @@ export class BoosterCommandDispatcher {
     let result: unknown
     const register: Register = new Register(
       migratedCommandEnvelope.requestID,
+      migratedCommandEnvelope.responseHeaders,
       migratedCommandEnvelope.currentUser,
       migratedCommandEnvelope.context
     )

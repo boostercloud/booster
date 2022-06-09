@@ -16,6 +16,7 @@ export interface Envelope {
 
 export interface CommandEnvelope extends Envelope {
   typeName: string
+  responseHeaders: Record<string, string>
   version: number
   value: CommandInput
 }
