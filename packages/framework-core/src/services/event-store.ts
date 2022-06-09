@@ -1,13 +1,14 @@
 import {
   BoosterConfig,
-  UUID,
   EventEnvelope,
   InvalidParameterError,
   ReducerGlobalError,
+  UUID,
 } from '@boostercloud/framework-types'
 import { createInstance, getLogger } from '@boostercloud/framework-common-helpers'
 import { BoosterGlobalErrorDispatcher } from '../booster-global-error-dispatcher'
 import { Migrator } from '../migrator'
+import { BoosterEntityMigrated } from '../core-concepts/data-migration/events/booster-entity-migrated'
 
 const originOfTime = new Date(0).toISOString() // Unix epoch
 
@@ -100,6 +101,10 @@ export class EventStore {
   ): Promise<EventEnvelope> {
     const logger = getLogger(this.config, 'EventStore#entityReducer')
     try {
+      if (eventEnvelope.typeName === BoosterEntityMigrated.name) {
+        return this.toBoosterMigratedSnapshot(eventEnvelope)
+      }
+
       logger.debug('Calling reducer with event: ', eventEnvelope, ' and entity snapshot ', latestSnapshot)
       const eventMetadata = this.config.events[eventEnvelope.typeName]
       const migratedEventEnvelope = await new Migrator(this.config).migrate(eventEnvelope)
@@ -138,6 +143,25 @@ export class EventStore {
       logger.error('Error when calling reducer', e)
       throw e
     }
+  }
+
+  private toBoosterMigratedSnapshot(eventEnvelope: EventEnvelope): EventEnvelope {
+    const logger = getLogger(this.config, 'EventStore#toBoosterMigratedSnapshot')
+    const value = eventEnvelope.value as BoosterEntityMigrated
+    const className = value.newEntity.constructor.name
+    const boosterMigratedSnapshot = {
+      version: this.config.currentVersionFor(className),
+      kind: 'snapshot',
+      requestID: eventEnvelope.requestID,
+      entityID: value.newEntity.id,
+      entityTypeName: className,
+      typeName: className,
+      value: value.newEntity,
+      createdAt: new Date().toISOString(),
+      snapshottedEventCreatedAt: eventEnvelope.createdAt,
+    } as EventEnvelope
+    logger.debug('BoosterEntityMigrated result: ', boosterMigratedSnapshot)
+    return boosterMigratedSnapshot
   }
 
   // eslint-disable-next-line @typescript-eslint/ban-types
