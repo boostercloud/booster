@@ -175,6 +175,14 @@ describe('Entities end-to-end tests', () => {
   })
 
   context('Data migration', () => {
+    //TODO: AWS provider doesn't support entityIds Interface so these tests are skipped for AWS
+    if (process.env.TESTED_PROVIDER === 'AWS') {
+      console.log('****************** Warning **********************')
+      console.log('AWS provider does not support entityIds Interface so these tests are skipped for AWS')
+      console.log('*************************************************')
+      return
+    }
+
     context('with same id', () => {
       const mockCartCount = 3
       const mockCartItems: Array<UUID> = []
