@@ -129,6 +129,7 @@ describe('GraphQL generator', () => {
       asyncIteratorStub = stub().returns(mockAsyncIteratorResult)
       mockResolverContext = {
         requestID: mockRequestId,
+        responseHeaders: {},
         user: {
           username: mockEmail,
           roles: [mockRole],

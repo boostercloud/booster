@@ -31,7 +31,7 @@ describe('the `RegisterHandler` class', () => {
     } as any
     config.reducers['SomeEvent'] = { class: SomeEntity, methodName: 'whatever' }
 
-    const register = new Register('1234')
+    const register = new Register('1234', {} as any)
     const event1 = new SomeEvent('a')
     const event2 = new SomeEvent('b')
     register.events(event1, event2)
@@ -56,7 +56,7 @@ describe('the `RegisterHandler` class', () => {
     } as any
     config.reducers['SomeEvent'] = { class: SomeEntity, methodName: 'whatever' }
 
-    const register = new Register('1234')
+    const register = new Register('1234', {} as any)
     await RegisterHandler.handle(config, register)
 
     expect(config.provider.events.store).to.not.have.been.called
@@ -76,7 +76,7 @@ describe('the `RegisterHandler` class', () => {
 
     replace(Date.prototype, 'toISOString', fake.returns('just the right time'))
 
-    const register = new Register('1234')
+    const register = new Register('1234', {} as any)
     const event1 = new SomeEvent('a')
     const event2 = new SomeEvent('b')
     register.events(event1, event2)
@@ -124,7 +124,7 @@ describe('the `RegisterHandler` class', () => {
       roles: ['Paco'],
       claims: {},
     }
-    const register = new Register('1234', user)
+    const register = new Register('1234', {} as any, user)
     const event = new SomeEvent('a')
     replace(Date.prototype, 'toISOString', fake.returns('right here, right now!'))
 

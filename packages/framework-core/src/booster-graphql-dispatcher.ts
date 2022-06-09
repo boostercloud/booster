@@ -98,7 +98,7 @@ export class BoosterGraphQLDispatcher {
 
   private async runGraphQLOperation(
     envelope: GraphQLRequestEnvelope | GraphQLRequestEnvelopeError,
-    responseHeaders?: Record<string, string>
+    responseHeaders: Record<string, string> = {}
   ): Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult> {
     const logger = getLogger(this.config, 'BoosterGraphQLDispatcher#runGraphQLOperation')
     try {
@@ -136,7 +136,7 @@ export class BoosterGraphQLDispatcher {
       }
       const resolverContext: GraphQLResolverContext = {
         connectionID: envelope.connectionID,
-        responseHeaders: responseHeaders || {},
+        responseHeaders: responseHeaders,
         requestID: envelope.requestID,
         user: envelope.currentUser,
         operation: {
@@ -150,9 +150,9 @@ export class BoosterGraphQLDispatcher {
       switch (operationData.operation) {
         case 'query':
         case 'mutation':
-          return this.handleQueryOrMutation(queryDocument, resolverContext)
+          return await this.handleQueryOrMutation(queryDocument, resolverContext)
         case 'subscription':
-          return this.handleSubscription(queryDocument, resolverContext)
+          return await this.handleSubscription(queryDocument, resolverContext)
       }
     } catch (e) {
       const error = e as Error

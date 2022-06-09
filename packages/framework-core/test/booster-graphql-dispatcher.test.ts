@@ -187,7 +187,8 @@ describe('the `BoosterGraphQLDispatcher`', () => {
           expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly(
             match((result) => {
               return result.errors[0].message == errorMessage
-            })
+            }),
+            {}
           )
         })
 
@@ -203,7 +204,8 @@ describe('the `BoosterGraphQLDispatcher`', () => {
           expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly(
             match((result) => {
               return result.errors[0].message == 'Received an empty GraphQL body'
-            })
+            }),
+            {}
           )
         })
 
@@ -223,11 +225,13 @@ describe('the `BoosterGraphQLDispatcher`', () => {
           expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly(
             match((result) => {
               return result.errors[0].message == 'Received an empty GraphQL query'
-            })
+            }),
+            {}
           )
         })
 
         it('calls the provider "handleGraphQLResult" with an error when a subscription operation is used', async () => {
+          const errorRegex = /This API and protocol does not support "subscription" operations/
           const config = mockConfigForGraphQLEnvelope({
             requestID: random.uuid(),
             eventType: 'MESSAGE',
@@ -238,14 +242,14 @@ describe('the `BoosterGraphQLDispatcher`', () => {
           const dispatcher = new BoosterGraphQLDispatcher(config)
           replace(gqlValidator, 'validate', fake.returns([]))
 
+          //await expect(dispatcher.dispatch({})).to.be.rejectedWith(errorRegex)
           await dispatcher.dispatch({})
 
           expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly(
             match((result) => {
-              return new RegExp(/This API and protocol does not support "subscription" operations/).test(
-                result.errors[0].message
-              )
-            })
+              return new RegExp(errorRegex).test(result.errors[0].message)
+            }),
+            {}
           )
         })
 
@@ -269,6 +273,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
             },
             pubSub: new NoopReadModelPubSub(),
             storeSubscriptions: true,
+            responseHeaders: {},
           }
           const config = mockConfigForGraphQLEnvelope(graphQLEnvelope)
           const dispatcher = new BoosterGraphQLDispatcher(config)
@@ -288,7 +293,56 @@ describe('the `BoosterGraphQLDispatcher`', () => {
             variableValues: match(graphQLVariables),
             operationName: match.any,
           })
-          expect(config.provider.graphQL.handleResult).to.have.been.calledWithExactly(graphQLResult)
+          expect(config.provider.graphQL.handleResult).to.have.been.calledWithExactly(graphQLResult, {})
+        })
+
+        it('calls the the GraphQL engine with the passed envelope and handles the result including the `responseHeaders`', async () => {
+          const graphQLBody = 'query { a { x }}'
+          const graphQLResult = { data: 'the result' }
+          const graphQLVariables = { productId: 'productId' }
+          const graphQLEnvelope: GraphQLRequestEnvelope = {
+            requestID: random.uuid(),
+            eventType: 'MESSAGE',
+            value: {
+              query: graphQLBody,
+              variables: graphQLVariables,
+            },
+          }
+          const resolverContext: GraphQLResolverContext = {
+            requestID: graphQLEnvelope.requestID,
+            operation: {
+              query: graphQLBody,
+              variables: graphQLVariables,
+            },
+            pubSub: new NoopReadModelPubSub(),
+            storeSubscriptions: true,
+            responseHeaders: {},
+          }
+          const config = mockConfigForGraphQLEnvelope(graphQLEnvelope)
+          const dispatcher = new BoosterGraphQLDispatcher(config, logger)
+          const parseSpy = spy(gqlParser, 'parse')
+          replace(gqlValidator, 'validate', fake.returns([]))
+
+          const executeFake = fake((params: any) => {
+            // Simulates that the handler has added the `responseHeaders`
+            params.contextValue.responseHeaders['Test-Header'] = 'Test-Value'
+            return graphQLResult
+          })
+          replace(gqlExecutor, 'execute', executeFake)
+
+          await dispatcher.dispatch({})
+
+          expect(parseSpy).to.have.been.calledWithExactly(graphQLBody)
+          expect(executeFake).to.have.been.calledWithExactly({
+            schema: match.any,
+            document: match.any,
+            contextValue: match(resolverContext),
+            variableValues: match(graphQLVariables),
+            operationName: match.any,
+          })
+          expect(config.provider.graphQL.handleResult).to.have.been.calledWithExactly(graphQLResult, {
+            'Test-Header': 'Test-Value',
+          })
         })
 
         it('calls the the GraphQL engine with the passed envelope with an authorization token and handles the result', async () => {
@@ -313,6 +367,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
             },
             pubSub: new NoopReadModelPubSub(),
             storeSubscriptions: true,
+            responseHeaders: {},
           }
 
           const currentUser: UserEnvelope = {
@@ -344,7 +399,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
             variableValues: match(graphQLVariables),
             operationName: match.any,
           })
-          expect(config.provider.graphQL.handleResult).to.have.been.calledWithExactly(graphQLResult)
+          expect(config.provider.graphQL.handleResult).to.have.been.calledWithExactly(graphQLResult, {})
         })
 
         context('with graphql execution returning errors', () => {
@@ -371,7 +426,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
             await dispatcher.dispatch({})
 
             // Check that the handled error includes all the errors that GraphQL reported
-            expect(config.provider.graphQL.handleResult).to.have.been.calledWithExactly(graphQLErrorResult)
+            expect(config.provider.graphQL.handleResult).to.have.been.calledWithExactly(graphQLErrorResult, {})
           })
 
           it('calls the provider "handleGraphQLResult" with the error with a mutation', async () => {
@@ -387,7 +442,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
             await dispatcher.dispatch({})
 
             // Check that the handled error includes all the errors that GraphQL reported
-            expect(config.provider.graphQL.handleResult).to.have.been.calledWithExactly(graphQLErrorResult)
+            expect(config.provider.graphQL.handleResult).to.have.been.calledWithExactly(graphQLErrorResult, {})
           })
         })
       })
