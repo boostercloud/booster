@@ -5,6 +5,13 @@ import { expect } from 'chai'
 import gql from 'graphql-tag'
 import { sleep, waitForIt } from '../../helper/sleep'
 import { applicationUnderTest } from './setup'
+import { UUID } from '@boostercloud/framework-types'
+import {
+  QUANTITY_AFTER_DATA_MIGRATION,
+  QUANTITY_AFTER_DATA_MIGRATION_ID,
+  QUANTITY_TO_MIGRATE_DATA,
+  QUANTITY_TO_MIGRATE_ID,
+} from '../../../src/constants'
 
 const secs = 10
 
@@ -164,6 +171,220 @@ describe('Entities end-to-end tests', () => {
       const productData = queryResult.data.ProductReadModel
 
       expect(productData).to.be.null
+    })
+  })
+
+  context('Data migration', () => {
+    context('with same id', () => {
+      const mockCartCount = 3
+      const mockCartItems: Array<UUID> = []
+
+      beforeEach(async () => {
+        const changeCartPromises: Array<Promise<unknown>> = []
+
+        for (let i = 0; i < mockCartCount; i++) {
+          const mockCartId = random.uuid()
+          const mockProductId: string = random.uuid()
+          const mockQuantity = QUANTITY_TO_MIGRATE_DATA
+          mockCartItems.push(mockCartId)
+
+          changeCartPromises.push(
+            client.mutate({
+              variables: {
+                cartId: mockCartId,
+                productId: mockProductId,
+                quantity: mockQuantity,
+              },
+              mutation: gql`
+                mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
+                  ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+                }
+              `,
+            })
+          )
+        }
+
+        await Promise.all(changeCartPromises)
+
+        await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: {
+                  id: { in: [...mockCartItems] },
+                },
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter) {
+                  ListCartReadModels(filter: $filter) {
+                    items {
+                      id
+                      cartItems {
+                        productId
+                        quantity
+                      }
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels.items.length == mockCartCount
+        )
+      })
+
+      it('find migrated entities', async () => {
+        const migrated = await waitForIt(
+          () => {
+            return client.mutate({
+              mutation: gql`
+                mutation CartDataMigrateCommand {
+                  CartDataMigrateCommand
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.CartDataMigrateCommand !== undefined
+        )
+
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: {
+                  id: { in: [...migrated.data.CartDataMigrateCommand] },
+                },
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter) {
+                  ListCartReadModels(filter: $filter) {
+                    items {
+                      id
+                      cartItems {
+                        productId
+                        quantity
+                      }
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels.items.length == mockCartCount
+        )
+
+        const readModels = queryResult.data.ListCartReadModels
+        readModels.items.forEach((item: { cartItems: { quantity: any }[] }) =>
+          expect(item.cartItems[0].quantity).to.be.eq(QUANTITY_AFTER_DATA_MIGRATION)
+        )
+        expect(migrated.data.CartDataMigrateCommand).to.have.members(mockCartItems)
+      })
+    })
+
+    context('with different id', () => {
+      const mockCartCount = 3
+      const mockCartItems: Array<UUID> = []
+
+      beforeEach(async () => {
+        const changeCartPromises: Array<Promise<unknown>> = []
+
+        for (let i = 0; i < mockCartCount; i++) {
+          const mockCartId = random.uuid()
+          const mockProductId: string = random.uuid()
+          const mockQuantity = QUANTITY_TO_MIGRATE_ID
+          mockCartItems.push(mockCartId)
+
+          changeCartPromises.push(
+            client.mutate({
+              variables: {
+                cartId: mockCartId,
+                productId: mockProductId,
+                quantity: mockQuantity,
+              },
+              mutation: gql`
+                mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
+                  ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+                }
+              `,
+            })
+          )
+        }
+
+        await Promise.all(changeCartPromises)
+
+        await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: {
+                  id: { in: [...mockCartItems] },
+                },
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter) {
+                  ListCartReadModels(filter: $filter) {
+                    items {
+                      id
+                      cartItems {
+                        productId
+                        quantity
+                      }
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels.items.length == mockCartCount
+        )
+      })
+
+      it('find migrated entities', async () => {
+        const migrated = await waitForIt(
+          () => {
+            return client.mutate({
+              mutation: gql`
+                mutation CartIdDataMigrateCommand {
+                  CartIdDataMigrateCommand
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.CartIdDataMigrateCommand !== undefined
+        )
+
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: {
+                  id: { in: [...migrated.data.CartIdDataMigrateCommand] },
+                },
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter) {
+                  ListCartReadModels(filter: $filter) {
+                    items {
+                      id
+                      cartItems {
+                        productId
+                        quantity
+                      }
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels.items.length == mockCartCount
+        )
+
+        const readModels = queryResult.data.ListCartReadModels
+        readModels.items.forEach((item: { cartItems: { quantity: any }[] }) =>
+          expect(item.cartItems[0].quantity).to.be.eq(QUANTITY_AFTER_DATA_MIGRATION_ID)
+        )
+        expect(migrated.data.CartIdDataMigrateCommand).to.not.have.members(mockCartItems)
+      })
     })
   })
 })
