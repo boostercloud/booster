@@ -145,7 +145,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
         responseHeaders: {},
       }
 
-      await new BoosterCommandDispatcher(config as any, logger).dispatchCommand(commandEnvelope as any, context as any)
+      await new BoosterCommandDispatcher(config as any).dispatchCommand(commandEnvelope as any, context as any)
 
       expect(ProperlyHandledCommand.handle).to.have.been.calledWithMatch(commandValue, { responseHeaders: {} })
       expect(context.responseHeaders).to.deep.equal({ 'Test-Header': 'test' })

@@ -49,7 +49,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
 
         await dispatcher.dispatch({})
 
-        expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly(graphQLResult)
+        expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly(graphQLResult, {})
       })
 
       it('override the introspection configuration and disable it', async () => {
@@ -81,7 +81,8 @@ describe('the `BoosterGraphQLDispatcher`', () => {
               result.errors[0].message ==
               'Instrospection queries are disabled. Check the configuration if you want to enable them.'
             )
-          })
+          }),
+          {}
         )
       })
     })
@@ -319,7 +320,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
             responseHeaders: {},
           }
           const config = mockConfigForGraphQLEnvelope(graphQLEnvelope)
-          const dispatcher = new BoosterGraphQLDispatcher(config, logger)
+          const dispatcher = new BoosterGraphQLDispatcher(config)
           const parseSpy = spy(gqlParser, 'parse')
           replace(gqlValidator, 'validate', fake.returns([]))
 
