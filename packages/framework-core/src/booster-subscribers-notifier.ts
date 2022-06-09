@@ -69,6 +69,7 @@ export class BoosterSubscribersNotifier {
     const logger = getLogger(this.config, 'BoosterSubscribersNotifier#runSubscriptionAndNotify')
     const context: GraphQLResolverContext = {
       connectionID: subscription.connectionID,
+      responseHeaders: {},
       requestID: subscription.requestID,
       user: subscription.currentUser,
       operation: subscription.operation,

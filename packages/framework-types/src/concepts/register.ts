@@ -27,6 +27,7 @@ export class Register {
 
   public constructor(
     readonly requestID: UUID,
+    readonly responseHeaders: Record<string, string>,
     readonly currentUser?: UserEnvelope,
     readonly context?: ContextEnvelope
   ) {}
