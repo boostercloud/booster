@@ -2,8 +2,9 @@ import { EntityInterface, Instance, UUID } from '@boostercloud/framework-types'
 
 export class BoosterEntityMigrated {
   public constructor(
-    readonly entityName: string,
+    readonly oldEntityName: string,
     readonly oldEntityId: UUID,
+    readonly newEntityName: string,
     readonly newEntity: Instance & EntityInterface
   ) {}
 

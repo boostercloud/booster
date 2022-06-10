@@ -80,6 +80,6 @@ export async function storeEvents(
 }
 
 async function persistEvent(eventRegistry: EventRegistry, eventEnvelope: EventEnvelope): Promise<void> {
-  return await eventRegistry.store(eventEnvelope)
+  return eventRegistry.store(eventEnvelope)
   //TODO: check when there is a write error to implement Optimistic Concurrency
 }

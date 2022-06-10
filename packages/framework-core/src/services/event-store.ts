@@ -148,15 +148,16 @@ export class EventStore {
   private toBoosterMigratedSnapshot(eventEnvelope: EventEnvelope): EventEnvelope {
     const logger = getLogger(this.config, 'EventStore#toBoosterMigratedSnapshot')
     const value = eventEnvelope.value as BoosterEntityMigrated
-    const className = value.newEntity.constructor.name
+    const entity = value.newEntity
+    const className = value.newEntityName
     const boosterMigratedSnapshot = {
       version: this.config.currentVersionFor(className),
       kind: 'snapshot',
       requestID: eventEnvelope.requestID,
-      entityID: value.newEntity.id,
+      entityID: entity.id,
       entityTypeName: className,
       typeName: className,
-      value: value.newEntity,
+      value: entity,
       createdAt: new Date().toISOString(),
       snapshottedEventCreatedAt: eventEnvelope.createdAt,
     } as EventEnvelope

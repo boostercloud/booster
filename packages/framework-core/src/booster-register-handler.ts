@@ -52,7 +52,7 @@ export class RegisterHandler {
     config: BoosterConfig
   ): string {
     if (eventTypeName === BoosterEntityMigrated.name) {
-      return (event as BoosterEntityMigrated).entityName
+      return (event as BoosterEntityMigrated).oldEntityName
     }
     const reducerInfo = config.reducers[eventTypeName]
     return reducerInfo.class.name

@@ -6,10 +6,12 @@ import {
   EventSearchParameters,
   EventSearchResponse,
   FilterFor,
-  PaginatedEntitiesIdsResult,
   FinderByKeyFunction,
+  Instance,
+  PaginatedEntitiesIdsResult,
   ReadModelInterface,
   ReadOnlyNonEmptyArray,
+  Register,
   Searcher,
   SearcherFunction,
   SequenceKey,
@@ -23,8 +25,8 @@ import { BoosterSubscribersNotifier } from './booster-subscribers-notifier'
 import { Importer } from './importer'
 import { EventStore } from './services/event-store'
 import { BoosterRocketDispatcher } from './booster-rocket-dispatcher'
-import { BoosterDataMigrationDispatcher } from './booster-data-migration-dispatcher'
 import { BoosterEntityMigrated } from './core-concepts/data-migration/events/booster-entity-migrated'
+import { RegisterHandler } from './booster-register-handler'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -173,13 +175,15 @@ export class Booster {
     return new BoosterRocketDispatcher(this.config).dispatch(request)
   }
 
-  public static migrateEntity<TEntity extends EntityInterface>(
-    entity: Class<TEntity>,
+  public static migrateEntity(
+    oldEntityName: string,
     oldEntityId: UUID,
-    newEntity: EntityInterface
+    newEntity: Instance & EntityInterface
   ): Promise<void> {
-    const boosterDataMigrationDispatcher = new BoosterDataMigrationDispatcher(this.config)
-    return boosterDataMigrationDispatcher.dispatch(entity.name, oldEntityId, newEntity)
+    const requestID = UUID.generate()
+    const register = new Register(requestID)
+    register.events(new BoosterEntityMigrated(oldEntityName, oldEntityId, newEntity.constructor.name, newEntity))
+    return RegisterHandler.handle(this.config, register)
   }
 
   private static configureDataMigrations(): void {

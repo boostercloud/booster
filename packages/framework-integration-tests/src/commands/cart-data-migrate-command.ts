@@ -1,5 +1,5 @@
 import { Booster, Command } from '@boostercloud/framework-core'
-import { PaginatedEntitiesIdsResult, Register, UUID } from '@boostercloud/framework-types'
+import { Register, UUID } from '@boostercloud/framework-types'
 import { Cart } from '../entities/cart'
 import { QUANTITY_AFTER_DATA_MIGRATION, QUANTITY_TO_MIGRATE_DATA } from '../constants'
 
@@ -11,7 +11,7 @@ export class CartDataMigrateCommand {
 
   public static async handle(_command: CartDataMigrateCommand, _register: Register): Promise<Array<UUID>> {
     console.log('migrating')
-    const entitiesIdsResult = (await Booster.entitiesIDs('Cart', 50, undefined)) as PaginatedEntitiesIdsResult
+    const entitiesIdsResult = await Booster.entitiesIDs('Cart', 500, undefined)
     const paginatedEntityIdResults = entitiesIdsResult.items
 
     const carts = await Promise.all(
@@ -33,7 +33,7 @@ export class CartDataMigrateCommand {
         const validCart = cart!
         validCart.cartItems[0].quantity = QUANTITY_AFTER_DATA_MIGRATION
         const newCart = new Cart(validCart.id, validCart.cartItems, validCart.shippingAddress, validCart.checks)
-        await Booster.migrateEntity(Cart, validCart.id, newCart)
+        await Booster.migrateEntity('Cart', validCart.id, newCart)
         console.log('Migrated', newCart)
         return validCart.id
       })

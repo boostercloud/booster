@@ -242,18 +242,13 @@ describe('Entities end-to-end tests', () => {
       })
 
       it('find migrated entities', async () => {
-        const migrated = await waitForIt(
-          () => {
-            return client.mutate({
-              mutation: gql`
-                mutation CartDataMigrateCommand {
-                  CartDataMigrateCommand
-                }
-              `,
-            })
-          },
-          (result) => result?.data?.CartDataMigrateCommand !== undefined
-        )
+        const migrated = await client.mutate({
+          mutation: gql`
+            mutation CartDataMigrateCommand {
+              CartDataMigrateCommand
+            }
+          `,
+        })
 
         const queryResult = await waitForIt(
           () => {
@@ -278,18 +273,36 @@ describe('Entities end-to-end tests', () => {
               `,
             })
           },
-          (result) => result?.data?.ListCartReadModels.items.length == mockCartCount
+          (result) => {
+            const items = result?.data?.ListCartReadModels?.items
+            const jsonItems = JSON.stringify(items)
+            if (!items || items.length !== mockCartCount) {
+              return `Waiting for ${mockCartCount} items. ${jsonItems} `
+            }
+
+            if (!allItemsHasQuantity(items, QUANTITY_AFTER_DATA_MIGRATION)) {
+              return `Waiting for quantities to be equal to ${QUANTITY_AFTER_DATA_MIGRATION}. ${jsonItems}`
+            }
+
+            return true
+          }
         )
 
         const readModels = queryResult.data.ListCartReadModels
-        readModels.items.forEach((item: { cartItems: { quantity: any }[] }) =>
-          expect(item.cartItems[0].quantity).to.be.eq(QUANTITY_AFTER_DATA_MIGRATION)
+        readModels.items.forEach((item: { id: any; cartItems: { quantity: any; productId: any }[] }) =>
+          expect(
+            item.cartItems[0].quantity,
+            `Not matching quantity on cartId ${item.id} and productId: ${item.cartItems[0].productId}`
+          ).to.be.eq(QUANTITY_AFTER_DATA_MIGRATION)
         )
-        expect(migrated.data.CartDataMigrateCommand).to.have.members(mockCartItems)
+        expect(
+          migrated.data.CartDataMigrateCommand,
+          `migrated items ${migrated.data.CartDataMigrateCommand} doesn't match with mocked items ${mockCartItems}`
+        ).to.have.members(mockCartItems)
       })
     })
 
-    context('with different id', () => {
+    context('with different id and name', () => {
       const mockCartCount = 3
       const mockCartItems: Array<UUID> = []
 
@@ -348,18 +361,13 @@ describe('Entities end-to-end tests', () => {
       })
 
       it('find migrated entities', async () => {
-        const migrated = await waitForIt(
-          () => {
-            return client.mutate({
-              mutation: gql`
-                mutation CartIdDataMigrateCommand {
-                  CartIdDataMigrateCommand
-                }
-              `,
-            })
-          },
-          (result) => result?.data?.CartIdDataMigrateCommand !== undefined
-        )
+        const migrated = await client.mutate({
+          mutation: gql`
+            mutation CartIdDataMigrateCommand {
+              CartIdDataMigrateCommand
+            }
+          `,
+        })
 
         const queryResult = await waitForIt(
           () => {
@@ -384,15 +392,37 @@ describe('Entities end-to-end tests', () => {
               `,
             })
           },
-          (result) => result?.data?.ListCartReadModels.items.length == mockCartCount
+          (result) => {
+            const items = result?.data?.ListCartReadModels?.items
+            const jsonItems = JSON.stringify(items)
+            if (!items || items.length !== mockCartCount) {
+              return `Waiting for ${mockCartCount} items. ${jsonItems} `
+            }
+
+            if (!allItemsHasQuantity(items, QUANTITY_AFTER_DATA_MIGRATION_ID)) {
+              return `Waiting for quantities to be equal to ${QUANTITY_AFTER_DATA_MIGRATION_ID}. ${jsonItems}`
+            }
+
+            return true
+          }
         )
 
         const readModels = queryResult.data.ListCartReadModels
-        readModels.items.forEach((item: { cartItems: { quantity: any }[] }) =>
-          expect(item.cartItems[0].quantity).to.be.eq(QUANTITY_AFTER_DATA_MIGRATION_ID)
+        readModels.items.forEach((item: { id: any; cartItems: { quantity: any; productId: any }[] }) =>
+          expect(
+            item.cartItems[0].quantity,
+            `Not matching quantity on cartId ${item.id} and productId: ${item.cartItems[0].productId}`
+          ).to.be.eq(QUANTITY_AFTER_DATA_MIGRATION_ID)
         )
-        expect(migrated.data.CartIdDataMigrateCommand).to.not.have.members(mockCartItems)
+        expect(
+          migrated.data.CartIdDataMigrateCommand,
+          `Migrated items ${migrated.data.CartDataMigrateCommand} match with mocked items ${mockCartItems}`
+        ).to.not.have.members(mockCartItems)
       })
     })
   })
+
+  function allItemsHasQuantity(items: any, quantity: number): boolean {
+    return items.every((item: { cartItems: { quantity: number }[] }) => item.cartItems[0].quantity === quantity)
+  }
 })
