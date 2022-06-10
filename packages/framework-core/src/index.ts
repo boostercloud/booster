@@ -9,11 +9,6 @@ export {
   boosterTriggerScheduledCommand,
   boosterRocketDispatcher,
 } from './booster'
-export {
-  sanitizeToken,
-  getKey,
-  tokenToUserEnvelope,
-  validateToken,
-} from './token-verification'
+export * from './services/token-verifiers'
 
 export const Booster: BoosterApp = boosterModule.Booster
