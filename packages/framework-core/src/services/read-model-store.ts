@@ -13,6 +13,7 @@ import {
 } from '@boostercloud/framework-types'
 import { Promises, retryIfError, createInstance, getLogger } from '@boostercloud/framework-common-helpers'
 import { BoosterGlobalErrorDispatcher } from '../booster-global-error-dispatcher'
+import { ReadModelMigrator } from '../read-model-migrator'
 
 export class ReadModelStore {
   public constructor(readonly config: BoosterConfig) {}
@@ -97,22 +98,26 @@ export class ReadModelStore {
   ): Promise<unknown> {
     const logger = getLogger(this.config, 'ReadModelStore#applyProjectionToReadModel')
     const readModel = await this.fetchReadModel(readModelName, readModelID, sequenceKey)
-    const currentReadModelVersion: number = readModel?.boosterMetadata?.version ?? 0
+    let migratedReadModel: ReadModelInterface | undefined
+    if (readModel) {
+      migratedReadModel = await new ReadModelMigrator(this.config, readModelName).migrate(readModel)
+    }
+    const currentReadModelVersion: number = migratedReadModel?.boosterMetadata?.version ?? 0
 
     let newReadModel: any
     try {
       newReadModel = Array.isArray(entity[projectionMetadata.joinKey])
-        ? this.projectionFunction(projectionMetadata)(entity, readModelID, readModel)
-        : this.projectionFunction(projectionMetadata)(entity, readModel)
+        ? this.projectionFunction(projectionMetadata)(entity, readModelID, migratedReadModel || null)
+        : this.projectionFunction(projectionMetadata)(entity, migratedReadModel || null)
     } catch (e) {
       const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
-      const error = await globalErrorDispatcher.dispatch(new ProjectionGlobalError(entity, readModel, e))
+      const error = await globalErrorDispatcher.dispatch(new ProjectionGlobalError(entity, migratedReadModel, e))
       if (error) throw error
     }
 
     if (newReadModel === ReadModelAction.Delete) {
-      logger.debug(`Deleting read model ${readModelName} with ID ${readModelID}:`, readModel)
-      return this.config.provider.readModels.delete(this.config, readModelName, readModel)
+      logger.debug(`Deleting read model ${readModelName} with ID ${readModelID}:`, migratedReadModel)
+      return this.config.provider.readModels.delete(this.config, readModelName, migratedReadModel)
     } else if (newReadModel === ReadModelAction.Nothing) {
       logger.debug(
         `[ReadModelStore#project] Skipping actions for ${readModelName} with ID ${readModelID}:`,
@@ -122,7 +127,7 @@ export class ReadModelStore {
     }
     // Increment the read model version in 1 before storing
     newReadModel.boosterMetadata = {
-      ...readModel?.boosterMetadata,
+      ...migratedReadModel?.boosterMetadata,
       version: currentReadModelVersion + 1,
     }
     logger.debug(
