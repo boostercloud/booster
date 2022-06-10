@@ -1,27 +1,15 @@
 import { UserEnvelope } from '../envelope'
 
-interface TokenVerierCommon {
-  readonly issuer: string
-  readonly rolesClaim?: string
-  readonly extraValidation?: (jwtToken: Record<string, unknown>, rawToken: string) => Promise<void>
-
-  verify?(token: string): Promise<UserEnvelope>
+export interface TokenVerifier {
+  verify(token: string): Promise<UserEnvelope>
 }
 
-export interface JwskUriTokenVerifier extends TokenVerierCommon {
-  readonly jwksUri: string
+/**
+ * @deprecated Use an object that matches the `TokenVerifier` interface instead. You can use a `JwskUriTokenVerifier` or `PublicKeyTokenVerifier` instance or a custom implementation.
+ */
+export type TokenVerifierConfig = {
+  issuer: string
+  jwksUri?: string
+  publicKey?: Promise<string>
+  rolesClaim?: string
 }
-
-export interface PublicKeyTokenVerifier extends TokenVerierCommon {
-  readonly publicKey: Promise<string>
-}
-
-export const isJwskUriTokenVerifier = (b: TokenVerifier): b is JwskUriTokenVerifier => {
-  return (b as JwskUriTokenVerifier).jwksUri !== undefined
-}
-
-export const isPublicKeyTokenVerifier = (b: TokenVerifier): b is PublicKeyTokenVerifier => {
-  return (b as PublicKeyTokenVerifier).publicKey !== undefined
-}
-
-export type TokenVerifier = JwskUriTokenVerifier | PublicKeyTokenVerifier
