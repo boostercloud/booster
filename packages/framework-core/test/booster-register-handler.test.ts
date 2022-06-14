@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from './expect'
-import { Register, BoosterConfig, Level, UserEnvelope } from '@boostercloud/framework-types'
+import { Register, BoosterConfig, Level, UserEnvelope, UUID } from '@boostercloud/framework-types'
 import { replace, fake, restore, spy } from 'sinon'
 import { RegisterHandler } from '../src'
+import { BoosterEntityMigrated } from '../src/core-concepts/data-migration/events/booster-entity-migrated'
 
-class SomeEntity {}
+class SomeEntity {
+  public constructor(readonly id: UUID) {}
+}
 
 class SomeEvent {
   public constructor(readonly someField: string) {}
@@ -94,6 +97,7 @@ describe('the `RegisterHandler` class', () => {
           kind: 'event',
           requestID: '1234',
           typeName: 'SomeEvent',
+          subType: undefined,
           value: event1,
           version: 1,
         },
@@ -105,6 +109,7 @@ describe('the `RegisterHandler` class', () => {
           kind: 'event',
           requestID: '1234',
           typeName: 'SomeEvent',
+          subType: undefined,
           value: event2,
           version: 1,
         },
@@ -134,11 +139,46 @@ describe('the `RegisterHandler` class', () => {
       kind: 'event',
       entityID: '42',
       requestID: '1234',
+      subType: undefined,
       entityTypeName: 'SomeEntity',
       value: event,
       createdAt: 'right here, right now!',
       currentUser: user,
       typeName: 'SomeEvent',
+    })
+  })
+
+  it('can wrap internal events to produce eventEnvelopes', () => {
+    const config = new BoosterConfig('test')
+    config.reducers['BoosterEntityMigrated'] = {
+      class: SomeEntity,
+      methodName: 'someReducer',
+    }
+    const user: UserEnvelope = {
+      username: 'paco@example.com',
+      roles: ['Paco'],
+      claims: {},
+    }
+    const register = new Register('1234', user)
+    const someEntity = new SomeEntity('42')
+    const event = new BoosterEntityMigrated('oldEntity', 'oldEntityId', 'newEntityName', someEntity)
+    replace(Date.prototype, 'toISOString', fake.returns('right here, right now!'))
+
+    const registerHandler = RegisterHandler as any
+    expect(registerHandler.wrapEvent(register, config, event)).to.deep.equal({
+      version: 1,
+      kind: 'event',
+      entityTypeName: 'oldEntity',
+      entityID: 'oldEntityId',
+      requestID: '1234',
+      subType: {
+        isInternal: true,
+        name: 'BoosterEntityMigrated',
+      },
+      value: event,
+      createdAt: 'right here, right now!',
+      currentUser: user,
+      typeName: 'BoosterEntityMigrated',
     })
   })
 })

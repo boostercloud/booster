@@ -24,8 +24,15 @@ export interface ScheduledCommandEnvelope extends Envelope {
   typeName: string
 }
 
+export type EventEnvelopeSubType = {
+  name: string
+  isInternal: boolean
+  [key: string]: unknown
+}
+
 export interface EventEnvelope extends Envelope {
   typeName: string
+  subType?: EventEnvelopeSubType
   version: number
   kind: 'event' | 'snapshot'
   entityID: UUID

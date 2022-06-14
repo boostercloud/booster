@@ -1,10 +1,11 @@
 import {
   BoosterConfig,
-  Register,
-  Instance,
-  EventInterface,
   EventEnvelope,
+  EventInterface,
+  Instance,
   NotFoundError,
+  Register,
+  EventEnvelopeSubType,
 } from '@boostercloud/framework-types'
 import { BoosterEntityMigrated } from './core-concepts/data-migration/events/booster-entity-migrated'
 
@@ -41,8 +42,19 @@ export class RegisterHandler {
       currentUser: register.currentUser,
       entityTypeName: entityTypeName,
       typeName: eventTypeName,
+      subType: RegisterHandler.getSubType(eventTypeName),
       value: event,
       createdAt: new Date().toISOString(), // TODO: This could be overridden by the provider. We should not set it. Ensure all providers set it
+    }
+  }
+
+  private static getSubType(eventTypeName: string): EventEnvelopeSubType | undefined {
+    if (eventTypeName !== BoosterEntityMigrated.name) {
+      return
+    }
+    return {
+      name: BoosterEntityMigrated.name,
+      isInternal: true,
     }
   }
 

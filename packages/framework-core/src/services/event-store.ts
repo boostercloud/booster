@@ -101,8 +101,10 @@ export class EventStore {
   ): Promise<EventEnvelope> {
     const logger = getLogger(this.config, 'EventStore#entityReducer')
     try {
-      if (eventEnvelope.typeName === BoosterEntityMigrated.name) {
-        return this.toBoosterMigratedSnapshot(eventEnvelope)
+      if (eventEnvelope.subType && eventEnvelope.subType.isInternal) {
+        if (eventEnvelope.typeName === BoosterEntityMigrated.name) {
+          return this.toBoosterEntityMigratedSnapshot(eventEnvelope)
+        }
       }
 
       logger.debug('Calling reducer with event: ', eventEnvelope, ' and entity snapshot ', latestSnapshot)
@@ -133,6 +135,7 @@ export class EventStore {
         entityID: migratedEventEnvelope.entityID,
         entityTypeName: migratedEventEnvelope.entityTypeName,
         typeName: migratedEventEnvelope.entityTypeName,
+        subType: migratedEventEnvelope.subType,
         value: newEntity,
         createdAt: new Date().toISOString(), // TODO: This could be overridden by the provider. We should not set it. Ensure all providers set it
         snapshottedEventCreatedAt: migratedEventEnvelope.createdAt,
@@ -145,8 +148,8 @@ export class EventStore {
     }
   }
 
-  private toBoosterMigratedSnapshot(eventEnvelope: EventEnvelope): EventEnvelope {
-    const logger = getLogger(this.config, 'EventStore#toBoosterMigratedSnapshot')
+  private toBoosterEntityMigratedSnapshot(eventEnvelope: EventEnvelope): EventEnvelope {
+    const logger = getLogger(this.config, 'EventStore#toBoosterEntityMigratedSnapshot')
     const value = eventEnvelope.value as BoosterEntityMigrated
     const entity = value.newEntity
     const className = value.newEntityName
@@ -157,6 +160,7 @@ export class EventStore {
       entityID: entity.id,
       entityTypeName: className,
       typeName: className,
+      subType: eventEnvelope.subType,
       value: entity,
       createdAt: new Date().toISOString(),
       snapshottedEventCreatedAt: eventEnvelope.createdAt,
