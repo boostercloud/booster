@@ -105,6 +105,7 @@ describe('EventStore', () => {
     return {
       version: 1,
       kind: 'event',
+      superKind: 'domain',
       entityID: '42',
       entityTypeName: AnEntity.name,
       value: event,
@@ -118,6 +119,7 @@ describe('EventStore', () => {
     return {
       version: 1,
       kind: 'snapshot',
+      superKind: 'domain',
       entityID: '42',
       entityTypeName: AnEntity.name,
       value: entity,
@@ -481,7 +483,7 @@ describe('EventStore', () => {
               entityID: '42',
               entityTypeName: AnEntity.name,
               typeName: AnEntity.name,
-              subType: undefined,
+              superKind: 'domain',
               value: {
                 id: '42',
                 count: 1,
@@ -516,7 +518,7 @@ describe('EventStore', () => {
               entityID: '42',
               entityTypeName: AnEntity.name,
               typeName: AnEntity.name,
-              subType: undefined,
+              superKind: 'domain',
               value: {
                 id: '42',
                 count: 1,
@@ -544,10 +546,7 @@ describe('EventStore', () => {
               },
               requestID: 'whatever',
               typeName: BoosterEntityMigrated.name,
-              subType: {
-                name: BoosterEntityMigrated.name,
-                isInternal: true,
-              },
+              superKind: 'booster',
               createdAt: 'fakeTimeStamp',
             }
 
@@ -561,10 +560,7 @@ describe('EventStore', () => {
               entityID: '42',
               entityTypeName: 'newEntityName',
               typeName: 'newEntityName',
-              subType: {
-                name: BoosterEntityMigrated.name,
-                isInternal: true,
-              },
+              superKind: 'booster',
               value: {
                 id: '42',
               },

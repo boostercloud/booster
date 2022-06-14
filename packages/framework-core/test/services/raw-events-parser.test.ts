@@ -100,6 +100,7 @@ function createEventEnvelope(
     entityID: entityID,
     entityTypeName: entityTypeName,
     kind,
+    superKind: 'domain',
     createdAt: random.alpha(),
     version: 1,
     value: { id: random.uuid() },

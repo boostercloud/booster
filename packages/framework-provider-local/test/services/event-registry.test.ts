@@ -159,6 +159,7 @@ describe('the event registry', () => {
     it('should throw if the database `insert` fails', async () => {
       const event: EventEnvelope = {
         kind: 'event',
+        superKind: 'domain',
         entityID: faker.random.uuid(),
         entityTypeName: faker.random.word(),
         value: {
