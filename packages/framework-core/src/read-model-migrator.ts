@@ -21,7 +21,7 @@ export class ReadModelMigrator {
   }
 
   private checkVersionRange(readModel: ReadModelInterface): void {
-    const readModelVersion = ReadModelMigrator.readModelMigrationVersion(readModel)
+    const readModelVersion = ReadModelMigrator.readModelSchemaVersion(readModel)
     const currentVersion = this.config.currentVersionFor(this.readModelName)
     if (currentVersion < readModelVersion) {
       throw new InvalidVersionError(
@@ -33,14 +33,14 @@ export class ReadModelMigrator {
 
   private needsMigration(readModel: ReadModelInterface): boolean {
     const currentVersion = this.config.currentVersionFor(this.readModelName)
-    return currentVersion > ReadModelMigrator.readModelMigrationVersion(readModel)
+    return currentVersion > ReadModelMigrator.readModelSchemaVersion(readModel)
   }
 
   private async applyAllMigrations<TMigratableReadModel extends ReadModelInterface>(
     oldReadModel: TMigratableReadModel
   ): Promise<TMigratableReadModel> {
     const logger = getLogger(this.config, 'Migrator#applyAllMigrations')
-    const oldVersion = ReadModelMigrator.readModelMigrationVersion(oldReadModel)
+    const oldVersion = ReadModelMigrator.readModelSchemaVersion(oldReadModel)
     const currentVersion = this.config.currentVersionFor(this.readModelName)
     logger.info(`Migrating ${this.readModelName} from version ${oldVersion} to version ${currentVersion}`)
     logger.debug('ReadModel before migration:\n', oldReadModel)
@@ -55,7 +55,7 @@ export class ReadModelMigrator {
       ...migratedValue,
       boosterMetadata: {
         ...migratedValue.boosterMetadata,
-        migrationVersion: currentVersion,
+        schemaVersion: currentVersion,
       },
     }
     logger.debug('ReadModel after migration:\n', newReadModel)
@@ -79,7 +79,7 @@ export class ReadModelMigrator {
     return newConcept
   }
 
-  private static readModelMigrationVersion(readModel: ReadModelInterface): number {
-    return readModel.boosterMetadata?.migrationVersion || 1
+  private static readModelSchemaVersion(readModel: ReadModelInterface): number {
+    return readModel.boosterMetadata?.schemaVersion || 1
   }
 }
