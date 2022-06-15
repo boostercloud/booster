@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { Booster } from '../src/booster'
-import { fake, replace, restore } from 'sinon'
+import { fake, replace, restore, spy } from 'sinon'
 import { expect } from './expect'
 import { BoosterCommandDispatcher } from '../src/booster-command-dispatcher'
 import { CommandBeforeFunction, Register } from '@boostercloud/framework-types'
@@ -27,7 +27,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
       }
       Booster.configure('test', async (config) => {
         await expect(
-          new BoosterCommandDispatcher(config).dispatchCommand(command as any)
+          new BoosterCommandDispatcher(config).dispatchCommand(command as any, {} as any)
         ).to.be.eventually.rejectedWith('The required command "version" was not present')
       })
     })
@@ -40,7 +40,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
       }
       Booster.configure('test', async (config) => {
         await expect(
-          new BoosterCommandDispatcher(config).dispatchCommand(command as any)
+          new BoosterCommandDispatcher(config).dispatchCommand(command as any, {} as any)
         ).to.be.eventually.rejectedWith('Could not find a proper handler for PostComment')
       })
     })
@@ -65,7 +65,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
       }
 
       await expect(
-        new BoosterCommandDispatcher(config as any).dispatchCommand(commandEnvelope as any)
+        new BoosterCommandDispatcher(config as any).dispatchCommand(commandEnvelope as any, {} as any)
       ).to.be.eventually.rejectedWith("Access denied for command 'UnauthorizedCommand'")
     })
 
@@ -102,12 +102,56 @@ describe('the `BoosterCommandsDispatcher`', () => {
         requestID: '42',
       }
 
-      await new BoosterCommandDispatcher(config as any).dispatchCommand(commandEnvelope as any)
+      await new BoosterCommandDispatcher(config as any).dispatchCommand(commandEnvelope as any, {} as any)
 
       expect(fakeHandler).to.have.been.calledWithMatch(commandValue)
     })
 
-    it('properly handle the registered events', async () => {
+    it('allows the handler set the responseHeaders', async () => {
+      class ProperlyHandledCommand {
+        public static handle(command: ProperlyHandledCommand, register: Register) {
+          register.responseHeaders['Test-Header'] = 'test'
+        }
+      }
+
+      spy(ProperlyHandledCommand, 'handle')
+      replace(RegisterHandler, 'handle', fake())
+
+      const config = {
+        commandHandlers: {
+          ProperlyHandledCommand: {
+            authorizedRoles: 'all',
+            before: [],
+            class: ProperlyHandledCommand,
+          },
+        },
+        currentVersionFor: fake.returns(1),
+      }
+      const commandValue = {
+        something: 'to handle',
+      }
+
+      const commandEnvelope = {
+        typeName: 'ProperlyHandledCommand',
+        version: 'π', // JS doesn't care, and π is a number after all xD...
+        currentUser: {
+          roles: ['Loki'],
+        },
+        value: commandValue,
+        requestID: '42',
+      }
+
+      const context = {
+        responseHeaders: {},
+      }
+
+      await new BoosterCommandDispatcher(config as any).dispatchCommand(commandEnvelope as any, context as any)
+
+      expect(ProperlyHandledCommand.handle).to.have.been.calledWithMatch(commandValue, { responseHeaders: {} })
+      expect(context.responseHeaders).to.deep.equal({ 'Test-Header': 'test' })
+    })
+
+    it('properly handles the registered events', async () => {
       class SomethingHappened {
         public constructor(readonly when: string) {}
         public entityID() {
@@ -152,7 +196,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
         requestID: '42',
       }
 
-      await new BoosterCommandDispatcher(config as any).dispatchCommand(commandEnvelope as any)
+      await new BoosterCommandDispatcher(config as any).dispatchCommand(commandEnvelope as any, {} as any)
 
       expect(fakeHandler).to.have.been.calledWithMatch(commandValue)
       expect(RegisterHandler.handle).to.have.been.calledWithMatch(config, {
@@ -182,12 +226,15 @@ describe('the `BoosterCommandsDispatcher`', () => {
         boosterConfig = config
       })
 
-      await new BoosterCommandDispatcher(boosterConfig).dispatchCommand({
-        requestID: '1234',
-        version: 1,
-        typeName: 'PostComment',
-        value: command,
-      })
+      await new BoosterCommandDispatcher(boosterConfig).dispatchCommand(
+        {
+          requestID: '1234',
+          version: 1,
+          typeName: 'PostComment',
+          value: command,
+        },
+        {} as any
+      )
       expect(asyncOperationFinished).to.be.true
     })
 
@@ -228,12 +275,15 @@ describe('the `BoosterCommandsDispatcher`', () => {
           boosterConfig = config
         })
 
-        await new BoosterCommandDispatcher(boosterConfig).dispatchCommand({
-          requestID: '1234',
-          version: 1,
-          typeName: 'PostComment',
-          value: command,
-        })
+        await new BoosterCommandDispatcher(boosterConfig).dispatchCommand(
+          {
+            requestID: '1234',
+            version: 1,
+            typeName: 'PostComment',
+            value: command,
+          },
+          {} as any
+        )
 
         expect(transformedInput).to.deep.equal(new PostComment(newComment))
       })
@@ -256,12 +306,15 @@ describe('the `BoosterCommandsDispatcher`', () => {
           boosterConfig = config
         })
 
-        await new BoosterCommandDispatcher(boosterConfig).dispatchCommand({
-          requestID: '1234',
-          version: 1,
-          typeName: 'PostComment',
-          value: command,
-        })
+        await new BoosterCommandDispatcher(boosterConfig).dispatchCommand(
+          {
+            requestID: '1234',
+            version: 1,
+            typeName: 'PostComment',
+            value: command,
+          },
+          {} as any
+        )
 
         expect(transformedInput).to.deep.equal(new PostComment(newCommentV2))
       })

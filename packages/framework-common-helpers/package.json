@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-common-helpers",
-  "version": "0.28.5",
+  "version": "0.28.6",
   "description": "Contains Booster common helpers used by the core and provider packages",
   "keywords": [
     "framework-common-helpers"
@@ -33,17 +33,17 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "dependencies": {
-    "@boostercloud/framework-types": "^0.28.5",
+    "@boostercloud/framework-types": "^0.28.6",
     "child-process-promise": "^2.2.1",
     "tslib": "2.3.1"
   },
   "devDependencies": {
-    "@types/uuid": "8.3.0",
     "@types/rewire": "^2.5.28",
+    "@types/uuid": "8.3.0",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
+    "rewire": "5.0.0",
     "sinon": "9.2.3",
-    "sinon-chai": "3.5.0",
-    "rewire": "5.0.0"
+    "sinon-chai": "3.5.0"
   }
 }

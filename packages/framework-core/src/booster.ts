@@ -6,9 +6,9 @@ import {
   EventSearchParameters,
   EventSearchResponse,
   FilterFor,
+  PaginatedEntitiesIdsResult,
   FinderByKeyFunction,
   Instance,
-  PaginatedEntitiesIdsResult,
   ReadModelInterface,
   ReadOnlyNonEmptyArray,
   Register,
@@ -181,7 +181,7 @@ export class Booster {
     newEntity: Instance & EntityInterface
   ): Promise<void> {
     const requestID = UUID.generate()
-    const register = new Register(requestID)
+    const register = new Register(requestID, {})
     register.events(new BoosterEntityMigrated(oldEntityName, oldEntityId, newEntity.constructor.name, newEntity))
     return RegisterHandler.handle(this.config, register)
   }
