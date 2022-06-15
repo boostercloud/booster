@@ -125,7 +125,8 @@ export class ReadModelStore {
       )
       return
     }
-    const schemaVersion: number = migratedReadModel?.boosterMetadata?.schemaVersion ?? 1
+    const schemaVersion: number =
+      migratedReadModel?.boosterMetadata?.schemaVersion ?? this.config.currentVersionFor(readModelName)
     // Increment the read model version in 1 before storing
     newReadModel.boosterMetadata = {
       ...migratedReadModel?.boosterMetadata,

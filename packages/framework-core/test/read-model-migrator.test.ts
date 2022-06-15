@@ -88,31 +88,6 @@ describe('ReadModelMigrator', () => {
       expect(await migrator.migrate(toMigrate, 'TestConcept')).to.equal(toMigrate)
     })
 
-    it('migrates when the received schemaVersion is not set', async () => {
-      const toMigrate: ReadModelInterface = {
-        id: 'id',
-        boosterMetadata: {
-          version: 0,
-        },
-        field1: 'test-field1',
-      }
-
-      const expected: ReadModelInterface = {
-        id: 'id',
-        boosterMetadata: {
-          version: 0,
-          schemaVersion: 3,
-        },
-        field1: 'test-field1',
-        field2: 2,
-        field3: 'default',
-      }
-
-      const got = (await migrator.migrate(toMigrate, 'TestConcept')) as TestConceptV3
-      expect(got).not.to.be.equal(toMigrate) // This checks the reference is not the same (i.e. a different object is returned)
-      expect(got).to.be.deep.equal(expected)
-    })
-
     it('migrates when the received schemaVersion is lower than the current one', async () => {
       const toMigrate: ReadModelInterface = {
         id: 'id',

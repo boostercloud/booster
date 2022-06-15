@@ -6,7 +6,7 @@ export interface ReadModelInterface {
   id: UUID
   boosterMetadata?: {
     version: number
-    schemaVersion?: number
+    schemaVersion: number
     optimisticConcurrencyValue?: string | number
   }
   [key: string]: any
