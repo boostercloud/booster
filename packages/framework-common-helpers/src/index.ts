@@ -1,3 +1,4 @@
+export * from './groups'
 export * from './promises'
 export * from './retrier'
 export * from './instances'

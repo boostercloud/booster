@@ -4,6 +4,7 @@ import {
   EventInterface,
   EventSearchParameters,
   EventSearchResponse,
+  PaginatedEntitiesIdsResult,
   UUID,
 } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
@@ -25,6 +26,16 @@ export async function searchEvents(
 
   logger.debug('Events search result: ', eventEnvelopes)
   return convertToSearchResult(eventEnvelopes)
+}
+
+export async function searchEntitiesIds(
+  dynamoDB: DynamoDB.DocumentClient,
+  config: BoosterConfig,
+  limit: number,
+  afterCursor: Record<string, string> | undefined,
+  entityTypeName: string
+): Promise<PaginatedEntitiesIdsResult> {
+  throw new Error('eventsSearcherAdapter#searchEntitiesIds: Not implemented yet')
 }
 
 interface TimeQueryData {

@@ -6,6 +6,7 @@ import {
   EventSearchParameters,
   EventSearchResponse,
   FilterFor,
+  PaginatedEntitiesIdsResult,
   FinderByKeyFunction,
   ReadModelInterface,
   ReadOnlyNonEmptyArray,
@@ -122,6 +123,19 @@ export class Booster {
       event.value = createInstance(eventMetadata.class, event.value)
       return event
     })
+  }
+
+  public static async entitiesIDs(
+    entityTypeName: string,
+    limit: number,
+    afterCursor?: Record<string, string>
+  ): Promise<PaginatedEntitiesIdsResult> {
+    return await this.config.provider.events.searchEntitiesIDs(
+      this.config,
+      limit,
+      afterCursor,
+      entityTypeName
+    )
   }
 
   /**
