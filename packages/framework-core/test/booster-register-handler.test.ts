@@ -159,7 +159,7 @@ describe('the `RegisterHandler` class', () => {
       roles: ['Paco'],
       claims: {},
     }
-    const register = new Register('1234', user)
+    const register = new Register('1234', {}, user)
     const someEntity = new SomeEntity('42')
     const event = new BoosterEntityMigrated('oldEntity', 'oldEntityId', 'newEntityName', someEntity)
     replace(Date.prototype, 'toISOString', fake.returns('right here, right now!'))

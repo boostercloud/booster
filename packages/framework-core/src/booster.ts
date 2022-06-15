@@ -9,7 +9,6 @@ import {
   PaginatedEntitiesIdsResult,
   FinderByKeyFunction,
   Instance,
-  PaginatedEntitiesIdsResult,
   ReadModelInterface,
   ReadOnlyNonEmptyArray,
   Register,
@@ -136,12 +135,7 @@ export class Booster {
     limit: number,
     afterCursor?: Record<string, string>
   ): Promise<PaginatedEntitiesIdsResult> {
-    return await this.config.provider.events.searchEntitiesIDs(
-      this.config,
-      limit,
-      afterCursor,
-      entityTypeName
-    )
+    return await this.config.provider.events.searchEntitiesIDs(this.config, limit, afterCursor, entityTypeName)
   }
 
   /**
@@ -187,7 +181,7 @@ export class Booster {
     newEntity: Instance & EntityInterface
   ): Promise<void> {
     const requestID = UUID.generate()
-    const register = new Register(requestID)
+    const register = new Register(requestID, {})
     register.events(new BoosterEntityMigrated(oldEntityName, oldEntityId, newEntity.constructor.name, newEntity))
     return RegisterHandler.handle(this.config, register)
   }
