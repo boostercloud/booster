@@ -13,6 +13,7 @@ import { createInstance, getLogger } from '@boostercloud/framework-common-helper
 import { applyBeforeFunctions } from './services/filter-helpers'
 import { BoosterGlobalErrorDispatcher } from './booster-global-error-dispatcher'
 import { Migrator } from './migrator'
+import { GraphQLResolverContext } from './services/graphql/common'
 
 export class BoosterCommandDispatcher {
   private readonly globalErrorDispatcher: BoosterGlobalErrorDispatcher
@@ -21,7 +22,7 @@ export class BoosterCommandDispatcher {
     this.globalErrorDispatcher = new BoosterGlobalErrorDispatcher(config)
   }
 
-  public async dispatchCommand(commandEnvelope: CommandEnvelope): Promise<unknown> {
+  public async dispatchCommand(commandEnvelope: CommandEnvelope, context: GraphQLResolverContext): Promise<unknown> {
     const logger = getLogger(this.config, 'BoosterCommandDispatcher#dispatchCommand')
     logger.debug('Dispatching the following command envelope: ', commandEnvelope)
     if (!commandEnvelope.version) {
@@ -44,6 +45,7 @@ export class BoosterCommandDispatcher {
     let result: unknown
     const register: Register = new Register(
       migratedCommandEnvelope.requestID,
+      context.responseHeaders,
       migratedCommandEnvelope.currentUser,
       migratedCommandEnvelope.context
     )
@@ -58,7 +60,8 @@ export class BoosterCommandDispatcher {
 
       logger.debug('Calling "handle" method on command: ', commandClass)
       result = await commandClass.handle(commandInstance, register)
-    } catch (e) {
+    } catch (err) {
+      const e = err as Error
       const error = await this.globalErrorDispatcher.dispatch(new CommandHandlerGlobalError(migratedCommandEnvelope, e))
       if (error) throw error
     }

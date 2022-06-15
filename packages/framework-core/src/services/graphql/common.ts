@@ -32,6 +32,7 @@ export type ResolverBuilder = (objectClass: AnyClass) => GraphQLFieldResolver<un
 
 export interface GraphQLResolverContext {
   connectionID?: string
+  responseHeaders: Record<string, string>
   operation: GraphQLOperation
   requestID: UUID
   user?: UserEnvelope

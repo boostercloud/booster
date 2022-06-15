@@ -120,7 +120,7 @@ export class GraphQLGenerator {
   ): GraphQLFieldResolver<unknown, GraphQLResolverContext, { input: unknown }> {
     return async (parent, args, context) => {
       const commandEnvelope = toCommandEnvelope(commandClass.name, args.input, context)
-      const result = await this.commandsDispatcher.dispatchCommand(commandEnvelope)
+      const result = await this.commandsDispatcher.dispatchCommand(commandEnvelope, context)
       // It could be that the command didn't return anything
       // so in that case we return `true`, as GraphQL doesn't have a `null` type
       return result ?? true

@@ -32,6 +32,7 @@ export class BoosterConfig {
   public rockets?: Array<RocketDescriptor>
   public appName = 'new-booster-app'
   public assets?: Array<string>
+  public defaultResponseHeaders: Record<string, string> = {}
   public readonly subscriptions = {
     maxConnectionDurationInSeconds: 7 * 24 * 60 * 60, // 7 days
     maxDurationInSeconds: 2 * 24 * 60 * 60, // 2 days
