@@ -100,7 +100,7 @@ export class ReadModelStore {
     const readModel = await this.fetchReadModel(readModelName, readModelID, sequenceKey)
     let migratedReadModel: ReadModelInterface | undefined
     if (readModel) {
-      migratedReadModel = await new ReadModelMigrator(this.config, readModelName).migrate(readModel)
+      migratedReadModel = await new ReadModelMigrator(this.config).migrate(readModel, readModelName)
     }
     const currentReadModelVersion: number = migratedReadModel?.boosterMetadata?.version ?? 0
 
@@ -125,10 +125,12 @@ export class ReadModelStore {
       )
       return
     }
+    const schemaVersion: number = migratedReadModel?.boosterMetadata?.schemaVersion ?? 1
     // Increment the read model version in 1 before storing
     newReadModel.boosterMetadata = {
       ...migratedReadModel?.boosterMetadata,
       version: currentReadModelVersion + 1,
+      schemaVersion: schemaVersion,
     }
     logger.debug(
       `[ReadModelStore#project] Storing new version of read model ${readModelName} with ID ${readModelID}:`,
