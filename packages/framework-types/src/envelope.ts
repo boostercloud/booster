@@ -24,10 +24,13 @@ export interface ScheduledCommandEnvelope extends Envelope {
   typeName: string
 }
 
+export type SuperKindType = 'domain' | 'notification' | 'booster'
+
 export interface EventEnvelope extends Envelope {
   typeName: string
   version: number
   kind: 'event' | 'snapshot'
+  superKind: SuperKindType
   entityID: UUID
   entityTypeName: string
   value: EventInterface | EntityInterface

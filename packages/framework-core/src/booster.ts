@@ -8,8 +8,10 @@ import {
   FilterFor,
   PaginatedEntitiesIdsResult,
   FinderByKeyFunction,
+  Instance,
   ReadModelInterface,
   ReadOnlyNonEmptyArray,
+  Register,
   Searcher,
   SearcherFunction,
   SequenceKey,
@@ -23,6 +25,8 @@ import { BoosterSubscribersNotifier } from './booster-subscribers-notifier'
 import { Importer } from './importer'
 import { EventStore } from './services/event-store'
 import { BoosterRocketDispatcher } from './booster-rocket-dispatcher'
+import { BoosterEntityMigrated } from './core-concepts/data-migration/events/booster-entity-migrated'
+import { RegisterHandler } from './booster-register-handler'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -64,6 +68,7 @@ export class Booster {
     const projectRootPath = codeRootPath.replace(new RegExp(this.config.codeRelativePath + '$'), '')
     this.config.userProjectRootPath = projectRootPath
     Importer.importUserProjectFiles(codeRootPath)
+    this.configureDataMigrations()
     this.config.validate()
   }
 
@@ -130,12 +135,7 @@ export class Booster {
     limit: number,
     afterCursor?: Record<string, string>
   ): Promise<PaginatedEntitiesIdsResult> {
-    return await this.config.provider.events.searchEntitiesIDs(
-      this.config,
-      limit,
-      afterCursor,
-      entityTypeName
-    )
+    return await this.config.provider.events.searchEntitiesIDs(this.config, limit, afterCursor, entityTypeName)
   }
 
   /**
@@ -173,6 +173,23 @@ export class Booster {
 
   public static dispatchRocket(request: unknown): Promise<unknown> {
     return new BoosterRocketDispatcher(this.config).dispatch(request)
+  }
+
+  public static migrateEntity(
+    oldEntityName: string,
+    oldEntityId: UUID,
+    newEntity: Instance & EntityInterface
+  ): Promise<void> {
+    const requestID = UUID.generate()
+    const register = new Register(requestID, {})
+    register.events(new BoosterEntityMigrated(oldEntityName, oldEntityId, newEntity.constructor.name, newEntity))
+    return RegisterHandler.handle(this.config, register)
+  }
+
+  private static configureDataMigrations(): void {
+    this.config.events[BoosterEntityMigrated.name] = {
+      class: BoosterEntityMigrated,
+    }
   }
 }
 

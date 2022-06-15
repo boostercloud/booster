@@ -105,6 +105,7 @@ describe('the events-adapter', () => {
         return {
           version: 1,
           kind: 'event',
+          superKind: 'domain',
           requestID,
           entityID: e.entityID(),
           entityTypeName: 'fake-entity-name',
@@ -153,6 +154,7 @@ function buildEventEnvelopes(): Array<EventEnvelope> {
       version: 1,
       entityID: 'id',
       kind: 'event',
+      superKind: 'domain',
       value: {
         id: 'id',
       },
@@ -165,6 +167,7 @@ function buildEventEnvelopes(): Array<EventEnvelope> {
       version: 1,
       entityID: 'id2',
       kind: 'event',
+      superKind: 'domain',
       value: {
         id: 'id2',
       },

@@ -5,6 +5,13 @@ import { expect } from 'chai'
 import gql from 'graphql-tag'
 import { sleep, waitForIt } from '../../helper/sleep'
 import { applicationUnderTest } from './setup'
+import { UUID } from '@boostercloud/framework-types'
+import {
+  QUANTITY_AFTER_DATA_MIGRATION,
+  QUANTITY_AFTER_DATA_MIGRATION_ID,
+  QUANTITY_TO_MIGRATE_DATA,
+  QUANTITY_TO_MIGRATE_ID,
+} from '../../../src/constants'
 
 const secs = 10
 
@@ -166,4 +173,256 @@ describe('Entities end-to-end tests', () => {
       expect(productData).to.be.null
     })
   })
+
+  context('Data migration', () => {
+    //TODO: AWS provider doesn't support entityIds Interface so these tests are skipped for AWS
+    if (process.env.TESTED_PROVIDER === 'AWS') {
+      console.log('****************** Warning **********************')
+      console.log('AWS provider does not support entityIds Interface so these tests are skipped for AWS')
+      console.log('*************************************************')
+      return
+    }
+
+    context('with same id', () => {
+      const mockCartCount = 3
+      const mockCartItems: Array<UUID> = []
+
+      beforeEach(async () => {
+        const changeCartPromises: Array<Promise<unknown>> = []
+
+        for (let i = 0; i < mockCartCount; i++) {
+          const mockCartId = random.uuid()
+          const mockProductId: string = random.uuid()
+          const mockQuantity = QUANTITY_TO_MIGRATE_DATA
+          mockCartItems.push(mockCartId)
+
+          changeCartPromises.push(
+            client.mutate({
+              variables: {
+                cartId: mockCartId,
+                productId: mockProductId,
+                quantity: mockQuantity,
+              },
+              mutation: gql`
+                mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
+                  ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+                }
+              `,
+            })
+          )
+        }
+
+        await Promise.all(changeCartPromises)
+
+        await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: {
+                  id: { in: [...mockCartItems] },
+                },
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter) {
+                  ListCartReadModels(filter: $filter) {
+                    items {
+                      id
+                      cartItems {
+                        productId
+                        quantity
+                      }
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels.items.length == mockCartCount
+        )
+      })
+
+      it('find migrated entities', async () => {
+        const migrated = await client.mutate({
+          mutation: gql`
+            mutation CartDataMigrateCommand {
+              CartDataMigrateCommand
+            }
+          `,
+        })
+
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: {
+                  id: { in: [...migrated.data.CartDataMigrateCommand] },
+                },
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter) {
+                  ListCartReadModels(filter: $filter) {
+                    items {
+                      id
+                      cartItems {
+                        productId
+                        quantity
+                      }
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => {
+            const items = result?.data?.ListCartReadModels?.items
+            const jsonItems = JSON.stringify(items)
+            if (!items || items.length !== mockCartCount) {
+              return `Waiting for ${mockCartCount} items. ${jsonItems} `
+            }
+
+            if (!allItemsHasQuantity(items, QUANTITY_AFTER_DATA_MIGRATION)) {
+              return `Waiting for quantities to be equal to ${QUANTITY_AFTER_DATA_MIGRATION}. ${jsonItems}`
+            }
+
+            return true
+          }
+        )
+
+        const readModels = queryResult.data.ListCartReadModels
+        readModels.items.forEach((item: { id: any; cartItems: { quantity: any; productId: any }[] }) =>
+          expect(
+            item.cartItems[0].quantity,
+            `Not matching quantity on cartId ${item.id} and productId: ${item.cartItems[0].productId}`
+          ).to.be.eq(QUANTITY_AFTER_DATA_MIGRATION)
+        )
+        expect(
+          migrated.data.CartDataMigrateCommand,
+          `migrated items ${migrated.data.CartDataMigrateCommand} doesn't match with mocked items ${mockCartItems}`
+        ).to.have.members(mockCartItems)
+      })
+    })
+
+    context('with different id and name', () => {
+      const mockCartCount = 3
+      const mockCartItems: Array<UUID> = []
+
+      beforeEach(async () => {
+        const changeCartPromises: Array<Promise<unknown>> = []
+
+        for (let i = 0; i < mockCartCount; i++) {
+          const mockCartId = random.uuid()
+          const mockProductId: string = random.uuid()
+          const mockQuantity = QUANTITY_TO_MIGRATE_ID
+          mockCartItems.push(mockCartId)
+
+          changeCartPromises.push(
+            client.mutate({
+              variables: {
+                cartId: mockCartId,
+                productId: mockProductId,
+                quantity: mockQuantity,
+              },
+              mutation: gql`
+                mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
+                  ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+                }
+              `,
+            })
+          )
+        }
+
+        await Promise.all(changeCartPromises)
+
+        await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: {
+                  id: { in: [...mockCartItems] },
+                },
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter) {
+                  ListCartReadModels(filter: $filter) {
+                    items {
+                      id
+                      cartItems {
+                        productId
+                        quantity
+                      }
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels.items.length == mockCartCount
+        )
+      })
+
+      it('find migrated entities', async () => {
+        const migrated = await client.mutate({
+          mutation: gql`
+            mutation CartIdDataMigrateCommand {
+              CartIdDataMigrateCommand
+            }
+          `,
+        })
+
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: {
+                  id: { in: [...migrated.data.CartIdDataMigrateCommand] },
+                },
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter) {
+                  ListCartReadModels(filter: $filter) {
+                    items {
+                      id
+                      cartItems {
+                        productId
+                        quantity
+                      }
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => {
+            const items = result?.data?.ListCartReadModels?.items
+            const jsonItems = JSON.stringify(items)
+            if (!items || items.length !== mockCartCount) {
+              return `Waiting for ${mockCartCount} items. ${jsonItems} `
+            }
+
+            if (!allItemsHasQuantity(items, QUANTITY_AFTER_DATA_MIGRATION_ID)) {
+              return `Waiting for quantities to be equal to ${QUANTITY_AFTER_DATA_MIGRATION_ID}. ${jsonItems}`
+            }
+
+            return true
+          }
+        )
+
+        const readModels = queryResult.data.ListCartReadModels
+        readModels.items.forEach((item: { id: any; cartItems: { quantity: any; productId: any }[] }) =>
+          expect(
+            item.cartItems[0].quantity,
+            `Not matching quantity on cartId ${item.id} and productId: ${item.cartItems[0].productId}`
+          ).to.be.eq(QUANTITY_AFTER_DATA_MIGRATION_ID)
+        )
+        expect(
+          migrated.data.CartIdDataMigrateCommand,
+          `Migrated items ${migrated.data.CartDataMigrateCommand} match with mocked items ${mockCartItems}`
+        ).to.not.have.members(mockCartItems)
+      })
+    })
+  })
+
+  function allItemsHasQuantity(items: any, quantity: number): boolean {
+    return items.every((item: { cartItems: { quantity: number }[] }) => item.cartItems[0].quantity === quantity)
+  }
 })

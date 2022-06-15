@@ -305,6 +305,7 @@ function buildEventEnvelope(id: string, createdAt: string): EventEnvelope {
     entityTypeName: random.alpha(),
     typeName: random.alpha(),
     kind: 'event',
+    superKind: 'domain',
     version: random.number(),
   }
 }

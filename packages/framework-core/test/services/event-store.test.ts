@@ -12,6 +12,7 @@ import {
 import { replace, fake, stub, restore } from 'sinon'
 import { EventStore } from '../../src/services/event-store'
 import { expect } from '../expect'
+import { BoosterEntityMigrated } from '../../dist/core-concepts/data-migration/events/booster-entity-migrated'
 
 describe('EventStore', () => {
   afterEach(() => {
@@ -104,6 +105,7 @@ describe('EventStore', () => {
     return {
       version: 1,
       kind: 'event',
+      superKind: 'domain',
       entityID: '42',
       entityTypeName: AnEntity.name,
       value: event,
@@ -117,6 +119,7 @@ describe('EventStore', () => {
     return {
       version: 1,
       kind: 'snapshot',
+      superKind: 'domain',
       entityID: '42',
       entityTypeName: AnEntity.name,
       value: entity,
@@ -480,6 +483,7 @@ describe('EventStore', () => {
               entityID: '42',
               entityTypeName: AnEntity.name,
               typeName: AnEntity.name,
+              superKind: 'domain',
               value: {
                 id: '42',
                 count: 1,
@@ -514,9 +518,51 @@ describe('EventStore', () => {
               entityID: '42',
               entityTypeName: AnEntity.name,
               typeName: AnEntity.name,
+              superKind: 'domain',
               value: {
                 id: '42',
                 count: 1,
+              },
+              snapshottedEventCreatedAt: 'fakeTimeStamp',
+            })
+          })
+        })
+
+        context('given an internal event', () => {
+          it('calculates the new internal snapshot', async () => {
+            const snapshot = {}
+            const eventEnvelope = {
+              version: 1,
+              kind: 'event',
+              entityID: '42',
+              entityTypeName: AnEntity.name,
+              value: {
+                oldEntityName: 'oldEntityName',
+                oldEntityId: 'oldEntityId',
+                newEntityName: 'newEntityName',
+                newEntity: {
+                  id: '42',
+                },
+              },
+              requestID: 'whatever',
+              typeName: BoosterEntityMigrated.name,
+              superKind: 'booster',
+              createdAt: 'fakeTimeStamp',
+            }
+
+            const newSnapshot = await eventStore.entityReducer(snapshot, eventEnvelope)
+            delete newSnapshot.createdAt
+
+            expect(newSnapshot).to.be.deep.equal({
+              version: 1,
+              kind: 'snapshot',
+              requestID: eventEnvelope.requestID,
+              entityID: '42',
+              entityTypeName: 'newEntityName',
+              typeName: 'newEntityName',
+              superKind: 'booster',
+              value: {
+                id: '42',
               },
               snapshottedEventCreatedAt: 'fakeTimeStamp',
             })

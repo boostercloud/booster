@@ -1,13 +1,14 @@
 import {
   BoosterConfig,
-  UUID,
   EventEnvelope,
   InvalidParameterError,
   ReducerGlobalError,
+  UUID,
 } from '@boostercloud/framework-types'
 import { createInstance, getLogger } from '@boostercloud/framework-common-helpers'
 import { BoosterGlobalErrorDispatcher } from '../booster-global-error-dispatcher'
 import { Migrator } from '../migrator'
+import { BoosterEntityMigrated } from '../core-concepts/data-migration/events/booster-entity-migrated'
 
 const originOfTime = new Date(0).toISOString() // Unix epoch
 
@@ -100,6 +101,12 @@ export class EventStore {
   ): Promise<EventEnvelope> {
     const logger = getLogger(this.config, 'EventStore#entityReducer')
     try {
+      if (eventEnvelope.superKind && eventEnvelope.superKind === 'booster') {
+        if (eventEnvelope.typeName === BoosterEntityMigrated.name) {
+          return this.toBoosterEntityMigratedSnapshot(eventEnvelope)
+        }
+      }
+
       logger.debug('Calling reducer with event: ', eventEnvelope, ' and entity snapshot ', latestSnapshot)
       const eventMetadata = this.config.events[eventEnvelope.typeName]
       const migratedEventEnvelope = await new Migrator(this.config).migrate(eventEnvelope)
@@ -124,6 +131,7 @@ export class EventStore {
       const newSnapshot: EventEnvelope = {
         version: this.config.currentVersionFor(eventEnvelope.entityTypeName),
         kind: 'snapshot',
+        superKind: migratedEventEnvelope.superKind,
         requestID: migratedEventEnvelope.requestID,
         entityID: migratedEventEnvelope.entityID,
         entityTypeName: migratedEventEnvelope.entityTypeName,
@@ -138,6 +146,27 @@ export class EventStore {
       logger.error('Error when calling reducer', e)
       throw e
     }
+  }
+
+  private toBoosterEntityMigratedSnapshot(eventEnvelope: EventEnvelope): EventEnvelope {
+    const logger = getLogger(this.config, 'EventStore#toBoosterEntityMigratedSnapshot')
+    const value = eventEnvelope.value as BoosterEntityMigrated
+    const entity = value.newEntity
+    const className = value.newEntityName
+    const boosterMigratedSnapshot = {
+      version: this.config.currentVersionFor(className),
+      kind: 'snapshot',
+      superKind: eventEnvelope.superKind,
+      requestID: eventEnvelope.requestID,
+      entityID: entity.id,
+      entityTypeName: className,
+      typeName: className,
+      value: entity,
+      createdAt: new Date().toISOString(),
+      snapshottedEventCreatedAt: eventEnvelope.createdAt,
+    } as EventEnvelope
+    logger.debug('BoosterEntityMigrated result: ', boosterMigratedSnapshot)
+    return boosterMigratedSnapshot
   }
 
   // eslint-disable-next-line @typescript-eslint/ban-types

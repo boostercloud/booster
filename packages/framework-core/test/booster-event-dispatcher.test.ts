@@ -37,6 +37,7 @@ class AnEventHandler {
 const someEvent: EventEnvelope = {
   version: 1,
   kind: 'event',
+  superKind: 'domain',
   entityID: '42',
   entityTypeName: 'SomeEntity',
   value: {
@@ -57,6 +58,7 @@ const someEntity: EntityInterface = {
 const someEntitySnapshot: EventEnvelope = {
   version: 1,
   kind: 'snapshot',
+  superKind: 'domain',
   entityID: '42',
   entityTypeName: 'SomeEntity',
   value: someEntity,

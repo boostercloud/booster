@@ -148,6 +148,7 @@ describe('ReadModelStore', () => {
     return {
       version: 1,
       kind: 'snapshot',
+      superKind: 'domain',
       entityID: '42',
       entityTypeName: entityName,
       value: {
@@ -167,6 +168,7 @@ describe('ReadModelStore', () => {
         const entitySnapshotWithNoProjections: EventEnvelope = {
           version: 1,
           kind: 'snapshot',
+          superKind: 'domain',
           entityID: '42',
           entityTypeName: 'AConceptWithoutProjections',
           value: { entityID: () => '42' },
