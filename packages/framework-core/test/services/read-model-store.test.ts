@@ -242,14 +242,14 @@ describe('ReadModelStore', () => {
           id: 'joinColumnID',
           kind: 'some',
           count: 123,
-          boosterMetadata: { version: 1 },
+          boosterMetadata: { version: 1, schemaVersion: 1 },
         })
         expect(AnotherReadModel.anotherObserver).to.have.been.calledOnceWith(anEntityInstance, null)
         expect(AnotherReadModel.anotherObserver).to.have.returned({
           id: 'joinColumnID',
           kind: 'another',
           count: 123,
-          boosterMetadata: { version: 1 },
+          boosterMetadata: { version: 1, schemaVersion: 1 },
         })
         expect(config.provider.readModels.store).to.have.been.calledTwice
         expect(config.provider.readModels.store).to.have.been.calledWith(
@@ -259,7 +259,7 @@ describe('ReadModelStore', () => {
             id: 'joinColumnID',
             kind: 'some',
             count: 123,
-            boosterMetadata: { version: 1 },
+            boosterMetadata: { version: 1, schemaVersion: 1 },
           },
           0
         )
@@ -270,7 +270,7 @@ describe('ReadModelStore', () => {
             id: 'joinColumnID',
             kind: 'another',
             count: 123,
-            boosterMetadata: { version: 1 },
+            boosterMetadata: { version: 1, schemaVersion: 1 },
           },
           0
         )
@@ -319,7 +319,7 @@ describe('ReadModelStore', () => {
           id: 'joinColumnID',
           kind: 'some',
           count: 200,
-          boosterMetadata: { version: someReadModelStoredVersion + 1 },
+          boosterMetadata: { version: someReadModelStoredVersion + 1, schemaVersion: 1 },
         })
         expect(AnotherReadModel.anotherObserver).to.have.been.calledOnceWith(anEntityInstance, {
           id: 'joinColumnID',
@@ -331,7 +331,7 @@ describe('ReadModelStore', () => {
           id: 'joinColumnID',
           kind: 'another',
           count: 300,
-          boosterMetadata: { version: anotherReadModelStoredVersion + 1 },
+          boosterMetadata: { version: anotherReadModelStoredVersion + 1, schemaVersion: 1 },
         })
         expect(config.provider.readModels.store).to.have.been.calledTwice
         expect(config.provider.readModels.store).to.have.been.calledWith(
@@ -341,7 +341,7 @@ describe('ReadModelStore', () => {
             id: 'joinColumnID',
             kind: 'some',
             count: 200,
-            boosterMetadata: { version: someReadModelStoredVersion + 1 },
+            boosterMetadata: { version: someReadModelStoredVersion + 1, schemaVersion: 1 },
           },
           someReadModelStoredVersion
         )
@@ -352,7 +352,7 @@ describe('ReadModelStore', () => {
             id: 'joinColumnID',
             kind: 'another',
             count: 300,
-            boosterMetadata: { version: anotherReadModelStoredVersion + 1 },
+            boosterMetadata: { version: anotherReadModelStoredVersion + 1, schemaVersion: 1 },
           },
           anotherReadModelStoredVersion
         )
@@ -405,7 +405,7 @@ describe('ReadModelStore', () => {
               id: 'joinColumnID',
               kind: 'some',
               count: 123,
-              boosterMetadata: { version: 1 },
+              boosterMetadata: { version: 1, schemaVersion: 1 },
             },
             0,
           ])
@@ -452,7 +452,7 @@ describe('ReadModelStore', () => {
           id: 'joinColumnID',
           kind: 'some',
           count: 200,
-          boosterMetadata: { version: someReadModelStoredVersion + 1 },
+          boosterMetadata: { version: someReadModelStoredVersion + 1, schemaVersion: 1 },
         })
         expect(SomeReadModel.someObserverArray).to.have.been.calledWithMatch(
           anEntityInstance,
@@ -463,7 +463,7 @@ describe('ReadModelStore', () => {
           id: 'anotherJoinColumnID',
           kind: 'some',
           count: 123,
-          boosterMetadata: { version: 1 },
+          boosterMetadata: { version: 1, schemaVersion: 1 },
         })
 
         expect(config.provider.readModels.store).to.have.been.calledTwice
@@ -474,7 +474,7 @@ describe('ReadModelStore', () => {
             id: 'joinColumnID',
             kind: 'some',
             count: 200,
-            boosterMetadata: { version: someReadModelStoredVersion + 1 },
+            boosterMetadata: { version: someReadModelStoredVersion + 1, schemaVersion: 1 },
           },
           someReadModelStoredVersion
         )
@@ -485,7 +485,7 @@ describe('ReadModelStore', () => {
             id: 'anotherJoinColumnID',
             kind: 'some',
             count: 123,
-            boosterMetadata: { version: 1 },
+            boosterMetadata: { version: 1, schemaVersion: 1 },
           },
           0
         )
