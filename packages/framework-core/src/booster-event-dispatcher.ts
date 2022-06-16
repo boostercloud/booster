@@ -16,9 +16,8 @@ import { createInstance, Promises, getLogger } from '@boostercloud/framework-com
 export class BoosterEventDispatcher {
   /**
    * Entry point to dispatch events coming from the cloud provider.
-   * @param rawEvents List of RAW events from the cloud provider
+   * @param rawEvents List of raw events from the cloud provider
    * @param config
-   * @param logger
    */
   public static async dispatch(rawEvents: unknown, config: BoosterConfig): Promise<void> {
     const logger = getLogger(config, 'BoosterEventDispatcher#dispatch')
@@ -60,12 +59,13 @@ export class BoosterEventDispatcher {
     readModelStore: ReadModelStore
   ): Promise<void> {
     const logger = getLogger(config, 'BoosterEventDispatcher#snapshotAndUpdateReadModels')
-    const entitySnapshot = await eventStore.calculateAndStoreEntitySnapshot(entityName, entityID, envelopes)
+    const entitySnapshot = await eventStore.fetchEntitySnapshot(entityName, entityID, envelopes)
     if (!entitySnapshot) {
       logger.debug('No new snapshot generated, skipping read models projection')
       return
     }
-
+    logger.debug('Storing snapshot:', entitySnapshot)
+    await eventStore.storeSnapshot(entitySnapshot)
     logger.debug('Snapshot loaded and started read models projection:', entitySnapshot)
     await readModelStore.project(entitySnapshot)
   }
