@@ -396,10 +396,6 @@ describe('EventStore', () => {
         })
       })
     })
-
-    describe.skip('calculateAndStoreEntitySnapshot', () => {
-      // TODO: create tests for this method
-    })
   })
 
   describe('private methods', () => {
