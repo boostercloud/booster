@@ -14,11 +14,13 @@ import { expect } from '../expect'
 import { random } from 'faker'
 import { createMockReadModelEnvelope } from '../helpers/read-model-helper'
 import {
+  deleteReadModel,
   fetchReadModel,
   rawReadModelEventsToEnvelopes,
   searchReadModel,
   storeReadModel,
 } from '../../src/library/read-model-adapter'
+import { describe } from 'mocha'
 
 async function fetchMock(
   mockReadModelRegistry: SinonStubbedInstance<ReadModelRegistry>,
@@ -67,6 +69,7 @@ describe('read-models-adapter', () => {
   let loggerDebugStub: SinonStub
   let storeStub: SinonStub
   let queryStub: SinonStub
+  let deleteStub: SinonStub
 
   type StubbedClass<T> = SinonStubbedInstance<T> & T
   let mockReadModelRegistry: SinonStubbedInstance<ReadModelRegistry>
@@ -78,6 +81,7 @@ describe('read-models-adapter', () => {
     loggerDebugStub = stub()
     storeStub = stub()
     queryStub = stub()
+    deleteStub = stub()
 
     mockConfig.logger = {
       info: fake(),
@@ -92,6 +96,7 @@ describe('read-models-adapter', () => {
     replace(mockReadModelRegistry, 'store', storeStub as any)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     replace(mockReadModelRegistry, 'query', queryStub as any)
+    replace(mockReadModelRegistry, 'deleteById', deleteStub as any)
   })
 
   describe('rawReadModelEventsToEnvelopes', () => {
@@ -482,6 +487,25 @@ describe('read-models-adapter', () => {
           3
         )
       })
+    })
+  })
+
+  describe('deleteReadModel', () => {
+    it('delete one read model', async () => {
+      const expectedId = random.uuid()
+      const mockReadModelInterface: ReadModelInterface = {
+        id: expectedId,
+        age: random.number(40),
+        foo: random.word(),
+        bar: random.float(),
+        boosterMetadata: {
+          version: 1,
+          schemaVersion: 1,
+        },
+      }
+      const expectedName = 'readModel'
+      await deleteReadModel(mockReadModelRegistry as any, mockConfig, expectedName, mockReadModelInterface)
+      expect(deleteStub).to.have.been.calledWithExactly(expectedId, expectedName)
     })
   })
 })

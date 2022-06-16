@@ -90,3 +90,15 @@ export async function searchReadModel(
   }
   return items
 }
+
+export async function deleteReadModel(
+  db: ReadModelRegistry,
+  config: BoosterConfig,
+  readModelName: string,
+  readModel: ReadModelInterface
+): Promise<void> {
+  const logger = getLogger(config, 'read-model-adapter#deleteReadModel')
+  logger.debug(`Entering to Read model deleted. ID=${readModel.id}.Name=${readModelName}`)
+  await db.deleteById(readModel.id, readModelName)
+  logger.debug(`Read model deleted. ID=${readModel.id}. Name=${readModelName}`)
+}

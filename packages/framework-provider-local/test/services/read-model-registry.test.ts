@@ -181,15 +181,21 @@ describe('the read model registry', () => {
     })
   })
 
-  xdescribe('delete by id', () => {
+  describe('delete by id', () => {
     it('should delete read models by id', async () => {
-      const mockEvent: ReadModelEnvelope = createMockReadModelEnvelope()
+      const mockReadModelEnvelope: ReadModelEnvelope = createMockReadModelEnvelope()
       const id = '1'
-      mockEvent.value.id = id
-      await readModelRegistry.store(mockEvent)
-      const numberOfDeletedEvents = await readModelRegistry.deleteById(id)
-      expect(numberOfDeletedEvents).to.be.equal(1)
-      expect(await readModelRegistry.query({})).to.be.deep.equal([])
+      mockReadModelEnvelope.value.id = id
+
+      readModelRegistry.readModels.remove = stub().yields(null, mockReadModelEnvelope)
+
+      await readModelRegistry.store(mockReadModelEnvelope)
+      await readModelRegistry.deleteById(id, mockReadModelEnvelope.typeName)
+
+      expect(readModelRegistry.readModels.remove).to.have.been.calledWith(
+        { typeName: mockReadModelEnvelope.typeName, 'value.id': id },
+        { multi: false }
+      )
     })
   })
 
