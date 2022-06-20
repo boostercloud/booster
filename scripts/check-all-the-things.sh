@@ -1,10 +1,12 @@
 #!/usr/bin/env sh
 
-lerna clean --yes \
-&& lerna bootstrap \
-&& lerna run clean --stream \
-&& lerna run compile --stream \
-&& lerna run format --stream \
-&& lerna run lint:fix --stream \
-&& lerna run lint:check --stream \
-&& lerna run test --stream
+LERNA="npx lerna"
+
+$LERNA clean --yes \
+&& $LERNA bootstrap \
+&& $LERNA run clean --stream \
+&& $LERNA run compile --stream \
+&& $LERNA run format --stream \
+&& $LERNA run lint:fix --stream \
+&& $LERNA run lint:check --stream \
+&& $LERNA run test --stream
