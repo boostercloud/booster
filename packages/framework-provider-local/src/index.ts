@@ -12,6 +12,7 @@ import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import * as path from 'path'
 
 import {
+  deleteReadModel,
   fetchReadModel,
   rawReadModelEventsToEnvelopes,
   searchReadModel,
@@ -53,7 +54,7 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
     search: searchReadModel.bind(null, readModelRegistry),
     store: storeReadModel.bind(null, readModelRegistry),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete: undefined as any,
+    delete: deleteReadModel.bind(null, readModelRegistry),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     subscribe: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
