@@ -18,5 +18,6 @@
   "mocha.files.glob": "packages/*/test/**/*.ts",
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": false
-  }
+  },
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
