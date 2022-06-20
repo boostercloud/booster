@@ -369,6 +369,77 @@ describe('EventStore', () => {
             })
           )
         })
+
+        it('produces a new snapshot and returns it, up to the event that makes the reducer fail', async () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const eventStore = new EventStore(config) as any
+          const someEventEnvelope = eventEnvelopeFor(someEvent, AnEvent.name)
+          const otherEventEnvelope = eventEnvelopeFor(otherEvent, AnEvent.name)
+          const pendingEvents = [
+            someEventEnvelope,
+            otherEventEnvelope,
+            someEventEnvelope,
+            otherEventEnvelope,
+            someEventEnvelope,
+            otherEventEnvelope,
+          ]
+          const results = [1, 3, 4, 6, 7, 9]
+          const errorsOnIndex = 3 // When the reducer starts failing
+
+          const inputs = results.map((result) => {
+            return snapshotEnvelopeFor({
+              id: '42',
+              count: result,
+            })
+          })
+
+          replace(eventStore, 'loadLatestSnapshot', fake.resolves(null))
+          replace(eventStore, 'loadEventStreamSince', fake.resolves(pendingEvents))
+
+          const reducer = stub()
+
+          results.forEach((result, index) => {
+            if (index >= errorsOnIndex) {
+              reducer.onCall(index).throws(new Error('Reducer failed'))
+            } else {
+              reducer.onCall(index).returns(
+                snapshotEnvelopeFor({
+                  id: '42',
+                  count: result,
+                })
+              )
+            }
+          })
+
+          replace(eventStore, 'entityReducer', reducer)
+          replace(eventStore, 'storeSnapshot', fake())
+
+          const entityName = AnEntity.name
+          const entityID = '42'
+          const entity = await eventStore.fetchEntitySnapshot(entityName, entityID)
+
+          expect(eventStore.loadLatestSnapshot).to.have.been.calledOnceWith(entityName, entityID)
+          expect(eventStore.loadEventStreamSince).to.have.been.calledOnceWith(entityName, entityID, originOfTime)
+
+          expect(eventStore.entityReducer.getCall(0).args[0]).to.be.null
+          expect(eventStore.entityReducer.getCall(0).args[1]).to.deep.equal(pendingEvents[0])
+          for (let index = 1; index < results.length; index++) {
+            if (index >= errorsOnIndex) {
+              break
+            }
+            expect(eventStore.entityReducer.getCall(index).args[0]).to.deep.equal(inputs[index - 1])
+            expect(eventStore.entityReducer.getCall(index).args[1]).to.deep.equal(pendingEvents[index])
+          }
+
+          expect(eventStore.storeSnapshot).to.not.have.been.called
+
+          expect(entity).to.be.deep.equal(
+            snapshotEnvelopeFor({
+              id: '42',
+              count: results[errorsOnIndex - 1],
+            })
+          )
+        })
       })
 
       context('with no snapshot and an empty list of events', () => {

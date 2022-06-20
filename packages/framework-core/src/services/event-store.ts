@@ -37,7 +37,12 @@ export class EventStore {
       )
       let newEntitySnapshot = latestSnapshotEnvelope
       for (const pendingEvent of pendingEvents) {
-        newEntitySnapshot = await this.entityReducer(newEntitySnapshot, pendingEvent)
+        try {
+          newEntitySnapshot = await this.entityReducer(newEntitySnapshot, pendingEvent)
+        } catch (e) {
+          logger.error('Uncaught error in reducer, generating snapshot and returning.\nError info:\n', e)
+          break
+        }
       }
 
       logger.debug(
