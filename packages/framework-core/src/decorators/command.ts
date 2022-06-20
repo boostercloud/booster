@@ -31,6 +31,8 @@ export function Command(
         authorizer = BoosterAuthorizer.allowAccess
       } else if (Array.isArray(attributes.authorize)) {
         authorizer = BoosterAuthorizer.authorizeRoles.bind(null, attributes.authorize)
+      } else if (typeof attributes.authorize === 'function') {
+        authorizer = attributes.authorize
       }
 
       const metadata = getClassMetadata(commandClass)

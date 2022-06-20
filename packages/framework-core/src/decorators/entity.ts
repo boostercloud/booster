@@ -44,6 +44,8 @@ export function Entity<TEntity extends EntityInterface, TParam extends EntityDec
         eventStreamAuthorizer = BoosterAuthorizer.allowAccess
       } else if (Array.isArray(authorizeReadEvents)) {
         eventStreamAuthorizer = BoosterAuthorizer.authorizeRoles.bind(null, authorizeReadEvents)
+      } else if (typeof authorizeReadEvents === 'function') {
+        eventStreamAuthorizer = authorizeReadEvents
       }
 
       config.entities[entityClass.name] = {

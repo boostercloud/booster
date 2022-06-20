@@ -15,11 +15,11 @@ export interface AuthMetadata {
   readonly skipConfirmation?: boolean
 }
 export interface CommandRoleAccess {
-  readonly authorize: 'all' | Array<Class<RoleInterface>> | CommandAuthorizer
+  readonly authorize?: 'all' | Array<Class<RoleInterface>> | CommandAuthorizer
 }
 
 export interface ReadModelRoleAccess {
-  readonly authorize: 'all' | Array<Class<RoleInterface>> | ReadModelAuthorizer
+  readonly authorize?: 'all' | Array<Class<RoleInterface>> | ReadModelAuthorizer
 }
 
 export interface EventStreamRoleAccess {

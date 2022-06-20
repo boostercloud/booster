@@ -93,7 +93,7 @@ Using the configured Booster logger is not mandatory for your application, but i
 
 ## Authentication and Authorization
 
-Booster accepts standard [JWT tokens](https://jwt.io/) to authenticate incoming requests, and you can use the claims included in these tokens to authorize access to commands or read models by using the provided simple role-based authorization or writing your own authorizer functions.
+Booster accepts standard [JWT tokens](https://jwt.io/) to authenticate incoming requests. Likewise, you can use the claims included in these tokens to authorize access to commands or read models by using the provided simple role-based authorization or writing your own authorizer functions.
 
 > [!NOTE] To learn how to include the access token in your requests, check the section [Authorizing operations](#authorizing-operations).
 
@@ -164,13 +164,15 @@ You can also provide your own `TokenVerifier` implementation for advanced accept
 Booster will accept as a token verifier any object that matches the `TokenVerifier` interface:
 
 ```typescript
-interface TokenVerifier {
-  /** Returns an UserEnvelope object if the token is valid. Raises an exception if not valid */
-  verify(token: string): Promise<UserEnvelope> 
+export interface TokenVerifier {
+  // Verify asd deserialize a stringified token with this token verifier.
+  verify(token: string): Promise<DecodedToken>
+  // Build a valid `UserEnvelope` from a decoded token.
+  toUserEnvelope(decodedToken: DecodedToken): UserEnvelope
 }
 ```
 
-If you only need to perform extra checks, the easiest way to build a working `TokenVerifier` might be by extending one of the default implementations and adding your own checks before or after the call to `super`:
+If you only need to perform extra validations on top of one of the default `TokenVerifier`s, you can extend one of the default implementations:
 
 ```typescript
 export class CustomValidator extends PrivateKeyValidator {
@@ -186,16 +188,9 @@ export class CustomValidator extends PrivateKeyValidator {
 }
 ```
 
-If you need to do more advanced checks, you can implement the whole verification algorithm yourself. This could make sense if you're using non-standard or legacy tokens, as you will have the opportunity to fill the `UserEnvelope` object required by the Booster core in any way you want. In case you're dealing with JWT tokens, Booster exposes many of the functions that it uses in the default `TokenVerifier` implementations:
+If you need to do more advanced checks, you can implement the whole verification algorithm yourself (this could make sense if you're using non-standard or legacy tokens). Booster exposes for convenience many of the utility functions that it uses in the default `TokenVerifier` implementations:
 
 ```typescript
-/**
- * Creates a valid UserEnvelope from a decoded JWT token. This is an utility function that can be used
- */
-export function tokenToUserEnvelope(decodedToken: any, rolesClaim = defaultRolesClaim): UserEnvelope {
-  ...
-}
-
 /**
  * Initializes a jwksRSA client that can be used to get the public key of a JWKS URI using the
  * `getKeyWithClient` function.
@@ -231,14 +226,14 @@ export async function verifyJWT(
 
 ### Checking when a valid user can perform a specific actions (Authentication)
 
-Every Command and ReadModel in Booster has an `authorize` policy that tells Booster who can use or access it. Booster follows a whitelisting approach, so all read models and commands are inaccessible by default when this policy is not set. It accepts one of the following options:
+Every Command and ReadModel in Booster has an `authorize` policy that tells Booster who can access it. Booster authorization follows a whitelisting approach, so all read models and commands are inaccessible by default unless you define a different behavior. The `authorize` parameter accepts one of the following options:
 
 - `'all'`: The command or read-model is explicitly public: any user, both authenticated and anonymous, can access it.
 - An array of authorized roles `[Role1, Role2, ...]`: This means that only those authenticated users that
   have any of the roles listed there are authorized to execute the command.
-- An authorizer function that matches the type `CommandAuthorizer` for commands or `ReadModelAuthorizer` for read models.
+- An authorizer function that matches the `CommandAuthorizer` interface for commands or the `ReadModelAuthorizer` interface for read models.
 
-#### Public commands and read models
+#### `authorize: 'all'`: Making commands and read models public
 
 Setting the option `authorize: all` in a command or read model will make it publicly accessible to anyone that has access to the graphql endpoint. For example, the following command can be executed by anyone, even if they don't provide a valid JWT token:
 
@@ -251,7 +246,7 @@ export class CreateComment {
 }
 ```
 
-> [!NOTE] **Think twice wether you really need fully open GraphQL endpoints in your application**, this might be useful in the development phase, but we recommend to **avoid exposing your endpoints in this way in production**. Even for public APIs, it might be useful to issue API keys to avoid abuse. Booster easily scales to any given demand, but scaling also increases the cloud bill! (See [Denial of wallet attacks](https://www.sciencedirect.com/science/article/pii/S221421262100079X))
+> [!NOTE] **Think twice if you really need fully open GraphQL endpoints in your application**, this might be useful during development, but we recommend to **avoid exposing your endpoints in this way in production**. Even for public APIs, it might be useful to issue API keys to avoid abuse. Booster is designed to scale to any given demand, but scaling also increases the cloud bill! (See [Denial of wallet attacks](https://www.sciencedirect.com/science/article/pii/S221421262100079X))
 
 #### Simple Role-based authorization
 
@@ -265,7 +260,7 @@ export class User {}
 export class Admin {}
 ```
 
-Once they're defined you can use them in any command or read model `authorize` policy. This one can be executed by authenticated users that have the role `Admin` or `User` and will reject any request from users that don't have valid JWT tokens or have valid tokens but doesn't have one of the roles' names in their `roleClaims` (Remember that this `roleClaims` option is set in the `TokenVerifier` at config time and is the name of the claim where Booster reads the role names from):
+Once they're defined you can set them in any command or read model `authorize` policy. For instance, the following command can be executed by authenticated users that have the role `Admin` or `User` and will reject any request from users that don't have valid JWT tokens or have valid tokens but doesn't have one of the roles' names in their token (Remember that the name of the claim from which Booster reads the roles from can be configured in the `roleClaims` option in the corresponding `TokenVerifier`):
 
 ```typescript
 @Command({
@@ -276,7 +271,7 @@ export class UpdateUser {
 }
 ```
 
-Make sure that you configure your JWT tokens issuer to include the custom claims required in your Booster app. For instance, for the previous `UpdateUser` command, Booster will expect to receive a token that includes a claim matching the one defined in the `TokenVerifier`'s `rolesClaim` property with the value `Admin` or `User`. Here is an example of a Firebase token:
+Remember to also configure your JWT tokens issuer to include the custom claims required in your Booster app (If you're not using the provider default one). For instance, for the previous `UpdateUser` command, Booster will expect to receive a token that includes a claim matching the one defined in the `TokenVerifier`'s `rolesClaim` property with the value `Admin` or `User`. Here is an example from a Firebase token:
 
 ```json
 {
@@ -333,9 +328,30 @@ export class SuperUserWithoutConfirmation {}
 
 To learn more about the Authorization rocket for AWS, please read the [README](https://github.com/boostercloud/rocket-auth-aws-infrastructure/blob/main/README.md) in its Github repository.
 
+### Accessing the event streams API
+
+You can enable access (disabled by default) to one or more entities' events streams through the events API. To do so, you just need to add a configuration object setting the `authorizeReadEvents` policy with any of the supported authorization mechanisms (`'all'` to make them public, an array of roles, or an authorizer function that matches the `EventStreamAuthorizer` type signature). For example:
+
+```typescript
+@Entity({
+  authorizeReadEvents: 'all', // Anyone can read any Cart's event
+})
+export class Cart {
+  public constructor(
+    readonly id: UUID,
+    readonly cartItems: Array<CartItem>,
+    public shippingAddress?: Address,
+    public checks = 0
+  ) {}
+  // <reducers...>
+}
+```
+
+[!NOTE] Be careful when exposing events data, as this data is likely to hold internal system state. Pay special attention when authorizing public access with the `'all'` option, it's always recommended to look for alternate solutions that limit access.
+
 #### Custom authorization with authorizer functions
 
-If the role-based authorization model doesn't work well for your application (for instance, when your application is designed for permission-based authorization), you can implement your own authorization mechanisms by providing authorizer functions to commands, read models or events (to access event streams). As authorizers are regular JavaScript functions, you can easily reuse them in your project or even in other Booster projects as a library.
+If the role-based authorization model doesn't work for your application (for instance, when your application requires permission-based authorization), you can implement your own authorization mechanisms by providing authorizer functions to commands, read models or entities (to access event streams). As authorizers are regular JavaScript functions, you can easily reuse them in your project or even in other Booster projects as a library.
 
 ##### Command Authorizers
 
@@ -421,27 +437,6 @@ export class Cart {
   ...
 }
 ```
-
-### Accessing the event streams API
-
-You can optionally enable access to one or more entities' events streams through the events API. To do so, you just need to add a configuration object setting the `authorizeReadEvents` policy to any of the supported authorization mechanisms (`'all'` to make them public, an array of roles or an authorizer function that matches the `EventAuthorizer` type signature). For example:
-
-```typescript
-@Entity({
-  authorizeReadEvents: 'all', // Anyone can read any Cart's event
-})
-export class Cart {
-  public constructor(
-    readonly id: UUID,
-    readonly cartItems: Array<CartItem>,
-    public shippingAddress?: Address,
-    public checks = 0
-  ) {}
-  // <reducers...>
-}
-```
-
-[!NOTE] Be careful when exposing events data, as this data is likely to hold internal system state. And again, be aware that authorizing public access with the `'all'` option is usually not a good idea.
 
 ## GraphQL API
 
