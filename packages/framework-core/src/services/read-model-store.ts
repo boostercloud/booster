@@ -110,9 +110,11 @@ export class ReadModelStore {
         ? this.projectionFunction(projectionMetadata)(entity, readModelID, migratedReadModel || null)
         : this.projectionFunction(projectionMetadata)(entity, migratedReadModel || null)
     } catch (e) {
+      logger.error('Uncaught error in projection', e)
       const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
-      const error = await globalErrorDispatcher.dispatch(new ProjectionGlobalError(entity, migratedReadModel, e))
-      if (error) throw error
+      await globalErrorDispatcher.dispatch(new ProjectionGlobalError(entity, migratedReadModel, e))
+      // Given we dispatched the error, now we can ignore the read model change
+      newReadModel = ReadModelAction.Nothing
     }
 
     if (newReadModel === ReadModelAction.Delete) {

@@ -222,6 +222,25 @@ describe('ReadModelStore', () => {
       })
     })
 
+    context('when the projection throws', () => {
+      it('ignores the read model', async () => {
+        replace(config.provider.readModels, 'store', fake())
+        replace(config.provider.readModels, 'delete', fake())
+        replace(
+          ReadModelStore.prototype,
+          'projectionFunction',
+          fake.returns(() => {
+            throw new Error('Wow such projection, much error')
+          })
+        )
+        const readModelStore = new ReadModelStore(config)
+
+        await readModelStore.project(eventEnvelopeFor(AnImportantEntity.name))
+        expect(config.provider.readModels.store).not.to.have.been.called
+        expect(config.provider.readModels.delete).not.to.have.been.called
+      })
+    })
+
     context("when the corresponding read models don't exist", () => {
       it('creates new instances of the read models', async () => {
         replace(config.provider.readModels, 'store', fake())
