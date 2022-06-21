@@ -24,10 +24,13 @@ export interface ScheduledCommandEnvelope extends Envelope {
   typeName: string
 }
 
+export type SuperKindType = 'domain' | 'notification' | 'booster'
+
 export interface EventEnvelope extends Envelope {
   typeName: string
   version: number
   kind: 'event' | 'snapshot'
+  superKind: SuperKindType
   entityID: UUID
   entityTypeName: string
   value: EventInterface | EntityInterface
@@ -72,6 +75,16 @@ export interface EventSearchResponse {
 export interface ReadModelEnvelope {
   typeName: string
   value: ReadModelInterface
+}
+
+export interface PaginatedEntityIdResult {
+  entityID: UUID
+}
+
+export interface PaginatedEntitiesIdsResult {
+  items: Array<PaginatedEntityIdResult>
+  count?: number
+  cursor?: Record<string, string>
 }
 
 export interface ReadModelListResult<TReadModel> {

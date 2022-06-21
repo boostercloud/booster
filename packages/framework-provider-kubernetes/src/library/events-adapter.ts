@@ -4,10 +4,11 @@ import {
   EventEnvelope,
   EventSearchParameters,
   EventSearchResponse,
-  Logger,
+  PaginatedEntitiesIdsResult,
   UserApp,
   UUID,
 } from '@boostercloud/framework-types'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 import { EventRegistry } from '../services/event-registry'
 import { RedisAdapter } from '../services/redis-adapter'
 
@@ -17,12 +18,12 @@ export const store = async (
   registry: EventRegistry,
   userApp: UserApp,
   events: Array<EventEnvelope>,
-  _config: BoosterConfig,
-  logger: Logger
+  config: BoosterConfig
 ): Promise<void> => {
+  const logger = getLogger(config, 'events-adapter#store')
   for (const envelope of events) {
     logger.debug('Storing event envelope', envelope)
-    await registry.store(envelope, logger)
+    await registry.store(config, envelope)
   }
   await userApp.boosterEventDispatcher(events)
 }
@@ -35,8 +36,7 @@ const isNewerThan = (isoString: string) => (key: string) => {
 
 export const forEntitySince = async (
   registry: EventRegistry,
-  _config: BoosterConfig,
-  logger: Logger,
+  config: BoosterConfig,
   entityTypeName: string,
   entityID: UUID,
   since?: string
@@ -49,24 +49,24 @@ export const forEntitySince = async (
     valuePredicate: () => true,
     sortBy: (a: EventEnvelope, b: EventEnvelope) => a.createdAt.localeCompare(b.createdAt),
   }
-  const queryResult = await registry.query(query, logger)
+  const queryResult = await registry.query(config, query)
   return queryResult
 }
 
 export async function latestEntitySnapshot(
   registry: EventRegistry,
-  _config: BoosterConfig,
-  logger: Logger,
+  config: BoosterConfig,
   entityTypeName: string,
   entityID: UUID
 ): Promise<EventEnvelope | null> {
+  const logger = getLogger(config, 'events-adapter#latestEntitySnapshot')
   const query = {
     keyQuery: ['ee', entityTypeName, entityID, 'snapshot'].join(RedisAdapter.keySeparator),
     keyPredicate: () => true,
     valuePredicate: () => true,
     sortBy: (a: EventEnvelope, b: EventEnvelope) => a.createdAt.localeCompare(b.createdAt),
   }
-  const snapshot = (await registry.queryLatest(query, logger)) as EventEnvelope
+  const snapshot = (await registry.queryLatest(config, query)) as EventEnvelope
 
   if (snapshot) {
     logger.debug(
@@ -85,8 +85,17 @@ export async function latestEntitySnapshot(
 export const search = (
   _registry: EventRegistry,
   _config: BoosterConfig,
-  _logger: Logger,
   _filters: EventSearchParameters
 ): Promise<Array<EventSearchResponse>> => {
   throw new Error('eventsAdapter#search: Not implemented yet')
+}
+
+export async function searchEntitiesIds(
+  eventRegistry: EventRegistry,
+  config: BoosterConfig,
+  limit: number,
+  afterCursor: Record<string, string> | undefined,
+  entityTypeName: string
+): Promise<PaginatedEntitiesIdsResult> {
+  throw new Error('eventsAdapter#searchEntitiesIds: Not implemented yet')
 }

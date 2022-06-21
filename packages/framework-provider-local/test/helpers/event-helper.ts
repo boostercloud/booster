@@ -8,6 +8,7 @@ export function createMockEventEnvelop(): EventEnvelope {
 export function createMockEventEnvelopForEntity(entityTypeName: string, entityID: string): EventEnvelope {
   return {
     kind: 'event',
+    superKind: 'domain',
     entityID: entityID,
     entityTypeName: entityTypeName,
     value: {
@@ -23,6 +24,7 @@ export function createMockEventEnvelopForEntity(entityTypeName: string, entityID
 export function createMockSnapshot(): EventEnvelope {
   return {
     kind: 'snapshot',
+    superKind: 'domain',
     entityID: random.uuid(),
     entityTypeName: random.word(),
     value: {

@@ -3,7 +3,7 @@ import { expect } from '../expect'
 import { fancy } from 'fancy-test'
 import { restore, replace, fake } from 'sinon'
 import Prompter from '../../src/services/user-prompt'
-import { ProviderLibrary, Logger, BoosterConfig } from '@boostercloud/framework-types'
+import { ProviderLibrary, BoosterConfig } from '@boostercloud/framework-types'
 import * as Nuke from '../../src/commands/nuke'
 import * as providerService from '../../src/services/provider-service'
 import { oraLogger } from '../../src/services/logger'
@@ -102,8 +102,8 @@ describe('nuke', () => {
         const prompter = new Prompter()
         const fakePrompter = fake.resolves('fake app')
         replace(prompter, 'defaultOrPrompt', fakePrompter)
-        const fakeNuke = fake((_config: unknown, logger: Logger) => {
-          logger.info('this is a progress update')
+        const fakeNuke = fake((config: BoosterConfig) => {
+          config.logger?.info('this is a progress update')
         })
 
         replace(environment, 'currentEnvironment', fake.returns('test-env'))

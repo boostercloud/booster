@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/application-tester",
-  "version": "0.28.1",
+  "version": "0.29.1",
   "description": "Contains Booster types related to the information extracted from the user project",
   "keywords": [
     "application-tester"
@@ -37,7 +37,7 @@
     "apollo-link-http": "1.5.17",
     "apollo-link-ws": "1.0.20",
     "apollo-utilities": "1.3.4",
-    "cross-fetch": "3.1.4",
+    "cross-fetch": "3.1.5",
     "jsonwebtoken": "8.5.1",
     "subscriptions-transport-ws": "0.9.18",
     "ws": "7.4.5"

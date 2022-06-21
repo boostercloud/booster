@@ -11,9 +11,8 @@ import {
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
 import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
-import { generate } from '../../services/generator'
+import { generate, template } from '../../services/generator'
 import * as path from 'path'
-import { templates } from '../../templates'
 import { classNameToFileName } from '../../common/filenames'
 
 export default class EventHandler extends BaseCommand {
@@ -76,7 +75,7 @@ const generateEventHandler = (info: EventHandlerInfo): Promise<void> =>
     name: info.name,
     extension: '.ts',
     placementDir: path.join('src', 'event-handlers'),
-    template: templates.eventHandler,
+    template: template('event-handler'),
     info: {
       imports: generateImports(info),
       ...info,

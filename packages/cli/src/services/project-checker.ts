@@ -71,13 +71,12 @@ export async function checkResourceExists(name: string, placementDir: string, ex
   }
 }
 
-export async function checkCurrentDirBoosterVersion(userAgent: string): Promise<void> {
-  return checkBoosterVersion(userAgent, process.cwd())
+export async function checkCurrentDirBoosterVersion(version: string): Promise<void> {
+  return checkBoosterVersion(version, process.cwd())
 }
 
-async function checkBoosterVersion(userAgent: string, projectPath: string): Promise<void> {
+async function checkBoosterVersion(cliVersion: string, projectPath: string): Promise<void> {
   const projectVersion = await getBoosterVersion(projectPath)
-  const cliVersion = userAgent.split(' ')[0].split('/')[2]
   await compareVersionsAndDisplayMessages(cliVersion, projectVersion)
 }
 

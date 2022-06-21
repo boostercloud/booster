@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BoosterConfig,
-  Logger,
   Instance,
   ReadModelEnvelope,
   ReadModelInterface,
@@ -14,30 +13,28 @@ import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { FilteredReadModelPubSub, ReadModelPubSub } from './services/pub-sub/read-model-pub-sub'
 import { GraphQLResolverContext } from './services/graphql/common'
 import { ExecutionResult } from 'graphql/execution/execute'
-import { Promises } from '@boostercloud/framework-common-helpers'
+import { Promises, getLogger } from '@boostercloud/framework-common-helpers'
 
 export class BoosterSubscribersNotifier {
   private readonly graphQLSchema: GraphQLSchema
 
-  public constructor(private config: BoosterConfig, private logger: Logger) {
-    this.graphQLSchema = GraphQLGenerator.generateSchema(config, logger)
+  public constructor(private config: BoosterConfig) {
+    this.graphQLSchema = GraphQLGenerator.generateSchema(config)
   }
 
   public async dispatch(request: unknown): Promise<void> {
+    const logger = getLogger(this.config, 'BoosterSubscribersNotifier#dispatch')
     try {
-      this.logger.debug('Received the following event for subscription dispatching: ', request)
-      const readModelEnvelopes = await this.config.provider.readModels.rawToEnvelopes(this.config, this.logger, request)
-      this.logger.debug('[SubsciptionDispatcher] The following ReadModels were updated: ', readModelEnvelopes)
+      logger.debug('Received the following event for subscription dispatching: ', request)
+      const readModelEnvelopes = await this.config.provider.readModels.rawToEnvelopes(this.config, request)
+      logger.debug('[SubsciptionDispatcher] The following ReadModels were updated: ', readModelEnvelopes)
       const subscriptions = await this.getSubscriptions(readModelEnvelopes)
-      this.logger.debug(
-        '[SubsciptionDispatcher] Found the following subscriptions for those read models: ',
-        subscriptions
-      )
+      logger.debug('Found the following subscriptions for those read models: ', subscriptions)
 
       const pubSub = this.getPubSub(readModelEnvelopes)
       await Promises.allSettledAndFulfilled(subscriptions.map(this.runSubscriptionAndNotify.bind(this, pubSub)))
     } catch (e) {
-      this.logger.error(e)
+      logger.error(e)
     }
   }
 
@@ -55,9 +52,7 @@ export class BoosterSubscribersNotifier {
     const readModelNames = readModelEnvelopes.map((readModelEnvelope) => readModelEnvelope.typeName)
     const readModelUniqueNames = [...new Set(readModelNames)]
     const subscriptionSets = await Promise.all(
-      readModelUniqueNames.map((name) =>
-        this.config.provider.readModels.fetchSubscriptions(this.config, this.logger, name)
-      )
+      readModelUniqueNames.map((name) => this.config.provider.readModels.fetchSubscriptions(this.config, name))
     )
     return subscriptionSets.flat()
   }
@@ -71,8 +66,10 @@ export class BoosterSubscribersNotifier {
     pubSub: ReadModelPubSub<ReadModelInterface>,
     subscription: SubscriptionEnvelope
   ): Promise<unknown> {
+    const logger = getLogger(this.config, 'BoosterSubscribersNotifier#runSubscriptionAndNotify')
     const context: GraphQLResolverContext = {
       connectionID: subscription.connectionID,
+      responseHeaders: {},
       requestID: subscription.requestID,
       user: subscription.currentUser,
       operation: subscription.operation,
@@ -80,7 +77,7 @@ export class BoosterSubscribersNotifier {
       storeSubscriptions: false, // We don't store the subscription again, just get the result now
     }
     const document = this.parseSubscriptionQuery(subscription.operation.query)
-    this.logger.debug('Running subscription with context: ', context)
+    logger.debug('Running subscription with context: ', context)
     const iterator = await graphql.subscribe({
       contextValue: context,
       document: document,
@@ -117,16 +114,17 @@ export class BoosterSubscribersNotifier {
   }
 
   private async notifyWithGraphQLResult(subscription: SubscriptionEnvelope, result: ExecutionResult): Promise<void> {
+    const logger = getLogger(this.config, 'BoosterSubscribersNotifier#notifyWithGraphQLResult')
     if (result.errors) {
       throw result.errors
     }
     const readModel = result.data as ReadModelInterface
     const message = new GraphQLData(subscription.operation.id!, { data: readModel })
-    this.logger.debug(
+    logger.debug(
       `Notifying connectionID '${subscription.connectionID}' with the following wrappeed read model: `,
       readModel
     )
     await this.config.provider.connections.sendMessage(this.config, subscription.connectionID, message)
-    this.logger.debug('Notifications sent')
+    logger.debug('Notifications sent')
   }
 }

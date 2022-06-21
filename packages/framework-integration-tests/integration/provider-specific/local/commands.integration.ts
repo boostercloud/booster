@@ -56,6 +56,7 @@ describe('commands', () => {
       const expectedResult = {
         version: 1,
         kind: 'event',
+        superKind: 'domain',
         entityID: mockCartId,
         currentUser: {
           username: 'test@test.com',

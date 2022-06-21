@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { Booster } from '../src/booster'
-import { fake, replace, restore } from 'sinon'
+import { fake, replace, restore, spy } from 'sinon'
 import { expect } from './expect'
 import { BoosterCommandDispatcher } from '../src/booster-command-dispatcher'
-import { CommandBeforeFunction, Logger, Register } from '@boostercloud/framework-types'
+import { CommandBeforeFunction, Register } from '@boostercloud/framework-types'
 import { Command, RegisterHandler } from '../src'
 import { random } from 'faker'
 
@@ -19,13 +19,6 @@ describe('the `BoosterCommandsDispatcher`', () => {
     })
   })
 
-  const logger: Logger = {
-    debug() {},
-    warn() {},
-    info() {},
-    error() {},
-  }
-
   describe('the `dispatchCommand` method', () => {
     it('fails if the command "version" is not sent', () => {
       const command = {
@@ -34,7 +27,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
       }
       Booster.configure('test', async (config) => {
         await expect(
-          new BoosterCommandDispatcher(config, logger).dispatchCommand(command as any)
+          new BoosterCommandDispatcher(config).dispatchCommand(command as any, {} as any)
         ).to.be.eventually.rejectedWith('The required command "version" was not present')
       })
     })
@@ -47,7 +40,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
       }
       Booster.configure('test', async (config) => {
         await expect(
-          new BoosterCommandDispatcher(config, logger).dispatchCommand(command as any)
+          new BoosterCommandDispatcher(config).dispatchCommand(command as any, {} as any)
         ).to.be.eventually.rejectedWith('Could not find a proper handler for PostComment')
       })
     })
@@ -72,7 +65,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
       }
 
       await expect(
-        new BoosterCommandDispatcher(config as any, logger).dispatchCommand(commandEnvelope as any)
+        new BoosterCommandDispatcher(config as any).dispatchCommand(commandEnvelope as any, {} as any)
       ).to.be.eventually.rejectedWith("Access denied for command 'UnauthorizedCommand'")
     })
 
@@ -109,12 +102,56 @@ describe('the `BoosterCommandsDispatcher`', () => {
         requestID: '42',
       }
 
-      await new BoosterCommandDispatcher(config as any, logger).dispatchCommand(commandEnvelope as any)
+      await new BoosterCommandDispatcher(config as any).dispatchCommand(commandEnvelope as any, {} as any)
 
       expect(fakeHandler).to.have.been.calledWithMatch(commandValue)
     })
 
-    it('properly handle the registered events', async () => {
+    it('allows the handler set the responseHeaders', async () => {
+      class ProperlyHandledCommand {
+        public static handle(command: ProperlyHandledCommand, register: Register) {
+          register.responseHeaders['Test-Header'] = 'test'
+        }
+      }
+
+      spy(ProperlyHandledCommand, 'handle')
+      replace(RegisterHandler, 'handle', fake())
+
+      const config = {
+        commandHandlers: {
+          ProperlyHandledCommand: {
+            authorizedRoles: 'all',
+            before: [],
+            class: ProperlyHandledCommand,
+          },
+        },
+        currentVersionFor: fake.returns(1),
+      }
+      const commandValue = {
+        something: 'to handle',
+      }
+
+      const commandEnvelope = {
+        typeName: 'ProperlyHandledCommand',
+        version: 'π', // JS doesn't care, and π is a number after all xD...
+        currentUser: {
+          roles: ['Loki'],
+        },
+        value: commandValue,
+        requestID: '42',
+      }
+
+      const context = {
+        responseHeaders: {},
+      }
+
+      await new BoosterCommandDispatcher(config as any).dispatchCommand(commandEnvelope as any, context as any)
+
+      expect(ProperlyHandledCommand.handle).to.have.been.calledWithMatch(commandValue, { responseHeaders: {} })
+      expect(context.responseHeaders).to.deep.equal({ 'Test-Header': 'test' })
+    })
+
+    it('properly handles the registered events', async () => {
       class SomethingHappened {
         public constructor(readonly when: string) {}
         public entityID() {
@@ -159,10 +196,10 @@ describe('the `BoosterCommandsDispatcher`', () => {
         requestID: '42',
       }
 
-      await new BoosterCommandDispatcher(config as any, logger).dispatchCommand(commandEnvelope as any)
+      await new BoosterCommandDispatcher(config as any).dispatchCommand(commandEnvelope as any, {} as any)
 
       expect(fakeHandler).to.have.been.calledWithMatch(commandValue)
-      expect(RegisterHandler.handle).to.have.been.calledWithMatch(config, logger, {
+      expect(RegisterHandler.handle).to.have.been.calledWithMatch(config, {
         requestID: '42',
         currentUser: commandEnvelope.currentUser,
         eventList: [event],
@@ -189,25 +226,30 @@ describe('the `BoosterCommandsDispatcher`', () => {
         boosterConfig = config
       })
 
-      await new BoosterCommandDispatcher(boosterConfig, logger).dispatchCommand({
-        requestID: '1234',
-        version: 1,
-        typeName: 'PostComment',
-        value: command,
-      })
+      await new BoosterCommandDispatcher(boosterConfig).dispatchCommand(
+        {
+          requestID: '1234',
+          version: 1,
+          typeName: 'PostComment',
+          value: command,
+        },
+        {} as any
+      )
       expect(asyncOperationFinished).to.be.true
     })
 
     context('when before hook functions are passed', () => {
       const newComment = 'Look, I changed the message'
       const newCommentV2 = 'Yes, I changed it for a second time'
-      const beforeFn: CommandBeforeFunction = async (input, currentUser) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const beforeFn: CommandBeforeFunction = async (input, _currentUser) => {
         input.comment = newComment
         const result = await Promise.resolve()
         console.log(result)
         return input
       }
-      const beforeFnV2: CommandBeforeFunction = async (input, currentUser) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const beforeFnV2: CommandBeforeFunction = async (input, _currentUser) => {
         // To double-check it's really chained
         if (input.comment === newComment) input.comment = newCommentV2
         const result = await Promise.resolve()
@@ -233,12 +275,15 @@ describe('the `BoosterCommandsDispatcher`', () => {
           boosterConfig = config
         })
 
-        await new BoosterCommandDispatcher(boosterConfig, logger).dispatchCommand({
-          requestID: '1234',
-          version: 1,
-          typeName: 'PostComment',
-          value: command,
-        })
+        await new BoosterCommandDispatcher(boosterConfig).dispatchCommand(
+          {
+            requestID: '1234',
+            version: 1,
+            typeName: 'PostComment',
+            value: command,
+          },
+          {} as any
+        )
 
         expect(transformedInput).to.deep.equal(new PostComment(newComment))
       })
@@ -261,12 +306,15 @@ describe('the `BoosterCommandsDispatcher`', () => {
           boosterConfig = config
         })
 
-        await new BoosterCommandDispatcher(boosterConfig, logger).dispatchCommand({
-          requestID: '1234',
-          version: 1,
-          typeName: 'PostComment',
-          value: command,
-        })
+        await new BoosterCommandDispatcher(boosterConfig).dispatchCommand(
+          {
+            requestID: '1234',
+            version: 1,
+            typeName: 'PostComment',
+            value: command,
+          },
+          {} as any
+        )
 
         expect(transformedInput).to.deep.equal(new PostComment(newCommentV2))
       })

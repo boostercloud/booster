@@ -19,7 +19,7 @@ import { replace, fake, restore } from 'sinon'
 import { expect } from '../expect'
 import { boosterAppPod } from '../../src/infrastructure/templates/booster-app-template'
 import { internet, random } from 'faker'
-import { Logger } from '@boostercloud/framework-types'
+import { BoosterConfig } from '@boostercloud/framework-types'
 
 describe('Users interaction with K8s cluster', () => {
   const NAMESPACE_NAME = random.word()
@@ -113,13 +113,8 @@ describe('Users interaction with K8s cluster', () => {
     replace(KubernetesObjectApi.prototype, 'replace', fake.resolves(new KubernetesObjectApi()))
     replace(CoreV1Api.prototype, 'readNamespacedSecret', fake.resolves(secret))
 
-    const fakeLogger: Logger = {
-      info: fake(),
-      warn: fake(),
-      error: fake(),
-      debug: fake(),
-    }
-    k8sManager = new K8sManagement(fakeLogger)
+    const config = new BoosterConfig('production')
+    k8sManager = new K8sManagement(config)
   })
 
   afterEach(() => {

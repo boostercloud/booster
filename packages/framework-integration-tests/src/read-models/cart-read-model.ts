@@ -8,7 +8,7 @@ import {
 } from '@boostercloud/framework-types'
 import { CartItem } from '../common/cart-item'
 import { Address } from '../common/address'
-import { Cart } from '../entities/cart'
+import { Cart, MigratedCart } from '../entities/cart'
 import { Payment } from '../entities/payment'
 import { beforeHookException, projectionErrorCartId, projectionErrorCartMessage, throwExceptionId } from '../constants'
 
@@ -62,7 +62,11 @@ export class CartReadModel {
   }
 
   @Projects(Cart, 'id')
-  public static updateWithCart(cart: Cart, oldCartReadModel?: CartReadModel): ProjectionResult<CartReadModel> {
+  @Projects(MigratedCart, 'id')
+  public static updateWithCart(
+    cart: Cart | MigratedCart,
+    oldCartReadModel?: CartReadModel
+  ): ProjectionResult<CartReadModel> {
     if (cart.id === projectionErrorCartId) {
       throw new Error(projectionErrorCartMessage)
     }

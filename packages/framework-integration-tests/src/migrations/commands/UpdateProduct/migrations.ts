@@ -5,7 +5,7 @@ import { UpdateProduct } from '../../../commands/update-product'
 @Migrates(UpdateProduct)
 export class UpdateProductMigration {
   @ToVersion(2, { fromSchema: UpdateProductV1, toSchema: UpdateProductV2 })
-  public splitDescriptionFieldIntoShortAndLong(oldEntity: UpdateProductV1): UpdateProductV2 {
+  public async splitDescriptionFieldIntoShortAndLong(oldEntity: UpdateProductV1): Promise<UpdateProductV2> {
     return new UpdateProductV2(
       oldEntity.id,
       oldEntity.sku,

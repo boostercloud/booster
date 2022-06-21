@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Logger, ScheduledCommandEnvelope } from '@boostercloud/framework-types'
+import { BoosterConfig, ScheduledCommandEnvelope } from '@boostercloud/framework-types'
 
-export const rawToEnvelope = (_rawMessage: unknown, _logger: Logger): Promise<ScheduledCommandEnvelope> => {
+export const rawToEnvelope = (_config: BoosterConfig, _rawMessage: unknown): Promise<ScheduledCommandEnvelope> => {
   throw new Error('scheduledAdapter#rawToEnvelope: Not implemented')
 }

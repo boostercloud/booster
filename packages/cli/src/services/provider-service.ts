@@ -1,4 +1,4 @@
-import { BoosterConfig, Logger } from '@boostercloud/framework-types'
+import { BoosterConfig } from '@boostercloud/framework-types'
 
 export function assertNameIsCorrect(name: string): void {
   // Current characters max length: 37
@@ -39,16 +39,16 @@ function supportedInfrastructureMethodOrDie(
   return method
 }
 
-export function deployToCloudProvider(config: BoosterConfig, logger: Logger): Promise<void> {
-  return supportedInfrastructureMethodOrDie('deploy', config)(config, logger)
+export function deployToCloudProvider(config: BoosterConfig): Promise<void> {
+  return supportedInfrastructureMethodOrDie('deploy', config)(config)
 }
 
-export function synthToProvider(config: BoosterConfig, logger: Logger): Promise<void> {
-  return supportedInfrastructureMethodOrDie('synth', config)(config, logger)
+export function synthToProvider(config: BoosterConfig): Promise<void> {
+  return supportedInfrastructureMethodOrDie('synth', config)(config)
 }
 
-export function nukeCloudProviderResources(config: BoosterConfig, logger: Logger): Promise<void> {
-  return supportedInfrastructureMethodOrDie('nuke', config)(config, logger)
+export function nukeCloudProviderResources(config: BoosterConfig): Promise<void> {
+  return supportedInfrastructureMethodOrDie('nuke', config)(config)
 }
 
 export async function startProvider(port: number, config: BoosterConfig): Promise<void> {

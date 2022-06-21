@@ -1,7 +1,6 @@
 import {
   BoosterConfig,
   GlobalErrorHandlerInterface,
-  Logger,
   GlobalErrorContainer,
   CommandHandlerGlobalError,
   EventHandlerGlobalError,
@@ -9,15 +8,17 @@ import {
   ReducerGlobalError,
   ProjectionGlobalError,
 } from '@boostercloud/framework-types'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 
 export class BoosterGlobalErrorDispatcher {
   public readonly errorHandler: GlobalErrorHandlerInterface | undefined
 
-  public constructor(readonly config: BoosterConfig, readonly logger: Logger) {
+  public constructor(readonly config: BoosterConfig) {
     this.errorHandler = this.config.globalErrorsHandler?.class
   }
 
   public async dispatch(error: GlobalErrorContainer): Promise<Error | undefined> {
+    const logger = getLogger(this.config, 'BoosterGlobalErrorDispatcher#dispatch')
     if (!this.errorHandler) return error.originalError
 
     let newError: Error | undefined = error.originalError
@@ -43,7 +44,7 @@ export class BoosterGlobalErrorDispatcher {
 
       newError = await this.handleGenericError(newError)
     } catch (e) {
-      this.logger.error(
+      logger.error(
         `Unhandled error inside the global error handler. When handling error ${error.originalError}, another error occurred`,
         e
       )

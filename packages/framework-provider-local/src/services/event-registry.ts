@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { EventEnvelope } from '@boostercloud/framework-types'
 import * as DataStore from 'nedb'
 import { eventsDatabase } from '../paths'
@@ -8,23 +9,23 @@ export class EventRegistry {
     this.events.loadDatabase()
   }
 
-  getCursor(query: object, createdAt = 1) {
-    return this.events.find(query).sort({ createdAt: createdAt })
+  getCursor(query: object, createdAt = 1, projections?: unknown) {
+    return this.events.find(query, projections).sort({ createdAt: createdAt })
   }
 
-  public async query(query: object, createdAt = 1, limit?: number): Promise<Array<EventEnvelope>> {
+  public async query(query: object, createdAt = 1, limit?: number, projections?: unknown): Promise<unknown> {
+    const cursor = this.getCursor(query, createdAt, projections)
+    if (limit) {
+      cursor.limit(Number(limit))
+    }
     const queryPromise = new Promise((resolve, reject) => {
-      const cursor = this.getCursor(query, createdAt)
-      if (limit) {
-        cursor.limit(Number(limit))
-      }
       cursor.exec((err, docs) => {
         if (err) reject(err)
         else resolve(docs)
       })
     })
 
-    return (await queryPromise) as Array<EventEnvelope>
+    return await queryPromise
   }
 
   public async queryLatest(query: object): Promise<EventEnvelope | null> {

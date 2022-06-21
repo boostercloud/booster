@@ -3,7 +3,6 @@ import { DynamoDBRecord, DynamoDBStreamEvent } from 'aws-lambda'
 import {
   BoosterConfig,
   EventEnvelope,
-  Logger,
   OptimisticConcurrencyUnexpectedVersionError,
   UUID,
 } from '@boostercloud/framework-types'
@@ -11,7 +10,7 @@ import { DynamoDB } from 'aws-sdk'
 import { eventsStoreAttributes } from '../constants'
 import { partitionKeyForEvent, partitionKeyForIndexByEntity } from './keys-helper'
 import { Converter } from 'aws-sdk/clients/dynamodb'
-import { retryIfError } from '@boostercloud/framework-common-helpers'
+import { getLogger, retryIfError } from '@boostercloud/framework-common-helpers'
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const originOfTime = new Date(0).toISOString()
@@ -28,11 +27,11 @@ export function rawEventsToEnvelopes(rawEvents: DynamoDBStreamEvent): Array<Even
 export async function readEntityEventsSince(
   dynamoDB: DynamoDB.DocumentClient,
   config: BoosterConfig,
-  logger: Logger,
   entityTypeName: string,
   entityID: UUID,
   since?: string
 ): Promise<Array<EventEnvelope>> {
+  const logger = getLogger(config, 'ReadModelStore#readEntityEventsSince')
   const fromTime = since ? since : originOfTime
   const result = await dynamoDB
     .query({
@@ -56,10 +55,10 @@ export async function readEntityEventsSince(
 export async function readEntityLatestSnapshot(
   dynamoDB: DynamoDB.DocumentClient,
   config: BoosterConfig,
-  logger: Logger,
   entityTypeName: string,
   entityID: UUID
 ): Promise<EventEnvelope | null> {
+  const logger = getLogger(config, 'ReadModelStore#readEntityLatestSnapshot')
   const result = await dynamoDB
     .query({
       TableName: config.resourceNames.eventsStore,
@@ -91,17 +90,13 @@ export async function readEntityLatestSnapshot(
 export async function storeEvents(
   dynamoDB: DynamoDB.DocumentClient,
   eventEnvelopes: Array<EventEnvelope>,
-  config: BoosterConfig,
-  logger: Logger
+  config: BoosterConfig
 ): Promise<void> {
+  const logger = getLogger(config, 'ReadModelStore#storeEvents')
   logger.debug('[EventsAdapter#storeEvents] Storing the following event envelopes:', eventEnvelopes)
   // const putRequests = []
   for (const eventEnvelope of eventEnvelopes) {
-    await retryIfError(
-      logger,
-      () => persistEvent(dynamoDB, config, eventEnvelope),
-      OptimisticConcurrencyUnexpectedVersionError
-    )
+    await retryIfError(() => persistEvent(dynamoDB, config, eventEnvelope), OptimisticConcurrencyUnexpectedVersionError)
   }
   logger.debug('[EventsAdapter#storeEvents] EventEnvelopes stored')
 }
@@ -136,8 +131,9 @@ async function persistEvent(
       })
       .promise()
   } catch (e) {
-    if (e.name == 'ConditionalCheckFailedException') {
-      throw new OptimisticConcurrencyUnexpectedVersionError(e.message)
+    const error = e as Error
+    if (error.name == 'ConditionalCheckFailedException') {
+      throw new OptimisticConcurrencyUnexpectedVersionError(error.message)
     }
     throw e
   }

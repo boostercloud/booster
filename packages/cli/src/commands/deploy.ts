@@ -6,7 +6,7 @@ import {
   compileProjectAndLoadConfig,
   createDeploymentSandbox,
 } from '../services/config-service'
-import { BoosterConfig, Logger } from '@boostercloud/framework-types'
+import { BoosterConfig } from '@boostercloud/framework-types'
 import { Script } from '../common/script'
 import Brand from '../common/brand'
 import { logger } from '../services/logger'
@@ -14,10 +14,10 @@ import { currentEnvironment, initializeEnvironment } from '../services/environme
 
 const runTasks = async (
   compileAndLoad: Promise<BoosterConfig>,
-  deployer: (config: BoosterConfig, logger: Logger) => Promise<void>
+  deployer: (config: BoosterConfig) => Promise<void>
 ): Promise<void> =>
   Script.init(`boost ${Brand.dangerize('deploy')} [${currentEnvironment()}] 🚀`, compileAndLoad)
-    .step('Deploying', (config) => deployer(config, logger))
+    .step('Deploying', (config) => deployer(config))
     .step('Cleaning up deployment files', cleanDeploymentSandbox)
     .info('Deployment complete!')
     .done()
@@ -31,6 +31,10 @@ export default class Deploy extends BaseCommand {
       char: 'e',
       description: 'environment configuration to run',
     }),
+    verbose: flags.boolean({
+      description: 'display full error messages',
+      default: false,
+    }),
   }
 
   public async run(): Promise<void> {
@@ -40,5 +44,17 @@ export default class Deploy extends BaseCommand {
       const deploymentProjectPath = await createDeploymentSandbox()
       await runTasks(compileProjectAndLoadConfig(deploymentProjectPath), deployToCloudProvider)
     }
+  }
+
+  async catch(fullError: Error) {
+    const {
+      flags: { verbose },
+    } = this.parse(Deploy)
+
+    if (verbose) {
+      console.error(fullError.message)
+    }
+
+    return super.catch(fullError)
   }
 }
