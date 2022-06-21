@@ -12,9 +12,9 @@ export interface ReadModelInterface {
   [key: string]: any
 }
 
-export interface ReadModelMetadata {
+export interface ReadModelMetadata<TReadModel extends ReadModelInterface = ReadModelInterface> {
   readonly class: Class<ReadModelInterface>
   readonly properties: Array<PropertyMetadata>
   readonly authorizedRoles: RoleAccess['authorize']
-  readonly before: NonNullable<ReadModelFilterHooks['before']>
+  readonly before: NonNullable<ReadModelFilterHooks<TReadModel>['before']>
 }
