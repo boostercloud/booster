@@ -52,7 +52,8 @@
   "resolutions": {
     "@boostercloud/framework-common-helpers": "portal:packages/framework-common-helpers",
     "@boostercloud/framework-types": "portal:packages/framework-types",
-    "@boostercloud/framework-core": "portal:packages/framework-core"
+    "@boostercloud/framework-core": "portal:packages/framework-core",
+    "minipass": "3.2.1"
   },
   "packageManager": "yarn@3.2.1"
 }
