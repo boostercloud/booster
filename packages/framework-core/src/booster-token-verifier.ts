@@ -1,5 +1,22 @@
-import { BoosterConfig, TokenVerifierConfig, UserEnvelope } from '@boostercloud/framework-types'
-import { JWTVerifyOptions, createRemoteJWKSet, importSPKI, jwtVerify, KeyLike, jwtDecrypt } from 'jose'
+import {
+  BoosterConfig,
+  NotAuthorizedError,
+  BoosterTokenExpiredError,
+  BoosterTokenNotBeforeError,
+  TokenVerifierConfig,
+  UserEnvelope,
+} from '@boostercloud/framework-types'
+import {
+  JWTVerifyOptions,
+  JWTDecryptResult,
+  JWTVerifyResult,
+  createRemoteJWKSet,
+  importSPKI,
+  jwtVerify,
+  KeyLike,
+  jwtDecrypt,
+} from 'jose'
+import { JWTClaimValidationFailed, JWTExpired } from 'jose/dist/types/util/errors'
 import { URL } from 'url'
 
 class TokenVerifierClient {
@@ -27,40 +44,60 @@ class TokenVerifierClient {
   }
 
   public async verify(token: string): Promise<UserEnvelope> {
-    token = this.sanitizeToken(token)
+    token = TokenVerifierClient.sanitizeToken(token)
+    let decodedToken = null
     if (this.jwks) {
-      const { payload } = await jwtVerify(token, this.jwks, this.options)
-      return this.tokenToUserEnvelope(payload)
+      decodedToken = await jwtVerify(token, this.jwks, this.options)
     }
     if ('decryptionKey' in this.tokenVerifierConfig) {
-      const { payload } = await jwtDecrypt(token, this.tokenVerifierConfig.decryptionKey)
-      return this.tokenToUserEnvelope(payload)
+      decodedToken = await jwtDecrypt(token, this.tokenVerifierConfig.decryptionKey)
     }
     if (!this.publicKey && 'publicKey' in this.tokenVerifierConfig) await this.importKey()
     if (this.publicKey) {
-      const { payload } = await jwtVerify(token, this.publicKey, this.options)
-      return this.tokenToUserEnvelope(payload)
+      decodedToken = await jwtVerify(token, this.publicKey, this.options)
     }
-    throw new Error('Token verifier not well configured')
+    if (decodedToken == null) throw new Error('Token verifier not well configured')
+    if (this.tokenVerifierConfig?.extraValidation) {
+      await this.tokenVerifierConfig?.extraValidation({ ...decodedToken }, token)
+    }
+    return this.tokenToUserEnvelope(decodedToken)
   }
 
-  private tokenToUserEnvelope(decodedToken: any): UserEnvelope {
-    const username = decodedToken?.email || decodedToken?.phone_number || decodedToken.sub
-    const id = decodedToken.sub
+  private tokenToUserEnvelope({ payload, protectedHeader }: JWTVerifyResult | JWTDecryptResult): UserEnvelope {
+    const username = payload.email || payload.phone_number || payload.sub
+    if (typeof username !== 'string') throw Error('No username found in token')
     const rolesClaim = this.tokenVerifierConfig.rolesClaim || 'custom:role'
-    const role = decodedToken[rolesClaim]
-    const roleValue = Array.isArray(role) ? role[0] : role
-
+    const role = payload[rolesClaim]
+    const roleValues = TokenVerifierClient.rolesFromTokenRole(role)
     return {
-      id,
+      id: payload.sub,
       username,
-      role: roleValue?.trim() ?? '',
-      claims: decodedToken,
+      roles: roleValues,
+      claims: payload,
+      header: protectedHeader,
     }
   }
 
-  private sanitizeToken(token: string): string {
+  private static sanitizeToken(token: string): string {
     return token.replace('Bearer ', '')
+  }
+
+  private static rolesFromTokenRole(role: unknown): Array<string> {
+    const roleValues = []
+    if (Array.isArray(role)) {
+      role.forEach((r) => TokenVerifierClient.validateRoleFormat(r))
+      roleValues.push(...role)
+    } else {
+      TokenVerifierClient.validateRoleFormat(role)
+      roleValues.push((role as string)?.trim() ?? '')
+    }
+    return roleValues
+  }
+
+  private static validateRoleFormat(role: unknown): void {
+    if (typeof role !== 'string') {
+      throw new Error(`Invalid role format ${role}. Valid format are Array<string> or string`)
+    }
   }
 }
 
@@ -79,6 +116,44 @@ export class BoosterTokenVerifier {
     )
     const winner = results.find((result) => result.status === 'fulfilled')
     if (winner) return Promise.resolve((winner as PromiseFulfilledResult<UserEnvelope>).value)
-    return Promise.reject(new Error(results.map((result) => (result as PromiseRejectedResult).reason).join('\n')))
+
+    return this.rejectVerification(results)
+  }
+
+  private rejectVerification(results: Array<PromiseSettledResult<UserEnvelope>>): Promise<UserEnvelope> {
+    const tokenExpiredErrors = this.getTokenExpiredErrors(results)
+    if (tokenExpiredErrors && tokenExpiredErrors.length > 0) {
+      const reasons = BoosterTokenVerifier.joinReasons(tokenExpiredErrors)
+      return Promise.reject(new BoosterTokenExpiredError(reasons))
+    }
+
+    const tokenNotBeforeErrors = this.getTokenNotBeforeErrors(results)
+    if (tokenNotBeforeErrors && tokenNotBeforeErrors.length > 0) {
+      const reasons = BoosterTokenVerifier.joinReasons(tokenNotBeforeErrors)
+      return Promise.reject(new BoosterTokenNotBeforeError(reasons))
+    }
+
+    const reasons = BoosterTokenVerifier.joinReasons(results as Array<PromiseRejectedResult>)
+    return Promise.reject(new NotAuthorizedError(reasons))
+  }
+
+  private getTokenNotBeforeErrors(results: Array<PromiseSettledResult<UserEnvelope>>): Array<PromiseRejectedResult> {
+    return this.getErrors(results).filter(
+      (result) => result.reason instanceof JWTClaimValidationFailed && result.reason.claim === 'nbf'
+    )
+  }
+
+  private getTokenExpiredErrors(results: Array<PromiseSettledResult<UserEnvelope>>): Array<PromiseRejectedResult> {
+    return this.getErrors(results).filter((result) => result.reason instanceof JWTExpired)
+  }
+
+  private getErrors(results: Array<PromiseSettledResult<UserEnvelope>>): Array<PromiseRejectedResult> {
+    return results
+      .filter((result) => result?.status && result?.status !== 'fulfilled')
+      .map((result) => result as PromiseRejectedResult)
+  }
+
+  private static joinReasons(errors: Array<PromiseRejectedResult>): string {
+    return errors.map((error) => error.reason).join('\n')
   }
 }

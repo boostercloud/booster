@@ -1,4 +1,4 @@
-import { checkResourceNameIsValid, classNameToFileName } from '../../src/common/filenames'
+import { checkResourceNameIsValid, classNameToFileName, fileNameWithExtension } from '../../src/common/filenames'
 import { expect } from '../expect'
 
 const rewire = require('rewire')
@@ -98,6 +98,21 @@ describe('filenames', () => {
     it('transforms PascalCased resource name to correct file name', () => {
       const generatedClassName = classNameToFileName('TestResource')
       expect(generatedClassName).to.equal('test-resource')
+    })
+  })
+
+  describe('fileNameWithExtension', () => {
+    it('transforms passed name to correct file name with default extension', function () {
+      const generatedFilename = fileNameWithExtension('TestFileName')
+      expect(generatedFilename).to.equal('test-file-name.ts')
+    })
+
+    it('transforms passed name and extension to correct file name with extension', function () {
+      const generatedFilename = fileNameWithExtension('TestFileName', 'ts')
+      const generatedFilenameTwo = fileNameWithExtension('TestFileName', 'js')
+
+      expect(generatedFilename).to.equal('test-file-name.ts')
+      expect(generatedFilenameTwo).to.equal('test-file-name.js')
     })
   })
 })

@@ -6,7 +6,7 @@ import { ShippingAddressUpdated as UpdatedCartShippingAddress } from '../events/
 
 import { CartItem } from '../common/cart-item'
 import { CartChecked } from '../events/cart-checked'
-import { beforeHookProductId } from '../constants'
+import { beforeHookProductId, reducerErrorCartId, reducerErrorCartMessage } from '../constants'
 
 /**
  * A cart is a temporary object where users accumulate all the items they want to buy
@@ -26,6 +26,9 @@ export class Cart {
   }
   @Reduces(CartItemChanged)
   public static changeItem(event: CartItemChanged, currentCart: Cart): Cart {
+    if (event.cartId === reducerErrorCartId) {
+      throw new Error(reducerErrorCartMessage)
+    }
     if (currentCart == null) {
       currentCart = new Cart(event.cartId, [])
     }

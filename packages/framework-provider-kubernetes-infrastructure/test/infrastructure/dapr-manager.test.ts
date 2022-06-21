@@ -12,6 +12,7 @@ const fs = require('fs')
 describe('Users Dapr interaction inside the cluster', () => {
   const fakeLogger: Logger = {
     info: fake(),
+    warn: fake(),
     error: fake(),
     debug: fake(),
   }

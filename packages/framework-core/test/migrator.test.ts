@@ -7,6 +7,7 @@ import { Migrator } from '../src/migrator'
 
 const logger: Logger = {
   debug() {},
+  warn() {},
   info() {},
   error() {},
 }

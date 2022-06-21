@@ -180,7 +180,7 @@ describe('the `GraphQLWebsocketHandler`', () => {
           it('stores connection data including the user', async () => {
             const expectedUser: UserEnvelope = {
               username: internet.email(),
-              role: lorem.word(),
+              roles: [lorem.word()],
               claims: {},
             }
 
@@ -274,7 +274,7 @@ describe('the `GraphQLWebsocketHandler`', () => {
           const connectionData: ConnectionDataEnvelope = {
             user: {
               username: internet.email(),
-              role: lorem.word(),
+              roles: [lorem.word()],
               claims: {},
             },
             expirationTime: random.number(),

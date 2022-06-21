@@ -69,7 +69,7 @@ export class BoosterGraphQLDispatcher {
       } catch (e) {
         envelope = {
           ...envelope,
-          error: new InvalidParameterError(e),
+          error: e,
         } as GraphQLRequestEnvelopeError
         this.logger.debug('Unable to decode auth token')
       }
@@ -78,7 +78,7 @@ export class BoosterGraphQLDispatcher {
   }
 
   private async handleMessage(envelope: GraphQLRequestEnvelope | GraphQLRequestEnvelopeError): Promise<DispatchResult> {
-    this.logger.debug(`Starting GraphQL operation: ${JSON.stringify(envelope)}`)
+    this.logger.debug('Starting GraphQL operation:', envelope)
 
     const envelopeOrError = await this.verifyTokenFromEnvelop(envelope)
 
@@ -125,6 +125,7 @@ export class BoosterGraphQLDispatcher {
         },
         pubSub: new NoopReadModelPubSub(),
         storeSubscriptions: true,
+        context: envelope.context,
       }
 
       switch (operationData.operation) {
@@ -136,7 +137,7 @@ export class BoosterGraphQLDispatcher {
       }
     } catch (e) {
       this.logger.error(e)
-      const errors = Array.isArray(e) ? e : [new GraphQLError(e.message)]
+      const errors = Array.isArray(e) ? e.map(toGraphQLErrorWithExtensions) : [toGraphQLErrorWithExtensions(e)]
       return { errors }
     }
   }
@@ -152,6 +153,7 @@ export class BoosterGraphQLDispatcher {
       variableValues: resolverContext.operation.variables,
       operationName: resolverContext.operation.operationName,
     })
+    result.errors = result.errors?.map(toGraphQLErrorWithExtensions)
     this.logger.debug('GraphQL result: ', result)
     return result
   }
@@ -190,4 +192,19 @@ export class BoosterGraphQLDispatcher {
 
 function cameThroughSocket(withConnectionID: { connectionID?: string }): boolean {
   return withConnectionID.connectionID != undefined
+}
+
+type BoosterError = Error & { code?: unknown; data?: unknown }
+function toGraphQLErrorWithExtensions(e: BoosterError | GraphQLError): GraphQLError {
+  if (e instanceof GraphQLError) {
+    const originalError = e.originalError as BoosterError
+    return new GraphQLError(e.message, e.nodes, e.source, e.positions, e.path, originalError, {
+      code: originalError?.code,
+      data: originalError?.data,
+    })
+  }
+  return new GraphQLError(e.message, undefined, undefined, undefined, undefined, e, {
+    code: e.code,
+    data: e.data,
+  })
 }

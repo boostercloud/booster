@@ -5,23 +5,16 @@ import gql from 'graphql-tag'
 import { expect } from 'chai'
 import * as chai from 'chai'
 import { sleep, waitForIt } from '../../helper/sleep'
-import { EventSearchResponse, EventTimeFilter } from '@boostercloud/framework-types'
+import { EventSearchResponse, EventTimeParameterFilter } from '@boostercloud/framework-types'
 import { applicationUnderTest } from './setup'
-import * as path from 'path'
 chai.use(require('chai-as-promised'))
 
 describe('Events end-to-end tests', () => {
-  //TODO: Azure provider doesn't support event Interface so these tests are skipped for Azure
-  if (process.env.TESTED_PROVIDER === 'AZURE') {
-    console.log('****************** Warning **********************')
-    console.log(`${path.join(process.cwd(), 'events.integration.ts')} ignored`)
-    console.log('Azure provider does not implement the Event Interface')
-    console.log('*************************************************')
-    return
-  }
-
   let anonymousClient: ApolloClient<NormalizedCacheObject>
   let loggedClient: ApolloClient<NormalizedCacheObject>
+  let expiredClient: ApolloClient<NormalizedCacheObject>
+  let beforeClient: ApolloClient<NormalizedCacheObject>
+  let expiredAndBeforeClient: ApolloClient<NormalizedCacheObject>
 
   before(async () => {
     anonymousClient = applicationUnderTest.graphql.client()
@@ -29,6 +22,13 @@ describe('Events end-to-end tests', () => {
     const userEmail = internet.email()
     const userToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail')
     loggedClient = applicationUnderTest.graphql.client(userToken)
+    const expiredToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail', 0)
+    expiredClient = applicationUnderTest.graphql.client(expiredToken)
+    const notBefore = Math.floor(Date.now() / 1000) + 999999
+    const beforeToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail', undefined, notBefore)
+    beforeClient = applicationUnderTest.graphql.client(beforeToken)
+    const expiredAndBeforeToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail', 0, notBefore)
+    expiredAndBeforeClient = applicationUnderTest.graphql.client(expiredAndBeforeToken)
   })
 
   describe('Query events', () => {
@@ -49,6 +49,45 @@ describe('Events end-to-end tests', () => {
 
           it('can read events belonging to an entity authorized for "all"', async () => {
             await expect(queryByType(anonymousClient, 'CartItemChanged')).to.eventually.be.fulfilled
+          })
+        })
+
+        context('with an expired or not before token', () => {
+          it('can not read events belonging to an entity with an expired token', async () => {
+            await expect(queryByType(expiredClient, 'CartItemChanged'))
+              .to.eventually.be.rejected.and.be.an.instanceOf(Error)
+              .and.have.property('graphQLErrors')
+              .and.have.to.be.deep.equal([
+                {
+                  message: 'TokenExpiredError: jwt expired\nTokenExpiredError: jwt expired',
+                  extensions: { code: 'BoosterTokenExpiredError' },
+                },
+              ])
+          })
+
+          it('can not read events belonging to an entity with a token not before', async () => {
+            await expect(queryByType(beforeClient, 'CartItemChanged'))
+              .to.eventually.be.rejected.and.be.an.instanceOf(Error)
+              .and.have.property('graphQLErrors')
+              .and.have.to.be.deep.equal([
+                {
+                  message: 'NotBeforeError: jwt not active\nNotBeforeError: jwt not active',
+                  extensions: { code: 'BoosterTokenNotBeforeError' },
+                },
+              ])
+          })
+
+          // jwt.verify check NotBefore before Expired. If we have a token NotBefore and Expired we will get a BoosterTokenExpiredError error
+          it('return BoosterTokenNotBeforeError with a token expired and not before', async () => {
+            await expect(queryByType(expiredAndBeforeClient, 'CartItemChanged'))
+              .to.eventually.be.rejected.and.be.an.instanceOf(Error)
+              .and.have.property('graphQLErrors')
+              .and.have.to.be.deep.equal([
+                {
+                  message: 'NotBeforeError: jwt not active\nNotBeforeError: jwt not active',
+                  extensions: { code: 'BoosterTokenNotBeforeError' },
+                },
+              ])
           })
         })
 
@@ -139,7 +178,7 @@ describe('Events end-to-end tests', () => {
               quantity: mockQuantity,
             },
             mutation: gql`
-              mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+              mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
                 ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
               }
             `,
@@ -214,6 +253,24 @@ describe('Events end-to-end tests', () => {
           })
         })
 
+        context('with limit', () => {
+          it('returns the expected events in the right order', async () => {
+            const limit = 3
+            const result = await queryByEntity(anonymousClient, 'Cart', undefined, mockCartId, limit)
+            const events: Array<EventSearchResponse> = result.data['eventsByEntity']
+            // As now the query included the entityId, we can be sure that ONLY the provisioned events were returned
+            expect(events.length).to.be.equal(limit)
+            checkOrderAndStructureOfEvents(events)
+            for (const event of events) {
+              expect(event.type).to.be.equal('CartItemChanged')
+              expect(event.entityID).to.be.equal(mockCartId)
+              const value: Record<string, string> = event.value as any
+              expect(value.productId).to.be.equal(mockProductId)
+              expect(value.quantity).to.be.equal(mockQuantity)
+            }
+          })
+        })
+
         context('with time filters', () => {
           it('returns the expected events in the right order', async () => {
             // Let's use a time filter that tries to get half of the events we provisioned. We can't be sure we will get
@@ -231,6 +288,32 @@ describe('Events end-to-end tests', () => {
                 to: to.toISOString(),
               },
               mockCartId
+            )
+            const events: Array<EventSearchResponse> = result.data['eventsByEntity']
+            // First check the order and structure
+            checkOrderAndStructureOfEvents(events)
+            // Now we check that we have received more than 0 events and less than number we provisioned, as time filters
+            // we used should have given us less events than what we provisioned
+            expect(events.length).to.be.within(1, numberOfProvisionedEvents - 1)
+          })
+
+          it('returns the expected events in the right order if we include limit and time filters and the "to" is reached before the limit', async () => {
+            // Let's use a time filter that tries to get half of the events we provisioned. We can't be sure we will get
+            // exactly half of them, because possible clock differences, but we will check using inequalities
+            const from = new Date(eventsProvisionedStartedAt)
+            from.setSeconds(from.getSeconds() - 1)
+            const halfTheDuration = (eventsProvisionedFinishedAt.getTime() - eventsProvisionedStartedAt.getTime()) / 2
+            const to = new Date(eventsProvisionedStartedAt.getTime() + halfTheDuration)
+
+            const result = await queryByEntity(
+              anonymousClient,
+              'Cart',
+              {
+                from: from.toISOString(),
+                to: to.toISOString(),
+              },
+              mockCartId,
+              numberOfProvisionedEvents * 2
             )
             const events: Array<EventSearchResponse> = result.data['eventsByEntity']
             // First check the order and structure
@@ -301,7 +384,7 @@ describe('Events end-to-end tests', () => {
                 quantity: 1,
               },
               mutation: gql`
-                mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+                mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
                   ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
                 }
               `,
@@ -335,13 +418,15 @@ describe('Events end-to-end tests', () => {
 function queryByType(
   client: ApolloClient<unknown>,
   type: string,
-  timeFilters?: EventTimeFilter
+  timeFilters?: EventTimeParameterFilter,
+  limit?: number
 ): Promise<ApolloQueryResult<any>> {
   const queryTimeFilters = timeFilters ? `, from:"${timeFilters.from}" to:"${timeFilters.to}"` : ''
+  const queryLimit = limit ? `, limit:${limit}` : ''
   return client.query({
     query: gql`
       query {
-        eventsByType(type: ${type}${queryTimeFilters}) {
+        eventsByType(type: ${type}${queryTimeFilters}${queryLimit}) {
             createdAt
             entity
             entityID
@@ -349,7 +434,7 @@ function queryByType(
             type
             user {
                 id
-                role
+                roles
                 username
             }
             value
@@ -362,15 +447,17 @@ function queryByType(
 function queryByEntity(
   client: ApolloClient<unknown>,
   entity: string,
-  timeFilters?: EventTimeFilter,
-  entityID?: string
+  timeFilters?: EventTimeParameterFilter,
+  entityID?: string,
+  limit?: number
 ): Promise<ApolloQueryResult<any>> {
   const queryTimeFilters = timeFilters ? `, from:"${timeFilters.from}" to:"${timeFilters.to}"` : ''
   const queryEntityID = entityID ? `, entityID:"${entityID}"` : ''
+  const queryLimit = limit ? `, limit:${limit}` : ''
   return client.query({
     query: gql`
       query {
-        eventsByEntity(entity: ${entity}${queryEntityID}${queryTimeFilters}) {
+        eventsByEntity(entity: ${entity}${queryEntityID}${queryTimeFilters}${queryLimit}) {
             createdAt
             entity
             entityID
@@ -378,7 +465,7 @@ function queryByEntity(
             type
             user {
                 id
-                role
+                roles
                 username
             }
             value

@@ -1,4 +1,4 @@
-import { HasInfrastructure, ProviderLibrary, UserApp } from '@boostercloud/framework-types'
+import { HasInfrastructure, ProviderLibrary, RocketDescriptor, UserApp } from '@boostercloud/framework-types'
 import {
   rawEventsToEnvelopes,
   readEntityEventsSince,
@@ -6,17 +6,19 @@ import {
   storeEvents,
 } from './library/events-adapter'
 import { requestSucceeded, requestFailed } from './library/api-adapter'
-import { EventRegistry } from './services'
+import { EventRegistry, ReadModelRegistry } from './services'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 
 import * as path from 'path'
-import { ReadModelRegistry } from './services/read-model-registry'
+
 import {
   fetchReadModel,
   rawReadModelEventsToEnvelopes,
   searchReadModel,
   storeReadModel,
 } from './library/read-model-adapter'
+import { searchEvents } from './library/events-search-adapter'
+import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
 
 export * from './paths'
 export * from './services'
@@ -33,14 +35,14 @@ export function loadInfrastructurePackage(packageName: string): HasInfrastructur
   return require(packageName)
 }
 
-export const Provider = (): ProviderLibrary => ({
+export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrary => ({
   // ProviderEventsLibrary
   events: {
     rawToEnvelopes: rawEventsToEnvelopes,
     forEntitySince: readEntityEventsSince.bind(null, eventRegistry),
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, eventRegistry),
     store: storeEvents.bind(null, userApp, eventRegistry),
-    search: undefined as any,
+    search: searchEvents.bind(null, eventRegistry),
   },
   // ProviderReadModelsLibrary
   readModels: {
@@ -82,8 +84,7 @@ export const Provider = (): ProviderLibrary => ({
   },
   // ScheduledCommandsLibrary
   scheduled: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rawToEnvelope: undefined as any,
+    rawToEnvelope: rawScheduledInputToEnvelope,
   },
   // ProviderInfrastructureGetter
   infrastructure: () => {
@@ -100,7 +101,7 @@ export const Provider = (): ProviderLibrary => ({
       )
     }
 
-    return infrastructure.Infrastructure()
+    return infrastructure.Infrastructure(rocketDescriptors)
   },
 })
 

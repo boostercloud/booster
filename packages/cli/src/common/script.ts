@@ -55,7 +55,10 @@ export class Script<TContext> {
                 await action(ctx)
                 Script.logger.succeed(message)
               },
-              (err) => err as Error
+              (err) => {
+                Script.logger.fail(message)
+                return err as Error
+              }
             )
           )
         )

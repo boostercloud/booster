@@ -5,6 +5,7 @@ import { Logger } from '@boostercloud/framework-types'
  */
 export const noopLogger: Logger = {
   debug: () => {},
+  warn: () => {},
   info: () => {},
   error: () => {},
 }

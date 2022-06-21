@@ -5,8 +5,7 @@ import { fake, replace, restore } from 'sinon'
 import { expect } from './expect'
 import { BoosterCommandDispatcher } from '../src/booster-command-dispatcher'
 import { CommandBeforeFunction, Logger, Register } from '@boostercloud/framework-types'
-import { Command } from '../src/decorators'
-import { RegisterHandler } from '../src/booster-register-handler'
+import { Command, RegisterHandler } from '../src'
 import { random } from 'faker'
 
 describe('the `BoosterCommandsDispatcher`', () => {
@@ -22,6 +21,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
 
   const logger: Logger = {
     debug() {},
+    warn() {},
     info() {},
     error() {},
   }
@@ -67,7 +67,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
         typeName: 'UnauthorizedCommand',
         version: 'π', // JS doesn't care, and π is a number after all xD...
         currentUser: {
-          role: 'Loki',
+          roles: ['Loki'],
         },
       }
 
@@ -93,6 +93,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
             class: ProperlyHandledCommand,
           },
         },
+        currentVersionFor: fake.returns(1),
       }
       const commandValue = {
         something: 'to handle',
@@ -102,7 +103,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
         typeName: 'ProperlyHandledCommand',
         version: 'π', // JS doesn't care, and π is a number after all xD...
         currentUser: {
-          role: 'Loki',
+          roles: ['Loki'],
         },
         value: commandValue,
         requestID: '42',
@@ -142,6 +143,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
             class: ProperlyHandledCommand,
           },
         },
+        currentVersionFor: fake.returns(1),
       }
       const commandValue = {
         something: 'to handle',
@@ -151,7 +153,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
         typeName: 'ProperlyHandledCommand',
         version: 'π', // JS doesn't care, and π is a number after all xD...
         currentUser: {
-          role: 'Loki',
+          roles: ['Loki'],
         },
         value: commandValue,
         requestID: '42',
@@ -199,13 +201,17 @@ describe('the `BoosterCommandsDispatcher`', () => {
     context('when before hook functions are passed', () => {
       const newComment = 'Look, I changed the message'
       const newCommentV2 = 'Yes, I changed it for a second time'
-      const beforeFn: CommandBeforeFunction = (input, currentUser) => {
+      const beforeFn: CommandBeforeFunction = async (input, currentUser) => {
         input.comment = newComment
+        const result = await Promise.resolve()
+        console.log(result)
         return input
       }
-      const beforeFnV2: CommandBeforeFunction = (input, currentUser) => {
+      const beforeFnV2: CommandBeforeFunction = async (input, currentUser) => {
         // To double-check it's really chained
         if (input.comment === newComment) input.comment = newCommentV2
+        const result = await Promise.resolve()
+        console.log(result)
         return input
       }
 

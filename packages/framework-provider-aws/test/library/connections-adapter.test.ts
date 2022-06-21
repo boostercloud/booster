@@ -20,7 +20,7 @@ describe('The "storeConnectionData" method', () => {
     const expectedData: ConnectionDataEnvelope = {
       expirationTime: random.number(),
       user: {
-        role: lorem.word(),
+        roles: [lorem.word()],
         username: internet.email(),
         claims: {},
       },
@@ -42,7 +42,7 @@ describe('The "fetchConnectionData" method', () => {
     const expectedData: ConnectionDataEnvelope = {
       expirationTime: random.number(),
       user: {
-        role: lorem.word(),
+        roles: [lorem.word()],
         username: internet.email(),
         claims: {},
       },
