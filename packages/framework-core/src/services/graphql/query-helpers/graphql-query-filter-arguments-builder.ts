@@ -63,7 +63,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
         not: { type: this.generatedFiltersByTypeName[filterName] },
         isDefined: { type: GraphQLBoolean },
       })
-    } else if (prop.typeInfo.type && prop.typeInfo.type.name !== 'Object') {
+    } else if (prop.typeInfo.type && prop.typeInfo.type.name !== 'Object' && prop.typeInfo.typeGroup !== 'Object') {
       fields = this.generateFilterInputTypes(prop.typeInfo)
     } else {
       return GraphQLJSONObject
