@@ -76,7 +76,6 @@ describe('the `Booster` class', () => {
       await Booster.readModel(TestReadModel).search()
       expect(searcherFunctionFake).to.have.been.calledOnceWithExactly(
         match.any,
-        match.any,
         TestReadModel.name,
         match.any,
         {},
@@ -101,6 +100,20 @@ describe('the `Booster` class', () => {
         expect(readModel.getId()).to.not.throw
       }
       expect(searcherFunctionFake).to.have.been.calledOnce
+    })
+  })
+  describe('the `entitiesIDs` method', () => {
+    it('has an instance method', async () => {
+      const providerSearchEntitiesIds = fake.returns([])
+      Booster.configureCurrentEnv((config) => {
+        config.provider = {
+          events: {
+            searchEntitiesIDs: providerSearchEntitiesIds,
+          },
+        } as unknown as ProviderLibrary
+      })
+      await Booster.entitiesIDs('TestEvent', 1, undefined)
+      expect(providerSearchEntitiesIds).to.have.been.calledOnce
     })
   })
   describe('the `event` method', () => {

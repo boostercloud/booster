@@ -1,13 +1,15 @@
-import { Logger, ScheduledCommandEnvelope, UUID } from '@boostercloud/framework-types'
+import { BoosterConfig, ScheduledCommandEnvelope, UUID } from '@boostercloud/framework-types'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 
 interface LocalScheduleCommandEnvelope {
   typeName: string
 }
 
 export async function rawScheduledInputToEnvelope(
-  input: Partial<LocalScheduleCommandEnvelope>,
-  logger: Logger
+  config: BoosterConfig,
+  input: Partial<LocalScheduleCommandEnvelope>
 ): Promise<ScheduledCommandEnvelope> {
+  const logger = getLogger(config, 'rawScheduledInputToEnvelope')
   logger.debug('Received LocalScheduleCommand request: ', input)
 
   if (!input.typeName)

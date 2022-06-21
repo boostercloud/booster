@@ -16,3 +16,7 @@ export const projectionErrorCartId = 'projectionErrorCartId'
 export const projectionErrorCartMessage = 'projectionErrorCartMessage'
 export const reducerErrorCartId = 'reducerErrorCartId'
 export const reducerErrorCartMessage = 'reducerErrorCartMessage'
+export const QUANTITY_TO_MIGRATE_DATA = 1234
+export const QUANTITY_AFTER_DATA_MIGRATION = 1234999
+export const QUANTITY_TO_MIGRATE_ID = 7777
+export const QUANTITY_AFTER_DATA_MIGRATION_ID = 7777999

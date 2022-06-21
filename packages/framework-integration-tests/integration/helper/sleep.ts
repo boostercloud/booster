@@ -4,7 +4,7 @@ export async function sleep(ms: number): Promise<void> {
 
 export async function waitForIt<TResult>(
   tryFunction: () => Promise<TResult>,
-  checkResult: (result: TResult) => boolean,
+  checkResult: (result: TResult) => boolean | string,
   trialDelayMs = 1000,
   timeoutMs = 60000
 ): Promise<TResult> {
@@ -15,14 +15,20 @@ export async function waitForIt<TResult>(
   async function doWaitFor(): Promise<TResult> {
     console.debug('.')
     const res = await tryFunction()
-    if (checkResult(res)) {
+    const checkResultValue = checkResult(res)
+    const waitingResult = typeof checkResultValue === 'boolean' ? checkResultValue : false
+    if (waitingResult) {
       console.debug('[waitForIt] match!')
       return res
     }
     const elapsed = Date.now() - start
 
     if (elapsed > timeoutMs) {
-      throw new Error('[waitForIt] Timeout reached')
+      if (typeof checkResultValue === 'boolean') {
+        throw new Error('[waitForIt] Timeout reached')
+      }
+      const message = checkResultValue ? `. ${checkResultValue}` : ''
+      throw new Error(`[waitForIt] Timeout reached${message}`)
     }
 
     await sleep(trialDelayMs)

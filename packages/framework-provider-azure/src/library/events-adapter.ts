@@ -1,6 +1,6 @@
-import { EventEnvelope } from '@boostercloud/framework-types'
 import { CosmosClient, SqlQuerySpec } from '@azure/cosmos'
-import { BoosterConfig, Logger, UUID } from '@boostercloud/framework-types'
+import { EventEnvelope, BoosterConfig, UUID } from '@boostercloud/framework-types'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 import { eventsStoreAttributes } from '../constants'
 import { partitionKeyForEvent } from './partition-keys'
 import { Context } from '@azure/functions'
@@ -15,7 +15,6 @@ export function rawEventsToEnvelopes(context: Context): Array<EventEnvelope> {
 export async function readEntityEventsSince(
   cosmosDb: CosmosClient,
   config: BoosterConfig,
-  logger: Logger,
   entityTypeName: string,
   entityID: UUID,
   since?: string
@@ -47,10 +46,10 @@ export async function readEntityEventsSince(
 export async function readEntityLatestSnapshot(
   cosmosDb: CosmosClient,
   config: BoosterConfig,
-  logger: Logger,
   entityTypeName: string,
   entityID: UUID
 ): Promise<EventEnvelope | null> {
+  const logger = getLogger(config, 'events-adapter#readEntityLatestSnapshot')
   const { resources } = await cosmosDb
     .database(config.resourceNames.applicationStack)
     .container(config.resourceNames.eventsStore)
@@ -85,9 +84,9 @@ export async function readEntityLatestSnapshot(
 export async function storeEvents(
   cosmosDb: CosmosClient,
   eventEnvelopes: Array<EventEnvelope>,
-  config: BoosterConfig,
-  logger: Logger
+  config: BoosterConfig
 ): Promise<void> {
+  const logger = getLogger(config, 'events-adapter#storeEvents')
   logger.debug('[EventsAdapter#storeEvents] Storing EventEnvelopes with eventEnvelopes:', eventEnvelopes)
   for (const eventEnvelope of eventEnvelopes) {
     await cosmosDb

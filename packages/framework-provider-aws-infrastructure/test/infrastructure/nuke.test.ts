@@ -1,5 +1,5 @@
 import { expect } from '../expect'
-import { BoosterConfig, Logger } from '@boostercloud/framework-types'
+import { BoosterConfig } from '@boostercloud/framework-types'
 import { CdkToolkit } from 'aws-cdk/lib/cdk-toolkit'
 import { fake, replace, restore } from 'sinon'
 import * as StackServiceConfiguration from '../../src/infrastructure/stack-tools'
@@ -25,13 +25,9 @@ describe('the nuke module', () => {
       )
       replace(CdkToolkit.prototype, 'destroy', fake())
 
-      const config = { hello: 'world' } as unknown as BoosterConfig
-      const logger = {
-        info: fake(),
-        error: console.error,
-      } as unknown as Logger
+      const config = new BoosterConfig('test')
 
-      await nukeModule.nuke(config, logger)
+      await nukeModule.nuke(config)
 
       expect(StackServiceConfiguration.getStackServiceConfiguration).to.have.been.calledWithMatch(config)
 
@@ -46,14 +42,11 @@ describe('the nuke module', () => {
       const fakeStackServiceConfiguration = { sdk: 'here goes the SDK', appStacks: '', cdkToolkit: '' }
       replace(StackServiceConfiguration, 'getStackServiceConfiguration', fake.resolves(fakeStackServiceConfiguration))
 
-      const config = { hello: 'world' } as unknown as BoosterConfig
-      const logger = {
-        info: fake(),
-      } as unknown as Logger
+      const config = new BoosterConfig('test')
 
-      await nukeModule.nuke(config, logger)
+      await nukeModule.nuke(config)
 
-      expect(fakeNukeToolkit).to.have.been.calledWithMatch(logger, config, fakeStackServiceConfiguration.sdk)
+      expect(fakeNukeToolkit).to.have.been.calledWithMatch(config, fakeStackServiceConfiguration.sdk)
 
       revertNukeToolkit()
       revertNukeApp()
@@ -68,14 +61,11 @@ describe('the nuke module', () => {
       }
       replace(StackServiceConfiguration, 'getStackServiceConfiguration', fake.resolves(fakeStackServiceConfiguration))
 
-      const config = { hello: 'world' } as unknown as BoosterConfig
-      const logger = {
-        info: fake(),
-      } as unknown as Logger
+      const config = new BoosterConfig('test')
 
-      await nukeModule.nuke(config, logger)
+      await nukeModule.nuke(config)
 
-      expect(fakeNukeApplication).to.have.been.calledWithMatch(logger, config, fakeStackServiceConfiguration.cdkToolkit)
+      expect(fakeNukeApplication).to.have.been.calledWithMatch(config, fakeStackServiceConfiguration.cdkToolkit)
 
       revertNukeToolkit()
       revertNukeApp()
@@ -91,14 +81,17 @@ describe('the nuke module', () => {
       }
       replace(StackServiceConfiguration, 'getStackServiceConfiguration', fake.resolves(fakeStackServiceConfiguration))
 
-      const config = { hello: 'world' } as unknown as BoosterConfig
-      const logger = {
+      const config = new BoosterConfig('test')
+      config.logger = {
+        debug: fake(),
         info: fake(),
-      } as unknown as Logger
+        warn: fake(),
+        error: fake(),
+      }
 
-      await nukeModule.nuke(config, logger)
+      await nukeModule.nuke(config)
 
-      expect(logger.info).to.have.been.calledWithMatch(/Destroying application/)
+      expect(config.logger?.info).to.have.been.calledWithMatch(/.*/, /Destroying application/)
 
       revertNukeToolkit()
       revertNukeApp()
@@ -111,13 +104,9 @@ describe('the nuke module', () => {
       replace(StackServiceConfiguration, 'getStackServiceConfiguration', fake.rejects(error))
       replace(CdkToolkit.prototype, 'destroy', fake())
 
-      const config = { hello: 'world' } as unknown as BoosterConfig
-      const logger = {
-        info: fake(),
-        error: console.error,
-      } as unknown as Logger
+      const config = new BoosterConfig('test')
 
-      await expect(nukeModule.nuke(config, logger)).to.be.eventually.rejectedWith(error)
+      await expect(nukeModule.nuke(config)).to.be.eventually.rejectedWith(error)
 
       revertNukeToolkit()
       revertNukeApp()
@@ -135,13 +124,9 @@ describe('the nuke module', () => {
       replace(StackServiceConfiguration, 'getStackServiceConfiguration', fake.resolves(fakeStackServiceConfiguration))
       replace(CdkToolkit.prototype, 'destroy', fake())
 
-      const config = { hello: 'world' } as unknown as BoosterConfig
-      const logger = {
-        info: fake(),
-        error: console.error,
-      } as unknown as Logger
+      const config = new BoosterConfig('test')
 
-      await expect(nukeModule.nuke(config, logger)).to.be.eventually.rejectedWith(error)
+      await expect(nukeModule.nuke(config)).to.be.eventually.rejectedWith(error)
 
       revertNukeToolkit()
       revertNukeApp()
@@ -159,13 +144,9 @@ describe('the nuke module', () => {
       replace(StackServiceConfiguration, 'getStackServiceConfiguration', fake.resolves(fakeStackServiceConfiguration))
       replace(CdkToolkit.prototype, 'destroy', fake())
 
-      const config = { hello: 'world' } as unknown as BoosterConfig
-      const logger = {
-        info: fake(),
-        error: console.error,
-      } as unknown as Logger
+      const config = new BoosterConfig('test')
 
-      await expect(nukeModule.nuke(config, logger)).to.be.eventually.rejectedWith(error)
+      await expect(nukeModule.nuke(config)).to.be.eventually.rejectedWith(error)
 
       revertNukeToolkit()
       revertNukeApp()
@@ -184,10 +165,7 @@ describe('the nuke module', () => {
         }
         replace(StackServiceConfiguration, 'getStackServiceConfiguration', fake.resolves(fakeStackServiceConfiguration))
 
-        const config = { hello: 'world' } as unknown as BoosterConfig
-        const logger = {
-          info: fake(),
-        } as unknown as Logger
+        const config = new BoosterConfig('test')
 
         const fakeRockets = [
           {
@@ -196,9 +174,9 @@ describe('the nuke module', () => {
           },
         ]
 
-        await nukeModule.nuke(config, logger, fakeRockets)
+        await nukeModule.nuke(config, fakeRockets)
 
-        expect(fakeNukeRockets).to.have.been.calledWithMatch(logger, fakeStackServiceConfiguration.sdk, fakeRockets)
+        expect(fakeNukeRockets).to.have.been.calledWithMatch(config, fakeStackServiceConfiguration.sdk, fakeRockets)
 
         revertNukeToolkit()
         revertNukeApp()
@@ -213,18 +191,15 @@ describe('the nuke module', () => {
       replace(S3Tools, 'emptyS3Bucket', fake())
 
       const config = { appName: 'test-app' } as unknown as BoosterConfig
-      const logger = {
-        info: fake(),
-      } as unknown as Logger
 
       const fakeCloudformation = { deleteStack: fake.returns({ promise: fake.resolves(true) }) }
       const fakeSDK = {
         cloudFormation: fake.returns(fakeCloudformation),
       }
 
-      await nukeToolkit(logger, config, fakeSDK)
+      await nukeToolkit(config, fakeSDK)
 
-      expect(S3Tools.emptyS3Bucket).to.have.been.calledWithMatch(fakeSDK, logger, 'test-app-toolkit-bucket')
+      expect(S3Tools.emptyS3Bucket).to.have.been.calledWithMatch(config, fakeSDK, 'test-app-toolkit-bucket')
     })
 
     it('deletes the toolkit stack', async () => {
@@ -232,16 +207,13 @@ describe('the nuke module', () => {
       replace(S3Tools, 'emptyS3Bucket', fake())
 
       const config = { appName: 'test-app' } as unknown as BoosterConfig
-      const logger = {
-        info: fake(),
-      } as unknown as Logger
 
       const fakeCloudformation = { deleteStack: fake.returns({ promise: fake.resolves(true) }) }
       const fakeSDK = {
         cloudFormation: fake.returns(fakeCloudformation),
       }
 
-      await nukeToolkit(logger, config, fakeSDK)
+      await nukeToolkit(config, fakeSDK)
 
       expect(fakeSDK.cloudFormation).to.have.been.called
       expect(fakeCloudformation.deleteStack).to.have.been.calledWithMatch({
@@ -258,9 +230,7 @@ describe('the nuke module', () => {
       const fakeBuildRocketUtils = fake.returns(fakeRocketUtils)
       replace(rocketUtils, 'buildRocketUtils', fakeBuildRocketUtils)
 
-      const logger = {
-        info: fake(),
-      } as unknown as Logger
+      const config = new BoosterConfig('test')
 
       const fakeSDK = { fake: 'aws' }
 
@@ -271,9 +241,9 @@ describe('the nuke module', () => {
         },
       ]
 
-      await nukeRockets(logger, fakeSDK, fakeRockets)
+      await nukeRockets(config, fakeSDK, fakeRockets)
 
-      expect(fakeBuildRocketUtils).to.have.been.calledWithMatch(fakeSDK, logger)
+      expect(fakeBuildRocketUtils).to.have.been.calledWithMatch(config, fakeSDK)
       expect(fakeUnmountStack).to.have.been.calledWithMatch(fakeRocketUtils)
     })
   })
@@ -293,11 +263,7 @@ describe('the nuke module', () => {
         destroy: fake(),
       }
 
-      const logger = {
-        info: fake(),
-      } as unknown as Logger
-
-      await nukeApplication(logger, config, cdkToolkit)
+      await nukeApplication(config, cdkToolkit)
 
       expect(cdkToolkit.destroy).to.have.been.calledWithMatch({
         stackNames: ['stack-name'],

@@ -53,9 +53,9 @@ export class ReadModelRegistry {
     })
   }
 
-  public async deleteById(id: UUID): Promise<number> {
+  public async deleteById(id: UUID, typeName: string): Promise<number> {
     const deletePromise = new Promise((resolve, reject) =>
-      this.readModels.remove({ 'value.id': { id } }, { multi: true }, (err, numRemoved: number) => {
+      this.readModels.remove({ typeName: typeName, 'value.id': id }, { multi: false }, (err, numRemoved: number) => {
         if (err) reject(err)
         else resolve(numRemoved)
       })

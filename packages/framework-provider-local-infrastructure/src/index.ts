@@ -5,8 +5,9 @@ import * as path from 'path'
 import { requestFailed } from './http'
 import { GraphQLController } from './controllers/graphql'
 import * as cors from 'cors'
-import { loadRocket } from './infrastructure-rocket'
 import { configureScheduler } from './scheduler'
+import { RocketLoader } from '@boostercloud/framework-common-helpers'
+import { InfrastructureRocket } from './infrastructure-rocket'
 
 export * from './test-helper/local-test-helper'
 export * from './infrastructure-rocket'
@@ -30,7 +31,7 @@ async function defaultErrorHandler(
 }
 
 export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): ProviderInfrastructure => {
-  const rockets = rocketDescriptors?.map(loadRocket)
+  const rockets = rocketDescriptors?.map(RocketLoader.loadRocket) as InfrastructureRocket[]
   return {
     /**
      * `run` serves as the entry point for the local provider. It starts the required infrastructure

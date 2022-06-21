@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { BoosterConfig, EventEnvelope, Logger, UUID } from '@boostercloud/framework-types'
+import { BoosterConfig, EventEnvelope, UUID } from '@boostercloud/framework-types'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 
 export type EventsStreamingCallback = (
   entityName: string,
@@ -11,9 +11,8 @@ type EnvelopesPerEntity = Record<string, Array<EventEnvelope>>
 
 export class RawEventsParser {
   public static async streamPerEntityEvents(
-    logger: Logger,
     config: BoosterConfig,
-    rawEvents: any,
+    rawEvents: unknown,
     callbackFn: EventsStreamingCallback
   ): Promise<void> {
     const eventEnvelopesPerEntity = config.provider.events
@@ -21,10 +20,11 @@ export class RawEventsParser {
       .filter(isEventKind)
       .reduce(groupByEntity, {})
     for (const entityEnvelopes of Object.values(eventEnvelopesPerEntity)) {
+      const logger = getLogger(config, 'RawEventsParser#streamPerEntityEvents')
       // All envelopes are for the same entity type/ID, so we get the first one to get those values
       const { entityTypeName, entityID } = entityEnvelopes[0]
       logger.debug(
-        `[RawEventsParser#streamPerEntityEvents]: Streaming the following events for entity '${entityTypeName}' and ID '${entityID}':`,
+        `Streaming the following events for entity '${entityTypeName}' and ID '${entityID}':`,
         entityEnvelopes
       )
       await callbackFn(entityTypeName, entityID, entityEnvelopes, config)

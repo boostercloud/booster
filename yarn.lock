@@ -1737,7 +1737,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@boostercloud/application-tester@^0.28.1, @boostercloud/application-tester@workspace:packages/application-tester":
+"@boostercloud/application-tester@^0.29.1, @boostercloud/application-tester@workspace:packages/application-tester":
   version: 0.0.0-use.local
   resolution: "@boostercloud/application-tester@workspace:packages/application-tester"
   dependencies:
@@ -1749,7 +1749,7 @@ __metadata:
     apollo-utilities: 1.3.4
     chai: 4.2.0
     chai-as-promised: 7.1.1
-    cross-fetch: 3.1.4
+    cross-fetch: 3.1.5
     fast-check: 2.17.0
     graphql: 15.8.0
     jsonwebtoken: 8.5.1
@@ -1766,8 +1766,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@boostercloud/cli@workspace:packages/cli"
   dependencies:
-    "@boostercloud/framework-core": ^0.28.1
-    "@boostercloud/framework-types": ^0.28.1
+    "@boostercloud/framework-core": ^0.29.1
+    "@boostercloud/framework-types": ^0.29.1
     "@oclif/command": ^1.8
     "@oclif/config": ^1.18
     "@oclif/dev-cli": ^1.26
@@ -1785,6 +1785,7 @@ __metadata:
     chai-as-promised: 7.1.1
     chalk: ^2.4.2
     child-process-promise: ^2.2.1
+    copyfiles: ^2.3.0
     execa: ^2.0.3
     faker: 5.1.0
     fancy-test: 1.4.3
@@ -1810,7 +1811,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-common-helpers@portal:packages/framework-common-helpers::locator=root%40workspace%3A."
   dependencies:
-    "@boostercloud/framework-types": ^0.28.1
+    "@boostercloud/framework-types": ^0.29.1
     child-process-promise: ^2.2.1
     tslib: 2.3.1
   languageName: node
@@ -1820,11 +1821,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-common-helpers@workspace:packages/framework-common-helpers"
   dependencies:
-    "@boostercloud/framework-types": ^0.28.1
+    "@boostercloud/framework-types": ^0.29.1
+    "@types/rewire": ^2.5.28
     "@types/uuid": 8.3.0
     chai: 4.2.0
     chai-as-promised: 7.1.1
     child-process-promise: ^2.2.1
+    rewire: 5.0.0
     rimraf: 3.0.2
     sinon: 9.2.3
     sinon-chai: 3.5.0
@@ -1836,8 +1839,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-core@portal:packages/framework-core::locator=root%40workspace%3A."
   dependencies:
-    "@boostercloud/framework-common-helpers": ^0.28.1
-    "@boostercloud/framework-types": ^0.28.1
+    "@boostercloud/framework-common-helpers": ^0.29.1
+    "@boostercloud/framework-types": ^0.29.1
     fp-ts: 2.10.5
     graphql: 15.8.0
     graphql-subscriptions: 1.2.1
@@ -1856,8 +1859,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-core@workspace:packages/framework-core"
   dependencies:
-    "@boostercloud/framework-common-helpers": ^0.28.1
-    "@boostercloud/framework-types": ^0.28.1
+    "@boostercloud/framework-common-helpers": ^0.29.1
+    "@boostercloud/framework-types": ^0.29.1
     "@types/faker": 5.1.5
     "@types/graphql-type-json": 0.3.2
     "@types/inflected": 1.1.29
@@ -1892,18 +1895,18 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-integration-tests@workspace:packages/framework-integration-tests"
   dependencies:
-    "@boostercloud/application-tester": ^0.28.1
-    "@boostercloud/framework-common-helpers": ^0.28.1
-    "@boostercloud/framework-core": ^0.28.1
-    "@boostercloud/framework-provider-aws": ^0.28.1
-    "@boostercloud/framework-provider-aws-infrastructure": ^0.28.1
-    "@boostercloud/framework-provider-azure": ^0.28.1
-    "@boostercloud/framework-provider-azure-infrastructure": ^0.28.1
-    "@boostercloud/framework-provider-kubernetes": ^0.28.1
-    "@boostercloud/framework-provider-kubernetes-infrastructure": ^0.28.1
-    "@boostercloud/framework-provider-local": ^0.28.1
-    "@boostercloud/framework-provider-local-infrastructure": ^0.28.1
-    "@boostercloud/framework-types": ^0.28.1
+    "@boostercloud/application-tester": ^0.29.1
+    "@boostercloud/framework-common-helpers": ^0.29.1
+    "@boostercloud/framework-core": ^0.29.1
+    "@boostercloud/framework-provider-aws": ^0.29.1
+    "@boostercloud/framework-provider-aws-infrastructure": ^0.29.1
+    "@boostercloud/framework-provider-azure": ^0.29.1
+    "@boostercloud/framework-provider-azure-infrastructure": ^0.29.1
+    "@boostercloud/framework-provider-kubernetes": ^0.29.1
+    "@boostercloud/framework-provider-kubernetes-infrastructure": ^0.29.1
+    "@boostercloud/framework-provider-local": ^0.29.1
+    "@boostercloud/framework-provider-local-infrastructure": ^0.29.1
+    "@boostercloud/framework-types": ^0.29.1
     "@kubernetes/client-node": 0.14.3
     "@types/aws-lambda": 8.10.48
     "@types/chai-arrays": 2.0.0
@@ -1917,7 +1920,7 @@ __metadata:
     apollo-link-ws: 1.0.20
     apollo-utilities: 1.3.4
     aws-sdk: 2.853.0
-    cross-fetch: 3.1.4
+    cross-fetch: 3.1.5
     faker: 5.1.0
     graphql: 15.8.0
     graphql-tag: 2.12.4
@@ -1936,7 +1939,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@boostercloud/framework-provider-aws-infrastructure@^0.28.1, @boostercloud/framework-provider-aws-infrastructure@workspace:packages/framework-provider-aws-infrastructure":
+"@boostercloud/framework-provider-aws-infrastructure@^0.29.1, @boostercloud/framework-provider-aws-infrastructure@workspace:packages/framework-provider-aws-infrastructure":
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-provider-aws-infrastructure@workspace:packages/framework-provider-aws-infrastructure"
   dependencies:
@@ -1953,11 +1956,13 @@ __metadata:
     "@aws-cdk/aws-s3-deployment": 1.99.0
     "@aws-cdk/core": 1.99.0
     "@aws-cdk/cx-api": 1.99.0
-    "@boostercloud/framework-provider-aws": ^0.28.1
-    "@boostercloud/framework-types": ^0.28.1
+    "@boostercloud/framework-common-helpers": ^0.29.1
+    "@boostercloud/framework-provider-aws": ^0.29.1
+    "@boostercloud/framework-types": ^0.29.1
     "@types/aws-lambda": 8.10.48
     "@types/aws-sdk": 2.7.0
     "@types/faker": 5.1.5
+    "@types/rewire": ^2.5.28
     aws-cdk: 1.99.0
     aws-sdk: ^2.848.0
     chai: 4.2.0
@@ -1973,15 +1978,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@boostercloud/framework-provider-aws@^0.28.1, @boostercloud/framework-provider-aws@workspace:packages/framework-provider-aws":
+"@boostercloud/framework-provider-aws@^0.29.1, @boostercloud/framework-provider-aws@workspace:packages/framework-provider-aws":
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-provider-aws@workspace:packages/framework-provider-aws"
   dependencies:
-    "@boostercloud/framework-common-helpers": ^0.28.1
-    "@boostercloud/framework-types": ^0.28.1
+    "@boostercloud/framework-common-helpers": ^0.29.1
+    "@boostercloud/framework-types": ^0.29.1
     "@types/aws-lambda": 8.10.48
     "@types/chai-arrays": 2.0.0
     "@types/faker": 5.1.5
+    "@types/rewire": ^2.5.28
     aws-sdk: 2.853.0
     chai: 4.2.0
     chai-arrays: ^2.2.0
@@ -1999,16 +2005,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@boostercloud/framework-provider-azure-infrastructure@^0.28.1, @boostercloud/framework-provider-azure-infrastructure@workspace:packages/framework-provider-azure-infrastructure":
+"@boostercloud/framework-provider-azure-infrastructure@^0.29.1, @boostercloud/framework-provider-azure-infrastructure@workspace:packages/framework-provider-azure-infrastructure":
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-provider-azure-infrastructure@workspace:packages/framework-provider-azure-infrastructure"
   dependencies:
     "@azure/arm-appservice": ^6.0.0
     "@azure/cosmos": 3.7.3
-    "@boostercloud/framework-common-helpers": ^0.28.1
-    "@boostercloud/framework-core": ^0.28.1
-    "@boostercloud/framework-provider-azure": ^0.28.1
-    "@boostercloud/framework-types": ^0.28.1
+    "@boostercloud/framework-common-helpers": ^0.29.1
+    "@boostercloud/framework-core": ^0.29.1
+    "@boostercloud/framework-provider-azure": ^0.29.1
+    "@boostercloud/framework-types": ^0.29.1
     "@cdktf/provider-azurerm": 0.2.179
     "@types/archiver": 5.1.0
     "@types/faker": 5.1.5
@@ -2038,15 +2044,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@boostercloud/framework-provider-azure@^0.28.1, @boostercloud/framework-provider-azure@workspace:packages/framework-provider-azure":
+"@boostercloud/framework-provider-azure@^0.29.1, @boostercloud/framework-provider-azure@workspace:packages/framework-provider-azure":
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-provider-azure@workspace:packages/framework-provider-azure"
   dependencies:
     "@azure/cosmos": 3.7.3
     "@azure/functions": ^1.2.2
-    "@boostercloud/framework-types": ^0.28.1
+    "@boostercloud/framework-common-helpers": ^0.29.1
+    "@boostercloud/framework-types": ^0.29.1
     chai: 4.2.0
     chai-as-promised: 7.1.1
+    faker: 5.1.0
     mocha: 8.4.0
     rimraf: 3.0.2
     sinon: 9.2.3
@@ -2054,12 +2062,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@boostercloud/framework-provider-kubernetes-infrastructure@^0.28.1, @boostercloud/framework-provider-kubernetes-infrastructure@workspace:packages/framework-provider-kubernetes-infrastructure":
+"@boostercloud/framework-provider-kubernetes-infrastructure@^0.29.1, @boostercloud/framework-provider-kubernetes-infrastructure@workspace:packages/framework-provider-kubernetes-infrastructure":
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-provider-kubernetes-infrastructure@workspace:packages/framework-provider-kubernetes-infrastructure"
   dependencies:
-    "@boostercloud/framework-common-helpers": ^0.28.1
-    "@boostercloud/framework-types": ^0.28.1
+    "@boostercloud/framework-common-helpers": ^0.29.1
+    "@boostercloud/framework-types": ^0.29.1
     "@kubernetes/client-node": 0.14.3
     "@types/archiver": 5.1.0
     "@types/cors": ^2.8.7
@@ -2086,11 +2094,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@boostercloud/framework-provider-kubernetes@^0.28.1, @boostercloud/framework-provider-kubernetes@workspace:packages/framework-provider-kubernetes":
+"@boostercloud/framework-provider-kubernetes@^0.29.1, @boostercloud/framework-provider-kubernetes@workspace:packages/framework-provider-kubernetes":
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-provider-kubernetes@workspace:packages/framework-provider-kubernetes"
   dependencies:
-    "@boostercloud/framework-types": ^0.28.1
+    "@boostercloud/framework-common-helpers": ^0.29.1
+    "@boostercloud/framework-types": ^0.29.1
     "@types/node-fetch": ^2.5.10
     "@types/redis": ^2.8.28
     body-parser: ^1.18.3
@@ -2106,12 +2115,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@boostercloud/framework-provider-local-infrastructure@^0.28.1, @boostercloud/framework-provider-local-infrastructure@workspace:packages/framework-provider-local-infrastructure":
+"@boostercloud/framework-provider-local-infrastructure@^0.29.1, @boostercloud/framework-provider-local-infrastructure@workspace:packages/framework-provider-local-infrastructure":
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-provider-local-infrastructure@workspace:packages/framework-provider-local-infrastructure"
   dependencies:
-    "@boostercloud/framework-provider-local": ^0.28.1
-    "@boostercloud/framework-types": ^0.28.1
+    "@boostercloud/framework-common-helpers": ^0.29.1
+    "@boostercloud/framework-provider-local": ^0.29.1
+    "@boostercloud/framework-types": ^0.29.1
     "@types/express": 4.17.12
     "@types/faker": 5.1.5
     "@types/nedb": ^1.8.11
@@ -2133,17 +2143,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@boostercloud/framework-provider-local@^0.28.1, @boostercloud/framework-provider-local@workspace:packages/framework-provider-local":
+"@boostercloud/framework-provider-local@^0.29.1, @boostercloud/framework-provider-local@workspace:packages/framework-provider-local":
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-provider-local@workspace:packages/framework-provider-local"
   dependencies:
-    "@boostercloud/framework-common-helpers": ^0.28.1
-    "@boostercloud/framework-types": ^0.28.1
+    "@boostercloud/framework-common-helpers": ^0.29.1
+    "@boostercloud/framework-types": ^0.29.1
     "@types/express": 4.17.12
     "@types/faker": 5.1.5
     "@types/nedb": ^1.8.11
     chai: 4.2.0
     chai-as-promised: 7.1.1
+    express: ^4.17.1
     faker: 5.1.0
     mocha: 8.4.0
     nedb: ^1.8.0
@@ -2155,15 +2166,15 @@ __metadata:
   linkType: soft
 
 "@boostercloud/framework-provider-local@file:packages/framework-provider-local::locator=root%40workspace%3A.":
-  version: 0.28.1
-  resolution: "@boostercloud/framework-provider-local@file:packages/framework-provider-local#packages/framework-provider-local::hash=4abe61&locator=root%40workspace%3A."
+  version: 0.29.1
+  resolution: "@boostercloud/framework-provider-local@file:packages/framework-provider-local#packages/framework-provider-local::hash=c2bddf&locator=root%40workspace%3A."
   dependencies:
-    "@boostercloud/framework-common-helpers": ^0.28.1
-    "@boostercloud/framework-types": ^0.28.1
+    "@boostercloud/framework-common-helpers": ^0.29.1
+    "@boostercloud/framework-types": ^0.29.1
     "@types/nedb": ^1.8.11
     nedb: ^1.8.0
     tslib: 2.3.1
-  checksum: ae19f32ab072b79a5d87f73ed6f3e0916e131ecc545f47cdcce4824957fee76df387627e71e10aaef01628e66648d072a2f5f04b141c049bfadf83f5e0b6e66c
+  checksum: 79b780d757ca7da656d9335218dea5e62a3ec3902bb2de3608dcc0c117c9b494858e5946da55f8d2ad5b0dcc92b5ef34697c0310ba53416d25ff0395197cba3d
   languageName: node
   linkType: hard
 
@@ -7410,7 +7421,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cross-fetch@npm:3.1.4, cross-fetch@npm:^3.1.4":
+"cross-fetch@npm:3.1.5":
+  version: 3.1.5
+  resolution: "cross-fetch@npm:3.1.5"
+  dependencies:
+    node-fetch: 2.6.7
+  checksum: f6b8c6ee3ef993ace6277fd789c71b6acf1b504fd5f5c7128df4ef2f125a429e29cd62dc8c127523f04a5f2fa4771ed80e3f3d9695617f441425045f505cf3bb
+  languageName: node
+  linkType: hard
+
+"cross-fetch@npm:^3.1.4":
   version: 3.1.4
   resolution: "cross-fetch@npm:3.1.4"
   dependencies:
@@ -13286,6 +13306,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"node-fetch@npm:2.6.7, node-fetch@npm:^2.6.7":
+  version: 2.6.7
+  resolution: "node-fetch@npm:2.6.7"
+  dependencies:
+    whatwg-url: ^5.0.0
+  peerDependencies:
+    encoding: ^0.1.0
+  peerDependenciesMeta:
+    encoding:
+      optional: true
+  checksum: 8d816ffd1ee22cab8301c7756ef04f3437f18dace86a1dae22cf81db8ef29c0bf6655f3215cb0cdb22b420b6fe141e64b26905e7f33f9377a7fa59135ea3e10b
+  languageName: node
+  linkType: hard
+
 "node-fetch@npm:^1.0.1":
   version: 1.7.3
   resolution: "node-fetch@npm:1.7.3"
@@ -13302,20 +13336,6 @@ __metadata:
   dependencies:
     whatwg-url: ^5.0.0
   checksum: ee8290626bdb73629c59722b75dcf4b9b6a67c1ed7eb9102e368479c4a13b56a48c2bb3ad71571e378e98c8b2c64c820e11f9cd39e4b8557dd138ad571ef9a42
-  languageName: node
-  linkType: hard
-
-"node-fetch@npm:^2.6.7":
-  version: 2.6.7
-  resolution: "node-fetch@npm:2.6.7"
-  dependencies:
-    whatwg-url: ^5.0.0
-  peerDependencies:
-    encoding: ^0.1.0
-  peerDependenciesMeta:
-    encoding:
-      optional: true
-  checksum: 8d816ffd1ee22cab8301c7756ef04f3437f18dace86a1dae22cf81db8ef29c0bf6655f3215cb0cdb22b420b6fe141e64b26905e7f33f9377a7fa59135ea3e10b
   languageName: node
   linkType: hard
 

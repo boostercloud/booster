@@ -41,7 +41,7 @@ describe('the event registry', () => {
       })
 
       it('should return expected event', async () => {
-        const result = await eventRegistry.query({
+        const result = (await eventRegistry.query({
           kind: mockTargetEvent.kind,
           entityID: mockTargetEvent.entityID,
           entityTypeName: mockTargetEvent.entityTypeName,
@@ -50,7 +50,7 @@ describe('the event registry', () => {
           requestID: mockTargetEvent.requestID,
           typeName: mockTargetEvent.typeName,
           version: mockTargetEvent.version,
-        })
+        })) as Array<EventEnvelope>
 
         expect(result.length).to.be.equal(1)
         expect(result[0]).to.deep.include(mockTargetEvent)
@@ -80,11 +80,11 @@ describe('the event registry', () => {
       })
 
       it('should return expected events of the same id sorted', async () => {
-        const result: EventEnvelope[] = await eventRegistry.query({
+        const result: EventEnvelope[] = (await eventRegistry.query({
           kind: 'event',
           entityID: entityId,
           entityTypeName: entityName,
-        })
+        })) as Array<EventEnvelope>
 
         expect(result.length).to.be.equal(initialEventsCount)
         expect(result[0].entityID).to.be.equal(entityId)
@@ -159,6 +159,7 @@ describe('the event registry', () => {
     it('should throw if the database `insert` fails', async () => {
       const event: EventEnvelope = {
         kind: 'event',
+        superKind: 'domain',
         entityID: faker.random.uuid(),
         entityTypeName: faker.random.word(),
         value: {

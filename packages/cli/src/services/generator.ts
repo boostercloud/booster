@@ -1,16 +1,34 @@
 import * as path from 'path'
-import * as fs from 'fs-extra'
+import { outputFile, readFileSync } from 'fs-extra'
 import * as Mustache from 'mustache'
 import { Target, FileDir } from './generator/target'
 import { classNameToFileName, checkResourceNameIsValid } from '../common/filenames'
 import { checkResourceExists } from './project-checker'
+import {
+  checkResourceStubFileExists,
+  resourceStubFilePath,
+  checkStubsFolderExists,
+  resourceTemplateFilePath,
+} from './stub-publisher'
+import type { TemplateType } from './stub-publisher'
 
 export async function generate<TInfo>(target: Target<TInfo>): Promise<void> {
   await checkResourceExists(target.name, target.placementDir, target.extension)
   checkResourceNameIsValid(target.name)
   const rendered = Mustache.render(target.template, { ...target.info })
   const renderPath = filePath<TInfo>(target)
-  await fs.outputFile(renderPath, rendered)
+  await outputFile(renderPath, rendered)
+}
+
+export function template(name: TemplateType): string {
+  const fileName = `${name}.stub`
+  const stubFile = resourceStubFilePath(fileName)
+
+  if (checkStubsFolderExists() && checkResourceStubFileExists(stubFile)) {
+    return readFileSync(stubFile).toString()
+  }
+
+  return readFileSync(resourceTemplateFilePath(fileName)).toString()
 }
 
 export function filePath<TInfo>(target: FileDir<TInfo>): string {

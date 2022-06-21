@@ -31,6 +31,10 @@ export default class Start extends BaseCommand {
       char: 'e',
       description: 'environment configuration to run',
     }),
+    verbose: flags.boolean({
+      description: 'display full error messages',
+      default: false,
+    }),
   }
 
   public async run(): Promise<void> {
@@ -39,5 +43,17 @@ export default class Start extends BaseCommand {
     if (initializeEnvironment(logger, flags.environment)) {
       await runTasks(flags.port, compileProjectAndLoadConfig(process.cwd()), startProvider.bind(null, flags.port))
     }
+  }
+
+  async catch(fullError: Error) {
+    const {
+      flags: { verbose },
+    } = this.parse(Start)
+
+    if (verbose) {
+      console.error(fullError.message)
+    }
+
+    return super.catch(fullError)
   }
 }

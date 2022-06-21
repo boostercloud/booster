@@ -1,27 +1,26 @@
-import { BoosterConfig, Logger } from '@boostercloud/framework-types'
+import { BoosterConfig } from '@boostercloud/framework-types'
 import { K8sManagement } from './k8s-sdk/k8s-management'
 import { HelmManager } from './helm-manager'
 import { DeployManager } from './deploy-manager'
 import { DaprManager } from './dapr-manager'
-import { Promises } from '@boostercloud/framework-common-helpers'
+import { Promises, getLogger } from '@boostercloud/framework-common-helpers'
 export interface BoosterK8sConfiguration extends BoosterConfig {
   context?: string
 }
 
-export const deploy = (configuration: BoosterConfig, logger: Logger): Promise<void> =>
-  deployBoosterApp(logger, configuration)
+export const deploy = (config: BoosterConfig): Promise<void> => deployBoosterApp(config)
 
-export const nuke = (configuration: BoosterConfig, logger: Logger): Promise<void> =>
-  nukeBoosterApp(logger, configuration)
+export const nuke = (config: BoosterConfig): Promise<void> => nukeBoosterApp(config)
 
-async function deployBoosterApp(logger: Logger, configuration: BoosterK8sConfiguration): Promise<void> {
-  const clusterManager = new K8sManagement(logger)
-  const helmManager = new HelmManager(logger)
-  const daprManager = new DaprManager(logger, configuration, clusterManager, helmManager)
-  const deployManager = new DeployManager(logger, configuration, clusterManager, daprManager, helmManager)
-  if (configuration.context) {
-    logger.info(`Setting Kubectl context to ${configuration.context}`)
-    await clusterManager.setClusterContext(configuration.context)
+async function deployBoosterApp(config: BoosterK8sConfiguration): Promise<void> {
+  const logger = getLogger(config, 'index#deployBoosterApp')
+  const clusterManager = new K8sManagement(config)
+  const helmManager = new HelmManager(config)
+  const daprManager = new DaprManager(config, clusterManager, helmManager)
+  const deployManager = new DeployManager(config, clusterManager, daprManager, helmManager)
+  if (config.context) {
+    logger.info(`Setting Kubectl context to ${config.context}`)
+    await clusterManager.setClusterContext(config.context)
   }
   logger.info('Checking your cluster and installed tools')
   await Promises.allSettledAndFulfilled([deployManager.ensureNamespaceExists(), deployManager.ensureHelmIsReady()])
@@ -48,14 +47,15 @@ async function deployBoosterApp(logger: Logger, configuration: BoosterK8sConfigu
   logger.info(`Your app is ready in this url: http://${serviceURL}/graphql`)
 }
 
-async function nukeBoosterApp(logger: Logger, configuration: BoosterK8sConfiguration): Promise<void> {
-  const clusterManager = new K8sManagement(logger)
-  const helmManager = new HelmManager(logger)
-  const daprManager = new DaprManager(logger, configuration, clusterManager, helmManager)
-  const deployManager = new DeployManager(logger, configuration, clusterManager, daprManager, helmManager)
-  if (configuration.context) {
-    logger.info(`Setting Kubectl context to ${configuration.context}`)
-    await clusterManager.setClusterContext(configuration.context)
+async function nukeBoosterApp(config: BoosterK8sConfiguration): Promise<void> {
+  const logger = getLogger(config, 'index#nukeBoosterApp')
+  const clusterManager = new K8sManagement(config)
+  const helmManager = new HelmManager(config)
+  const daprManager = new DaprManager(config, clusterManager, helmManager)
+  const deployManager = new DeployManager(config, clusterManager, daprManager, helmManager)
+  if (config.context) {
+    logger.info(`Setting Kubectl context to ${config.context}`)
+    await clusterManager.setClusterContext(config.context)
   }
   logger.info('Nuking your Booster project 🧨')
   await deployManager.deleteDapr()

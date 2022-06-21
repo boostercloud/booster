@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from './expect'
 import {
-  Logger,
   InvalidParameterError,
   UUID,
   ReadModelRequestEnvelope,
@@ -17,13 +16,6 @@ import { BoosterReadModelsReader } from '../src/booster-read-models-reader'
 import { random, internet } from 'faker'
 import { BoosterAuth } from '../src/booster-auth'
 import { Booster } from '../src/booster'
-
-const logger: Logger = {
-  debug() {},
-  warn() {},
-  info() {},
-  error() {},
-}
 
 describe('BoosterReadModelReader', () => {
   const config = new BoosterConfig('test')
@@ -53,7 +45,7 @@ describe('BoosterReadModelReader', () => {
   // Why sorting by salmon? Salmons are fun! https://youtu.be/dDj7DuHVV9E
   config.readModelSequenceKeys[SequencedReadModel.name] = 'salmon'
 
-  const readModelReader = new BoosterReadModelsReader(config, logger)
+  const readModelReader = new BoosterReadModelsReader(config)
 
   const noopGraphQLOperation: GraphQLOperation = {
     query: '',
@@ -307,7 +299,6 @@ describe('BoosterReadModelReader', () => {
 
         expect(providerSearcherFunctionFake).to.have.been.calledOnceWithExactly(
           match.any,
-          match.any,
           TestReadModel.name,
           filters,
           {},
@@ -469,12 +460,7 @@ describe('BoosterReadModelReader', () => {
       const subscriptionID = random.uuid()
       await readModelReader.unsubscribe(connectionID, subscriptionID)
 
-      expect(deleteSubscriptionFake).to.have.been.calledOnceWithExactly(
-        match.any,
-        match.any,
-        connectionID,
-        subscriptionID
-      )
+      expect(deleteSubscriptionFake).to.have.been.calledOnceWithExactly(match.any, connectionID, subscriptionID)
     })
   })
 
@@ -485,7 +471,7 @@ describe('BoosterReadModelReader', () => {
       const connectionID = random.uuid()
       await readModelReader.unsubscribeAll(connectionID)
 
-      expect(deleteAllSubscriptionsFake).to.have.been.calledOnceWithExactly(match.any, match.any, connectionID)
+      expect(deleteAllSubscriptionsFake).to.have.been.calledOnceWithExactly(match.any, connectionID)
     })
   })
 })

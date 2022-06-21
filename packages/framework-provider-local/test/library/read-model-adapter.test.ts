@@ -4,7 +4,6 @@ import { ReadModelRegistry } from '../../src'
 import {
   BoosterConfig,
   FilterFor,
-  Logger,
   ReadModelEnvelope,
   ReadModelInterface,
   ReadOnlyNonEmptyArray,
@@ -12,41 +11,39 @@ import {
   UUID,
 } from '@boostercloud/framework-types'
 import { expect } from '../expect'
-
 import { random } from 'faker'
 import { createMockReadModelEnvelope } from '../helpers/read-model-helper'
 import {
+  deleteReadModel,
   fetchReadModel,
   rawReadModelEventsToEnvelopes,
   searchReadModel,
   storeReadModel,
 } from '../../src/library/read-model-adapter'
+import { describe } from 'mocha'
 
 async function fetchMock(
   mockReadModelRegistry: SinonStubbedInstance<ReadModelRegistry>,
   mockConfig: BoosterConfig,
-  mockLogger: Logger,
   mockReadModelTypeName: string,
   mockReadModelID: UUID
 ): Promise<ReadOnlyNonEmptyArray<ReadModelInterface>> {
   // @ts-ignore
-  return await fetchReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModelTypeName, mockReadModelID)
+  return await fetchReadModel(mockReadModelRegistry, mockConfig, mockReadModelTypeName, mockReadModelID)
 }
 
 async function storeMock(
   mockReadModelRegistry: SinonStubbedInstance<ReadModelRegistry>,
   mockConfig: BoosterConfig,
-  mockLogger: Logger,
   mockReadModel: ReadModelEnvelope
 ): Promise<void> {
   // @ts-ignore
-  await storeReadModel(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel.typeName, mockReadModel.value, 1)
+  await storeReadModel(mockReadModelRegistry, mockConfig, mockReadModel.typeName, mockReadModel.value, 1)
 }
 
 async function searchMock(
   mockReadModelRegistry: SinonStubbedInstance<ReadModelRegistry>,
   mockConfig: BoosterConfig,
-  mockLogger: Logger,
   mockReadModel: ReadModelEnvelope,
   filters: FilterFor<any>,
   sortBy?: SortFor<unknown>,
@@ -57,7 +54,6 @@ async function searchMock(
   await searchReadModel(
     mockReadModelRegistry as any,
     mockConfig,
-    mockLogger,
     mockReadModel.typeName,
     filters,
     sortBy,
@@ -68,12 +64,12 @@ async function searchMock(
 
 describe('read-models-adapter', () => {
   let mockConfig: BoosterConfig
-  let mockLogger: Logger
   let mockReadModel: ReadModelEnvelope
 
   let loggerDebugStub: SinonStub
   let storeStub: SinonStub
   let queryStub: SinonStub
+  let deleteStub: SinonStub
 
   type StubbedClass<T> = SinonStubbedInstance<T> & T
   let mockReadModelRegistry: SinonStubbedInstance<ReadModelRegistry>
@@ -85,8 +81,9 @@ describe('read-models-adapter', () => {
     loggerDebugStub = stub()
     storeStub = stub()
     queryStub = stub()
+    deleteStub = stub()
 
-    mockLogger = {
+    mockConfig.logger = {
       info: fake(),
       warn: fake(),
       error: fake(),
@@ -99,11 +96,12 @@ describe('read-models-adapter', () => {
     replace(mockReadModelRegistry, 'store', storeStub as any)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     replace(mockReadModelRegistry, 'query', queryStub as any)
+    replace(mockReadModelRegistry, 'deleteById', deleteStub as any)
   })
 
   describe('rawReadModelEventsToEnvelopes', () => {
     it('should return an empty array of envelopes', async () => {
-      const results = await rawReadModelEventsToEnvelopes(mockConfig, mockLogger, [])
+      const results = await rawReadModelEventsToEnvelopes(mockConfig, [])
       const expected: ReadModelEnvelope[] = []
       expect(results).to.deep.equal(expected)
     })
@@ -112,7 +110,7 @@ describe('read-models-adapter', () => {
       const value1: ReadModelEnvelope = createMockReadModelEnvelope()
       const value2: ReadModelEnvelope = createMockReadModelEnvelope()
       const rawEvents: unknown[] = [value1 as unknown, value2 as unknown]
-      const results = await rawReadModelEventsToEnvelopes(mockConfig, mockLogger, rawEvents)
+      const results = await rawReadModelEventsToEnvelopes(mockConfig, rawEvents)
       const expected: ReadModelEnvelope[] = [value1, value2]
       expect(results).to.deep.equal(expected)
     })
@@ -130,7 +128,7 @@ describe('read-models-adapter', () => {
     it('should call read model registry query and return a value', async () => {
       queryStub.resolves([mockReadModel])
       const result: ReadModelInterface = (
-        await fetchMock(mockReadModelRegistry, mockConfig, mockLogger, mockReadModelTypeName, mockReadModelID)
+        await fetchMock(mockReadModelRegistry, mockConfig, mockReadModelTypeName, mockReadModelID)
       )[0]
 
       expect(queryStub).to.have.been.calledOnceWithExactly({
@@ -138,29 +136,30 @@ describe('read-models-adapter', () => {
         typeName: mockReadModelTypeName,
       })
       expect(result).to.deep.equal(mockReadModel.value)
-      expect(mockLogger.debug).to.not.be.calledWith(
-        `[ReadModelAdapter#fetchReadModel] Read model ${mockReadModelTypeName} with ID ${mockReadModelID} not found`
+      expect(mockConfig.logger?.debug).to.not.be.calledWith(
+        '[Booster]|read-model-adapter#fetchReadModel: ',
+        `Read model ${mockReadModelTypeName} with ID ${mockReadModelID} not found`
       )
-      expect(mockLogger.debug).to.be.calledWith(
-        `[ReadModelAdapter#fetchReadModel] Loaded read model ${mockReadModelTypeName} with ID ${mockReadModelID} with result:`
+      expect(mockConfig.logger?.debug).to.be.calledWith(
+        '[Booster]|read-model-adapter#fetchReadModel: ',
+        `Loaded read model ${mockReadModelTypeName} with ID ${mockReadModelID} with result:`
       )
     })
 
     it('should call read model registry query and no results', async () => {
       queryStub.resolves([])
-      const result = (
-        await fetchMock(mockReadModelRegistry, mockConfig, mockLogger, mockReadModelTypeName, mockReadModelID)
-      )[0]
+      const result = (await fetchMock(mockReadModelRegistry, mockConfig, mockReadModelTypeName, mockReadModelID))[0]
 
       expect(queryStub).to.have.been.calledOnceWithExactly({
         'value.id': mockReadModelID,
         typeName: mockReadModelTypeName,
       })
       expect(result).to.be.undefined
-      expect(mockLogger.debug).to.be.calledWith(
-        `[ReadModelAdapter#fetchReadModel] Read model ${mockReadModelTypeName} with ID ${mockReadModelID} not found`
+      expect(mockConfig.logger?.debug).to.be.calledWith(
+        '[Booster]|read-model-adapter#fetchReadModel: ',
+        `Read model ${mockReadModelTypeName} with ID ${mockReadModelID} not found`
       )
-      expect(mockLogger.debug).to.not.be.calledWith(
+      expect(mockConfig.logger?.debug).to.not.be.calledWith(
         `[ReadModelAdapter#fetchReadModel] Loaded read model ${mockReadModelTypeName} with ID ${mockReadModelID} with result:`
       )
     })
@@ -172,7 +171,7 @@ describe('read-models-adapter', () => {
     beforeEach(async () => {
       mockReadModel = createMockReadModelEnvelope()
 
-      await storeMock(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel)
+      await storeMock(mockReadModelRegistry, mockConfig, mockReadModel)
     })
 
     it('should call read model registry store', () => {
@@ -180,14 +179,17 @@ describe('read-models-adapter', () => {
     })
 
     it('should log the right debug message', () => {
-      expect(mockLogger.debug).to.have.been.calledWithExactly('[ReadModelAdapter#storeReadModel] Read model stored')
+      expect(mockConfig.logger?.debug).to.have.been.calledWithExactly(
+        '[Booster]|read-model-adapter#storeReadModel: ',
+        'Read model stored'
+      )
     })
   })
 
   describe('searchReadModel', () => {
     it('empty query should call read model registry store', async () => {
       const mockReadModel = createMockReadModelEnvelope()
-      await searchMock(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel, {})
+      await searchMock(mockReadModelRegistry, mockConfig, mockReadModel, {})
       expect(queryStub).to.have.been.calledWithExactly(
         {
           typeName: mockReadModel.typeName,
@@ -201,7 +203,7 @@ describe('read-models-adapter', () => {
     describe('query by one field', () => {
       it('eq query should call read model registry store with the appropriate operation converted', async () => {
         const mockReadModel = createMockReadModelEnvelope()
-        await searchMock(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel, {
+        await searchMock(mockReadModelRegistry, mockConfig, mockReadModel, {
           foo: { eq: 1 },
         })
         expect(queryStub).to.have.been.calledWithExactly(
@@ -214,7 +216,7 @@ describe('read-models-adapter', () => {
 
       it('ne query should call read model registry store with the appropriate operation converted', async () => {
         const mockReadModel = createMockReadModelEnvelope()
-        await searchMock(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel, {
+        await searchMock(mockReadModelRegistry, mockConfig, mockReadModel, {
           foo: { ne: 1 },
         })
         expect(queryStub).to.have.been.calledWithExactly(
@@ -227,7 +229,7 @@ describe('read-models-adapter', () => {
 
       it('lt query should call read model registry store with the appropriate operation converted', async () => {
         const mockReadModel = createMockReadModelEnvelope()
-        await searchMock(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel, {
+        await searchMock(mockReadModelRegistry, mockConfig, mockReadModel, {
           foo: { lt: 1 },
         })
         expect(queryStub).to.have.been.calledWithExactly(
@@ -240,7 +242,7 @@ describe('read-models-adapter', () => {
 
       it('gt query should call read model registry store with the appropriate operation converted', async () => {
         const mockReadModel = createMockReadModelEnvelope()
-        await searchMock(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel, {
+        await searchMock(mockReadModelRegistry, mockConfig, mockReadModel, {
           foo: { gt: 1 },
         })
 
@@ -254,7 +256,7 @@ describe('read-models-adapter', () => {
 
       it('lte query should call read model registry store with the appropriate operation converted', async () => {
         const mockReadModel = createMockReadModelEnvelope()
-        await searchMock(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel, {
+        await searchMock(mockReadModelRegistry, mockConfig, mockReadModel, {
           foo: { lte: 1 },
         })
         expect(queryStub).to.have.been.calledWithExactly(
@@ -267,7 +269,7 @@ describe('read-models-adapter', () => {
 
       it('gte query should call read model registry store with the appropriate operation converted', async () => {
         const mockReadModel = createMockReadModelEnvelope()
-        await searchMock(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel, {
+        await searchMock(mockReadModelRegistry, mockConfig, mockReadModel, {
           foo: { gte: 1 },
         })
         expect(queryStub).to.have.been.calledWithExactly(
@@ -280,7 +282,7 @@ describe('read-models-adapter', () => {
 
       it('gte query should call read model registry store with the appropriate operation converted', async () => {
         const mockReadModel = createMockReadModelEnvelope()
-        await searchMock(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel, {
+        await searchMock(mockReadModelRegistry, mockConfig, mockReadModel, {
           foo: { in: [1, 2, 3] },
         })
         expect(queryStub).to.have.been.calledWithExactly(
@@ -296,7 +298,7 @@ describe('read-models-adapter', () => {
 
       it('contains query should call read model registry store with the appropriate operation converted', async () => {
         const mockReadModel = createMockReadModelEnvelope()
-        await searchMock(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel, {
+        await searchMock(mockReadModelRegistry, mockConfig, mockReadModel, {
           foo: { contains: 'bar' },
         })
         expect(queryStub).to.have.been.calledWithExactly(
@@ -312,7 +314,7 @@ describe('read-models-adapter', () => {
 
       it('includes query should call read model registry store with the appropriate operation converted', async () => {
         const mockReadModel = createMockReadModelEnvelope()
-        await searchMock(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel, {
+        await searchMock(mockReadModelRegistry, mockConfig, mockReadModel, {
           foo: { includes: 'bar' },
         })
         expect(queryStub).to.have.been.calledWithExactly(
@@ -328,7 +330,7 @@ describe('read-models-adapter', () => {
 
       it('includes object query should call read model registry store with the appropriate operation converted', async () => {
         const mockReadModel = createMockReadModelEnvelope()
-        await searchMock(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel, {
+        await searchMock(mockReadModelRegistry, mockConfig, mockReadModel, {
           foo: { includes: { bar: 'baz' } },
         })
         expect(queryStub).to.have.been.calledWithExactly(
@@ -344,7 +346,7 @@ describe('read-models-adapter', () => {
 
       it('beginsWith query should call read model registry store with the appropriate operation converted', async () => {
         const mockReadModel = createMockReadModelEnvelope()
-        await searchMock(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel, {
+        await searchMock(mockReadModelRegistry, mockConfig, mockReadModel, {
           foo: { beginsWith: 'bar' },
         })
         expect(queryStub).to.have.been.calledWithExactly(
@@ -360,7 +362,7 @@ describe('read-models-adapter', () => {
 
       it('NOT beginsWith query should call read model registry store with the appropriate operation converted', async () => {
         const mockReadModel = createMockReadModelEnvelope()
-        await searchMock(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel, {
+        await searchMock(mockReadModelRegistry, mockConfig, mockReadModel, {
           not: { foo: { beginsWith: 'bar' } },
         })
         expect(queryStub).to.have.been.calledWithExactly(
@@ -378,7 +380,7 @@ describe('read-models-adapter', () => {
     describe('multiple queries', () => {
       it('only fields query should use AND and call read model registry store with the appropriate operation converted', async () => {
         const mockReadModel = createMockReadModelEnvelope()
-        await searchMock(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel, {
+        await searchMock(mockReadModelRegistry, mockConfig, mockReadModel, {
           foo: {
             subFooField: { eq: 'subFooField' },
           },
@@ -404,7 +406,7 @@ describe('read-models-adapter', () => {
 
       it('gt lt AND query should call read model registry store with the appropriate operation converted', async () => {
         const mockReadModel = createMockReadModelEnvelope()
-        await searchMock(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel, {
+        await searchMock(mockReadModelRegistry, mockConfig, mockReadModel, {
           and: [{ foo: { gt: 1 } }, { foo: { lt: 10 } }],
         })
         expect(queryStub).to.have.been.calledWithExactly(
@@ -420,7 +422,7 @@ describe('read-models-adapter', () => {
 
       it('gte lte AND query should call read model registry store with the appropriate operation converted', async () => {
         const mockReadModel = createMockReadModelEnvelope()
-        await searchMock(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel, {
+        await searchMock(mockReadModelRegistry, mockConfig, mockReadModel, {
           and: [{ foo: { gte: 1 } }, { foo: { lte: 10 } }],
         })
         expect(queryStub).to.have.been.calledWithExactly(
@@ -436,7 +438,7 @@ describe('read-models-adapter', () => {
 
       it('OR query should call read model registry store with the appropriate operation converted', async () => {
         const mockReadModel = createMockReadModelEnvelope()
-        await searchMock(mockReadModelRegistry, mockConfig, mockLogger, mockReadModel, {
+        await searchMock(mockReadModelRegistry, mockConfig, mockReadModel, {
           or: [{ foo: { eq: 1 } }, { bar: { lt: 10 } }],
         })
         expect(queryStub).to.have.been.calledWithExactly(
@@ -457,7 +459,6 @@ describe('read-models-adapter', () => {
         await searchMock(
           mockReadModelRegistry,
           mockConfig,
-          mockLogger,
           mockReadModel,
           {},
           [
@@ -486,6 +487,25 @@ describe('read-models-adapter', () => {
           3
         )
       })
+    })
+  })
+
+  describe('deleteReadModel', () => {
+    it('delete one read model', async () => {
+      const expectedId = random.uuid()
+      const mockReadModelInterface: ReadModelInterface = {
+        id: expectedId,
+        age: random.number(40),
+        foo: random.word(),
+        bar: random.float(),
+        boosterMetadata: {
+          version: 1,
+          schemaVersion: 1,
+        },
+      }
+      const expectedName = 'readModel'
+      await deleteReadModel(mockReadModelRegistry as any, mockConfig, expectedName, mockReadModelInterface)
+      expect(deleteStub).to.have.been.calledWithExactly(expectedId, expectedName)
     })
   })
 })

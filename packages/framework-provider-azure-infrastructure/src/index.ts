@@ -1,6 +1,7 @@
 import { deploy, nuke, synth } from './infrastructure'
-import { BoosterConfig, Logger, ProviderInfrastructure, RocketDescriptor } from '@boostercloud/framework-types'
-import { loadRocket } from './infrastructure/rockets/infrastructure-rocket'
+import { BoosterConfig, ProviderInfrastructure, RocketDescriptor } from '@boostercloud/framework-types'
+import { RocketLoader } from '@boostercloud/framework-common-helpers'
+import { InfrastructureRocket } from './infrastructure/rockets/infrastructure-rocket'
 
 export * from './test-helper/azure-test-helper'
 export * from './infrastructure/types/application-synth-stack'
@@ -10,10 +11,10 @@ export * from './infrastructure/rockets/infrastructure-rocket'
 export * from './infrastructure/types/functionDefinition'
 
 export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): ProviderInfrastructure => {
-  const rockets = rocketDescriptors?.map(loadRocket)
+  const rockets = rocketDescriptors?.map(RocketLoader.loadRocket) as InfrastructureRocket[]
   return {
-    deploy: async (config: BoosterConfig, logger: Logger) => await deploy(config, logger, rockets),
-    nuke: async (config: BoosterConfig, logger: Logger) => await nuke(config, logger, rockets),
-    synth: async (config: BoosterConfig, logger: Logger) => await synth(config, logger, rockets),
+    deploy: async (config: BoosterConfig) => await deploy(config, rockets),
+    nuke: async (config: BoosterConfig) => await nuke(config, rockets),
+    synth: async (config: BoosterConfig) => await synth(config, rockets),
   }
 }

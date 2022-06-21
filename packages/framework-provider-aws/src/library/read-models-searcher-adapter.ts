@@ -3,11 +3,11 @@ import {
   BoosterConfig,
   FilterFor,
   InvalidParameterError,
-  Logger,
   Operation,
   ReadModelListResult,
   SortFor,
 } from '@boostercloud/framework-types'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 import { DynamoDB } from 'aws-sdk'
 import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
 import ExpressionAttributeValueMap = DocumentClient.ExpressionAttributeValueMap
@@ -16,7 +16,6 @@ import ExpressionAttributeNameMap = DocumentClient.ExpressionAttributeNameMap
 export async function searchReadModel(
   dynamoDB: DynamoDB.DocumentClient,
   config: BoosterConfig,
-  logger: Logger,
   readModelName: string,
   filters: FilterFor<unknown>,
   sortBy?: SortFor<unknown>,
@@ -24,6 +23,7 @@ export async function searchReadModel(
   afterCursor?: DynamoDB.DocumentClient.Key | undefined,
   paginatedVersion = false
 ): Promise<Array<any> | ReadModelListResult<any>> {
+  const logger = getLogger(config, 'read-model-searcher-adapter#searchReadModel')
   if (sortBy) {
     logger.info('SortBy not implemented for AWS provider. It will be ignored')
   }

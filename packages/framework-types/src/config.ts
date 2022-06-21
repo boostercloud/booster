@@ -16,7 +16,7 @@ import {
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
 import * as path from 'path'
-import { RocketDescriptor, RocketFunction } from './rocket-descriptor'
+import { RocketDescriptor, RocketFunction } from './rockets'
 import { Logger } from '.'
 
 /**
@@ -32,10 +32,12 @@ export class BoosterConfig {
   public rockets?: Array<RocketDescriptor>
   public appName = 'new-booster-app'
   public assets?: Array<string>
+  public defaultResponseHeaders: Record<string, string> = {}
   public readonly subscriptions = {
     maxConnectionDurationInSeconds: 7 * 24 * 60 * 60, // 7 days
     maxDurationInSeconds: 2 * 24 * 60 * 60, // 2 days
   }
+  public enableGraphQLIntrospection = true
   private _userProjectRootPath?: string
   public readonly codeRelativePath: string = 'dist'
   public readonly eventDispatcherHandler: string = path.join(this.codeRelativePath, 'index.boosterEventDispatcher')

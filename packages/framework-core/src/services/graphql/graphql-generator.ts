@@ -6,7 +6,6 @@ import {
   EventSearchParameters,
   EventSearchRequest,
   EventSearchResponse,
-  Logger,
   ReadModelByIdRequestArgs,
   ReadModelInterface,
   ReadModelRequestArgs,
@@ -14,7 +13,8 @@ import {
   ReadModelRequestProperties,
   TimeKey,
 } from '@boostercloud/framework-types'
-import { GraphQLFieldResolver, GraphQLInputObjectType, GraphQLResolveInfo, GraphQLSchema } from 'graphql'
+import { getLogger } from '@boostercloud/framework-common-helpers'
+import { GraphQLFieldResolver, GraphQLInputObjectType, GraphQLSchema } from 'graphql'
 import { pluralize } from 'inflected'
 import { BoosterCommandDispatcher } from '../../booster-command-dispatcher'
 import { BoosterEventsReader } from '../../booster-events-reader'
@@ -31,12 +31,13 @@ export class GraphQLGenerator {
   private static eventsReader: BoosterEventsReader
   private static schema: GraphQLSchema
 
-  public static generateSchema(config: BoosterConfig, logger: Logger): GraphQLSchema {
+  public static generateSchema(config: BoosterConfig): GraphQLSchema {
+    const logger = getLogger(config, 'GraphQLGenerator#generateSchema')
     if (!this.schema) {
       logger.debug('Generating GraphQL schema...')
-      this.commandsDispatcher = new BoosterCommandDispatcher(config, logger)
-      this.readModelsReader = new BoosterReadModelsReader(config, logger)
-      this.eventsReader = new BoosterEventsReader(config, logger)
+      this.commandsDispatcher = new BoosterCommandDispatcher(config)
+      this.readModelsReader = new BoosterReadModelsReader(config)
+      this.eventsReader = new BoosterEventsReader(config)
 
       const typeInformer = new GraphQLTypeInformer(logger)
 
@@ -78,7 +79,7 @@ export class GraphQLGenerator {
 
   public static readModelResolverBuilder(
     readModelClass: AnyClass
-  ): GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestArgs<ReadModelInterface>> {
+  ): GraphQLFieldResolver<unknown, GraphQLResolverContext, ReadModelRequestArgs<ReadModelInterface>> {
     return (parent, args, context, info) => {
       let isPaginated = false
       if (info?.fieldName === `List${pluralize(readModelClass.name)}`) {
@@ -94,7 +95,7 @@ export class GraphQLGenerator {
     readModelClass: AnyClass
   ): GraphQLFieldResolver<unknown, GraphQLResolverContext, ReadModelByIdRequestArgs> {
     const sequenceKeyName = config.readModelSequenceKeys[readModelClass.name]
-    return async (parent, args, context, info) => {
+    return async (parent, args, context) => {
       const readModelRequestEnvelope = this.toReadModelByIdRequestEnvelope(
         readModelClass,
         args,
@@ -108,8 +109,7 @@ export class GraphQLGenerator {
   public static eventResolver(
     parent: unknown,
     args: EventSearchParameters,
-    context: GraphQLResolverContext,
-    info: GraphQLResolveInfo
+    context: GraphQLResolverContext
   ): Promise<Array<EventSearchResponse>> {
     const eventsRequestEnvelope = toEventSearchRequest(args, context)
     return this.eventsReader.fetch(eventsRequestEnvelope)
@@ -117,10 +117,10 @@ export class GraphQLGenerator {
 
   public static commandResolverBuilder(
     commandClass: AnyClass
-  ): GraphQLFieldResolver<any, GraphQLResolverContext, { input: any }> {
-    return async (parent, args, context, info) => {
+  ): GraphQLFieldResolver<unknown, GraphQLResolverContext, { input: unknown }> {
+    return async (parent, args, context) => {
       const commandEnvelope = toCommandEnvelope(commandClass.name, args.input, context)
-      const result = await this.commandsDispatcher.dispatchCommand(commandEnvelope)
+      const result = await this.commandsDispatcher.dispatchCommand(commandEnvelope, context)
       // It could be that the command didn't return anything
       // so in that case we return `true`, as GraphQL doesn't have a `null` type
       return result ?? true
@@ -130,7 +130,7 @@ export class GraphQLGenerator {
   public static subscriptionByIDResolverBuilder(
     config: BoosterConfig,
     readModelClass: AnyClass
-  ): GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestProperties<ReadModelInterface>> {
+  ): GraphQLFieldResolver<unknown, GraphQLResolverContext, ReadModelRequestProperties<ReadModelInterface>> {
     return async (parent, args, context, info) => {
       const filterArgs = { filter: { id: { eq: args.id } } }
       return this.subscriptionResolverBuilder(config, readModelClass)(parent, filterArgs, context, info)
@@ -140,8 +140,8 @@ export class GraphQLGenerator {
   public static subscriptionResolverBuilder(
     config: BoosterConfig,
     readModelClass: AnyClass
-  ): GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestArgs<ReadModelInterface>> {
-    return async (parent, args, context, info) => {
+  ): GraphQLFieldResolver<unknown, GraphQLResolverContext, ReadModelRequestArgs<ReadModelInterface>> {
+    return async (parent, args, context) => {
       if (!context.connectionID) {
         throw new Error('Missing "connectionID". It is required for subscriptions')
       }

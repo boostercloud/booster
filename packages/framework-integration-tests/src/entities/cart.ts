@@ -71,3 +71,8 @@ export class Cart {
     return currentCart
   }
 }
+
+@Entity({
+  authorizeReadEvents: 'all',
+})
+export class MigratedCart extends Cart {}

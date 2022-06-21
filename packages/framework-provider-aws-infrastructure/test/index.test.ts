@@ -1,27 +1,19 @@
-import { Logger, ProviderInfrastructure } from '@boostercloud/framework-types'
+import { ProviderInfrastructure } from '@boostercloud/framework-types'
 import { fake, replace, restore } from 'sinon'
 import { expect } from './expect'
 import * as infra from '../src/infrastructure'
-import * as infrastructureRocket from '../src/rockets/infrastructure-rocket'
-
-const rewire = require('rewire')
-const infrastructure = rewire('../src/index')
-
-const logger = {
-  info: fake(),
-  warn: fake(),
-  debug: fake(),
-  error: fake(),
-} as Logger
+import { Infrastructure } from '../src/index'
+import { RocketLoader } from '@boostercloud/framework-common-helpers'
 
 describe('the `framework-provider-aws-infrastructure` package', () => {
+  // eslint-disable-next-line @typescript-eslint/ban-types
   afterEach(() => {
     restore()
   })
 
   describe('the `Infrastructure` function', () => {
     context('with no rockets', () => {
-      const providerInfrastructure: ProviderInfrastructure = infrastructure.Infrastructure()
+      const providerInfrastructure: ProviderInfrastructure = Infrastructure()
 
       it('returns a `ProviderInfrastructure` object', () => {
         expect(providerInfrastructure).to.be.an('object')
@@ -36,9 +28,9 @@ describe('the `framework-provider-aws-infrastructure` package', () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const fakeConfig = { fake: 'config' } as any
 
-          if (providerInfrastructure.deploy) await providerInfrastructure.deploy(fakeConfig, logger)
+          if (providerInfrastructure.deploy) await providerInfrastructure.deploy(fakeConfig)
 
-          expect(infra.deploy).to.have.been.calledWith(fakeConfig, logger)
+          expect(infra.deploy).to.have.been.calledWith(fakeConfig)
         })
 
         it('throws an error if the deploy process failed', async () => {
@@ -50,7 +42,7 @@ describe('the `framework-provider-aws-infrastructure` package', () => {
 
           expect(providerInfrastructure.deploy).to.be.a('function')
           if (providerInfrastructure.deploy)
-            await expect(providerInfrastructure.deploy(fakeConfig, logger)).to.be.rejectedWith(errorMessage)
+            await expect(providerInfrastructure.deploy(fakeConfig)).to.be.rejectedWith(errorMessage)
         })
       })
 
@@ -66,7 +58,7 @@ describe('the `framework-provider-aws-infrastructure` package', () => {
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const providerInfrastructureAlias = providerInfrastructure as any
-          await expect(providerInfrastructureAlias.nuke(fakeConfig, logger)).to.be.rejectedWith(errorMessage)
+          await expect(providerInfrastructureAlias.nuke(fakeConfig)).to.be.rejectedWith(errorMessage)
         })
       })
     })
@@ -82,8 +74,8 @@ describe('the `framework-provider-aws-infrastructure` package', () => {
       ]
 
       it('returns a `ProviderInfrastructure` object', () => {
-        replace(infrastructureRocket, 'loadRocket', fake())
-        const providerInfrastructure: ProviderInfrastructure = infrastructure.Infrastructure(fakePackageList)
+        replace(RocketLoader, 'loadRocket', fake())
+        const providerInfrastructure: ProviderInfrastructure = Infrastructure(fakePackageList)
 
         expect(providerInfrastructure).to.be.an('object')
         expect(providerInfrastructure.deploy).to.be.a('function')
@@ -94,20 +86,20 @@ describe('the `framework-provider-aws-infrastructure` package', () => {
         it('is called with rockets', async () => {
           const fakeLoadedRocket = { thisIs: 'aRocket' }
           const fakeLoadRocket = fake.returns(fakeLoadedRocket)
-          replace(infrastructureRocket, 'loadRocket', fakeLoadRocket)
+          replace(RocketLoader, 'loadRocket', fakeLoadRocket)
 
-          const providerInfrastructure: ProviderInfrastructure = infrastructure.Infrastructure(fakePackageList)
+          const providerInfrastructure: ProviderInfrastructure = Infrastructure(fakePackageList)
           replace(infra, 'deploy', fake())
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const fakeConfig = { fake: 'config' } as any
 
           if (providerInfrastructure.deploy) {
-            await providerInfrastructure.deploy(fakeConfig, logger)
+            await providerInfrastructure.deploy(fakeConfig)
           }
 
           expect(fakeLoadRocket).to.have.been.calledOnceWith(fakePackageList[0])
-          expect(infra.deploy).to.have.been.calledWith(fakeConfig, logger, [fakeLoadedRocket])
+          expect(infra.deploy).to.have.been.calledWith(fakeConfig, [fakeLoadedRocket])
         })
       })
 
@@ -115,20 +107,20 @@ describe('the `framework-provider-aws-infrastructure` package', () => {
         it('is called with rockets', async () => {
           const fakeLoadedRocket = { thisIs: 'aRocket' }
           const fakeLoadRocket = fake.returns(fakeLoadedRocket)
-          replace(infrastructureRocket, 'loadRocket', fakeLoadRocket)
+          replace(RocketLoader, 'loadRocket', fakeLoadRocket)
 
-          const providerInfrastructure: ProviderInfrastructure = infrastructure.Infrastructure(fakePackageList)
+          const providerInfrastructure: ProviderInfrastructure = Infrastructure(fakePackageList)
           replace(infra, 'nuke', fake())
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const fakeConfig = { fake: 'config' } as any
 
           if (providerInfrastructure.nuke) {
-            await providerInfrastructure.nuke(fakeConfig, logger)
+            await providerInfrastructure.nuke(fakeConfig)
           }
 
           expect(fakeLoadRocket).to.have.been.calledOnceWith(fakePackageList[0])
-          expect(infra.nuke).to.have.been.calledWith(fakeConfig, logger, [fakeLoadedRocket])
+          expect(infra.nuke).to.have.been.calledWith(fakeConfig, [fakeLoadedRocket])
         })
       })
     })

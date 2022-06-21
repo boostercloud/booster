@@ -1,7 +1,8 @@
-export const template = `{{#imports}}
+{{#imports}}
 import { {{commaSeparatedComponents}} } from '{{{packagePath}}}'
 {{/imports}}
 
+// -> Custom code in the entity!
 @Entity
 export class {{{name}}} {
   public constructor(
@@ -19,4 +20,3 @@ export class {{{name}}} {
 
   {{/events}}
 }
-`
