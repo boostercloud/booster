@@ -55,7 +55,6 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "8.10.48",
-    "@types/aws-sdk": "2.7.0",
     "@types/faker": "5.1.5",
     "@types/rewire": "^2.5.28",
     "chai": "4.2.0",
@@ -66,6 +65,7 @@
     "rimraf": "3.0.2",
     "sinon": "9.2.3",
     "sinon-chai": "3.5.0",
+    "typescript": "4.5.4",
     "velocityjs": "^2.0.0"
   }
 }

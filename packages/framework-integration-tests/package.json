@@ -17,7 +17,7 @@
     "@boostercloud/framework-provider-kubernetes": "^0.29.2",
     "@boostercloud/framework-provider-local": "^0.29.2",
     "@boostercloud/framework-types": "^0.29.2",
-    "aws-sdk": "2.853.0"
+    "aws-sdk": "^2.848.0"
   },
   "devDependencies": {
     "@boostercloud/application-tester": "^0.29.2",

@@ -53,6 +53,6 @@
     "velocityjs": "^2.0.0"
   },
   "optionalDependencies": {
-    "aws-sdk": "2.853.0"
+    "aws-sdk": "^2.848.0"
   }
 }
