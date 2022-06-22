@@ -1,3 +1,4 @@
+import { ProviderTestHelper } from '@boostercloud/framework-types'
 import { LocalQueries } from './local-queries'
 import { LocalCounters } from './local-counters'
 
@@ -6,7 +7,7 @@ interface ApplicationOutputs {
   websocketURL: string
 }
 
-export class LocalTestHelper {
+export class LocalTestHelper implements ProviderTestHelper {
   private constructor(
     readonly outputs: ApplicationOutputs,
     readonly counters: LocalCounters,
@@ -30,12 +31,10 @@ export class LocalTestHelper {
   }
 
   private static async graphqlURL(): Promise<string> {
-    const url = 'http://localhost:3000/graphql'
-    return url
+    return 'http://localhost:3000/graphql'
   }
 
   private static async websocketURL(): Promise<string> {
-    const url = 'SOME-URL'
-    return url
+    return 'http://localhost:3000/graphql'
   }
 }

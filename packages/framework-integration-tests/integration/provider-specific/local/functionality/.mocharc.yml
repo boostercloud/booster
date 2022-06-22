@@ -7,6 +7,6 @@ recursive: true
 reporter: 'spec'
 timeout: 600000
 file:
-  - './integration/provider-specific/local/setup.ts'
+  - './integration/provider-specific/local/functionality/setup.ts'
 full-trace: true
 bail: true

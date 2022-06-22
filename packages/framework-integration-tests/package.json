@@ -50,7 +50,9 @@
     "subscriptions-transport-ws": "0.9.18",
     "ttypescript": "1.5.13",
     "ws": "7.4.5",
-    "yaml": "1.10.2"
+    "yaml": "1.10.2",
+    "chai": "4.2.0",
+    "nedb": "^1.8.0"
   },
   "engines": {
     "node": ">=14.0.0"
@@ -76,9 +78,9 @@
     "integration/k8s": "npm run integration/k8s-deploy && npm run integration/k8s-nuke",
     "integration/k8s-deploy": "BOOSTER_ENV=kubernetes mocha --forbid-only --exit --config \"integration/provider-specific/kubernetes/deployment/.mocharc.yml\" \"integration/provider-specific/kubernetes/deployment/**/*.integration.ts\"",
     "integration/k8s-nuke": "BOOSTER_ENV=kubernetes mocha --forbid-only --exit --config \"integration/provider-specific/kubernetes/nuke/.mocharc.yml\" \"integration/provider-specific/kubernetes/nuke/**/*.integration.ts\"",
-    "integration/local": "BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/provider-specific/local/.mocharc.yml\" \"integration/provider-specific/local/**/*.integration.ts\"",
-    "integration/local-ongoing": "npm run integration/local-start && npm run integration/local-stop",
+    "integration/local": "npm run integration/local-start && npm run integration/local-provider-specific && npm run integration/local-stop",
     "integration/local-start": "BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/provider-specific/local/start/.mocharc.yml\" \"integration/provider-specific/local/start/*.integration.ts\"",
+    "integration/local-provider-specific": "BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/provider-specific/local/functionality/.mocharc.yml\" \"integration/provider-specific/local/functionality/**/*.integration.ts\"",
     "integration/local-func": "TESTED_PROVIDER=LOCAL BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/provider-unaware/functionality/.mocharc.yml\" \"integration/provider-unaware/functionality/**/*.integration.ts\"",
     "integration/local-end-to-end": "TESTED_PROVIDER=LOCAL BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/provider-unaware/end-to-end/.mocharc.yml\" \"integration/provider-unaware/end-to-end/**/*.integration.ts\"",
     "integration/local-stop": "BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/provider-specific/local/stop/.mocharc.yml\" \"integration/provider-specific/local/stop/*.integration.ts\"",

@@ -1,4 +1,4 @@
-import { ProviderTestHelper } from '@boostercloud/application-tester'
+import { ProviderTestHelper } from '@boostercloud/framework-types'
 import { AWSTestHelper } from '@boostercloud/framework-provider-aws-infrastructure'
 import { AzureTestHelper } from '@boostercloud/framework-provider-azure-infrastructure'
 import { LocalTestHelper } from '@boostercloud/framework-provider-local-infrastructure'
