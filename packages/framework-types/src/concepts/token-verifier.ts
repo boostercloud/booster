@@ -2,11 +2,15 @@ import { UserEnvelope } from '../envelope'
 
 export interface DecodedToken {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  header: any
+  header: {
+    kid: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any
+  }
   payload: {
-    email: string
-    phone_number: string
     sub: string
+    email?: string
+    phone_number?: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any
   }

@@ -17,4 +17,14 @@ describe('framework-core package', () => {
     expect(BoosterCore.boosterNotifySubscribers).not.to.be.null
     expect(BoosterCore.boosterNotifySubscribers).to.equal(Booster.boosterNotifySubscribers)
   })
+
+  it('exports the `boosterTriggerScheduledCommand` function', () => {
+    expect(BoosterCore.boosterTriggerScheduledCommand).not.to.be.null
+    expect(BoosterCore.boosterTriggerScheduledCommand).to.equal(Booster.boosterTriggerScheduledCommand)
+  })
+
+  it('exports the `boosterRocketDispatcher` function', () => {
+    expect(BoosterCore.boosterRocketDispatcher).not.to.be.null
+    expect(BoosterCore.boosterRocketDispatcher).to.equal(Booster.boosterRocketDispatcher)
+  })
 })

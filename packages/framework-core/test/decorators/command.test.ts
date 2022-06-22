@@ -14,25 +14,27 @@ describe('the `Command` decorator', () => {
   })
 
   context('when an authorizer function is provided', () => {
-    const fakeCommandAuthorizer = fake.resolves(undefined)
-    @Command({ authorize: fakeCommandAuthorizer })
-    class PostComment {
-      public constructor(readonly comment: string) {}
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      public static async handle(_command: PostComment, _register: Register): Promise<void> {
-        throw new Error('Not implemented')
-      }
-    }
-
     it('injects the command handler metadata in the Booster configuration with the provided authorizer function', () => {
+      const fakeCommandAuthorizer = fake.resolves(undefined)
+      @Command({ authorize: fakeCommandAuthorizer })
+      class PostComment {
+        public constructor(readonly comment: string) {}
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        public static async handle(_command: PostComment, _register: Register): Promise<void> {
+          throw new Error('Not implemented')
+        }
+      }
+
       // Make Booster be of any type to access private members
       const booster = Booster as any
       const commandMetadata = booster.config.commandHandlers[PostComment.name]
 
       expect(commandMetadata).to.be.an('object')
       expect(commandMetadata.class).to.equal(PostComment)
-      expect(commandMetadata.properties).to.include({ name: 'comment', typeInfo: 'string' })
-      expect(commandMetadata.methods).to.include({ name: 'handle', typeInfo: 'Promise<void>' })
+      expect(commandMetadata.properties[0].name).to.equal('comment')
+      expect(commandMetadata.properties[0].typeInfo.name).to.equal('string')
+      expect(commandMetadata.methods[0].name).to.equal('handle')
+      expect(commandMetadata.methods[0].typeInfo.name).to.equal('Promise<void>')
       expect(commandMetadata.authorizer).to.equal(fakeCommandAuthorizer)
       expect(commandMetadata.before).to.be.an('Array')
       expect(commandMetadata.before).to.be.empty
@@ -40,24 +42,26 @@ describe('the `Command` decorator', () => {
   })
 
   context('when an authorizer function is not provided', () => {
-    @Command({})
-    class PostComment {
-      public constructor(readonly comment: string) {}
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      public static async handle(_command: PostComment, _register: Register): Promise<void> {
-        throw new Error('Not implemented')
-      }
-    }
-
     it('injects the command handler metadata in the Booster configuration and denies access', () => {
+      @Command({})
+      class PostComment {
+        public constructor(readonly comment: string) {}
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        public static async handle(_command: PostComment, _register: Register): Promise<void> {
+          throw new Error('Not implemented')
+        }
+      }
+
       // Make Booster be of any type to access private members
       const booster = Booster as any
       const commandMetadata = booster.config.commandHandlers[PostComment.name]
 
       expect(commandMetadata).to.be.an('object')
       expect(commandMetadata.class).to.equal(PostComment)
-      expect(commandMetadata.properties).to.include({ name: 'comment', typeInfo: 'string' })
-      expect(commandMetadata.methods).to.include({ name: 'handle', typeInfo: 'Promise<void>' })
+      expect(commandMetadata.properties[0].name).to.equal('comment')
+      expect(commandMetadata.properties[0].typeInfo.name).to.equal('string')
+      expect(commandMetadata.methods[0].name).to.equal('handle')
+      expect(commandMetadata.methods[0].typeInfo.name).to.equal('Promise<void>')
       expect(commandMetadata.authorizer).to.equal(BoosterAuthorizer.denyAccess)
       expect(commandMetadata.before).to.be.an('Array')
       expect(commandMetadata.before).to.be.empty
@@ -65,25 +69,27 @@ describe('the `Command` decorator', () => {
   })
 
   context('when a `before` hook is provided', () => {
-    const fakeBeforeHook = fake.resolves(undefined)
-    @Command({ before: [fakeBeforeHook] })
-    class PostComment {
-      public constructor(readonly comment: string) {}
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      public static async handle(_command: PostComment, _register: Register): Promise<void> {
-        throw new Error('Not implemented')
-      }
-    }
-
     it('injects the command handler metadata in the Booster configuration with the provided before hook', () => {
+      const fakeBeforeHook = fake.resolves(undefined)
+      @Command({ before: [fakeBeforeHook] })
+      class PostComment {
+        public constructor(readonly comment: string) {}
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        public static async handle(_command: PostComment, _register: Register): Promise<void> {
+          throw new Error('Not implemented')
+        }
+      }
+
       // Make Booster be of any type to access private members
       const booster = Booster as any
       const commandMetadata = booster.config.commandHandlers[PostComment.name]
 
       expect(commandMetadata).to.be.an('object')
       expect(commandMetadata.class).to.equal(PostComment)
-      expect(commandMetadata.properties).to.include({ name: 'comment', typeInfo: 'string' })
-      expect(commandMetadata.methods).to.include({ name: 'handle', typeInfo: 'Promise<void>' })
+      expect(commandMetadata.properties[0].name).to.equal('comment')
+      expect(commandMetadata.properties[0].typeInfo.name).to.equal('string')
+      expect(commandMetadata.methods[0].name).to.equal('handle')
+      expect(commandMetadata.methods[0].typeInfo.name).to.equal('Promise<void>')
       expect(commandMetadata.authorizer).to.equal(BoosterAuthorizer.denyAccess)
       expect(commandMetadata.before).to.be.an('Array')
       expect(commandMetadata.before).to.include(fakeBeforeHook)

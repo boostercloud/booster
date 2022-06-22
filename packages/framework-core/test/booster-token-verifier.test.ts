@@ -268,7 +268,7 @@ describe('the "verifyToken" method', () => {
     await expect(verifyFunction).to.eventually.be.rejectedWith('Unauthorized')
   })
 
-  it("fails if extra validation for token headers doesn't match", async () => {
+  it('fails if a custom token verifier raises an exception', async () => {
     const token = jwks.token({
       sub: userId,
       iss: issuer,

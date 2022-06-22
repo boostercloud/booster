@@ -73,7 +73,7 @@ describe('BoosterEventsReader', () => {
   })
 
   describe('the validation for the method `fetch` throws the right error when', () => {
-    it('it is a "byEntity" search and entity metadata is not found', async () => {
+    it('is a "byEntity" search and entity metadata is not found', async () => {
       const request: EventSearchRequest = {
         requestID: random.uuid(),
         parameters: {
@@ -85,7 +85,7 @@ describe('BoosterEventsReader', () => {
       )
     })
 
-    it('it is a "byType" search and the associated entity is not found', async () => {
+    it('is a "byType" search and the associated entity is not found', async () => {
       const request: EventSearchRequest = {
         requestID: random.uuid(),
         parameters: {
@@ -97,7 +97,7 @@ describe('BoosterEventsReader', () => {
       )
     })
 
-    it('it is a "byEvent" search and the associated entity metadata is not found', async () => {
+    it('is a "byEvent" search and the associated entity metadata is not found', async () => {
       const request: EventSearchRequest = {
         requestID: random.uuid(),
         parameters: {
@@ -109,7 +109,7 @@ describe('BoosterEventsReader', () => {
       )
     })
 
-    it('it is an invalid type of event search: it is not a "byEntity" or a "byType" search', async () => {
+    it('is an invalid type of event search: it is not a "byEntity" or a "byType" search', async () => {
       const request: EventSearchRequest = {
         requestID: random.uuid(),
         parameters: {} as never,
@@ -117,7 +117,7 @@ describe('BoosterEventsReader', () => {
       await expect(eventsReader.fetch(request)).to.be.rejectedWith(/Invalid event search request/)
     })
 
-    it('it is an invalid type of event search: it is both a "byEntity" and a "byType" search', async () => {
+    it('is an invalid type of event search: it is both a "byEntity" and a "byType" search', async () => {
       const request: EventSearchRequest = {
         requestID: random.uuid(),
         parameters: {

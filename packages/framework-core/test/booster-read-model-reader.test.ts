@@ -79,18 +79,22 @@ describe('BoosterReadModelReader', () => {
       ) => Promise<void>
 
       it('throws an invalid parameter error when the version is not present in a request', async () => {
-        const emptyReadmodel = {} as any
-        await expect(validateByIdRequest(emptyReadmodel)).to.be.eventually.rejectedWith('"version" was not present')
+        const emptyReadmodelByIdRequest = {} as any
+        await expect(validateByIdRequest(emptyReadmodelByIdRequest)).to.be.eventually.rejectedWith(
+          '"version" was not present'
+        )
       })
 
       it("throws a not found error when it can't find the read model metadata", async () => {
-        const readModel = { version: 1, class: { name: 'NonexistentReadModel' } } as any
-        await expect(validateByIdRequest(readModel)).to.be.eventually.rejectedWith(/Could not find read model/)
+        const readModelByIdRequest = { version: 1, class: { name: 'NonexistentReadModel' } } as any
+        await expect(validateByIdRequest(readModelByIdRequest)).to.be.eventually.rejectedWith(
+          /Could not find read model/
+        )
       })
 
       it('throws a non authorized error when the current user is not allowed to perform the request', async () => {
-        const readModel = { version: 1, class: TestReadModel } as any
-        await expect(validateByIdRequest(readModel)).to.be.eventually.rejectedWith(/Access denied/)
+        const readModelByIdRequest = { version: 1, class: TestReadModel } as any
+        await expect(validateByIdRequest(readModelByIdRequest)).to.be.eventually.rejectedWith(/Access denied/)
       })
 
       it('throws an invalid parameter error when the request receives a sequence key but it cannot be found in the Booster metadata', async () => {

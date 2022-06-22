@@ -1,6 +1,6 @@
 import { DecodedToken } from '@boostercloud/framework-types'
-import * as jwksRSA from 'jwks-rsa'
 import * as jwt from 'jsonwebtoken'
+import { JwksClient, SigningKey } from 'jwks-rsa'
 
 /**
  * Initializes a jwksRSA client that can be used to get the public key of a JWKS URI using the
@@ -9,7 +9,8 @@ import * as jwt from 'jsonwebtoken'
  * @param jwksUri The JWKS URI
  * @returns A JwksRSA client
  */
-export function getJwksClient(jwksUri: string): jwksRSA.JwksClient {
+export function getJwksClient(jwksUri: string): JwksClient {
+  const jwksRSA = require('jwks-rsa') // Manually loading the default export here to be able to stub it
   return jwksRSA({
     jwksUri,
     cache: true,
@@ -26,23 +27,17 @@ export function getJwksClient(jwksUri: string): jwksRSA.JwksClient {
  * @param callback The callback function that will be called when the public key is ready
  * @returns A function that can be used to get the public key
  */
-export function getKeyWithClient(
-  client: jwksRSA.JwksClient,
-  header: jwt.JwtHeader,
-  callback: jwt.SigningKeyCallback
-): void {
+export function getKeyWithClient(client: JwksClient, header: jwt.JwtHeader, callback: jwt.SigningKeyCallback): void {
   if (!header.kid) {
     callback(new Error('JWT kid not found'))
     return
   }
-  client.getSigningKey(header.kid, function (err: Error | null, key: jwksRSA.SigningKey) {
+  client.getSigningKey(header.kid, function (err: Error | null, key: SigningKey) {
     if (err) {
-      // This callback doesn't accept null so an empty string is enough here
-      callback(err, '')
+      callback(err)
       return
     }
-    const signingKey = key.getPublicKey()
-    callback(null, signingKey)
+    callback(null, key.getPublicKey())
   })
 }
 
