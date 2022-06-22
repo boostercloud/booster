@@ -397,17 +397,9 @@ describe('EventStore', () => {
       })
     })
 
-    describe.skip('calculateAndStoreEntitySnapshot', () => {
-      // TODO: create tests for this method
-    })
-  })
-
-  describe('private methods', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const eventStore = new EventStore(config) as any
-
     describe('storeSnapshot', () => {
       it('stores a snapshot in the event store', async () => {
+        const eventStore = new EventStore(config) as any
         replace(config.provider.events, 'store', fake())
 
         const someSnapshot = snapshotEnvelopeFor({
@@ -420,6 +412,11 @@ describe('EventStore', () => {
         expect(config.provider.events.store).to.have.been.calledOnceWith([someSnapshot], config)
       })
     })
+  })
+
+  describe('private methods', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const eventStore = new EventStore(config) as any
 
     describe('loadLatestSnapshot', () => {
       it('looks for the latest snapshot stored in the event stream', async () => {

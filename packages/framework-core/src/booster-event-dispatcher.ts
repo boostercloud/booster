@@ -60,12 +60,12 @@ export class BoosterEventDispatcher {
     readModelStore: ReadModelStore
   ): Promise<void> {
     const logger = getLogger(config, 'BoosterEventDispatcher#snapshotAndUpdateReadModels')
-    const entitySnapshot = await eventStore.calculateAndStoreEntitySnapshot(entityName, entityID, envelopes)
+    const entitySnapshot = await eventStore.fetchEntitySnapshot(entityName, entityID, envelopes)
     if (!entitySnapshot) {
       logger.debug('No new snapshot generated, skipping read models projection')
       return
     }
-
+    await eventStore.storeSnapshot(entitySnapshot)
     logger.debug('Snapshot loaded and started read models projection:', entitySnapshot)
     await readModelStore.project(entitySnapshot)
   }

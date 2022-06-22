@@ -15,14 +15,19 @@ const originOfTime = new Date(0).toISOString() // Unix epoch
 export class EventStore {
   public constructor(readonly config: BoosterConfig) {}
 
-  public async fetchEntitySnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | null> {
+  public async fetchEntitySnapshot(
+    entityName: string,
+    entityID: UUID,
+    pendingEnvelopes?: Array<EventEnvelope>
+  ): Promise<EventEnvelope | null> {
     const logger = getLogger(this.config, 'EventStore#fetchEntitySnapshot')
     logger.debug(`Fetching snapshot for entity ${entityName} with ID ${entityID}`)
     const latestSnapshotEnvelope = await this.loadLatestSnapshot(entityName, entityID)
 
-    // eslint-disable-next-line @typescript-eslint/no-extra-parens
     const lastVisitedTime = latestSnapshotEnvelope?.snapshottedEventCreatedAt ?? originOfTime
-    const pendingEvents = await this.loadEventStreamSince(entityName, entityID, lastVisitedTime)
+    const fetchStream = (): Promise<Array<EventEnvelope>> =>
+      this.loadEventStreamSince(entityName, entityID, lastVisitedTime)
+    const pendingEvents = pendingEnvelopes ?? (await fetchStream())
 
     if (pendingEvents.length <= 0) {
       return latestSnapshotEnvelope
@@ -44,40 +49,7 @@ export class EventStore {
     }
   }
 
-  public async calculateAndStoreEntitySnapshot(
-    entityName: string,
-    entityID: UUID,
-    pendingEnvelopes: Array<EventEnvelope>
-  ): Promise<EventEnvelope | null> {
-    const logger = getLogger(this.config, 'EventStore#calculateAndStoreEntitySnapshot')
-    logger.debug('Processing events: ', pendingEnvelopes)
-    logger.debug(`Fetching snapshot for entity ${entityName} with ID ${entityID}`)
-    const latestSnapshotEnvelope = await this.loadLatestSnapshot(entityName, entityID)
-
-    logger.debug(
-      `[EventStore#calculateAndStoreEntitySnapshot] Looking for the reducer for entity ${entityName} with ID ${entityID}`
-    )
-    let newEntitySnapshot = latestSnapshotEnvelope
-    for (const pendingEvent of pendingEnvelopes) {
-      newEntitySnapshot = await this.entityReducer(newEntitySnapshot, pendingEvent)
-    }
-
-    logger.debug(
-      `[EventStore#calculateAndStoreEntitySnapshot] Reduced new snapshot for entity ${entityName} with ID ${entityID}: `,
-      newEntitySnapshot
-    )
-
-    if (!newEntitySnapshot) {
-      logger.debug('New entity snapshot is null. Returning old one (which can also be null)')
-      return latestSnapshotEnvelope
-    }
-
-    await this.storeSnapshot(newEntitySnapshot)
-
-    return newEntitySnapshot
-  }
-
-  private async storeSnapshot(snapshot: EventEnvelope): Promise<void> {
+  public async storeSnapshot(snapshot: EventEnvelope): Promise<void> {
     const logger = getLogger(this.config, 'EventStore#storeSnapshot')
     logger.debug('Storing snapshot in the event store:', snapshot)
     return this.config.provider.events.store([snapshot], this.config)
