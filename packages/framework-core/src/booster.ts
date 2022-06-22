@@ -30,7 +30,7 @@ import { BoosterDataMigrationEntity } from './core-concepts/data-migration/entit
 import { BoosterDataMigrationStarted } from './core-concepts/data-migration/events/booster-data-migration-started'
 import { BoosterDataMigrationFinished } from './core-concepts/data-migration/events/booster-data-migration-finished'
 import { RegisterHandler } from './booster-register-handler'
-import { JWT_ENV_VARS } from './services/token-verifiers'
+import { JwksUriTokenVerifier, JWT_ENV_VARS } from './services/token-verifiers'
 
 /**
  * Main class to interact with Booster and configure it.
