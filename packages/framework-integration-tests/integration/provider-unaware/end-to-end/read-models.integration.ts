@@ -471,7 +471,10 @@ describe('Read models end-to-end tests', () => {
               `,
             })
           },
-          (result) => result?.data?.ListCartReadModels?.items.length >= 1
+          (result) => {
+            const carts = result?.data?.ListCartReadModels?.items
+            return carts?.length >= 1 && carts[0].shippingAddress?.firstName === mockAddress.firstName
+          }
         )
 
         const cartData = queryResult.data.ListCartReadModels.items
@@ -517,7 +520,10 @@ describe('Read models end-to-end tests', () => {
               `,
             })
           },
-          (result) => result?.data?.ListCartReadModels?.items.length >= 1
+          (result) => {
+            const carts = result?.data?.ListCartReadModels?.items
+            return carts?.length >= 1 && carts[0].shippingAddress?.firstName === mockAddress.firstName
+          }
         )
 
         const cartData = queryResult.data.ListCartReadModels.items
@@ -572,7 +578,10 @@ describe('Read models end-to-end tests', () => {
               `,
             })
           },
-          (result) => result?.data?.ListCartReadModels?.items.length >= 1
+          (result) => {
+            const carts = result?.data?.ListCartReadModels?.items
+            return carts?.length >= 1 && carts[0].shippingAddress?.firstName === mockAddress.firstName
+          }
         )
 
         const cartData = queryResult.data.ListCartReadModels.items
@@ -627,7 +636,10 @@ describe('Read models end-to-end tests', () => {
               `,
             })
           },
-          (result) => result?.data?.ListCartReadModels?.items.length >= 1
+          (result) => {
+            const carts = result?.data?.ListCartReadModels?.items
+            return carts?.length >= 1 && carts[0].shippingAddress?.firstName === mockAddress.firstName
+          }
         )
 
         const cartData = queryResult.data.ListCartReadModels.items
@@ -672,7 +684,10 @@ describe('Read models end-to-end tests', () => {
               `,
             })
           },
-          (result) => result?.data?.ListCartReadModels?.items.length >= 1
+          (result) => {
+            const carts = result?.data?.ListCartReadModels?.items
+            return carts?.length >= 1 && carts[0].shippingAddress?.firstName === mockAddress.firstName
+          }
         )
 
         const cartData = queryResult.data.ListCartReadModels.items

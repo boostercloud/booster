@@ -53,7 +53,7 @@
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
     "faker": "5.1.0",
-    "metadata-booster": "0.4.1",
+    "metadata-booster": "0.4.2",
     "mocha": "8.4.0",
     "mock-jwks": "1.0.3",
     "nock": "11.8.2",
