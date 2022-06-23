@@ -28,12 +28,15 @@ describe('Events end-to-end tests', () => {
     const userEmail = internet.email()
     const userToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail')
     loggedClient = applicationUnderTest.graphql.client(userToken)
-    const expiredToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail', 0)
+    const expiredToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail', { expiresIn: 0 })
     expiredClient = applicationUnderTest.graphql.client(expiredToken)
     const notBefore = Math.floor(Date.now() / 1000) + 999999
-    const beforeToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail', undefined, notBefore)
+    const beforeToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail', { notBefore })
     beforeClient = applicationUnderTest.graphql.client(beforeToken)
-    const expiredAndBeforeToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail', 0, notBefore)
+    const expiredAndBeforeToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail', {
+      expiresIn: 0,
+      notBefore,
+    })
     expiredAndBeforeClient = applicationUnderTest.graphql.client(expiredAndBeforeToken)
   })
 
