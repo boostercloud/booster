@@ -50,7 +50,7 @@ describe('Commands end-to-end tests', () => {
     it('rejects the command if the user does not have the required role', async () => {
       const authToken = applicationUnderTest.token.forUser('admin@example.com', 'User')
       const client = applicationUnderTest.graphql.client(authToken)
-      const result = await client.mutate({
+      const resultPromise = client.mutate({
         variables: {
           sku: random.uuid(),
           displayName: commerce.product(),
@@ -79,8 +79,7 @@ describe('Commands end-to-end tests', () => {
         `,
       })
 
-      expect(result).not.to.be.null
-      expect(result?.data?.CreateProduct).to.be.false
+      await expect(resultPromise).to.be.eventually.rejectedWith(/Access denied for this resource/)
     })
 
     it('accepts the command if the user has the required role', async () => {
@@ -124,7 +123,7 @@ describe('Commands end-to-end tests', () => {
     it('rejects the command when the policy is not satisfied', async () => {
       const authToken = applicationUnderTest.token.forUser('logger@example.com', 'User')
       const client = applicationUnderTest.graphql.client(authToken)
-      const result = await client.mutate({
+      const resultPromise = client.mutate({
         variables: {
           sku: random.uuid(),
           displayName: commerce.product(),
@@ -133,32 +132,19 @@ describe('Commands end-to-end tests', () => {
           currency: finance.currencyName(),
         },
         mutation: gql`
-          mutation LogSomething(
-            $sku: String!
-            $displayName: String!
-            $description: String!
-            $priceInCents: Float!
-            $currency: String!
-          ) {
-            LogSomething(
-              input: {
-                sku: $sku
-                displayName: $displayName
-                description: $description
-                priceInCents: $priceInCents
-                currency: $currency
-              }
-            )
+          mutation {
+            LogSomething
           }
         `,
       })
 
-      expect(result).not.to.be.null
-      expect(result?.data?.LogSomething).to.be.false
+      await expect(resultPromise).to.be.eventually.rejectedWith(/You are not allowed to log something/)
     })
 
     it('accepts the command when the policy is satisfied', async () => {
-      const authToken = applicationUnderTest.token.forUser('logger@example.com', 'User', { customClaims: { canLogSomething: true } })
+      const authToken = applicationUnderTest.token.forUser('logger@example.com', undefined, {
+        customClaims: { canLogSomething: true },
+      })
       const client = applicationUnderTest.graphql.client(authToken)
       const result = await client.mutate({
         variables: {
@@ -169,22 +155,8 @@ describe('Commands end-to-end tests', () => {
           currency: finance.currencyName(),
         },
         mutation: gql`
-          mutation LogSomething(
-            $sku: String!
-            $displayName: String!
-            $description: String!
-            $priceInCents: Float!
-            $currency: String!
-          ) {
-            LogSomething(
-              input: {
-                sku: $sku
-                displayName: $displayName
-                description: $description
-                priceInCents: $priceInCents
-                currency: $currency
-              }
-            )
+          mutation {
+            LogSomething
           }
         `,
       })

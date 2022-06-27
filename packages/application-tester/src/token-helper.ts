@@ -17,7 +17,7 @@ export class TokenHelper {
   constructor() {
     this.privateKey = fs.readFileSync(path.join(__dirname, '..', 'keys', 'private.key'))
   }
-  public forUser(email: string, role: string, tokenOptions?: TokenOptions): string {
+  public forUser(email: string, role?: string, tokenOptions?: TokenOptions): string {
     const keyid = 'booster'
     const issuer = 'booster'
     const options = {
@@ -32,15 +32,12 @@ export class TokenHelper {
     if (tokenOptions?.notBefore) {
       options['notBefore'] = tokenOptions?.notBefore
     }
-    return jwt.sign(
-      {
-        id: email,
-        'booster:role': role,
-        email,
-        ...tokenOptions?.customClaims,
-      },
-      this.privateKey,
-      options
-    )
+    const payload = {
+      id: email,
+      email,
+      ...tokenOptions?.customClaims,
+    }
+    const rolesClaim = role ? { 'booster:role': role } : {}
+    return jwt.sign({ ...payload, ...rolesClaim }, this.privateKey, options)
   }
 }

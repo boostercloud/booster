@@ -110,7 +110,7 @@ describe('the "verifyToken" method', () => {
     const expectedUser: UserEnvelope = {
       id: userId,
       username: email,
-      roles: [''],
+      roles: [],
       claims: {
         sub: userId,
         iss: issuer,

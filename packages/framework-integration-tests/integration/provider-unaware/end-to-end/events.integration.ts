@@ -18,6 +18,7 @@ chai.use(require('chai-as-promised'))
 describe('Events end-to-end tests', () => {
   let anonymousClient: ApolloClient<NormalizedCacheObject>
   let loggedClient: ApolloClient<NormalizedCacheObject>
+  let knowledgeableClient: ApolloClient<NormalizedCacheObject>
   let expiredClient: ApolloClient<NormalizedCacheObject>
   let beforeClient: ApolloClient<NormalizedCacheObject>
   let expiredAndBeforeClient: ApolloClient<NormalizedCacheObject>
@@ -28,6 +29,12 @@ describe('Events end-to-end tests', () => {
     const userEmail = internet.email()
     const userToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail')
     loggedClient = applicationUnderTest.graphql.client(userToken)
+    const tokenWithTheMagicWord = applicationUnderTest.token.forUser(userEmail, undefined, {
+      customClaims: {
+        magicWord: 'opensesame',
+      },
+    })
+    knowledgeableClient = applicationUnderTest.graphql.client(tokenWithTheMagicWord)
     const expiredToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail', { expiresIn: 0 })
     expiredClient = applicationUnderTest.graphql.client(expiredToken)
     const notBefore = Math.floor(Date.now() / 1000) + 999999
@@ -46,18 +53,24 @@ describe('Events end-to-end tests', () => {
         context('with a non-authenticated user', () => {
           it('can not read events belonging to an entity with no authorization declaration', async () => {
             await expect(queryByType(anonymousClient, 'OrderCreated')).to.eventually.be.rejectedWith(
-              /Access denied for reading events/
+              /Access denied for this resource/
             )
           })
 
           it('can not read events belonging to an entity authorized to some roles', async () => {
             await expect(queryByType(anonymousClient, 'ProductUpdated')).to.eventually.be.rejectedWith(
-              /Access denied for reading events/
+              /Access denied for this resource/
             )
           })
 
           it('can read events belonging to an entity authorized for "all"', async () => {
             await expect(queryByType(anonymousClient, 'CartItemChanged')).to.eventually.be.fulfilled
+          })
+
+          it('can not read events from an entity with a custom authorizer', async () => {
+            await expect(queryByType(anonymousClient, 'StockMoved')).to.eventually.be.rejectedWith(
+              /You don't know the magic word/
+            )
           })
         })
 
@@ -103,13 +116,13 @@ describe('Events end-to-end tests', () => {
         context('with an authenticated user', () => {
           it('can not read events belonging to an entity with no authorization declaration', async () => {
             await expect(queryByType(loggedClient, 'OrderCreated')).to.eventually.be.rejectedWith(
-              /Access denied for reading events/
+              /Access denied for this resource/
             )
           })
 
           it('can not read events belonging to an entity authorized to other role', async () => {
             await expect(queryByType(loggedClient, 'CartPaid')).to.eventually.be.rejectedWith(
-              /Access denied for reading events/
+              /Access denied for this resource/
             )
           })
 
@@ -120,6 +133,34 @@ describe('Events end-to-end tests', () => {
           it('can read events belonging to an entity authorized for their role', async () => {
             await expect(queryByType(loggedClient, 'ProductUpdated')).to.eventually.be.fulfilled
           })
+
+          it('can not read events from an entity with a custom authorizer', async () => {
+            await expect(queryByType(loggedClient, 'StockMoved')).to.eventually.be.rejectedWith(
+              /You don't know the magic word/
+            )
+          })
+        })
+
+        context('with a custom authorizer', () => {
+          it('can not read events belonging to an entity with no authorization declaration', async () => {
+            await expect(queryByType(knowledgeableClient, 'OrderCreated')).to.eventually.be.rejectedWith(
+              /Access denied for this resource/
+            )
+          }).timeout(10000)
+
+          it('can not read events belonging to an entity authorized to a role', async () => {
+            await expect(queryByType(knowledgeableClient, 'CartPaid')).to.eventually.be.rejectedWith(
+              /Access denied for this resource/
+            )
+          })
+
+          it('can read events belonging to an entity authorized for "all"', async () => {
+            await expect(queryByType(knowledgeableClient, 'CartItemChanged')).to.eventually.be.fulfilled
+          })
+
+          it('can read events belonging to an entity that satisfies the custom authorizer', async () => {
+            await expect(queryByType(knowledgeableClient, 'StockMoved')).to.eventually.be.fulfilled
+          })
         })
       })
 
@@ -127,31 +168,37 @@ describe('Events end-to-end tests', () => {
         context('with a non-authenticated user', () => {
           it('can not read events belonging to an entity with no authorization declaration', async () => {
             await expect(queryByEntity(anonymousClient, 'Order')).to.eventually.be.rejectedWith(
-              /Access denied for reading events/
+              /Access denied for this resource/
             )
           })
 
           it('can not read events belonging to an entity authorized to some roles', async () => {
             await expect(queryByEntity(anonymousClient, 'Product')).to.eventually.be.rejectedWith(
-              /Access denied for reading events/
+              /Access denied for this resource/
             )
           })
 
           it('can read events belonging to an entity authorized for "all"', async () => {
             await expect(queryByEntity(anonymousClient, 'Cart')).to.eventually.be.fulfilled
           })
+
+          it('can not read events from an entity with a custom authorizer', async () => {
+            await expect(queryByEntity(anonymousClient, 'Stock')).to.eventually.be.rejectedWith(
+              /You don't know the magic word/
+            )
+          })
         })
 
         context('with an authenticated user', () => {
           it('can not read events belonging to an entity with no authorization declaration', async () => {
             await expect(queryByEntity(loggedClient, 'Order')).to.eventually.be.rejectedWith(
-              /Access denied for reading events/
+              /Access denied for this resource/
             )
           })
 
           it('can not read events belonging to an entity authorized to other role', async () => {
             await expect(queryByEntity(loggedClient, 'Payment')).to.eventually.be.rejectedWith(
-              /Access denied for reading events/
+              /Access denied for this resource/
             )
           })
 
@@ -162,9 +209,38 @@ describe('Events end-to-end tests', () => {
           it('can read events belonging to an entity authorized for their role', async () => {
             await expect(queryByEntity(loggedClient, 'Product')).to.eventually.be.fulfilled
           })
+
+          it('can not read events from an entity with a custom authorizer', async () => {
+            await expect(queryByEntity(loggedClient, 'Stock')).to.eventually.be.rejectedWith(
+              /You don't know the magic word/
+            )
+          })
+        })
+
+        context('with a custom authorizer', () => {
+          it('can not read events belonging to an entity with no authorization declaration', async () => {
+            await expect(queryByEntity(knowledgeableClient, 'Order')).to.eventually.be.rejectedWith(
+              /Access denied for this resource/
+            )
+          })
+
+          it('can not read events belonging to an entity authorized to a role', async () => {
+            await expect(queryByEntity(knowledgeableClient, 'Payment')).to.eventually.be.rejectedWith(
+              /Access denied for this resource/
+            )
+          })
+
+          it('can read events belonging to an entity authorized for "all"', async () => {
+            await expect(queryByEntity(knowledgeableClient, 'Cart')).to.eventually.be.fulfilled
+          })
+
+          it('can read events belonging to an entity that satisfies the custom authorizer', async () => {
+            await expect(queryByEntity(knowledgeableClient, 'Stock')).to.eventually.be.fulfilled
+          })
         })
       })
     })
+
     describe('the result of the queries', () => {
       let mockCartId: string
       let mockProductId: string

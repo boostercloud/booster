@@ -2,13 +2,18 @@ import { DecodedToken, TokenVerifier, UserEnvelope } from '@boostercloud/framewo
 
 export const DEFAULT_ROLES_CLAIM = 'custom:role'
 
-const rolesFromTokenRole = (rolesClaim: unknown): Array<string> =>
-  (Array.isArray(rolesClaim) ? rolesClaim : [rolesClaim]).map((role: unknown): string => {
+function rolesFromTokenRole(rolesClaim: unknown): Array<string> {
+  if (!rolesClaim) {
+    return []
+  }
+  const roles = Array.isArray(rolesClaim) ? rolesClaim : [rolesClaim]
+  return roles.map((role: unknown): string => {
     if (typeof role !== 'string') {
       throw new Error(`Invalid role format ${role}. Valid format are Array<string> or string`)
     }
     return role
   })
+}
 
 export abstract class RoleBasedTokenVerifier implements TokenVerifier {
   public constructor(readonly rolesClaim: string = DEFAULT_ROLES_CLAIM) {}
