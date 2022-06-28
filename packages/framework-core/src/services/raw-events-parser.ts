@@ -20,7 +20,7 @@ export class RawEventsParser {
       .filter(isEventKind)
       .reduce(groupByEntity, {})
 
-    const procs = Object.values(eventEnvelopesPerEntity).map(async (entityEnvelopes) => {
+    const processes = Object.values(eventEnvelopesPerEntity).map(async (entityEnvelopes) => {
       const logger = getLogger(config, 'RawEventsParser#streamPerEntityEvents')
       // All envelopes are for the same entity type/ID, so we get the first one to get those values
       if (!entityEnvelopes[0]) {
@@ -33,7 +33,7 @@ export class RawEventsParser {
       )
       await callbackFn(entityTypeName, entityID, entityEnvelopes, config)
     })
-    await Promises.allSettledAndFulfilled(procs)
+    await Promises.allSettledAndFulfilled(processes)
   }
 }
 
