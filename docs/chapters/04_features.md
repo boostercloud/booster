@@ -1565,14 +1565,34 @@ class ProductV2 extends Product {}
 
 ### Data migrations
 
-For migrating data use `Booster.migrateEntity`. This method will generate an internal event `BoosterEntityMigrated` before migrating the entity data.
+The annotation `@DataMigration` in a class will indicate **Booster** that this class contains data migration code.
+
+```typescript
+@DataMigration({
+  order: 2,
+})
+```
+
+When the method `BoosterDataMigrations.run()` is call by the user, a new `BoosterDataMigrationStarted` event is emitted and **Booster** 
+will run all clases annotated with `@DataMigration` ordered by `order` value.
+
+User should emit `BoosterDataMigrationFinished` manually at the end of each `DataMigration.start` method.
+
+In `@DataMigration` classes, you can use `Booster.migrateEntity` method. This method will generate an internal event `BoosterEntityMigrated` before migrating the entity data.
 
 This method will receive the old entity name, the old entity id and the new entity that we will be persisted. This way, you can migrate an entity id or rename it.
 
 Example:
 
 ```typescript
-  public static async handle(_command: CartDataMigrateCommand, _register: Register): Promise<Array<UUID>> {
+@DataMigration({
+  order: 2,
+})
+export class CartIdDataMigrateV2 {
+  public constructor() {}
+
+
+  public static async start(register: Register): Promise<void> {
     const entitiesIdsResult = await Booster.entitiesIDs('Cart', 500, undefined)
     const paginatedEntityIdResults = entitiesIdsResult.items
 
@@ -1587,8 +1607,12 @@ Example:
           return validCart.id
       })
     )
+
+    register.events(new BoosterDataMigrationFinished('CartIdDataMigrateV2'))
   }
+}
 ```
+
 
 ## Provider feature matrix
 

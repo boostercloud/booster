@@ -12,6 +12,7 @@ import {
   TokenVerifierConfig,
   GlobalErrorHandlerMetadata,
   EntityInterface,
+  DataMigrationMetadata,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
@@ -61,6 +62,7 @@ export class BoosterConfig {
   public readonly roles: Record<RoleName, RoleMetadata> = {}
   public readonly migrations: Record<ConceptName, Map<Version, MigrationMetadata>> = {}
   public readonly scheduledCommandHandlers: Record<ScheduledCommandName, ScheduledCommandMetadata> = {}
+  public readonly dataMigrationHandlers: Record<DataMigrationName, DataMigrationMetadata> = {}
   public globalErrorsHandler: GlobalErrorHandlerMetadata | undefined
 
   private rocketFunctionMap: Record<string, RocketFunction> = {}
@@ -247,3 +249,4 @@ type RoleName = string
 type ConceptName = string
 type Version = number
 type ScheduledCommandName = string
+type DataMigrationName = string
