@@ -1,5 +1,5 @@
 import { BoosterConfig, EventEnvelope, UUID } from '@boostercloud/framework-types'
-import { getLogger } from '@boostercloud/framework-common-helpers'
+import { getLogger, Promises } from '@boostercloud/framework-common-helpers'
 
 export type EventsStreamingCallback = (
   entityName: string,
@@ -19,16 +19,21 @@ export class RawEventsParser {
       .rawToEnvelopes(rawEvents)
       .filter(isEventKind)
       .reduce(groupByEntity, {})
-    for (const entityEnvelopes of Object.values(eventEnvelopesPerEntity)) {
+
+    const procs = Object.values(eventEnvelopesPerEntity).map(async (entityEnvelopes) => {
       const logger = getLogger(config, 'RawEventsParser#streamPerEntityEvents')
       // All envelopes are for the same entity type/ID, so we get the first one to get those values
+      if (!entityEnvelopes[0]) {
+        throw new Error('The impossible happened: Attempted to process a non existent event')
+      }
       const { entityTypeName, entityID } = entityEnvelopes[0]
       logger.debug(
         `Streaming the following events for entity '${entityTypeName}' and ID '${entityID}':`,
         entityEnvelopes
       )
       await callbackFn(entityTypeName, entityID, entityEnvelopes, config)
-    }
+    })
+    await Promises.allSettledAndFulfilled(procs)
   }
 }
 
