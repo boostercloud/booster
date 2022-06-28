@@ -15,6 +15,16 @@ const originOfTime = new Date(0).toISOString() // Unix epoch
 export class EventStore {
   public constructor(readonly config: BoosterConfig) {}
 
+  /**
+   * Will fetch the latest snapshot for an entity by applying a reduction
+   * since the time of creation of the last snapshot, UNLESS `pendingEnvelopes`
+   * are passed, in that case, it won't load the events, but rather it will
+   * proceed with the creation of the new snapshot by considering `pendingEnvelopes`
+   * as the latest events.
+   *
+   * Also, in order to make next calls faster, this method stores the calculated
+   * snapshot.
+   */
   public async fetchEntitySnapshot(
     entityName: string,
     entityID: UUID,
@@ -44,6 +54,13 @@ export class EventStore {
         `[EventStore#fetchEntitySnapshot] Reduced new snapshot for entity ${entityName} with ID ${entityID}: `,
         newEntitySnapshot
       )
+
+      if (!newEntitySnapshot) {
+        logger.debug('No snapshot was fetched, returning')
+        return newEntitySnapshot
+      }
+
+      await this.storeSnapshot(newEntitySnapshot)
 
       return newEntitySnapshot
     }

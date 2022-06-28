@@ -65,7 +65,6 @@ export class BoosterEventDispatcher {
       logger.debug('No new snapshot generated, skipping read models projection')
       return
     }
-    await eventStore.storeSnapshot(entitySnapshot)
     logger.debug('Snapshot loaded and started read models projection:', entitySnapshot)
     await readModelStore.project(entitySnapshot)
   }
