@@ -38,7 +38,7 @@ export class BoosterEventDispatcher {
 
   private static eventProcessor(eventStore: EventStore, readModelStore: ReadModelStore): EventsStreamingCallback {
     return async (entityName, entityID, eventEnvelopes, config) => {
-      // TODO: Separate into two independent processes the snapshotting/read-model generation process from the event handling process`
+      // TODO: Separate the snapshot creation/read-model generation from the event handling into two independent processes.
       await BoosterEventDispatcher.snapshotAndUpdateReadModels(
         config,
         entityName,
