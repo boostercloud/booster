@@ -1,5 +1,5 @@
 import { BoosterConfig, EventEnvelope, UUID } from '@boostercloud/framework-types'
-import { getLogger, Promises } from '@boostercloud/framework-common-helpers'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 
 export type EventsStreamingCallback = (
   entityName: string,
@@ -15,13 +15,13 @@ export class RawEventsParser {
     rawEvents: unknown,
     callbackFn: EventsStreamingCallback
   ): Promise<void> {
+    const logger = getLogger(config, 'RawEventsParser#streamPerEntityEvents')
     const eventEnvelopesPerEntity = config.provider.events
       .rawToEnvelopes(rawEvents)
       .filter(isEventKind)
       .reduce(groupByEntity, {})
 
     const processes = Object.values(eventEnvelopesPerEntity).map(async (entityEnvelopes) => {
-      const logger = getLogger(config, 'RawEventsParser#streamPerEntityEvents')
       // All envelopes are for the same entity type/ID, so we get the first one to get those values
       if (!entityEnvelopes[0]) {
         throw new Error('The impossible happened: Attempted to process a non existent event')
@@ -31,9 +31,14 @@ export class RawEventsParser {
         `Streaming the following events for entity '${entityTypeName}' and ID '${entityID}':`,
         entityEnvelopes
       )
-      await callbackFn(entityTypeName, entityID, entityEnvelopes, config)
+      try {
+        await callbackFn(entityTypeName, entityID, entityEnvelopes, config)
+      } catch (e) {
+        logger.error('An error occurred while processing events', e)
+      }
     })
-    await Promises.allSettledAndFulfilled(processes)
+    // We use allSettled because we don't care if some of the processes fail
+    await Promise.allSettled(processes)
   }
 }
 
