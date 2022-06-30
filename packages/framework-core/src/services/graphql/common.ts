@@ -52,7 +52,9 @@ export const DateScalar = new GraphQLScalarType({
     return value.toJSON()
   },
   parseValue(value) {
-    return new Date(value)
+    const date = new Date(value)
+    if (isNaN(date.getTime())) throw new Error(`Invalid date: ${value}`)
+    return date
   },
   parseLiteral(ast) {
     if (ast.kind === Kind.STRING) {
