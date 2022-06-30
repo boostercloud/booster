@@ -3,13 +3,14 @@ import { getResourceGroup, getCosmosConnectionStrings } from '../infrastructure/
 import { ResourceGroup } from '../infrastructure/types/resource-group'
 import { AzureCounters } from './azure-counters'
 import { AzureQueries } from './azure-queries'
+import { ProviderTestHelper } from '@boostercloud/framework-types'
 
 interface ApplicationOutputs {
   graphqlURL: string
   websocketURL: string
 }
 
-export class AzureTestHelper {
+export class AzureTestHelper implements ProviderTestHelper {
   private constructor(
     readonly outputs: ApplicationOutputs,
     readonly counters: AzureCounters,

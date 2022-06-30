@@ -377,6 +377,28 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Local Provider-Unaware Functional Integration Tests",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--colors",
+        "--forbid-only",
+        "--config",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/provider-unaware/functionality/.mocharc.yml",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/provider-unaware/functionality/**/*.integration.ts"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+      "runtimeArgs": ["--preserve-symlinks"],
+      "env": {
+        "TESTED_PROVIDER": "LOCAL",
+        "BOOSTER_ENV": "local"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "framework-provider-kubernetes tests",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [

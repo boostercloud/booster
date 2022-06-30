@@ -2,6 +2,7 @@ import { Stack } from 'aws-sdk/clients/cloudformation'
 import { CloudFormation, config } from 'aws-sdk'
 import { AWSCounters } from './aws-counters'
 import { AWSQueries } from './aws-queries'
+import { ProviderTestHelper } from '@boostercloud/framework-types'
 
 interface ApplicationOutputs {
   graphqlURL: string
@@ -10,7 +11,7 @@ interface ApplicationOutputs {
 
 const cloudFormation = new CloudFormation()
 
-export class AWSTestHelper {
+export class AWSTestHelper implements ProviderTestHelper {
   private constructor(
     readonly outputs: ApplicationOutputs,
     readonly counters: AWSCounters,

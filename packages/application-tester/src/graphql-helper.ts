@@ -8,7 +8,7 @@ import { ApolloLink, split } from 'apollo-link'
 import * as WebSocket from 'ws'
 import { SubscriptionClient } from 'subscriptions-transport-ws'
 import { ApolloClientOptions } from 'apollo-client/ApolloClient'
-import { ProviderTestHelper } from './provider-test-helper'
+import { ProviderTestHelper } from '@boostercloud/framework-types'
 
 type AuthToken = string | (() => string)
 

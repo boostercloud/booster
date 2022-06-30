@@ -1,5 +1,5 @@
 import { GraphQLHelper } from './graphql-helper'
-import { Counters, ProviderTestHelper, Queries } from './provider-test-helper'
+import { Counters, ProviderTestHelper, Queries } from '@boostercloud/framework-types'
 import { TokenHelper } from './token-helper'
 
 export class ApplicationTester {

@@ -2,7 +2,7 @@ import fetch from 'cross-fetch'
 import { ApolloClient } from 'apollo-client'
 import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { HttpLink } from 'apollo-link-http'
-import { LOCAL_PROVIDER_HOST } from './constants'
+import { LOCAL_PROVIDER_HOST } from '../constants'
 import gql from 'graphql-tag'
 
 // --- Auth helpers ---

@@ -1,8 +1,7 @@
-import { confirmUser, confirmUserURL, createUser, signOutURL, signUpURL } from './utils'
+import { confirmUser, confirmUserURL, createUser, signOutURL, signUpURL, signInURL } from './utils'
 import { expect } from 'chai'
 import fetch from 'cross-fetch'
 import { internet, random } from 'faker'
-import { signInURL } from './utils'
 
 // FIXME: When JWT auth is merged
 xdescribe('With the auth API', () => {
