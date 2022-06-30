@@ -123,9 +123,9 @@ Booster.configure('production', (config: BoosterConfig): void => {
 })
 ```
 
-#### JWKSURI based authorization
+#### JWKS URI based authorization
 
-One common way to validate JWT tokens is by using a issuer-provided well-known URI on which you can find their [JWK](https://datatracker.ietf.org/doc/html/rfc7517) sets (JWKS). If you use this method, you only need to provide the issuer's name, the JWKSURI and, if you're using role-based authentication, an optional rolesClaim option that sets the claim from which Booster will read the role names.
+One common way to validate JWT tokens is by using a issuer-provided well-known URI on which you can find their [JWK](https://datatracker.ietf.org/doc/html/rfc7517) sets (JWKS). If you use this method, you only need to provide the issuer's name, the JWKS URI and, if you're using role-based authentication, an optional `rolesClaim` option that sets the claim from which Booster will read the role names.
 
 ```typescript
 ...
@@ -141,9 +141,9 @@ config.tokenVerifiers = [
 
 #### Public key based authentication
 
-If the token issuer doesn't provide a jwksURI, you can also validate tokens against a known public key. One scenario where this is useful is when you're implementing your own authentication mechanism or you're issuing self-signed tokens.
+If the token issuer doesn't provide a JWKS URI, you can also validate tokens against a known public key. One scenario where this is useful is when you're implementing your own authentication mechanism or you're issuing self-signed tokens.
 
-[!NOTE] If you need to handle private keys in production, consider using a [Key Management System](https://en.wikipedia.org/wiki/Key_management#Key_storage)). These systems often provide API endpoints that let you encrypt/sign your JWT tokens without exposing the private keys. The public keys can be set in a `PublicKeyTokenVerifier` to automate verification.
+[!NOTE] If you need to handle private keys in production, consider using a KMS [(Key Management System)](https://en.wikipedia.org/wiki/Key_management#Key_storage)). These systems often provide API endpoints that let you encrypt/sign your JWT tokens without exposing the private keys. The public keys can be set in a `PublicKeyTokenVerifier` to automate verification.
 
 ```typescript
 config.tokenVerifiers = [
@@ -165,7 +165,7 @@ Booster will accept as a token verifier any object that matches the `TokenVerifi
 
 ```typescript
 export interface TokenVerifier {
-  // Verify asd deserialize a stringified token with this token verifier.
+  // Verify and deserialize a stringified token with this token verifier.
   verify(token: string): Promise<DecodedToken>
   // Build a valid `UserEnvelope` from a decoded token.
   toUserEnvelope(decodedToken: DecodedToken): UserEnvelope
@@ -290,7 +290,7 @@ Remember to also configure your JWT tokens issuer to include the custom claims r
 
 ##### Extended roles when using the [Authentication Booster Rocket for AWS](https://github.com/boostercloud/rocket-auth-aws-infrastructure)
 
-The Authentication Rocket for AWS is an oppinionated implementation of a JWT tokens issuer on top of AWS Cognito that includes out-of-the-box features like Sign-up, Sign-in, Passwordless tokens, Change passwords and many other features. When a user goes through the sign up and sign in mecanisms provided by the rocket, they´ll get a standard JWT access token that can be included in any request as a Bearer token and will work in the same way as any other JWT token.
+The Authentication Rocket for AWS is an opinionated implementation of a JWT tokens issuer on top of AWS Cognito that includes out-of-the-box features like sign-up, sign-in, passwordless tokens, change password and many other features. When a user goes through the sign up and sign in mecanisms provided by the rocket, they'll get a standard JWT access token that can be included in any request as a Bearer token and will work in the same way as any other JWT token.
 
 When you use this rocket, you can use extra configuration parameters in the `@Role` decorator to enable some of these features. In the following example we define `Admin`, `User`, `SuperUser` and `SuperUserWithoutConfirmation` roles. They all contain an extra `auth` configuration attribute that set the behavior of the authorization role for each role:
 
@@ -455,7 +455,7 @@ Luckily, you can forget about that because Booster does all the work for you!
 
 The GraphQL API is fully **auto-generated** based on your _commands_ and _read models_.
 
-> [!NOTE] To get the full potential of the GraphQL API, it is recommended not to use `interface` types in any command or read model attributes. Use `class` types instead. This will allow you to perform complex graphQL filters, including over nested attributes. There's an example below:
+> [!NOTE] To get the full potential of the GraphQL API,  it is **not** recommended to use `interface` types in any command or read model attributes. Use `class` types instead. This will allow you to perform complex graphQL filters, including over nested attributes. There's an example below:
 
 ```typescript
 // My type
@@ -1678,7 +1678,7 @@ export class AppErrorHandler {
 
 ### Schema migrations
 
-Booster handle classes annotated with `@Migrates` as **Schema migrations**. The migration process will update an existing object
+Booster handles classes annotated with `@Migrates` as **Schema migrations**. The migration process will update an existing object
 from one version to the next one.
 
 For example, to migrate a `Product` entity from version 1 to version 2 we need the following migration class:
