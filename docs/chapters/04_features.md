@@ -1574,7 +1574,7 @@ The annotation `@DataMigration` in a class will indicate **Booster** that this c
 ```
 
 When the method `BoosterDataMigrations.run()` is call by the user, a new `BoosterDataMigrationStarted` event is emitted and **Booster** 
-will run all clases annotated with `@DataMigration` ordered by `order` value.
+will check if there are pending migrations and, if so, run them in the order specified by the `order` value.
 
 User should emit `BoosterDataMigrationFinished` manually at the end of each `DataMigration.start` method.
 

@@ -3,9 +3,7 @@ import {
   DataMigrationMetadata,
   DataMigrationStatus,
   EntityInterface,
-  EventEnvelope,
   Instance,
-  PaginatedEntitiesIdsResult,
   Register,
   UUID,
 } from '@boostercloud/framework-types'
@@ -25,28 +23,24 @@ export class BoosterDataMigrations {
 
     const configuredMigrations = config.dataMigrationHandlers
     if (Object.keys(configuredMigrations).length === 0) {
-      logger.debug('No pending migrations. Skipping...')
+      logger.debug('No defined migrations found. Skipping...')
       return false
     }
 
     const sortedConfiguredMigrations = BoosterDataMigrations.sortConfiguredMigrations(configuredMigrations)
-    const migrationEntities = await BoosterDataMigrations.latestDataMigrationEntities()
-
+    const eventStore = new EventStore(config)
     for (const configuredMigration of Object.values(sortedConfiguredMigrations)) {
-      const migrationEntityForConfiguredMigration = BoosterDataMigrations.migrationEntitiesForConfiguredMigration(
-        migrationEntities,
+      const migrationEntityForConfiguredMigration = await eventStore.fetchEntitySnapshot(
+        BoosterDataMigrationEntity.name,
         configuredMigration.class.name
       )
-
-      if (!BoosterDataMigrations.hasItems(migrationEntityForConfiguredMigration)) {
+      if (migrationEntityForConfiguredMigration === null) {
         logger.debug('Not found running or finished migrations for the DataMigration', configuredMigration)
         migrating = true
         await BoosterDataMigrations.migrate(configuredMigration)
       } else {
-        const runningMigrationsForHandler = BoosterDataMigrations.runningMigrations(
-          migrationEntityForConfiguredMigration
-        )
-        if (BoosterDataMigrations.hasItems(runningMigrationsForHandler)) {
+        const boosterDataMigrationEntity = migrationEntityForConfiguredMigration.value as BoosterDataMigrationEntity
+        if (boosterDataMigrationEntity.status === DataMigrationStatus.RUNNING) {
           logger.debug('Found running migrations for the DataMigration', configuredMigration)
           migrating = true
         }
@@ -75,56 +69,6 @@ export class BoosterDataMigrations {
     })
   }
 
-  private static async latestDataMigrationEntities(): Promise<Array<EventEnvelope>> {
-    const ids = await BoosterDataMigrations.dataMigrationEntitiesIds()
-    return await BoosterDataMigrations.fetchEntities(ids)
-  }
-
-  private static async fetchEntities(ids: Array<UUID>): Promise<Array<EventEnvelope>> {
-    const eventStore = new EventStore(Booster.config)
-    const promises: Array<Promise<EventEnvelope | null>> = []
-    for (const id of ids) {
-      promises.push(eventStore.fetchEntitySnapshot(BoosterDataMigrationEntity.name, id))
-    }
-    const result = await Promise.all(promises)
-    return result.filter((item) => item !== null) as Array<EventEnvelope>
-  }
-
-  private static async dataMigrationEntitiesIds(): Promise<Array<UUID>> {
-    let count = 1
-    const limit = 10
-    let cursor: Record<'id', string> | undefined = undefined
-    const result: Array<UUID> = []
-    while (count > 0) {
-      const queryResult: PaginatedEntitiesIdsResult = await Booster.config.provider.events.searchEntitiesIDs(
-        Booster.config,
-        limit,
-        cursor,
-        BoosterDataMigrationEntity.name
-      )
-
-      cursor = queryResult.cursor
-      count = queryResult.count ?? 0
-      result.push(...queryResult.items.map((item) => item.entityID))
-    }
-
-    return result
-  }
-
-  private static migrationEntitiesForConfiguredMigration(
-    runningOrFinishedMigrations: Array<EventEnvelope>,
-    configuredMigrationName: string
-  ): Array<EventEnvelope> {
-    return runningOrFinishedMigrations.filter((entity) => {
-      const entityValue = entity.value as BoosterDataMigrationEntity
-      return entityValue && entityValue.id === configuredMigrationName
-    })
-  }
-
-  private static hasItems(eventEnvelopes: EventEnvelope[]): boolean {
-    return eventEnvelopes && eventEnvelopes.length > 0
-  }
-
   private static async migrate(migrationHandler: DataMigrationMetadata): Promise<void> {
     const startedRegister = new Register(UUID.generate(), {})
 
@@ -140,14 +84,5 @@ export class BoosterDataMigrations {
     const logger = getLogger(Booster.config, 'BoosterMigration#emitStarted')
     logger.info('Migration started', configuredMigrationName)
     register.events(new BoosterDataMigrationStarted(configuredMigrationName, new Date().toISOString()))
-  }
-
-  private static runningMigrations(
-    runningOrFinishedMigrationForConfiguredMigration: Array<EventEnvelope>
-  ): Array<EventEnvelope> {
-    return runningOrFinishedMigrationForConfiguredMigration.filter((entity) => {
-      const value = entity.value as BoosterDataMigrationEntity
-      return value && value.status === DataMigrationStatus.RUNNING
-    })
   }
 }
