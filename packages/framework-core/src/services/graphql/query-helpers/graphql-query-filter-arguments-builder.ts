@@ -35,7 +35,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
   }
 
   private generateFilterFor(prop: PropertyMetadata): GraphQLInputObjectType | GraphQLScalarType {
-    let filterName = `${prop.typeInfo.typeName}PropertyFilter`
+    let filterName = `${prop.typeInfo.name}PropertyFilter`
     filterName = filterName.charAt(0).toUpperCase() + filterName.substr(1)
 
     if (this.generatedFiltersByTypeName[filterName]) return this.generatedFiltersByTypeName[filterName]

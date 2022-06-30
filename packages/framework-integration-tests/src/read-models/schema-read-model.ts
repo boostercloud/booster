@@ -2,10 +2,6 @@ import { Projects, ReadModel } from '@boostercloud/framework-core'
 import { Cart, MigratedCart } from '../entities/cart'
 import { ProjectionResult, UUID } from '@boostercloud/framework-types'
 
-class GenericClass<T> {
-  constructor(readonly genericValue: T) {}
-}
-
 @ReadModel({
   authorize: 'all',
 })
@@ -25,14 +21,12 @@ export class SchemaReadModel {
     readonly any0: any,
     readonly unknown0: unknown,
     readonly record: Record<string, string>,
-    readonly generic: GenericClass<string>,
     readonly optionalString?: string,
     readonly optionalNull?: string,
     readonly optionalUndefined?: undefined,
     readonly optionalUnknown?: unknown,
     readonly optionalAny?: any,
     readonly optionalRecord?: Record<string, string>,
-    readonly optionalGeneric?: GenericClass<Cart>,
     readonly readonlyArray?: ReadonlyArray<string>
   ) {}
 
@@ -57,8 +51,7 @@ export class SchemaReadModel {
       'test',
       {
         test: 'test',
-      },
-      new GenericClass<string>('test')
+      }
     )
   }
 }
