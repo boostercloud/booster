@@ -178,7 +178,7 @@ describe('EventStore', () => {
       })
 
       context('when there is a snapshot and a short list of pending events', () => {
-        it('produces and returns a new snapshot without storing it', async () => {
+        it('produces and returns a new snapshot, storing it', async () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const eventStore = new EventStore(config) as any
           const someSnapshotEnvelope = snapshotEnvelopeFor(someEntity)
@@ -227,7 +227,7 @@ describe('EventStore', () => {
           )
           expect(eventStore.entityReducer.secondCall.args[1]).to.deep.equal(otherEventEnvelope)
 
-          expect(eventStore.storeSnapshot).not.to.have.been.called
+          expect(eventStore.storeSnapshot).to.have.been.called
 
           expect(entity).to.be.deep.equal(
             snapshotEnvelopeFor({
@@ -239,7 +239,7 @@ describe('EventStore', () => {
       })
 
       context('when there is a snapshot and a long list of pending events', () => {
-        it('produces a new snapshot and returns it, but never stores it', async () => {
+        it('produces a new snapshot, stores it and returns it', async () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const eventStore = new EventStore(config) as any
           const someSnapshotEnvelope = snapshotEnvelopeFor(someEntity)
@@ -296,7 +296,7 @@ describe('EventStore', () => {
             expect(eventStore.entityReducer.getCall(index).args[1]).to.deep.equal(pendingEvents[index])
           }
 
-          expect(eventStore.storeSnapshot).to.not.have.been.called
+          expect(eventStore.storeSnapshot).to.have.been.called
 
           expect(entity).to.be.deep.equal(
             snapshotEnvelopeFor({
@@ -308,7 +308,7 @@ describe('EventStore', () => {
       })
 
       context('with no snapshot and a list of more than 5 events', () => {
-        it('produces a new snapshot and returns it, but never stores it', async () => {
+        it('produces a new snapshot, stores it and returns it', async () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const eventStore = new EventStore(config) as any
           const someEventEnvelope = eventEnvelopeFor(someEvent, AnEvent.name)
@@ -360,7 +360,7 @@ describe('EventStore', () => {
             expect(eventStore.entityReducer.getCall(index).args[1]).to.deep.equal(pendingEvents[index])
           }
 
-          expect(eventStore.storeSnapshot).to.not.have.been.called
+          expect(eventStore.storeSnapshot).to.have.been.called
 
           expect(entity).to.be.deep.equal(
             snapshotEnvelopeFor({

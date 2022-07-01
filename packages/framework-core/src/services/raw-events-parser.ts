@@ -15,20 +15,30 @@ export class RawEventsParser {
     rawEvents: unknown,
     callbackFn: EventsStreamingCallback
   ): Promise<void> {
+    const logger = getLogger(config, 'RawEventsParser#streamPerEntityEvents')
     const eventEnvelopesPerEntity = config.provider.events
       .rawToEnvelopes(rawEvents)
       .filter(isEventKind)
       .reduce(groupByEntity, {})
-    for (const entityEnvelopes of Object.values(eventEnvelopesPerEntity)) {
-      const logger = getLogger(config, 'RawEventsParser#streamPerEntityEvents')
+
+    const processes = Object.values(eventEnvelopesPerEntity).map(async (entityEnvelopes) => {
       // All envelopes are for the same entity type/ID, so we get the first one to get those values
+      if (!entityEnvelopes[0]) {
+        throw new Error('The impossible happened: Attempted to process a non existent event')
+      }
       const { entityTypeName, entityID } = entityEnvelopes[0]
       logger.debug(
         `Streaming the following events for entity '${entityTypeName}' and ID '${entityID}':`,
         entityEnvelopes
       )
-      await callbackFn(entityTypeName, entityID, entityEnvelopes, config)
-    }
+      try {
+        await callbackFn(entityTypeName, entityID, entityEnvelopes, config)
+      } catch (e) {
+        logger.error('An error occurred while processing events', e)
+      }
+    })
+    // We use allSettled because we don't care if some of the processes fail
+    await Promise.allSettled(processes)
   }
 }
 

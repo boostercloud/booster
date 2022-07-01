@@ -38,7 +38,7 @@ export class BoosterEventDispatcher {
 
   private static eventProcessor(eventStore: EventStore, readModelStore: ReadModelStore): EventsStreamingCallback {
     return async (entityName, entityID, eventEnvelopes, config) => {
-      // TODO: Separate into two independent processes the snapshotting/read-model generation process from the event handling process`
+      // TODO: Separate the snapshot creation/read-model generation from the event handling into two independent processes.
       await BoosterEventDispatcher.snapshotAndUpdateReadModels(
         config,
         entityName,
@@ -65,7 +65,6 @@ export class BoosterEventDispatcher {
       logger.debug('No new snapshot generated, skipping read models projection')
       return
     }
-    await eventStore.storeSnapshot(entitySnapshot)
     logger.debug('Snapshot loaded and started read models projection:', entitySnapshot)
     await readModelStore.project(entitySnapshot)
   }

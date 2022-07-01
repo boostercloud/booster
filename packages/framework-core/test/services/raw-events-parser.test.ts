@@ -1,6 +1,6 @@
 import { describe } from 'mocha'
 import { fake, restore, SinonSpy } from 'sinon'
-import { ProviderLibrary, BoosterConfig, EventEnvelope } from '@boostercloud/framework-types'
+import { ProviderLibrary, BoosterConfig, EventEnvelope, UUID } from '@boostercloud/framework-types'
 import { RawEventsParser } from '../../src/services/raw-events-parser'
 import { expect } from '../expect'
 import { random } from 'faker'
@@ -87,6 +87,34 @@ describe('RawEventsParser', () => {
         [eventEnvelopeForEntityB1, eventEnvelopeForEntityB2, eventEnvelopeForEntityB3, eventEnvelopeForEntityB4],
         config
       )
+    })
+
+    it('calls the callback function for all the events per entity even if for some it throws', async () => {
+      const events = [] as Array<EventEnvelope>
+      const callbackFunction = fake(
+        async (entityName: string, entityId: UUID, eventEnvelopes: Array<EventEnvelope>): Promise<void> => {
+          if (entityName === entityAName) {
+            throw new Error('Wow, such error, many failures!')
+          }
+          events.push(...eventEnvelopes)
+        }
+      )
+      await RawEventsParser.streamPerEntityEvents(config, rawEvents, callbackFunction)
+      expect(callbackFunction).to.have.been.calledTwice
+      expect(callbackFunction).to.have.been.calledWithExactly(
+        entityAName,
+        entityAID,
+        [eventEnvelopeForEntityA1, eventEnvelopeForEntityA2, eventEnvelopeForEntityA3],
+        config
+      )
+      const entityBEvents = [
+        eventEnvelopeForEntityB1,
+        eventEnvelopeForEntityB2,
+        eventEnvelopeForEntityB3,
+        eventEnvelopeForEntityB4,
+      ]
+      expect(callbackFunction).to.have.been.calledWithExactly(entityBName, entityBID, entityBEvents, config)
+      expect(events).to.deep.equal(entityBEvents)
     })
   })
 })
