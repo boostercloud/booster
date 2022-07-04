@@ -15,6 +15,8 @@ import {
   SequenceKey,
   SortFor,
   UUID,
+  Instance,
+  Register,
 } from '@boostercloud/framework-types'
 import { BoosterEventDispatcher } from './booster-event-dispatcher'
 import { BoosterGraphQLDispatcher } from './booster-graphql-dispatcher'
@@ -27,6 +29,7 @@ import { BoosterEntityMigrated } from './core-concepts/data-migration/events/boo
 import { BoosterDataMigrationEntity } from './core-concepts/data-migration/entities/booster-data-migration-entity'
 import { BoosterDataMigrationStarted } from './core-concepts/data-migration/events/booster-data-migration-started'
 import { BoosterDataMigrationFinished } from './core-concepts/data-migration/events/booster-data-migration-finished'
+import { RegisterHandler } from './booster-register-handler'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -173,6 +176,17 @@ export class Booster {
 
   public static dispatchRocket(request: unknown): Promise<unknown> {
     return new BoosterRocketDispatcher(this.config).dispatch(request)
+  }
+
+  public static migrateEntityData(
+    oldEntityName: string,
+    oldEntityId: UUID,
+    newEntity: Instance & EntityInterface
+  ): Promise<void> {
+    const requestID = UUID.generate()
+    const register = new Register(requestID, {})
+    register.events(new BoosterEntityMigrated(oldEntityName, oldEntityId, newEntity.constructor.name, newEntity))
+    return RegisterHandler.handle(this.config, register)
   }
 
   private static configureBoosterConcepts(): void {

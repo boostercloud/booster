@@ -1,38 +1,41 @@
 import { Booster } from '../booster'
-import { Class, AnyClass, MigrationMetadata, BoosterConfig, Instance } from '@boostercloud/framework-types'
+import { Class, AnyClass, SchemaMigrationMetadata, BoosterConfig, Instance } from '@boostercloud/framework-types'
 import 'reflect-metadata'
 
 const migrationMethodsMetadataKey = 'booster:migrationsMethods'
 
-export function Migrates(conceptClass: AnyClass): (migrationClass: AnyClass) => void {
-  return (migrationClass) => {
+export function SchemaMigration(conceptClass: AnyClass): (schemaMigrationClass: AnyClass) => void {
+  return (schemaMigrationClass) => {
     Booster.configureCurrentEnv((config) => {
       const conceptMigrations = getConceptMigrations(config, conceptClass)
-      const migrationMethodsMetadata = getMigrationMethods(migrationClass)
+      const migrationMethodsMetadata = getMigrationMethods(schemaMigrationClass)
 
-      for (const migrationMetadata of migrationMethodsMetadata) {
-        if (conceptMigrations.has(migrationMetadata.toVersion)) {
+      for (const schemaMigrationMetadata of migrationMethodsMetadata) {
+        if (conceptMigrations.has(schemaMigrationMetadata.toVersion)) {
           throw new Error(
-            `Found duplicated migration for '${conceptClass.name}' in migration class '${migrationClass.name}': ` +
-              `There is an already defined migration for version ${migrationMetadata.toVersion}`
+            `Found duplicated migration for '${conceptClass.name}' in migration class '${schemaMigrationClass.name}': ` +
+              `There is an already defined migration for version ${schemaMigrationMetadata.toVersion}`
           )
         }
 
-        conceptMigrations.set(migrationMetadata.toVersion, migrationMetadata)
+        conceptMigrations.set(schemaMigrationMetadata.toVersion, schemaMigrationMetadata)
       }
     })
   }
 }
 
-function getConceptMigrations(config: BoosterConfig, conceptClass: AnyClass): Map<number, MigrationMetadata> {
-  if (!config.migrations[conceptClass.name]) {
-    config.migrations[conceptClass.name] = new Map()
+function getConceptMigrations(config: BoosterConfig, conceptClass: AnyClass): Map<number, SchemaMigrationMetadata> {
+  if (!config.schemaMigrations[conceptClass.name]) {
+    config.schemaMigrations[conceptClass.name] = new Map()
   }
-  return config.migrations[conceptClass.name]
+  return config.schemaMigrations[conceptClass.name]
 }
 
-function getMigrationMethods(migrationClass: AnyClass): Array<MigrationMetadata> {
-  const migrationMethods: Array<MigrationMetadata> = Reflect.getMetadata(migrationMethodsMetadataKey, migrationClass)
+function getMigrationMethods(migrationClass: AnyClass): Array<SchemaMigrationMetadata> {
+  const migrationMethods: Array<SchemaMigrationMetadata> = Reflect.getMetadata(
+    migrationMethodsMetadataKey,
+    migrationClass
+  )
   if (!migrationMethods || migrationMethods.length == 0) {
     throw new Error(
       'No migration methods found in this class. Define at least one migration and annotate it with @ToVersion()'
@@ -64,7 +67,10 @@ export function ToVersion<TOldSchema, TNewSchema>(
   return (migrationInstance, propertyName): void => {
     const migrationClass = migrationInstance.constructor as AnyClass
 
-    let migrationMethods: Array<MigrationMetadata> = Reflect.getMetadata(migrationMethodsMetadataKey, migrationClass)
+    let migrationMethods: Array<SchemaMigrationMetadata> = Reflect.getMetadata(
+      migrationMethodsMetadataKey,
+      migrationClass
+    )
     if (!migrationMethods) {
       migrationMethods = []
     }

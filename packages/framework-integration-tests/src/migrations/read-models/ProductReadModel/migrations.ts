@@ -1,8 +1,8 @@
 import { ProductReadModelV1, ProductReadModelV2 } from './schema-versions'
-import { Migrates, ToVersion } from '@boostercloud/framework-core'
+import { SchemaMigration, ToVersion } from '@boostercloud/framework-core'
 import { ProductReadModel } from '../../../read-models/product-read-model'
 
-@Migrates(ProductReadModel)
+@SchemaMigration(ProductReadModel)
 export class ProductReadModelMigration {
   @ToVersion(2, { fromSchema: ProductReadModelV1, toSchema: ProductReadModelV2 })
   public async splitDescriptionFieldIntoShortAndLong(old: ProductReadModelV1): Promise<ProductReadModelV2> {

@@ -1,6 +1,6 @@
 import {
   ReducerMetadata,
-  MigrationMetadata,
+  SchemaMigrationMetadata,
   EntityMetadata,
   RoleMetadata,
   CommandMetadata,
@@ -60,7 +60,7 @@ export class BoosterConfig {
   public readonly projections: Record<EntityName, Array<ProjectionMetadata<EntityInterface>>> = {}
   public readonly readModelSequenceKeys: Record<EntityName, string> = {}
   public readonly roles: Record<RoleName, RoleMetadata> = {}
-  public readonly migrations: Record<ConceptName, Map<Version, MigrationMetadata>> = {}
+  public readonly schemaMigrations: Record<ConceptName, Map<Version, SchemaMigrationMetadata>> = {}
   public readonly scheduledCommandHandlers: Record<ScheduledCommandName, ScheduledCommandMetadata> = {}
   public readonly dataMigrationHandlers: Record<DataMigrationName, DataMigrationMetadata> = {}
   public globalErrorsHandler: GlobalErrorHandlerMetadata | undefined
@@ -120,7 +120,7 @@ export class BoosterConfig {
   }
 
   public currentVersionFor(className: string): number {
-    const migrations = this.migrations[className]
+    const migrations = this.schemaMigrations[className]
     if (!migrations) {
       return 1
     }
@@ -208,18 +208,18 @@ export class BoosterConfig {
   }
 
   private validateAllMigrations(): void {
-    for (const conceptName in this.migrations) {
-      this.validateConceptMigrations(conceptName, this.migrations[conceptName])
+    for (const conceptName in this.schemaMigrations) {
+      this.validateConceptSchemaMigrations(conceptName, this.schemaMigrations[conceptName])
     }
   }
 
-  private validateConceptMigrations(conceptName: string, migrations: Map<number, MigrationMetadata>): void {
+  private validateConceptSchemaMigrations(conceptName: string, migrations: Map<number, SchemaMigrationMetadata>): void {
     // Check that migrations are defined consecutively. In other words, there are no gaps between the version numbers
     const currentVersion = this.currentVersionFor(conceptName)
     for (let toVersion = 2; toVersion <= currentVersion; toVersion++) {
       if (!migrations.has(toVersion)) {
         throw new Error(
-          `Migrations for '${conceptName}' are invalid: they are missing a migration with toVersion=${toVersion}. ` +
+          `Schema Migrations for '${conceptName}' are invalid: they are missing a migration with toVersion=${toVersion}. ` +
             `There must be a migration for '${conceptName}' for every version in the range [2..${currentVersion}]`
         )
       }
