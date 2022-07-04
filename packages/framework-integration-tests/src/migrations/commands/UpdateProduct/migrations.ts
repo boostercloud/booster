@@ -1,8 +1,8 @@
 import { UpdateProductV1, UpdateProductV2 } from './schema-versions'
-import { Migrates, ToVersion } from '@boostercloud/framework-core'
+import { SchemaMigration, ToVersion } from '@boostercloud/framework-core'
 import { UpdateProduct } from '../../../commands/update-product'
 
-@Migrates(UpdateProduct)
+@SchemaMigration(UpdateProduct)
 export class UpdateProductMigration {
   @ToVersion(2, { fromSchema: UpdateProductV1, toSchema: UpdateProductV2 })
   public async splitDescriptionFieldIntoShortAndLong(oldEntity: UpdateProductV1): Promise<UpdateProductV2> {

@@ -36,7 +36,7 @@ export class CartIdDataMigrateV1 {
         const validCart = cart!
         validCart.cartItems[0].quantity = QUANTITY_AFTER_DATA_MIGRATION_V1
         const newCart = new Cart(validCart.id, validCart.cartItems, validCart.shippingAddress, validCart.checks)
-        await BoosterDataMigrations.migrateEntity('Cart', validCart.id, newCart)
+        await Booster.schemaMigrateEntity('Cart', validCart.id, newCart)
         console.log('Migrated', newCart)
         return validCart.id
       })

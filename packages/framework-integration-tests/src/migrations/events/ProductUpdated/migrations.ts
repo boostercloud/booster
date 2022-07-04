@@ -1,8 +1,8 @@
 import { ProductUpdated, ProductUpdateReason } from '../../../events/product-updated'
 import { ProductUpdatedV1, ProductUpdatedV2, ProductUpdatedV3, ProductUpdatedV4 } from './schema-versions'
-import { Migrates, ToVersion } from '@boostercloud/framework-core'
+import { SchemaMigration, ToVersion } from '@boostercloud/framework-core'
 
-@Migrates(ProductUpdated)
+@SchemaMigration(ProductUpdated)
 export class ProductUpdatedMigration {
   @ToVersion(2, { fromSchema: ProductUpdatedV1, toSchema: ProductUpdatedV2 })
   public async addReasonField(oldEvent: ProductUpdatedV1): Promise<ProductUpdatedV2> {

@@ -175,6 +175,17 @@ export class Booster {
     return new BoosterRocketDispatcher(this.config).dispatch(request)
   }
 
+  public static schemaMigrateEntity(
+    oldEntityName: string,
+    oldEntityId: UUID,
+    newEntity: Instance & EntityInterface
+  ): Promise<void> {
+    const requestID = UUID.generate()
+    const register = new Register(requestID, {})
+    register.events(new BoosterEntityMigrated(oldEntityName, oldEntityId, newEntity.constructor.name, newEntity))
+    return RegisterHandler.handle(this.config, register)
+  }
+
   private static configureBoosterConcepts(): void {
     this.configureDataMigrations()
   }

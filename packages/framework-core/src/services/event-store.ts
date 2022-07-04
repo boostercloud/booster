@@ -8,7 +8,7 @@ import {
 } from '@boostercloud/framework-types'
 import { createInstance, getLogger } from '@boostercloud/framework-common-helpers'
 import { BoosterGlobalErrorDispatcher } from '../booster-global-error-dispatcher'
-import { Migrator } from '../migrator'
+import { SchemaMigrator } from '../schema-migrator'
 import { BoosterEntityMigrated } from '../core-concepts/data-migration/events/booster-entity-migrated'
 
 const originOfTime = new Date(0).toISOString() // Unix epoch
@@ -110,12 +110,12 @@ export class EventStore {
 
       logger.debug('Calling reducer with event: ', eventEnvelope, ' and entity snapshot ', latestSnapshot)
       const eventMetadata = this.config.events[eventEnvelope.typeName]
-      const migratedEventEnvelope = await new Migrator(this.config).migrate(eventEnvelope)
+      const migratedEventEnvelope = await new SchemaMigrator(this.config).migrate(eventEnvelope)
       const eventInstance = createInstance(eventMetadata.class, migratedEventEnvelope.value)
       const entityMetadata = this.config.entities[migratedEventEnvelope.entityTypeName]
       let migratedLatestSnapshot: EventEnvelope | null = null
       if (latestSnapshot) {
-        migratedLatestSnapshot = await new Migrator(this.config).migrate(latestSnapshot)
+        migratedLatestSnapshot = await new SchemaMigrator(this.config).migrate(latestSnapshot)
       }
       const snapshotInstance = migratedLatestSnapshot
         ? createInstance(entityMetadata.class, migratedLatestSnapshot.value)

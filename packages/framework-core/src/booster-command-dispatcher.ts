@@ -12,7 +12,7 @@ import { RegisterHandler } from './booster-register-handler'
 import { createInstance, getLogger } from '@boostercloud/framework-common-helpers'
 import { applyBeforeFunctions } from './services/filter-helpers'
 import { BoosterGlobalErrorDispatcher } from './booster-global-error-dispatcher'
-import { Migrator } from './migrator'
+import { SchemaMigrator } from './schema-migrator'
 import { GraphQLResolverContext } from './services/graphql/common'
 
 export class BoosterCommandDispatcher {
@@ -41,7 +41,7 @@ export class BoosterCommandDispatcher {
     const commandClass = commandMetadata.class
     logger.debug('Found the following command:', commandClass.name)
 
-    const migratedCommandEnvelope = await new Migrator(this.config).migrate<CommandEnvelope>(commandEnvelope)
+    const migratedCommandEnvelope = await new SchemaMigrator(this.config).migrate<CommandEnvelope>(commandEnvelope)
     let result: unknown
     const register: Register = new Register(
       migratedCommandEnvelope.requestID,
