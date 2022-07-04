@@ -1,4 +1,5 @@
 export * from './command'
+export * from './data-migration'
 export * from './event'
 export * from './entity'
 export * from './event-handler'

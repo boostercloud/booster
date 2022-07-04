@@ -1,4 +1,5 @@
 import {
+  BOOSTER_SUPER_KIND,
   BoosterConfig,
   EventEnvelope,
   InvalidParameterError,
@@ -101,7 +102,7 @@ export class EventStore {
   ): Promise<EventEnvelope> {
     const logger = getLogger(this.config, 'EventStore#entityReducer')
     try {
-      if (eventEnvelope.superKind && eventEnvelope.superKind === 'booster') {
+      if (eventEnvelope.superKind && eventEnvelope.superKind === BOOSTER_SUPER_KIND) {
         if (eventEnvelope.typeName === BoosterEntityMigrated.name) {
           return this.toBoosterEntityMigratedSnapshot(eventEnvelope)
         }

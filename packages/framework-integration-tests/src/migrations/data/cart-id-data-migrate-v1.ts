@@ -1,19 +1,23 @@
-import { Booster, Command } from '@boostercloud/framework-core'
-import { Register, UUID } from '@boostercloud/framework-types'
-import { Cart } from '../entities/cart'
-import { QUANTITY_AFTER_DATA_MIGRATION, QUANTITY_TO_MIGRATE_DATA } from '../constants'
+import {
+  Booster,
+  BoosterDataMigrationFinished,
+  BoosterDataMigrations,
+  DataMigration,
+} from '@boostercloud/framework-core'
+import { Cart } from '../../entities/cart'
+import { Register } from '@boostercloud/framework-types'
+import { QUANTITY_AFTER_DATA_MIGRATION_V1, QUANTITY_TO_MIGRATE_DATA } from '../../constants'
 
-@Command({
-  authorize: 'all',
+@DataMigration({
+  order: 1,
 })
-export class CartDataMigrateCommand {
+export class CartIdDataMigrateV1 {
   public constructor() {}
 
-  public static async handle(_command: CartDataMigrateCommand, _register: Register): Promise<Array<UUID>> {
-    console.log('migrating')
+  public static async start(register: Register): Promise<void> {
+    console.log('Data migration')
     const entitiesIdsResult = await Booster.entitiesIDs('Cart', 500, undefined)
     const paginatedEntityIdResults = entitiesIdsResult.items
-
     const carts = await Promise.all(
       paginatedEntityIdResults.map(async (entity) => await Booster.entity(Cart, entity.entityID))
     )
@@ -25,18 +29,19 @@ export class CartDataMigrateCommand {
         cart.cartItems[0].quantity === QUANTITY_TO_MIGRATE_DATA
     )
     if (!validCarts || validCarts.length === 0) {
-      return []
+      return
     }
-
-    return await Promise.all(
+    await Promise.all(
       validCarts.map(async (cart) => {
         const validCart = cart!
-        validCart.cartItems[0].quantity = QUANTITY_AFTER_DATA_MIGRATION
+        validCart.cartItems[0].quantity = QUANTITY_AFTER_DATA_MIGRATION_V1
         const newCart = new Cart(validCart.id, validCart.cartItems, validCart.shippingAddress, validCart.checks)
-        await Booster.migrateEntity('Cart', validCart.id, newCart)
+        await BoosterDataMigrations.migrateEntity('Cart', validCart.id, newCart)
         console.log('Migrated', newCart)
         return validCart.id
       })
     )
+
+    register.events(new BoosterDataMigrationFinished('CartIdDataMigrateV1'))
   }
 }
