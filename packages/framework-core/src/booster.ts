@@ -175,7 +175,7 @@ export class Booster {
     return new BoosterRocketDispatcher(this.config).dispatch(request)
   }
 
-  public static schemaMigrateEntity(
+  public static migrateEntityData(
     oldEntityName: string,
     oldEntityId: UUID,
     newEntity: Instance & EntityInterface
