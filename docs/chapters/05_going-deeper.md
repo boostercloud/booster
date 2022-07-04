@@ -599,6 +599,6 @@ Here are some answers to questions you may have:
     "ts-node": "9.1.1",
     "@types/node": "15.0.2",
     "ttypescript": "1.5.13",
-    "metadata-booster": "0.4.2"
+    "metadata-booster": "0.4.3"
   },
 ```
