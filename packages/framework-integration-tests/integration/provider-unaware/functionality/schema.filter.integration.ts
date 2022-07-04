@@ -5,7 +5,6 @@ import { ApolloClient } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { applicationUnderTest } from '../end-to-end/setup'
 
-// TODO "name": "Date" ON AND, OR, ...
 const __TYPE = '__Type'
 const INPUT_OBJECT = 'INPUT_OBJECT'
 const __INPUT_VALUE = '__InputValue'
@@ -76,7 +75,7 @@ describe('schemas', async () => {
         type: {
           __typename: __TYPE,
           kind: INPUT_OBJECT,
-          name: DATE_PROPERTY_FILTER, // UndefinedPropertyFilter
+          name: DATE_PROPERTY_FILTER,
         },
       }
       expect(inputFields[1]).to.be.eql(expectedResult)
@@ -269,13 +268,19 @@ describe('schemas', async () => {
       // @ts-ignore
       expect(inputFields[14].__typename).to.be.eql(__INPUT_VALUE)
       // @ts-ignore
-      expect(inputFields[14].type.kind).to.be.eql(SCALAR)
+      expect(inputFields[14].type.kind).to.be.eql(INPUT_OBJECT)
       // @ts-ignore
-      expect(inputFields[14].type.name).to.be.eql(JSON_OBJECT)
-      // @ts-ignore
-      expect(inputFields[14].type.inputFileds).to.be.undefined
+      expect(inputFields[14].type.name).to.be.eql('GenericClass_string_PropertyFilter')
       // @ts-ignore
       expect(inputFields[14].type.__typename).to.be.eql(__TYPE)
+      // @ts-ignore
+      expect(inputFields[14].type.inputFields[0].name).to.be.eql('genericValue')
+      // @ts-ignore
+      expect(inputFields[14].type.inputFields[0].type.kind).to.be.eql(SCALAR)
+      // @ts-ignore
+      expect(inputFields[14].type.inputFields[0].type.name).to.be.eql(JSON_OBJECT)
+      // @ts-ignore
+      expect(inputFields[14].type.inputFields[0].type.__typename).to.be.eql(__TYPE)
     })
 
     it('For base class', () => {
@@ -400,13 +405,19 @@ describe('schemas', async () => {
       // @ts-ignore
       expect(inputFields[22].__typename).to.be.eql(__INPUT_VALUE)
       // @ts-ignore
-      expect(inputFields[22].type.kind).to.be.eql(SCALAR)
+      expect(inputFields[22].type.kind).to.be.eql(INPUT_OBJECT)
       // @ts-ignore
-      expect(inputFields[22].type.name).to.be.eql(JSON_OBJECT)
-      // @ts-ignore
-      expect(inputFields[22].type.inputFileds).to.be.undefined
+      expect(inputFields[22].type.name).to.be.eql('GenericClass_Cart_PropertyFilter')
       // @ts-ignore
       expect(inputFields[22].type.__typename).to.be.eql(__TYPE)
+      // @ts-ignore
+      expect(inputFields[22].type.inputFields[0].name).to.be.eql('genericValue')
+      // @ts-ignore
+      expect(inputFields[22].type.inputFields[0].type.kind).to.be.eql(SCALAR)
+      // @ts-ignore
+      expect(inputFields[22].type.inputFields[0].type.name).to.be.eql(JSON_OBJECT)
+      // @ts-ignore
+      expect(inputFields[22].type.inputFields[0].type.__typename).to.be.eql(__TYPE)
     })
 
     it('For optional base class', async () => {

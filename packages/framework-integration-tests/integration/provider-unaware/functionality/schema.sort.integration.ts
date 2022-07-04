@@ -9,8 +9,6 @@ const __TYPE = '__Type'
 const INPUT_OBJECT = 'INPUT_OBJECT'
 const __INPUT_VALUE = '__InputValue'
 const STRING_PROPERTY_FILTER = 'StringPropertyFilter'
-const SCALAR = 'SCALAR'
-const JSON_OBJECT = 'JSONObject'
 const ENUM = 'ENUM'
 const ORDER_PROPERTY = 'orderProperty'
 
@@ -236,43 +234,18 @@ describe('schemas', async () => {
     })
 
     it('For generic', async () => {
-      const queryResult = await client.query({
-        query: gql`
-          query UniversalQuery {
-            __type(name: "ListSchemaReadModelFilter") {
-              kind
-              name
-              inputFields(includeDeprecated: false) {
-                name
-                type {
-                  kind
-                  name
-                  inputFields {
-                    name
-                    type {
-                      kind
-                      name
-                    }
-                  }
-                }
-              }
-            }
-          }
-        `,
-      })
-      inputFields = queryResult.data.__type.inputFields
       // @ts-ignore
       expect(inputFields[14].name).to.be.eql('generic')
       // @ts-ignore
       expect(inputFields[14].__typename).to.be.eql(__INPUT_VALUE)
       // @ts-ignore
-      expect(inputFields[14].type.kind).to.be.eql(SCALAR)
+      expect(inputFields[14].type.name).to.be.eql(ORDER_PROPERTY)
       // @ts-ignore
-      expect(inputFields[14].type.name).to.be.eql(JSON_OBJECT)
-      // @ts-ignore
-      expect(inputFields[14].type.inputFileds).to.be.undefined
+      expect(inputFields[14].type.kind).to.be.eql(ENUM)
       // @ts-ignore
       expect(inputFields[14].type.__typename).to.be.eql(__TYPE)
+      // @ts-ignore
+      expect(inputFields[14].type.inputFileds).to.be.undefined
     })
 
     it('For base class', () => {
@@ -367,43 +340,18 @@ describe('schemas', async () => {
     })
 
     it('For optional generic', async () => {
-      const queryResult = await client.query({
-        query: gql`
-          query UniversalQuery {
-            __type(name: "ListSchemaReadModelFilter") {
-              kind
-              name
-              inputFields(includeDeprecated: false) {
-                name
-                type {
-                  kind
-                  name
-                  inputFields {
-                    name
-                    type {
-                      kind
-                      name
-                    }
-                  }
-                }
-              }
-            }
-          }
-        `,
-      })
-      inputFields = queryResult.data.__type.inputFields
       // @ts-ignore
       expect(inputFields[22].name).to.be.eql('optionalGeneric')
       // @ts-ignore
       expect(inputFields[22].__typename).to.be.eql(__INPUT_VALUE)
       // @ts-ignore
-      expect(inputFields[22].type.kind).to.be.eql(SCALAR)
+      expect(inputFields[22].type.name).to.be.eql(ORDER_PROPERTY)
       // @ts-ignore
-      expect(inputFields[22].type.name).to.be.eql(JSON_OBJECT)
-      // @ts-ignore
-      expect(inputFields[22].type.inputFileds).to.be.undefined
+      expect(inputFields[22].type.kind).to.be.eql(ENUM)
       // @ts-ignore
       expect(inputFields[22].type.__typename).to.be.eql(__TYPE)
+      // @ts-ignore
+      expect(inputFields[22].type.inputFileds).to.be.undefined
     })
 
     it('For optional base class', async () => {
