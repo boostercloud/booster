@@ -36,6 +36,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
 
   private generateFilterFor(prop: PropertyMetadata): GraphQLInputObjectType | GraphQLScalarType {
     let filterName = `${prop.typeInfo.name}PropertyFilter`
+    filterName = filterName.replace(/[^_a-zA-Z]/g, '_')
     filterName = filterName.charAt(0).toUpperCase() + filterName.substr(1)
 
     if (this.generatedFiltersByTypeName[filterName]) return this.generatedFiltersByTypeName[filterName]
@@ -44,7 +45,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
 
     if (prop.typeInfo.name === 'UUID' || prop.typeInfo.name === 'Date') {
       fields = this.generateFilterInputTypes(prop.typeInfo)
-    } else if (prop.typeInfo.type && prop.typeInfo.typeGroup === 'Class') {
+    } else if (prop.typeInfo.type && (prop.typeInfo.typeGroup === 'Class' || prop.typeInfo.typeGroup === 'Object')) {
       if (isExternalType(prop.typeInfo)) return GraphQLJSONObject
       let nestedProperties: GraphQLInputFieldConfigMap = {}
       const metadata = getClassMetadata(prop.typeInfo.type)
@@ -63,7 +64,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
         not: { type: this.generatedFiltersByTypeName[filterName] },
         isDefined: { type: GraphQLBoolean },
       })
-    } else if (prop.typeInfo.type && prop.typeInfo.type.name !== 'Object' && prop.typeInfo.typeGroup !== 'Object') {
+    } else if (prop.typeInfo.type && prop.typeInfo.type.name !== 'Object') {
       fields = this.generateFilterInputTypes(prop.typeInfo)
     } else {
       return GraphQLJSONObject
@@ -74,6 +75,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
 
   private generateArrayFilterFor(property: PropertyMetadata): GraphQLInputObjectType {
     let filterName = `${property.typeInfo.parameters[0].name}ArrayPropertyFilter`
+    filterName = filterName.replace(/[^_a-zA-Z]/g, '_')
     filterName = filterName.charAt(0).toUpperCase() + filterName.substr(1)
 
     if (!this.generatedFiltersByTypeName[filterName]) {
