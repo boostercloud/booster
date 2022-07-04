@@ -1565,7 +1565,7 @@ class ProductV2 extends Product {}
 
 ### Data migrations
 
-The annotation `@DataMigration` in a class will indicate **Booster** that this class contains data migration code.
+The decorator `@DataMigration` will indicate **Booster** that this class contains data migration code.
 
 ```typescript
 @DataMigration({
