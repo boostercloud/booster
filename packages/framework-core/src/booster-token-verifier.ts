@@ -3,33 +3,17 @@ import {
   BoosterTokenExpiredError,
   BoosterTokenNotBeforeError,
   UserEnvelope,
-  TokenVerifier,
   BoosterConfig,
 } from '@boostercloud/framework-types'
 import { NotBeforeError, TokenExpiredError } from 'jsonwebtoken'
-import { JwskUriTokenVerifier, PublicKeyTokenVerifier } from './services/token-verifiers/jwsk-token-verifier'
 
 export class BoosterTokenVerifier {
-  private tokenVerifiers: Array<TokenVerifier>
-
-  public constructor(config: BoosterConfig) {
-    this.tokenVerifiers =
-      config.tokenVerifiers?.map((tokenVerifier): TokenVerifier => {
-        if ('verify' in tokenVerifier) {
-          // Implements the TokenVerifier interface
-          return tokenVerifier
-        } else if (tokenVerifier.jwksUri) {
-          return new JwskUriTokenVerifier(tokenVerifier.issuer, tokenVerifier.jwksUri, tokenVerifier.rolesClaim)
-        } else if (tokenVerifier.publicKey) {
-          return new PublicKeyTokenVerifier(tokenVerifier.issuer, tokenVerifier.publicKey, tokenVerifier.rolesClaim)
-        } else {
-          throw new Error('Invalid token verifier configuration')
-        }
-      }) ?? []
-  }
+  public constructor(private config: BoosterConfig) {}
 
   public async verify(token: string): Promise<UserEnvelope> {
-    const results = await Promise.allSettled(this.tokenVerifiers.map((tokenVerifier) => tokenVerifier.verify(token)))
+    const results = await Promise.allSettled(
+      this.config.tokenVerifiers.map((tokenVerifier) => tokenVerifier.verify(token))
+    )
     const winner = results.find((result) => result.status === 'fulfilled')
     if (!winner) return this.rejectVerification(results)
     return Promise.resolve((winner as PromiseFulfilledResult<UserEnvelope>).value)

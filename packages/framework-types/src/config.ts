@@ -13,7 +13,6 @@ import {
   EntityInterface,
   DataMigrationMetadata,
   TokenVerifier,
-  TokenVerifierConfig,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
@@ -83,7 +82,12 @@ export class BoosterConfig {
   /** Environment variables set at deployment time on the target lambda functions */
   public readonly env: Record<string, string> = {}
 
-  public tokenVerifiers?: Array<TokenVerifier | TokenVerifierConfig>
+  /**
+   * Add `TokenVerifier` implementations to this array to enable token verification.
+   * When a bearer token arrives in a request 'Authorization' header, it will be checked
+   * against all the verifiers registered here.
+   */
+  public tokenVerifiers: Array<TokenVerifier> = []
 
   public constructor(public readonly environmentName: string) {}
 

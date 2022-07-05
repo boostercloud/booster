@@ -7,8 +7,10 @@ import {
   EventInterface,
   RoleAccess,
   AnyClass,
+  EventStreamAuthorizer,
 } from '@boostercloud/framework-types'
 import 'reflect-metadata'
+import { BoosterAuthorizer } from '../booster-authorizer'
 
 interface EntityAttributes {
   authorizeReadEvents: RoleAccess['authorize']
@@ -31,16 +33,23 @@ export function Entity<TEntity extends EntityInterface, TParam extends EntityDec
 ): EntityDecoratorResult<TEntity, TParam> {
   let authorizeReadEvents: RoleAccess['authorize'] = []
   // This function will be either returned or executed, depending on the parameters passed to the decorator
-  const mainLogicFunction = (entityClass: Class<TEntity>) => {
+  const mainLogicFunction = (entityClass: Class<TEntity>): void => {
     Booster.configureCurrentEnv((config): void => {
       if (config.entities[entityClass.name]) {
         throw new Error(`An entity called ${entityClass.name} is already registered
         If you think that this is an error, try performing a clean build..`)
       }
 
+      let authorizer: EventStreamAuthorizer = BoosterAuthorizer.denyAccess
+      if (authorizeReadEvents === 'all') {
+        authorizer = BoosterAuthorizer.allowAccess
+      } else if (Array.isArray(authorizeReadEvents)) {
+        authorizer = BoosterAuthorizer.authorizeRoles.bind(null, authorizeReadEvents)
+      }
+
       config.entities[entityClass.name] = {
         class: entityClass,
-        authorizeReadEvents,
+        authorizer,
       }
     })
   }

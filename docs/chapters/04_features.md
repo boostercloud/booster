@@ -30,6 +30,7 @@ If no configuration is provided, Booster uses the default JavaScript logging cap
 If you need advanced logging capabilities such as redirecting your logs to a log aggregator, Booster also supports overriding the default behavior by providing custom loggers. The only thing you need to do is to provide an object that implements the `Logger` interface at config time:
 
 _The Logger interface (In package `@boostercloud/framework-types`):_
+
 ```typescript
 interface Logger {
   debug(message?: any, ...optionalParams: any[]): void
@@ -42,6 +43,7 @@ interface Logger {
 You can set your logger, as well as the log level and your preferred log prefix (Defaults to the string `'Booster'`) in your `config.ts` file for each of your environments:
 
 _In your project's config.ts file:_
+
 ```typescript
 Booster.configure('development', (config: BoosterConfig): void => {
   config.appName = 'my-store'
@@ -57,13 +59,14 @@ Booster.configure('development', (config: BoosterConfig): void => {
 
 All framework's components will use this logger by default and will generate logs that match the following pattern:
 
-```
+```text
 [<logPrefix>]|moduleName: <message>
 ```
 
 You can get a custom logger instance that extends the configured logger by adding your moduleName and optionally overriding the configured prefix with the `getLogger` helper function. It's a good practice to build and use a separate logger instance built with this method for each context, as this will make it easier to filter your logs when you need to investigate a problem.
 
 _Example: Obtaining a logger for your command:_
+
 ```typescript
 @Command({
   authorize: [User],
@@ -81,7 +84,8 @@ export class UpdateShippingAddress {
 ```
 
 When a `UpdateShippingAddress` command is handled, it wil log messages that look like the following:
-```
+
+```text
 [MyApp]|UpdateShippingCommand#handler: User buyer42 changed shipping address for cart 314: { street: '13th rue del percebe', number: 6, ... }
 ```
 
@@ -89,13 +93,154 @@ Using the configured Booster logger is not mandatory for your application, but i
 
 ## Authentication and Authorization
 
-First of all, you need to know that the authorization in Booster is done through roles. Every Command and ReadModel has an authorize policy that tells Booster who can execute or access it. It consists of one of the following two values:
+Booster accepts standard [JWT tokens](https://jwt.io/) to authenticate incoming requests, and you can use the claims included in these tokens to authorize access to commands or read models by using the provided simple role-based authorization or writing your own authorizer functions.
 
-- `'all'`: Meaning that the command is public: any user, both authenticated and anonymous, can execute it.
+> [!NOTE] To learn how to include the access token in your requests, check the section [Authorizing operations](#authorizing-operations).
+
+### Validating incoming tokens (Authentication)
+
+In order to validate incoming tokens and make sure that user requests come from trustable origins, you need to provide one or more `TokenVerifier` instances at config time for each of your environments. Booster provides standard implementations for jwskUri and public key based authentication:
+
+```typescript
+import { Booster } from '@boostercloud/framework-core'
+import { BoosterConfig } from '@boostercloud/framework-types'
+
+Booster.configure('production', (config: BoosterConfig): void => {
+  config.appName = 'demoapp'
+  config.providerPackage = '@boostercloud/framework-provider-aws'
+  config.tokenVerifiers = [
+    new JwskUriTokenVerifier(
+      issuer: 'https://securetoken.google.com/demoapp',
+      jwksUri: 'https://demoapp.firebase.com/.well-known/jwks.json',
+      rolesClaim: 'firebase:groups'
+    ),
+    new PublicKeyTokenVerifier(
+      issuer: 'custom-key-pair',
+      publicKeyResolver: getCustomKey(),
+      rolesClaim: 'custom:roles'
+    ),
+  ]
+})
+```
+
+#### JWKSURI based authorization
+
+One common way to validate JWT tokens is by using a issuer-provided well-known URI on which you can find their [JWK](https://datatracker.ietf.org/doc/html/rfc7517) sets (JWKS). If you use this method, you only need to provide the issuer's name, the JWKSURI and, if you're using role-based authentication, an optional rolesClaim option that sets the claim from which Booster will read the role names.
+
+```typescript
+...
+config.tokenVerifiers = [
+  new JwskUriTokenVerifier(
+    issuer: 'https://securetoken.google.com/demoapp', // Issuer name
+    jwksUri: 'https://demoapp.firebase.com/.well-known/jwks.json', // JWKS URI that points to the issuer's well-known JWKS JSON file
+    rolesClaim: 'firebase:groups', // Name of the claim to read the roles from (when you're using role-based authorization)
+  ),
+]
+...
+```
+
+#### Public key based authentication
+
+If the token issuer doesn't provide a jwksURI, you can also validate tokens against a known public key. One scenario where this is useful is when you're implementing your own authentication mechanism or you're issuing self-signed tokens.
+
+[!NOTE] If you need to handle private keys in production, consider using a [Key Management System](https://en.wikipedia.org/wiki/Key_management#Key_storage)). These systems often provide API endpoints that let you encrypt/sign your JWT tokens without exposing the private keys. The public keys can be set in a `PublicKeyTokenVerifier` to automate verification.
+
+```typescript
+config.tokenVerifiers = [
+  new PublicKeyTokenVerifier(
+    issuer: 'custom-key-pair', // Issuer name
+    publicKeyResolver: getCustomKey(), // Promise that resolves to the public key string
+    rolesClaim: 'custom:roles', // Name of the claim to read the roles from (when you're using role-based authorization)
+  ),
+]
+```
+
+Notice that the `publicKeyResolver` is a promise that resolves to a string, so it can be used to load the public key from a remote location too (i.e. get it from your KMS).
+
+#### Custom authentication
+
+You can also provide your own `TokenVerifier` implementation for advanced acceptance criteria beyond simple cryptographic signature checks. An use case for this could be to check that the token was generated specifically for your service by inspecting the `aud` claim, or check that the token has not been blacklisted or invalidated by your business logic (i.e. a user logs out before the token's expiration date and is included in an invalidated tokens list to make sure that an attacker that finds the token later can't use it to impersonate the legitimate owner).
+
+Booster will accept as a token verifier any object that matches the `TokenVerifier` interface:
+
+```typescript
+interface TokenVerifier {
+  /** Returns an UserEnvelope object if the token is valid. Raises an exception if not valid */
+  verify(token: string): Promise<UserEnvelope> 
+}
+```
+
+If you only need to perform extra checks, the easiest way to build a working `TokenVerifier` might be by extending one of the default implementations and adding your own checks before or after the call to `super`:
+
+```typescript
+export class CustomValidator extends PrivateKeyValidator {
+  public async verify(token: string): Promise<UserEnvelope> {
+    // Call to the PrivateKeyValidator verify method to check the signature
+    const userEnvelope = await super.verify(token)
+
+    // Do my extra validations here. Throwing an error will reject the token
+    await myExtraValidations(userEnvelope.claims, token)
+
+    return userEnvelope
+  }
+}
+```
+
+If you need to do more advanced checks, you can implement the whole verification algorithm yourself. This could make sense if you're using non-standard or legacy tokens, as you will have the opportunity to fill the `UserEnvelope` object required by the Booster core in any way you want. In case you're dealing with JWT tokens, Booster exposes many of the functions that it uses in the default `TokenVerifier` implementations:
+
+```typescript
+/**
+ * Creates a valid UserEnvelope from a decoded JWT token. This is an utility function that can be used
+ */
+export function tokenToUserEnvelope(decodedToken: any, rolesClaim = defaultRolesClaim): UserEnvelope {
+  ...
+}
+
+/**
+ * Initializes a jwksRSA client that can be used to get the public key of a JWKS URI using the
+ * `getKeyWithClient` function.
+ */
+export function getJwksClient(jwksUri: string) {
+  ...
+}
+
+/**
+ * Initializes a function that can be used to get the public key from a JWKS URI with the signature
+ * required by the `verifyJWT` function. You can create a client using the `getJwksClient` function.
+ */
+export function getKeyWithClient(
+  client: jwksRSA.JwksClient,
+  header: jwt.JwtHeader,
+  callback: jwt.SigningKeyCallback
+): void {
+  ...
+}
+
+/**
+ * Verifies a JWT token using a key or key resolver function and returns a Booster UserEnvelope.
+ */
+export async function verifyJWT(
+  token: string,
+  issuer: string,
+  key: jwt.Secret | jwt.GetPublicKeyOrSecret,
+  rolesClaim?: string
+): Promise<UserEnvelope> {
+ ...
+}
+```
+
+### Checking when a valid user can perform a specific actions (Authentication)
+
+Every Command and ReadModel in Booster has an `authorize` policy that tells Booster who can use or access it. Booster follows a whitelisting approach, so all read models and commands are inaccessible by default when this policy is not set. It accepts one of the following options:
+
+- `'all'`: The command or read-model is explicitly public: any user, both authenticated and anonymous, can access it.
 - An array of authorized roles `[Role1, Role2, ...]`: This means that only those authenticated users that
-  have any of the roles listed there are authorized to execute the command
+  have any of the roles listed there are authorized to execute the command.
+- An authorizer function that matches the type `CommandAuthorizer` for commands or `ReadModelAuthorizer` for read models.
 
-For example, the following command can be executed by anyone:
+#### Public commands and read models
+
+Setting the option `authorize: all` in a command or read model will make it publicly accessible to anyone that has access to the graphql endpoint. For example, the following command can be executed by anyone, even if they don't provide a valid JWT token:
 
 ```typescript
 @Command({
@@ -106,157 +251,21 @@ export class CreateComment {
 }
 ```
 
-While this one can be executed by authenticated users that have the role `Admin` or `User`:
+> [!NOTE] **Think twice wether you really need fully open GraphQL endpoints in your application**, this might be useful in the development phase, but we recommend to **avoid exposing your endpoints in this way in production**. Even for public APIs, it might be useful to issue API keys to avoid abuse. Booster easily scales to any given demand, but scaling also increases the cloud bill! (See [Denial of wallet attacks](https://www.sciencedirect.com/science/article/pii/S221421262100079X))
+
+#### Simple Role-based authorization
+
+Booster provides a simple role-based authentication mechanism that will work in many standard scenarios. As many other Booster artifacts, Roles are defined as simple decorated classes, typically in (but not limited to) the `src/config/roles.ts` file. To define a role, you only need to decorate an empty class with the `@Role` decorator as follows:
 
 ```typescript
-@Command({
-  authorize: [Admin, User],
-})
-export class UpdateUser {
-  ...
-}
-```
-
-Optionally, you can also add authorization to entities to control who can read its events. To do so, pass a configuration object to the @Entity annotation with the authorized roles (or `'all'` for everyone) in the `authorizeReadEvents` field. For example:
-
-```typescript
-// cart.ts (entity)
-@Entity({
-  authorizeReadEvents: 'all',
-})
-export class Cart {
-  public constructor(
-    readonly id: UUID,
-    readonly cartItems: Array<CartItem>,
-    public shippingAddress?: Address,
-    public checks = 0
-  ) {}
-  // <reducers...>
-}
-```
-
-By default, a Booster application has no roles defined, so the only allowed value you can use in the `authorize` (or `authorizeReadEvents`) policy is `'all'` (good for public APIs).
-If you want to add user authorization, you first need to create the roles that are suitable for your application.
-
-Roles are classes annotated with the `@Role` decorator, where you can specify some attributes. We recommend that you define your roles in the file `src/roles.ts` or, if you have too many roles, put them in several files under the `src/roles` folder.
-
-> [!NOTE] There is no `Admin` user by default. In order to register one you need to specify a sign-up method on `src/roles.ts`.
-
-In the following example we define `Admin`, `User`, `SuperUser` and `SuperUserWithoutConfirmation` roles. They all contain an `auth` attribute which contains a `signUpMethods` and `skipConfirmation` attributes.
-
-```typescript
-// src/roles.ts
-
-@Role({
-  auth: {
-    // Do not specify (or use an empty array) if you don't want to allow sign-ups
-    signUpMethods: [],
-  },
-})
-export class Admin {}
-
-@Role({
-  auth: {
-    // Do not specify (or use an empty array) if you don't want to allow sign-ups
-    signUpMethods: ['email'],
-  },
-})
+@Role()
 export class User {}
 
-@Role({
-  auth: {
-    signUpMethods: ['email', 'phone'],
-    skipConfirmation: false,
-  },
-})
-export class SuperUser {}
-
-@Role({
-  auth: {
-    signUpMethods: ['email', 'phone'],
-    skipConfirmation: true,
-  },
-})
-export class SuperUserWithoutConfirmation {}
+@Role()
+export class Admin {}
 ```
 
-When `signUpMethods` is empty (`Admin` role) or is not specified, a user can't use this role to sign up.
-`signUpMethods` is an array with limited possible values: `email`, `phone` or a combination of both.
-Users with the `User` role will only be able to sign up with their emails, whereas the ones with the `SuperUser` role will be able to sign up with either their email or their phone number.
-
-When `skipConfirmation` is false or not specified, a confirmation is required for the chosen sign up method.
-Users that sign up with their emails will receive a confirmation link in their inbox. They just need to click it to confirm their registration.
-Users that sign up with their phones will receive a confirmation code as an SMS message. That code needs to be sent back using the confirmation endpoint.
-If `skipConfirmation` is set to true, users can sign in without confirmation after signing up.
-
-## Autentication Rocket
-
-Now, with the roles defined, your Booster application is ready to use the [AWS Authorization Rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure), which provides authentication and authorization integration in your application. Check out its documentation to know how you can configure it and how the user can get their access tokens.
-
-Once a user has an access token, it can be included in any request made to your Booster application as a Bearer token. It will be used to get the user information and authorize them to access protected resources.
-
-To learn how to include the access token in your requests, check the section [Authorizing operations](#authorizing-operations).
-
-## Custom Authentication
-
-Booster provides a **JWT authorization mode** to authorize all incoming Booster requests using the server you decide. Your authentication server will provide JWT tokens that you can use with Booster. Your application will decode your token and verify its validity with your server, and then, the required roles will be matched with the claims contained in the token.
-
-In that way, you can use different authentication providers, like Auth0, Firebase, Cognito, or create your own, without the need of a specific rocket implementation.
-
-> [!NOTE] The JWT authorization mode does not make use of the `signUpMethods` and `signUpConfirmation` attributes of your roles configuration. This configuration depends on the authentication server you use.
-
-### JWT Configuration
-
-In order to use the JWT authorization you will need to configure at least one token verifier. To do this you can add a `TokenVerifierConfig` entry to the `tokenVerifiers` property which contains the following properties:
-
-- `jwksUri`: URI pointing to a [JWKS](https://datatracker.ietf.org/doc/html/rfc7517#section-4) object containing the public keys provided by the auth provider that signed the JWT tokens.
-- `publicKey`: Alternatively, you can manually provide a public key using this parameter.
-- `issuer`: Identifies the principal that issued the JWT tokens.
-- `rolesClaim`: Field where provider contains the token. As an example Cognito uses `cognito:groups`.
-
-This is a config sample for an application that uses Firebase as the auth provider:
-
-```typescript
-import { Booster } from '@boostercloud/framework-core'
-import { BoosterConfig } from '@boostercloud/framework-types'
-
-Booster.configure('production', (config: BoosterConfig): void => {
-  config.appName = 'demoapp'
-  config.providerPackage = '@boostercloud/framework-provider-aws'
-  config.tokenVerifiers = [
-    {
-      jwksUri: 'https://demoapp.firebase.com/.well-known/jwks.json',
-      issuer: 'https://securetoken.google.com/demoapp',
-      rolesClaim: 'firebase:groups',
-    }
-  ]
-})
-```
-
-And this is an extended configuration that accepts both firebase emitted tokens and self-signed tokens that use a certificate stored in a local file:
-
-```typescript
-Booster.configure('production', (config: BoosterConfig): void => {
-  config.appName = 'my-app'
-  config.providerPackage = '@boostercloud/framework-provider-aws'
-  config.tokenVerifiers = [
-    // Accepts tokens signed with a local certificate (For instance, tokens generated for confirmation emails)
-    { 
-      issuer: 'booster',
-      publicKey: fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8'),
-      rolesClaim: 'booster:role',
-    },
-    // Also accepts tokens signed by Firebase
-    {
-      jwksUri: 'https://myapp.firebase.com/.well-known/jwks.json',
-      issuer: 'https://securetoken.google.com/myapp',
-      rolesClaim: 'firebase:groups',
-    }
-  ]
-})
-```
-
-In addition to that, you will need to configure your JWT tokens to include the custom claims required in your Booster app, i.e. if your command is declared in this way:
+Once they're defined you can use them in any command or read model `authorize` policy. This one can be executed by authenticated users that have the role `Admin` or `User` and will reject any request from users that don't have valid JWT tokens or have valid tokens but doesn't have one of the roles' names in their `roleClaims` (Remember that this `roleClaims` option is set in the `TokenVerifier` at config time and is the name of the claim where Booster reads the role names from):
 
 ```typescript
 @Command({
@@ -267,11 +276,11 @@ export class UpdateUser {
 }
 ```
 
-Your token should include a property specified in `rolesClaim` with the value `Admin` or `User`. Here is an example of a Firebase token:
+Make sure that you configure your JWT tokens issuer to include the custom claims required in your Booster app. For instance, for the previous `UpdateUser` command, Booster will expect to receive a token that includes a claim matching the one defined in the `TokenVerifier`'s `rolesClaim` property with the value `Admin` or `User`. Here is an example of a Firebase token:
 
 ```json
 {
-  "firebase:groups": "User",
+  "firebase:groups": "User", // <- roles are read from 'firebase:groups' claim
   "iss": "https://securetoken.google.com/demoapp",
   "aud": "demoapp",
   "auth_time": 1604676721,
@@ -284,11 +293,155 @@ Your token should include a property specified in `rolesClaim` with the value `A
 }
 ```
 
-Once you have the token with the auth provider of choice, simply pass it in the requests through the header:
+##### Extended roles when using the [Authentication Booster Rocket for AWS](https://github.com/boostercloud/rocket-auth-aws-infrastructure)
 
-```http request
-Authorization: Bearer <your JWT token>
+The Authentication Rocket for AWS is an oppinionated implementation of a JWT tokens issuer on top of AWS Cognito that includes out-of-the-box features like Sign-up, Sign-in, Passwordless tokens, Change passwords and many other features. When a user goes through the sign up and sign in mecanisms provided by the rocket, they´ll get a standard JWT access token that can be included in any request as a Bearer token and will work in the same way as any other JWT token.
+
+When you use this rocket, you can use extra configuration parameters in the `@Role` decorator to enable some of these features. In the following example we define `Admin`, `User`, `SuperUser` and `SuperUserWithoutConfirmation` roles. They all contain an extra `auth` configuration attribute that set the behavior of the authorization role for each role:
+
+```typescript
+@Role({
+  auth: {
+    signUpMethods: [], // Using an empty array here prevents sign-ups (Admin has no special treatment. If you don't enable signup, you'll need to create the first admin manually in the AWS console)
+  },
+})
+export class Admin {}
+
+@Role({
+  auth: {
+    signUpMethods: ['email'], // Enable email sign-ups for Users
+  },
+})
+export class User {}
+
+@Role({
+  auth: {
+    signUpMethods: ['email', 'phone'], // Can sign up by email or phone
+    skipConfirmation: false, // It requires email or phone confirmation. The rocket will send either an email or a SMS with a confirmation link.
+  },
+})
+export class SuperUser {}
+
+@Role({
+  auth: {
+    signUpMethods: ['email', 'phone'],
+    skipConfirmation: true, // It doesn't require email or phone confirmation
+  },
+})
+export class SuperUserWithoutConfirmation {}
 ```
+
+To learn more about the Authorization rocket for AWS, please read the [README](https://github.com/boostercloud/rocket-auth-aws-infrastructure/blob/main/README.md) in its Github repository.
+
+#### Custom authorization with authorizer functions
+
+If the role-based authorization model doesn't work well for your application (for instance, when your application is designed for permission-based authorization), you can implement your own authorization mechanisms by providing authorizer functions to commands, read models or events (to access event streams). As authorizers are regular JavaScript functions, you can easily reuse them in your project or even in other Booster projects as a library.
+
+##### Command Authorizers
+
+Command authorizers are functions that match the `CommandAuthorizer` type:
+
+```typescript
+export type CommandAuthorizer = (currentUser?: UserEnvelope, input?: CommandInput) => Promise<void>
+```
+
+For instance, if you want to restrict a command to users that have a permission named `Permission-To-Rock` in the `permissions` claim you can do this:
+
+```typescript
+@Command({
+  authorize: async (currentUser) => {
+    if (!currentUser.claims['permissions'].includes('Permission-To-Rock')) {
+      throw new Error(`User ${currentUser.username} should not be rocking!`)
+    }
+  }
+})
+export class PerformIncredibleGuitarSolo {
+  ...
+}
+```
+
+##### Read Model Authorizers
+
+Read Model Authorizers are functions that match the `ReadModelAuthorizer` type:
+
+```typescript
+export type ReadModelAuthorizer<TReadModel extends ReadModelInterface> = (
+  currentUser?: UserEnvelope,
+  readModelRequestEnvelope?: ReadModelRequestEnvelope<TReadModel>
+) => Promise<void>
+```
+
+For instance, you may want to restrict access to a specific resource only to people that has been granted read permission:
+
+```typescript
+@ReadModel({
+  authorize: async (currentUser, readModelRequestEnvelope) => {
+    const userPermissions = Booster.entity(UserPermissions, currentUser.username)
+    if (!userPermissions || !userPermissions.accessTo[readModelRequestEnvelope.className].includes(readModelRequestEnvelope.key.id)) {
+      throw new Error(`User ${currentUser.username} should not be looking here`)
+    }
+  }
+})
+```
+
+##### Event Stream Authorizers
+
+Event Stream Authorizers are functions that match the `EventStreamAuthorizer` type:
+
+```typescript
+export type EventStreamAuthorizer = (
+  currentUser?: UserEnvelope,
+  eventSearchRequest?: EventSearchRequest
+) => Promise<void>
+```
+
+For instance, you can restrict access to entities that the current user own.
+
+```typescript
+@Entity({
+  authorizeReadEvents: (currentUser, eventSearchRequest) => {
+    const { entityID } = eventSearchRequest.parameters
+    if (!entityID) {
+      throw new Error(`${currentUser.username} cannot list carts`)
+    }
+    const cart = Booster.entity(Cart, entityID)
+    if (cart.ownerUserName !== currentUser.userName) {
+      throw new Error(`${currentUser.username} cannot see events in cart ${entityID}`)
+    }
+  }
+})
+export class Cart {
+  public constructor(
+    readonly id: UUID,
+    readonly ownerUserName: string,
+    readonly cartItems: Array<CartItem>,
+    public shippingAddress?: Address,
+    public checks = 0
+  ) {}
+  ...
+}
+```
+
+### Accessing the event streams API
+
+You can optionally enable access to one or more entities' events streams through the events API. To do so, you just need to add a configuration object setting the `authorizeReadEvents` policy to any of the supported authorization mechanisms (`'all'` to make them public, an array of roles or an authorizer function that matches the `EventAuthorizer` type signature). For example:
+
+```typescript
+@Entity({
+  authorizeReadEvents: 'all', // Anyone can read any Cart's event
+})
+export class Cart {
+  public constructor(
+    readonly id: UUID,
+    readonly cartItems: Array<CartItem>,
+    public shippingAddress?: Address,
+    public checks = 0
+  ) {}
+  // <reducers...>
+}
+```
+
+[!NOTE] Be careful when exposing events data, as this data is likely to hold internal system state. And again, be aware that authorizing public access with the `'all'` option is usually not a good idea.
 
 ## GraphQL API
 
@@ -307,7 +460,7 @@ Luckily, you can forget about that because Booster does all the work for you!
 
 The GraphQL API is fully **auto-generated** based on your _commands_ and _read models_.
 
-**Note:** To get the full potential of the GraphQL API, it is recommended not to use `interface` types in any command or read model attributes. Use `class` types instead. This will allow you to perform complex graphQL filters, including over nested attributes. There's an example below:
+> [!NOTE] To get the full potential of the GraphQL API, it is recommended not to use `interface` types in any command or read model attributes. Use `class` types instead. This will allow you to perform complex graphQL filters, including over nested attributes. There's an example below:
 
 ```typescript
 // My type
@@ -399,7 +552,7 @@ Where:
 
 In the following example we send a command named "ChangeCart" that will add/remove an item to/from a shopping cart. The command requires the ID of the cart (`cartId`), the item identifier (`sku`) and the quantity of units we are adding/removing (`quantity`).
 
-```
+```text
 URL: "<graphqlURL>"
 ```
 
@@ -411,7 +564,7 @@ mutation {
 
 In case we are not using any GraphQL client, this would be the equivalent bare HTTP request:
 
-```
+```text
 URL: "<graphqlURL>"
 METHOD: "POST"
 ```
@@ -455,7 +608,7 @@ Where:
 
 In the following example we send a query to read a read model named `CartReadModel` whose ID is `demo`. We get back its `id` and the list of cart `items` as response.
 
-```
+```text
 URL: "<graphqlURL>"
 ```
 
@@ -470,7 +623,7 @@ query {
 
 In case we are not using any GraphQL client, this would be the equivalent bare HTTP request:
 
-```
+```text
 URL: "<graphqlURL>"
 METHOD: "POST"
 ```
@@ -604,7 +757,6 @@ mutation {
 
 > [!NOTE] Remember that, in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
 
-
 ### Adding before hooks to your read models
 
 When you send queries or subscriptions to your read models, you can tell Booster to execute some code before executing the operation. These are called `before` hooks, and they receive a `ReadModelRequestEnvelope` object representing the current request.
@@ -731,7 +883,7 @@ Where:
 
 #### Examples
 
-```
+```text
   URL: "<graphqlURL>"
 ```
 
@@ -854,6 +1006,7 @@ query {
 - Currently, only available on the AWS provider.
 
 ### Filter & Pagination
+
 #### Filtering a read model
 
 The Booster GraphQL API provides support for filtering Read Models on `queries` and `subscriptions`.
@@ -949,7 +1102,7 @@ query {
 }
 ```
 
-Note: `eq` and `ne` are valid filters for checking if a field value is null or not null.
+> [!NOTE] `eq` and `ne` are valid filters for checking if a field value is null or not null.
 
 ##### Array filters
 
@@ -969,7 +1122,7 @@ query {
 }
 ```
 
-_Note: Right now, with complex properties in Arrays, you just can filter them if you know the exact value of an element but is not possible to filter from a property of the element. As a workaround, you can use an array of ids of the complex property and filter for that property as in the example above._
+> [!NOTE] Right now, with complex properties in Arrays, you just can filter them if you know the exact value of an element but is not possible to filter from a property of the element. As a workaround, you can use an array of ids of the complex property and filter for that property as in the example above.
 
 ##### Filter combinators
 
@@ -994,7 +1147,6 @@ query {
 ```
 
 ##### IsDefined operator
-
 
 | Filter    |    Value    |         Description |
 |:----------|:-----------:|--------------------:|
@@ -1079,27 +1231,29 @@ For example, you can sort and get the products in your commands like this:
 ```
 
 This is a preview feature available only for some Providers and with some limitations:
-* Azure: 
-  * Sort by one field supported. 
-  * Nested fields supported. 
-  * Sort by more than one file: **unsupported**.
-* Local:
-  * Sort by one field supported.
-  * Nested fields supported.
-  * Sort by more than one file: **unsupported**.
+
+- Azure:
+  - Sort by one field supported.
+  - Nested fields supported.
+  - Sort by more than one file: **unsupported**.
+- Local:
+  - Sort by one field supported.
+  - Nested fields supported.
+  - Sort by more than one file: **unsupported**.
 
 > **Warning**: It is not possible to sort by fields defined as Interface, only classes or primitives types.
-
 
 #### Using pagination
 
 The Booster GraphQL API includes a type for your read models that stands for `List{"your-read-model-name"}`, which is the official way to work with pagination. Alternative, there is another type without the `List` prefix, which will be deprecated in future versions.
 
 The Read Model List type includes some new parameters that can be used on queries:
- * `limit`; an integer that specifies the maximum number of items to be returned.
- * `afterCursor`; a parameter to set the `cursor` property returned by the previous query, if not null.
+
+- `limit`; an integer that specifies the maximum number of items to be returned.
+- `afterCursor`; a parameter to set the `cursor` property returned by the previous query, if not null.
 
  Example:
+
 ```graphql
 query {
   ListProductReadModels
@@ -1116,8 +1270,9 @@ query {
 ```
 
 Besides the parameters, this type also returns a type `{your-read-model-name}Connection`, it includes the following properties:
- * `cursor`; if there are more results to paginate, it will return the object to pass to the `afterCursor` parameter on the next query. If there aren't more items to be shown, it will be undefined.
- * `items`; the list of items returned by the query, if there aren't any, it will be an empty list.
+
+- `cursor`; if there are more results to paginate, it will return the object to pass to the `afterCursor` parameter on the next query. If there aren't more items to be shown, it will be undefined.
+- `items`; the list of items returned by the query, if there aren't any, it will be an empty list.
 
 ### Using Apollo Client
 
@@ -1433,51 +1588,58 @@ boost nuke -e <environment name>
 For a force delete without asking for confirmation, you can run `boost nuke -e <environment name> -f`.
 
 > [!ATTENTION] Be EXTRA CAUTIOUS with this option, all your application data will be irreversibly DELETED without confirmation.
- 
 
 ## Error handling
 
 Booster includes a global error handler annotation `@GlobalErrorHandler` that will catch all errors that are thrown by:
-* **Command Handling Errors**: Errors thrown by the `handle` method of the command.
+
+- **Command Handling Errors**: Errors thrown by the `handle` method of the command.
   **Program handling errors**: Errors thrown by the ScheduledCommand `handle` method.
   **Event Handle errors**: Errors thrown by the `Event Handle` method.
-* **Reducer errors**: Errors thrown by the `@Reduces` method of the entity.
-* **Projection errors**: Errors thrown in the ReadModel `@Projects` method.
-* All errors: Errors thrown in any of the previous methods. This method will always be called, also when calling any of the above methods.
+- **Reducer errors**: Errors thrown by the `@Reduces` method of the entity.
+- **Projection errors**: Errors thrown in the ReadModel `@Projects` method.
+- All errors: Errors thrown in any of the previous methods. This method will always be called, also when calling any of the above methods.
 
 You can trap and return new errors in any of these methods annotating a class with `@GlobalErrorHandler` and implementing the following methods:
 
 **Command handle errors**:
+
 ```typescript
 onCommandHandlerError?(error: Error, command: CommandEnvelope): Promise<Error | undefined>
 ```
 
 **Schedule handle errors**:
+
 ```typescript
 onScheduledCommandHandlerError?(error: Error): Promise<Error | undefined>
 ```
 
 **Event handler errors**:
+
 ```typescript
 onDispatchEventHandlerError?(error: Error, eventInstance: EventInterface): Promise<Error | undefined>
 ```
 
 **Reducer errors**:
+
 ```typescript
 onReducerError?(error: Error, eventInstance: EventInterface, snapshotInstance: EntityInterface | null): Promise<Error | undefined>
 ```
 
 **Projections errors**:
+
 ```typescript
 onProjectionError?(error: Error, entity: EntityInterface, readModel: ReadModelInterface | undefined): Promise<Error | undefined>
 ```
 
 **All errors**
+
 ```typescript
   onError?(error: Error | undefined): Promise<Error | undefined>
 ```
 
 Example:
+
 ```typescript
 @GlobalErrorHandler()
 export class AppErrorHandler {
@@ -1519,13 +1681,12 @@ export class AppErrorHandler {
 
 ## Migrations
 
-
 ### Schema migrations
 
-Booster handle classes annotated with `@Migrates` as **Schema migrations**. The migration process will update an existing object 
-from one version to the next one. 
+Booster handle classes annotated with `@Migrates` as **Schema migrations**. The migration process will update an existing object
+from one version to the next one.
 
-For example, to migrate a `Product` entity from version 1 to version 2 we need the following migration class: 
+For example, to migrate a `Product` entity from version 1 to version 2 we need the following migration class:
 
 ```typescript
 @Migrates(Product)

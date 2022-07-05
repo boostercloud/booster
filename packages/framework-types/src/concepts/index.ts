@@ -1,3 +1,4 @@
+export * from './authorizers'
 export * from './command'
 export * from './data-migration'
 export * from './event'
