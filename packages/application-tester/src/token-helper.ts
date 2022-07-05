@@ -26,7 +26,7 @@ export class TokenHelper {
       issuer,
       keyid,
     } as jwt.SignOptions
-    if (tokenOptions?.expiresIn || tokenOptions?.expiresIn === 0) {
+    if (tokenOptions?.expiresIn !== undefined) {
       options['expiresIn'] = tokenOptions?.expiresIn
     }
     if (tokenOptions?.notBefore) {

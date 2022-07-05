@@ -1,11 +1,6 @@
 import { expect } from '../../expect'
 import { fake, match, replace, restore } from 'sinon'
-import {
-  getJwksClient,
-  getKeyWithClient,
-  sanitizeAuthorizationHeader,
-  verifyJWT,
-} from '../../../src/services/token-verifiers/utilities'
+import { getJwksClient, getKeyWithClient, verifyJWT } from '../../../src/services/token-verifiers/utilities'
 import { JwksClient } from 'jwks-rsa'
 import * as jwt from 'jsonwebtoken'
 import { DecodedToken } from '@boostercloud/framework-types'
@@ -80,15 +75,6 @@ describe('function `getKeyWithClient`', () => {
 
       expect(fakeCallback).to.have.been.calledWith(null, 'public-key')
     })
-  })
-})
-
-describe('function `sanitizeAuthorizationHeader`', () => {
-  it('returns the authorization header without the "Bearer" prefix', () => {
-    const fakeAuthorizationHeader = 'Bearer 123'
-    const sanitizedAuthorizationHeader = sanitizeAuthorizationHeader(fakeAuthorizationHeader)
-
-    expect(sanitizedAuthorizationHeader).to.equal('123')
   })
 })
 

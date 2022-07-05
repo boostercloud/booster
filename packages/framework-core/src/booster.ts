@@ -31,6 +31,7 @@ import { BoosterDataMigrationStarted } from './core-concepts/data-migration/even
 import { BoosterDataMigrationFinished } from './core-concepts/data-migration/events/booster-data-migration-finished'
 import { RegisterHandler } from './booster-register-handler'
 import { JwksUriTokenVerifier, JWT_ENV_VARS } from './services/token-verifiers'
+import { BoosterAuthorizer } from './booster-authorizer'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -221,7 +222,7 @@ export class Booster {
 
     this.config.entities[BoosterDataMigrationEntity.name] = {
       class: BoosterDataMigrationEntity,
-      authorizeReadEvents: [],
+      eventStreamAuthorizer: BoosterAuthorizer.denyAccess,
     }
   }
 

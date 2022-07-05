@@ -42,14 +42,6 @@ export function getKeyWithClient(client: JwksClient, header: jwt.JwtHeader, call
 }
 
 /**
- * Strips the `Bearer` prefix from the Authorization header so it can be fed to a TokenVerifier `verify` method.
- * @param authorizationHeader The value of the Authorization header
- * @returns The token part of the Authorization header
- */
-export const sanitizeAuthorizationHeader = (authorizationHeader: string): string =>
-  authorizationHeader.replace('Bearer ', '')
-
-/**
  * Verifies a JWT token using a key or key resolver function and returns a Booster UserEnvelope.
  *
  * @param token The token to verify
@@ -63,7 +55,7 @@ export async function verifyJWT(
   issuer: string,
   key: jwt.Secret | jwt.GetPublicKeyOrSecret
 ): Promise<DecodedToken> {
-  const sanitizedToken = sanitizeAuthorizationHeader(token)
+  const sanitizedToken = token.replace('Bearer ', '') // Remove the 'Bearer' prefix from the token
 
   return await new Promise((resolve, reject) => {
     jwt.verify(
