@@ -9,10 +9,10 @@ import {
   EventHandlerInterface,
   ScheduledCommandMetadata,
   EventMetadata,
-  TokenVerifierConfig,
   GlobalErrorHandlerMetadata,
   EntityInterface,
   DataMigrationMetadata,
+  TokenVerifier,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
@@ -82,7 +82,7 @@ export class BoosterConfig {
   /** Environment variables set at deployment time on the target lambda functions */
   public readonly env: Record<string, string> = {}
 
-  private _tokenVerifiers?: Array<TokenVerifierConfig>
+  private _tokenVerifiers?: Array<TokenVerifier>
 
   public constructor(public readonly environmentName: string) {}
 
@@ -172,7 +172,7 @@ export class BoosterConfig {
     return value
   }
 
-  public get tokenVerifiers(): Array<TokenVerifierConfig> {
+  public get tokenVerifiers(): Array<TokenVerifier> {
     /*
      * TODO: Leaving this lazy initializer to load tokenVerifier options from environment
      * variables here for backwards compatibility reasons, but we should consider forcing
@@ -203,7 +203,7 @@ export class BoosterConfig {
     return this._tokenVerifiers
   }
 
-  public set tokenVerifiers(tokenVerifiers: Array<TokenVerifierConfig>) {
+  public set tokenVerifiers(tokenVerifiers: Array<TokenVerifier>) {
     this._tokenVerifiers = tokenVerifiers
   }
 
