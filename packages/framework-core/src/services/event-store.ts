@@ -25,19 +25,13 @@ export class EventStore {
    * Also, in order to make next calls faster, this method stores the calculated
    * snapshot.
    */
-  public async fetchEntitySnapshot(
-    entityName: string,
-    entityID: UUID,
-    pendingEnvelopes?: Array<EventEnvelope>
-  ): Promise<EventEnvelope | null> {
+  public async fetchEntitySnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | null> {
     const logger = getLogger(this.config, 'EventStore#fetchEntitySnapshot')
     logger.debug(`Fetching snapshot for entity ${entityName} with ID ${entityID}`)
     const latestSnapshotEnvelope = await this.loadLatestSnapshot(entityName, entityID)
 
     const lastVisitedTime = latestSnapshotEnvelope?.snapshottedEventCreatedAt ?? originOfTime
-    const fetchStream = (): Promise<Array<EventEnvelope>> =>
-      this.loadEventStreamSince(entityName, entityID, lastVisitedTime)
-    const pendingEvents = pendingEnvelopes ?? (await fetchStream())
+    const pendingEvents = await this.loadEventStreamSince(entityName, entityID, lastVisitedTime)
 
     if (pendingEvents.length <= 0) {
       return latestSnapshotEnvelope
@@ -57,6 +51,7 @@ export class EventStore {
 
       if (!newEntitySnapshot) {
         logger.debug('No snapshot was fetched, returning')
+
         return newEntitySnapshot
       }
 

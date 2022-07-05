@@ -93,7 +93,7 @@ describe('BoosterEventDispatcher', () => {
     })
 
     describe('the `eventProcessor` method', () => {
-      it('waits for snapshotting and read model update process to complete', async () => {
+      it('waits for the snapshot generation process and read model update process to complete', async () => {
         const stubEventStore = createStubInstance(EventStore)
         const stubReadModelStore = createStubInstance(ReadModelStore)
 
@@ -109,7 +109,6 @@ describe('BoosterEventDispatcher', () => {
           config,
           someEvent.entityTypeName,
           someEvent.entityID,
-          [someEvent],
           stubEventStore,
           stubReadModelStore
         )
@@ -144,17 +143,12 @@ describe('BoosterEventDispatcher', () => {
           config,
           someEvent.entityTypeName,
           someEvent.entityID,
-          [someEvent],
           eventStore,
           readModelStore
         )
 
         expect(eventStore.fetchEntitySnapshot).to.have.been.called
-        expect(eventStore.fetchEntitySnapshot).to.have.been.calledOnceWith(
-          someEvent.entityTypeName,
-          someEvent.entityID,
-          [someEvent]
-        )
+        expect(eventStore.fetchEntitySnapshot).to.have.been.calledOnceWith(someEvent.entityTypeName, someEvent.entityID)
       })
 
       it('projects the entity state to the corresponding read models', async () => {
@@ -168,7 +162,6 @@ describe('BoosterEventDispatcher', () => {
           config,
           someEvent.entityTypeName,
           someEvent.entityID,
-          [someEvent],
           eventStore,
           readModelStore
         )
