@@ -209,10 +209,8 @@
       "name": "framework-core tests",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [
-        "-r",
-        "ts-node/register",
-        "--timeout",
-        "999999",
+        "--require", "ts-node/register",
+        "--timeout", "999999",
         "--colors",
         "--forbid-only",
         "${workspaceFolder}/packages/framework-core/test/**/*.test.ts"

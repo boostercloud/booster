@@ -243,7 +243,7 @@ export class Booster {
           " Please set your application's `config.tokenVerifiers` options explicitly in your `src/config/config.ts` file."
       )
       this.config.tokenVerifiers.push(
-        new JwskUriTokenVerifier(BOOSTER_JWT_ISSUER, BOOSTER_JWKS_URI, BOOSTER_ROLES_CLAIM)
+        new JwksUriTokenVerifier(BOOSTER_JWT_ISSUER, BOOSTER_JWKS_URI, BOOSTER_ROLES_CLAIM)
       )
     }
   }

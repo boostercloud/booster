@@ -1,5 +1,6 @@
-import { TokenVerifier, UserEnvelope } from '@boostercloud/framework-types'
-import { getJwksClient, getKeyWithClient, verifyJWT } from '.'
+import { DecodedToken } from '@boostercloud/framework-types'
+import { getJwksClient, getKeyWithClient, verifyJWT } from './utilities'
+import { RoleBasedTokenVerifier } from './role-based-token-verifier'
 
 /**
  * Environment variables that are used to configure a default JWKs URI Token Verifier
@@ -12,12 +13,14 @@ export const JWT_ENV_VARS = {
   BOOSTER_ROLES_CLAIM: 'BOOSTER_ROLES_CLAIM',
 }
 
-export class JwskUriTokenVerifier implements TokenVerifier {
-  public constructor(readonly issuer: string, readonly jwksUri: string, readonly rolesClaim?: string) {}
+export class JwksUriTokenVerifier extends RoleBasedTokenVerifier {
+  public constructor(readonly issuer: string, readonly jwksUri: string, rolesClaim?: string) {
+    super(rolesClaim)
+  }
 
-  public async verify(token: string): Promise<UserEnvelope> {
+  public async verify(token: string): Promise<DecodedToken> {
     const client = getJwksClient(this.jwksUri)
     const key = getKeyWithClient.bind(this, client)
-    return verifyJWT(token, this.issuer, key, this.rolesClaim)
+    return verifyJWT(token, this.issuer, key)
   }
 }

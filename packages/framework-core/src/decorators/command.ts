@@ -3,7 +3,7 @@ import { Booster } from '../booster'
 import {
   CommandInterface,
   CommandFilterHooks,
-  RoleAccess,
+  CommandRoleAccess,
   Register,
   Class,
   CommandAuthorizer,
@@ -17,7 +17,7 @@ import { BoosterAuthorizer } from '../booster-authorizer'
  * @constructor
  */
 export function Command(
-  attributes: RoleAccess & CommandFilterHooks
+  attributes: CommandRoleAccess & CommandFilterHooks
 ): <TCommand>(commandClass: CommandInterface<TCommand>) => void {
   return (commandClass) => {
     Booster.configureCurrentEnv((config): void => {

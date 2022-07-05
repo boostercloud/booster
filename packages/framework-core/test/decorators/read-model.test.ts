@@ -3,6 +3,7 @@ import { expect } from '../expect'
 import { describe } from 'mocha'
 import { ReadModel, Booster, Entity, Projects, sequencedBy } from '../../src'
 import { UUID, ProjectionResult } from '@boostercloud/framework-types'
+import { BoosterAuthorizer } from '../../src/booster-authorizer'
 
 describe('the `ReadModel` decorator', () => {
   afterEach(() => {
@@ -32,7 +33,7 @@ describe('the `ReadModel` decorator', () => {
 
     expect(booster.config.readModels['SomeReadModel']).to.be.deep.equal({
       class: SomeReadModel,
-      authorizedRoles: 'all',
+      authorizer: BoosterAuthorizer.allowAccess,
       before: [],
       properties: [
         {

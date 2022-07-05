@@ -10,5 +10,5 @@ export interface EntityInterface {
 
 export interface EntityMetadata {
   readonly class: Class<EntityInterface>
-  readonly authorizer: EventStreamAuthorizer
+  readonly eventStreamAuthorizer: EventStreamAuthorizer
 }

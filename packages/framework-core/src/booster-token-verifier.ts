@@ -11,11 +11,13 @@ export class BoosterTokenVerifier {
   public constructor(private config: BoosterConfig) {}
 
   public async verify(token: string): Promise<UserEnvelope> {
-    const results = await Promise.allSettled(
-      this.config.tokenVerifiers.map((tokenVerifier) => tokenVerifier.verify(token))
+    const userEnvelopes = await Promise.allSettled(
+      this.config.tokenVerifiers.map((tokenVerifier) =>
+        tokenVerifier.verify(token).then((decodedToken) => Promise.resolve(tokenVerifier.toUserEnvelope(decodedToken)))
+      )
     )
-    const winner = results.find((result) => result.status === 'fulfilled')
-    if (!winner) return this.rejectVerification(results)
+    const winner = userEnvelopes.find((result) => result.status === 'fulfilled')
+    if (!winner) return this.rejectVerification(userEnvelopes)
     return Promise.resolve((winner as PromiseFulfilledResult<UserEnvelope>).value)
   }
 

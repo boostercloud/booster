@@ -1,11 +1,11 @@
 import { Booster, PublicKeyTokenVerifier } from '@boostercloud/framework-core'
-import { BoosterConfig, UserEnvelope } from '@boostercloud/framework-types'
+import { BoosterConfig, DecodedToken } from '@boostercloud/framework-types'
 import * as fs from 'fs'
 import * as path from 'path'
 
 class CustomPublicKeyTokenVerifier extends PublicKeyTokenVerifier {
-  public async verify(token: string): Promise<UserEnvelope> {
-    super.verify(token)
+  public async verify(token: string): Promise<DecodedToken> {
+    await super.verify(token)
     throw new Error('Unauthorized')
   }
 }

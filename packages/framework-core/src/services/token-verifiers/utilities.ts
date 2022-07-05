@@ -1,39 +1,6 @@
-import { UserEnvelope } from '@boostercloud/framework-types'
+import { DecodedToken } from '@boostercloud/framework-types'
 import * as jwksRSA from 'jwks-rsa'
 import * as jwt from 'jsonwebtoken'
-
-const defaultRolesClaim = 'custom:role'
-
-/**
- * Creates a valid UserEnvelope from a decoded JWT token. This is an utility function that can be used
- * if you want to create your own TokenVerifier implementation and you implement a custom
- * decoding algorithm.
- *
- * @param decodedToken The decoded JWT token
- * @param rolesClaim The name of the claim containing the roles
- * @returns The `UserEnvelope` object that will be injected in the register object in command handlers
- */
-export function tokenToUserEnvelope(decodedToken: any, rolesClaim = defaultRolesClaim): UserEnvelope {
-  const payload = decodedToken.payload
-  const username = payload?.email || payload?.phone_number || payload.sub
-  const id = payload.sub
-  const roles = rolesFromTokenRole(payload[rolesClaim])
-  return {
-    id,
-    username,
-    roles,
-    claims: decodedToken.payload,
-    header: decodedToken.header,
-  }
-}
-
-const rolesFromTokenRole = (rolesClaim: unknown): Array<string> =>
-  (Array.isArray(rolesClaim) ? rolesClaim : [rolesClaim]).map((role: unknown): string => {
-    if (typeof role !== 'string') {
-      throw new Error(`Invalid role format ${role}. Valid format are Array<string> or string`)
-    }
-    return role
-  })
 
 /**
  * Initializes a jwksRSA client that can be used to get the public key of a JWKS URI using the
@@ -99,12 +66,11 @@ export const sanitizeAuthorizationHeader = (authorizationHeader: string): string
 export async function verifyJWT(
   token: string,
   issuer: string,
-  key: jwt.Secret | jwt.GetPublicKeyOrSecret,
-  rolesClaim?: string
-): Promise<UserEnvelope> {
+  key: jwt.Secret | jwt.GetPublicKeyOrSecret
+): Promise<DecodedToken> {
   const sanitizedToken = sanitizeAuthorizationHeader(token)
 
-  const decodedToken = await new Promise((resolve, reject) => {
+  return await new Promise((resolve, reject) => {
     jwt.verify(
       sanitizedToken,
       key,
@@ -117,10 +83,11 @@ export async function verifyJWT(
         if (err) {
           return reject(err)
         }
-        return resolve(decoded)
+        if (!decoded) {
+          return reject(new Error('The token could not be decoded'))
+        }
+        return resolve(decoded as DecodedToken)
       }
     )
   })
-
-  return tokenToUserEnvelope(decodedToken, rolesClaim)
 }

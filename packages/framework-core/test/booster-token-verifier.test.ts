@@ -6,6 +6,8 @@ import { BoosterConfig, UserEnvelope } from '@boostercloud/framework-types'
 import createJWKSMock from 'mock-jwks'
 import { internet, phone, random } from 'faker'
 import { BoosterTokenVerifier } from '../src/booster-token-verifier'
+import { JwksUriTokenVerifier } from '../src/services/token-verifiers/jwks-uri-token-verifier'
+import { DecodedToken } from '../../framework-types/src/concepts/token-verifier'
 
 describe('the "verifyToken" method', () => {
   const auth0VerifierUri = 'https://myauth0app.auth0.com/'
@@ -17,12 +19,7 @@ describe('the "verifyToken" method', () => {
   const config = new BoosterConfig('test')
   let boosterTokenVerifier: BoosterTokenVerifier
 
-  config.tokenVerifiers = [
-    {
-      issuer,
-      jwksUri: auth0VerifierUri + '.well-known/jwks.json',
-    },
-  ]
+  config.tokenVerifiers = [new JwksUriTokenVerifier(issuer, auth0VerifierUri + '.well-known/jwks.json')]
 
   beforeEach(() => {
     jwks.start()
@@ -246,20 +243,23 @@ describe('the "verifyToken" method', () => {
       phoneNumber,
     })
 
+    class ExtendedJwksUriTokenVerifier extends JwksUriTokenVerifier {
+      async verify(token: string): Promise<DecodedToken> {
+        const decodedToken = await super.verify(token)
+
+        const promiseSolved = await Promise.resolve()
+        console.log(promiseSolved)
+        if (decodedToken.payload['custom:role'] !== 'Admin') {
+          throw 'Unauthorized'
+        }
+
+        return decodedToken
+      }
+    }
+
     const configWithExtraValidation = new BoosterConfig('test with extra validation')
     configWithExtraValidation.tokenVerifiers = [
-      {
-        issuer,
-        jwksUri: auth0VerifierUri + '.well-known/jwks.json',
-        extraValidation: async (jwtToken, _rawToken) => {
-          const payload = jwtToken.payload as any
-          const promiseSolved = await Promise.resolve()
-          console.log(promiseSolved)
-          if (payload['custom:role'] !== 'Admin') {
-            throw 'Unauthorized'
-          }
-        },
-      },
+      new ExtendedJwksUriTokenVerifier(issuer, auth0VerifierUri + '.well-known/jwks.json'),
     ]
 
     const tokenVerifier = new BoosterTokenVerifier(configWithExtraValidation)
@@ -274,20 +274,24 @@ describe('the "verifyToken" method', () => {
       iss: issuer,
     })
 
+    class ExtendedJwksUriTokenVerifier2 extends JwksUriTokenVerifier {
+      async verify(token: string): Promise<DecodedToken> {
+        const decodedToken = await super.verify(token)
+
+        const header = decodedToken.header
+        const promiseSolved = await Promise.resolve()
+        console.log(promiseSolved)
+        if (header?.alg !== 'RS512') {
+          throw 'Invalid token encoding'
+        }
+
+        return decodedToken
+      }
+    }
+
     const configWithExtraValidation = new BoosterConfig('test with extra validation')
     configWithExtraValidation.tokenVerifiers = [
-      {
-        issuer,
-        jwksUri: auth0VerifierUri + '.well-known/jwks.json',
-        extraValidation: async (jwtToken, _rawToken) => {
-          const header = jwtToken.header as any
-          const promiseSolved = await Promise.resolve()
-          console.log(promiseSolved)
-          if (header.alg !== 'RS512') {
-            throw 'Invalid token encoding'
-          }
-        },
-      },
+      new ExtendedJwksUriTokenVerifier2(issuer, auth0VerifierUri + '.well-known/jwks.json'),
     ]
 
     const tokenVerifier = new BoosterTokenVerifier(configWithExtraValidation)

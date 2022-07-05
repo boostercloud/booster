@@ -3,7 +3,7 @@ import {
   ReadModelAuthorizer,
   ReadModelFilterHooks,
   ReadModelInterface,
-  RoleAccess,
+  ReadModelRoleAccess,
 } from '@boostercloud/framework-types'
 import { Booster } from '../booster'
 import { BoosterAuthorizer } from '../booster-authorizer'
@@ -14,7 +14,7 @@ import { getClassMetadata } from './metadata'
  * @param attributes
  */
 export function ReadModel(
-  attributes: RoleAccess & ReadModelFilterHooks
+  attributes: ReadModelRoleAccess & ReadModelFilterHooks
 ): (readModelClass: Class<ReadModelInterface>) => void {
   return (readModelClass) => {
     Booster.configureCurrentEnv((config): void => {

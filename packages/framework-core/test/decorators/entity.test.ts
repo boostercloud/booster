@@ -4,7 +4,9 @@
 import { expect } from '../expect'
 import { Event, Entity, Reduces, Role } from '../../src/decorators/'
 import { Booster } from '../../src'
-import { UUID } from '@boostercloud/framework-types'
+import { UserEnvelope, UUID } from '@boostercloud/framework-types'
+import { BoosterAuthorizer } from '../../src/booster-authorizer'
+import { fake, replace } from 'sinon'
 
 describe('the `Entity` decorator', () => {
   afterEach(() => {
@@ -41,17 +43,19 @@ describe('the `Entity` decorator', () => {
       }
     }
 
-    expect(Booster.config.entities['Comment']).to.deep.equal({
-      class: Comment,
-      authorizeReadEvents: [],
-    })
+    expect(Booster.config.entities['Comment'].class).to.be.equal(Comment)
+    expect(Booster.config.entities['Comment'].eventStreamAuthorizer).to.be.equal(BoosterAuthorizer.denyAccess)
+
     expect(Booster.config.reducers['CommentPosted']).to.deep.include({
       class: Comment,
       methodName: 'react',
     })
   })
 
-  it('adds the entity class as an entity with the right read events permissions', () => {
+  it('adds the entity class as an entity with the right read events permissions', async () => {
+    const fakeAuthorizeRoles = fake()
+    replace(BoosterAuthorizer, 'authorizeRoles', fakeAuthorizeRoles)
+
     @Entity({
       authorizeReadEvents: 'all',
     })
@@ -73,11 +77,13 @@ describe('the `Entity` decorator', () => {
 
     expect(Booster.config.entities['Comment']).to.deep.equal({
       class: Comment,
-      authorizeReadEvents: 'all',
+      eventStreamAuthorizer: BoosterAuthorizer.allowAccess,
     })
-    expect(Booster.config.entities['User']).to.deep.equal({
-      class: User,
-      authorizeReadEvents: [Manager],
-    })
+    expect(Booster.config.entities['User'].class).to.be.equal(User)
+    const fakeUserEnvelope = {
+      username: 'asdf',
+    } as UserEnvelope
+    await Booster.config.entities['User'].eventStreamAuthorizer(fakeUserEnvelope)
+    expect(fakeAuthorizeRoles).to.have.been.calledWithMatch([Manager], fakeUserEnvelope)
   })
 })

@@ -4,6 +4,7 @@ import { random, internet } from 'faker'
 import { BoosterEventsReader } from '../src/booster-events-reader'
 import { expect } from './expect'
 import { Booster } from '../src'
+import { BoosterAuthorizer } from '../src/booster-authorizer'
 
 describe('BoosterEventsReader', () => {
   class TestEntity {
@@ -40,6 +41,7 @@ describe('BoosterEventsReader', () => {
   ]
 
   beforeEach(() => {
+    const eventStreamAuthorizer = BoosterAuthorizer.authorizeRoles.bind(null, [CanReadEventsRole])
     Booster.configureCurrentEnv((config) => {
       providerEventsSearch = fake.returns(searchResult)
 
@@ -51,7 +53,7 @@ describe('BoosterEventsReader', () => {
 
       config.entities[TestEntity.name] = {
         class: TestEntity,
-        authorizeReadEvents: [CanReadEventsRole],
+        eventStreamAuthorizer,
       }
       config.reducers[TestEvent.name] = {
         class: TestEntity,

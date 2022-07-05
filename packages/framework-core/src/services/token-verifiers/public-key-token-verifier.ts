@@ -1,15 +1,14 @@
-import { TokenVerifier, UserEnvelope } from '@boostercloud/framework-types'
-import { verifyJWT } from '.'
+import { DecodedToken } from '@boostercloud/framework-types'
+import { verifyJWT } from './utilities'
+import { RoleBasedTokenVerifier } from './role-based-token-verifier'
 
-export class PublicKeyTokenVerifier implements TokenVerifier {
-  public constructor(
-    readonly issuer: string,
-    readonly publicKeyResolver: Promise<string>,
-    readonly rolesClaim?: string
-  ) {}
+export class PublicKeyTokenVerifier extends RoleBasedTokenVerifier {
+  public constructor(readonly issuer: string, readonly publicKeyResolver: Promise<string>, rolesClaim?: string) {
+    super(rolesClaim)
+  }
 
-  public async verify(token: string): Promise<UserEnvelope> {
+  public async verify(token: string): Promise<DecodedToken> {
     const key = await this.publicKeyResolver
-    return verifyJWT(token, this.issuer, key, this.rolesClaim)
+    return verifyJWT(token, this.issuer, key)
   }
 }

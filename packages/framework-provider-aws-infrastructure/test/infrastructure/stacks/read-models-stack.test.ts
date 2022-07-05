@@ -17,7 +17,7 @@ describe('ReadModelsStack', () => {
       config.userProjectRootPath = '.'
       config.readModels['SomeReadModel'] = {
         class: SomeReadModel,
-        authorizedRoles: 'all',
+        authorizer: () => Promise.resolve(),
         properties: [],
         before: [],
       }
@@ -47,7 +47,7 @@ describe('ReadModelsStack', () => {
       config.userProjectRootPath = '.'
       config.readModels['SomeReadModel'] = {
         class: SomeReadModel,
-        authorizedRoles: 'all',
+        authorizer: () => Promise.resolve(),
         properties: [],
         before: [],
       }

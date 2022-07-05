@@ -11,9 +11,9 @@ export class BoosterAuthorizer {
 
   public static authorizeRoles(authorizedRoles: Array<Class<RoleInterface>>, user?: UserEnvelope): Promise<void> {
     if (user && userHasSomeRole(user, authorizedRoles)) {
-      return this.allowAccess()
+      return BoosterAuthorizer.allowAccess()
     }
-    return this.denyAccess()
+    return BoosterAuthorizer.denyAccess()
   }
 }
 

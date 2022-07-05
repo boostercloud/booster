@@ -25,7 +25,7 @@ export class BoosterEventsReader {
     logger.debug('Validating the following event request: ', eventRequest)
     const entityMetadata = this.entityMetadataFromRequest(eventRequest)
 
-    await entityMetadata.authorizer(eventRequest.currentUser, eventRequest)
+    await entityMetadata.eventStreamAuthorizer(eventRequest.currentUser, eventRequest)
   }
 
   private entityMetadataFromRequest(eventRequest: EventSearchRequest): EntityMetadata {
