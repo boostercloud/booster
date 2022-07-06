@@ -1,8 +1,8 @@
 {
-  "name": "metadata-booster",
-  "version": "0.4.3",
+  "name": "@boostercloud/metadata-booster",
+  "version": "0.29.6",
   "description": "Emits detailed metadata of your types. You can then get it in runtime to deal with schema-aware operation, like defining GraphQL schemas, ORM operations, etc.",
-  "repository": "https://github.com/boostercloud/metadata-booster.git",
+  "repository": "https://github.com/boostercloud/booster.git",
   "keywords": [
     "metadata",
     "transformer",
@@ -12,9 +12,9 @@
   "author": "Booster Cloud",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/boostercloud/metadata-booster/issues"
+    "url": "https://github.com/boostercloud/booster/issues"
   },
-  "homepage": "https://github.com/boostercloud/metadata-booster#readme",
+  "homepage": "https://github.com/boostercloud/booster#readme",
   "main": "dist/index.js",
   "files": [
     "dist"
