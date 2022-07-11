@@ -7,8 +7,9 @@ import {
   Searcher,
   EventSearchParameters,
   EventSearchResponse,
-  PaginatedEntitiesIdsResult, Instance
-} from "."
+  PaginatedEntitiesIdsResult,
+  Instance,
+} from '.'
 
 /**
  * `BoosterApp` is the interface of the user-facing functions that
