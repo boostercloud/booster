@@ -1,7 +1,7 @@
 import { Projects, ReadModel } from '@boostercloud/framework-core'
 import { UserWithEmail } from '../roles'
 import { ProjectionResult, ReadModelAction, UUID } from '@boostercloud/framework-types'
-import { Product } from '../entities/product'
+import { Product, ProductType } from '../entities/product'
 import { Money } from '../common/money'
 import { Pack } from '../entities/pack'
 
@@ -17,6 +17,8 @@ export class ProductReadModel {
     readonly description: string,
     readonly availability: number,
     public deleted: boolean,
+    readonly productDetails: Record<string, unknown>,
+    readonly productType: ProductType = 'Other',
     readonly price?: Money,
     readonly packs?: Array<Pack>
   ) {}
@@ -33,6 +35,8 @@ export class ProductReadModel {
         product.description,
         product.availability,
         product.deleted,
+        product.productDetails,
+        product.productType,
         product.price,
         []
       )
@@ -63,6 +67,8 @@ export class ProductReadModel {
         currentProductReadModel.description,
         currentProductReadModel.availability,
         currentProductReadModel.deleted,
+        currentProductReadModel.productDetails,
+        currentProductReadModel.productType,
         currentProductReadModel.price,
         packList
       )

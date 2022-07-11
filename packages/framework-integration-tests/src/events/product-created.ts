@@ -9,7 +9,9 @@ export class ProductCreated {
     readonly sku: string,
     readonly displayName: string,
     readonly description: string,
-    readonly price: Money
+    readonly price: Money,
+    readonly productDetails: Record<string, unknown> = {},
+    readonly productType: ProductType = 'Other'
   ) {}
 
   public entityID(): UUID {

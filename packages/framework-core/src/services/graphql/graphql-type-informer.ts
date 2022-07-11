@@ -13,7 +13,7 @@ import {
   GraphQLString,
   GraphQLType,
 } from 'graphql'
-import { GraphQLJSONObject } from 'graphql-type-json'
+import { GraphQLJSON } from 'graphql-scalars'
 import { ClassMetadata, ClassType, TypeMetadata } from 'metadata-booster'
 import { DateScalar, isExternalType } from './common'
 import { Logger } from '@boostercloud/framework-types'
@@ -83,7 +83,7 @@ export class GraphQLTypeInformer {
       const metadata = getClassMetadata(typeMetadata.type)
       return this.createObjectType(metadata, inputType)
     }
-    return GraphQLJSONObject
+    return GraphQLJSON
   }
 
   private createEnumType(typeMetadata: TypeMetadata): GraphQLEnumType {

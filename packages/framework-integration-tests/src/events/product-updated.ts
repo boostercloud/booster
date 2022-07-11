@@ -19,7 +19,9 @@ export class ProductUpdated {
     readonly price: Money,
     readonly pictures: Array<Picture>,
     readonly deleted: boolean = false,
-    readonly reason: ProductUpdateReason
+    readonly reason: ProductUpdateReason,
+    readonly productDetails: Record<string, unknown> = {},
+    readonly productType: ProductType = 'Other'
   ) {}
 
   public entityID(): UUID {

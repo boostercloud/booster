@@ -1354,7 +1354,7 @@ describe('Read models end-to-end tests', () => {
                   afterCursor: cursor,
                 },
                 query: gql`
-                  query ListCartReadModels($limit: Int, $afterCursor: JSONObject) {
+                  query ListCartReadModels($limit: Int, $afterCursor: JSON) {
                     ListCartReadModels(limit: $limit, afterCursor: $afterCursor) {
                       cursor
                       items {
@@ -1618,6 +1618,8 @@ describe('Read models end-to-end tests', () => {
                   packs {
                     id
                   }
+                  productDetails
+                  productType
                 }
               }
             `,
@@ -1674,6 +1676,8 @@ describe('Read models end-to-end tests', () => {
                     name
                     products
                   }
+                  productDetails
+                  productType
                 }
               }
             `,
