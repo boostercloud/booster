@@ -163,7 +163,7 @@ describe('GraphQLTypeInformer', () => {
         expect(result).to.be.deep.equal(GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLBoolean))))
       })
 
-      it('should return Any', () => {
+      it('should return GraphQLJSON', () => {
         const result = sut.getOrCreateGraphQLType({
           name: 'MyObject',
           typeGroup: 'Object',
@@ -179,7 +179,7 @@ describe('GraphQLTypeInformer', () => {
           mockType = random.arrayElement(['Float32Array', 'Float32Array', 'Uint8Array', 'Promise'])
         })
 
-        it('should return Any', () => {
+        it('should return GraphQLJSON', () => {
           const result = sut.getOrCreateGraphQLType({
             name: `MyObject${mockType}`,
             typeGroup: mockType,
