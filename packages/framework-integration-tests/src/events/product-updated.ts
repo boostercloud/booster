@@ -2,6 +2,7 @@ import { Event } from '@boostercloud/framework-core'
 import { UUID } from '@boostercloud/framework-types'
 import { Money } from '../common/money'
 import { Picture } from '../common/picture'
+import { ProductType } from '../entities/product'
 
 export enum ProductUpdateReason {
   CatalogChange = 'CatalogChange',

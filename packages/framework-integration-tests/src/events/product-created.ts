@@ -1,6 +1,7 @@
 import { Event } from '@boostercloud/framework-core'
 import { UUID } from '@boostercloud/framework-types'
 import { Money } from '../common/money'
+import { ProductType } from '../entities/product'
 
 @Event
 export class ProductCreated {
