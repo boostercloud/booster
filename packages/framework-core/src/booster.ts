@@ -30,6 +30,8 @@ import { BoosterDataMigrationEntity } from './core-concepts/data-migration/entit
 import { BoosterDataMigrationStarted } from './core-concepts/data-migration/events/booster-data-migration-started'
 import { BoosterDataMigrationFinished } from './core-concepts/data-migration/events/booster-data-migration-finished'
 import { RegisterHandler } from './booster-register-handler'
+import { JwksUriTokenVerifier, JWT_ENV_VARS } from './services/token-verifiers'
+import { BoosterAuthorizer } from './booster-authorizer'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -72,6 +74,8 @@ export class Booster {
     this.config.userProjectRootPath = projectRootPath
     Importer.importUserProjectFiles(codeRootPath)
     this.configureBoosterConcepts()
+    this.configureDataMigrations()
+    this.loadTokenVerifierFromEnv()
     this.config.validate()
   }
 
@@ -218,7 +222,30 @@ export class Booster {
 
     this.config.entities[BoosterDataMigrationEntity.name] = {
       class: BoosterDataMigrationEntity,
-      authorizeReadEvents: [],
+      eventStreamAuthorizer: BoosterAuthorizer.denyAccess,
+    }
+  }
+
+  /**
+   * TODO: We're loading tokenVerifier options from environment variables here for backwards
+   * compatibility reasons, but the preferred way to initialize the project token verifiers
+   * is by setting an implementation of the `TokenVerifier` interface in the project's config.
+   * The Authentication Booster Rocket for AWS uses this initialization mechanism.
+   *
+   * @deprecated Please set your own implementation of the `TokenVerifier` interface in the project config.
+   */
+  private static loadTokenVerifierFromEnv(): void {
+    const BOOSTER_JWT_ISSUER = process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER]
+    const BOOSTER_JWKS_URI = process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI]
+    const BOOSTER_ROLES_CLAIM = process.env[JWT_ENV_VARS.BOOSTER_ROLES_CLAIM]
+    if (BOOSTER_JWT_ISSUER && BOOSTER_JWKS_URI && BOOSTER_ROLES_CLAIM) {
+      console.warn(
+        'Deprecation notice: Implicitly loading the JWT token verifier options from default environment variables is deprecated.' +
+          " Please set your application's `config.tokenVerifiers` options explicitly in your `src/config/config.ts` file."
+      )
+      this.config.tokenVerifiers.push(
+        new JwksUriTokenVerifier(BOOSTER_JWT_ISSUER, BOOSTER_JWKS_URI, BOOSTER_ROLES_CLAIM)
+      )
     }
   }
 }

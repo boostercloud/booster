@@ -14,7 +14,7 @@ describe('Read models end-to-end tests', () => {
   let client: ApolloClient<NormalizedCacheObject>
 
   before(async () => {
-    client = await applicationUnderTest.graphql.client()
+    client = applicationUnderTest.graphql.client()
   })
 
   describe('Query read models', () => {
@@ -1702,6 +1702,209 @@ describe('Read models end-to-end tests', () => {
             products: mockPackProducts,
           },
         ])
+      })
+    })
+  })
+
+  describe('read model authorization', () => {
+    context('with an anonymous user', () => {
+      let anonymousClient: ApolloClient<NormalizedCacheObject>
+
+      beforeEach(() => {
+        anonymousClient = applicationUnderTest.graphql.client()
+      })
+
+      context('with a public read model', () => {
+        it('should be accessible', async () => {
+          const resultPromise = anonymousClient.query({
+            variables: {
+              cartId: 'mockCartId',
+            },
+            query: gql`
+              query CartReadModel($cartId: ID!) {
+                CartReadModel(id: $cartId) {
+                  id
+                }
+              }
+            `,
+          })
+
+          await expect(resultPromise).to.be.eventually.fulfilled
+        })
+      })
+
+      context('with a read model authorized for certain roles', () => {
+        it('should not be accessible', async () => {
+          const resultPromise = anonymousClient.query({
+            variables: {
+              id: 'mockId',
+            },
+            query: gql`
+              query ProductReadModel($id: ID!) {
+                ProductReadModel(id: $id) {
+                  id
+                }
+              }
+            `,
+          })
+
+          await expect(resultPromise).to.eventually.be.rejectedWith(/Access denied for this resource/)
+        })
+      })
+
+      context('with a read model with a custom authorizer', () => {
+        it('should not be accessible', async () => {
+          const resultPromise = anonymousClient.query({
+            variables: {
+              id: 'mockId',
+            },
+            query: gql`
+              query SpecialReportsReadModel($id: ID!) {
+                SpecialReportsReadModel(id: $id) {
+                  id
+                }
+              }
+            `,
+          })
+
+          await expect(resultPromise).to.eventually.be.rejectedWith(/You are not allowed to see such insightful report/)
+        })
+      })
+    })
+
+    context('with a user with a role', () => {
+      let loggedClient: ApolloClient<NormalizedCacheObject>
+
+      beforeEach(() => {
+        const userToken = applicationUnderTest.token.forUser(internet.email(), 'UserWithEmail')
+        loggedClient = applicationUnderTest.graphql.client(userToken)
+      })
+
+      context('with a public read model', () => {
+        it('should be accessible', async () => {
+          const resultPromise = loggedClient.query({
+            variables: {
+              cartId: 'mockCartId',
+            },
+            query: gql`
+              query CartReadModel($cartId: ID!) {
+                CartReadModel(id: $cartId) {
+                  id
+                }
+              }
+            `,
+          })
+
+          await expect(resultPromise).to.eventually.be.fulfilled
+        })
+      })
+
+      context('with a read model authorized for matching roles', () => {
+        it('should be accessible', async () => {
+          const resultPromise = loggedClient.query({
+            variables: {
+              id: 'mockId',
+            },
+            query: gql`
+              query ProductReadModel($id: ID!) {
+                ProductReadModel(id: $id) {
+                  id
+                }
+              }
+            `,
+          })
+
+          await expect(resultPromise).to.eventually.be.fulfilled
+        })
+      })
+
+      context('with a read model with a custom authorizer', () => {
+        it('should not be accessible', async () => {
+          const resultPromise = loggedClient.query({
+            variables: {
+              id: 'mockId',
+            },
+            query: gql`
+              query SpecialReportsReadModel($id: ID!) {
+                SpecialReportsReadModel(id: $id) {
+                  id
+                }
+              }
+            `,
+          })
+
+          await expect(resultPromise).to.eventually.be.rejectedWith(/You are not allowed to see such insightful report/)
+        })
+      })
+    })
+
+    context('with a user that fulfills the custom authorizer', () => {
+      let knowledgeableClient: ApolloClient<NormalizedCacheObject>
+
+      beforeEach(() => {
+        const tokenWithSpecialAccess = applicationUnderTest.token.forUser(internet.email(), undefined, {
+          customClaims: {
+            specialReportAccess: 'true',
+          },
+        })
+        knowledgeableClient = applicationUnderTest.graphql.client(tokenWithSpecialAccess)
+      })
+
+      context('with a public read model', () => {
+        it('should be accessible', async () => {
+          const resultPromise = knowledgeableClient.query({
+            variables: {
+              cartId: 'mockCartId',
+            },
+            query: gql`
+              query CartReadModel($cartId: ID!) {
+                CartReadModel(id: $cartId) {
+                  id
+                }
+              }
+            `,
+          })
+
+          await expect(resultPromise).to.eventually.be.fulfilled
+        })
+      })
+
+      context('with a read model authorized for certain roles', () => {
+        it('should not be accessible', async () => {
+          const resultPromise = knowledgeableClient.query({
+            variables: {
+              id: 'mockId',
+            },
+            query: gql`
+              query ProductReadModel($id: ID!) {
+                ProductReadModel(id: $id) {
+                  id
+                }
+              }
+            `,
+          })
+
+          await expect(resultPromise).to.eventually.be.rejectedWith(/Access denied for this resource/)
+        })
+      })
+
+      context('with a read model with a custom authorizer', () => {
+        it('should be accessible', async () => {
+          const resultPromise = knowledgeableClient.query({
+            variables: {
+              id: 'mockId',
+            },
+            query: gql`
+              query SpecialReportsReadModel($id: ID!) {
+                SpecialReportsReadModel(id: $id) {
+                  id
+                }
+              }
+            `,
+          })
+
+          await expect(resultPromise).to.eventually.be.fulfilled
+        })
       })
     })
   })

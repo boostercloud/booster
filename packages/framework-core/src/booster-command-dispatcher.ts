@@ -3,11 +3,9 @@ import {
   CommandEnvelope,
   Register,
   InvalidParameterError,
-  NotAuthorizedError,
   NotFoundError,
   CommandHandlerGlobalError,
 } from '@boostercloud/framework-types'
-import { BoosterAuth } from './booster-auth'
 import { RegisterHandler } from './booster-register-handler'
 import { createInstance, getLogger } from '@boostercloud/framework-common-helpers'
 import { applyBeforeFunctions } from './services/filter-helpers'
@@ -34,9 +32,7 @@ export class BoosterCommandDispatcher {
       throw new NotFoundError(`Could not find a proper handler for ${commandEnvelope.typeName}`)
     }
 
-    if (!BoosterAuth.isUserAuthorized(commandMetadata.authorizedRoles, commandEnvelope.currentUser)) {
-      throw new NotAuthorizedError(`Access denied for command '${commandEnvelope.typeName}'`)
-    }
+    await commandMetadata.authorizer(commandEnvelope.currentUser, commandEnvelope)
 
     const commandClass = commandMetadata.class
     logger.debug('Found the following command:', commandClass.name)
