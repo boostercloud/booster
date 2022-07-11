@@ -7,6 +7,7 @@ import { sleep, waitForIt } from '../../helper/sleep'
 import { applicationUnderTest } from './setup'
 import { UUID } from '@boostercloud/framework-types'
 import { NEW_CART_IDS, QUANTITY_AFTER_DATA_MIGRATION_V2, QUANTITY_TO_MIGRATE_DATA } from '../../../src/constants'
+import { ProductType } from '../../../src/entities/product'
 
 const secs = 10
 
@@ -26,6 +27,8 @@ describe('Entities end-to-end tests', () => {
     let mockDescription: string
     let mockPriceInCents: number
     let mockCurrency: string
+    let mockProductType: ProductType
+    let mockProductDetails
 
     let productId: string
 
@@ -35,6 +38,11 @@ describe('Entities end-to-end tests', () => {
       mockDescription = lorem.paragraph()
       mockPriceInCents = random.number({ min: 1 })
       mockCurrency = finance.currencyCode()
+      mockProductType = 'Clothing'
+      mockProductDetails = {
+        color: commerce.color(),
+        material: commerce.productMaterial(),
+      }
 
       // Add one item
       await client.mutate({
@@ -44,6 +52,8 @@ describe('Entities end-to-end tests', () => {
           description: mockDescription,
           priceInCents: mockPriceInCents,
           currency: mockCurrency,
+          productDetails: mockProductDetails,
+          productType: mockProductType,
         },
         mutation: gql`
           mutation CreateProduct(
@@ -52,6 +62,8 @@ describe('Entities end-to-end tests', () => {
             $description: String!
             $priceInCents: Float!
             $currency: String!
+            $productDetails: JSON
+            $productType: JSON
           ) {
             CreateProduct(
               input: {
@@ -60,6 +72,8 @@ describe('Entities end-to-end tests', () => {
                 description: $description
                 priceInCents: $priceInCents
                 currency: $currency
+                productDetails: $productDetails
+                productType: $productType
               }
             )
           }
@@ -83,6 +97,8 @@ describe('Entities end-to-end tests', () => {
                   }
                   availability
                   deleted
+                  productDetails
+                  productType
                 }
               }
             `,
@@ -107,6 +123,8 @@ describe('Entities end-to-end tests', () => {
         },
         availability: 0,
         deleted: false,
+        productDetails: mockProductDetails,
+        productType: mockProductType,
       }
 
       expect(product).to.be.deep.equal(expectedResult)
@@ -155,6 +173,8 @@ describe('Entities end-to-end tests', () => {
                   }
                   availability
                   deleted
+                  productDetails
+                  productType
                 }
               }
             `,

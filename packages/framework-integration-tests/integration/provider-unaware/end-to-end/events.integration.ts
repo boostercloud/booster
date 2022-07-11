@@ -662,7 +662,7 @@ describe('Events end-to-end tests', () => {
               afterCursor: cursor,
             },
             mutation: gql`
-              mutation EntitiesIdsFinder($entityName: String!, $limit: Float!, $afterCursor: JSONObject) {
+              mutation EntitiesIdsFinder($entityName: String!, $limit: Float!, $afterCursor: JSON) {
                 EntitiesIdsFinder(input: { entityName: $entityName, limit: $limit, afterCursor: $afterCursor })
               }
             `,

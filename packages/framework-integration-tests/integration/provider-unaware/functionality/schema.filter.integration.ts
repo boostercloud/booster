@@ -13,7 +13,7 @@ const DATE_PROPERTY_FILTER = 'DatePropertyFilter'
 const STRING_ARRAY_PROPERTY_FILTER = 'StringArrayPropertyFilter'
 const STRING_PROPERTY_FILTER = 'StringPropertyFilter'
 const SCALAR = 'SCALAR'
-const JSON_OBJECT = 'JSONObject'
+const JSON_OBJECT = 'JSON'
 const BASE_CLASS_PROPERTY_FILTER = 'BaseClassPropertyFilter'
 
 describe('schemas', async () => {

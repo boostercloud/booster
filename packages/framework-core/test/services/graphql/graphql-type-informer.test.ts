@@ -12,7 +12,7 @@ import {
   GraphQLString,
 } from 'graphql'
 import { TypeMetadata } from 'metadata-booster'
-import { GraphQLJSONObject } from 'graphql-type-json'
+import { GraphQLJSON } from 'graphql-scalars'
 import { random } from 'faker'
 import { GraphQLEnumValueConfig, GraphQLEnumValueConfigMap } from 'graphql/type/definition'
 import { DateScalar } from '../../../src/services/graphql/common'
@@ -63,9 +63,9 @@ describe('GraphQLTypeInformer', () => {
       const otherParameterValue =
         result instanceof GraphQLObjectType ? result.getFields()['otherParameter'].type : undefined
       expect(someParametersValue).to.be.deep.equal(
-        GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLJSONObject)))))
+        GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLJSON)))))
       )
-      expect(otherParameterValue).to.be.deep.equal(GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLJSONObject))))
+      expect(otherParameterValue).to.be.deep.equal(GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLJSON))))
     })
 
     describe('Get or create GraphQLType', () => {
@@ -163,13 +163,13 @@ describe('GraphQLTypeInformer', () => {
         expect(result).to.be.deep.equal(GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLBoolean))))
       })
 
-      it('should return GraphQLJSONObject', () => {
+      it('should return GraphQLJSON', () => {
         const result = sut.getOrCreateGraphQLType({
           name: 'MyObject',
           typeGroup: 'Object',
         } as TypeMetadata)
 
-        expect(result).to.be.deep.equal(GraphQLNonNull(GraphQLJSONObject))
+        expect(result).to.be.deep.equal(GraphQLNonNull(GraphQLJSON))
       })
 
       describe('default', () => {
@@ -179,7 +179,7 @@ describe('GraphQLTypeInformer', () => {
           mockType = random.arrayElement(['Float32Array', 'Float32Array', 'Uint8Array', 'Promise'])
         })
 
-        it('should return GraphQLJSONObject', () => {
+        it('should return GraphQLJSON', () => {
           const result = sut.getOrCreateGraphQLType({
             name: `MyObject${mockType}`,
             typeGroup: mockType,
@@ -187,7 +187,7 @@ describe('GraphQLTypeInformer', () => {
             isNullable: false,
           } as TypeMetadata)
 
-          expect(result).to.be.deep.equal(GraphQLNonNull(GraphQLJSONObject))
+          expect(result).to.be.deep.equal(GraphQLNonNull(GraphQLJSON))
         })
       })
     })

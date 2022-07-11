@@ -7,7 +7,7 @@ import { applicationUnderTest } from '../end-to-end/setup'
 
 const __TYPE = '__Type'
 const SCALAR = 'SCALAR'
-const JSON_OBJECT = 'JSONObject'
+const JSON_OBJECT = 'JSON'
 const NON_NULL = 'NON_NULL'
 const __Field = '__Field'
 const ID = 'ID'

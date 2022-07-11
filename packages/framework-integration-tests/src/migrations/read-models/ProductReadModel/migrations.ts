@@ -13,6 +13,8 @@ export class ProductReadModelMigration {
       old.description,
       1000,
       old.deleted,
+      {},
+      'Other',
       old.price,
       []
     )
