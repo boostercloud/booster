@@ -15,8 +15,6 @@ import {
   SequenceKey,
   SortFor,
   UUID,
-  Instance,
-  Register,
 } from '@boostercloud/framework-types'
 import { BoosterEventDispatcher } from './booster-event-dispatcher'
 import { BoosterGraphQLDispatcher } from './booster-graphql-dispatcher'
@@ -180,17 +178,6 @@ export class Booster {
 
   public static dispatchRocket(request: unknown): Promise<unknown> {
     return new BoosterRocketDispatcher(this.config).dispatch(request)
-  }
-
-  public static migrateEntityData(
-    oldEntityName: string,
-    oldEntityId: UUID,
-    newEntity: Instance & EntityInterface
-  ): Promise<void> {
-    const requestID = UUID.generate()
-    const register = new Register(requestID, {})
-    register.events(new BoosterEntityMigrated(oldEntityName, oldEntityId, newEntity.constructor.name, newEntity))
-    return RegisterHandler.handle(this.config, register)
   }
 
   private static configureBoosterConcepts(): void {
