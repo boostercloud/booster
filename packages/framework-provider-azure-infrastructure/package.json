@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-azure-infrastructure",
-  "version": "0.29.8",
+  "version": "0.29.9",
   "description": "Handle the Booster deployment process to Azure",
   "keywords": [
     "framework-provider-azure-infrastructure"
@@ -23,7 +23,7 @@
     "@azure/arm-appservice": "^6.0.0",
     "@azure/cosmos": "3.7.3",
     "@boostercloud/framework-common-helpers": "^0.29.7",
-    "@boostercloud/framework-core": "^0.29.8",
+    "@boostercloud/framework-core": "^0.29.9",
     "@boostercloud/framework-provider-azure": "^0.29.7",
     "@boostercloud/framework-types": "^0.29.7",
     "@cdktf/provider-azurerm": "0.2.179",
