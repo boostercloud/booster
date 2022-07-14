@@ -84,10 +84,14 @@ export class EventStore {
     return this.config.provider.events.store([snapshot], this.config)
   }
 
-  private loadLatestSnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | null> {
+  private async loadLatestSnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | null> {
     const logger = getLogger(this.config, 'EventStore#loadLatestSnapshot')
     logger.debug(`Loading latest snapshot for entity ${entityName} and ID ${entityID}`)
-    return this.config.provider.events.latestEntitySnapshot(this.config, entityName, entityID)
+    const latestSnapshot = await this.config.provider.events.latestEntitySnapshot(this.config, entityName, entityID)
+    if (latestSnapshot) {
+      return new SchemaMigrator(this.config).migrate(latestSnapshot)
+    }
+    return null
   }
 
   private loadEventStreamSince(entityTypeName: string, entityID: UUID, timestamp: string): Promise<EventEnvelope[]> {
@@ -113,13 +117,7 @@ export class EventStore {
       const migratedEventEnvelope = await new SchemaMigrator(this.config).migrate(eventEnvelope)
       const eventInstance = createInstance(eventMetadata.class, migratedEventEnvelope.value)
       const entityMetadata = this.config.entities[migratedEventEnvelope.entityTypeName]
-      let migratedLatestSnapshot: EventEnvelope | null = null
-      if (latestSnapshot) {
-        migratedLatestSnapshot = await new SchemaMigrator(this.config).migrate(latestSnapshot)
-      }
-      const snapshotInstance = migratedLatestSnapshot
-        ? createInstance(entityMetadata.class, migratedLatestSnapshot.value)
-        : null
+      const snapshotInstance = latestSnapshot ? createInstance(entityMetadata.class, latestSnapshot.value) : null
       let newEntity: any
       try {
         newEntity = this.reducerForEvent(migratedEventEnvelope.typeName)(eventInstance, snapshotInstance)
