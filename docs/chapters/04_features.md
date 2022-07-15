@@ -110,14 +110,14 @@ Booster.configure('production', (config: BoosterConfig): void => {
   config.providerPackage = '@boostercloud/framework-provider-aws'
   config.tokenVerifiers = [
     new JwskUriTokenVerifier(
-      issuer: 'https://securetoken.google.com/demoapp',
-      jwksUri: 'https://demoapp.firebase.com/.well-known/jwks.json',
-      rolesClaim: 'firebase:groups'
+      'https://securetoken.google.com/demoapp',
+      'https://demoapp.firebase.com/.well-known/jwks.json',
+      'firebase:groups'
     ),
     new PublicKeyTokenVerifier(
-      issuer: 'custom-key-pair',
-      publicKeyResolver: getCustomKey(),
-      rolesClaim: 'custom:roles'
+      'custom-key-pair',
+      getCustomKey(),
+      'custom:roles'
     ),
   ]
 })
@@ -131,9 +131,9 @@ One common way to validate JWT tokens is by using a issuer-provided well-known U
 ...
 config.tokenVerifiers = [
   new JwskUriTokenVerifier(
-    issuer: 'https://securetoken.google.com/demoapp', // Issuer name
-    jwksUri: 'https://demoapp.firebase.com/.well-known/jwks.json', // JWKS URI that points to the issuer's well-known JWKS JSON file
-    rolesClaim: 'firebase:groups', // Name of the claim to read the roles from (when you're using role-based authorization)
+    'https://securetoken.google.com/demoapp', // Issuer name
+    'https://demoapp.firebase.com/.well-known/jwks.json', // JWKS URI that points to the issuer's well-known JWKS JSON file
+    'firebase:groups', // Name of the claim to read the roles from (when you're using role-based authorization)
   ),
 ]
 ...
@@ -148,9 +148,9 @@ If the token issuer doesn't provide a JWKS URI, you can also validate tokens aga
 ```typescript
 config.tokenVerifiers = [
   new PublicKeyTokenVerifier(
-    issuer: 'custom-key-pair', // Issuer name
-    publicKeyResolver: getCustomKey(), // Promise that resolves to the public key string
-    rolesClaim: 'custom:roles', // Name of the claim to read the roles from (when you're using role-based authorization)
+    'custom-key-pair', // Issuer name
+    getCustomKey(), // Promise that resolves to the public key string
+    'custom:roles', // Name of the claim to read the roles from (when you're using role-based authorization)
   ),
 ]
 ```
