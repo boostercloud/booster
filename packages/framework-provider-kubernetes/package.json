@@ -45,6 +45,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
+    "@types/cors": "2.8.12",
     "@types/node-fetch": "^2.5.10",
     "@types/redis": "^2.8.28",
     "mocha": "8.4.0"
