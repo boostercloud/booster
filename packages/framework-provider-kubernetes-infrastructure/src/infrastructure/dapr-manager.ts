@@ -173,7 +173,7 @@ export class DaprManager {
    */
   public async readDaprComponentFile(componentFile: string): Promise<string> {
     const filePath = path.join(this.daprComponentsPath, componentFile)
-    return fs.promises.readFile(filePath, { encoding: 'utf-8' })
+    return fs.promises.readFile(filePath, { encoding: 'utf8' })
   }
 
   /**
