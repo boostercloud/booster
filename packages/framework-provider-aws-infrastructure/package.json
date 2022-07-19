@@ -34,7 +34,7 @@
     "@boostercloud/framework-common-helpers": "*",
     "@boostercloud/framework-provider-aws": "*",
     "@boostercloud/framework-types": "*",
-    "aws-cdk": "1.99.0",
+    "aws-cdk": "1.164.0",
     "aws-sdk": "2.853.0",
     "colors": "^1.4.0"
   },
