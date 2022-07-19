@@ -14,11 +14,16 @@ on:
 jobs:
   unit-tests:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        node: [14, 16, 18]
+    name: unit tests on Node ${{ matrix.node }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: ${{ matrix.node }}
       - run: npx lerna bootstrap
       - run: npx lerna run compile --stream
       - run: npx lerna run test --stream
