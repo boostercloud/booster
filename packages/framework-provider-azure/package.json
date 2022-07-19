@@ -29,7 +29,7 @@
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
     "faker": "5.1.0",
-    "mocha": "8.4.0",
+    "mocha": "^10.0.0",
     "sinon": "9.2.3",
     "sinon-chai": "3.5.0",
     "typescript": "4.7.4"

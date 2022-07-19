@@ -33,7 +33,7 @@
     "lerna": "^5.1.8",
     "lint-staged": "11.0.0",
     "markdown-toc": "1.2.0",
-    "mocha": "8.4.0",
+    "mocha": "^10.0.0",
     "nx": "^14.4.3",
     "nyc": "15.1.0",
     "prettier": "2.3.0",

@@ -26,7 +26,7 @@
     "cors": "2.8.5",
     "express": "^4.17.1",
     "form-data": "^3.0.0",
-    "isomorphic-fetch": "^2.2.1",
+    "isomorphic-fetch": "^3.0.0",
     "mustache": "4.1.0",
     "node-fetch": "^2.6.7",
     "redis": "^3.0.2"
@@ -48,7 +48,7 @@
     "@types/cors": "2.8.12",
     "@types/node-fetch": "^2.5.10",
     "@types/redis": "^2.8.28",
-    "mocha": "8.4.0",
+    "mocha": "^10.0.0",
     "typescript": "4.7.4"
   }
 }
