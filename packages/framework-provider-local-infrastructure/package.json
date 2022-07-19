@@ -43,6 +43,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
+    "@types/cors": "2.8.12",
     "@types/express": "4.17.12",
     "@types/faker": "5.1.5",
     "@types/nedb": "^1.8.11",
