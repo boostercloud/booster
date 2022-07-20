@@ -47,7 +47,7 @@
     "faker": "5.1.0",
     "mocha": "^10.0.0",
     "rewire": "5.0.0",
-    "sinon": "9.2.3",
+    "sinon": "^10.0.0",
     "sinon-chai": "3.5.0",
     "typescript": "4.7.4",
     "velocityjs": "^2.0.0"
