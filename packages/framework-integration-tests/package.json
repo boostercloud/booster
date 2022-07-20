@@ -25,6 +25,7 @@
     "@boostercloud/framework-provider-azure-infrastructure": "*",
     "@boostercloud/framework-provider-kubernetes-infrastructure": "*",
     "@boostercloud/framework-provider-local-infrastructure": "*",
+    "@theaussiepom/tar": "0.0.1",
     "@kubernetes/client-node": "0.14.3",
     "@types/aws-lambda": "8.10.48",
     "@types/chai-arrays": "2.0.0",
