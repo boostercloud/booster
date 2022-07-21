@@ -16,7 +16,5 @@ export const template = `{
     "experimentalDecorators": true,
     "plugins": [{ "transform": "@boostercloud/metadata-booster" }]
   },
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src/**/*"]
 }`
