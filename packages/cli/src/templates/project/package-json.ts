@@ -14,6 +14,7 @@ export const template = `{
   "devDependencies": {
     "@boostercloud/framework-provider-local": "^${VERSION}",
     "@boostercloud/framework-provider-local-infrastructure": "^${VERSION}",
+    "@boostercloud/metadata-booster": "^${VERSION}",
     "{{{providerPackageName}}}-infrastructure": "*",
     "rimraf": "^3.0.1",
     "@typescript-eslint/eslint-plugin": "4.22.1",
@@ -28,8 +29,7 @@ export const template = `{
     "typescript": "4.5.4",
     "ts-node": "9.1.1",
     "@types/node": "15.0.2",
-    "ttypescript": "1.5.13",
-    "metadata-booster": "0.4.3"
+    "ttypescript": "1.5.13"
   },
   "engines": {
     "node": ">=14.0.0"

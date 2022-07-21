@@ -15,7 +15,7 @@ export const template = `{
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
     "plugins": [
-      { "transform": "metadata-booster" }
+      { "transform": "@boostercloud/metadata-booster" }
     ]
   },
   "include": [

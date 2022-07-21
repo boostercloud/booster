@@ -1,0 +1,38 @@
+{
+  "name": "@boostercloud/metadata-booster",
+  "version": "0.30.2",
+  "description": "Emits detailed metadata of your types. You can then get it in runtime to deal with schema-aware operation, like defining GraphQL schemas, ORM operations, etc.",
+  "repository": "https://github.com/boostercloud/booster.git",
+  "keywords": [
+    "metadata",
+    "transformer",
+    "booster",
+    "reflect"
+  ],
+  "author": "Booster Cloud",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/boostercloud/booster/issues"
+  },
+  "homepage": "https://github.com/boostercloud/booster#readme",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "tslib": "2.4.0",
+    "ts-morph": "15.1.0",
+    "reflect-metadata": "0.1.13"
+  },
+  "devDependencies": {
+    "ttypescript": "1.5.13",
+    "typescript": "4.7.4"
+  },
+  "scripts": {
+    "lint:check": "eslint --ext '.js,.ts' **/*.ts",
+    "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
+    "compile": "tsc -b tsconfig.json",
+    "prepack": "tsc -b tsconfig.json",
+    "test": "ttsc -p tsconfig.test.json"
+  }
+}

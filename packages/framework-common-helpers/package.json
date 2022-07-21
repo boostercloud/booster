@@ -35,7 +35,7 @@
   "dependencies": {
     "@boostercloud/framework-types": "^0.30.2",
     "child-process-promise": "^2.2.1",
-    "tslib": "2.3.1"
+    "tslib": "2.4.0"
   },
   "devDependencies": {
     "@types/rewire": "^2.5.28",

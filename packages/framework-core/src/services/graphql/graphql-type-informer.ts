@@ -14,7 +14,7 @@ import {
   GraphQLType,
 } from 'graphql'
 import { GraphQLJSON } from 'graphql-scalars'
-import { ClassMetadata, ClassType, TypeMetadata } from 'metadata-booster'
+import { ClassMetadata, ClassType, TypeMetadata } from '@boostercloud/metadata-booster'
 import { DateScalar, isExternalType } from './common'
 import { Logger } from '@boostercloud/framework-types'
 

@@ -1,6 +1,6 @@
 import { ReadModelAuthorizer, ReadModelFilterHooks, UUID } from '.'
 import { Class } from '../typelevel'
-import { PropertyMetadata } from 'metadata-booster'
+import { PropertyMetadata } from '@boostercloud/metadata-booster'
 
 export interface ReadModelInterface {
   id: UUID
