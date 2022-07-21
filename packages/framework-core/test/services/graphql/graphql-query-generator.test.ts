@@ -19,7 +19,7 @@ import {
 import { random } from 'faker'
 import { GraphQLJSON } from 'graphql-scalars'
 import { AnyClass, BoosterConfig } from '@boostercloud/framework-types'
-import { ClassMetadata } from 'metadata-booster'
+import { ClassMetadata } from '@boostercloud/metadata-booster'
 import * as metadata from '../../../src/decorators/metadata'
 
 describe('GraphQLQueryGenerator', () => {
