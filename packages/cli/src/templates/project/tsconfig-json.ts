@@ -17,4 +17,5 @@ export const template = `{
     "plugins": [{ "transform": "@boostercloud/metadata-booster" }]
   },
   "include": ["src/**/*"]
-}`
+}
+`
