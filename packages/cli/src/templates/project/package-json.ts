@@ -29,7 +29,7 @@ export const template = `{
     "typescript": "4.5.4",
     "ts-node": "9.1.1",
     "@types/node": "15.0.2",
-    "ttypescript": "1.5.13",
+    "ttypescript": "1.5.13"
   },
   "engines": {
     "node": ">=14.0.0"
