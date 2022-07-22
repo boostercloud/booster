@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/metadata-booster",
-  "version": "0.30.2",
+  "version": "0.30.3",
   "description": "Emits detailed metadata of your types. You can then get it in runtime to deal with schema-aware operation, like defining GraphQL schemas, ORM operations, etc.",
   "repository": "https://github.com/boostercloud/booster.git",
   "keywords": [
@@ -23,9 +23,9 @@
     "dist"
   ],
   "dependencies": {
-    "tslib": "2.4.0",
+    "reflect-metadata": "0.1.13",
     "ts-morph": "15.1.0",
-    "reflect-metadata": "0.1.13"
+    "tslib": "2.4.0"
   },
   "devDependencies": {
     "ttypescript": "1.5.13",

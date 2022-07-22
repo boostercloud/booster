@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-common-helpers",
-  "version": "0.30.2",
+  "version": "0.30.3",
   "description": "Contains Booster common helpers used by the core and provider packages",
   "keywords": [
     "framework-common-helpers"
@@ -33,7 +33,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "dependencies": {
-    "@boostercloud/framework-types": "^0.30.2",
+    "@boostercloud/framework-types": "^0.30.3",
     "child-process-promise": "^2.2.1",
     "tslib": "2.4.0"
   },
