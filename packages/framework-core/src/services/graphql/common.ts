@@ -49,10 +49,12 @@ export const DateScalar = new GraphQLScalarType({
   name: 'Date',
   description: 'Date custom scalar type',
   serialize(value) {
+    if (!(value instanceof Date)) throw new Error(`Invalid date: ${value}`)
     return value.toJSON()
   },
   parseValue(value) {
-    const date = new Date(value)
+    if (typeof value !== 'string' || typeof value !== 'number') throw new Error(`Invalid date: ${value}`)
+    const date = new Date(value as string | number as any)
     if (isNaN(date.getTime())) throw new Error(`Invalid date: ${value}`)
     return date
   },

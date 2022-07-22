@@ -153,6 +153,8 @@ export class BoosterGraphQLDispatcher {
           return await this.handleQueryOrMutation(queryDocument, resolverContext)
         case 'subscription':
           return await this.handleSubscription(queryDocument, resolverContext)
+        default:
+          throw new InvalidProtocolError(`Unrecognized GraphQL operation ${operationData.operation}`)
       }
     } catch (e) {
       const error = e as Error

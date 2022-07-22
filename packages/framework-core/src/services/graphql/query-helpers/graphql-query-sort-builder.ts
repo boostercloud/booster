@@ -1,8 +1,8 @@
-import { GraphQLEnumType, GraphQLFieldConfigArgumentMap, GraphQLInputObjectType, Thunk } from 'graphql'
+import { GraphQLEnumType, GraphQLFieldConfigArgumentMap, GraphQLInputObjectType } from 'graphql'
 import { PropertyMetadata } from '@boostercloud/metadata-booster'
 import { getClassMetadata } from '../../../decorators/metadata'
 import { buildGraphqlSimpleEnumFor, isExternalType } from '../common'
-import { GraphQLInputFieldConfigMap } from 'graphql/type/definition'
+import { GraphQLInputFieldConfig, GraphQLInputFieldConfigMap, ThunkObjMap } from 'graphql/type/definition'
 import { GraphQLTypeInformer } from '../graphql-type-informer'
 import { AnyClass } from '@boostercloud/framework-types'
 
@@ -32,7 +32,7 @@ export class GraphqlQuerySortBuilder {
     if (prop.typeInfo.typeGroup === 'Array') return this.orderType
     if (prop.typeInfo.name === 'UUID' || prop.typeInfo.name === 'Date') return this.orderType
 
-    let fields: Thunk<GraphQLInputFieldConfigMap> = {}
+    let fields: ThunkObjMap<GraphQLInputFieldConfig> = {}
 
     if (prop.typeInfo.type && prop.typeInfo.typeGroup === 'Class') {
       if (isExternalType(prop.typeInfo)) return this.orderType

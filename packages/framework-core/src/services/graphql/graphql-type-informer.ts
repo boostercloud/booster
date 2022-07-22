@@ -96,7 +96,7 @@ export class GraphQLTypeInformer {
   private createArrayType(typeMetadata: TypeMetadata, inputType: boolean): GraphQLList<GraphQLType> {
     const param = typeMetadata.parameters[0]
     const GraphQLPropType = this.getOrCreateGraphQLType(param, inputType)
-    return GraphQLList(GraphQLPropType)
+    return new GraphQLList(GraphQLPropType)
   }
 
   private getOrCreateObjectType(classMetadata: ClassMetadata, inputType: boolean): GraphQLType {
