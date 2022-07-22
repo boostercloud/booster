@@ -1,7 +1,7 @@
 {
   "name": "@boostercloud/framework-integration-tests",
   "description": "Example project for Booster",
-  "version": "0.30.2",
+  "version": "0.30.3",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
   "private": true,
@@ -45,7 +45,6 @@
     "graphql-tag": "2.12.4",
     "jsonwebtoken": "8.5.1",
     "jwks-rsa": "2.0.3",
-    "metadata-booster": "0.4.3",
     "mocha": "^10.0.0",
     "mocha-skip-if": "0.0.3",
     "serverless": "3.8.0",

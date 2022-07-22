@@ -26,8 +26,6 @@ module.exports = {
     'linebreak-style': ['error', 'unix'],
     quotes: ['error', 'single', { avoidEscape: true, allowTemplateLiterals: false }],
     semi: ['error', 'never'],
-    'no-extra-parens': 'off',
-    '@typescript-eslint/no-extra-parens': ['error'],
     'no-magic-numbers': 'off',
     '@typescript-eslint/no-parameter-properties': 0,
     '@typescript-eslint/no-floating-promises': ['error'],

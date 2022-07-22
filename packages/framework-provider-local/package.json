@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-local",
-  "version": "0.30.2",
+  "version": "0.30.3",
   "description": "Debug your Booster projects locally",
   "keywords": [
     "framework-provider-aws"
@@ -24,7 +24,7 @@
     "@boostercloud/framework-types": "*",
     "@types/nedb": "^1.8.11",
     "nedb": "^1.8.0",
-    "tslib": "2.3.1"
+    "tslib": "2.4.0"
   },
   "scripts": {
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",

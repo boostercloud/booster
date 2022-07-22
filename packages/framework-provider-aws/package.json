@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-aws",
-  "version": "0.30.2",
+  "version": "0.30.3",
   "description": "Handle Booster's integration with AWS",
   "keywords": [
     "framework-provider-aws"

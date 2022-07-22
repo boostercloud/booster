@@ -23,7 +23,7 @@
     "@types/node": "whatever",
     "@boostercloud/framework-provider-aws-infrastructure": "whatever",
     "ttypescript": "whatever",
-    "metadata-booster": "whatever"
+    "@boostercloud/metadata-booster": "whatever"
   },
   "engines": {
     "node": ">=14.0.0"
