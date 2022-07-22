@@ -88,7 +88,7 @@ describe('The "subscribeToReadModel" method', () => {
     it('stores the subscription with the expected data', async () => {
       db.put = fake.returns({
         promise: () => Promise.resolve(),
-      })
+      }) as any
       await subscribeToReadModel(db, config, envelope)
       expect(db.put).to.have.been.calledWithExactly({
         TableName: config.resourceNames.subscriptionsStore,
@@ -120,7 +120,7 @@ describe('The "fetchSubscriptions" method', () => {
         Promise.resolve({
           Items: subscriptions,
         }),
-    })
+    }) as any
     const subscriptionName = lorem.word()
     const result = await fetchSubscriptions(db, config, subscriptionName)
 

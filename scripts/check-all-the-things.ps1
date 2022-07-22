@@ -1,3 +1,5 @@
+# WARNING: This script is unmaintained, use at your own risk
+#
 # In theory we could write all of this with Bash style &&,
 # but in order to maintain backwards compatibility
 # with Powershell <7.0 (what most Windows users have preinstalled)

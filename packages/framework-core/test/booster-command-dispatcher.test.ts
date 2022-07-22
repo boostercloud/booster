@@ -170,7 +170,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
         public static handle() {}
       }
 
-      replace(ProperlyHandledCommand, 'handle', fakeHandler)
+      replace(ProperlyHandledCommand, 'handle', fakeHandler as any)
       replace(RegisterHandler, 'handle', fake())
 
       const config = {

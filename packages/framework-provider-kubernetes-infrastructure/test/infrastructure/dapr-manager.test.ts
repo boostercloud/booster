@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
 import { K8sManagement } from '../../src/infrastructure/k8s-sdk/k8s-management'
 import { HelmManager } from '../../src/infrastructure/helm-manager'
@@ -10,7 +11,7 @@ import { CoreV1Api, KubeConfig, KubernetesObjectApi } from '@kubernetes/client-n
 const fs = require('fs')
 
 describe('Users Dapr interaction inside the cluster', () => {
-  replace(KubeConfig.prototype, 'makeApiClient', fake.returns(new CoreV1Api()))
+  replace(KubeConfig.prototype, 'makeApiClient', fake.returns(new CoreV1Api()) as any)
   replace(KubernetesObjectApi, 'makeApiClient', fake.returns(new KubernetesObjectApi()))
   const config = new BoosterConfig('test')
   const k8sManager = new K8sManagement(config)

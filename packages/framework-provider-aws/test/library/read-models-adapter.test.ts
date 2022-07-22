@@ -115,7 +115,7 @@ describe('the "fetchReadModel" method', () => {
           'query',
           fake.returns({
             promise: fake.rejects('not found'),
-          })
+          }) as any
         )
 
         await expect(fetchReadModel(db, config, 'SomeReadModel', 'someReadModelID')).to.be.eventually.rejectedWith(
@@ -145,7 +145,7 @@ describe('the "fetchReadModel" method', () => {
           'query',
           fake.returns({
             promise: fake.rejects('not found'),
-          })
+          }) as any
         )
 
         await expect(
@@ -179,7 +179,7 @@ describe('the "fetchReadModel" method', () => {
           'query',
           fake.returns({
             promise: fake.resolves({ Items: [{ some: 'object' }] }),
-          })
+          }) as any
         )
 
         const results = await fetchReadModel(db, config, 'SomeReadModel', 'someReadModelID')
@@ -215,7 +215,7 @@ describe('the "fetchReadModel" method', () => {
           'query',
           fake.returns({
             promise: fake.resolves({ Items: [{ some: 'object', time: '42' }] }),
-          })
+          }) as any
         )
 
         const results = await fetchReadModel(db, config, 'SomeReadModel', 'someReadModelID', {
@@ -265,7 +265,7 @@ describe('the "storeReadModel" method', () => {
         promise: fake.resolves({
           $response: {},
         }),
-      })
+      }) as any
     )
 
     const something = await storeReadModel(db, config, 'SomeReadModel', { id: 777, some: 'object' } as any, 0)
@@ -290,7 +290,7 @@ describe('the "storeReadModel" method', () => {
           e.name = 'ConditionalCheckFailedException'
           throw e
         },
-      })
+      }) as any
     )
 
     await expect(
@@ -311,7 +311,7 @@ describe('the "deleteReadModel"', () => {
           promise: fake.resolves({
             $response: {},
           }),
-        })
+        }) as any
       )
 
       await deleteReadModel(db, config, 'SomeReadModel', { id: 777, some: 'object' } as any)
@@ -336,7 +336,7 @@ describe('the "deleteReadModel"', () => {
           promise: fake.resolves({
             $response: {},
           }),
-        })
+        }) as any
       )
 
       await deleteReadModel(db, config, readModelName, { id: '777', time: '42', some: 'object' } as any)

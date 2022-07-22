@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
 import { K8sManagement } from '../../src/infrastructure/k8s-sdk/k8s-management'
 import { HelmManager } from '../../src/infrastructure/helm-manager'
@@ -16,7 +17,7 @@ describe('User interaction during the deploy:', async () => {
   const deployManager = new DeployManager(config, k8sManager, daprManager, helmManager)
 
   beforeEach(() => {
-    replace(KubeConfig.prototype, 'makeApiClient', fake.returns(new CoreV1Api()))
+    replace(KubeConfig.prototype, 'makeApiClient', fake.returns(new CoreV1Api()) as any)
     replace(KubernetesObjectApi, 'makeApiClient', fake.returns(new KubernetesObjectApi()))
   })
 
@@ -146,8 +147,8 @@ describe('User interaction during the deploy:', async () => {
 
   it('allows verifying that the upload code works', async () => {
     stub(k8sManager, 'waitForServiceToBeReady').resolves({ ip: 'http://ip_mock.com' })
-    replace(utils, 'waitForIt', fake.resolves(200))
-    replace(utils, 'uploadFile', fake.resolves({ statusCode: 200 }))
+    replace(utils, 'waitForIt', fake.resolves(200) as any)
+    replace(utils, 'uploadFile', fake.resolves({ statusCode: 200 }) as any)
     replace(utils, 'createProjectZipFile', fake.resolves('path'))
     await expect(deployManager.uploadUserCode()).to.eventually.be.fulfilled
   })

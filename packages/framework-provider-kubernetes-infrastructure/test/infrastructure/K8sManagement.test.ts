@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   CoreV1Api,
   KubeConfig,
@@ -100,18 +101,18 @@ describe('Users interaction with K8s cluster', () => {
   const secret = { response: {}, body: secretValue }
 
   beforeEach(() => {
-    replace(KubeConfig.prototype, 'makeApiClient', fake.returns(new CoreV1Api()))
+    replace(KubeConfig.prototype, 'makeApiClient', fake.returns(new CoreV1Api()) as any)
     replace(KubernetesObjectApi, 'makeApiClient', fake.returns(new KubernetesObjectApi()))
-    replace(CoreV1Api.prototype, 'listNamespace', fake.resolves(namespaceList))
-    replace(CoreV1Api.prototype, 'listNamespacedPod', fake.resolves(podList))
-    replace(CoreV1Api.prototype, 'createNamespace', fake.resolves(namespace))
-    replace(CoreV1Api.prototype, 'deleteNamespace', fake.resolves(namespace))
-    replace(CoreV1Api.prototype, 'listNode', fake.resolves(nodeList))
-    replace(CoreV1Api.prototype, 'listNamespacedService', fake.resolves(serviceList))
-    replace(CoreV1Api.prototype, 'listPersistentVolumeClaimForAllNamespaces', fake.resolves(volumeClaimList))
-    replace(KubernetesObjectApi.prototype, 'read', fake.resolves(clientRead))
-    replace(KubernetesObjectApi.prototype, 'replace', fake.resolves(new KubernetesObjectApi()))
-    replace(CoreV1Api.prototype, 'readNamespacedSecret', fake.resolves(secret))
+    replace(CoreV1Api.prototype, 'listNamespace', fake.resolves(namespaceList) as any)
+    replace(CoreV1Api.prototype, 'listNamespacedPod', fake.resolves(podList) as any)
+    replace(CoreV1Api.prototype, 'createNamespace', fake.resolves(namespace) as any)
+    replace(CoreV1Api.prototype, 'deleteNamespace', fake.resolves(namespace) as any)
+    replace(CoreV1Api.prototype, 'listNode', fake.resolves(nodeList) as any)
+    replace(CoreV1Api.prototype, 'listNamespacedService', fake.resolves(serviceList) as any)
+    replace(CoreV1Api.prototype, 'listPersistentVolumeClaimForAllNamespaces', fake.resolves(volumeClaimList) as any)
+    replace(KubernetesObjectApi.prototype, 'read', fake.resolves(clientRead) as any)
+    replace(KubernetesObjectApi.prototype, 'replace', fake.resolves(new KubernetesObjectApi()) as any)
+    replace(CoreV1Api.prototype, 'readNamespacedSecret', fake.resolves(secret) as any)
 
     const config = new BoosterConfig('production')
     k8sManager = new K8sManagement(config)

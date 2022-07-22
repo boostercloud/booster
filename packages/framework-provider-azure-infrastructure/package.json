@@ -26,7 +26,7 @@
     "@boostercloud/framework-core": "*",
     "@boostercloud/framework-provider-azure": "*",
     "@boostercloud/framework-types": "*",
-    "@cdktf/provider-azurerm": "0.2.179",
+    "@cdktf/provider-azurerm": "1.0.0",
     "@types/archiver": "5.1.0",
     "@types/needle": "^2.0.4",
     "archiver": "5.3.0",
@@ -44,7 +44,7 @@
     "mustache": "4.1.0",
     "needle": "^2.5.0",
     "ora": "^3.4.0",
-    "sinon-chai": "3.5.0",
+    "sinon-chai": "3.7.0",
     "uuid": "8.3.2"
   },
   "scripts": {
@@ -61,12 +61,20 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
+    "@types/chai": "4.3.1",
+    "@types/chai-as-promised": "7.1.5",
     "@types/faker": "5.1.5",
     "@types/fs-extra": "9.0.13",
+    "@types/mocha": "9.1.1",
     "@types/mustache": "4.1.0",
+    "@types/sinon": "10.0.13",
+    "@types/sinon-chai": "3.2.8",
     "@types/uuid": "8.3.0",
     "faker": "5.1.0",
     "mocha": "^10.0.0",
+    "nyc": "15.1.0",
+    "sinon": "14.0.0",
+    "ttypescript": "1.5.13",
     "typescript": "4.7.4"
   }
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
 import { deploy, nuke } from '../../src/infrastructure/index'
 import { BoosterConfig } from '@boostercloud/framework-types'
@@ -16,7 +17,7 @@ describe('During the deploy or nuke of Booster apps:', async () => {
   const errorMsg = 'error!'
 
   beforeEach(() => {
-    replace(KubeConfig.prototype, 'makeApiClient', fake.returns(new CoreV1Api()))
+    replace(KubeConfig.prototype, 'makeApiClient', fake.returns(new CoreV1Api()) as any)
     replace(KubernetesObjectApi, 'makeApiClient', fake.returns(new KubernetesObjectApi()))
   })
 
@@ -26,16 +27,16 @@ describe('During the deploy or nuke of Booster apps:', async () => {
 
   it('allows finishing deploy correctly', async () => {
     const serviceUrl = internet.ip()
-    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureDaprExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureEventStoreExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureUploadPodExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'uploadUserCode', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureDaprExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureEventStoreExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureUploadPodExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'uploadUserCode', fake.resolves(true) as any)
     replace(DeployManager.prototype, 'deployBoosterApp', fake.resolves(serviceUrl))
     await deploy(config)
 
@@ -52,117 +53,117 @@ describe('During the deploy or nuke of Booster apps:', async () => {
   })
 
   it('allows deploying but the helms validation fails', async () => {
-    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true) as any)
     replace(DeployManager.prototype, 'ensureHelmIsReady', fake.throws(errorMsg))
 
     await expect(deploy(config)).to.eventually.be.rejectedWith(errorMsg)
   })
 
   it('allows deploying but the volume claim validation fails', async () => {
-    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.throws(errorMsg))
-    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.throws(errorMsg) as any)
+    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true) as any)
 
     await expect(deploy(config)).to.be.eventually.rejectedWith(errorMsg)
   })
 
   it('allows deploying but the upload service validation fails', async () => {
-    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true) as any)
     replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.throws(errorMsg))
 
     await expect(deploy(config)).to.be.eventually.rejectedWith(errorMsg)
   })
 
   it('allows deploying but he booster service validation fails', async () => {
-    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true) as any)
     replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.throws(errorMsg))
 
     await expect(deploy(config)).to.be.eventually.rejectedWith(errorMsg)
   })
 
   it('allows deploying but the dapr service validation fails', async () => {
-    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true) as any)
     replace(DeployManager.prototype, 'ensureDaprExists', fake.throws(errorMsg))
 
     await expect(deploy(config)).to.be.eventually.rejectedWith(errorMsg)
   })
 
   it('allows deploying but the eventStore validation fails', async () => {
-    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureDaprExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureDaprExists', fake.resolves(true) as any)
     replace(DeployManager.prototype, 'ensureEventStoreExists', fake.throws(errorMsg))
 
     await expect(deploy(config)).to.be.eventually.rejectedWith(errorMsg)
   })
 
   it('allows deploying but the Upload pod validation fails', async () => {
-    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureDaprExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureEventStoreExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureDaprExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureEventStoreExists', fake.resolves(true) as any)
     replace(DeployManager.prototype, 'ensureUploadPodExists', fake.throws(errorMsg))
 
     await expect(deploy(config)).to.be.eventually.rejectedWith(errorMsg)
   })
 
   it('allows deploying but the User code Upload fails', async () => {
-    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureDaprExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureEventStoreExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureUploadPodExists', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureDaprExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureEventStoreExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureUploadPodExists', fake.resolves(true) as any)
     replace(DeployManager.prototype, 'uploadUserCode', fake.throws(errorMsg))
 
     await expect(deploy(config)).to.be.eventually.rejectedWith(errorMsg)
   })
 
   it('allows deploying butthe booster pod validation fails', async () => {
-    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureDaprExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureEventStoreExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'ensureUploadPodExists', fake.resolves(true))
-    replace(DeployManager.prototype, 'uploadUserCode', fake.resolves(true))
+    replace(DeployManager.prototype, 'ensureNamespaceExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureHelmIsReady', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureVolumeClaimExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'setServiceType', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureUploadServiceExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureBoosterServiceExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureDaprExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureEventStoreExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'ensureUploadPodExists', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'uploadUserCode', fake.resolves(true) as any)
     replace(DeployManager.prototype, 'deployBoosterApp', fake.throws(errorMsg))
 
     await expect(deploy(config)).to.be.eventually.rejectedWith(errorMsg)
   })
 
   it('allows finishing nuke correctly', async () => {
-    replace(DeployManager.prototype, 'deleteDapr', fake.resolves(true))
-    replace(DeployManager.prototype, 'deleteRedis', fake.resolves(true))
-    replace(DeployManager.prototype, 'deleteAllResources', fake.resolves(true))
+    replace(DeployManager.prototype, 'deleteDapr', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'deleteRedis', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'deleteAllResources', fake.resolves(true) as any)
 
     await nuke(config)
 
@@ -179,15 +180,15 @@ describe('During the deploy or nuke of Booster apps:', async () => {
   })
 
   it('allows nuking but delete redis fails', async () => {
-    replace(DeployManager.prototype, 'deleteDapr', fake.resolves(true))
+    replace(DeployManager.prototype, 'deleteDapr', fake.resolves(true) as any)
     replace(DeployManager.prototype, 'deleteRedis', fake.throws(errorMsg))
 
     await expect(nuke(config)).to.be.eventually.rejectedWith(errorMsg)
   })
 
   it('allows nuking but delete resources fails', async () => {
-    replace(DeployManager.prototype, 'deleteDapr', fake.resolves(true))
-    replace(DeployManager.prototype, 'deleteRedis', fake.resolves(true))
+    replace(DeployManager.prototype, 'deleteDapr', fake.resolves(true) as any)
+    replace(DeployManager.prototype, 'deleteRedis', fake.resolves(true) as any)
     replace(DeployManager.prototype, 'deleteAllResources', fake.throws(errorMsg))
 
     await expect(nuke(config)).to.be.eventually.rejectedWith(errorMsg)

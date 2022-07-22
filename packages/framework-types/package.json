@@ -39,14 +39,21 @@
   },
   "devDependencies": {
     "@boostercloud/metadata-booster": "^0.30.3",
+    "@types/chai": "4.3.1",
+    "@types/chai-as-promised": "7.1.5",
+    "@types/mocha": "9.1.1",
+    "@types/sinon": "10.0.13",
+    "@types/sinon-chai": "3.2.8",
     "@types/uuid": "8.3.0",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
     "fast-check": "2.17.0",
     "metadata-booster": "0.4.3",
     "mocha": "^10.0.0",
-    "sinon": "^10.0.0",
-    "sinon-chai": "3.5.0",
+    "nyc": "15.1.0",
+    "sinon": "14.0.0",
+    "sinon-chai": "3.7.0",
+    "ttypescript": "1.5.13",
     "typescript": "4.7.4"
   }
 }
