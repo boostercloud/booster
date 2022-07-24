@@ -11,7 +11,7 @@ import {
   Thunk,
 } from 'graphql'
 import { getClassMetadata } from '../../../decorators/metadata'
-import { PropertyMetadata, TypeMetadata } from 'metadata-booster'
+import { PropertyMetadata, TypeMetadata } from '@boostercloud/metadata-booster'
 import { GraphQLJSON } from 'graphql-scalars'
 import { AnyClass, UUID } from '@boostercloud/framework-types'
 import { GraphQLTypeInformer } from '../graphql-type-informer'

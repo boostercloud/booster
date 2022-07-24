@@ -1,5 +1,5 @@
 import { Class } from '../typelevel'
-import { PropertyMetadata } from 'metadata-booster'
+import { PropertyMetadata } from '@boostercloud/metadata-booster'
 import { Register, CommandAuthorizer, CommandFilterHooks } from './.'
 
 export type CommandInput = Record<string, any>

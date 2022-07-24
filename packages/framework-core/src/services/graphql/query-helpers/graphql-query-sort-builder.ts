@@ -1,5 +1,5 @@
 import { GraphQLEnumType, GraphQLFieldConfigArgumentMap, GraphQLInputObjectType, Thunk } from 'graphql'
-import { PropertyMetadata } from 'metadata-booster'
+import { PropertyMetadata } from '@boostercloud/metadata-booster'
 import { getClassMetadata } from '../../../decorators/metadata'
 import { buildGraphqlSimpleEnumFor, isExternalType } from '../common'
 import { GraphQLInputFieldConfigMap } from 'graphql/type/definition'
