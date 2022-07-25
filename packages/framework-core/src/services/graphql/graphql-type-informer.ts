@@ -14,7 +14,7 @@ import {
   GraphQLType,
 } from 'graphql'
 import { GraphQLJSON } from 'graphql-scalars'
-import { ClassMetadata, ClassType, TypeMetadata } from '@boostercloud/metadata-booster'
+import { ClassMetadata, TypeBuilder, TypeMetadata } from '@boostercloud/metadata-booster'
 import { DateScalar, isExternalType } from './common'
 import { Logger } from '@boostercloud/framework-types'
 
@@ -23,10 +23,10 @@ export class GraphQLTypeInformer {
 
   constructor(private logger: Logger) {}
 
-  public generateGraphQLTypeForClass(type: ClassType, inputType: true): GraphQLInputType
-  public generateGraphQLTypeForClass(type: ClassType, inputType?: false): GraphQLOutputType
-  public generateGraphQLTypeForClass(type: ClassType, inputType: boolean): GraphQLType
-  public generateGraphQLTypeForClass(type: ClassType, inputType = false): GraphQLType {
+  public generateGraphQLTypeForClass(type: TypeBuilder, inputType: true): GraphQLInputType
+  public generateGraphQLTypeForClass(type: TypeBuilder, inputType?: false): GraphQLOutputType
+  public generateGraphQLTypeForClass(type: TypeBuilder, inputType: boolean): GraphQLType
+  public generateGraphQLTypeForClass(type: TypeBuilder, inputType = false): GraphQLType {
     this.logger.debug(`Generate GraphQL ${inputType ? 'input' : 'output'} type for class ${type.name}`)
     const metadata = getClassMetadata(type)
     return this.getOrCreateObjectType(metadata, inputType)

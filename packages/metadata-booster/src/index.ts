@@ -8,6 +8,7 @@ const transformer: (program: ts.Program) => ts.TransformerFactory<ts.SourceFile>
     const f = context.factory
     const filterInterfaceFunctionName = f.createUniqueName('filterInterface')
     return (sourceFile) => {
+      console.log(`\n\n\n######    VISITING FILE ${sourceFile.fileName}     #####`)
       const importedTypes: Record<string, string> = {}
       function visitor(node: ts.Node): ts.VisitResult<ts.Node> {
         if (ts.isImportDeclaration(node)) {

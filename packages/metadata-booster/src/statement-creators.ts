@@ -1,9 +1,9 @@
 import * as ts from 'typescript'
-import { ClassInfo, PropertyInfo, TypeInfo } from './metadata-extractors'
+import { ClassMetadata, PropertyMetadata, TypeMetadata } from './metadata-types'
 
 export function createClassMetadataDecorator(
   f: ts.NodeFactory,
-  classInfo: ClassInfo,
+  classInfo: ClassMetadata,
   filterInterfaceFunctionName: ts.Identifier,
   typesByModule: Record<string, string>
 ): ts.Decorator {
@@ -31,7 +31,7 @@ export function createClassMetadataDecorator(
 
 function createPropertiesMetadata(
   f: ts.NodeFactory,
-  properties: Array<PropertyInfo>,
+  properties: Array<PropertyMetadata>,
   filterInterfaceFunctionName: ts.Identifier,
   typesByModule: Record<string, string>
 ): ts.ArrayLiteralExpression {
@@ -53,7 +53,7 @@ function createPropertiesMetadata(
 
 function createMetadataForTypeInfo(
   f: ts.NodeFactory,
-  typeInfo: TypeInfo,
+  typeInfo: TypeMetadata,
   filterInterfaceFunctionName: ts.Identifier,
   typesByModule: Record<string, string>
 ): ts.ObjectLiteralExpression {

@@ -1,4 +1,3 @@
-import { GraphQLScalarType } from 'graphql/type/definition'
 import {
   AnyClass,
   UserEnvelope,
@@ -13,6 +12,7 @@ import {
   GraphQLFieldResolver,
   GraphQLList,
   GraphQLObjectType,
+  GraphQLScalarType,
   GraphQLType,
   Kind,
 } from 'graphql'

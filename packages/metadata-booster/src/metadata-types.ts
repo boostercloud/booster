@@ -1,5 +1,3 @@
-export type ClassType = { new (...args: unknown[]): unknown }
-
 // type instead of enum to be able to install this package as a devDependency and not a production dependency
 export type TypeGroup =
   | 'String'
@@ -17,24 +15,29 @@ export type TypeGroup =
   | 'ReadonlyArray'
   | 'Other'
 
-export interface TypeMetadata {
-  name: string
-  typeGroup: TypeGroup
-  parameters: Array<TypeMetadata>
-  isNullable: boolean
-  typeName?: string
-  importPath?: string
-  type?: ClassType
+// TODO: Add a variant as a union type so it is compatible with morphic-ts or io-ts instead of using new
+export type TypeBuilder = { new (...args: unknown[]): unknown }
+
+export interface HasTypeBuilder {
+  type?: TypeBuilder
 }
 
-export interface PropertyMetadata {
+export type TypeMetadata = {
+  name: string
+  typeName?: string
+  parameters: Array<TypeMetadata>
+  typeGroup: TypeGroup
+  isNullable: boolean
+  importPath?: string
+} & HasTypeBuilder
+
+export type PropertyMetadata = {
   name: string
   typeInfo: TypeMetadata
-}
+} & HasTypeBuilder
 
-export interface ClassMetadata {
+export type ClassMetadata = {
   name: string
-  type: ClassType
   fields: Array<PropertyMetadata>
   methods: Array<PropertyMetadata>
-}
+} & HasTypeBuilder

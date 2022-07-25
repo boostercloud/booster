@@ -1,8 +1,14 @@
-import { GraphQLEnumType, GraphQLFieldConfigArgumentMap, GraphQLInputObjectType } from 'graphql'
+import {
+  GraphQLEnumType,
+  GraphQLFieldConfigArgumentMap,
+  GraphQLInputObjectType,
+  GraphQLInputFieldConfig,
+  GraphQLInputFieldConfigMap,
+  ThunkObjMap,
+} from 'graphql'
 import { PropertyMetadata } from '@boostercloud/metadata-booster'
 import { getClassMetadata } from '../../../decorators/metadata'
 import { buildGraphqlSimpleEnumFor, isExternalType } from '../common'
-import { GraphQLInputFieldConfig, GraphQLInputFieldConfigMap, ThunkObjMap } from 'graphql/type/definition'
 import { GraphQLTypeInformer } from '../graphql-type-informer'
 import { AnyClass } from '@boostercloud/framework-types'
 

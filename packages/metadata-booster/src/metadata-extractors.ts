@@ -2,28 +2,12 @@
 
 import { ClassDeclaration, ClassInstancePropertyTypes, createWrappedNode, Node, SyntaxKind, Type } from 'ts-morph'
 import * as ts from 'typescript'
-import { TypeGroup } from './metadata-types'
+import { ClassMetadata, TypeGroup, TypeMetadata } from './metadata-types'
 
-export interface TypeInfo {
-  name: string // e.g. Array<string>
-  typeName: string | null // e.g. Array
-  parameters: Array<TypeInfo>
-  typeGroup: TypeGroup
-  isNullable: boolean
-}
-
-export interface PropertyInfo {
-  name: string
-  typeInfo: TypeInfo
-}
-
-export interface ClassInfo {
-  name: string
-  fields: Array<PropertyInfo>
-  methods: Array<PropertyInfo>
-}
-
-export function getClassInfo(classNode: ts.ClassDeclaration & ts.Node, checker: ts.TypeChecker): ClassInfo | undefined {
+export function getClassInfo(
+  classNode: ts.ClassDeclaration & ts.Node,
+  checker: ts.TypeChecker
+): ClassMetadata | undefined {
   if (!classNode.name) return
 
   const node = createWrappedNode<ts.Node>(classNode, { typeChecker: checker }).asKindOrThrow(
@@ -54,7 +38,8 @@ function hasQuestionTokenNode(node: Node<ts.Node> | undefined): boolean {
   return false
 }
 
-function getTypeInfo(type: Type, node?: Node): TypeInfo {
+function getTypeInfo(type: Type, node?: Node): TypeMetadata {
+  console.log('Calling getTypeInfo for type', type.getText())
   const typeGroupTuples: [(t: Type) => boolean, TypeGroup][] = [
     [(t) => t.isString(), 'String'],
     [(t) => t.isNumber(), 'Number'],
@@ -74,7 +59,7 @@ function getTypeInfo(type: Type, node?: Node): TypeInfo {
   const hasQuestionToken = hasQuestionTokenNode(node)
   const isNullable = type.isNullable() || hasQuestionToken
   type = type.getNonNullableType()
-  const typeInfo: TypeInfo = {
+  const typeInfo: TypeMetadata = {
     name: type.getText(node), // node is passed for better name printing: https://github.com/dsherret/ts-morph/issues/907
     typeName: '',
     typeGroup: typeGroupTuples.find(([fn]) => fn(type))?.[1] || 'Other',
@@ -92,7 +77,11 @@ function getTypeInfo(type: Type, node?: Node): TypeInfo {
       typeInfo.parameters = type.getIntersectionTypes().map((t) => getTypeInfo(t, node))
       break
     default:
-      typeInfo.parameters = type.getTypeArguments().map((a) => getTypeInfo(a, node))
+      typeInfo.parameters = type.getTypeArguments().map((a) => {
+        console.log('Mapping over', a.getText())
+
+        return getTypeInfo(a, node)
+      })
   }
 
   // typeName is used for referencing the type in the metadata
@@ -104,7 +93,7 @@ function getTypeInfo(type: Type, node?: Node): TypeInfo {
       break
     case 'Union':
     case 'Intersection':
-      typeInfo.typeName = null
+      typeInfo.typeName = undefined
       break
     case 'Enum':
     case 'Class':
@@ -127,7 +116,7 @@ function getTypeInfo(type: Type, node?: Node): TypeInfo {
       if (type.isEnumLiteral()) {
         typeInfo.name = type.getSymbol()?.getName() || '' // e.g. "Small"
       }
-      typeInfo.typeName = null
+      typeInfo.typeName = undefined
       break
   }
 
