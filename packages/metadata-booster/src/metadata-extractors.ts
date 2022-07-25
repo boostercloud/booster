@@ -3,10 +3,12 @@
 import { ClassDeclaration, ClassInstancePropertyTypes, createWrappedNode, Node, SyntaxKind, Type } from 'ts-morph'
 import * as ts from 'typescript'
 import { ClassMetadata, TypeGroup, TypeMetadata } from './metadata-types'
+import { TypeCache } from './type-information'
 
 export function getClassInfo(
   classNode: ts.ClassDeclaration & ts.Node,
-  checker: ts.TypeChecker
+  checker: ts.TypeChecker,
+  cache: TypeCache
 ): ClassMetadata | undefined {
   if (!classNode.name) return
 
@@ -16,8 +18,11 @@ export function getClassInfo(
 
   return {
     name: node.getNameOrThrow(),
-    fields: getInstanceProperties(node).map((p) => ({ name: p.getName(), typeInfo: getTypeInfo(p.getType(), p) })),
-    methods: node.getMethods().map((m) => ({ name: m.getName(), typeInfo: getTypeInfo(m.getReturnType(), m) })),
+    fields: getInstanceProperties(node).map((p) => ({
+      name: p.getName(),
+      typeInfo: getTypeInfo(p.getType(), cache, p),
+    })),
+    methods: node.getMethods().map((m) => ({ name: m.getName(), typeInfo: getTypeInfo(m.getReturnType(), cache, m) })),
   }
 }
 
@@ -38,8 +43,13 @@ function hasQuestionTokenNode(node: Node<ts.Node> | undefined): boolean {
   return false
 }
 
-function getTypeInfo(type: Type, node?: Node): TypeMetadata {
-  console.log('Calling getTypeInfo for type', type.getText())
+function getTypeInfo(type: Type, cache: TypeCache, node?: Node): TypeMetadata {
+  const typeName = type.getText(node) // node is passed for better name printing: https://github.com/dsherret/ts-morph/issues/907
+  const cachedType = cache.getType(typeName)
+  if (cachedType) {
+    console.log(`Type ${typeName} was cached, returning`)
+    return cachedType
+  }
   const typeGroupTuples: [(t: Type) => boolean, TypeGroup][] = [
     [(t) => t.isString(), 'String'],
     [(t) => t.isNumber(), 'Number'],
@@ -60,27 +70,27 @@ function getTypeInfo(type: Type, node?: Node): TypeMetadata {
   const isNullable = type.isNullable() || hasQuestionToken
   type = type.getNonNullableType()
   const typeInfo: TypeMetadata = {
-    name: type.getText(node), // node is passed for better name printing: https://github.com/dsherret/ts-morph/issues/907
+    name: typeName,
     typeName: '',
     typeGroup: typeGroupTuples.find(([fn]) => fn(type))?.[1] || 'Other',
     isNullable,
     parameters: [],
   }
+  cache.saveType({ typeInfo })
   switch (typeInfo.typeGroup) {
     case 'Enum':
-      typeInfo.parameters = type.getUnionTypes().map((t) => getTypeInfo(t))
+      typeInfo.parameters = type.getUnionTypes().map((t) => getTypeInfo(t, cache))
       break
     case 'Union':
-      typeInfo.parameters = type.getUnionTypes().map((t) => getTypeInfo(t, node))
+      typeInfo.parameters = type.getUnionTypes().map((t) => getTypeInfo(t, cache, node))
       break
     case 'Intersection':
-      typeInfo.parameters = type.getIntersectionTypes().map((t) => getTypeInfo(t, node))
+      typeInfo.parameters = type.getIntersectionTypes().map((t) => getTypeInfo(t, cache, node))
       break
     default:
       typeInfo.parameters = type.getTypeArguments().map((a) => {
-        console.log('Mapping over', a.getText())
-
-        return getTypeInfo(a, node)
+        const cachedParam = cache.getType(a.getText())
+        return cachedParam ?? getTypeInfo(a, cache, node)
       })
   }
 
@@ -121,6 +131,7 @@ function getTypeInfo(type: Type, node?: Node): TypeMetadata {
   }
 
   if (typeInfo.typeName === '') throw new Error(`Could not extract typeName for type ${JSON.stringify(typeInfo)}`)
+  cache.saveType({ typeInfo, forceSave: true })
 
   return typeInfo
 }

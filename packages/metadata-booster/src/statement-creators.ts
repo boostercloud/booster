@@ -1,11 +1,13 @@
 import * as ts from 'typescript'
 import { ClassMetadata, PropertyMetadata, TypeMetadata } from './metadata-types'
+import { TypeCache } from './type-information'
 
 export function createClassMetadataDecorator(
   f: ts.NodeFactory,
   classInfo: ClassMetadata,
   filterInterfaceFunctionName: ts.Identifier,
-  typesByModule: Record<string, string>
+  typesByModule: Record<string, string>,
+  cache: TypeCache
 ): ts.Decorator {
   return f.createDecorator(
     f.createCallExpression(f.createPropertyAccessExpression(f.createIdentifier('Reflect'), 'metadata'), undefined, [
@@ -16,11 +18,11 @@ export function createClassMetadataDecorator(
           f.createPropertyAssignment('type', f.createIdentifier(classInfo.name)),
           f.createPropertyAssignment(
             'fields',
-            createPropertiesMetadata(f, classInfo.fields, filterInterfaceFunctionName, typesByModule)
+            createPropertiesMetadata(f, classInfo.fields, filterInterfaceFunctionName, typesByModule, cache)
           ),
           f.createPropertyAssignment(
             'methods',
-            createPropertiesMetadata(f, classInfo.methods, filterInterfaceFunctionName, typesByModule)
+            createPropertiesMetadata(f, classInfo.methods, filterInterfaceFunctionName, typesByModule, cache)
           ),
         ],
         true
@@ -33,7 +35,8 @@ function createPropertiesMetadata(
   f: ts.NodeFactory,
   properties: Array<PropertyMetadata>,
   filterInterfaceFunctionName: ts.Identifier,
-  typesByModule: Record<string, string>
+  typesByModule: Record<string, string>,
+  cache: TypeCache
 ): ts.ArrayLiteralExpression {
   return f.createArrayLiteralExpression(
     properties.map((prop) => {
@@ -42,7 +45,7 @@ function createPropertiesMetadata(
           f.createPropertyAssignment('name', f.createStringLiteral(prop.name)),
           f.createPropertyAssignment(
             'typeInfo',
-            createMetadataForTypeInfo(f, prop.typeInfo, filterInterfaceFunctionName, typesByModule)
+            createMetadataForTypeInfo(f, prop.typeInfo, filterInterfaceFunctionName, typesByModule, cache)
           ),
         ],
         true
@@ -51,12 +54,19 @@ function createPropertiesMetadata(
   )
 }
 
+let counter = 0
+
 function createMetadataForTypeInfo(
   f: ts.NodeFactory,
   typeInfo: TypeMetadata,
   filterInterfaceFunctionName: ts.Identifier,
-  typesByModule: Record<string, string>
+  typesByModule: Record<string, string>,
+  cache: TypeCache
 ): ts.ObjectLiteralExpression {
+  if (cache.hasStatementCreated(typeInfo.name)) return cache.getStatement(typeInfo.name)
+  const currentLevel = counter
+  console.log(new Array(counter).map(() => '  ').join(), 'Calling createMetadataForTypeInfo for type', typeInfo.name)
+  counter++
   const typeModule = typeInfo.typeName && typesByModule[typeInfo.typeName]
   const properties: ts.ObjectLiteralElementLike[] = [
     f.createPropertyAssignment('name', f.createStringLiteral(typeInfo.name)),
@@ -66,7 +76,7 @@ function createMetadataForTypeInfo(
       'parameters',
       f.createArrayLiteralExpression(
         typeInfo.parameters.map((param) =>
-          createMetadataForTypeInfo(f, param, filterInterfaceFunctionName, typesByModule)
+          createMetadataForTypeInfo(f, param, filterInterfaceFunctionName, typesByModule, cache)
         )
       )
     ),
@@ -90,7 +100,10 @@ function createMetadataForTypeInfo(
       )
     )
   }
-  return f.createObjectLiteralExpression(properties, true)
+  counter = currentLevel
+  const result = f.createObjectLiteralExpression(properties, true)
+  cache.saveStatement(typeInfo.name, result)
+  return result
 }
 
 export function createFilterInterfaceFunction(
