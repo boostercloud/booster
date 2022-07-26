@@ -1,6 +1,6 @@
 import * as ts from 'typescript'
 import { ClassMetadata, PropertyMetadata, TypeMetadata } from './metadata-types'
-import { TypeCache } from './type-information'
+import { TypeCache } from './type-cache'
 
 export function createClassMetadataDecorator(
   f: ts.NodeFactory,
@@ -63,7 +63,15 @@ function createMetadataForTypeInfo(
   typesByModule: Record<string, string>,
   cache: TypeCache
 ): ts.ObjectLiteralExpression {
-  if (cache.hasStatementCreated(typeInfo.name)) return cache.getStatement(typeInfo.name)
+  const cachedType = typeInfo.typeName ? cache.getType(typeInfo.typeName) : cache.getType(typeInfo.name)
+
+  if (cachedType?.statement) {
+    cachedType.statementAccesses++
+    if (cachedType.statementAccesses > 1) {
+      return cachedType.statement
+    }
+  }
+
   const currentLevel = counter
   console.log(new Array(counter).map(() => '  ').join(), 'Calling createMetadataForTypeInfo for type', typeInfo.name)
   counter++
@@ -83,26 +91,30 @@ function createMetadataForTypeInfo(
   ]
   if (typeModule) properties.push(f.createPropertyAssignment('importPath', f.createStringLiteral(typeModule)))
   if (typeInfo.typeName) {
-    properties.push(
-      f.createPropertyAssignment('typeName', f.createStringLiteral(typeInfo.typeName)),
-      f.createPropertyAssignment(
-        'type',
-        typeModule
-          ? /* eslint-disable indent */
-            f.createPropertyAccessExpression(
-              f.createCallExpression(f.createIdentifier('require'), undefined, [
-                f.createStringLiteral(typeModule || ''),
-              ]),
-              f.createIdentifier(typeInfo.typeName)
-            )
-          : f.createCallExpression(filterInterfaceFunctionName, undefined, [f.createStringLiteral(typeInfo.typeName)])
-        /* eslint-enable indent */
+    properties.push(f.createPropertyAssignment('typeName', f.createStringLiteral(typeInfo.typeName)))
+    if (typeModule) {
+      properties.push(
+        f.createPropertyAssignment(
+          'type',
+          f.createPropertyAccessExpression(
+            f.createCallExpression(f.createIdentifier('require'), undefined, [f.createStringLiteral(typeModule || '')]),
+            f.createIdentifier(typeInfo.typeName)
+          )
+        )
       )
-    )
+    } else {
+      console.log('Creating function call', filterInterfaceFunctionName)
+      properties.push(
+        f.createPropertyAssignment(
+          'type',
+          f.createCallExpression(filterInterfaceFunctionName, undefined, [f.createStringLiteral(typeInfo.typeName)])
+        )
+      )
+    }
   }
   counter = currentLevel
   const result = f.createObjectLiteralExpression(properties, true)
-  cache.saveStatement(typeInfo.name, result)
+  cache.saveStatement(typeInfo, result)
   return result
 }
 
@@ -110,6 +122,7 @@ export function createFilterInterfaceFunction(
   f: ts.NodeFactory,
   filterInterfaceFunctionName: ts.Identifier
 ): ts.FunctionDeclaration {
+  console.log('Creating function called', filterInterfaceFunctionName)
   return f.createFunctionDeclaration(
     undefined,
     undefined,

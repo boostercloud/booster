@@ -3,7 +3,7 @@
 import { ClassDeclaration, ClassInstancePropertyTypes, createWrappedNode, Node, SyntaxKind, Type } from 'ts-morph'
 import * as ts from 'typescript'
 import { ClassMetadata, TypeGroup, TypeMetadata } from './metadata-types'
-import { TypeCache } from './type-information'
+import { TypeCache } from './type-cache'
 
 export function getClassInfo(
   classNode: ts.ClassDeclaration & ts.Node,
