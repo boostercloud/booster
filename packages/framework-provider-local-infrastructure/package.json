@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-local-infrastructure",
-  "version": "0.27.1",
+  "version": "0.27.2",
   "description": "Handle the Booster running process of the local runtime",
   "keywords": [
     "framework-provider-local-infrastructure"
@@ -20,8 +20,8 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@boostercloud/framework-provider-local": "^0.27.1",
-    "@boostercloud/framework-types": "^0.27.1",
+    "@boostercloud/framework-provider-local": "^0.27.2",
+    "@boostercloud/framework-types": "^0.27.2",
     "cors": "2.8.5",
     "express": "^4.17.1",
     "nedb": "^1.8.0",
@@ -47,8 +47,8 @@
     "@types/nedb": "^1.8.11",
     "@types/node-schedule": "^1.3.2",
     "@types/sinon-express-mock": "^1.3.7",
-    "chai-as-promised": "7.1.1",
     "chai": "4.2.0",
+    "chai-as-promised": "7.1.1",
     "faker": "5.1.0",
     "mocha": "8.4.0",
     "sinon": "9.2.3",
