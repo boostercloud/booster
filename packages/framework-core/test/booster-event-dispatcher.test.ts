@@ -215,10 +215,10 @@ describe('BoosterEventDispatcher', () => {
       it('calls the register handler for all the published events', async () => {
         let capturedRegister1: Register = {} as any
         let capturedRegister2: Register = {} as any
-        const fakeHandler1 = fake((event: EventInterface, register: Register) => {
+        const fakeHandler1 = fake(async (event: EventInterface, register: Register) => {
           capturedRegister1 = register
         })
-        const fakeHandler2 = fake((event: EventInterface, register: Register) => {
+        const fakeHandler2 = fake(async (event: EventInterface, register: Register) => {
           capturedRegister2 = register
         })
         config.eventHandlers[SomeEvent.name] = [{ handle: fakeHandler1 }, { handle: fakeHandler2 }]
