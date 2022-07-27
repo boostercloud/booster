@@ -71,7 +71,7 @@ function createMetadataForTypeInfo(
       return cachedType.statement
     }
   }
-
+  let shouldCache = true
   const currentLevel = counter
   console.log(new Array(counter).map(() => '  ').join(), 'Calling createMetadataForTypeInfo for type', typeInfo.name)
   counter++
@@ -93,6 +93,8 @@ function createMetadataForTypeInfo(
   if (typeInfo.typeName) {
     properties.push(f.createPropertyAssignment('typeName', f.createStringLiteral(typeInfo.typeName)))
     if (typeModule) {
+      shouldCache = false // We don't cache types that use imports because it could happen that the cached reference uses a path that is not reachable from the current file
+      console.log('Creating import', typeModule)
       properties.push(
         f.createPropertyAssignment(
           'type',
@@ -103,7 +105,6 @@ function createMetadataForTypeInfo(
         )
       )
     } else {
-      console.log('Creating function call', filterInterfaceFunctionName)
       properties.push(
         f.createPropertyAssignment(
           'type',
@@ -114,7 +115,9 @@ function createMetadataForTypeInfo(
   }
   counter = currentLevel
   const result = f.createObjectLiteralExpression(properties, true)
-  cache.saveStatement(typeInfo, result)
+  if (shouldCache) {
+    cache.saveStatement(typeInfo, result)
+  }
   return result
 }
 

@@ -61,7 +61,6 @@ const transformer: (program: ts.Program) => ts.TransformerFactory<ts.SourceFile>
         ...modifiedSourceFile.statements,
         filterInterfaceFunction,
       ])
-      fs.writeFileSync(result.fileName + '.testing', result.getFullText())
       return result
     }
   }
