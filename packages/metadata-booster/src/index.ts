@@ -1,17 +1,15 @@
 import * as ts from 'typescript'
 import { getClassInfo } from './metadata-extractors'
-import { createClassMetadataDecorator, createFilterInterfaceFunction } from './statement-creators'
+import { createClassMetadataDecorator, createTypeEvalFunction } from './statement-creators'
 import { TypeCache } from './type-cache'
-import * as fs from 'fs'
 
 const transformer: (program: ts.Program) => ts.TransformerFactory<ts.SourceFile> = (program) => {
   const checker = program.getTypeChecker()
   const transformerFactory: ts.TransformerFactory<ts.SourceFile> = (context) => {
     const typeCache = TypeCache.getInstance()
     const f = context.factory
-    const filterInterfaceFunctionName = f.createIdentifier('filterInterface')
+    const typeEvalFunctionName = f.createIdentifier('filterInterface')
     return (sourceFile) => {
-      console.log(`\n\n\n######    VISITING FILE ${sourceFile.fileName}     #####`)
       const importedTypes: Record<string, string> = {}
       function visitor(node: ts.Node): ts.VisitResult<ts.Node> {
         if (ts.isImportDeclaration(node)) {
@@ -36,7 +34,7 @@ const transformer: (program: ts.Program) => ts.TransformerFactory<ts.SourceFile>
             const metadataDecorator = createClassMetadataDecorator(
               f,
               classInfo,
-              filterInterfaceFunctionName,
+              typeEvalFunctionName,
               importedTypes,
               typeCache
             )
@@ -55,11 +53,11 @@ const transformer: (program: ts.Program) => ts.TransformerFactory<ts.SourceFile>
         return ts.visitEachChild(node, visitor, context)
       }
       const modifiedSourceFile = ts.visitNode(sourceFile, visitor)
-      const filterInterfaceFunction = createFilterInterfaceFunction(f, filterInterfaceFunctionName)
+      const typeEvalFunction = createTypeEvalFunction(f, typeEvalFunctionName)
       const result = f.updateSourceFile(modifiedSourceFile, [
         f.createImportDeclaration(undefined, undefined, undefined, f.createStringLiteral('reflect-metadata')),
         ...modifiedSourceFile.statements,
-        filterInterfaceFunction,
+        typeEvalFunction,
       ])
       return result
     }

@@ -5,7 +5,7 @@ import { TypeCache } from './type-cache'
 export function createClassMetadataDecorator(
   f: ts.NodeFactory,
   classInfo: ClassMetadata,
-  filterInterfaceFunctionName: ts.Identifier,
+  typeEvalFunctionName: ts.Identifier,
   typesByModule: Record<string, string>,
   cache: TypeCache
 ): ts.Decorator {
@@ -18,11 +18,11 @@ export function createClassMetadataDecorator(
           f.createPropertyAssignment('type', f.createIdentifier(classInfo.name)),
           f.createPropertyAssignment(
             'fields',
-            createPropertiesMetadata(f, classInfo.fields, filterInterfaceFunctionName, typesByModule, cache)
+            createPropertiesMetadata(f, classInfo.fields, typeEvalFunctionName, typesByModule, cache)
           ),
           f.createPropertyAssignment(
             'methods',
-            createPropertiesMetadata(f, classInfo.methods, filterInterfaceFunctionName, typesByModule, cache)
+            createPropertiesMetadata(f, classInfo.methods, typeEvalFunctionName, typesByModule, cache)
           ),
         ],
         true
@@ -34,7 +34,7 @@ export function createClassMetadataDecorator(
 function createPropertiesMetadata(
   f: ts.NodeFactory,
   properties: Array<PropertyMetadata>,
-  filterInterfaceFunctionName: ts.Identifier,
+  typeEvalFunctionName: ts.Identifier,
   typesByModule: Record<string, string>,
   cache: TypeCache
 ): ts.ArrayLiteralExpression {
@@ -45,7 +45,7 @@ function createPropertiesMetadata(
           f.createPropertyAssignment('name', f.createStringLiteral(prop.name)),
           f.createPropertyAssignment(
             'typeInfo',
-            createMetadataForTypeInfo(f, prop.typeInfo, filterInterfaceFunctionName, typesByModule, cache)
+            createMetadataForTypeInfo(f, prop.typeInfo, typeEvalFunctionName, typesByModule, cache)
           ),
         ],
         true
@@ -54,12 +54,10 @@ function createPropertiesMetadata(
   )
 }
 
-let counter = 0
-
 function createMetadataForTypeInfo(
   f: ts.NodeFactory,
   typeInfo: TypeMetadata,
-  filterInterfaceFunctionName: ts.Identifier,
+  typeEvalFunctionName: ts.Identifier,
   typesByModule: Record<string, string>,
   cache: TypeCache
 ): ts.ObjectLiteralExpression {
@@ -72,9 +70,6 @@ function createMetadataForTypeInfo(
     }
   }
   let shouldCache = true
-  const currentLevel = counter
-  console.log(new Array(counter).map(() => '  ').join(), 'Calling createMetadataForTypeInfo for type', typeInfo.name)
-  counter++
   const typeModule = typeInfo.typeName && typesByModule[typeInfo.typeName]
   const properties: ts.ObjectLiteralElementLike[] = [
     f.createPropertyAssignment('name', f.createStringLiteral(typeInfo.name)),
@@ -84,7 +79,7 @@ function createMetadataForTypeInfo(
       'parameters',
       f.createArrayLiteralExpression(
         typeInfo.parameters.map((param) =>
-          createMetadataForTypeInfo(f, param, filterInterfaceFunctionName, typesByModule, cache)
+          createMetadataForTypeInfo(f, param, typeEvalFunctionName, typesByModule, cache)
         )
       )
     ),
@@ -94,7 +89,6 @@ function createMetadataForTypeInfo(
     properties.push(f.createPropertyAssignment('typeName', f.createStringLiteral(typeInfo.typeName)))
     if (typeModule) {
       shouldCache = false // We don't cache types that use imports because it could happen that the cached reference uses a path that is not reachable from the current file
-      console.log('Creating import', typeModule)
       properties.push(
         f.createPropertyAssignment(
           'type',
@@ -108,12 +102,11 @@ function createMetadataForTypeInfo(
       properties.push(
         f.createPropertyAssignment(
           'type',
-          f.createCallExpression(filterInterfaceFunctionName, undefined, [f.createStringLiteral(typeInfo.typeName)])
+          f.createCallExpression(typeEvalFunctionName, undefined, [f.createStringLiteral(typeInfo.typeName)])
         )
       )
     }
   }
-  counter = currentLevel
   const result = f.createObjectLiteralExpression(properties, true)
   if (shouldCache) {
     cache.saveStatement(typeInfo, result)
@@ -121,16 +114,12 @@ function createMetadataForTypeInfo(
   return result
 }
 
-export function createFilterInterfaceFunction(
-  f: ts.NodeFactory,
-  filterInterfaceFunctionName: ts.Identifier
-): ts.FunctionDeclaration {
-  console.log('Creating function called', filterInterfaceFunctionName)
+export function createTypeEvalFunction(f: ts.NodeFactory, typeEvalFunctionName: ts.Identifier): ts.FunctionDeclaration {
   return f.createFunctionDeclaration(
     undefined,
     undefined,
     undefined,
-    filterInterfaceFunctionName,
+    typeEvalFunctionName,
     undefined,
     [f.createParameterDeclaration(undefined, undefined, undefined, 'typeName', undefined, undefined, undefined)],
     undefined,

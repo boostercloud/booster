@@ -13,7 +13,6 @@ export class TypeCache {
 
   public static getInstance(): TypeCache {
     if (!this.cache) {
-      console.log('Creating new type cache')
       this.cache = new TypeCache({})
     }
     return this.cache
@@ -29,7 +28,6 @@ export class TypeCache {
 
   public saveType({ typeInfo, forceSave }: SaveTypeOpts): void {
     const { name, typeName } = typeInfo
-    console.log(`Saving type ${name}`)
     if (!forceSave && this.getType(name)) {
       throw new Error(`Metadata generation error: Type ${name} was already cached`)
     }

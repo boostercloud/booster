@@ -47,7 +47,6 @@ function getTypeInfo(type: Type, cache: TypeCache, node?: Node): TypeMetadata {
   const typeName = type.getText(node) // node is passed for better name printing: https://github.com/dsherret/ts-morph/issues/907
   const cachedType = cache.getType(typeName)
   if (cachedType) {
-    console.log(`Type ${typeName} was cached, returning`)
     return cachedType
   }
   const typeGroupTuples: [(t: Type) => boolean, TypeGroup][] = [
