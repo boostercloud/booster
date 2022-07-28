@@ -333,8 +333,8 @@ describe('BoosterReadModelReader', () => {
 
           const currentUser = envelope.currentUser
           expect(beforeFnSpy).to.have.been.calledOnceWithExactly(envelope, currentUser)
-          const expectedReturn = Promise.resolve({ ...envelope, filters: { id: { eq: envelope.filters.id } } })
-          expect(beforeFnSpy).to.have.returned(expectedReturn)
+          const expected = { ...envelope, filters: { id: { eq: envelope.filters.id } } }
+          await expect(beforeFnSpy.firstCall.returnValue).to.eventually.deep.equal(expected)
         })
       })
 
@@ -365,17 +365,18 @@ describe('BoosterReadModelReader', () => {
           await readModelReader.search(envelope)
 
           expect(beforeFnSpy).to.have.been.calledOnceWithExactly(envelope, envelope.currentUser)
-          const expectedReturn = Promise.resolve({ ...envelope, filters: { id: { eq: envelope.filters.id } } })
-          expect(beforeFnSpy).to.have.returned(expectedReturn)
+          const expectedReturn = { ...envelope, filters: { id: { eq: envelope.filters.id } } }
+          const returnedEnvelopePromise = beforeFnSpy.firstCall.returnValue
+          await expect(returnedEnvelopePromise).to.eventually.deep.equal(expectedReturn)
 
-          const returnedEnvelope = await beforeFnSpy.returnValues[0]
+          const returnedEnvelope = await returnedEnvelopePromise
           expect(beforeFnV2Spy).to.have.been.calledAfter(beforeFnSpy)
           expect(beforeFnV2Spy).to.have.been.calledOnceWithExactly(returnedEnvelope, returnedEnvelope.currentUser)
-          const expectedReturnEnvelope = Promise.resolve({
+          const expectedReturnEnvelope = {
             ...returnedEnvelope,
             filters: { id: { eq: returnedEnvelope.currentUser?.username } },
-          })
-          expect(beforeFnV2Spy).to.have.returned(expectedReturnEnvelope)
+          }
+          await expect(beforeFnV2Spy.firstCall.returnValue).to.eventually.deep.equal(expectedReturnEnvelope)
         })
       })
     })
