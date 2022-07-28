@@ -12,7 +12,7 @@ describe('JwksUriTokenVerifier', () => {
 
   it('builds a key resolver and calls `verifyJWT`', async () => {
     const fakeClient = { fakeClient: true }
-    replace(utilities, 'getJwksClient', fake.returns(fakeClient))
+    replace(utilities, 'getJwksClient', fake.returns(fakeClient) as any)
     const fakeGetKey = { fakeGetKey: true }
     replace(utilities, 'getKeyWithClient', fake.returns(fakeGetKey))
     const fakeDecodedToken = { header: { kid: '123' }, payload: { sub: '123' } }
@@ -28,7 +28,7 @@ describe('JwksUriTokenVerifier', () => {
         return Promise.resolve(fakeDecodedToken)
       }
     )
-    replace(utilities, 'verifyJWT', fakeVerifyJWT)
+    replace(utilities, 'verifyJWT', fakeVerifyJWT as any)
 
     const verifier = new JwksUriTokenVerifier('issuer', 'https://example.com/jwks')
 

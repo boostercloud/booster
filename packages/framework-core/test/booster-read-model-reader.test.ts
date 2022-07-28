@@ -148,7 +148,7 @@ describe('BoosterReadModelReader', () => {
         const fakeValidateByIdRequest = fake()
         replace(readModelReader as any, 'validateByIdRequest', fakeValidateByIdRequest)
         const fakeSearcher = { findById: fake() }
-        replace(Booster, 'readModel', fake.returns(fakeSearcher))
+        replace(Booster, 'readModel', fake.returns(fakeSearcher as any))
 
         const currentUser = {
           id: 'a user',
@@ -288,7 +288,7 @@ describe('BoosterReadModelReader', () => {
 
       it('calls the provider search function and returns its results', async () => {
         const expectedReadModels = [new TestReadModel(), new TestReadModel()]
-        const providerSearcherFunctionFake = fake.returns(expectedReadModels)
+        const providerSearcherFunctionFake = fake.returns(expectedReadModels as any)
         replace(config.provider.readModels, 'search', providerSearcherFunctionFake)
 
         replace(Booster, 'config', config) // Needed because the function `Booster.readModel` references `this.config` from `searchFunction`
@@ -321,7 +321,7 @@ describe('BoosterReadModelReader', () => {
           }
 
           replace(Booster, 'config', config) // Needed because the function `Booster.readModel` references `this.config` from `searchFunction`
-          replace(config.provider.readModels, 'search', providerSearcherFunctionFake)
+          replace(config.provider.readModels, 'search', providerSearcherFunctionFake as any)
         })
 
         afterEach(() => {
@@ -354,7 +354,7 @@ describe('BoosterReadModelReader', () => {
 
           replace(Booster, 'config', config) // Needed because the function `Booster.readModel` references `this.config` from `searchFunction`
 
-          replace(config.provider.readModels, 'search', providerSearcherFunctionFake)
+          replace(config.provider.readModels, 'search', providerSearcherFunctionFake as any)
         })
 
         afterEach(() => {

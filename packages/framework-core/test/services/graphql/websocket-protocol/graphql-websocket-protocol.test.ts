@@ -187,7 +187,7 @@ describe('the `GraphQLWebsocketHandler`', () => {
             }
 
             const fakeVerifier = fake.returns(expectedUser)
-            replace(boosterTokenVerifier, 'verify', fakeVerifier)
+            replace(boosterTokenVerifier, 'verify', fakeVerifier as any)
 
             resultPromise = websocketHandler.handle(envelope)
             await resultPromise

@@ -189,7 +189,7 @@ describe('ReadModelStore', () => {
 
         replace(config.provider.readModels, 'store', fake())
         const readModelStore = new ReadModelStore(config)
-        replace(readModelStore, 'fetchReadModel', fake.returns(null))
+        replace(readModelStore, 'fetchReadModel', fake.returns(null) as any)
 
         await expect(readModelStore.project(entitySnapshotWithNoProjections)).to.eventually.be.fulfilled
 
@@ -236,7 +236,7 @@ describe('ReadModelStore', () => {
       it('creates new instances of the read models', async () => {
         replace(config.provider.readModels, 'store', fake())
         const readModelStore = new ReadModelStore(config)
-        replace(readModelStore, 'fetchReadModel', fake.returns(null))
+        replace(readModelStore, 'fetchReadModel', fake.returns(null) as any)
         spy(SomeReadModel, 'someObserver')
         spy(AnotherReadModel, 'anotherObserver')
         const entityValue: any = eventEnvelopeFor(AnImportantEntity.name).value
@@ -307,7 +307,7 @@ describe('ReadModelStore', () => {
                 boosterMetadata: { version: anotherReadModelStoredVersion },
               }
             }
-          })
+          }) as any
         )
         spy(SomeReadModel, 'someObserver')
         spy(AnotherReadModel, 'anotherObserver')
@@ -382,7 +382,7 @@ describe('ReadModelStore', () => {
     context('when the projection calls an instance method in the read model', () => {
       it('is executed without failing', async () => {
         const readModelStore = new ReadModelStore(config)
-        replace(config.provider.readModels, 'fetch', fake.returns([{ id: 'joinColumnID', count: 31415 }]))
+        replace(config.provider.readModels, 'fetch', fake.returns([{ id: 'joinColumnID', count: 31415 }] as any))
         const getIdFake = fake()
         replace(SomeReadModel.prototype, 'getId', getIdFake)
         await readModelStore.project(eventEnvelopeFor(AnEntity.name))
@@ -440,7 +440,7 @@ describe('ReadModelStore', () => {
               }
             }
             return null
-          })
+          }) as any
         )
         spy(SomeReadModel, 'someObserver')
         spy(SomeReadModel, 'someObserverArray')
@@ -526,7 +526,7 @@ describe('ReadModelStore', () => {
         const someReadModelStoreCalls = fakeStore.getCalls().filter((call) => call.args[1] === SomeReadModel.name)
         expect(someReadModelStoreCalls).to.be.have.length(expectedJoinColumnIDTries + expectedAnotherJoinColumnIDTries)
         someReadModelStoreCalls
-          .filter((call) => call.args[3].id == 'joinColumnID')
+          .filter((call) => call.args[2].id == 'joinColumnID')
           .forEach((call) => {
             expect(call.args).to.be.deep.equal([
               config,
@@ -541,7 +541,7 @@ describe('ReadModelStore', () => {
             ])
           })
         someReadModelStoreCalls
-          .filter((call) => call.args[3].id == 'anotherJoinColumnID')
+          .filter((call) => call.args[2].id == 'anotherJoinColumnID')
           .forEach((call) => {
             expect(call.args).to.be.deep.equal([
               config,
@@ -594,7 +594,7 @@ describe('ReadModelStore', () => {
   describe('the `fetchReadModel` method', () => {
     context('with no sequenceMetadata', () => {
       it("returns `undefined` when the read model doesn't exist", async () => {
-        replace(config.provider.readModels, 'fetch', fake.returns(undefined))
+        replace(config.provider.readModels, 'fetch', fake.returns(undefined) as any)
         const readModelStore = new ReadModelStore(config)
 
         const result = await readModelStore.fetchReadModel(SomeReadModel.name, 'joinColumnID')
@@ -609,7 +609,7 @@ describe('ReadModelStore', () => {
       })
 
       it("returns `undefined` when the read model doesn't exist and provider returns [undefined]", async () => {
-        replace(config.provider.readModels, 'fetch', fake.returns([undefined]))
+        replace(config.provider.readModels, 'fetch', fake.returns([undefined]) as any)
         const readModelStore = new ReadModelStore(config)
 
         const result = await readModelStore.fetchReadModel(SomeReadModel.name, 'joinColumnID')
@@ -624,7 +624,7 @@ describe('ReadModelStore', () => {
       })
 
       it('returns an instance of the current read model value when it exists', async () => {
-        replace(config.provider.readModels, 'fetch', fake.returns([{ id: 'joinColumnID' }]))
+        replace(config.provider.readModels, 'fetch', fake.returns([{ id: 'joinColumnID' }]) as any)
         const readModelStore = new ReadModelStore(config)
 
         const result = await readModelStore.fetchReadModel(SomeReadModel.name, 'joinColumnID')
@@ -641,7 +641,7 @@ describe('ReadModelStore', () => {
 
     context('with sequenceMetadata', () => {
       it("calls the provider's fetch method passing the sequenceMetadata object", async () => {
-        replace(config.provider.readModels, 'fetch', fake.returns({ id: 'joinColumnID' }))
+        replace(config.provider.readModels, 'fetch', fake.returns({ id: 'joinColumnID' }) as any)
         const readModelStore = new ReadModelStore(config)
 
         await readModelStore.fetchReadModel(SomeReadModel.name, 'joinColumnID', {

@@ -226,7 +226,7 @@ describe('the `Booster` class', () => {
       config.provider = {} as ProviderLibrary
 
       it('the `entity` function calls to the `fetchEntitySnapshot` method in the EventStore', async () => {
-        replace(EventStore.prototype, 'fetchEntitySnapshot', fake.returns({ value: { id: '42' } }))
+        replace(EventStore.prototype, 'fetchEntitySnapshot', fake.returns({ value: { id: '42' } } as any))
 
         class SomeEntity {
           public constructor(readonly id: UUID) {}
@@ -238,7 +238,7 @@ describe('the `Booster` class', () => {
       })
 
       it('the entity function has an instance method', async () => {
-        replace(EventStore.prototype, 'fetchEntitySnapshot', fake.returns({ id: '42' }))
+        replace(EventStore.prototype, 'fetchEntitySnapshot', fake.returns({ id: '42' } as any))
 
         class SomeEntity {
           public constructor(readonly id: UUID) {}

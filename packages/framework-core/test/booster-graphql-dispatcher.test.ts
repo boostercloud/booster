@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { fake, match, replace, restore, spy } from 'sinon'
 import { random, lorem, internet } from 'faker'
@@ -12,7 +13,7 @@ import { BoosterGraphQLDispatcher } from '../src/booster-graphql-dispatcher'
 import * as gqlParser from 'graphql/language/parser'
 import * as gqlValidator from 'graphql/validation/validate'
 import * as gqlExecutor from 'graphql/execution/execute'
-import * as gqlSubscriptor from 'graphql/subscription/subscribe'
+import * as gqlSubscriptor from 'graphql/subscription'
 import { GraphQLResolverContext } from '../src/services/graphql/common'
 import { NoopReadModelPubSub } from '../src/services/pub-sub/noop-read-model-pub-sub'
 import { GraphQLWebsocketHandler } from '../src/services/graphql/websocket-protocol/graphql-websocket-protocol'
@@ -44,7 +45,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
         const parseSpy = spy(gqlParser.parse)
         replace(gqlParser, 'parse', parseSpy)
         replace(gqlValidator, 'validate', fake.returns([]))
-        const executeFake = fake.returns(graphQLResult)
+        const executeFake = fake.returns(graphQLResult as any)
         replace(gqlExecutor, 'execute', executeFake)
 
         await dispatcher.dispatch({})
@@ -70,7 +71,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
         const parseSpy = spy(gqlParser.parse)
         replace(gqlParser, 'parse', parseSpy)
         replace(gqlValidator, 'validate', fake.returns([]))
-        const executeFake = fake.returns(graphQLResult)
+        const executeFake = fake.returns(graphQLResult as any)
         replace(gqlExecutor, 'execute', executeFake)
 
         await dispatcher.dispatch({})
@@ -278,7 +279,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
           }
           const config = mockConfigForGraphQLEnvelope(graphQLEnvelope)
           const dispatcher = new BoosterGraphQLDispatcher(config)
-          const executeFake = fake.returns(graphQLResult)
+          const executeFake = fake.returns(graphQLResult as any)
           const parseSpy = spy(gqlParser.parse)
           replace(gqlParser, 'parse', parseSpy)
           replace(gqlValidator, 'validate', fake.returns([]))
@@ -327,7 +328,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
           const executeFake = fake((params: any) => {
             // Simulates that the handler has added the `responseHeaders`
             params.contextValue.responseHeaders['Test-Header'] = 'Test-Value'
-            return graphQLResult
+            return graphQLResult as any
           })
           replace(gqlExecutor, 'execute', executeFake)
 
@@ -379,13 +380,13 @@ describe('the `BoosterGraphQLDispatcher`', () => {
 
           const config = mockConfigForGraphQLEnvelope(graphQLEnvelope)
           const dispatcher = new BoosterGraphQLDispatcher(config)
-          const executeFake = fake.returns(graphQLResult)
+          const executeFake = fake.returns(graphQLResult as any)
           const parseSpy = spy(gqlParser.parse)
           replace(gqlParser, 'parse', parseSpy)
           replace(gqlValidator, 'validate', fake.returns([]))
           replace(gqlExecutor, 'execute', executeFake)
 
-          const fakeVerifier = fake.returns(currentUser)
+          const fakeVerifier = fake.returns(currentUser as any)
           replace(BoosterTokenVerifier.prototype, 'verify', fakeVerifier)
           resolverContext.user = currentUser
 
@@ -411,7 +412,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
               errors: [new GraphQLError('graphql error 1'), new GraphQLError('graphql error 2')],
             }
             replace(gqlExecutor, 'execute', fake.returns(graphQLErrorResult))
-            replace(gqlSubscriptor, 'subscribe', fake.returns(graphQLErrorResult))
+            replace(gqlSubscriptor, 'subscribe', fake.returns(graphQLErrorResult as any))
           })
 
           it('calls the provider "handleGraphQLResult" with the error with a query', async () => {

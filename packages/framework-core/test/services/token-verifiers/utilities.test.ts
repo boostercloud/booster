@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../../expect'
 import { fake, match, replace, restore } from 'sinon'
 import { getJwksClient, getKeyWithClient, verifyJWT } from '../../../src/services/token-verifiers/utilities'
@@ -93,7 +94,7 @@ describe('function `verifyJWT`', () => {
       const fakeVerify = fake((_token: unknown, _key: unknown, _options: unknown, callback: Function) =>
         callback(null, fakeDecodedToken)
       )
-      replace(jwt, 'verify', fakeVerify)
+      replace(jwt, 'verify', fakeVerify as any)
 
       await expect(verifyJWT(fakeToken, 'issuer', fakePublicKey)).to.eventually.become(fakeDecodedToken)
 
@@ -120,7 +121,7 @@ describe('function `verifyJWT`', () => {
       const fakeVerify = fake((_token: unknown, _key: unknown, _options: unknown, callback: Function) =>
         callback(fakeError)
       )
-      replace(jwt, 'verify', fakeVerify)
+      replace(jwt, 'verify', fakeVerify as any)
 
       await expect(verifyJWT(fakeToken, 'issuer', fakePublicKey)).to.eventually.be.rejectedWith(fakeError)
 
