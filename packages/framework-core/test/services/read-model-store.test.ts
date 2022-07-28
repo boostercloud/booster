@@ -535,7 +535,7 @@ describe('ReadModelStore', () => {
                 id: 'joinColumnID',
                 kind: 'some',
                 count: 123,
-                boosterMetadata: { version: 1 },
+                boosterMetadata: { version: 1, schemaVersion: 1 },
               },
               0,
             ])
@@ -550,7 +550,7 @@ describe('ReadModelStore', () => {
                 id: 'anotherJoinColumnID',
                 kind: 'some',
                 count: 123,
-                boosterMetadata: { version: 1 },
+                boosterMetadata: { version: 1, schemaVersion: 1 },
               },
               0,
             ])
