@@ -1,10 +1,13 @@
 import * as ts from 'typescript'
+import { makeModuleLogger } from './logging'
 import { TypeMetadata } from './metadata-types'
 
-type SaveTypeOpts = { typeInfo: TypeMetadata; forceSave?: boolean }
-type CacheExtras = { statement?: ts.ObjectLiteralExpression; typeAccesses: number; statementAccesses: number }
+type CachedStatement = { statement?: ts.ObjectLiteralExpression }
+type CacheExtras = { typeAccesses: number; statementAccesses: number }
+type CachedTypeInfo = TypeMetadata & CachedStatement & CacheExtras
+type SaveTypeOpts = { typeInfo: TypeMetadata & CachedStatement; forceSave?: boolean }
 
-type CachedTypeInfo = TypeMetadata & CacheExtras
+const makeLogger = makeModuleLogger(module.filename)
 
 export class TypeCache {
   private static cache: TypeCache
@@ -18,44 +21,61 @@ export class TypeCache {
     return this.cache
   }
 
-  public getType(name: string): CachedTypeInfo | undefined {
-    const cachedType = this.cacheRecord[name]
+  public getType(
+    info: Pick<TypeMetadata, 'name' | 'isNullable' | 'typeName'>,
+    skipTypeName = false
+  ): CachedTypeInfo | undefined {
+    const logger = makeLogger(this.getType.name)
+    const typeKey =
+      !skipTypeName && info.typeName ? buildKey(flipName(info as TypeMetadataWithTypeName)) : buildKey(info)
+    logger.debug('Getting type for key %s', typeKey)
+    const cachedType = this.cacheRecord[typeKey]
     if (cachedType) {
       cachedType.typeAccesses++
     }
     return cachedType
   }
 
-  public saveType({ typeInfo, forceSave }: SaveTypeOpts): void {
-    const { name, typeName } = typeInfo
-    if (!forceSave && this.getType(name)) {
-      throw new Error(`Metadata generation error: Type ${name} was already cached`)
+  public saveType({ typeInfo: info, forceSave }: SaveTypeOpts): void {
+    const typeKey = buildKey(info)
+    if (!forceSave && this.getType(info)) {
+      throw new Error(`Metadata generation error: Type ${info.name} was already cached`)
     }
-    const cachedInfo = { ...typeInfo, typeAccesses: 0, statementAccesses: 0 }
-    this.cacheRecord[name] = cachedInfo
-    if (typeName) {
-      this.cacheRecord[typeName] = cachedInfo
+    const cachedInfo = { ...info, typeAccesses: 0, statementAccesses: 0 }
+    this.cacheRecord[typeKey] = cachedInfo
+    if (info.typeName) {
+      const typeKey2 = buildKey(flipName(info as TypeMetadataWithTypeName))
+      this.cacheRecord[typeKey2] = cachedInfo
     }
   }
 
-  public getStatement({ name, typeName }: TypeMetadata): ts.ObjectLiteralExpression | undefined {
-    let cachedType
-    if (typeName) {
-      cachedType = this.getType(typeName)
-    }
-    cachedType = cachedType ?? this.getType(name)
+  public getStatement(info: TypeMetadata): ts.ObjectLiteralExpression | undefined {
+    const cachedType = this.getType(info)
     if (!cachedType) {
-      throw new Error(`Attempted get a statement that was not saved for ${name}`)
+      throw new Error(`Attempted get a statement that was not saved for ${info.name}`)
     }
     cachedType.statementAccesses++
     return cachedType.statement
   }
 
-  public saveStatement({ name, typeName }: TypeMetadata, statement: ts.ObjectLiteralExpression): void {
-    const cachedType = typeName ? this.getType(typeName) : this.getType(name)
+  public saveStatement(info: TypeMetadata, statement: ts.ObjectLiteralExpression): void {
+    const cachedType = this.getType(info)
     if (!cachedType) {
-      throw new Error(`Attempted to mark an non-existent type ${name} as created`)
+      throw new Error(`Attempted to mark an non-existent type ${info.name} as created`)
     }
-    this.cacheRecord[name] = { ...cachedType, statement }
+
+    this.saveType({ typeInfo: { ...cachedType, statement }, forceSave: true })
   }
 }
+
+const buildKey = ({ name, isNullable }: Pick<TypeMetadata, 'name' | 'isNullable'>): string =>
+  `${name}${isNullable ? '?' : ''}`
+
+type TypeMetadataWithTypeName = TypeMetadata & {
+  typeName: string
+}
+
+const flipName = (typeInfo: TypeMetadataWithTypeName): TypeMetadataWithTypeName => ({
+  ...typeInfo,
+  name: typeInfo.typeName,
+})

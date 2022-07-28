@@ -61,7 +61,7 @@ function createMetadataForTypeInfo(
   typesByModule: Record<string, string>,
   cache: TypeCache
 ): ts.ObjectLiteralExpression {
-  const cachedType = typeInfo.typeName ? cache.getType(typeInfo.typeName) : cache.getType(typeInfo.name)
+  const cachedType = cache.getType(typeInfo)
 
   if (cachedType?.statement) {
     cachedType.statementAccesses++

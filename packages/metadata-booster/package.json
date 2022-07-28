@@ -23,9 +23,12 @@
     "dist"
   ],
   "dependencies": {
+    "fp-ts": "2.12.2",
     "reflect-metadata": "0.1.13",
     "ts-morph": "15.1.0",
-    "tslib": "2.4.0"
+    "ts-pattern": "4.0.5",
+    "tslib": "2.4.0",
+    "winston": "3.8.1"
   },
   "devDependencies": {
     "@types/chai": "4.3.1",
