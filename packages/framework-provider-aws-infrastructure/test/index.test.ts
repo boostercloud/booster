@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ProviderInfrastructure } from '@boostercloud/framework-types'
 import { fake, replace, restore } from 'sinon'
 import { expect } from './expect'
@@ -86,7 +87,7 @@ describe('the `framework-provider-aws-infrastructure` package', () => {
         it('is called with rockets', async () => {
           const fakeLoadedRocket = { thisIs: 'aRocket' }
           const fakeLoadRocket = fake.returns(fakeLoadedRocket)
-          replace(RocketLoader, 'loadRocket', fakeLoadRocket)
+          replace(RocketLoader, 'loadRocket', fakeLoadRocket as any)
 
           const providerInfrastructure: ProviderInfrastructure = Infrastructure(fakePackageList)
           replace(infra, 'deploy', fake())
@@ -107,7 +108,7 @@ describe('the `framework-provider-aws-infrastructure` package', () => {
         it('is called with rockets', async () => {
           const fakeLoadedRocket = { thisIs: 'aRocket' }
           const fakeLoadRocket = fake.returns(fakeLoadedRocket)
-          replace(RocketLoader, 'loadRocket', fakeLoadRocket)
+          replace(RocketLoader, 'loadRocket', fakeLoadRocket as any)
 
           const providerInfrastructure: ProviderInfrastructure = Infrastructure(fakePackageList)
           replace(infra, 'nuke', fake())
