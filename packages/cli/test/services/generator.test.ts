@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as path from 'path'
 import * as fs from 'fs-extra'
 import * as Mustache from 'mustache'
@@ -9,8 +10,8 @@ import { expect } from '../expect'
 
 describe('generate service', (): void => {
   beforeEach(() => {
-    replace(fs, 'outputFile', fake.resolves({}))
-    replace(projectChecker, 'checkResourceExists', fake.resolves({}))
+    replace(fs, 'outputFile', fake.resolves({}) as any)
+    replace(projectChecker, 'checkResourceExists', fake())
   })
 
   afterEach(() => {

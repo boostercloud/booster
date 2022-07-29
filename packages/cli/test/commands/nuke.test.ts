@@ -131,8 +131,8 @@ describe('nuke', () => {
     beforeEach(() => {
       const config = new BoosterConfig('fake_environment')
       replace(configService, 'compileProjectAndLoadConfig', fake.resolves(config))
-      replace(providerService, 'nukeCloudProviderResources', fake.resolves({}))
-      replace(projectChecker, 'checkCurrentDirBoosterVersion', fake.resolves({}))
+      replace(providerService, 'nukeCloudProviderResources', fake())
+      replace(projectChecker, 'checkCurrentDirBoosterVersion', fake())
       replace(oraLogger, 'fail', fake.resolves({}))
       replace(oraLogger, 'info', fake.resolves({}))
       replace(oraLogger, 'start', fake.resolves({}))

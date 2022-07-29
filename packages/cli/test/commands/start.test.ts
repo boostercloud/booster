@@ -1,6 +1,6 @@
 import { expect } from '../expect'
 import { restore, fake, replace } from 'sinon'
-import rewire = require('rewire')
+const rewire = require('rewire')
 import { ProviderLibrary, BoosterConfig } from '@boostercloud/framework-types'
 import * as Start from '../../src/commands/start'
 import * as providerService from '../../src/services/provider-service'
@@ -56,8 +56,8 @@ describe('start', () => {
     beforeEach(() => {
       const config = new BoosterConfig('fake_environment')
       replace(configService, 'compileProjectAndLoadConfig', fake.resolves(config))
-      replace(providerService, 'startProvider', fake.resolves({}))
-      replace(projectChecker, 'checkCurrentDirBoosterVersion', fake.resolves({}))
+      replace(providerService, 'startProvider', fake())
+      replace(projectChecker, 'checkCurrentDirBoosterVersion', fake())
       replace(oraLogger, 'fail', fake.resolves({}))
       replace(oraLogger, 'info', fake.resolves({}))
       replace(oraLogger, 'start', fake.resolves({}))

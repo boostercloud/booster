@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { fake, replace, restore, SinonSpy, SinonStub, stub } from 'sinon'
 import * as projectChecker from '../../src/services/project-checker'
 import { BoosterConfig } from '@boostercloud/framework-types'
@@ -22,7 +23,7 @@ describe('configService', () => {
 
   describe('compileProject', () => {
     beforeEach(() => {
-      replace(childProcessPromise, 'exec', fake.resolves({}))
+      replace(childProcessPromise, 'exec', fake.resolves({}) as any)
     })
 
     it('runs the npm command', async () => {
@@ -33,7 +34,7 @@ describe('configService', () => {
 
   describe('cleanProject', () => {
     beforeEach(() => {
-      replace(childProcessPromise, 'exec', fake.resolves({}))
+      replace(childProcessPromise, 'exec', fake.resolves({}) as any)
     })
 
     it('runs the npm command', async () => {

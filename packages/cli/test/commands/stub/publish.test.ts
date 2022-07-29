@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { IConfig } from '@oclif/config'
 import * as fs from 'fs-extra'
 import { join } from 'path'
@@ -7,7 +8,7 @@ import { expect } from '../../expect'
 import Publish from '../../../src/commands/stub/publish'
 import Prompter from '../../../src/services/user-prompt'
 import { resourceTemplatesPath } from '../../../src/services/stub-publisher'
-import inquirer = require('inquirer')
+const inquirer = require('inquirer')
 
 describe('stub', async () => {
   describe('publish', async () => {
@@ -54,13 +55,13 @@ describe('stub', async () => {
       fakeReadFileSync = fake()
 
       stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
-      replace(ProjectChecker, 'checkCurrentDirBoosterVersion', fake.resolves({}))
+      replace(ProjectChecker, 'checkCurrentDirBoosterVersion', fake())
 
-      replace(fs, 'outputFile', fake.resolves({}))
+      replace(fs, 'outputFile', fake.resolves({}) as any)
       replace(fs, 'mkdirSync', fakeMkdirSync)
       replace(fs, 'writeFileSync', fakeWriteFileSync)
       replace(fs, 'readFileSync', fakeReadFileSync)
-      replace(fs, 'readdirSync', fake.returns(directoryFileMocks))
+      replace(fs, 'readdirSync', fake.returns(directoryFileMocks) as any)
     })
 
     afterEach(() => {

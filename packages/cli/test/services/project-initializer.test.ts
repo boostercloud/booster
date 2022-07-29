@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as fs from 'fs-extra'
 import * as path from 'path'
 import * as childProcessPromise from 'child-process-promise'
@@ -13,9 +14,9 @@ import { expect } from '../expect'
 
 describe('project initializer', (): void => {
   beforeEach(() => {
-    replace(fs, 'mkdirs', fake.resolves({}))
-    replace(fs, 'outputFile', fake.resolves({}))
-    replace(childProcessPromise, 'exec', fake.resolves({}))
+    replace(fs, 'mkdirs', fake.resolves({}) as any)
+    replace(fs, 'outputFile', fake.resolves({}) as any)
+    replace(childProcessPromise, 'exec', fake.resolves({}) as any)
   })
 
   afterEach(() => {

@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as ProjectChecker from '../../../src/services/project-checker'
 import { restore, replace, fake, stub } from 'sinon'
 import Event from '../../../src/commands/new/event'
-import Mustache = require('mustache')
+import * as Mustache from 'mustache'
 import * as fs from 'fs-extra'
 import { IConfig } from '@oclif/config'
 import { expect } from '../../expect'
@@ -33,8 +34,8 @@ describe('new', (): void => {
 
     beforeEach(() => {
       stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
-      replace(fs, 'outputFile', fake.resolves({}))
-      replace(ProjectChecker, 'checkCurrentDirBoosterVersion', fake.resolves({}))
+      replace(fs, 'outputFile', fake.resolves({}) as any)
+      replace(ProjectChecker, 'checkCurrentDirBoosterVersion', fake())
     })
 
     afterEach(() => {

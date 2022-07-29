@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { restore, stub, fake, SinonSpy, replace } from 'sinon'
 import { join } from 'path'
 import * as fs from 'fs-extra'
@@ -231,7 +232,7 @@ describe('stub publisher', () => {
 
   describe('publishStubFiles', () => {
     beforeEach(() => {
-      replace(fs, 'readdirSync', fake.returns(directoryFileMocks))
+      replace(fs, 'readdirSync', fake.returns(directoryFileMocks) as any)
     })
 
     it('copies template files', () => {
@@ -275,7 +276,7 @@ describe('stub publisher', () => {
       const fakeWriteFileSync: SinonSpy = fake()
 
       replace(fs, 'writeFileSync', fakeWriteFileSync)
-      replace(fs, 'readFileSync', fake.returns(fakeContent))
+      replace(fs, 'readFileSync', fake.returns(fakeContent) as any)
 
       copyStubFile(from, to)
 

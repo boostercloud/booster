@@ -111,6 +111,9 @@ class LowerCliVersionError extends Error {
 }
 
 async function compareVersionsAndDisplayMessages(cliVersion: string, projectVersion: string): Promise<void> {
+  // If were running tests, the version is *. Also, its a good escape hatch in case the user uses other versioning
+  if (cliVersion === '*' || projectVersion === '*') return
+
   const cliSemVersion = new Semver(cliVersion)
   const projectSemVersion = new Semver(projectVersion)
   if (cliSemVersion.equals(projectSemVersion)) {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as childProcessPromise from 'child-process-promise'
 import { fake, replace, restore } from 'sinon'
 import { installAllDependencies, installProductionDependencies } from '../../src/services/dependencies'
@@ -10,7 +11,7 @@ describe('dependencies service', () => {
 
   describe('installProductionDependencies', () => {
     it('installs dependencies in production mode', async () => {
-      replace(childProcessPromise, 'exec', fake.resolves({}))
+      replace(childProcessPromise, 'exec', fake.resolves({}) as any)
       const path = 'aPath'
 
       await expect(installProductionDependencies(path)).to.eventually.be.fulfilled
@@ -27,7 +28,7 @@ describe('dependencies service', () => {
       const error = new Error('something wrong happened')
       const path = 'aPath'
 
-      replace(childProcessPromise, 'exec', fake.rejects(error))
+      replace(childProcessPromise, 'exec', fake.rejects(error) as any)
 
       await expect(installProductionDependencies(path)).to.eventually.be.rejectedWith(
         /Could not install production dependencies/
@@ -38,7 +39,7 @@ describe('dependencies service', () => {
   describe('installAllDependencies', () => {
     context('without passing a path', () => {
       it('installs dependencies in dev mode in the current directory', async () => {
-        replace(childProcessPromise, 'exec', fake.resolves({}))
+        replace(childProcessPromise, 'exec', fake.resolves({}) as any)
 
         await expect(installAllDependencies()).to.eventually.be.fulfilled
 
@@ -48,7 +49,7 @@ describe('dependencies service', () => {
 
     context('passing a path', () => {
       it('installs dependencies in dev mode in the passed path', async () => {
-        replace(childProcessPromise, 'exec', fake.resolves({}))
+        replace(childProcessPromise, 'exec', fake.resolves({}) as any)
 
         await expect(installAllDependencies('somewhere')).to.eventually.be.fulfilled
 
@@ -59,7 +60,7 @@ describe('dependencies service', () => {
     it('wraps the exec error', async () => {
       const error = new Error('something wrong happened')
 
-      replace(childProcessPromise, 'exec', fake.rejects(error))
+      replace(childProcessPromise, 'exec', fake.rejects(error) as any)
 
       await expect(installAllDependencies()).to.eventually.be.rejectedWith(/Could not install dependencies/)
     })
