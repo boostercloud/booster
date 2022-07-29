@@ -144,7 +144,7 @@ describe('GraphQLQueryGenerator', () => {
 
             beforeEach(() => {
               // Provision target types
-              mockPropertyName = random.alphaNumeric(10)
+              mockPropertyName = generatePropertyName(10)
               mockTargetType = Array
               mockTargetTypeName = mockTargetType.name
               mockPropertyType = Boolean
@@ -255,7 +255,7 @@ describe('GraphQLQueryGenerator', () => {
                 })
 
                 it('When Number', () => {
-                  mockPropertyName = random.alphaNumeric(10)
+                  mockPropertyName = generatePropertyName(10)
                   mockTargetType = Array
                   mockTargetTypeName = mockTargetType.name
                   mockPropertyType = Number
@@ -341,7 +341,7 @@ describe('GraphQLQueryGenerator', () => {
                 })
 
                 it('When String', () => {
-                  mockPropertyName = random.alphaNumeric(10)
+                  mockPropertyName = generatePropertyName(10)
                   mockTargetType = Array
                   mockTargetTypeName = mockTargetType.name
                   mockPropertyType = String
@@ -560,3 +560,6 @@ describe('GraphQLQueryGenerator', () => {
     it('generates event queries for specific entities') // TODO
   })
 })
+
+const generatePropertyName = (length: number): string =>
+  random.alpha({ count: 1 }) + random.alphaNumeric(Math.max(0, length - 1))

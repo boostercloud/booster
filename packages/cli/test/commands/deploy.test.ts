@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from '../expect'
 import { fancy } from 'fancy-test'
@@ -98,10 +99,10 @@ describe('deploy', () => {
     beforeEach(() => {
       const config = new BoosterConfig('fake_environment')
       replace(configService, 'compileProjectAndLoadConfig', fake.resolves(config))
-      replace(providerService, 'deployToCloudProvider', fake.resolves({}))
-      replace(configService, 'createDeploymentSandbox', fake.returns('fake/path'))
-      replace(configService, 'cleanDeploymentSandbox', fake.resolves({}))
-      replace(projectChecker, 'checkCurrentDirBoosterVersion', fake.resolves({}))
+      replace(providerService, 'deployToCloudProvider', fake())
+      replace(configService, 'createDeploymentSandbox', fake.returns('fake/path') as any)
+      replace(configService, 'cleanDeploymentSandbox', fake())
+      replace(projectChecker, 'checkCurrentDirBoosterVersion', fake())
       replace(oraLogger, 'fail', fake.resolves({}))
       replace(oraLogger, 'info', fake.resolves({}))
       replace(oraLogger, 'start', fake.resolves({}))

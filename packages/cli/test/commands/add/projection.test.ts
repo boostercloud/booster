@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { fake, replace, restore, spy, stub } from 'sinon'
 import { IConfig } from '@oclif/config'
 import { ClassDeclaration, MethodDeclarationStructure, Project, SourceFile } from 'ts-morph'
@@ -15,7 +16,7 @@ describe('add', async () => {
     const sourceFileText = `
       import { ReadModel } from '@boostercloud/framework-core'
       import { UUID } from '@boostercloud/framework-types'
-      
+
       @ReadModel({
         authorize: 'all',
       })
@@ -26,7 +27,7 @@ describe('add', async () => {
 
     beforeEach(() => {
       stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
-      replace(ProjectChecker, 'checkCurrentDirBoosterVersion', fake.resolves({}))
+      replace(ProjectChecker, 'checkCurrentDirBoosterVersion', fake())
       replace(Filenames, 'fileNameWithExtension', fake.returns('post-read-model.ts'))
     })
 
@@ -191,7 +192,7 @@ describe('add', async () => {
         const fakeSourceFile = project.createSourceFile('post.ts', sourceFileText)
 
         stub(Project.prototype, 'getSourceFileOrThrow').returns(fakeSourceFile)
-        replace(SourceFile.prototype, 'getClassOrThrow', fake.throws(new Error()))
+        replace(SourceFile.prototype, 'getClassOrThrow', fake.throws(new Error()) as any)
         replace(SourceFile.prototype, 'fixMissingImports', spy())
         replace(SourceFile.prototype, 'save', spy())
 

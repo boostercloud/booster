@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { StreamViewType } from '@aws-cdk/aws-dynamodb'
 import { InfrastructureRocket } from '../../src'
 import { BoosterConfig, UUID } from '@boostercloud/framework-types'
@@ -21,7 +22,7 @@ describe('the `stack-tools` module', () => {
 
   describe('the `getStackServiceConfiguration` method', () => {
     it('builds the configuration using the `assemble` method', async () => {
-      replace(SdkProvider.prototype, 'forEnvironment', fake())
+      replace(SdkProvider.prototype, 'forEnvironment', fake.returns(Promise.resolve({ sdk: undefined } as any)))
       const fakeAssemble = fake()
       const revertAssemble = StackTools.__set__('assemble', fakeAssemble)
       const revertGetEnvironment = StackTools.__set__('getEnvironment', fake.returns(Promise.resolve(testEnvironment)))
@@ -41,7 +42,7 @@ describe('the `stack-tools` module', () => {
 
     context('with rockets', () => {
       it('forwards the rocket list to the `assemble` method for initialization', async () => {
-        replace(SdkProvider.prototype, 'forEnvironment', fake())
+        replace(SdkProvider.prototype, 'forEnvironment', fake.returns({ sdk: undefined } as any))
         const fakeAssemble = fake()
         const revertRewire = StackTools.__set__('assemble', fakeAssemble)
         const revertGetEnvironment = StackTools.__set__(
@@ -89,7 +90,7 @@ describe('the `stack-tools` module', () => {
       // Just checks that the assemble method does not fail,
       // meaning that the stack is built correctly according to the
       // AWS validations
-      expect(() => assemble(config)).not.to.throw()
+      expect(assemble(config)).to.not.be.undefined
     })
 
     context('when roles and permissions have been defined', () => {

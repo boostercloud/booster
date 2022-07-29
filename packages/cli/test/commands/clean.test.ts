@@ -9,9 +9,9 @@ import { IConfig } from '@oclif/config'
 describe('clean', () => {
   describe('Clean class', () => {
     beforeEach(() => {
-      replace(configService, 'cleanProject', fake.resolves({}))
-      replace(projectChecker, 'checkCurrentDirIsABoosterProject', fake.resolves({}))
-      replace(projectChecker, 'checkCurrentDirBoosterVersion', fake.resolves({}))
+      replace(configService, 'cleanProject', fake())
+      replace(projectChecker, 'checkCurrentDirIsABoosterProject', fake())
+      replace(projectChecker, 'checkCurrentDirBoosterVersion', fake())
       replace(oraLogger, 'info', fake.resolves({}))
       replace(oraLogger, 'start', fake.resolves({}))
     })
