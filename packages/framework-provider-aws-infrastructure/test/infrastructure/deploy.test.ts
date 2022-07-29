@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { expect } from '../expect'
@@ -21,7 +22,7 @@ config.userProjectRootPath = '.'
 
 describe('the deployment module', () => {
   beforeEach(() => {
-    replace(SdkProvider.prototype, 'forEnvironment', fake.returns(mock()))
+    replace(SdkProvider.prototype, 'forEnvironment', fake.returns(mock()) as any)
   })
 
   afterEach(() => {
@@ -39,7 +40,7 @@ describe('the deployment module', () => {
             bootstrap: fake(),
             deploy: fake(),
           },
-        })
+        }) as any
       )
 
       await deploy(config)
@@ -59,7 +60,7 @@ describe('the deployment module', () => {
             bootstrap: fake(),
             deploy: fake.throws(errorMessage),
           },
-        })
+        }) as any
       )
 
       await expect(deploy(config)).to.eventually.be.rejectedWith(errorMessage)
@@ -75,7 +76,7 @@ describe('the deployment module', () => {
             bootstrap: fake(),
             deploy: fake(),
           },
-        })
+        }) as any
       )
 
       await deploy(config)
@@ -95,7 +96,7 @@ describe('the deployment module', () => {
             bootstrap: fakeBootstrap,
             deploy: fake(),
           },
-        })
+        }) as any
       )
 
       await deploy(config)
@@ -119,7 +120,7 @@ describe('the deployment module', () => {
             bootstrap: fakeBootstrap,
             deploy: fake(),
           },
-        })
+        }) as any
       )
 
       await deploy(config)
@@ -149,7 +150,7 @@ describe('the deployment module', () => {
               bootstrap: fake(),
               deploy: fake(),
             },
-          })
+          }) as any
         )
 
         const fakeRocket: InfrastructureRocket = {

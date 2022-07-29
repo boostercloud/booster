@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { CdkToolkit } from 'aws-cdk/lib/cdk-toolkit'
@@ -18,11 +19,7 @@ describe('the nuke module', () => {
     it('calls to `getStackServiceConfiguration` to get the stack configuration', async () => {
       const revertNukeToolkit = nukeModule.__set__('nukeToolkit', fake())
       const revertNukeApp = nukeModule.__set__('nukeApplication', fake())
-      replace(
-        StackServiceConfiguration,
-        'getStackServiceConfiguration',
-        fake.resolves({ aws: '', appStacks: '', cdkToolkit: '' })
-      )
+      replace(StackServiceConfiguration, 'getStackServiceConfiguration', fake.resolves({} as any))
       replace(CdkToolkit.prototype, 'destroy', fake())
 
       const config = new BoosterConfig('test')
@@ -40,7 +37,11 @@ describe('the nuke module', () => {
       const revertNukeToolkit = nukeModule.__set__('nukeToolkit', fakeNukeToolkit)
       const revertNukeApp = nukeModule.__set__('nukeApplication', fake())
       const fakeStackServiceConfiguration = { sdk: 'here goes the SDK', appStacks: '', cdkToolkit: '' }
-      replace(StackServiceConfiguration, 'getStackServiceConfiguration', fake.resolves(fakeStackServiceConfiguration))
+      replace(
+        StackServiceConfiguration,
+        'getStackServiceConfiguration',
+        fake.resolves(fakeStackServiceConfiguration) as any
+      )
 
       const config = new BoosterConfig('test')
 
@@ -59,7 +60,11 @@ describe('the nuke module', () => {
       const fakeStackServiceConfiguration = {
         cdkToolkit: 'and here the cdkToolkit',
       }
-      replace(StackServiceConfiguration, 'getStackServiceConfiguration', fake.resolves(fakeStackServiceConfiguration))
+      replace(
+        StackServiceConfiguration,
+        'getStackServiceConfiguration',
+        fake.resolves(fakeStackServiceConfiguration) as any
+      )
 
       const config = new BoosterConfig('test')
 
@@ -79,7 +84,11 @@ describe('the nuke module', () => {
         appStacks: 'and here the appStacks',
         cdkToolkit: 'and here the cdkToolkit',
       }
-      replace(StackServiceConfiguration, 'getStackServiceConfiguration', fake.resolves(fakeStackServiceConfiguration))
+      replace(
+        StackServiceConfiguration,
+        'getStackServiceConfiguration',
+        fake.resolves(fakeStackServiceConfiguration) as any
+      )
 
       const config = new BoosterConfig('test')
       config.logger = {
@@ -121,7 +130,11 @@ describe('the nuke module', () => {
         appStacks: 'and here the appStacks',
         cdkToolkit: 'and here the cdkToolkit',
       }
-      replace(StackServiceConfiguration, 'getStackServiceConfiguration', fake.resolves(fakeStackServiceConfiguration))
+      replace(
+        StackServiceConfiguration,
+        'getStackServiceConfiguration',
+        fake.resolves(fakeStackServiceConfiguration) as any
+      )
       replace(CdkToolkit.prototype, 'destroy', fake())
 
       const config = new BoosterConfig('test')
@@ -141,7 +154,11 @@ describe('the nuke module', () => {
         appStacks: 'and here the appStacks',
         cdkToolkit: 'and here the cdkToolkit',
       }
-      replace(StackServiceConfiguration, 'getStackServiceConfiguration', fake.resolves(fakeStackServiceConfiguration))
+      replace(
+        StackServiceConfiguration,
+        'getStackServiceConfiguration',
+        fake.resolves(fakeStackServiceConfiguration) as any
+      )
       replace(CdkToolkit.prototype, 'destroy', fake())
 
       const config = new BoosterConfig('test')
@@ -163,7 +180,11 @@ describe('the nuke module', () => {
           appStacks: 'and here the appStacks',
           cdkToolkit: 'and here the cdkToolkit',
         }
-        replace(StackServiceConfiguration, 'getStackServiceConfiguration', fake.resolves(fakeStackServiceConfiguration))
+        replace(
+          StackServiceConfiguration,
+          'getStackServiceConfiguration',
+          fake.resolves(fakeStackServiceConfiguration) as any
+        )
 
         const config = new BoosterConfig('test')
 
@@ -228,7 +249,7 @@ describe('the nuke module', () => {
 
       const fakeRocketUtils = { rocket: 'utils' }
       const fakeBuildRocketUtils = fake.returns(fakeRocketUtils)
-      replace(rocketUtils, 'buildRocketUtils', fakeBuildRocketUtils)
+      replace(rocketUtils, 'buildRocketUtils', fakeBuildRocketUtils as any)
 
       const config = new BoosterConfig('test')
 
