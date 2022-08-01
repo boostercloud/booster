@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-core",
-  "version": "0.30.3",
+  "version": "0.30.4",
   "description": "Library for your Booster apps",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
@@ -45,7 +45,7 @@
     "validator": "13.7.0"
   },
   "devDependencies": {
-    "@boostercloud/metadata-booster": "^0.30.3",
+    "@boostercloud/metadata-booster": "*",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "7.1.5",
     "@types/faker": "5.1.5",

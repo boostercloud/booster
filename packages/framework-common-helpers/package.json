@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-common-helpers",
-  "version": "0.30.3",
+  "version": "0.30.4",
   "description": "Contains Booster common helpers used by the core and provider packages",
   "keywords": [
     "framework-common-helpers"

@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-azure-infrastructure",
-  "version": "0.30.3",
+  "version": "0.30.4",
   "description": "Handle the Booster deployment process to Azure",
   "keywords": [
     "framework-provider-azure-infrastructure"

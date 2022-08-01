@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-types",
-  "version": "0.30.3",
+  "version": "0.30.4",
   "description": "Contains Booster types related to the information extracted from the user project",
   "keywords": [
     "framework-types"

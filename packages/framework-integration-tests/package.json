@@ -1,7 +1,7 @@
 {
   "name": "@boostercloud/framework-integration-tests",
   "description": "Example project for Booster",
-  "version": "0.30.3",
+  "version": "0.30.4",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
   "private": true,
