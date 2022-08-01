@@ -5,7 +5,7 @@ extension:
 package: './package.json'
 recursive: true
 reporter: 'spec'
-timeout: 5000
+timeout: 180000
 full-trace: true
 bail: true
 color: true

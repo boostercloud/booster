@@ -13,6 +13,7 @@
     "update-contributing-toc": "markdown-toc -i --bullets=- --maxdepth 4 CONTRIBUTING.md"
   },
   "devDependencies": {
+    "@octokit/rest": "18.5.3",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "7.1.5",
     "@types/faker": "5.1.5",
@@ -22,29 +23,28 @@
     "@types/sinon": "10.0.13",
     "@types/sinon-chai": "3.2.8",
     "@types/validator": "13.1.3",
-    "@octokit/rest": "18.5.3",
     "@typescript-eslint/eslint-plugin": "4.22.1",
     "@typescript-eslint/parser": "4.22.1",
     "eslint": "7.26.0",
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-import": "2.22.1",
     "eslint-plugin-prettier": "3.4.0",
+    "has-tostringtag": "^1.0.0",
     "husky": "6.0.0",
     "lerna": "^5.1.8",
     "lint-staged": "11.0.0",
     "markdown-toc": "1.2.0",
+    "mocha": "^10.0.0",
     "nx": "^14.4.3",
     "prettier": "2.3.0",
     "rimraf": "3.0.2",
     "ts-node": "10.8.1",
     "typescript": "4.7.4",
-    "yargs": "17.0.1",
-    "has-tostringtag": "^1.0.0"
+    "yargs": "17.0.1"
   },
   "license": "Apache-2.0",
   "lint-staged": {
     "*.{js,ts,md}": "prettier --single-quote --write",
     "**/*.{ts,md}": "prettier --single-quote --write"
-  },
-  "dependencies": {}
+  }
 }
