@@ -11,12 +11,11 @@ export const makeModuleLogger =
     const loggingOpts = process.env['METADATA_BOOSTER_DEBUG']?.trim() ?? ''
 
     const trs = match(loggingOpts)
-      .with('', () => [])
-      .when(str.includes('.log'), () => [new transports.File({ filename: loggingOpts })])
-      .otherwise(() => [new transports.Console()])
+      .with('', () => [new transports.Console({ level: 'error' })])
+      .when(str.includes('.log'), () => [new transports.File({ level: 'debug', filename: loggingOpts })])
+      .otherwise(() => [new transports.Console({ level: 'debug' })])
 
     return createLogger({
-      level: 'debug',
       format: format.combine(format.label({ label: `${moduleName}#${functionName}` }), format.splat(), loggerFormat),
       transports: trs,
     })
