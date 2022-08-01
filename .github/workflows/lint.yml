@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: 16.x
       - name: Bootstrapping project
-        run: npx lerna bootstrap
+        run: npm run bootstrap
       - name: Fixing linting and formatting issues
         id: eslint-fix
         run: npx lerna run lint:fix --stream
@@ -36,4 +36,3 @@ jobs:
       - name: Fail if ESLint made changes
         if: steps.eslint-fix.outputs.exit-code != 0
         run: exit 1
-

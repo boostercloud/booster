@@ -15,7 +15,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16.x
-      - run: npx lerna bootstrap
+      - run: npm run bootstrap
       - run: npx lerna run compile
       - run: npx lerna run integration/aws-deploy --stream
         env:
@@ -33,7 +33,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16.x
-      - run: npx lerna bootstrap
+      - run: npm run bootstrap
       - run: npx lerna run compile
       - run: npx lerna run integration/aws-func --stream
         env:
@@ -51,7 +51,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16.x
-      - run: npx lerna bootstrap
+      - run: npm run bootstrap
       - run: npx lerna run compile
       - run: npx lerna run integration/aws-end-to-end --stream
         env:
@@ -69,7 +69,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16.x
-      - run: npx lerna bootstrap
+      - run: npm run bootstrap
       - run: npx lerna run compile
       - run: npx lerna run integration/aws-load --stream
         env:
@@ -89,7 +89,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16.x
-      - run: npx lerna bootstrap
+      - run: npm run bootstrap
       - run: npx lerna run compile
       - run: npx lerna run integration/aws-nuke --stream
         env:
@@ -105,7 +105,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16.x
-      - run: npx lerna bootstrap
+      - run: npm run bootstrap
       - run: npx lerna run compile
       - run: npx lerna run integration/cli --stream
 
@@ -117,7 +117,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16.x
-      - run: npx lerna bootstrap
+      - run: npm run bootstrap
       - run: npx lerna run compile
       - run: npx lerna run integration/local --stream
 
@@ -134,7 +134,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16.x
-      - run: npx lerna bootstrap
+      - run: npm run bootstrap
       - run: npx lerna run compile
       - run: npx lerna run integration/azure-deploy --stream
         env:
@@ -165,7 +165,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16.x
-      - run: npx lerna bootstrap
+      - run: npm run bootstrap
       - run: npx lerna run compile
       - run: npx lerna run integration/azure-end-to-end --stream
         env:
@@ -196,7 +196,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16.x
-      - run: npx lerna bootstrap
+      - run: npm run bootstrap
       - run: npx lerna run compile
       - run: npx lerna run integration/azure-func --stream
         env:
@@ -229,7 +229,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16.x
-      - run: npx lerna bootstrap
+      - run: npm run bootstrap
       - run: npx lerna run compile
       - run: npx lerna run integration/azure-nuke --stream
         env:
@@ -266,8 +266,7 @@ jobs:
   #    - run: kubectl create ns booster-my-store-kubernetes
   #    - run: kubectl config set-context --current --namespace=booster-my-store-kubernetes
   #    - run: minikube start --namespace=booster-my-store-kubernetes
-  #    - run: npx lerna bootstrap
+  #    - run: npm run bootstrap
   #    - run: npx lerna run compile
   #    - run: npx lerna run integration/k8s-deploy --stream
   #    - run: npx lerna run integration/k8s-nuke --stream
-

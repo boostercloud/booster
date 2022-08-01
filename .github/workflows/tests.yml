@@ -19,6 +19,6 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16.x
-      - run: npx lerna bootstrap
+      - run: npm run bootstrap
       - run: npx lerna run compile --stream
       - run: npx lerna run test --stream

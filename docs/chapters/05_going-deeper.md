@@ -461,7 +461,7 @@ If you want to support the same functionality in several providers, it could be 
 1. Upload your rocket to a git repository.
 2. Run :
     ```shell
-        > lerna bootstrap
+        > npm run bootstrap
     ```
     This will bootstrap the packages, install all their dependencies and link any cross-dependencies.
 3. Ensure you have the option `publishConfig.access` set to `public` in the `package.json` file of every package.
@@ -471,7 +471,7 @@ If you want to support the same functionality in several providers, it could be 
     ```
 5. Run :
     ```shell
-        > lerna publish
+        > npx lerna publish
     ```
     Creates a new release of the packages that have been updated. It will update all the packages in git and npm, and it will prompt for a new version of the rocket package.
 6. If the previous step finished successfully, the package will be available in NPM.

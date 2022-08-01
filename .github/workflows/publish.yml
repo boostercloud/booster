@@ -43,7 +43,7 @@ jobs:
           node-version: 16.x
           registry-url: https://registry.npmjs.org/
 
-      - run: npx lerna bootstrap
+      - run: npm run bootstrap
       - run: npx lerna run compile
 
       # Discard all changes that might have occurred after bootstrap
