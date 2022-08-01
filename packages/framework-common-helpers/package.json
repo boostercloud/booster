@@ -19,21 +19,10 @@
     "type": "git",
     "url": "git+https://github.com/boostercloud/booster.git"
   },
-  "scripts": {
-    "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
-    "lint:check": "eslint --ext '.js,.ts' **/*.ts",
-    "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "compile": "tsc -b tsconfig.json",
-    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
-    "test:helpers": "npm run test",
-    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
-    "prepack": "tsc -b tsconfig.json"
-  },
   "bugs": {
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "dependencies": {
-    "@boostercloud/framework-types": "*",
     "child-process-promise": "^2.2.1",
     "tslib": "2.4.0"
   },
@@ -48,6 +37,7 @@
     "@types/uuid": "8.3.0",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
+    "eslint": "7.26.0",
     "nyc": "15.1.0",
     "rewire": "5.0.0",
     "sinon": "14.0.0",

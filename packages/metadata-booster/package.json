@@ -36,6 +36,7 @@
     "@types/mocha": "9.1.1",
     "@types/sinon": "10.0.13",
     "@types/sinon-chai": "3.2.8",
+    "eslint": "7.26.0",
     "nyc": "15.1.0",
     "sinon": "14.0.0",
     "ttypescript": "1.5.13",

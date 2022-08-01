@@ -20,8 +20,6 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@boostercloud/framework-common-helpers": "*",
-    "@boostercloud/framework-types": "*",
     "body-parser": "^1.18.3",
     "cors": "2.8.5",
     "express": "^4.17.1",
@@ -30,16 +28,6 @@
     "mustache": "4.1.0",
     "node-fetch": "^2.6.7",
     "redis": "^3.0.2"
-  },
-  "scripts": {
-    "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
-    "lint:check": "eslint --ext '.js,.ts' **/*.ts",
-    "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "compile": "tsc -b tsconfig.json",
-    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
-    "prepack": "tsc -b tsconfig.json",
-    "test:provider-kubernetes": "npm run test",
-    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
   },
   "bugs": {
     "url": "https://github.com/boostercloud/booster/issues"
@@ -54,6 +42,7 @@
     "@types/redis": "^2.8.28",
     "@types/sinon": "10.0.13",
     "@types/sinon-chai": "3.2.8",
+    "eslint": "7.26.0",
     "mocha": "^10.0.0",
     "nyc": "15.1.0",
     "sinon": "14.0.0",
