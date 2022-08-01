@@ -7,7 +7,7 @@
   "private": true,
   "scripts": {
     "build": "npx lerna run compile",
-    "bootstrap": "npx rimraf packages/*/package-lock.json && npx lerna bootstrap",
+    "bootstrap": "npx lerna bootstrap",
     "clean-compile": "npx lerna run clean && npx lerna clean --yes && npm run bootstrap && npm run build",
     "update-tocs": "npm run update-documentation-toc && npm run update-contributing-toc",
     "update-documentation-toc": "markdown-toc -i --maxdepth 4 docs/README.md",
