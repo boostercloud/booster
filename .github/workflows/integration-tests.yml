@@ -16,7 +16,7 @@ jobs:
         with:
           node-version: 16.x
       - run: npm run bootstrap
-      - run: npx lerna run compile
+      - run: npx lerna run build
       - run: npx lerna run integration/aws-deploy --stream
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
@@ -34,7 +34,7 @@ jobs:
         with:
           node-version: 16.x
       - run: npm run bootstrap
-      - run: npx lerna run compile
+      - run: npx lerna run build
       - run: npx lerna run integration/aws-func --stream
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
@@ -52,7 +52,7 @@ jobs:
         with:
           node-version: 16.x
       - run: npm run bootstrap
-      - run: npx lerna run compile
+      - run: npx lerna run build
       - run: npx lerna run integration/aws-end-to-end --stream
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
@@ -70,7 +70,7 @@ jobs:
         with:
           node-version: 16.x
       - run: npm run bootstrap
-      - run: npx lerna run compile
+      - run: npx lerna run build
       - run: npx lerna run integration/aws-load --stream
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
@@ -90,7 +90,7 @@ jobs:
         with:
           node-version: 16.x
       - run: npm run bootstrap
-      - run: npx lerna run compile
+      - run: npx lerna run build
       - run: npx lerna run integration/aws-nuke --stream
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
@@ -106,7 +106,7 @@ jobs:
         with:
           node-version: 16.x
       - run: npm run bootstrap
-      - run: npx lerna run compile
+      - run: npx lerna run build
       - run: npx lerna run integration/cli --stream
 
   local-integration-tests:
@@ -118,7 +118,7 @@ jobs:
         with:
           node-version: 16.x
       - run: npm run bootstrap
-      - run: npx lerna run compile
+      - run: npx lerna run build
       - run: npx lerna run integration/local --stream
 
   azure-deploy-integration-tests:
@@ -135,7 +135,7 @@ jobs:
         with:
           node-version: 16.x
       - run: npm run bootstrap
-      - run: npx lerna run compile
+      - run: npx lerna run build
       - run: npx lerna run integration/azure-deploy --stream
         env:
           AZURE_APP_ID: ${{ secrets.AZURE_CLIENTID }}
@@ -166,7 +166,7 @@ jobs:
         with:
           node-version: 16.x
       - run: npm run bootstrap
-      - run: npx lerna run compile
+      - run: npx lerna run build
       - run: npx lerna run integration/azure-end-to-end --stream
         env:
           AZURE_APP_ID: ${{ secrets.AZURE_CLIENTID }}
@@ -197,7 +197,7 @@ jobs:
         with:
           node-version: 16.x
       - run: npm run bootstrap
-      - run: npx lerna run compile
+      - run: npx lerna run build
       - run: npx lerna run integration/azure-func --stream
         env:
           AZURE_APP_ID: ${{ secrets.AZURE_CLIENTID }}
@@ -230,7 +230,7 @@ jobs:
         with:
           node-version: 16.x
       - run: npm run bootstrap
-      - run: npx lerna run compile
+      - run: npx lerna run build
       - run: npx lerna run integration/azure-nuke --stream
         env:
           AZURE_APP_ID: ${{ secrets.AZURE_CLIENTID }}
@@ -267,6 +267,6 @@ jobs:
   #    - run: kubectl config set-context --current --namespace=booster-my-store-kubernetes
   #    - run: minikube start --namespace=booster-my-store-kubernetes
   #    - run: npm run bootstrap
-  #    - run: npx lerna run compile
+  #    - run: npx lerna run build
   #    - run: npx lerna run integration/k8s-deploy --stream
   #    - run: npx lerna run integration/k8s-nuke --stream

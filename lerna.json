@@ -1,15 +1,5 @@
 {
-  "packages": ["packages/*"],
-  "command": {
-    "add": {
-      "exact": true
-    },
-    "bootstrap": {
-      "hoist": false,
-      "strict": true
-    }
-  },
   "useNx": true,
   "version": "0.30.4",
-  "npmClient": "npm"
+  "useWorkspaces": true
 }

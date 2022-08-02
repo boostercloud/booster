@@ -20,5 +20,5 @@ jobs:
         with:
           node-version: 16.x
       - run: npm run bootstrap
-      - run: npx lerna run compile --stream
+      - run: npx lerna run build --stream
       - run: npx lerna run test --stream

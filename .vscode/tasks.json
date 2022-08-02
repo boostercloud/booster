@@ -7,7 +7,7 @@
       "problemMatcher": ["$tsc"],
       "group": "build",
       "label": "npm: build",
-      "detail": "npx lerna run compile"
+      "detail": "npx lerna run build"
     }
   ]
 }

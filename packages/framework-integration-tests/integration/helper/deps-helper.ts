@@ -47,5 +47,5 @@ export async function overrideWithBoosterLocalDependencies(projectPath: string):
 }
 
 export async function forceLernaRebuild(): Promise<void> {
-  await exec('npx lerna clean --yes && npx lerna bootstrap && npx lerna run clean && npx lerna run compile')
+  await exec('npx lerna clean --yes && npx lerna bootstrap && npx lerna run clean && npx lerna run build')
 }

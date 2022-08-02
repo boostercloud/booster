@@ -44,7 +44,7 @@ jobs:
           registry-url: https://registry.npmjs.org/
 
       - run: npm run bootstrap
-      - run: npx lerna run compile
+      - run: npx lerna run build
 
       # Discard all changes that might have occurred after bootstrap
       - run: git stash

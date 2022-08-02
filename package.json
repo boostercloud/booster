@@ -6,7 +6,7 @@
   "bugs": "https://github.com/boostercloud/booster/issues",
   "private": true,
   "scripts": {
-    "build": "npx lerna run compile",
+    "build": "npx lerna run build",
     "bootstrap": "npx lerna bootstrap",
     "clean-compile": "npx lerna run clean && npx lerna clean --yes && npm run bootstrap && npm run build",
     "update-tocs": "npm run update-documentation-toc && npm run update-contributing-toc",
@@ -32,7 +32,7 @@
     "eslint-plugin-prettier": "3.4.0",
     "has-tostringtag": "^1.0.0",
     "husky": "6.0.0",
-    "lerna": "^5.1.8",
+    "lerna": "^5.3.0",
     "lint-staged": "11.0.0",
     "markdown-toc": "1.2.0",
     "mocha": "^10.0.0",
@@ -43,6 +43,9 @@
     "typescript": "4.7.4",
     "yargs": "17.0.1"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "license": "Apache-2.0",
   "lint-staged": {
     "*.{js,ts,md}": "prettier --single-quote --write",

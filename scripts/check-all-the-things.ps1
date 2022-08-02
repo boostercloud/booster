@@ -7,7 +7,7 @@
 npx lerna clean --yes
 if ($?) { npm run bootstrap }
 npx lerna run clean --stream
-if ($?) { npx lerna run compile --stream }
+if ($?) { npx lerna run build --stream }
 if ($?) { npx lerna run format --stream }
 if ($?) { npx lerna run lint:fix --stream }
 if ($?) { npx lerna run lint:check --stream }
