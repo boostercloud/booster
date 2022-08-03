@@ -1,7 +1,7 @@
 import { CoreV1Api, KubeConfig, KubernetesObject, KubernetesObjectApi } from '@kubernetes/client-node'
 import { Node, Namespace, Pod, Service, VolumeClaim, Secret } from './types'
 import * as Mustache from 'mustache'
-import { safeLoadAll } from 'js-yaml'
+import { loadAll } from 'js-yaml'
 import { waitForIt } from '../utils'
 import { DaprTemplateRoles, TemplateValues } from '../templates/template-types'
 import * as util from 'util'
@@ -274,7 +274,7 @@ export class K8sManagement {
     logger.debug('Making API client')
     const client = KubernetesObjectApi.makeApiClient(this.kube)
     logger.debug('Safe loading')
-    const specs = safeLoadAll(yaml)
+    const specs = loadAll(yaml) as Array<KubernetesObject>
     logger.debug('Filtering specs')
     const validSpecs = specs.filter((s) => s?.kind && s?.metadata)
     const created: KubernetesObject[] = []

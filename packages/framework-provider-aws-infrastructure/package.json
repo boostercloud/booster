@@ -20,6 +20,7 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
+    "@boostercloud/framework-provider-aws": "*",
     "@aws-cdk/aws-apigateway": "1.99.0",
     "@aws-cdk/aws-apigatewayv2": "1.99.0",
     "@aws-cdk/aws-cloudfront": "1.99.0",
@@ -73,5 +74,15 @@
     "ttypescript": "1.5.13",
     "typescript": "4.7.4",
     "velocityjs": "^2.0.0"
+  },
+  "scripts": {
+    "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
+    "lint:check": "eslint --ext '.js,.ts' **/*.ts",
+    "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
+    "build": "npx tsc -b tsconfig.json",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "test:types": "npm run test",
+    "test": "npx nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
+    "prepack": "npx tsc -b tsconfig.json"
   }
 }

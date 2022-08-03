@@ -29,6 +29,7 @@
     "tslib": "2.4.0"
   },
   "devDependencies": {
+    "@boostercloud/framework-types": "*",
     "@oclif/dev-cli": "^1.26",
     "@oclif/test": "^2.1",
     "@types/chai": "4.3.1",
@@ -85,5 +86,15 @@
     ]
   },
   "repository": "boostercloud/booster",
-  "types": "lib/index.d.ts"
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
+    "lint:check": "eslint --ext '.js,.ts' **/*.ts",
+    "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
+    "build": "npx tsc -b tsconfig.json",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "test:types": "npm run test",
+    "test": "npx nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
+    "prepack": "npx tsc -b tsconfig.json"
+  }
 }

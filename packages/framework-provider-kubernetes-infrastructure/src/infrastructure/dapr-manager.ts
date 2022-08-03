@@ -8,7 +8,7 @@ import { HelmManager } from './helm-manager'
 import * as Mustache from 'mustache'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { getProjectNamespaceName } from './utils'
-import { safeLoad } from 'js-yaml'
+import { load } from 'js-yaml'
 import { stateStoreRoleBinding } from './templates/statestore-role-binding'
 import { stateStoreRole } from './templates/statestore-role'
 
@@ -58,7 +58,7 @@ export class DaprManager {
     if (fs.existsSync(stateStoreFilePath)) {
       logger.debug('statetore.yaml exists')
       const stateStoreFileContent = fs.readFileSync(stateStoreFilePath).toString()
-      const yamlData = safeLoad(stateStoreFileContent) as StateStoreYaml
+      const yamlData = load(stateStoreFileContent) as StateStoreYaml
       if (!yamlData.metadata.annotations['booster/created']) {
         logger.debug('The state store is provisioned by the user. Getting statestore credentials')
         //TODO: Get the credentials for the state store in K8s provider if the user provides us the statestore in Dapr. We need to get the DB_HOST, DB_USER and DB_PASS to pass it to the runtime

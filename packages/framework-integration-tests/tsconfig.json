@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "typeRoots": ["./node_modules/@theaussiepom", "./node_modules/@types"],
     "declaration": true,
     "importHelpers": true,
     "module": "commonjs",
@@ -16,6 +15,7 @@
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
     "useUnknownInCatchVariables": false,
+    "skipLibCheck": true,
     "lib": ["ES2019", "ES2020"],
     "plugins": [{ "transform": "@boostercloud/metadata-booster" }]
   },

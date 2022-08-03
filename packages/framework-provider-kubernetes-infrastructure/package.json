@@ -19,7 +19,20 @@
     "type": "git",
     "url": "git+https://github.com/boostercloud/booster.git"
   },
+  "scripts": {
+    "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
+    "lint:check": "eslint --ext '.js,.ts' **/*.ts",
+    "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
+    "build": "npx tsc -b tsconfig.json",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "test:types": "npm run test",
+    "test": "npx nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
+    "prepack": "npx tsc -b tsconfig.json"
+  },
   "dependencies": {
+    "@boostercloud/framework-types": "*",
+    "@boostercloud/framework-common-helpers": "*",
+    "@kubernetes/client-node": "^0.17.0",
     "archiver": "5.3.0",
     "body-parser": "^1.18.3",
     "cors": "2.8.5",

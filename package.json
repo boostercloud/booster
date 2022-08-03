@@ -14,6 +14,11 @@
     "update-documentation-toc": "npx markdown-toc -i --maxdepth 4 docs/README.md",
     "update-contributing-toc": "npx markdown-toc -i --bullets=- --maxdepth 4 CONTRIBUTING.md"
   },
+  "overrides": {
+    "@types/tar": {
+      "minipass": "^3.3.5"
+    }
+  },
   "devDependencies": {
     "@octokit/rest": "18.5.3",
     "@types/chai": "4.3.1",

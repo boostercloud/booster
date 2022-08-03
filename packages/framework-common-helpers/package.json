@@ -57,9 +57,9 @@
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "build": "tsc -b tsconfig.json",
+    "build": "npx tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
-    "prepack": "tsc -b tsconfig.json",
+    "prepack": "npx tsc -b tsconfig.json",
     "test:core": "npm run test",
     "test": "cross-env BOOSTER_ENV=test npx nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
   }

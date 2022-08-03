@@ -78,7 +78,7 @@
     "watch:local": "nodemon --watch ../framework-provider-local/dist --watch ../framework-provider-local-infrastructure --watch dist --exec \"../cli/bin/run start -e local\"",
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "build": "ttsc -b tsconfig.json",
+    "build": "npx ttsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "postinstall": "rimraf ../../node_modules/serverless/node_modules/archiver && echo 'Deleted buggy \"archiver\" module from \"serveless\" dependencies to use the newer hoisted one'",
     "integration": "npm run integration/cli && npm run integration/local && npm run integration/aws && npm run integration/azure",
