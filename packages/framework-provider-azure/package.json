@@ -54,7 +54,7 @@
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "build": "npx tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
-    "test:types": "npm run test",
+    "test:provider-azure": "npm run test",
     "test": "npx nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
     "prepack": "npx tsc -b tsconfig.json"
   },

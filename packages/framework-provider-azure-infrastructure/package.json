@@ -21,6 +21,8 @@
   },
   "dependencies": {
     "@boostercloud/framework-common-helpers": "*",
+    "@boostercloud/framework-core": "*",
+    "@boostercloud/framework-types": "*",
     "@boostercloud/framework-provider-azure": "*",
     "@azure/arm-appservice": "^6.0.0",
     "@azure/cosmos": "3.7.3",
@@ -49,9 +51,9 @@
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "build": "npx tsc -b tsconfig.json",
+    "build": "npx tsc -b tsconfig.json && copyfiles -f src/infrastructure/templates/*.json dist/infrastructure/templates",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
-    "test:types": "npm run test",
+    "test:provider-azure-infrastructure": "npm run test",
     "test": "npx nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
     "prepack": "npx tsc -b tsconfig.json"
   },
@@ -75,6 +77,7 @@
     "eslint-plugin-import": "2.22.1",
     "eslint-plugin-prettier": "3.4.0",
     "faker": "5.1.0",
+    "mocha": "^10.0.0",
     "nyc": "15.1.0",
     "prettier": "2.3.0",
     "sinon": "14.0.0",

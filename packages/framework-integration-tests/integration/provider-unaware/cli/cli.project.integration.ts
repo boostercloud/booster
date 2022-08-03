@@ -309,7 +309,7 @@ describe('Project', () => {
           // Install those dependencies
           await exec('npm install --production --no-bin-links --no-optional', { cwd: fullProjectPath })
 
-          await expect(exec('npm run compile', { cwd: fullProjectPath })).to.be.eventually.fulfilled
+          await expect(exec('npm run build', { cwd: fullProjectPath })).to.be.eventually.fulfilled
         })
       })
 

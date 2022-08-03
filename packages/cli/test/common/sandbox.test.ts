@@ -52,10 +52,9 @@ describe('sandbox', () => {
       expect(fakeReaddirSync).to.have.been.calledWith(path.join('src', 'commands'))
       expect(fakeReaddirSync).to.have.been.calledWith(path.join('assetFolder'))
 
-      expect(fakeCopySync).to.have.callCount(9)
+      expect(fakeCopySync).to.have.callCount(8)
       const copyFileCallsArguments = [
         ['package.json', path.join(sandboxPath, 'package.json')],
-        ['package-lock.json', path.join(sandboxPath, 'package-lock.json')],
         ['tsconfig.json', path.join(sandboxPath, 'tsconfig.json')],
         [path.join('src', 'index.js'), path.join(sandboxPath, 'src', 'index.js')],
         [path.join('src', 'commands', 'commandA.js'), path.join(sandboxPath, 'src', 'commands', 'commandA.js')],

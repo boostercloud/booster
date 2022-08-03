@@ -60,7 +60,7 @@
     "build": "npx tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "npx tsc -b tsconfig.json",
-    "test:core": "npm run test",
-    "test": "cross-env BOOSTER_ENV=test npx nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+    "test:helpers": "npm run test",
+    "test": "npx nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
   }
 }
