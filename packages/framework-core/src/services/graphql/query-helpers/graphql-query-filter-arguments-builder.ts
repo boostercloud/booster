@@ -3,13 +3,12 @@ import {
   GraphQLFieldConfigArgumentMap,
   GraphQLFloat,
   GraphQLID,
-  GraphQLInputFieldConfig,
   GraphQLInputFieldConfigMap,
   GraphQLInputObjectType,
   GraphQLList,
   GraphQLScalarType,
   GraphQLString,
-  ThunkObjMap,
+  Thunk,
 } from 'graphql'
 import { getClassMetadata } from '../../../decorators/metadata'
 import { PropertyMetadata, TypeMetadata } from '@boostercloud/metadata-booster'
@@ -42,7 +41,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
 
     if (this.generatedFiltersByTypeName[filterName]) return this.generatedFiltersByTypeName[filterName]
     if (prop.typeInfo.typeGroup === 'Array') return this.generateArrayFilterFor(prop)
-    let fields: ThunkObjMap<GraphQLInputFieldConfig> = {}
+    let fields: Thunk<GraphQLInputFieldConfigMap> = {}
 
     if (prop.typeInfo.name === 'UUID' || prop.typeInfo.name === 'Date') {
       fields = this.generateFilterInputTypes(prop.typeInfo)

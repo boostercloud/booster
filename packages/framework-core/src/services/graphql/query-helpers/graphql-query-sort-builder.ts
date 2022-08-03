@@ -2,9 +2,8 @@ import {
   GraphQLEnumType,
   GraphQLFieldConfigArgumentMap,
   GraphQLInputObjectType,
-  GraphQLInputFieldConfig,
   GraphQLInputFieldConfigMap,
-  ThunkObjMap,
+  Thunk,
 } from 'graphql'
 import { PropertyMetadata } from '@boostercloud/metadata-booster'
 import { getClassMetadata } from '../../../decorators/metadata'
@@ -38,7 +37,7 @@ export class GraphqlQuerySortBuilder {
     if (prop.typeInfo.typeGroup === 'Array') return this.orderType
     if (prop.typeInfo.name === 'UUID' || prop.typeInfo.name === 'Date') return this.orderType
 
-    let fields: ThunkObjMap<GraphQLInputFieldConfig> = {}
+    let fields: Thunk<GraphQLInputFieldConfigMap> = {}
 
     if (prop.typeInfo.type && prop.typeInfo.typeGroup === 'Class') {
       if (isExternalType(prop.typeInfo)) return this.orderType

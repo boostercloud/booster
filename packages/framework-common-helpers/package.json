@@ -24,6 +24,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "dependencies": {
+    "@boostercloud/framework-types": "*",
     "child-process-promise": "^2.2.1",
     "tslib": "2.4.0"
   },

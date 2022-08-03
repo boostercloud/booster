@@ -8,10 +8,10 @@
   "scripts": {
     "build": "npx lerna run build",
     "bootstrap": "npx lerna bootstrap",
-    "clean-compile": "npx lerna run clean && npx lerna clean --yes && npm run bootstrap && npm run build",
+    "clean": "npx rimraf node_modules && npx lerna run clean && npx lerna clean --yes",
     "update-tocs": "npm run update-documentation-toc && npm run update-contributing-toc",
-    "update-documentation-toc": "markdown-toc -i --maxdepth 4 docs/README.md",
-    "update-contributing-toc": "markdown-toc -i --bullets=- --maxdepth 4 CONTRIBUTING.md"
+    "update-documentation-toc": "npx markdown-toc -i --maxdepth 4 docs/README.md",
+    "update-contributing-toc": "npx markdown-toc -i --bullets=- --maxdepth 4 CONTRIBUTING.md"
   },
   "devDependencies": {
     "@octokit/rest": "18.5.3",
