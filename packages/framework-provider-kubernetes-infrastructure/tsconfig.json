@@ -1,7 +1,6 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "typeRoots": ["./node_modules/@theaussiepom", "./node_modules/@types"],
     "outDir": "./dist",
     "rootDir": "./src"
   },

@@ -3,18 +3,8 @@
     "default": {
       "runner": "nx/tasks-runners/default",
       "options": {
-        "cacheableOperations": ["build", "test"],
-        "parallel": 5
+        "cacheableOperations": []
       }
-    }
-  },
-  "namedInputs": {
-    "default": ["{projectRoot}/**/*"]
-  },
-  "targetDefaults": {
-    "inputs": ["default"],
-    "build": {
-      "dependsOn": ["^build"]
     }
   }
 }
