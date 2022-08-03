@@ -7,6 +7,7 @@
   "private": true,
   "scripts": {
     "build": "npx lerna run build",
+    "test": "npx lerna run test",
     "bootstrap": "npx lerna bootstrap",
     "clean": "npx rimraf node_modules && npx lerna run clean && npx lerna clean --yes",
     "update-tocs": "npm run update-documentation-toc && npm run update-contributing-toc",
