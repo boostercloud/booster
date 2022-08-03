@@ -5,7 +5,7 @@ To properly test a Booster application, you should create a `test` folder at the
 When a Booster application is generated, you will have a script in a `package.json` like this:
 ```typescript
 "scripts": {
-  "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+  "test": "npx nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
 }
 ```
 
@@ -13,7 +13,7 @@ The only thing that you should add to this line are the `AWS_SDK_LOAD_CONFIG=tru
 
 ```typescript
 "scripts": {
-  "test": "AWS_SDK_LOAD_CONFIG=true BOOSTER_ENV=test nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+  "test": "AWS_SDK_LOAD_CONFIG=true BOOSTER_ENV=test npx nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
 }
 ```
 

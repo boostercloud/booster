@@ -147,8 +147,8 @@ aws_secret_access_key = <YOUR SECRET ACCESS KEY>
 
 **Declaring Region**
 
-If you'd like to use multiple AWS account profiles (in place of or in addition to your 
-default profile) you will need to also set a `region` option for each one to let the AWS SDK 
+If you'd like to use multiple AWS account profiles (in place of or in addition to your
+default profile) you will need to also set a `region` option for each one to let the AWS SDK
 know which region to deploy to. To do this, you have two options:
 
 - Add the region to the profile of your choice in your `~/.aws/credentials` file
@@ -179,7 +179,7 @@ region=<REGION FOR YOUR BOOSTER APP>
 
 **Switching Profiles**
 
-To change the AWS profile you use to deploy or nuke you need to export 
+To change the AWS profile you use to deploy or nuke you need to export
 the profile in your current `AWS_PROFILE` environment variable. This is done
 within your current terminal session with the following command –
 
@@ -188,37 +188,37 @@ $ export AWS_PROFILE=other_profile
 ```
 
 > [!WARNING]
-> When you are switching profiles by setting the `AWS_PROFILE` environment variable, 
+> When you are switching profiles by setting the `AWS_PROFILE` environment variable,
 > you will need to ensure you **do not** have values curently set for either the
-> `AWS_SECRET_ACCESS_KEY` or `AWS_ACCESS_KEY_ID` variables. If these have values assigned, 
+> `AWS_SECRET_ACCESS_KEY` or `AWS_ACCESS_KEY_ID` variables. If these have values assigned,
 > they will take precedence over any keys set within the current `AWS_PROFILE` profile.
-> 
+>
 > You can check if `AWS_SECRET_ACCESS_KEY` or `AWS_ACCESS_KEY_ID` have variables assigned
 > by checking all current AWS variables -
-> 
+>
 > ```shell
 > $ env | grep AWS
 > ```
-> 
+>
 > Or by checking these variables explicitly –
-> 
+>
 > ```shell
 > $ echo $AWS_ACCESS_KEY_ID
 > $ echo $AWS_SECRET_ACCESS_KEY
 > ```
-> 
-> If values are present for `AWS_SECRET_ACCESS_KEY` or `AWS_ACCESS_KEY_ID` you can 
+>
+> If values are present for `AWS_SECRET_ACCESS_KEY` or `AWS_ACCESS_KEY_ID` you can
 > clear them by unsetting them –
-> 
+>
 > ```shell
 > $ unset AWS_SECRET_ACCESS_KEY
 > $ unset AWS_ACCESS_KEY_ID
 > ```
 
-Selecting different profiles can be done manually, for each deploy or nuke, as 
-shown above, or you can create scripts within your package.json to set these 
-values at the same time as you deploy or nuke an environment. For example, below 
-we are creating scripts that set a different AWS profile to be used for 'development' 
+Selecting different profiles can be done manually, for each deploy or nuke, as
+shown above, or you can create scripts within your package.json to set these
+values at the same time as you deploy or nuke an environment. For example, below
+we are creating scripts that set a different AWS profile to be used for 'development'
 and 'production environments –
 
 ```json
@@ -233,7 +233,7 @@ and 'production environments –
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "compile": "ttsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
-    "test": "AWS_SDK_LOAD_CONFIG=true BOOSTER_ENV=test nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+    "test": "AWS_SDK_LOAD_CONFIG=true BOOSTER_ENV=test npx nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
   },
 ...
 ```
