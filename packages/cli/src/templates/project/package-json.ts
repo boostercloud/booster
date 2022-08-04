@@ -19,6 +19,7 @@ export const template = `{
     "rimraf": "^3.0.1",
     "@typescript-eslint/eslint-plugin": "4.22.1",
     "@typescript-eslint/parser": "4.22.1",
+    "@types/jsonwebtoken": "8.5.8",
     "eslint": "7.26.0",
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-prettier": "3.4.0",
@@ -41,7 +42,7 @@ export const template = `{
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "build": "npx ttsc -b tsconfig.json",
+    "build": "ttsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "test": "AWS_SDK_LOAD_CONFIG=true BOOSTER_ENV=test npx nyc --extension .ts mocha --forbid-only \\"test/**/*.test.ts\\""
   },

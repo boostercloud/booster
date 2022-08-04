@@ -1,5 +1,6 @@
 import * as path from 'path'
-import { exec } from 'child-process-promise'
+import * as util from 'util'
+import * as child_process from 'child_process'
 import * as chai from 'chai'
 import {
   createFolder,
@@ -12,6 +13,9 @@ import {
 import { ChildProcess } from 'child_process'
 import { overrideWithBoosterLocalDependencies } from '../../helper/deps-helper'
 import { stripAnsi } from './strip-ansi'
+import * as os from 'os'
+
+const exec = util.promisify(child_process.exec)
 
 // The Booster CLI version used should match the integration tests' version
 const BOOSTER_VERSION = require('../../../package.json').version
@@ -31,7 +35,7 @@ const REPO_URL = 'https://github.com/boostercloud/booster/'
 const PROVIDER = '@boostercloud/framework-provider-aws'
 
 describe('Project', () => {
-  const SANDBOX_INTEGRATION_DIR = 'new-project-integration-sandbox'
+  const SANDBOX_INTEGRATION_DIR = path.join(os.tmpdir(), 'new-project-integration-sandbox')
 
   before(async () => {
     // Required by Github actions CI/CD, because it doesn't have git configured
@@ -45,7 +49,7 @@ describe('Project', () => {
     removeFolders([SANDBOX_INTEGRATION_DIR])
   })
 
-  const cliPath = path.join('..', '..', 'cli', 'bin', 'run')
+  const cliPath = path.resolve(path.join('..', 'cli', 'bin', 'run'))
   const expectedOutputRegex = new RegExp(
     [
       'boost new',
@@ -123,7 +127,7 @@ describe('Project', () => {
     })
 
     if (promptAnswers) {
-      await handlePrompt(cliProcess.childProcess, promptAnswers)
+      await handlePrompt(cliProcess.child, promptAnswers)
     }
 
     return (await cliProcess).stdout
@@ -298,17 +302,15 @@ describe('Project', () => {
         })
 
         it('passes linter', async () => {
-          await expect(exec('npm run lint:check', { cwd: projectPath(projectName), capture: ['stderr', 'stdout'] })).to
-            .be.eventually.fulfilled
+          await expect(exec('npm run lint:check', { cwd: projectPath(projectName) })).to.be.eventually.fulfilled
         }).timeout(TEST_TIMEOUT)
 
-        // TODO: Remove the skip when there is at leas one version published of framework-common-helpers
         it('compiles', async () => {
           const fullProjectPath = projectPath(projectName)
           // Rewrite dependencies to use local versions
           await overrideWithBoosterLocalDependencies(fullProjectPath)
           // Install those dependencies
-          await exec('npm install --production --no-bin-links --no-optional', { cwd: fullProjectPath })
+          await exec('npm install', { cwd: fullProjectPath })
 
           await expect(exec('npm run build', { cwd: fullProjectPath })).to.be.eventually.fulfilled
         })
