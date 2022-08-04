@@ -5,6 +5,7 @@ import { exec } from 'child-process-promise'
 // Imported from another package to avoid duplication
 // It is OK-ish, since integration tests are always run in the context of the whole monorepo
 import { createSandboxProject } from '../../../../cli/src/common/sandbox'
+import { stripAnsi } from './strip-ansi'
 
 describe('Type', () => {
   let typeSandboxDir: string
@@ -26,7 +27,7 @@ describe('Type', () => {
       )
 
       const { stdout } = await exec(`${cliPath} new:type Item`, { cwd: typeSandboxDir })
-      expect(stdout).to.match(expectedOutputRegex)
+      expect(stripAnsi(stdout)).to.match(expectedOutputRegex)
 
       const expectedTypeContent = loadFixture('common/item.ts')
       const typeContent = readFileContent(`${typeSandboxDir}/src/common/item.ts`)

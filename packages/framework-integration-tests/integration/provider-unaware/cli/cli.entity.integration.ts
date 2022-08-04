@@ -5,6 +5,7 @@ import { exec } from 'child-process-promise'
 // Imported from another package to avoid duplication
 // It is OK-ish, since integration tests are always run in the context of the whole monorepo
 import { createSandboxProject } from '../../../../cli/src/common/sandbox'
+import { stripAnsi } from './strip-ansi'
 
 const EVENT_ENTITY_ID_PLACEHOLDER = '/* the associated entity ID */'
 const ENTITY_REDUCER_PLACEHOLDER = '/* NEW PostWithReducer HERE */'
@@ -30,7 +31,7 @@ describe('Entity', () => {
           'm'
         )
         const { stdout } = await exec(`${cliPath} new:entity Post`, { cwd: entitySandboxDir })
-        expect(stdout).to.match(expectedOutputRegex)
+        expect(stripAnsi(stdout)).to.match(expectedOutputRegex)
 
         const expectedEntityContent = readFileContent('integration/fixtures/entities/post.ts')
         const entityContent = readFileContent(`${entitySandboxDir}/src/entities/post.ts`)
@@ -47,7 +48,7 @@ describe('Entity', () => {
         const { stdout } = await exec(`${cliPath} new:entity PostWithFields --fields title:string body:string`, {
           cwd: entitySandboxDir,
         })
-        expect(stdout).to.match(expectedOutputRegex)
+        expect(stripAnsi(stdout)).to.match(expectedOutputRegex)
 
         const expectedEntityContent = readFileContent('integration/fixtures/entities/post-with-fields.ts')
         const entityContent = readFileContent(`${entitySandboxDir}/src/entities/post-with-fields.ts`)

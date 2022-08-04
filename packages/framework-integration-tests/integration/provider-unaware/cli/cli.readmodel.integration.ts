@@ -12,6 +12,7 @@ import { exec } from 'child-process-promise'
 // Imported from another package to avoid duplication
 // It is OK-ish, since integration tests are always run in the context of the whole monorepo
 import { createSandboxProject } from '../../../../cli/src/common/sandbox'
+import { stripAnsi } from './strip-ansi'
 
 const READ_MODEL_AUTH_PLACEHOLDER = "// Specify authorized roles here. Use 'all' to authorize anyone"
 const READ_MODEL_PROJECTION_PLACEHOLDER = '/* NEW CartWithProjectionReadModel HERE */'
@@ -39,7 +40,7 @@ describe('Read model', () => {
         removeFiles([FILE_CART_READ_MODEL])
 
         const { stdout } = await exec(`${cliPath} new:read-model CartReadModel`, { cwd: readModelSandboxDir })
-        expect(stdout).to.match(EXPECTED_OUTPUT_REGEX)
+        expect(stripAnsi(stdout)).to.match(EXPECTED_OUTPUT_REGEX)
 
         const expectedEntityContent = loadFixture('read-models/cart-read-model.ts')
         const entityContent = readFileContent(FILE_CART_READ_MODEL)
@@ -60,7 +61,7 @@ describe('Read model', () => {
           cliPath + " new:read-model CartWithFieldsReadModel --fields 'items:Array<Item>'",
           { cwd: readModelSandboxDir }
         )
-        expect(stdout).to.match(EXPECTED_OUTPUT_REGEX)
+        expect(stripAnsi(stdout)).to.match(EXPECTED_OUTPUT_REGEX)
 
         const expectedEntityContent = loadFixture('read-models/cart-with-fields-read-model.ts')
         const entityContent = readFileContent(FILE_CART_WITH_FIELDS_READ_MODEL)
@@ -84,7 +85,7 @@ describe('Read model', () => {
           cliPath + " new:read-model CartWithProjectionReadModel --fields 'items:Array<Item>' --projects Cart:id",
           { cwd: readModelSandboxDir }
         )
-        expect(stdout).to.match(EXPECTED_OUTPUT_REGEX)
+        expect(stripAnsi(stdout)).to.match(EXPECTED_OUTPUT_REGEX)
 
         const expectedEntityContent = loadFixture('read-models/cart-with-projection-read-model.ts')
         const entityContent = readFileContent(FILE_CART_WITH_PROJECTION_READ_MODEL)

@@ -5,6 +5,7 @@ import { exec } from 'child-process-promise'
 // Imported from another package to avoid duplication
 // It is OK-ish, since integration tests are always run in the context of the whole monorepo
 import { createSandboxProject } from '../../../../cli/src/common/sandbox'
+import { stripAnsi } from './strip-ansi'
 
 describe('Event handler', () => {
   let eventHandlerSandboxDir: string
@@ -30,7 +31,7 @@ describe('Event handler', () => {
       const { stdout } = await exec(`${cliPath} new:event-handler HandleCartChange -e CartItemChanged`, {
         cwd: eventHandlerSandboxDir,
       })
-      expect(stdout).to.match(expectedOutputRegex)
+      expect(stripAnsi(stdout)).to.match(expectedOutputRegex)
 
       const expectedEventContent = loadFixture('event-handlers/handle-cart-change.ts')
       const eventContent = readFileContent(`${eventHandlerSandboxDir}/src/event-handlers/handle-cart-change.ts`)

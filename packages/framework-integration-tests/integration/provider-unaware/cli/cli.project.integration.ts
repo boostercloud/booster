@@ -11,6 +11,7 @@ import {
 } from '../../helper/file-helper'
 import { ChildProcess } from 'child_process'
 import { overrideWithBoosterLocalDependencies } from '../../helper/deps-helper'
+import { stripAnsi } from './strip-ansi'
 
 // The Booster CLI version used should match the integration tests' version
 const BOOSTER_VERSION = require('../../../package.json').version
@@ -170,7 +171,7 @@ describe('Project', () => {
     const fileContents = projectFileContents.bind(null, projectName)
     const dirContents = projectDirContents.bind(null, projectName)
 
-    expect(stdout).to.match(expectedOutputRegex)
+    expect(stripAnsi(stdout)).to.match(expectedOutputRegex)
 
     expect(dirContents('/src/commands')).is.empty
     expect(dirContents('/src/common')).is.empty
@@ -411,7 +412,7 @@ describe('Project', () => {
         ]
         const stdout = await execNewProject('cart-demo-invalid-provider', flags)
 
-        expect(stdout).to.match(expectedOutputRegex)
+        expect(stripAnsi(stdout)).to.match(expectedOutputRegex)
       }).timeout(TEST_TIMEOUT)
     })
   })
