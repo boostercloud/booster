@@ -16,6 +16,7 @@ import {
   ProjectionMetadata,
 } from '@boostercloud/framework-types'
 import { expect } from '../expect'
+import { BoosterAuthorizer } from '../../src/booster-authorizer'
 
 describe('ReadModelStore', () => {
   afterEach(() => {
@@ -93,18 +94,27 @@ describe('ReadModelStore', () => {
       fetch: () => {},
     },
   } as unknown as ProviderLibrary
-  config.entities[AnImportantEntity.name] = { class: AnImportantEntity, authorizeReadEvents: [] }
-  config.entities[AnEntity.name] = { class: AnEntity, authorizeReadEvents: [] }
-  config.entities[AnImportantEntityWithArray.name] = { class: AnImportantEntityWithArray, authorizeReadEvents: [] }
+  config.entities[AnImportantEntity.name] = {
+    class: AnImportantEntity,
+    eventStreamAuthorizer: BoosterAuthorizer.authorizeRoles.bind(null, []),
+  }
+  config.entities[AnEntity.name] = {
+    class: AnEntity,
+    eventStreamAuthorizer: BoosterAuthorizer.authorizeRoles.bind(null, []),
+  }
+  config.entities[AnImportantEntityWithArray.name] = {
+    class: AnImportantEntityWithArray,
+    eventStreamAuthorizer: BoosterAuthorizer.authorizeRoles.bind(null, []),
+  }
   config.readModels[SomeReadModel.name] = {
     class: SomeReadModel,
-    authorizedRoles: 'all',
+    authorizer: BoosterAuthorizer.allowAccess,
     properties: [],
     before: [],
   }
   config.readModels[AnotherReadModel.name] = {
     class: AnotherReadModel,
-    authorizedRoles: 'all',
+    authorizer: BoosterAuthorizer.allowAccess,
     properties: [],
     before: [],
   }

@@ -10,12 +10,13 @@ import {
   SubscriptionEnvelope,
   FilterFor,
   BoosterConfig,
+  ReadModelInterface,
 } from '@boostercloud/framework-types'
 import { restore, fake, match, spy, replace } from 'sinon'
 import { BoosterReadModelsReader } from '../src/booster-read-models-reader'
 import { random, internet } from 'faker'
-import { BoosterAuth } from '../src/booster-auth'
 import { Booster } from '../src/booster'
+import { BoosterAuthorizer } from '../src/booster-authorizer'
 
 describe('BoosterReadModelReader', () => {
   const config = new BoosterConfig('test')
@@ -32,11 +33,11 @@ describe('BoosterReadModelReader', () => {
     restore()
   })
 
-  class TestReadModel {
+  class TestReadModel implements ReadModelInterface {
     public id: UUID = '∂'
   }
 
-  class SequencedReadModel {
+  class SequencedReadModel implements ReadModelInterface {
     public id: UUID = 'π'
   }
 
@@ -55,13 +56,13 @@ describe('BoosterReadModelReader', () => {
     beforeEach(() => {
       config.readModels[TestReadModel.name] = {
         class: TestReadModel,
-        authorizedRoles: [UserRole],
+        authorizer: BoosterAuthorizer.authorizeRoles.bind(null, [UserRole]),
         properties: [],
         before: [],
       }
       config.readModels[SequencedReadModel.name] = {
         class: SequencedReadModel,
-        authorizedRoles: [UserRole],
+        authorizer: BoosterAuthorizer.authorizeRoles.bind(null, [UserRole]),
         properties: [],
         before: [],
       }
@@ -72,66 +73,63 @@ describe('BoosterReadModelReader', () => {
       delete config.readModels[SequencedReadModel.name]
     })
 
-    describe('the `validateByIdRequest', () => {
-      const validateByIdRequest = (readModelReader as any).validateByIdRequest.bind(readModelReader)
+    describe('the `validateByIdRequest` function', () => {
+      const validateByIdRequest = (readModelReader as any).validateByIdRequest.bind(readModelReader) as (
+        readModelByIdRequest: ReadModelRequestEnvelope<ReadModelInterface>
+      ) => Promise<void>
 
-      it('throws an invalid parameter error when the version is not present in a request', () => {
-        expect(() => {
-          validateByIdRequest({})
-        }).to.throw('"version" was not present')
+      it('throws an invalid parameter error when the version is not present in a request', async () => {
+        const emptyReadmodelByIdRequest = {} as any
+        await expect(validateByIdRequest(emptyReadmodelByIdRequest)).to.be.eventually.rejectedWith(
+          '"version" was not present'
+        )
       })
 
-      it("throws a not found error when it can't find the read model metadata", () => {
-        expect(() => {
-          validateByIdRequest({ version: 1, class: { name: 'NonexistentReadModel' } })
-        }).to.throw(/Could not find read model/)
+      it("throws a not found error when it can't find the read model metadata", async () => {
+        const readModelByIdRequest = { version: 1, class: { name: 'NonexistentReadModel' } } as any
+        await expect(validateByIdRequest(readModelByIdRequest)).to.be.eventually.rejectedWith(
+          /Could not find read model/
+        )
       })
 
-      it('throws a non authorized error when the current user is not allowed to perform the request', () => {
-        expect(() => {
-          validateByIdRequest({ version: 1, class: TestReadModel })
-        }).to.throw(/Access denied/)
+      it('throws a non authorized error when the current user is not allowed to perform the request', async () => {
+        const readModelByIdRequest = { version: 1, class: TestReadModel } as any
+        await expect(validateByIdRequest(readModelByIdRequest)).to.be.eventually.rejectedWith(/Access denied/)
       })
 
-      it('throws an invalid parameter error when the request receives a sequence key but it cannot be found in the Booster metadata', () => {
-        replace(BoosterAuth, 'isUserAuthorized', fake.returns(true))
-        expect(() => {
-          validateByIdRequest({
-            version: 1,
-            class: TestReadModel,
-            currentUser: { id: '666', username: 'root', roles: ['root'] },
-            key: {
-              id: 'π',
-              sequenceKey: { name: 'salmon', value: 'sammy' },
-            },
-          })
-        }).to.throw(/Could not find a sort key/)
+      it('throws an invalid parameter error when the request receives a sequence key but it cannot be found in the Booster metadata', async () => {
+        const readModel = {
+          version: 1,
+          class: TestReadModel,
+          currentUser: { id: '666', username: 'root', roles: ['UserRole'], claims: {} },
+          key: {
+            id: 'π',
+            sequenceKey: { name: 'salmon', value: 'sammy' },
+          },
+        } as any
+        await expect(validateByIdRequest(readModel)).to.be.eventually.rejectedWith(/Could not find a sort key/)
       })
 
-      it('does not throw an error when there is no sequence key and everything else is ok', () => {
-        replace(BoosterAuth, 'isUserAuthorized', fake.returns(true))
-        expect(() => {
-          validateByIdRequest({
-            version: 1,
-            class: TestReadModel,
-            currentUser: { id: '666', username: 'root', roles: ['root'] },
-          })
-        }).not.to.throw()
+      it('does not throw an error when there is no sequence key and everything else is ok', async () => {
+        const readModel = {
+          version: 1,
+          class: TestReadModel,
+          currentUser: { id: '666', username: 'root', roles: ['UserRole'] },
+        } as any
+        await expect(validateByIdRequest(readModel)).to.be.eventually.fulfilled
       })
 
-      it('does not throw an error when there is a valid sequence key and everything else is ok', () => {
-        replace(BoosterAuth, 'isUserAuthorized', fake.returns(true))
-        expect(() => {
-          validateByIdRequest({
-            version: 1,
-            class: SequencedReadModel,
-            currentUser: { id: '666', username: 'root', roles: ['root'] },
-            key: {
-              id: '§',
-              sequenceKey: { name: 'salmon', value: 'sammy' },
-            },
-          })
-        }).not.to.throw()
+      it('does not throw an error when there is a valid sequence key and everything else is ok', async () => {
+        const readModel = {
+          version: 1,
+          class: SequencedReadModel,
+          currentUser: { id: '666', username: 'root', roles: ['UserRole'] },
+          key: {
+            id: '§',
+            sequenceKey: { name: 'salmon', value: 'sammy' },
+          },
+        } as any
+        await expect(validateByIdRequest(readModel)).to.be.eventually.fulfilled
       })
     })
 
@@ -183,7 +181,7 @@ describe('BoosterReadModelReader', () => {
     beforeEach(() => {
       config.readModels[TestReadModel.name] = {
         class: TestReadModel,
-        authorizedRoles: [UserRole],
+        authorizer: BoosterAuthorizer.authorizeRoles.bind(null, [UserRole]),
         properties: [],
         before: [],
       }
@@ -278,7 +276,7 @@ describe('BoosterReadModelReader', () => {
       beforeEach(() => {
         config.readModels[TestReadModel.name] = {
           class: TestReadModel,
-          authorizedRoles: [UserRole],
+          authorizer: BoosterAuthorizer.authorizeRoles.bind(null, [UserRole]),
           properties: [],
           before: [],
         }
@@ -317,7 +315,7 @@ describe('BoosterReadModelReader', () => {
 
           config.readModels[TestReadModel.name] = {
             class: TestReadModel,
-            authorizedRoles: [UserRole],
+            authorizer: BoosterAuthorizer.authorizeRoles.bind(null, [UserRole]),
             properties: [],
             before: [beforeFnSpy],
           }
@@ -349,7 +347,7 @@ describe('BoosterReadModelReader', () => {
 
           config.readModels[TestReadModel.name] = {
             class: TestReadModel,
-            authorizedRoles: [UserRole],
+            authorizer: BoosterAuthorizer.authorizeRoles.bind(null, [UserRole]),
             properties: [],
             before: [beforeFnSpy, beforeFnV2Spy],
           }
@@ -389,7 +387,7 @@ describe('BoosterReadModelReader', () => {
         beforeEach(() => {
           config.readModels[TestReadModel.name] = {
             class: TestReadModel,
-            authorizedRoles: [UserRole],
+            authorizer: BoosterAuthorizer.authorizeRoles.bind(null, [UserRole]),
             properties: [],
             before: [],
           }
@@ -422,7 +420,7 @@ describe('BoosterReadModelReader', () => {
         beforeEach(() => {
           config.readModels[TestReadModel.name] = {
             class: TestReadModel,
-            authorizedRoles: [UserRole],
+            authorizer: BoosterAuthorizer.authorizeRoles.bind(null, [UserRole]),
             properties: [],
             before: [beforeFn, beforeFnV2],
           }

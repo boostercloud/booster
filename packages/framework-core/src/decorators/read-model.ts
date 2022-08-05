@@ -1,5 +1,12 @@
-import { Class, ReadModelFilterHooks, ReadModelInterface, RoleAccess } from '@boostercloud/framework-types'
+import {
+  Class,
+  ReadModelAuthorizer,
+  ReadModelFilterHooks,
+  ReadModelInterface,
+  ReadModelRoleAccess,
+} from '@boostercloud/framework-types'
 import { Booster } from '../booster'
+import { BoosterAuthorizer } from '../booster-authorizer'
 import { getClassMetadata } from './metadata'
 
 /**
@@ -7,7 +14,7 @@ import { getClassMetadata } from './metadata'
  * @param attributes
  */
 export function ReadModel(
-  attributes: RoleAccess & ReadModelFilterHooks
+  attributes: ReadModelRoleAccess & ReadModelFilterHooks
 ): (readModelClass: Class<ReadModelInterface>) => void {
   return (readModelClass) => {
     Booster.configureCurrentEnv((config): void => {
@@ -16,10 +23,19 @@ export function ReadModel(
         If you think that this is an error, try performing a clean build.`)
       }
 
+      let authorizer: ReadModelAuthorizer = BoosterAuthorizer.denyAccess
+      if (attributes.authorize === 'all') {
+        authorizer = BoosterAuthorizer.allowAccess
+      } else if (Array.isArray(attributes.authorize)) {
+        authorizer = BoosterAuthorizer.authorizeRoles.bind(null, attributes.authorize)
+      } else if (typeof attributes.authorize === 'function') {
+        authorizer = attributes.authorize
+      }
+
       config.readModels[readModelClass.name] = {
         class: readModelClass,
         properties: getClassMetadata(readModelClass).fields,
-        authorizedRoles: attributes.authorize,
+        authorizer,
         before: attributes.before ?? [],
       }
     })

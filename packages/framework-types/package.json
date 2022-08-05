@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-types",
-  "version": "0.29.1",
+  "version": "0.30.4",
   "description": "Contains Booster types related to the information extracted from the user project",
   "keywords": [
     "framework-types"
@@ -34,15 +34,15 @@
   },
   "dependencies": {
     "@types/graphql": "14.5.0",
-    "tslib": "2.3.1",
+    "tslib": "2.4.0",
     "uuid": "8.3.2"
   },
   "devDependencies": {
+    "@boostercloud/metadata-booster": "^0.30.4",
     "@types/uuid": "8.3.0",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
     "fast-check": "2.17.0",
-    "metadata-booster": "0.4.1",
     "mocha": "8.4.0",
     "sinon": "9.2.3",
     "sinon-chai": "3.5.0"

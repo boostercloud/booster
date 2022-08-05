@@ -2,6 +2,12 @@ import * as fs from 'fs'
 import * as jwt from 'jsonwebtoken'
 import * as path from 'path'
 
+type TokenOptions = {
+  expiresIn?: number
+  notBefore?: number
+  customClaims?: Record<string, any>
+}
+
 /**
  * This helper will create a valid token using a real private key for testing
  * The keyset file is expecgted to be located in "<package root>/keys/private.key file"
@@ -11,7 +17,7 @@ export class TokenHelper {
   constructor() {
     this.privateKey = fs.readFileSync(path.join(__dirname, '..', 'keys', 'private.key'))
   }
-  public forUser(email: string, role: string, expiresIn?: number, notBefore?: number): string {
+  public forUser(email: string, role?: string, tokenOptions?: TokenOptions): string {
     const keyid = 'booster'
     const issuer = 'booster'
     const options = {
@@ -20,20 +26,18 @@ export class TokenHelper {
       issuer,
       keyid,
     } as jwt.SignOptions
-    if (expiresIn || expiresIn === 0) {
-      options['expiresIn'] = expiresIn
+    if (tokenOptions?.expiresIn !== undefined) {
+      options['expiresIn'] = tokenOptions?.expiresIn
     }
-    if (notBefore) {
-      options['notBefore'] = notBefore
+    if (tokenOptions?.notBefore) {
+      options['notBefore'] = tokenOptions?.notBefore
     }
-    return jwt.sign(
-      {
-        id: email,
-        'booster:role': role,
-        email,
-      },
-      this.privateKey,
-      options
-    )
+    const payload = {
+      id: email,
+      email,
+      ...tokenOptions?.customClaims,
+    }
+    const rolesClaim = role ? { 'booster:role': role } : {}
+    return jwt.sign({ ...payload, ...rolesClaim }, this.privateKey, options)
   }
 }

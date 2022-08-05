@@ -39,6 +39,7 @@ describe('entities', async () => {
 
     await waitForIt(
       () => applicationUnderTest.query.readModels(mockCartId, CART_READ_MODEL_NAME),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (readModel: any) =>
         readModel && readModel[0]?.id === mockCartId && readModel[0]?.cartItems[0]?.productId === mockProductId
     )

@@ -297,7 +297,8 @@ describe('Project', () => {
         })
 
         it('passes linter', async () => {
-          await expect(exec('npm run lint:check', { cwd: projectPath(projectName), capture: ['stderr', 'stdout']})).to.be.eventually.fulfilled
+          await expect(exec('npm run lint:check', { cwd: projectPath(projectName), capture: ['stderr', 'stdout'] })).to
+            .be.eventually.fulfilled
         }).timeout(TEST_TIMEOUT)
 
         // TODO: Remove the skip when there is at leas one version published of framework-common-helpers

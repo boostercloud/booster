@@ -2,8 +2,8 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 
 import { expect } from './expect'
-import { BoosterConfig, MigrationMetadata, ReadModelInterface, UUID } from '@boostercloud/framework-types'
-import { ReadModelMigrator } from '../src/read-model-migrator'
+import { BoosterConfig, SchemaMigrationMetadata, ReadModelInterface, UUID } from '@boostercloud/framework-types'
+import { ReadModelSchemaMigrator } from '../src/read-model-schema-migrator'
 
 class TestConceptV1 {
   public constructor(readonly id: UUID, readonly field1: string) {}
@@ -27,8 +27,8 @@ class TestConceptMigration {
   }
 }
 
-describe('ReadModelMigrator', () => {
-  const migrations = new Map<number, MigrationMetadata>()
+describe('ReadModelSchemaMigrator', () => {
+  const migrations = new Map<number, SchemaMigrationMetadata>()
   migrations.set(2, {
     fromSchema: TestConceptV1,
     toSchema: TestConceptV2,
@@ -44,8 +44,8 @@ describe('ReadModelMigrator', () => {
     toVersion: 3,
   })
   const config = new BoosterConfig('test')
-  config.migrations['TestConcept'] = migrations
-  const migrator = new ReadModelMigrator(config)
+  config.schemaMigrations['TestConcept'] = migrations
+  const migrator = new ReadModelSchemaMigrator(config)
 
   describe('migrate', async () => {
     it('throws when the schemaVersion of the concept to migrate is lower than 1', async () => {
@@ -58,7 +58,7 @@ describe('ReadModelMigrator', () => {
       }
 
       await expect(migrator.migrate(toMigrate, 'TestConcept')).to.be.rejectedWith(
-        /Received an invalid version value, 0, for TestConcept/
+        /Received an invalid schema version value, 0, for TestConcept/
       )
     })
 
@@ -72,7 +72,7 @@ describe('ReadModelMigrator', () => {
       }
 
       await expect(migrator.migrate(toMigrate, 'TestConcept')).to.be.rejectedWith(
-        /The current version of TestConcept is 3, which is lower than the received version 4/
+        /The current schema version of TestConcept is 3, which is lower than the received version 4/
       )
     })
 

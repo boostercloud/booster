@@ -83,7 +83,7 @@ describe('the `stack-tools` module', () => {
       config.appName = 'testing-app'
       config.entities[EmptyEntity.name] = {
         class: EmptyEntity,
-        authorizeReadEvents: [],
+        eventStreamAuthorizer: () => Promise.resolve(),
       }
 
       // Just checks that the assemble method does not fail,
@@ -117,7 +117,7 @@ describe('the `stack-tools` module', () => {
       config.appName = 'testing-app'
       config.readModels[SomeReadModel.name] = {
         class: SomeReadModel,
-        authorizedRoles: 'all',
+        authorizer: () => Promise.resolve(),
         properties: [],
         before: [],
       }
@@ -178,7 +178,7 @@ describe('the `stack-tools` module', () => {
         config.appName = 'testing-app'
         config.entities[EmptyEntity.name] = {
           class: EmptyEntity,
-          authorizeReadEvents: [],
+          eventStreamAuthorizer: () => Promise.reject('unauthorized'),
         }
 
         const fakeRocket: InfrastructureRocket = {
