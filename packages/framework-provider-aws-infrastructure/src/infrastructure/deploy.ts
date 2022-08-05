@@ -33,11 +33,10 @@ export async function deploy(config: BoosterConfig, rockets?: InfrastructureRock
   )
 
   logger.info(`Deploying ${config.appName} on environment ${config.environmentName}`)
+  const stackNames = getStackNames(config)
   await cdkToolkit.deploy({
     toolkitStackName,
-    selector: {
-      patterns: getStackNames(config),
-    },
+    stackNames,
     requireApproval: RequireApproval.Never,
   })
 }

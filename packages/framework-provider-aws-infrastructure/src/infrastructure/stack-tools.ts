@@ -65,7 +65,7 @@ export async function getStackServiceConfiguration(
 ): Promise<StackServiceConfiguration> {
   const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults()
   const environment = await getEnvironment(sdkProvider)
-  const { sdk } = await sdkProvider.forEnvironment(environment, Mode.ForWriting)
+  const sdk = await sdkProvider.forEnvironment(environment, Mode.ForWriting)
   const configuration = await new Configuration().load()
   const cloudExecutable = new CloudExecutable({
     configuration,

@@ -37,7 +37,7 @@
     "@aws-cdk/core": "1.99.0",
     "@aws-cdk/cx-api": "1.99.0",
     "archiver": "5.3.1",
-    "aws-cdk": "1.164.0",
+    "aws-cdk": "1.99.0",
     "aws-sdk": "2.853.0",
     "cdk-assets": "2.33.0",
     "colors": "^1.4.0",
