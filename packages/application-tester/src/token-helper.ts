@@ -1,6 +1,6 @@
 import * as fs from 'fs'
-import * as jwt from 'jsonwebtoken'
 import * as path from 'path'
+import { SignJWT, KeyLike, importPKCS8 } from 'jose'
 
 type TokenOptions = {
   expiresIn?: number
@@ -13,31 +13,41 @@ type TokenOptions = {
  * The keyset file is expecgted to be located in "<package root>/keys/private.key file"
  */
 export class TokenHelper {
-  private privateKey: Buffer
+  private privateKey: string
+
   constructor() {
-    this.privateKey = fs.readFileSync(path.join(__dirname, '..', 'keys', 'private.key'))
+    this.privateKey = fs.readFileSync(path.join(__dirname, '..', 'keys', 'private.key')).toString('utf8')
   }
-  public forUser(email: string, role?: string, tokenOptions?: TokenOptions): string {
+
+  public async forUser(email: string, role?: string, tokenOptions?: TokenOptions): Promise<string> {
     const keyid = 'booster'
     const issuer = 'booster'
-    const options = {
-      algorithm: 'RS256',
-      subject: email,
-      issuer,
-      keyid,
-    } as jwt.SignOptions
-    if (tokenOptions?.expiresIn !== undefined) {
-      options['expiresIn'] = tokenOptions?.expiresIn
-    }
-    if (tokenOptions?.notBefore) {
-      options['notBefore'] = tokenOptions?.notBefore
-    }
+
     const payload = {
       id: email,
       email,
       ...tokenOptions?.customClaims,
     }
     const rolesClaim = role ? { 'booster:role': role } : {}
-    return jwt.sign({ ...payload, ...rolesClaim }, this.privateKey, options)
+
+    let tokenBuilder = new SignJWT({ ...payload, ...rolesClaim })
+      .setProtectedHeader({
+        alg: 'RS256',
+        kid: keyid,
+      })
+      .setIssuedAt()
+      .setIssuer(issuer)
+      .setSubject(email)
+
+    if (tokenOptions?.expiresIn !== undefined) {
+      tokenBuilder = tokenBuilder.setExpirationTime(tokenOptions.expiresIn)
+    }
+
+    if (tokenOptions?.notBefore !== undefined) {
+      tokenBuilder = tokenBuilder.setNotBefore(tokenOptions.notBefore)
+    }
+
+    const key: KeyLike = await importPKCS8(this.privateKey, 'RS256')
+    return await tokenBuilder.sign(key)
   }
 }
