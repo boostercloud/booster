@@ -287,7 +287,7 @@ describe('the nuke module', () => {
       await nukeApplication(config, cdkToolkit)
 
       expect(cdkToolkit.destroy).to.have.been.calledWithMatch({
-        selector: { patterns: ['stack-name'] },
+        stackNames: ['stack-name'],
         exclusively: false,
         force: true,
       })
