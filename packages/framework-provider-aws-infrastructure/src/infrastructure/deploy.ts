@@ -36,7 +36,7 @@ export async function deploy(config: BoosterConfig, rockets?: InfrastructureRock
   const stackNames = getStackNames(config)
   await cdkToolkit.deploy({
     toolkitStackName,
-    stackNames,
+    selector: { patterns: stackNames },
     requireApproval: RequireApproval.Never,
   })
 }
