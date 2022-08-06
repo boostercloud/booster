@@ -1,4 +1,4 @@
-import { DecodedToken, TokenVerifier, UserEnvelope } from '@boostercloud/framework-types'
+import { DecodedToken, TokenVerifier, UserEnvelope, UUID } from '@boostercloud/framework-types'
 
 export const DEFAULT_ROLES_CLAIM = 'custom:role'
 
@@ -16,21 +16,21 @@ function rolesFromTokenRole(rolesClaim: unknown): Array<string> {
 }
 
 export abstract class RoleBasedTokenVerifier implements TokenVerifier {
-  public constructor(readonly rolesClaim: string = DEFAULT_ROLES_CLAIM) {}
+  public constructor(readonly issuer: string, readonly rolesClaim: string = DEFAULT_ROLES_CLAIM) {}
 
   abstract verify(token: string): Promise<DecodedToken>
 
   public toUserEnvelope(decodedToken: DecodedToken): UserEnvelope {
-    const payload = decodedToken.payload
-    const username = payload?.email || payload?.phone_number || payload.sub
-    const id = payload.sub
+    const { payload, header } = decodedToken
+    const id = payload.sub ?? (UUID.generate() as string)
+    const username = (payload.email ?? payload.phone_number ?? payload.sub ?? id) as string
     const roles = rolesFromTokenRole(payload[this.rolesClaim])
     return {
       id,
       username,
       roles,
-      claims: decodedToken.payload,
-      header: decodedToken.header,
+      claims: payload,
+      header,
     }
   }
 }

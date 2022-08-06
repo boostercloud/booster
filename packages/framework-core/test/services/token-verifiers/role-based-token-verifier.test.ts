@@ -18,6 +18,7 @@ describe('abstract class RoleBasedTokenVerifier', () => {
         const roles = ['ProUser']
         const header = {
           kid: 'kid123',
+          alg: 'RS256',
         }
         const payload = {
           sub: 'sub123',
@@ -26,7 +27,7 @@ describe('abstract class RoleBasedTokenVerifier', () => {
         }
         class UselessTokenVerifier extends RoleBasedTokenVerifier {
           public constructor() {
-            super()
+            super('issuer')
           }
 
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -54,6 +55,7 @@ describe('abstract class RoleBasedTokenVerifier', () => {
         const roles = ['ProUser']
         const header = {
           kid: 'kid123',
+          alg: 'RS256',
         }
         const payload = {
           sub: 'sub123',

@@ -216,10 +216,10 @@ describe('the "verifyToken" method', () => {
 
     const verifyFunction = boosterTokenVerifier.verify(token)
 
-    await expect(verifyFunction).to.eventually.be.rejectedWith('jwt expired')
+    await expect(verifyFunction).to.eventually.be.rejectedWith(/JWTExpired: "exp" claim timestamp check failed/)
   })
 
-  it('fails if current time is before the notBefore claim of the token ', async () => {
+  it('fails if current time is before the notBefore claim of the token', async () => {
     const token = jwks.token({
       sub: userId,
       iss: issuer,
@@ -231,7 +231,9 @@ describe('the "verifyToken" method', () => {
 
     const verifyFunction = boosterTokenVerifier.verify(token)
 
-    await expect(verifyFunction).to.eventually.be.rejectedWith('jwt not active')
+    await expect(verifyFunction).to.eventually.be.rejectedWith(
+      /JWTClaimValidationFailed: "nbf" claim timestamp check failed/
+    )
   })
 
   it("fails if extra validation doesn't match", async () => {

@@ -5,15 +5,18 @@ import {
   UserEnvelope,
   BoosterConfig,
 } from '@boostercloud/framework-types'
-import { NotBeforeError, TokenExpiredError } from 'jsonwebtoken'
+import { errors } from 'jose'
 
 export class BoosterTokenVerifier {
   public constructor(private config: BoosterConfig) {}
 
   public async verify(token: string): Promise<UserEnvelope> {
+    const sanitizedToken = token.replace('Bearer ', '').trim()
     const userEnvelopes = await Promise.allSettled(
       this.config.tokenVerifiers.map((tokenVerifier) =>
-        tokenVerifier.verify(token).then((decodedToken) => Promise.resolve(tokenVerifier.toUserEnvelope(decodedToken)))
+        tokenVerifier
+          .verify(sanitizedToken)
+          .then((decodedToken) => Promise.resolve(tokenVerifier.toUserEnvelope(decodedToken)))
       )
     )
     const winner = userEnvelopes.find((result) => result.status === 'fulfilled')
@@ -39,11 +42,13 @@ export class BoosterTokenVerifier {
   }
 
   private getTokenNotBeforeErrors(results: Array<PromiseSettledResult<UserEnvelope>>): Array<PromiseRejectedResult> {
-    return this.getErrors(results).filter((result) => result.reason instanceof NotBeforeError)
+    return this.getErrors(results).filter(
+      (result) => result.reason instanceof errors.JWTClaimValidationFailed && result.reason.claim === 'nbf'
+    )
   }
 
   private getTokenExpiredErrors(results: Array<PromiseSettledResult<UserEnvelope>>): Array<PromiseRejectedResult> {
-    return this.getErrors(results).filter((result) => result.reason instanceof TokenExpiredError)
+    return this.getErrors(results).filter((result) => result.reason instanceof errors.JWTExpired)
   }
 
   private getErrors(results: Array<PromiseSettledResult<UserEnvelope>>): Array<PromiseRejectedResult> {

@@ -1,14 +1,21 @@
-import { DecodedToken } from '@boostercloud/framework-types'
-import { verifyJWT } from './utilities'
 import { RoleBasedTokenVerifier } from './role-based-token-verifier'
+import { importSPKI, jwtVerify } from 'jose'
+import { DecodedToken } from '@boostercloud/framework-types'
 
 export class PublicKeyTokenVerifier extends RoleBasedTokenVerifier {
-  public constructor(readonly issuer: string, readonly publicKeyResolver: Promise<string>, rolesClaim?: string) {
-    super(rolesClaim)
+  public constructor(
+    issuer: string,
+    readonly publicKeyResolver: Promise<string>,
+    rolesClaim?: string,
+    readonly algorithm: string = 'RS256'
+  ) {
+    super(issuer, rolesClaim)
   }
 
   public async verify(token: string): Promise<DecodedToken> {
     const key = await this.publicKeyResolver
-    return verifyJWT(token, this.issuer, key)
+    const publicKey = await importSPKI(key, this.algorithm)
+    const { payload, protectedHeader } = await jwtVerify(token, publicKey, { issuer: this.issuer })
+    return { payload, header: protectedHeader }
   }
 }

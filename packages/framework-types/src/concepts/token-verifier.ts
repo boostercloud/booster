@@ -1,19 +1,9 @@
 import { UserEnvelope } from '../envelope'
+import { JWTHeaderParameters, JWTPayload } from 'jose'
 
 export interface DecodedToken {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  header: {
-    kid: string
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any
-  }
-  payload: {
-    sub: string
-    email?: string
-    phone_number?: string
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any
-  }
+  payload: JWTPayload
+  header: JWTHeaderParameters
 }
 
 export interface TokenVerifier {

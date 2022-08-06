@@ -1,6 +1,7 @@
-import { DecodedToken } from '@boostercloud/framework-types'
-import { getJwksClient, getKeyWithClient, verifyJWT } from './utilities'
 import { RoleBasedTokenVerifier } from './role-based-token-verifier'
+import { createRemoteJWKSet, jwtVerify } from 'jose'
+import { URL } from 'url'
+import { DecodedToken } from '@boostercloud/framework-types'
 
 /**
  * Environment variables that are used to configure a default JWKs URI Token Verifier
@@ -14,13 +15,21 @@ export const JWT_ENV_VARS = {
 }
 
 export class JwksUriTokenVerifier extends RoleBasedTokenVerifier {
-  public constructor(readonly issuer: string, readonly jwksUri: string, rolesClaim?: string) {
-    super(rolesClaim)
+  public constructor(
+    issuer: string,
+    readonly jwksUri: string,
+    rolesClaim?: string,
+    readonly algorithm: string = 'RS256'
+  ) {
+    super(issuer, rolesClaim)
   }
 
   public async verify(token: string): Promise<DecodedToken> {
-    const client = getJwksClient(this.jwksUri)
-    const key = getKeyWithClient.bind(this, client)
-    return verifyJWT(token, this.issuer, key)
+    const jwks = createRemoteJWKSet(new URL(this.jwksUri))
+    const { payload, protectedHeader } = await jwtVerify(token, jwks, {
+      issuer: this.issuer,
+      algorithms: [this.algorithm],
+    })
+    return { payload, header: protectedHeader }
   }
 }
