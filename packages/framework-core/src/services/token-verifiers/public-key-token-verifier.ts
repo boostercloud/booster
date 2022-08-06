@@ -15,6 +15,7 @@ export class PublicKeyTokenVerifier extends RoleBasedTokenVerifier {
   public async verify(token: string): Promise<DecodedToken> {
     const key = await this.publicKeyResolver
     const publicKey = await importSPKI(key, this.algorithm)
-    return await jwtVerify(token, publicKey, { issuer: this.issuer })
+    const { payload, protectedHeader } = await jwtVerify(token, publicKey, { issuer: this.issuer })
+    return { payload, header: protectedHeader }
   }
 }

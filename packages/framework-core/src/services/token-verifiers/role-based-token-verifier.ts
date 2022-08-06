@@ -21,7 +21,7 @@ export abstract class RoleBasedTokenVerifier implements TokenVerifier {
   abstract verify(token: string): Promise<DecodedToken>
 
   public toUserEnvelope(decodedToken: DecodedToken): UserEnvelope {
-    const { payload, protectedHeader } = decodedToken
+    const { payload, header } = decodedToken
     const id = payload.sub ?? (UUID.generate() as string)
     const username = (payload.email ?? payload.phone_number ?? payload.sub ?? id) as string
     const roles = rolesFromTokenRole(payload[this.rolesClaim])
@@ -30,7 +30,7 @@ export abstract class RoleBasedTokenVerifier implements TokenVerifier {
       username,
       roles,
       claims: payload,
-      header: protectedHeader,
+      header,
     }
   }
 }

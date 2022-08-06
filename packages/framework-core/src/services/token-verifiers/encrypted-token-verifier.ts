@@ -13,6 +13,7 @@ export class EncryptedTokenVerifier extends RoleBasedTokenVerifier {
 
   public async verify(token: string): Promise<DecodedToken> {
     const decryptionKey = await this.decryptionKeyResolver
-    return await jwtDecrypt(token, decryptionKey)
+    const { payload, protectedHeader } = await jwtDecrypt(token, decryptionKey)
+    return { payload, header: protectedHeader }
   }
 }

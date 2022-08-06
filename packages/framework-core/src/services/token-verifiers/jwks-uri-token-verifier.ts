@@ -26,6 +26,10 @@ export class JwksUriTokenVerifier extends RoleBasedTokenVerifier {
 
   public async verify(token: string): Promise<DecodedToken> {
     const jwks = createRemoteJWKSet(new URL(this.jwksUri))
-    return await jwtVerify(token, jwks, { issuer: this.issuer })
+    const { payload, protectedHeader } = await jwtVerify(token, jwks, {
+      issuer: this.issuer,
+      algorithms: [this.algorithm],
+    })
+    return { payload, header: protectedHeader }
   }
 }

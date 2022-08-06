@@ -1,7 +1,10 @@
 import { UserEnvelope } from '../envelope'
-import { JWTVerifyResult } from 'jose'
+import { JWTHeaderParameters, JWTPayload } from 'jose'
 
-export type DecodedToken = JWTVerifyResult
+export interface DecodedToken {
+  payload: JWTPayload
+  header: JWTHeaderParameters
+}
 
 export interface TokenVerifier {
   /**
