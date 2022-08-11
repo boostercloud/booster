@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import { ClassDeclaration, ClassInstancePropertyTypes, createWrappedNode, Node, SyntaxKind, Type } from 'ts-morph'
-import * as ts from 'typescript'
+import { ts, ClassDeclaration, ClassInstancePropertyTypes, createWrappedNode, Node, SyntaxKind, Type } from 'ts-morph'
 import { makeModuleLogger } from './logging'
 import { ClassMetadata, getTypeGroup, TypeMetadata } from './metadata-types'
 import { TypeCache } from './type-cache'
@@ -58,14 +57,18 @@ function hasQuestionTokenNode(node: Node<ts.Node> | undefined): boolean {
 function getTypeInfo(type: Type, cache: TypeCache, node?: Node): TypeMetadata {
   const logger = makeLogger(getTypeInfo.name)
   const typeInfo: TypeMetadata = makeTypeInfo(type, node)
+  if (typeInfo.isNullable) {
+    type = type.getNonNullableType()
+  }
   const cachedType = cache.getType(typeInfo, true)
   if (cachedType) {
     return cachedType
   }
   cache.saveType({ typeInfo })
+  logger.debug('Parsing parameters for %s', typeInfo.name)
   switch (typeInfo.typeGroup) {
     case 'Enum':
-      typeInfo.parameters = type.getUnionTypes().map((t) => getTypeInfo(t, cache))
+      typeInfo.parameters = type.getUnionTypes().map((t) => getTypeInfo(t, cache, node))
       break
     case 'Union':
       typeInfo.parameters = type.getUnionTypes().map((t) => getTypeInfo(t, cache, node))
@@ -76,9 +79,13 @@ function getTypeInfo(type: Type, cache: TypeCache, node?: Node): TypeMetadata {
     default:
       typeInfo.parameters = type.getTypeArguments().map((a) => {
         const cachedParam = cache.getType(makeTypeInfo(a, node), true)
+        if (!cachedParam) {
+          return getTypeInfo(a, cache, node)
+        }
         return cachedParam ?? getTypeInfo(a, cache, node)
       })
   }
+  cache.saveType({ typeInfo, forceSave: true })
 
   logger.debug('Assigning type name for %s, with type group of %s', typeInfo.name, typeInfo.typeGroup)
   // typeName is used for referencing the type in the metadata
@@ -96,10 +103,10 @@ function getTypeInfo(type: Type, cache: TypeCache, node?: Node): TypeMetadata {
     case 'Class':
     case 'ReadonlyArray':
     case 'Array': {
-      const symbolName = type.getSymbol()?.getName()
-      logger.debug('Got symbol name %s', symbolName)
+      const symbolName = type.getText(node)
+      logger.debug('Got symbol name %s for type %s', symbolName, typeInfo.name)
       // getSymbol() is used for complex types, in which cases getText() returns too much information (e.g. Map<User> instead of just Map)
-      typeInfo.typeName = symbolName || 'Array'
+      typeInfo.typeName = symbolName || typeInfo.typeGroup
       break
     }
     case 'Object':
@@ -130,10 +137,15 @@ function getTypeInfo(type: Type, cache: TypeCache, node?: Node): TypeMetadata {
 }
 
 function makeTypeInfo(type: Type, node?: Node): TypeMetadata {
-  const typeName = type.getText(node) // node is passed for better name printing: https://github.com/dsherret/ts-morph/issues/907
+  const logger = makeLogger(makeTypeInfo.name)
+  logger.debug('Making type info')
   const hasQuestionToken = hasQuestionTokenNode(node)
   const isNullable = type.isNullable() || hasQuestionToken
   type = type.getNonNullableType()
+  let typeName = type.getText(node) // node is passed for better name printing: https://github.com/dsherret/ts-morph/issues/907
+  const currentPath = node?.getSourceFile().getFilePath()
+  if (typeName.includes('import')) logger.debug('Includes import \n\n%s\n\nwith path\n%s', typeName, currentPath)
+  typeName = typeName.replace(new RegExp(`import("${currentPath}").`), '')
 
   return {
     name: typeName,
