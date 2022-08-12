@@ -8,6 +8,7 @@ import {
   NotFoundError,
   Register,
   SuperKindType,
+  ReducerMetadata,
 } from '@boostercloud/framework-types'
 import { BoosterEntityMigrated } from './core-concepts/data-migration/events/booster-entity-migrated'
 import { BoosterDataMigrationStarted } from './core-concepts/data-migration/events/booster-data-migration-started'
@@ -70,7 +71,7 @@ export class RegisterHandler {
     if (eventTypeName === BoosterEntityMigrated.name) {
       return (event as BoosterEntityMigrated).oldEntityName
     }
-    const reducerInfo = config.reducers[eventTypeName]
-    return reducerInfo.class.name
+    const reducerInfo: ReducerMetadata | undefined = config.reducers[eventTypeName]
+    return reducerInfo?.class?.name
   }
 }
