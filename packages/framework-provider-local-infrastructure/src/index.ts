@@ -53,11 +53,13 @@ export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): Provider
       }
       expressServer.use(
         express.json({
+          limit: '6mb',
           verify: (req, res, buf) => {
             req.rawBody = buf
           },
         })
       )
+      expressServer.use(express.urlencoded({ limit: '6mb' }))
       expressServer.use(cors())
       expressServer.use(function (req, res, next) {
         res.header('Access-Control-Allow-Origin', '*')
