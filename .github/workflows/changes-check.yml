@@ -23,12 +23,8 @@ jobs:
         # Pinning to specific commit that has been audited. Only update 3rd party
         # actions' commit hashes if you've audited them
         uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
-
-      - name: Rush link
-        run: rush link
-
-      - name: Rush build
-        run: rush rebuild --verbose
+        with:
+          build: true
 
       - name: Check for changes
         run: rush change --verify
