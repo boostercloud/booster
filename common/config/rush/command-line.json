@@ -16,6 +16,12 @@
       "name": "test",
       "summary": "Runs unit tests for all packages",
       "enableParallelism": true
+    },
+    {
+      "commandKind": "bulk",
+      "name": "lint:fix",
+      "summary": "Fixes ESLint issues",
+      "enableParallelism": true
     }
   ],
 
