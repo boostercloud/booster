@@ -393,6 +393,50 @@
       "projectFolder": "packages/framework-common-helpers"
     },
     {
+      "packageName": "@boostercloud/framework-core",
+      "projectFolder": "packages/framework-core"
+    },
+    {
+      "packageName": "@boostercloud/framework-integration-tests",
+      "projectFolder": "packages/framework-integration-tests"
+    },
+    {
+      "packageName": "@boostercloud/framework-provider-aws",
+      "projectFolder": "packages/framework-provider-aws"
+    },
+    {
+      "packageName": "@boostercloud/framework-provider-aws-infrastructure",
+      "projectFolder": "packages/framework-provider-aws-infrastructure"
+    },
+    {
+      "packageName": "@boostercloud/framework-provider-azure",
+      "projectFolder": "packages/framework-provider-azure"
+    },
+    {
+      "packageName": "@boostercloud/framework-provider-azure-infrastructure",
+      "projectFolder": "packages/framework-provider-azure-infrastructure"
+    },
+    {
+      "packageName": "@boostercloud/framework-provider-kubernetes",
+      "projectFolder": "packages/framework-provider-kubernetes"
+    },
+    {
+      "packageName": "@boostercloud/framework-provider-kubernetes-infrastructure",
+      "projectFolder": "packages/framework-provider-kubernetes-infrastructure"
+    },
+    {
+      "packageName": "@boostercloud/framework-provider-local",
+      "projectFolder": "packages/framework-provider-local"
+    },
+    {
+      "packageName": "@boostercloud/framework-provider-local-infrastructure",
+      "projectFolder": "packages/framework-provider-local-infrastructure"
+    },
+    {
+      "packageName": "@boostercloud/framework-types",
+      "projectFolder": "packages/framework-types"
+    },
+    {
       "packageName": "@boostercloud/metadata-booster",
       "projectFolder": "packages/metadata-booster"
     }
