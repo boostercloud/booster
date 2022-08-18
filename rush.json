@@ -382,18 +382,22 @@
   "projects": [
     {
       "packageName": "@boostercloud/application-tester",
+      "shouldPublish": true,
       "projectFolder": "packages/application-tester"
     },
     {
       "packageName": "@boostercloud/cli",
+      "shouldPublish": true,
       "projectFolder": "packages/cli"
     },
     {
       "packageName": "@boostercloud/framework-common-helpers",
+      "shouldPublish": true,
       "projectFolder": "packages/framework-common-helpers"
     },
     {
       "packageName": "@boostercloud/framework-core",
+      "shouldPublish": true,
       "projectFolder": "packages/framework-core"
     },
     {
@@ -402,42 +406,52 @@
     },
     {
       "packageName": "@boostercloud/framework-provider-aws",
+      "shouldPublish": true,
       "projectFolder": "packages/framework-provider-aws"
     },
     {
       "packageName": "@boostercloud/framework-provider-aws-infrastructure",
+      "shouldPublish": true,
       "projectFolder": "packages/framework-provider-aws-infrastructure"
     },
     {
       "packageName": "@boostercloud/framework-provider-azure",
+      "shouldPublish": true,
       "projectFolder": "packages/framework-provider-azure"
     },
     {
       "packageName": "@boostercloud/framework-provider-azure-infrastructure",
+      "shouldPublish": true,
       "projectFolder": "packages/framework-provider-azure-infrastructure"
     },
     {
       "packageName": "@boostercloud/framework-provider-kubernetes",
+      "shouldPublish": true,
       "projectFolder": "packages/framework-provider-kubernetes"
     },
     {
       "packageName": "@boostercloud/framework-provider-kubernetes-infrastructure",
+      "shouldPublish": true,
       "projectFolder": "packages/framework-provider-kubernetes-infrastructure"
     },
     {
       "packageName": "@boostercloud/framework-provider-local",
+      "shouldPublish": true,
       "projectFolder": "packages/framework-provider-local"
     },
     {
       "packageName": "@boostercloud/framework-provider-local-infrastructure",
+      "shouldPublish": true,
       "projectFolder": "packages/framework-provider-local-infrastructure"
     },
     {
       "packageName": "@boostercloud/framework-types",
+      "shouldPublish": true,
       "projectFolder": "packages/framework-types"
     },
     {
       "packageName": "@boostercloud/metadata-booster",
+      "shouldPublish": true,
       "projectFolder": "packages/metadata-booster"
     }
   ]
