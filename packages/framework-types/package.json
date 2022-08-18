@@ -26,7 +26,7 @@
     "build": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "test:types": "npm run test",
-    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\" 2>&1",
     "prepack": "tsc -b tsconfig.json"
   },
   "bugs": {
@@ -40,6 +40,14 @@
   },
   "devDependencies": {
     "@boostercloud/metadata-booster": "^0.30.6",
+    "@types/chai": "4.2.18",
+    "@types/chai-as-promised": "7.1.4",
+    "@types/mocha": "8.2.2",
+    "@types/node": "16.11.7",
+    "@types/sinon": "10.0.0",
+    "@types/sinon-chai": "3.2.5",
+    "@typescript-eslint/eslint-plugin": "4.22.1",
+    "@typescript-eslint/parser": "4.22.1",
     "@types/uuid": "8.3.0",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
@@ -47,6 +55,6 @@
     "mocha": "8.4.0",
     "sinon": "9.2.3",
     "sinon-chai": "3.5.0",
-    "@types/node": "~18.7.6"
+    "nyc": "~15.1.0"
   }
 }

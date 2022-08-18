@@ -29,7 +29,8 @@
   },
   "devDependencies": {
     "ttypescript": "1.5.13",
-    "typescript": "4.7.4"
+    "typescript": "4.7.4",
+    "ts-node": "~10.9.1"
   },
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",

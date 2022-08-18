@@ -25,7 +25,8 @@
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "build": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
-    "prepack": "tsc -b tsconfig.json"
+    "prepack": "tsc -b tsconfig.json",
+    "test": ""
   },
   "bugs": {
     "url": "https://github.com/boostercloud/booster/issues"
