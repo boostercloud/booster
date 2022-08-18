@@ -12,8 +12,8 @@
   },
   "bugs": "https://github.com/boostercloud/booster/issues",
   "dependencies": {
-    "@boostercloud/framework-core": "^0.30.6",
-    "@boostercloud/framework-types": "^0.30.6",
+    "@boostercloud/framework-core": "workspace:^0.30.6",
+    "@boostercloud/framework-types": "workspace:^0.30.6",
     "@oclif/command": "^1.8",
     "@oclif/config": "^1.18",
     "@oclif/errors": "^1.3",
