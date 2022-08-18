@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-common-helpers",
+      "comment": "Switched to MS Rush",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@boostercloud/framework-common-helpers"
+}

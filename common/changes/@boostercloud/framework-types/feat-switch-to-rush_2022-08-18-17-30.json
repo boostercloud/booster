@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-types",
+      "comment": "Switched to MS Rush",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@boostercloud/framework-types"
+}

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/cli",
+      "comment": "Switched to MS Rush",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@boostercloud/cli"
+}
