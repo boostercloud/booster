@@ -158,16 +158,16 @@ npm install --save-prod "reflect-metadata"
   },
 }
 ```
-4. _[Optional]_ From now on, to compile your code you need to use the command `ttsc` (the TTypescript wrapper), instead of `tsc`. I normally have a "compile" script in my "package.json" file that calls `"tsc -b tsconfig.json"`, so I compile my code by running `npm run compile`. I would recommend you to do that and change "tsc" by "ttsc". Like this:
+4. _[Optional]_ From now on, to compile your code you need to use the command `ttsc` (the TTypescript wrapper), instead of `tsc`. I normally have a "build" script in my "package.json" file that calls `"tsc -b tsconfig.json"`, so I compile my code by running `npm run build`. I would recommend you to do that and change "tsc" by "ttsc". Like this:
 ```json
   ... other "package.json" options fields ...
   "scripts": {
-    "compile": "ttsc -b tsconfig.json",
+    "build": "ttsc -b tsconfig.json",
     "test": "..."
   }
 ```
 
-Now you can compile your project by running `npm run compile` and have access to a full detailed metadata for all your Typescript classes.
+Now you can compile your project by running `npm run build` and have access to a full detailed metadata for all your Typescript classes.
 
 ## Compatibility
 This transformer is compatible with Typescript version 4.x.x

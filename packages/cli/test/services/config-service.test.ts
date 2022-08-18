@@ -27,7 +27,7 @@ describe('configService', () => {
 
     it('runs the npm command', async () => {
       await configService.compileProject(userProjectPath)
-      expect(childProcessPromise.exec).to.have.been.calledWith('npm run clean && npm run compile')
+      expect(childProcessPromise.exec).to.have.been.calledWith('npm run clean && npm run build')
     })
   })
 
