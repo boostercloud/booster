@@ -1,25 +1,8 @@
-*-debug.log
-*-error.log
-.nyc_output
 **/dist/
 **/lib/
 **/tmp/
-**/node_modules
-*.tsbuildinfo
 **/.idea
-**/coverage
-**/.booster
 
-# Ignoring lockfiles because Rush has only one
-*/**/npm-shrinkwrap.json
-*/**/package-lock.json
-*/**/shrinkwrap.yaml
-*/**/pnpm-lock.yaml
-*/**/yarn.lock
-!common/config/rush/shrinkwrap.yaml
-
-# .npmrc is managed by Rush
-.npmrc
 # Logs
 *.log
 npm-debug.log*
