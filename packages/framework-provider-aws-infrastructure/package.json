@@ -36,13 +36,16 @@
     "@boostercloud/framework-types": "^0.30.6",
     "aws-cdk": "1.99.0",
     "aws-sdk": "2.853.0",
-    "colors": "^1.4.0"
+    "colors": "^1.4.0",
+    "@aws-cdk/core": "1.99.0",
+    "@aws-cdk/aws-events": "1.99.0",
+    "tslib": "~2.4.0"
   },
   "scripts": {
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "compile": "tsc -b tsconfig.json",
+    "build": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",
     "test:provider-aws-infrastructure": "npm run test",

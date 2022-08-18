@@ -23,7 +23,7 @@
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "compile": "tsc -b tsconfig.json",
+    "build": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "test:types": "npm run test",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
@@ -35,7 +35,8 @@
   "dependencies": {
     "@types/graphql": "14.5.0",
     "tslib": "2.4.0",
-    "uuid": "8.3.2"
+    "uuid": "8.3.2",
+    "graphql": "~16.6.0"
   },
   "devDependencies": {
     "@boostercloud/metadata-booster": "^0.30.6",
@@ -45,6 +46,7 @@
     "fast-check": "2.17.0",
     "mocha": "8.4.0",
     "sinon": "9.2.3",
-    "sinon-chai": "3.5.0"
+    "sinon-chai": "3.5.0",
+    "@types/node": "~18.7.6"
   }
 }

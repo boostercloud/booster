@@ -18,10 +18,7 @@ export async function overrideWithBoosterLocalDependencies(projectPath: string):
 
       const execution = await exec(`npm pack ${path.join('..', '..', dependencyName)}`, { cwd: dotBooster })
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const packedDependencyFileName = execution.stdout
-        ?.trim()
-        ?.split('\n')
-        ?.pop()!
+      const packedDependencyFileName = execution.stdout?.trim()?.split('\n')?.pop()!
       const dotBoosterAbsolutePath = path.resolve(dotBooster)
       // Now override the packageJSON dependencies with the path to the packed dependency
       packageJSON.dependencies[packageName] = `file:${path.join(dotBoosterAbsolutePath, packedDependencyFileName)}`
@@ -39,10 +36,7 @@ export async function overrideWithBoosterLocalDependencies(projectPath: string):
 
       const execution = await exec(`npm pack ${path.join('..', '..', dependencyName)}`, { cwd: dotBooster })
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const packedDependencyFileName = execution.stdout
-        ?.trim()
-        ?.split('\n')
-        ?.pop()!
+      const packedDependencyFileName = execution.stdout?.trim()?.split('\n')?.pop()!
       const dotBoosterAbsolutePath = path.resolve(dotBooster)
       // Now override the packageJSON dependencies with the path to the packed dependency
       packageJSON.devDependencies[packageName] = `file:${path.join(dotBoosterAbsolutePath, packedDependencyFileName)}`
@@ -52,6 +46,6 @@ export async function overrideWithBoosterLocalDependencies(projectPath: string):
   fs.writeFileSync(path.join(projectPath, 'package.json'), JSON.stringify(packageJSON, undefined, 2))
 }
 
-export async function forceLernaRebuild(): Promise<void> {
-  await exec('lerna clean --yes && lerna bootstrap && lerna run clean && lerna run compile')
+export async function forceRepoRebuild(): Promise<void> {
+  await exec('rush update && rush rebuild')
 }

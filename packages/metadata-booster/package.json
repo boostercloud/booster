@@ -34,7 +34,7 @@
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "compile": "tsc -b tsconfig.json",
+    "build": "tsc -b tsconfig.json",
     "prepack": "tsc -b tsconfig.json",
     "test": "ttsc -p tsconfig.test.json"
   }

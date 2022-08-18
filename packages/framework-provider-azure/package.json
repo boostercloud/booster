@@ -23,7 +23,8 @@
     "@azure/cosmos": "3.7.3",
     "@azure/functions": "^1.2.2",
     "@boostercloud/framework-common-helpers": "^0.30.6",
-    "@boostercloud/framework-types": "^0.30.6"
+    "@boostercloud/framework-types": "^0.30.6",
+    "tslib": "~2.4.0"
   },
   "devDependencies": {
     "chai": "4.2.0",
@@ -37,7 +38,7 @@
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "compile": "tsc -b tsconfig.json",
+    "build": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",
     "test:provider-azure": "npm run test",

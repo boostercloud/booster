@@ -30,13 +30,14 @@
     "isomorphic-fetch": "^2.2.1",
     "js-yaml": "^3.14.0",
     "mustache": "4.1.0",
-    "semver": "^7.3.5"
+    "semver": "^7.3.5",
+    "node-fetch": "^2.6.7"
   },
   "scripts": {
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "compile": "tsc -b tsconfig.json",
+    "build": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",
     "test:provider-kubernetes-infrastructure": "npm run test",
@@ -53,11 +54,14 @@
     "@types/faker": "5.1.5",
     "@types/mustache": "4.1.0",
     "@types/semver": "5.5.0",
+    "@types/node-fetch": "^2.5.107",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
     "faker": "5.1.0",
     "mocha": "8.4.0",
     "sinon": "9.2.3",
-    "sinon-chai": "3.5.0"
+    "sinon-chai": "3.5.0",
+    "@types/node": "~18.7.6",
+    "@types/js-yaml": "~3.12.5"
   }
 }

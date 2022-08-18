@@ -2,7 +2,7 @@ import * as path from 'path'
 import { ChildProcess } from 'child_process'
 import { runCommand } from '@boostercloud/framework-common-helpers'
 
-// Path to the CLI binary compiled by lerna
+// Path to the CLI binary compiled for this project
 const cliBinaryPath = path.join('..', '..', 'cli', 'bin', 'run')
 
 export async function deploy(projectPath: string, environmentName = 'production'): Promise<void> {

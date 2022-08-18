@@ -17,7 +17,8 @@
     "@boostercloud/framework-provider-kubernetes": "^0.30.6",
     "@boostercloud/framework-provider-local": "^0.30.6",
     "@boostercloud/framework-types": "^0.30.6",
-    "aws-sdk": "2.853.0"
+    "aws-sdk": "2.853.0",
+    "tslib": "~2.4.0"
   },
   "devDependencies": {
     "@boostercloud/application-tester": "^0.30.6",
@@ -52,7 +53,8 @@
     "subscriptions-transport-ws": "0.9.18",
     "ttypescript": "1.5.13",
     "ws": "7.4.5",
-    "yaml": "1.10.2"
+    "yaml": "1.10.2",
+    "typescript": "4.7.4"
   },
   "engines": {
     "node": ">=14.0.0"
@@ -64,7 +66,7 @@
     "watch:local": "nodemon --watch ../framework-provider-local/dist --watch ../framework-provider-local-infrastructure --watch dist --exec \"../cli/bin/run start -e local\"",
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "compile": "ttsc -b tsconfig.json",
+    "build": "ttsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "postinstall": "rimraf ../../node_modules/serverless/node_modules/archiver && echo 'Deleted buggy \"archiver\" module from \"serveless\" dependencies to use the newer hoisted one'",
     "integration": "npm run integration/cli && npm run integration/local && npm run integration/aws && npm run integration/azure",

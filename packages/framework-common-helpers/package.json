@@ -23,7 +23,7 @@
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "compile": "tsc -b tsconfig.json",
+    "build": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "test:helpers": "npm run test",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
@@ -44,6 +44,8 @@
     "chai-as-promised": "7.1.1",
     "rewire": "5.0.0",
     "sinon": "9.2.3",
-    "sinon-chai": "3.5.0"
+    "sinon-chai": "3.5.0",
+    "@types/node": "~18.7.6",
+    "@types/child-process-promise": "~2.2.2"
   }
 }
