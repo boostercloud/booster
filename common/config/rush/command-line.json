@@ -19,6 +19,12 @@
     },
     {
       "commandKind": "bulk",
+      "name": "lint:check",
+      "summary": "Checks that there are no ESLint issues",
+      "enableParallelism": true
+    },
+    {
+      "commandKind": "bulk",
       "name": "lint:fix",
       "summary": "Fixes ESLint issues",
       "enableParallelism": true

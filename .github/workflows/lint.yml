@@ -8,32 +8,17 @@ on:
 
 jobs:
   lint:
-    if: startsWith(github.head_ref, 'eslint-patches') == false && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.head_ref }}
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16.x
-      - name: Bootstrapping project
-        run: npx lerna bootstrap
-      - name: Fixing linting and formatting issues
-        id: eslint-fix
-        run: npx lerna run lint:fix --stream
-      - name: Set branch name
-        id: vars
-        run: echo ::set-output name=branch-name::"eslint-patches/${{ github.head_ref }}"
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
-        with:
-          commit-message: Fix ESLint and Prettier issues
-          title: Fixes by ESLint automatic action
-          body: This is an auto-generated PR
-          branch: ${{ steps.vars.outputs.branch-name }}
-          token: ${{ secrets.GITHUB_TOKEN_ACTION }}
-      - name: Fail if ESLint made changes
-        if: steps.eslint-fix.outputs.exit-code != 0
-        run: exit 1
+      - name: Checkout
+        uses: actions/checkout@v2
 
+      - name: Rush Install
+        # Pinning to specific commit that has been audited. Only update 3rd party
+        # actions' commit hashes if you've audited them
+        uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
+        with:
+          build: true
+
+      - name: Check linting
+        run: rush lint:check
