@@ -18,8 +18,12 @@ jobs:
         # Pinning to specific commit that has been audited. Only update 3rd party
         # actions' commit hashes if you've audited them
         uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
-        with:
-          build: true
+
+      - name: Rush link
+        run: rush link
+
+      - name: Rush build
+        run: rush rebuild --verbose
 
       - name: Deploy to AWS
         run: cd packages/framework-integration-tests && rushx integration/aws-deploy -v
@@ -41,8 +45,12 @@ jobs:
         # Pinning to specific commit that has been audited. Only update 3rd party
         # actions' commit hashes if you've audited them
         uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
-        with:
-          build: true
+
+      - name: Rush link
+        run: rush link
+
+      - name: Rush build
+        run: rush rebuild --verbose
 
       - name: AWS Functionality
         run: cd packages/framework-integration-tests && rushx integration/aws-func -v
@@ -64,8 +72,12 @@ jobs:
         # Pinning to specific commit that has been audited. Only update 3rd party
         # actions' commit hashes if you've audited them
         uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
-        with:
-          build: true
+
+      - name: Rush link
+        run: rush link
+
+      - name: Rush build
+        run: rush rebuild --verbose
 
       - name: AWS end to end
         run: cd packages/framework-integration-tests && rushx integration/aws-end-to-end -v
@@ -87,8 +99,12 @@ jobs:
         # Pinning to specific commit that has been audited. Only update 3rd party
         # actions' commit hashes if you've audited them
         uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
-        with:
-          build: true
+
+      - name: Rush link
+        run: rush link
+
+      - name: Rush build
+        run: rush rebuild --verbose
 
       - name: AWS load tests
         run: cd packages/framework-integration-tests && rushx integration/aws-load -v
@@ -112,8 +128,12 @@ jobs:
         # Pinning to specific commit that has been audited. Only update 3rd party
         # actions' commit hashes if you've audited them
         uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
-        with:
-          build: true
+
+      - name: Rush link
+        run: rush link
+
+      - name: Rush build
+        run: rush rebuild --verbose
 
       - name: AWS nuke
         run: cd packages/framework-integration-tests && rushx integration/aws-nuke -v
@@ -133,8 +153,12 @@ jobs:
         # Pinning to specific commit that has been audited. Only update 3rd party
         # actions' commit hashes if you've audited them
         uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
-        with:
-          build: true
+
+      - name: Rush link
+        run: rush link
+
+      - name: Rush build
+        run: rush rebuild --verbose
 
       - name: CLI Tests
         run: cd packages/framework-integration-tests && rushx integration/cli -v
@@ -150,8 +174,12 @@ jobs:
         # Pinning to specific commit that has been audited. Only update 3rd party
         # actions' commit hashes if you've audited them
         uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
-        with:
-          build: true
+
+      - name: Rush link
+        run: rush link
+
+      - name: Rush build
+        run: rush rebuild --verbose
 
       - name: Local Integration Tests
         run: cd packages/framework-integration-tests && rushx integration/local -v
@@ -172,8 +200,12 @@ jobs:
         # Pinning to specific commit that has been audited. Only update 3rd party
         # actions' commit hashes if you've audited them
         uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
-        with:
-          build: true
+
+      - name: Rush link
+        run: rush link
+
+      - name: Rush build
+        run: rush rebuild --verbose
 
       - name: Deploy to Azure
         run: cd packages/framework-integration-tests && rushx integration/azure-deploy -v
@@ -208,8 +240,12 @@ jobs:
         # Pinning to specific commit that has been audited. Only update 3rd party
         # actions' commit hashes if you've audited them
         uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
-        with:
-          build: true
+
+      - name: Rush link
+        run: rush link
+
+      - name: Rush build
+        run: rush rebuild --verbose
 
       - name: Azure end to end
         run: cd packages/framework-integration-tests && rushx integration/azure-end-to-end -v
@@ -244,8 +280,12 @@ jobs:
         # Pinning to specific commit that has been audited. Only update 3rd party
         # actions' commit hashes if you've audited them
         uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
-        with:
-          build: true
+
+      - name: Rush link
+        run: rush link
+
+      - name: Rush build
+        run: rush rebuild --verbose
 
       - name: Azure func
         run: cd packages/framework-integration-tests && rushx integration/azure-func -v
@@ -282,8 +322,12 @@ jobs:
         # Pinning to specific commit that has been audited. Only update 3rd party
         # actions' commit hashes if you've audited them
         uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
-        with:
-          build: true
+
+      - name: Rush link
+        run: rush link
+
+      - name: Rush build
+        run: rush rebuild --verbose
 
       - name: Azure nuke
         run: cd packages/framework-integration-tests && rushx integration/azure-nuke -v
