@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-types",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@boostercloud/framework-types"
+}

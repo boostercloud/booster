@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/metadata-booster",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@boostercloud/metadata-booster"
+}
