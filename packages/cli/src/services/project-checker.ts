@@ -85,7 +85,11 @@ async function getBoosterVersion(projectPath: string): Promise<string> {
   try {
     const packageJsonContents = require(path.join(projectAbsolutePath, 'package.json'))
     const version = packageJsonContents.dependencies['@boostercloud/framework-core']
-    const versionParts = version.replace('^', '').replace('.tgz', '').split('-')
+    const versionParts = version
+      .replace('workspace:', '') // We remove the workspace protocol in case we're in the Booster monorepo
+      .replace('^', '')
+      .replace('.tgz', '')
+      .split('-')
     return versionParts[versionParts.length - 1]
   } catch (e) {
     throw new Error(
@@ -111,6 +115,7 @@ class LowerCliVersionError extends Error {
 }
 
 async function compareVersionsAndDisplayMessages(cliVersion: string, projectVersion: string): Promise<void> {
+  if (process.env.BOOSTER_CLI_SKIP_VERSION_CHECK?.trim()) return
   const cliSemVersion = new Semver(cliVersion)
   const projectSemVersion = new Semver(projectVersion)
   if (cliSemVersion.equals(projectSemVersion)) {
