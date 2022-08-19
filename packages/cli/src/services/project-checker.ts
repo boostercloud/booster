@@ -115,7 +115,6 @@ class LowerCliVersionError extends Error {
 }
 
 async function compareVersionsAndDisplayMessages(cliVersion: string, projectVersion: string): Promise<void> {
-  if (process.env.BOOSTER_CLI_SKIP_VERSION_CHECK?.trim()) return
   const cliSemVersion = new Semver(cliVersion)
   const projectSemVersion = new Semver(projectVersion)
   if (cliSemVersion.equals(projectSemVersion)) {
