@@ -22,7 +22,7 @@ jobs:
           build: true
 
       - name: Deploy to AWS
-        run: cd packages/framework-integration-tests && rushx integration/aws-deploy -v
+        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/aws-deploy -v
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
@@ -45,7 +45,7 @@ jobs:
           build: true
 
       - name: AWS Functionality
-        run: cd packages/framework-integration-tests && rushx integration/aws-func -v
+        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/aws-func -v
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
@@ -68,7 +68,7 @@ jobs:
           build: true
 
       - name: AWS end to end
-        run: cd packages/framework-integration-tests && rushx integration/aws-end-to-end -v
+        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/aws-end-to-end -v
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
@@ -91,7 +91,7 @@ jobs:
           build: true
 
       - name: AWS load tests
-        run: cd packages/framework-integration-tests && rushx integration/aws-load -v
+        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/aws-load -v
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
@@ -116,7 +116,7 @@ jobs:
           build: true
 
       - name: AWS nuke
-        run: cd packages/framework-integration-tests && rushx integration/aws-nuke -v
+        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/aws-nuke -v
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
@@ -137,7 +137,7 @@ jobs:
           build: true
 
       - name: CLI Tests
-        run: cd packages/framework-integration-tests && rushx integration/cli -v
+        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/cli -v
 
   local-integration-tests:
     name: Local Environment Integration Tests
@@ -154,7 +154,7 @@ jobs:
           build: true
 
       - name: Local Integration Tests
-        run: cd packages/framework-integration-tests && rushx integration/local -v
+        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/local -v
 
   azure-deploy-integration-tests:
     name: Azure Deployment Integration Test
@@ -176,7 +176,7 @@ jobs:
           build: true
 
       - name: Deploy to Azure
-        run: cd packages/framework-integration-tests && rushx integration/azure-deploy -v
+        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/azure-deploy -v
         env:
           AZURE_APP_ID: ${{ secrets.AZURE_CLIENTID }}
           AZURE_SECRET: ${{ secrets.AZURE_SECRET }}
@@ -212,7 +212,7 @@ jobs:
           build: true
 
       - name: Azure end to end
-        run: cd packages/framework-integration-tests && rushx integration/azure-end-to-end -v
+        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/azure-end-to-end -v
         env:
           AZURE_APP_ID: ${{ secrets.AZURE_CLIENTID }}
           AZURE_SECRET: ${{ secrets.AZURE_SECRET }}
@@ -248,7 +248,7 @@ jobs:
           build: true
 
       - name: Azure func
-        run: cd packages/framework-integration-tests && rushx integration/azure-func -v
+        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/azure-func -v
         env:
           AZURE_APP_ID: ${{ secrets.AZURE_CLIENTID }}
           AZURE_SECRET: ${{ secrets.AZURE_SECRET }}
@@ -286,7 +286,7 @@ jobs:
           build: true
 
       - name: Azure nuke
-        run: cd packages/framework-integration-tests && rushx integration/azure-nuke -v
+        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/azure-nuke -v
         env:
           AZURE_APP_ID: ${{ secrets.AZURE_CLIENTID }}
           AZURE_SECRET: ${{ secrets.AZURE_SECRET }}
