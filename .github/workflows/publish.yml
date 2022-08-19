@@ -51,7 +51,7 @@ jobs:
           build: true
 
       - name: Check for changes
-        run: rush change --verify
+        run: node common/scripts/install-run-rush.js change --verify
 
       # Discard all changes that might have occurred after change build
       - run: git stash
@@ -91,7 +91,7 @@ jobs:
         run: git stash
 
       - name: Publish using Rush
-        run: rush publish
+        run: node common/scripts/install-run-rush.js publish
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_ACTION }}

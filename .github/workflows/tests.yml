@@ -27,4 +27,4 @@ jobs:
           build: true
 
       - name: Unit tests
-        run: rush test
+        run: node common/scripts/install-run-rush.js test
