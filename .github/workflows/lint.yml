@@ -21,4 +21,4 @@ jobs:
           build: true
 
       - name: Check linting
-        run: node common/scripts/install-run-rush.js lint:check
+        run: node common/scripts/install-run-rush.js lint:check -v
