@@ -316,6 +316,7 @@ importers:
   ../../packages/framework-integration-tests:
     specifiers:
       '@boostercloud/application-tester': workspace:^0.30.6
+      '@boostercloud/cli': workspace:^0.30.6
       '@boostercloud/framework-common-helpers': workspace:^0.30.6
       '@boostercloud/framework-core': workspace:^0.30.6
       '@boostercloud/framework-provider-aws': workspace:^0.30.6
@@ -388,6 +389,7 @@ importers:
       tslib: 2.4.0
     devDependencies:
       '@boostercloud/application-tester': link:../application-tester
+      '@boostercloud/cli': link:../cli
       '@boostercloud/framework-provider-aws-infrastructure': link:../framework-provider-aws-infrastructure
       '@boostercloud/framework-provider-azure-infrastructure': link:../framework-provider-azure-infrastructure
       '@boostercloud/framework-provider-kubernetes-infrastructure': link:../framework-provider-kubernetes-infrastructure
@@ -1500,6 +1502,7 @@ packages:
       '@aws-cdk/core': 1.99.0
       '@aws-cdk/region-info': 1.99.0
       constructs: 3.4.73
+      yaml: 1.10.2
     dev: false
     bundledDependencies:
       - yaml
@@ -1545,6 +1548,7 @@ packages:
       '@aws-cdk/core': 1.99.0
       '@aws-cdk/custom-resources': 1.99.0
       constructs: 3.4.73
+      punycode: 2.1.1
     dev: false
     bundledDependencies:
       - punycode
@@ -1592,6 +1596,7 @@ packages:
       '@aws-cdk/core': 1.99.0
       '@aws-cdk/cx-api': 1.99.0
       constructs: 3.4.73
+      minimatch: 3.1.2
     dev: false
     bundledDependencies:
       - minimatch
@@ -2021,6 +2026,9 @@ packages:
   /@aws-cdk/cloud-assembly-schema/1.99.0:
     resolution: {integrity: sha512-4wfPYbeI22TBYMIHHeBwn93fnK2RZi0IFoxD50vDXycOgvc4OqPu+jFoXntJXz0dgaZqvzQAEGQAj8kRC3rLOg==}
     engines: {node: '>= 10.13.0 <13 || >=13.7.0'}
+    dependencies:
+      jsonschema: 1.4.1
+      semver: 7.3.7
     dev: false
     bundledDependencies:
       - jsonschema
@@ -2045,7 +2053,11 @@ packages:
       '@aws-cdk/cloud-assembly-schema': 1.99.0
       '@aws-cdk/cx-api': 1.99.0
       '@aws-cdk/region-info': 1.99.0
+      '@balena/dockerignore': 1.0.2
       constructs: 3.4.73
+      fs-extra: 9.1.0
+      ignore: 5.2.0
+      minimatch: 3.1.2
     dev: false
     bundledDependencies:
       - fs-extra
@@ -2072,6 +2084,7 @@ packages:
     engines: {node: '>= 10.13.0 <13 || >=13.7.0'}
     dependencies:
       '@aws-cdk/cloud-assembly-schema': 1.99.0
+      semver: 7.3.7
     dev: false
     bundledDependencies:
       - semver
@@ -2353,6 +2366,10 @@ packages:
       '@babel/helper-validator-identifier': 7.18.6
       to-fast-properties: 2.0.0
 
+  /@balena/dockerignore/1.0.2:
+    resolution: {integrity: sha512-wMue2Sy4GAVTk6Ic4tJVcnfdau+gx2EnG7S+uAEe+TWJFqE4YoWN4/H8MSLj4eYJKxGg26lZwboEniNiNwZQ6Q==}
+    dev: false
+
   /@cdktf/hcl2cdk/0.8.0-pre.10_constructs@10.1.80:
     resolution: {integrity: sha512-jyCZe4tlz4i3wwpyO5guKvzd5FchY/T9lCx7cgxZbMp/pX+6yWtuFrg8zYtmO9xGTU8KmuwL8CdKwM5FBrhOrA==}
     dependencies:
@@ -2394,6 +2411,7 @@ packages:
       cdktf: 0.7.0_constructs@10.1.80
       constructs: 10.1.80
     dev: false
+    bundledDependencies: []
 
   /@cdktf/provider-generator/0.8.0-pre.10_constructs@10.1.80:
     resolution: {integrity: sha512-t7riiqie/9AmHDYGVfur9/nD6uGKnUngEfqMeNRWNMw+C48ng/K7Q1KcOf5+pGi1ufO038dgHLhFgX3X+7XUNw==}
@@ -4763,6 +4781,7 @@ packages:
     peerDependencies:
       constructs: ^10.0.0
     dependencies:
+      archiver: 5.3.0
       constructs: 10.1.80
     dev: false
     bundledDependencies:
@@ -4773,6 +4792,7 @@ packages:
     peerDependencies:
       constructs: ^10.0.0
     dependencies:
+      archiver: 5.3.0
       constructs: 10.1.80
     dev: false
     bundledDependencies:
@@ -7922,6 +7942,10 @@ packages:
   /jsonpath-plus/0.19.0:
     resolution: {integrity: sha512-GSVwsrzW9LsA5lzsqe4CkuZ9wp+kxBb2GwNniaWzI2YFn5Ig42rSW8ZxVpWXaAfakXNrx5pgY5AbQq7kzX29kg==}
     engines: {node: '>=6.0'}
+
+  /jsonschema/1.4.1:
+    resolution: {integrity: sha512-S6cATIPVv1z0IlxdN+zUk5EPjkGCdnhN4wVSBlvoUO1tOLJootbo9CquNJmbIh4yikWHiUedhRYrNPn1arpEmQ==}
+    dev: false
 
   /jsonwebtoken/8.5.1:
     resolution: {integrity: sha512-XjwVfRS6jTMsqYs0EsuJ4LGxXV14zQybNd4L2r0UvbVnSF9Af8x7p5MzbJ90Ioz/9TI41/hTCvznF/loiSzn8w==}

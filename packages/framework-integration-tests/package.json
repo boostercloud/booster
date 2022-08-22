@@ -21,6 +21,7 @@
     "tslib": "~2.4.0"
   },
   "devDependencies": {
+    "@boostercloud/cli": "workspace:^0.30.6",
     "@boostercloud/application-tester": "workspace:^0.30.6",
     "@boostercloud/framework-provider-aws-infrastructure": "workspace:^0.30.6",
     "@boostercloud/framework-provider-azure-infrastructure": "workspace:^0.30.6",
@@ -82,7 +83,7 @@
   "repository": "boostercloud/booster",
   "scripts": {
     "test": "",
-    "watch:local": "nodemon --watch ../framework-provider-local/dist --watch ../framework-provider-local-infrastructure --watch dist --exec \"../cli/bin/run start -e local\"",
+    "watch:local": "nodemon --watch ../framework-provider-local/dist --watch ../framework-provider-local-infrastructure --watch dist --exec \"./node_modules/.bin/boost start -e local\"",
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "build": "ttsc -b tsconfig.json",
