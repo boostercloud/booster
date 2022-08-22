@@ -173,7 +173,7 @@ dependencies:
   '@rush-temp/cli': file:projects/cli.tgz
   '@rush-temp/framework-common-helpers': file:projects/framework-common-helpers.tgz
   '@rush-temp/framework-core': file:projects/framework-core.tgz
-  '@rush-temp/framework-integration-tests': file:projects/framework-integration-tests.tgz_graphql@15.8.0
+  '@rush-temp/framework-integration-tests': file:projects/framework-integration-tests.tgz_424e1c4641e768d778f444b9def55fc3
   '@rush-temp/framework-provider-aws': file:projects/framework-provider-aws.tgz
   '@rush-temp/framework-provider-aws-infrastructure': file:projects/framework-provider-aws-infrastructure.tgz
   '@rush-temp/framework-provider-azure': file:projects/framework-provider-azure.tgz
@@ -623,6 +623,7 @@ packages:
       '@aws-cdk/core': 1.99.0
       '@aws-cdk/region-info': 1.99.0
       constructs: 3.4.76
+      yaml: 1.10.2
     dev: false
     bundledDependencies:
       - yaml
@@ -668,6 +669,7 @@ packages:
       '@aws-cdk/core': 1.99.0
       '@aws-cdk/custom-resources': 1.99.0
       constructs: 3.4.76
+      punycode: 2.1.1
     dev: false
     bundledDependencies:
       - punycode
@@ -715,6 +717,7 @@ packages:
       '@aws-cdk/core': 1.99.0
       '@aws-cdk/cx-api': 1.99.0
       constructs: 3.4.76
+      minimatch: 3.1.2
     dev: false
     bundledDependencies:
       - minimatch
@@ -1144,6 +1147,9 @@ packages:
   /@aws-cdk/cloud-assembly-schema/1.99.0:
     resolution: {integrity: sha512-4wfPYbeI22TBYMIHHeBwn93fnK2RZi0IFoxD50vDXycOgvc4OqPu+jFoXntJXz0dgaZqvzQAEGQAj8kRC3rLOg==}
     engines: {node: '>= 10.13.0 <13 || >=13.7.0'}
+    dependencies:
+      jsonschema: 1.4.1
+      semver: 7.3.7
     dev: false
     bundledDependencies:
       - jsonschema
@@ -1168,7 +1174,11 @@ packages:
       '@aws-cdk/cloud-assembly-schema': 1.99.0
       '@aws-cdk/cx-api': 1.99.0
       '@aws-cdk/region-info': 1.99.0
+      '@balena/dockerignore': 1.0.2
       constructs: 3.4.76
+      fs-extra: 9.1.0
+      ignore: 5.2.0
+      minimatch: 3.1.2
     dev: false
     bundledDependencies:
       - fs-extra
@@ -1195,6 +1205,7 @@ packages:
     engines: {node: '>= 10.13.0 <13 || >=13.7.0'}
     dependencies:
       '@aws-cdk/cloud-assembly-schema': 1.99.0
+      semver: 7.3.7
     dev: false
     bundledDependencies:
       - semver
@@ -1484,6 +1495,10 @@ packages:
       to-fast-properties: 2.0.0
     dev: false
 
+  /@balena/dockerignore/1.0.2:
+    resolution: {integrity: sha512-wMue2Sy4GAVTk6Ic4tJVcnfdau+gx2EnG7S+uAEe+TWJFqE4YoWN4/H8MSLj4eYJKxGg26lZwboEniNiNwZQ6Q==}
+    dev: false
+
   /@cdktf/hcl2cdk/0.8.0-pre.10_constructs@10.1.83:
     resolution: {integrity: sha512-jyCZe4tlz4i3wwpyO5guKvzd5FchY/T9lCx7cgxZbMp/pX+6yWtuFrg8zYtmO9xGTU8KmuwL8CdKwM5FBrhOrA==}
     dependencies:
@@ -1525,6 +1540,7 @@ packages:
       cdktf: 0.7.0_constructs@10.1.83
       constructs: 10.1.83
     dev: false
+    bundledDependencies: []
 
   /@cdktf/provider-generator/0.8.0-pre.10_constructs@10.1.83:
     resolution: {integrity: sha512-t7riiqie/9AmHDYGVfur9/nD6uGKnUngEfqMeNRWNMw+C48ng/K7Q1KcOf5+pGi1ufO038dgHLhFgX3X+7XUNw==}
@@ -2422,7 +2438,7 @@ packages:
   /@types/child-process-promise/2.2.2:
     resolution: {integrity: sha512-4eGTIhKW0jb9DlS81Fgo/UyZ12DMhDhz3Ec8tdHW53l4ubteynNIuy7Z1HNnyHn1jTzXa/o9iX0WoAdiSoDs+Q==}
     dependencies:
-      '@types/node': 16.11.7
+      '@types/node': 18.7.9
     dev: false
 
   /@types/connect/3.4.35:
@@ -2451,7 +2467,7 @@ packages:
   /@types/express-serve-static-core/4.17.30:
     resolution: {integrity: sha512-gstzbTWro2/nFed1WXtf+TtrpwxH7Ggs4RLYTLbeVgIkUQOI3WG/JKjgeOU1zXDvezllupjrf8OPIdvTbIaVOQ==}
     dependencies:
-      '@types/node': 16.11.7
+      '@types/node': 18.7.9
       '@types/qs': 6.9.7
       '@types/range-parser': 1.2.4
     dev: false
@@ -2487,7 +2503,7 @@ packages:
   /@types/fs-extra/9.0.13:
     resolution: {integrity: sha512-nEnwB++1u5lVDM2UI4c1+5R+FYaKfaAzS4OococimjVm3nQw3TuzH5UNsocrcTBbhnerblyHj4A49qXbIiZdpA==}
     dependencies:
-      '@types/node': 16.11.7
+      '@types/node': 18.7.9
     dev: false
 
   /@types/glob/7.2.0:
@@ -2538,7 +2554,7 @@ packages:
   /@types/jsonwebtoken/8.5.1:
     resolution: {integrity: sha512-rNAPdomlIUX0i0cg2+I+Q1wOUr531zHBQ+cV/28PJ39bSPKjahatZZ2LMuhiguETkCgLVzfruw/ZvNMNkKoSzw==}
     dependencies:
-      '@types/node': 16.11.7
+      '@types/node': 18.7.9
     dev: false
 
   /@types/jsonwebtoken/8.5.8:
@@ -2591,7 +2607,7 @@ packages:
   /@types/nedb/1.8.12:
     resolution: {integrity: sha512-ICDoQMORMjOSqfNFXT4ENXfwwCir1BPblXNm0SPH7C4Q10ou+pvVagcFAJ+rrzf3A47tGU4K/KbzKu7wO9j45Q==}
     dependencies:
-      '@types/node': 16.11.7
+      '@types/node': 18.7.9
     dev: false
 
   /@types/needle/2.5.3:
@@ -2612,7 +2628,7 @@ packages:
   /@types/node-fetch/2.6.2:
     resolution: {integrity: sha512-DHqhlq5jeESLy19TYhLakJ07kNumXWjcDdxXsLUMJZ6ue8VZJj4kLPQVE/2mdHh3xZziNF1xppu5lwmS53HR+A==}
     dependencies:
-      '@types/node': 16.11.7
+      '@types/node': 18.7.9
       form-data: 3.0.1
     dev: false
 
@@ -2679,7 +2695,7 @@ packages:
     resolution: {integrity: sha512-z5xyF6uh8CbjAu9760KDKsH2FcDxZ2tFCsA4HIMWE6IkiYMXfVoa+4f9KX+FN0ZLsaMw1WNG2ETLA6N+/YA+cg==}
     dependencies:
       '@types/mime': 3.0.1
-      '@types/node': 16.11.7
+      '@types/node': 18.7.9
     dev: false
 
   /@types/sinon-chai/3.2.5:
@@ -2692,7 +2708,7 @@ packages:
   /@types/sinon-express-mock/1.3.9:
     resolution: {integrity: sha512-wHtSYqZ/c1FytL4qEMVb3tp8UZk1EnUq6Qc4jQv5eJ9N2QtFdS4WU3Wijqzeu5r3/DfZqpvzkxbbZLa0+9F9sA==}
     dependencies:
-      '@types/express': 4.17.12
+      '@types/express': 4.17.13
       '@types/sinon': 10.0.0
     dev: false
 
@@ -2746,7 +2762,7 @@ packages:
   /@types/ws/7.4.2:
     resolution: {integrity: sha512-PbeN0Eydl7LQl4OIav29YmkO2LxbVuz3nZD/kb19lOS+wLgIkRbWMNmU/QQR7ABpOJ7D7xDOU8co7iohObewrw==}
     dependencies:
-      '@types/node': 16.11.7
+      '@types/node': 18.7.9
     dev: false
 
   /@types/ws/8.5.3:
@@ -3944,6 +3960,7 @@ packages:
     peerDependencies:
       constructs: ^10.0.0
     dependencies:
+      archiver: 5.3.0
       constructs: 10.1.83
     dev: false
     bundledDependencies:
@@ -3954,6 +3971,7 @@ packages:
     peerDependencies:
       constructs: ^10.0.0
     dependencies:
+      archiver: 5.3.0
       constructs: 10.1.83
     dev: false
     bundledDependencies:
@@ -7281,6 +7299,10 @@ packages:
   /jsonpath-plus/0.19.0:
     resolution: {integrity: sha512-GSVwsrzW9LsA5lzsqe4CkuZ9wp+kxBb2GwNniaWzI2YFn5Ig42rSW8ZxVpWXaAfakXNrx5pgY5AbQq7kzX29kg==}
     engines: {node: '>=6.0'}
+    dev: false
+
+  /jsonschema/1.4.1:
+    resolution: {integrity: sha512-S6cATIPVv1z0IlxdN+zUk5EPjkGCdnhN4wVSBlvoUO1tOLJootbo9CquNJmbIh4yikWHiUedhRYrNPn1arpEmQ==}
     dev: false
 
   /jsonwebtoken/8.5.1:
@@ -11414,8 +11436,8 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/framework-integration-tests.tgz_graphql@15.8.0:
-    resolution: {integrity: sha512-8XQaEn1ripUezjkLeEGugg/wnOIolFZezDZjZEQ4ZCiSM6ERe7LC4z+CyGJEjafoV/Rfr3UB48xaLjAeE5uVqQ==, tarball: file:projects/framework-integration-tests.tgz}
+  file:projects/framework-integration-tests.tgz_424e1c4641e768d778f444b9def55fc3:
+    resolution: {integrity: sha512-il02AWaR4NHZ0swXFe3+5cx+M6deszU1f7qORt+AUHKTOUrp0PczUdGZoxx2jKrNWwGFv65shcHa1z/egbHiNg==, tarball: file:projects/framework-integration-tests.tgz}
     id: file:projects/framework-integration-tests.tgz
     name: '@rush-temp/framework-integration-tests'
     version: 0.0.0
@@ -11443,6 +11465,8 @@ packages:
       apollo-link-ws: 1.0.20_5e4e46367064635de8208c19ba92a672
       apollo-utilities: 1.3.4_graphql@15.8.0
       aws-sdk: 2.853.0
+      cdktf: 0.7.0_constructs@10.1.83
+      cdktf-cli: 0.8.0-pre.10
       chai: 4.2.0
       chai-as-promised: 7.1.1_chai@4.2.0
       child-process-promise: 2.2.1
@@ -11473,10 +11497,13 @@ packages:
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
+      - '@types/react'
       - bufferutil
+      - constructs
       - debug
       - encoding
       - graphql
+      - graphql-ws
       - supports-color
       - utf-8-validate
     dev: false

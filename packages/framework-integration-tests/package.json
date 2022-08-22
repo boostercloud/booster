@@ -18,6 +18,8 @@
     "@boostercloud/framework-provider-local": "^0.30.6",
     "@boostercloud/framework-types": "^0.30.6",
     "aws-sdk": "2.853.0",
+    "cdktf": "0.7.0",
+    "cdktf-cli": "0.8.0-pre.10",
     "tslib": "~2.4.0"
   },
   "devDependencies": {
