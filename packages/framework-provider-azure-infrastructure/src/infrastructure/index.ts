@@ -4,6 +4,7 @@ import { runCommand, getLogger } from '@boostercloud/framework-common-helpers'
 import { InfrastructureRocket } from './rockets/infrastructure-rocket'
 import { ApplicationBuilder } from './application-builder'
 import { RocketBuilder } from './rockets/rocket-builder'
+import * as path from 'path'
 
 export const synth = (config: BoosterConfig, rockets?: InfrastructureRocket[]): Promise<void> =>
   synthApp(config, rockets)
@@ -30,7 +31,7 @@ async function deployApp(config: BoosterConfig, rockets?: InfrastructureRocket[]
   const applicationBuilder = new ApplicationBuilder(config, rockets)
   const applicationBuild = await applicationBuilder.buildApplication()
 
-  const command = await runCommand(process.cwd(), 'npx cdktf deploy --auto-approve')
+  const command = await runCommand(process.cwd(), `${path.join('node_modules', '.bin', 'cdktf')} deploy --auto-approve`)
   if (command.childProcess.exitCode !== 0) {
     return Promise.reject(`Deploy application ${config.appName} failed. Check cdktf logs`)
   }
