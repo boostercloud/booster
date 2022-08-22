@@ -73,7 +73,9 @@
     "ttypescript": "1.5.13",
     "typescript": "4.7.4",
     "ws": "7.4.5",
-    "yaml": "1.10.2"
+    "yaml": "1.10.2",
+    "nedb": "~1.8.0",
+    "@types/nedb": "~1.8.12"
   },
   "engines": {
     "node": ">=14.0.0"
