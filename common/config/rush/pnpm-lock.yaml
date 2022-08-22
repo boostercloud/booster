@@ -55,7 +55,6 @@ specifiers:
   '@types/js-yaml': ~3.12.5
   '@types/mocha': 8.2.2
   '@types/mustache': 4.1.0
-  '@types/nedb': ^1.8.11
   '@types/needle': ^2.0.4
   '@types/node-schedule': ^1.3.2
   '@types/redis': ^2.8.28
@@ -199,7 +198,6 @@ dependencies:
   '@types/js-yaml': 3.12.7
   '@types/mocha': 8.2.2
   '@types/mustache': 4.1.0
-  '@types/nedb': 1.8.12
   '@types/needle': 2.5.3
   '@types/node-schedule': 1.3.2
   '@types/redis': 2.8.32
@@ -625,7 +623,6 @@ packages:
       '@aws-cdk/core': 1.99.0
       '@aws-cdk/region-info': 1.99.0
       constructs: 3.4.76
-      yaml: 1.10.2
     dev: false
     bundledDependencies:
       - yaml
@@ -671,7 +668,6 @@ packages:
       '@aws-cdk/core': 1.99.0
       '@aws-cdk/custom-resources': 1.99.0
       constructs: 3.4.76
-      punycode: 2.1.1
     dev: false
     bundledDependencies:
       - punycode
@@ -719,7 +715,6 @@ packages:
       '@aws-cdk/core': 1.99.0
       '@aws-cdk/cx-api': 1.99.0
       constructs: 3.4.76
-      minimatch: 3.1.2
     dev: false
     bundledDependencies:
       - minimatch
@@ -1149,9 +1144,6 @@ packages:
   /@aws-cdk/cloud-assembly-schema/1.99.0:
     resolution: {integrity: sha512-4wfPYbeI22TBYMIHHeBwn93fnK2RZi0IFoxD50vDXycOgvc4OqPu+jFoXntJXz0dgaZqvzQAEGQAj8kRC3rLOg==}
     engines: {node: '>= 10.13.0 <13 || >=13.7.0'}
-    dependencies:
-      jsonschema: 1.4.1
-      semver: 7.3.7
     dev: false
     bundledDependencies:
       - jsonschema
@@ -1176,11 +1168,7 @@ packages:
       '@aws-cdk/cloud-assembly-schema': 1.99.0
       '@aws-cdk/cx-api': 1.99.0
       '@aws-cdk/region-info': 1.99.0
-      '@balena/dockerignore': 1.0.2
       constructs: 3.4.76
-      fs-extra: 9.1.0
-      ignore: 5.2.0
-      minimatch: 3.1.2
     dev: false
     bundledDependencies:
       - fs-extra
@@ -1207,7 +1195,6 @@ packages:
     engines: {node: '>= 10.13.0 <13 || >=13.7.0'}
     dependencies:
       '@aws-cdk/cloud-assembly-schema': 1.99.0
-      semver: 7.3.7
     dev: false
     bundledDependencies:
       - semver
@@ -1497,10 +1484,6 @@ packages:
       to-fast-properties: 2.0.0
     dev: false
 
-  /@balena/dockerignore/1.0.2:
-    resolution: {integrity: sha512-wMue2Sy4GAVTk6Ic4tJVcnfdau+gx2EnG7S+uAEe+TWJFqE4YoWN4/H8MSLj4eYJKxGg26lZwboEniNiNwZQ6Q==}
-    dev: false
-
   /@cdktf/hcl2cdk/0.8.0-pre.10_constructs@10.1.83:
     resolution: {integrity: sha512-jyCZe4tlz4i3wwpyO5guKvzd5FchY/T9lCx7cgxZbMp/pX+6yWtuFrg8zYtmO9xGTU8KmuwL8CdKwM5FBrhOrA==}
     dependencies:
@@ -1542,7 +1525,6 @@ packages:
       cdktf: 0.7.0_constructs@10.1.83
       constructs: 10.1.83
     dev: false
-    bundledDependencies: []
 
   /@cdktf/provider-generator/0.8.0-pre.10_constructs@10.1.83:
     resolution: {integrity: sha512-t7riiqie/9AmHDYGVfur9/nD6uGKnUngEfqMeNRWNMw+C48ng/K7Q1KcOf5+pGi1ufO038dgHLhFgX3X+7XUNw==}
@@ -2440,7 +2422,7 @@ packages:
   /@types/child-process-promise/2.2.2:
     resolution: {integrity: sha512-4eGTIhKW0jb9DlS81Fgo/UyZ12DMhDhz3Ec8tdHW53l4ubteynNIuy7Z1HNnyHn1jTzXa/o9iX0WoAdiSoDs+Q==}
     dependencies:
-      '@types/node': 18.7.9
+      '@types/node': 16.11.7
     dev: false
 
   /@types/connect/3.4.35:
@@ -2469,7 +2451,7 @@ packages:
   /@types/express-serve-static-core/4.17.30:
     resolution: {integrity: sha512-gstzbTWro2/nFed1WXtf+TtrpwxH7Ggs4RLYTLbeVgIkUQOI3WG/JKjgeOU1zXDvezllupjrf8OPIdvTbIaVOQ==}
     dependencies:
-      '@types/node': 18.7.9
+      '@types/node': 16.11.7
       '@types/qs': 6.9.7
       '@types/range-parser': 1.2.4
     dev: false
@@ -2505,7 +2487,7 @@ packages:
   /@types/fs-extra/9.0.13:
     resolution: {integrity: sha512-nEnwB++1u5lVDM2UI4c1+5R+FYaKfaAzS4OococimjVm3nQw3TuzH5UNsocrcTBbhnerblyHj4A49qXbIiZdpA==}
     dependencies:
-      '@types/node': 18.7.9
+      '@types/node': 16.11.7
     dev: false
 
   /@types/glob/7.2.0:
@@ -2556,7 +2538,7 @@ packages:
   /@types/jsonwebtoken/8.5.1:
     resolution: {integrity: sha512-rNAPdomlIUX0i0cg2+I+Q1wOUr531zHBQ+cV/28PJ39bSPKjahatZZ2LMuhiguETkCgLVzfruw/ZvNMNkKoSzw==}
     dependencies:
-      '@types/node': 18.7.9
+      '@types/node': 16.11.7
     dev: false
 
   /@types/jsonwebtoken/8.5.8:
@@ -2609,7 +2591,7 @@ packages:
   /@types/nedb/1.8.12:
     resolution: {integrity: sha512-ICDoQMORMjOSqfNFXT4ENXfwwCir1BPblXNm0SPH7C4Q10ou+pvVagcFAJ+rrzf3A47tGU4K/KbzKu7wO9j45Q==}
     dependencies:
-      '@types/node': 18.7.9
+      '@types/node': 16.11.7
     dev: false
 
   /@types/needle/2.5.3:
@@ -2630,7 +2612,7 @@ packages:
   /@types/node-fetch/2.6.2:
     resolution: {integrity: sha512-DHqhlq5jeESLy19TYhLakJ07kNumXWjcDdxXsLUMJZ6ue8VZJj4kLPQVE/2mdHh3xZziNF1xppu5lwmS53HR+A==}
     dependencies:
-      '@types/node': 18.7.9
+      '@types/node': 16.11.7
       form-data: 3.0.1
     dev: false
 
@@ -2697,7 +2679,7 @@ packages:
     resolution: {integrity: sha512-z5xyF6uh8CbjAu9760KDKsH2FcDxZ2tFCsA4HIMWE6IkiYMXfVoa+4f9KX+FN0ZLsaMw1WNG2ETLA6N+/YA+cg==}
     dependencies:
       '@types/mime': 3.0.1
-      '@types/node': 18.7.9
+      '@types/node': 16.11.7
     dev: false
 
   /@types/sinon-chai/3.2.5:
@@ -2710,7 +2692,7 @@ packages:
   /@types/sinon-express-mock/1.3.9:
     resolution: {integrity: sha512-wHtSYqZ/c1FytL4qEMVb3tp8UZk1EnUq6Qc4jQv5eJ9N2QtFdS4WU3Wijqzeu5r3/DfZqpvzkxbbZLa0+9F9sA==}
     dependencies:
-      '@types/express': 4.17.13
+      '@types/express': 4.17.12
       '@types/sinon': 10.0.0
     dev: false
 
@@ -2764,7 +2746,7 @@ packages:
   /@types/ws/7.4.2:
     resolution: {integrity: sha512-PbeN0Eydl7LQl4OIav29YmkO2LxbVuz3nZD/kb19lOS+wLgIkRbWMNmU/QQR7ABpOJ7D7xDOU8co7iohObewrw==}
     dependencies:
-      '@types/node': 18.7.9
+      '@types/node': 16.11.7
     dev: false
 
   /@types/ws/8.5.3:
@@ -3837,7 +3819,7 @@ packages:
     resolution: {integrity: sha512-gxGWBrTT1JuMx6R+o5PTXMmUnhnVzLQ9SNutD4YqKtI6ap897t3tKECYla6gCWEkplXnlNybEkZg9GEGxKFCgw==}
     dependencies:
       pascal-case: 3.1.2
-      tslib: 2.4.0
+      tslib: 2.3.1
     dev: false
 
   /camelcase-keys/6.2.2:
@@ -3962,7 +3944,6 @@ packages:
     peerDependencies:
       constructs: ^10.0.0
     dependencies:
-      archiver: 5.3.0
       constructs: 10.1.83
     dev: false
     bundledDependencies:
@@ -3973,7 +3954,6 @@ packages:
     peerDependencies:
       constructs: ^10.0.0
     dependencies:
-      archiver: 5.3.0
       constructs: 10.1.83
     dev: false
     bundledDependencies:
@@ -7303,10 +7283,6 @@ packages:
     engines: {node: '>=6.0'}
     dev: false
 
-  /jsonschema/1.4.1:
-    resolution: {integrity: sha512-S6cATIPVv1z0IlxdN+zUk5EPjkGCdnhN4wVSBlvoUO1tOLJootbo9CquNJmbIh4yikWHiUedhRYrNPn1arpEmQ==}
-    dev: false
-
   /jsonwebtoken/8.5.1:
     resolution: {integrity: sha512-XjwVfRS6jTMsqYs0EsuJ4LGxXV14zQybNd4L2r0UvbVnSF9Af8x7p5MzbJ90Ioz/9TI41/hTCvznF/loiSzn8w==}
     engines: {node: '>=4', npm: '>=1.4.28'}
@@ -7657,7 +7633,7 @@ packages:
   /lower-case/2.0.2:
     resolution: {integrity: sha512-7fm3l3NAF9WfN6W3JOmf5drwpVqX78JtoGJ3A6W0a6ZnldM41w2fV5D490psKFTpMds8TJse/eHLFFsNHHjHgg==}
     dependencies:
-      tslib: 2.4.0
+      tslib: 2.3.1
     dev: false
 
   /lowercase-keys/2.0.0:
@@ -8109,7 +8085,7 @@ packages:
     resolution: {integrity: sha512-fgAN3jGAh+RoxUGZHTSOLJIqUc2wmoBwGR4tbpNAKmmovFoWq0OdRkb0VkldReO2a2iBT/OEulG9XSUc10r3zg==}
     dependencies:
       lower-case: 2.0.2
-      tslib: 2.4.0
+      tslib: 2.3.1
     dev: false
 
   /nock/11.8.2:
@@ -8685,7 +8661,7 @@ packages:
     resolution: {integrity: sha512-uWlGT3YSnK9x3BQJaOdcZwrnV6hPpd8jFH1/ucpiLRPh/2zCVJKS19E4GvYHvaCcACn3foXZ0cLB9Wrx1KGe5g==}
     dependencies:
       no-case: 3.0.4
-      tslib: 2.4.0
+      tslib: 2.3.1
     dev: false
 
   /password-prompt/1.1.2:
@@ -11564,7 +11540,7 @@ packages:
     dev: false
 
   file:projects/framework-provider-aws.tgz:
-    resolution: {integrity: sha512-MTsPOhRSRa8PmBFYOlRwwjhAL4fWt0xfHDhaDjHhaUciFJXQ6I/Nf69U0Hj8Axt8nWzDc7Rb0r82PDMgmAuBWw==, tarball: file:projects/framework-provider-aws.tgz}
+    resolution: {integrity: sha512-jZqZBtjZFRl8WVhmIMxuHv2t9O1/zQvRqN4DOHjdW24cT2w7RzlaY0Pfpm6rpNwJFKds4RhFmB7FPczm8u9ZRA==, tarball: file:projects/framework-provider-aws.tgz}
     name: '@rush-temp/framework-provider-aws'
     version: 0.0.0
     dependencies:
@@ -11580,6 +11556,7 @@ packages:
       '@types/sinon-chai': 3.2.5
       '@typescript-eslint/eslint-plugin': 4.22.1_c2640d32ade1b01dcebe224140a5800b
       '@typescript-eslint/parser': 4.22.1_eslint@7.26.0+typescript@4.7.4
+      aws-sdk: 2.853.0
       chai: 4.2.0
       chai-arrays: 2.2.0
       chai-as-promised: 7.1.1_chai@4.2.0
@@ -11599,8 +11576,6 @@ packages:
       tslib: 2.4.0
       typescript: 4.7.4
       velocityjs: 2.0.6
-    optionalDependencies:
-      aws-sdk: 2.853.0
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
