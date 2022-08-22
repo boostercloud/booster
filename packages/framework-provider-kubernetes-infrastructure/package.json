@@ -20,7 +20,7 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@boostercloud/framework-common-helpers": "workspace:^0.30.6",
+    "@boostercloud/framework-common-helpers": "^0.30.6",
     "@kubernetes/client-node": "0.14.3",
     "archiver": "5.3.0",
     "body-parser": "^1.18.3",
@@ -47,7 +47,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@boostercloud/framework-types": "workspace:^0.30.6",
+    "@boostercloud/framework-types": "^0.30.6",
     "@types/chai": "4.2.18",
     "@types/chai-as-promised": "7.1.4",
     "@types/mocha": "8.2.2",

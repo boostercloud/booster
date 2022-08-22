@@ -33,7 +33,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "dependencies": {
-    "@boostercloud/framework-types": "workspace:^0.30.6",
+    "@boostercloud/framework-types": "^0.30.6",
     "child-process-promise": "^2.2.1",
     "tslib": "2.4.0"
   },

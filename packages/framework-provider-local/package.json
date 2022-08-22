@@ -20,8 +20,8 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@boostercloud/framework-common-helpers": "workspace:^0.30.6",
-    "@boostercloud/framework-types": "workspace:^0.30.6",
+    "@boostercloud/framework-common-helpers": "^0.30.6",
+    "@boostercloud/framework-types": "^0.30.6",
     "@types/nedb": "^1.8.11",
     "nedb": "^1.8.0",
     "tslib": "2.4.0"

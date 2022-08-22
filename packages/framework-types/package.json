@@ -39,7 +39,7 @@
     "graphql": "^15.5.1"
   },
   "devDependencies": {
-    "@boostercloud/metadata-booster": "workspace:^0.30.6",
+    "@boostercloud/metadata-booster": "^0.30.6",
     "@types/chai": "4.2.18",
     "@types/chai-as-promised": "7.1.4",
     "@types/mocha": "8.2.2",
