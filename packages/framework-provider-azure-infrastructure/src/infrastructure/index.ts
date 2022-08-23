@@ -31,10 +31,7 @@ async function deployApp(config: BoosterConfig, rockets?: InfrastructureRocket[]
   const applicationBuilder = new ApplicationBuilder(config, rockets)
   const applicationBuild = await applicationBuilder.buildApplication()
 
-  const command = await runCommand(
-    process.cwd(),
-    `${path.join(process.cwd(), 'node_modules', '.bin', 'cdktf')} deploy --auto-approve`
-  )
+  const command = await runCommand(process.cwd(), `npx cdktf deploy --auto-approve`)
   if (command.childProcess.exitCode !== 0) {
     return Promise.reject(`Deploy application ${config.appName} failed. Check cdktf logs`)
   }

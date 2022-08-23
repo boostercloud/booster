@@ -1,2 +1,2 @@
 #!/bin/sh
-rush lint:fix
+echo Remember to execute rush lint:fix
