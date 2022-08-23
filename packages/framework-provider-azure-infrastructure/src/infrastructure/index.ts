@@ -4,7 +4,6 @@ import { runCommand, getLogger } from '@boostercloud/framework-common-helpers'
 import { InfrastructureRocket } from './rockets/infrastructure-rocket'
 import { ApplicationBuilder } from './application-builder'
 import { RocketBuilder } from './rockets/rocket-builder'
-import * as path from 'path'
 
 export const synth = (config: BoosterConfig, rockets?: InfrastructureRocket[]): Promise<void> =>
   synthApp(config, rockets)
