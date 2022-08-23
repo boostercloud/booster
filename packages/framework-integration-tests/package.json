@@ -18,8 +18,6 @@
     "@boostercloud/framework-provider-local": "^0.30.6",
     "@boostercloud/framework-types": "^0.30.6",
     "aws-sdk": "2.853.0",
-    "cdktf": "0.7.0",
-    "cdktf-cli": "0.8.0-pre.10",
     "tslib": "~2.4.0"
   },
   "devDependencies": {
@@ -54,6 +52,8 @@
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
     "child-process-promise": "~2.2.1",
+    "cdktf": "0.7.0",
+    "cdktf-cli": "0.8.0-pre.10",
     "cross-fetch": "3.1.5",
     "eslint": "7.26.0",
     "eslint-config-prettier": "8.3.0",
