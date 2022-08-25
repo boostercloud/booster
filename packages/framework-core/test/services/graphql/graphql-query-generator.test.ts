@@ -17,9 +17,9 @@ import {
   GraphQLList,
 } from 'graphql'
 import { random } from 'faker'
-import GraphQLJSON from 'graphql-type-json'
+import { GraphQLJSON } from 'graphql-scalars'
 import { AnyClass, BoosterConfig } from '@boostercloud/framework-types'
-import { ClassMetadata } from 'metadata-booster'
+import { ClassMetadata } from '@boostercloud/metadata-booster'
 import * as metadata from '../../../src/decorators/metadata'
 
 describe('GraphQLQueryGenerator', () => {
@@ -157,6 +157,7 @@ describe('GraphQLQueryGenerator', () => {
                       name: mockPropertyType.name,
                       typeGroup: 'Boolean',
                       type: mockPropertyType,
+                      typeName: 'Boolean',
                       parameters: [],
                       isNullable: false,
                     },
@@ -170,6 +171,7 @@ describe('GraphQLQueryGenerator', () => {
                       typeGroup: 'String',
                       type: mockPropertyType,
                       parameters: [],
+                      typeName: 'String',
                       isNullable: false,
                     },
                   },
@@ -266,6 +268,7 @@ describe('GraphQLQueryGenerator', () => {
                           name: mockPropertyType.name,
                           typeGroup: 'Number',
                           type: mockPropertyType,
+                          typeName: 'Number',
                           parameters: [],
                           isNullable: false,
                         },
@@ -351,6 +354,7 @@ describe('GraphQLQueryGenerator', () => {
                           name: mockPropertyType.name,
                           typeGroup: 'String',
                           type: mockPropertyType,
+                          typeName: 'String',
                           parameters: [],
                           isNullable: false,
                         },

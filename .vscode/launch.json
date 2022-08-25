@@ -209,10 +209,8 @@
       "name": "framework-core tests",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [
-        "-r",
-        "ts-node/register",
-        "--timeout",
-        "999999",
+        "--require", "ts-node/register",
+        "--timeout", "999999",
         "--colors",
         "--forbid-only",
         "${workspaceFolder}/packages/framework-core/test/**/*.test.ts"
@@ -297,7 +295,11 @@
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
       "cwd": "${workspaceFolder}/packages/framework-integration-tests",
-      "runtimeArgs": ["--preserve-symlinks"]
+      "runtimeArgs": ["--preserve-symlinks"],
+      "env": {
+        "BOOSTER_ENV": "production",
+        "TESTED_PROVIDER": "AWS"
+      }
     },
     {
       "type": "node",
@@ -315,7 +317,11 @@
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
       "cwd": "${workspaceFolder}/packages/framework-integration-tests",
-      "runtimeArgs": ["--preserve-symlinks"]
+      "runtimeArgs": ["--preserve-symlinks"],
+      "env": {
+        "BOOSTER_ENV": "production",
+        "TESTED_PROVIDER": "AWS"
+      }
     },
     {
       "type": "node",
@@ -333,7 +339,11 @@
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
       "cwd": "${workspaceFolder}/packages/framework-integration-tests",
-      "runtimeArgs": ["--preserve-symlinks"]
+      "runtimeArgs": ["--preserve-symlinks"],
+      "env": {
+        "BOOSTER_ENV": "production",
+        "TESTED_PROVIDER": "AWS"
+      }
     },
     {
       "type": "node",
@@ -351,7 +361,11 @@
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
       "cwd": "${workspaceFolder}/packages/framework-integration-tests",
-      "runtimeArgs": ["--preserve-symlinks"]
+      "runtimeArgs": ["--preserve-symlinks"],
+      "env": {
+        "BOOSTER_ENV": "production",
+        "TESTED_PROVIDER": "AWS"
+      }
     },
     {
       "type": "node",

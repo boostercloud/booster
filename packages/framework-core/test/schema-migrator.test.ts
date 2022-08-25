@@ -2,8 +2,8 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 
 import { expect } from './expect'
-import { BoosterConfig, CommandEnvelope, MigrationMetadata } from '@boostercloud/framework-types'
-import { Migrator } from '../src/migrator'
+import { BoosterConfig, CommandEnvelope, SchemaMigrationMetadata } from '@boostercloud/framework-types'
+import { SchemaMigrator } from '../src/schema-migrator'
 
 class TestConceptV1 {
   public constructor(readonly field1: string) {}
@@ -27,16 +27,16 @@ class TestConceptMigration {
   }
 }
 
-describe('Migrator', () => {
-  const migrations = new Map<number, MigrationMetadata>()
-  migrations.set(2, {
+describe('Schema Migrator', () => {
+  const schemaMigrations = new Map<number, SchemaMigrationMetadata>()
+  schemaMigrations.set(2, {
     fromSchema: TestConceptV1,
     toSchema: TestConceptV2,
     methodName: 'addField2',
     migrationClass: TestConceptMigration,
     toVersion: 2,
   })
-  migrations.set(3, {
+  schemaMigrations.set(3, {
     fromSchema: TestConceptV2,
     toSchema: TestConceptV3,
     methodName: 'addField3',
@@ -44,10 +44,10 @@ describe('Migrator', () => {
     toVersion: 3,
   })
   const config = new BoosterConfig('test')
-  config.migrations['TestConcept'] = migrations
-  const migrator = new Migrator(config)
+  config.schemaMigrations['TestConcept'] = schemaMigrations
+  const migrator = new SchemaMigrator(config)
 
-  describe('migrate', async () => {
+  describe('schema migrate', async () => {
     it('throws when the version of the concept to migrate is lower than 1', async () => {
       const toMigrate: CommandEnvelope = {
         requestID: 'requestID',
@@ -57,7 +57,7 @@ describe('Migrator', () => {
       }
 
       await expect(migrator.migrate(toMigrate)).to.be.rejectedWith(
-        /Received an invalid version value, 0, for TestConcept/
+        /Received an invalid schema version value, 0, for TestConcept/
       )
     })
 
@@ -70,7 +70,7 @@ describe('Migrator', () => {
       }
 
       await expect(migrator.migrate(toMigrate)).to.be.rejectedWith(
-        /The current version of TestConcept is 3, which is lower than the received version 4/
+        /The current schema version of TestConcept is 3, which is lower than the received version 4/
       )
     })
 

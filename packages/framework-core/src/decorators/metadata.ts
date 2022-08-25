@@ -1,5 +1,5 @@
 import { AnyClass } from '@boostercloud/framework-types'
-import { ClassMetadata } from 'metadata-booster'
+import { ClassMetadata } from '@boostercloud/metadata-booster'
 import 'reflect-metadata'
 
 export function getClassMetadata(classType: AnyClass): ClassMetadata {
