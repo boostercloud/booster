@@ -19,7 +19,7 @@ jobs:
       - run: echo "$DATA"
         env:
           DATA: ${{ toJson(github.event.head_commit) }}
-      - uses: actions/checkout@v2-beta
+      - uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN_ACTION }}
 
@@ -49,9 +49,6 @@ jobs:
         uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
         with:
           build: true
-
-      - name: Check for changes
-        run: node common/scripts/install-run-rush.js change --verify
 
       # Discard all changes that might have occurred after change build
       - run: git stash
@@ -91,7 +88,8 @@ jobs:
         run: git stash
 
       - name: Publish using Rush
-        run: node common/scripts/install-run-rush.js publish -v
+        run: node common/scripts/install-run-rush.js publish --apply --publish --include-all --target-branch origin/main --add-commit-details
+
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_ACTION }}
