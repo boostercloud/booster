@@ -14,6 +14,7 @@ scripts/mirroring.js
 .booster
 .deploy
 *-integration-sandbox
+**/errors.log
 
 # yarn (see https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored)
 .yarn/*

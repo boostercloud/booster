@@ -22,7 +22,9 @@ export async function search<TResult>(
 ): Promise<Array<TResult> | ReadModelListResult<TResult>> {
   const logger = getLogger(config, 'query-helper#search')
   const filterExpression = buildFilterExpression(filters)
-  const queryDefinition = `SELECT ${projections} FROM c ${filterExpression !== '' ? `WHERE ${filterExpression}` : filterExpression}`
+  const queryDefinition = `SELECT ${projections} FROM c ${
+    filterExpression !== '' ? `WHERE ${filterExpression}` : filterExpression
+  }`
   const queryWithOrder = queryDefinition + buildOrderExpression(order)
   let finalQuery = queryWithOrder
   if (paginatedVersion && limit) {

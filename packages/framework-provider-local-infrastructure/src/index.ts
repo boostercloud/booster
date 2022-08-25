@@ -53,9 +53,16 @@ export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): Provider
       }
       expressServer.use(
         express.json({
+          limit: '6mb',
           verify: (req, res, buf) => {
             req.rawBody = buf
           },
+        })
+      )
+      expressServer.use(
+        express.urlencoded({
+          extended: true,
+          limit: '6mb'
         })
       )
       expressServer.use(cors())

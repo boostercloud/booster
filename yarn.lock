@@ -1820,7 +1820,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@boostercloud/application-tester@^0.29.2, @boostercloud/application-tester@workspace:packages/application-tester":
+"@boostercloud/application-tester@^0.30.6, @boostercloud/application-tester@workspace:packages/application-tester":
   version: 0.0.0-use.local
   resolution: "@boostercloud/application-tester@workspace:packages/application-tester"
   dependencies:
@@ -1849,8 +1849,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@boostercloud/cli@workspace:packages/cli"
   dependencies:
-    "@boostercloud/framework-core": ^0.29.2
-    "@boostercloud/framework-types": ^0.29.2
+    "@boostercloud/framework-core": ^0.30.6
+    "@boostercloud/framework-types": ^0.30.6
     "@oclif/command": ^1.8
     "@oclif/config": ^1.18
     "@oclif/dev-cli": ^1.26
@@ -1883,8 +1883,8 @@ __metadata:
     rimraf: 3.0.2
     sinon: 9.2.3
     sinon-chai: 3.5.0
-    ts-morph: 13.0.2
-    tslib: 2.3.1
+    ts-morph: 15.1.0
+    tslib: 2.4.0
   bin:
     boost: ./bin/run
   languageName: unknown
@@ -1894,9 +1894,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-common-helpers@portal:packages/framework-common-helpers::locator=root%40workspace%3A."
   dependencies:
-    "@boostercloud/framework-types": ^0.29.2
+    "@boostercloud/framework-types": ^0.30.6
     child-process-promise: ^2.2.1
-    tslib: 2.3.1
+    tslib: 2.4.0
   languageName: node
   linkType: soft
 
@@ -1904,7 +1904,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-common-helpers@workspace:packages/framework-common-helpers"
   dependencies:
-    "@boostercloud/framework-types": ^0.29.2
+    "@boostercloud/framework-types": ^0.30.6
     "@types/rewire": ^2.5.28
     "@types/uuid": 8.3.0
     chai: 4.2.0
@@ -1914,7 +1914,7 @@ __metadata:
     rimraf: 3.0.2
     sinon: 9.2.3
     sinon-chai: 3.5.0
-    tslib: 2.3.1
+    tslib: 2.4.0
     typescript: 4.5.4
   languageName: unknown
   linkType: soft
@@ -1923,18 +1923,18 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-core@portal:packages/framework-core::locator=root%40workspace%3A."
   dependencies:
-    "@boostercloud/framework-common-helpers": ^0.29.2
-    "@boostercloud/framework-types": ^0.29.2
+    "@boostercloud/framework-common-helpers": ^0.30.6
+    "@boostercloud/framework-types": ^0.30.6
     fp-ts: 2.10.5
     graphql: 15.8.0
+    graphql-scalars: 1.17.0
     graphql-subscriptions: 1.2.1
-    graphql-type-json: 0.3.2
     inflected: 2.1.0
     iterall: 1.3.0
     jsonwebtoken: 8.5.1
     jwks-rsa: 2.0.3
     reflect-metadata: 0.1.13
-    tslib: 2.3.1
+    tslib: 2.4.0
     validator: 13.7.0
   languageName: node
   linkType: soft
@@ -1943,10 +1943,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-core@workspace:packages/framework-core"
   dependencies:
-    "@boostercloud/framework-common-helpers": ^0.29.2
-    "@boostercloud/framework-types": ^0.29.2
+    "@boostercloud/framework-common-helpers": ^0.30.6
+    "@boostercloud/framework-types": ^0.30.6
+    "@boostercloud/metadata-booster": ^0.30.6
     "@types/faker": 5.1.5
-    "@types/graphql-type-json": 0.3.2
     "@types/inflected": 1.1.29
     "@types/jsonwebtoken": 8.5.1
     "@types/validator": 13.1.3
@@ -1955,13 +1955,12 @@ __metadata:
     faker: 5.1.0
     fp-ts: 2.10.5
     graphql: 15.8.0
+    graphql-scalars: 1.17.0
     graphql-subscriptions: 1.2.1
-    graphql-type-json: 0.3.2
     inflected: 2.1.0
     iterall: 1.3.0
     jsonwebtoken: 8.5.1
     jwks-rsa: 2.0.3
-    metadata-booster: 0.4.1
     mocha: 8.4.0
     mock-jwks: 1.0.3
     nock: 11.8.2
@@ -1969,7 +1968,7 @@ __metadata:
     rimraf: 3.0.2
     sinon: 9.2.3
     sinon-chai: 3.5.0
-    tslib: 2.3.1
+    tslib: 2.4.0
     typescript: 4.5.4
     validator: 13.7.0
   languageName: unknown
@@ -1979,18 +1978,19 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-integration-tests@workspace:packages/framework-integration-tests"
   dependencies:
-    "@boostercloud/application-tester": ^0.29.2
-    "@boostercloud/framework-common-helpers": ^0.29.2
-    "@boostercloud/framework-core": ^0.29.2
-    "@boostercloud/framework-provider-aws": ^0.29.2
-    "@boostercloud/framework-provider-aws-infrastructure": ^0.29.2
-    "@boostercloud/framework-provider-azure": ^0.29.2
-    "@boostercloud/framework-provider-azure-infrastructure": ^0.29.2
-    "@boostercloud/framework-provider-kubernetes": ^0.29.2
-    "@boostercloud/framework-provider-kubernetes-infrastructure": ^0.29.2
-    "@boostercloud/framework-provider-local": ^0.29.2
-    "@boostercloud/framework-provider-local-infrastructure": ^0.29.2
-    "@boostercloud/framework-types": ^0.29.2
+    "@boostercloud/application-tester": ^0.30.6
+    "@boostercloud/framework-common-helpers": ^0.30.6
+    "@boostercloud/framework-core": ^0.30.6
+    "@boostercloud/framework-provider-aws": ^0.30.6
+    "@boostercloud/framework-provider-aws-infrastructure": ^0.30.6
+    "@boostercloud/framework-provider-azure": ^0.30.6
+    "@boostercloud/framework-provider-azure-infrastructure": ^0.30.6
+    "@boostercloud/framework-provider-kubernetes": ^0.30.6
+    "@boostercloud/framework-provider-kubernetes-infrastructure": ^0.30.6
+    "@boostercloud/framework-provider-local": ^0.30.6
+    "@boostercloud/framework-provider-local-infrastructure": ^0.30.6
+    "@boostercloud/framework-types": ^0.30.6
+    "@boostercloud/metadata-booster": ^0.30.6
     "@kubernetes/client-node": 0.14.3
     "@types/aws-lambda": 8.10.48
     "@types/chai-arrays": 2.0.0
@@ -2004,13 +2004,14 @@ __metadata:
     apollo-link-ws: 1.0.20
     apollo-utilities: 1.3.4
     aws-sdk: ^2.848.0
+    chai: 4.2.0
+    chai-as-promised: 7.1.1
     cross-fetch: 3.1.5
     faker: 5.1.0
     graphql: 15.8.0
     graphql-tag: 2.12.4
     jsonwebtoken: 8.5.1
     jwks-rsa: 2.0.3
-    metadata-booster: 0.4.1
     mocha: 8.4.0
     mocha-skip-if: 0.0.3
     rimraf: 3.0.2
@@ -2023,7 +2024,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@boostercloud/framework-provider-aws-infrastructure@^0.29.2, @boostercloud/framework-provider-aws-infrastructure@workspace:packages/framework-provider-aws-infrastructure":
+"@boostercloud/framework-provider-aws-infrastructure@^0.30.6, @boostercloud/framework-provider-aws-infrastructure@workspace:packages/framework-provider-aws-infrastructure":
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-provider-aws-infrastructure@workspace:packages/framework-provider-aws-infrastructure"
   dependencies:
@@ -2040,9 +2041,9 @@ __metadata:
     "@aws-cdk/aws-s3-deployment": 1.99.0
     "@aws-cdk/core": 1.99.0
     "@aws-cdk/cx-api": 1.99.0
-    "@boostercloud/framework-common-helpers": ^0.29.2
-    "@boostercloud/framework-provider-aws": ^0.29.2
-    "@boostercloud/framework-types": ^0.29.2
+    "@boostercloud/framework-common-helpers": ^0.30.6
+    "@boostercloud/framework-provider-aws": ^0.30.6
+    "@boostercloud/framework-types": ^0.30.6
     "@types/aws-lambda": 8.10.48
     "@types/faker": 5.1.5
     "@types/rewire": ^2.5.28
@@ -2062,12 +2063,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@boostercloud/framework-provider-aws@^0.29.2, @boostercloud/framework-provider-aws@workspace:packages/framework-provider-aws":
+"@boostercloud/framework-provider-aws@^0.30.6, @boostercloud/framework-provider-aws@workspace:packages/framework-provider-aws":
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-provider-aws@workspace:packages/framework-provider-aws"
   dependencies:
-    "@boostercloud/framework-common-helpers": ^0.29.2
-    "@boostercloud/framework-types": ^0.29.2
+    "@boostercloud/framework-common-helpers": ^0.30.6
+    "@boostercloud/framework-types": ^0.30.6
     "@types/aws-lambda": 8.10.48
     "@types/chai-arrays": 2.0.0
     "@types/faker": 5.1.5
@@ -2089,16 +2090,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@boostercloud/framework-provider-azure-infrastructure@^0.29.2, @boostercloud/framework-provider-azure-infrastructure@workspace:packages/framework-provider-azure-infrastructure":
+"@boostercloud/framework-provider-azure-infrastructure@^0.30.6, @boostercloud/framework-provider-azure-infrastructure@workspace:packages/framework-provider-azure-infrastructure":
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-provider-azure-infrastructure@workspace:packages/framework-provider-azure-infrastructure"
   dependencies:
     "@azure/arm-appservice": ^6.0.0
     "@azure/cosmos": 3.7.3
-    "@boostercloud/framework-common-helpers": ^0.29.2
-    "@boostercloud/framework-core": ^0.29.2
-    "@boostercloud/framework-provider-azure": ^0.29.2
-    "@boostercloud/framework-types": ^0.29.2
+    "@boostercloud/framework-common-helpers": ^0.30.6
+    "@boostercloud/framework-core": ^0.30.6
+    "@boostercloud/framework-provider-azure": ^0.30.6
+    "@boostercloud/framework-types": ^0.30.6
     "@cdktf/provider-azurerm": 0.2.179
     "@types/archiver": 5.1.0
     "@types/faker": 5.1.5
@@ -2128,14 +2129,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@boostercloud/framework-provider-azure@^0.29.2, @boostercloud/framework-provider-azure@workspace:packages/framework-provider-azure":
+"@boostercloud/framework-provider-azure@^0.30.6, @boostercloud/framework-provider-azure@workspace:packages/framework-provider-azure":
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-provider-azure@workspace:packages/framework-provider-azure"
   dependencies:
     "@azure/cosmos": 3.7.3
     "@azure/functions": ^1.2.2
-    "@boostercloud/framework-common-helpers": ^0.29.2
-    "@boostercloud/framework-types": ^0.29.2
+    "@boostercloud/framework-common-helpers": ^0.30.6
+    "@boostercloud/framework-types": ^0.30.6
     chai: 4.2.0
     chai-as-promised: 7.1.1
     faker: 5.1.0
@@ -2146,12 +2147,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@boostercloud/framework-provider-kubernetes-infrastructure@^0.29.2, @boostercloud/framework-provider-kubernetes-infrastructure@workspace:packages/framework-provider-kubernetes-infrastructure":
+"@boostercloud/framework-provider-kubernetes-infrastructure@^0.30.6, @boostercloud/framework-provider-kubernetes-infrastructure@workspace:packages/framework-provider-kubernetes-infrastructure":
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-provider-kubernetes-infrastructure@workspace:packages/framework-provider-kubernetes-infrastructure"
   dependencies:
-    "@boostercloud/framework-common-helpers": ^0.29.2
-    "@boostercloud/framework-types": ^0.29.2
+    "@boostercloud/framework-common-helpers": ^0.30.6
+    "@boostercloud/framework-types": ^0.30.6
     "@kubernetes/client-node": 0.14.3
     "@types/archiver": 5.1.0
     "@types/cors": ^2.8.7
@@ -2178,12 +2179,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@boostercloud/framework-provider-kubernetes@^0.29.2, @boostercloud/framework-provider-kubernetes@workspace:packages/framework-provider-kubernetes":
+"@boostercloud/framework-provider-kubernetes@^0.30.6, @boostercloud/framework-provider-kubernetes@workspace:packages/framework-provider-kubernetes":
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-provider-kubernetes@workspace:packages/framework-provider-kubernetes"
   dependencies:
-    "@boostercloud/framework-common-helpers": ^0.29.2
-    "@boostercloud/framework-types": ^0.29.2
+    "@boostercloud/framework-common-helpers": ^0.30.6
+    "@boostercloud/framework-types": ^0.30.6
     "@types/node-fetch": ^2.5.10
     "@types/redis": ^2.8.28
     body-parser: ^1.18.3
@@ -2199,13 +2200,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@boostercloud/framework-provider-local-infrastructure@^0.29.2, @boostercloud/framework-provider-local-infrastructure@workspace:packages/framework-provider-local-infrastructure":
+"@boostercloud/framework-provider-local-infrastructure@^0.30.6, @boostercloud/framework-provider-local-infrastructure@workspace:packages/framework-provider-local-infrastructure":
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-provider-local-infrastructure@workspace:packages/framework-provider-local-infrastructure"
   dependencies:
-    "@boostercloud/framework-common-helpers": ^0.29.2
-    "@boostercloud/framework-provider-local": ^0.29.2
-    "@boostercloud/framework-types": ^0.29.2
+    "@boostercloud/framework-common-helpers": ^0.30.6
+    "@boostercloud/framework-provider-local": ^0.30.6
+    "@boostercloud/framework-types": ^0.30.6
     "@types/express": 4.17.12
     "@types/faker": 5.1.5
     "@types/nedb": ^1.8.11
@@ -2223,16 +2224,16 @@ __metadata:
     sinon: 9.2.3
     sinon-chai: 3.5.0
     sinon-express-mock: ^2.2.1
-    tslib: 2.3.1
+    tslib: 2.4.0
   languageName: unknown
   linkType: soft
 
-"@boostercloud/framework-provider-local@^0.29.2, @boostercloud/framework-provider-local@workspace:packages/framework-provider-local":
+"@boostercloud/framework-provider-local@^0.30.6, @boostercloud/framework-provider-local@workspace:packages/framework-provider-local":
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-provider-local@workspace:packages/framework-provider-local"
   dependencies:
-    "@boostercloud/framework-common-helpers": ^0.29.2
-    "@boostercloud/framework-types": ^0.29.2
+    "@boostercloud/framework-common-helpers": ^0.30.6
+    "@boostercloud/framework-types": ^0.30.6
     "@types/express": 4.17.12
     "@types/faker": 5.1.5
     "@types/nedb": ^1.8.11
@@ -2245,20 +2246,20 @@ __metadata:
     rimraf: 3.0.2
     sinon: 9.2.3
     sinon-chai: 3.5.0
-    tslib: 2.3.1
+    tslib: 2.4.0
   languageName: unknown
   linkType: soft
 
 "@boostercloud/framework-provider-local@file:packages/framework-provider-local::locator=root%40workspace%3A.":
-  version: 0.29.2
-  resolution: "@boostercloud/framework-provider-local@file:packages/framework-provider-local#packages/framework-provider-local::hash=81a803&locator=root%40workspace%3A."
+  version: 0.30.6
+  resolution: "@boostercloud/framework-provider-local@file:packages/framework-provider-local#packages/framework-provider-local::hash=9606da&locator=root%40workspace%3A."
   dependencies:
-    "@boostercloud/framework-common-helpers": ^0.29.2
-    "@boostercloud/framework-types": ^0.29.2
+    "@boostercloud/framework-common-helpers": ^0.30.6
+    "@boostercloud/framework-types": ^0.30.6
     "@types/nedb": ^1.8.11
     nedb: ^1.8.0
-    tslib: 2.3.1
-  checksum: a5919aced368883fdec4ed68eeda370c84b9ac7fa86d93b3ccba6991eec935356b42b45da51a3bb040a62fca5bbbfc3aa43ae22fc9a68bdd6ccbbf7be2969b1d
+    tslib: 2.4.0
+  checksum: d76175686a3a184b125809b37dbfb74fd2ff9a27e48f7d2d8fb9b64770e2eaf69f1e6ed56781af8c41e9615f292e962bd4a70b03ce01dd4f5f26413dbdfd618f
   languageName: node
   linkType: hard
 
@@ -2267,7 +2268,7 @@ __metadata:
   resolution: "@boostercloud/framework-types@portal:packages/framework-types::locator=root%40workspace%3A."
   dependencies:
     "@types/graphql": 14.5.0
-    tslib: 2.3.1
+    tslib: 2.4.0
     uuid: 8.3.2
   languageName: node
   linkType: soft
@@ -2276,19 +2277,31 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@boostercloud/framework-types@workspace:packages/framework-types"
   dependencies:
+    "@boostercloud/metadata-booster": ^0.30.6
     "@types/graphql": 14.5.0
     "@types/uuid": 8.3.0
     chai: 4.2.0
     chai-as-promised: 7.1.1
     fast-check: 2.17.0
-    metadata-booster: 0.4.1
     mocha: 8.4.0
     rimraf: 3.0.2
     sinon: 9.2.3
     sinon-chai: 3.5.0
-    tslib: 2.3.1
+    tslib: 2.4.0
     typescript: 4.5.4
     uuid: 8.3.2
+  languageName: unknown
+  linkType: soft
+
+"@boostercloud/metadata-booster@^0.30.6, @boostercloud/metadata-booster@workspace:packages/metadata-booster":
+  version: 0.0.0-use.local
+  resolution: "@boostercloud/metadata-booster@workspace:packages/metadata-booster"
+  dependencies:
+    reflect-metadata: 0.1.13
+    ts-morph: 15.1.0
+    tslib: 2.4.0
+    ttypescript: 1.5.13
+    typescript: 4.7.4
   languageName: unknown
   linkType: soft
 
@@ -2343,6 +2356,15 @@ __metadata:
     is-valid-domain: ^0.1.2
     jsii-srcmak: ^0.1.406
   checksum: 275e870eff9299f05e224d89d80ba28100345e20929f56b90372560a13b69529e6508ab12cd2c63004adfc7e59efbe1de5851c8d18ed016e41b09533c518dbc0
+  languageName: node
+  linkType: hard
+
+"@cspotcode/source-map-support@npm:^0.8.0":
+  version: 0.8.1
+  resolution: "@cspotcode/source-map-support@npm:0.8.1"
+  dependencies:
+    "@jridgewell/trace-mapping": 0.3.9
+  checksum: 5718f267085ed8edb3e7ef210137241775e607ee18b77d95aa5bd7514f47f5019aa2d82d96b3bf342ef7aa890a346fa1044532ff7cc3009e7d24fce3ce6200fa
   languageName: node
   linkType: hard
 
@@ -2585,6 +2607,16 @@ __metadata:
   version: 1.4.13
   resolution: "@jridgewell/sourcemap-codec@npm:1.4.13"
   checksum: f14449096f60a5f921262322fef65ce0bbbfb778080b3b20212080bcefdeba621c43a58c27065bd536ecb4cc767b18eb9c45f15b6b98a4970139572b60603a1c
+  languageName: node
+  linkType: hard
+
+"@jridgewell/trace-mapping@npm:0.3.9":
+  version: 0.3.9
+  resolution: "@jridgewell/trace-mapping@npm:0.3.9"
+  dependencies:
+    "@jridgewell/resolve-uri": ^3.0.3
+    "@jridgewell/sourcemap-codec": ^1.4.10
+  checksum: d89597752fd88d3f3480845691a05a44bd21faac18e2185b6f436c3b0fd0c5a859fbbd9aaa92050c4052caf325ad3e10e2e1d1b64327517471b7d51babc0ddef
   languageName: node
   linkType: hard
 
@@ -4248,6 +4280,46 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ts-morph/common@npm:~0.16.0":
+  version: 0.16.0
+  resolution: "@ts-morph/common@npm:0.16.0"
+  dependencies:
+    fast-glob: ^3.2.11
+    minimatch: ^5.1.0
+    mkdirp: ^1.0.4
+    path-browserify: ^1.0.1
+  checksum: 0ef97330a164a42b81b0499b042e91db8e39d705bb983ef83cbc80cc32ab36123e26baefb78203953d1a0c6e3b92cad9bc7a5e0ea409623a5e7db90cb3742112
+  languageName: node
+  linkType: hard
+
+"@tsconfig/node10@npm:^1.0.7":
+  version: 1.0.9
+  resolution: "@tsconfig/node10@npm:1.0.9"
+  checksum: a33ae4dc2a621c0678ac8ac4bceb8e512ae75dac65417a2ad9b022d9b5411e863c4c198b6ba9ef659e14b9fb609bbec680841a2e84c1172df7a5ffcf076539df
+  languageName: node
+  linkType: hard
+
+"@tsconfig/node12@npm:^1.0.7":
+  version: 1.0.11
+  resolution: "@tsconfig/node12@npm:1.0.11"
+  checksum: 5ce29a41b13e7897a58b8e2df11269c5395999e588b9a467386f99d1d26f6c77d1af2719e407621412520ea30517d718d5192a32403b8dfcc163bf33e40a338a
+  languageName: node
+  linkType: hard
+
+"@tsconfig/node14@npm:^1.0.0":
+  version: 1.0.3
+  resolution: "@tsconfig/node14@npm:1.0.3"
+  checksum: 19275fe80c4c8d0ad0abed6a96dbf00642e88b220b090418609c4376e1cef81bf16237bf170ad1b341452feddb8115d8dd2e5acdfdea1b27422071163dc9ba9d
+  languageName: node
+  linkType: hard
+
+"@tsconfig/node16@npm:^1.0.2":
+  version: 1.0.3
+  resolution: "@tsconfig/node16@npm:1.0.3"
+  checksum: 3a8b657dd047495b7ad23437d6afd20297ce90380ff0bdee93fc7d39a900dbd8d9e26e53ff6b465e7967ce2adf0b218782590ce9013285121e6a5928fbd6819f
+  languageName: node
+  linkType: hard
+
 "@types/accepts@npm:^1.3.5":
   version: 1.3.5
   resolution: "@types/accepts@npm:1.3.5"
@@ -4445,15 +4517,6 @@ __metadata:
     "@types/minimatch": "*"
     "@types/node": "*"
   checksum: 6ae717fedfdfdad25f3d5a568323926c64f52ef35897bcac8aca8e19bc50c0bd84630bbd063e5d52078b2137d8e7d3c26eabebd1a2f03ff350fff8a91e79fc19
-  languageName: node
-  linkType: hard
-
-"@types/graphql-type-json@npm:0.3.2":
-  version: 0.3.2
-  resolution: "@types/graphql-type-json@npm:0.3.2"
-  dependencies:
-    graphql: ^14.5.3
-  checksum: 552300dd97b378a75dc5cc300c460b86379a044e4eebec415a6a0e72ce5131be88837e354332872171f61315f0aa4d8f0078bd4fe2b9fc12ee649ab9f7e325e2
   languageName: node
   linkType: hard
 
@@ -5120,12 +5183,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"acorn-walk@npm:^8.1.1":
+  version: 8.2.0
+  resolution: "acorn-walk@npm:8.2.0"
+  checksum: 1715e76c01dd7b2d4ca472f9c58968516a4899378a63ad5b6c2d668bba8da21a71976c14ec5f5b75f887b6317c4ae0b897ab141c831d741dc76024d8745f1ad1
+  languageName: node
+  linkType: hard
+
 "acorn@npm:^7.1.1, acorn@npm:^7.4.0":
   version: 7.4.1
   resolution: "acorn@npm:7.4.1"
   bin:
     acorn: bin/acorn
   checksum: 1860f23c2107c910c6177b7b7be71be350db9e1080d814493fae143ae37605189504152d1ba8743ba3178d0b37269ce1ffc42b101547fdc1827078f82671e407
+  languageName: node
+  linkType: hard
+
+"acorn@npm:^8.4.1":
+  version: 8.8.0
+  resolution: "acorn@npm:8.8.0"
+  bin:
+    acorn: bin/acorn
+  checksum: 7270ca82b242eafe5687a11fea6e088c960af712683756abf0791b68855ea9cace3057bd5e998ffcef50c944810c1e0ca1da526d02b32110e13c722aa959afdc
   languageName: node
   linkType: hard
 
@@ -10089,6 +10168,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"graphql-scalars@npm:1.17.0":
+  version: 1.17.0
+  resolution: "graphql-scalars@npm:1.17.0"
+  dependencies:
+    tslib: ~2.3.0
+  peerDependencies:
+    graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
+  checksum: 4ac8f2ef7a387bac85e32381fc73067e7dd4ad4c1bef4cda3b5de4eb907ef9bc258372e1dcf225547390b5798a476073e6d83eb36ecdf6c3c06669c13d021962
+  languageName: node
+  linkType: hard
+
 "graphql-subscriptions@npm:1.2.1, graphql-subscriptions@npm:^1.2.1":
   version: 1.2.1
   resolution: "graphql-subscriptions@npm:1.2.1"
@@ -10122,15 +10212,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-type-json@npm:0.3.2":
-  version: 0.3.2
-  resolution: "graphql-type-json@npm:0.3.2"
-  peerDependencies:
-    graphql: ">=0.8.0"
-  checksum: 41620699637a5294937bd61d6e2696edea5a1279ef3d8f4b33716a910635595435381ccd1b74c6fae62c2bc81064c62ae27d3559c8380c0f99bdfdc8ecb249b0
-  languageName: node
-  linkType: hard
-
 "graphql@npm:*":
   version: 16.5.0
   resolution: "graphql@npm:16.5.0"
@@ -10142,15 +10223,6 @@ __metadata:
   version: 15.8.0
   resolution: "graphql@npm:15.8.0"
   checksum: 423325271db8858428641b9aca01699283d1fe5b40ef6d4ac622569ecca927019fce8196208b91dd1d8eb8114f00263fe661d241d0eb40c10e5bfd650f86ec5e
-  languageName: node
-  linkType: hard
-
-"graphql@npm:^14.5.3":
-  version: 14.7.0
-  resolution: "graphql@npm:14.7.0"
-  dependencies:
-    iterall: ^1.2.2
-  checksum: e5f4e60799421a573904f390e1ec0aa76360f751688dbbe62e9c35baa0d3727c8d59a659bfc524f126dffe3518da87fd8ecaa78c94fd5c0fe4e035c670745242
   languageName: node
   linkType: hard
 
@@ -11339,7 +11411,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"iterall@npm:1.3.0, iterall@npm:^1.2.1, iterall@npm:^1.2.2, iterall@npm:^1.3.0":
+"iterall@npm:1.3.0, iterall@npm:^1.2.1, iterall@npm:^1.3.0":
   version: 1.3.0
   resolution: "iterall@npm:1.3.0"
   checksum: c78b99678f8c99be488cca7f33e4acca9b72c1326e050afbaf023f086e55619ee466af0464af94a0cb3f292e60cb5bac53a8fd86bd4249ecad26e09f17bb158b
@@ -12806,7 +12878,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimatch@npm:>=3.0, minimatch@npm:^5.0.1":
+"minimatch@npm:>=3.0, minimatch@npm:^5.0.1, minimatch@npm:^5.1.0":
   version: 5.1.0
   resolution: "minimatch@npm:5.1.0"
   dependencies:
@@ -15686,8 +15758,8 @@ __metadata:
     nyc: 15.1.0
     prettier: 2.3.0
     rimraf: 3.0.2
-    ts-node: 9.1.1
-    typescript: 4.5.4
+    ts-node: 10.8.1
+    typescript: 4.7.4
     yargs: 17.0.1
   languageName: unknown
   linkType: soft
@@ -16299,7 +16371,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"source-map-support@npm:^0.5.17, source-map-support@npm:^0.5.19":
+"source-map-support@npm:^0.5.19":
   version: 0.5.21
   resolution: "source-map-support@npm:0.5.21"
   dependencies:
@@ -17241,24 +17313,51 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-node@npm:9.1.1":
-  version: 9.1.1
-  resolution: "ts-node@npm:9.1.1"
+"ts-morph@npm:15.1.0":
+  version: 15.1.0
+  resolution: "ts-morph@npm:15.1.0"
   dependencies:
+    "@ts-morph/common": ~0.16.0
+    code-block-writer: ^11.0.0
+  checksum: 95e026214282850f08d1d4de673e969cdc166cb6d9366e455e1ea0251a204f80cffcb958c8ed7b1f351e56b972c4244e0dc7be0b13df3c4a6f22abdd4d4608e4
+  languageName: node
+  linkType: hard
+
+"ts-node@npm:10.8.1":
+  version: 10.8.1
+  resolution: "ts-node@npm:10.8.1"
+  dependencies:
+    "@cspotcode/source-map-support": ^0.8.0
+    "@tsconfig/node10": ^1.0.7
+    "@tsconfig/node12": ^1.0.7
+    "@tsconfig/node14": ^1.0.0
+    "@tsconfig/node16": ^1.0.2
+    acorn: ^8.4.1
+    acorn-walk: ^8.1.1
     arg: ^4.1.0
     create-require: ^1.1.0
     diff: ^4.0.1
     make-error: ^1.1.1
-    source-map-support: ^0.5.17
+    v8-compile-cache-lib: ^3.0.1
     yn: 3.1.1
   peerDependencies:
+    "@swc/core": ">=1.2.50"
+    "@swc/wasm": ">=1.2.50"
+    "@types/node": "*"
     typescript: ">=2.7"
+  peerDependenciesMeta:
+    "@swc/core":
+      optional: true
+    "@swc/wasm":
+      optional: true
   bin:
     ts-node: dist/bin.js
+    ts-node-cwd: dist/bin-cwd.js
+    ts-node-esm: dist/bin-esm.js
     ts-node-script: dist/bin-script.js
     ts-node-transpile-only: dist/bin-transpile.js
     ts-script: dist/bin-script-deprecated.js
-  checksum: 356e2647b8b1e6ab00380c0537fa569b63bd9b6f006cc40fd650f81fae1817bd8fecc075300036950d8f45c1d85b95be33cd1e48a1a424a7d86c3dbb42bf60e5
+  checksum: 7d1aa7aa3ae1c0459c4922ed0dbfbade442cfe0c25aebaf620cdf1774f112c8d7a9b14934cb6719274917f35b2c503ba87bcaf5e16a0d39ba0f68ce3e7728363
   languageName: node
   linkType: hard
 
@@ -17281,17 +17380,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tslib@npm:2.4.0, tslib@npm:^2.0.0, tslib@npm:^2.0.1, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.2.0, tslib@npm:^2.3.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0":
+  version: 2.4.0
+  resolution: "tslib@npm:2.4.0"
+  checksum: 8c4aa6a3c5a754bf76aefc38026134180c053b7bd2f81338cb5e5ebf96fefa0f417bff221592bf801077f5bf990562f6264fecbc42cd3309b33872cb6fc3b113
+  languageName: node
+  linkType: hard
+
 "tslib@npm:^1.10.0, tslib@npm:^1.8.1, tslib@npm:^1.9.0, tslib@npm:^1.9.3":
   version: 1.14.1
   resolution: "tslib@npm:1.14.1"
   checksum: dbe628ef87f66691d5d2959b3e41b9ca0045c3ee3c7c7b906cc1e328b39f199bb1ad9e671c39025bd56122ac57dfbf7385a94843b1cc07c60a4db74795829acd
-  languageName: node
-  linkType: hard
-
-"tslib@npm:^2.0.0, tslib@npm:^2.0.1, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.2.0, tslib@npm:^2.3.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0":
-  version: 2.4.0
-  resolution: "tslib@npm:2.4.0"
-  checksum: 8c4aa6a3c5a754bf76aefc38026134180c053b7bd2f81338cb5e5ebf96fefa0f417bff221592bf801077f5bf990562f6264fecbc42cd3309b33872cb6fc3b113
   languageName: node
   linkType: hard
 
@@ -17513,6 +17612,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"typescript@npm:4.7.4":
+  version: 4.7.4
+  resolution: "typescript@npm:4.7.4"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 5750181b1cd7e6482c4195825547e70f944114fb47e58e4aa7553e62f11b3f3173766aef9c281783edfd881f7b8299cf35e3ca8caebe73d8464528c907a164df
+  languageName: node
+  linkType: hard
+
 "typescript@patch:typescript@4.5.4#~builtin<compat/typescript>":
   version: 4.5.4
   resolution: "typescript@patch:typescript@npm%3A4.5.4#~builtin<compat/typescript>::version=4.5.4&hash=7ad353"
@@ -17520,6 +17629,16 @@ __metadata:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: eda87927f9cfb94aca9b5e47842daf37347ad3073133e17f556fbb6c18f3493c5b551eedab0f4b26774235ddb7acbe0087250d5285f72ce6819a0891dd5a74ed
+  languageName: node
+  linkType: hard
+
+"typescript@patch:typescript@4.7.4#~builtin<compat/typescript>":
+  version: 4.7.4
+  resolution: "typescript@patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=7ad353"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 9096d8f6c16cb80ef3bf96fcbbd055bf1c4a43bd14f3b7be45a9fbe7ada46ec977f604d5feed3263b4f2aa7d4c7477ce5f9cd87de0d6feedec69a983f3a4f93e
   languageName: node
   linkType: hard
 
@@ -17733,6 +17852,13 @@ __metadata:
   bin:
     uuid: ./bin/uuid
   checksum: 58de2feed61c59060b40f8203c0e4ed7fd6f99d42534a499f1741218a1dd0c129f4aa1de797bcf822c8ea5da7e4137aa3673431a96dae729047f7aca7b27866f
+  languageName: node
+  linkType: hard
+
+"v8-compile-cache-lib@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "v8-compile-cache-lib@npm:3.0.1"
+  checksum: 78089ad549e21bcdbfca10c08850022b22024cdcc2da9b168bcf5a73a6ed7bf01a9cebb9eac28e03cd23a684d81e0502797e88f3ccd27a32aeab1cfc44c39da0
   languageName: node
   linkType: hard
 

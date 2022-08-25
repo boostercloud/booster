@@ -2,7 +2,7 @@ import {
   BoosterConfig,
   CommandEnvelope,
   EventEnvelope,
-  MigrationMetadata,
+  SchemaMigrationMetadata,
   CommandInterface,
   EntityInterface,
   EventInterface,
@@ -10,13 +10,13 @@ import {
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 
-type MigrableEnvelope = CommandEnvelope | EventEnvelope
-type MigrableValue = CommandInterface | EventInterface | EntityInterface
+type SchemaMigrableEnvelope = CommandEnvelope | EventEnvelope
+type SchemaMigrableValue = CommandInterface | EventInterface | EntityInterface
 
-export class Migrator {
+export class SchemaMigrator {
   public constructor(private config: BoosterConfig) {}
 
-  public async migrate<TMigrableEnvelope extends MigrableEnvelope>(
+  public async migrate<TMigrableEnvelope extends SchemaMigrableEnvelope>(
     conceptEnvelope: TMigrableEnvelope
   ): Promise<TMigrableEnvelope> {
     this.checkVersionRange(conceptEnvelope)
@@ -27,10 +27,10 @@ export class Migrator {
     return conceptEnvelope // The current version is exactly the same as the version of the concept
   }
 
-  private checkVersionRange(conceptEnvelope: MigrableEnvelope): void {
+  private checkVersionRange(conceptEnvelope: SchemaMigrableEnvelope): void {
     if (conceptEnvelope.version < 1) {
       throw new InvalidVersionError(
-        `Received an invalid version value, ${conceptEnvelope.version}, for ${conceptEnvelope.typeName}. ` +
+        `Received an invalid schema version value, ${conceptEnvelope.version}, for ${conceptEnvelope.typeName}. ` +
           'Versions must be greater than 0'
       )
     }
@@ -38,28 +38,30 @@ export class Migrator {
     const currentVersion = this.config.currentVersionFor(conceptEnvelope.typeName)
     if (currentVersion < conceptEnvelope.version) {
       throw new InvalidVersionError(
-        `Can not migrate an unknown version: The current version of ${conceptEnvelope.typeName} is ${currentVersion}, which is ` +
+        `Can not migrate schema an unknown version: The current schema version of ${conceptEnvelope.typeName} is ${currentVersion}, which is ` +
           `lower than the received version ${conceptEnvelope.version}`
       )
     }
   }
 
-  private needsMigration(conceptEnvelope: MigrableEnvelope): boolean {
+  private needsMigration(conceptEnvelope: SchemaMigrableEnvelope): boolean {
     const currentVersion = this.config.currentVersionFor(conceptEnvelope.typeName)
     return currentVersion > conceptEnvelope.version
   }
 
-  private async applyAllMigrations<TMigrableEnvelope extends MigrableEnvelope>(
+  private async applyAllMigrations<TMigrableEnvelope extends SchemaMigrableEnvelope>(
     oldConceptEnvelope: TMigrableEnvelope
   ): Promise<TMigrableEnvelope> {
-    const logger = getLogger(this.config, 'Migrator#applyAllMigrations')
+    const logger = getLogger(this.config, 'SchemaMigrator#applyAllMigrations')
     const currentVersion = this.config.currentVersionFor(oldConceptEnvelope.typeName)
     const oldVersion = oldConceptEnvelope.version
-    logger.info(`Migrating ${oldConceptEnvelope.typeName} from version ${oldVersion} to version ${currentVersion}`)
-    logger.debug('Envelope before migration:\n', oldConceptEnvelope)
+    logger.info(
+      `Migrating schema ${oldConceptEnvelope.typeName} from version ${oldVersion} to version ${currentVersion}`
+    )
+    logger.debug('Envelope before schema migration:\n', oldConceptEnvelope)
 
-    const migrations = this.config.migrations[oldConceptEnvelope.typeName]
-    let migratedConceptValue = oldConceptEnvelope.value as MigrableValue
+    const migrations = this.config.schemaMigrations[oldConceptEnvelope.typeName]
+    let migratedConceptValue = oldConceptEnvelope.value as SchemaMigrableValue
     for (let toVersion = oldVersion + 1; toVersion <= currentVersion; toVersion++) {
       migratedConceptValue = await this.applyMigration(migratedConceptValue, migrations.get(toVersion))
     }
@@ -73,14 +75,14 @@ export class Migrator {
     return newConceptEnvelope
   }
 
-  private async applyMigration<TMigrableValue extends MigrableValue>(
+  private async applyMigration<TMigrableValue extends SchemaMigrableValue>(
     oldValue: TMigrableValue,
-    migration: MigrationMetadata | undefined
+    migration: SchemaMigrationMetadata | undefined
   ): Promise<TMigrableValue> {
-    const logger = getLogger(this.config, 'Migrator#applyMigration')
+    const logger = getLogger(this.config, 'SchemaMigrator#applyMigration')
     if (!migration) {
       throw new InvalidVersionError(
-        'Received an undefined migration value. Are there "gaps" between the versions of the migrations?'
+        'Received an undefined schema migration value. Are there "gaps" between the versions of the schema migrations?'
       )
     }
     const oldConcept = Object.assign(new migration.fromSchema(), oldValue)

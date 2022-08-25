@@ -11,8 +11,8 @@ import {
   Thunk,
 } from 'graphql'
 import { getClassMetadata } from '../../../decorators/metadata'
-import { PropertyMetadata, TypeMetadata } from 'metadata-booster'
-import { GraphQLJSONObject } from 'graphql-type-json'
+import { PropertyMetadata, TypeMetadata } from '@boostercloud/metadata-booster'
+import { GraphQLJSON } from 'graphql-scalars'
 import { AnyClass, UUID } from '@boostercloud/framework-types'
 import { GraphQLTypeInformer } from '../graphql-type-informer'
 import { DateScalar, isExternalType } from '../common'
@@ -36,6 +36,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
 
   private generateFilterFor(prop: PropertyMetadata): GraphQLInputObjectType | GraphQLScalarType {
     let filterName = `${prop.typeInfo.name}PropertyFilter`
+    filterName = filterName.replace(/[^_a-zA-Z]/g, '_')
     filterName = filterName.charAt(0).toUpperCase() + filterName.substr(1)
 
     if (this.generatedFiltersByTypeName[filterName]) return this.generatedFiltersByTypeName[filterName]
@@ -44,11 +45,11 @@ export class GraphqlQueryFilterArgumentsBuilder {
 
     if (prop.typeInfo.name === 'UUID' || prop.typeInfo.name === 'Date') {
       fields = this.generateFilterInputTypes(prop.typeInfo)
-    } else if (prop.typeInfo.type && prop.typeInfo.typeGroup === 'Class') {
-      if (isExternalType(prop.typeInfo)) return GraphQLJSONObject
+    } else if (prop.typeInfo.type && (prop.typeInfo.typeGroup === 'Class' || prop.typeInfo.typeGroup === 'Object')) {
+      if (isExternalType(prop.typeInfo)) return GraphQLJSON
       let nestedProperties: GraphQLInputFieldConfigMap = {}
       const metadata = getClassMetadata(prop.typeInfo.type)
-      if (metadata.fields.length === 0) return GraphQLJSONObject
+      if (metadata.fields.length === 0) return GraphQLJSON
 
       this.typeInformer.generateGraphQLTypeForClass(prop.typeInfo.type, true)
 
@@ -63,10 +64,10 @@ export class GraphqlQueryFilterArgumentsBuilder {
         not: { type: this.generatedFiltersByTypeName[filterName] },
         isDefined: { type: GraphQLBoolean },
       })
-    } else if (prop.typeInfo.type && prop.typeInfo.type.name !== 'Object' && prop.typeInfo.typeGroup !== 'Object') {
+    } else if (prop.typeInfo.type && prop.typeInfo.type.name !== 'Object') {
       fields = this.generateFilterInputTypes(prop.typeInfo)
     } else {
-      return GraphQLJSONObject
+      return GraphQLJSON
     }
     this.generatedFiltersByTypeName[filterName] = new GraphQLInputObjectType({ name: filterName, fields })
     return this.generatedFiltersByTypeName[filterName]
@@ -74,6 +75,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
 
   private generateArrayFilterFor(property: PropertyMetadata): GraphQLInputObjectType {
     let filterName = `${property.typeInfo.parameters[0].name}ArrayPropertyFilter`
+    filterName = filterName.replace(/[^_a-zA-Z]/g, '_')
     filterName = filterName.charAt(0).toUpperCase() + filterName.substr(1)
 
     if (!this.generatedFiltersByTypeName[filterName]) {
@@ -91,7 +93,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
             graphqlType = GraphQLFloat
             break
           default:
-            graphqlType = param.type === UUID ? GraphQLID : GraphQLJSONObject
+            graphqlType = param.type === UUID ? GraphQLID : GraphQLJSON
             break
         }
         propFilters.includes = { type: graphqlType }

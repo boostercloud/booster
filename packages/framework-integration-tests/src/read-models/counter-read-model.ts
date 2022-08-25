@@ -11,7 +11,8 @@ export class CounterReadModel {
   @Projects(Counter, 'id')
   public static updateCounter(
     counter: Counter,
-    oldCounterReadModel?: CounterReadModel
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _oldCounterReadModel?: CounterReadModel
   ): ProjectionResult<CounterReadModel> {
     // This method calls are here to ensure they work. More info: https://github.com/boostercloud/booster/issues/797
     counter.getId()

@@ -4,15 +4,13 @@
     "outDir": "./dist",
     "rootDir": "./src"
   },
-  "include": [
-    "src/**/*"
-  ],
+  "include": ["src/**/*"],
   "ts-node": {
     "compiler": "ttypescript",
     "compilerOptions": {
       "plugins": [
         {
-          "transform": "metadata-booster"
+          "transform": "@boostercloud/metadata-booster"
         }
       ]
     }

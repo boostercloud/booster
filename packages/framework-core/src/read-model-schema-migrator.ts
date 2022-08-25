@@ -1,12 +1,12 @@
 import {
   BoosterConfig,
   InvalidVersionError,
-  MigrationMetadata,
+  SchemaMigrationMetadata,
   ReadModelInterface,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 
-export class ReadModelMigrator {
+export class ReadModelSchemaMigrator {
   public constructor(private config: BoosterConfig) {}
 
   public async migrate<TMigratableReadModel extends ReadModelInterface>(
@@ -22,10 +22,10 @@ export class ReadModelMigrator {
   }
 
   private checkVersionRange(readModel: ReadModelInterface, readModelName: string): void {
-    const readModelVersion = ReadModelMigrator.readModelSchemaVersion(readModel)
+    const readModelVersion = ReadModelSchemaMigrator.readModelSchemaVersion(readModel)
     if (readModelVersion < 1) {
       throw new InvalidVersionError(
-        `Received an invalid version value, ${readModelVersion}, for ${readModelName}. ` +
+        `Received an invalid schema version value, ${readModelVersion}, for ${readModelName}. ` +
           'Versions must be greater than 0'
       )
     }
@@ -33,7 +33,7 @@ export class ReadModelMigrator {
     const currentVersion = this.config.currentVersionFor(readModelName)
     if (currentVersion < readModelVersion) {
       throw new InvalidVersionError(
-        `Can not migrate an unknown version: The current version of ${readModelName} is ${currentVersion}, which is ` +
+        `Can not migrate schema an unknown version: The current schema version of ${readModelName} is ${currentVersion}, which is ` +
           `lower than the received version ${readModelVersion}`
       )
     }
@@ -41,20 +41,20 @@ export class ReadModelMigrator {
 
   private needsMigration(readModel: ReadModelInterface, readModelName: string): boolean {
     const currentVersion = this.config.currentVersionFor(readModelName)
-    return currentVersion > ReadModelMigrator.readModelSchemaVersion(readModel)
+    return currentVersion > ReadModelSchemaMigrator.readModelSchemaVersion(readModel)
   }
 
   private async applyAllMigrations<TMigratableReadModel extends ReadModelInterface>(
     oldReadModel: TMigratableReadModel,
     readModelName: string
   ): Promise<TMigratableReadModel> {
-    const logger = getLogger(this.config, 'ReadModelMigrator#applyAllMigrations')
-    const oldVersion = ReadModelMigrator.readModelSchemaVersion(oldReadModel)
+    const logger = getLogger(this.config, 'ReadModelSchemaMigrator#applyAllMigrations')
+    const oldVersion = ReadModelSchemaMigrator.readModelSchemaVersion(oldReadModel)
     const currentVersion = this.config.currentVersionFor(readModelName)
-    logger.info(`Migrating ${readModelName} from version ${oldVersion} to version ${currentVersion}`)
-    logger.debug('ReadModel before migration:\n', oldReadModel)
+    logger.info(`Migrating Schema ${readModelName} from version ${oldVersion} to version ${currentVersion}`)
+    logger.debug('ReadModel before schema migration:\n', oldReadModel)
 
-    const migrations = this.config.migrations[readModelName]
+    const migrations = this.config.schemaMigrations[readModelName]
     let migratedValue = oldReadModel
     for (let toVersion = oldVersion + 1; toVersion <= currentVersion; toVersion++) {
       migratedValue = await this.applyMigration(migratedValue, migrations.get(toVersion))
@@ -67,27 +67,27 @@ export class ReadModelMigrator {
         schemaVersion: currentVersion,
       },
     }
-    logger.debug('ReadModel after migration:\n', newReadModel)
+    logger.debug('ReadModel after schema migration:\n', newReadModel)
     return newReadModel
   }
 
   private async applyMigration<TMigrableValue extends ReadModelInterface>(
     oldValue: TMigrableValue,
-    migration: MigrationMetadata | undefined
+    migration: SchemaMigrationMetadata | undefined
   ): Promise<TMigrableValue> {
-    const logger = getLogger(this.config, 'ReadModelMigrator#applyMigration')
+    const logger = getLogger(this.config, 'ReadModelSchemaMigrator#applyMigration')
     if (!migration) {
       throw new InvalidVersionError(
-        'Received an undefined migration value. Are there "gaps" between the versions of the migrations?'
+        'Received an undefined schema migration value. Are there "gaps" between the versions of the schema migrations?'
       )
     }
     const oldConcept = Object.assign(new migration.fromSchema(), oldValue)
     const migrationMethod = new migration.migrationClass()[migration.methodName]
     const newConcept = await migrationMethod(oldConcept)
     logger.debug(
-      `Partial migration finished. Migrated from oldValue=${JSON.stringify(oldConcept)} to newValue=${JSON.stringify(
-        newConcept
-      )}`
+      `Partial schema migration finished. Schema migrated from oldValue=${JSON.stringify(
+        oldConcept
+      )} to newValue=${JSON.stringify(newConcept)}`
     )
     return newConcept
   }
