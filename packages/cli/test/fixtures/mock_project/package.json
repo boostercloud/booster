@@ -6,11 +6,11 @@
   "dependencies": {
     "@boostercloud/framework-core": "^1.11.2",
     "@boostercloud/framework-types": "^1.11.2",
-    "@boostercloud/framework-provider-aws": "*",
+    "@boostercloud/framework-provider-aws": "^1.11.2",
     "tslib": "^2.0.3"
   },
   "devDependencies": {
-    "@boostercloud/framework-provider-aws-infrastructure": "*",
+    "@boostercloud/framework-provider-aws-infrastructure": "^1.11.2",
     "@boostercloud/rocket-backup-aws-infrastructure": "^1.11.2",
     "@boostercloud/rocket-static-sites-aws-infrastructure": "^1.11.2",
     "rimraf": "^3.0.1",

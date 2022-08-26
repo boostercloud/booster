@@ -21,6 +21,9 @@ jobs:
         with:
           build: true
 
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
+
       - name: Deploy to AWS
         run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/aws-deploy -v
         env:
@@ -36,6 +39,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
 
       - name: Rush Install
         # Pinning to specific commit that has been audited. Only update 3rd party
@@ -67,6 +73,9 @@ jobs:
         with:
           build: true
 
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
+
       - name: AWS end to end
         run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/aws-end-to-end -v
         env:
@@ -89,6 +98,9 @@ jobs:
         uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
         with:
           build: true
+
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
 
       - name: AWS load tests
         run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/aws-load -v
@@ -115,6 +127,9 @@ jobs:
         with:
           build: true
 
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
+
       - name: AWS nuke
         run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/aws-nuke -v
         env:
@@ -136,6 +151,9 @@ jobs:
         with:
           build: true
 
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
+
       - name: CLI Tests
         run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/cli -v
 
@@ -152,6 +170,9 @@ jobs:
         uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
         with:
           build: true
+
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
 
       - name: Local Integration Tests
         run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/local -v
@@ -174,6 +195,9 @@ jobs:
         uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
         with:
           build: true
+
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
 
       - name: Deploy to Azure
         run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/azure-deploy -v
@@ -211,6 +235,9 @@ jobs:
         with:
           build: true
 
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
+
       - name: Azure end to end
         run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/azure-end-to-end -v
         env:
@@ -246,6 +273,9 @@ jobs:
         uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
         with:
           build: true
+
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
 
       - name: Azure func
         run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/azure-func -v
@@ -284,6 +314,9 @@ jobs:
         uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
         with:
           build: true
+
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
 
       - name: Azure nuke
         run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/azure-nuke -v
