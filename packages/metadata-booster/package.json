@@ -27,14 +27,26 @@
     "ts-morph": "15.1.0",
     "tslib": "2.4.0"
   },
+  "eslintConfig": {
+    "extends": [
+      "@boostercloud/eslint-config"
+    ]
+  },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "4.22.1",
+    "@typescript-eslint/parser": "4.22.1",
+    "eslint": "7.26.0",
+    "eslint-config-prettier": "8.3.0",
+    "eslint-plugin-import": "2.22.1",
+    "eslint-plugin-prettier": "3.4.0",
+    "@boostercloud/eslint-config": "workspace:^0.30.6",
     "ts-node": "~10.9.1",
     "ttypescript": "1.5.13",
     "typescript": "4.7.4"
   },
   "scripts": {
-    "lint:check": "eslint --ext '.js,.ts' **/*.ts",
-    "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
+    "lint:check": "eslint -c package.json --ext '.js,.ts' **/*.ts",
+    "lint:fix": "eslint -c package.json --quiet --fix --ext '.js,.ts' **/*.ts",
     "build": "tsc -b tsconfig.json",
     "prepack": "tsc -b tsconfig.json",
     "test": "ttsc -p tsconfig.test.json"

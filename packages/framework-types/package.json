@@ -21,8 +21,8 @@
   },
   "scripts": {
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
-    "lint:check": "eslint --ext '.js,.ts' **/*.ts",
-    "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
+    "lint:check": "eslint -c package.json --ext '.js,.ts' **/*.ts",
+    "lint:fix": "eslint -c package.json --quiet --fix --ext '.js,.ts' **/*.ts",
     "build": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "test:types": "npm run test",
@@ -38,7 +38,13 @@
     "tslib": "2.4.0",
     "uuid": "8.3.2"
   },
+  "eslintConfig": {
+    "extends": [
+      "@boostercloud/eslint-config"
+    ]
+  },
   "devDependencies": {
+    "@boostercloud/eslint-config": "workspace:^0.30.6",
     "@boostercloud/metadata-booster": "workspace:^0.30.6",
     "@types/chai": "4.2.18",
     "@types/chai-as-promised": "7.1.4",
@@ -49,6 +55,10 @@
     "@types/uuid": "8.3.0",
     "@typescript-eslint/eslint-plugin": "4.22.1",
     "@typescript-eslint/parser": "4.22.1",
+    "eslint": "7.26.0",
+    "eslint-config-prettier": "8.3.0",
+    "eslint-plugin-import": "2.22.1",
+    "eslint-plugin-prettier": "3.4.0",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
     "fast-check": "2.17.0",

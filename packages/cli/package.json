@@ -31,7 +31,13 @@
     "ts-morph": "15.1.0",
     "tslib": "2.4.0"
   },
+  "eslintConfig": {
+    "extends": [
+      "@boostercloud/eslint-config"
+    ]
+  },
   "devDependencies": {
+    "@boostercloud/eslint-config": "workspace:^0.30.6",
     "@oclif/dev-cli": "^1.26",
     "@oclif/test": "^2.1",
     "@types/chai": "4.2.18",
@@ -92,8 +98,8 @@
   "repository": "boostercloud/booster",
   "scripts": {
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
-    "lint:check": "eslint --ext '.js,.ts' **/*.ts",
-    "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
+    "lint:check": "eslint -c package.json --ext '.js,.ts' **/*.ts",
+    "lint:fix": "eslint -c package.json --quiet --fix --ext '.js,.ts' **/*.ts",
     "build": "tsc -b tsconfig.json && copyfiles -f src/templates/*.stub dist/templates",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",

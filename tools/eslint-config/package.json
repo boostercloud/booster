@@ -1,0 +1,29 @@
+{
+  "name": "@boostercloud/eslint-config",
+  "version": "0.30.6",
+  "description": "Shared eslint rules",
+  "main": "index.js",
+  "scripts": {
+    "build": "",
+    "test": "",
+    "lint:fix": "",
+    "lint:check": ""
+  },
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "4.22.1",
+    "@typescript-eslint/parser": "4.22.1",
+    "eslint": "7.26.0",
+    "eslint-config-prettier": "8.3.0",
+    "eslint-plugin-import": "2.22.1",
+    "eslint-plugin-prettier": "3.4.0"
+  },
+  "devDependencies": {},
+  "peerDependencies": {
+    "typescript": "^4.7.4"
+  },
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
+  }
+}
