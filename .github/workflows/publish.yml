@@ -58,6 +58,9 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
+
       - name: 'Az CLI login'
         uses: azure/login@v1.4.0
         with:
