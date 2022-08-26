@@ -20,8 +20,8 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@boostercloud/framework-common-helpers": "^0.30.6",
-    "@boostercloud/framework-types": "^0.30.6",
+    "@boostercloud/framework-common-helpers": "workspace:^0.30.6",
+    "@boostercloud/framework-types": "workspace:^0.30.6",
     "body-parser": "^1.18.3",
     "cors": "2.8.5",
     "express": "^4.17.1",
@@ -45,10 +45,15 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
+    "@types/body-parser": "~1.19.2",
     "@types/chai": "4.2.18",
     "@types/chai-as-promised": "7.1.4",
+    "@types/cors": "~2.8.12",
+    "@types/express": "~4.17.13",
     "@types/mocha": "8.2.2",
     "@types/node": "16.11.7",
+    "@types/node-fetch": "^2.5.10",
+    "@types/redis": "^2.8.28",
     "@types/sinon": "10.0.0",
     "@types/sinon-chai": "3.2.5",
     "@typescript-eslint/eslint-plugin": "4.22.1",
@@ -62,11 +67,16 @@
     "prettier": "2.3.0",
     "rimraf": "3.0.2",
     "ts-node": "10.8.1",
-    "typescript": "4.7.4",
-    "@types/node-fetch": "^2.5.10",
-    "@types/redis": "^2.8.28",
-    "@types/express": "~4.17.13",
-    "@types/cors": "~2.8.12",
-    "@types/body-parser": "~1.19.2"
+    "typescript": "4.7.4"
+  },
+  "pnpm": {
+    "overrides": {
+      "pac-resolver@<5.0.0": ">=5.0.0",
+      "underscore@>=1.3.2 <1.12.1": ">=1.12.1",
+      "node-fetch@<2.6.7": ">=2.6.7",
+      "ws@>=7.0.0 <7.4.6": ">=7.4.6",
+      "nanoid@>=3.0.0 <3.1.31": ">=3.1.31",
+      "node-fetch@<2.6.1": ">=2.6.1"
+    }
   }
 }
