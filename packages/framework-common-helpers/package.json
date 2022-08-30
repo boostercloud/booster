@@ -21,8 +21,8 @@
   },
   "scripts": {
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
-    "lint:check": "eslint -c package.json --ext '.js,.ts' **/*.ts",
-    "lint:fix": "eslint -c package.json --quiet --fix --ext '.js,.ts' **/*.ts",
+    "lint:check": "eslint --ext '.js,.ts' **/*.ts",
+    "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "build": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "test:helpers": "npm run test",
@@ -36,11 +36,6 @@
     "@boostercloud/framework-types": "workspace:^0.30.6",
     "child-process-promise": "^2.2.1",
     "tslib": "2.4.0"
-  },
-  "eslintConfig": {
-    "extends": [
-      "@boostercloud/eslint-config"
-    ]
   },
   "devDependencies": {
     "@boostercloud/eslint-config": "workspace:^0.30.6",
