@@ -18,7 +18,7 @@ function overrideWithLocalDeps(dependencies: Record<string, string>): void {
       const sanitizedPackageName = packageName.replace('@', '').replace('/', '-')
       const sanitizedPackageVersion = dependencies[packageName]
         .replace('workspace:', '')
-        .replace('*', '')
+        .replace(/\*/g, '')
         .replace('^', '')
       const packedDependencyFileName = `${sanitizedPackageName}-${sanitizedPackageVersion}.tgz`
 
