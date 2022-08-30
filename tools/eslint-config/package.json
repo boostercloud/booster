@@ -18,7 +18,10 @@
     "eslint-plugin-import": "2.22.1",
     "eslint-plugin-prettier": "3.4.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "typescript": "4.7.4",
+    "prettier": "2.3.0"
+  },
   "peerDependencies": {
     "typescript": "^4.7.4"
   },
