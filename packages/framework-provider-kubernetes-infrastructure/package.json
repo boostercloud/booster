@@ -22,7 +22,7 @@
   "dependencies": {
     "@boostercloud/eslint-config": "workspace:^0.30.6",
     "@boostercloud/framework-common-helpers": "workspace:^0.30.6",
-    "@kubernetes/client-node": "0.14.3",
+    "@kubernetes/client-node": "^0.17.0",
     "archiver": "5.3.0",
     "body-parser": "^1.18.3",
     "cors": "2.8.5",
