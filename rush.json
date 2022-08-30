@@ -377,6 +377,11 @@
    */
   "projects": [
     {
+      "packageName": "@boostercloud/eslint-config",
+      "shouldPublish": false,
+      "projectFolder": "tools/eslint-config"
+    },
+    {
       "packageName": "@boostercloud/application-tester",
       "shouldPublish": true,
       "projectFolder": "packages/application-tester"

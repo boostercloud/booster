@@ -38,6 +38,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
+    "@boostercloud/eslint-config": "workspace:^0.30.6",
     "@types/aws-lambda": "8.10.48",
     "@types/chai": "4.2.18",
     "@types/chai-arrays": "2.0.0",

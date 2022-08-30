@@ -55,6 +55,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
+    "@boostercloud/eslint-config": "workspace:^0.30.6",
     "@types/aws-lambda": "8.10.48",
     "@types/aws-sdk": "2.7.0",
     "@types/chai": "4.2.18",

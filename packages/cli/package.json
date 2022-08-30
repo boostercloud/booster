@@ -32,6 +32,7 @@
     "tslib": "2.4.0"
   },
   "devDependencies": {
+    "@boostercloud/eslint-config": "workspace:^0.30.6",
     "@oclif/dev-cli": "^1.26",
     "@oclif/test": "^2.1",
     "@types/chai": "4.2.18",
