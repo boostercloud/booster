@@ -51,6 +51,7 @@
    * This design avoids unnecessary churn in this file.
    */
   "allowedAlternativeVersions": {
+    "constructs": ["^3.3.69"]
     /**
      * For example, allow some projects to use an older TypeScript compiler
      * (in addition to whatever "usual" version is being used by other projects in the repo):
