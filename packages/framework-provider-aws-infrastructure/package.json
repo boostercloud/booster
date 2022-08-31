@@ -24,6 +24,7 @@
     "@aws-cdk/aws-logs": "^1.170.0",
     "@aws-cdk/assets": "^1.170.0",
     "@aws-cdk/aws-apigatewayv2": "^1.170.0",
+    "@aws-cdk/cloudformation-diff": "^1.170.0",
     "@aws-cdk/aws-cloudfront": "^1.170.0",
     "@aws-cdk/custom-resources": "^1.170.0",
     "@aws-cdk/aws-dynamodb": "^1.170.0",
@@ -43,7 +44,9 @@
     "aws-cdk": "^1.170.0",
     "aws-sdk": "2.853.0",
     "colors": "^1.4.0",
-    "tslib": "^2.4.0"
+    "tslib": "^2.4.0",
+    "promptly": "~3.2.0",
+    "cdk-assets": "~2.39.1"
   },
   "scripts": {
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
