@@ -41,13 +41,13 @@
     "copyfiles": "^2.3.0",
     "fs-extra": "^8.1.0",
     "mocha": "8.4.0",
-    "ms-rest-azure": "^3.0.2",
     "mustache": "4.1.0",
     "needle": "^2.5.0",
     "ora": "^3.4.0",
     "sinon-chai": "3.5.0",
     "tslib": "^2.4.0",
-    "uuid": "8.3.2"
+    "uuid": "8.3.2",
+    "@azure/identity": "~2.1.0"
   },
   "scripts": {
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
