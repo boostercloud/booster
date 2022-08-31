@@ -25,6 +25,7 @@
     "@aws-cdk/assets": "^1.170.0",
     "@aws-cdk/aws-apigatewayv2": "^1.170.0",
     "@aws-cdk/aws-cloudfront": "^1.170.0",
+    "@aws-cdk/custom-resources": "^1.170.0",
     "@aws-cdk/aws-dynamodb": "^1.170.0",
     "@aws-cdk/aws-events": "^1.170.0",
     "@aws-cdk/aws-events-targets": "^1.170.0",
@@ -42,7 +43,7 @@
     "aws-cdk": "^1.170.0",
     "aws-sdk": "2.853.0",
     "colors": "^1.4.0",
-    "tslib": "~2.4.0"
+    "tslib": "^2.4.0"
   },
   "scripts": {
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
@@ -65,7 +66,7 @@
     "@types/chai-as-promised": "7.1.4",
     "@types/faker": "5.1.5",
     "@types/mocha": "8.2.2",
-    "@types/node": "16.11.7",
+    "@types/node": "^16.11.7",
     "@types/rewire": "^2.5.28",
     "@types/sinon": "10.0.0",
     "@types/sinon-chai": "3.2.5",
@@ -79,13 +80,13 @@
     "eslint-plugin-prettier": "3.4.0",
     "faker": "5.1.0",
     "mocha": "8.4.0",
-    "nyc": "15.1.0",
+    "nyc": "^15.1.0",
     "prettier": "2.3.0",
     "rewire": "5.0.0",
     "rimraf": "3.0.2",
     "sinon": "9.2.3",
     "sinon-chai": "3.5.0",
-    "ts-node": "10.8.1",
+    "ts-node": "^10.9.1",
     "typescript": "4.7.4",
     "velocityjs": "^2.0.0"
   },
