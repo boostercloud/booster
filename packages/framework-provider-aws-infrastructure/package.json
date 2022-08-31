@@ -44,7 +44,9 @@
     "aws-cdk": "^1.170.0",
     "aws-sdk": "2.853.0",
     "colors": "^1.4.0",
-    "tslib": "^2.4.0"
+    "tslib": "^2.4.0",
+    "promptly": "~3.2.0",
+    "cdk-assets": "~2.39.1"
   },
   "scripts": {
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",

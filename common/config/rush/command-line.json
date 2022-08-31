@@ -21,12 +21,21 @@
       "commandKind": "bulk",
       "name": "lint:check",
       "summary": "Checks that there are no ESLint issues",
+      "safeForSimultaneousRushProcesses": true,
       "enableParallelism": true
     },
     {
       "commandKind": "bulk",
       "name": "lint:fix",
       "summary": "Fixes ESLint issues",
+      "safeForSimultaneousRushProcesses": true,
+      "enableParallelism": true
+    },
+    {
+      "commandKind": "bulk",
+      "name": "clean",
+      "summary": "Cleans compilation output from TypeScript",
+      "safeForSimultaneousRushProcesses": true,
       "enableParallelism": true
     },
     {
