@@ -24,6 +24,7 @@
     "@aws-cdk/aws-logs": "^1.170.0",
     "@aws-cdk/assets": "^1.170.0",
     "@aws-cdk/aws-apigatewayv2": "^1.170.0",
+    "@aws-cdk/cloudformation-diff": "^1.170.0",
     "@aws-cdk/aws-cloudfront": "^1.170.0",
     "@aws-cdk/custom-resources": "^1.170.0",
     "@aws-cdk/aws-dynamodb": "^1.170.0",
