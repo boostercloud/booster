@@ -376,7 +376,7 @@
   "projects": [
     {
       "packageName": "@boostercloud/eslint-config",
-      "shouldPublish": false,
+      "shouldPublish": true, // Required for our integration tests, in the registry it is private
       "projectFolder": "tools/eslint-config"
     },
     {
