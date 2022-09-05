@@ -64,7 +64,7 @@ describe('After deployment', () => {
         },
         (result) => result != null,
         30000,
-        720000
+        1440000
       )
       expect(mutationResult?.data).to.exist
     })
