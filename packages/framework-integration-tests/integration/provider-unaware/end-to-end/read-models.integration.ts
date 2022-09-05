@@ -1706,6 +1706,198 @@ describe('Read models end-to-end tests', () => {
     })
   })
 
+  describe('projecting two entities with function joinKey', () => {
+    let client: ApolloClient<NormalizedCacheObject>
+    let userToken: string
+
+    before(async () => {
+      const userEmail = internet.email()
+      userToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail')
+      client = applicationUnderTest.graphql.client(userToken)
+    })
+
+    const oneMockProductId: string = random.uuid()
+    const twoMockProductId: string = random.uuid()
+
+    beforeEach(async () => {
+      // Add item one
+      await client.mutate({
+        variables: {
+          productID: oneMockProductId,
+          sku: random.uuid(),
+          displayName: commerce.productName(),
+          description: lorem.paragraph(),
+          priceInCents: random.number({ min: 1 }),
+          currency: finance.currencyCode(),
+        },
+        mutation: gql`
+          mutation CreateProduct(
+            $productID: ID!
+            $sku: String!
+            $displayName: String!
+            $description: String!
+            $priceInCents: Float!
+            $currency: String!
+          ) {
+            CreateProduct(
+              input: {
+                productID: $productID
+                sku: $sku
+                displayName: $displayName
+                description: $description
+                priceInCents: $priceInCents
+                currency: $currency
+              }
+            )
+          }
+        `,
+      })
+
+      // Add item two
+      await client.mutate({
+        variables: {
+          productID: twoMockProductId,
+          sku: random.uuid(),
+          displayName: commerce.productName(),
+          description: lorem.paragraph(),
+          priceInCents: random.number({ min: 1 }),
+          currency: finance.currencyCode(),
+        },
+        mutation: gql`
+          mutation CreateProduct(
+            $productID: ID!
+            $sku: String!
+            $displayName: String!
+            $description: String!
+            $priceInCents: Float!
+            $currency: String!
+          ) {
+            CreateProduct(
+              input: {
+                productID: $productID
+                sku: $sku
+                displayName: $displayName
+                description: $description
+                priceInCents: $priceInCents
+                currency: $currency
+              }
+            )
+          }
+        `,
+      })
+    })
+
+    it('should project changes for one of the entities', async () => {
+      // Check that new product is available in read model
+      const products = await waitForIt(
+        () => {
+          return client.query({
+            variables: {
+              products: [oneMockProductId, twoMockProductId],
+            },
+            query: gql`
+              query ProductReadModels($products: [ID!]!) {
+                ProductReadModels(filter: { id: { in: $products } }) {
+                  id
+                  sku
+                  displayName
+                  description
+                  price {
+                    cents
+                    currency
+                  }
+                  availability
+                  deleted
+                  packs {
+                    id
+                  }
+                  productDetails
+                  productType
+                }
+              }
+            `,
+          })
+        },
+        (result) =>
+          result?.data?.ProductReadModels?.length == 2 &&
+          result?.data?.ProductReadModels?.every(
+            (product: any) => Array.isArray(product.packs) && product.packs.length == 0
+          )
+      )
+
+      expect(products.data.ProductReadModels.length).to.be.equal(2)
+
+      const mockPromotionID: string = random.uuid()
+      const mockPromotionName: string = commerce.productName()
+
+      // Create Promotion
+      await client.mutate({
+        variables: {
+          promotionID: mockPromotionID,
+          name: mockPromotionName,
+          productID: oneMockProductId,
+          promotionType: 'Product',
+        },
+        mutation: gql`
+          mutation CreatePromotions($promotionID: ID!, $name: String!, $productID: ID!, $promotionType: JSON!) {
+            CreatePromotions(
+              input: { promotionID: $promotionID, name: $name, productID: $productID, promotionType: $promotionType }
+            )
+          }
+        `,
+      })
+
+      const updatedQueryResults = await waitForIt(
+        () => {
+          return client.query({
+            variables: {
+              products: [oneMockProductId, twoMockProductId],
+            },
+            query: gql`
+              query ProductReadModels($products: [ID!]!) {
+                ProductReadModels(filter: { id: { in: $products } }) {
+                  id
+                  sku
+                  displayName
+                  description
+                  price {
+                    cents
+                    currency
+                  }
+                  availability
+                  deleted
+                  packs {
+                    id
+                    name
+                    products
+                  }
+                  productDetails
+                  productType
+                  promotionsCodes
+                }
+              }
+            `,
+          })
+        },
+        (result) =>
+          result?.data?.ProductReadModels?.length == 2 &&
+          result?.data?.ProductReadModels?.some(
+            (product: any) => Array.isArray(product.promotionsCodes) && product.promotionsCodes.length == 1
+          )
+      )
+
+      const updatedProducts = updatedQueryResults.data.ProductReadModels
+      expect(updatedProducts.length).to.be.equal(2)
+
+      const oneUpdatedProduct = updatedProducts.find((product: { id: string }) => product.id === oneMockProductId)
+      const twoUpdatedProduct = updatedProducts.find((product: { id: string }) => product.id === twoMockProductId)
+
+      expect(oneUpdatedProduct.promotionsCodes.length).to.be.eql(1)
+      expect(oneUpdatedProduct.promotionsCodes[0]).to.be.eql(mockPromotionID)
+      expect(twoUpdatedProduct.promotionsCodes).to.be.null
+    })
+  })
+
   describe('read model authorization', () => {
     context('with an anonymous user', () => {
       let anonymousClient: ApolloClient<NormalizedCacheObject>

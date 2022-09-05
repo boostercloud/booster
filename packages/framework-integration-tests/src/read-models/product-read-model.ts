@@ -4,6 +4,7 @@ import { ProjectionResult, ReadModelAction, UUID } from '@boostercloud/framework
 import { Product, ProductType } from '../entities/product'
 import { Money } from '../common/money'
 import { Pack } from '../entities/pack'
+import { Promotion } from '../entities/promotion'
 
 // This is an example read model for a possible admin-exclusive report to show last and previous updates to products
 @ReadModel({
@@ -20,7 +21,8 @@ export class ProductReadModel {
     readonly productDetails: Record<string, unknown>,
     readonly productType: ProductType = 'Other',
     readonly price?: Money,
-    readonly packs?: Array<Pack>
+    readonly packs?: Array<Pack>,
+    readonly promotionsCodes?: Array<UUID>
   ) {}
 
   @Projects(Product, 'id')
@@ -73,5 +75,40 @@ export class ProductReadModel {
         packList
       )
     }
+  }
+
+  @Projects(Promotion, (promotion: Promotion) => {
+    if (promotion.promotionType === 'Product') {
+      return {
+        id: {
+          eq: promotion.productID,
+        },
+      }
+    }
+    return undefined
+  })
+  public static updateWithPromotions(
+    promotion: Promotion,
+    _readModelID: UUID,
+    currentProductReadModel?: ProductReadModel
+  ): ProjectionResult<ProductReadModel> {
+    if (!currentProductReadModel) {
+      return ReadModelAction.Nothing
+    }
+    const promotionsCodes: Array<UUID> = currentProductReadModel.promotionsCodes || []
+    promotionsCodes.push(promotion.id)
+    return new ProductReadModel(
+      currentProductReadModel.id,
+      currentProductReadModel.sku,
+      currentProductReadModel.displayName,
+      currentProductReadModel.description,
+      currentProductReadModel.availability,
+      currentProductReadModel.deleted,
+      currentProductReadModel.productDetails,
+      currentProductReadModel.productType,
+      currentProductReadModel.price,
+      [],
+      promotionsCodes
+    )
   }
 }

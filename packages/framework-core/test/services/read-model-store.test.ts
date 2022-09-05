@@ -123,31 +123,31 @@ describe('ReadModelStore', () => {
       class: SomeReadModel,
       methodName: 'someObserver',
       joinKey: 'someKey',
-    } as ProjectionMetadata<any>,
+    } as ProjectionMetadata<any, any>,
     {
       class: SomeReadModel,
       methodName: 'projectionThatCallsEntityMethod',
       joinKey: 'someKey',
-    } as ProjectionMetadata<any>,
+    } as ProjectionMetadata<any, any>,
     {
       class: AnotherReadModel,
       methodName: 'anotherObserver',
       joinKey: 'someKey',
-    } as ProjectionMetadata<any>,
+    } as ProjectionMetadata<any, any>,
   ]
   config.projections[AnImportantEntityWithArray.name] = [
     {
       class: SomeReadModel,
       methodName: 'someObserverArray',
       joinKey: 'someKey',
-    } as ProjectionMetadata<any>,
+    } as ProjectionMetadata<any, any>,
   ]
   config.projections['AnEntity'] = [
     {
       class: SomeReadModel,
       methodName: 'projectionThatCallsReadModelMethod',
       joinKey: 'someKey',
-    } as ProjectionMetadata<any>,
+    } as ProjectionMetadata<any, any>,
   ]
 
   function eventEnvelopeFor(entityName: string): EventEnvelope {
@@ -583,7 +583,7 @@ describe('ReadModelStore', () => {
             anEntityInstance,
             projectionMetadata,
             readModelClassName,
-            anEntityInstance[projectionMetadata.joinKey],
+            anEntityInstance[projectionMetadata.joinKey as string],
             readModelClassName === 'AnotherReadModel' ? { name: 'count', value: 123 } : undefined
           )
         }
@@ -661,23 +661,25 @@ describe('ReadModelStore', () => {
 
   describe('the `joinKeyForProjection` private method', () => {
     context('when the joinKey exists', () => {
-      it('returns the joinKey value', () => {
+      it('returns the joinKey value', async () => {
         const anEntitySnapshot = eventEnvelopeFor(AnImportantEntity.name)
         const anEntityInstance = createInstance(AnImportantEntity, anEntitySnapshot.value) as any
         const readModelStore = new ReadModelStore(config) as any
 
-        expect(readModelStore.joinKeyForProjection(anEntityInstance, { joinKey: 'someKey' })).to.be.deep.equal([
-          'joinColumnID',
-        ])
+        const joinKeyForProjection = await readModelStore.joinKeyForProjection(anEntityInstance, { joinKey: 'someKey' })
+        expect(joinKeyForProjection).to.be.deep.equal(['joinColumnID'])
       })
     })
 
     context('when the joinkey does not exist', () => {
-      it('should not throw and error an skip', () => {
+      it('should not throw and error an skip', async () => {
         const anEntitySnapshot = eventEnvelopeFor(AnImportantEntity.name)
         const anEntityInstance = createInstance(AnImportantEntity, anEntitySnapshot.value) as any
         const readModelStore = new ReadModelStore(config) as any
-        expect(readModelStore.joinKeyForProjection(anEntityInstance, { joinKey: 'whatever' })).to.be.undefined
+        const joinKeyForProjection = await readModelStore.joinKeyForProjection(anEntityInstance, {
+          joinKey: 'whatever',
+        })
+        expect(joinKeyForProjection).to.be.undefined
       })
     })
   })

@@ -2,7 +2,7 @@
 import { expect } from '../expect'
 import { describe } from 'mocha'
 import { ReadModel, Booster, Entity, Projects, sequencedBy, Role } from '../../src'
-import { UUID, ProjectionResult, UserEnvelope } from '@boostercloud/framework-types'
+import { UUID, ProjectionResult, UserEnvelope, FilterFor } from '@boostercloud/framework-types'
 import { BoosterAuthorizer } from '../../src/booster-authorizer'
 import { fake, restore } from 'sinon'
 
@@ -230,6 +230,9 @@ describe('the `Projects` decorator', () => {
       for (const propName in config.projections) {
         delete config.projections[propName]
       }
+      for (const propName in config.entities) {
+        delete config.entities[propName]
+      }
     })
   })
 
@@ -260,6 +263,47 @@ describe('the `Projects` decorator', () => {
       methodName: 'observeSomeEntity',
       joinKey: 'id',
     })
+  })
+
+  it('registers a read model method as an entity projection in Booster configuration with a function', () => {
+    @Entity
+    class SomeEntity {
+      public constructor(readonly id: UUID) {}
+    }
+
+    @ReadModel({
+      authorize: 'all',
+    })
+    class SomeReadModel {
+      public constructor(readonly id: UUID) {}
+
+      @Projects(SomeEntity, (someEntity: SomeEntity) => {
+        return {
+          id: {
+            eq: someEntity.id,
+          } as FilterFor<SomeReadModel>,
+        }
+      })
+      public static observeSomeEntity(entity: SomeEntity): ProjectionResult<SomeReadModel> {
+        throw new Error(`not implemented for ${entity}`)
+      }
+    }
+
+    const someEntityObservers = Booster.config.projections['SomeEntity']
+
+    expect(Booster.config.readModels).to.contain(SomeReadModel)
+    expect(someEntityObservers).to.be.an('Array')
+    expect(someEntityObservers['0'].class).to.be.eq(SomeReadModel)
+    expect(someEntityObservers['0'].methodName).to.be.eq('observeSomeEntity')
+    expect(someEntityObservers['0'].joinKey.toString()).to.be.eq(
+      '(someEntity) => {\n' +
+        '                return {\n' +
+        '                    id: {\n' +
+        '                        eq: someEntity.id,\n' +
+        '                    },\n' +
+        '                };\n' +
+        '            }'
+    )
   })
 
   describe('the `sequencedBy` decorator', () => {
