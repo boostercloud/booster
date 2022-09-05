@@ -6,6 +6,7 @@ import {
   EventSearchParameters,
   EventSearchRequest,
   EventSearchResponse,
+  PaginatedEventSearchResponse,
   ReadModelByIdRequestArgs,
   ReadModelInterface,
   ReadModelRequestArgs,
@@ -50,6 +51,7 @@ export class GraphQLGenerator {
         this.readModelByIDResolverBuilder.bind(this, config),
         this.readModelResolverBuilder.bind(this),
         this.eventResolver.bind(this),
+        this.paginatedEventResolver.bind(this),
         generatedFiltersByTypeName
       )
 
@@ -102,7 +104,7 @@ export class GraphQLGenerator {
         context,
         sequenceKeyName
       )
-      return await this.readModelsReader.findById(readModelRequestEnvelope)
+      return this.readModelsReader.findById(readModelRequestEnvelope)
     }
   }
 
@@ -110,9 +112,18 @@ export class GraphQLGenerator {
     parent: unknown,
     args: EventSearchParameters,
     context: GraphQLResolverContext
-  ): Promise<Array<EventSearchResponse>> {
+  ): Promise<Array<EventSearchResponse> | PaginatedEventSearchResponse> {
     const eventsRequestEnvelope = toEventSearchRequest(args, context)
     return this.eventsReader.fetch(eventsRequestEnvelope)
+  }
+
+  public static paginatedEventResolver(
+    parent: unknown,
+    args: EventSearchParameters,
+    context: GraphQLResolverContext
+  ): Promise<Array<EventSearchResponse> | PaginatedEventSearchResponse> {
+    const eventsRequestEnvelope = toEventSearchRequest(args, context)
+    return this.eventsReader.fetch(eventsRequestEnvelope, true)
   }
 
   public static commandResolverBuilder(

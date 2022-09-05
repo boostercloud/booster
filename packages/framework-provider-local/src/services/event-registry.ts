@@ -13,10 +13,19 @@ export class EventRegistry {
     return this.events.find(query, projections).sort({ createdAt: createdAt })
   }
 
-  public async query(query: object, createdAt = 1, limit?: number, projections?: unknown): Promise<unknown> {
+  public async query(
+    query: object,
+    createdAt = 1,
+    limit?: number,
+    skip?: number,
+    projections?: unknown
+  ): Promise<unknown> {
     const cursor = this.getCursor(query, createdAt, projections)
     if (limit) {
       cursor.limit(Number(limit))
+    }
+    if (skip) {
+      cursor.skip(skip)
     }
     const queryPromise = new Promise((resolve, reject) => {
       cursor.exec((err, docs) => {

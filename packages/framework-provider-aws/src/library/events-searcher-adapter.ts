@@ -5,6 +5,7 @@ import {
   EventSearchParameters,
   EventSearchResponse,
   PaginatedEntitiesIdsResult,
+  PaginatedEventSearchResponse,
   UUID,
 } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
@@ -14,26 +15,36 @@ import { partitionKeyForEvent, partitionKeyForIndexByEntity } from './keys-helpe
 import { inChunksOf } from '../pagination-helpers'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 
+export interface PaginatedResult {
+  items: Array<EventEnvelope>
+  count?: number
+  cursor?: Record<string, string>
+}
+
 export async function searchEvents(
   dynamoDB: DynamoDB.DocumentClient,
   config: BoosterConfig,
-  parameters: EventSearchParameters
-): Promise<Array<EventSearchResponse>> {
+  parameters: EventSearchParameters,
+  paginated = false
+): Promise<Array<EventSearchResponse> | PaginatedEventSearchResponse> {
   const logger = getLogger(config, 'events-searcher-adapter#searchEvents')
   logger.debug('Initiating an events search. Filters: ', parameters)
   const timeFilterQuery = buildSearchEventsTimeQuery(parameters.from, parameters.to)
-  const eventEnvelopes = await executeSearch(dynamoDB, config, parameters, timeFilterQuery, parameters.limit)
-
-  logger.debug('Events search result: ', eventEnvelopes)
-  return convertToSearchResult(eventEnvelopes)
+  const eventEnvelopes = await executeSearch(dynamoDB, config, parameters, timeFilterQuery, parameters, paginated)
+  if (paginated) {
+    logger.debug('Events paginated search result: ', eventEnvelopes)
+    return convertToPaginatedSearchResult(<PaginatedResult>eventEnvelopes)
+  }
+  logger.debug('Events list search result: ', eventEnvelopes)
+  return convertToSearchResult(<Array<EventEnvelope>>eventEnvelopes)
 }
 
 export async function searchEntitiesIds(
-  dynamoDB: DynamoDB.DocumentClient,
-  config: BoosterConfig,
-  limit: number,
-  afterCursor: Record<string, string> | undefined,
-  entityTypeName: string
+  _dynamoDB: DynamoDB.DocumentClient,
+  _config: BoosterConfig,
+  _limit: number,
+  _afterCursor: Record<string, string> | undefined,
+  _entityTypeName: string
 ): Promise<PaginatedEntitiesIdsResult> {
   throw new Error('eventsSearcherAdapter#searchEntitiesIds: Not implemented yet')
 }
@@ -75,16 +86,25 @@ async function executeSearch(
   config: BoosterConfig,
   filters: EventSearchParameters,
   timeFilterQuery: TimeQueryData,
-  limit?: number
-): Promise<Array<EventEnvelope>> {
+  parameters: EventSearchParameters,
+  paginated = false
+): Promise<Array<EventEnvelope> | PaginatedResult> {
   if ('entity' in filters) {
     if (filters.entityID) {
-      return await searchEventsByEntityAndID(dynamoDB, config, filters.entity, filters.entityID, timeFilterQuery, limit)
+      return searchEventsByEntityAndID(
+        dynamoDB,
+        config,
+        filters.entity,
+        filters.entityID,
+        timeFilterQuery,
+        parameters,
+        paginated
+      )
     } else {
-      return await searchEventsByEntity(dynamoDB, config, filters.entity, timeFilterQuery, limit)
+      return searchEventsByEntity(dynamoDB, config, filters.entity, timeFilterQuery, parameters, paginated)
     }
   } else if ('type' in filters) {
-    return await searchEventsByType(dynamoDB, config, filters.type, timeFilterQuery, limit)
+    return searchEventsByType(dynamoDB, config, filters.type, timeFilterQuery, parameters, paginated)
   } else {
     throw new Error('Invalid search event query. It is neither an search by "entity" nor a search by "type"')
   }
@@ -96,24 +116,34 @@ async function searchEventsByEntityAndID(
   entity: string,
   entityID: UUID,
   timeQuery: TimeQueryData,
-  limit?: number
-): Promise<Array<EventEnvelope>> {
+  parameters: EventSearchParameters,
+  paginated = false
+): Promise<Array<EventEnvelope> | PaginatedResult> {
   const logger = getLogger(config, 'events-searcher-adapter#searchEventsByEntityAndID')
-  // TODO: Manage pagination
+  const afterCursor = getAfterCursor(paginated, parameters.afterCursor)
   const params: DocumentClient.QueryInput = {
     TableName: config.resourceNames.eventsStore,
     ConsistentRead: true,
     ScanIndexForward: false, // Descending order (newer timestamps first)
-    Limit: limit,
+    Limit: parameters.limit,
     KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey${timeQuery.expression}`,
     ExpressionAttributeValues: {
       ...timeQuery.attributeValues,
       ':partitionKey': partitionKeyForEvent(entity, entityID),
     },
+    ExclusiveStartKey: afterCursor,
   }
 
   logger.debug('Searching events by entity and entity ID. Query params: ', params)
   const result = await dynamoDB.query(params).promise()
+  if (paginated) {
+    const items = (result.Items as Array<EventEnvelope>) ?? []
+    return {
+      items: items,
+      count: result.Count,
+      cursor: result.LastEvaluatedKey,
+    }
+  }
   return (result.Items as Array<EventEnvelope>) ?? []
 }
 
@@ -127,27 +157,37 @@ async function searchEventsByEntity(
   config: BoosterConfig,
   entity: string,
   timeQuery: TimeQueryData,
-  limit?: number
-): Promise<Array<EventEnvelope>> {
+  parameters: EventSearchParameters,
+  paginated = false
+): Promise<Array<EventEnvelope> | PaginatedResult> {
   const logger = getLogger(config, 'events-searcher-adapter#searchEventsByEntity')
-  // TODO: manage pagination
+  const afterCursor = getAfterCursor(paginated, parameters.afterCursor)
   // First query the index
   const params: DocumentClient.QueryInput = {
     TableName: config.resourceNames.eventsStore,
     IndexName: eventsStoreAttributes.indexByEntity.name(config),
     ScanIndexForward: false, // Descending order (newer timestamps first)
-    Limit: limit,
+    Limit: parameters.limit,
     KeyConditionExpression: `${eventsStoreAttributes.indexByEntity.partitionKey} = :partitionKey${timeQuery.expression}`,
     ExpressionAttributeValues: {
       ...timeQuery.attributeValues,
       ':partitionKey': partitionKeyForIndexByEntity(entity, 'event'),
     },
+    ExclusiveStartKey: afterCursor,
   }
 
   logger.debug('Searching events by entity. Index query params: ', params)
   const partialResult = await dynamoDB.query(params).promise()
   const indexRecords = (partialResult.Items as Array<EventStoreKeys>) ?? []
-  return findEventsDataWithKeys(dynamoDB, config, indexRecords)
+  const events = await findEventsDataWithKeys(dynamoDB, config, indexRecords)
+  if (paginated) {
+    return {
+      items: events,
+      count: partialResult.Count,
+      cursor: partialResult.LastEvaluatedKey,
+    }
+  }
+  return events
 }
 
 async function searchEventsByType(
@@ -155,27 +195,37 @@ async function searchEventsByType(
   config: BoosterConfig,
   type: string,
   timeQuery: TimeQueryData,
-  limit?: number
-): Promise<Array<EventEnvelope>> {
+  parameters: EventSearchParameters,
+  paginated = false
+): Promise<Array<EventEnvelope> | PaginatedResult> {
   const logger = getLogger(config, 'events-searcher-adapter#searchEventsByType')
-  // TODO: manage pagination
+  const afterCursor = getAfterCursor(paginated, parameters.afterCursor)
   // Fist query the index
   const params: DocumentClient.QueryInput = {
     TableName: config.resourceNames.eventsStore,
     IndexName: eventsStoreAttributes.indexByType.name(config),
     ScanIndexForward: false, // Descending order (newer timestamps first)
-    Limit: limit,
+    Limit: parameters.limit,
     KeyConditionExpression: `${eventsStoreAttributes.indexByType.partitionKey} = :partitionKey${timeQuery.expression}`,
     ExpressionAttributeValues: {
       ...timeQuery.attributeValues,
       ':partitionKey': type,
     },
+    ExclusiveStartKey: afterCursor,
   }
 
   logger.debug('Searching events by type. Index query params: ', params)
   const partialResult = await dynamoDB.query(params).promise()
   const indexRecords = (partialResult.Items as Array<EventStoreKeys>) ?? []
-  return findEventsDataWithKeys(dynamoDB, config, indexRecords)
+  const events = await findEventsDataWithKeys(dynamoDB, config, indexRecords)
+  if (paginated) {
+    return {
+      items: events,
+      count: partialResult.Count,
+      cursor: partialResult.LastEvaluatedKey,
+    }
+  }
+  return events
 }
 
 async function findEventsDataWithKeys(
@@ -247,4 +297,19 @@ function convertToSearchResult(eventEnvelopes: Array<EventEnvelope>): Array<Even
       if (a.createdAt < b.createdAt) return 1
       return 0
     })
+}
+
+function convertToPaginatedSearchResult(results: PaginatedResult): PaginatedEventSearchResponse {
+  return {
+    items: convertToSearchResult(results.items),
+    count: results.count,
+    cursor: results.cursor,
+  }
+}
+
+function getAfterCursor(paginated: boolean, afterCursor?: Record<string, string>): Record<string, string> | undefined {
+  if (paginated && afterCursor && Object.keys(afterCursor).length > 0) {
+    return afterCursor
+  }
+  return undefined
 }

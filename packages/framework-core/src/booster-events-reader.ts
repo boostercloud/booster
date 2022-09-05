@@ -8,6 +8,7 @@ import {
   EventSearchParameters,
   EventParametersFilterByEntity,
   EventParametersFilterByType,
+  PaginatedEventSearchResponse,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 import { Booster } from './booster'
@@ -15,9 +16,12 @@ import { Booster } from './booster'
 export class BoosterEventsReader {
   public constructor(readonly config: BoosterConfig) {}
 
-  public async fetch(eventRequest: EventSearchRequest): Promise<Array<EventSearchResponse>> {
+  public async fetch(
+    eventRequest: EventSearchRequest,
+    paginated = false
+  ): Promise<Array<EventSearchResponse> | PaginatedEventSearchResponse> {
     await this.validateRequest(eventRequest)
-    return this.processFetch(eventRequest)
+    return this.processFetch(eventRequest, paginated)
   }
 
   private async validateRequest(eventRequest: EventSearchRequest): Promise<void> {
@@ -68,7 +72,13 @@ export class BoosterEventsReader {
     return this.entityMetadataFromEntityName(reducerMetadata.class.name)
   }
 
-  private async processFetch(eventRequest: EventSearchRequest): Promise<Array<EventSearchResponse>> {
+  private async processFetch(
+    eventRequest: EventSearchRequest,
+    paginated = false
+  ): Promise<Array<EventSearchResponse> | PaginatedEventSearchResponse> {
+    if (paginated) {
+      return Booster.paginatedEvents(eventRequest.parameters)
+    }
     return Booster.events(eventRequest.parameters)
   }
 }

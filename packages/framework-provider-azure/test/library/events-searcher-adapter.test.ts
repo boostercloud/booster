@@ -61,6 +61,38 @@ describe('Events Searcher adapter', () => {
       )
     })
 
+    it('Generate filters for entity, entityId and time when paginated EventSearchParameters has all fields', async () => {
+      const filters: EventSearchParameters = {
+        from: 'from',
+        to: 'to',
+        entity: 'entity',
+        entityID: 'entityID',
+        type: 'type',
+        limit: 1,
+        afterCursor: { id: '1' },
+      }
+      const mockSearch = stub(searchModule, 'search').returns(Promise.resolve([]))
+      const eventStoreName = 'new-booster-app-app-events-store'
+      await searchEvents(mockCosmosDbClient as any, mockConfig, filters, true)
+
+      expect(mockSearch).to.have.been.calledWithExactly(
+        mockCosmosDbClient,
+        mockConfig,
+        eventStoreName,
+        {
+          entityTypeName_entityID_kind: { eq: 'entity-entityID-event' },
+          createdAt: { gte: 'from', lte: 'to' },
+          kind: { eq: 'event' },
+        },
+        1,
+        { id: '1' },
+        true,
+        {
+          createdAt: 'DESC',
+        }
+      )
+    })
+
     it('Generate filters for entity, entityId and time when EventSearchParameters has all fields and limited', async () => {
       const filters: EventSearchParameters = {
         from: 'from',
@@ -86,6 +118,38 @@ describe('Events Searcher adapter', () => {
         3,
         undefined,
         undefined,
+        {
+          createdAt: 'DESC',
+        }
+      )
+    })
+
+    it('Generate filters for entity, entityId and time when paginated EventSearchParameters has all fields and limited', async () => {
+      const filters: EventSearchParameters = {
+        from: 'from',
+        to: 'to',
+        entity: 'entity',
+        entityID: 'entityID',
+        type: 'type',
+        limit: 3,
+        afterCursor: { id: '1' },
+      }
+      const mockSearch = stub(searchModule, 'search').returns(Promise.resolve([]))
+      const eventStoreName = 'new-booster-app-app-events-store'
+      await searchEvents(mockCosmosDbClient as any, mockConfig, filters, true)
+
+      expect(mockSearch).to.have.been.calledWithExactly(
+        mockCosmosDbClient,
+        mockConfig,
+        eventStoreName,
+        {
+          entityTypeName_entityID_kind: { eq: 'entity-entityID-event' },
+          createdAt: { gte: 'from', lte: 'to' },
+          kind: { eq: 'event' },
+        },
+        3,
+        { id: '1' },
+        true,
         {
           createdAt: 'DESC',
         }
@@ -118,6 +182,34 @@ describe('Events Searcher adapter', () => {
       )
     })
 
+    it('Generate filters for entity, entityId when paginated EventSearchParameters has entity and entityID fields', async () => {
+      const filters: EventSearchParameters = {
+        entity: 'entity',
+        entityID: 'entityID',
+        limit: 1,
+        afterCursor: { id: '1' },
+      }
+      const mockSearch = stub(searchModule, 'search').returns(Promise.resolve([]))
+      const eventStoreName = 'new-booster-app-app-events-store'
+      await searchEvents(mockCosmosDbClient as any, mockConfig, filters, true)
+
+      expect(mockSearch).to.have.been.calledWithExactly(
+        mockCosmosDbClient,
+        mockConfig,
+        eventStoreName,
+        {
+          entityTypeName_entityID_kind: { eq: 'entity-entityID-event' },
+          kind: { eq: 'event' },
+        },
+        1,
+        { id: '1' },
+        true,
+        {
+          createdAt: 'DESC',
+        }
+      )
+    })
+
     it('Generate filters for type when EventSearchParameters has type field', async () => {
       const filters: EventSearchParameters = {
         type: 'type',
@@ -143,6 +235,33 @@ describe('Events Searcher adapter', () => {
       )
     })
 
+    it('Generate filters for type when paginated EventSearchParameters has type field', async () => {
+      const filters: EventSearchParameters = {
+        type: 'type',
+        limit: 1,
+        afterCursor: { id: '1' },
+      }
+      const mockSearch = stub(searchModule, 'search').returns(Promise.resolve([]))
+      const eventStoreName = 'new-booster-app-app-events-store'
+      await searchEvents(mockCosmosDbClient as any, mockConfig, filters, true)
+
+      expect(mockSearch).to.have.been.calledWithExactly(
+        mockCosmosDbClient,
+        mockConfig,
+        eventStoreName,
+        {
+          typeName: { eq: 'type' },
+          kind: { eq: 'event' },
+        },
+        1,
+        { id: '1' },
+        true,
+        {
+          createdAt: 'DESC',
+        }
+      )
+    })
+
     it('Generate filters for entity when EventSearchParameters has only entity field', async () => {
       const parameters: EventSearchParameters = {
         entity: 'entity',
@@ -162,6 +281,33 @@ describe('Events Searcher adapter', () => {
         undefined,
         undefined,
         undefined,
+        {
+          createdAt: 'DESC',
+        }
+      )
+    })
+
+    it('Generate filters for entity when paginated EventSearchParameters has only entity field', async () => {
+      const parameters: EventSearchParameters = {
+        entity: 'entity',
+        limit: 1,
+        afterCursor: { id: '1' },
+      }
+      const mockSearch = stub(searchModule, 'search').returns(Promise.resolve([]))
+      const eventStoreName = 'new-booster-app-app-events-store'
+      await searchEvents(mockCosmosDbClient as any, mockConfig, parameters, true)
+
+      expect(mockSearch).to.have.been.calledWithExactly(
+        mockCosmosDbClient,
+        mockConfig,
+        eventStoreName,
+        {
+          entityTypeName: { eq: 'entity' },
+          kind: { eq: 'event' },
+        },
+        1,
+        { id: '1' },
+        true,
         {
           createdAt: 'DESC',
         }

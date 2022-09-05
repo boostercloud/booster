@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
-import { createStubInstance, restore, SinonStubbedInstance, fake, replace } from 'sinon'
+import { createStubInstance, fake, replace, restore, SinonSpy, SinonStubbedInstance } from 'sinon'
 import {
   BoosterConfig,
   EventEnvelope,
@@ -8,10 +8,11 @@ import {
   EventParametersFilterByType,
   EventSearchParameters,
   EventSearchResponse,
+  PaginatedEventSearchResponse,
 } from '@boostercloud/framework-types'
-import { random, date } from 'faker'
+import { date, random } from 'faker'
 import { DynamoDB } from 'aws-sdk'
-import { searchEvents } from '../../src/library/events-searcher-adapter'
+import { PaginatedResult, searchEvents } from '../../src/library/events-searcher-adapter'
 import { eventsStoreAttributes } from '../../src'
 import { partitionKeyForEvent, partitionKeyForIndexByEntity } from '../../src/library/keys-helper'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
@@ -56,6 +57,7 @@ describe('Events searcher adapter', () => {
 
       runQueryTestsWithTimeFiltersVariants(
         () => filter,
+        () => false,
         () => {
           return {
             TableName: config.resourceNames.eventsStore,
@@ -64,6 +66,37 @@ describe('Events searcher adapter', () => {
             Limit: undefined,
             KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey`,
             ExpressionAttributeValues: { ':partitionKey': partitionKeyForEvent(filter.entity, entityID) },
+            ExclusiveStartKey: undefined,
+          }
+        }
+      )
+    })
+
+    describe('for a paginated search by entity with ID', () => {
+      let filter: EventParametersFilterByEntity
+      let entityID: string
+      beforeEach(() => {
+        entityID = random.uuid()
+        filter = {
+          entity: random.alpha(),
+          entityID: entityID,
+          limit: 1,
+          afterCursor: { id: '1' },
+        }
+      })
+
+      runQueryTestsWithTimeFiltersVariants(
+        () => filter,
+        () => true,
+        () => {
+          return {
+            TableName: config.resourceNames.eventsStore,
+            ConsistentRead: true,
+            ScanIndexForward: false,
+            Limit: 1,
+            KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey`,
+            ExpressionAttributeValues: { ':partitionKey': partitionKeyForEvent(filter.entity, entityID) },
+            ExclusiveStartKey: { id: '1' },
           }
         }
       )
@@ -79,6 +112,7 @@ describe('Events searcher adapter', () => {
 
       runQueryTestsWithTimeFiltersVariants(
         () => filter,
+        () => false,
         () => {
           return {
             TableName: config.resourceNames.eventsStore,
@@ -89,6 +123,37 @@ describe('Events searcher adapter', () => {
             ExpressionAttributeValues: {
               ':partitionKey': partitionKeyForIndexByEntity(filter.entity, 'event'),
             },
+            ExclusiveStartKey: undefined,
+          }
+        },
+        true
+      )
+    })
+
+    describe('for a paginated search by entity and no ID', () => {
+      let filter: EventParametersFilterByEntity
+      beforeEach(() => {
+        filter = {
+          entity: random.alpha(),
+          limit: 1,
+          afterCursor: { id: '1' },
+        }
+      })
+
+      runQueryTestsWithTimeFiltersVariants(
+        () => filter,
+        () => true,
+        () => {
+          return {
+            TableName: config.resourceNames.eventsStore,
+            IndexName: eventsStoreAttributes.indexByEntity.name(config),
+            ScanIndexForward: false,
+            Limit: 1,
+            KeyConditionExpression: `${eventsStoreAttributes.indexByEntity.partitionKey} = :partitionKey`,
+            ExpressionAttributeValues: {
+              ':partitionKey': partitionKeyForIndexByEntity(filter.entity, 'event'),
+            },
+            ExclusiveStartKey: { id: '1' },
           }
         },
         true
@@ -105,6 +170,7 @@ describe('Events searcher adapter', () => {
 
       runQueryTestsWithTimeFiltersVariants(
         () => filter,
+        () => false,
         () => {
           return {
             TableName: config.resourceNames.eventsStore,
@@ -115,6 +181,37 @@ describe('Events searcher adapter', () => {
             ExpressionAttributeValues: {
               ':partitionKey': filter.type,
             },
+            ExclusiveStartKey: undefined,
+          }
+        },
+        true
+      )
+    })
+
+    describe('for a paginated search by type', () => {
+      let filter: EventParametersFilterByType
+      beforeEach(() => {
+        filter = {
+          type: random.alpha(),
+          limit: 1,
+          afterCursor: { id: '1' },
+        }
+      })
+
+      runQueryTestsWithTimeFiltersVariants(
+        () => filter,
+        () => true,
+        () => {
+          return {
+            TableName: config.resourceNames.eventsStore,
+            IndexName: eventsStoreAttributes.indexByType.name(config),
+            ScanIndexForward: false,
+            Limit: 1,
+            KeyConditionExpression: `${eventsStoreAttributes.indexByType.partitionKey} = :partitionKey`,
+            ExpressionAttributeValues: {
+              ':partitionKey': filter.type,
+            },
+            ExclusiveStartKey: { id: '1' },
           }
         },
         true
@@ -124,12 +221,13 @@ describe('Events searcher adapter', () => {
 
   function runQueryTestsWithTimeFiltersVariants(
     getFilters: () => EventSearchParameters,
+    getPaginated: () => boolean,
     getQuery: () => DocumentClient.QueryInput,
     requiresExtraQueryToMainTable = false
   ): void {
     context('with no time filters', () => {
       it('does the query with no time filters', async () => {
-        await searchEvents(db, config, getFilters())
+        await searchEvents(db, config, getFilters(), getPaginated())
         expect(db.query).to.have.been.calledWithExactly(getQuery())
       })
     })
@@ -149,7 +247,7 @@ describe('Events searcher adapter', () => {
       })
 
       it('does the query with "from" time filter and limit', async () => {
-        await searchEvents(db, config, filterWithFrom)
+        await searchEvents(db, config, filterWithFrom, getPaginated())
         expect(db.query).to.have.been.calledWithExactly(queryWithFromTimeAdditions)
       })
     })
@@ -167,7 +265,7 @@ describe('Events searcher adapter', () => {
       })
 
       it('does the query with "from" time filter', async () => {
-        await searchEvents(db, config, filterWithFrom)
+        await searchEvents(db, config, filterWithFrom, getPaginated())
         expect(db.query).to.have.been.calledWithExactly(queryWithFromTimeAdditions)
       })
     })
@@ -185,7 +283,7 @@ describe('Events searcher adapter', () => {
       })
 
       it('does the query with "to" time filters', async () => {
-        await searchEvents(db, config, filterWithTo)
+        await searchEvents(db, config, filterWithTo, getPaginated())
         expect(db.query).to.have.been.calledWithExactly(queryWithToTimeAdditions)
       })
     })
@@ -205,7 +303,7 @@ describe('Events searcher adapter', () => {
       })
 
       it('does the query with both time filters', async () => {
-        await searchEvents(db, config, fullFilter)
+        await searchEvents(db, config, fullFilter, getPaginated())
         expect(db.query).to.have.been.calledWithExactly(fullQuery)
       })
     })
@@ -233,7 +331,7 @@ describe('Events searcher adapter', () => {
           }) as any
         )
 
-        await searchEvents(db, config, getFilters())
+        await searchEvents(db, config, getFilters(), getPaginated())
         expect(db.batchGet).to.have.been.calledWithExactly({
           RequestItems: {
             [config.resourceNames.eventsStore]: {
@@ -264,17 +362,21 @@ describe('Events searcher adapter', () => {
         buildEventEnvelope(occurredFirstID, occurredFirstDate.toISOString()),
         buildEventEnvelope(occurredSecondID, occurredSecondDate.toISOString()),
       ]
-      const fakeExecuteSearch = fake.returns(Promise.resolve(unsortedResult))
-      let revert: () => void
-
-      beforeEach(() => {
-        revert = rewiredModule.__set__('executeSearch', fakeExecuteSearch)
-      })
-      afterEach(() => {
-        revert()
-      })
 
       it('the result is converted and sorted in descendant order', async () => {
+        let fakeExecuteSearch: SinonSpy
+        if (getFilters() && getPaginated()) {
+          const unsortedPaginatedResult: PaginatedResult = {
+            items: unsortedResult,
+            count: unsortedResult.length,
+            cursor: { id: '1' },
+          }
+          fakeExecuteSearch = fake.returns(Promise.resolve(unsortedPaginatedResult))
+        } else {
+          fakeExecuteSearch = fake.returns(Promise.resolve(unsortedResult))
+        }
+
+        const revert = rewiredModule.__set__('executeSearch', fakeExecuteSearch)
         // For extra care, first assert that the result page is truly unordered
         expect(unsortedResult.map((item) => item.entityID)).not.to.be.deep.equal([
           occurredThirdID,
@@ -282,15 +384,42 @@ describe('Events searcher adapter', () => {
           occurredFirstID,
         ])
 
-        const res: Array<EventSearchResponse> = await rewiredModule.searchEvents(db, config, getFilters())
+        const res: Array<EventSearchResponse> | PaginatedEventSearchResponse = await rewiredModule.searchEvents(
+          db,
+          config,
+          getFilters(),
+          getPaginated()
+        )
         console.log(res)
 
-        // Check they are sorted
-        expect(res.map((item) => item.entityID)).to.be.deep.equal([occurredThirdID, occurredSecondID, occurredFirstID])
-        // Check they have the right structure
-        for (const item of res) {
-          expect(item).to.have.keys(['type', 'entity', 'entityID', 'requestID', 'user', 'createdAt', 'value'])
+        if (getFilters() && getPaginated()) {
+          const result = res as PaginatedEventSearchResponse
+          // Check they are sorted
+          expect(result.items.map((item) => item.entityID)).to.be.deep.equal([
+            occurredThirdID,
+            occurredSecondID,
+            occurredFirstID,
+          ])
+          // Check they have the right structure
+          for (const item of result.items) {
+            expect(item).to.have.keys(['type', 'entity', 'entityID', 'requestID', 'user', 'createdAt', 'value'])
+          }
+          expect(result.count).to.be.eq(result.items.length)
+          expect(result.cursor).to.be.deep.equal({ id: '1' })
+        } else {
+          const result = res as Array<EventSearchResponse>
+          // Check they are sorted
+          expect(result.map((item) => item.entityID)).to.be.deep.equal([
+            occurredThirdID,
+            occurredSecondID,
+            occurredFirstID,
+          ])
+          // Check they have the right structure
+          for (const item of result) {
+            expect(item).to.have.keys(['type', 'entity', 'entityID', 'requestID', 'user', 'createdAt', 'value'])
+          }
         }
+        revert()
       })
     })
   }

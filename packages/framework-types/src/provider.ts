@@ -8,6 +8,7 @@ import {
   GraphQLRequestEnvelope,
   GraphQLRequestEnvelopeError,
   PaginatedEntitiesIdsResult,
+  PaginatedEventSearchResponse,
   ReadModelEnvelope,
   ReadModelListResult,
   ScheduledCommandEnvelope,
@@ -36,7 +37,11 @@ export interface ProviderEventsLibrary {
     since?: string
   ): Promise<Array<EventEnvelope>>
   latestEntitySnapshot(config: BoosterConfig, entityTypeName: string, entityID: UUID): Promise<EventEnvelope | null>
-  search(config: BoosterConfig, parameters: EventSearchParameters): Promise<Array<EventSearchResponse>>
+  search(
+    config: BoosterConfig,
+    parameters: EventSearchParameters,
+    paginated: boolean
+  ): Promise<Array<EventSearchResponse> | PaginatedEventSearchResponse>
   searchEntitiesIDs(
     config: BoosterConfig,
     limit: number,

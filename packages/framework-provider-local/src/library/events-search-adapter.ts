@@ -5,6 +5,9 @@ import {
   EventSearchResponse,
   PaginatedEntitiesIdsResult,
   PaginatedEntityIdResult,
+  PaginatedEventSearchResponse,
+  UUID,
+  Logger,
 } from '@boostercloud/framework-types'
 import { getLogger, unique } from '@boostercloud/framework-common-helpers'
 import { EventRegistry } from '..'
@@ -16,21 +19,20 @@ const DEFAULT_KIND_FILTER = { kind: 'event' }
 export async function searchEvents(
   eventRegistry: EventRegistry,
   config: BoosterConfig,
-  parameters: EventSearchParameters
-): Promise<Array<EventSearchResponse>> {
+  parameters: EventSearchParameters,
+  paginated = false
+): Promise<Array<EventSearchResponse> | PaginatedEventSearchResponse> {
   const logger = getLogger(config, 'events-searcher-adapter#searchEvents')
   logger.debug('Initiating an events search. Filters: ', parameters)
   const timeFilterQuery = buildFiltersForByTime(parameters.from, parameters.to)
   const eventFilterQuery = buildFiltersForByFilters(parameters)
   const filterQuery = { ...eventFilterQuery, ...timeFilterQuery, ...DEFAULT_KIND_FILTER }
-  const result = (await eventRegistry.query(
-    filterQuery,
-    DEFAULT_CREATED_AT_SORT_ORDER,
-    parameters.limit
-  )) as Array<EventEnvelope>
-  const eventsSearchResponses = resultToEventSearchResponse(result)
-  logger.debug('Events search result: ', eventsSearchResponses)
-  return eventsSearchResponses
+  const limit = parameters.limit
+
+  if (paginated) {
+    return paginatedSearchEvents(parameters, eventRegistry, filterQuery, limit, logger)
+  }
+  return listSearchEvents(eventRegistry, filterQuery, limit, logger)
 }
 
 export async function searchEntitiesIds(
@@ -48,7 +50,7 @@ export async function searchEntitiesIds(
   )
   const filterQuery = { ...DEFAULT_KIND_FILTER, entityTypeName: entityTypeName }
 
-  const result = (await eventRegistry.query(filterQuery, DEFAULT_CREATED_AT_SORT_ORDER, undefined, {
+  const result = (await eventRegistry.query(filterQuery, DEFAULT_CREATED_AT_SORT_ORDER, undefined, undefined, {
     entityID: 1,
   })) as Array<PaginatedEntityIdResult>
 
@@ -64,4 +66,42 @@ export async function searchEntitiesIds(
     count: paginatedResult?.length ?? 0,
     cursor: { id: ((limit ? limit : 1) + skipId).toString() },
   } as PaginatedEntitiesIdsResult
+}
+
+async function listSearchEvents(
+  eventRegistry: EventRegistry,
+  filterQuery: { createdAt?: unknown; kind: string; typeName?: string; entityTypeName?: string; entityID?: UUID },
+  limit: number | undefined,
+  logger: Logger
+): Promise<Array<EventSearchResponse>> {
+  const events = (await eventRegistry.query(filterQuery, DEFAULT_CREATED_AT_SORT_ORDER, limit)) as Array<EventEnvelope>
+  const eventsSearchResponses = resultToEventSearchResponse(events)
+
+  logger.debug('Events list search result: ', eventsSearchResponses)
+  return eventsSearchResponses
+}
+
+async function paginatedSearchEvents(
+  parameters: EventSearchParameters,
+  eventRegistry: EventRegistry,
+  filterQuery: { createdAt?: unknown; kind: string; typeName?: string; entityTypeName?: string; entityID?: UUID },
+  limit: number | undefined,
+  logger: Logger
+): Promise<PaginatedEventSearchResponse> {
+  const skipId = parameters.afterCursor?.id ? parseInt(parameters.afterCursor?.id) : 0
+  const events = (await eventRegistry.query(
+    filterQuery,
+    DEFAULT_CREATED_AT_SORT_ORDER,
+    limit,
+    skipId
+  )) as Array<EventEnvelope>
+  const eventsSearchResponses = resultToEventSearchResponse(events)
+
+  const paginatedResult = {
+    items: eventsSearchResponses,
+    count: eventsSearchResponses?.length ?? 0,
+    cursor: { id: ((limit ? limit : 1) + skipId).toString() },
+  }
+  logger.debug('Events paginated search result: ', paginatedResult)
+  return paginatedResult
 }

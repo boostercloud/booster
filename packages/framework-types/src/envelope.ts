@@ -46,6 +46,7 @@ export type EventSearchParameters = EventParametersFilterByEntity | EventParamet
 
 export interface EventLimitParameter {
   limit?: number
+  afterCursor?: Record<string, string>
 }
 
 export interface EventTimeParameterFilter extends EventLimitParameter {
@@ -70,6 +71,12 @@ export interface EventSearchResponse {
   user?: UserEnvelope
   createdAt: string
   value: EventInterface
+}
+
+export interface PaginatedEventSearchResponse {
+  items: Array<EventSearchResponse>
+  count?: number
+  cursor?: Record<string, string>
 }
 
 export interface ReadModelEnvelope {

@@ -2,7 +2,10 @@ import {
   BoosterConfig,
   EventSearchParameters,
   EventSearchResponse,
+  FilterFor,
+  Logger,
   PaginatedEntitiesIdsResult,
+  PaginatedEventSearchResponse,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 import { CosmosClient } from '@azure/cosmos'
@@ -12,8 +15,9 @@ import { buildFiltersForByFilters, buildFiltersForByTime, resultToEventSearchRes
 export async function searchEvents(
   cosmosDb: CosmosClient,
   config: BoosterConfig,
-  parameters: EventSearchParameters
-): Promise<Array<EventSearchResponse>> {
+  parameters: EventSearchParameters,
+  paginated = false
+): Promise<Array<EventSearchResponse> | PaginatedEventSearchResponse> {
   const logger = getLogger(config, 'events-searcher-adapter#searchEvents')
   logger.debug('Initiating an events search. Filters: ', parameters)
 
@@ -21,12 +25,11 @@ export async function searchEvents(
   const timeFilterQuery = buildFiltersForByTime(parameters.from, parameters.to)
   const eventFilterQuery = buildFiltersForByFilters(parameters)
   const filterQuery = { ...eventFilterQuery, ...timeFilterQuery, kind: { eq: 'event' } }
-  const result = (await search(cosmosDb, config, eventStore, filterQuery, parameters.limit, undefined, undefined, {
-    createdAt: 'DESC',
-  })) as any[]
-  const eventEnvelopes = resultToEventSearchResponse(result)
-  logger.debug('Events search result: ', eventEnvelopes)
-  return eventEnvelopes
+
+  if (paginated) {
+    return paginatedSearchEvents(cosmosDb, config, eventStore, filterQuery, parameters, logger)
+  }
+  return listSearchEvents(cosmosDb, config, eventStore, filterQuery, parameters, logger)
 }
 
 export async function searchEntitiesIds(
@@ -57,5 +60,43 @@ export async function searchEntitiesIds(
     'DISTINCT c.entityID'
   )) as PaginatedEntitiesIdsResult
   logger.debug('Unique events search result', result)
+  return result
+}
+
+async function listSearchEvents(
+  cosmosDb: CosmosClient,
+  config: BoosterConfig,
+  eventStore: string,
+  filterQuery: FilterFor<unknown>,
+  parameters: EventSearchParameters,
+  logger: Logger
+): Promise<Array<EventSearchResponse>> {
+  const events = (await search(cosmosDb, config, eventStore, filterQuery, parameters.limit, undefined, undefined, {
+    createdAt: 'DESC',
+  })) as any[]
+  const eventEnvelopes = resultToEventSearchResponse(events)
+  logger.debug('Events list search result: ', eventEnvelopes)
+  return eventEnvelopes
+}
+
+async function paginatedSearchEvents(
+  cosmosDb: CosmosClient,
+  config: BoosterConfig,
+  eventStore: string,
+  filterQuery: FilterFor<unknown>,
+  parameters: EventSearchParameters,
+  logger: Logger
+): Promise<PaginatedEventSearchResponse> {
+  const limit = parameters.limit
+  const afterCursor = parameters.afterCursor
+  const paginatedEvents = (await search(cosmosDb, config, eventStore, filterQuery, limit, afterCursor, true, {
+    createdAt: 'DESC',
+  })) as PaginatedEventSearchResponse
+
+  const result = {
+    ...paginatedEvents,
+    items: resultToEventSearchResponse(paginatedEvents.items),
+  }
+  logger.debug('Events paginated search result: ', result)
   return result
 }
