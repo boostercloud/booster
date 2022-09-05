@@ -6,8 +6,9 @@ import {
   EventSearchParameters,
   EventSearchResponse,
   FilterFor,
-  PaginatedEntitiesIdsResult,
   FinderByKeyFunction,
+  PaginatedEntitiesIdsResult,
+  PaginatedEventSearchResponse,
   ReadModelInterface,
   ReadOnlyNonEmptyArray,
   Searcher,
@@ -125,9 +126,37 @@ export class Booster {
     return new Searcher(readModelClass, searchFunction, finderByIdFunction)
   }
 
+  public static async paginatedEvents(request: EventSearchParameters): Promise<PaginatedEventSearchResponse> {
+    return (await this.findEvents(request, true)) as PaginatedEventSearchResponse
+  }
+
   public static async events(request: EventSearchParameters): Promise<Array<EventSearchResponse>> {
-    const events: Array<EventSearchResponse> = await this.config.provider.events.search(this.config, request)
-    return events.map((event) => {
+    return (await this.findEvents(request, false)) as Array<EventSearchResponse>
+  }
+
+  private static async findEvents(
+    request: EventSearchParameters,
+    paginated = false
+  ): Promise<Array<EventSearchResponse> | PaginatedEventSearchResponse> {
+    const events: Array<EventSearchResponse> | PaginatedEventSearchResponse = await this.config.provider.events.search(
+      this.config,
+      request,
+      paginated
+    )
+    if (paginated) {
+      const paginatedEvents = events as PaginatedEventSearchResponse
+      const instances = paginatedEvents.items.map((event) => {
+        const eventMetadata = this.config.events[event.type]
+        event.value = createInstance(eventMetadata.class, event.value)
+        return event
+      })
+      return {
+        ...events,
+        items: instances,
+      }
+    }
+    const eventsResponse = events as Array<EventSearchResponse>
+    return eventsResponse.map((event) => {
       const eventMetadata = this.config.events[event.type]
       event.value = createInstance(eventMetadata.class, event.value)
       return event

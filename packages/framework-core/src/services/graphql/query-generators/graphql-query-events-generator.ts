@@ -35,6 +35,7 @@ export class GraphqlQueryEventsGenerator {
           limit: { type: GraphQLInt },
         },
         resolve: this.eventsResolver,
+        deprecationReason: 'Method is deprecated. Use Paginated* methods',
       },
       eventsByType: {
         type: eventQueryResponse,
@@ -47,6 +48,7 @@ export class GraphqlQueryEventsGenerator {
           limit: { type: GraphQLInt },
         },
         resolve: this.eventsResolver,
+        deprecationReason: 'Method is deprecated. Use Paginated* methods',
       },
     }
   }

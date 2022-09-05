@@ -9,6 +9,7 @@ import {
   EventSearchResponse,
   EventTimeParameterFilter,
   PaginatedEntitiesIdsResult,
+  PaginatedEventSearchResponse,
   UUID,
 } from '@boostercloud/framework-types'
 import { applicationUnderTest } from './setup'
@@ -453,6 +454,95 @@ describe('Events end-to-end tests', () => {
         })
       })
     })
+
+    describe('the result of the paginated queries involving many events', () => {
+      let mockCartId: string
+      const numberOfProvisionedEvents = 30
+
+      beforeEach(async () => {
+        const mutationPromises: Array<Promise<unknown>> = []
+        mockCartId = random.uuid()
+        for (let i = 0; i < numberOfProvisionedEvents; i++) {
+          mutationPromises.push(
+            anonymousClient.mutate({
+              variables: {
+                cartId: mockCartId,
+                productId: random.uuid(),
+                quantity: 1,
+              },
+              mutation: gql`
+                mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
+                  ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+                }
+              `,
+            })
+          )
+        }
+        await Promise.all(mutationPromises)
+      })
+
+      context('when doing a paginated query that would return many (30) events', () => {
+        it('returns the expected result', async () => {
+          console.log(mockCartId)
+          const result = await waitForIt(
+            async () => {
+              return await anonymousClient.mutate({
+                variables: {
+                  entity: 'Cart',
+                  entityID: mockCartId,
+                },
+                mutation: gql`
+                  mutation PaginatedEvent($entity: String!, $entityID: String!) {
+                    PaginatedEvents(input: { entity: $entity, entityID: $entityID })
+                  }
+                `,
+              })
+            },
+            (result) => {
+              const paginatedEvents = result.data['PaginatedEvents']
+              const itemsSize = paginatedEvents?.flatMap(
+                (paginatedEvent: { items: any }) => paginatedEvent.items
+              )?.length
+              return (
+                itemsSize === numberOfProvisionedEvents ?? `expected ${numberOfProvisionedEvents}, got ${itemsSize}`
+              )
+            }
+          )
+          const paginatedEvents = result.data['PaginatedEvents'] as Array<PaginatedEventSearchResponse>
+
+          if (isAzureOrLocal()) {
+            expect(paginatedEvents.length).to.be.eq(4)
+            expectPaginatedEvents(paginatedEvents, mockCartId, 0, 10, 10, '10')
+            expectPaginatedEvents(paginatedEvents, mockCartId, 1, 10, 10, '20')
+            expectPaginatedEvents(paginatedEvents, mockCartId, 2, 10, 10, '30')
+            expectPaginatedEvents(paginatedEvents, mockCartId, 3, 0, 0, '40')
+          } else {
+            expect(paginatedEvents.length).to.be.eq(3)
+            expectPaginatedEvents(
+              paginatedEvents,
+              mockCartId,
+              0,
+              10,
+              10,
+              `Cart-${paginatedEvents[0].items[9].entityID}-event`
+            )
+            expectPaginatedEvents(
+              paginatedEvents,
+              mockCartId,
+              1,
+              10,
+              10,
+              `Cart-${paginatedEvents[1].items[9].entityID}-event`
+            )
+            expectPaginatedEvents(paginatedEvents, mockCartId, 2, 10, 10)
+          }
+
+          const events = paginatedEvents?.flatMap((paginatedEvent) => paginatedEvent.items)
+          checkOrder(events)
+        })
+      })
+    })
+
     describe('the result of the queries involving many events', () => {
       let mockCartId: string
       const numberOfProvisionedEvents = 150
@@ -834,14 +924,18 @@ function queryByEntity(
   })
 }
 
-function checkOrderAndStructureOfEvents(events: Array<EventSearchResponse>): void {
-  // First check if they are in the right order (from more recent to older)
+function checkOrder(events: Array<EventSearchResponse>): void {
   const eventsSorted = [...events].sort((a, b) => {
     if (a.createdAt > b.createdAt) return -1
     if (a.createdAt < b.createdAt) return 1
     return 0
   })
   expect(eventsSorted).to.be.deep.equal(events)
+}
+
+function checkOrderAndStructureOfEvents(events: Array<EventSearchResponse>): void {
+  // First check if they are in the right order (from more recent to older)
+  checkOrder(events)
   // Now check if the structure and some of their fields are correct
   for (const event of events) {
     expect(event).to.have.keys('__typename', 'createdAt', 'entity', 'entityID', 'requestID', 'type', 'user', 'value')
@@ -853,5 +947,33 @@ function checkOrderAndStructureOfEvents(events: Array<EventSearchResponse>): voi
     expect(event.entityID).not.to.be.undefined
     const value: Record<string, string> = event.value as any
     expect(value.cartId).not.to.be.undefined
+  }
+}
+
+function isAzureOrLocal(): boolean {
+  return process.env.TESTED_PROVIDER === 'AZURE' || process.env.TESTED_PROVIDER === 'LOCAL'
+}
+
+function expectPaginatedEvents(
+  paginatedEvents: Array<PaginatedEventSearchResponse>,
+  mockCartId: string,
+  id: number,
+  itemsLength: number,
+  count: number,
+  cursorId?: string
+): void {
+  expect(paginatedEvents[id].items.length, `id ${id}`).to.be.eq(itemsLength)
+  paginatedEvents[id].items.forEach((item) => {
+    expect(item.entityID, `id ${id}`).to.be.eq(mockCartId)
+  })
+  expect(paginatedEvents[id].count, `id ${id}`).to.be.eq(count)
+  if (isAzureOrLocal()) {
+    expect(paginatedEvents[id].cursor?.id, `id ${id}`).to.be.eq(cursorId)
+  } else {
+    if (cursorId) {
+      expect(paginatedEvents[id].cursor?.entityTypeName_entityID_kind, `id ${id}`).to.be.eq(cursorId)
+    } else {
+      expect(paginatedEvents[id].cursor, `id ${id}`).to.be.undefined
+    }
   }
 }

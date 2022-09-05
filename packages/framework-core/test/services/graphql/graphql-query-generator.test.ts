@@ -37,6 +37,7 @@ describe('GraphQLQueryGenerator', () => {
       let mockByIdResolverBuilder: SinonStub
       let mockFilterResolverBuilder: SinonStub
       let mockEventsResolver: SinonStub
+      let mockPaginatedEventsResolver: SinonStub
 
       let getGraphQLTypeForStub: SinonStub
 
@@ -54,6 +55,7 @@ describe('GraphQLQueryGenerator', () => {
         mockByIdResolverBuilder = stub()
         mockFilterResolverBuilder = stub()
         mockEventsResolver = stub()
+        mockPaginatedEventsResolver = stub()
 
         getGraphQLTypeForStub = stub().returns(mockGraphQLType)
         replace(mockTypeInformer, 'getOrCreateGraphQLType', getGraphQLTypeForStub as any)
@@ -84,7 +86,8 @@ describe('GraphQLQueryGenerator', () => {
               mockTypeInformer as any,
               mockByIdResolverBuilder,
               mockFilterResolverBuilder,
-              mockEventsResolver
+              mockEventsResolver,
+              mockPaginatedEventsResolver
             )
 
             getClassMetadataStub = sinon
@@ -188,7 +191,8 @@ describe('GraphQLQueryGenerator', () => {
                   mockTypeInformer as any,
                   mockByIdResolverBuilder,
                   mockFilterResolverBuilder,
-                  mockEventsResolver
+                  mockEventsResolver,
+                  mockPaginatedEventsResolver
                 )
               })
 
@@ -284,7 +288,8 @@ describe('GraphQLQueryGenerator', () => {
                     mockTypeInformer as any,
                     mockByIdResolverBuilder,
                     mockFilterResolverBuilder,
-                    mockEventsResolver
+                    mockEventsResolver,
+                    mockPaginatedEventsResolver
                   )
                   const result = graphQLQueryGenerator.generate()
 
@@ -370,7 +375,8 @@ describe('GraphQLQueryGenerator', () => {
                     mockTypeInformer as any,
                     mockByIdResolverBuilder,
                     mockFilterResolverBuilder,
-                    mockEventsResolver
+                    mockEventsResolver,
+                    mockPaginatedEventsResolver
                   )
                   const result = graphQLQueryGenerator.generate()
 
@@ -473,7 +479,8 @@ describe('GraphQLQueryGenerator', () => {
             mockTypeInformer as any,
             mockByIdResolverBuilder,
             mockFilterResolverBuilder,
-            mockEventsResolver
+            mockEventsResolver,
+            mockPaginatedEventsResolver
           )
         })
 
@@ -481,7 +488,15 @@ describe('GraphQLQueryGenerator', () => {
           const result = graphQLQueryGenerator.generate().toConfig()
           expect(result.name).to.be.equal('Query')
           expect(new Set(Object.keys(result.fields))).to.be.deep.equal(
-            new Set(['Boolean', 'Booleans', 'ListBooleans', 'eventsByEntity', 'eventsByType'])
+            new Set([
+              'Boolean',
+              'Booleans',
+              'ListBooleans',
+              'eventsByEntity',
+              'eventsByType',
+              'paginatedEventsByEntity',
+              'paginatedEventsByType',
+            ])
           )
 
           const eventsByEntityField = result.fields['eventsByEntity']
@@ -520,7 +535,8 @@ describe('GraphQLQueryGenerator', () => {
             mockTypeInformer as any,
             mockByIdResolverBuilder,
             mockFilterResolverBuilder,
-            mockEventsResolver
+            mockEventsResolver,
+            mockPaginatedEventsResolver
           )
         })
 
@@ -536,8 +552,13 @@ describe('GraphQLQueryGenerator', () => {
           expect(result.name).to.be.equal('Query')
 
           const config = result.toConfig()
-          expect(Object.keys(config.fields).length).to.eq(2)
-          expect(config.fields).to.include.keys('eventsByEntity', 'eventsByType')
+          expect(Object.keys(config.fields).length).to.eq(4)
+          expect(config.fields).to.include.keys(
+            'eventsByEntity',
+            'eventsByType',
+            'paginatedEventsByEntity',
+            'paginatedEventsByType'
+          )
         })
       })
     })

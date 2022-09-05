@@ -4,6 +4,7 @@ import {
   FilterFor,
   InvalidParameterError,
   Operation,
+  PaginatedEventSearchResponse,
   ReadModelListResult,
   SortFor,
 } from '@boostercloud/framework-types'
@@ -19,7 +20,7 @@ export async function search<TResult>(
   paginatedVersion = false,
   order?: SortFor<unknown>,
   projections = '*'
-): Promise<Array<TResult> | ReadModelListResult<TResult>> {
+): Promise<Array<TResult> | ReadModelListResult<TResult> | PaginatedEventSearchResponse> {
   const logger = getLogger(config, 'query-helper#search')
   const filterExpression = buildFilterExpression(filters)
   const queryDefinition = `SELECT ${projections} FROM c ${
