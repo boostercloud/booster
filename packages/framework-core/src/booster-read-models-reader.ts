@@ -13,6 +13,7 @@ import {
 import { getLogger } from '@boostercloud/framework-common-helpers'
 import { Booster } from './booster'
 import { applyReadModelRequestBeforeFunctions } from './services/filter-helpers'
+import { ReadModelSchemaMigrator } from './read-model-schema-migrator'
 
 export class BoosterReadModelsReader {
   public constructor(readonly config: BoosterConfig) {}
@@ -33,7 +34,16 @@ export class BoosterReadModelsReader {
     if (!key) {
       throw 'Tried to run a findById operation without providing a key. An ID is required to perform this operation.'
     }
-    return Booster.readModel(readModelMetadata.class).findById(key.id, key.sequenceKey)
+    const currentReadModel = await Booster.readModel(readModelMetadata.class).findById(key.id, key.sequenceKey)
+    if (currentReadModel) {
+      const readModelName = readModelMetadata.class.name
+      const readModelSchemaMigrator = new ReadModelSchemaMigrator(this.config)
+      if (Array.isArray(currentReadModel)) {
+        return [await readModelSchemaMigrator.migrate(<ReadModelInterface>currentReadModel[0], readModelName)]
+      }
+      return readModelSchemaMigrator.migrate(<ReadModelInterface>currentReadModel, readModelName)
+    }
+    return currentReadModel
   }
 
   public async search(
@@ -48,13 +58,23 @@ export class BoosterReadModelsReader {
       readModelRequest.currentUser
     )
 
-    return Booster.readModel(readModelMetadata.class)
+    const readModelName = readModelMetadata.class.name
+    const readModels = await Booster.readModel(readModelMetadata.class)
       .filter(readModelTransformedRequest.filters)
       .sortBy(readModelTransformedRequest.sortBy)
       .limit(readModelTransformedRequest.limit)
       .afterCursor(readModelTransformedRequest.afterCursor)
       .paginatedVersion(readModelTransformedRequest.paginatedVersion)
       .search()
+
+    const readModelSchemaMigrator = new ReadModelSchemaMigrator(this.config)
+    if (Array.isArray(readModels)) {
+      return Promise.all(readModels.map((readModel) => readModelSchemaMigrator.migrate(readModel, readModelName)))
+    }
+    readModels.items = await Promise.all(
+      readModels.items.map((readModel) => readModelSchemaMigrator.migrate(readModel, readModelName))
+    )
+    return readModels
   }
 
   public async subscribe(
