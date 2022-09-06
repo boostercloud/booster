@@ -9,9 +9,7 @@ describe('scheduler', () => {
   let mockConfig: any
 
   const userProject = {
-    boosterTriggerScheduledCommand: () => {
-      console.log('triggering scheduled command...')
-    },
+    boosterTriggerScheduledCommand: () => {}
   }
 
   describe('configureScheduler', () => {
@@ -23,7 +21,7 @@ describe('scheduler', () => {
       restore()
     })
 
-    it('should schedule all commands with the corresponding crons', async () => {
+    it('should only schedule commands where `scheduledOn` exists and is not undefined or null or empty', () => {
       mockConfig = {
         scheduledCommandHandlers: {
           cmd1: {
@@ -48,6 +46,21 @@ describe('scheduler', () => {
               year: '*',
             },
           },
+          cmdWithoutScheduledOn: {
+            class: fake(),
+          },
+          cmdWithEmptyScheduledOn: {
+            class: fake(),
+            scheduledOn: {},
+          },
+          cmdWithUndefinedScheduledOn: {
+            class: fake(),
+            scheduledOn: undefined,
+          },
+          cmdWithNullScheduledOn: {
+            class: fake(),
+            scheduledOn: null,
+          }
         },
       }
 
@@ -55,9 +68,14 @@ describe('scheduler', () => {
 
       expect(scheduler.scheduleJob).to.have.been.calledWithMatch('cmd1', '5 4 * * *')
       expect(scheduler.scheduleJob).to.have.been.calledWithMatch('cmd2', '* 4 3 * *')
+      
+      expect(scheduler.scheduleJob).to.not.have.been.calledWithMatch('cmdWithEmptyScheduledOn')
+      expect(scheduler.scheduleJob).to.not.have.been.calledWithMatch('cmdWithoutScheduledOn')
+      expect(scheduler.scheduleJob).to.not.have.been.calledWithMatch('cmdWithUndefinedScheduledOn')
+      expect(scheduler.scheduleJob).to.not.have.been.calledWithMatch('cmdWithNullScheduledOn')
     })
 
-    it('should not schedule anything when there are no commands', async () => {
+    it('should not schedule anything when there are no commands', () => {
       mockConfig = {
         scheduledCommandHandlers: {},
       }
