@@ -1,9 +1,10 @@
-import { ReadModelInterface, SequenceKey, UUID } from './concepts'
+import { EventInterface, ReadModelInterface, SequenceKey, UUID } from './concepts'
 import { BoosterConfig } from './config'
 import {
   ConnectionDataEnvelope,
   EventEnvelope,
   EventSearchParameters,
+  EventSearchRequestArgs,
   EventSearchResponse,
   GraphQLRequestEnvelope,
   GraphQLRequestEnvelopeError,
@@ -42,6 +43,10 @@ export interface ProviderEventsLibrary {
     parameters: EventSearchParameters,
     paginated: boolean
   ): Promise<Array<EventSearchResponse> | PaginatedEventSearchResponse>
+  filteredSearch<TEvent extends EventInterface>(
+    config: BoosterConfig,
+    parameters: EventSearchRequestArgs<TEvent>
+  ): Promise<PaginatedEventSearchResponse>
   searchEntitiesIDs(
     config: BoosterConfig,
     limit: number,

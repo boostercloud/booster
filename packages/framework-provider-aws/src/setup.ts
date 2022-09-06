@@ -14,7 +14,7 @@ import {
   readEntityLatestSnapshot,
   storeEvents,
 } from './library/events-adapter'
-import { searchEntitiesIds, searchEvents } from './library/events-searcher-adapter'
+import { filteredSearchEvents, searchEntitiesIds, searchEvents } from './library/events-searcher-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import {
   deleteReadModel,
@@ -61,6 +61,7 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
       forEntitySince: readEntityEventsSince.bind(null, dynamoDB),
       latestEntitySnapshot: readEntityLatestSnapshot.bind(null, dynamoDB),
       search: searchEvents.bind(null, dynamoDB),
+      filteredSearch: filteredSearchEvents.bind(null, dynamoDB),
       store: storeEvents.bind(null, dynamoDB),
       searchEntitiesIDs: searchEntitiesIds.bind(null, dynamoDB),
     },

@@ -456,33 +456,11 @@ describe('read-models-adapter', () => {
     describe('Sort fields', () => {
       it('query should call read model registry store with sort fields, limits and skip', async () => {
         const mockReadModel = createMockReadModelEnvelope()
-        await searchMock(
-          mockReadModelRegistry,
-          mockConfig,
-          mockReadModel,
-          {},
-          [
-            {
-              field: 'ID',
-              order: 'DESC',
-            },
-            {
-              field: 'anotherField',
-              order: 'ASC',
-            },
-          ],
-          3,
-          { id: '5' }
-        )
+        const sortBy = { id: 'DESC', anotherField: 'ASC' }
+        await searchMock(mockReadModelRegistry, mockConfig, mockReadModel, {}, sortBy, 3, { id: '5' })
         expect(queryStub).to.have.been.calledWithExactly(
           { typeName: mockReadModel.typeName },
-          [
-            { field: 'ID', order: 'DESC' },
-            {
-              field: 'anotherField',
-              order: 'ASC',
-            },
-          ],
+          { 'value.id': -1, 'value.anotherField': 1 },
           5,
           3
         )

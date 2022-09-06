@@ -3,7 +3,9 @@ import {
   BoosterConfig,
   Class,
   EntityInterface,
+  EventInterface,
   EventSearchParameters,
+  EventSearchRequestArgs,
   EventSearchResponse,
   FilterFor,
   FinderByKeyFunction,
@@ -161,6 +163,12 @@ export class Booster {
       event.value = createInstance(eventMetadata.class, event.value)
       return event
     })
+  }
+
+  public static async filteredEvents<TEvent extends EventInterface>(
+    request: EventSearchRequestArgs<TEvent>
+  ): Promise<PaginatedEventSearchResponse> {
+    return this.config.provider.events.filteredSearch(this.config, request)
   }
 
   public static async entitiesIDs(

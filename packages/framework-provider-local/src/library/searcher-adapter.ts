@@ -1,4 +1,12 @@
-import { FilterFor } from '@boostercloud/framework-types'
+import { FilterFor, SortFor } from '@boostercloud/framework-types'
+
+export function queryRecordForWithoutValues(filters: FilterFor<unknown>): Record<string, QueryOperation<QueryValue>> {
+  return queryRecordFor(filters, '', undefined, false)
+}
+
+export function toLocalSortForWithoutValues(sortBy?: SortFor<unknown>): undefined | LocalSortedFor {
+  return toLocalSortFor(sortBy, '', undefined, false)
+}
 
 /**
  * Creates a query record out of the read mode name and
@@ -6,29 +14,31 @@ import { FilterFor } from '@boostercloud/framework-types'
  * method of the read model registry.
  */
 export function queryRecordFor(
-  filters: FilterFor<any>,
+  filters: FilterFor<unknown>,
   nested?: string,
-  queryFromFilters: Record<string, object> = {}
+  queryFromFilters: Record<string, object> = {},
+  addValues = true
 ): Record<string, QueryOperation<QueryValue>> {
+  const valuePrefix = addValues ? 'value.' : ''
   if (Object.keys(filters).length != 0) {
     for (const key in filters) {
       const propName = nested ? `${nested}.${key}` : key
-      const filter = filters[key] as FilterFor<any>
+      const filter = (filters as FilterFor<any>)[key] as FilterFor<any>
       switch (key) {
         case 'not':
-          queryFromFilters[`$${propName}`] = queryRecordFor(filter)
+          queryFromFilters[`$${propName}`] = queryRecordFor(filter, '', undefined, addValues)
           break
         case 'or':
         case 'and':
           queryFromFilters[`$${propName}`] = (filters[key] as Array<FilterFor<any>>).map((filter) =>
-            queryRecordFor(filter)
+            queryRecordFor(filter, '', undefined, addValues)
           )
           break
         default:
           if (!Object.keys(queryOperatorTable).includes(Object.keys(filter)[0])) {
-            queryRecordFor(filter, propName, queryFromFilters)
+            queryRecordFor(filter, propName, queryFromFilters, addValues)
           } else {
-            queryFromFilters[`value.${propName}`] = filterToQuery(filter) as FilterFor<QueryValue>
+            queryFromFilters[`${valuePrefix}${propName}`] = filterToQuery(filter) as FilterFor<QueryValue>
           }
           break
       }
@@ -111,4 +121,27 @@ function buildRegexQuery(operation: string, values: Array<QueryValue>): QueryOpe
     return { $regex: new RegExp(`^${matcher}`) }
   }
   return { $regex: new RegExp(matcher) }
+}
+
+export interface LocalSortedFor {
+  [key: string]: number
+}
+
+export function toLocalSortFor(
+  sortBy?: SortFor<unknown>,
+  parentKey = '',
+  sortedList: LocalSortedFor = {},
+  addValues = true
+): undefined | LocalSortedFor {
+  if (!sortBy || Object.keys(sortBy).length === 0) return
+  const elements = sortBy!
+  const valuePrefix = addValues ? 'value.' : ''
+  Object.entries(elements).forEach(([key, value]) => {
+    if (typeof value === 'string') {
+      sortedList[`${valuePrefix}${parentKey}${key}`] = value === 'ASC' ? 1 : -1
+    } else {
+      toLocalSortFor(value as SortFor<unknown>, `${parentKey}${key}.`, sortedList, addValues)
+    }
+  })
+  return sortedList
 }

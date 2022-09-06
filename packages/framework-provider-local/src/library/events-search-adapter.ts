@@ -1,17 +1,20 @@
 import {
   BoosterConfig,
   EventEnvelope,
+  EventInterface,
   EventSearchParameters,
+  EventSearchRequestArgs,
   EventSearchResponse,
+  Logger,
   PaginatedEntitiesIdsResult,
   PaginatedEntityIdResult,
   PaginatedEventSearchResponse,
   UUID,
-  Logger,
 } from '@boostercloud/framework-types'
 import { getLogger, unique } from '@boostercloud/framework-common-helpers'
 import { EventRegistry } from '..'
 import { buildFiltersForByFilters, buildFiltersForByTime, resultToEventSearchResponse } from './events-searcher-builder'
+import { queryRecordForWithoutValues, toLocalSortForWithoutValues } from './searcher-adapter'
 
 const DEFAULT_CREATED_AT_SORT_ORDER = -1
 const DEFAULT_KIND_FILTER = { kind: 'event' }
@@ -104,4 +107,25 @@ async function paginatedSearchEvents(
   }
   logger.debug('Events paginated search result: ', paginatedResult)
   return paginatedResult
+}
+
+export async function filteredSearchEvents<TEvent extends EventInterface>(
+  eventRegistry: EventRegistry,
+  config: BoosterConfig,
+  parameters: EventSearchRequestArgs<TEvent>
+): Promise<PaginatedEventSearchResponse> {
+  const logger = getLogger(config, 'events-search-adapter#filteredSearchEvents')
+  const queryFor = queryRecordForWithoutValues(parameters.filter)
+  const query = { ...queryFor, kind: 'event' }
+  logger.debug('Got query ', query)
+  const skipId = parameters.afterCursor?.id ? parseInt(parameters.afterCursor?.id) : 0
+  const sortByList = toLocalSortForWithoutValues(parameters.sortBy)
+  const events = await eventRegistry.genericQuery(query, sortByList, parameters.limit, skipId)
+  const eventsSearchResponses = resultToEventSearchResponse(events)
+  logger.debug('Search result: ', eventsSearchResponses)
+  return {
+    items: eventsSearchResponses,
+    count: eventsSearchResponses?.length ?? 0,
+    cursor: { id: ((parameters.limit ? parameters.limit : 1) + skipId).toString() },
+  }
 }

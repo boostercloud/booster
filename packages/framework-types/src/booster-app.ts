@@ -9,6 +9,8 @@ import {
   PaginatedEntitiesIdsResult,
   EventSearchResponse,
   PaginatedEventSearchResponse,
+  EventSearchRequestArgs,
+  EventInterface,
 } from '.'
 
 /**
@@ -24,6 +26,9 @@ export interface BoosterApp {
   readModel<TReadModel extends ReadModelInterface>(readModelClass: Class<TReadModel>): Searcher<TReadModel>
   events(request: EventSearchParameters): Promise<Array<EventSearchResponse>>
   paginatedEvents(request: EventSearchParameters): Promise<PaginatedEventSearchResponse>
+  filteredEvents<TEvent extends EventInterface>(
+    request: EventSearchRequestArgs<TEvent>
+  ): Promise<PaginatedEventSearchResponse>
   entitiesIDs(
     entityTypeName: string,
     limit: number,

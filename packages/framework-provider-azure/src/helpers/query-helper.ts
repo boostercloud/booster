@@ -206,9 +206,9 @@ function toLocalSortFor(
   const elements = sortBy!
   Object.entries(elements).forEach(([key, value]) => {
     if (typeof value === 'string') {
-      sortedList.push(`c.${parentKey}${key} ${value}`)
+      sortedList.push(`c${parentKey}["${key}"] ${value}`)
     } else {
-      toLocalSortFor(value as SortFor<unknown>, `${parentKey}${key}.`, sortedList)
+      toLocalSortFor(value as SortFor<unknown>, `${parentKey}["${key}"]`, sortedList)
     }
   })
   return sortedList

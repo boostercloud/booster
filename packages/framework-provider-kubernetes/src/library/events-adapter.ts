@@ -2,7 +2,9 @@
 import {
   BoosterConfig,
   EventEnvelope,
+  EventInterface,
   EventSearchParameters,
+  EventSearchRequestArgs,
   EventSearchResponse,
   PaginatedEntitiesIdsResult,
   PaginatedEventSearchResponse,
@@ -89,6 +91,14 @@ export const search = (
   _filters: EventSearchParameters
 ): Promise<Array<EventSearchResponse> | PaginatedEventSearchResponse> => {
   throw new Error('eventsAdapter#search: Not implemented yet')
+}
+
+export async function filteredSearch<TEvent extends EventInterface>(
+  _registry: EventRegistry,
+  _config: BoosterConfig,
+  _parameters: EventSearchRequestArgs<TEvent>
+): Promise<PaginatedEventSearchResponse> {
+  throw new Error('eventsAdapter#filteredSearch: Not implemented yet')
 }
 
 export async function searchEntitiesIds(

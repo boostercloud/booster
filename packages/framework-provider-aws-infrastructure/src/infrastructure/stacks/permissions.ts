@@ -59,7 +59,7 @@ function grantFullAccessToEventStore(store: Table, lambda: Function): void {
   lambda.addToRolePolicy(
     createPolicyStatement(
       [store.tableArn],
-      ['dynamodb:Query*', 'dynamodb:Put*', 'dynamodb:BatchGetItem', 'dynamodb:BatchWriteItem']
+      ['dynamodb:Query*', 'dynamodb:Scan*', 'dynamodb:Put*', 'dynamodb:BatchGetItem', 'dynamodb:BatchWriteItem']
     )
   )
   lambda.addToRolePolicy(

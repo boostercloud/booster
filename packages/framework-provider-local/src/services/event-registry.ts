@@ -2,6 +2,7 @@
 import { EventEnvelope } from '@boostercloud/framework-types'
 import * as DataStore from 'nedb'
 import { eventsDatabase } from '../paths'
+import { LocalSortedFor } from '../library/searcher-adapter'
 
 export class EventRegistry {
   public readonly events: DataStore<EventEnvelope> = new DataStore(eventsDatabase)
@@ -35,6 +36,31 @@ export class EventRegistry {
     })
 
     return await queryPromise
+  }
+
+  public async genericQuery(
+    query: unknown,
+    sortByList?: LocalSortedFor,
+    limit?: number,
+    skip?: number,
+    projections?: unknown
+  ): Promise<Array<EventEnvelope>> {
+    const cursor = this.events.find(query, projections)
+    if (sortByList) {
+      cursor.sort(sortByList)
+    }
+    if (limit) {
+      cursor.limit(Number(limit))
+    }
+    if (skip) {
+      cursor.skip(skip)
+    }
+    return new Promise((resolve, reject) => {
+      cursor.exec((err, docs) => {
+        if (err) reject(err)
+        else resolve(docs)
+      })
+    })
   }
 
   public async queryLatest(query: object): Promise<EventEnvelope | null> {

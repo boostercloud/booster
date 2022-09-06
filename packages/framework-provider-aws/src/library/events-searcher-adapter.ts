@@ -1,9 +1,13 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import {
   BoosterConfig,
   EventEnvelope,
   EventInterface,
   EventSearchParameters,
+  EventSearchRequestArgs,
   EventSearchResponse,
+  FilteredEventEnvelope,
+  FilterFor,
   PaginatedEntitiesIdsResult,
   PaginatedEventSearchResponse,
   UUID,
@@ -14,6 +18,12 @@ import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import { partitionKeyForEvent, partitionKeyForIndexByEntity } from './keys-helper'
 import { inChunksOf } from '../pagination-helpers'
 import { getLogger } from '@boostercloud/framework-common-helpers'
+import {
+  buildExpressionAttributeNames,
+  buildExpressionAttributeValues,
+  buildFilterExpression,
+  paginatedScan,
+} from './query-helper'
 
 export interface PaginatedResult {
   items: Array<EventEnvelope>
@@ -37,6 +47,42 @@ export async function searchEvents(
   }
   logger.debug('Events list search result: ', eventEnvelopes)
   return convertToSearchResult(<Array<EventEnvelope>>eventEnvelopes)
+}
+
+export async function filteredSearchEvents<TEvent extends EventInterface>(
+  dynamoDB: DynamoDB.DocumentClient,
+  config: BoosterConfig,
+  parameters: EventSearchRequestArgs<TEvent>
+): Promise<PaginatedEventSearchResponse> {
+  const logger = getLogger(config, 'events-searcher-adapter#filteredSearchEvents')
+  const { filter, sortBy, limit, afterCursor } = parameters
+  if (sortBy) {
+    logger.info('SortBy not implemented for AWS provider. It will be ignored')
+  }
+  let params: DocumentClient.ScanInput = {
+    TableName: config.resourceNames.eventsStore,
+    ConsistentRead: true,
+    Limit: limit,
+    ExclusiveStartKey: afterCursor,
+  }
+  if (filter && Object.keys(filter).length > 0) {
+    const filterQuery: FilterFor<FilteredEventEnvelope<TEvent>> = { kind: { eq: 'event' }, ...filter }
+    params = {
+      ...params,
+      FilterExpression: buildFilterExpression(filterQuery),
+      ExpressionAttributeNames: buildExpressionAttributeNames(filterQuery),
+      ExpressionAttributeValues: buildExpressionAttributeValues(filterQuery),
+    }
+  }
+  logger.debug('Running search with the following params: \n', params)
+  const result = await paginatedScan(dynamoDB, params)
+  logger.debug('Search result: ', result)
+  const items = convertToSearchResult(result.Items as Array<EventEnvelope>)
+  return {
+    items: items,
+    count: result.Count,
+    cursor: result.LastEvaluatedKey,
+  }
 }
 
 export async function searchEntitiesIds(

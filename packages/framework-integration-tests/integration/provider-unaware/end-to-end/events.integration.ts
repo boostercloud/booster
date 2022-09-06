@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ApolloClient, ApolloQueryResult } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { internet, random } from 'faker'
@@ -456,19 +457,23 @@ describe('Events end-to-end tests', () => {
     })
 
     describe('the result of the paginated queries involving many events', () => {
+      let createdAt: string
       let mockCartId: string
+      let mockQuantity: number
       const numberOfProvisionedEvents = 30
 
       beforeEach(async () => {
         const mutationPromises: Array<Promise<unknown>> = []
         mockCartId = random.uuid()
+        mockQuantity = random.number(9999)
+        createdAt = new Date().toISOString()
         for (let i = 0; i < numberOfProvisionedEvents; i++) {
           mutationPromises.push(
             anonymousClient.mutate({
               variables: {
                 cartId: mockCartId,
                 productId: random.uuid(),
-                quantity: 1,
+                quantity: mockQuantity,
               },
               mutation: gql`
                 mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
@@ -539,6 +544,211 @@ describe('Events end-to-end tests', () => {
 
           const events = paginatedEvents?.flatMap((paginatedEvent) => paginatedEvent.items)
           checkOrder(events)
+        })
+      })
+
+      context('when doing a filtered query that would return many (30) events', () => {
+        it('returns the expected result for entityTypeNameAndId', async () => {
+          console.log(`mockCartId: ${mockCartId}`)
+          const result = await waitForIt(
+            async () => {
+              return await anonymousClient.mutate({
+                variables: {
+                  by: 'entityTypeNameAndId',
+                  entityTypeName: 'Cart',
+                  entityID: mockCartId,
+                },
+                mutation: gql`
+                  mutation CartItemChangedListEvents($by: JSON!, $entityTypeName: String!, $entityID: String!) {
+                    CartItemChangedListEvents(input: { by: $by, entityTypeName: $entityTypeName, entityID: $entityID })
+                  }
+                `,
+              })
+            },
+            (result) => {
+              const paginatedEvents = result.data['CartItemChangedListEvents']
+              const itemsSize = paginatedEvents?.flatMap(
+                (paginatedEvent: { items: any }) => paginatedEvent.items
+              )?.length
+              return (
+                itemsSize === numberOfProvisionedEvents ?? `expected ${numberOfProvisionedEvents}, got ${itemsSize}`
+              )
+            }
+          )
+          const paginatedEvents = result.data['CartItemChangedListEvents'] as Array<PaginatedEventSearchResponse>
+
+          if (isAzureOrLocal()) {
+            expect(paginatedEvents.length).to.be.eq(4)
+            expectPaginatedEvents(paginatedEvents, mockCartId, 0, 10, 10, '10')
+            expectPaginatedEvents(paginatedEvents, mockCartId, 1, 10, 10, '20')
+            expectPaginatedEvents(paginatedEvents, mockCartId, 2, 10, 10, '30')
+            expectPaginatedEvents(paginatedEvents, mockCartId, 3, 0, 0, '40')
+            const events = paginatedEvents?.flatMap((paginatedEvent) => paginatedEvent.items)
+            checkOrderByEntityID(events)
+          } else {
+            expect(paginatedEvents.length).to.be.eq(3)
+            expectPaginatedEvents(
+              paginatedEvents,
+              mockCartId,
+              0,
+              10,
+              10,
+              `Cart-${paginatedEvents[0].items[9].entityID}-event`
+            )
+            expectPaginatedEvents(
+              paginatedEvents,
+              mockCartId,
+              1,
+              10,
+              10,
+              `Cart-${paginatedEvents[1].items[9].entityID}-event`
+            )
+            expectPaginatedEvents(paginatedEvents, mockCartId, 2, 10, 10)
+          }
+        })
+
+        it('returns the expected result for createdAtAndQuantity', async () => {
+          console.log(`mockCartId: ${mockCartId}`)
+          console.log(`mockQuantity: ${mockQuantity}`)
+          const result = await waitForIt(
+            async () => {
+              return await anonymousClient.mutate({
+                variables: {
+                  by: 'createdAtAndQuantity',
+                  createdAt: createdAt,
+                  cartId: mockCartId,
+                  quantity: mockQuantity,
+                },
+                mutation: gql`
+                  mutation CartItemChangedListEvents(
+                    $by: JSON!
+                    $createdAt: String!
+                    $cartId: String!
+                    $quantity: Float!
+                  ) {
+                    CartItemChangedListEvents(
+                      input: { by: $by, createdAt: $createdAt, cartId: $cartId, quantity: $quantity }
+                    )
+                  }
+                `,
+              })
+            },
+            (result) => {
+              const paginatedEvents = result.data['CartItemChangedListEvents']
+              const itemsSize = paginatedEvents?.flatMap(
+                (paginatedEvent: { items: any }) => paginatedEvent.items
+              )?.length
+              return (
+                itemsSize === numberOfProvisionedEvents ?? `expected ${numberOfProvisionedEvents}, got ${itemsSize}`
+              )
+            }
+          )
+          const paginatedEvents = result.data['CartItemChangedListEvents'] as Array<PaginatedEventSearchResponse>
+
+          if (isAzureOrLocal()) {
+            expect(paginatedEvents.length).to.be.eq(4)
+            expectPaginatedEvents(paginatedEvents, mockCartId, 0, 10, 10, '10')
+            expectPaginatedEvents(paginatedEvents, mockCartId, 1, 10, 10, '20')
+            expectPaginatedEvents(paginatedEvents, mockCartId, 2, 10, 10, '30')
+            expectPaginatedEvents(paginatedEvents, mockCartId, 3, 0, 0, '40')
+            const events = paginatedEvents?.flatMap((paginatedEvent) => paginatedEvent.items)
+            checkOrder(events)
+          } else {
+            expect(paginatedEvents.length).to.be.eq(4)
+            expectPaginatedEvents(
+              paginatedEvents,
+              mockCartId,
+              0,
+              10,
+              10,
+              `Cart-${paginatedEvents[0].items[9].entityID}-event`
+            )
+            expectPaginatedEvents(
+              paginatedEvents,
+              mockCartId,
+              1,
+              10,
+              10,
+              `Cart-${paginatedEvents[1].items[9].entityID}-event`
+            )
+            expectPaginatedEvents(
+              paginatedEvents,
+              mockCartId,
+              2,
+              10,
+              10,
+              `Cart-${paginatedEvents[2].items[9].entityID}-event`
+            )
+            expectPaginatedEvents(paginatedEvents, mockCartId, 3, 0, 0, undefined)
+          }
+        })
+
+        it('returns the expected result for cartIdAndQuantity', async () => {
+          console.log(`mockCartId: ${mockCartId}`)
+          console.log(`mockQuantity: ${mockQuantity}`)
+          const result = await waitForIt(
+            async () => {
+              return await anonymousClient.mutate({
+                variables: {
+                  by: 'cartIdAndQuantity',
+                  cartId: mockCartId,
+                  quantity: mockQuantity,
+                },
+                mutation: gql`
+                  mutation CartItemChangedListEvents($by: JSON!, $cartId: String!, $quantity: Float!) {
+                    CartItemChangedListEvents(input: { by: $by, cartId: $cartId, quantity: $quantity })
+                  }
+                `,
+              })
+            },
+            (result) => {
+              const paginatedEvents = result.data['CartItemChangedListEvents']
+              const itemsSize = paginatedEvents?.flatMap(
+                (paginatedEvent: { items: any }) => paginatedEvent.items
+              )?.length
+              return (
+                itemsSize === numberOfProvisionedEvents ?? `expected ${numberOfProvisionedEvents}, got ${itemsSize}`
+              )
+            }
+          )
+          const paginatedEvents = result.data['CartItemChangedListEvents'] as Array<PaginatedEventSearchResponse>
+
+          if (isAzureOrLocal()) {
+            expect(paginatedEvents.length).to.be.eq(4)
+            expectPaginatedEvents(paginatedEvents, mockCartId, 0, 10, 10, '10')
+            expectPaginatedEvents(paginatedEvents, mockCartId, 1, 10, 10, '20')
+            expectPaginatedEvents(paginatedEvents, mockCartId, 2, 10, 10, '30')
+            expectPaginatedEvents(paginatedEvents, mockCartId, 3, 0, 0, '40')
+            const events = paginatedEvents?.flatMap((paginatedEvent) => paginatedEvent.items)
+            checkOrderByProductId(events)
+          } else {
+            expect(paginatedEvents.length).to.be.eq(4)
+            expectPaginatedEvents(
+              paginatedEvents,
+              mockCartId,
+              0,
+              10,
+              10,
+              `Cart-${paginatedEvents[0].items[9].entityID}-event`
+            )
+            expectPaginatedEvents(
+              paginatedEvents,
+              mockCartId,
+              1,
+              10,
+              10,
+              `Cart-${paginatedEvents[1].items[9].entityID}-event`
+            )
+            expectPaginatedEvents(
+              paginatedEvents,
+              mockCartId,
+              2,
+              10,
+              10,
+              `Cart-${paginatedEvents[2].items[9].entityID}-event`
+            )
+            expectPaginatedEvents(paginatedEvents, mockCartId, 3, 0, 0, undefined)
+          }
         })
       })
     })
@@ -928,6 +1138,26 @@ function checkOrder(events: Array<EventSearchResponse>): void {
   const eventsSorted = [...events].sort((a, b) => {
     if (a.createdAt > b.createdAt) return -1
     if (a.createdAt < b.createdAt) return 1
+    return 0
+  })
+  expect(eventsSorted).to.be.deep.equal(events)
+}
+
+function checkOrderByEntityID(events: Array<EventSearchResponse>): void {
+  const eventsSorted = [...events].sort((a, b) => {
+    if (a.entityID > b.entityID) return -1
+    if (a.entityID < b.entityID) return 1
+    return 0
+  })
+  expect(eventsSorted).to.be.deep.equal(events)
+}
+
+function checkOrderByProductId(events: Array<EventSearchResponse>): void {
+  const eventsSorted = [...events].sort((a, b) => {
+    // @ts-ignore
+    if (a.value.productId > b.value.productId) return -1
+    // @ts-ignore
+    if (a.value.productId < b.value.productId) return 1
     return 0
   })
   expect(eventsSorted).to.be.deep.equal(events)

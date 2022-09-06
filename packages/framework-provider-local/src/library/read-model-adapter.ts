@@ -11,7 +11,7 @@ import {
 } from '@boostercloud/framework-types'
 import { ReadModelRegistry } from '../services'
 import { getLogger } from '@boostercloud/framework-common-helpers'
-import { queryRecordFor } from './searcher-adapter'
+import { queryRecordFor, toLocalSortFor } from './searcher-adapter'
 
 export async function rawReadModelEventsToEnvelopes(
   config: BoosterConfig,
@@ -78,7 +78,8 @@ export async function searchReadModel(
   const query = { ...queryFor, typeName: readModelName }
   logger.debug('Got query ', query)
   const skipId = afterCursor?.id ? parseInt(afterCursor?.id) : 0
-  const result = await db.query(query, sortBy, skipId, limit)
+  const sortByList = toLocalSortFor(sortBy)
+  const result = await db.query(query, sortByList, skipId, limit)
   logger.debug('Search result: ', result)
   const items = result?.map((envelope) => envelope.value) ?? []
   if (paginatedVersion) {

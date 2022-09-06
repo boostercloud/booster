@@ -10,6 +10,7 @@ import {
   createMockReadModelEnvelope,
 } from '../helpers/read-model-helper'
 import { random } from 'faker'
+import { toLocalSortFor } from '../../src/library/searcher-adapter'
 
 describe('the read model registry', () => {
   let initialReadModelsCount: number
@@ -109,25 +110,21 @@ describe('the read model registry', () => {
     })
 
     it('should return all results sorted by Age', async () => {
-      const result = await readModelRegistry.query(
-        {},
-        {
-          age: 'DESC',
-        }
-      )
+      const sortByList = toLocalSortFor({
+        age: 'DESC',
+      })
+      const result = await readModelRegistry.query({}, sortByList)
 
       expect(result.length).to.be.equal(initialReadModelsCount + 1)
       assertOrderByAgeDesc(result)
     })
 
     it('should return all results sorted by Age and ID', async () => {
-      const result = await readModelRegistry.query(
-        {},
-        {
-          age: 'DESC',
-          id: 'DESC',
-        }
-      )
+      const sortByList = toLocalSortFor({
+        age: 'DESC',
+        id: 'DESC',
+      })
+      const result = await readModelRegistry.query({}, sortByList)
 
       expect(result.length).to.be.equal(initialReadModelsCount + 1)
       assertOrderByAgeAndIdDesc(result)

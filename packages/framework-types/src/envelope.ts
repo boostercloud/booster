@@ -44,6 +44,24 @@ export interface EventSearchRequest extends Envelope {
 
 export type EventSearchParameters = EventParametersFilterByEntity | EventParametersFilterByType
 
+export interface FilteredEventEnvelope<TEvent extends EventInterface> extends Envelope {
+  kind: string
+  version: number
+  superKind: SuperKindType
+  entityID: UUID
+  entityTypeName: string
+  typeName: string
+  value: TEvent
+  createdAt: string
+}
+
+export interface EventSearchRequestArgs<TEvent extends EventInterface> {
+  filter: FilterFor<FilteredEventEnvelope<TEvent>>
+  sortBy?: SortFor<FilteredEventEnvelope<TEvent>>
+  limit: number
+  afterCursor?: Record<string, string>
+}
+
 export interface EventLimitParameter {
   limit?: number
   afterCursor?: Record<string, string>
