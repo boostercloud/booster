@@ -23,16 +23,26 @@ describe('scheduled-adapter', () => {
   })
 
   describe('rawScheduledInputToEnvelope', () => {
-    ;[{ typeName: '' }, { typeName: undefined }].forEach(function (arg) {
-      it('should throw an error when typeName is empty or undefined', async () => {
-        await expect(rawScheduledInputToEnvelope(mockConfig, arg)).to.eventually.be.rejectedWith(
-          new Error(
-            `typeName is not defined or empty, scheduled command envelope should have the structure {typeName: string }, but you gave ${JSON.stringify(
-              arg
-            )}`
-          ).message
-        )
-      })
+    it('should throw an error when typeName is empty', async () => {
+      const emptyScheduledCommandEnvelope = { typeName: '' }
+      await expect(rawScheduledInputToEnvelope(mockConfig, emptyScheduledCommandEnvelope)).to.eventually.be.rejectedWith(
+        new Error(
+          `typeName is not defined or empty, scheduled command envelope should have the structure {typeName: string }, but you gave ${JSON.stringify(
+            emptyScheduledCommandEnvelope
+          )}`
+        ).message
+      )
+    })
+
+    it('should throw an error when typeName is undefined', async () => {
+      const undefinedScheduledCommandEnvelope = { typeName: undefined }
+      await expect(rawScheduledInputToEnvelope(mockConfig, undefinedScheduledCommandEnvelope)).to.eventually.be.rejectedWith(
+        new Error(
+          `typeName is not defined or empty, scheduled command envelope should have the structure {typeName: string }, but you gave ${JSON.stringify(
+            undefinedScheduledCommandEnvelope
+          )}`
+        ).message
+      )
     })
 
     it('should return a ScheduledCommandEnvelope with the same typeName', async () => {
