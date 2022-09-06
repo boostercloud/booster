@@ -69,9 +69,9 @@ describe('scheduler', () => {
 
       expect(scheduler.scheduleJob).to.have.been.calledWithMatch('cmd1', '5 4 * * *')
       expect(scheduler.scheduleJob).to.have.been.calledWithMatch('cmd2', '* 4 3 * *')
-      expect(scheduler.scheduleJob).to.have.been.calledWithMatch('cmdWithEmptyScheduledOn', {})
+      // expect(scheduler.scheduleJob).to.have.been.calledWithMatch('cmdWithEmptyScheduledOn', {})
 
-      // expect(scheduler.scheduleJob).to.not.have.been.calledWithMatch('cmdWithEmptyScheduledOn')
+      expect(scheduler.scheduleJob).to.not.have.been.calledWithMatch('cmdWithEmptyScheduledOn', {})
       expect(scheduler.scheduleJob).to.not.have.been.calledWithMatch('cmdWithoutScheduledOn')
       expect(scheduler.scheduleJob).to.not.have.been.calledWithMatch('cmdWithUndefinedScheduledOn')
       expect(scheduler.scheduleJob).to.not.have.been.calledWithMatch('cmdWithNullScheduledOn')
@@ -96,7 +96,7 @@ describe('scheduler', () => {
 
       /* Build a custom Arbitrary that generates cron objects representating a valid cron expression.
        *
-       * TODO - this could do with some improvements, especially from a performance standpoint:
+       * TODO - this could do with some improvements, especially from a performance standpoint - the use of filters can potentially slow down test runs:
        *  1. Instead of filtering generated cron expressions according to `isValidCron()`, they should be filtered according to the rules of `cron-parser`, which is used by `node-scheduler`
        *  2. The regexes should be fine-tuned according to the rules of `cron-parser`, to avoid generating garbage strings, e.g. it might not make sense to have "W" or "L" in the regex when `cron-parser` might not accept them.
        *  3. Not sure if each field in a cron expression has a maxLength of 9. The smaller this number, the less garbage strings will be generated.
