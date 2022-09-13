@@ -13,11 +13,15 @@ export interface ContextResponse {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function requestSucceeded(body?: any): Promise<ContextResponse> {
+export async function requestSucceeded(
+  body?: any,
+  headers?: Record<string, number | string | ReadonlyArray<string>>
+): Promise<ContextResponse> {
   return {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Content-Type': 'application/json',
+      ...headers,
     },
     status: 200,
     body: body ? JSON.stringify(body) : '',
