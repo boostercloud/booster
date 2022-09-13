@@ -10,7 +10,7 @@ import { ZipResource } from '../types/zip-resource'
 import * as archiver from 'archiver'
 import * as needle from 'needle'
 import { azureCredentials, createWebSiteManagementClient } from './utils'
-import { User } from 'azure-arm-website/lib/models'
+import { User } from '@azure/arm-appservice'
 
 export class FunctionZip {
   static async deployZip(
@@ -21,7 +21,7 @@ export class FunctionZip {
     const credentials = await FunctionZip.getCredentials(resourceGroupName, functionAppName)
     await FunctionZip.deployFunctionPackage(
       zipResource.path,
-      credentials.publishingUserName,
+      credentials.publishingUserName ?? '',
       credentials.publishingPassword ?? '',
       credentials.name ?? ''
     )
@@ -40,7 +40,11 @@ export class FunctionZip {
   private static async getCredentials(resourceGroupName: string, functionAppName: string): Promise<User> {
     const credentials = await azureCredentials()
     const webSiteManagementClient = await createWebSiteManagementClient(credentials)
-    return await webSiteManagementClient.webApps.listPublishingCredentials(resourceGroupName, functionAppName)
+    const poller = await webSiteManagementClient.webApps.beginListPublishingCredentials(
+      resourceGroupName,
+      functionAppName
+    )
+    return await poller.pollUntilDone()
   }
 
   private static async deployFunctionPackage(

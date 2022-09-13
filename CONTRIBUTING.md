@@ -1,5 +1,8 @@
 # Contributing to Booster
 
+> **DISCLAIMER:** The Booster docs are undergoing an overhaul. Most of what's written here applies, but expect some hiccups in the build process
+> that is described here, as it changed in the last version. New documentation will have this documented properly.
+
 Thanks for taking the time to contribute to Booster. It is an open-source project and it wouldn't be possible without people like you 🙏🎉
 
 This document is a set of guidelines to help you contribute to Booster, which is hosted on the [`boostercloud`](https://github.com/boostercloud) GitHub
@@ -38,7 +41,7 @@ Remember that if something here doesn't make sense, you can also propose a chang
 This project and everyone participating in it are expected to uphold the [Booster's Code of Conduct](https://github.com/boostercloud/booster/blob/main/CODE_OF_CONDUCT.md), based on the Covenant Code of Conduct.
 If you see unacceptable behavior, please communicate so to `hello@booster.cloud`.
 
-## I don't want to read this whole thing, I just have a question!!!
+## I don't want to read this whole thing, I just have a question
 
 Go ahead and ask the community in [Discord](https://discord.com/invite/bDY8MKx) or [create a new issue](https://github.com/boostercloud/booster/issues).
 
@@ -52,9 +55,9 @@ Booster is divided in many different packages. The criteria to split the code in
 - They contain code that is used by at least two of the other packages.
 - They're a vendor-specific specialization of some abstract part of the framework (for instance, all the code that is required by AWS is in separate packages).
 
-The packages are managed using [Lerna](https://lerna.js.org) and [npm](https://npmjs.com), if you run `lerna run compile`, it will run `npm run compile` in all the package folders.
+~~The packages are managed using [Lerna](https://lerna.js.org) and [npm](https://npmjs.com), if you run `rush build`, it will run `npm run build` in all the package folders.~~
 
-The packages are published to `npm` under the prefix `@boostercloud/`, their purpose is as follows:
+The packages are published to `npmjs` under the prefix `@boostercloud/`, their purpose is as follows:
 
 - `cli` - You guessed it! This package is the `boost` command-line tool, it interacts only with the core package in order to load the project configuration. The specific provider packages to interact with the cloud providers are loaded dynamically from the project config.
 - `framework-core` - This one contains all the framework runtime vendor-independent logic. Stuff like the generation of the config or the commands and events handling happens here. The specific provider packages to interact with the cloud providers are loaded dynamically from the project config.
@@ -75,7 +78,7 @@ This is a dependency graph that shows the dependencies among all packages, inclu
 
 Contributing to an open source project is never just a matter of code, you can help us significantly by just using Booster and interacting with our community. Here you'll find some tips on how to do it effectively.
 
-###  Reporting Bugs
+### Reporting Bugs
 
 Before creating a bug report, please search for similar issues to make sure that they're not already reported. If you don't find any, go ahead and create an issue including as many details as possible. Fill out the required template, the information requested helps us to resolve issues faster.
 
@@ -90,7 +93,7 @@ Bugs are tracked as GitHub issues. Explain the problem and include additional de
 - Explain which behavior you expected to see instead and why.
 - If the problem is related to performance or memory, include a CPU profile capture with your report.
 
-###  Suggesting Enhancements
+### Suggesting Enhancements
 
 Enhancement suggestions are tracked as GitHub issues. Make sure you provide the following information:
 
@@ -101,12 +104,12 @@ Enhancement suggestions are tracked as GitHub issues. Make sure you provide the 
 - Explain why this enhancement would be useful to most Booster users and isn't something that can or should be implemented as a community package.
 - List some other libraries or frameworks where this enhancement exists.
 
-###  Improving documentation
+### Improving documentation
 
 [Booster documentation](https://docs.booster.cloud) is treated as a live document that continues improving on a daily basis. If you find something that is missing or can be improved, please contribute, it will be of great help for other developers.
 To contribute you can use the button "Edit on github" at the top of each chapter.
 
-####  Documentation principles and practices
+#### Documentation principles and practices
 
 The ultimate goal of a technical document is to translate the knowledge from the technology creators into the reader's mind so that they learn. The challenging
 part here is the one in which they learn. It is challenging because, under the same amount of information, a person can suffer an information overload because
@@ -123,7 +126,7 @@ To achieve our goal we propose writing documentation following these principles:
 6. Inclusive
 7. Cohesive
 
-#####  Principles
+##### Principles
 
 **1. Clean and Clear**
 
@@ -183,7 +186,7 @@ snapshots to make the reduction process efficient. In any case, this is opaque t
 
 Did you feel the difference? The latter makes you feel that everything is connected, it is more cohesive.
 
-#####  Practices
+##### Practices
 
 There are many writing styles depending on the type of document. It is common within technical and scientific writing to use Inductive and/or Deductive styles
 for paragraphs. They have different outcomes and one style may suit better in one case or another, that is why it is important to know them, and decide which
@@ -202,8 +205,7 @@ called Inductive.**
 The first paragraph is deductive and the last one is inductive. In general, it is better to use the deductive style, but if we stick to one, our writing will start looking weird and maybe boring.
 So decide one or another being conscious about your intention.
 
-
-###  Create your very first GitHub issue
+### Create your very first GitHub issue
 
 [Click here](https://github.com/boostercloud/booster/issues/new) to start making contributions to Booster.
 
@@ -222,31 +224,23 @@ Make sure that you assign the chosen issue to yourself to communicate your inten
 
 To start contributing to the project you would need to set up the project in your system, to do so, you must first follow these steps in your terminal.
 
-- Install Lerna: `npm install -g lerna`
+- Install Lerna: `npm install -g @microsoft/rush`
 
 - Clone the repo and get into the directory of the project: `git clone <WRITE REPO URL HERE> && cd booster`
 
-- Install project dependencies: `lerna bootstrap`
+- Install project dependencies: `rush update`
 
-- Compile the project `lerna run compile`
+- Compile the project `rush build`
 
 - Add your contribution
 
-- Make sure everything works by [executing the unit tests](#running-unit-tests): `lerna run test --stream`
+- Make sure everything works by [executing the unit tests](#running-unit-tests): `rush rest`
+
+> **DISCLAIMER**: The integration test process changed, feel free to chime in into our Discord for more info
 
 - Make sure everything works by [running the integration tests](#running-integration-tests): `lerna run integration --stream`
 
-- Before making a PR you should run the `check-all-the-things` script:
-  - `./scripts/check-all-the-things.sh` on Linux and MacOS
-  - `.\scripts\check-all-the-things.ps1` on Windows
-
-> [!Warning]
-> Node v14.14 is the minimum version required.
-
-> [!Attention]
-> All tests must have passed before submitting a PR.
-
-### Understanding the "lerna monorepo" approach and how dependencies are structured in the project
+### OUTDATED ~~Understanding the "lerna monorepo" approach and how dependencies are structured in the project~~
 
 The Booster Framework project is organized following the ["lerna monorepo"](https://lerna.js.org/) structure. There are several "package.json" files and each one has its purpose with regard to the dependencies you include on them:
 
@@ -259,7 +253,7 @@ There could be the situation in which two packages depends on the same dependenc
 
 Finally, **always use exact numbers for dependency versions**. This means that if you want to add the dependency "aws-sdk" in version 1.2.3, you should add `"aws-sdk": "1.2.3"` to the corresponding "package.json" file, and never `"aws-sdk": "^1.2.3"` or `"aws-sdk": "~1.2.3"`. This restriction comes from hard problems we've had in the past.
 
-### Running unit tests
+### OUTDATED ~~Running unit tests~~
 
 Unit tests are executed when you type `lerna run test`. If you want to run the unit tests for an especific package, you should run one of the following commands:
 
@@ -275,7 +269,7 @@ Unit tests are executed when you type `lerna run test`. If you want to run the u
 - `lerna run test:provider-local-infrastructure --stream`: Run unit tests for the `framework-provider-local-infrastructure` package.
 - `lerna run test:types --stream`: Run unit tests for the `framework-types` package.
 
-### Running integration tests
+### OUTDATED ~~Running integration tests~~
 
 Integration tests are run automatically in Github Actions when a PR is locked, but it would be recommendable to run them locally before submitting a PR for review. You can find several scripts in `packages/framework-integration-tests/package.json` to run different test suites. You can run them using lerna tool:
 

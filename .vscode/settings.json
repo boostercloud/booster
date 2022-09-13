@@ -1,10 +1,5 @@
 {
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact",
-  ],
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
   "mocha.options": {
     "compilers": "ts-node/register",
     "watchExtensions": "ts",
@@ -12,11 +7,10 @@
     "reporter": "spec",
     "timeout": 5000
   },
-  "mocha.requires": [
-    "ts-node/register"
-  ],
+  "mocha.requires": ["ts-node/register"],
   "mocha.files.glob": "packages/*/test/**/*.ts",
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": false
-  }
+  },
+  "monorepoWorkspace.includeRoot": false
 }

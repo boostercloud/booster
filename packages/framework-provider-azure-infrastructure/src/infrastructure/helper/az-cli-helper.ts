@@ -12,6 +12,7 @@ export async function getResourceGroup(appName: string, environmentName: string)
   if (command?.stdout.includes('could not be found')) {
     return Promise.reject(`Resource Group for application ${appName} does not exist`)
   }
+  console.log(`Command success ${command.stdout}`)
   return JSON.parse(command?.stdout)
 }
 

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-provider-kubernetes",
+      "comment": "Switched to MS Rush",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@boostercloud/framework-provider-kubernetes"
+}

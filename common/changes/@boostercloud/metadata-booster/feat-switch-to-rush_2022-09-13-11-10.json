@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/metadata-booster",
+      "comment": "Upgrade dependencies",
+      "type": "major"
+    }
+  ],
+  "packageName": "@boostercloud/metadata-booster"
+}

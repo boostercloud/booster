@@ -2,8 +2,8 @@ import * as path from 'path'
 import { ChildProcess } from 'child_process'
 import { runCommand } from '@boostercloud/framework-common-helpers'
 
-// Path to the CLI binary compiled by lerna
-const cliBinaryPath = path.join('..', '..', 'cli', 'bin', 'run')
+// Path to the CLI binary compiled for this project
+const cliBinaryPath = path.join(__dirname, '..', '..', 'node_modules', '.bin', 'boost')
 
 export async function deploy(projectPath: string, environmentName = 'production'): Promise<void> {
   // Production dependencies are installed by the cliHelper command

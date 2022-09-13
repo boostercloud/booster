@@ -28,7 +28,7 @@ export async function compileProjectAndLoadConfig(userProjectPath: string): Prom
 
 export async function compileProject(projectPath: string): Promise<void> {
   try {
-    await exec('npm run clean && npm run compile', { cwd: projectPath })
+    await exec('npm run clean && npm run build', { cwd: projectPath })
   } catch (e) {
     throw wrapExecError(e, 'Project contains compilation errors')
   }

@@ -44,7 +44,7 @@ describe('Project', () => {
     removeFolders([SANDBOX_INTEGRATION_DIR])
   })
 
-  const cliPath = path.join('..', '..', 'cli', 'bin', 'run')
+  const cliPath = path.join('..', 'node_modules', '.bin', 'boost')
   const expectedOutputRegex = new RegExp(
     [
       'boost new',
@@ -309,7 +309,7 @@ describe('Project', () => {
           // Install those dependencies
           await exec('npm install --production --no-bin-links --no-optional', { cwd: fullProjectPath })
 
-          await expect(exec('npm run compile', { cwd: fullProjectPath })).to.be.eventually.fulfilled
+          await expect(exec('npm run build', { cwd: fullProjectPath })).to.be.eventually.fulfilled
         })
       })
 

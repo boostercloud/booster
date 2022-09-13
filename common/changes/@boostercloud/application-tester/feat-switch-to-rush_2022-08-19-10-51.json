@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/application-tester",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@boostercloud/application-tester"
+}

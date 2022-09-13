@@ -209,8 +209,10 @@
       "name": "framework-core tests",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [
-        "--require", "ts-node/register",
-        "--timeout", "999999",
+        "--require",
+        "ts-node/register",
+        "--timeout",
+        "999999",
         "--colors",
         "--forbid-only",
         "${workspaceFolder}/packages/framework-core/test/**/*.test.ts"
@@ -431,14 +433,9 @@
       "request": "launch",
       "name": "Server in debug mode",
       "cwd": "${workspaceFolder}/packages/framework-integration-tests/local-project-integration-sandbox",
-      "skipFiles": [
-      ],
+      "skipFiles": [],
       "program": "${workspaceFolder}/packages/cli/bin/run",
-      "args": [
-          "start",
-          "-e",
-          "local"
-      ],
+      "args": ["start", "-e", "local"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/cli",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@boostercloud/cli"
+}

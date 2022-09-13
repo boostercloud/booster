@@ -1,7 +1,7 @@
 import { StreamViewType } from '@aws-cdk/aws-dynamodb'
 import { InfrastructureRocket } from '../../src'
 import { BoosterConfig, UUID } from '@boostercloud/framework-types'
-import { fake, replace, restore, spy } from 'sinon'
+import { fake, mock, replace, restore, spy } from 'sinon'
 import { expect } from '../expect'
 import { ApplicationStackBuilder } from '../../src/infrastructure/stacks/application-stack'
 import { SdkProvider } from 'aws-cdk'
@@ -21,7 +21,7 @@ describe('the `stack-tools` module', () => {
 
   describe('the `getStackServiceConfiguration` method', () => {
     it('builds the configuration using the `assemble` method', async () => {
-      replace(SdkProvider.prototype, 'forEnvironment', fake())
+      replace(SdkProvider.prototype, 'forEnvironment', fake.returns(mock()))
       const fakeAssemble = fake()
       const revertAssemble = StackTools.__set__('assemble', fakeAssemble)
       const revertGetEnvironment = StackTools.__set__('getEnvironment', fake.returns(Promise.resolve(testEnvironment)))
@@ -41,7 +41,7 @@ describe('the `stack-tools` module', () => {
 
     context('with rockets', () => {
       it('forwards the rocket list to the `assemble` method for initialization', async () => {
-        replace(SdkProvider.prototype, 'forEnvironment', fake())
+        replace(SdkProvider.prototype, 'forEnvironment', fake.returns(mock()))
         const fakeAssemble = fake()
         const revertRewire = StackTools.__set__('assemble', fakeAssemble)
         const revertGetEnvironment = StackTools.__set__(

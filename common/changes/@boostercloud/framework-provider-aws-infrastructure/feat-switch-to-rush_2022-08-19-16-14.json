@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-provider-aws-infrastructure",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@boostercloud/framework-provider-aws-infrastructure"
+}
