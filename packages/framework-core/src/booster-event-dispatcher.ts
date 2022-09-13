@@ -24,15 +24,22 @@ export class BoosterEventDispatcher {
     const logger = getLogger(config, 'BoosterEventDispatcher#dispatch')
     const eventStore = new EventStore(config)
     const readModelStore = new ReadModelStore(config)
-    logger.debug('Event workflow started for raw events:', require('util').inspect(rawEvents, false, null, false))
+
+    logger.debug(
+      'Event workflow started for raw events:',
+      // TODO: Make this compatible with ES Modules
+      // More info: https://github.com/sindresorhus/eslint-plugin-unicorn/blob/v43.0.2/docs/rules/prefer-module.md
+      // eslint-disable-next-line unicorn/prefer-module
+      require('node:util').inspect(rawEvents, false, undefined, false)
+    )
     try {
       await RawEventsParser.streamPerEntityEvents(
         config,
         rawEvents,
         BoosterEventDispatcher.eventProcessor(eventStore, readModelStore)
       )
-    } catch (e) {
-      logger.error('Unhandled error while dispatching event: ', e)
+    } catch (error) {
+      logger.error('Unhandled error while dispatching event: ', error)
     }
   }
 
@@ -77,7 +84,7 @@ export class BoosterEventDispatcher {
     const logger = getLogger(config, 'BoosterEventDispatcher.dispatchEntityEventsToEventHandlers')
     for (const eventEnvelope of entityEventEnvelopes) {
       const eventHandlers = config.eventHandlers[eventEnvelope.typeName]
-      if (!eventHandlers || eventHandlers.length == 0) {
+      if (!eventHandlers || eventHandlers.length === 0) {
         logger.debug(`No event-handlers found for event ${eventEnvelope.typeName}. Skipping...`)
         continue
       }
@@ -89,9 +96,9 @@ export class BoosterEventDispatcher {
           logger.debug('Calling "handle" method on event handler: ', eventHandler)
           try {
             await eventHandler.handle(eventInstance, register)
-          } catch (e) {
+          } catch (error_) {
             const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(config)
-            const error = await globalErrorDispatcher.dispatch(new EventHandlerGlobalError(eventInstance, e))
+            const error = await globalErrorDispatcher.dispatch(new EventHandlerGlobalError(eventInstance, error_))
             if (error) throw error
           }
           return RegisterHandler.handle(config, register)

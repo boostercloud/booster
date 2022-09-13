@@ -36,18 +36,18 @@ function createPropertiesMetadata(
   typesByModule: Record<string, string>
 ): ts.ArrayLiteralExpression {
   return f.createArrayLiteralExpression(
-    properties.map((prop) => {
+    properties.map((property) => {
       return f.createObjectLiteralExpression(
         [
-          f.createPropertyAssignment('name', f.createStringLiteral(prop.name)),
+          f.createPropertyAssignment('name', f.createStringLiteral(property.name)),
           f.createPropertyAssignment(
             'typeInfo',
-            createMetadataForTypeInfo(f, prop.typeInfo, filterInterfaceFunctionName, typesByModule)
+            createMetadataForTypeInfo(f, property.typeInfo, filterInterfaceFunctionName, typesByModule)
           ),
         ],
         true
       )
-    }, true)
+    })
   )
 }
 
@@ -65,8 +65,8 @@ function createMetadataForTypeInfo(
     f.createPropertyAssignment(
       'parameters',
       f.createArrayLiteralExpression(
-        typeInfo.parameters.map((param) =>
-          createMetadataForTypeInfo(f, param, filterInterfaceFunctionName, typesByModule)
+        typeInfo.parameters.map((parameter) =>
+          createMetadataForTypeInfo(f, parameter, filterInterfaceFunctionName, typesByModule)
         )
       )
     ),
@@ -103,7 +103,7 @@ export function createFilterInterfaceFunction(
     undefined,
     filterInterfaceFunctionName,
     undefined,
-    [f.createParameterDeclaration(undefined, undefined, undefined, 'typeName', undefined, undefined, undefined)],
+    [f.createParameterDeclaration(undefined, undefined, undefined, 'typeName')],
     undefined,
     f.createBlock(
       [
@@ -119,8 +119,7 @@ export function createFilterInterfaceFunction(
           f.createCatchClause(
             undefined,
             f.createBlock([f.createReturnStatement(f.createIdentifier('undefined'))], false)
-          ),
-          undefined
+          )
         ),
       ],
       false

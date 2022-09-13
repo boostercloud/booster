@@ -264,11 +264,11 @@ describe('BoosterReadModelReader', () => {
       currentUser,
     } as any
 
-    const beforeFn = async (request: ReadModelRequestEnvelope<any>): Promise<ReadModelRequestEnvelope<any>> => {
+    const beforeFunction = async (request: ReadModelRequestEnvelope<any>): Promise<ReadModelRequestEnvelope<any>> => {
       return { ...request, filters: { id: { eq: request.filters.id } } }
     }
 
-    const beforeFnV2 = async (request: ReadModelRequestEnvelope<any>): Promise<ReadModelRequestEnvelope<any>> => {
+    const beforeFunctionV2 = async (request: ReadModelRequestEnvelope<any>): Promise<ReadModelRequestEnvelope<any>> => {
       return { ...request, filters: { id: { eq: request.currentUser?.username } } }
     }
 
@@ -308,7 +308,7 @@ describe('BoosterReadModelReader', () => {
       })
 
       context('when there is only one before hook function', () => {
-        const beforeFnSpy = spy(beforeFn)
+        const beforeFunctionSpy = spy(beforeFunction)
 
         beforeEach(() => {
           const providerSearcherFunctionFake = fake.returns([])
@@ -317,7 +317,7 @@ describe('BoosterReadModelReader', () => {
             class: TestReadModel,
             authorizer: BoosterAuthorizer.authorizeRoles.bind(null, [UserRole]),
             properties: [],
-            before: [beforeFnSpy],
+            before: [beforeFunctionSpy],
           }
 
           replace(Booster, 'config', config) // Needed because the function `Booster.readModel` references `this.config` from `searchFunction`
@@ -332,15 +332,15 @@ describe('BoosterReadModelReader', () => {
           await readModelReader.search(envelope)
 
           const currentUser = envelope.currentUser
-          expect(beforeFnSpy).to.have.been.calledOnceWithExactly(envelope, currentUser)
+          expect(beforeFunctionSpy).to.have.been.calledOnceWithExactly(envelope, currentUser)
           const expectedReturn = Promise.resolve({ ...envelope, filters: { id: { eq: envelope.filters.id } } })
-          expect(beforeFnSpy).to.have.returned(expectedReturn)
+          expect(beforeFunctionSpy).to.have.returned(expectedReturn)
         })
       })
 
       context('when there are more than one before hook functions', () => {
-        const beforeFnSpy = spy(beforeFn)
-        const beforeFnV2Spy = spy(beforeFnV2)
+        const beforeFunctionSpy = spy(beforeFunction)
+        const beforeFunctionV2Spy = spy(beforeFunctionV2)
 
         beforeEach(() => {
           const providerSearcherFunctionFake = fake.returns([])
@@ -349,7 +349,7 @@ describe('BoosterReadModelReader', () => {
             class: TestReadModel,
             authorizer: BoosterAuthorizer.authorizeRoles.bind(null, [UserRole]),
             properties: [],
-            before: [beforeFnSpy, beforeFnV2Spy],
+            before: [beforeFunctionSpy, beforeFunctionV2Spy],
           }
 
           replace(Booster, 'config', config) // Needed because the function `Booster.readModel` references `this.config` from `searchFunction`
@@ -364,18 +364,18 @@ describe('BoosterReadModelReader', () => {
         it('chains the before hook functions when there is more than one', async () => {
           await readModelReader.search(envelope)
 
-          expect(beforeFnSpy).to.have.been.calledOnceWithExactly(envelope, envelope.currentUser)
+          expect(beforeFunctionSpy).to.have.been.calledOnceWithExactly(envelope, envelope.currentUser)
           const expectedReturn = Promise.resolve({ ...envelope, filters: { id: { eq: envelope.filters.id } } })
-          expect(beforeFnSpy).to.have.returned(expectedReturn)
+          expect(beforeFunctionSpy).to.have.returned(expectedReturn)
 
-          const returnedEnvelope = await beforeFnSpy.returnValues[0]
-          expect(beforeFnV2Spy).to.have.been.calledAfter(beforeFnSpy)
-          expect(beforeFnV2Spy).to.have.been.calledOnceWithExactly(returnedEnvelope, returnedEnvelope.currentUser)
+          const returnedEnvelope = await beforeFunctionSpy.returnValues[0]
+          expect(beforeFunctionV2Spy).to.have.been.calledAfter(beforeFunctionSpy)
+          expect(beforeFunctionV2Spy).to.have.been.calledOnceWithExactly(returnedEnvelope, returnedEnvelope.currentUser)
           const expectedReturnEnvelope = Promise.resolve({
             ...returnedEnvelope,
             filters: { id: { eq: returnedEnvelope.currentUser?.username } },
           })
-          expect(beforeFnV2Spy).to.have.returned(expectedReturnEnvelope)
+          expect(beforeFunctionV2Spy).to.have.returned(expectedReturnEnvelope)
         })
       })
     })
@@ -422,7 +422,7 @@ describe('BoosterReadModelReader', () => {
             class: TestReadModel,
             authorizer: BoosterAuthorizer.authorizeRoles.bind(null, [UserRole]),
             properties: [],
-            before: [beforeFn, beforeFnV2],
+            before: [beforeFunction, beforeFunctionV2],
           }
 
           replace(config.provider.readModels, 'subscribe', providerSubscribeFunctionFake)

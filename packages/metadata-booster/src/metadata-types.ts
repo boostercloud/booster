@@ -1,4 +1,4 @@
-export type ClassType = { new (...args: unknown[]): unknown }
+export type ClassType = { new (...arguments_: unknown[]): unknown }
 
 // type instead of enum to be able to install this package as a devDependency and not a production dependency
 export type TypeGroup =

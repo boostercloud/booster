@@ -56,10 +56,20 @@ export class BoosterCommandDispatcher {
 
       logger.debug('Calling "handle" method on command: ', commandClass)
       result = await commandClass.handle(commandInstance, register)
-    } catch (err) {
-      const e = err as Error
-      const error = await this.globalErrorDispatcher.dispatch(new CommandHandlerGlobalError(migratedCommandEnvelope, e))
-      if (error) throw error
+    } catch (unknownError) {
+      let safeError: Error
+      if (!(unknownError instanceof Error)) {
+        logger.warn(
+          'The command handler failed with an error that is not an instance of Error. Wrapping it in an Error'
+        )
+        safeError = new Error(unknownError)
+      } else {
+        safeError = unknownError
+      }
+      const possibleError = await this.globalErrorDispatcher.dispatch(
+        new CommandHandlerGlobalError(migratedCommandEnvelope, safeError)
+      )
+      if (possibleError) throw possibleError
     }
     logger.debug('Command dispatched with register: ', register)
     await RegisterHandler.handle(this.config, register)

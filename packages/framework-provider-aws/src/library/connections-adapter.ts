@@ -1,6 +1,6 @@
 import { BoosterConfig, ConnectionDataEnvelope } from '@boostercloud/framework-types'
 import { ApiGatewayManagementApi, DynamoDB } from 'aws-sdk'
-import { environmentVarNames, connectionsStoreAttributes } from '../constants'
+import { environmentVariableNames, connectionsStoreAttributes } from '../constants'
 
 export async function storeConnectionData(
   db: DynamoDB.DocumentClient,
@@ -53,7 +53,7 @@ export async function sendMessageToConnection(
   data: unknown
 ): Promise<void> {
   await new ApiGatewayManagementApi({
-    endpoint: config.mustGetEnvironmentVar(environmentVarNames.websocketAPIURL),
+    endpoint: config.mustGetEnvironmentVar(environmentVariableNames.websocketAPIURL),
   })
     .postToConnection({
       ConnectionId: connectionID,

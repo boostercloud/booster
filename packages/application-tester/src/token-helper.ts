@@ -1,10 +1,11 @@
-import * as fs from 'fs'
+import * as fs from 'node:fs'
 import * as jwt from 'jsonwebtoken'
-import * as path from 'path'
+import * as path from 'node:path'
 
 type TokenOptions = {
   expiresIn?: number
   notBefore?: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   customClaims?: Record<string, any>
 }
 
@@ -15,6 +16,9 @@ type TokenOptions = {
 export class TokenHelper {
   private privateKey: Buffer
   constructor() {
+    // TODO: Make this compatible with ESModules instead of relying on __dirname
+    // More info on this: https://github.com/sindresorhus/eslint-plugin-unicorn/blob/v43.0.2/docs/rules/prefer-module.md
+    // eslint-disable-next-line unicorn/prefer-module
     this.privateKey = fs.readFileSync(path.join(__dirname, '..', 'keys', 'private.key'))
   }
   public forUser(email: string, role?: string, tokenOptions?: TokenOptions): string {

@@ -3,7 +3,7 @@ export const eventsStoreAttributes = {
   sortKey: 'createdAt',
 } as const
 
-export const environmentVarNames = {
+export const environmentVariableNames = {
   restAPIURL: 'BOOSTER_REST_API_URL',
   websocketAPIURL: 'BOOSTER_WEBSOCKET_API_URL',
   cosmosDbConnectionString: 'COSMOSDB_CONNECTION_STRING',

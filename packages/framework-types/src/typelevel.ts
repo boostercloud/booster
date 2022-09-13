@@ -14,7 +14,7 @@
  */
 export interface Class<TReflected> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  new (...args: any[]): TReflected
+  new (...arguments_: any[]): TReflected
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface,@typescript-eslint/no-explicit-any

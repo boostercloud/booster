@@ -28,7 +28,7 @@ class GenericClass<T> {
 }
 
 class Animal {
-  constructor(readonly animalProp: string) {}
+  constructor(readonly animalProperty: string) {}
 }
 
 class Dog extends Animal {
@@ -48,12 +48,12 @@ class Test {
     public unionWithObject: string | Car,
     public unionWithUnknown: string | unknown, // typeGroup = Other, nullable = false
     public intersection0: Array<string> & Array<number>,
-    public func0: (arg0: string) => void,
+    public function0: (argument0: string) => void,
     public any0: any,
     public unknown0: unknown, // typeGroup = Other
     public record: Record<string, undefined>, // typeGroup = Type
     public generic: GenericClass<string>, // typeGroup: "Object", typeName = GenericClass, parameter[typeGroup] = string
-    public inheritedProps: Chihuahua,
+    public inheritedProperties: Chihuahua,
     public optionalString?: string, // typeGroup = String, nullable = true
     public optionalNull?: string, // typeGroup = String, nullable = true
     public optionalUndefined?: undefined, // typeGroup = Other, nullable = true

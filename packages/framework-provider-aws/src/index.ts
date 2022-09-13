@@ -10,10 +10,17 @@ import { requestFailed, requestSucceeded } from './library/api-gateway-io'
  */
 export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
   try {
+    // TODO: Make this compatible with ES Modules
+    // More info: https://github.com/sindresorhus/eslint-plugin-unicorn/blob/v43.0.2/docs/rules/prefer-module.md
+    // eslint-disable-next-line unicorn/prefer-module
     require('aws-sdk')
+
+    // TODO: Make this compatible with ES Modules
+    // More info: https://github.com/sindresorhus/eslint-plugin-unicorn/blob/v43.0.2/docs/rules/prefer-module.md
+    // eslint-disable-next-line unicorn/prefer-module
     const { Provider } = require('./setup')
     return Provider(rockets)
-  } catch (e) {
+  } catch {
     return {
       // ProviderEventsLibrary
       events: {
@@ -58,6 +65,9 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
       },
       // ProviderInfrastructureGetter
       infrastructure: () =>
+        // TODO: Make this compatible with ES Modules
+        // More info: https://github.com/sindresorhus/eslint-plugin-unicorn/blob/v43.0.2/docs/rules/prefer-module.md
+        // eslint-disable-next-line unicorn/prefer-module
         require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
     }
   }

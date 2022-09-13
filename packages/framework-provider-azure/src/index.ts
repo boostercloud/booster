@@ -9,24 +9,25 @@ import {
   readEntityLatestSnapshot,
 } from './library/events-adapter'
 import { CosmosClient } from '@azure/cosmos'
-import { environmentVarNames } from './constants'
+import { environmentVariableNames as environmentVariableNames } from './constants'
 import { deleteReadModel, fetchReadModel, storeReadModel } from './library/read-model-adapter'
 import { searchReadModel } from './library/searcher-adapter'
 import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
 import { searchEvents, searchEntitiesIds } from './library/events-searcher-adapter'
 
-let cosmosClient: CosmosClient
-if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefined') {
-  cosmosClient = {} as any
-} else {
-  cosmosClient = new CosmosClient(process.env[environmentVarNames.cosmosDbConnectionString] as string)
-}
+const cosmosClient =
+  typeof process.env[environmentVariableNames.cosmosDbConnectionString] === 'undefined'
+    ? ({} as any)
+    : new CosmosClient(process.env[environmentVariableNames.cosmosDbConnectionString] as string)
 
 /* We load the infrastructure package dynamically here to avoid including it in the
  * dependencies that are deployed in the lambda functions. The infrastructure
  * package is only used during the deploy.
  */
 export function loadInfrastructurePackage(packageName: string): HasInfrastructure {
+  // TODO: Make this compatible with ES Modules
+  // More info: https://github.com/sindresorhus/eslint-plugin-unicorn/blob/v43.0.2/docs/rules/prefer-module.md
+  // eslint-disable-next-line unicorn/prefer-module
   return require(packageName)
 }
 
@@ -34,21 +35,21 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
   // ProviderEventsLibrary
   events: {
     rawToEnvelopes: rawEventsToEnvelopes,
-    store: storeEvents.bind(null, cosmosClient),
-    forEntitySince: readEntityEventsSince.bind(null, cosmosClient),
-    latestEntitySnapshot: readEntityLatestSnapshot.bind(null, cosmosClient),
-    search: searchEvents.bind(null, cosmosClient),
-    searchEntitiesIDs: searchEntitiesIds.bind(null, cosmosClient),
+    store: storeEvents.bind(undefined, cosmosClient),
+    forEntitySince: readEntityEventsSince.bind(undefined, cosmosClient),
+    latestEntitySnapshot: readEntityLatestSnapshot.bind(undefined, cosmosClient),
+    search: searchEvents.bind(undefined, cosmosClient),
+    searchEntitiesIDs: searchEntitiesIds.bind(undefined, cosmosClient),
   },
   // ProviderReadModelsLibrary
   readModels: {
-    fetch: fetchReadModel.bind(null, cosmosClient),
-    search: searchReadModel.bind(null, cosmosClient),
+    fetch: fetchReadModel.bind(undefined, cosmosClient),
+    search: searchReadModel.bind(undefined, cosmosClient),
     subscribe: undefined as any,
     rawToEnvelopes: undefined as any,
     fetchSubscriptions: undefined as any,
-    store: storeReadModel.bind(null, cosmosClient),
-    delete: deleteReadModel.bind(null, cosmosClient),
+    store: storeReadModel.bind(undefined, cosmosClient),
+    delete: deleteReadModel.bind(undefined, cosmosClient),
     deleteSubscription: undefined as any,
     deleteAllSubscriptions: undefined as any,
   },
@@ -74,14 +75,17 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
   },
   // ProviderInfrastructureGetter
   infrastructure: () => {
+    // TODO: Make this compatible with ES Modules
+    // More info: https://github.com/sindresorhus/eslint-plugin-unicorn/blob/v43.0.2/docs/rules/prefer-module.md
+    // eslint-disable-next-line unicorn/prefer-module
     const infrastructurePackageName = require('../package.json').name + '-infrastructure'
     let infrastructure: HasInfrastructure | undefined
 
     try {
       infrastructure = loadInfrastructurePackage(infrastructurePackageName)
-    } catch (e) {
+    } catch (error) {
       throw new Error(
-        `The Azure infrastructure package could not be loaded. The following error was thrown: ${e.message}. Please ensure that one of the following actions has been done:\n` +
+        `The Azure infrastructure package could not be loaded. The following error was thrown: ${error.message}. Please ensure that one of the following actions has been done:\n` +
           `  - It has been specified in your "devDependencies" section of your "package.json" file. You can do so by running 'npm install --save-dev ${infrastructurePackageName}'\n` +
           `  - Or it has been installed globally. You can do so by running 'npm install -g ${infrastructurePackageName}'`
       )

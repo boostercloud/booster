@@ -108,14 +108,14 @@ export interface ReadModelRequestEnvelope<TReadModel extends ReadModelInterface>
   paginatedVersion?: boolean // Used only for retrocompatibility
 }
 
-export interface ReadModelRequestArgs<TReadModel extends ReadModelInterface> {
+export interface ReadModelRequestArguments<TReadModel extends ReadModelInterface> {
   filter?: ReadModelRequestProperties<TReadModel>
   sortBy?: ReadModelSortProperties<TReadModel>
   limit?: number
   afterCursor?: unknown
 }
 
-export interface ReadModelByIdRequestArgs {
+export interface ReadModelByIdRequestArguments {
   id: string
   [sequenceKey: string]: string | undefined
 }

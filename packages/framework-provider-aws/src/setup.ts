@@ -102,9 +102,9 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
       let infrastructure: HasInfrastructure | undefined
       try {
         infrastructure = loadInfrastructurePackage(infrastructurePackageName)
-      } catch (e) {
+      } catch (error) {
         throw new Error(
-          `The AWS infrastructure package could not be loaded. The following error was thrown: ${e.message}. Please ensure that one of the following actions has been done:\n` +
+          `The AWS infrastructure package could not be loaded. The following error was thrown: ${error.message}. Please ensure that one of the following actions has been done:\n` +
             `  - It has been specified in your "devDependencies" section of your "package.json" file. You can do so by running 'npm install --save-dev ${infrastructurePackageName}'\n` +
             `  - Or it has been installed globally. You can do so by running 'npm install -g ${infrastructurePackageName}'`
         )

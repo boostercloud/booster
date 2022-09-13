@@ -7,11 +7,11 @@ export enum Level {
 
 export interface Logger {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  debug(message?: any, ...optionalParams: any[]): void
+  debug(message?: any, ...optionalParameters: any[]): void
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  info(message?: any, ...optionalParams: any[]): void
+  info(message?: any, ...optionalParameters: any[]): void
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  warn(message?: any, ...optionalParams: any[]): void
+  warn(message?: any, ...optionalParameters: any[]): void
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  error(message?: any, ...optionalParams: any[]): void
+  error(message?: any, ...optionalParameters: any[]): void
 }

@@ -40,7 +40,7 @@ import { BoosterAuthorizer } from './booster-authorizer'
  */
 export class Booster {
   public static readonly configuredEnvironments: Set<string> = new Set<string>()
-  public static readonly config = new BoosterConfig(checkAndGetCurrentEnv())
+  public static readonly config = new BoosterConfig(checkAndGetCurrentEnvironment())
   /**
    * Avoid creating instances of this class
    */
@@ -236,14 +236,14 @@ export class Booster {
   }
 }
 
-function checkAndGetCurrentEnv(): string {
-  const env = process.env.BOOSTER_ENV
-  if (!env || env.trim().length == 0) {
+function checkAndGetCurrentEnvironment(): string {
+  const environment = process.env.BOOSTER_ENV
+  if (!environment || environment.trim().length === 0) {
     throw new Error(
       'Booster environment is missing. You need to provide an environment to configure your Booster project'
     )
   }
-  return env
+  return environment
 }
 
 export async function boosterEventDispatcher(rawEvent: unknown): Promise<unknown> {

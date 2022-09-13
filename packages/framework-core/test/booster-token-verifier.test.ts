@@ -226,7 +226,7 @@ describe('the "verifyToken" method', () => {
       'custom:role': ['User', 'Other'],
       email,
       phoneNumber,
-      nbf: Math.floor(Date.now() / 1000) + 999999,
+      nbf: Math.floor(Date.now() / 1000) + 999_999,
     })
 
     const verifyFunction = boosterTokenVerifier.verify(token)

@@ -23,9 +23,9 @@ export class Promises {
     const results = await Promise.allSettled(values) // Promise.allSettled never throws
 
     // Get all the failed promises
-    const failed: Array<PromiseRejectedResult> = results
-      .filter((res) => res.status == 'rejected')
-      .map((res) => res as PromiseRejectedResult)
+    const failed: Array<PromiseRejectedResult> = results.filter(
+      (result): result is PromiseRejectedResult => result.status == 'rejected'
+    )
 
     // Throw if we found any failed ones
     if (failed.length > 0) {
@@ -39,7 +39,7 @@ export class Promises {
 export class PromisesError extends Error {
   public readonly failedReasons: Array<unknown>
   constructor(rejectedResults: Array<PromiseRejectedResult>) {
-    const reasons = rejectedResults.map((res) => res.reason)
+    const reasons = rejectedResults.map((result) => result.reason)
     super(reasons.join('. '))
     this.failedReasons = reasons
   }

@@ -23,8 +23,8 @@ export async function retryIfError<TReturn>(
       const result = await logicToRetry()
       logger?.debug(`[retryIfError] Succeeded after ${tryNumber} retries`)
       return result
-    } catch (e) {
-      const error = e as Error
+    } catch (error_) {
+      const error = error_ as Error
       checkRetryError(error, errorClassThatRetries, logger)
       errorAfterMaxTries = error
     }
@@ -34,9 +34,9 @@ export async function retryIfError<TReturn>(
   )
 }
 
-function checkRetryError(e: Error, errorClassThatRetries: Class<Error>, logger?: Logger): void {
-  if (!(e instanceof errorClassThatRetries)) {
+function checkRetryError(error: Error, errorClassThatRetries: Class<Error>, logger?: Logger): void {
+  if (!(error instanceof errorClassThatRetries)) {
     logger?.debug('[checkRetryError] Logic failed with an error that must not be retried. Rethrowing')
-    throw e
+    throw error
   }
 }

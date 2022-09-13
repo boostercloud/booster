@@ -21,8 +21,8 @@ describe('the `Booster` class', () => {
     restore()
     Booster.configure('test', (config) => {
       config.appName = ''
-      for (const propName in config.commandHandlers) {
-        delete config.commandHandlers[propName]
+      for (const propertyName in config.commandHandlers) {
+        delete config.commandHandlers[propertyName]
       }
     })
   })
@@ -113,7 +113,7 @@ describe('the `Booster` class', () => {
           },
         } as unknown as ProviderLibrary
       })
-      await Booster.entitiesIDs('TestEvent', 1, undefined)
+      await Booster.entitiesIDs('TestEvent', 1)
       expect(providerSearchEntitiesIds).to.have.been.calledOnce
     })
   })

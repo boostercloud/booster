@@ -1,5 +1,5 @@
-import * as fs from 'fs'
-import * as path from 'path'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 
 export class Importer {
   public static importUserProjectFiles(codeRootPath: string): void {
@@ -29,11 +29,11 @@ export class Importer {
   }
 
   private static isJavaScriptFile(file: string): boolean {
-    return file.match(/.*\.js$/) != null
+    return file.match(/.*\.js$/) != undefined
   }
 
   private static isNotIndexJs(file: string): boolean {
-    return file.match(/index.js$/) == null
+    return file.match(/index.js$/) == undefined
   }
   private static removeDevExtension(file: string): string {
     return path.join(file.replace(/(\.d)?(\.ts|\.js)/, ''))

@@ -48,7 +48,7 @@ export class BoosterGraphQLDispatcher {
 
     switch (envelopeOrError.eventType) {
       case 'CONNECT':
-        return this.config.provider.graphQL.handleResult(null, graphQLWebsocketSubprotocolHeaders)
+        return this.config.provider.graphQL.handleResult(undefined, graphQLWebsocketSubprotocolHeaders)
       case 'MESSAGE':
         const responseHeaders = { ...this.config.defaultResponseHeaders }
         const result = await this.handleMessage(envelopeOrError, responseHeaders)
@@ -70,10 +70,10 @@ export class BoosterGraphQLDispatcher {
       try {
         logger.debug(`Decoding current user from auth token: ${envelope.token}`)
         envelope.currentUser = await this.boosterTokenVerifier.verify(envelope.token)
-      } catch (e) {
+      } catch (error) {
         envelope = {
           ...envelope,
-          error: e,
+          error: error,
         } as GraphQLRequestEnvelopeError
         logger.debug('Unable to decode auth token')
       }
@@ -123,7 +123,7 @@ export class BoosterGraphQLDispatcher {
         operation.operationName === 'IntrospectionQuery' || operation.query.includes('__schema')
       if (isIntrospectionQuery && !this.config.enableGraphQLIntrospection) {
         throw new InvalidProtocolError(
-          'Instrospection queries are disabled. Check the configuration if you want to enable them.'
+          'Introspection queries are disabled. Check the configuration if you want to enable them.'
         )
       }
 
@@ -154,10 +154,18 @@ export class BoosterGraphQLDispatcher {
         case 'subscription':
           return await this.handleSubscription(queryDocument, resolverContext)
       }
-    } catch (e) {
-      const error = e as Error
-      logger.error(e)
-      const errors = Array.isArray(e) ? e.map(toGraphQLErrorWithExtensions) : [toGraphQLErrorWithExtensions(error)]
+    } catch (unknownError) {
+      let safeError: Error
+      if (!(unknownError instanceof Error)) {
+        logger.warn('Received an error that is not an instance of Error. Wrapping it in a new Error instance')
+        safeError = new Error(unknownError)
+      } else {
+        safeError = unknownError as Error
+      }
+      logger.error(unknownError)
+      const errors = Array.isArray(unknownError)
+        ? unknownError.map((element) => toGraphQLErrorWithExtensions(element))
+        : [toGraphQLErrorWithExtensions(safeError)]
       return { errors }
     }
   }

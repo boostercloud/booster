@@ -8,7 +8,7 @@ import {
   UUID,
 } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
-import { dynamoDbBatchGetLimit, eventsStoreAttributes } from '../constants'
+import { dynamoBatchGetLimit, eventsStoreAttributes } from '../constants'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import { partitionKeyForEvent, partitionKeyForIndexByEntity } from './keys-helper'
 import { inChunksOf } from '../pagination-helpers'
@@ -186,7 +186,7 @@ async function findEventsDataWithKeys(
   const logger = getLogger(config, 'events-searcher-adapter#findEventsDataWithKeys')
   const result: Array<EventEnvelope> = []
 
-  const keysBatches = inChunksOf(dynamoDbBatchGetLimit, keys)
+  const keysBatches = inChunksOf(dynamoBatchGetLimit, keys)
   logger.debug(`Performing batch get for ${keysBatches.length} batches`)
   for (const keysBatch of keysBatches) {
     const batchResult = await performBatchGet(dynamoDB, config, keysBatch)

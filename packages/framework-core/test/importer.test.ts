@@ -2,10 +2,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { restore, replace, stub, spy } from 'sinon'
-import * as fs from 'fs'
-import * as path from 'path'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 import { Importer } from '../src/importer'
 import { expect } from './expect'
+
+const fakeStatSync = (fileName: string) => ({
+  isDirectory: () => !fileName.includes('.'),
+})
 
 describe('the `importer` service', () => {
   afterEach(() => {
@@ -16,9 +20,6 @@ describe('the `importer` service', () => {
   describe('the `importUserProjectFiles` function', () => {
     it('calls `require` for each import file', () => {
       const codeRelativePath = 'dist'
-      const fakeStatSync = (fileName: string) => ({
-        isDirectory: () => !fileName.includes('.'),
-      })
       replace(fs, 'statSync', fakeStatSync as any)
 
       const fakeReaddirSync = stub()

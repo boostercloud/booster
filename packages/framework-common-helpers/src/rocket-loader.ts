@@ -3,7 +3,10 @@ import { RocketDescriptor } from '@boostercloud/framework-types'
 export class RocketLoader {
   // Separate function to make it easier to mock in tests
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private static requireRocket(rocketPackageName: string): (params: unknown) => any {
+  private static requireRocket(rocketPackageName: string): (parameters: unknown) => any {
+    // TODO: Make this compatible with ES Modules
+    // More info: https://github.com/sindresorhus/eslint-plugin-unicorn/blob/v43.0.2/docs/rules/prefer-module.md
+    // eslint-disable-next-line unicorn/prefer-module
     return require(rocketPackageName).default
   }
 

@@ -33,8 +33,8 @@ export class BoosterScheduledCommandDispatcher {
     try {
       logger.debug('Calling "handle" method on command: ', command)
       await command.handle(register)
-    } catch (e) {
-      const error = await this.globalErrorDispatcher.dispatch(new ScheduleCommandGlobalError(e))
+    } catch (error_) {
+      const error = await this.globalErrorDispatcher.dispatch(new ScheduleCommandGlobalError(error_))
       if (error) throw error
     }
     logger.debug('Command dispatched with register: ', register)

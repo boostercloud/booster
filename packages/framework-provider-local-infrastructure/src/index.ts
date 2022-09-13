@@ -1,7 +1,7 @@
 import * as express from 'express'
 import { GraphQLService } from '@boostercloud/framework-provider-local'
 import { BoosterConfig, ProviderInfrastructure, RocketDescriptor, UserApp } from '@boostercloud/framework-types'
-import * as path from 'path'
+import * as path from 'node:path'
 import { requestFailed } from './http'
 import { GraphQLController } from './controllers/graphql'
 import * as cors from 'cors'
@@ -18,16 +18,16 @@ export * from './infrastructure-rocket'
  * error attached.
  */
 async function defaultErrorHandler(
-  err: Error,
-  _req: express.Request,
-  res: express.Response,
+  error: Error,
+  _request: express.Request,
+  response: express.Response,
   next: express.NextFunction
 ): Promise<void> {
-  if (res.headersSent) {
-    return next(err)
+  if (response.headersSent) {
+    return next(error)
   }
-  console.error(err)
-  await requestFailed(err, res)
+  console.error(error)
+  await requestFailed(error, response)
 }
 
 export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): ProviderInfrastructure => {
@@ -43,19 +43,22 @@ export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): Provider
     start: async (config: BoosterConfig, port: number): Promise<void> => {
       const expressServer = express()
       const router = express.Router()
+      // TODO: Make this compatible with ES Modules
+      // More info: https://github.com/sindresorhus/eslint-plugin-unicorn/blob/v43.0.2/docs/rules/prefer-module.md
+      // eslint-disable-next-line unicorn/prefer-module
       const userProject = require(path.join(process.cwd(), 'dist', 'index.js'))
       const graphQLService = new GraphQLService(userProject as UserApp)
       router.use('/graphql', new GraphQLController(graphQLService).router)
       if (rockets && rockets.length > 0) {
-        rockets.forEach((rocket) => {
+        for (const rocket of rockets) {
           rocket.mountStack(config, router)
-        })
+        }
       }
       expressServer.use(
         express.json({
           limit: '6mb',
-          verify: (req, res, buf) => {
-            req.rawBody = buf
+          verify: (request, _, buf) => {
+            request.rawBody = buf
           },
         })
       )
@@ -66,9 +69,9 @@ export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): Provider
         })
       )
       expressServer.use(cors())
-      expressServer.use(function (req, res, next) {
-        res.header('Access-Control-Allow-Origin', '*')
-        res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+      expressServer.use(function (_request, response, next) {
+        response.header('Access-Control-Allow-Origin', '*')
+        response.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
         next()
       })
       expressServer.use(router)

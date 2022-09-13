@@ -9,7 +9,7 @@ import { requestSucceeded, requestFailed } from './library/api-adapter'
 import { EventRegistry, ReadModelRegistry } from './services'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 
-import * as path from 'path'
+import * as path from 'node:path'
 
 import {
   deleteReadModel,
@@ -26,6 +26,10 @@ export * from './services'
 
 const eventRegistry = new EventRegistry()
 const readModelRegistry = new ReadModelRegistry()
+
+// TODO: Make this compatible with ES Modules
+// More info: https://github.com/sindresorhus/eslint-plugin-unicorn/blob/v43.0.2/docs/rules/prefer-module.md
+// eslint-disable-next-line unicorn/prefer-module
 const userApp: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
 
 /* We load the infrastructure package dynamically here to avoid including it in the
@@ -33,6 +37,9 @@ const userApp: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
  * package is only used during the deploy.
  */
 export function loadInfrastructurePackage(packageName: string): HasInfrastructure {
+  // TODO: Make this compatible with ES Modules
+  // More info: https://github.com/sindresorhus/eslint-plugin-unicorn/blob/v43.0.2/docs/rules/prefer-module.md
+  // eslint-disable-next-line unicorn/prefer-module
   return require(packageName)
 }
 
@@ -40,21 +47,21 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
   // ProviderEventsLibrary
   events: {
     rawToEnvelopes: rawEventsToEnvelopes,
-    forEntitySince: readEntityEventsSince.bind(null, eventRegistry),
-    latestEntitySnapshot: readEntityLatestSnapshot.bind(null, eventRegistry),
-    store: storeEvents.bind(null, userApp, eventRegistry),
-    search: searchEvents.bind(null, eventRegistry),
-    searchEntitiesIDs: searchEntitiesIds.bind(null, eventRegistry),
+    forEntitySince: readEntityEventsSince.bind(undefined, eventRegistry),
+    latestEntitySnapshot: readEntityLatestSnapshot.bind(undefined, eventRegistry),
+    store: storeEvents.bind(undefined, userApp, eventRegistry),
+    search: searchEvents.bind(undefined, eventRegistry),
+    searchEntitiesIDs: searchEntitiesIds.bind(undefined, eventRegistry),
   },
   // ProviderReadModelsLibrary
   readModels: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rawToEnvelopes: rawReadModelEventsToEnvelopes,
-    fetch: fetchReadModel.bind(null, readModelRegistry),
-    search: searchReadModel.bind(null, readModelRegistry),
-    store: storeReadModel.bind(null, readModelRegistry),
+    fetch: fetchReadModel.bind(undefined, readModelRegistry),
+    search: searchReadModel.bind(undefined, readModelRegistry),
+    store: storeReadModel.bind(undefined, readModelRegistry),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete: deleteReadModel.bind(null, readModelRegistry),
+    delete: deleteReadModel.bind(undefined, readModelRegistry),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     subscribe: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -90,14 +97,17 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
   },
   // ProviderInfrastructureGetter
   infrastructure: () => {
+    // TODO: Make this compatible with ES Modules
+    // More info: https://github.com/sindresorhus/eslint-plugin-unicorn/blob/v43.0.2/docs/rules/prefer-module.md
+    // eslint-disable-next-line unicorn/prefer-module
     const infrastructurePackageName = require('../package.json').name + '-infrastructure'
     let infrastructure: HasInfrastructure | undefined
 
     try {
       infrastructure = loadInfrastructurePackage(infrastructurePackageName)
-    } catch (e) {
+    } catch (error) {
       throw new Error(
-        `The Local infrastructure package could not be loaded. The following error was thrown: ${e.message}. Please ensure that one of the following actions has been done:\n` +
+        `The Local infrastructure package could not be loaded. The following error was thrown: ${error.message}. Please ensure that one of the following actions has been done:\n` +
           `  - It has been specified in your "devDependencies" section of your "package.json" file. You can do so by running 'npm install --save-dev ${infrastructurePackageName}'\n` +
           `  - Or it has been installed globally. You can do so by running 'npm install -g ${infrastructurePackageName}'`
       )

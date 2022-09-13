@@ -131,7 +131,7 @@ export class BoosterReadModelsReader {
       readModelRequest.currentUser
     )
 
-    const nowEpoch = Math.floor(new Date().getTime() / 1000)
+    const nowEpoch = Math.floor(Date.now() / 1000)
     const subscription: SubscriptionEnvelope = {
       ...newReadModelRequest,
       expirationTime: nowEpoch + this.config.subscriptions.maxDurationInSeconds,

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { fake } from 'sinon'
 import { FilterFor, Searcher, SequenceKey } from '../src'
 import { expect } from './expect'
@@ -30,6 +31,8 @@ describe('the `Searcher` class', () => {
       it('adds an array of filters to the searcher and returns the searcher', () => {
         const fakeFilters: FilterFor<SomeModel> = { someField: { gt: '200' } }
 
+        // Not an array
+        // eslint-disable-next-line unicorn/no-array-callback-reference
         const newSearcher = searcher.filter(fakeFilters)
 
         expect(newSearcher).to.be.deep.equal(searcher)
@@ -89,6 +92,9 @@ describe('the `Searcher` class', () => {
     describe('the method `searchOne`', () => {
       it("calls the `searcherFunction` discarding searcher's limit and pagination settings", async () => {
         const filters = { someField: { gt: '200' } }
+
+        // Not an array
+        // eslint-disable-next-line unicorn/no-array-callback-reference
         const result = await searcher.filter(filters).afterCursor('30').limit(50).paginatedVersion(true).searchOne()
 
         expect(searcherFunction).to.have.been.calledWithMatch('SomeModel', filters, {}, 1, '30', false)
@@ -99,6 +105,9 @@ describe('the `Searcher` class', () => {
     describe('the method `search`', () => {
       it('calls the `searcherFunction` forwarding the configured parameters', async () => {
         const filters = { someField: { gt: '200' }, field: { otherField: { isDefined: true } } } as FilterFor<any>
+
+        // Not an array
+        // eslint-disable-next-line unicorn/no-array-callback-reference
         await searcher.filter(filters).afterCursor('30').limit(50).paginatedVersion(true).search()
 
         expect(searcherFunction).to.have.been.calledWithMatch('SomeModel', filters, {}, 50, '30', true)

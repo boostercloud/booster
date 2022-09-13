@@ -21,7 +21,7 @@ const boosterEventsTypesNames: Array<string> = [
 
 export class RegisterHandler {
   public static async handle(config: BoosterConfig, register: Register): Promise<void> {
-    if (register.eventList.length == 0) {
+    if (register.eventList.length === 0) {
       return
     }
     return config.provider.events.store(

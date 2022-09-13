@@ -18,13 +18,19 @@ export class GraphQLHelper {
   public client(authToken?: AuthToken): ApolloClient<NormalizedCacheObject> {
     return new ApolloClient({
       cache: new InMemoryCache(),
-      link: this.getAuthLink(authToken).concat(this.getApolloHTTPLink()),
+      link: this.buildLink(authToken),
       defaultOptions: {
         query: {
           fetchPolicy: 'no-cache',
         },
       },
     })
+  }
+
+  private buildLink(authToken?: AuthToken): ApolloLink | undefined {
+    // ESLint thinks this is an array, but its not, disabling rule
+    // eslint-disable-next-line unicorn/prefer-spread
+    return this.getAuthLink(authToken).concat(this.getApolloHTTPLink())
   }
 
   /**
@@ -40,7 +46,7 @@ export class GraphQLHelper {
         return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
       },
       new WebSocketLink(subscriptionClient),
-      this.getAuthLink(authToken).concat(this.getApolloHTTPLink())
+      this.buildLink(authToken)
     )
 
     return new DisconnectableApolloClient(subscriptionClient, {
@@ -86,9 +92,9 @@ export class GraphQLHelper {
             }
             return {}
           },
-          connectionCallback: (err?: any) => {
-            if (err) {
-              reject(err)
+          connectionCallback: (error?: any) => {
+            if (error) {
+              reject(error)
               return
             }
             resolve(subscriptionClient)
@@ -108,13 +114,13 @@ export class GraphQLHelper {
               console.debug('[GraphQL socket] on "pong"')
             })
             this.addListener('message', (data: WebSocket.Data): void => {
-              console.debug('[GraphQL socket] on message: ', data)
+              console.debug('[GraphQL socket] on message:', data)
             })
             this.addListener('close', (code: number, message: string): void => {
-              console.debug('[GraphQL socket] on close: ', code, message)
+              console.debug('[GraphQL socket] on close:', code, message)
             })
-            this.addListener('error', (err: Error): void => {
-              console.debug('[GraphQL socket] on error: ', err.message)
+            this.addListener('error', (error: Error): void => {
+              console.debug('[GraphQL socket] on error:', error.message)
             })
           }
         }

@@ -1,6 +1,5 @@
-import { deploy, nuke, BoosterK8sConfiguration } from './infrastructure'
+import { deploy, nuke } from './infrastructure'
 import { BoosterConfig, ProviderInfrastructure, RocketDescriptor } from '@boostercloud/framework-types'
-export { BoosterK8sConfiguration }
 
 export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): ProviderInfrastructure => {
   return {
@@ -8,3 +7,5 @@ export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): Provider
     nuke: async (config: BoosterConfig) => await nuke(config),
   }
 }
+
+export { BoosterK8sConfiguration } from './infrastructure'

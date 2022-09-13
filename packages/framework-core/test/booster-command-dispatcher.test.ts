@@ -14,8 +14,8 @@ describe('the `BoosterCommandsDispatcher`', () => {
     restore()
     Booster.configure('test', (config) => {
       config.appName = ''
-      for (const propName in config.commandHandlers) {
-        delete config.commandHandlers[propName]
+      for (const propertyName in config.commandHandlers) {
+        delete config.commandHandlers[propertyName]
       }
     })
   })
@@ -243,14 +243,14 @@ describe('the `BoosterCommandsDispatcher`', () => {
       const newComment = 'Look, I changed the message'
       const newCommentV2 = 'Yes, I changed it for a second time'
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const beforeFn: CommandBeforeFunction = async (input, _currentUser) => {
+      const beforeFunction: CommandBeforeFunction = async (input, _currentUser) => {
         input.comment = newComment
         const result = await Promise.resolve()
         console.log(result)
         return input
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const beforeFnV2: CommandBeforeFunction = async (input, _currentUser) => {
+      const beforeFunctionV2: CommandBeforeFunction = async (input, _currentUser) => {
         // To double-check it's really chained
         if (input.comment === newComment) input.comment = newCommentV2
         const result = await Promise.resolve()
@@ -260,7 +260,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
 
       it('transforms the input if a before hook function is passed', async () => {
         let transformedInput = {}
-        @Command({ authorize: 'all', before: [beforeFn] })
+        @Command({ authorize: 'all', before: [beforeFunction] })
         class PostComment {
           public constructor(readonly comment: string) {}
           public static async handle(command: PostComment): Promise<void> {
@@ -291,7 +291,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
 
       it('transforms the input when more than one before hook function is passed', async () => {
         let transformedInput = {}
-        @Command({ authorize: 'all', before: [beforeFn, beforeFnV2] })
+        @Command({ authorize: 'all', before: [beforeFunction, beforeFunctionV2] })
         class PostComment {
           public constructor(readonly comment: string) {}
           public static async handle(command: PostComment): Promise<void> {

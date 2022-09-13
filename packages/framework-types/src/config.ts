@@ -16,7 +16,7 @@ import {
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
-import * as path from 'path'
+import * as path from 'node:path'
 import { RocketDescriptor, RocketFunction } from './rockets'
 import { Logger } from '.'
 
@@ -66,14 +66,14 @@ export class BoosterConfig {
   public globalErrorsHandler: GlobalErrorHandlerMetadata | undefined
 
   private rocketFunctionMap: Record<string, RocketFunction> = {}
-  public registerRocketFunction(id: string, func: RocketFunction): void {
+  public registerRocketFunction(id: string, function_: RocketFunction): void {
     const currentFunction = this.rocketFunctionMap[id]
     if (currentFunction) {
       throw new Error(
         `Error registering rocket function with id ${id}: There is already a rocket function registered under the same ID, "${currentFunction.name}"`
       )
     }
-    this.rocketFunctionMap[id] = func
+    this.rocketFunctionMap[id] = function_
   }
   public getRegisteredRocketFunction(id: string): RocketFunction | undefined {
     return this.rocketFunctionMap[id]
@@ -140,6 +140,9 @@ export class BoosterConfig {
   public get provider(): ProviderLibrary {
     if (!this._provider && this.providerPackage) {
       const rockets = this.rockets ?? []
+      // TODO: Make this compatible with ES Modules
+      // More info: https://github.com/sindresorhus/eslint-plugin-unicorn/blob/v43.0.2/docs/rules/prefer-module.md
+      // eslint-disable-next-line unicorn/prefer-module
       const provider = require(this.providerPackage)
       this._provider = provider.Provider(rockets)
     }
@@ -169,10 +172,10 @@ export class BoosterConfig {
     this._userProjectRootPath = path
   }
 
-  public mustGetEnvironmentVar(varName: string): string {
-    const value = process.env[varName]
+  public mustGetEnvironmentVar(variableName: string): string {
+    const value = process.env[variableName]
     if (value == undefined) {
-      throw new Error(`Missing environment variable '${varName}'`)
+      throw new Error(`Missing environment variable '${variableName}'`)
     }
     return value
   }

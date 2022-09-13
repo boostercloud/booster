@@ -9,19 +9,19 @@ export function getLogger(config: BoosterConfig, location?: string, overridenLog
   const error = config.logger?.error ?? console.error
 
   const logPrefix = overridenLogPrefix ?? config?.logPrefix ?? defaultLogPrefix
-  const locationStr = location ? `|${location}: ` : ': '
-  const prefix = `[${logPrefix}]${locationStr}`
+  const locationString = location ? `|${location}: ` : ': '
+  const prefix = `[${logPrefix}]${locationString}`
 
-  const prefixedDebugFunction = debug.bind(null, prefix)
-  const prefixedInfoFunction = info.bind(null, prefix)
-  const prefixedWarnFunction = warn.bind(null, prefix)
-  const prefixedErrFunction = error.bind(null, prefix)
+  const prefixedDebugFunction = debug.bind(undefined, prefix)
+  const prefixedInfoFunction = info.bind(undefined, prefix)
+  const prefixedWarnFunction = warn.bind(undefined, prefix)
+  const prefixedErrorFunction = error.bind(undefined, prefix)
 
   return {
     debug: config.logLevel <= Level.debug ? prefixedDebugFunction : noopLog,
     info: config.logLevel <= Level.info ? prefixedInfoFunction : noopLog,
     warn: config.logLevel <= Level.warn ? prefixedWarnFunction : noopLog,
-    error: prefixedErrFunction,
+    error: prefixedErrorFunction,
   }
 }
 

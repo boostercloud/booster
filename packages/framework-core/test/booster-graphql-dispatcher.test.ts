@@ -116,7 +116,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
 
         expect(config.provider.readModels.deleteAllSubscriptions).not.to.have.been.called
         expect(config.provider.connections.deleteData).not.to.have.been.called
-        expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly(undefined)
+        expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly()
       })
 
       it('calls deletes connection and subscription data', async () => {
@@ -134,7 +134,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
           config,
           mockConnectionID
         )
-        expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly(undefined)
+        expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly()
       })
     })
 
@@ -324,9 +324,9 @@ describe('the `BoosterGraphQLDispatcher`', () => {
           const parseSpy = spy(gqlParser, 'parse')
           replace(gqlValidator, 'validate', fake.returns([]))
 
-          const executeFake = fake((params: any) => {
+          const executeFake = fake((parameters: any) => {
             // Simulates that the handler has added the `responseHeaders`
-            params.contextValue.responseHeaders['Test-Header'] = 'Test-Value'
+            parameters.contextValue.responseHeaders['Test-Header'] = 'Test-Value'
             return graphQLResult
           })
           replace(gqlExecutor, 'execute', executeFake)

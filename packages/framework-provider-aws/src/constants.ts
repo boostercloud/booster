@@ -27,10 +27,10 @@ export const connectionsStoreAttributes = {
   ttl: 'expirationTime',
 } as const
 
-export const environmentVarNames = {
+export const environmentVariableNames = {
   restAPIURL: 'BOOSTER_REST_API_URL',
   websocketAPIURL: 'BOOSTER_WEBSOCKET_API_URL',
 } as const
 
-export const dynamoDbBatchGetLimit = 100
-export const dynamoDbBatchWriteLimit = 25
+export const dynamoBatchGetLimit = 100
+export const dynamoBatchWriteLimit = 25

@@ -14,15 +14,15 @@ const transformer: (program: ts.Program) => ts.TransformerFactory<ts.SourceFile>
           // To ensure we import 'reflect-metadata', delete it from the file in case it is already there.
           // Later we will add it.
           const quotedModuleName = node.moduleSpecifier.getText()
-          const moduleName = quotedModuleName.replace(/['']/g, '')
+          const moduleName = quotedModuleName.replace(/'/g, '')
           if (moduleName == 'reflect-metadata') {
             return undefined
           }
           const namedBindings = node.importClause?.namedBindings
           if (namedBindings && 'elements' in namedBindings) {
-            const setImportedType = (elem: ts.ImportSpecifier): string =>
-              (importedTypes[elem.name.getText()] = moduleName)
-            namedBindings.elements.forEach(setImportedType)
+            for (const { name: binding } of namedBindings.elements) {
+              importedTypes[binding.getText()] = moduleName
+            }
           }
         }
 

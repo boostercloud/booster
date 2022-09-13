@@ -2,8 +2,8 @@ import { ProviderLibrary } from '@boostercloud/framework-types'
 import { expect } from './expect'
 import { fake, restore, stub } from 'sinon'
 
-const rewire = require('rewire')
-const awsSdk = require('aws-sdk')
+import rewire from 'rewire'
+import awsSdk from 'aws-sdk'
 const providerPackage = rewire('../src/index')
 const providerPackageSetup = rewire('../src/setup')
 const fakeInfrastructure = fake.returns({})
@@ -19,7 +19,7 @@ describe('the `framework-provider-aws` package', (): void => {
     })
     context('with no rockets', () => {
       it('returns a `ProviderLibrary` undefined when DynamoDB is undefined', () => {
-        stub(awsSdk, 'DynamoDB').returns(undefined)
+        stub(awsSdk, 'DynamoDB').returns(fake())
         const providerLibrary: ProviderLibrary = providerPackage.Provider()
         expect(providerLibrary.events.rawToEnvelopes).to.be.undefined
         expect(providerLibrary.events.forEntitySince).to.be.undefined

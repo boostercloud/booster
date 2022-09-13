@@ -6,7 +6,7 @@ import { TypeGroup } from './metadata-types'
 
 export interface TypeInfo {
   name: string // e.g. Array<string>
-  typeName: string | null // e.g. Array
+  typeName?: string // e.g. Array
   parameters: Array<TypeInfo>
   typeGroup: TypeGroup
   isNullable: boolean
@@ -64,7 +64,7 @@ function getTypeInfo(type: Type, node?: Node): TypeInfo {
     [(t) => t.isIntersection(), 'Intersection'],
     [(t) => t.isClass(), 'Class'],
     [(t) => t.isInterface(), 'Interface'],
-    [(t) => t.getAliasSymbol() != null, 'Type'],
+    [(t) => t.getAliasSymbol() != undefined, 'Type'],
     [(t) => t.isArray(), 'Array'],
     [(t) => t.getCallSignatures().length > 0, 'Function'],
     [(t) => isReadonlyArray(t), 'ReadonlyArray'],
@@ -77,7 +77,7 @@ function getTypeInfo(type: Type, node?: Node): TypeInfo {
   const typeInfo: TypeInfo = {
     name: type.getText(node), // node is passed for better name printing: https://github.com/dsherret/ts-morph/issues/907
     typeName: '',
-    typeGroup: typeGroupTuples.find(([fn]) => fn(type))?.[1] || 'Other',
+    typeGroup: typeGroupTuples.find(([function_]) => function_(type))?.[1] || 'Other',
     isNullable,
     parameters: [],
   }
@@ -104,7 +104,7 @@ function getTypeInfo(type: Type, node?: Node): TypeInfo {
       break
     case 'Union':
     case 'Intersection':
-      typeInfo.typeName = null
+      typeInfo.typeName = undefined
       break
     case 'Enum':
     case 'Class':
@@ -127,7 +127,7 @@ function getTypeInfo(type: Type, node?: Node): TypeInfo {
       if (type.isEnumLiteral()) {
         typeInfo.name = type.getSymbol()?.getName() || '' // e.g. "Small"
       }
-      typeInfo.typeName = null
+      typeInfo.typeName = undefined
       break
   }
 

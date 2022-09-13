@@ -117,11 +117,11 @@ export class Searcher<TObject> {
 }
 
 export type SortFor<TType> = {
-  [TProp in keyof TType]?: SortFor<TType[TProp]> | 'ASC' | 'DESC'
+  [TProperty in keyof TType]?: SortFor<TType[TProperty]> | 'ASC' | 'DESC'
 }
 
 export type FilterFor<TType> = {
-  [TProp in keyof TType]?: Operation<TType[TProp]>
+  [TProperty in keyof TType]?: Operation<TType[TProperty]>
 } &
   FilterCombinators<TType> &
   IsDefinedOperator

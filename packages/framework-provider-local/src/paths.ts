@@ -1,4 +1,4 @@
-import * as path from 'path'
+import * as path from 'node:path'
 export const registeredUsersDatabase = internalPath('registered_users.json')
 export const authenticatedUsersDatabase = internalPath('authenticated_users.json')
 export const eventsDatabase = internalPath('events.json')
