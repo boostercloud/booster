@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Rush Install
         # Pinning to specific commit that has been audited. Only update 3rd party
@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Rush Install
         # Pinning to specific commit that has been audited. Only update 3rd party
@@ -64,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Rush Install
         # Pinning to specific commit that has been audited. Only update 3rd party
@@ -90,7 +90,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Rush Install
         # Pinning to specific commit that has been audited. Only update 3rd party
@@ -118,7 +118,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Rush Install
         # Pinning to specific commit that has been audited. Only update 3rd party
@@ -142,7 +142,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Rush Install
         # Pinning to specific commit that has been audited. Only update 3rd party
@@ -162,7 +162,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Rush Install
         # Pinning to specific commit that has been audited. Only update 3rd party
@@ -187,7 +187,7 @@ jobs:
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Rush Install
         # Pinning to specific commit that has been audited. Only update 3rd party
@@ -226,7 +226,7 @@ jobs:
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Rush Install
         # Pinning to specific commit that has been audited. Only update 3rd party
@@ -265,7 +265,7 @@ jobs:
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Rush Install
         # Pinning to specific commit that has been audited. Only update 3rd party
@@ -306,7 +306,7 @@ jobs:
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Rush Install
         # Pinning to specific commit that has been audited. Only update 3rd party
@@ -341,7 +341,7 @@ jobs:
   #  env:
   #    KUBECONFIG: '/home/runner/.kube/config'
   #  steps:
-  #    - uses: actions/checkout@v2
+  #    - uses: actions/checkout@v3
   #    - uses: manusa/actions-setup-minikube@v2.3.1
   #      with:
   #        minikube version: 'v1.18.1'
