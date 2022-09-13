@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - '1.0.0'
     paths-ignore:
       - '**.md'
 
