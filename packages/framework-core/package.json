@@ -32,7 +32,7 @@
   "dependencies": {
     "@boostercloud/framework-common-helpers": "workspace:^0.30.6",
     "@boostercloud/framework-types": "workspace:^0.30.6",
-    "fp-ts": "2.10.5",
+    "fp-ts": "^2.11.0",
     "graphql": "^15.5.1",
     "graphql-scalars": "^1.17.0",
     "graphql-subscriptions": "1.2.1",
