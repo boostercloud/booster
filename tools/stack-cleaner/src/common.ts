@@ -24,6 +24,11 @@ type BoosterModule<SDK extends ValidSDK<SDK>, ErrorType> = {
   [Key in keyof SDK]: (...args: Parameters<SDK[Key]>) => ReaderTaskEither<SDK, ErrorType, PromiseResultType<SDK[Key]>>
 }
 
+export const withField =
+  <T, K extends keyof T, V>(prop: K, f: (value: T[K]) => V) =>
+  (t: T): V =>
+    pipe(t, Lens.fromProp<T>()(prop).get, f)
+
 const buildOperation =
   <SDK extends ValidSDK<SDK>, ErrorType, Result, K extends keyof SDK = keyof SDK>(
     prop: K,

@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import * as Arr from 'fp-ts/ReadonlyArray'
 import * as Str from 'fp-ts/string'
 import * as Either from 'fp-ts/Either'
-import { flow, pipe } from 'fp-ts/function'
+import { constVoid, flow, pipe } from 'fp-ts/function'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import { CloudError, CloudModule as Cloud } from './cloud'
 import { AwsImplementation } from './aws'
@@ -21,7 +22,6 @@ const trace =
       return a
     })
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const listObjectsAlongStorage = (storageName: string) =>
   pipe(
     Cloud.listObjectsInStorage(storageName),
@@ -31,13 +31,14 @@ const listObjectsAlongStorage = (storageName: string) =>
 
 const inParallel = Arr.traverse(RTE.ApplicativeSeq)
 
+const listAllObjects = (buckets: ReadonlyArray<string>) =>
+  pipe(buckets, RTE.traverseArray(listObjectsAlongStorage), RTE.map(Arr.flatten))
+
 const cleanBuckets = pipe(
   RTE.Do,
-  RTE.bind('buckets', () => pipe(Cloud.listStorages(), RTE.map(filterNames))),
+  RTE.bindW('buckets', () => pipe(Cloud.listStorages(), RTE.map(filterNames))),
   RTE.chainFirstW(({ buckets }) => trace('Found buckets')(buckets)),
-  RTE.bindW('objects', ({ buckets }) =>
-    pipe(buckets, RTE.traverseArray(listObjectsAlongStorage), RTE.map(Arr.flatten))
-  ),
+  RTE.bindW('objects', ({ buckets }) => listAllObjects(buckets)),
   RTE.chainFirstW(({ objects }) => trace('Found objects')(objects)),
   RTE.bindW('deletedObjects', ({ objects }) =>
     pipe(
@@ -46,22 +47,7 @@ const cleanBuckets = pipe(
     )
   ),
   RTE.bindW('deletedBuckets', ({ buckets }) => pipe(buckets, RTE.traverseSeqArray(Cloud.deleteStorage))),
-  RTE.chain(() => RTE.right(undefined))
-  // RTE.bind('objectDeleteTasks', ({ objects }) =>
-  //   pipe(
-  //     objects,
-  //     Arr.flatten,
-  //     Arr.reduce(
-  //       RTE.fromIO(() => {}),
-  //       (current, { storageName, objectName }) =>
-  //         pipe(
-  //           current,
-  //           RTE.chain(() => Cloud.deleteObject(storageName, objectName))
-  //         )
-  //     )
-  //   )
-  // ),
-  // RTE.bind('bucketDeleteTasks', ({ buckets }) => inParallel(Cloud.deleteStorage)(buckets))
+  RTE.chain(() => RTE.of(constVoid()))
 )
 
 const parallelDeleteStacks = inParallel(Cloud.deleteStack)
@@ -69,7 +55,7 @@ const parallelDeleteStacks = inParallel(Cloud.deleteStack)
 const cleanStacks = pipe(
   RTE.Do,
   RTE.bindW('stacks', Cloud.getDeployedStacks),
-  RTE.bindW('partitionedStacks', ({ stacks }) => RTE.right(partitionByType(filterNames(stacks)))),
+  RTE.bindW('partitionedStacks', ({ stacks }) => RTE.right(partitionByType(filterStoreNames(stacks)))),
   RTE.chainFirstW(({ partitionedStacks }) => parallelDeleteStacks(partitionedStacks.left)),
   RTE.chainW(({ partitionedStacks }) => parallelDeleteStacks(partitionedStacks.right))
 )

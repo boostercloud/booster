@@ -12,17 +12,37 @@ import { CloudSDK } from './cloud'
 export const AwsImplementation = (cloudFormation: CloudFormationClient, s3: S3Client): CloudSDK => ({
   async getDeployedStacks(): Promise<string[]> {
     console.log('Getting stacks')
-    const command = new ListStacksCommand({})
-    const stacks = await cloudFormation.send(command)
-    const result =
-      (stacks.StackSummaries?.map((summary) => summary.StackName).filter((name) => name) as Array<string>) ?? []
-    return result
+    let nextToken: string | undefined
+    const stackNames = [] as string[]
+    do {
+      const command = new ListStacksCommand({ NextToken: nextToken })
+      const stacks = await cloudFormation.send(command)
+      const result =
+        (stacks.StackSummaries?.map((summary) => summary.StackName).filter((name) => name) as Array<string>) ?? []
+      nextToken = stacks.NextToken
+      stackNames.push(...result)
+    } while (nextToken)
+    return stackNames
   },
 
   async deleteStack(stackName: string): Promise<void> {
     console.log('Deleting stack', stackName)
-    const command = new DeleteStackCommand({ StackName: stackName, RetainResources: [] })
-    await cloudFormation.send(command)
+    let retryRate = 2000
+    let retryAgain = true
+    while (retryAgain) {
+      if (retryRate > 32000) {
+        break
+      }
+      try {
+        const command = new DeleteStackCommand({ StackName: stackName })
+        await cloudFormation.send(command)
+        retryAgain = false
+      } catch (error) {
+        console.log('ThrottlingException, retrying in', retryRate, 'ms')
+        await new Promise((resolve) => setTimeout(resolve, retryRate))
+        retryRate *= 2
+      }
+    }
   },
 
   async listStorages(): Promise<string[]> {
