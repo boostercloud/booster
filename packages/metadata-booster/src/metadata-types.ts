@@ -22,6 +22,7 @@ export interface TypeMetadata {
   typeGroup: TypeGroup
   parameters: Array<TypeMetadata>
   isNullable: boolean
+  isGetAccessor: boolean
   typeName?: string
   importPath?: string
   type?: ClassType
