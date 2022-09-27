@@ -113,7 +113,9 @@ function beginWith(readModelPropValue: any, element: string): boolean {
 }
 
 function includes(readModelPropValue: any, element: any): boolean {
-  if (!Array.isArray(readModelPropValue)) return false
-  if (readModelPropValue.includes(element)) return true
-  return readModelPropValue.some((prop: any) => Object.keys(prop).some((key) => prop[key] === element[key]))
+  if (Array.isArray(readModelPropValue)) {
+    return readModelPropValue.includes(element)
+  } else {
+    return readModelPropValue.some((prop: any) => Object.keys(prop).some((key) => prop[key] === element[key]))
+  }
 }
