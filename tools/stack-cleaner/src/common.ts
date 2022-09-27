@@ -29,6 +29,14 @@ export const withField =
   (t: T): V =>
     pipe(t, Lens.fromProp<T>()(prop).get, f)
 
+export const trace =
+  <A>(message: string) =>
+  (a: A): RTE.ReaderTaskEither<unknown, never, A> =>
+    RTE.fromIO(() => {
+      console.log(message, a)
+      return a
+    })
+
 const buildOperation =
   <SDK extends ValidSDK<SDK>, ErrorType, Result, K extends keyof SDK = keyof SDK>(
     prop: K,

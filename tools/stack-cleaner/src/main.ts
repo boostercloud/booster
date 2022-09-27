@@ -8,19 +8,13 @@ import { CloudError, CloudModule as Cloud } from './cloud'
 import { AwsImplementation } from './aws'
 import { CloudFormationClient } from '@aws-sdk/client-cloudformation'
 import { S3Client } from '@aws-sdk/client-s3'
+import { trace } from './common'
+import { Predicate } from 'fp-ts/lib/Predicate'
 
 const filterStoreNames = Arr.filter(Str.startsWith('my-store-'))
 const filterToolkitNames = Arr.filter(Str.includes('toolkit'))
 const filterNames = flow(filterStoreNames, filterToolkitNames)
 const partitionByType = Arr.partition(Str.includes('toolkit'))
-
-const trace =
-  <A>(message: string) =>
-  (a: A): RTE.ReaderTaskEither<unknown, never, A> =>
-    RTE.fromIO(() => {
-      console.log(message, a)
-      return a
-    })
 
 const listObjectsAlongStorage = (storageName: string) =>
   pipe(
@@ -34,31 +28,33 @@ const inParallel = Arr.traverse(RTE.ApplicativeSeq)
 const listAllObjects = (buckets: ReadonlyArray<string>) =>
   pipe(buckets, RTE.traverseArray(listObjectsAlongStorage), RTE.map(Arr.flatten))
 
-const cleanBuckets = pipe(
-  RTE.Do,
-  RTE.bindW('buckets', () => pipe(Cloud.listStorages(), RTE.map(filterNames))),
-  RTE.chainFirstW(({ buckets }) => trace('Found buckets')(buckets)),
-  RTE.bindW('objects', ({ buckets }) => listAllObjects(buckets)),
-  RTE.chainFirstW(({ objects }) => trace('Found objects')(objects)),
-  RTE.bindW('deletedObjects', ({ objects }) =>
-    pipe(
-      objects,
-      RTE.traverseSeqArray(({ storageName, objectName }) => Cloud.deleteObject(storageName, objectName))
-    )
-  ),
-  RTE.bindW('deletedBuckets', ({ buckets }) => pipe(buckets, RTE.traverseSeqArray(Cloud.deleteStorage))),
-  RTE.chain(() => RTE.of(constVoid()))
-)
+const cleanBuckets = (bucketFilter: Predicate<string>) =>
+  pipe(
+    RTE.Do,
+    RTE.bindW('buckets', () => pipe(Cloud.listStorages(), RTE.map(Arr.filter(bucketFilter)))),
+    RTE.chainFirstW(({ buckets }) => trace('Found buckets')(buckets)),
+    RTE.bindW('objects', ({ buckets }) => listAllObjects(buckets)),
+    RTE.chainFirstW(({ objects }) => trace('Found objects')(objects)),
+    RTE.bindW('deletedObjects', ({ objects }) =>
+      pipe(
+        objects,
+        RTE.traverseSeqArray(({ storageName, objectName }) => Cloud.deleteObject(storageName, objectName))
+      )
+    ),
+    RTE.bindW('deletedBuckets', ({ buckets }) => pipe(buckets, RTE.traverseSeqArray(Cloud.deleteStorage))),
+    RTE.chain(() => RTE.of(constVoid()))
+  )
 
 const parallelDeleteStacks = inParallel(Cloud.deleteStack)
 
-const cleanStacks = pipe(
-  RTE.Do,
-  RTE.bindW('stacks', Cloud.getDeployedStacks),
-  RTE.bindW('partitionedStacks', ({ stacks }) => RTE.right(partitionByType(filterStoreNames(stacks)))),
-  RTE.chainFirstW(({ partitionedStacks }) => parallelDeleteStacks(partitionedStacks.left)),
-  RTE.chainW(({ partitionedStacks }) => parallelDeleteStacks(partitionedStacks.right))
-)
+const cleanStacks = (stackFilter: Predicate<string>) =>
+  pipe(
+    RTE.Do,
+    RTE.bindW('stacks', Cloud.getDeployedStacks),
+    RTE.bindW('partitionedStacks', ({ stacks }) => RTE.right(partitionByType(Arr.filter(stackFilter)(stacks)))),
+    RTE.chainFirstW(({ partitionedStacks }) => parallelDeleteStacks(partitionedStacks.left)),
+    RTE.chainW(({ partitionedStacks }) => parallelDeleteStacks(partitionedStacks.right))
+  )
 
 const cleanAll = pipe(
   cleanBuckets,
@@ -83,7 +79,6 @@ const handleSuccess = (): void => {
 export const main = async (): Promise<void> => {
   const region = 'us-east-1'
   const sdk = AwsImplementation(new CloudFormationClient({ region }), new S3Client({ region }))
-  pipe(cleanAll)
   const result = await cleanAll(sdk)()
   return pipe(result, Either.fold(handleError, handleSuccess))
 }
