@@ -1,7 +1,7 @@
 {
   "name": "@boostercloud/framework-integration-tests",
   "description": "Example project for Booster",
-  "version": "0.30.6",
+  "version": "0.30.7",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
   "private": true,
@@ -10,6 +10,7 @@
   },
   "bugs": "https://github.com/boostercloud/booster/issues",
   "dependencies": {
+<<<<<<< HEAD
     "@boostercloud/framework-common-helpers": "workspace:^0.30.6",
     "@boostercloud/framework-core": "workspace:^0.30.6",
     "@boostercloud/framework-provider-aws": "workspace:^0.30.6",
@@ -31,6 +32,25 @@
     "@boostercloud/framework-provider-local-infrastructure": "workspace:^0.30.6",
     "@boostercloud/metadata-booster": "workspace:^0.30.6",
     "@kubernetes/client-node": "^0.17.0",
+=======
+    "@boostercloud/framework-common-helpers": "^0.30.7",
+    "@boostercloud/framework-core": "^0.30.7",
+    "@boostercloud/framework-provider-aws": "^0.30.7",
+    "@boostercloud/framework-provider-azure": "^0.30.7",
+    "@boostercloud/framework-provider-kubernetes": "^0.30.7",
+    "@boostercloud/framework-provider-local": "^0.30.7",
+    "@boostercloud/framework-types": "^0.30.7",
+    "aws-sdk": "2.853.0"
+  },
+  "devDependencies": {
+    "@boostercloud/application-tester": "^0.30.7",
+    "@boostercloud/framework-provider-aws-infrastructure": "^0.30.7",
+    "@boostercloud/framework-provider-azure-infrastructure": "^0.30.7",
+    "@boostercloud/framework-provider-kubernetes-infrastructure": "^0.30.7",
+    "@boostercloud/framework-provider-local-infrastructure": "^0.30.7",
+    "@boostercloud/metadata-booster": "^0.30.7",
+    "@kubernetes/client-node": "0.14.3",
+>>>>>>> e5c87fb1 (v0.30.7)
     "@types/aws-lambda": "8.10.48",
     "@types/chai": "4.2.18",
     "@types/chai-arrays": "2.0.0",

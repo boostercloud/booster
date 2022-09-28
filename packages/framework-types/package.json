@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-types",
-  "version": "0.30.6",
+  "version": "0.30.7",
   "description": "Contains Booster types related to the information extracted from the user project",
   "keywords": [
     "framework-types"
@@ -39,6 +39,7 @@
     "uuid": "8.3.2"
   },
   "devDependencies": {
+<<<<<<< HEAD
     "@boostercloud/eslint-config": "workspace:^0.30.6",
     "@boostercloud/metadata-booster": "workspace:^0.30.6",
     "@types/chai": "4.2.18",
@@ -47,6 +48,9 @@
     "@types/node": "^16.11.7",
     "@types/sinon": "10.0.0",
     "@types/sinon-chai": "3.2.5",
+=======
+    "@boostercloud/metadata-booster": "^0.30.7",
+>>>>>>> e5c87fb1 (v0.30.7)
     "@types/uuid": "8.3.0",
     "@typescript-eslint/eslint-plugin": "4.22.1",
     "@typescript-eslint/parser": "4.22.1",

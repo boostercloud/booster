@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-aws-infrastructure",
-  "version": "0.30.6",
+  "version": "0.30.7",
   "description": "Handle the Booster deployment process to AWS",
   "keywords": [
     "framework-provider-aws-infrastructure"
@@ -20,6 +20,7 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@aws-cdk/aws-apigateway": "^1.170.0",
     "@aws-cdk/aws-logs": "^1.170.0",
     "@aws-cdk/assets": "^1.170.0",
@@ -42,6 +43,23 @@
     "@boostercloud/framework-types": "workspace:^0.30.6",
     "constructs": "^3.3.69",
     "aws-cdk": "^1.170.0",
+=======
+    "@aws-cdk/aws-apigateway": "1.99.0",
+    "@aws-cdk/aws-apigatewayv2": "1.99.0",
+    "@aws-cdk/aws-cloudfront": "1.99.0",
+    "@aws-cdk/aws-dynamodb": "1.99.0",
+    "@aws-cdk/aws-events-targets": "1.99.0",
+    "@aws-cdk/aws-iam": "1.99.0",
+    "@aws-cdk/aws-lambda": "1.99.0",
+    "@aws-cdk/aws-lambda-event-sources": "1.99.0",
+    "@aws-cdk/aws-s3": "1.99.0",
+    "@aws-cdk/aws-s3-deployment": "1.99.0",
+    "@aws-cdk/cx-api": "1.99.0",
+    "@boostercloud/framework-common-helpers": "^0.30.7",
+    "@boostercloud/framework-provider-aws": "^0.30.7",
+    "@boostercloud/framework-types": "^0.30.7",
+    "aws-cdk": "1.99.0",
+>>>>>>> e5c87fb1 (v0.30.7)
     "aws-sdk": "2.853.0",
     "colors": "^1.4.0",
     "tslib": "^2.4.0",
