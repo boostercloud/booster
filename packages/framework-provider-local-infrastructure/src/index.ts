@@ -62,7 +62,7 @@ export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): Provider
       expressServer.use(
         express.urlencoded({
           extended: true,
-          limit: '6mb'
+          limit: '6mb',
         })
       )
       expressServer.use(cors())

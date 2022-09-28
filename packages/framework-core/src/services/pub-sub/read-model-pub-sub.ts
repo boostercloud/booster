@@ -42,11 +42,8 @@ export class FilteredReadModelPubSub<TReadModel extends ReadModelInterface> impl
 
 function filterReadModel<TReadModel extends ReadModelInterface>(
   readModel: TReadModel,
-  filters?: ReadModelRequestProperties<TReadModel>
+  filters: ReadModelRequestProperties<TReadModel>
 ): boolean {
-  if (!filters) {
-    return true
-  }
   for (const filteredProp in filters) {
     const readModelPropValue = readModel[filteredProp]
     return filterByOperation<TReadModel>(filters[filteredProp], readModelPropValue)
@@ -113,7 +110,13 @@ function beginWith(readModelPropValue: any, element: string): boolean {
 }
 
 function includes(readModelPropValue: any, element: any): boolean {
-  if (!Array.isArray(readModelPropValue)) return false
-  if (readModelPropValue.includes(element)) return true
-  return readModelPropValue.some((prop: any) => Object.keys(prop).some((key) => prop[key] === element[key]))
+  if (Array.isArray(readModelPropValue)) {
+    // Check that array includes an object
+    if (typeof element === 'object') {
+      return readModelPropValue.some((item) => Object.keys(element).every((key) => item[key] === element[key]))
+    }
+    // If not, do a regular includes
+    return readModelPropValue.includes(element)
+  }
+  return false
 }
