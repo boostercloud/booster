@@ -44,9 +44,6 @@ function filterReadModel<TReadModel extends ReadModelInterface>(
   readModel: TReadModel,
   filters: ReadModelRequestProperties<TReadModel>
 ): boolean {
-  if (!filters) {
-    return true
-  }
   for (const filteredProp in filters) {
     const readModelPropValue = readModel[filteredProp]
     return filterByOperation<TReadModel>(filters[filteredProp], readModelPropValue)
@@ -114,8 +111,16 @@ function beginWith(readModelPropValue: any, element: string): boolean {
 
 function includes(readModelPropValue: any, element: any): boolean {
   if (Array.isArray(readModelPropValue)) {
+    // Check that array includes an object
+    if (typeof element === 'object') {
+      return readModelPropValue.some((item) => {
+        return Object.keys(element).every((key) => {
+          return item[key] === element[key]
+        })
+      })
+    }
+    // If not, do a regular includes
     return readModelPropValue.includes(element)
-  } else {
-    return readModelPropValue.some((prop: any) => Object.keys(prop).some((key) => prop[key] === element[key]))
   }
+  return false
 }
