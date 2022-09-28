@@ -42,7 +42,7 @@ export class FilteredReadModelPubSub<TReadModel extends ReadModelInterface> impl
 
 function filterReadModel<TReadModel extends ReadModelInterface>(
   readModel: TReadModel,
-  filters?: ReadModelRequestProperties<TReadModel>
+  filters: ReadModelRequestProperties<TReadModel>
 ): boolean {
   if (!filters) {
     return true
