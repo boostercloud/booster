@@ -7,9 +7,7 @@ export class BoosterRocketDispatcher {
     const rawToEnvelopes = this.config.provider.rockets.rawToEnvelopes(this.config, request)
     const rocketId = rawToEnvelopes.rocketId
     if (!rocketId) {
-      throw new Error(
-        `Attempt to execute a rocket function but the ID is missing.`
-      )
+      throw new Error('Attempt to execute a rocket function but the ID is missing.')
     }
     const rocketFunction = this.config.getRegisteredRocketFunction(rocketId)
     if (!rocketFunction) {
