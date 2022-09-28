@@ -113,11 +113,7 @@ function includes(readModelPropValue: any, element: any): boolean {
   if (Array.isArray(readModelPropValue)) {
     // Check that array includes an object
     if (typeof element === 'object') {
-      return readModelPropValue.some((item) => {
-        return Object.keys(element).every((key) => {
-          return item[key] === element[key]
-        })
-      })
+      return readModelPropValue.some((item) => Object.keys(element).every((key) => item[key] === element[key]))
     }
     // If not, do a regular includes
     return readModelPropValue.includes(element)
