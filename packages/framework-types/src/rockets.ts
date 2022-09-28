@@ -8,3 +8,7 @@ export interface RocketDescriptor {
   packageName: string
   parameters: unknown
 }
+
+export interface RocketEnvelope {
+  rocketId: string | undefined
+}
