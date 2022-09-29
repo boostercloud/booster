@@ -119,6 +119,14 @@ export function createFilterInterfaceFunction(
           f.createCatchClause(
             undefined,
             f.createBlock([f.createReturnStatement(f.createIdentifier('undefined'))], false)
+          ),
+          f.createBlock(
+            [
+              f.createReturnStatement(
+                f.createCallExpression(f.createIdentifier('eval'), undefined, [f.createIdentifier('typeName')])
+              ),
+            ],
+            false
           )
         ),
       ],
