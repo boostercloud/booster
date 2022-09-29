@@ -226,16 +226,16 @@ function cameThroughSocket(withConnectionID: { connectionID?: string }): boolean
 }
 
 type BoosterError = Error & { code?: unknown; data?: unknown }
-function toGraphQLErrorWithExtensions(e: BoosterError | GraphQLError): GraphQLError {
-  if (e instanceof GraphQLError) {
-    const originalError = e.originalError as BoosterError
-    return new GraphQLError(e.message, e.nodes, e.source, e.positions, e.path, originalError, {
+function toGraphQLErrorWithExtensions(error: BoosterError | GraphQLError): GraphQLError {
+  if (error instanceof GraphQLError) {
+    const originalError = error.originalError as BoosterError
+    return new GraphQLError(error.message, error.nodes, error.source, error.positions, error.path, originalError, {
       code: originalError?.code,
       data: originalError?.data,
     })
   }
-  return new GraphQLError(e.message, undefined, undefined, undefined, undefined, e, {
-    code: e.code,
-    data: e.data,
+  return new GraphQLError(error.message, undefined, undefined, undefined, undefined, error, {
+    code: error.code,
+    data: error.data,
   })
 }

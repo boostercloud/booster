@@ -10,24 +10,26 @@ import { Lens } from 'monocle-ts'
 /**
  * Helper function to wrap an async function that may throw an exception in a ReaderTaskEither
  */
-const tryCatch = <Env, Error, Result>(
+const tryCatch = <Environment, Error, Result>(
   operation: () => Promise<Result>,
   onReject: (error: unknown) => Error
-): ReaderTaskEither<Env, Error, Result> => fromTaskEither(TE.tryCatch(operation, onReject))
+): ReaderTaskEither<Environment, Error, Result> => fromTaskEither(TE.tryCatch(operation, onReject))
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ValidSDK<T> = { [key in keyof T]: (...args: any[]) => Promise<any> }
+type ValidSDK<T> = { [key in keyof T]: (...arguments_: any[]) => Promise<any> }
 
 type PromiseResultType<T> = T extends Promise<infer R> ? R : never
 
 type BoosterModule<SDK extends ValidSDK<SDK>, ErrorType> = {
-  [Key in keyof SDK]: (...args: Parameters<SDK[Key]>) => ReaderTaskEither<SDK, ErrorType, PromiseResultType<SDK[Key]>>
+  [Key in keyof SDK]: (
+    ...arguments_: Parameters<SDK[Key]>
+  ) => ReaderTaskEither<SDK, ErrorType, PromiseResultType<SDK[Key]>>
 }
 
 export const withField =
-  <T, K extends keyof T, V>(prop: K, f: (value: T[K]) => V) =>
+  <T, K extends keyof T, V>(property: K, f: (value: T[K]) => V) =>
   (t: T): V =>
-    pipe(t, Lens.fromProp<T>()(prop).get, f)
+    pipe(t, Lens.fromProp<T>()(property).get, f)
 
 export const trace =
   <A>(message: string) =>
@@ -39,13 +41,13 @@ export const trace =
 
 const buildOperation =
   <SDK extends ValidSDK<SDK>, ErrorType, Result, K extends keyof SDK = keyof SDK>(
-    prop: K,
-    onError: (err: unknown) => ErrorType
+    property: K,
+    onError: (error: unknown) => ErrorType
   ) =>
-  (...params: Parameters<SDK[K]>): ReaderTaskEither<SDK, ErrorType, Result> =>
+  (...parameters: Parameters<SDK[K]>): ReaderTaskEither<SDK, ErrorType, Result> =>
     pipe(
-      RTE.asks<SDK, SDK[K]>(Lens.fromProp<SDK>()(prop).get),
-      RTE.chain((operation: SDK[K]) => tryCatch(() => operation(...params), onError))
+      RTE.asks<SDK, SDK[K]>(Lens.fromProp<SDK>()(property).get),
+      RTE.chain((operation: SDK[K]) => tryCatch(() => operation(...parameters), onError))
     )
 
 export const buildModule = <
@@ -54,13 +56,13 @@ export const buildModule = <
   Module = BoosterModule<SDK, ErrorType>,
   K extends keyof SDK = keyof SDK
 >(
-  props: Array<K>,
-  onError: (err: unknown) => ErrorType
+  properties: Array<K>,
+  onError: (error: unknown) => ErrorType
 ): Module =>
   pipe(
-    props,
-    Arr.reduce({} as Module, (acc, prop) => ({
-      ...acc,
-      [prop]: buildOperation<SDK, ErrorType, ReturnType<SDK[K]>>(prop, onError),
+    properties,
+    Arr.reduce({} as Module, (accumulator, property) => ({
+      ...accumulator,
+      [property]: buildOperation<SDK, ErrorType, ReturnType<SDK[K]>>(property, onError),
     }))
   )

@@ -77,12 +77,12 @@ const handleSuccess = (): void => {
 }
 
 export const main = async (): Promise<void> => {
-  const [regionArg, ...args] = process.argv.slice(2)
-  const region = regionArg ?? 'us-east-1'
+  const [regionArgument, ...arguments_] = process.argv.slice(2)
+  const region = regionArgument ?? 'us-east-1'
   const sdk = AwsImplementation(new CloudFormationClient({ region }), new S3Client({ region }))
   const stackFilter = (s: string) =>
     pipe(
-      args,
+      arguments_,
       Arr.some((prefix) => Str.startsWith(prefix)(s))
     )
   // Could be more specific, but this is good enough for now

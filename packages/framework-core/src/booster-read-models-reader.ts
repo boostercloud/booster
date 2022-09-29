@@ -48,13 +48,16 @@ export class BoosterReadModelsReader {
       readModelRequest.currentUser
     )
 
-    return Booster.readModel(readModelMetadata.class)
-      .filter(readModelTransformedRequest.filters)
-      .sortBy(readModelTransformedRequest.sortBy)
-      .limit(readModelTransformedRequest.limit)
-      .afterCursor(readModelTransformedRequest.afterCursor)
-      .paginatedVersion(readModelTransformedRequest.paginatedVersion)
-      .search()
+    return (
+      Booster.readModel(readModelMetadata.class)
+        // eslint-disable-next-line unicorn/no-array-callback-reference
+        .filter(readModelTransformedRequest.filters)
+        .sortBy(readModelTransformedRequest.sortBy)
+        .limit(readModelTransformedRequest.limit)
+        .afterCursor(readModelTransformedRequest.afterCursor)
+        .paginatedVersion(readModelTransformedRequest.paginatedVersion)
+        .search()
+    )
   }
 
   public async subscribe(

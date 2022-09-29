@@ -17,8 +17,7 @@ export const AwsImplementation = (cloudFormation: CloudFormationClient, s3: S3Cl
     do {
       const command = new ListStacksCommand({ NextToken: nextToken })
       const stacks = await cloudFormation.send(command)
-      const result =
-        (stacks.StackSummaries?.map((summary) => summary.StackName).filter((name) => name) as Array<string>) ?? []
+      const result = (stacks.StackSummaries?.map((summary) => summary.StackName).filter(Boolean) as Array<string>) ?? []
       nextToken = stacks.NextToken
       stackNames.push(...result)
     } while (nextToken)
@@ -30,14 +29,14 @@ export const AwsImplementation = (cloudFormation: CloudFormationClient, s3: S3Cl
     let retryRate = 2000
     let retryAgain = true
     while (retryAgain) {
-      if (retryRate > 32000) {
+      if (retryRate > 32_000) {
         break
       }
       try {
         const command = new DeleteStackCommand({ StackName: stackName })
         await cloudFormation.send(command)
         retryAgain = false
-      } catch (error) {
+      } catch {
         console.log('ThrottlingException, retrying in', retryRate, 'ms')
         await new Promise((resolve) => setTimeout(resolve, retryRate))
         retryRate *= 2
@@ -49,7 +48,7 @@ export const AwsImplementation = (cloudFormation: CloudFormationClient, s3: S3Cl
     console.log('Getting storages')
     const command = new ListBucketsCommand({})
     const storages = await s3.send(command)
-    const result = (storages.Buckets?.map((bucket) => bucket.Name).filter((name) => name) as Array<string>) ?? []
+    const result = (storages.Buckets?.map((bucket) => bucket.Name).filter(Boolean) as Array<string>) ?? []
     for (const index in result) {
       console.log('Checking region')
       const isSameRegion = await checkRegion(result[index], s3, expectedRegion)
@@ -65,7 +64,7 @@ export const AwsImplementation = (cloudFormation: CloudFormationClient, s3: S3Cl
     const command = new ListObjectsCommand({ Bucket: storageName })
     const objects = await s3.send(command)
     console.log('Got objects in storage', storageName, objects)
-    return (objects.Contents?.map((content) => content.Key).filter((key) => key) as Array<string>) ?? []
+    return (objects.Contents?.map((content) => content.Key).filter(Boolean) as Array<string>) ?? []
   },
 
   async deleteObject(storageName: string, objectName: string): Promise<void> {

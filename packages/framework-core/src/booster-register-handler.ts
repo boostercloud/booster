@@ -13,11 +13,11 @@ import { BoosterEntityMigrated } from './core-concepts/data-migration/events/boo
 import { BoosterDataMigrationStarted } from './core-concepts/data-migration/events/booster-data-migration-started'
 import { BoosterDataMigrationFinished } from './core-concepts/data-migration/events/booster-data-migration-finished'
 
-const boosterEventsTypesNames: Array<string> = [
+const boosterEventsTypesNames = new Set([
   BoosterEntityMigrated.name,
   BoosterDataMigrationStarted.name,
   BoosterDataMigrationFinished.name,
-]
+])
 
 export class RegisterHandler {
   public static async handle(config: BoosterConfig, register: Register): Promise<void> {
@@ -25,7 +25,7 @@ export class RegisterHandler {
       return
     }
     return config.provider.events.store(
-      register.eventList.map(RegisterHandler.wrapEvent.bind(null, register, config)),
+      register.eventList.map(RegisterHandler.wrapEvent.bind(undefined, register, config)),
       config
     )
   }
@@ -59,7 +59,7 @@ export class RegisterHandler {
   }
 
   private static getSuperKind(eventTypeName: string): SuperKindType {
-    return boosterEventsTypesNames.includes(eventTypeName) ? BOOSTER_SUPER_KIND : DOMAIN_SUPER_KIND
+    return boosterEventsTypesNames.has(eventTypeName) ? BOOSTER_SUPER_KIND : DOMAIN_SUPER_KIND
   }
 
   private static getEntityTypeName(
