@@ -45,14 +45,14 @@ export const AwsImplementation = (cloudFormation: CloudFormationClient, s3: S3Cl
     }
   },
 
-  async listStorages(): Promise<string[]> {
+  async listStorages(expectedRegion: string): Promise<string[]> {
     console.log('Getting storages')
     const command = new ListBucketsCommand({})
     const storages = await s3.send(command)
     const result = (storages.Buckets?.map((bucket) => bucket.Name).filter((name) => name) as Array<string>) ?? []
     for (const index in result) {
       console.log('Checking region')
-      const isSameRegion = await checkRegion(result[index], s3, 'us-east-1')
+      const isSameRegion = await checkRegion(result[index], s3, expectedRegion)
       if (!isSameRegion) {
         delete result[index]
       }

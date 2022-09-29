@@ -6,7 +6,7 @@ import { buildModule } from './common'
 export interface CloudSDK {
   getDeployedStacks: () => Promise<Array<string>>
   deleteStack: (stackName: string) => Promise<void>
-  listStorages: () => Promise<Array<string>>
+  listStorages: (region: string) => Promise<Array<string>>
   listObjectsInStorage: (storageName: string) => Promise<Array<string>>
   deleteObject: (storageName: string, objectName: string) => Promise<void>
   deleteStorage: (storageName: string) => Promise<void>

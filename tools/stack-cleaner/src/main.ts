@@ -2,7 +2,7 @@
 import * as Arr from 'fp-ts/ReadonlyArray'
 import * as Str from 'fp-ts/string'
 import * as Either from 'fp-ts/Either'
-import { constVoid, flow, pipe } from 'fp-ts/function'
+import { constVoid, pipe } from 'fp-ts/function'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import { CloudError, CloudModule as Cloud } from './cloud'
 import { AwsImplementation } from './aws'
@@ -11,9 +11,6 @@ import { S3Client } from '@aws-sdk/client-s3'
 import { trace } from './common'
 import { Predicate } from 'fp-ts/lib/Predicate'
 
-const filterStoreNames = Arr.filter(Str.startsWith('my-store-'))
-const filterToolkitNames = Arr.filter(Str.includes('toolkit'))
-const filterNames = flow(filterStoreNames, filterToolkitNames)
 const partitionByType = Arr.partition(Str.includes('toolkit'))
 
 const listObjectsAlongStorage = (storageName: string) =>
@@ -28,10 +25,10 @@ const inParallel = Arr.traverse(RTE.ApplicativeSeq)
 const listAllObjects = (buckets: ReadonlyArray<string>) =>
   pipe(buckets, RTE.traverseArray(listObjectsAlongStorage), RTE.map(Arr.flatten))
 
-const cleanBuckets = (bucketFilter: Predicate<string>) =>
+const cleanBuckets = (region: string, bucketFilter: Predicate<string>) =>
   pipe(
     RTE.Do,
-    RTE.bindW('buckets', () => pipe(Cloud.listStorages(), RTE.map(Arr.filter(bucketFilter)))),
+    RTE.bindW('buckets', () => pipe(Cloud.listStorages(region), RTE.map(Arr.filter(bucketFilter)))),
     RTE.chainFirstW(({ buckets }) => trace('Found buckets')(buckets)),
     RTE.bindW('objects', ({ buckets }) => listAllObjects(buckets)),
     RTE.chainFirstW(({ objects }) => trace('Found objects')(objects)),
@@ -56,10 +53,13 @@ const cleanStacks = (stackFilter: Predicate<string>) =>
     RTE.chainW(({ partitionedStacks }) => parallelDeleteStacks(partitionedStacks.right))
   )
 
-const cleanAll = pipe(
-  cleanBuckets,
-  RTE.chain(() => cleanStacks)
-)
+type CleanAllInput = { region: string; bucketFilter: Predicate<string>; stackFilter: Predicate<string> }
+
+const cleanAll = ({ region, bucketFilter, stackFilter }: CleanAllInput) =>
+  pipe(
+    cleanBuckets(region, bucketFilter),
+    RTE.chain(() => cleanStacks(stackFilter))
+  )
 
 const handleError = (cloudError: CloudError): void => {
   switch (cloudError._tag) {
@@ -77,8 +77,16 @@ const handleSuccess = (): void => {
 }
 
 export const main = async (): Promise<void> => {
-  const region = 'us-east-1'
+  const [regionArg, ...args] = process.argv.slice(2)
+  const region = regionArg ?? 'us-east-1'
   const sdk = AwsImplementation(new CloudFormationClient({ region }), new S3Client({ region }))
-  const result = await cleanAll(sdk)()
+  const stackFilter = (s: string) =>
+    pipe(
+      args,
+      Arr.some((prefix) => Str.startsWith(prefix)(s))
+    )
+  // Could be more specific, but this is good enough for now
+  const bucketFilter = stackFilter
+  const result = await cleanAll({ region, bucketFilter, stackFilter })(sdk)()
   return pipe(result, Either.fold(handleError, handleSuccess))
 }
