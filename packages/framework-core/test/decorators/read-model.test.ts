@@ -282,7 +282,7 @@ describe('the `Projects` decorator', () => {
         public constructor(readonly id: UUID, @sequencedBy readonly timestamp: string) {}
       }
 
-      expect(Booster.config.readModelSequenceKeys).not.to.be.null
+      expect(Booster.config.readModelSequenceKeys).not.to.be.undefined
       expect(Booster.config.readModelSequenceKeys[SequencedReadModel.name]).to.be.a('String')
       expect(Booster.config.readModelSequenceKeys[SequencedReadModel.name]).to.be.equal('timestamp')
     })

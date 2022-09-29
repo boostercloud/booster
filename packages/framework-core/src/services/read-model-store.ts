@@ -107,8 +107,8 @@ export class ReadModelStore {
     let newReadModel: any
     try {
       newReadModel = Array.isArray(entity[projectionMetadata.joinKey])
-        ? this.projectionFunction(projectionMetadata)(entity, readModelID, migratedReadModel || null)
-        : this.projectionFunction(projectionMetadata)(entity, migratedReadModel || null)
+        ? this.projectionFunction(projectionMetadata)(entity, readModelID, migratedReadModel || undefined)
+        : this.projectionFunction(projectionMetadata)(entity, migratedReadModel || undefined)
     } catch (e) {
       const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
       const error = await globalErrorDispatcher.dispatch(new ProjectionGlobalError(entity, migratedReadModel, e))

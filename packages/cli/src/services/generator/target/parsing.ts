@@ -10,7 +10,7 @@ import {
   HasProjection,
 } from './types'
 
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-non-undefined-assertion */
 /* eslint-disable @typescript-eslint/generic-type-naming */
 
 export const parseName = (name: string): Promise<HasName> => Promise.resolve({ name })
@@ -30,14 +30,12 @@ export const parseFields = async (fields: Array<string>): Promise<HasFields> => 
 
 function parseField(rawField: string): Promise<Field> {
   const splitInput = rawField.split(':')
-  if (splitInput.length != 2 || splitInput[0].length === 0 || splitInput[1].length === 0) {
-    return Promise.reject(fieldParsingError(rawField))
-  } else {
-    return Promise.resolve({
-      name: splitInput[0],
-      type: splitInput[1],
-    })
-  }
+  return splitInput.length != 2 || splitInput[0].length === 0 || splitInput[1].length === 0
+    ? Promise.reject(fieldParsingError(rawField))
+    : Promise.resolve({
+        name: splitInput[0],
+        type: splitInput[1],
+      })
 }
 
 export const parseProjections = (fields: Array<string>): Promise<HasProjections> =>

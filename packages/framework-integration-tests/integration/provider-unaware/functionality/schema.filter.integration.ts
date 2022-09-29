@@ -120,7 +120,7 @@ describe('schemas', async () => {
       expect(inputFields[4]).to.be.eql(expectedResult)
     })
 
-    it('For union with null', () => {
+    it('For union with undefined', () => {
       const expectedResult = {
         __typename: __INPUT_VALUE,
         name: 'unionWithNull',
@@ -309,7 +309,7 @@ describe('schemas', async () => {
       expect(inputFields[16]).to.be.eql(expectedResult)
     })
 
-    it('For optional null', () => {
+    it('For optional undefined', () => {
       const expectedResult = {
         __typename: __INPUT_VALUE,
         name: 'optionalNull',

@@ -43,7 +43,7 @@ export class AppErrorHandler {
   public static async onReducerError(
     error: Error,
     eventInstance: EventInterface,
-    snapshotInstance: EntityInterface | null
+    snapshotInstance: EntityInterface | undefined
   ): Promise<Error | undefined> {
     if (eventInstance?.entityID() === reducerErrorCartId) {
       return new Error(error.message + '-onReducerError')

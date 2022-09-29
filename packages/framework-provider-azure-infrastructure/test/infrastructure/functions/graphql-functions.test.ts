@@ -10,7 +10,7 @@ describe('Creating graphql-functions', () => {
 
   it('create the expected GraphQLFunctionDefiniton', () => {
     const definition = new GraphqlFunction(config).getFunctionDefinition()
-    expect(definition).not.to.be.null
+    expect(definition).not.to.be.undefined
     expect(definition.name).to.be.equal('graphql')
     expect(definition.config.bindings[0].type).to.be.equal('httpTrigger')
     expect(definition.config.bindings[0].name).to.be.equal('rawRequest')

@@ -84,7 +84,7 @@ export class FunctionZip {
     archive.pipe(output)
     archive.directory('.deploy', false)
     functionDefinitions.forEach((functionDefinition: FunctionDefinition) => {
-      archive.append(JSON.stringify(functionDefinition.config, null, 2), {
+      archive.append(JSON.stringify(functionDefinition.config, undefined, 2), {
         name: functionDefinition.name + '/function.json',
       })
     })

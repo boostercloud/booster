@@ -63,7 +63,7 @@ describe('function `getKeyWithClient`', () => {
     it('calls the callback function with the public key', () => {
       // eslint-disable-next-line @typescript-eslint/ban-types
       const fakeGetSigningKeyCallback = fake((_kid: string, callback: Function) =>
-        callback(null, { getPublicKey: () => 'public-key' })
+        callback(undefined, { getPublicKey: () => 'public-key' })
       )
       const fakeJwksClient = {
         getSigningKey: fakeGetSigningKeyCallback,
@@ -73,7 +73,7 @@ describe('function `getKeyWithClient`', () => {
 
       getKeyWithClient(fakeJwksClient, fakeHeader, fakeCallback)
 
-      expect(fakeCallback).to.have.been.calledWith(null, 'public-key')
+      expect(fakeCallback).to.have.been.calledWith(undefined, 'public-key')
     })
   })
 })
@@ -91,7 +91,7 @@ describe('function `verifyJWT`', () => {
       const fakeDecodedToken = { a: 'token' } as unknown as DecodedToken
       // eslint-disable-next-line @typescript-eslint/ban-types
       const fakeVerify = fake((_token: unknown, _key: unknown, _options: unknown, callback: Function) =>
-        callback(null, fakeDecodedToken)
+        callback(undefined, fakeDecodedToken)
       )
       replace(jwt, 'verify', fakeVerify)
 

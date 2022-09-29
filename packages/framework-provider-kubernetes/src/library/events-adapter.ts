@@ -58,7 +58,7 @@ export async function latestEntitySnapshot(
   config: BoosterConfig,
   entityTypeName: string,
   entityID: UUID
-): Promise<EventEnvelope | null> {
+): Promise<EventEnvelope | undefined> {
   const logger = getLogger(config, 'events-adapter#latestEntitySnapshot')
   const query = {
     keyQuery: ['ee', entityTypeName, entityID, 'snapshot'].join(RedisAdapter.keySeparator),
@@ -78,7 +78,7 @@ export async function latestEntitySnapshot(
     logger.debug(
       `[EventsAdapter#latestEntitySnapshot] No snapshot found for entity ${entityTypeName} with ID ${entityID}.`
     )
-    return null
+    return undefined
   }
 }
 

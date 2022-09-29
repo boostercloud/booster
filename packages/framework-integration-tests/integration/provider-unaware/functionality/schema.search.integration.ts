@@ -63,7 +63,7 @@ describe('schemas', async () => {
         name: 'id',
         type: {
           __typename: __TYPE,
-          name: null,
+          name: undefined,
           kind: NON_NULL,
           ofType: {
             __typename: __TYPE,
@@ -82,7 +82,7 @@ describe('schemas', async () => {
         type: {
           __typename: __TYPE,
           kind: NON_NULL,
-          name: null,
+          name: undefined,
           ofType: {
             __typename: __TYPE,
             name: DATE,
@@ -100,10 +100,10 @@ describe('schemas', async () => {
         type: {
           __typename: __TYPE,
           kind: NON_NULL,
-          name: null,
+          name: undefined,
           ofType: {
             __typename: __TYPE,
-            name: null,
+            name: undefined,
             kind: LIST,
           },
         },
@@ -118,10 +118,10 @@ describe('schemas', async () => {
         type: {
           __typename: __TYPE,
           kind: NON_NULL,
-          name: null,
+          name: undefined,
           ofType: {
             __typename: __TYPE,
-            name: null,
+            name: undefined,
             kind: LIST,
           },
         },
@@ -136,7 +136,7 @@ describe('schemas', async () => {
         type: {
           __typename: __TYPE,
           kind: NON_NULL,
-          name: null,
+          name: undefined,
           ofType: {
             __typename: __TYPE,
             name: JSON_OBJECT,
@@ -147,7 +147,7 @@ describe('schemas', async () => {
       expect(fields[4]).to.be.eql(expectedResult)
     })
 
-    it('For union with null', () => {
+    it('For union with undefined', () => {
       const expectedResult = {
         __typename: __Field,
         name: 'unionWithNull',
@@ -155,7 +155,7 @@ describe('schemas', async () => {
           __typename: __TYPE,
           kind: SCALAR,
           name: STRING,
-          ofType: null,
+          ofType: undefined,
         },
       }
       expect(fields[5]).to.be.eql(expectedResult)
@@ -169,7 +169,7 @@ describe('schemas', async () => {
           __typename: __TYPE,
           kind: SCALAR,
           name: STRING,
-          ofType: null,
+          ofType: undefined,
         },
       }
       expect(fields[6]).to.be.eql(expectedResult)
@@ -182,7 +182,7 @@ describe('schemas', async () => {
         type: {
           __typename: __TYPE,
           kind: NON_NULL,
-          name: null,
+          name: undefined,
           ofType: {
             __typename: __TYPE,
             name: JSON_OBJECT,
@@ -200,7 +200,7 @@ describe('schemas', async () => {
         type: {
           __typename: __TYPE,
           kind: NON_NULL,
-          name: null,
+          name: undefined,
           ofType: {
             __typename: __TYPE,
             name: JSON_OBJECT,
@@ -218,7 +218,7 @@ describe('schemas', async () => {
         type: {
           __typename: __TYPE,
           kind: NON_NULL,
-          name: null,
+          name: undefined,
           ofType: {
             __typename: __TYPE,
             name: JSON_OBJECT,
@@ -236,7 +236,7 @@ describe('schemas', async () => {
         type: {
           __typename: __TYPE,
           kind: NON_NULL,
-          name: null,
+          name: undefined,
           ofType: {
             __typename: __TYPE,
             name: JSON_OBJECT,
@@ -254,7 +254,7 @@ describe('schemas', async () => {
         type: {
           __typename: __TYPE,
           kind: NON_NULL,
-          name: null,
+          name: undefined,
           ofType: {
             __typename: __TYPE,
             name: JSON_OBJECT,
@@ -272,7 +272,7 @@ describe('schemas', async () => {
         type: {
           __typename: __TYPE,
           kind: NON_NULL,
-          name: null,
+          name: undefined,
           ofType: {
             __typename: __TYPE,
             name: JSON_OBJECT,
@@ -290,7 +290,7 @@ describe('schemas', async () => {
         type: {
           __typename: __TYPE,
           kind: NON_NULL,
-          name: null,
+          name: undefined,
           ofType: {
             __typename: __TYPE,
             name: JSON_OBJECT,
@@ -309,7 +309,7 @@ describe('schemas', async () => {
       // @ts-ignore
       expect(fields[14].type.kind).to.be.eql(NON_NULL)
       // @ts-ignore
-      expect(fields[14].type.name).to.be.null
+      expect(fields[14].type.name).to.be.undefined
       // @ts-ignore
       expect(fields[14].type.ofType.__typename).to.be.eql(__TYPE)
       // @ts-ignore
@@ -325,7 +325,7 @@ describe('schemas', async () => {
         type: {
           __typename: __TYPE,
           kind: NON_NULL,
-          name: null,
+          name: undefined,
           ofType: {
             __typename: __TYPE,
             name: 'BaseClass',
@@ -344,13 +344,13 @@ describe('schemas', async () => {
           __typename: __TYPE,
           kind: SCALAR,
           name: STRING,
-          ofType: null,
+          ofType: undefined,
         },
       }
       expect(fields[16]).to.be.eql(expectedResult)
     })
 
-    it('For optional null', () => {
+    it('For optional undefined', () => {
       const expectedResult = {
         __typename: __Field,
         name: 'optionalNull',
@@ -358,7 +358,7 @@ describe('schemas', async () => {
           __typename: __TYPE,
           kind: SCALAR,
           name: STRING,
-          ofType: null,
+          ofType: undefined,
         },
       }
       expect(fields[17]).to.be.eql(expectedResult)
@@ -372,7 +372,7 @@ describe('schemas', async () => {
           __typename: __TYPE,
           kind: SCALAR,
           name: JSON_OBJECT,
-          ofType: null,
+          ofType: undefined,
         },
       }
       expect(fields[18]).to.be.eql(expectedResult)
@@ -386,7 +386,7 @@ describe('schemas', async () => {
           __typename: __TYPE,
           kind: SCALAR,
           name: JSON_OBJECT,
-          ofType: null,
+          ofType: undefined,
         },
       }
       expect(fields[19]).to.be.eql(expectedResult)
@@ -400,7 +400,7 @@ describe('schemas', async () => {
           __typename: __TYPE,
           kind: SCALAR,
           name: JSON_OBJECT,
-          ofType: null,
+          ofType: undefined,
         },
       }
       expect(fields[20]).to.be.eql(expectedResult)
@@ -414,7 +414,7 @@ describe('schemas', async () => {
           __typename: __TYPE,
           kind: SCALAR,
           name: JSON_OBJECT,
-          ofType: null,
+          ofType: undefined,
         },
       }
       expect(fields[21]).to.be.eql(expectedResult)
@@ -428,7 +428,7 @@ describe('schemas', async () => {
           __typename: __TYPE,
           kind: SCALAR,
           name: JSON_OBJECT,
-          ofType: null,
+          ofType: undefined,
         },
       }
       expect(fields[22]).to.be.eql(expectedResult)
@@ -442,7 +442,7 @@ describe('schemas', async () => {
           __typename: __TYPE,
           kind: OBJECT_KIND,
           name: 'BaseClass',
-          ofType: null,
+          ofType: undefined,
         },
       }
       expect(fields[23]).to.be.eql(expectedResult)
@@ -455,7 +455,7 @@ describe('schemas', async () => {
         type: {
           __typename: __TYPE,
           kind: LIST,
-          name: null,
+          name: undefined,
           ofType: {
             __typename: __TYPE,
             name: STRING,

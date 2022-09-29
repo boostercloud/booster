@@ -140,7 +140,7 @@ describe('BoosterGlobalErrorDispatcher', () => {
       public static async onReducerError(
         error: Error,
         eventInstance: EventInterface,
-        snapshotInstance: EntityInterface | null
+        snapshotInstance: EntityInterface | undefined
       ): Promise<Error | undefined> {
         return new Error(`${error}.onReducerError`)
       }

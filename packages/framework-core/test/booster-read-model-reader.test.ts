@@ -56,13 +56,13 @@ describe('BoosterReadModelReader', () => {
     beforeEach(() => {
       config.readModels[TestReadModel.name] = {
         class: TestReadModel,
-        authorizer: BoosterAuthorizer.authorizeRoles.bind(null, [UserRole]),
+        authorizer: BoosterAuthorizer.authorizeRoles.bind(undefined, [UserRole]),
         properties: [],
         before: [],
       }
       config.readModels[SequencedReadModel.name] = {
         class: SequencedReadModel,
-        authorizer: BoosterAuthorizer.authorizeRoles.bind(null, [UserRole]),
+        authorizer: BoosterAuthorizer.authorizeRoles.bind(undefined, [UserRole]),
         properties: [],
         before: [],
       }
@@ -181,7 +181,7 @@ describe('BoosterReadModelReader', () => {
     beforeEach(() => {
       config.readModels[TestReadModel.name] = {
         class: TestReadModel,
-        authorizer: BoosterAuthorizer.authorizeRoles.bind(null, [UserRole]),
+        authorizer: BoosterAuthorizer.authorizeRoles.bind(undefined, [UserRole]),
         properties: [],
         before: [],
       }
@@ -276,7 +276,7 @@ describe('BoosterReadModelReader', () => {
       beforeEach(() => {
         config.readModels[TestReadModel.name] = {
           class: TestReadModel,
-          authorizer: BoosterAuthorizer.authorizeRoles.bind(null, [UserRole]),
+          authorizer: BoosterAuthorizer.authorizeRoles.bind(undefined, [UserRole]),
           properties: [],
           before: [],
         }
@@ -315,7 +315,7 @@ describe('BoosterReadModelReader', () => {
 
           config.readModels[TestReadModel.name] = {
             class: TestReadModel,
-            authorizer: BoosterAuthorizer.authorizeRoles.bind(null, [UserRole]),
+            authorizer: BoosterAuthorizer.authorizeRoles.bind(undefined, [UserRole]),
             properties: [],
             before: [beforeFunctionSpy],
           }
@@ -347,7 +347,7 @@ describe('BoosterReadModelReader', () => {
 
           config.readModels[TestReadModel.name] = {
             class: TestReadModel,
-            authorizer: BoosterAuthorizer.authorizeRoles.bind(null, [UserRole]),
+            authorizer: BoosterAuthorizer.authorizeRoles.bind(undefined, [UserRole]),
             properties: [],
             before: [beforeFunctionSpy, beforeFunctionV2Spy],
           }
@@ -387,7 +387,7 @@ describe('BoosterReadModelReader', () => {
         beforeEach(() => {
           config.readModels[TestReadModel.name] = {
             class: TestReadModel,
-            authorizer: BoosterAuthorizer.authorizeRoles.bind(null, [UserRole]),
+            authorizer: BoosterAuthorizer.authorizeRoles.bind(undefined, [UserRole]),
             properties: [],
             before: [],
           }
@@ -420,7 +420,7 @@ describe('BoosterReadModelReader', () => {
         beforeEach(() => {
           config.readModels[TestReadModel.name] = {
             class: TestReadModel,
-            authorizer: BoosterAuthorizer.authorizeRoles.bind(null, [UserRole]),
+            authorizer: BoosterAuthorizer.authorizeRoles.bind(undefined, [UserRole]),
             properties: [],
             before: [beforeFunction, beforeFunctionV2],
           }

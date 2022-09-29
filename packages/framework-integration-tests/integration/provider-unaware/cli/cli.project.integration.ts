@@ -167,8 +167,8 @@ describe('Project', () => {
     dirContents(projectPath(projectName, dirName))
 
   const assertions = async (stdout: string, projectName: string, flags?: string[]): Promise<void> => {
-    const fileContents = projectFileContents.bind(null, projectName)
-    const dirContents = projectDirContents.bind(null, projectName)
+    const fileContents = projectFileContents.bind(undefined, projectName)
+    const dirContents = projectDirContents.bind(undefined, projectName)
 
     expect(stdout).to.match(expectedOutputRegex)
 

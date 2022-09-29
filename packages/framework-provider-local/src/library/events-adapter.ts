@@ -44,7 +44,7 @@ export async function readEntityLatestSnapshot(
   config: BoosterConfig,
   entityTypeName: string,
   entityID: UUID
-): Promise<EventEnvelope | null> {
+): Promise<EventEnvelope | undefined> {
   const logger = getLogger(config, 'events-adapter#readEntityLatestSnapshot')
   const query = {
     entityID: entityID,
@@ -59,7 +59,7 @@ export async function readEntityLatestSnapshot(
     return snapshot as EventEnvelope
   } else {
     logger.debug(`No snapshot found for entity ${entityTypeName} with ID ${entityID}.`)
-    return null
+    return undefined
   }
 }
 

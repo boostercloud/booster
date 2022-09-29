@@ -11,7 +11,7 @@ export interface GlobalErrorHandlerInterface extends AnyClass {
   onReducerError?(
     error: Error,
     eventInstance: EventInterface,
-    snapshotInstance: EntityInterface | null
+    snapshotInstance: EntityInterface | undefined
   ): Promise<Error | undefined>
   onProjectionError?(
     error: Error,

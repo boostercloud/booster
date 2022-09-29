@@ -45,7 +45,7 @@ export function buildFiltersForByFilters(
   }
 }
 
-export function resultToEventSearchResponse(result: Array<EventEnvelope> | null): Array<EventSearchResponse> {
+export function resultToEventSearchResponse(result: Array<EventEnvelope> | undefined): Array<EventSearchResponse> {
   if (!result || result.length === 0) return []
   const eventSearchResult = result.map((item) => {
     return {

@@ -18,17 +18,17 @@ function hasValidResourceName(name: string): boolean {
   return resourceName === name
 }
 
-function formatResourceName(name: string): null | string {
+function formatResourceName(name: string): undefined | string {
   const resourceName: string = name
-    .replace(/^[\d-]|[#$-/:-?{-~!"^_`[\]]/g, ' ')
+    .replace(/^[\d-]|[!"#$-/:-?[\]^_`{-~]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
 
-  if (resourceName === '') return null
+  if (resourceName === '') return undefined
 
   if (resourceName.length === 1) return resourceName.toLocaleUpperCase()
 
-  const match = resourceName.match(/[a-zA-Z\d]+/g)
+  const match = resourceName.match(/[\dA-Za-z]+/g)
 
   if (match) return match.map(titleCaseString).join('')
 

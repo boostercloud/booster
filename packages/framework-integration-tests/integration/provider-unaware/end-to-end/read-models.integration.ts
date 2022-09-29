@@ -59,7 +59,7 @@ describe('Read models end-to-end tests', () => {
               `,
             })
           },
-          (result) => result?.data?.CartReadModel != null
+          (result) => result?.data?.CartReadModel != undefined
         )
 
         const cartData = queryResult.data.CartReadModel
@@ -109,7 +109,7 @@ describe('Read models end-to-end tests', () => {
               `,
             })
           },
-          (result) => result?.data?.CartReadModel != null
+          (result) => result?.data?.CartReadModel != undefined
         )
 
         const cartData = queryResult.data.CartReadModel
@@ -746,7 +746,7 @@ describe('Read models end-to-end tests', () => {
             },
             {
               payment: {
-                id: { ne: null },
+                id: { ne: undefined },
               },
             },
           ],
@@ -795,7 +795,7 @@ describe('Read models end-to-end tests', () => {
         expect(cartData[0].payment.id).to.be.eq(mockPaymentId)
       })
 
-      it('should retrieve a list of carts when filter by null', async () => {
+      it('should retrieve a list of carts when filter by undefined', async () => {
         const mockPaymentId: string = random.uuid()
         await client.mutate({
           variables: {
@@ -817,12 +817,12 @@ describe('Read models end-to-end tests', () => {
             },
             {
               payment: {
-                confirmationToken: { ne: null },
+                confirmationToken: { ne: undefined },
               },
             },
             {
               payment: {
-                id: { ne: null },
+                id: { ne: undefined },
               },
             },
           ],
@@ -1098,7 +1098,7 @@ describe('Read models end-to-end tests', () => {
                 `,
               })
             },
-            (result) => result?.data?.CartReadModel != null
+            (result) => result?.data?.CartReadModel != undefined
           )
 
           await client.mutate({
@@ -1135,7 +1135,7 @@ describe('Read models end-to-end tests', () => {
                 `,
               })
             },
-            (result) => result?.data?.CartReadModel?.shippingAddress?.firstName != null
+            (result) => result?.data?.CartReadModel?.shippingAddress?.firstName != undefined
           )
         }
       })
@@ -1430,7 +1430,7 @@ describe('Read models end-to-end tests', () => {
             `,
           })
         },
-        (result) => result?.data?.CartReadModel != null
+        (result) => result?.data?.CartReadModel != undefined
       )
 
       const cartData = queryResult.data.CartReadModel
@@ -1487,7 +1487,7 @@ describe('Read models end-to-end tests', () => {
             `,
           })
         },
-        (result) => result?.data?.CartReadModel?.payment != null
+        (result) => result?.data?.CartReadModel?.payment != undefined
       )
 
       const updatedCartData = updatedQueryResult.data.CartReadModel

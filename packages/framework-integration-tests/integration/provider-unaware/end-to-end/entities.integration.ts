@@ -185,7 +185,7 @@ describe('Entities end-to-end tests', () => {
 
       const productData = queryResult.data.ProductReadModel
 
-      expect(productData).to.be.null
+      expect(productData).to.be.undefined
     })
   })
 

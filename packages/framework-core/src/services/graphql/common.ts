@@ -60,7 +60,7 @@ export const DateScalar = new GraphQLScalarType({
     if (ast.kind === Kind.STRING) {
       return new Date(ast.value)
     }
-    return null
+    return undefined
   },
 })
 

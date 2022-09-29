@@ -57,7 +57,7 @@ export async function readEntityLatestSnapshot(
   config: BoosterConfig,
   entityTypeName: string,
   entityID: UUID
-): Promise<EventEnvelope | null> {
+): Promise<EventEnvelope | undefined> {
   const logger = getLogger(config, 'ReadModelStore#readEntityLatestSnapshot')
   const result = await dynamoDB
     .query({
@@ -83,7 +83,7 @@ export async function readEntityLatestSnapshot(
     logger.debug(
       `[EventsAdapter#readEntityLatestSnapshot] No snapshot found for entity ${entityTypeName} with ID ${entityID}.`
     )
-    return null
+    return undefined
   }
 }
 

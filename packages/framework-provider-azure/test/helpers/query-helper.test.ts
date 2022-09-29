@@ -14,11 +14,11 @@ describe('Query helper', () => {
 
     let mockCosmosDbClient: SinonStubbedInstance<CosmosClient>
     class Money {
-      constructor(public cents: number | null, public currency: string) {}
+      constructor(public cents: number | undefined, public currency: string) {}
     }
 
     class Item {
-      constructor(public sku: string | null, public price: Money) {}
+      constructor(public sku: string | undefined, public price: Money) {}
     }
 
     class Product {
@@ -476,8 +476,8 @@ describe('Query helper', () => {
               },
             ],
           },
-          { mainItem: { sku: { eq: null } } },
-          { mainItem: { price: { cents: { ne: null } } } },
+          { mainItem: { sku: { eq: undefined } } },
+          { mainItem: { price: { cents: { ne: undefined } } } },
         ],
       }
       await search(
@@ -502,8 +502,8 @@ describe('Query helper', () => {
             { name: '@id_0', value: '3' },
             { name: '@sku_0', value: 'test' },
             { name: '@items_0', value: { sku: 'test', price: { cents: 1000, currency: 'EUR' } } },
-            { name: '@sku_1', value: null },
-            { name: '@cents_0', value: null },
+            { name: '@sku_1', value: undefined },
+            { name: '@cents_0', value: undefined },
           ],
         })
       )

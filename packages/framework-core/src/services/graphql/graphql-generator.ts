@@ -122,7 +122,7 @@ export class GraphQLGenerator {
       const commandEnvelope = toCommandEnvelope(commandClass.name, args.input, context)
       const result = await this.commandsDispatcher.dispatchCommand(commandEnvelope, context)
       // It could be that the command didn't return anything
-      // so in that case we return `true`, as GraphQL doesn't have a `null` type
+      // so in that case we return `true`, as GraphQL doesn't have a `undefined` type
       return result ?? true
     }
   }

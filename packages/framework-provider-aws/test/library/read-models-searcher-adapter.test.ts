@@ -20,11 +20,11 @@ describe('Read models searcher adapter', () => {
     }
 
     class Money {
-      constructor(public cents: number | null, public currency: string) {}
+      constructor(public cents: number | undefined, public currency: string) {}
     }
 
     class Item {
-      constructor(public sku: string | null, public price: Money) {}
+      constructor(public sku: string | undefined, public price: Money) {}
     }
 
     class Product {
@@ -242,8 +242,8 @@ describe('Read models searcher adapter', () => {
           ':id_0': '3',
           ':sku_0': 'test',
           ':items_0': { sku: 'test', price: { cents: 1000, currency: 'EUR' } },
-          ':sku_1': null,
-          ':cents_0': null,
+          ':sku_1': undefined,
+          ':cents_0': undefined,
         },
       }
       const filters: FilterFor<Product> = {
@@ -268,8 +268,8 @@ describe('Read models searcher adapter', () => {
               },
             ],
           },
-          { mainItem: { sku: { eq: null } } },
-          { mainItem: { price: { cents: { ne: null } } } },
+          { mainItem: { sku: { eq: undefined } } },
+          { mainItem: { price: { cents: { ne: undefined } } } },
         ],
       }
 

@@ -22,10 +22,10 @@ describe('user prompt', () => {
     expect(value).to.equal('mockedValue')
   })
 
-  it('defaultOrPrompt with null value', async () => {
+  it('defaultOrPrompt with undefined value', async () => {
     const promptStub = stub(inquirer, 'prompt')
     promptStub.resolves({ value: 'mockedValue' })
-    const value = await new Prompter().defaultOrPrompt(null, 'Enter a value')
+    const value = await new Prompter().defaultOrPrompt(undefined, 'Enter a value')
     expect(value).to.equal('mockedValue')
   })
 
@@ -70,10 +70,10 @@ describe('user prompt', () => {
     expect(value).to.equal('value2')
   })
 
-  it('defaultOrChoose with null value', async () => {
+  it('defaultOrChoose with undefined value', async () => {
     const promptStub = stub(inquirer, 'prompt')
     promptStub.resolves({ value: 'value2' })
-    const value = await new Prompter().defaultOrChoose(null, 'Choose a value', ['value1', 'value2', 'value3'])
+    const value = await new Prompter().defaultOrChoose(undefined, 'Choose a value', ['value1', 'value2', 'value3'])
     expect(value).to.equal('value2')
   })
 

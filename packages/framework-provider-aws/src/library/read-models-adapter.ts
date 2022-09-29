@@ -19,7 +19,7 @@ export async function rawReadModelEventsToEnvelopes(
   config: BoosterConfig,
   rawEvents: DynamoDBStreamEvent
 ): Promise<Array<ReadModelEnvelope>> {
-  return rawEvents.Records.map(toReadModelEnvelope.bind(null, config))
+  return rawEvents.Records.map(toReadModelEnvelope.bind(undefined, config))
 }
 
 export async function fetchReadModel(

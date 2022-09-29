@@ -32,11 +32,13 @@ export function getKeyWithClient(client: JwksClient, header: jwt.JwtHeader, call
     callback(new Error('JWT kid not found'))
     return
   }
-  client.getSigningKey(header.kid, function (err: Error | null, key: SigningKey) {
-    if (err) {
-      callback(err)
+  void client.getSigningKey(header.kid, function (error: Error | null, key: SigningKey) {
+    if (error) {
+      callback(error)
       return
     }
+    // Unable to pass undefined here
+    // eslint-disable-next-line unicorn/no-null
     callback(null, key.getPublicKey())
   })
 }
@@ -66,9 +68,9 @@ export async function verifyJWT(
         issuer,
         complete: true, // To return headers, payload and other useful token information
       },
-      (err, decoded) => {
-        if (err) {
-          return reject(err)
+      (error, decoded) => {
+        if (error) {
+          return reject(error)
         }
         if (!decoded) {
           return reject(new Error('The token could not be decoded'))

@@ -197,7 +197,7 @@ describe('events-adapter', () => {
 
     context('without snapshot', () => {
       beforeEach(async () => {
-        queryLatestStub.resolves(null)
+        queryLatestStub.resolves(undefined)
       })
 
       it('should log expected message', async () => {
@@ -209,10 +209,10 @@ describe('events-adapter', () => {
         )
       })
 
-      it('should return null', async () => {
+      it('should return undefined', async () => {
         const result = await readEntityLatestSnapshot(mockEventRegistry, mockConfig, mockEntityTypeName, mockEntityID)
 
-        expect(result).to.be.deep.equal(null)
+        expect(result).to.be.deep.equal(undefined)
       })
     })
   })

@@ -15,7 +15,7 @@ describe('After deployment', () => {
       // that the resource group exists
       const environmentName = checkAndGetCurrentEnv()
       const applicationUnderTest = new ApplicationTester(await getProviderTestHelper())
-      let resourceGroup: any = null
+      let resourceGroup: any = undefined
       let error = false
       try {
         console.log('Checking resource group...')
@@ -65,10 +65,10 @@ describe('After deployment', () => {
             })
           } catch (err) {
             console.error(err)
-            return null
+            return undefined
           }
         },
-        (result) => result != null,
+        (result) => result != undefined,
         30000,
         1440000
       )

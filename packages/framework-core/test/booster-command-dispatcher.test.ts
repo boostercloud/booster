@@ -52,7 +52,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
       const config = {
         commandHandlers: {
           UnauthorizedCommand: {
-            authorizer: BoosterAuthorizer.authorizeRoles.bind(null, [Thor]),
+            authorizer: BoosterAuthorizer.authorizeRoles.bind(undefined, [Thor]),
           },
         },
       }

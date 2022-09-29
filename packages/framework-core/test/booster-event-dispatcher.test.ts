@@ -185,8 +185,8 @@ describe('BoosterEventDispatcher', () => {
       it('does nothing and does not throw if there are no event handlers', async () => {
         replace(RegisterHandler, 'handle', fake())
         const boosterEventDispatcher = BoosterEventDispatcher as any
-        // We try first with null array of event handlers
-        config.eventHandlers[SomeEvent.name] = null as any
+        // We try first with undefined array of event handlers
+        config.eventHandlers[SomeEvent.name] = undefined as any
         await boosterEventDispatcher.dispatchEntityEventsToEventHandlers([someEvent], config)
         // And now with an empty array
         config.eventHandlers[SomeEvent.name] = []

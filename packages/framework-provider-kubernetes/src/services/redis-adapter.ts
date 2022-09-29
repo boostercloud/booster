@@ -37,8 +37,8 @@ export class RedisAdapter {
     })
     if (!response.ok) {
       logger.error("Couldn't store object")
-      const err = response.text()
-      throw err
+      const error = response.text()
+      throw error
     }
   }
 
@@ -46,21 +46,21 @@ export class RedisAdapter {
     const logger = getLogger(config, 'RedisAdapter#keys')
     logger.debug('RedisAdapter keys')
     return new Promise((resolve) => {
-      this.client.keys(`booster||${keyPattern}*`, function (err: Error | null, res: Array<string>) {
-        if (err) {
-          logger.debug(err)
+      this.client.keys(`booster||${keyPattern}*`, function (error: Error | null, response: Array<string>) {
+        if (error) {
+          logger.debug(error)
           return resolve([])
         }
-        resolve(res)
+        resolve(response)
       })
     })
   }
 
-  public async hget<TResult>(key: string): Promise<TResult | null> {
+  public async hget<TResult>(key: string): Promise<TResult | void> {
     return new Promise((resolve) =>
-      this.client.hget(key, 'data', (err: Error | null, res: string) => {
-        if (err) return resolve(null)
-        resolve(JSON.parse(res))
+      this.client.hget(key, 'data', (error: Error | null, response: string) => {
+        if (error) return resolve()
+        resolve(JSON.parse(response))
       })
     )
   }

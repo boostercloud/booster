@@ -60,13 +60,13 @@ describe('filenames', () => {
       })
     })
 
-    describe('should return null when', () => {
+    describe('should return undefined when', () => {
       it('string is empty', () => {
-        expect(formatResourceName('')).to.be.null
+        expect(formatResourceName('')).to.be.undefined
       })
 
       it('string is empty after removing invalid characters', () => {
-        expect(formatResourceName('###!##-==-_-')).to.be.null
+        expect(formatResourceName('###!##-==-_-')).to.be.undefined
       })
     })
   })

@@ -149,8 +149,8 @@ interface IsDefinedOperator {
 }
 
 interface BooleanOperators<TType> extends IsDefinedOperator {
-  eq?: TType | null
-  ne?: TType | null
+  eq?: TType | undefined
+  ne?: TType | undefined
 }
 
 interface ScalarOperators<TType> extends BooleanOperators<TType> {

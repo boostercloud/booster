@@ -54,7 +54,7 @@ describe('Read Model adapter', () => {
           .database(mockConfig.resourceNames.applicationStack)
           .container(`${mockConfig.resourceNames.applicationStack}-${mockReadModelName}`).item
       ).to.have.been.calledWithExactly(mockReadModelId, mockReadModelId)
-      expect(result).not.to.be.null
+      expect(result).not.to.be.undefined
     })
   })
 
@@ -76,7 +76,7 @@ describe('Read Model adapter', () => {
           .database(mockConfig.resourceNames.applicationStack)
           .container(`${mockConfig.resourceNames.applicationStack}-${mockReadModelName}`).items.create
       ).to.have.been.calledWithExactly(match(mockReadModel))
-      expect(something).not.to.be.null
+      expect(something).not.to.be.undefined
     })
   })
 })

@@ -35,7 +35,7 @@ describe('events', async () => {
       `,
     })
 
-    expect(response).not.to.be.null
+    expect(response).not.to.be.undefined
     expect(response?.data?.ChangeCartItem).to.be.true
 
     // Verify number of events
@@ -47,7 +47,7 @@ describe('events', async () => {
 
     // Verify latest event
     const latestEvent: Array<any> = await applicationUnderTest.query.events(`Cart-${mockCartId}-event`)
-    expect(latestEvent).not.to.be.null
+    expect(latestEvent).not.to.be.undefined
 
     expect(latestEvent[0].entityTypeName_entityID_kind).to.be.equal(`Cart-${mockCartId}-event`)
     expect(latestEvent[0].value.productId).to.be.equal(mockProductId)
@@ -78,7 +78,7 @@ describe('events', async () => {
       `,
     })
 
-    expect(response).not.to.be.null
+    expect(response).not.to.be.undefined
     expect(response?.data?.ChangeMultipleCartItems).to.be.true
 
     // Verify number of events
@@ -94,7 +94,7 @@ describe('events', async () => {
     // Verify latest events
     const latestEvents: Array<any> = await applicationUnderTest.query.events(`Cart-${mockCartId}-event`)
     const eventProductIds: Array<number> = []
-    expect(latestEvents).not.to.be.null
+    expect(latestEvents).not.to.be.undefined
 
     for (const event of latestEvents) {
       expect(event.entityTypeName_entityID_kind).to.be.equal(`Cart-${mockCartId}-event`)

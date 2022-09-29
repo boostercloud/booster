@@ -76,7 +76,7 @@ export class Arn {
     if (sep !== '/' && sep !== ':' && sep !== '') {
       throw new Error('resourcePathSep may only be ":", "/" or an empty string')
     }
-    if (components.resourceName != null) {
+    if (components.resourceName != undefined) {
       values.push(sep)
       values.push(components.resourceName)
     }

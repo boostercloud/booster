@@ -41,7 +41,7 @@ describe('BoosterEventsReader', () => {
   ]
 
   beforeEach(() => {
-    const eventStreamAuthorizer = BoosterAuthorizer.authorizeRoles.bind(null, [CanReadEventsRole])
+    const eventStreamAuthorizer = BoosterAuthorizer.authorizeRoles.bind(undefined, [CanReadEventsRole])
     Booster.configureCurrentEnv((config) => {
       providerEventsSearch = fake.returns(searchResult)
 

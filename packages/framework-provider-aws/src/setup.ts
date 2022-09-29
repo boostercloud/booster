@@ -58,23 +58,23 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
     // ProviderEventsLibrary
     events: {
       rawToEnvelopes: rawEventsToEnvelopes,
-      forEntitySince: readEntityEventsSince.bind(null, dynamoDB),
-      latestEntitySnapshot: readEntityLatestSnapshot.bind(null, dynamoDB),
-      search: searchEvents.bind(null, dynamoDB),
-      store: storeEvents.bind(null, dynamoDB),
-      searchEntitiesIDs: searchEntitiesIds.bind(null, dynamoDB),
+      forEntitySince: readEntityEventsSince.bind(undefined, dynamoDB),
+      latestEntitySnapshot: readEntityLatestSnapshot.bind(undefined, dynamoDB),
+      search: searchEvents.bind(undefined, dynamoDB),
+      store: storeEvents.bind(undefined, dynamoDB),
+      searchEntitiesIDs: searchEntitiesIds.bind(undefined, dynamoDB),
     },
     // ProviderReadModelsLibrary
     readModels: {
       rawToEnvelopes: rawReadModelEventsToEnvelopes,
-      fetch: fetchReadModel.bind(null, dynamoDB),
-      search: searchReadModel.bind(null, dynamoDB),
-      store: storeReadModel.bind(null, dynamoDB),
-      delete: deleteReadModel.bind(null, dynamoDB),
-      subscribe: subscribeToReadModel.bind(null, dynamoDB),
-      fetchSubscriptions: fetchSubscriptions.bind(null, dynamoDB),
-      deleteSubscription: deleteSubscription.bind(null, dynamoDB),
-      deleteAllSubscriptions: deleteAllSubscriptions.bind(null, dynamoDB),
+      fetch: fetchReadModel.bind(undefined, dynamoDB),
+      search: searchReadModel.bind(undefined, dynamoDB),
+      store: storeReadModel.bind(undefined, dynamoDB),
+      delete: deleteReadModel.bind(undefined, dynamoDB),
+      subscribe: subscribeToReadModel.bind(undefined, dynamoDB),
+      fetchSubscriptions: fetchSubscriptions.bind(undefined, dynamoDB),
+      deleteSubscription: deleteSubscription.bind(undefined, dynamoDB),
+      deleteAllSubscriptions: deleteAllSubscriptions.bind(undefined, dynamoDB),
     },
     // ProviderGraphQLLibrary
     graphQL: {
@@ -87,9 +87,9 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
       requestFailed,
     },
     connections: {
-      storeData: storeConnectionData.bind(null, dynamoDB),
-      fetchData: fetchConnectionData.bind(null, dynamoDB),
-      deleteData: deleteConnectionData.bind(null, dynamoDB),
+      storeData: storeConnectionData.bind(undefined, dynamoDB),
+      fetchData: fetchConnectionData.bind(undefined, dynamoDB),
+      deleteData: deleteConnectionData.bind(undefined, dynamoDB),
       sendMessage: sendMessageToConnection,
     },
     // ScheduledCommandsLibrary

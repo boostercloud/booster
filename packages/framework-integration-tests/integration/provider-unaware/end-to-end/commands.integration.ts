@@ -27,7 +27,7 @@ describe('Commands end-to-end tests', () => {
         `,
       })
 
-      expect(response).not.to.be.null
+      expect(response).not.to.be.undefined
       expect(response?.data?.ChangeCartItem).to.be.true
     })
 
@@ -41,7 +41,7 @@ describe('Commands end-to-end tests', () => {
         `,
       })
 
-      expect(response).not.to.be.null
+      expect(response).not.to.be.undefined
       expect(response?.data?.EmptyCommand).to.be.equal('Empty command executed')
     })
   })
@@ -114,7 +114,7 @@ describe('Commands end-to-end tests', () => {
         `,
       })
 
-      expect(result).not.to.be.null
+      expect(result).not.to.be.undefined
       expect(result?.data?.CreateProduct).to.be.true
     })
   })
@@ -161,7 +161,7 @@ describe('Commands end-to-end tests', () => {
         `,
       })
 
-      expect(result).not.to.be.null
+      expect(result).not.to.be.undefined
       expect(result?.data?.LogSomething).to.be.true
     })
   })

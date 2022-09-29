@@ -28,7 +28,7 @@ describe('Scheduled commands', () => {
     )
 
     const cartReadModel = cartData?.data?.CartReadModel
-    expect(cartReadModel).not.to.be.null
+    expect(cartReadModel).not.to.be.undefined
     expect(cartReadModel.id).to.equal(checkedCartId)
     expect(cartReadModel.checks).to.be.greaterThan(0)
   })

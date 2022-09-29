@@ -53,7 +53,7 @@ describe('the `GlobalErrorHandler` decorator', () => {
       public static async onReducerError(
         error: Error,
         eventInstance: EventInterface,
-        snapshotInstance: EntityInterface | null
+        snapshotInstance: EntityInterface | undefined
       ): Promise<Error> {
         return new Error('')
       }

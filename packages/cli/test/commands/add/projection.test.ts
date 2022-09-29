@@ -15,7 +15,7 @@ describe('add', async () => {
     const sourceFileText = `
       import { ReadModel } from '@boostercloud/framework-core'
       import { UUID } from '@boostercloud/framework-types'
-      
+
       @ReadModel({
         authorize: 'all',
       })
@@ -67,7 +67,7 @@ describe('add', async () => {
     describe('displays an error', () => {
       it('with flags missing', async () => {
         let exceptionThrown = false
-        let exceptionMessage = null
+        let exceptionMessage = undefined
 
         try {
           await new Projection([], {} as IConfig).run()
@@ -83,7 +83,7 @@ describe('add', async () => {
 
       it('with empty --read-model', async () => {
         let exceptionThrown = false
-        let exceptionMessage = null
+        let exceptionMessage = undefined
 
         try {
           await new Projection(['--entity', projectionName, '--read-model'], {} as IConfig).run()
@@ -98,7 +98,7 @@ describe('add', async () => {
 
       it('with empty --entity', async () => {
         let exceptionThrown = false
-        let exceptionMessage = null
+        let exceptionMessage = undefined
 
         try {
           await new Projection(['--read-model', readModelName, '--entity'], {} as IConfig).run()
@@ -113,7 +113,7 @@ describe('add', async () => {
 
       it("when projection doesn't have entity id", async () => {
         let exceptionThrown = false
-        let exceptionMessage = null
+        let exceptionMessage = undefined
 
         try {
           await new Projection(['--read-model', readModelName, '--entity', 'Post'], {} as IConfig).run()
@@ -130,7 +130,7 @@ describe('add', async () => {
 
       it('when projection has empty entity id', async () => {
         let exceptionThrown = false
-        let exceptionMessage = null
+        let exceptionMessage = undefined
 
         try {
           await new Projection(['--read-model', readModelName, '--entity', 'Post:'], {} as IConfig).run()
@@ -147,7 +147,7 @@ describe('add', async () => {
 
       it('when projection has empty entity name', async () => {
         let exceptionThrown = false
-        let exceptionMessage = null
+        let exceptionMessage = undefined
 
         try {
           await new Projection(['--read-model', readModelName, '--entity', ':id'], {} as IConfig).run()

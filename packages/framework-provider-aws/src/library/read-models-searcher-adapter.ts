@@ -158,7 +158,7 @@ function buildExpressionAttributeNames(filters: FilterFor<any>): ExpressionAttri
       default:
         Object.entries(filters[propName] as FilterFor<any>).forEach(([prop, value]) => {
           attributeNames[`#${propName}`] = propName
-          if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
+          if (typeof value === 'object' && !Array.isArray(value) && value !== undefined) {
             Object.assign(attributeNames, buildExpressionAttributeNames({ [prop]: value }))
           }
         })
@@ -208,7 +208,7 @@ function buildAttributeValue(
       value.forEach((element, subIndex) => {
         attributeValues[holder(index, subIndex)] = element
       })
-    } else if (typeof value === 'object' && key !== 'includes' && value !== null) {
+    } else if (typeof value === 'object' && key !== 'includes' && value !== undefined) {
       Object.assign(attributeValues, buildExpressionAttributeValues({ [key]: value }, usedPlaceholders))
     } else if (key !== 'isDefined') {
       attributeValues[holder(index)] = value

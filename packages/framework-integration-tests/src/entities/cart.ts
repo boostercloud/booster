@@ -29,7 +29,7 @@ export class Cart {
     if (event.cartId === reducerErrorCartId) {
       throw new Error(reducerErrorCartMessage)
     }
-    if (currentCart == null) {
+    if (currentCart == undefined) {
       currentCart = new Cart(event.cartId, [])
     }
     // This method calls are here to ensure they work. More info: https://github.com/boostercloud/booster/issues/797
@@ -53,7 +53,7 @@ export class Cart {
 
   @Reduces(UpdatedCartShippingAddress)
   public static updatedShippingAddress(event: UpdatedCartShippingAddress, currentCart: Cart): Cart {
-    if (currentCart == null) {
+    if (currentCart == undefined) {
       currentCart = new Cart(event.cartId, [])
     }
 
@@ -63,7 +63,7 @@ export class Cart {
 
   @Reduces(CartChecked)
   public static checkCart(event: CartChecked, currentCart: Cart): Cart {
-    if (currentCart == null) {
+    if (currentCart == undefined) {
       currentCart = new Cart(event.cartId, [])
     }
 

@@ -57,7 +57,7 @@ describe('entities', async () => {
       `,
     })
 
-    expect(ConfirmPaymentResponse).not.to.be.null
+    expect(ConfirmPaymentResponse).not.to.be.undefined
     expect(ConfirmPaymentResponse?.data?.ConfirmPayment).to.be.true
 
     const expectedReadModelItemsCount = readModelItemsCount + 1
@@ -75,7 +75,7 @@ describe('entities', async () => {
         readModel[0]?.cartItems[0]?.productId === mockProductId
     )
 
-    expect(latestReadModelItem).not.to.be.null
+    expect(latestReadModelItem).not.to.be.undefined
     expect(latestReadModelItem[0].id).to.be.equal(mockCartId)
     expect(latestReadModelItem[0].cartItems[0].productId).to.be.equal(mockProductId)
     expect(latestReadModelItem[0].cartItems[0].quantity).to.be.equal(mockQuantity)

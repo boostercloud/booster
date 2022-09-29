@@ -41,7 +41,7 @@ export default class Start extends BaseCommand {
     const { flags } = this.parse(Start)
 
     if (initializeEnvironment(logger, flags.environment)) {
-      await runTasks(flags.port, compileProjectAndLoadConfig(process.cwd()), startProvider.bind(null, flags.port))
+      await runTasks(flags.port, compileProjectAndLoadConfig(process.cwd()), startProvider.bind(undefined, flags.port))
     }
   }
 

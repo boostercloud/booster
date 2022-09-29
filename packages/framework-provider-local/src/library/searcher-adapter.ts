@@ -86,9 +86,9 @@ const queryOperatorTable: Record<string, (values: Array<QueryValue>) => QueryOpe
   gte: (values) => ({ $gte: values[0] }),
   in: (values) => ({ $in: values }),
   isDefined: (values) => ({ $exists: values[0] }),
-  contains: buildRegexQuery.bind(null, 'contains'),
-  beginsWith: buildRegexQuery.bind(null, 'begins-with'),
-  includes: buildIncludes.bind(null, 'contains'),
+  contains: buildRegexQuery.bind(undefined, 'contains'),
+  beginsWith: buildRegexQuery.bind(undefined, 'begins-with'),
+  includes: buildIncludes.bind(undefined, 'contains'),
 }
 
 function buildIncludes(operation: string, values: Array<QueryValue>): QueryOperation<QueryValue> {

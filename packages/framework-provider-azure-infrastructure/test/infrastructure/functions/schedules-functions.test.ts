@@ -27,7 +27,7 @@ describe('Creating scheduled-functions', () => {
 
     it('is one definition with the proper fields', () => {
       const definitions = new ScheduledFunctions(config).getFunctionDefinitions() as Array<ScheduleFunctionDefinition>
-      expect(definitions).not.to.be.null
+      expect(definitions).not.to.be.undefined
       expect(definitions.length).to.be.equal(1)
       expectDefinition(definitions[0], scheduleCommandName, '0 * * 1 * *')
     })
@@ -52,7 +52,7 @@ describe('Creating scheduled-functions', () => {
 
     it('is two definitions with the proper fields', () => {
       const definitions = new ScheduledFunctions(config).getFunctionDefinitions() as Array<ScheduleFunctionDefinition>
-      expect(definitions).not.to.be.null
+      expect(definitions).not.to.be.undefined
       expect(definitions.length).to.be.equal(2)
       expectDefinition(definitions[0], scheduleCommandName1, '0 * * 1 * *')
       expectDefinition(definitions[1], scheduleCommandName2, '0 * * 1 * *')

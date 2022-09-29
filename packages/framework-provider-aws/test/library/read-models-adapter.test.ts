@@ -277,7 +277,7 @@ describe('the "storeReadModel" method', () => {
         'attribute_not_exists(boosterMetadata.optimisticConcurrencyValue) OR boosterMetadata.optimisticConcurrencyValue = :optimisticConcurrencyValue',
       ExpressionAttributeValues: { ':optimisticConcurrencyValue': 0 },
     })
-    expect(something).not.to.be.null
+    expect(something).not.to.be.undefined
   })
 
   it('throws the OptimisticConcurrencyUnexpectedVersionError when there is a ConditionalCheckFailedException', async () => {

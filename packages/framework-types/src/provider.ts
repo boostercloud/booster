@@ -35,7 +35,11 @@ export interface ProviderEventsLibrary {
     entityID: UUID,
     since?: string
   ): Promise<Array<EventEnvelope>>
-  latestEntitySnapshot(config: BoosterConfig, entityTypeName: string, entityID: UUID): Promise<EventEnvelope | null>
+  latestEntitySnapshot(
+    config: BoosterConfig,
+    entityTypeName: string,
+    entityID: UUID
+  ): Promise<EventEnvelope | undefined>
   search(config: BoosterConfig, parameters: EventSearchParameters): Promise<Array<EventSearchResponse>>
   searchEntitiesIDs(
     config: BoosterConfig,

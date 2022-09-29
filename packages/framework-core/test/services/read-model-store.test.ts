@@ -96,15 +96,15 @@ describe('ReadModelStore', () => {
   } as unknown as ProviderLibrary
   config.entities[AnImportantEntity.name] = {
     class: AnImportantEntity,
-    eventStreamAuthorizer: BoosterAuthorizer.authorizeRoles.bind(null, []),
+    eventStreamAuthorizer: BoosterAuthorizer.authorizeRoles.bind(undefined, []),
   }
   config.entities[AnEntity.name] = {
     class: AnEntity,
-    eventStreamAuthorizer: BoosterAuthorizer.authorizeRoles.bind(null, []),
+    eventStreamAuthorizer: BoosterAuthorizer.authorizeRoles.bind(undefined, []),
   }
   config.entities[AnImportantEntityWithArray.name] = {
     class: AnImportantEntityWithArray,
-    eventStreamAuthorizer: BoosterAuthorizer.authorizeRoles.bind(null, []),
+    eventStreamAuthorizer: BoosterAuthorizer.authorizeRoles.bind(undefined, []),
   }
   config.readModels[SomeReadModel.name] = {
     class: SomeReadModel,
@@ -189,7 +189,7 @@ describe('ReadModelStore', () => {
 
         replace(config.provider.readModels, 'store', fake())
         const readModelStore = new ReadModelStore(config)
-        replace(readModelStore, 'fetchReadModel', fake.returns(null))
+        replace(readModelStore, 'fetchReadModel', fake.returns(undefined))
 
         await expect(readModelStore.project(entitySnapshotWithNoProjections)).to.eventually.be.fulfilled
 
@@ -236,7 +236,7 @@ describe('ReadModelStore', () => {
       it('creates new instances of the read models', async () => {
         replace(config.provider.readModels, 'store', fake())
         const readModelStore = new ReadModelStore(config)
-        replace(readModelStore, 'fetchReadModel', fake.returns(null))
+        replace(readModelStore, 'fetchReadModel', fake.returns(undefined))
         spy(SomeReadModel, 'someObserver')
         spy(AnotherReadModel, 'anotherObserver')
         const entityValue: any = eventEnvelopeFor(AnImportantEntity.name).value
@@ -247,14 +247,14 @@ describe('ReadModelStore', () => {
         expect(readModelStore.fetchReadModel).to.have.been.calledThrice
         expect(readModelStore.fetchReadModel).to.have.been.calledWith(SomeReadModel.name, 'joinColumnID')
         expect(readModelStore.fetchReadModel).to.have.been.calledWith(AnotherReadModel.name, 'joinColumnID')
-        expect(SomeReadModel.someObserver).to.have.been.calledOnceWith(anEntityInstance, null)
+        expect(SomeReadModel.someObserver).to.have.been.calledOnceWith(anEntityInstance, undefined)
         expect(SomeReadModel.someObserver).to.have.returned({
           id: 'joinColumnID',
           kind: 'some',
           count: 123,
           boosterMetadata: { version: 1, schemaVersion: 1 },
         })
-        expect(AnotherReadModel.anotherObserver).to.have.been.calledOnceWith(anEntityInstance, null)
+        expect(AnotherReadModel.anotherObserver).to.have.been.calledOnceWith(anEntityInstance, undefined)
         expect(AnotherReadModel.anotherObserver).to.have.returned({
           id: 'joinColumnID',
           kind: 'another',
@@ -434,12 +434,12 @@ describe('ReadModelStore', () => {
           fake((className: string, id: UUID) => {
             if (className == SomeReadModel.name) {
               if (id == 'anotherJoinColumnID') {
-                return null
+                return undefined
               } else {
                 return { id: id, kind: 'some', count: 77, boosterMetadata: { version: someReadModelStoredVersion } }
               }
             }
-            return null
+            return undefined
           })
         )
         spy(SomeReadModel, 'someObserver')
@@ -467,7 +467,7 @@ describe('ReadModelStore', () => {
         expect(SomeReadModel.someObserverArray).to.have.been.calledWithMatch(
           anEntityInstance,
           'anotherJoinColumnID',
-          null
+          undefined
         )
         expect(SomeReadModel.someObserverArray).to.have.returned({
           id: 'anotherJoinColumnID',

@@ -15,7 +15,7 @@ export class Stock {
 
   @Reduces(StockMoved)
   public static stockMoved(event: StockMoved, currentStock?: Stock): Stock {
-    if (currentStock == null) {
+    if (currentStock == undefined) {
       const stock = new Stock(event.productID, {})
       stock.warehouses[event.origin] = 0 // It must come from a provider or a different dimension
       stock.warehouses[event.destination] = event.quantity

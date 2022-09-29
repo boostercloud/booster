@@ -46,7 +46,7 @@ export function wrapEventEnvelopesForCosmosDB(eventEnvelopes: Array<EventEnvelop
     invocationId: '',
     log: {} as AzureLogger,
     traceContext: {} as TraceContext,
-    done(err?: Error | string | null, result?: any): void {},
+    done(err?: Error | string | undefined, result?: any): void {},
     bindings: { rawEvent: eventEnvelopes },
   }
 }

@@ -107,8 +107,8 @@ describe('searcher-adapter', () => {
               },
             ],
           },
-          { mainItem: { sku: { eq: null } } },
-          { mainItem: { price: { cents: { ne: null } } } },
+          { mainItem: { sku: { eq: undefined } } },
+          { mainItem: { price: { cents: { ne: undefined } } } },
         ],
       })
       expect(result).to.deep.equal({
@@ -123,8 +123,8 @@ describe('searcher-adapter', () => {
               },
             ],
           },
-          { 'value.mainItem.sku': null },
-          { 'value.mainItem.price.cents': { $ne: null } },
+          { 'value.mainItem.sku': undefined },
+          { 'value.mainItem.price.cents': { $ne: undefined } },
         ],
       })
     })

@@ -67,7 +67,7 @@ describe('EventStore', () => {
   } as any as ProviderLibrary
   config.entities[AnEntity.name] = {
     class: AnEntity,
-    eventStreamAuthorizer: BoosterAuthorizer.authorizeRoles.bind(null, []),
+    eventStreamAuthorizer: BoosterAuthorizer.authorizeRoles.bind(undefined, []),
   }
   config.reducers[AnEvent.name] = {
     class: AnEntity,
@@ -141,7 +141,7 @@ describe('EventStore', () => {
         const eventStore = new EventStore(config) as any
         const someEventEnvelope = eventEnvelopeFor(someEvent, AnEvent.name)
 
-        replace(eventStore, 'loadLatestSnapshot', fake.resolves(null))
+        replace(eventStore, 'loadLatestSnapshot', fake.resolves(undefined))
         replace(eventStore, 'loadEventStreamSince', fake.resolves([someEventEnvelope]))
         replace(eventStore, 'entityReducer', function () {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -334,7 +334,7 @@ describe('EventStore', () => {
             })
           })
 
-          replace(eventStore, 'loadLatestSnapshot', fake.resolves(null))
+          replace(eventStore, 'loadLatestSnapshot', fake.resolves(undefined))
           replace(eventStore, 'loadEventStreamSince', fake.resolves(pendingEvents))
 
           const reducer = stub()
@@ -358,7 +358,7 @@ describe('EventStore', () => {
           expect(eventStore.loadLatestSnapshot).to.have.been.calledOnceWith(entityName, entityID)
           expect(eventStore.loadEventStreamSince).to.have.been.calledOnceWith(entityName, entityID, originOfTime)
 
-          expect(eventStore.entityReducer.getCall(0).args[0]).to.be.null
+          expect(eventStore.entityReducer.getCall(0).args[0]).to.be.undefined
           expect(eventStore.entityReducer.getCall(0).args[1]).to.deep.equal(pendingEvents[0])
           for (let index = 1; index < results.length; index++) {
             expect(eventStore.entityReducer.getCall(index).args[0]).to.deep.equal(inputs[index - 1])
@@ -377,11 +377,11 @@ describe('EventStore', () => {
       })
 
       context('with no snapshot and an empty list of events', () => {
-        it('does nothing and returns null', async () => {
+        it('does nothing and returns undefined', async () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const eventStore = new EventStore(config) as any
 
-          replace(eventStore, 'loadLatestSnapshot', fake.resolves(null))
+          replace(eventStore, 'loadLatestSnapshot', fake.resolves(undefined))
           replace(eventStore, 'loadEventStreamSince', fake.resolves([]))
 
           replace(eventStore, 'entityReducer', fake())
@@ -397,7 +397,7 @@ describe('EventStore', () => {
           expect(eventStore.entityReducer).not.to.have.been.called
           expect(eventStore.storeSnapshot).not.to.have.been.called
 
-          expect(entity).to.be.null
+          expect(entity).to.be.undefined
         })
       })
     })
@@ -507,14 +507,14 @@ describe('EventStore', () => {
             })
             replace(eventStore, 'reducerForEvent', fake.returns(fakeReducer))
 
-            const newSnapshot = await eventStore.entityReducer(null, eventEnvelope)
+            const newSnapshot = await eventStore.entityReducer(undefined, eventEnvelope)
             delete newSnapshot.createdAt
 
             const eventInstance = new AnEvent(someEvent.id, someEvent.entityId, someEvent.delta)
             eventInstance.entityID = someEvent.entityID
 
             expect(eventStore.reducerForEvent).to.have.been.calledOnceWith(AnEvent.name)
-            expect(fakeReducer).to.have.been.calledOnceWith(eventInstance, null)
+            expect(fakeReducer).to.have.been.calledOnceWith(eventInstance, undefined)
 
             expect(newSnapshot).to.be.deep.equal({
               version: 1,
@@ -579,7 +579,7 @@ describe('EventStore', () => {
           const eventEnvelope = eventEnvelopeFor(someEvent, AnotherEvent.name, 'fakeTimeStamp')
           const getIdFake = fake()
           replace(AnotherEvent.prototype, 'getPrefixedId', getIdFake)
-          await eventStore.entityReducer(null, eventEnvelope)
+          await eventStore.entityReducer(undefined, eventEnvelope)
           expect(getIdFake).to.have.been.called
         })
       })

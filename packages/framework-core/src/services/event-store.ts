@@ -16,7 +16,7 @@ const originOfTime = new Date(0).toISOString() // Unix epoch
 export class EventStore {
   public constructor(readonly config: BoosterConfig) {}
 
-  public async fetchEntitySnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | null> {
+  public async fetchEntitySnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | undefined> {
     const logger = getLogger(this.config, 'EventStore#fetchEntitySnapshot')
     logger.debug(`Fetching snapshot for entity ${entityName} with ID ${entityID}`)
     const latestSnapshotEnvelope = await this.loadLatestSnapshot(entityName, entityID)
@@ -49,7 +49,7 @@ export class EventStore {
     entityName: string,
     entityID: UUID,
     pendingEnvelopes: Array<EventEnvelope>
-  ): Promise<EventEnvelope | null> {
+  ): Promise<EventEnvelope | undefined> {
     const logger = getLogger(this.config, 'EventStore#calculateAndStoreEntitySnapshot')
     logger.debug('Processing events: ', pendingEnvelopes)
     logger.debug(`Fetching snapshot for entity ${entityName} with ID ${entityID}`)
@@ -69,7 +69,7 @@ export class EventStore {
     )
 
     if (!newEntitySnapshot) {
-      logger.debug('New entity snapshot is null. Returning old one (which can also be null)')
+      logger.debug('New entity snapshot is undefined. Returning old one (which can also be undefined)')
       return latestSnapshotEnvelope
     }
 
@@ -84,14 +84,14 @@ export class EventStore {
     return this.config.provider.events.store([snapshot], this.config)
   }
 
-  private async loadLatestSnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | null> {
+  private async loadLatestSnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | undefined> {
     const logger = getLogger(this.config, 'EventStore#loadLatestSnapshot')
     logger.debug(`Loading latest snapshot for entity ${entityName} and ID ${entityID}`)
     const latestSnapshot = await this.config.provider.events.latestEntitySnapshot(this.config, entityName, entityID)
     if (latestSnapshot) {
       return new SchemaMigrator(this.config).migrate(latestSnapshot)
     }
-    return null
+    return undefined
   }
 
   private loadEventStreamSince(entityTypeName: string, entityID: UUID, timestamp: string): Promise<EventEnvelope[]> {
@@ -101,7 +101,7 @@ export class EventStore {
   }
 
   private async entityReducer(
-    latestSnapshot: EventEnvelope | null,
+    latestSnapshot: EventEnvelope | undefined,
     eventEnvelope: EventEnvelope
   ): Promise<EventEnvelope> {
     const logger = getLogger(this.config, 'EventStore#entityReducer')
@@ -117,7 +117,7 @@ export class EventStore {
       const migratedEventEnvelope = await new SchemaMigrator(this.config).migrate(eventEnvelope)
       const eventInstance = createInstance(eventMetadata.class, migratedEventEnvelope.value)
       const entityMetadata = this.config.entities[migratedEventEnvelope.entityTypeName]
-      const snapshotInstance = latestSnapshot ? createInstance(entityMetadata.class, latestSnapshot.value) : null
+      const snapshotInstance = latestSnapshot ? createInstance(entityMetadata.class, latestSnapshot.value) : undefined
       let newEntity: any
       try {
         newEntity = this.reducerForEvent(migratedEventEnvelope.typeName)(eventInstance, snapshotInstance)

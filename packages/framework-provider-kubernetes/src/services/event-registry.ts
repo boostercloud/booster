@@ -49,17 +49,17 @@ export class EventRegistry {
     logger.debug(`Got filtered keys: ${JSON.stringify(keysToQuery)}`)
     logger.debug('Getting envelopes')
     const envelopes = (await Promise.all(keysToQuery.map((k) => this.redis.hget<EventEnvelope>(k))))
-      .filter((envelope): envelope is EventEnvelope => envelope !== null)
+      .filter((envelope): envelope is EventEnvelope => envelope !== undefined)
       .filter(query.valuePredicate)
       .sort(query.sortBy)
     logger.debug(`Got ${envelopes.length} envelopes, returning`)
     return envelopes
   }
 
-  public async queryLatest(config: BoosterConfig, query: Query): Promise<EventEnvelope | null> {
+  public async queryLatest(config: BoosterConfig, query: Query): Promise<EventEnvelope | undefined> {
     const result = await this.query(config, query)
     if (result.length <= 0) {
-      return null
+      return undefined
     }
     return result[result.length - 1]
   }

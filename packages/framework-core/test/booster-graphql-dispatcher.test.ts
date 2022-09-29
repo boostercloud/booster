@@ -98,7 +98,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
         const dispatcher = new BoosterGraphQLDispatcher(config)
         await dispatcher.dispatch({})
 
-        expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly(null, {
+        expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly(undefined, {
           'Sec-WebSocket-Protocol': 'graphql-ws',
         })
       })
@@ -144,7 +144,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
           const messageEnvelope: GraphQLRequestEnvelope = {
             requestID: random.uuid(),
             eventType: 'MESSAGE',
-            connectionID: random.uuid(), // A non-null connectionID means it came through socket
+            connectionID: random.uuid(), // A non-undefined connectionID means it came through socket
           }
           const config = mockConfigForGraphQLEnvelope(messageEnvelope)
 

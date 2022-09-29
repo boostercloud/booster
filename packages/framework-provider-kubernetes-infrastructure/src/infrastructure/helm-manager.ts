@@ -33,7 +33,7 @@ export class HelmManager {
     }
     logger.debug('Checking if version matches properly')
     const match = stdout.match(/Version:"(.*?)"/)
-    const version = !match ? null : match[1]
+    const version = !match ? undefined : match[1]
     const cleanedVersion = semver.clean(version)
     logger.debug('Got version', cleanedVersion)
     if (!semver.gte(cleanedVersion, '3.0.0')) {

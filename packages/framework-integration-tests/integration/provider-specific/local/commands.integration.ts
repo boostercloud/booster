@@ -33,7 +33,7 @@ describe('commands', () => {
     xit('should successfully process a command', async () => {
       const mutationResult = await changeCartItem(client, mockCartId, mockProductId, mockQuantity)
 
-      expect(mutationResult).not.to.be.null
+      expect(mutationResult).not.to.be.undefined
       expect(mutationResult.data.ChangeCartItem).to.be.true
     })
 

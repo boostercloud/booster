@@ -187,7 +187,7 @@ describe('the read model registry', () => {
       const id = '1'
       mockReadModelEnvelope.value.id = id
 
-      readModelRegistry.readModels.remove = stub().yields(null, mockReadModelEnvelope)
+      readModelRegistry.readModels.remove = stub().yields(undefined, mockReadModelEnvelope)
 
       await readModelRegistry.store(mockReadModelEnvelope)
       await readModelRegistry.deleteById(id, mockReadModelEnvelope.typeName)
@@ -204,7 +204,7 @@ describe('the read model registry', () => {
       const readModel: ReadModelEnvelope = createMockReadModelEnvelope()
       const expectedQuery = { typeName: readModel.typeName, 'value.id': readModel.value.id }
 
-      readModelRegistry.readModels.update = stub().yields(null, readModel)
+      readModelRegistry.readModels.update = stub().yields(undefined, readModel)
 
       await readModelRegistry.store(readModel)
       expect(readModelRegistry.readModels.update).to.have.been.calledWith(expectedQuery, readModel, {
@@ -222,7 +222,7 @@ describe('the read model registry', () => {
 
       const error = new Error(faker.random.words())
 
-      readModelRegistry.readModels.update = stub().yields(error, null)
+      readModelRegistry.readModels.update = stub().yields(error, undefined)
 
       void expect(readModelRegistry.store(readModel)).to.be.rejectedWith(error)
     })

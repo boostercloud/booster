@@ -11,6 +11,6 @@ export interface RocketUtils {
 
 export const buildRocketUtils = (config: BoosterConfig, sdk: ISDK): RocketUtils => ({
   s3: {
-    emptyBucket: emptyS3Bucket.bind(null, config, sdk),
+    emptyBucket: emptyS3Bucket.bind(undefined, config, sdk),
   },
 })

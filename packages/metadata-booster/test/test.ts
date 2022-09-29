@@ -42,7 +42,7 @@ class Test {
     public array0: string[],
     public array1: Array<string>,
     public unionArrays: Array<string> | Array<number>,
-    public unionWithNull: string | null, // typeGroup = String, nullable = true
+    public unionWithNull: string | undefined, // typeGroup = String, nullable = true
     public unionWithUndefined: string | undefined, // typeGroup = String, nullable = true
     public unionWithAny: string | any, // typeGroup = Other, nullable = false
     public unionWithObject: string | Car,

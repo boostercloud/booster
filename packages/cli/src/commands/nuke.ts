@@ -26,7 +26,7 @@ async function askToConfirmRemoval(
   if (force) return config
   const configuration = await config
   const appName = await prompter.defaultOrPrompt(
-    null,
+    undefined,
     'Please, enter the app name to confirm deletion of all resources:'
   )
   if (appName == configuration.appName) {

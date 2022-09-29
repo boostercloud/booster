@@ -53,7 +53,7 @@ export class GraphQLTypeInformer {
     return typeMetadata.isNullable ? createdGraphQLType : new GraphQLNonNull(createdGraphQLType)
   }
 
-  private getGraphQLName(typeMetadata: TypeMetadata, inputType: boolean): string | null {
+  private getGraphQLName(typeMetadata: TypeMetadata, inputType: boolean): string | undefined {
     if (typeMetadata.name === 'UUID' || typeMetadata.name === 'Date') {
       // UUID is a class but should result in a scalar which doesn't need a separate input type
       // Date is an interface which has no `type`, so we need to use `name` instead
@@ -65,7 +65,7 @@ export class GraphQLTypeInformer {
     if (typeMetadata.typeName && typeMetadata.typeGroup === 'Class') {
       return typeMetadata.typeName + (inputType ? 'Input' : '')
     }
-    return typeMetadata.typeName || null
+    return typeMetadata.typeName || undefined
   }
 
   private createGraphQLType(typeMetadata: TypeMetadata, inputType: boolean): GraphQLType {

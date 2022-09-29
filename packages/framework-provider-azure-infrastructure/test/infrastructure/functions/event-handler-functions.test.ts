@@ -10,7 +10,7 @@ describe('Creating event-handler-functions', () => {
 
   it('create the expected EventHandlerFunctionDefiniton', () => {
     const definition = new EventHandlerFunction(config).getFunctionDefinition()
-    expect(definition).not.to.be.null
+    expect(definition).not.to.be.undefined
     expect(definition.name).to.be.equal('eventHandler')
     expect(definition.config.bindings[0].type).to.be.equal('cosmosDBTrigger')
     expect(definition.config.bindings[0].name).to.be.equal('rawEvent')

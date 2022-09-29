@@ -111,24 +111,24 @@ describe('the event registry', () => {
     })
 
     it('should return latest item', async () => {
-      const result: EventEnvelope | null = await eventRegistry.queryLatest({
+      const result: EventEnvelope | undefined = await eventRegistry.queryLatest({
         kind: mockTargetEvent.kind,
         entityID: mockTargetEvent.entityID,
         entityTypeName: mockTargetEvent.entityTypeName,
       })
 
-      expect(result).not.to.be.null
+      expect(result).not.to.be.undefined
       expect(result).to.deep.include(copyOfMockTargetEvent)
     })
 
-    it('should return null', async () => {
-      const result: EventEnvelope | null = await eventRegistry.queryLatest({
+    it('should return undefined', async () => {
+      const result: EventEnvelope | undefined = await eventRegistry.queryLatest({
         kind: mockTargetEvent.kind,
         entityID: random.uuid(),
         entityTypeName: mockTargetEvent.entityTypeName,
       })
 
-      expect(result).to.be.null
+      expect(result).to.be.undefined
     })
   })
 
@@ -150,7 +150,7 @@ describe('the event registry', () => {
     it('should insert events into the events database', async () => {
       const mockEvent: EventEnvelope = createMockEventEnvelop()
 
-      eventRegistry.events.insert = stub().yields(null, mockEvent)
+      eventRegistry.events.insert = stub().yields(undefined, mockEvent)
 
       await eventRegistry.store(mockEvent)
       return expect(eventRegistry.events.insert).to.have.been.called
@@ -173,7 +173,7 @@ describe('the event registry', () => {
 
       const error = new Error(faker.random.words())
 
-      eventRegistry.events.insert = stub().yields(error, null)
+      eventRegistry.events.insert = stub().yields(error, undefined)
 
       return expect(eventRegistry.store(event)).to.be.rejectedWith(error)
     })

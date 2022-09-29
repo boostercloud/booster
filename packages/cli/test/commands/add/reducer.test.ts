@@ -14,7 +14,7 @@ describe('add', async () => {
     const sourceFileText = `
     import { Entity } from '@boostercloud/framework-core'
     import { UUID } from '@boostercloud/framework-types'
-    
+
     @Entity
     export class Post {
       public constructor(public id: UUID, readonly title: string, readonly content: string, readonly author: string) {}
@@ -88,13 +88,13 @@ describe('add', async () => {
     describe('displays an error', () => {
       it('with flags missing', async () => {
         let exceptionThrown = false
-        let exceptionMessage = null
+        let exceptionMessage
 
         try {
           await new Reducer([], {} as IConfig).run()
-        } catch (e) {
+        } catch (error) {
           exceptionThrown = true
-          exceptionMessage = e.message
+          exceptionMessage = error.message
         }
 
         expect(exceptionThrown).to.be.true
@@ -104,13 +104,13 @@ describe('add', async () => {
 
       it('with empty --entity flag', async () => {
         let exceptionThrown = false
-        let exceptionMessage = null
+        let exceptionMessage
 
         try {
           await new Reducer(['--event', 'PostCreated', '--entity'], {} as IConfig).run()
-        } catch (e) {
+        } catch (error) {
           exceptionThrown = true
-          exceptionMessage = e.message
+          exceptionMessage = error.message
         }
 
         expect(exceptionThrown).to.be.true
@@ -119,13 +119,13 @@ describe('add', async () => {
 
       it('with empty --event flag', async () => {
         let exceptionThrown = false
-        let exceptionMessage = null
+        let exceptionMessage
 
         try {
           await new Reducer(['--entity', entityName, '--event'], {} as IConfig).run()
-        } catch (e) {
+        } catch (error) {
           exceptionThrown = true
-          exceptionMessage = e.message
+          exceptionMessage = error.message
         }
 
         expect(exceptionThrown).to.be.true
@@ -142,7 +142,7 @@ describe('add', async () => {
 
         try {
           await new Reducer(['--entity', entityName, '--event', 'PostCreated'], {} as IConfig).run()
-        } catch (e) {
+        } catch {
           exceptionThrown = true
         }
 
@@ -172,7 +172,7 @@ describe('add', async () => {
 
         try {
           await new Reducer(['--entity', entityName, '--event', 'PostUpdated'], {} as IConfig).run()
-        } catch (e) {
+        } catch {
           exceptionThrown = true
         }
 

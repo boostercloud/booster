@@ -39,7 +39,7 @@ describe('Cart end-to-end tests', () => {
         `,
       })
 
-      expect(response).not.to.be.null
+      expect(response).not.to.be.undefined
       expect(response?.data?.ChangeCartItem).to.be.true
     })
 
@@ -57,7 +57,7 @@ describe('Cart end-to-end tests', () => {
         `,
       })
 
-      expect(response).not.to.be.null
+      expect(response).not.to.be.undefined
       expect(response?.data?.ChangeCartItem).to.be.true
 
       const queryResult = await waitForIt(
@@ -79,7 +79,7 @@ describe('Cart end-to-end tests', () => {
             `,
           })
         },
-        (result) => result?.data?.CartReadModel != null
+        (result) => result?.data?.CartReadModel != undefined
       )
 
       const cartData = queryResult.data.CartReadModel
@@ -150,7 +150,7 @@ describe('Cart end-to-end tests', () => {
                 `,
               })
             },
-            (result) => result?.data?.CartReadModel != null
+            (result) => result?.data?.CartReadModel != undefined
           )
 
           const cartData = queryResult.data.CartReadModel
@@ -412,7 +412,7 @@ describe('Cart end-to-end tests', () => {
         )
 
         const productData = queryResult.data.ProductReadModel
-        expect(productData).to.be.null
+        expect(productData).to.be.undefined
       })
     })
   })
@@ -461,7 +461,7 @@ describe('Cart end-to-end tests', () => {
               `,
             })
           },
-          (result) => result?.data?.CartReadModel != null
+          (result) => result?.data?.CartReadModel != undefined
         )
 
         const cartData = queryResult.data.CartReadModel
@@ -518,7 +518,7 @@ describe('Cart end-to-end tests', () => {
               `,
             })
           },
-          (result) => result?.data?.CartReadModel?.payment != null
+          (result) => result?.data?.CartReadModel?.payment != undefined
         )
 
         const updatedCartData = updatedQueryResult.data.CartReadModel

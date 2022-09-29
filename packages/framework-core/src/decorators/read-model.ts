@@ -27,7 +27,7 @@ export function ReadModel(
       if (attributes.authorize === 'all') {
         authorizer = BoosterAuthorizer.allowAccess
       } else if (Array.isArray(attributes.authorize)) {
-        authorizer = BoosterAuthorizer.authorizeRoles.bind(null, attributes.authorize)
+        authorizer = BoosterAuthorizer.authorizeRoles.bind(undefined, attributes.authorize)
       } else if (typeof attributes.authorize === 'function') {
         authorizer = attributes.authorize
       }

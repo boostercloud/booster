@@ -28,7 +28,7 @@ export class EventRegistry {
     return await queryPromise
   }
 
-  public async queryLatest(query: object): Promise<EventEnvelope | null> {
+  public async queryLatest(query: object): Promise<EventEnvelope | undefined> {
     const queryPromise = new Promise((resolve, reject) =>
       this.events
         .find(query)
@@ -41,7 +41,7 @@ export class EventRegistry {
 
     const events = (await queryPromise) as Array<EventEnvelope>
     if (events.length <= 0) {
-      return null
+      return undefined
     }
     return events[0]
   }

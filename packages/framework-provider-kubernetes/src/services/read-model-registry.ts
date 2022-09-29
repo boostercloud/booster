@@ -72,13 +72,13 @@ export class ReadModelRegistry {
     config: BoosterConfig,
     readModelName: string,
     readModelID: UUID
-  ): Promise<ReadModelInterface | null> {
+  ): Promise<ReadModelInterface | undefined> {
     const logger = getLogger(config, 'ReadModelRegistry#fetch')
     const key: string = this.readModelKey(readModelName, readModelID)
     logger.debug('fetching key booster||', key)
     const envelope = await this.redis.hget<ReadModelEnvelope>(`booster||${key}`)
     logger.debug('envelope fetched ' + JSON.stringify(envelope))
-    return envelope ? envelope.value : null
+    return envelope ? envelope.value : undefined
   }
 
   private readModelEnvelopeKey(readmodel: ReadModelEnvelope): string {
