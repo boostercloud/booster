@@ -4,7 +4,7 @@ import { FunctionProps, Runtime, StartingPosition } from '@aws-cdk/aws-lambda'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { RestApi } from '@aws-cdk/aws-apigateway'
 import { CfnApi } from '@aws-cdk/aws-apigatewayv2'
-import { environmentVarNames } from '@boostercloud/framework-provider-aws'
+import { environmentVariableNames } from '@boostercloud/framework-provider-aws'
 import { DynamoEventSourceProps } from '@aws-cdk/aws-lambda-event-sources'
 
 export interface APIs {
@@ -24,8 +24,8 @@ export function lambda(
     environment: {
       BOOSTER_ENV: config.environmentName,
       ...config.env, // Adds custom environment variables set by the user in the config file
-      [environmentVarNames.restAPIURL]: baseURLForAPI(config, stack, apis.restAPI.restApiId),
-      [environmentVarNames.websocketAPIURL]: baseURLForAPI(config, stack, apis.websocketAPI.ref),
+      [environmentVariableNames.restAPIURL]: baseURLForAPI(config, stack, apis.restAPI.restApiId),
+      [environmentVariableNames.websocketAPIURL]: baseURLForAPI(config, stack, apis.websocketAPI.ref),
     },
   }
 }

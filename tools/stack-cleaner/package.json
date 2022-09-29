@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/stack-cleaner",
-  "version": "0.30.6",
+  "version": "1.0.0",
   "description": "Tool to batch delete stacks in cloud providers",
   "main": "dist/index.js",
   "publishConfig": {
@@ -21,7 +21,7 @@
     "monocle-ts": "~2.3.13"
   },
   "devDependencies": {
-    "@boostercloud/eslint-config": "workspace:^0.30.6",
+    "@boostercloud/eslint-config": "workspace:^1.0.0",
     "@types/node": "^16.11.7",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",

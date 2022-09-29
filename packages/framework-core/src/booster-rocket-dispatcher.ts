@@ -1,13 +1,13 @@
-import { BoosterConfig, rocketFunctionIDEnvVar } from '@boostercloud/framework-types'
+import { BoosterConfig, rocketFunctionIdEnvironmentVariable } from '@boostercloud/framework-types'
 
 export class BoosterRocketDispatcher {
   constructor(readonly config: BoosterConfig) {}
 
   public dispatch(request: unknown): Promise<unknown> {
-    const rocketFunctionID = process.env[rocketFunctionIDEnvVar]
+    const rocketFunctionID = process.env[rocketFunctionIdEnvironmentVariable]
     if (!rocketFunctionID) {
       throw new Error(
-        `Attempt to execute a rocket function but the ID is missing. Did you forget to set the ID in the environment variable "${rocketFunctionIDEnvVar}"?`
+        `Attempt to execute a rocket function but the ID is missing. Did you forget to set the ID in the environment variable "${rocketFunctionIdEnvironmentVariable}"?`
       )
     }
     const rocketFunction = this.config.getRegisteredRocketFunction(rocketFunctionID)

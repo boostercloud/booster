@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-core",
-  "version": "0.30.7",
+  "version": "1.0.0",
   "description": "Library for your Booster apps",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
@@ -30,15 +30,9 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@boostercloud/framework-common-helpers": "workspace:^0.30.6",
-    "@boostercloud/framework-types": "workspace:^0.30.6",
+    "@boostercloud/framework-common-helpers": "workspace:^1.0.0",
+    "@boostercloud/framework-types": "workspace:^1.0.0",
     "fp-ts": "^2.11.0",
-=======
-    "@boostercloud/framework-common-helpers": "^0.30.7",
-    "@boostercloud/framework-types": "^0.30.7",
-    "fp-ts": "2.10.5",
->>>>>>> e5c87fb1 (v0.30.7)
     "graphql": "^15.5.1",
     "graphql-scalars": "^1.17.0",
     "graphql-subscriptions": "1.2.1",
@@ -51,14 +45,7 @@
     "validator": "13.7.0"
   },
   "devDependencies": {
-<<<<<<< HEAD
-    "@boostercloud/metadata-booster": "workspace:^0.30.6",
-    "@boostercloud/eslint-config": "workspace:^0.30.6",
-    "@types/chai": "4.2.18",
-    "@types/chai-as-promised": "7.1.4",
-=======
-    "@boostercloud/metadata-booster": "^0.30.7",
->>>>>>> e5c87fb1 (v0.30.7)
+    "@boostercloud/metadata-booster": "workspace:^1.0.0",
     "@types/faker": "5.1.5",
     "@types/inflected": "1.1.29",
     "@types/jsonwebtoken": "^8.5.8",

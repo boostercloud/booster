@@ -6,9 +6,9 @@ import {
   EventSearchParameters,
   EventSearchRequest,
   EventSearchResponse,
-  ReadModelByIdRequestArgs,
   ReadModelInterface,
-  ReadModelRequestArgs,
+  ReadModelRequestArguments,
+  ReadModelByIdRequestArguments,
   ReadModelRequestEnvelope,
   ReadModelRequestProperties,
   TimeKey,
@@ -79,7 +79,7 @@ export class GraphQLGenerator {
 
   public static readModelResolverBuilder(
     readModelClass: AnyClass
-  ): GraphQLFieldResolver<unknown, GraphQLResolverContext, ReadModelRequestArgs<ReadModelInterface>> {
+  ): GraphQLFieldResolver<unknown, GraphQLResolverContext, ReadModelRequestArguments<ReadModelInterface>> {
     return (parent, args, context, info) => {
       let isPaginated = false
       if (info?.fieldName === `List${pluralize(readModelClass.name)}`) {
@@ -93,7 +93,7 @@ export class GraphQLGenerator {
   public static readModelByIDResolverBuilder(
     config: BoosterConfig,
     readModelClass: AnyClass
-  ): GraphQLFieldResolver<unknown, GraphQLResolverContext, ReadModelByIdRequestArgs> {
+  ): GraphQLFieldResolver<unknown, GraphQLResolverContext, ReadModelByIdRequestArguments> {
     const sequenceKeyName = config.readModelSequenceKeys[readModelClass.name]
     return async (parent, args, context) => {
       const readModelRequestEnvelope = this.toReadModelByIdRequestEnvelope(
@@ -140,7 +140,7 @@ export class GraphQLGenerator {
   public static subscriptionResolverBuilder(
     config: BoosterConfig,
     readModelClass: AnyClass
-  ): GraphQLFieldResolver<unknown, GraphQLResolverContext, ReadModelRequestArgs<ReadModelInterface>> {
+  ): GraphQLFieldResolver<unknown, GraphQLResolverContext, ReadModelRequestArguments<ReadModelInterface>> {
     return async (parent, args, context) => {
       if (!context.connectionID) {
         throw new Error('Missing "connectionID". It is required for subscriptions')
@@ -157,7 +157,7 @@ export class GraphQLGenerator {
 
   private static toReadModelByIdRequestEnvelope(
     readModelClass: Class<ReadModelInterface>,
-    args: ReadModelByIdRequestArgs,
+    args: ReadModelByIdRequestArguments,
     context: GraphQLResolverContext,
     sequenceKeyName?: string
   ): ReadModelRequestEnvelope<ReadModelInterface> {
@@ -185,7 +185,7 @@ export class GraphQLGenerator {
 
 function toReadModelRequestEnvelope(
   readModelClass: Class<ReadModelInterface>,
-  args: ReadModelRequestArgs<ReadModelInterface>,
+  args: ReadModelRequestArguments<ReadModelInterface>,
   context: GraphQLResolverContext,
   paginatedVersion = false
 ): ReadModelRequestEnvelope<ReadModelInterface> {

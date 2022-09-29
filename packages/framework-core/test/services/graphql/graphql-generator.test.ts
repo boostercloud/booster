@@ -10,7 +10,7 @@ import {
   EventParametersFilterByEntity,
   EventSearchRequest,
   EventSearchResponse,
-  ReadModelRequestArgs,
+  ReadModelRequestArguments,
   ReadModelRequestProperties,
 } from '@boostercloud/framework-types'
 import { expect } from '../../expect'
@@ -160,7 +160,11 @@ describe('GraphQL generator', () => {
     describe('readModelResolverBuilder', () => {
       let fakeSearch: SinonStub
 
-      let returnedFunction: GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestArgs<ReadModelInterface>>
+      let returnedFunction: GraphQLFieldResolver<
+        any,
+        GraphQLResolverContext,
+        ReadModelRequestArguments<ReadModelInterface>
+      >
 
       beforeEach(() => {
         fakeSearch = stub().resolves(mockFetchResult)
@@ -374,7 +378,11 @@ describe('GraphQL generator', () => {
     describe('subscriptionResolverBuilder', () => {
       let mockContextConnectionID: string
       let subscribeStub: SinonStub
-      let returnedFunction: GraphQLFieldResolver<any, GraphQLResolverContext, ReadModelRequestArgs<ReadModelInterface>>
+      let returnedFunction: GraphQLFieldResolver<
+        any,
+        GraphQLResolverContext,
+        ReadModelRequestArguments<ReadModelInterface>
+      >
 
       beforeEach(() => {
         mockContextConnectionID = random.uuid()
