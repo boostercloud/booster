@@ -380,6 +380,11 @@
       "projectFolder": "tools/eslint-config"
     },
     {
+      "packageName": "@boostercloud/stack-cleaner",
+      "shouldPublish": false, // Only used internally
+      "projectFolder": "tools/stack-cleaner"
+    },
+    {
       "packageName": "@boostercloud/application-tester",
       "shouldPublish": true,
       "projectFolder": "packages/application-tester"
