@@ -1,12 +1,12 @@
 import { CommandInput, EntityInterface, EventInterface, ReadModelInterface, SequenceKey, UUID } from './concepts'
+import { QueryResult } from './concepts/query'
 import { GraphQLClientMessage } from './graphql-websocket-messages'
 import { FilterFor, SortFor } from './searcher'
-import { Class } from './typelevel'
+import { AnyClass, Class } from './typelevel'
 
 /**
  * An `Envelope` carries a command/event body together with the name
- * of its class. This is important information for the `Distributor` to
- * work. Each provider has to implement their own `Envelope`.
+ * of its class.
  */
 export interface Envelope {
   currentUser?: UserEnvelope
@@ -18,6 +18,13 @@ export interface CommandEnvelope extends Envelope {
   typeName: string
   version: number
   value: CommandInput
+}
+
+export interface QueryEnvelope extends Envelope {
+  typeName: string
+  version: number
+  class: AnyClass
+  filter: Record<string, FilterFor<QueryResult>>
 }
 
 export interface ScheduledCommandEnvelope extends Envelope {
@@ -70,6 +77,10 @@ export interface EventSearchResponse {
   user?: UserEnvelope
   createdAt: string
   value: EventInterface
+}
+
+export interface QueryArgs {
+  filter?: Record<string, FilterFor<QueryResult>>
 }
 
 export interface ReadModelEnvelope {

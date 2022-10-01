@@ -1,4 +1,5 @@
 export * from './command-handler-global-error'
+export * from './query-handler-global-error'
 export * from './dispatch-event-handler-global-error'
 export * from './global-error-container'
 export * from './projection-global-error'

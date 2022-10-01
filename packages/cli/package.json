@@ -1,7 +1,7 @@
 {
   "name": "@boostercloud/cli",
   "description": "CLI of the Booster Cloud Framework, the next level of abstraction for cloud-native applications",
-  "version": "0.30.7",
+  "version": "0.30.10",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
   "publishConfig": {
@@ -12,8 +12,8 @@
   },
   "bugs": "https://github.com/boostercloud/booster/issues",
   "dependencies": {
-    "@boostercloud/framework-core": "^0.30.7",
-    "@boostercloud/framework-types": "^0.30.7",
+    "@boostercloud/framework-core": "^0.30.10",
+    "@boostercloud/framework-types": "^0.30.10",
     "@oclif/command": "^1.8",
     "@oclif/config": "^1.18",
     "@oclif/errors": "^1.3",
@@ -82,5 +82,6 @@
     "test:cli": "npm run test",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
   },
-  "types": "lib/index.d.ts"
+  "types": "lib/index.d.ts",
+  "gitHead": "c108d9b5c8accd7777d0a544b13e8bb5193a79e5"
 }

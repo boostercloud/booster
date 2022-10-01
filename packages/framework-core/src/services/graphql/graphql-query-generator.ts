@@ -16,10 +16,12 @@ export class GraphQLQueryGenerator {
   public constructor(
     protected readonly config: BoosterConfig,
     protected readonly readModels: AnyClass[],
+    protected readonly queries: AnyClass[],
     protected readonly typeInformer: GraphQLTypeInformer,
     protected readonly byIDResolverBuilder: ResolverBuilder,
     protected readonly filterResolverBuilder: ResolverBuilder,
     protected readonly eventsResolver: GraphQLFieldResolver<unknown, GraphQLResolverContext, any>,
+    protected readonly queryResolverBuilder: ResolverBuilder,
     protected generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
   ) {
     this.graphqlQueryByKeysGenerator = new GraphqlQueryByKeysGenerator(
@@ -30,8 +32,10 @@ export class GraphQLQueryGenerator {
     )
     this.graphqlQueryFiltersGenerator = new GraphqlQueryFiltersGenerator(
       readModels,
+      queries,
       typeInformer,
       filterResolverBuilder,
+      queryResolverBuilder,
       generatedFiltersByTypeName
     )
     this.graphqlQueryListedGenerator = new GraphqlQueryListedGenerator(

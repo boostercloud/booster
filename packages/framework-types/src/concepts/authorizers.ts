@@ -1,7 +1,9 @@
-import { EventSearchRequest, ReadModelRequestEnvelope, UserEnvelope, CommandEnvelope } from '../envelope'
+import { EventSearchRequest, ReadModelRequestEnvelope, UserEnvelope, CommandEnvelope, QueryEnvelope } from '../envelope'
 import { ReadModelInterface } from './read-model'
 
 export type CommandAuthorizer = (currentUser?: UserEnvelope, commandEnvelope?: CommandEnvelope) => Promise<void>
+
+export type QueryAuthorizer = (currentUser?: UserEnvelope, commandEnvelope?: QueryEnvelope) => Promise<void>
 
 export type ReadModelAuthorizer = (
   currentUser?: UserEnvelope,

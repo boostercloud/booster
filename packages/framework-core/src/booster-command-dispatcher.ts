@@ -8,7 +8,7 @@ import {
 } from '@boostercloud/framework-types'
 import { RegisterHandler } from './booster-register-handler'
 import { createInstance, getLogger } from '@boostercloud/framework-common-helpers'
-import { applyBeforeFunctions } from './services/filter-helpers'
+import { applyQueryBeforeFunctions } from './services/filter-helpers'
 import { BoosterGlobalErrorDispatcher } from './booster-global-error-dispatcher'
 import { SchemaMigrator } from './schema-migrator'
 import { GraphQLResolverContext } from './services/graphql/common'
@@ -46,7 +46,7 @@ export class BoosterCommandDispatcher {
       migratedCommandEnvelope.context
     )
     try {
-      const commandInput = await applyBeforeFunctions(
+      const commandInput = await applyQueryBeforeFunctions(
         migratedCommandEnvelope.value,
         commandMetadata.before,
         migratedCommandEnvelope.currentUser

@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-core",
-  "version": "0.30.7",
+  "version": "0.30.10",
   "description": "Library for your Booster apps",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
@@ -30,8 +30,8 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "dependencies": {
-    "@boostercloud/framework-common-helpers": "^0.30.7",
-    "@boostercloud/framework-types": "^0.30.7",
+    "@boostercloud/framework-common-helpers": "^0.30.10",
+    "@boostercloud/framework-types": "^0.30.10",
     "fp-ts": "2.10.5",
     "graphql": "^15.5.1",
     "graphql-scalars": "^1.17.0",
@@ -58,5 +58,6 @@
     "nock": "11.8.2",
     "sinon": "9.2.3",
     "sinon-chai": "3.5.0"
-  }
+  },
+  "gitHead": "c108d9b5c8accd7777d0a544b13e8bb5193a79e5"
 }

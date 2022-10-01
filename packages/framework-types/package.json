@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-types",
-  "version": "0.30.7",
+  "version": "0.30.10",
   "description": "Contains Booster types related to the information extracted from the user project",
   "keywords": [
     "framework-types"
@@ -46,5 +46,6 @@
     "mocha": "8.4.0",
     "sinon": "9.2.3",
     "sinon-chai": "3.5.0"
-  }
+  },
+  "gitHead": "c108d9b5c8accd7777d0a544b13e8bb5193a79e5"
 }

@@ -19,6 +19,7 @@ import { Level } from './logger'
 import * as path from 'path'
 import { RocketDescriptor, RocketFunction } from './rockets'
 import { Logger } from '.'
+import { QueryMetadata } from './concepts/query'
 
 /**
  * Class used by external packages that needs to get a representation of
@@ -55,6 +56,7 @@ export class BoosterConfig {
   public readonly entities: Record<EntityName, EntityMetadata> = {}
   public readonly reducers: Record<EventName, ReducerMetadata> = {}
   public readonly commandHandlers: Record<CommandName, CommandMetadata> = {}
+  public readonly queryHandlers: Record<QueryName, QueryMetadata> = {}
   public readonly eventHandlers: Record<EventName, Array<EventHandlerInterface>> = {}
   public readonly readModels: Record<ReadModelName, ReadModelMetadata> = {}
   public readonly projections: Record<EntityName, Array<ProjectionMetadata<EntityInterface>>> = {}
@@ -208,6 +210,7 @@ interface ResourceNames {
 type EntityName = string
 type EventName = string
 type CommandName = string
+type QueryName = string
 type ReadModelName = string
 type RoleName = string
 type ConceptName = string
