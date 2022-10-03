@@ -35,11 +35,7 @@ export class BoosterQueryDispatcher {
 
     let result: unknown
     try {
-      const queryInput = await applyQueryBeforeFunctions(
-        queryEnvelope.filter,
-        queryMetadata.before,
-        queryEnvelope.currentUser
-      )
+      const queryInput = await applyQueryBeforeFunctions(queryEnvelope, queryMetadata.before, queryEnvelope.currentUser)
 
       logger.debug('Calling "handle" method on query: ', queryClass)
       result = await queryClass.handle(queryInput.filter ?? {})
