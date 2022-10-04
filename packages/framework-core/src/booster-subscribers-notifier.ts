@@ -58,7 +58,7 @@ export class BoosterSubscribersNotifier {
   }
 
   private getPubSub(readModelEnvelopes: Array<ReadModelEnvelope>): ReadModelPubSub<ReadModelInterface> {
-    const readModelInstances = readModelEnvelopes.map(this.getReadModelInstance, this)
+    const readModelInstances = readModelEnvelopes.map((element) => this.getReadModelInstance(element).bind(this))
     return new FilteredReadModelPubSub(readModelInstances)
   }
 

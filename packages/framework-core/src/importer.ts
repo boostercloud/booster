@@ -3,10 +3,13 @@ import * as path from 'node:path'
 
 export class Importer {
   public static importUserProjectFiles(codeRootPath: string): void {
-    Importer.getImportFiles(codeRootPath).forEach(Importer.importWithoutExtension)
+    for (const element of Importer.getImportFiles(codeRootPath)) {
+      Importer.importWithoutExtension(element)
+    }
   }
 
   private static importWithoutExtension(file: string): void {
+    // eslint-disable-next-line unicorn/prefer-module
     require(Importer.removeDevExtension(file))
   }
 
@@ -14,17 +17,17 @@ export class Importer {
     return Importer.walkDir(codeRootPath).filter(Importer.isJavaScriptFile).filter(Importer.isNotIndexJs)
   }
 
-  private static walkDir(dir: string): Array<string> {
+  private static walkDir(directory: string): Array<string> {
     const files: Array<string> = []
-    Importer.listDirectory(dir).forEach((file: string): void => {
-      const fileName = path.join(dir, file)
+    for (const file of Importer.listDirectory(directory)) {
+      const fileName = path.join(directory, file)
       if (Importer.isDirectory(fileName)) {
         const filesInDirectory = Importer.walkDir(fileName)
         files.push(...filesInDirectory)
       } else {
         files.push(fileName)
       }
-    })
+    }
     return files
   }
 
@@ -39,8 +42,8 @@ export class Importer {
     return path.join(file.replace(/(\.d)?(\.ts|\.js)/, ''))
   }
 
-  private static listDirectory(dir: string): Array<string> {
-    return fs.readdirSync(dir)
+  private static listDirectory(directory: string): Array<string> {
+    return fs.readdirSync(directory)
   }
 
   private static isDirectory(fileName: string): boolean {

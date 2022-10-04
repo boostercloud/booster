@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/prefer-module */
 import * as chai from 'chai'
 
 chai.use(require('sinon-chai'))

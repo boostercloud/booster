@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/prefer-module */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HasInfrastructure, ProviderLibrary, RocketDescriptor } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'

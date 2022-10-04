@@ -21,6 +21,7 @@
     "tslib": "^2.4.0"
   },
   "devDependencies": {
+    "@boostercloud/eslint-config": "workspace:^1.0.0",
     "@boostercloud/application-tester": "workspace:^1.0.0",
     "@boostercloud/framework-provider-aws-infrastructure": "workspace:^1.0.0",
     "@boostercloud/framework-provider-azure-infrastructure": "workspace:^1.0.0",

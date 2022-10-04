@@ -8,4 +8,5 @@ export {
   boosterRocketDispatcher,
 } from '@boostercloud/framework-core'
 
+// eslint-disable-next-line unicorn/prefer-module
 Booster.start(__dirname)
