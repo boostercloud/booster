@@ -23,7 +23,8 @@
     "@azure/cosmos": "^3.17.0",
     "@azure/functions": "^1.2.2",
     "@boostercloud/framework-common-helpers": "workspace:^1.0.0",
-    "@boostercloud/framework-types": "workspace:^1.0.0"
+    "@boostercloud/framework-types": "workspace:^1.0.0",
+    "tslib": "^2.4.0"
   },
   "devDependencies": {
     "@boostercloud/eslint-config": "workspace:^1.0.0",

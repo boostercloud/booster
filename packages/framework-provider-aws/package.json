@@ -21,7 +21,8 @@
   },
   "dependencies": {
     "@boostercloud/framework-common-helpers": "workspace:^1.0.0",
-    "@boostercloud/framework-types": "workspace:^1.0.0"
+    "@boostercloud/framework-types": "workspace:^1.0.0",
+    "tslib": "^2.4.0"
   },
   "scripts": {
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
