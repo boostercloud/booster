@@ -2,8 +2,8 @@ import { ProviderLibrary } from '@boostercloud/framework-types'
 import { expect } from './expect'
 import { fake, restore, stub } from 'sinon'
 
-import rewire from 'rewire'
-import awsSdk from 'aws-sdk'
+const rewire = require('rewire')
+const awsSdk = require('aws-sdk')
 const providerPackage = rewire('../src/index')
 const providerPackageSetup = rewire('../src/setup')
 const fakeInfrastructure = fake.returns({})

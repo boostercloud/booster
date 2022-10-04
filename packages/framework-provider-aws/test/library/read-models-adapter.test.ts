@@ -108,21 +108,21 @@ describe('the "fetchReadModel" method', () => {
   context("when the read model doesn't exist", () => {
     context('when no sequenceMetadata is defined', () => {
       it('responds with an error querying by partition key', async () => {
-        const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
+        const database: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
         const config = new BoosterConfig('test')
         replace(
-          db,
+          database,
           'query',
           fake.returns({
             promise: fake.rejects('not found'),
           })
         )
 
-        await expect(fetchReadModel(db, config, 'SomeReadModel', 'someReadModelID')).to.be.eventually.rejectedWith(
-          'not found'
-        )
+        await expect(
+          fetchReadModel(database, config, 'SomeReadModel', 'someReadModelID')
+        ).to.be.eventually.rejectedWith('not found')
 
-        expect(db.query).to.have.been.calledOnceWith({
+        expect(database.query).to.have.been.calledOnceWith({
           TableName: 'new-booster-app-app-SomeReadModel',
           KeyConditionExpression: '#id = :id',
           ExpressionAttributeNames: {
@@ -138,10 +138,10 @@ describe('the "fetchReadModel" method', () => {
 
     context('when sequenceMetadata is defined', () => {
       it('responds with an error querying both by partition and sort keys', async () => {
-        const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
+        const database: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
         const config = new BoosterConfig('test')
         replace(
-          db,
+          database,
           'query',
           fake.returns({
             promise: fake.rejects('not found'),
@@ -149,10 +149,10 @@ describe('the "fetchReadModel" method', () => {
         )
 
         await expect(
-          fetchReadModel(db, config, 'SomeReadModel', 'someReadModelID', { name: 'asdf', value: '42' })
+          fetchReadModel(database, config, 'SomeReadModel', 'someReadModelID', { name: 'asdf', value: '42' })
         ).to.be.eventually.rejectedWith('not found')
 
-        expect(db.query).to.have.been.calledOnceWith({
+        expect(database.query).to.have.been.calledOnceWith({
           TableName: 'new-booster-app-app-SomeReadModel',
           KeyConditionExpression: '#id = :id AND #asdf = :asdf',
           ExpressionAttributeNames: {
@@ -172,19 +172,19 @@ describe('the "fetchReadModel" method', () => {
   context('when the read model exists', () => {
     context('when no sequenceMetadata is defined', () => {
       it('gets the read model by partition key and responds with a read model', async () => {
-        const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
+        const database: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
         const config = new BoosterConfig('test')
         replace(
-          db,
+          database,
           'query',
           fake.returns({
             promise: fake.resolves({ Items: [{ some: 'object' }] }),
           })
         )
 
-        const results = await fetchReadModel(db, config, 'SomeReadModel', 'someReadModelID')
+        const results = await fetchReadModel(database, config, 'SomeReadModel', 'someReadModelID')
 
-        expect(db.query).to.have.been.calledOnceWith({
+        expect(database.query).to.have.been.calledOnceWith({
           TableName: 'new-booster-app-app-SomeReadModel',
           KeyConditionExpression: '#id = :id',
           ExpressionAttributeNames: {
@@ -208,22 +208,22 @@ describe('the "fetchReadModel" method', () => {
 
     context('when sequenceMetadata is defined', () => {
       it('gets the read model by partition and sort key and responds with a read model', async () => {
-        const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
+        const database: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
         const config = new BoosterConfig('test')
         replace(
-          db,
+          database,
           'query',
           fake.returns({
             promise: fake.resolves({ Items: [{ some: 'object', time: '42' }] }),
           })
         )
 
-        const results = await fetchReadModel(db, config, 'SomeReadModel', 'someReadModelID', {
+        const results = await fetchReadModel(database, config, 'SomeReadModel', 'someReadModelID', {
           name: 'time',
           value: '42',
         })
 
-        expect(db.query).to.have.been.calledOnceWith({
+        expect(database.query).to.have.been.calledOnceWith({
           TableName: 'new-booster-app-app-SomeReadModel',
           KeyConditionExpression: '#id = :id AND #time = :time',
           ExpressionAttributeNames: {
@@ -251,7 +251,7 @@ describe('the "fetchReadModel" method', () => {
 })
 
 describe('the "storeReadModel" method', () => {
-  const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
+  const database: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
   const config = new BoosterConfig('test')
   beforeEach(() => {
     restore()
@@ -259,7 +259,7 @@ describe('the "storeReadModel" method', () => {
 
   it('saves a read model', async () => {
     replace(
-      db,
+      database,
       'put',
       fake.returns({
         promise: fake.resolves({
@@ -268,21 +268,21 @@ describe('the "storeReadModel" method', () => {
       })
     )
 
-    const something = await storeReadModel(db, config, 'SomeReadModel', { id: 777, some: 'object' } as any, 0)
+    const something = await storeReadModel(database, config, 'SomeReadModel', { id: 777, some: 'object' } as any, 0)
 
-    expect(db.put).to.have.been.calledOnceWithExactly({
+    expect(database.put).to.have.been.calledOnceWithExactly({
       TableName: 'new-booster-app-app-SomeReadModel',
       Item: { id: 777, some: 'object' },
       ConditionExpression:
         'attribute_not_exists(boosterMetadata.optimisticConcurrencyValue) OR boosterMetadata.optimisticConcurrencyValue = :optimisticConcurrencyValue',
       ExpressionAttributeValues: { ':optimisticConcurrencyValue': 0 },
     })
-    expect(something).not.to.be.undefined
+    expect(something).not.to.be.null
   })
 
   it('throws the OptimisticConcurrencyUnexpectedVersionError when there is a ConditionalCheckFailedException', async () => {
     replace(
-      db,
+      database,
       'put',
       fake.returns({
         promise: () => {
@@ -294,7 +294,7 @@ describe('the "storeReadModel" method', () => {
     )
 
     await expect(
-      storeReadModel(db, config, 'SomeReadModel', { id: 777, some: 'object' } as any, 0)
+      storeReadModel(database, config, 'SomeReadModel', { id: 777, some: 'object' } as any, 0)
     ).to.eventually.be.rejectedWith(OptimisticConcurrencyUnexpectedVersionError)
   })
 })
@@ -302,10 +302,10 @@ describe('the "storeReadModel" method', () => {
 describe('the "deleteReadModel"', () => {
   context('when the read model is not sequenced', () => {
     it('deletes an existing read model by the partition key', async () => {
-      const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
+      const database: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
       const config = new BoosterConfig('test')
       replace(
-        db,
+        database,
         'delete',
         fake.returns({
           promise: fake.resolves({
@@ -314,9 +314,9 @@ describe('the "deleteReadModel"', () => {
         })
       )
 
-      await deleteReadModel(db, config, 'SomeReadModel', { id: 777, some: 'object' } as any)
+      await deleteReadModel(database, config, 'SomeReadModel', { id: 777, some: 'object' } as any)
 
-      expect(db.delete).to.have.been.calledOnceWithExactly({
+      expect(database.delete).to.have.been.calledOnceWithExactly({
         TableName: 'new-booster-app-app-SomeReadModel',
         Key: { id: 777 },
       })
@@ -325,12 +325,12 @@ describe('the "deleteReadModel"', () => {
 
   context('when the read model is sequenced', () => {
     it('deletes an existing read model by both the partition and the sort keys', async () => {
-      const db: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
+      const database: DynamoDB.DocumentClient = new DynamoDB.DocumentClient()
       const config = new BoosterConfig('test')
       const readModelName = 'SomeReadModel'
       config.readModelSequenceKeys[readModelName] = 'time'
       replace(
-        db,
+        database,
         'delete',
         fake.returns({
           promise: fake.resolves({
@@ -339,9 +339,9 @@ describe('the "deleteReadModel"', () => {
         })
       )
 
-      await deleteReadModel(db, config, readModelName, { id: '777', time: '42', some: 'object' } as any)
+      await deleteReadModel(database, config, readModelName, { id: '777', time: '42', some: 'object' } as any)
 
-      expect(db.delete).to.have.been.calledOnceWithExactly({
+      expect(database.delete).to.have.been.calledOnceWithExactly({
         TableName: 'new-booster-app-app-SomeReadModel',
         Key: { id: '777', time: '42' },
       })
