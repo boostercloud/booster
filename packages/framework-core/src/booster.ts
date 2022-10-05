@@ -126,12 +126,8 @@ export class Booster {
   }
 
   public static async events(request: EventSearchParameters): Promise<Array<EventSearchResponse>> {
-    const events: Array<EventSearchResponse> = await this.config.provider.events.search(this.config, request)
-    return events.map((event) => {
-      const eventMetadata = this.config.events[event.type]
-      event.value = createInstance(eventMetadata.class, event.value)
-      return event
-    })
+    const eventStore = new EventStore(this.config)
+    return await eventStore.searchEvents(request)
   }
 
   public static async entitiesIDs(
@@ -139,7 +135,8 @@ export class Booster {
     limit: number,
     afterCursor?: Record<string, string>
   ): Promise<PaginatedEntitiesIdsResult> {
-    return await this.config.provider.events.searchEntitiesIDs(this.config, limit, afterCursor, entityTypeName)
+    const eventStore = new EventStore(this.config)
+    return await eventStore.searchEntitiesIDs(entityTypeName, limit, afterCursor)
   }
 
   /**

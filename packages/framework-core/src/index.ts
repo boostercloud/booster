@@ -1,9 +1,7 @@
 import * as boosterModule from './booster'
 import { BoosterApp } from '@boostercloud/framework-types'
-export { RegisterHandler } from './booster-register-handler'
-export * from './decorators'
-export { BoosterDataMigrations } from './booster-data-migrations'
-export { BoosterDataMigrationFinished } from './core-concepts/data-migration/events/booster-data-migration-finished'
+
+// Core entry points
 export {
   boosterEventDispatcher,
   boosterServeGraphQL,
@@ -11,6 +9,9 @@ export {
   boosterTriggerScheduledCommand,
   boosterRocketDispatcher,
 } from './booster'
-export * from './services/token-verifiers'
 
+// User-facing Booster SDK
+export * from './sdk'
+
+// The Booster singleton class
 export const Booster: BoosterApp = boosterModule.Booster

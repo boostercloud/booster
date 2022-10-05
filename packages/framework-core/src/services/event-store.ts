@@ -5,6 +5,9 @@ import {
   InvalidParameterError,
   ReducerGlobalError,
   UUID,
+  EventSearchParameters,
+  EventSearchResponse,
+  PaginatedEntitiesIdsResult,
 } from '@boostercloud/framework-types'
 import { createInstance, getLogger } from '@boostercloud/framework-common-helpers'
 import { BoosterGlobalErrorDispatcher } from '../booster-global-error-dispatcher'
@@ -13,6 +16,11 @@ import { BoosterEntityMigrated } from '../core-concepts/data-migration/events/bo
 
 const originOfTime = new Date(0).toISOString() // Unix epoch
 
+/**
+ * Low-level event store interface that operates at EventEnvelope level.
+ * It's used by Booster framework's components to store and read raw events
+ * using the provider events library.
+ */
 export class EventStore {
   public constructor(readonly config: BoosterConfig) {}
 
@@ -76,6 +84,33 @@ export class EventStore {
     await this.storeSnapshot(newEntitySnapshot)
 
     return newEntitySnapshot
+  }
+
+  public async storeEvents(events: Array<EventEnvelope>): Promise<void> {
+    const logger = getLogger(this.config, 'EventStore#storeEvents')
+    logger.debug('Storing events in the event store:', events)
+    return this.config.provider.events.store(events, this.config)
+  }
+
+  public async searchEvents(searchParameters: EventSearchParameters): Promise<Array<EventSearchResponse>> {
+    const logger = getLogger(this.config, 'EventStore#searchEvents')
+    logger.debug('Searching events in the event store:', searchParameters)
+    const events = await this.config.provider.events.search(this.config, searchParameters)
+    return events.map((event) => {
+      const eventMetadata = this.config.events[event.type]
+      event.value = createInstance(eventMetadata.class, event.value)
+      return event
+    })
+  }
+
+  public async searchEntitiesIDs(
+    entityTypeName: string,
+    limit: number,
+    afterCursor?: Record<string, string>
+  ): Promise<PaginatedEntitiesIdsResult> {
+    const logger = getLogger(this.config, 'EventStore#searchEntitiesIDs')
+    logger.debug(`Searching entities IDs for entity ${entityTypeName}`)
+    return this.config.provider.events.searchEntitiesIDs(this.config, limit, afterCursor, entityTypeName)
   }
 
   private async storeSnapshot(snapshot: EventEnvelope): Promise<void> {

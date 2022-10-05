@@ -12,8 +12,9 @@ import { RegisterHandler } from './booster-register-handler'
 import { EventStore } from './services/event-store'
 import { BoosterDataMigrationEntity } from './core-concepts/data-migration/entities/booster-data-migration-entity'
 import { BoosterEntityMigrated } from './core-concepts/data-migration/events/booster-entity-migrated'
-import { Booster } from './index'
+import { Booster } from './'
 import { BoosterDataMigrationStarted } from './core-concepts/data-migration/events/booster-data-migration-started'
+import { Events } from './sdk/events'
 
 export class BoosterDataMigrations {
   public static async run(): Promise<boolean> {
@@ -50,15 +51,18 @@ export class BoosterDataMigrations {
     return migrating
   }
 
-  public static migrateEntity(
+  public static async migrateEntity(
     oldEntityName: string,
     oldEntityId: UUID,
     newEntity: Instance & EntityInterface
   ): Promise<void> {
     const requestID = UUID.generate()
-    const register = new Register(requestID, {})
-    register.events(new BoosterEntityMigrated(oldEntityName, oldEntityId, newEntity.constructor.name, newEntity))
-    return RegisterHandler.handle(Booster.config, register)
+    await Events.with(Booster.config).store(
+      [new BoosterEntityMigrated(oldEntityName, oldEntityId, newEntity.constructor.name, newEntity)],
+      {
+        requestID,
+      }
+    )
   }
 
   private static sortConfiguredMigrations(
@@ -70,19 +74,18 @@ export class BoosterDataMigrations {
   }
 
   private static async migrate(migrationHandler: DataMigrationMetadata): Promise<void> {
-    const startedRegister = new Register(UUID.generate(), {})
-
-    await BoosterDataMigrations.emitStarted(startedRegister, migrationHandler.class.name)
-    await RegisterHandler.handle(Booster.config, startedRegister)
+    const startedRequestID = UUID.generate()
+    const logger = getLogger(Booster.config, 'BoosterDataMigrations#migrate')
+    logger.info('Migration started', migrationHandler.class.name)
+    await Events.with(Booster.config).store(
+      [new BoosterDataMigrationStarted(migrationHandler.class.name, new Date().toISOString())],
+      {
+        requestID: startedRequestID,
+      }
+    )
 
     const finishedRegister = new Register(UUID.generate(), {})
     await (migrationHandler.class as DataMigrationInterface).start(finishedRegister)
     await RegisterHandler.handle(Booster.config, finishedRegister)
-  }
-
-  private static async emitStarted(register: Register, configuredMigrationName: string): Promise<void> {
-    const logger = getLogger(Booster.config, 'BoosterMigration#emitStarted')
-    logger.info('Migration started', configuredMigrationName)
-    register.events(new BoosterDataMigrationStarted(configuredMigrationName, new Date().toISOString()))
   }
 }
