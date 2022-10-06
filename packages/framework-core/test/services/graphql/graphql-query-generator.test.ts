@@ -3,7 +3,7 @@ import { GraphQLQueryGenerator } from '../../../src/services/graphql/graphql-que
 import { SinonStub, stub, replace, SinonStubbedInstance, restore } from 'sinon'
 import { expect } from '../../expect'
 import { GraphQLTypeInformer } from '../../../src/services/graphql/graphql-type-informer'
-import sinon = require('sinon')
+const sinon = require('sinon')
 import {
   GraphQLBoolean,
   GraphQLFloat,
@@ -37,6 +37,7 @@ describe('GraphQLQueryGenerator', () => {
       let mockByIdResolverBuilder: SinonStub
       let mockFilterResolverBuilder: SinonStub
       let mockEventsResolver: SinonStub
+      let mockQueryResolver: SinonStub
 
       let getGraphQLTypeForStub: SinonStub
 
@@ -54,6 +55,7 @@ describe('GraphQLQueryGenerator', () => {
         mockByIdResolverBuilder = stub()
         mockFilterResolverBuilder = stub()
         mockEventsResolver = stub()
+        mockQueryResolver = stub()
 
         getGraphQLTypeForStub = stub().returns(mockGraphQLType)
         replace(mockTypeInformer, 'getOrCreateGraphQLType', getGraphQLTypeForStub as any)
@@ -81,10 +83,12 @@ describe('GraphQLQueryGenerator', () => {
             graphQLQueryGenerator = new GraphQLQueryGenerator(
               simpleConfig,
               [mockTargetTypeClass],
+              [mockTargetTypeClass],
               mockTypeInformer as any,
               mockByIdResolverBuilder,
               mockFilterResolverBuilder,
-              mockEventsResolver
+              mockEventsResolver,
+              mockQueryResolver
             )
 
             getClassMetadataStub = sinon
@@ -185,10 +189,12 @@ describe('GraphQLQueryGenerator', () => {
                 graphQLQueryGenerator = new GraphQLQueryGenerator(
                   simpleConfig,
                   [mockTargetType],
+                  [mockTargetType],
                   mockTypeInformer as any,
                   mockByIdResolverBuilder,
                   mockFilterResolverBuilder,
-                  mockEventsResolver
+                  mockEventsResolver,
+                  mockQueryResolver
                 )
               })
 
@@ -281,10 +287,12 @@ describe('GraphQLQueryGenerator', () => {
                   graphQLQueryGenerator = new GraphQLQueryGenerator(
                     simpleConfig,
                     [mockTargetType],
+                    [mockTargetType],
                     mockTypeInformer as any,
                     mockByIdResolverBuilder,
                     mockFilterResolverBuilder,
-                    mockEventsResolver
+                    mockEventsResolver,
+                    mockQueryResolver
                   )
                   const result = graphQLQueryGenerator.generate()
 
@@ -367,10 +375,12 @@ describe('GraphQLQueryGenerator', () => {
                   graphQLQueryGenerator = new GraphQLQueryGenerator(
                     simpleConfig,
                     [mockTargetType],
+                    [mockTargetType],
                     mockTypeInformer as any,
                     mockByIdResolverBuilder,
                     mockFilterResolverBuilder,
-                    mockEventsResolver
+                    mockEventsResolver,
+                    mockQueryResolver
                   )
                   const result = graphQLQueryGenerator.generate()
 
@@ -470,10 +480,12 @@ describe('GraphQLQueryGenerator', () => {
           graphQLQueryGenerator = new GraphQLQueryGenerator(
             configWithEventsAndEntities,
             [mockTargetTypeClass],
+            [mockTargetTypeClass],
             mockTypeInformer as any,
             mockByIdResolverBuilder,
             mockFilterResolverBuilder,
-            mockEventsResolver
+            mockEventsResolver,
+            mockQueryResolver
           )
         })
 
@@ -517,10 +529,12 @@ describe('GraphQLQueryGenerator', () => {
           graphQLQueryGenerator = new GraphQLQueryGenerator(
             simpleConfig,
             [],
+            [],
             mockTypeInformer as any,
             mockByIdResolverBuilder,
             mockFilterResolverBuilder,
-            mockEventsResolver
+            mockEventsResolver,
+            mockQueryResolver
           )
         })
 
