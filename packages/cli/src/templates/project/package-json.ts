@@ -9,13 +9,13 @@ export const template = `{
   "dependencies": {
     "@boostercloud/framework-core": "^${VERSION}",
     "@boostercloud/framework-types": "^${VERSION}",
-    "{{{providerPackageName}}}": "*"
+    "{{{providerPackageName}}}": "^${VERSION}"
   },
   "devDependencies": {
     "@boostercloud/framework-provider-local": "^${VERSION}",
     "@boostercloud/framework-provider-local-infrastructure": "^${VERSION}",
     "@boostercloud/metadata-booster": "^${VERSION}",
-    "{{{providerPackageName}}}-infrastructure": "*",
+    "{{{providerPackageName}}}-infrastructure": "^${VERSION}",
     "rimraf": "^3.0.1",
     "@typescript-eslint/eslint-plugin": "4.22.1",
     "@typescript-eslint/parser": "4.22.1",
@@ -24,9 +24,10 @@ export const template = `{
     "eslint-plugin-prettier": "3.4.0",
     "mocha": "8.4.0",
     "@types/mocha": "8.2.2",
+    "@types/jsonwebtoken": "^8.5.1",
     "nyc": "15.1.0",
     "prettier":  "2.3.0",
-    "typescript": "4.5.4",
+    "typescript": "4.7.4",
     "ts-node": "9.1.1",
     "@types/node": "15.0.2",
     "ttypescript": "1.5.13"
