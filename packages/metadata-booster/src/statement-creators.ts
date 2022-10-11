@@ -47,7 +47,8 @@ function createPropertiesMetadata(
         ],
         true
       )
-    })
+      // eslint-disable-next-line unicorn/no-array-method-this-argument
+    }, true)
   )
 }
 
@@ -120,14 +121,8 @@ export function createFilterInterfaceFunction(
             undefined,
             f.createBlock([f.createReturnStatement(f.createIdentifier('undefined'))], false)
           ),
-          f.createBlock(
-            [
-              f.createReturnStatement(
-                f.createCallExpression(f.createIdentifier('eval'), undefined, [f.createIdentifier('typeName')])
-              ),
-            ],
-            false
-          )
+          // eslint-disable-next-line unicorn/no-useless-undefined
+          undefined
         ),
       ],
       false
