@@ -79,7 +79,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
           match((result) => {
             return (
               result.errors[0].message ==
-              'Instrospection queries are disabled. Check the configuration if you want to enable them.'
+              'Introspection queries are disabled. Check the configuration if you want to enable them.'
             )
           }),
           {}
@@ -116,7 +116,8 @@ describe('the `BoosterGraphQLDispatcher`', () => {
 
         expect(config.provider.readModels.deleteAllSubscriptions).not.to.have.been.called
         expect(config.provider.connections.deleteData).not.to.have.been.called
-        expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly()
+        // eslint-disable-next-line unicorn/no-useless-undefined
+        expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly(undefined)
       })
 
       it('calls deletes connection and subscription data', async () => {
@@ -134,7 +135,8 @@ describe('the `BoosterGraphQLDispatcher`', () => {
           config,
           mockConnectionID
         )
-        expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly()
+        // eslint-disable-next-line unicorn/no-useless-undefined
+        expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly(undefined)
       })
     })
 
