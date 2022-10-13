@@ -64,7 +64,7 @@ function getTypeInfo(type: Type, node?: Node): TypeInfo {
     [(t) => t.isIntersection(), 'Intersection'],
     [(t) => t.isClass(), 'Class'],
     [(t) => t.isInterface(), 'Interface'],
-    [(t) => t.getAliasSymbol() != undefined, 'Type'],
+    [(t) => t.getAliasSymbol() !== undefined, 'Type'],
     [(t) => t.isArray(), 'Array'],
     [(t) => t.getCallSignatures().length > 0, 'Function'],
     [(t) => isReadonlyArray(t), 'ReadonlyArray'],

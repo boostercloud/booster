@@ -39,7 +39,7 @@
     "@types/jsonwebtoken": "^8.5.8",
     "@types/mocha": "^8.2.2",
     "@types/nedb": "^1.8.12",
-    "@types/node": "^16.11.7",
+    "@types/node": "16.11.7",
     "@types/sinon": "10.0.0",
     "@types/sinon-chai": "^3.2.8",
     "@types/ws": "^8.5.3",

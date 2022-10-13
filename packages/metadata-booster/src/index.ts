@@ -14,7 +14,8 @@ const transformer: (program: ts.Program) => ts.TransformerFactory<ts.SourceFile>
           // To ensure we import 'reflect-metadata', delete it from the file in case it is already there.
           // Later we will add it.
           const quotedModuleName = node.moduleSpecifier.getText()
-          const moduleName = quotedModuleName.replace(/'/g, '')
+          // eslint-disable-next-line unicorn/better-regex
+          const moduleName = quotedModuleName.replace(/['']/g, '')
           if (moduleName == 'reflect-metadata') {
             return undefined
           }
