@@ -1,7 +1,10 @@
+const unicorn = require('./unicorn')
+
 module.exports = {
   env: {
     node: true,
     es6: true,
+    ...unicorn.env,
   },
   extends: [
     'eslint:recommended',
@@ -16,11 +19,12 @@ module.exports = {
     SharedArrayBuffer: 'readonly',
   },
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint'],
+  plugins: ['@typescript-eslint', ...unicorn.plugins],
   parserOptions: {
     ecmaVersion: 2018,
     sourceType: 'module',
     project: 'tsconfig.eslint.json',
+    ...unicorn.parserOptions,
   },
   rules: {
     'linebreak-style': ['error', 'unix'],
@@ -43,5 +47,6 @@ module.exports = {
       },
     ],
     'import/no-extraneous-dependencies': ['error'],
+    ...unicorn.rules,
   },
 }

@@ -40,12 +40,12 @@
     "@types/jsonwebtoken": "^8.5.8",
     "@types/mocha": "8.2.2",
     "@types/nedb": "^1.8.12",
-    "@types/node": "^16.11.7",
+    "@types/node": "16.11.7",
     "@types/sinon": "10.0.0",
     "@types/sinon-chai": "3.2.5",
     "@types/ws": "^8.5.3",
-    "@typescript-eslint/eslint-plugin": "4.22.1",
-    "@typescript-eslint/parser": "4.22.1",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
     "apollo-cache-inmemory": "1.6.6",
     "apollo-client": "2.6.10",
     "apollo-link": "1.2.14",
@@ -61,9 +61,9 @@
     "chai-as-promised": "7.1.1",
     "child-process-promise": "^2.2.1",
     "cross-fetch": "3.1.5",
-    "eslint": "7.26.0",
+    "eslint": "^8.23.1",
     "eslint-config-prettier": "8.3.0",
-    "eslint-plugin-import": "2.22.1",
+    "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "3.4.0",
     "faker": "5.1.0",
     "graphql-tag": "2.12.4",
@@ -84,7 +84,8 @@
     "typescript": "4.7.4",
     "ws": "7.4.5",
     "yaml": "1.10.2",
-    "sinon": "9.2.3"
+    "sinon": "9.2.3",
+    "eslint-plugin-unicorn": "~44.0.2"
   },
   "engines": {
     "node": ">=14.0.0"
