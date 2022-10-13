@@ -63,7 +63,8 @@ describe('function `getKeyWithClient`', () => {
     it('calls the callback function with the public key', () => {
       // eslint-disable-next-line @typescript-eslint/ban-types
       const fakeGetSigningKeyCallback = fake((_kid: string, callback: Function) =>
-        callback(undefined, { getPublicKey: () => 'public-key' })
+        // eslint-disable-next-line unicorn/no-null
+        callback(null, { getPublicKey: () => 'public-key' })
       )
       const fakeJwksClient = {
         getSigningKey: fakeGetSigningKeyCallback,
@@ -73,7 +74,8 @@ describe('function `getKeyWithClient`', () => {
 
       getKeyWithClient(fakeJwksClient, fakeHeader, fakeCallback)
 
-      expect(fakeCallback).to.have.been.calledWith(undefined, 'public-key')
+      // eslint-disable-next-line unicorn/no-null
+      expect(fakeCallback).to.have.been.calledWith(null, 'public-key')
     })
   })
 })
