@@ -64,7 +64,6 @@ export class EventStore {
       `[EventStore#calculateAndStoreEntitySnapshot] Looking for the reducer for entity ${entityName} with ID ${entityID}`
     )
     for (const pendingEvent of pendingEnvelopes) {
-      logger.debug(`Reducing snapshot for entity ${entityName} with ID ${pendingEvent.entityID.toString()}`)
       const newEntitySnapshot = await this.entityReducer(
         snapshotsPerNewEntityId[pendingEvent.entityID.toString()],
         pendingEvent
