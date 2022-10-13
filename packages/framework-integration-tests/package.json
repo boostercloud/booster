@@ -27,6 +27,7 @@
     "@boostercloud/framework-provider-azure-infrastructure": "workspace:^1.0.0",
     "@boostercloud/framework-provider-kubernetes-infrastructure": "workspace:^1.0.0",
     "@boostercloud/framework-provider-local-infrastructure": "workspace:^1.0.0",
+    "@boostercloud/cli": "workspace:^1.0.0",
     "@boostercloud/metadata-booster": "workspace:^1.0.0",
     "@kubernetes/client-node": "0.14.3",
     "@types/aws-lambda": "8.10.48",

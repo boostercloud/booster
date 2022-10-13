@@ -1,3 +1,5 @@
+/* eslint-disable unicorn/prefer-node-protocol */
+/* eslint-disable unicorn/import-style */
 import * as path from 'path'
 import { ChildProcess } from 'child_process'
 import { runCommand } from '@boostercloud/framework-common-helpers'
