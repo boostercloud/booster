@@ -70,7 +70,7 @@ export class BoosterEventDispatcher {
       return
     }
 
-    logger.debug('Snapshot loaded and started read models projection:', snapshotsForIndependentEntities)
+    logger.debug('Snapshot(s) calculated and started read models projection:', snapshotsForIndependentEntities)
 
     const projectedPromises = snapshotsForIndependentEntities.map((entitySnapshot) =>
       readModelStore.project(entitySnapshot)
