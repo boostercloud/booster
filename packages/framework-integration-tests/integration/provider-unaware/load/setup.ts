@@ -1,4 +1,4 @@
-import { getProviderTestHelper, setEnv } from '../../helper/app-helper'
+import { getProviderTestHelper, setEnvironment } from '../../helper/app-helper'
 import { ApplicationTester } from '@boostercloud/application-tester'
 import * as path from 'path'
 import { ArtilleryExecutor } from './artillery-executor'
@@ -8,7 +8,7 @@ export let scriptExecutor: ArtilleryExecutor
 export let applicationUnderTest: ApplicationTester
 
 before(async () => {
-  await setEnv()
+  await setEnvironment()
   const providerTestHelper = await getProviderTestHelper()
   scriptExecutor = new ArtilleryExecutor(loadTestsFolder, providerTestHelper)
   await scriptExecutor.ensureDeployed()

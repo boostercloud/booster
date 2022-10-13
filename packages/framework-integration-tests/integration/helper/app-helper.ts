@@ -2,9 +2,9 @@ import { ProviderTestHelper } from '@boostercloud/application-tester'
 import { AWSTestHelper } from '@boostercloud/framework-provider-aws-infrastructure'
 import { AzureTestHelper } from '@boostercloud/framework-provider-azure-infrastructure'
 import { LocalTestHelper } from '@boostercloud/framework-provider-local-infrastructure'
-import * as util from 'node:util'
+import * as util from 'util'
 
-const exec = util.promisify(require('node:child_process').exec)
+const exec = util.promisify(require('child_process').exec)
 
 export function applicationName(): string {
   return `my-store-${process.env.BOOSTER_APP_SUFFIX}`

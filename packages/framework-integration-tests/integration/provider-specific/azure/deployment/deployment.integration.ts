@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AzureTestHelper } from '@boostercloud/framework-provider-azure-infrastructure'
 import { expect } from '../../../helper/expect'
-import { applicationName, checkAndGetCurrentEnv, getProviderTestHelper } from '../../../helper/app-helper'
+import { applicationName, checkAndGetCurrentEnvironment, getProviderTestHelper } from '../../../helper/app-helper'
 import { internet, random, commerce, finance } from 'faker'
 import { waitForIt } from '../../../helper/sleep'
 import { gql } from 'graphql-tag'
@@ -13,7 +13,7 @@ describe('After deployment', () => {
       // The project must have been deployed by the cliHelper hook in setup.ts
       // that scripts uses the cli to do the deployment, so we just check here
       // that the resource group exists
-      const environmentName = checkAndGetCurrentEnv()
+      const environmentName = checkAndGetCurrentEnvironment()
       const applicationUnderTest = new ApplicationTester(await getProviderTestHelper())
       let resourceGroup: any = undefined
       let error = false

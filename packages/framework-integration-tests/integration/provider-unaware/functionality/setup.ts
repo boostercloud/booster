@@ -1,9 +1,9 @@
 import { ApplicationTester } from '@boostercloud/application-tester'
-import { getProviderTestHelper, setEnv } from '../../helper/app-helper'
+import { getProviderTestHelper, setEnvironment } from '../../helper/app-helper'
 
 export let applicationUnderTest: ApplicationTester
 
 before(async () => {
-  await setEnv()
+  await setEnvironment()
   applicationUnderTest = new ApplicationTester(await getProviderTestHelper())
 })
