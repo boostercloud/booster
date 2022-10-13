@@ -104,7 +104,8 @@ export function createFilterInterfaceFunction(
     undefined,
     filterInterfaceFunctionName,
     undefined,
-    [f.createParameterDeclaration(undefined, undefined, undefined, 'typeName')],
+    // eslint-disable-next-line unicorn/no-useless-undefined
+    [f.createParameterDeclaration(undefined, undefined, undefined, 'typeName', undefined, undefined, undefined)],
     undefined,
     f.createBlock(
       [
@@ -121,8 +122,7 @@ export function createFilterInterfaceFunction(
             undefined,
             f.createBlock([f.createReturnStatement(f.createIdentifier('undefined'))], false)
           ),
-          // eslint-disable-next-line unicorn/no-useless-undefined
-          undefined
+          f.createBlock([f.createReturnStatement(f.createIdentifier('undefined'))], false)
         ),
       ],
       false

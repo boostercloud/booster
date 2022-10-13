@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-null */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import { ClassDeclaration, ClassInstancePropertyTypes, createWrappedNode, Node, SyntaxKind, Type } from 'ts-morph'
@@ -6,7 +7,7 @@ import { TypeGroup } from './metadata-types'
 
 export interface TypeInfo {
   name: string // e.g. Array<string>
-  typeName?: string // e.g. Array
+  typeName: string | null // e.g. Array
   parameters: Array<TypeInfo>
   typeGroup: TypeGroup
   isNullable: boolean
@@ -64,7 +65,7 @@ function getTypeInfo(type: Type, node?: Node): TypeInfo {
     [(t) => t.isIntersection(), 'Intersection'],
     [(t) => t.isClass(), 'Class'],
     [(t) => t.isInterface(), 'Interface'],
-    [(t) => t.getAliasSymbol() !== undefined, 'Type'],
+    [(t) => t.getAliasSymbol() != null, 'Type'],
     [(t) => t.isArray(), 'Array'],
     [(t) => t.getCallSignatures().length > 0, 'Function'],
     [(t) => isReadonlyArray(t), 'ReadonlyArray'],
@@ -104,7 +105,7 @@ function getTypeInfo(type: Type, node?: Node): TypeInfo {
       break
     case 'Union':
     case 'Intersection':
-      typeInfo.typeName = undefined
+      typeInfo.typeName = null
       break
     case 'Enum':
     case 'Class':
@@ -127,7 +128,7 @@ function getTypeInfo(type: Type, node?: Node): TypeInfo {
       if (type.isEnumLiteral()) {
         typeInfo.name = type.getSymbol()?.getName() || '' // e.g. "Small"
       }
-      typeInfo.typeName = undefined
+      typeInfo.typeName = null
       break
   }
 
