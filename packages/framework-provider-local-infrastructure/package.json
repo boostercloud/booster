@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-local-infrastructure",
-  "version": "0.30.7",
+  "version": "1.0.0",
   "description": "Handle the Booster running process of the local runtime",
   "keywords": [
     "framework-provider-local-infrastructure"
@@ -20,15 +20,9 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@boostercloud/framework-common-helpers": "workspace:^0.30.6",
-    "@boostercloud/framework-provider-local": "workspace:^0.30.6",
-    "@boostercloud/framework-types": "workspace:^0.30.6",
-=======
-    "@boostercloud/framework-common-helpers": "^0.30.7",
-    "@boostercloud/framework-provider-local": "^0.30.7",
-    "@boostercloud/framework-types": "^0.30.7",
->>>>>>> e5c87fb1 (v0.30.7)
+    "@boostercloud/framework-common-helpers": "workspace:^1.0.0",
+    "@boostercloud/framework-provider-local": "workspace:^1.0.0",
+    "@boostercloud/framework-types": "workspace:^1.0.0",
     "cors": "2.8.5",
     "express": "^4.17.1",
     "nedb": "^1.8.0",
@@ -49,7 +43,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@boostercloud/eslint-config": "workspace:^0.30.6",
+    "@boostercloud/eslint-config": "workspace:^1.0.0",
     "@types/chai": "4.2.18",
     "@types/chai-as-promised": "7.1.4",
     "@types/cors": "^2.8.12",
