@@ -9,13 +9,14 @@ export const template = `{
   "dependencies": {
     "@boostercloud/framework-core": "^${VERSION}",
     "@boostercloud/framework-types": "^${VERSION}",
-    "{{{providerPackageName}}}": "${VERSION}*"
+    "@boostercloud/framework-common-helpers": "^${VERSION}",
+    "{{{providerPackageName}}}": "^${VERSION}"
   },
   "devDependencies": {
     "@boostercloud/framework-provider-local": "^${VERSION}",
     "@boostercloud/framework-provider-local-infrastructure": "^${VERSION}",
     "@boostercloud/metadata-booster": "^${VERSION}",
-    "{{{providerPackageName}}}-infrastructure": "${VERSION}*",
+    "{{{providerPackageName}}}-infrastructure": "^${VERSION}",
     "rimraf": "^3.0.1",
     "@typescript-eslint/eslint-plugin": "4.22.1",
     "@typescript-eslint/parser": "4.22.1",

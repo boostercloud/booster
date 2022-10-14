@@ -102,7 +102,7 @@ module.exports = {
     'unicorn/prefer-set-has': 'off',
     'unicorn/prefer-spread': 'off',
     // TODO: Enable this by default when targeting Node.js 16.
-    'unicorn/prefer-string-replace-all': 'error',
+    'unicorn/prefer-string-replace-all': 'off',
     'unicorn/prefer-string-slice': 'off',
     'unicorn/prefer-string-starts-ends-with': 'off',
     'unicorn/prefer-string-trim-start-end': 'off',
