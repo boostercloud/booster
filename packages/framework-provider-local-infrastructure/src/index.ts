@@ -48,7 +48,7 @@ export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): Provider
       router.use('/graphql', new GraphQLController(graphQLService).router)
       if (rockets && rockets.length > 0) {
         rockets.forEach((rocket) => {
-          rocket.mountStack(config, router, port)
+          rocket.mountStack(config, router, { port })
         })
       }
       expressServer.use(
