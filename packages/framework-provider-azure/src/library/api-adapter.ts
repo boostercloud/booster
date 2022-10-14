@@ -14,7 +14,7 @@ export interface ContextResponse {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function requestSucceeded(
-  body?: any,
+  body?: unknown,
   headers?: Record<string, number | string | ReadonlyArray<string>>
 ): Promise<ContextResponse> {
   return {
