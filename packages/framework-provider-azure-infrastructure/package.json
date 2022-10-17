@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-azure-infrastructure",
-  "version": "0.30.7",
+  "version": "1.0.0",
   "description": "Handle the Booster deployment process to Azure",
   "keywords": [
     "framework-provider-azure-infrastructure"
@@ -20,23 +20,13 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-<<<<<<< HEAD
     "@azure/arm-appservice": "^13.0.0",
     "@azure/cosmos": "^3.17.0",
-    "@boostercloud/framework-common-helpers": "workspace:^0.30.6",
-    "@boostercloud/framework-core": "workspace:^0.30.6",
-    "@boostercloud/framework-provider-azure": "workspace:^0.30.6",
-    "@boostercloud/framework-types": "workspace:^0.30.6",
+    "@boostercloud/framework-common-helpers": "workspace:^1.0.0",
+    "@boostercloud/framework-core": "workspace:^1.0.0",
+    "@boostercloud/framework-provider-azure": "workspace:^1.0.0",
+    "@boostercloud/framework-types": "workspace:^1.0.0",
     "@cdktf/provider-azurerm": "^0.2.179",
-=======
-    "@azure/arm-appservice": "^6.0.0",
-    "@azure/cosmos": "3.7.3",
-    "@boostercloud/framework-common-helpers": "^0.30.7",
-    "@boostercloud/framework-core": "^0.30.7",
-    "@boostercloud/framework-provider-azure": "^0.30.7",
-    "@boostercloud/framework-types": "^0.30.7",
-    "@cdktf/provider-azurerm": "0.2.179",
->>>>>>> e5c87fb1 (v0.30.7)
     "@types/archiver": "5.1.0",
     "@types/needle": "^2.0.4",
     "archiver": "5.3.0",
@@ -73,22 +63,22 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@boostercloud/eslint-config": "workspace:^0.30.6",
+    "@boostercloud/eslint-config": "workspace:^1.0.0",
     "@types/chai": "4.2.18",
     "@types/chai-as-promised": "7.1.4",
     "@types/faker": "5.1.5",
     "@types/fs-extra": "^9.0.13",
     "@types/mocha": "8.2.2",
     "@types/mustache": "4.1.0",
-    "@types/node": "^16.11.7",
+    "@types/node": "16.11.7",
     "@types/sinon": "10.0.0",
     "@types/sinon-chai": "3.2.5",
     "@types/uuid": "8.3.0",
-    "@typescript-eslint/eslint-plugin": "4.22.1",
-    "@typescript-eslint/parser": "4.22.1",
-    "eslint": "7.26.0",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
+    "eslint": "^8.23.1",
     "eslint-config-prettier": "8.3.0",
-    "eslint-plugin-import": "2.22.1",
+    "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "3.4.0",
     "faker": "5.1.0",
     "mocha": "8.4.0",
@@ -97,7 +87,8 @@
     "rimraf": "3.0.2",
     "ts-node": "^10.9.1",
     "typescript": "4.7.4",
-    "sinon": "9.2.3"
+    "sinon": "9.2.3",
+    "eslint-plugin-unicorn": "~44.0.2"
   },
   "pnpm": {
     "overrides": {

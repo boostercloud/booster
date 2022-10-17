@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-kubernetes-infrastructure",
-  "version": "0.30.7",
+  "version": "1.0.0",
   "description": "Handle Booster's integration with Kubernetes",
   "keywords": [
     "framework-provider-kubernetes-infrastructure"
@@ -20,14 +20,9 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@boostercloud/eslint-config": "workspace:^0.30.6",
-    "@boostercloud/framework-common-helpers": "workspace:^0.30.6",
+    "@boostercloud/eslint-config": "workspace:^1.0.0",
+    "@boostercloud/framework-common-helpers": "workspace:^1.0.0",
     "@kubernetes/client-node": "^0.17.0",
-=======
-    "@boostercloud/framework-common-helpers": "^0.30.7",
-    "@kubernetes/client-node": "0.14.3",
->>>>>>> e5c87fb1 (v0.30.7)
     "archiver": "5.3.0",
     "body-parser": "^1.18.3",
     "cors": "2.8.5",
@@ -54,11 +49,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-<<<<<<< HEAD
-    "@boostercloud/framework-types": "workspace:^0.30.6",
-=======
-    "@boostercloud/framework-types": "^0.30.7",
->>>>>>> e5c87fb1 (v0.30.7)
+    "@boostercloud/framework-types": "workspace:^1.0.0",
     "@types/archiver": "5.1.0",
     "@types/chai": "4.2.18",
     "@types/chai-as-promised": "7.1.4",
@@ -68,18 +59,18 @@
     "@types/js-yaml": "~3.12.5",
     "@types/mocha": "8.2.2",
     "@types/mustache": "4.1.0",
-    "@types/node": "^16.11.7",
+    "@types/node": "16.11.7",
     "@types/node-fetch": "^2.5.10",
     "@types/semver": "5.5.0",
     "@types/sinon": "10.0.0",
     "@types/sinon-chai": "3.2.5",
-    "@typescript-eslint/eslint-plugin": "4.22.1",
-    "@typescript-eslint/parser": "4.22.1",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
-    "eslint": "7.26.0",
+    "eslint": "^8.23.1",
     "eslint-config-prettier": "8.3.0",
-    "eslint-plugin-import": "2.22.1",
+    "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "3.4.0",
     "faker": "5.1.0",
     "mocha": "8.4.0",
@@ -89,7 +80,9 @@
     "sinon": "9.2.3",
     "sinon-chai": "3.5.0",
     "ts-node": "^10.9.1",
-    "typescript": "4.7.4"
+    "typescript": "4.7.4",
+    "eslint-plugin-unicorn": "~44.0.2",
+    "@types/request": "~2.48.8"
   },
   "pnpm": {
     "overrides": {

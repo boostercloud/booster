@@ -5,6 +5,7 @@
   "author": "author_placeholder",
   "dependencies": {
     "@boostercloud/framework-core": "whatever",
+    "@boostercloud/framework-common-helpers": "whatever",
     "@boostercloud/framework-types": "whatever",
     "@boostercloud/framework-provider-aws": "whatever"
   },
