@@ -22,7 +22,7 @@ Remember that if something here doesn't make sense, you can also propose a chang
   - [Create your very first GitHub issue](#create-your-very-first-github-issue)
 - [Your First Code Contribution](#your-first-code-contribution)
   - [Getting the code](#getting-the-code)
-  - [Understanding the "lerna monorepo" approach and how dependencies are structured in the project](#understanding-the-lerna-monorepo-approach-and-how-dependencies-are-structured-in-the-project)
+  - [Understanding the "rush monorepo" approach and how dependencies are structured in the project](#understanding-the-rush-monorepo-approach-and-how-dependencies-are-structured-in-the-project)
   - [Running unit tests](#running-unit-tests)
   - [Running integration tests](#running-integration-tests)
   - [Github flow](#github-flow)
@@ -55,7 +55,7 @@ Booster is divided in many different packages. The criteria to split the code in
 - They contain code that is used by at least two of the other packages.
 - They're a vendor-specific specialization of some abstract part of the framework (for instance, all the code that is required by AWS is in separate packages).
 
-~~The packages are managed using [Lerna](https://lerna.js.org) and [npm](https://npmjs.com), if you run `rush build`, it will run `npm run build` in all the package folders.~~
+The packages are managed using [rush](https://rushjs.io/) and [npm](https://npmjs.com), if you run `rush build`, it will build all the packages.
 
 The packages are published to `npmjs` under the prefix `@boostercloud/`, their purpose is as follows:
 
@@ -224,7 +224,7 @@ Make sure that you assign the chosen issue to yourself to communicate your inten
 
 To start contributing to the project you would need to set up the project in your system, to do so, you must first follow these steps in your terminal.
 
-- Install Lerna: `npm install -g @microsoft/rush`
+- Install Rush: `npm install -g @microsoft/rush`
 
 - Clone the repo and get into the directory of the project: `git clone <WRITE REPO URL HERE> && cd booster`
 
@@ -238,52 +238,53 @@ To start contributing to the project you would need to set up the project in you
 
 > **DISCLAIMER**: The integration test process changed, feel free to chime in into our Discord for more info
 
-- Make sure everything works by [running the integration tests](#running-integration-tests): `lerna run integration --stream`
+- Make sure everything works by [running the integration tests](#running-integration-tests):
 
-### OUTDATED ~~Understanding the "lerna monorepo" approach and how dependencies are structured in the project~~
+```bash
+rush pack-integration-deps
+cd packages/framework-integration-tests
+rushx integration -v
+```
 
-The Booster Framework project is organized following the ["lerna monorepo"](https://lerna.js.org/) structure. There are several "package.json" files and each one has its purpose with regard to the dependencies you include on them:
+### Understanding the "rush monorepo" approach and how dependencies are structured in the project
 
-- The "package.json" located at the project root is _only_ intended for development tools that you use at project level, like the Typescript compiler, linter plugins, etc. You should never put there dependencies that you would use inside a package like `framework-core`, for example (there is a linter rule that will fail if you do this).
+The Booster Framework project is organized following the ["rush monorepo"](https://rushjs.io/) structure. There are several "package.json" files and each one has its purpose with regard to the dependencies you include on them:
+
 - The "package.json" files that are on each package root should contain the dependencies used by that specific package. Be sure to correctly differentiate which dependency is only for development and which one is for production.
-
-When you bootstrap your project with `lerna bootstrap`, all the needed dependencies will be installed. Lerna is configured to use a "hoisted" approach. This means that if there is the same dependency specified in several "package.json" files, it will be "hoisted": that dependency will be installed inside the `node_modules` located in the project root, and _not_ on the `node_modules` of each package. This saves space, makes the development speed faster and resolves some problems.
-
-There could be the situation in which two packages depends on the same dependency but with different versions. In that case you would get an error during `lerna bootstrap`, and that's good. Specify the same dependency version and it will be fixed.
 
 Finally, **always use exact numbers for dependency versions**. This means that if you want to add the dependency "aws-sdk" in version 1.2.3, you should add `"aws-sdk": "1.2.3"` to the corresponding "package.json" file, and never `"aws-sdk": "^1.2.3"` or `"aws-sdk": "~1.2.3"`. This restriction comes from hard problems we've had in the past.
 
-### OUTDATED ~~Running unit tests~~
+### Running unit tests
 
-Unit tests are executed when you type `lerna run test`. If you want to run the unit tests for an especific package, you should run one of the following commands:
+Unit tests are executed when you type `rush test`. If you want to run the unit tests for an especific package, you should move to the corresponding folder and run one of the following commands:
 
-- `lerna run test:cli --stream`: Run unit tests for the `cli` package.
-- `lerna run test:core --stream`: Run unit tests for the `framework-core` package.
-- `lerna run test:provider-aws --stream`: Run unit tests for the `framework-provider-aws` package.
-- `lerna run test:provider-aws-infrastructure --stream`: Run unit tests for the `framework-provider-aws-infrastructure` package.
-- `lerna run test:provider-azure --stream`: Run unit tests for the `framework-provider-azure` package.
-- `lerna run test:provider-azure-infrastructure --stream`: Run unit tests for the `framework-provider-azure-infrastructure` package.
-- `lerna run test:provider-kubernetes --stream`: Run unit tests for the `framework-provider-kubernetes` package.
-- `lerna run test:provider-kubernetes-infrastructure --stream`: Run unit tests for the `framework-provider-kubernetes-infrastructure` package.
-- `lerna run test:provider-local --stream`: Run unit tests for the `framework-provider-local` package.
-- `lerna run test:provider-local-infrastructure --stream`: Run unit tests for the `framework-provider-local-infrastructure` package.
-- `lerna run test:types --stream`: Run unit tests for the `framework-types` package.
+- `rushx test:cli -v`: Run unit tests for the `cli` package.
+- `rushx test:core -v`: Run unit tests for the `framework-core` package.
+- `rushx test:provider-aws -v`: Run unit tests for the `framework-provider-aws` package.
+- `rushx test:provider-aws-infrastructure -v`: Run unit tests for the `framework-provider-aws-infrastructure` package.
+- `rushx test:provider-azure -v`: Run unit tests for the `framework-provider-azure` package.
+- `rushx test:provider-azure-infrastructure -v`: Run unit tests for the `framework-provider-azure-infrastructure` package.
+- `rushx test:provider-kubernetes -v`: Run unit tests for the `framework-provider-kubernetes` package.
+- `rushx test:provider-kubernetes-infrastructure -v`: Run unit tests for the `framework-provider-kubernetes-infrastructure` package.
+- `rushx test:provider-local -v`: Run unit tests for the `framework-provider-local` package.
+- `rushx test:provider-local-infrastructure -v`: Run unit tests for the `framework-provider-local-infrastructure` package.
+- `rushx test:types -v`: Run unit tests for the `framework-types` package.
 
-### OUTDATED ~~Running integration tests~~
+### Running integration tests
 
-Integration tests are run automatically in Github Actions when a PR is locked, but it would be recommendable to run them locally before submitting a PR for review. You can find several scripts in `packages/framework-integration-tests/package.json` to run different test suites. You can run them using lerna tool:
+Integration tests are run automatically in Github Actions when a PR is locked, but it would be recommendable to run them locally before submitting a PR for review. You can find several scripts in `packages/framework-integration-tests/package.json` to run different test suites. You can run them using rush tool:
 
-`lerna run <script name> --stream`
+`rushx <script name> -v`
 
 These are the available scripts to run integration tests:
 
-- `lerna run integration --stream`: Run all the integration test suites in the right order.
-- `lerna run integration/aws-deploy --stream`: This test just checks that the sample project in `packages/framework-integration-tests/src` can be successfully deployed to AWS. The deployment process takes several minutes and this project is used by all the other AWS integration tests, so it's a requirement to run this test before.
-- `lerna run integration/aws-func --stream`: AWS functional integration tests. They stress the deployed app write API and checks that the results are the expected ones both in the databases and the read APIs.
-- `lerna run integration/end-to-end --stream`: Runs complete and realistic use cases on several cloud providers. This tests are intended to verify that a single project can be deployed to different cloud providers. Currently, only AWS is implemented though.
-- `lerna run integration/aws-nuke --stream`: This test checks that the application deployed to AWS can be properly nuked. This test should be the last one after other test suites related to AWS have finished.
-- `lerna run integration/local --stream`: Checks that the test application can be launched locally and that the APIs and the databases behave as expected.
-- `lerna run integration/cli --stream`: Checks cli commands and check that they produce the expected results.
+- `rushx integration -v`: Run all the integration test suites in the right order.
+- `rushx integration/aws-deploy -v`: This test just checks that the sample project in `packages/framework-integration-tests/src` can be successfully deployed to AWS. The deployment process takes several minutes and this project is used by all the other AWS integration tests, so it's a requirement to run this test before.
+- `rushx integration/aws-func -v`: AWS functional integration tests. They stress the deployed app write API and checks that the results are the expected ones both in the databases and the read APIs.
+- `rushx integration/end-to-end -v`: Runs complete and realistic use cases on several cloud providers. This tests are intended to verify that a single project can be deployed to different cloud providers. Currently, only AWS is implemented though.
+- `rushx integration/aws-nuke -v`: This test checks that the application deployed to AWS can be properly nuked. This test should be the last one after other test suites related to AWS have finished.
+- `rushx integration/local -v`: Checks that the test application can be launched locally and that the APIs and the databases behave as expected.
+- `rushx integration/cli -v`: Checks cli commands and check that they produce the expected results.
 
 AWS integration tests are run in real AWS resources, so you'll need to have your AWS credentials properly set in your development machine. By default, the sample project will be deployed to your default account. Basically, if you can deploy a Booster project to AWS, you should be good to go ([See more details about setting up an AWS account in the docs](https://github.com/boostercloud/booster/tree/main/docs#set-up-an-aws-account)). Notice that while all resources used by Booster are included in the AWS free tier, running these tests in your own AWS account could incur in some expenses.
 
@@ -340,7 +341,7 @@ The most important kind of commits are the ones that trigger version bumps and t
 
 Apart from those previously mentioned, there are more commit types:
 
-- **build**: Changes that affect the build system or external dependencies (example scopes: lerna, tsconfig, npm)
+- **build**: Changes that affect the build system or external dependencies (example scopes: rush, tsconfig, npm)
 - **ci**: Changes to our CI configuration files and scripts
 - **docs**: Documentation only changes
 - **feat**: A new feature
@@ -363,7 +364,7 @@ Apart of using conventional commits for triggering releases, we use them to buil
 
 ## Code Style Guidelines
 
-The Booster project comes with a nice set of ESLint config files to help you follow a consistent style, and we really encourage to use it in your editor. You can also run the `lerna run lint:fix` commands to try solving any linter problems automatically.
+The Booster project comes with a nice set of ESLint config files to help you follow a consistent style, and we really encourage to use it in your editor. You can also run the `rush run lint:fix` commands to try solving any linter problems automatically.
 
 For everything else, the rule of thumb is: Try to be consistent with the code around yours, and if you're not sure, ask :-)
 
