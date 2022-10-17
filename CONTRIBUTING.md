@@ -55,7 +55,7 @@ Booster is divided in many different packages. The criteria to split the code in
 - They contain code that is used by at least two of the other packages.
 - They're a vendor-specific specialization of some abstract part of the framework (for instance, all the code that is required by AWS is in separate packages).
 
-The packages are managed using [rush](https://rushjs.io/) and [npm](https://npmjs.com), if you run `rush build`, it will run `npm run build` in all the package folders.
+The packages are managed using [rush](https://rushjs.io/) and [npm](https://npmjs.com), if you run `rush build`, it will build all the packages.
 
 The packages are published to `npmjs` under the prefix `@boostercloud/`, their purpose is as follows:
 
