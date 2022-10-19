@@ -46,7 +46,8 @@
     "colors": "^1.4.0",
     "tslib": "^2.4.0",
     "promptly": "~3.2.0",
-    "cdk-assets": "~2.39.1"
+    "cdk-assets": "~2.39.1",
+    "@effect-ts/core": "^0.60.4"
   },
   "scripts": {
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",

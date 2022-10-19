@@ -12,15 +12,23 @@ import * as configTs from '../templates/project/config-ts'
 import * as indexTs from '../templates/project/index-ts'
 import * as prettierRc from '../templates/project/prettierrc-yaml'
 import * as mochaRc from '../templates/project/mocharc-yml'
-import { wrapExecError } from '../common/errors'
-import { installAllDependencies } from './dependencies'
+import { guardError, wrapExecError } from '../common/errors'
+import { packageManagerInternals } from './package-manager'
+import { runWithLayer } from '@boostercloud/framework-types/src/effect'
+import { LivePackageManager } from './package-manager/live.impl'
 
 export async function generateConfigFiles(config: ProjectInitializerConfig): Promise<void> {
   await Promise.all(filesToGenerate.map(renderToFile(config)))
 }
 
-export async function installDependencies(config: ProjectInitializerConfig): Promise<void> {
-  return installAllDependencies(projectDir(config))
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function installDependencies(_config: ProjectInitializerConfig): Promise<void> {
+  // return installAllDependencies(projectDir(config))
+  // FIXME: Pass the project path
+  return runWithLayer(packageManagerInternals.installAllDependencies(), {
+    layer: LivePackageManager,
+    onError: guardError('Could not install dependencies'),
+  })
 }
 
 export async function generateRootDirectory(config: ProjectInitializerConfig): Promise<void> {

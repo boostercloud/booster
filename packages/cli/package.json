@@ -29,7 +29,8 @@
     "mustache": "4.1.0",
     "ora": "^3.4.0",
     "ts-morph": "15.1.0",
-    "tslib": "^2.4.0"
+    "tslib": "^2.4.0",
+    "@effect-ts/core": "^0.60.4"
   },
   "devDependencies": {
     "@boostercloud/eslint-config": "workspace:^1.0.0",

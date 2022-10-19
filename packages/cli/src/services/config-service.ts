@@ -1,18 +1,24 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { BoosterApp, BoosterConfig } from '@boostercloud/framework-types'
 import * as path from 'path'
-import { exec } from 'child-process-promise'
-import { wrapExecError } from '../common/errors'
+import { guardError } from '../common/errors'
 import { checkItIsABoosterProject } from './project-checker'
 import { currentEnvironment } from './environment'
 import { createSandboxProject, removeSandboxProject } from '../common/sandbox'
-import { installProductionDependencies } from './dependencies'
+import { packageManagerInternals } from './package-manager'
+import { gen, runWithLayer } from '@boostercloud/framework-types/src/effect'
+import { LivePackageManager } from './package-manager/live.impl'
 
 export const DEPLOYMENT_SANDBOX = '.deploy'
 
 export async function createDeploymentSandbox(): Promise<string> {
   const config = await compileProjectAndLoadConfig(process.cwd())
   const sandboxRelativePath = createSandboxProject(DEPLOYMENT_SANDBOX, config.assets)
-  await installProductionDependencies(sandboxRelativePath)
+  // await installProductionDependencies(sandboxRelativePath)
+  runWithLayer(packageManagerInternals.installProductionDependencies(), {
+    layer: LivePackageManager,
+    onError: guardError('Could not install production dependencies'),
+  })
   return sandboxRelativePath
 }
 
@@ -27,20 +33,30 @@ export async function compileProjectAndLoadConfig(userProjectPath: string): Prom
 }
 
 export async function compileProject(projectPath: string): Promise<void> {
-  try {
-    await exec('npm run clean && npm run build', { cwd: projectPath })
-  } catch (e) {
-    throw wrapExecError(e, 'Project contains compilation errors')
-  }
+  return runWithLayer(compileProjectEff(projectPath), {
+    layer: LivePackageManager,
+    onError: guardError('Project contains compilation errors'),
+  })
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const compileProjectEff = (_projectPath: string) =>
+  gen(function* ($) {
+    yield* $(cleanProjectEff(_projectPath)) // FIXME: Run in projectPath
+    yield* $(packageManagerInternals.runScript('build', [])) // FIXME: Run in projectPath
+  })
+
 export async function cleanProject(projectPath: string): Promise<void> {
-  try {
-    await exec('npm run clean', { cwd: projectPath })
-  } catch (e) {
-    throw wrapExecError(e, 'Error cleaning project')
-  }
+  return runWithLayer(cleanProjectEff(projectPath), {
+    layer: LivePackageManager,
+    onError: guardError('Could not clean project'),
+  })
 }
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const cleanProjectEff = (_projectPath: string) =>
+  // FIXME: Run in projectPath
+  packageManagerInternals.runScript('clean', [])
 
 function readProjectConfig(userProjectPath: string): Promise<BoosterConfig> {
   const userProject = loadUserProject(userProjectPath)
