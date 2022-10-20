@@ -101,7 +101,7 @@
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",
     "test:cli": "npm run test",
-    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+    "test": "nyc --extension .ts mocha  \"test/**/*.test.ts\""
   },
   "types": "lib/index.d.ts",
   "pnpm": {

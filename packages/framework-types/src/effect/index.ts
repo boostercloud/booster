@@ -1,8 +1,7 @@
 import { pipe } from '@effect-ts/core'
 import { Layer } from '@effect-ts/core/Effect/Layer'
-import { Effect, provideSomeLayer } from '@effect-ts/core/Effect'
+import { Effect, provideSomeLayer, runPromise } from '@effect-ts/core/Effect'
 import { Has } from '@effect-ts/core/Has'
-import { runMain } from '@effect-ts/node/Runtime'
 
 export * from '@effect-ts/core/Effect'
 export * as Layer from '@effect-ts/core/Effect/Layer'
@@ -13,7 +12,7 @@ export { pipe, flow } from '@effect-ts/core/Function'
 
 type RunWithLayerOpts<R> = {
   readonly layer: Layer<unknown, never, Has<R>>
-  readonly onError: (eff: Effect<Has<R>, unknown, unknown>) => Effect<Has<R>, never, unknown>
+  readonly onError: (eff: Effect<Has<R>, unknown, void>) => Effect<Has<R>, never, void>
 }
 
 /**
@@ -23,5 +22,9 @@ type RunWithLayerOpts<R> = {
  * @param opts.onError The function to handle errors
  * @returns void
  */
-export const runWithLayer = <R>(effect: Effect<Has<R>, unknown, void>, { layer, onError }: RunWithLayerOpts<R>): void =>
-  pipe(effect, onError, provideSomeLayer(layer), runMain)
+export const unsafeRunEffect = <R>(
+  effect: Effect<Has<R>, unknown, void>,
+  { layer, onError }: RunWithLayerOpts<R>
+): Promise<void> => {
+  return pipe(effect, onError, provideSomeLayer(layer), runPromise)
+}

@@ -1,20 +1,26 @@
-import { fake, replace, restore, SinonSpy, SinonStub, stub } from 'sinon'
+import { fake, replace, restore, SinonStub, stub } from 'sinon'
 import * as projectChecker from '../../src/services/project-checker'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 import * as environment from '../../src/services/environment'
-import * as dependencies from '../../src/services/dependencies'
 import * as childProcessPromise from 'child-process-promise'
+// import { NpmPackageManager } from '../../src/services/package-manager/npm.impl'
+// import { LiveProcess } from '../../src/services/process/live.impl'
+// import { LiveFileSystem } from '../../src/services/file-system/live.impl'
+// import { Layer } from '@boostercloud/framework-types/src/effect'
 
 const rewire = require('rewire')
 const configService = rewire('../../src/services/config-service')
 
-describe('configService', () => {
+describe.only('configService', () => {
   const userProjectPath = 'path/to/project'
-  let fakeInstallProductionDependencies: SinonSpy
+  // let fakeInstallProductionDependencies: SinonSpy
   beforeEach(() => {
-    fakeInstallProductionDependencies = fake()
-    replace(dependencies, 'installProductionDependencies', fakeInstallProductionDependencies)
+    // fakeInstallProductionDependencies = fake()
+    // replace(dependencies, 'installProductionDependencies', fakeInstallProductionDependencies)
+    // TODO: Don't use live services when testing. This should be fixed when we finish migrating all the services to the new effect system
+    // const testLayer = Layer.all(LiveProcess, LiveFileSystem)
+    // replace(configService, 'UsedLayer', Layer.using(testLayer)(NpmPackageManager))
   })
   afterEach(() => {
     restore()
@@ -26,8 +32,11 @@ describe('configService', () => {
     })
 
     it('runs the npm command', async () => {
-      await configService.compileProject(userProjectPath)
-      expect(childProcessPromise.exec).to.have.been.calledWith('npm run clean && npm run build')
+      const result = await configService.compileProject(userProjectPath)
+      // expect(childProcessPromise.exec).to.have.callCount('npm run clean && npm run build')
+      expect(childProcessPromise.exec).to.have.calledWith('npm run clean')
+      expect(childProcessPromise.exec).to.have.calledWith('npm run build')
+      expect(result).to.not.be.undefined
     })
   })
 

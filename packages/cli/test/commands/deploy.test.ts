@@ -9,9 +9,10 @@ import * as providerService from '../../src/services/provider-service'
 import { oraLogger } from '../../src/services/logger'
 import { IConfig } from '@oclif/config'
 import * as environment from '../../src/services/environment'
-import * as dependencies from '../../src/services/dependencies'
+import * as packageManagerImpl from '../../src/services/package-manager/live.impl'
 import * as configService from '../../src/services/config-service'
 import * as projectChecker from '../../src/services/project-checker'
+import { TestPackageManager } from '../services/package-manager/test.impl'
 
 // With this trick we can test non exported symbols
 const rewire = require('rewire')
@@ -57,7 +58,8 @@ describe('deploy', () => {
 
     context('when there is a valid index.ts', () => {
       fancy.stdout().it('Starts deployment', async (ctx) => {
-        replace(dependencies, 'installAllDependencies', fake())
+        // TODO: Once we migrate all services to the new way, we can remove this and just use the Test Layer for each of them
+        replace(packageManagerImpl, 'LivePackageManager', TestPackageManager)
 
         const fakeProvider = {} as ProviderLibrary
 

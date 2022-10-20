@@ -3,10 +3,10 @@ import { FileSystemService } from '../file-system'
 import { ProcessService } from '../process'
 import { PackageManagerService } from '.'
 import { dieMessage, gen, Layer, orDie } from '@boostercloud/framework-types/src/effect'
-import { RushPackageManager } from './rush.impl'
-import { PnpmPackageManager } from './pnpm.impl'
-import { YarnPackageManager } from './yarn.impl'
-import { NpmPackageManager } from './npm.impl'
+import { makeRushPackageManager } from './rush.impl'
+import { makePnpmPackageManager } from './pnpm.impl'
+import { makeYarnPackageManager } from './yarn.impl'
+import { makeNpmPackageManager } from './npm.impl'
 import { LiveFileSystem } from '../file-system/live.impl'
 import { LiveProcess } from '../process/live.impl'
 
@@ -16,13 +16,13 @@ const inferPackageManagerNameFromDirectoryContents = gen(function* ($) {
   const workingDir = yield* $(cwd())
   const contents = yield* $(readDirectoryContents(workingDir))
   if (contents.includes('.rush')) {
-    return yield* $(RushPackageManager)
+    return yield* $(makeRushPackageManager)
   } else if (contents.includes('pnpm-lock.yaml')) {
-    return yield* $(PnpmPackageManager)
+    return yield* $(makePnpmPackageManager)
   } else if (contents.includes('yarn.lock')) {
-    return yield* $(YarnPackageManager)
+    return yield* $(makeYarnPackageManager)
   } else if (contents.includes('package-lock.json')) {
-    return yield* $(NpmPackageManager)
+    return yield* $(makeNpmPackageManager)
   } else {
     return yield* $(dieMessage('No package manager found'))
   }

@@ -36,19 +36,14 @@ export const makePackageManager = (packageManagerCommand: string) =>
     // Create a function to run a script in the project directory
     const run = yield* $(makeScopedRun(packageManagerCommand, projectDirRef))
 
-    // Implementation for service functions
-    const setProjectRoot = (projectDir: string) => Ref.set(projectDir)(projectDirRef)
-    const runScript = (scriptName: string, args: ReadonlyArray<string>) => run('run', [scriptName, ...args])
-    const installProductionDependencies = run('install', ['--production', '--no-bin-links', '--no-optional'])
-    const installAllDependencies = run('install', [])
-
-    // Assembly of the service
     const service: PackageManagerService = {
-      setProjectRoot,
-      runScript,
+      setProjectRoot: (projectDir: string) => Ref.set(projectDir)(projectDirRef),
+      runScript: (scriptName: string, args: ReadonlyArray<string>) => run('run', [scriptName, ...args]),
       installProductionDependencies: () =>
-        guardError('Could not install production dependencies')(installProductionDependencies),
-      installAllDependencies: () => guardError('Could not install dependencies')(installAllDependencies),
+        guardError('Could not install production dependencies')(
+          run('install', ['--production', '--no-bin-links', '--no-optional'])
+        ),
+      installAllDependencies: () => guardError('Could not install dependencies')(run('install', [])),
     }
     return service
   })
