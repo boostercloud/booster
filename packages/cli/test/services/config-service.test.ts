@@ -3,8 +3,8 @@ import * as projectChecker from '../../src/services/project-checker'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 import * as environment from '../../src/services/environment'
-import * as childProcessPromise from 'child-process-promise'
-// import { NpmPackageManager } from '../../src/services/package-manager/npm.impl'
+import { TestPackageManager } from './package-manager/test.impl'
+import * as PackageManager from '../../src/services/package-manager/live.impl'
 // import { LiveProcess } from '../../src/services/process/live.impl'
 // import { LiveFileSystem } from '../../src/services/file-system/live.impl'
 // import { Layer } from '@boostercloud/framework-types/src/effect'
@@ -14,40 +14,34 @@ const configService = rewire('../../src/services/config-service')
 
 describe.only('configService', () => {
   const userProjectPath = 'path/to/project'
+  const packageManager = TestPackageManager()
   // let fakeInstallProductionDependencies: SinonSpy
-  beforeEach(() => {
+  before(() => {
     // fakeInstallProductionDependencies = fake()
     // replace(dependencies, 'installProductionDependencies', fakeInstallProductionDependencies)
     // TODO: Don't use live services when testing. This should be fixed when we finish migrating all the services to the new effect system
     // const testLayer = Layer.all(LiveProcess, LiveFileSystem)
-    // replace(configService, 'UsedLayer', Layer.using(testLayer)(NpmPackageManager))
+    replace(PackageManager, 'LivePackageManager', packageManager.layer)
   })
   afterEach(() => {
     restore()
+    for (const fake of Object.values(packageManager.fakes)) {
+      fake.resetHistory()
+    }
   })
 
   describe('compileProject', () => {
-    beforeEach(() => {
-      replace(childProcessPromise, 'exec', fake.resolves({}))
-    })
-
     it('runs the npm command', async () => {
-      const result = await configService.compileProject(userProjectPath)
-      // expect(childProcessPromise.exec).to.have.callCount('npm run clean && npm run build')
-      expect(childProcessPromise.exec).to.have.calledWith('npm run clean')
-      expect(childProcessPromise.exec).to.have.calledWith('npm run build')
-      expect(result).to.not.be.undefined
+      await configService.compileProject(userProjectPath)
+      expect(packageManager.fakes.runScript).to.have.calledWith('clean')
+      expect(packageManager.fakes.runScript).to.have.calledWith('build')
     })
   })
 
   describe('cleanProject', () => {
-    beforeEach(() => {
-      replace(childProcessPromise, 'exec', fake.resolves({}))
-    })
-
     it('runs the npm command', async () => {
       await configService.cleanProject(userProjectPath)
-      expect(childProcessPromise.exec).to.have.been.calledWith('npm run clean')
+      expect(packageManager.fakes.runScript).to.have.been.calledWith('clean')
     })
   })
 

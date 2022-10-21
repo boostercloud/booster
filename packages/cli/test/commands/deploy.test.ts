@@ -59,7 +59,7 @@ describe('deploy', () => {
     context('when there is a valid index.ts', () => {
       fancy.stdout().it('Starts deployment', async (ctx) => {
         // TODO: Once we migrate all services to the new way, we can remove this and just use the Test Layer for each of them
-        replace(packageManagerImpl, 'LivePackageManager', TestPackageManager)
+        replace(packageManagerImpl, 'LivePackageManager', TestPackageManager().layer)
 
         const fakeProvider = {} as ProviderLibrary
 
