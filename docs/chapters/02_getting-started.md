@@ -100,7 +100,7 @@ git config --global user.email "your_email@youremail.com"
 
 This step is optional; Booster is a cloud-native framework, meaning that your application
 will be deployed to the cloud using different cloud providers. By default, Booster uses the
-[AWS Provider](chapters/04_features.md#aws-provider), so you need an AWS account.
+[AWS Provider](04_features.md#aws-provider), so you need an AWS account.
 
 > [!WARNING]
 > Booster is free to use, but remember that the resources deployed to your cloud provider
@@ -141,7 +141,7 @@ aws_access_key_id = <YOUR ACCESS KEY ID>
 aws_secret_access_key = <YOUR SECRET ACCESS KEY>
 ```
 
-> You can see more details in the [Providers configuration](chapters/05_going-deeper.md#providers-configuration) section.
+> You can see more details in the [Providers configuration](05_going-deeper.md#providers-configuration) section.
 
 #### Multiple AWS Accounts
 
@@ -278,7 +278,7 @@ You can check the different login options in this [reference document](https://d
 
 Once you are logged in from the CLI, you can deploy applications with Booster.
 
-> You can see more details in the [Providers configuration](chapters/05_going-deeper.md#providers-configuration) section.
+> You can see more details in the [Providers configuration](05_going-deeper.md#providers-configuration) section.
 
 ### Kubernetes Provider Prerequisites
 
@@ -301,7 +301,7 @@ Please note that the desired cluster should be accessible from the kubectl comma
 kubectl get pods -A
 ```
 
-> You can see more details in the [Providers configuration](chapters/05_going-deeper.md#providers-configuration) section.
+> You can see more details in the [Providers configuration](05_going-deeper.md#providers-configuration) section.
 
 ### Installing the Booster CLI
 
@@ -357,7 +357,7 @@ the instructions. After some prompted questions, the CLI will ask you to select 
 ```
 
 When asked for the provider, select AWS as that is what we have
-configured [here](chapters/02_getting-started.md#aws-provider-prerequisites) for the example. You can use another provider if you want, or add more providers once you have created the project.
+configured [here](02_getting-started.md#aws-provider-prerequisites) for the example. You can use another provider if you want, or add more providers once you have created the project.
 
 After choosing your provider, you will see your project generated!:
 
@@ -441,7 +441,7 @@ Now open the project in your favorite editor, e.g. [Visual Studio Code](https://
 ### 2. First command
 
 Commands define the input to our system, so we'll start by generating our first
-[command](chapters/03_booster-architecture.md#_1-command-and-command-handlers) to create posts. Use the command generator, while in the project's root
+[command](03_booster-architecture.md#_1-command-and-command-handlers) to create posts. Use the command generator, while in the project's root
 directory, as follows:
 
 ```bash
@@ -599,7 +599,7 @@ boost new:read-model PostReadModel --fields title:string author:string --project
 ```
 
 We have used a new flag, `--projects`, that allow us to specify the entities (can be many) the read model will
-watch for changes. You might be wondering what is the `:id` after the entity name. That's the [joinKey](chapters/03_booster-architecture.md#the-projection-function),
+watch for changes. You might be wondering what is the `:id` after the entity name. That's the [joinKey](03_booster-architecture.md#the-projection-function),
 but you can forget about it now.
 
 As you might guess, the read-model generator will create a file called
