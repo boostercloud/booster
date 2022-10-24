@@ -20,12 +20,13 @@ const ensureProjectDir = (projectDirRef: Ref.Ref<string>) =>
 /**
  * Returns a function that executes a package manager command in the project directory.
  */
-const makeScopedRun = (command: string, projectDirRef: Ref.Ref<string>) =>
+export const makeScopedRun = (command: string, projectDirRef: Ref.Ref<string>) =>
   gen(function* ($) {
     const { exec } = yield* $(ProcessService)
     const projectDir = yield* $(ensureProjectDir(projectDirRef))
-    return (scriptName: string, args: ReadonlyArray<string>) =>
-      exec(`${command} ${scriptName} ${args.join(' ')}`, projectDir)
+    return (scriptName: string, args: ReadonlyArray<string>) => {
+      return exec([command, scriptName, ...args].join(' ').trim(), projectDir)
+    }
   })
 
 export const makePackageManager = (packageManagerCommand: string) =>

@@ -34,6 +34,7 @@
   },
   "devDependencies": {
     "@boostercloud/eslint-config": "workspace:^1.0.0",
+    "@boostercloud/application-tester": "workspace:^1.0.0",
     "@oclif/dev-cli": "^1.26",
     "@oclif/test": "^2.1",
     "@types/chai": "4.2.18",

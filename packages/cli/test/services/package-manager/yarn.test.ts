@@ -1,37 +1,36 @@
 import { fake } from 'sinon'
 import { gen, Layer, unsafeRunEffect } from '@boostercloud/framework-types/src/effect'
 import { expect } from '../../expect'
-import { TestFileSystem } from '../file-system/test.impl'
-import { TestProcess } from '../process/test.impl'
+import { makeTestFileSystem } from '../file-system/test.impl'
+import { makeTestProcess } from '../process/test.impl'
 import { packageManagerInternals } from '../../../src/services/package-manager'
 import { YarnPackageManager } from '../../../src/services/package-manager/yarn.impl'
+import { guardError } from '../../../src/common/errors'
+
+const TestFileSystem = makeTestFileSystem()
+const TestProcess = makeTestProcess()
 
 describe('PackageManager - Yarn Implementation', () => {
   beforeEach(() => {})
 
-  it('run arbitrary scripts from package.json', () => {
+  it('run arbitrary scripts from package.json', async () => {
     const script = 'script'
     const args = ['arg1', 'arg2']
-    const fakeFileSystem = TestFileSystem()
-    const fakeProcess = TestProcess()
-    const testLayer = Layer.all(fakeFileSystem.layer, fakeProcess.layer)
+    const testLayer = Layer.all(TestFileSystem.layer, TestProcess.layer)
     const { runScript } = packageManagerInternals
 
-    unsafeRunEffect(runScript(script, args), {
+    await unsafeRunEffect(runScript(script, args), {
       layer: Layer.using(testLayer)(YarnPackageManager),
-      onError: (error) => {
-        throw error
-      },
+      onError: guardError('An error ocurred'),
     })
-    expect(fakeProcess.fakes.exec).to.have.been.calledWith(`yarn run ${script} ${args.join(' ')}`, { cwd: '' })
+    expect(TestProcess.fakes.exec).to.have.been.calledWith(`yarn run ${script} ${args.join(' ')}`)
   })
 
-  it('can set the project root properly', () => {
+  it('can set the project root properly', async () => {
     const projectRoot = 'projectRoot'
 
-    const fakeFileSystem = TestFileSystem()
-    const fakeProcess = TestProcess({ cwd: fake.resolves(projectRoot) })
-    const testLayer = Layer.all(fakeFileSystem.layer, fakeProcess.layer)
+    const CwdTestProcess = makeTestProcess({ cwd: fake.returns(projectRoot) })
+    const testLayer = Layer.all(TestFileSystem.layer, CwdTestProcess.layer)
     const { setProjectRoot, runScript } = packageManagerInternals
 
     const effect = gen(function* ($) {
@@ -39,48 +38,34 @@ describe('PackageManager - Yarn Implementation', () => {
       yield* $(runScript('script', []))
     })
 
-    unsafeRunEffect(effect, {
+    await unsafeRunEffect(effect, {
       layer: Layer.using(testLayer)(YarnPackageManager),
-      onError: (error) => {
-        throw error
-      },
+      onError: guardError('An error ocurred'),
     })
-    expect(fakeProcess.fakes.exec).to.have.been.calledWith('yarn run script', { cwd: projectRoot })
+    expect(CwdTestProcess.fakes.exec).to.have.been.calledWith('yarn run script', projectRoot)
   })
 
-  it('can install production dependencies', () => {
-    const fakeFileSystem = TestFileSystem()
-    const fakeProcess = TestProcess()
-    const testLayer = Layer.all(fakeFileSystem.layer, fakeProcess.layer)
+  it('can install production dependencies', async () => {
+    const testLayer = Layer.all(TestFileSystem.layer, TestProcess.layer)
     const { installProductionDependencies } = packageManagerInternals
 
-    unsafeRunEffect(installProductionDependencies(), {
+    await unsafeRunEffect(installProductionDependencies(), {
       layer: Layer.using(testLayer)(YarnPackageManager),
-      onError: (error) => {
-        throw error
-      },
+      onError: guardError('An error ocurred'),
     })
 
-    expect(fakeProcess.fakes.exec).to.have.been.calledWith('yarn install --production --no-bin-links --no-optional', {
-      cwd: '',
-    })
+    expect(TestProcess.fakes.exec).to.have.been.calledWith('yarn install --production --no-bin-links --no-optional')
   })
 
-  it('can install all dependencies', () => {
-    const fakeFileSystem = TestFileSystem()
-    const fakeProcess = TestProcess()
-    const testLayer = Layer.all(fakeFileSystem.layer, fakeProcess.layer)
+  it('can install all dependencies', async () => {
+    const testLayer = Layer.all(TestFileSystem.layer, TestProcess.layer)
     const { installAllDependencies } = packageManagerInternals
 
-    unsafeRunEffect(installAllDependencies(), {
+    await unsafeRunEffect(installAllDependencies(), {
       layer: Layer.using(testLayer)(YarnPackageManager),
-      onError: (error) => {
-        throw error
-      },
+      onError: guardError('An error ocurred'),
     })
 
-    expect(fakeProcess.fakes.exec).to.have.been.calledWith('yarn install', {
-      cwd: '',
-    })
+    expect(TestProcess.fakes.exec).to.have.been.calledWith('yarn install')
   })
 })

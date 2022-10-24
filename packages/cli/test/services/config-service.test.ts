@@ -3,45 +3,38 @@ import * as projectChecker from '../../src/services/project-checker'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 import * as environment from '../../src/services/environment'
-import { TestPackageManager } from './package-manager/test.impl'
 import * as PackageManager from '../../src/services/package-manager/live.impl'
+import { makeTestPackageManager } from './package-manager/test.impl'
 // import { LiveProcess } from '../../src/services/process/live.impl'
 // import { LiveFileSystem } from '../../src/services/file-system/live.impl'
 // import { Layer } from '@boostercloud/framework-types/src/effect'
 
 const rewire = require('rewire')
 const configService = rewire('../../src/services/config-service')
+const TestPackageManager = makeTestPackageManager()
 
-describe.only('configService', () => {
+describe('configService', () => {
   const userProjectPath = 'path/to/project'
-  const packageManager = TestPackageManager()
   // let fakeInstallProductionDependencies: SinonSpy
-  before(() => {
-    // fakeInstallProductionDependencies = fake()
-    // replace(dependencies, 'installProductionDependencies', fakeInstallProductionDependencies)
-    // TODO: Don't use live services when testing. This should be fixed when we finish migrating all the services to the new effect system
-    // const testLayer = Layer.all(LiveProcess, LiveFileSystem)
-    replace(PackageManager, 'LivePackageManager', packageManager.layer)
-  })
   afterEach(() => {
     restore()
-    for (const fake of Object.values(packageManager.fakes)) {
-      fake.resetHistory()
-    }
+    TestPackageManager.reset()
   })
 
   describe('compileProject', () => {
     it('runs the npm command', async () => {
+      replace(PackageManager, 'LivePackageManager', TestPackageManager.layer)
       await configService.compileProject(userProjectPath)
-      expect(packageManager.fakes.runScript).to.have.calledWith('clean')
-      expect(packageManager.fakes.runScript).to.have.calledWith('build')
+      expect(TestPackageManager.fakes.runScript).to.have.calledWith('clean')
+      expect(TestPackageManager.fakes.runScript).to.have.calledWith('build')
     })
   })
 
   describe('cleanProject', () => {
     it('runs the npm command', async () => {
+      replace(PackageManager, 'LivePackageManager', TestPackageManager.layer)
       await configService.cleanProject(userProjectPath)
-      expect(packageManager.fakes.runScript).to.have.been.calledWith('clean')
+      expect(TestPackageManager.fakes.runScript).to.have.been.calledWith('clean')
     })
   })
 

@@ -13,8 +13,8 @@ import * as indexTs from '../templates/project/index-ts'
 import * as prettierRc from '../templates/project/prettierrc-yaml'
 import * as mochaRc from '../templates/project/mocharc-yml'
 import { guardError, wrapExecError } from '../common/errors'
-import { packageManagerInternals } from './package-manager'
-import { unsafeRunEffect } from '@boostercloud/framework-types/src/effect'
+import { PackageManagerService } from './package-manager'
+import { gen, unsafeRunEffect } from '@boostercloud/framework-types/src/effect'
 import { LivePackageManager } from './package-manager/live.impl'
 
 export async function generateConfigFiles(config: ProjectInitializerConfig): Promise<void> {
@@ -22,10 +22,15 @@ export async function generateConfigFiles(config: ProjectInitializerConfig): Pro
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function installDependencies(_config: ProjectInitializerConfig): Promise<void> {
+export async function installDependencies(config: ProjectInitializerConfig): Promise<void> {
   // return installAllDependencies(projectDir(config))
   // FIXME: Pass the project path
-  return unsafeRunEffect(packageManagerInternals.installAllDependencies(), {
+  const effect = gen(function* ($) {
+    const { setProjectRoot, installAllDependencies } = yield* $(PackageManagerService)
+    yield* $(setProjectRoot(projectDir(config)))
+    yield* $(installAllDependencies())
+  })
+  return unsafeRunEffect(effect, {
     layer: LivePackageManager,
     onError: guardError('Could not install dependencies'),
   })

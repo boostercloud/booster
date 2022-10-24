@@ -1,17 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Layer, succeedWith } from '@boostercloud/framework-types/src/effect'
 import { FileSystemService } from '../../../src/services/file-system'
-import { fake, SinonSpy } from 'sinon'
+import { fake } from 'sinon'
+import { FakeOverrides, fakeService } from '@boostercloud/application-tester/src/effect'
 
-type Overrides = Record<keyof FileSystemService, SinonSpy<any[], any>>
-
-export const TestFileSystem = (overrides?: Overrides) => {
-  const defaultFakes = {
+export const makeTestFileSystem = (overrides?: FakeOverrides<FileSystemService>) =>
+  fakeService(FileSystemService, {
     readDirectoryContents: fake.returns([]),
-  } as Overrides
-  const fakes = { ...defaultFakes, ...overrides }
-  const layer = Layer.fromValue(FileSystemService)({
-    readDirectoryContents: (path) => succeedWith(() => fakes.readDirectoryContents(path)),
+    ...overrides,
   })
-  return { layer, fakes }
-}

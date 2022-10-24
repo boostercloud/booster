@@ -2,7 +2,7 @@
 import { FileSystemService } from '../file-system'
 import { ProcessService } from '../process'
 import { PackageManagerService } from '.'
-import { dieMessage, gen, Layer, orDie } from '@boostercloud/framework-types/src/effect'
+import { gen, Layer, orDie } from '@boostercloud/framework-types/src/effect'
 import { makeRushPackageManager } from './rush.impl'
 import { makePnpmPackageManager } from './pnpm.impl'
 import { makeYarnPackageManager } from './yarn.impl'
@@ -24,7 +24,8 @@ const inferPackageManagerNameFromDirectoryContents = gen(function* ($) {
   } else if (contents.includes('package-lock.json')) {
     return yield* $(makeNpmPackageManager)
   } else {
-    return yield* $(dieMessage('No package manager found'))
+    // Infer npm by default
+    return yield* $(makeNpmPackageManager)
   }
 })
 

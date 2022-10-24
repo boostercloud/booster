@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { tryCatchPromise, Layer } from '@boostercloud/framework-types/src/effect'
 import { FileSystemError, FileSystemService } from '.'
 import * as fs from 'fs'

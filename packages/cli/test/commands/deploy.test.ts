@@ -12,12 +12,14 @@ import * as environment from '../../src/services/environment'
 import * as packageManagerImpl from '../../src/services/package-manager/live.impl'
 import * as configService from '../../src/services/config-service'
 import * as projectChecker from '../../src/services/project-checker'
-import { TestPackageManager } from '../services/package-manager/test.impl'
+import { makeTestPackageManager } from '../services/package-manager/test.impl'
 
 // With this trick we can test non exported symbols
 const rewire = require('rewire')
 const deploy = rewire('../../src/commands/deploy')
 const runTasks = deploy.__get__('runTasks')
+
+const TestPackageManager = makeTestPackageManager()
 
 describe('deploy', () => {
   beforeEach(() => {
@@ -25,6 +27,7 @@ describe('deploy', () => {
   })
 
   afterEach(() => {
+    TestPackageManager.reset()
     // Restore the default sinon sandbox here
     restore()
   })
@@ -59,7 +62,7 @@ describe('deploy', () => {
     context('when there is a valid index.ts', () => {
       fancy.stdout().it('Starts deployment', async (ctx) => {
         // TODO: Once we migrate all services to the new way, we can remove this and just use the Test Layer for each of them
-        replace(packageManagerImpl, 'LivePackageManager', TestPackageManager().layer)
+        replace(packageManagerImpl, 'LivePackageManager', TestPackageManager.layer)
 
         const fakeProvider = {} as ProviderLibrary
 

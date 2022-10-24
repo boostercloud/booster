@@ -1,37 +1,39 @@
 import { fake } from 'sinon'
 import { gen, Layer, unsafeRunEffect } from '@boostercloud/framework-types/src/effect'
 import { expect } from '../../expect'
-import { TestFileSystem } from '../file-system/test.impl'
-import { TestProcess } from '../process/test.impl'
+import { makeTestFileSystem } from '../file-system/test.impl'
+import { makeTestProcess } from '../process/test.impl'
 import { packageManagerInternals } from '../../../src/services/package-manager'
 import { RushPackageManager } from '../../../src/services/package-manager/rush.impl'
+import { guardError } from '../../../src/common/errors'
+
+const TestFileSystem = makeTestFileSystem()
+const TestProcess = makeTestProcess()
 
 describe('PackageManager - Rush Implementation', () => {
-  beforeEach(() => {})
-
-  it('run arbitrary scripts from package.json', () => {
-    const script = 'script'
-    const args = ['arg1', 'arg2']
-    const fakeFileSystem = TestFileSystem()
-    const fakeProcess = TestProcess()
-    const testLayer = Layer.all(fakeFileSystem.layer, fakeProcess.layer)
-    const { runScript } = packageManagerInternals
-
-    unsafeRunEffect(runScript(script, args), {
-      layer: Layer.using(testLayer)(RushPackageManager),
-      onError: (error) => {
-        throw error
-      },
-    })
-    expect(fakeProcess.fakes.exec).to.have.been.calledWith(`rushx ${script} ${args.join(' ')}`, { cwd: '' })
+  beforeEach(() => {
+    TestFileSystem.reset()
+    TestProcess.reset()
   })
 
-  it('can set the project root properly', () => {
+  it('run arbitrary scripts from package.json', async () => {
+    const script = 'script'
+    const args = ['arg1', 'arg2']
+    const testLayer = Layer.all(TestFileSystem.layer, TestProcess.layer)
+    const { runScript } = packageManagerInternals
+
+    await unsafeRunEffect(runScript(script, args), {
+      layer: Layer.using(testLayer)(RushPackageManager),
+      onError: guardError('An error ocurred'),
+    })
+    expect(TestProcess.fakes.exec).to.have.been.calledWith(`rushx ${script} ${args.join(' ')}`)
+  })
+
+  it('can set the project root properly', async () => {
     const projectRoot = 'projectRoot'
 
-    const fakeFileSystem = TestFileSystem()
-    const fakeProcess = TestProcess({ cwd: fake.resolves(projectRoot) })
-    const testLayer = Layer.all(fakeFileSystem.layer, fakeProcess.layer)
+    const CwdTestProcess = makeTestProcess({ cwd: fake.returns(projectRoot) })
+    const testLayer = Layer.all(TestFileSystem.layer, CwdTestProcess.layer)
     const { setProjectRoot, runScript } = packageManagerInternals
 
     const effect = gen(function* ($) {
@@ -39,48 +41,34 @@ describe('PackageManager - Rush Implementation', () => {
       yield* $(runScript('script', []))
     })
 
-    unsafeRunEffect(effect, {
+    await unsafeRunEffect(effect, {
       layer: Layer.using(testLayer)(RushPackageManager),
-      onError: (error) => {
-        throw error
-      },
+      onError: guardError('An error ocurred'),
     })
-    expect(fakeProcess.fakes.exec).to.have.been.calledWith('rushx script', { cwd: projectRoot })
+    expect(CwdTestProcess.fakes.exec).to.have.been.calledWith('rushx script', projectRoot)
   })
 
-  it('can install production dependencies', () => {
-    const fakeFileSystem = TestFileSystem()
-    const fakeProcess = TestProcess()
-    const testLayer = Layer.all(fakeFileSystem.layer, fakeProcess.layer)
+  it('cannot install production dependencies', async () => {
+    const testLayer = Layer.all(TestFileSystem.layer, TestProcess.layer)
     const { installProductionDependencies } = packageManagerInternals
 
-    unsafeRunEffect(installProductionDependencies(), {
-      layer: Layer.using(testLayer)(RushPackageManager),
-      onError: (error) => {
-        throw error
-      },
-    })
-
-    expect(fakeProcess.fakes.exec).to.have.been.calledWith('rush install --production --no-bin-links --no-optional', {
-      cwd: '',
-    })
+    expect(
+      unsafeRunEffect(installProductionDependencies(), {
+        layer: Layer.using(testLayer)(RushPackageManager),
+        onError: guardError('An error ocurred'),
+      })
+    ).to.eventually.throw()
   })
 
-  it('can install all dependencies', () => {
-    const fakeFileSystem = TestFileSystem()
-    const fakeProcess = TestProcess()
-    const testLayer = Layer.all(fakeFileSystem.layer, fakeProcess.layer)
+  it('can install all dependencies', async () => {
+    const testLayer = Layer.all(TestFileSystem.layer, TestProcess.layer)
     const { installAllDependencies } = packageManagerInternals
 
-    unsafeRunEffect(installAllDependencies(), {
+    await unsafeRunEffect(installAllDependencies(), {
       layer: Layer.using(testLayer)(RushPackageManager),
-      onError: (error) => {
-        throw error
-      },
+      onError: guardError('An error ocurred'),
     })
 
-    expect(fakeProcess.fakes.exec).to.have.been.calledWith('rush update', {
-      cwd: '',
-    })
+    expect(TestProcess.fakes.exec).to.have.been.calledWith('rush update')
   })
 })

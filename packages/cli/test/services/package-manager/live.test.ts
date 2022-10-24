@@ -1,82 +1,71 @@
 import { fake } from 'sinon'
 import { Layer, unsafeRunEffect } from '@boostercloud/framework-types/src/effect'
 import { expect } from '../../expect'
-import { TestFileSystem } from '../file-system/test.impl'
-import { TestProcess } from '../process/test.impl'
+import { makeTestFileSystem } from '../file-system/test.impl'
+import { makeTestProcess } from '../process/test.impl'
 import { packageManagerInternals } from '../../../src/services/package-manager'
 import { InferredPackageManager } from '../../../src/services/package-manager/live.impl'
+import { guardError } from '../../../src/common/errors'
 
 describe('PackageManager - Live Implementation (with inference)', () => {
-  beforeEach(() => {})
+  const TestProcess = makeTestProcess()
 
-  it('infers Rush when a `.rush` folder is present', () => {
-    const fakeFileSystem = TestFileSystem({ readDirectoryContents: fake.resolves(['.rush']) })
-    const fakeProcess = TestProcess()
-    const testLayer = Layer.all(fakeFileSystem.layer, fakeProcess.layer)
-    const { runScript } = packageManagerInternals
-    unsafeRunEffect(runScript('script', []), {
-      layer: Layer.using(testLayer)(InferredPackageManager),
-      onError: (error) => {
-        throw error
-      },
-    })
-    expect(fakeProcess.fakes.exec).to.have.been.calledWith('rushx script', { cwd: '' })
+  beforeEach(() => {
+    TestProcess.reset()
   })
 
-  it('infers pnpm when a `pnpm-lock.yaml` file is present', () => {
-    const fakeFileSystem = TestFileSystem({ readDirectoryContents: fake.resolves(['pnpm-lock.yaml']) })
-    const fakeProcess = TestProcess()
-    const testLayer = Layer.all(fakeFileSystem.layer, fakeProcess.layer)
+  it('infers Rush when a `.rush` folder is present', async () => {
+    const TestFileSystem = makeTestFileSystem({ readDirectoryContents: fake.returns(['.rush']) })
+    const testLayer = Layer.all(TestFileSystem.layer, TestProcess.layer)
     const { runScript } = packageManagerInternals
-    unsafeRunEffect(runScript('script', []), {
+    await unsafeRunEffect(runScript('script', []), {
       layer: Layer.using(testLayer)(InferredPackageManager),
-      onError: (error) => {
-        throw error
-      },
+      onError: guardError('An error ocurred'),
     })
-    expect(fakeProcess.fakes.exec).to.have.been.calledWith('pnpm run', { cwd: '' })
+    expect(TestProcess.fakes.exec).to.have.been.calledWith('rushx script')
   })
 
-  it('infers npm when a `package-lock.json` file is present', () => {
-    const fakeFileSystem = TestFileSystem({ readDirectoryContents: fake.resolves(['package-lock.json']) })
-    const fakeProcess = TestProcess()
-    const testLayer = Layer.all(fakeFileSystem.layer, fakeProcess.layer)
+  it('infers pnpm when a `pnpm-lock.yaml` file is present', async () => {
+    const TestFileSystem = makeTestFileSystem({ readDirectoryContents: fake.returns(['pnpm-lock.yaml']) })
+    const testLayer = Layer.all(TestFileSystem.layer, TestProcess.layer)
     const { runScript } = packageManagerInternals
-    unsafeRunEffect(runScript('script', []), {
+    await unsafeRunEffect(runScript('script', []), {
       layer: Layer.using(testLayer)(InferredPackageManager),
-      onError: (error) => {
-        throw error
-      },
+      onError: guardError('An error ocurred'),
     })
-    expect(fakeProcess.fakes.exec).to.have.been.calledWith('npm run', { cwd: '' })
+    expect(TestProcess.fakes.exec).to.have.been.calledWith('pnpm run script')
   })
 
-  it('infers yarn when a `yarn.lock` file is present', () => {
-    const fakeFileSystem = TestFileSystem({ readDirectoryContents: fake.resolves(['yarn.lock']) })
-    const fakeProcess = TestProcess()
-    const testLayer = Layer.all(fakeFileSystem.layer, fakeProcess.layer)
+  it('infers npm when a `package-lock.json` file is present', async () => {
+    const TestFileSystem = makeTestFileSystem({ readDirectoryContents: fake.returns(['package-lock.json']) })
+    const testLayer = Layer.all(TestFileSystem.layer, TestProcess.layer)
     const { runScript } = packageManagerInternals
-    unsafeRunEffect(runScript('script', []), {
+    await unsafeRunEffect(runScript('script', []), {
       layer: Layer.using(testLayer)(InferredPackageManager),
-      onError: (error) => {
-        throw error
-      },
+      onError: guardError('An error ocurred'),
     })
-    expect(fakeProcess.fakes.exec).to.have.been.calledWith('yarn run', { cwd: '' })
+    expect(TestProcess.fakes.exec).to.have.been.calledWith('npm run script')
   })
 
-  it('throws if there is no lock file present or a `.rush` folder', () => {
-    const fakeFileSystem = TestFileSystem()
-    const fakeProcess = TestProcess()
-    const testLayer = Layer.all(fakeFileSystem.layer, fakeProcess.layer)
+  it('infers yarn when a `yarn.lock` file is present', async () => {
+    const TestFileSystem = makeTestFileSystem({ readDirectoryContents: fake.returns(['yarn.lock']) })
+    const testLayer = Layer.all(TestFileSystem.layer, TestProcess.layer)
     const { runScript } = packageManagerInternals
-    expect(() =>
-      unsafeRunEffect(runScript('script', []), {
-        layer: Layer.using(testLayer)(InferredPackageManager),
-        onError: (error) => {
-          throw error
-        },
-      })
-    ).to.throw('No package manager found')
+    await unsafeRunEffect(runScript('script', []), {
+      layer: Layer.using(testLayer)(InferredPackageManager),
+      onError: guardError('An error ocurred'),
+    })
+    expect(TestProcess.fakes.exec).to.have.been.calledWith('yarn run script')
+  })
+
+  it('infers npm when no lock file is present', async () => {
+    const TestFileSystem = makeTestFileSystem({ readDirectoryContents: fake.returns([]) })
+    const testLayer = Layer.all(TestFileSystem.layer, TestProcess.layer)
+    const { runScript } = packageManagerInternals
+    await unsafeRunEffect(runScript('script', []), {
+      layer: Layer.using(testLayer)(InferredPackageManager),
+      onError: guardError('An error ocurred'),
+    })
+    expect(TestProcess.fakes.exec).to.have.been.calledWith('npm run script')
   })
 })

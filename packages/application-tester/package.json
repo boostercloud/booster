@@ -32,6 +32,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "dependencies": {
+    "@boostercloud/framework-types": "workspace:^1.0.0",
     "apollo-cache-inmemory": "1.6.6",
     "apollo-client": "2.6.10",
     "apollo-link": "1.2.14",
@@ -44,6 +45,8 @@
     "subscriptions-transport-ws": "0.9.18",
     "tslib": "^2.4.0",
     "ws": "7.4.5",
+    "@types/sinon": "10.0.0",
+    "sinon": "9.2.3",
     "@effect-ts/core": "^0.60.4"
   },
   "devDependencies": {
