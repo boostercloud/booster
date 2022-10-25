@@ -5,9 +5,6 @@ import { expect } from '../expect'
 import * as environment from '../../src/services/environment'
 import * as PackageManager from '../../src/services/package-manager/live.impl'
 import { makeTestPackageManager } from './package-manager/test.impl'
-// import { LiveProcess } from '../../src/services/process/live.impl'
-// import { LiveFileSystem } from '../../src/services/file-system/live.impl'
-// import { Layer } from '@boostercloud/framework-types/src/effect'
 
 const rewire = require('rewire')
 const configService = rewire('../../src/services/config-service')
@@ -15,7 +12,6 @@ const TestPackageManager = makeTestPackageManager()
 
 describe('configService', () => {
   const userProjectPath = 'path/to/project'
-  // let fakeInstallProductionDependencies: SinonSpy
   afterEach(() => {
     restore()
     TestPackageManager.reset()
