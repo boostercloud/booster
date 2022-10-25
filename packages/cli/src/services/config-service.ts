@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { BoosterApp, BoosterConfig } from '@boostercloud/framework-types'
 import * as path from 'path'
-import * as fs from 'fs'
 import { guardError } from '../common/errors'
 import { checkItIsABoosterProject } from './project-checker'
 import { currentEnvironment } from './environment'
@@ -15,7 +13,6 @@ export const DEPLOYMENT_SANDBOX = path.join(process.cwd(), '.deploy')
 export async function createDeploymentSandbox(): Promise<string> {
   const config = await compileProjectAndLoadConfig(process.cwd())
   const sandboxRelativePath = createSandboxProject(DEPLOYMENT_SANDBOX, config.assets)
-  // await installProductionDependencies(sandboxRelativePath)
   const effect = gen(function* ($) {
     const { setProjectRoot, installProductionDependencies } = yield* $(PackageManagerService)
     yield* $(setProjectRoot(sandboxRelativePath))
