@@ -21,20 +21,19 @@ export async function generateConfigFiles(config: ProjectInitializerConfig): Pro
   await Promise.all(filesToGenerate.map(renderToFile(config)))
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function installDependencies(config: ProjectInitializerConfig): Promise<void> {
-  // return installAllDependencies(projectDir(config))
-  // FIXME: Pass the project path
-  const effect = gen(function* ($) {
-    const { setProjectRoot, installAllDependencies } = yield* $(PackageManagerService)
-    yield* $(setProjectRoot(projectDir(config)))
-    yield* $(installAllDependencies())
-  })
-  return unsafeRunEffect(effect, {
+  return unsafeRunEffect(installDependenciesEff(config), {
     layer: LivePackageManager,
     onError: guardError('Could not install dependencies'),
   })
 }
+
+const installDependenciesEff = (config: ProjectInitializerConfig) =>
+  gen(function* ($) {
+    const { setProjectRoot, installAllDependencies } = yield* $(PackageManagerService)
+    yield* $(setProjectRoot(projectDir(config)))
+    yield* $(installAllDependencies())
+  })
 
 export async function generateRootDirectory(config: ProjectInitializerConfig): Promise<void> {
   const srcDir = path.join(projectDir(config), 'src')

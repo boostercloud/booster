@@ -5,7 +5,7 @@ import { guardError } from '../common/errors'
 import { checkItIsABoosterProject } from './project-checker'
 import { currentEnvironment } from './environment'
 import { createSandboxProject, removeSandboxProject } from '../common/sandbox'
-import { packageManagerInternals, PackageManagerService } from './package-manager'
+import { PackageManagerService } from './package-manager'
 import { gen, unsafeRunEffect } from '@boostercloud/framework-types/src/effect'
 import { LivePackageManager } from './package-manager/live.impl'
 
@@ -14,9 +14,13 @@ export const DEPLOYMENT_SANDBOX = '.deploy'
 export async function createDeploymentSandbox(): Promise<string> {
   const config = await compileProjectAndLoadConfig(process.cwd())
   const sandboxRelativePath = createSandboxProject(DEPLOYMENT_SANDBOX, config.assets)
-  const { installProductionDependencies } = packageManagerInternals
   // await installProductionDependencies(sandboxRelativePath)
-  await unsafeRunEffect(installProductionDependencies(), {
+  const effect = gen(function* ($) {
+    const { setProjectRoot, installProductionDependencies } = yield* $(PackageManagerService)
+    yield* $(setProjectRoot(sandboxRelativePath))
+    yield* $(installProductionDependencies())
+  })
+  await unsafeRunEffect(effect, {
     layer: LivePackageManager,
     onError: guardError('Could not install production dependencies'),
   })
