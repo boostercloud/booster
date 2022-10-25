@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { BoosterApp, BoosterConfig } from '@boostercloud/framework-types'
 import * as path from 'path'
+import * as fs from 'fs'
 import { guardError } from '../common/errors'
 import { checkItIsABoosterProject } from './project-checker'
 import { currentEnvironment } from './environment'
@@ -9,7 +10,7 @@ import { PackageManagerService } from './package-manager'
 import { gen, unsafeRunEffect } from '@boostercloud/framework-types/src/effect'
 import { LivePackageManager } from './package-manager/live.impl'
 
-export const DEPLOYMENT_SANDBOX = '.deploy'
+export const DEPLOYMENT_SANDBOX = path.join(process.cwd(), '.deploy')
 
 export async function createDeploymentSandbox(): Promise<string> {
   const config = await compileProjectAndLoadConfig(process.cwd())
@@ -38,7 +39,7 @@ export async function compileProjectAndLoadConfig(userProjectPath: string): Prom
 }
 
 export async function compileProject(projectPath: string): Promise<void> {
-  return unsafeRunEffect(compileProjectEff(projectPath), {
+  return await unsafeRunEffect(compileProjectEff(projectPath), {
     layer: LivePackageManager,
     onError: guardError('Project contains compilation errors'),
   })
@@ -49,7 +50,7 @@ const compileProjectEff = (projectPath: string) =>
     const { setProjectRoot, runScript } = yield* $(PackageManagerService)
     yield* $(setProjectRoot(projectPath))
     yield* $(cleanProjectEff(projectPath))
-    yield* $(runScript('build', []))
+    return yield* $(runScript('build', []))
   })
 
 export async function cleanProject(projectPath: string): Promise<void> {
@@ -79,6 +80,8 @@ function readProjectConfig(userProjectPath: string): Promise<BoosterConfig> {
 
 function loadUserProject(userProjectPath: string): { Booster: BoosterApp } {
   const projectIndexJSPath = path.resolve(path.join(userProjectPath, 'dist', 'index.js'))
+  console.log('RESOLVED TO:', projectIndexJSPath)
+  console.log('CONTENTS:\n', fs.readdirSync(path.dirname(projectIndexJSPath)).join('\n'))
   return require(projectIndexJSPath)
 }
 

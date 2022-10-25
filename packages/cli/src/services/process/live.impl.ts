@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import * as childProcess from 'child-process-promise'
 import * as process from 'process'
 import { ProcessService, ProcessError } from '.'
@@ -7,11 +6,14 @@ import { Layer, tryCatch, tryCatchPromise } from '@boostercloud/framework-types/
 const exec = (command: string, cwd?: string) =>
   tryCatchPromise(
     async () => {
+      console.log('Executing command', command, 'in', cwd)
       const { stdout, stderr } = await childProcess.exec(command, { cwd })
-      if (stderr) {
-        throw new Error(stderr)
-      }
-      return stdout
+      const result = `
+${stderr ? `There were some issues running the command: ${stderr}` : ''}
+${stdout}
+`
+      console.log('RESULT:', result)
+      return result
     },
     (reason) => new ProcessError(reason)
   )

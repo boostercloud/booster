@@ -3,10 +3,7 @@ import { deriveLifted, Effect, tag } from '@boostercloud/framework-types/src/eff
 
 export class ProcessError {
   readonly _tag = 'ProcessError'
-  readonly error: Error
-  public constructor(readonly reason: unknown) {
-    this.error = reason instanceof Error ? reason : new Error(String(reason))
-  }
+  public constructor(readonly reason: unknown) {}
 }
 
 export interface ProcessService {

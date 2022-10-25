@@ -4,7 +4,7 @@ export class PackageManagerError {
   readonly _tag = 'PackageManagerError'
   readonly error: Error
   public constructor(readonly reason: unknown) {
-    this.error = reason instanceof Error ? reason : new Error(String(reason))
+    this.error = reason instanceof Error ? reason : new Error(JSON.stringify(reason))
   }
 }
 
