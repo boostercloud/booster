@@ -6,13 +6,11 @@ import { Layer, tryCatch, tryCatchPromise } from '@boostercloud/framework-types/
 const exec = (command: string, cwd?: string) =>
   tryCatchPromise(
     async () => {
-      console.log('Executing command', command, 'in', cwd)
       const { stdout, stderr } = await childProcess.exec(command, { cwd })
       const result = `
 ${stderr ? `There were some issues running the command: ${stderr}` : ''}
 ${stdout}
 `
-      console.log('RESULT:', result)
       return result
     },
     (reason) => new ProcessError(reason)

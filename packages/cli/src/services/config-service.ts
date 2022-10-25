@@ -80,8 +80,6 @@ function readProjectConfig(userProjectPath: string): Promise<BoosterConfig> {
 
 function loadUserProject(userProjectPath: string): { Booster: BoosterApp } {
   const projectIndexJSPath = path.resolve(path.join(userProjectPath, 'dist', 'index.js'))
-  console.log('RESOLVED TO:', projectIndexJSPath)
-  console.log('CONTENTS:\n', fs.readdirSync(path.dirname(projectIndexJSPath)).join('\n'))
   return require(projectIndexJSPath)
 }
 

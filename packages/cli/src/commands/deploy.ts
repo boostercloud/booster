@@ -41,9 +41,6 @@ export default class Deploy extends BaseCommand {
     const { flags } = this.parse(Deploy)
 
     if (initializeEnvironment(logger, flags.environment)) {
-      console.log('###########################')
-      console.log(`# Deploying to ${currentEnvironment()} environment`)
-      console.log('###########################')
       const deploymentProjectPath = await createDeploymentSandbox()
       await runTasks(compileProjectAndLoadConfig(deploymentProjectPath), deployToCloudProvider)
     }
