@@ -1,23 +1,29 @@
 import { Effect, Has, Layer, ShapeFn, succeedWith, Tag } from '@boostercloud/framework-types/src/effect'
 import { SinonSpy } from 'sinon'
 
-/**
- * Utils to mock an entire service, without having to wire up the whole dependency graph.
- * This is useful for unit testing, but not for integration testing.
+/*
+ * This module exposed testing utilities for working with Effect services in tests.
  *
- * @typedef {Object} FakeServiceUtils
- * @property {Layer} layer - The layer that can be used to replace the service in the dependency graph
- * @property {Record<string, SinonSpy>} fakes - The fakes that can be used to assert the service was called with the right parameters
- * @property {() => void} reset - A function to reset all the fakes
+ * If you don't even know what Effect is, you probably should start by reading the docs
+ * in the `@boostercloud/framework-types/src/effect` module.
+ *
+ * The key idea is that you can create a mock service that can be used in tests
+ * instead of the real service. This allows you to test your code without
+ * depending on the real service, nor having to replace functions of libraries with mocks.
+ *
+ * When testing services, we don't need to ensure that the service is actually calling
+ * the real implementation. We just need to ensure that the service is calling the
+ * right functions with the right arguments. That is, unless we're testing the live
+ * implementation, which is the only case where it is acceptable to replace the
+ * library functions with a mock.
  */
-export type FakeServiceUtils<T extends ShapeFn<T>> = {
-  layer: Layer.Layer<unknown, never, Has<T>>
-  fakes: Fakes<T>
-  reset: () => void
-}
 
 /**
- * Creates a utility object to test services.
+ * Main entry point of the Effect testing helper module.
+ * You pass the tag for your service, and a record of mocks for the functions. This function will
+ * return a helper object that contains a `Layer` that you can use to replace the service in your
+ * tests, the fakes record that you passed, and a `reset` function that will reset the history
+ * of all the fakes, so you can use them in multiple tests.
  *
  * @param tag - The tag of the service to fake. E.g. `ProcessService`.
  * @param fakes - A record of the methods to fake. E.g. `{ cwd: fake.returns(''), exec: fake.returns('') }`.
@@ -47,6 +53,21 @@ export const fakeService = <T extends ShapeFn<T>>(tag: Tag<T>, fakes: Fakes<T>):
 
   // Return the layer, fakes, and reset function
   return { layer, fakes, reset }
+}
+
+/**
+ * Utils to mock an entire service, without having to wire up the whole dependency graph.
+ * This is useful for unit testing, but not for integration testing.
+ *
+ * @typedef {Object} FakeServiceUtils
+ * @property {Layer} layer - The layer that can be used to replace the service in the dependency graph
+ * @property {Record<string, SinonSpy>} fakes - The fakes that can be used to assert the service was called with the right parameters
+ * @property {() => void} reset - A function to reset all the fakes
+ */
+export type FakeServiceUtils<T extends ShapeFn<T>> = {
+  layer: Layer.Layer<unknown, never, Has<T>>
+  fakes: Fakes<T>
+  reset: () => void
 }
 
 /**
