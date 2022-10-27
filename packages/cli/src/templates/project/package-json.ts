@@ -25,6 +25,7 @@ export const template = `{
     "eslint-plugin-prettier": "3.4.0",
     "mocha": "8.4.0",
     "@types/mocha": "8.2.2",
+    "@types/jsonwebtoken": "^8.5.1",
     "nyc": "15.1.0",
     "prettier":  "2.3.0",
     "typescript": "4.7.4",
