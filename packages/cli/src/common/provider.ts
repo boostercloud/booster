@@ -1,6 +1,6 @@
 export const enum Provider {
-  AWS = '@boostercloud/framework-provider-aws (AWS)',
-  AZURE = '@boostercloud/framework-provider-azure (Azure) [Experimental]',
-  KUBERNETES = '@boostercloud/framework-provider-kubernetes (Kubernetes) [Experimental]',
+  AWS = 'AWS (@boostercloud/framework-provider-aws)',
+  AZURE = 'Azure (@boostercloud/framework-provider-azure) [Experimental]',
+  KUBERNETES = 'Kubernetes (@boostercloud/framework-provider-kubernetes) [Experimental]',
   OTHER = 'Other',
 }

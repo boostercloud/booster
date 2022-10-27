@@ -143,37 +143,32 @@ export const parseConfig = async (
     })
   }
 
-  const description = await prompter.defaultOrPrompt(
-    flags.description,
-    'What\'s your project description? (default: "")'
-  )
-  const versionPrompt = await prompter.defaultOrPrompt(flags.version, "What's the first version? (default: 0.1.0)")
-  const version = versionPrompt || '0.1.0'
-  const author = await prompter.defaultOrPrompt(flags.author, 'Who\'s the author? (default: "")')
-  const homepage = await prompter.defaultOrPrompt(flags.homepage, 'What\'s the website? (default: "")')
-  const licensePrompt = await prompter.defaultOrPrompt(
-    flags.license,
-    'What license will you be publishing this under? (default: MIT)'
-  )
-  const license = licensePrompt || 'MIT'
-  const repository = await prompter.defaultOrPrompt(
-    flags.repository,
-    'What\'s the URL of the repository? (default: "")'
-  )
+  const {
+    projectName,
+    description = '',
+    version = '0.1.0',
+    author = '',
+    homepage = '',
+    license = 'MIT',
+    repository = '',
+    skipInstall = false,
+    skipGit = false,
+  } = flags
+
   const providerPackageName = await getProviderPackageName(prompter, flags.providerPackageName)
 
   return Promise.resolve({
-    projectName: flags.projectName as string,
+    projectName: projectName as string,
     providerPackageName,
-    description,
-    version,
-    author,
-    homepage,
-    license,
-    repository,
+    description: description,
+    version: version,
+    author: author,
+    homepage: homepage,
+    license: license,
+    repository: repository,
     boosterVersion,
     default: false,
-    skipInstall: flags.skipInstall || false,
-    skipGit: flags.skipGit || false,
+    skipInstall: skipInstall,
+    skipGit: skipGit,
   })
 }
