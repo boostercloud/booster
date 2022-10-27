@@ -1,11 +1,11 @@
-import { processInternals } from '../../../src/services/process'
 import * as process from 'process'
 import * as childProcessPromise from 'child-process-promise'
 import { fake, replace, restore } from 'sinon'
-import { unsafeRunEffect } from '@boostercloud/framework-types/src/effect'
+import { gen, unsafeRunEffect } from '@boostercloud/framework-types/src/effect'
 import { LiveProcess } from '../../../src/services/process/live.impl'
 import { expect } from '../../expect'
 import { guardError } from '../../../src/common/errors'
+import { ProcessService } from '../../../src/services/process'
 
 describe('Process - Live Implementation', () => {
   beforeEach(() => {
@@ -18,8 +18,11 @@ describe('Process - Live Implementation', () => {
   })
 
   it('uses process.cwd', async () => {
-    const { cwd } = processInternals
-    await unsafeRunEffect(cwd(), {
+    const effect = gen(function* ($) {
+      const { cwd } = yield* $(ProcessService)
+      return yield* $(cwd())
+    })
+    await unsafeRunEffect(effect, {
       layer: LiveProcess,
       onError: guardError('An error ocurred'),
     })
@@ -27,11 +30,15 @@ describe('Process - Live Implementation', () => {
   })
 
   it('uses child-process-promise.exec', async () => {
-    const { exec } = processInternals
     const command = 'command'
     const cwd = 'cwd'
 
-    await unsafeRunEffect(exec(command, cwd), {
+    const effect = gen(function* ($) {
+      const { exec } = yield* $(ProcessService)
+      return yield* $(exec(command, cwd))
+    })
+
+    await unsafeRunEffect(effect, {
       layer: LiveProcess,
       onError: guardError('An error ocurred'),
     })

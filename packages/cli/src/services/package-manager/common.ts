@@ -26,7 +26,7 @@ export const makeScopedRun = (command: string, projectDirRef: Ref.Ref<string>) =
     return (scriptName: string, args: ReadonlyArray<string>) =>
       gen(function* ($) {
         const projectDir = yield* $(ensureProjectDir(processService, projectDirRef))
-        return yield* $(exec(`${command} ${scriptName} ${args.join(' ')}`, projectDir))
+        return yield* $(exec(`${command} ${scriptName} ${args.join(' ')}`.trim(), projectDir))
       })
   })
 
