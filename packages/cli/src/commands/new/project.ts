@@ -58,6 +58,10 @@ export default class Project extends Command {
       description: 'skip git initialization',
       default: false,
     }),
+    verbose: flags.boolean({
+      description: 'display full error messages',
+      default: false,
+    }),
   }
 
   public static args = [{ name: 'projectName' }]
@@ -66,15 +70,23 @@ export default class Project extends Command {
     const { args, flags } = this.parse(Project)
     const { projectName } = args
 
-    try {
-      if (!projectName) throw "You haven't provided a project name, but it is required, run with --help for usage"
-      assertNameIsCorrect(projectName)
-      await checkProjectAlreadyExists(projectName)
-      const parsedFlags = { projectName, ...flags }
-      await run(parsedFlags as Partial<ProjectInitializerConfig>, this.config.version)
-    } catch (error) {
-      console.error(error)
+    if (!projectName) throw "You haven't provided a project name, but it is required, run with --help for usage"
+    assertNameIsCorrect(projectName)
+    await checkProjectAlreadyExists(projectName)
+    const parsedFlags = { projectName, ...flags }
+    await run(parsedFlags as Partial<ProjectInitializerConfig>, this.config.version)
+  }
+
+  async catch(fullError: Error) {
+    const {
+      flags: { verbose },
+    } = this.parse(Project)
+
+    if (verbose) {
+      console.error(fullError)
     }
+
+    return super.catch(fullError)
   }
 }
 
