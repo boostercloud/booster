@@ -1,4 +1,5 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
+import Brand from '../common/brand'
 
 export function assertNameIsCorrect(name: string): void {
   // Current characters max length: 37
@@ -19,8 +20,8 @@ export function assertNameIsCorrect(name: string): void {
 }
 
 class ForbiddenProjectName extends Error {
-  constructor(public name: string, public restrictionText: string) {
-    super(`Project name cannot ${restrictionText}:\n\n    Found: '${name}'`)
+  constructor(public projectName: string, public restrictionText: string) {
+    super(Brand.dangerize(`Your Booster project name cannot ${restrictionText}. You choose "${projectName}"`))
   }
 }
 
