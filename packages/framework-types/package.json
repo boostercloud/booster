@@ -36,7 +36,9 @@
     "@types/graphql": "14.5.0",
     "graphql": "^15.5.1",
     "tslib": "^2.4.0",
-    "uuid": "8.3.2"
+    "uuid": "8.3.2",
+    "@effect-ts/core": "^0.60.4",
+    "@effect-ts/node": "~0.39.0"
   },
   "devDependencies": {
     "@boostercloud/eslint-config": "workspace:^1.0.0",

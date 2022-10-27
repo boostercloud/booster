@@ -1,4 +1,5 @@
 import Brand from './brand'
+import { orDieWith } from '@boostercloud/framework-types/src/effect'
 
 /**
  * Builds an error extracting its message from the "stdout" and "stderr" properties if present
@@ -10,3 +11,6 @@ export function wrapExecError(e: Error, prefix: string): Error {
   const { stdout, stderr } = e as any
   return new Error(Brand.dangerize(prefix) + '\n' + stdout + stderr)
 }
+
+export const guardError = (prefix: string) =>
+  orDieWith((reason: unknown) => new Error(Brand.dangerize(prefix) + '\n' + JSON.stringify(reason)))

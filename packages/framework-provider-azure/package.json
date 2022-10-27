@@ -25,7 +25,8 @@
     "@azure/identity": "~2.1.0",
     "@boostercloud/framework-common-helpers": "workspace:^1.0.0",
     "@boostercloud/framework-types": "workspace:^1.0.0",
-    "tslib": "^2.4.0"
+    "tslib": "^2.4.0",
+    "@effect-ts/core": "^0.60.4"
   },
   "devDependencies": {
     "@boostercloud/eslint-config": "workspace:^1.0.0",

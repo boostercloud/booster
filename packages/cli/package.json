@@ -29,10 +29,12 @@
     "mustache": "4.1.0",
     "ora": "^3.4.0",
     "ts-morph": "15.1.0",
-    "tslib": "^2.4.0"
+    "tslib": "^2.4.0",
+    "@effect-ts/core": "^0.60.4"
   },
   "devDependencies": {
     "@boostercloud/eslint-config": "workspace:^1.0.0",
+    "@boostercloud/application-tester": "workspace:^1.0.0",
     "@oclif/dev-cli": "^1.26",
     "@oclif/test": "^2.1",
     "@types/chai": "4.2.18",
@@ -100,7 +102,7 @@
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",
     "test:cli": "npm run test",
-    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+    "test": "nyc --extension .ts mocha --forbid-only  \"test/**/*.test.ts\""
   },
   "types": "lib/index.d.ts",
   "pnpm": {

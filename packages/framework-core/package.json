@@ -42,7 +42,8 @@
     "jwks-rsa": "2.0.3",
     "reflect-metadata": "0.1.13",
     "tslib": "^2.4.0",
-    "validator": "13.7.0"
+    "validator": "13.7.0",
+    "@effect-ts/core": "^0.60.4"
   },
   "devDependencies": {
     "@boostercloud/metadata-booster": "workspace:^1.0.0",

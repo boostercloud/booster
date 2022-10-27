@@ -1,5 +1,4 @@
 import * as fs from 'fs-extra'
-import * as path from 'path'
 import * as childProcessPromise from 'child-process-promise'
 import {
   generateConfigFiles,
@@ -10,6 +9,8 @@ import {
 } from '../../src/services/project-initializer'
 import { restore, replace, fake } from 'sinon'
 import { expect } from '../expect'
+import { makeTestPackageManager } from './package-manager/test.impl'
+import * as PackageManager from '../../src/services/package-manager/live.impl'
 
 describe('project initializer', (): void => {
   beforeEach(() => {
@@ -59,10 +60,10 @@ describe('project initializer', (): void => {
   })
 
   it('install dependencies', async () => {
+    const TestPackageManager = makeTestPackageManager()
+    replace(PackageManager, 'LivePackageManager', TestPackageManager.layer)
     await installDependencies(defaultProjectInitializerConfig)
-    expect(childProcessPromise.exec).to.have.been.calledWithMatch('npm install', {
-      cwd: path.join(process.cwd(), projectName),
-    })
+    expect(TestPackageManager.fakes.installAllDependencies).to.have.been.called
   })
 
   it('Generate config files', async () => {

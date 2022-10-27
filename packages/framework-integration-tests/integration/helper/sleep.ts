@@ -6,7 +6,7 @@ export async function waitForIt<TResult>(
   tryFunction: () => Promise<TResult>,
   checkResult: (result: TResult) => boolean | string,
   trialDelayMs = 1000,
-  timeoutMs = 60000
+  timeoutMs = 600000
 ): Promise<TResult> {
   console.debug('[waitForIt] start')
   const start = Date.now()

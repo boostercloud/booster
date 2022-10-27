@@ -1,44 +1,36 @@
-import { fake, replace, restore, SinonSpy, SinonStub, stub } from 'sinon'
+import { fake, replace, restore, SinonStub, stub } from 'sinon'
 import * as projectChecker from '../../src/services/project-checker'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 import * as environment from '../../src/services/environment'
-import * as dependencies from '../../src/services/dependencies'
-import * as childProcessPromise from 'child-process-promise'
+import * as PackageManager from '../../src/services/package-manager/live.impl'
+import { makeTestPackageManager } from './package-manager/test.impl'
 
 const rewire = require('rewire')
 const configService = rewire('../../src/services/config-service')
+const TestPackageManager = makeTestPackageManager()
 
 describe('configService', () => {
   const userProjectPath = 'path/to/project'
-  let fakeInstallProductionDependencies: SinonSpy
-  beforeEach(() => {
-    fakeInstallProductionDependencies = fake()
-    replace(dependencies, 'installProductionDependencies', fakeInstallProductionDependencies)
-  })
   afterEach(() => {
     restore()
+    TestPackageManager.reset()
   })
 
   describe('compileProject', () => {
-    beforeEach(() => {
-      replace(childProcessPromise, 'exec', fake.resolves({}))
-    })
-
     it('runs the npm command', async () => {
+      replace(PackageManager, 'LivePackageManager', TestPackageManager.layer)
       await configService.compileProject(userProjectPath)
-      expect(childProcessPromise.exec).to.have.been.calledWith('npm run clean && npm run build')
+      expect(TestPackageManager.fakes.runScript).to.have.calledWith('clean')
+      expect(TestPackageManager.fakes.runScript).to.have.calledWith('build')
     })
   })
 
   describe('cleanProject', () => {
-    beforeEach(() => {
-      replace(childProcessPromise, 'exec', fake.resolves({}))
-    })
-
     it('runs the npm command', async () => {
+      replace(PackageManager, 'LivePackageManager', TestPackageManager.layer)
       await configService.cleanProject(userProjectPath)
-      expect(childProcessPromise.exec).to.have.been.calledWith('npm run clean')
+      expect(TestPackageManager.fakes.runScript).to.have.been.calledWith('clean')
     })
   })
 

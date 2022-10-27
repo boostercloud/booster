@@ -455,7 +455,7 @@ describe('Events end-to-end tests', () => {
     })
     describe('the result of the queries involving many events', () => {
       let mockCartId: string
-      const numberOfProvisionedEvents = 150
+      const numberOfProvisionedEvents = 50
 
       beforeEach(async () => {
         const mutationPromises: Array<Promise<unknown>> = []
@@ -476,7 +476,12 @@ describe('Events end-to-end tests', () => {
             })
           )
         }
-        await Promise.all(mutationPromises)
+        try {
+          await Promise.all(mutationPromises)
+        } catch (e) {
+          console.log(JSON.stringify(e))
+          throw e
+        }
       })
       context('when doing a query that would return many (150) events', () => {
         it('returns the expected result', async () => {

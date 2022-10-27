@@ -9,16 +9,21 @@ import {
 import { restore, replace, fake, spy, stub } from 'sinon'
 import { logger } from '../../src/services/logger'
 import * as fs from 'fs-extra'
+import * as process from 'process'
 import { projectDir, ProjectInitializerConfig } from '../../src/services/project-initializer'
 import Prompter from '../../src/services/user-prompt'
 import { expect } from '../expect'
 
-describe('project checker', (): void => {
+describe('project checker', () => {
   afterEach(() => {
     restore()
   })
 
   describe('checkCurrentDirIsABoosterProject', () => {
+    beforeEach(() => {
+      restore()
+    })
+
     it('is a Booster project', async () => {
       replace(process, 'cwd', fake.returns(path.join(process.cwd(), 'test', 'fixtures', 'mock_project')))
       let exceptionThrown = false
@@ -125,6 +130,10 @@ describe('project checker', (): void => {
       replace(logger, 'info', fake.resolves({}))
     })
 
+    afterEach(() => {
+      restore()
+    })
+
     it("should print info message and do nothing if resource doesn't exist", async () => {
       const resourcePath = path.join('test', 'fixtures', 'mock_project', 'src', 'entities')
       const existsSyncStub = stub(fs, 'existsSync')
@@ -181,10 +190,18 @@ describe('project checker', (): void => {
       replace(logger, 'info', fake.resolves({}))
     })
 
+    afterEach(() => {
+      restore()
+    })
+
     describe('inside a Booster project', () => {
       //project version in mocked package.json is 1.11.2
       beforeEach(() => {
         replace(process, 'cwd', fake.returns(path.join(process.cwd(), 'test', 'fixtures', 'mock_project')))
+      })
+
+      afterEach(() => {
+        restore()
       })
 
       it('versions match', async () => {

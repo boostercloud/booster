@@ -19,7 +19,8 @@
     "@boostercloud/framework-types": "workspace:^1.0.0",
     "aws-sdk": "2.853.0",
     "graphql": "^15.5.1",
-    "tslib": "^2.4.0"
+    "tslib": "^2.4.0",
+    "@effect-ts/core": "^0.60.4"
   },
   "devDependencies": {
     "@boostercloud/eslint-config": "workspace:^1.0.0",

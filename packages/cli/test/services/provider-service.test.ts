@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { afterEach, describe } from 'mocha'
 import * as providerService from '../../src/services/provider-service'
 import { restore, fake } from 'sinon'
@@ -84,7 +83,7 @@ describe('providerService', () => {
         } as any
 
         await expect(providerService.startProvider(3000, fakeConfig)).to.eventually.be.rejectedWith(
-          `Attempted to perform the 'start' operation with a provider that does not support this feature, please check your environment configuration.`
+          "Attempted to perform the 'start' operation with a provider that does not support this feature, please check your environment configuration."
         )
       })
     })
