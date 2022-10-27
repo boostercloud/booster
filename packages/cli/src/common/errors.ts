@@ -12,6 +12,5 @@ export function wrapExecError(e: Error, prefix: string): Error {
   return new Error(Brand.dangerize(prefix) + '\n' + stdout + stderr)
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const guardError = (prefix: string) =>
   orDieWith((reason: unknown) => new Error(Brand.dangerize(prefix) + '\n' + JSON.stringify(reason)))

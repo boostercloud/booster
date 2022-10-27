@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from '../expect'
 import { fancy } from 'fancy-test'
 import { restore, fake, replace } from 'sinon'

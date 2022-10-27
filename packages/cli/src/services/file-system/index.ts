@@ -1,4 +1,4 @@
-import { deriveLifted, Effect, tag } from '@boostercloud/framework-types/src/effect'
+import { Effect, tag } from '@boostercloud/framework-types/src/effect'
 
 export class FileSystemError {
   readonly _tag = 'FileSystemError'
@@ -13,15 +13,3 @@ export interface FileSystemService {
 }
 
 export const FileSystemService = tag<FileSystemService>()
-
-/**
- * Helper SDK to be able to run service methods outside of the layers
- */
-export const fileSystemInternals = deriveLifted(FileSystemService)(
-  // Functions to export from the service
-  ['readDirectoryContents'],
-  // Constants to export from the service
-  [],
-  // Values returned from side effects in the service
-  []
-)

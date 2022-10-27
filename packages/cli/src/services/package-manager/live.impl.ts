@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { FileSystemService } from '../file-system'
 import { ProcessService } from '../process'
 import { PackageManagerService } from '.'

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { gen, Ref } from '@boostercloud/framework-types/src/effect'
 import { PackageManagerService } from '.'
 import { guardError } from '../../common/errors'
