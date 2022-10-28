@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-core",
+      "comment": "Fix runtime errors",
+      "type": "none"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core"
+}
