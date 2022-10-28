@@ -1,7 +1,7 @@
 import * as childProcess from 'child-process-promise'
 import * as process from 'process'
 import { ProcessService, ProcessError } from '.'
-import { Layer, tryCatch, tryCatchPromise } from '@boostercloud/framework-types/src/effect'
+import { Layer, tryCatch, tryCatchPromise } from '@boostercloud/framework-types/dist/effect'
 
 const exec = (command: string, cwd?: string) =>
   tryCatchPromise(

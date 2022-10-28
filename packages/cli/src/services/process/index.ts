@@ -1,4 +1,4 @@
-import { Effect, tag } from '@boostercloud/framework-types/src/effect'
+import { Effect, tag } from '@boostercloud/framework-types/dist/effect'
 
 export class ProcessError {
   readonly _tag = 'ProcessError'

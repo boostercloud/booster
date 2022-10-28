@@ -1,5 +1,5 @@
 import { fake } from 'sinon'
-import { gen, Layer, unsafeRunEffect } from '@boostercloud/framework-types/src/effect'
+import { gen, Layer, unsafeRunEffect } from '@boostercloud/framework-types/dist/effect'
 import { expect } from '../../expect'
 import { makeTestFileSystem } from '../file-system/test.impl'
 import { makeTestProcess } from '../process/test.impl'

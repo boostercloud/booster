@@ -1,5 +1,5 @@
 import { PackageManagerService } from '.'
-import { dieMessage, gen, Layer, orDie, Ref } from '@boostercloud/framework-types/src/effect'
+import { dieMessage, gen, Layer, orDie, Ref } from '@boostercloud/framework-types/dist/effect'
 import { makeScopedRun } from './common'
 import { guardError } from '../../common/errors'
 

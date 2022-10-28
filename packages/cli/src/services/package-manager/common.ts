@@ -1,4 +1,4 @@
-import { gen, Ref } from '@boostercloud/framework-types/src/effect'
+import { gen, Ref } from '@boostercloud/framework-types/dist/effect'
 import { PackageManagerService } from '.'
 import { guardError } from '../../common/errors'
 import { ProcessService } from '../process'
