@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import { ClassDeclaration, ClassInstancePropertyTypes, createWrappedNode, Node, SyntaxKind, Type } from 'ts-morph'
+// TODO: Import properly
 import * as ts from 'typescript'
 import { TypeGroup } from './metadata-types'
 

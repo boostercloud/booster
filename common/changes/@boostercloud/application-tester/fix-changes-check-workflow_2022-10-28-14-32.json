@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/application-tester",
+      "comment": "Fix runtime error",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@boostercloud/application-tester"
+}

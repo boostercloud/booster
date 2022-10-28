@@ -28,6 +28,9 @@ export class Importer {
     return files
   }
 
+  /**
+   * Returns true if the file is a JavaScript file.
+   */
   private static isJavaScriptFile(file: string): boolean {
     return file.match(/.*\.js$/) != null
   }

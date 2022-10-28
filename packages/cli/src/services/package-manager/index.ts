@@ -1,4 +1,4 @@
-import { Effect, tag } from '@boostercloud/framework-types/src/effect'
+import { Effect, tag } from '@boostercloud/framework-types/dist/effect'
 
 export class PackageManagerError {
   readonly _tag = 'PackageManagerError'

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/metadata-booster",
+      "comment": "Fix runtime error",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@boostercloud/metadata-booster"
+}

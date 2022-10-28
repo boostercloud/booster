@@ -1,7 +1,7 @@
 import { FileSystemService } from '../file-system'
 import { ProcessService } from '../process'
 import { PackageManagerService } from '.'
-import { gen, Layer, orDie } from '@boostercloud/framework-types/src/effect'
+import { gen, Layer, orDie } from '@boostercloud/framework-types/dist/effect'
 import { makeRushPackageManager } from './rush.impl'
 import { makePnpmPackageManager } from './pnpm.impl'
 import { makeYarnPackageManager } from './yarn.impl'

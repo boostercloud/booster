@@ -14,7 +14,7 @@ import * as prettierRc from '../templates/project/prettierrc-yaml'
 import * as mochaRc from '../templates/project/mocharc-yml'
 import { guardError, wrapExecError } from '../common/errors'
 import { PackageManagerService } from './package-manager'
-import { gen, unsafeRunEffect } from '@boostercloud/framework-types/src/effect'
+import { gen, unsafeRunEffect } from '@boostercloud/framework-types/dist/effect'
 import { LivePackageManager } from './package-manager/live.impl'
 
 export async function generateConfigFiles(config: ProjectInitializerConfig): Promise<void> {

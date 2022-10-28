@@ -1,3 +1,4 @@
+// TODO: Document thoroughly
 import { pipe } from '@effect-ts/core'
 import { Layer } from '@effect-ts/core/Effect/Layer'
 import { Effect, provideSomeLayer, runPromise } from '@effect-ts/core/Effect'

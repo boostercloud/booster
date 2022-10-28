@@ -5,7 +5,7 @@ import { checkItIsABoosterProject } from './project-checker'
 import { currentEnvironment } from './environment'
 import { createSandboxProject, removeSandboxProject } from '../common/sandbox'
 import { PackageManagerService } from './package-manager'
-import { gen, unsafeRunEffect } from '@boostercloud/framework-types/src/effect'
+import { gen, unsafeRunEffect } from '@boostercloud/framework-types/dist/effect'
 import { LivePackageManager } from './package-manager/live.impl'
 
 export const DEPLOYMENT_SANDBOX = path.join(process.cwd(), '.deploy')
