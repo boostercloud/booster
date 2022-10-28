@@ -102,6 +102,8 @@
   {
     "definitionName": "lockStepVersion",
     "policyName": "booster",
+    "nextBump": "patch",
+    "mainProject": "@boostercloud/framework-core",
     "version": "1.0.0"
   }
 ]
