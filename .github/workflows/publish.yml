@@ -8,18 +8,13 @@ on:
 
 jobs:
   publish-npm:
-    if: "!contains(github.event.head_commit.author.name, 'GITHUBACTION')
-      && (
-      startsWith(github.event.head_commit.message, 'BREAKING CHANGE:')
-      || startsWith(github.event.head_commit.message, 'feat')
-      || startsWith(github.event.head_commit.message, 'fix')
-      )"
+    if: "!contains(github.event.head_commit.author.name, 'GITHUBACTION')"
     runs-on: ubuntu-latest
     steps:
       - run: echo "$DATA"
         env:
           DATA: ${{ toJson(github.event.head_commit) }}
-      - uses: actions/checkout@v2-beta
+      - uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN_ACTION }}
 
@@ -43,16 +38,23 @@ jobs:
           node-version: 16.x
           registry-url: https://registry.npmjs.org/
 
-      - run: npx lerna bootstrap
-      - run: npx lerna run compile
+      - name: Rush Install
+        # Pinning to specific commit that has been audited. Only update 3rd party
+        # actions' commit hashes if you've audited them
+        uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
+        with:
+          build: true
 
-      # Discard all changes that might have occurred after bootstrap
+      # Discard all changes that might have occurred after change build
       - run: git stash
 
       - name: Authenticate with Registry
         run: npm config set "//registry.npmjs.org/:_authToken" "$NPM_TOKEN"
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
 
       - name: 'Az CLI login'
         uses: azure/login@v1.4.0
@@ -78,12 +80,14 @@ jobs:
         # This is not running the integration tests of other providers. Think how this could be done, as they require some other configuration
         # (as an example, check the k8s tests in "integration-test.yml", it requires a minicube environment)
         # Maybe running them in different jobs.
-        run: npx lerna run integration --stream
+        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration -v
 
       - name: Discard all the changes after integration tests
         run: git stash
 
-      - uses: theam/actions/lerna-semantic-publish@master
+      - name: Publish using Rush
+        run: node common/scripts/install-run-rush.js publish --apply --publish --include-all --target-branch origin/main --add-commit-details
+
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_ACTION }}

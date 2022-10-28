@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from '../expect'
 import { fancy } from 'fancy-test'
 import { restore, fake, replace } from 'sinon'
@@ -9,14 +8,17 @@ import * as providerService from '../../src/services/provider-service'
 import { oraLogger } from '../../src/services/logger'
 import { IConfig } from '@oclif/config'
 import * as environment from '../../src/services/environment'
-import * as dependencies from '../../src/services/dependencies'
+import * as packageManagerImpl from '../../src/services/package-manager/live.impl'
 import * as configService from '../../src/services/config-service'
 import * as projectChecker from '../../src/services/project-checker'
+import { makeTestPackageManager } from '../services/package-manager/test.impl'
 
 // With this trick we can test non exported symbols
 const rewire = require('rewire')
 const deploy = rewire('../../src/commands/deploy')
 const runTasks = deploy.__get__('runTasks')
+
+const TestPackageManager = makeTestPackageManager()
 
 describe('deploy', () => {
   beforeEach(() => {
@@ -24,6 +26,7 @@ describe('deploy', () => {
   })
 
   afterEach(() => {
+    TestPackageManager.reset()
     // Restore the default sinon sandbox here
     restore()
   })
@@ -57,7 +60,8 @@ describe('deploy', () => {
 
     context('when there is a valid index.ts', () => {
       fancy.stdout().it('Starts deployment', async (ctx) => {
-        replace(dependencies, 'installAllDependencies', fake())
+        // TODO: Once we migrate all services to the new way, we can remove this and just use the Test Layer for each of them
+        replace(packageManagerImpl, 'LivePackageManager', TestPackageManager.layer)
 
         const fakeProvider = {} as ProviderLibrary
 

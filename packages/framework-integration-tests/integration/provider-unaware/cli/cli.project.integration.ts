@@ -44,7 +44,7 @@ describe('Project', () => {
     removeFolders([SANDBOX_INTEGRATION_DIR])
   })
 
-  const cliPath = path.join('..', '..', 'cli', 'bin', 'run')
+  const cliPath = path.join('..', 'node_modules', '.bin', 'boost')
   const expectedOutputRegex = new RegExp(
     [
       'boost new',
@@ -116,7 +116,7 @@ describe('Project', () => {
     projectName: string,
     flags: Array<string> = [],
     promptAnswers?: PromptAnswers
-  ): Promise<string> => {
+  ): Promise<{ stdout: string; stderr: string }> => {
     const cliProcess = exec(`${cliPath} new:project ${projectName} ${flags.join(' ')}`, {
       cwd: SANDBOX_INTEGRATION_DIR,
     })
@@ -125,7 +125,8 @@ describe('Project', () => {
       await handlePrompt(cliProcess.childProcess, promptAnswers)
     }
 
-    return (await cliProcess).stdout
+    const { stdout, stderr } = await cliProcess
+    return { stdout, stderr }
   }
 
   const packageJsonAssertions = (
@@ -149,7 +150,7 @@ describe('Project', () => {
       } else {
         checkKeysAndValues
           ? expect(jsonContentObj[key]).to.deep.equals(expectedJsonObj[key])
-          : expect(Object.prototype.hasOwnProperty.call(jsonContentObj, key)).true
+          : expect(jsonContentObj).to.haveOwnProperty(key)
       }
     })
   }
@@ -166,10 +167,16 @@ describe('Project', () => {
   const projectDirContents = (projectName: string, dirName: string): Array<string> =>
     dirContents(projectPath(projectName, dirName))
 
-  const assertions = async (stdout: string, projectName: string, flags?: string[]): Promise<void> => {
+  const assertions = async (
+    output: { stdout: string; stderr: string },
+    projectName: string,
+    flags?: string[]
+  ): Promise<void> => {
+    const { stdout, stderr } = output
     const fileContents = projectFileContents.bind(null, projectName)
     const dirContents = projectDirContents.bind(null, projectName)
 
+    expect(stderr).to.be.empty
     expect(stdout).to.match(expectedOutputRegex)
 
     expect(dirContents('/src/commands')).is.empty
@@ -249,9 +256,9 @@ describe('Project', () => {
           '--skipInstall',
           '--skipGit',
         ]
-        const stdout = await execNewProject(projectName, flags)
+        const output = await execNewProject(projectName, flags)
 
-        await assertions(stdout, projectName)
+        await assertions(output, projectName)
       }).timeout(TEST_TIMEOUT)
 
       it('should create a new project using long flags to configure it', async () => {
@@ -268,29 +275,27 @@ describe('Project', () => {
           '--skipInstall',
           '--skipGit',
         ]
-        const stdout = await execNewProject(projectName, flags)
+        const output = await execNewProject(projectName, flags)
 
-        await assertions(stdout, projectName)
+        await assertions(output, projectName)
       }).timeout(TEST_TIMEOUT)
 
       context('with default parameters', async () => {
         const projectName = 'cart-demo-default'
-        const flags = ['--default']
-        let stdout: string
+        const flags = ['--default', '--skipInstall']
+        let output: { stdout: string; stderr: string }
 
         before(async () => {
-          stdout = await execNewProject(projectName, flags)
+          output = await execNewProject(projectName, flags)
         })
 
         it('generates the expected project', async () => {
-          await assertions(stdout, projectName, flags)
+          await assertions(output, projectName, flags)
         })
 
-        it('installs dependencies', () => {
-          expect(projectFileExists(projectName, 'node_modules')).to.be.true
-          expect(projectDirContents(projectName, 'node_modules')).not.to.be.empty
-          expect(projectFileExists(projectName, 'package-lock.json')).to.be.true
-        })
+        // We don't check for the dependencies installation at this point because it will pickup the `workspace:`
+        // protocol which is not supported out of a workspace.
+        it('installs dependencies', () => {})
 
         it('initializes git', () => {
           expect(projectFileExists(projectName, '.git')).to.be.true
@@ -309,7 +314,7 @@ describe('Project', () => {
           // Install those dependencies
           await exec('npm install --production --no-bin-links --no-optional', { cwd: fullProjectPath })
 
-          await expect(exec('npm run compile', { cwd: fullProjectPath })).to.be.eventually.fulfilled
+          await expect(exec('npm run build', { cwd: fullProjectPath })).to.be.eventually.fulfilled
         })
       })
 
@@ -335,9 +340,9 @@ describe('Project', () => {
           provider: 'default', // Just "hit enter" to choose the default one
         }
         // We skip dependencies and git installation to make this test faster
-        const stdout = await execNewProject(projectName, ['--skipInstall', '--skipGit'], promptAnswers)
+        const output = await execNewProject(projectName, ['--skipInstall', '--skipGit'], promptAnswers)
 
-        await assertions(stdout, projectName)
+        await assertions(output, projectName)
       }).timeout(TEST_TIMEOUT)
 
       it('should create a new project using a custom provider', async () => {
@@ -352,9 +357,9 @@ describe('Project', () => {
           provider: PROVIDER,
         }
         // We skip dependencies and git installation to make this test faster
-        const stdout = await execNewProject(projectName, ['--skipInstall', '--skipGit'], promptAnswers)
+        const output = await execNewProject(projectName, ['--skipInstall', '--skipGit'], promptAnswers)
 
-        await assertions(stdout, projectName)
+        await assertions(output, projectName)
       }).timeout(TEST_TIMEOUT)
     })
 
@@ -375,9 +380,9 @@ describe('Project', () => {
           '--skipInstall',
           '--skipGit',
         ]
-        const stdout = await execNewProject(projectName, flags, promptAnswers)
+        const output = await execNewProject(projectName, flags, promptAnswers)
 
-        await assertions(stdout, projectName)
+        await assertions(output, projectName)
       }).timeout(TEST_TIMEOUT)
     })
   })
@@ -409,9 +414,9 @@ describe('Project', () => {
           '--skipInstall',
           '--skipGit',
         ]
-        const stdout = await execNewProject('cart-demo-invalid-provider', flags)
+        const output = await execNewProject('cart-demo-invalid-provider', flags)
 
-        expect(stdout).to.match(expectedOutputRegex)
+        expect(output.stdout).to.match(expectedOutputRegex)
       }).timeout(TEST_TIMEOUT)
     })
   })

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Switch to rush, upgrade deps, remove npm internal usage, and more!",
+      "type": "major",
+      "packageName": "@boostercloud/framework-provider-azure-infrastructure"
+    }
+  ],
+  "packageName": "@boostercloud/framework-provider-azure-infrastructure",
+  "email": "nick@booster.cloud"
+}

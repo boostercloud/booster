@@ -7,8 +7,10 @@ export const template = `{
   "version": "{{{version}}}",
   "author": "{{{author}}}",
   "dependencies": {
+    "tslib": "^2.4.0",
     "@boostercloud/framework-core": "^${VERSION}",
     "@boostercloud/framework-types": "^${VERSION}",
+    "@boostercloud/framework-common-helpers": "^${VERSION}",
     "{{{providerPackageName}}}": "^${VERSION}"
   },
   "devDependencies": {
@@ -27,7 +29,7 @@ export const template = `{
     "@types/jsonwebtoken": "^8.5.1",
     "nyc": "15.1.0",
     "prettier":  "2.3.0",
-    "typescript": "^4.7.4",
+    "typescript": "4.7.4",
     "ts-node": "9.1.1",
     "@types/node": "15.0.2",
     "ttypescript": "1.5.13"
@@ -42,7 +44,7 @@ export const template = `{
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "compile": "ttsc -b tsconfig.json",
+    "build": "ttsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "test": "AWS_SDK_LOAD_CONFIG=true BOOSTER_ENV=test nyc --extension .ts mocha --forbid-only \\"test/**/*.test.ts\\""
   },

@@ -11,13 +11,21 @@ jobs:
     name: AWS Deployment Integration Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Rush Install
+        # Pinning to specific commit that has been audited. Only update 3rd party
+        # actions' commit hashes if you've audited them
+        uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
         with:
-          node-version: 16.x
-      - run: npx lerna bootstrap
-      - run: npx lerna run compile
-      - run: npx lerna run integration/aws-deploy --stream
+          build: true
+
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
+
+      - name: Deploy to AWS
+        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/aws-deploy -v
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
@@ -29,13 +37,21 @@ jobs:
       - aws-deploy-integration-tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Rush Install
+        # Pinning to specific commit that has been audited. Only update 3rd party
+        # actions' commit hashes if you've audited them
+        uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
         with:
-          node-version: 16.x
-      - run: npx lerna bootstrap
-      - run: npx lerna run compile
-      - run: npx lerna run integration/aws-func --stream
+          build: true
+
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
+
+      - name: AWS Functionality
+        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/aws-func -v
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
@@ -47,13 +63,21 @@ jobs:
       - aws-func-integration-tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Rush Install
+        # Pinning to specific commit that has been audited. Only update 3rd party
+        # actions' commit hashes if you've audited them
+        uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
         with:
-          node-version: 16.x
-      - run: npx lerna bootstrap
-      - run: npx lerna run compile
-      - run: npx lerna run integration/aws-end-to-end --stream
+          build: true
+
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
+
+      - name: AWS end to end
+        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/aws-end-to-end -v
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
@@ -65,13 +89,21 @@ jobs:
       - aws-end-to-end-tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Rush Install
+        # Pinning to specific commit that has been audited. Only update 3rd party
+        # actions' commit hashes if you've audited them
+        uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
         with:
-          node-version: 16.x
-      - run: npx lerna bootstrap
-      - run: npx lerna run compile
-      - run: npx lerna run integration/aws-load --stream
+          build: true
+
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
+
+      - name: AWS load tests
+        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/aws-load -v
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
@@ -85,13 +117,21 @@ jobs:
       - aws-load-tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Rush Install
+        # Pinning to specific commit that has been audited. Only update 3rd party
+        # actions' commit hashes if you've audited them
+        uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
         with:
-          node-version: 16.x
-      - run: npx lerna bootstrap
-      - run: npx lerna run compile
-      - run: npx lerna run integration/aws-nuke --stream
+          build: true
+
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
+
+      - name: AWS nuke
+        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/aws-nuke -v
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
@@ -101,25 +141,41 @@ jobs:
     name: CLI Integration Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Rush Install
+        # Pinning to specific commit that has been audited. Only update 3rd party
+        # actions' commit hashes if you've audited them
+        uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
         with:
-          node-version: 16.x
-      - run: npx lerna bootstrap
-      - run: npx lerna run compile
-      - run: npx lerna run integration/cli --stream
+          build: true
+
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
+
+      - name: CLI Tests
+        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/cli -v
 
   local-integration-tests:
     name: Local Environment Integration Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Rush Install
+        # Pinning to specific commit that has been audited. Only update 3rd party
+        # actions' commit hashes if you've audited them
+        uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
         with:
-          node-version: 16.x
-      - run: npx lerna bootstrap
-      - run: npx lerna run compile
-      - run: npx lerna run integration/local --stream
+          build: true
+
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
+
+      - name: Local Integration Tests
+        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/local -v
 
   azure-deploy-integration-tests:
     name: Azure Deployment Integration Test
@@ -130,19 +186,27 @@ jobs:
         with:
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
 
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Rush Install
+        # Pinning to specific commit that has been audited. Only update 3rd party
+        # actions' commit hashes if you've audited them
+        uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
         with:
-          node-version: 16.x
-      - run: npx lerna bootstrap
-      - run: npx lerna run compile
-      - run: npx lerna run integration/azure-deploy --stream
+          build: true
+
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
+
+      - name: Deploy to Azure
+        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/azure-deploy -v
         env:
           AZURE_APP_ID: ${{ secrets.AZURE_CLIENTID }}
           AZURE_SECRET: ${{ secrets.AZURE_SECRET }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
-          REGION: East US
+          REGION: Central US
           publisherEmail: noreply@booster.cloud
           publisherName: Booster App
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENTID }}
@@ -161,19 +225,27 @@ jobs:
         with:
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
 
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Rush Install
+        # Pinning to specific commit that has been audited. Only update 3rd party
+        # actions' commit hashes if you've audited them
+        uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
         with:
-          node-version: 16.x
-      - run: npx lerna bootstrap
-      - run: npx lerna run compile
-      - run: npx lerna run integration/azure-end-to-end --stream
+          build: true
+
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
+
+      - name: Azure end to end
+        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/azure-end-to-end -v
         env:
           AZURE_APP_ID: ${{ secrets.AZURE_CLIENTID }}
           AZURE_SECRET: ${{ secrets.AZURE_SECRET }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
-          REGION: East US
+          REGION: Central US
           publisherEmail: noreply@booster.cloud
           publisherName: Booster App
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENTID }}
@@ -192,19 +264,27 @@ jobs:
         with:
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
 
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Rush Install
+        # Pinning to specific commit that has been audited. Only update 3rd party
+        # actions' commit hashes if you've audited them
+        uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
         with:
-          node-version: 16.x
-      - run: npx lerna bootstrap
-      - run: npx lerna run compile
-      - run: npx lerna run integration/azure-func --stream
+          build: true
+
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
+
+      - name: Azure func
+        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/azure-func -v
         env:
           AZURE_APP_ID: ${{ secrets.AZURE_CLIENTID }}
           AZURE_SECRET: ${{ secrets.AZURE_SECRET }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
-          REGION: East US
+          REGION: Central US
           publisherEmail: noreply@booster.cloud
           publisherName: Booster App
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENTID }}
@@ -225,19 +305,27 @@ jobs:
         with:
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
 
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Rush Install
+        # Pinning to specific commit that has been audited. Only update 3rd party
+        # actions' commit hashes if you've audited them
+        uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
         with:
-          node-version: 16.x
-      - run: npx lerna bootstrap
-      - run: npx lerna run compile
-      - run: npx lerna run integration/azure-nuke --stream
+          build: true
+
+      - name: Pack local dependencies for integration tests
+        run: node common/scripts/install-run-rush.js pack-integration-deps
+
+      - name: Azure nuke
+        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/azure-nuke -v
         env:
           AZURE_APP_ID: ${{ secrets.AZURE_CLIENTID }}
           AZURE_SECRET: ${{ secrets.AZURE_SECRET }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
-          REGION: East US
+          REGION: Central US
           publisherEmail: noreply@booster.cloud
           publisherName: Booster App
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENTID }}
@@ -253,7 +341,7 @@ jobs:
   #  env:
   #    KUBECONFIG: '/home/runner/.kube/config'
   #  steps:
-  #    - uses: actions/checkout@v2
+  #    - uses: actions/checkout@v3
   #    - uses: manusa/actions-setup-minikube@v2.3.1
   #      with:
   #        minikube version: 'v1.18.1'
@@ -270,4 +358,3 @@ jobs:
   #    - run: npx lerna run compile
   #    - run: npx lerna run integration/k8s-deploy --stream
   #    - run: npx lerna run integration/k8s-nuke --stream
-
