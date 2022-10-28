@@ -99,10 +99,4 @@
   //
   //   // "includeEmailInChangeFile": true
   // }
-  {
-    "policyName": "booster",
-    "definitionName": "lockStepVersion",
-    "version": "1.0.0",
-    "nextBump": "patch"
-  }
 ]
