@@ -1,2 +1,6 @@
 #!/bin/sh
-echo Remember to execute rush lint:fix
+echo '#############################################'
+echo '#                                           #'
+echo '#  ⚠️  Remember to execute `rush lint:fix` ⚠️ #'
+echo '#                                           #'
+echo '#############################################'
