@@ -19,6 +19,7 @@ interface StateStoreYaml {
     }
   }
 }
+// Manager for Dapr
 export class DaprManager {
   private eventStoreRepo = 'https://charts.bitnami.com/bitnami'
   private eventStoreRepoName = 'bitnami'

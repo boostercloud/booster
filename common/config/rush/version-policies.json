@@ -99,4 +99,9 @@
   //
   //   // "includeEmailInChangeFile": true
   // }
+  {
+    "definitionName": "lockStepVersion",
+    "policyName": "booster",
+    "version": "1.0.0"
+  }
 ]

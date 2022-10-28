@@ -7,12 +7,12 @@ export class AzureCounters {
     this.appName = appName
     this.db = new CosmosClient(cosmosConnectionString)
   }
-  //TODO Azure Does not support Subscriptions
+  //TODO: Azure Does not support Subscriptions
   public async subscriptions(): Promise<number> {
     return 0
   }
 
-  //TODO Azure Does not support Subscriptions
+  //TODO: Azure Does not support Subscriptions
   public async connections(): Promise<number> {
     return 0
   }

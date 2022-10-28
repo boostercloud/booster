@@ -2,6 +2,7 @@
 import * as GraphQLAdapter from './graphql-adapter'
 import { httpStatusCodeFor, toClassTitle } from '@boostercloud/framework-types'
 
+// Wrapper to return through GraphQL
 export const requestSucceeded = async (_body?: unknown): Promise<unknown> => {
   return GraphQLAdapter.handleResult(_body)
 }

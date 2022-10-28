@@ -1,3 +1,4 @@
+// We should enable all of these one by one creating PRs
 'use strict'
 module.exports = {
   env: {
