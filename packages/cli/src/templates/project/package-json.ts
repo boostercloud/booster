@@ -7,6 +7,7 @@ export const template = `{
   "version": "{{{version}}}",
   "author": "{{{author}}}",
   "dependencies": {
+    "tslib": "^2.4.0",
     "@boostercloud/framework-core": "^${VERSION}",
     "@boostercloud/framework-types": "^${VERSION}",
     "@boostercloud/framework-common-helpers": "^${VERSION}",
@@ -31,6 +32,7 @@ export const template = `{
     "typescript": "4.7.4",
     "ts-node": "9.1.1",
     "@types/node": "15.0.2",
+    "reflect-metadata": "0.1.13",
     "ttypescript": "1.5.13"
   },
   "engines": {
