@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-common-helpers",
+      "comment": "Fix runtime error",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@boostercloud/framework-common-helpers"
+}
