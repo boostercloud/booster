@@ -2,7 +2,7 @@ import * as Oclif from '@oclif/command'
 import BaseCommand from '../../common/base-command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
-import { generate, template } from '../../services/generator'
+import { generate, prepareFields, template } from '../../services/generator'
 import {
   HasName,
   HasFields,
@@ -30,7 +30,7 @@ export default class Command extends BaseCommand {
   public async run(): Promise<void> {
     const { args, flags } = this.parse(Command)
     try {
-      const fields = flags.fields || []
+      const fields = prepareFields(flags.fields)
       if (!args.commandName) throw "You haven't provided a command name, but it is required, run with --help for usage"
       return run(args.commandName, fields)
     } catch (error) {

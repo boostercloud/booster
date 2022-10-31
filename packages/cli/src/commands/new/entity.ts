@@ -13,7 +13,7 @@ import {
   ImportDeclaration,
 } from '../../services/generator/target'
 import * as path from 'path'
-import { generate, template } from '../../services/generator'
+import { generate, prepareFields, template } from '../../services/generator'
 import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 import { classNameToFileName } from '../../common/filenames'
 
@@ -39,7 +39,7 @@ export default class Entity extends BaseCommand {
     const { args, flags } = this.parse(Entity)
 
     try {
-      const fields = flags.fields || []
+      const fields = prepareFields(flags.fields)
       const events = flags.reduces || []
       if (!args.entityName) throw "You haven't provided an entity name, but it is required, run with --help for usage"
       return run(args.entityName, fields, events)

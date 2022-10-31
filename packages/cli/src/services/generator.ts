@@ -36,6 +36,17 @@ export function filePath<TInfo>(target: FileDir<TInfo>): string {
   return path.join(process.cwd(), target.placementDir, `${fileName}${target.extension}`)
 }
 
+export function prepareFields(fields: string[] = []): string[] {
+  return fields
+    .flatMap((field: string) => field.split(' '))
+    .filter((field: string) => field)
+    .sort((aField: string, bField: string) => {
+      if (aField.includes('?') > bField.includes('?')) return 1
+      if (aField.includes('?') < bField.includes('?')) return -1
+      return 0
+    })
+}
+
 /**
  * Split path string to get resource folder name
  *

@@ -10,7 +10,7 @@ import {
   parseFields,
   ImportDeclaration,
 } from '../../services/generator/target'
-import { generate, template } from '../../services/generator'
+import { generate, prepareFields, template } from '../../services/generator'
 import * as path from 'path'
 import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 
@@ -31,7 +31,7 @@ export default class Event extends BaseCommand {
     const { args, flags } = this.parse(Event)
 
     try {
-      const fields = flags.fields || []
+      const fields = prepareFields(flags.fields)
       if (!args.eventName) throw "You haven't provided an event name, but it is required, run with --help for usage"
       return run(args.eventName, fields)
     } catch (error) {
