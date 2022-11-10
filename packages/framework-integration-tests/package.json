@@ -84,7 +84,6 @@
     "ttypescript": "1.5.13",
     "typescript": "4.7.4",
     "ws": "7.4.5",
-    "yaml": "1.10.2",
     "sinon": "9.2.3",
     "eslint-plugin-unicorn": "~44.0.2"
   },
