@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-core",
+      "comment": "Added missing dependencies to @boostercloud/framework-provider-aws-infrastructure",
+      "type": "none"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core"
+}

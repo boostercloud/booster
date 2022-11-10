@@ -439,7 +439,6 @@ importers:
       ttypescript: 1.5.13
       typescript: 4.7.4
       ws: 7.4.5
-      yaml: 1.10.2
     dependencies:
       '@boostercloud/framework-common-helpers': link:../framework-common-helpers
       '@boostercloud/framework-core': link:../framework-core
@@ -516,7 +515,6 @@ importers:
       ttypescript: 1.5.13_6oasmw356qmm23djlsjgkwvrtm
       typescript: 4.7.4
       ws: 7.4.5
-      yaml: 1.10.2
 
   ../../packages/framework-provider-aws:
     specifiers:
@@ -621,6 +619,7 @@ importers:
       '@boostercloud/framework-provider-aws': workspace:^1.0.0
       '@boostercloud/framework-types': workspace:^1.0.0
       '@effect-ts/core': ^0.60.4
+      '@types/archiver': 5.1.0
       '@types/aws-lambda': 8.10.48
       '@types/aws-sdk': 2.7.0
       '@types/chai': 4.2.18
@@ -633,6 +632,7 @@ importers:
       '@types/sinon-chai': 3.2.5
       '@typescript-eslint/eslint-plugin': ^5.0.0
       '@typescript-eslint/parser': ^5.0.0
+      archiver: 5.3.0
       aws-cdk: ^1.170.0
       aws-sdk: 2.853.0
       cdk-assets: ~2.39.1
@@ -658,6 +658,7 @@ importers:
       tslib: ^2.4.0
       typescript: 4.7.4
       velocityjs: ^2.0.0
+      yaml: 1.10.2
     dependencies:
       '@aws-cdk/assets': 1.179.0_bs7morulzjijy5bmj2ufqn7rwy
       '@aws-cdk/aws-apigateway': 1.179.0_566o4syj2bu6qibmnabjzxglla
@@ -680,6 +681,7 @@ importers:
       '@boostercloud/framework-provider-aws': link:../framework-provider-aws
       '@boostercloud/framework-types': link:../framework-types
       '@effect-ts/core': 0.60.4
+      archiver: 5.3.0
       aws-cdk: 1.179.0
       aws-sdk: 2.853.0
       cdk-assets: 2.39.1
@@ -687,8 +689,10 @@ importers:
       constructs: 3.4.137
       promptly: 3.2.0
       tslib: 2.4.0
+      yaml: 1.10.2
     devDependencies:
       '@boostercloud/eslint-config': link:../../tools/eslint-config
+      '@types/archiver': 5.1.0
       '@types/aws-lambda': 8.10.48
       '@types/aws-sdk': 2.7.0
       '@types/chai': 4.2.18
@@ -1672,6 +1676,7 @@ packages:
       '@aws-cdk/core': 1.179.0_wobw5cuxxyp6fekxiie3x626sy
       '@aws-cdk/region-info': 1.179.0
       constructs: 3.4.137
+      yaml: 1.10.2
     transitivePeerDependencies:
       - '@aws-cdk/aws-lambda'
       - '@aws-cdk/cx-api'
@@ -1762,6 +1767,7 @@ packages:
       '@aws-cdk/core': 1.179.0_wobw5cuxxyp6fekxiie3x626sy
       '@aws-cdk/custom-resources': 1.179.0_6dssxli5n5uhr4uyfejvkvakyy
       constructs: 3.4.137
+      punycode: 2.1.1
     transitivePeerDependencies:
       - '@aws-cdk/aws-ec2'
       - '@aws-cdk/aws-logs'
@@ -2301,6 +2307,7 @@ packages:
       '@aws-cdk/aws-s3-assets': 1.179.0_oa36ahfhbsqihtei6hr4wrq4fq
       '@aws-cdk/core': 1.179.0_wobw5cuxxyp6fekxiie3x626sy
       '@aws-cdk/lambda-layer-awscli': 1.179.0_yzkn7ewr3kat27gz2azfbc3o5a
+      case: 1.6.3
       constructs: 3.4.137
     transitivePeerDependencies:
       - '@aws-cdk/assets'
@@ -2525,6 +2532,9 @@ packages:
   /@aws-cdk/cloud-assembly-schema/1.179.0:
     resolution: {integrity: sha512-UE/4RXmO2T+lYO07R3B5+vTUNDn/wVU+nFWADNiDpQmwJpde1lxhpwPb8CXCwxob9/eK4FjsVNRyzXConY6aQw==}
     engines: {node: '>= 14.15.0'}
+    dependencies:
+      jsonschema: 1.4.1
+      semver: 7.3.8
     dev: false
     bundledDependencies:
       - jsonschema
@@ -2533,6 +2543,9 @@ packages:
   /@aws-cdk/cloud-assembly-schema/2.39.1:
     resolution: {integrity: sha512-lSVaaedXWeK08uoq0IXDCspz9U/H4qIERemdsMQrMUDTiUe/JBby7vtmyMvOdEscE8GMAmiOzoPmAE0Uf+yw5A==}
     engines: {node: '>= 14.15.0'}
+    dependencies:
+      jsonschema: 1.4.1
+      semver: 7.3.8
     dev: false
     bundledDependencies:
       - jsonschema
@@ -2561,7 +2574,11 @@ packages:
       '@aws-cdk/cloud-assembly-schema': 1.179.0
       '@aws-cdk/cx-api': 1.179.0
       '@aws-cdk/region-info': 1.179.0
+      '@balena/dockerignore': 1.0.2
       constructs: 3.4.137
+      fs-extra: 9.1.0
+      ignore: 5.2.0
+      minimatch: 3.1.2
     dev: false
     bundledDependencies:
       - fs-extra
@@ -2599,6 +2616,7 @@ packages:
     engines: {node: '>= 14.15.0'}
     dependencies:
       '@aws-cdk/cloud-assembly-schema': 1.179.0
+      semver: 7.3.8
     dev: false
     bundledDependencies:
       - semver
@@ -2608,6 +2626,7 @@ packages:
     engines: {node: '>= 14.15.0'}
     dependencies:
       '@aws-cdk/cloud-assembly-schema': 2.39.1
+      semver: 7.3.8
     dev: false
     bundledDependencies:
       - semver
@@ -2998,6 +3017,10 @@ packages:
       '@babel/helper-validator-identifier': 7.19.1
       to-fast-properties: 2.0.0
 
+  /@balena/dockerignore/1.0.2:
+    resolution: {integrity: sha512-wMue2Sy4GAVTk6Ic4tJVcnfdau+gx2EnG7S+uAEe+TWJFqE4YoWN4/H8MSLj4eYJKxGg26lZwboEniNiNwZQ6Q==}
+    dev: false
+
   /@cdktf/hcl2cdk/0.12.3:
     resolution: {integrity: sha512-8LEFkMZPIN2MsGFtZsrGEAbNI6IeFpuYQr0ygr9k35mltJkVrNtPT7Rar0BL5BojFxVR59/2J0xPErUuci4w7Q==}
     dependencies:
@@ -3037,6 +3060,7 @@ packages:
       cdktf: 0.7.0_constructs@10.1.142
       constructs: 10.1.142
     dev: false
+    bundledDependencies: []
 
   /@cdktf/provider-generator/0.12.3:
     resolution: {integrity: sha512-ThzC83+IpRAqZ0cYabMbE/gQUaZctFvhrFBv+bAc80iDowUbVFiGNtDG/Vb1h9XttMXcFYrH6sj3yHBplTPW1A==}
@@ -4460,7 +4484,6 @@ packages:
       readdir-glob: 1.1.2
       tar-stream: 2.2.0
       zip-stream: 4.1.0
-    dev: false
 
   /archy/1.0.0:
     resolution: {integrity: sha512-Xg+9RwCg/0p32teKdGMPTPnVXKD0w3DfHnFTficozsAgsvq2XenPJq/MYpzzQ/v8zrOyJn6Ds39VA4JIDwFfqw==}
@@ -4874,7 +4897,10 @@ packages:
     peerDependencies:
       constructs: ^10.0.25
     dependencies:
+      archiver: 5.3.1
       constructs: 10.1.142
+      json-stable-stringify: 1.0.2
+      semver: 7.3.8
     bundledDependencies:
       - archiver
       - json-stable-stringify
@@ -4885,6 +4911,7 @@ packages:
     peerDependencies:
       constructs: ^10.0.0
     dependencies:
+      archiver: 5.3.0
       constructs: 10.1.142
     bundledDependencies:
       - archiver
@@ -7735,6 +7762,11 @@ packages:
   /json-stable-stringify-without-jsonify/1.0.1:
     resolution: {integrity: sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==}
 
+  /json-stable-stringify/1.0.2:
+    resolution: {integrity: sha512-eunSSaEnxV12z+Z73y/j5N37/In40GK4GmsSy+tEHJMxknvqnA7/djeYtAgW0GsWHUfg+847WJjKaEylk2y09g==}
+    dependencies:
+      jsonify: 0.0.1
+
   /json-stringify-safe/5.0.1:
     resolution: {integrity: sha512-ZClg6AaYvamvYEE82d3Iyd3vSSIjQ+odgjaTzRuO3s7toCdFKczob2i0zCh7JE8kWn17yvAWhUVxvqGwUalsRA==}
 
@@ -7762,9 +7794,16 @@ packages:
     optionalDependencies:
       graceful-fs: 4.2.10
 
+  /jsonify/0.0.1:
+    resolution: {integrity: sha512-2/Ki0GcmuqSrgFyelQq9M05y7PS0mEwuIzrf3f1fPqkVDVRvZrPZtVSMHxdgo8Aq0sxAOb/cr2aqqA3LeWHVPg==}
+
   /jsonpath-plus/0.19.0:
     resolution: {integrity: sha512-GSVwsrzW9LsA5lzsqe4CkuZ9wp+kxBb2GwNniaWzI2YFn5Ig42rSW8ZxVpWXaAfakXNrx5pgY5AbQq7kzX29kg==}
     engines: {node: '>=6.0'}
+
+  /jsonschema/1.4.1:
+    resolution: {integrity: sha512-S6cATIPVv1z0IlxdN+zUk5EPjkGCdnhN4wVSBlvoUO1tOLJootbo9CquNJmbIh4yikWHiUedhRYrNPn1arpEmQ==}
+    dev: false
 
   /jsonwebtoken/8.5.1:
     resolution: {integrity: sha512-XjwVfRS6jTMsqYs0EsuJ4LGxXV14zQybNd4L2r0UvbVnSF9Af8x7p5MzbJ90Ioz/9TI41/hTCvznF/loiSzn8w==}
@@ -10832,7 +10871,7 @@ packages:
   /yaml/1.10.2:
     resolution: {integrity: sha512-r3vXyErRCYJ7wg28yvBY5VSoAF8ZvlcW9/BwUzEtUsjvX/DKs24dIkuwjtuprwJJHsbyUbLApepYTR1BN4uHrg==}
     engines: {node: '>= 6'}
-    dev: true
+    dev: false
 
   /yamljs/0.3.0:
     resolution: {integrity: sha512-C/FsVVhht4iPQYXOInoxUM/1ELSf9EsgKH34FofQOp6hwCPrW4vG4w5++TED3xRUo8gD7l0P1J1dLlDYzODsTQ==}

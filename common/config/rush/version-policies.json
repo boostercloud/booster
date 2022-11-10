@@ -104,6 +104,6 @@
     "policyName": "booster",
     "nextBump": "patch",
     "mainProject": "@boostercloud/framework-core",
-    "version": "1.0.0"
+    "version": "1.0.1"
   }
 ]
