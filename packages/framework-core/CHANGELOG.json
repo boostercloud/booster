@@ -1,0 +1,17 @@
+{
+  "name": "@boostercloud/framework-core",
+  "entries": [
+    {
+      "version": "1.0.2",
+      "tag": "@boostercloud/framework-core_v1.0.2",
+      "date": "Fri, 11 Nov 2022 00:15:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added missing dependencies to @boostercloud/framework-provider-aws-infrastructure"
+          }
+        ]
+      }
+    }
+  ]
+}
