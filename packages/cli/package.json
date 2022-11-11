@@ -1,7 +1,7 @@
 {
   "name": "@boostercloud/cli",
   "description": "CLI of the Booster Cloud Framework, the next level of abstraction for cloud-native applications",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
   "publishConfig": {
@@ -12,8 +12,8 @@
   },
   "bugs": "https://github.com/boostercloud/booster/issues",
   "dependencies": {
-    "@boostercloud/framework-core": "workspace:^1.0.0",
-    "@boostercloud/framework-types": "workspace:^1.0.0",
+    "@boostercloud/framework-core": "workspace:^1.0.2",
+    "@boostercloud/framework-types": "workspace:^1.0.2",
     "@oclif/command": "^1.8",
     "@oclif/config": "^1.18",
     "@oclif/errors": "^1.3",
@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "@boostercloud/eslint-config": "workspace:^1.0.0",
-    "@boostercloud/application-tester": "workspace:^1.0.0",
+    "@boostercloud/application-tester": "workspace:^1.0.2",
     "@oclif/dev-cli": "^1.26",
     "@oclif/test": "^2.1",
     "@types/chai": "4.2.18",
