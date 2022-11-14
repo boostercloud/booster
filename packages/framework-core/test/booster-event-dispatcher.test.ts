@@ -220,7 +220,7 @@ describe('BoosterEventDispatcher', () => {
       })
 
       it('does nothing and does not throw if there are no event handlers', async () => {
-        replace(RegisterHandler, 'handle', fake())
+        replace(RegisterHandler, 'flush', fake())
         const boosterEventDispatcher = BoosterEventDispatcher as any
         // We try first with null array of event handlers
         config.eventHandlers[SomeEvent.name] = null as any
@@ -236,7 +236,7 @@ describe('BoosterEventDispatcher', () => {
         const fakeHandler2 = fake()
         config.eventHandlers[SomeEvent.name] = [{ handle: fakeHandler1 }, { handle: fakeHandler2 }]
 
-        replace(RegisterHandler, 'handle', fake())
+        replace(RegisterHandler, 'flush', fake())
 
         const boosterEventDispatcher = BoosterEventDispatcher as any
         await boosterEventDispatcher.dispatchEntityEventsToEventHandlers([someEvent], config)
@@ -260,14 +260,14 @@ describe('BoosterEventDispatcher', () => {
         })
         config.eventHandlers[SomeEvent.name] = [{ handle: fakeHandler1 }, { handle: fakeHandler2 }]
 
-        replace(RegisterHandler, 'handle', fake())
+        replace(RegisterHandler, 'flush', fake())
 
         const boosterEventDispatcher = BoosterEventDispatcher as any
         await boosterEventDispatcher.dispatchEntityEventsToEventHandlers([someEvent], config)
 
-        expect(RegisterHandler.handle).to.have.been.calledTwice
-        expect(RegisterHandler.handle).to.have.been.calledWith(config, capturedRegister1)
-        expect(RegisterHandler.handle).to.have.been.calledWith(config, capturedRegister2)
+        expect(RegisterHandler.flush).to.have.been.calledTwice
+        expect(RegisterHandler.flush).to.have.been.calledWith(config, capturedRegister1)
+        expect(RegisterHandler.flush).to.have.been.calledWith(config, capturedRegister2)
       })
 
       it('waits for async event handlers to finish', async () => {
@@ -279,12 +279,12 @@ describe('BoosterEventDispatcher', () => {
         })
         config.eventHandlers[SomeEvent.name] = [{ handle: fakeHandler }]
 
-        replace(RegisterHandler, 'handle', fake())
+        replace(RegisterHandler, 'flush', fake())
 
         const boosterEventDispatcher = BoosterEventDispatcher as any
         await boosterEventDispatcher.dispatchEntityEventsToEventHandlers([someEvent], config)
 
-        expect(RegisterHandler.handle).to.have.been.calledWith(config, capturedRegister)
+        expect(RegisterHandler.flush).to.have.been.calledWith(config, capturedRegister)
         expect(capturedRegister.eventList[0]).to.be.deep.equal(someEvent.value)
       })
     })

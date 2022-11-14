@@ -20,14 +20,30 @@ const boosterEventsTypesNames: Array<string> = [
 ]
 
 export class RegisterHandler {
-  public static async handle(config: BoosterConfig, register: Register): Promise<void> {
+  public static async flush(
+    config: BoosterConfig,
+    register: Register,
+    extraEvents?: Array<EventInterface>
+  ): Promise<void> {
+    if (extraEvents && extraEvents.length > 0) {
+      register.eventList.push(...extraEvents)
+    }
+
     if (register.eventList.length == 0) {
       return
     }
+
     return config.provider.events.store(
       register.eventList.map(RegisterHandler.wrapEvent.bind(null, register, config)),
       config
     )
+  }
+
+  /**
+   * @deprecated Use flush
+   */
+  public static async handle(config: BoosterConfig, register: Register): Promise<void> {
+    await this.flush(config, register)
   }
 
   private static wrapEvent(register: Register, config: BoosterConfig, event: Instance & EventInterface): EventEnvelope {

@@ -42,7 +42,7 @@ describe('the `RegisterHandler` class', () => {
     const registerHandler = RegisterHandler as any
     spy(registerHandler, 'wrapEvent')
 
-    await RegisterHandler.handle(config, register)
+    await RegisterHandler.flush(config, register)
 
     expect(registerHandler.wrapEvent).to.have.been.calledTwice
     expect(registerHandler.wrapEvent).to.have.been.calledWith(register, config, event1)
@@ -60,7 +60,7 @@ describe('the `RegisterHandler` class', () => {
     config.reducers['SomeEvent'] = { class: SomeEntity, methodName: 'whatever' }
 
     const register = new Register('1234', {} as any)
-    await RegisterHandler.handle(config, register)
+    await RegisterHandler.flush(config, register)
 
     expect(config.provider.events.store).to.not.have.been.called
   })
@@ -84,7 +84,7 @@ describe('the `RegisterHandler` class', () => {
     const event2 = new SomeEvent('b')
     register.events(event1, event2)
 
-    await RegisterHandler.handle(config, register)
+    await RegisterHandler.flush(config, register)
 
     expect(config.provider.events.store).to.have.been.calledOnce
     expect(config.provider.events.store).to.have.been.calledWithMatch(

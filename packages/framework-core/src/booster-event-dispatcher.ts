@@ -102,7 +102,7 @@ export class BoosterEventDispatcher {
             const error = await globalErrorDispatcher.dispatch(new EventHandlerGlobalError(eventInstance, e))
             if (error) throw error
           }
-          return RegisterHandler.handle(config, register)
+          return RegisterHandler.flush(config, register)
         })
       )
     }

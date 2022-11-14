@@ -62,7 +62,7 @@ export class BoosterCommandDispatcher {
       if (error) throw error
     }
     logger.debug('Command dispatched with register: ', register)
-    await RegisterHandler.handle(this.config, register)
+    await RegisterHandler.flush(this.config, register)
     return result
   }
 }
