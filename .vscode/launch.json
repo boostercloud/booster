@@ -254,14 +254,14 @@
         "--forbid-only",
         "--full-stack",
         "--config",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/cli/.mocharc.yml",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/cli/**/*.integration.ts"
+        "${workspaceFolder}/packages/framework-integration-tests/integration/provider-unaware/cli/.mocharc.yml",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/provider-unaware/cli/**/*.integration.ts"
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
       "cwd": "${workspaceFolder}/packages/framework-integration-tests",
-      "runtimeArgs": ["--preserve-symlinks"]
+      "runtimeArgs": ["--preserve-symlinks"],
     },
     {
       "type": "node",
