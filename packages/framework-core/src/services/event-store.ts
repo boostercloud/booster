@@ -4,9 +4,10 @@ import {
   EventEnvelope,
   InvalidParameterError,
   ReducerGlobalError,
+  SnapshotPersistHandlerGlobalError,
   UUID,
 } from '@boostercloud/framework-types'
-import { createInstance, getLogger } from '@boostercloud/framework-common-helpers'
+import { createInstance, getLogger, isFulfilled, isRejected } from '@boostercloud/framework-common-helpers'
 import { BoosterGlobalErrorDispatcher } from '../booster-global-error-dispatcher'
 import { SchemaMigrator } from '../schema-migrator'
 import { BoosterEntityMigrated } from '../core-concepts/data-migration/events/booster-entity-migrated'
@@ -49,39 +50,57 @@ export class EventStore {
     entityName: string,
     entityID: UUID,
     pendingEnvelopes: Array<EventEnvelope>
-  ): Promise<EventEnvelope | null> {
+  ): Promise<Array<EventEnvelope>> {
     const logger = getLogger(this.config, 'EventStore#calculateAndStoreEntitySnapshot')
     logger.debug('Processing events: ', pendingEnvelopes)
     logger.debug(`Fetching snapshot for entity ${entityName} with ID ${entityID}`)
     const latestSnapshotEnvelope = await this.loadLatestSnapshot(entityName, entityID)
+    const snapshotsPerNewEntityId: Record<string, EventEnvelope> = {}
+    if (latestSnapshotEnvelope) {
+      snapshotsPerNewEntityId[latestSnapshotEnvelope.entityID.toString()] = latestSnapshotEnvelope
+    }
 
     logger.debug(
       `[EventStore#calculateAndStoreEntitySnapshot] Looking for the reducer for entity ${entityName} with ID ${entityID}`
     )
-    let newEntitySnapshot = latestSnapshotEnvelope
     for (const pendingEvent of pendingEnvelopes) {
-      newEntitySnapshot = await this.entityReducer(newEntitySnapshot, pendingEvent)
+      const newEntitySnapshot = await this.entityReducer(
+        snapshotsPerNewEntityId[pendingEvent.entityID.toString()],
+        pendingEvent
+      )
+      snapshotsPerNewEntityId[newEntitySnapshot.entityID.toString()] = newEntitySnapshot
     }
 
     logger.debug(
-      `[EventStore#calculateAndStoreEntitySnapshot] Reduced new snapshot for entity ${entityName} with ID ${entityID}: `,
-      newEntitySnapshot
+      `[EventStore#calculateAndStoreEntitySnapshot] Reduced new snapshots for entity ${entityName} with ID ${entityID}: `,
+      snapshotsPerNewEntityId
     )
 
-    if (!newEntitySnapshot) {
-      logger.debug('New entity snapshot is null. Returning old one (which can also be null)')
-      return latestSnapshotEnvelope
+    const snapshotsForNewEntityIds = Object.values(snapshotsPerNewEntityId)
+
+    if (snapshotsForNewEntityIds.length === 0) {
+      logger.debug('New entity snapshots not found. Returning empty snapshots')
+      return snapshotsForNewEntityIds
     }
 
-    await this.storeSnapshot(newEntitySnapshot)
-
-    return newEntitySnapshot
+    const storeSnapshotsPromises = snapshotsForNewEntityIds.map((snapshot) => this.storeSnapshot(snapshot))
+    const results = await Promise.allSettled(storeSnapshotsPromises)
+    results.filter(isRejected).forEach((result) => logger.error('Error persisting snapshot', result.reason))
+    return results.filter(isFulfilled).map((result) => result.value)
   }
 
-  private async storeSnapshot(snapshot: EventEnvelope): Promise<void> {
-    const logger = getLogger(this.config, 'EventStore#storeSnapshot')
-    logger.debug('Storing snapshot in the event store:', snapshot)
-    return this.config.provider.events.store([snapshot], this.config)
+  private async storeSnapshot(snapshot: EventEnvelope): Promise<EventEnvelope> {
+    try {
+      const logger = getLogger(this.config, 'EventStore#storeSnapshot')
+      logger.debug('Storing snapshot in the event store:', snapshot)
+      await this.config.provider.events.store([snapshot], this.config)
+      return snapshot
+    } catch (e) {
+      const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
+      const error = await globalErrorDispatcher.dispatch(new SnapshotPersistHandlerGlobalError(snapshot, e))
+      if (error) throw error
+    }
+    return snapshot
   }
 
   private async loadLatestSnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | null> {

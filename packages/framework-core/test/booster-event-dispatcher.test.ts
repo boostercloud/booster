@@ -55,6 +55,10 @@ const someEntity: EntityInterface = {
   id: '42',
 }
 
+const otherEntity: EntityInterface = {
+  id: '90',
+}
+
 const someEntitySnapshot: EventEnvelope = {
   version: 1,
   kind: 'snapshot',
@@ -64,6 +68,18 @@ const someEntitySnapshot: EventEnvelope = {
   value: someEntity,
   requestID: '234',
   typeName: 'SomeEntity',
+  createdAt: 'a few nanoseconds later',
+}
+
+const otherEntitySnapshot: EventEnvelope = {
+  version: 1,
+  kind: 'snapshot',
+  superKind: 'domain',
+  entityID: '90',
+  entityTypeName: 'OtherEntity',
+  value: otherEntity,
+  requestID: '235',
+  typeName: 'OtherEntity',
   createdAt: 'a few nanoseconds later',
 }
 
@@ -139,6 +155,7 @@ describe('BoosterEventDispatcher', () => {
         const boosterEventDispatcher = BoosterEventDispatcher as any
         const eventStore = createStubInstance(EventStore)
         const readModelStore = createStubInstance(ReadModelStore)
+        eventStore.calculateAndStoreEntitySnapshot = fake.resolves([]) as any
 
         await boosterEventDispatcher.snapshotAndUpdateReadModels(
           config,
@@ -160,7 +177,7 @@ describe('BoosterEventDispatcher', () => {
       it('projects the entity state to the corresponding read models', async () => {
         const boosterEventDispatcher = BoosterEventDispatcher as any
         const eventStore = createStubInstance(EventStore)
-        eventStore.calculateAndStoreEntitySnapshot = fake.resolves(someEntitySnapshot) as any
+        eventStore.calculateAndStoreEntitySnapshot = fake.resolves([someEntitySnapshot]) as any
 
         const readModelStore = createStubInstance(ReadModelStore)
 
@@ -174,6 +191,26 @@ describe('BoosterEventDispatcher', () => {
         )
         expect(readModelStore.project).to.have.been.calledOnce
         expect(readModelStore.project).to.have.been.calledWith(someEntitySnapshot)
+      })
+
+      it('projects the entities states to the corresponding read models', async () => {
+        const boosterEventDispatcher = BoosterEventDispatcher as any
+        const eventStore = createStubInstance(EventStore)
+        eventStore.calculateAndStoreEntitySnapshot = fake.resolves([someEntitySnapshot, otherEntitySnapshot]) as any
+
+        const readModelStore = createStubInstance(ReadModelStore)
+
+        await boosterEventDispatcher.snapshotAndUpdateReadModels(
+          config,
+          someEvent.entityTypeName,
+          someEvent.entityID,
+          [someEvent],
+          eventStore,
+          readModelStore
+        )
+        expect(readModelStore.project).to.have.been.calledTwice
+        expect(readModelStore.project.getCall(0)).to.have.been.calledWith(someEntitySnapshot)
+        expect(readModelStore.project.getCall(1)).to.have.been.calledWith(otherEntitySnapshot)
       })
     })
 
