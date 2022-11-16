@@ -33,6 +33,7 @@ describe('the `ReadModel` decorator', () => {
             typeInfo: {
               importPath: '@boostercloud/framework-types',
               isNullable: false,
+              isGetAccessor: false,
               name: 'UUID',
               parameters: [],
               type: UUID,
@@ -44,6 +45,7 @@ describe('the `ReadModel` decorator', () => {
             name: 'title',
             typeInfo: {
               isNullable: false,
+              isGetAccessor: false,
               name: 'string',
               parameters: [],
               type: String,
@@ -99,6 +101,7 @@ describe('the `ReadModel` decorator', () => {
             typeInfo: {
               importPath: '@boostercloud/framework-types',
               isNullable: false,
+              isGetAccessor: false,
               name: 'UUID',
               parameters: [],
               type: UUID,
@@ -110,6 +113,7 @@ describe('the `ReadModel` decorator', () => {
             name: 'aStringProp',
             typeInfo: {
               isNullable: false,
+              isGetAccessor: false,
               name: 'string',
               parameters: [],
               type: String,
@@ -121,6 +125,7 @@ describe('the `ReadModel` decorator', () => {
             name: 'aNumberProp',
             typeInfo: {
               isNullable: false,
+              isGetAccessor: false,
               name: 'number',
               parameters: [],
               type: Number,
@@ -132,10 +137,12 @@ describe('the `ReadModel` decorator', () => {
             name: 'aReadonlyArray',
             typeInfo: {
               isNullable: false,
+              isGetAccessor: false,
               name: 'readonly string[]',
               parameters: [
                 {
                   isNullable: false,
+                  isGetAccessor: false,
                   name: 'string',
                   parameters: [],
                   type: String,
