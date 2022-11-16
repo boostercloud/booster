@@ -1674,6 +1674,38 @@ export class AppErrorHandler {
 
 **Note**: if you want to ignore the error thrown, you can simply return `undefined` from the error handler.
 
+## ReadModels accessors
+
+You can define getters methods on your ReadModel to be returned in the GraphQL results.
+
+* Return a calculated value example:
+```typescript
+export class CartReadModel {
+  public get cartItemsSize(): number | undefined {
+    return this.cartItems ? this.cartItems.length : 0
+  }
+}
+```
+
+* Return another ReadModel from a search:
+```typescript
+export class CartReadModel {
+  public get lastProduct(): Promise<ProductReadModel | undefined> {
+    if (this.cartItemsSize === 0) {
+      return Promise.resolve(undefined)
+    }
+    return Booster.readModel(ProductReadModel)
+            .filter({
+              id: { eq: this.cartItems.at(-1)?.productId },
+            })
+            .searchOne()
+  }
+}
+```
+
+**Note**: The promise result will be resolved by the GraphQL engine
+**Note**: You cannot use these getters as FilterFor, SortFor properties.
+
 ## Migrations
 
 ### Schema migrations

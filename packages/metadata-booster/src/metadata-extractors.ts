@@ -11,6 +11,7 @@ export interface TypeInfo {
   parameters: Array<TypeInfo>
   typeGroup: TypeGroup
   isNullable: boolean
+  isGetAccessor: boolean
 }
 
 export interface PropertyInfo {
@@ -81,6 +82,7 @@ function getTypeInfo(type: Type, node?: Node): TypeInfo {
     typeGroup: typeGroupTuples.find(([fn]) => fn(type))?.[1] || 'Other',
     isNullable,
     parameters: [],
+    isGetAccessor: Node.isGetAccessorDeclaration(node),
   }
   switch (typeInfo.typeGroup) {
     case 'Enum':
