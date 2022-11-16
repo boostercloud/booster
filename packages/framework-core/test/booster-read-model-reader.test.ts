@@ -1,22 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from './expect'
 import {
-  InvalidParameterError,
-  UUID,
-  ReadModelRequestEnvelope,
-  GraphQLOperation,
-  NotFoundError,
-  NotAuthorizedError,
-  SubscriptionEnvelope,
-  FilterFor,
   BoosterConfig,
+  FilterFor,
+  GraphQLOperation,
+  InvalidParameterError,
+  NotAuthorizedError,
+  NotFoundError,
   ReadModelInterface,
+  ReadModelListResult,
+  ReadModelRequestEnvelope,
+  SubscriptionEnvelope,
+  UUID,
 } from '@boostercloud/framework-types'
-import { restore, fake, match, spy, replace } from 'sinon'
+import { fake, match, replace, restore, SinonStub, spy, stub } from 'sinon'
 import { BoosterReadModelsReader } from '../src/booster-read-models-reader'
-import { random, internet } from 'faker'
+import { internet, random } from 'faker'
 import { Booster } from '../src/booster'
 import { BoosterAuthorizer } from '../src/booster-authorizer'
+import { ReadModelSchemaMigrator } from '../src/read-model-schema-migrator'
 
 describe('BoosterReadModelReader', () => {
   const config = new BoosterConfig('test')
@@ -134,14 +136,17 @@ describe('BoosterReadModelReader', () => {
     })
 
     describe('the `findById` method', () => {
+      let migratorStub: SinonStub
       beforeEach(() => {
         config.readModels['SomeReadModel'] = {
           before: [],
         } as any
+        migratorStub = stub(ReadModelSchemaMigrator.prototype, 'migrate')
       })
 
       afterEach(() => {
         delete config.readModels['SomeReadModel']
+        migratorStub.restore()
       })
 
       it('validates and uses the searcher to find a read model by id', async () => {
@@ -173,6 +178,71 @@ describe('BoosterReadModelReader', () => {
 
         expect(fakeValidateByIdRequest).to.have.been.calledOnceWith(readModelRequestEnvelope)
         expect(fakeSearcher.findById).to.have.been.calledOnceWith('42')
+      })
+
+      it('calls migrate after find a read model by id', async () => {
+        const fakeValidateByIdRequest = fake()
+        replace(readModelReader as any, 'validateByIdRequest', fakeValidateByIdRequest)
+
+        const fakeSearcher = { findById: fake.returns(new TestReadModel()) }
+        replace(Booster, 'readModel', fake.returns(fakeSearcher))
+
+        const readModelRequestEnvelope = {
+          key: {
+            id: '42',
+            sequenceKey: {
+              name: 'salmon',
+              value: 'sammy',
+            },
+          },
+          class: { name: 'TestReadModel' },
+          className: 'TestReadModel',
+          currentUser: {
+            id: 'a user',
+          } as any,
+          version: 1,
+          requestID: 'my request!',
+        } as any
+
+        migratorStub.callsFake(async (readModel, readModelName) => readModel)
+
+        await readModelReader.findById(readModelRequestEnvelope)
+
+        expect(fakeValidateByIdRequest).to.have.been.calledOnceWith(readModelRequestEnvelope)
+        expect(fakeSearcher.findById).to.have.been.calledOnceWith('42')
+        expect(migratorStub).to.have.been.calledOnce
+      })
+
+      it('call migrate once the read model after find a read model by id and got an Array', async () => {
+        const fakeValidateByIdRequest = fake()
+        replace(readModelReader as any, 'validateByIdRequest', fakeValidateByIdRequest)
+        const fakeSearcher = { findById: fake.returns([new TestReadModel(), new TestReadModel()]) }
+        replace(Booster, 'readModel', fake.returns(fakeSearcher))
+
+        const readModelRequestEnvelope = {
+          key: {
+            id: '42',
+            sequenceKey: {
+              name: 'salmon',
+              value: 'sammy',
+            },
+          },
+          class: { name: 'TestReadModel' },
+          className: 'TestReadModel',
+          currentUser: {
+            id: 'a user',
+          } as any,
+          version: 1,
+          requestID: 'my request!',
+        } as any
+
+        migratorStub.callsFake(async (readModel, readModelName) => readModel)
+
+        await readModelReader.findById(readModelRequestEnvelope)
+
+        expect(fakeValidateByIdRequest).to.have.been.calledOnceWith(readModelRequestEnvelope)
+        expect(fakeSearcher.findById).to.have.been.calledOnceWith('42')
+        expect(migratorStub).to.have.been.calledOnce
       })
     })
   })
@@ -273,6 +343,7 @@ describe('BoosterReadModelReader', () => {
     }
 
     describe('the "search" method', () => {
+      let migratorStub: SinonStub
       beforeEach(() => {
         config.readModels[TestReadModel.name] = {
           class: TestReadModel,
@@ -280,10 +351,12 @@ describe('BoosterReadModelReader', () => {
           properties: [],
           before: [],
         }
+        migratorStub = stub(ReadModelSchemaMigrator.prototype, 'migrate')
       })
 
       afterEach(() => {
         delete config.readModels[TestReadModel.name]
+        migratorStub.restore()
       })
 
       it('calls the provider search function and returns its results', async () => {
@@ -292,6 +365,8 @@ describe('BoosterReadModelReader', () => {
         replace(config.provider.readModels, 'search', providerSearcherFunctionFake)
 
         replace(Booster, 'config', config) // Needed because the function `Booster.readModel` references `this.config` from `searchFunction`
+
+        migratorStub.callsFake(async (readModel, readModelName) => readModel)
 
         const result = await readModelReader.search(envelope)
 
@@ -305,6 +380,60 @@ describe('BoosterReadModelReader', () => {
           false
         )
         expect(result).to.be.deep.equal(expectedReadModels)
+      })
+
+      it('calls migrates after search a read model with a simple array', async () => {
+        const expectedReadModels = [new TestReadModel(), new TestReadModel()]
+        const providerSearcherFunctionFake = fake.returns(expectedReadModels)
+        replace(config.provider.readModels, 'search', providerSearcherFunctionFake)
+
+        replace(Booster, 'config', config) // Needed because the function `Booster.readModel` references `this.config` from `searchFunction`
+
+        migratorStub.callsFake(async (readModel, readModelName) => readModel)
+
+        const result = await readModelReader.search(envelope)
+
+        expect(providerSearcherFunctionFake).to.have.been.calledOnceWithExactly(
+          match.any,
+          TestReadModel.name,
+          filters,
+          {},
+          undefined,
+          undefined,
+          false
+        )
+        expect(result).to.be.deep.equal(expectedReadModels)
+        expect(migratorStub).to.have.been.calledTwice
+      })
+
+      it('calls migrates once after paginated search a read model', async () => {
+        const expectedReadModels = [new TestReadModel(), new TestReadModel()]
+        const searchResult: ReadModelListResult<TestReadModel> = {
+          items: expectedReadModels,
+          count: 2,
+          cursor: {},
+        }
+        const providerSearcherFunctionFake = fake.returns(searchResult)
+        replace(config.provider.readModels, 'search', providerSearcherFunctionFake)
+
+        replace(Booster, 'config', config) // Needed because the function `Booster.readModel` references `this.config` from `searchFunction`
+
+        migratorStub.callsFake(async (readModel, readModelName) => readModel)
+
+        envelope.paginatedVersion = true
+        const result = await readModelReader.search(envelope)
+
+        expect(providerSearcherFunctionFake).to.have.been.calledOnceWithExactly(
+          match.any,
+          TestReadModel.name,
+          filters,
+          {},
+          undefined,
+          undefined,
+          true
+        )
+        expect(result).to.be.deep.equal(searchResult)
+        expect(migratorStub).to.have.been.calledTwice
       })
 
       context('when there is only one before hook function', () => {
