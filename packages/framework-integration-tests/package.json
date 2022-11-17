@@ -4,7 +4,6 @@
   "version": "1.0.2",
   "author": "Booster Cloud",
   "homepage": "https://booster.cloud",
-  "private": true,
   "publishConfig": {
     "access": "restricted"
   },

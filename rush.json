@@ -405,7 +405,7 @@
     },
     {
       "packageName": "@boostercloud/framework-integration-tests",
-      "shouldPublish": false,
+      "shouldPublish": true,
       "versionPolicyName": "booster",
       "projectFolder": "packages/framework-integration-tests"
     },
