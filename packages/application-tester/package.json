@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/application-tester",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Contains Booster types related to the information extracted from the user project",
   "keywords": [
     "application-tester"
@@ -32,7 +32,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "dependencies": {
-    "@boostercloud/framework-types": "workspace:^1.1.0",
+    "@boostercloud/framework-types": "workspace:^1.2.0",
     "apollo-cache-inmemory": "1.6.6",
     "apollo-client": "2.6.10",
     "apollo-link": "1.2.14",
