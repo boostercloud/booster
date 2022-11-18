@@ -15,11 +15,13 @@ export class GraphqlQuerySortBuilder {
   public generateSortArguments(type: AnyClass): GraphQLFieldConfigArgumentMap {
     const metadata = getClassMetadata(type)
     const args: GraphQLFieldConfigArgumentMap = {}
-    metadata.fields.forEach((prop: PropertyMetadata) => {
-      args[prop.name] = {
-        type: this.generateSortFor(prop),
-      }
-    })
+    metadata.fields
+      .filter((field: PropertyMetadata) => !field.typeInfo.isGetAccessor)
+      .forEach((prop: PropertyMetadata) => {
+        args[prop.name] = {
+          type: this.generateSortFor(prop),
+        }
+      })
     return args
   }
 

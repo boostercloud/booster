@@ -36,6 +36,9 @@ export class GraphQLTypeInformer {
   public getOrCreateGraphQLType(typeMetadata: TypeMetadata, inputType?: false): GraphQLOutputType
   public getOrCreateGraphQLType(typeMetadata: TypeMetadata, inputType: boolean): GraphQLType
   public getOrCreateGraphQLType(typeMetadata: TypeMetadata, inputType = false): GraphQLType {
+    if (typeMetadata.typeName === 'Promise') {
+      return this.getOrCreateGraphQLType(typeMetadata.parameters[0], inputType)
+    }
     const name = this.getGraphQLName(typeMetadata, inputType)
 
     // Check if GraphQL type already exists and reuse
