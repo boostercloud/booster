@@ -85,14 +85,8 @@ jobs:
       - name: Discard all the changes after integration tests
         run: git stash
 
-      - name: Bump version using Rush
-        run: node common/scripts/install-run-rush.js version --bump -b main
-
-      - name: Pull before publishing
-        run: git pull --rebase origin main
-
       - name: Publish using Rush
-        run: node common/scripts/install-run-rush.js publish --apply --publish --include-all --target-branch origin/main --add-commit-details
+        run: node common/scripts/install-run-rush.js publish --apply --publish --target-branch origin/main --add-commit-details
 
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
