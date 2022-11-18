@@ -66,6 +66,7 @@ export class GraphQLMutationGenerator {
         typeGroup: 'Boolean',
         typeName: 'Boolean',
         isNullable: false,
+        isGetAccessor: false,
         parameters: [],
       } as TypeMetadata
     }

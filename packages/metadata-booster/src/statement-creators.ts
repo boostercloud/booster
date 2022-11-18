@@ -62,6 +62,7 @@ function createMetadataForTypeInfo(
     f.createPropertyAssignment('name', f.createStringLiteral(typeInfo.name)),
     f.createPropertyAssignment('typeGroup', f.createStringLiteral(typeInfo.typeGroup)),
     f.createPropertyAssignment('isNullable', typeInfo.isNullable ? f.createTrue() : f.createFalse()),
+    f.createPropertyAssignment('isGetAccessor', typeInfo.isGetAccessor ? f.createTrue() : f.createFalse()),
     f.createPropertyAssignment(
       'parameters',
       f.createArrayLiteralExpression(
