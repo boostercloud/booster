@@ -29,7 +29,7 @@ jobs:
           git fetch
           git config --local user.email "action@github.com"
           git config --local user.name "GITHUBACTION"
-          git config pull.ff only
+          git config pull.rebase true
         env:
           USER_NAME: ${{ secrets.DEPLOYING_USER_NAME }}
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN_ACTION }} # Token for pushing
