@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Migrate on ReadModel Find and Search",
+      "type": "minor",
+      "packageName": "@boostercloud/framework-core"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core",
+  "email": "adrian@theagilemonkeys.com"
+}
