@@ -5,6 +5,9 @@ import {
   EventHandlerInterface,
   UUID,
   EventHandlerGlobalError,
+  EventMetadata,
+  NotFoundError,
+  UnknownEventMetadata,
 } from '@boostercloud/framework-types'
 import { EventStore } from './services/event-store'
 import { EventsStreamingCallback, RawEventsParser } from './services/raw-events-parser'
@@ -89,7 +92,18 @@ export class BoosterEventDispatcher {
         logger.debug(`No event-handlers found for event ${eventEnvelope.typeName}. Skipping...`)
         continue
       }
-      const eventClass = config.events[eventEnvelope.typeName]
+      const eventClass = BoosterEventDispatcher.eventMetadata(eventEnvelope, config)
+      if (!eventClass) {
+        throw new NotFoundError(
+          `Couldn't find event or unknownEvent for event ${JSON.stringify(
+            eventEnvelope
+          )}. Is the event handled by an entity?`
+        )
+      }
+      if (this.isUnknownEventMetadata(eventClass)) {
+        logger.warn('UnknownEvent found for event. Skipping eventHandler call', eventEnvelope)
+        return
+      }
       await Promises.allSettledAndFulfilled(
         eventHandlers.map(async (eventHandler: EventHandlerInterface) => {
           const eventInstance = createInstance(eventClass.class, eventEnvelope.value)
@@ -106,5 +120,20 @@ export class BoosterEventDispatcher {
         })
       )
     }
+  }
+
+  private static eventMetadata(
+    eventEnvelope: EventEnvelope,
+    config: BoosterConfig
+  ): EventMetadata | UnknownEventMetadata | undefined {
+    const event = config.events[eventEnvelope.typeName]
+    if (event) return event
+    return config.unknownEvent
+  }
+
+  private static isUnknownEventMetadata(
+    eventMetadata: EventMetadata | UnknownEventMetadata
+  ): eventMetadata is UnknownEventMetadata {
+    return eventMetadata !== undefined && (eventMetadata as UnknownEventMetadata).methodName !== undefined
   }
 }

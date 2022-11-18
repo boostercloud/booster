@@ -13,6 +13,7 @@ import {
   EntityInterface,
   DataMigrationMetadata,
   TokenVerifier,
+  UnknownEventMetadata,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
@@ -64,6 +65,8 @@ export class BoosterConfig {
   public readonly scheduledCommandHandlers: Record<ScheduledCommandName, ScheduledCommandMetadata> = {}
   public readonly dataMigrationHandlers: Record<DataMigrationName, DataMigrationMetadata> = {}
   public globalErrorsHandler: GlobalErrorHandlerMetadata | undefined
+  public unknownReducerHandler: ReducerMetadata | undefined
+  public unknownEvent: UnknownEventMetadata | undefined
 
   private rocketFunctionMap: Record<string, RocketFunction> = {}
   public registerRocketFunction(id: string, func: RocketFunction): void {

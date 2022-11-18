@@ -12,6 +12,7 @@ import {
 import { BoosterEntityMigrated } from './core-concepts/data-migration/events/booster-entity-migrated'
 import { BoosterDataMigrationStarted } from './core-concepts/data-migration/events/booster-data-migration-started'
 import { BoosterDataMigrationFinished } from './core-concepts/data-migration/events/booster-data-migration-finished'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 
 const boosterEventsTypesNames: Array<string> = [
   BoosterEntityMigrated.name,
@@ -32,12 +33,7 @@ export class RegisterHandler {
 
   private static wrapEvent(register: Register, config: BoosterConfig, event: Instance & EventInterface): EventEnvelope {
     const eventTypeName = event.constructor.name
-    const entityTypeName = RegisterHandler.getEntityTypeName(eventTypeName, event, config)
-    if (!entityTypeName) {
-      throw new NotFoundError(
-        `Couldn't find information about event ${eventTypeName}. Is the event handled by an entity?`
-      )
-    }
+    const entityTypeName = RegisterHandler.reducerClassName(eventTypeName, event, config)
     if (!event.entityID || !event.entityID()) {
       throw new Error(
         `Event ${eventTypeName} has an empty 'entityID' or the required 'entityID' method was not implemented. Make sure to return a string-compatible value identifying the entity this event belongs to.`
@@ -62,15 +58,25 @@ export class RegisterHandler {
     return boosterEventsTypesNames.includes(eventTypeName) ? BOOSTER_SUPER_KIND : DOMAIN_SUPER_KIND
   }
 
-  private static getEntityTypeName(
+  private static reducerClassName(
     eventTypeName: string,
     event: Instance & EventInterface,
     config: BoosterConfig
   ): string {
+    const logger = getLogger(config, 'booster-register-handler#reducerClassName')
     if (eventTypeName === BoosterEntityMigrated.name) {
       return (event as BoosterEntityMigrated).oldEntityName
     }
     const reducerInfo = config.reducers[eventTypeName]
-    return reducerInfo.class.name
+    if (reducerInfo?.class?.name) {
+      return reducerInfo.class.name
+    }
+    if (config.unknownReducerHandler) {
+      logger.debug(`No reducer found for ${eventTypeName}. Using unknownReducerHandler`)
+      return config.unknownReducerHandler.class.name
+    }
+    throw new NotFoundError(
+      `Couldn't find reducer or unknownReducerHandler for event ${eventTypeName}. Is the event handled by an entity?`
+    )
   }
 }

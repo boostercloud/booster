@@ -58,6 +58,15 @@ describe('EventStore', () => {
     }
   }
 
+  class AnUnknownReducer {
+    public static unknownReducer(event: EventInterface, currentEntity: EntityInterface): EntityInterface | void {
+      if (event instanceof AnotherEvent) {
+        return new AnEntity(UUID.generate(), 1)
+      }
+      return
+    }
+  }
+
   const config = new BoosterConfig('test')
   config.provider = {
     events: {
@@ -1032,6 +1041,10 @@ describe('EventStore', () => {
     })
 
     describe('reducerForEvent', () => {
+      afterEach(() => {
+        config.unknownReducerHandler = undefined
+      })
+
       context('for an event with a registered reducer', () => {
         it('returns the proper reducer method for the event', () => {
           const reducer = eventStore.reducerForEvent(AnEvent.name)
@@ -1041,10 +1054,23 @@ describe('EventStore', () => {
         })
       })
 
-      context('for events without registered reducers', () => {
-        it('fails miserably', () => {
+      context('for an event without registered reducers but with a unknownReducerHandler', () => {
+        it('returns the unknownReducerHandler reducer method for the event', () => {
+          config.unknownReducerHandler = {
+            class: AnUnknownReducer,
+            methodName: 'unknownReducer',
+          }
+          const reducer = eventStore.reducerForEvent('InventedEvent')
+
+          expect(reducer).to.be.instanceOf(Function)
+          expect(reducer).to.be.equal(eval('AnUnknownReducer')['unknownReducer'])
+        })
+      })
+
+      context('for events without registered reducers and unknownReducerHandler undefined', () => {
+        it('application fails', () => {
           expect(() => eventStore.reducerForEvent('InventedEvent')).to.throw(
-            /No reducer registered for event InventedEvent/
+            'No reducer registered for event InventedEvent'
           )
         })
       })

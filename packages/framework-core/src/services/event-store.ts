@@ -2,9 +2,12 @@ import {
   BOOSTER_SUPER_KIND,
   BoosterConfig,
   EventEnvelope,
-  InvalidParameterError,
+  EventMetadata,
+  NotFoundError,
   ReducerGlobalError,
+  ReducerMetadata,
   SnapshotPersistHandlerGlobalError,
+  UnknownEventMetadata,
   UUID,
 } from '@boostercloud/framework-types'
 import { createInstance, getLogger, isFulfilled, isRejected } from '@boostercloud/framework-common-helpers'
@@ -68,7 +71,9 @@ export class EventStore {
         snapshotsPerNewEntityId[pendingEvent.entityID.toString()],
         pendingEvent
       )
-      snapshotsPerNewEntityId[newEntitySnapshot.entityID.toString()] = newEntitySnapshot
+      if (newEntitySnapshot) {
+        snapshotsPerNewEntityId[newEntitySnapshot.entityID.toString()] = newEntitySnapshot
+      }
     }
 
     logger.debug(
@@ -122,7 +127,7 @@ export class EventStore {
   private async entityReducer(
     latestSnapshot: EventEnvelope | null,
     eventEnvelope: EventEnvelope
-  ): Promise<EventEnvelope> {
+  ): Promise<EventEnvelope | null> {
     const logger = getLogger(this.config, 'EventStore#entityReducer')
     try {
       if (eventEnvelope.superKind && eventEnvelope.superKind === BOOSTER_SUPER_KIND) {
@@ -132,14 +137,30 @@ export class EventStore {
       }
 
       logger.debug('Calling reducer with event: ', eventEnvelope, ' and entity snapshot ', latestSnapshot)
-      const eventMetadata = this.config.events[eventEnvelope.typeName]
+      const eventMetadata = this.eventMetadata(eventEnvelope)
+      if (!eventMetadata) {
+        throw new NotFoundError(`No event registered for event ${JSON.stringify(eventEnvelope)}`)
+      }
+      if (this.isUnknownEventMetadata(eventMetadata)) {
+        logger.warn('UnknownEvent found for event. Skipping snapshot creation', eventEnvelope)
+        const eventHandler = (eventMetadata.class as any)[eventMetadata.methodName]
+        eventHandler(eventEnvelope.value)
+        return null
+      }
+      const knownEventMetadata = eventMetadata as EventMetadata
       const migratedEventEnvelope = await new SchemaMigrator(this.config).migrate(eventEnvelope)
-      const eventInstance = createInstance(eventMetadata.class, migratedEventEnvelope.value)
+      const eventInstance = createInstance(knownEventMetadata.class, migratedEventEnvelope.value)
       const entityMetadata = this.config.entities[migratedEventEnvelope.entityTypeName]
       const snapshotInstance = latestSnapshot ? createInstance(entityMetadata.class, latestSnapshot.value) : null
       let newEntity: any
       try {
-        newEntity = this.reducerForEvent(migratedEventEnvelope.typeName)(eventInstance, snapshotInstance)
+        const reducer = this.reducerForEvent(migratedEventEnvelope.typeName)
+        if (reducer.name === this.config.unknownReducerHandler?.methodName) {
+          logger.warn(`UnknownReducer found for ${migratedEventEnvelope.typeName}. Skipping snapshot creation`)
+          reducer(eventInstance, snapshotInstance)
+          return null
+        }
+        newEntity = reducer(eventInstance, snapshotInstance)
       } catch (e) {
         const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
         const error = await globalErrorDispatcher.dispatch(new ReducerGlobalError(eventInstance, snapshotInstance, e))
@@ -190,9 +211,9 @@ export class EventStore {
   // eslint-disable-next-line @typescript-eslint/ban-types
   private reducerForEvent(eventName: string): Function {
     const logger = getLogger(this.config, 'EventStore#reducerForEvent')
-    const reducerMetadata = this.config.reducers[eventName]
+    const reducerMetadata = this.reducerMetadataForEvent(eventName)
     if (!reducerMetadata) {
-      throw new InvalidParameterError(`No reducer registered for event ${eventName}`)
+      throw new NotFoundError(`No reducer registered for event ${eventName}`)
     } else {
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -205,5 +226,25 @@ export class EventStore {
         throw new Error(`Couldn't load the Entity class ${reducerMetadata.class.name}`)
       }
     }
+  }
+
+  private eventMetadata(eventEnvelope: EventEnvelope): EventMetadata | UnknownEventMetadata | undefined {
+    const event = this.config.events[eventEnvelope.typeName]
+    if (event) return event
+    return this.config.unknownEvent
+  }
+
+  private isUnknownEventMetadata(
+    eventMetadata: EventMetadata | UnknownEventMetadata
+  ): eventMetadata is UnknownEventMetadata {
+    return (eventMetadata as UnknownEventMetadata).methodName !== undefined
+  }
+
+  private reducerMetadataForEvent(eventName: string): ReducerMetadata | undefined {
+    const reducerMetadataFromConfiguration = this.config.reducers[eventName]
+    if (reducerMetadataFromConfiguration) {
+      return reducerMetadataFromConfiguration
+    }
+    return this.config.unknownReducerHandler
   }
 }

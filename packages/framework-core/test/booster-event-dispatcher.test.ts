@@ -29,11 +29,29 @@ class SomeEvent {
   }
 }
 
+class UnknownEvent {
+  public constructor(readonly id: UUID) {}
+
+  public entityID(): UUID {
+    return this.id
+  }
+  public getPrefixedId(prefix: string): string {
+    return `${prefix}-${this.id}`
+  }
+}
+
 class AnEventHandler {
   public static async handle(event: SomeEvent, register: Register): Promise<void> {
     event.getPrefixedId('prefix')
   }
 }
+
+class UnknownEventHandler {
+  public static async handle(event: EventInterface): Promise<void> {
+    // skip
+  }
+}
+
 const someEvent: EventEnvelope = {
   version: 1,
   kind: 'event',
@@ -48,6 +66,23 @@ const someEvent: EventEnvelope = {
   },
   requestID: '123',
   typeName: 'SomeEvent',
+  createdAt: 'an uncertain future',
+}
+
+const unknownEvent: EventEnvelope = {
+  version: 1,
+  kind: 'event',
+  superKind: 'domain',
+  entityID: '42',
+  entityTypeName: 'UnknownEntity',
+  value: {
+    entityID: (): UUID => {
+      return '42'
+    },
+    id: '42',
+  },
+  requestID: '123',
+  typeName: 'UnknownEvent',
   createdAt: 'an uncertain future',
 }
 
@@ -219,7 +254,7 @@ describe('BoosterEventDispatcher', () => {
         config.eventHandlers[SomeEvent.name] = []
       })
 
-      it('does nothing and does not throw if there are no event handlers', async () => {
+      it('does nothing and does not throw if there are no eventHandlers', async () => {
         replace(RegisterHandler, 'handle', fake())
         const boosterEventDispatcher = BoosterEventDispatcher as any
         // We try first with null array of event handlers
@@ -229,6 +264,39 @@ describe('BoosterEventDispatcher', () => {
         config.eventHandlers[SomeEvent.name] = []
         await boosterEventDispatcher.dispatchEntityEventsToEventHandlers([someEvent], config)
         // It should not throw any errors
+      })
+
+      it('Throw if there are no event class neither unknownEvent', async () => {
+        const fakeHandler1 = fake()
+        const fakeHandler2 = fake()
+        config.eventHandlers[UnknownEvent.name] = [{ handle: fakeHandler1 }, { handle: fakeHandler2 }]
+
+        replace(RegisterHandler, 'handle', fake())
+
+        const boosterEventDispatcher = BoosterEventDispatcher as any
+        await expect(
+          boosterEventDispatcher.dispatchEntityEventsToEventHandlers([unknownEvent], config)
+        ).to.be.eventually.rejectedWith(
+          'Couldn\'t find event or unknownEvent for event {"version":1,"kind":"event","superKind":"domain","entityID":"42","entityTypeName":"UnknownEntity","value":{"id":"42"},"requestID":"123","typeName":"UnknownEvent","createdAt":"an uncertain future"}. Is the event handled by an entity?'
+        )
+      })
+
+      it('Skip if there are no event class but unknownEvent', async () => {
+        const fakeHandler1 = fake()
+        const fakeHandler2 = fake()
+        config.eventHandlers[UnknownEvent.name] = [{ handle: fakeHandler1 }, { handle: fakeHandler2 }]
+        config.unknownEvent = {
+          class: UnknownEventHandler,
+          methodName: 'handle',
+        }
+
+        replace(RegisterHandler, 'handle', fake())
+
+        const boosterEventDispatcher = BoosterEventDispatcher as any
+        await boosterEventDispatcher.dispatchEntityEventsToEventHandlers([unknownEvent], config)
+
+        expect(fakeHandler1).to.not.have.been.called
+        expect(fakeHandler2).to.not.have.been.called
       })
 
       it('calls all the handlers for the current event', async () => {

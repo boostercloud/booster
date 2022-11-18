@@ -1,7 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from './expect'
-import { Register, BoosterConfig, Level, UserEnvelope, UUID } from '@boostercloud/framework-types'
+import {
+  Register,
+  BoosterConfig,
+  Level,
+  UserEnvelope,
+  UUID,
+  EventInterface,
+  EntityInterface,
+} from '@boostercloud/framework-types'
 import { replace, fake, restore, spy } from 'sinon'
 import { RegisterHandler } from '../src'
 import { BoosterEntityMigrated } from '../src/core-concepts/data-migration/events/booster-entity-migrated'
@@ -15,6 +23,10 @@ class SomeEvent {
   entityID() {
     return '42'
   }
+}
+
+class UnknownEntityReducer {
+  public static unknownReducer(event: EventInterface): EntityInterface | void {}
 }
 
 describe('the `RegisterHandler` class', () => {
@@ -115,6 +127,79 @@ describe('the `RegisterHandler` class', () => {
         },
       ],
       config
+    )
+  })
+
+  it('stores wrapped events when there is not a reducer for the entity but an unknownReducerHandler', async () => {
+    const config = new BoosterConfig('test')
+    config.provider = {
+      events: {
+        store: fake(),
+      },
+    } as any
+    config.unknownReducerHandler = {
+      class: UnknownEntityReducer,
+      methodName: 'unknownReducer',
+    }
+
+    replace(Date.prototype, 'toISOString', fake.returns('just the right time'))
+
+    const register = new Register('1234', {} as any)
+    const event1 = new SomeEvent('a')
+    const event2 = new SomeEvent('b')
+    register.events(event1, event2)
+
+    await RegisterHandler.handle(config, register)
+
+    expect(config.provider.events.store).to.have.been.calledOnce
+    expect(config.provider.events.store).to.have.been.calledWithMatch(
+      [
+        {
+          createdAt: 'just the right time',
+          currentUser: undefined,
+          entityID: '42',
+          entityTypeName: 'UnknownEntityReducer',
+          kind: 'event',
+          superKind: 'domain',
+          requestID: '1234',
+          typeName: 'SomeEvent',
+          value: event1,
+          version: 1,
+        },
+        {
+          createdAt: 'just the right time',
+          currentUser: undefined,
+          entityID: '42',
+          entityTypeName: 'UnknownEntityReducer',
+          kind: 'event',
+          superKind: 'domain',
+          requestID: '1234',
+          typeName: 'SomeEvent',
+          value: event2,
+          version: 1,
+        },
+      ],
+      config
+    )
+  })
+
+  it('fails when there is not a reducer neither an unknownReducerHandler', async () => {
+    const config = new BoosterConfig('test')
+    config.provider = {
+      events: {
+        store: fake(),
+      },
+    } as any
+
+    replace(Date.prototype, 'toISOString', fake.returns('just the right time'))
+
+    const register = new Register('1234', {} as any)
+    const event1 = new SomeEvent('a')
+    const event2 = new SomeEvent('b')
+    register.events(event1, event2)
+
+    await expect(RegisterHandler.handle(config, register)).to.be.eventually.rejectedWith(
+      "Couldn't find reducer or unknownReducerHandler for event SomeEvent. Is the event handled by an entity?"
     )
   })
 

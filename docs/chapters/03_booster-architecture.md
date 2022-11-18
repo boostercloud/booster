@@ -599,6 +599,52 @@ You can visualize reduction like this:
 
 ![reducer process gif](../img/reducer.gif)
 
+### Unhandled events
+
+#### Event class
+
+If an event is generated but there is no `@Event` class to handle it then **Booster** will execute a method annotated with `@UnknownEvent` (if it exists).
+
+This method will receive all the events that doesn't have an event class.
+
+If the method doesn't throw an exception, **Booster** will ignore the event. Throw an event in case the `event` should exist.
+
+If there is not an **@Event** neither an **@UnknownEvent** for an event, Booster will throw an exception.
+
+```typescript
+    @UnknownEvent()
+    public static unknownEvent(event: EventInterface): void {
+      // Return void for UnexpectedEventHandled. No entities will be created and the system will not fail
+      if (event instanceof UnexpectedEventHandled) {
+      return
+    }
+    throw Error('Unexpected event captured with UnknownEvent')
+    }
+```
+
+For **@EventHandler** classes, if the `@Event` doesn't exist but there is an `@UnknownEvent` method, then **Booster** will not fail.  
+
+#### Reducer method
+
+If an event is generated but there is no `@Reduces` method to handle it then **Booster** will execute a method annotated with `@UnknownReducer` (if it exists).
+
+This method will receive all the events that are not reduced by an entity.
+
+If the method doesn't throw an exception, **Booster** will ignore the event. Throw an event in case the `event` should be reduced.
+
+If there is not a **@Reduces** neither an **@UnknownReducer** for an event, Booster will throw an exception.
+
+```typescript
+    @UnknownReducer()
+    public static unknownReducer(event: EventInterface): void {
+      // Return void for UnexpectedEventWithoutReducer. No entities will be created and the system will not fail
+      if (event instanceof ExpectedEventWithoutReducer) {
+      return
+    }
+    throw Error('Unexpected event captured with UnknownReducer')
+    }
+```
+
 ##  Eventual consistency
 
 Due to the event driven and async nature of Booster, your data might not be instantly updated. Booster will consume the commands, generate events, and _eventually_ generate the entities. Most of the time this is not perceivable, but under huge loads, it could be noticed.
