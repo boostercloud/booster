@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-types",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Contains Booster types related to the information extracted from the user project",
   "keywords": [
     "framework-types"
@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@boostercloud/eslint-config": "workspace:^1.0.0",
-    "@boostercloud/metadata-booster": "workspace:^1.0.2",
+    "@boostercloud/metadata-booster": "workspace:^1.1.0",
     "@types/chai": "4.2.18",
     "@types/chai-as-promised": "7.1.4",
     "@types/mocha": "8.2.2",
