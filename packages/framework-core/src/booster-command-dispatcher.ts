@@ -42,6 +42,7 @@ export class BoosterCommandDispatcher {
     const register: Register = new Register(
       migratedCommandEnvelope.requestID,
       context.responseHeaders,
+      RegisterHandler.flush,
       migratedCommandEnvelope.currentUser,
       migratedCommandEnvelope.context
     )
@@ -62,7 +63,7 @@ export class BoosterCommandDispatcher {
       if (error) throw error
     }
     logger.debug('Command dispatched with register: ', register)
-    await RegisterHandler.flush(this.config, register)
+    await RegisterHandler.handle(this.config, register)
     return result
   }
 }

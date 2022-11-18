@@ -8,6 +8,8 @@ import {
   NotFoundError,
   Register,
   SuperKindType,
+  UserEnvelope,
+  UUID,
 } from '@boostercloud/framework-types'
 import { BoosterEntityMigrated } from './core-concepts/data-migration/events/booster-entity-migrated'
 import { BoosterDataMigrationStarted } from './core-concepts/data-migration/events/booster-data-migration-started'
@@ -20,33 +22,32 @@ const boosterEventsTypesNames: Array<string> = [
 ]
 
 export class RegisterHandler {
+  public static async handle(config: BoosterConfig, register: Register): Promise<void> {
+    return this.flush(config, register.eventList, register.requestID, register.currentUser)
+  }
+
   public static async flush(
     config: BoosterConfig,
-    register: Register,
-    extraEvents?: Array<EventInterface>
+    eventList: Array<EventInterface>,
+    requestID: UUID,
+    currentUser?: UserEnvelope
   ): Promise<void> {
-    if (extraEvents && extraEvents.length > 0) {
-      register.eventList.push(...extraEvents)
-    }
-
-    if (register.eventList.length == 0) {
+    if (eventList.length == 0) {
       return
     }
 
     return config.provider.events.store(
-      register.eventList.map(RegisterHandler.wrapEvent.bind(null, register, config)),
+      eventList.map((event) => RegisterHandler.wrapEvent(config, event, requestID, currentUser)),
       config
     )
   }
 
-  /**
-   * @deprecated Use flush
-   */
-  public static async handle(config: BoosterConfig, register: Register): Promise<void> {
-    await this.flush(config, register)
-  }
-
-  private static wrapEvent(register: Register, config: BoosterConfig, event: Instance & EventInterface): EventEnvelope {
+  private static wrapEvent(
+    config: BoosterConfig,
+    event: Instance & EventInterface,
+    requestID: UUID,
+    currentUser?: UserEnvelope
+  ): EventEnvelope {
     const eventTypeName = event.constructor.name
     const entityTypeName = RegisterHandler.getEntityTypeName(eventTypeName, event, config)
     if (!entityTypeName) {
@@ -65,8 +66,8 @@ export class RegisterHandler {
       kind: 'event',
       superKind: RegisterHandler.getSuperKind(eventTypeName),
       entityID: event.entityID(),
-      requestID: register.requestID,
-      currentUser: register.currentUser,
+      requestID: requestID,
+      currentUser: currentUser,
       entityTypeName: entityTypeName,
       typeName: eventTypeName,
       value: event,

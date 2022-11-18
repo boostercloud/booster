@@ -93,7 +93,7 @@ export class BoosterEventDispatcher {
       await Promises.allSettledAndFulfilled(
         eventHandlers.map(async (eventHandler: EventHandlerInterface) => {
           const eventInstance = createInstance(eventClass.class, eventEnvelope.value)
-          const register = new Register(eventEnvelope.requestID, {}, eventEnvelope.currentUser)
+          const register = new Register(eventEnvelope.requestID, {}, RegisterHandler.flush, eventEnvelope.currentUser)
           logger.debug('Calling "handle" method on event handler: ', eventHandler)
           try {
             await eventHandler.handle(eventInstance, register)
@@ -102,7 +102,7 @@ export class BoosterEventDispatcher {
             const error = await globalErrorDispatcher.dispatch(new EventHandlerGlobalError(eventInstance, e))
             if (error) throw error
           }
-          return RegisterHandler.flush(config, register)
+          return RegisterHandler.handle(config, register)
         })
       )
     }

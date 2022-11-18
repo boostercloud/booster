@@ -16,22 +16,35 @@ describe('events', async () => {
   it('should be persisted when flush is call', async () => {
     const mockCartId = random.uuid()
     const result = await waitForIt(
-      () => mutateFlushEvents(client, mockCartId),
+      () =>
+        client.mutate({
+          variables: {
+            cartId: mockCartId,
+          },
+          mutation: gql`
+            mutation FlushEvents($cartId: ID!) {
+              FlushEvents(input: { cartId: $cartId, previousProducts: 1, afterProducts: 3 }) {
+                id
+                cartItems {
+                  productId
+                  quantity
+                }
+              }
+            }
+          `,
+        }),
       (result) => result?.data?.FlushEvents != null && result?.data?.FlushEvents.length > 0
     )
 
     expect(result).not.to.be.null
     const previousProducts = result?.data?.FlushEvents[0].cartItems
-    const extraProducts = result?.data?.FlushEvents[1].cartItems
-    const afterProducts = result?.data?.FlushEvents[2].cartItems
+    const afterProducts = result?.data?.FlushEvents[1].cartItems
+
     // Events return the cart flushed the first time
     expect(previousProducts.length).to.be.eq(1)
 
-    // Events return the cart flushed the first time and the two added as extra events
-    expect(extraProducts.length).to.be.eq(3)
-
     // Events doesn't return the last 3 events that were not flushed
-    expect(afterProducts.length).to.be.eq(3)
+    expect(afterProducts.length).to.be.eq(1)
 
     const queryResult = await waitForIt(
       () => {
@@ -59,13 +72,13 @@ describe('events', async () => {
       (result) => {
         return (
           result?.data?.ListCartReadModels?.items.length === 1 &&
-          result?.data?.ListCartReadModels?.items[0].cartItems.length === 6
+          result?.data?.ListCartReadModels?.items[0].cartItems.length === 4
         )
       }
     )
 
-    // After the command is executed, the register is flushed, so we will have the 6 cartItems
-    expect(queryResult.data.ListCartReadModels?.items[0].cartItems.length).to.be.eq(6)
+    // After the command is executed, the register is flushed, so we will have the 4 cartItems
+    expect(queryResult.data.ListCartReadModels?.items[0].cartItems.length).to.be.eq(4)
   })
 
   it('should create an event in the event store', async () => {
@@ -169,22 +182,3 @@ describe('events', async () => {
     expectEvents.to.be.sorted((prev: number, next: number) => prev > next)
   })
 })
-
-function mutateFlushEvents(client: ApolloClient<NormalizedCacheObject>, mockCartId: string) {
-  return client.mutate({
-    variables: {
-      cartId: mockCartId,
-    },
-    mutation: gql`
-      mutation FlushEvents($cartId: ID!) {
-        FlushEvents(input: { cartId: $cartId, previousProducts: 1, extraProducts: 2, afterProducts: 3 }) {
-          id
-          cartItems {
-            productId
-            quantity
-          }
-        }
-      }
-    `,
-  })
-}

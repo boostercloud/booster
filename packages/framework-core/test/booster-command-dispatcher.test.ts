@@ -171,7 +171,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
       }
 
       replace(ProperlyHandledCommand, 'handle', fakeHandler)
-      replace(RegisterHandler, 'flush', fake())
+      replace(RegisterHandler, 'handle', fake())
 
       const config = {
         commandHandlers: {
@@ -200,7 +200,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
       await new BoosterCommandDispatcher(config as any).dispatchCommand(commandEnvelope as any, {} as any)
 
       expect(fakeHandler).to.have.been.calledWithMatch(commandValue)
-      expect(RegisterHandler.flush).to.have.been.calledWithMatch(config, {
+      expect(RegisterHandler.handle).to.have.been.calledWithMatch(config, {
         requestID: '42',
         currentUser: commandEnvelope.currentUser,
         eventList: [event],

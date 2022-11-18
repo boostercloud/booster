@@ -1,6 +1,9 @@
 import { EventInterface } from './event'
 import { UserEnvelope, ContextEnvelope } from '../envelope'
 import { UUID } from './uuid'
+import { BoosterConfig } from '../config'
+
+export type FlusherFunction = (config: BoosterConfig, eventList: Array<EventInterface>, requestID: UUID, currentUser?: UserEnvelope) => Promise<void>
 
 /**
  * Object passed by booster to handlers to accumulate the events emmited or the commands submitted by the handler.
@@ -28,6 +31,7 @@ export class Register {
   public constructor(
     readonly requestID: UUID,
     readonly responseHeaders: Record<string, string>,
+    readonly flusher: FlusherFunction,
     readonly currentUser?: UserEnvelope,
     readonly context?: ContextEnvelope
   ) {}
@@ -39,5 +43,10 @@ export class Register {
   public events(...events: Array<EventInterface>): Register {
     this.eventList.push(...events)
     return this
+  }
+
+  public async flush(config: BoosterConfig): Promise<void> {
+    await this.flusher(config, this.eventList, this.requestID, this.currentUser)
+    this.eventList.length = 0
   }
 }
