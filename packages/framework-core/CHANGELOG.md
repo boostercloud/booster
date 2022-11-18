@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Fri, 18 Nov 2022 16:37:13 GMT and should not be manually modified.
+This log was last generated on Fri, 18 Nov 2022 17:45:52 GMT and should not be manually modified.
+
+## 1.3.0
+Fri, 18 Nov 2022 17:45:52 GMT
+
+### Minor changes
+
+- Support GraphQL Promises for getters
 
 ## 1.2.0
 Fri, 18 Nov 2022 16:37:13 GMT
