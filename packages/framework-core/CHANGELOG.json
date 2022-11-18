@@ -2,6 +2,36 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "1.1.0",
+      "tag": "@boostercloud/framework-core_v1.1.0",
+      "date": "Fri, 18 Nov 2022 13:22:15 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Migrate on ReadModel Find and Search",
+            "author": "Javier Toledo <javier@booster.cloud>",
+            "commit": "b0fc7fe617bee7caddf33ca3b230030e2828b735"
+          },
+          {
+            "comment": "Fix BEM events processing",
+            "author": "Javier Toledo <javier@booster.cloud>",
+            "commit": "b0fc7fe617bee7caddf33ca3b230030e2828b735"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^1.0.2` to `^1.1.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^1.0.2` to `^1.1.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^1.0.2` to `^1.1.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.0.2",
       "tag": "@boostercloud/framework-core_v1.0.2",
       "date": "Fri, 11 Nov 2022 00:15:47 GMT",
