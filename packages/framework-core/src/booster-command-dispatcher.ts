@@ -42,7 +42,7 @@ export class BoosterCommandDispatcher {
     const register: Register = new Register(
       migratedCommandEnvelope.requestID,
       context.responseHeaders,
-      RegisterHandler.flush,
+      RegisterHandler.handle,
       migratedCommandEnvelope.currentUser,
       migratedCommandEnvelope.context
     )

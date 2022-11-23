@@ -11,7 +11,6 @@ export class FlushEvents {
     readonly cartId: UUID,
     readonly previousProducts: number,
     readonly afterProducts: number,
-    readonly extraProducts: number
   ) {}
 
   public static async handle(command: FlushEvents, register: Register): Promise<Array<Cart>> {

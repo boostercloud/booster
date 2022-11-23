@@ -34,7 +34,7 @@ describe('the `RegisterHandler` class', () => {
     } as any
     config.reducers['SomeEvent'] = { class: SomeEntity, methodName: 'whatever' }
 
-    const register = new Register('1234', {} as any, RegisterHandler.flush)
+    const register = new Register('1234', {} as any, RegisterHandler.handle)
     const event1 = new SomeEvent('a')
     const event2 = new SomeEvent('b')
     register.events(event1, event2)
@@ -45,8 +45,8 @@ describe('the `RegisterHandler` class', () => {
     await RegisterHandler.handle(config, register)
 
     expect(registerHandler.wrapEvent).to.have.been.calledTwice
-    expect(registerHandler.wrapEvent).to.have.been.calledWith(config, event1, '1234')
-    expect(registerHandler.wrapEvent).to.have.been.calledWith(config, event2, '1234')
+    expect(registerHandler.wrapEvent).to.have.been.calledWith(config, event1, register)
+    expect(registerHandler.wrapEvent).to.have.been.calledWith(config, event2, register)
     expect(config.provider.events.store).to.have.been.calledOnce
   })
 
@@ -59,7 +59,7 @@ describe('the `RegisterHandler` class', () => {
     } as any
     config.reducers['SomeEvent'] = { class: SomeEntity, methodName: 'whatever' }
 
-    const register = new Register('1234', {} as any, RegisterHandler.flush)
+    const register = new Register('1234', {} as any, RegisterHandler.handle)
     await RegisterHandler.handle(config, register)
 
     expect(config.provider.events.store).to.not.have.been.called
@@ -79,7 +79,7 @@ describe('the `RegisterHandler` class', () => {
 
     replace(Date.prototype, 'toISOString', fake.returns('just the right time'))
 
-    const register = new Register('1234', {} as any, RegisterHandler.flush)
+    const register = new Register('1234', {} as any, RegisterHandler.handle)
     const event1 = new SomeEvent('a')
     const event2 = new SomeEvent('b')
     register.events(event1, event2)
@@ -129,11 +129,12 @@ describe('the `RegisterHandler` class', () => {
       roles: ['Paco'],
       claims: {},
     }
+    const register = new Register('1234', {} as any, RegisterHandler.handle, user)
     const event = new SomeEvent('a')
     replace(Date.prototype, 'toISOString', fake.returns('right here, right now!'))
 
     const registerHandler = RegisterHandler as any
-    expect(registerHandler.wrapEvent(config, event, '1234', user)).to.deep.equal({
+    expect(registerHandler.wrapEvent(config, event, register)).to.deep.equal({
       version: 1,
       kind: 'event',
       superKind: 'domain',
@@ -158,12 +159,13 @@ describe('the `RegisterHandler` class', () => {
       roles: ['Paco'],
       claims: {},
     }
+    const register = new Register('1234', {}, RegisterHandler.handle, user)
     const someEntity = new SomeEntity('42')
     const event = new BoosterEntityMigrated('oldEntity', 'oldEntityId', 'newEntityName', someEntity)
     replace(Date.prototype, 'toISOString', fake.returns('right here, right now!'))
 
     const registerHandler = RegisterHandler as any
-    expect(registerHandler.wrapEvent(config, event, '1234', user)).to.deep.equal({
+    expect(registerHandler.wrapEvent(config, event, register)).to.deep.equal({
       version: 1,
       kind: 'event',
       superKind: 'booster',

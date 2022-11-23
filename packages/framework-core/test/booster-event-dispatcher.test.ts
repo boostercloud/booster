@@ -271,7 +271,7 @@ describe('BoosterEventDispatcher', () => {
       })
 
       it('waits for async event handlers to finish', async () => {
-        let capturedRegister: Register = new Register(random.uuid(), {} as any, RegisterHandler.flush)
+        let capturedRegister: Register = new Register(random.uuid(), {} as any, RegisterHandler.handle)
         const fakeHandler = fake(async (event: EventInterface, register: Register) => {
           await new Promise((resolve) => setTimeout(resolve, 100))
           register.events(someEvent.value as EventInterface)

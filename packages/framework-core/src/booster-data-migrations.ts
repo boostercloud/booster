@@ -56,7 +56,7 @@ export class BoosterDataMigrations {
     newEntity: Instance & EntityInterface
   ): Promise<void> {
     const requestID = UUID.generate()
-    const register = new Register(requestID, {}, RegisterHandler.flush)
+    const register = new Register(requestID, {}, RegisterHandler.handle)
     register.events(new BoosterEntityMigrated(oldEntityName, oldEntityId, newEntity.constructor.name, newEntity))
     return RegisterHandler.handle(Booster.config, register)
   }
@@ -70,12 +70,12 @@ export class BoosterDataMigrations {
   }
 
   private static async migrate(migrationHandler: DataMigrationMetadata): Promise<void> {
-    const startedRegister = new Register(UUID.generate(), {}, RegisterHandler.flush)
+    const startedRegister = new Register(UUID.generate(), {}, RegisterHandler.handle)
 
     await BoosterDataMigrations.emitStarted(startedRegister, migrationHandler.class.name)
     await RegisterHandler.handle(Booster.config, startedRegister)
 
-    const finishedRegister = new Register(UUID.generate(), {}, RegisterHandler.flush)
+    const finishedRegister = new Register(UUID.generate(), {}, RegisterHandler.handle)
     await (migrationHandler.class as DataMigrationInterface).start(finishedRegister)
     await RegisterHandler.handle(Booster.config, finishedRegister)
   }

@@ -8,8 +8,6 @@ import {
   NotFoundError,
   Register,
   SuperKindType,
-  UserEnvelope,
-  UUID,
 } from '@boostercloud/framework-types'
 import { BoosterEntityMigrated } from './core-concepts/data-migration/events/booster-entity-migrated'
 import { BoosterDataMigrationStarted } from './core-concepts/data-migration/events/booster-data-migration-started'
@@ -23,31 +21,17 @@ const boosterEventsTypesNames: Array<string> = [
 
 export class RegisterHandler {
   public static async handle(config: BoosterConfig, register: Register): Promise<void> {
-    return this.flush(config, register.eventList, register.requestID, register.currentUser)
-  }
-
-  public static async flush(
-    config: BoosterConfig,
-    eventList: Array<EventInterface>,
-    requestID: UUID,
-    currentUser?: UserEnvelope
-  ): Promise<void> {
-    if (eventList.length == 0) {
+    if (register.eventList.length == 0) {
       return
     }
 
     return config.provider.events.store(
-      eventList.map((event) => RegisterHandler.wrapEvent(config, event, requestID, currentUser)),
+      register.eventList.map((event) => RegisterHandler.wrapEvent(config, event, register)),
       config
     )
   }
 
-  private static wrapEvent(
-    config: BoosterConfig,
-    event: Instance & EventInterface,
-    requestID: UUID,
-    currentUser?: UserEnvelope
-  ): EventEnvelope {
+  private static wrapEvent(config: BoosterConfig, event: Instance & EventInterface, register: Register): EventEnvelope {
     const eventTypeName = event.constructor.name
     const entityTypeName = RegisterHandler.getEntityTypeName(eventTypeName, event, config)
     if (!entityTypeName) {
@@ -66,8 +50,8 @@ export class RegisterHandler {
       kind: 'event',
       superKind: RegisterHandler.getSuperKind(eventTypeName),
       entityID: event.entityID(),
-      requestID: requestID,
-      currentUser: currentUser,
+      requestID: register.requestID,
+      currentUser: register.currentUser,
       entityTypeName: entityTypeName,
       typeName: eventTypeName,
       value: event,
