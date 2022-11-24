@@ -1,17 +1,31 @@
+import { useThemeConfig } from '@docusaurus/theme-common'
 import React from 'react'
+import FooterCopyright from './FooterCopyright'
+import FooterLinkSection from './FooterLinkSection'
 
-const FooterWrapper = () => {
+interface FooterLinkColumn {
+  title: string
+  items: FooterLinkItem[]
+}
+
+interface FooterLinkItem {
+  label: string
+  to: string
+}
+
+function Footer() {
+  const { footer } = useThemeConfig()
+  if (!footer) {
+    return null
+  }
+  const { copyright, links, style } = footer
   return (
-    <footer>
-      <div>
-        <p>
-          Booster is an open source initiative from{' '}
-          <span>
-            <a href="https://www.theagilemonkeys.com/">The Agile Monkeys</a>
-          </span>
-        </p>
-      </div>
-    </footer>
+    <>
+      <footer className="w-full max-w-3xl mx-auto flex flex-col gap-32 py-16">
+        <FooterLinkSection links={links as FooterLinkColumn[]} />
+        <FooterCopyright copyright={copyright} />
+      </footer>
+    </>
   )
 }
-export default FooterWrapper
+export default React.memo(Footer)

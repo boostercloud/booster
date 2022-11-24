@@ -72,7 +72,66 @@ const config = {
           },
         ],
       },
-      footer: {},
+      footer: {
+        copyright: `Booster is an open-source initiative from <a href="https://www.theagilemonkeys.com/">The Agile Monkeys.</a>`,
+        links: [
+          {
+            title: 'Join Us',
+            items: [
+              {
+                label: 'Github',
+                to: 'https://github.com/boostercloud',
+              },
+              {
+                label: 'Discord',
+                to: 'https://discord.gg/bDY8MKx',
+              },
+              {
+                label: 'Twitter',
+                to: 'https://twitter.com/boostthecloud',
+              },
+              {
+                label: 'Linkedin',
+                to: 'https://www.linkedin.com/company/boosterin-labs/',
+              },
+            ],
+          },
+          {
+            title: 'Resources',
+            items: [
+              {
+                label: 'Docs',
+                to: 'https://docs.booster.cloud/',
+              },
+              {
+                label: 'YouTube',
+                to: 'https://www.youtube.com/channel/UCpUTONI8OG19pr9A4cn35DA',
+              },
+              {
+                label: 'Podcast',
+                to: 'https://www.youtube.com/channel/UCxUYk1SVyNRCGNV-9SYjEFQ',
+              },
+              {
+                label: 'Press kit',
+                to: 'https://www.dropbox.com/sh/wyt7rdq7l873iyl/AADzGIae_adkFyjB_VTW2UYka?dl=0',
+              },
+            ],
+          },
+          {
+            title: 'Read more',
+            items: [
+              {
+                label: 'Dev.to',
+                to: 'https://dev.to/boostercloud',
+              },
+              {
+                label: 'Medium',
+                to: 'https://medium.com/@theam',
+              },
+            ],
+          },
+        ],
+      },
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
