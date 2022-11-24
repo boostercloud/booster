@@ -8,3 +8,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+svg {
+  display: unset;
+}
