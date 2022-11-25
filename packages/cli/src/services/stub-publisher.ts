@@ -5,6 +5,7 @@ import { wrapExecError } from '../common/errors'
 
 export type TemplateType =
   | 'command'
+  | 'query'
   | 'entity'
   | 'event'
   | 'event-handler'

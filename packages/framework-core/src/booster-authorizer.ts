@@ -1,4 +1,15 @@
-import { Class, UserEnvelope, RoleInterface, NotAuthorizedError } from '@boostercloud/framework-types'
+import {
+  Class,
+  UserEnvelope,
+  RoleInterface,
+  NotAuthorizedError,
+  QueryAuthorizer,
+  CommandRoleAccess,
+  QueryRoleAccess,
+  ReadModelRoleAccess,
+  CommandAuthorizer,
+  ReadModelAuthorizer,
+} from '@boostercloud/framework-types'
 
 export class BoosterAuthorizer {
   public static allowAccess(): Promise<void> {
@@ -14,6 +25,20 @@ export class BoosterAuthorizer {
       return BoosterAuthorizer.allowAccess()
     }
     return BoosterAuthorizer.denyAccess()
+  }
+
+  public static build(
+    attributes: CommandRoleAccess | QueryRoleAccess | ReadModelRoleAccess
+  ): CommandAuthorizer | QueryAuthorizer | ReadModelAuthorizer {
+    let authorizer: CommandAuthorizer | QueryAuthorizer | ReadModelAuthorizer = BoosterAuthorizer.denyAccess
+    if (attributes.authorize === 'all') {
+      authorizer = BoosterAuthorizer.allowAccess
+    } else if (Array.isArray(attributes.authorize)) {
+      authorizer = BoosterAuthorizer.authorizeRoles.bind(null, attributes.authorize)
+    } else if (typeof attributes.authorize === 'function') {
+      authorizer = attributes.authorize
+    }
+    return authorizer
   }
 }
 

@@ -1,11 +1,12 @@
 import { AnyClass } from '../typelevel'
-import { CommandEnvelope, EventEnvelope } from '../envelope'
+import { CommandEnvelope, EventEnvelope, QueryEnvelope } from "../envelope";
 import { EventInterface } from './event'
 import { ReadModelInterface } from './read-model'
 import { EntityInterface } from './entity'
 
 export interface GlobalErrorHandlerInterface extends AnyClass {
   onCommandHandlerError?(error: Error, command: CommandEnvelope): Promise<Error | undefined>
+  onQueryHandlerError?(error: Error, query: QueryEnvelope): Promise<Error | undefined>
   onScheduledCommandHandlerError?(error: Error): Promise<Error | undefined>
   onDispatchEventHandlerError?(error: Error, eventInstance: EventInterface): Promise<Error | undefined>
   onReducerError?(

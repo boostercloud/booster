@@ -18,7 +18,7 @@ import {
 } from 'graphql'
 import { random } from 'faker'
 import { GraphQLJSON } from 'graphql-scalars'
-import { AnyClass, BoosterConfig } from '@boostercloud/framework-types'
+import { AnyClass, BoosterConfig, QueryMetadata } from "@boostercloud/framework-types";
 import { ClassMetadata } from '@boostercloud/metadata-booster'
 import * as metadata from '../../../src/decorators/metadata'
 
@@ -35,8 +35,10 @@ describe('GraphQLQueryGenerator', () => {
 
       let mockTypeInformer: SinonStubbedInstance<GraphQLTypeInformer>
       let mockByIdResolverBuilder: SinonStub
+      let mockQueryResolverBuilder: SinonStub
       let mockFilterResolverBuilder: SinonStub
       let mockEventsResolver: SinonStub
+      const queryHandlers: Record<string, QueryMetadata> = {}
 
       let getGraphQLTypeForStub: SinonStub
 
@@ -52,6 +54,7 @@ describe('GraphQLQueryGenerator', () => {
 
         mockTypeInformer = sinon.createStubInstance(GraphQLTypeInformer)
         mockByIdResolverBuilder = stub()
+        mockQueryResolverBuilder = stub()
         mockFilterResolverBuilder = stub()
         mockEventsResolver = stub()
 
@@ -81,8 +84,10 @@ describe('GraphQLQueryGenerator', () => {
             graphQLQueryGenerator = new GraphQLQueryGenerator(
               simpleConfig,
               [mockTargetTypeClass],
+              queryHandlers,
               mockTypeInformer as any,
               mockByIdResolverBuilder,
+              mockQueryResolverBuilder,
               mockFilterResolverBuilder,
               mockEventsResolver
             )
@@ -187,8 +192,10 @@ describe('GraphQLQueryGenerator', () => {
                 graphQLQueryGenerator = new GraphQLQueryGenerator(
                   simpleConfig,
                   [mockTargetType],
+                  queryHandlers,
                   mockTypeInformer as any,
                   mockByIdResolverBuilder,
+                  mockQueryResolverBuilder,
                   mockFilterResolverBuilder,
                   mockEventsResolver
                 )
@@ -284,8 +291,10 @@ describe('GraphQLQueryGenerator', () => {
                   graphQLQueryGenerator = new GraphQLQueryGenerator(
                     simpleConfig,
                     [mockTargetType],
+                    queryHandlers,
                     mockTypeInformer as any,
                     mockByIdResolverBuilder,
+                    mockQueryResolverBuilder,
                     mockFilterResolverBuilder,
                     mockEventsResolver
                   )
@@ -371,8 +380,10 @@ describe('GraphQLQueryGenerator', () => {
                   graphQLQueryGenerator = new GraphQLQueryGenerator(
                     simpleConfig,
                     [mockTargetType],
+                    queryHandlers,
                     mockTypeInformer as any,
                     mockByIdResolverBuilder,
+                    mockQueryResolverBuilder,
                     mockFilterResolverBuilder,
                     mockEventsResolver
                   )
@@ -474,8 +485,10 @@ describe('GraphQLQueryGenerator', () => {
           graphQLQueryGenerator = new GraphQLQueryGenerator(
             configWithEventsAndEntities,
             [mockTargetTypeClass],
+            queryHandlers,
             mockTypeInformer as any,
             mockByIdResolverBuilder,
+            mockQueryResolverBuilder,
             mockFilterResolverBuilder,
             mockEventsResolver
           )
@@ -521,8 +534,10 @@ describe('GraphQLQueryGenerator', () => {
           graphQLQueryGenerator = new GraphQLQueryGenerator(
             simpleConfig,
             [],
+            queryHandlers,
             mockTypeInformer as any,
             mockByIdResolverBuilder,
+            mockQueryResolverBuilder,
             mockFilterResolverBuilder,
             mockEventsResolver
           )

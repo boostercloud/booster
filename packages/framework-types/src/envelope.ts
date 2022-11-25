@@ -1,4 +1,12 @@
-import { CommandInput, EntityInterface, EventInterface, ReadModelInterface, SequenceKey, UUID } from './concepts'
+import {
+  CommandInput,
+  EntityInterface,
+  EventInterface,
+  QueryInput,
+  ReadModelInterface,
+  SequenceKey,
+  UUID,
+} from './concepts'
 import { GraphQLClientMessage } from './graphql-websocket-messages'
 import { FilterFor, SortFor } from './searcher'
 import { Class } from './typelevel'
@@ -14,10 +22,17 @@ export interface Envelope {
   context?: ContextEnvelope
 }
 
-export interface CommandEnvelope extends Envelope {
+export interface TypedEnvelope extends Envelope {
   typeName: string
   version: number
+}
+
+export interface CommandEnvelope extends TypedEnvelope {
   value: CommandInput
+}
+
+export interface QueryEnvelope extends TypedEnvelope {
+  value: QueryInput
 }
 
 export interface ScheduledCommandEnvelope extends Envelope {
@@ -26,9 +41,7 @@ export interface ScheduledCommandEnvelope extends Envelope {
 
 export type SuperKindType = 'domain' | 'notification' | 'booster'
 
-export interface EventEnvelope extends Envelope {
-  typeName: string
-  version: number
+export interface EventEnvelope extends TypedEnvelope {
   kind: 'event' | 'snapshot'
   superKind: SuperKindType
   entityID: UUID

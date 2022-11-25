@@ -10,6 +10,9 @@ import {
   commandHandlerErrorCartId,
   commandHandlerErrorCartMessage,
   commandHandlerErrorIgnoredCartId,
+  queryHandlerErrorCartId,
+  queryHandlerErrorCartMessage,
+  queryHandlerErrorIgnoredCartId,
 } from '../../../src/constants'
 
 describe('Global error handler', async () => {
@@ -73,6 +76,39 @@ describe('Global error handler', async () => {
           `,
         })
       ).to.be.eventually.rejectedWith(expectedErrorMessage)
+    })
+  })
+
+  context('QueryHandler', async () => {
+    it('should update error object when handler fails', async () => {
+      const expectedErrorMessage = `GraphQL error: ${queryHandlerErrorCartMessage}-onQueryHandlerError-onError`
+      await expect(
+        client.mutate({
+          variables: {
+            cartId: queryHandlerErrorCartId,
+          },
+          mutation: gql`
+            mutation GetCartById($cartId: ID!) {
+              GetCartById(input: { cartId: $cartId })
+            }
+          `,
+        })
+      ).to.be.eventually.rejectedWith(expectedErrorMessage)
+    })
+
+    it('should ignore error object when handler returns undefined', async () => {
+      await expect(
+        client.mutate({
+          variables: {
+            cartId: queryHandlerErrorIgnoredCartId,
+          },
+          mutation: gql`
+            mutation GetCartById($cartId: ID!) {
+              GetCartById(input: { cartId: $cartId })
+            }
+          `,
+        })
+      ).to.be.eventually.eql({ data: { GetCartById: true } })
     })
   })
 
