@@ -21,11 +21,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Rush Install
-        # Pinning to specific commit that has been audited. Only update 3rd party
-        # actions' commit hashes if you've audited them
-        uses: advancedcsg-open/actions-rush@981bd2de50c1c39dbb8a537e646ee0c410da8638
-        with:
-          build: true
+        run: node common/scripts/install-run-rush.js install
 
+      - name: Rush Build
+        run: node common/scripts/install-run-rush.js build
+        
       - name: Unit tests
         run: node common/scripts/install-run-rush.js test -v
