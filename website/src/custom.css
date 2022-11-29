@@ -4,11 +4,16 @@
   font-family: 'Open Sans';
   --ifm-font-family-base: 'Open Sans';
 }
-
+/* 
 @tailwind base;
 @tailwind components;
-@tailwind utilities;
+@tailwind utilities; */
 
 svg {
   display: unset;
+}
+
+.container {
+  margin: unset;
+  max-width: unset;
 }
