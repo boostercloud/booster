@@ -7,11 +7,11 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula')
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Booster Framework',
-  url: 'https://your-docusaurus-test-site.com',
+  url: 'https://boosterframework.com',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/favicon.png',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
@@ -28,9 +28,8 @@ const config = {
 
   presets: [
     [
-      'classic',
-      /** @type {import('@docusaurus/preset-classic').Options} */
-      ({
+      '@docusaurus/preset-classic',
+      {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
@@ -46,7 +45,7 @@ const config = {
         theme: {
           customCss: [require.resolve('./src/custom.css')],
         },
-      }),
+      },
     ],
   ],
 
@@ -66,7 +65,7 @@ const config = {
             label: 'Docs',
           },
           {
-            href: 'https://github.com/facebook/docusaurus',
+            href: 'https://github.com/boostercloud/booster',
             label: 'GitHub',
             position: 'right',
           },
