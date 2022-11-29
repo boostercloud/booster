@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Fri, 18 Nov 2022 17:45:52 GMT and should not be manually modified.
+This log was last generated on Tue, 29 Nov 2022 09:58:54 GMT and should not be manually modified.
+
+## 1.3.1
+Tue, 29 Nov 2022 09:58:54 GMT
+
+### Patches
+
+- Exported BoosterDataMigrationEntity
 
 ## 1.3.0
 Fri, 18 Nov 2022 17:45:52 GMT
