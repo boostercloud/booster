@@ -2,6 +2,31 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "1.3.2",
+      "tag": "@boostercloud/framework-core_v1.3.2",
+      "date": "Tue, 29 Nov 2022 19:05:38 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add optional headers to Azure and Local API responses",
+            "author": "Javier Toledo <javier@booster.cloud>",
+            "commit": "0b1a7feebd7e64f9946e31b7715e600498b1783b"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^1.3.1` to `^1.3.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^1.3.1` to `^1.3.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^1.3.1` to `^1.3.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.3.1",
       "tag": "@boostercloud/framework-core_v1.3.1",
       "date": "Tue, 29 Nov 2022 09:58:54 GMT",

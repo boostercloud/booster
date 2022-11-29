@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Tue, 29 Nov 2022 09:58:54 GMT and should not be manually modified.
+This log was last generated on Tue, 29 Nov 2022 19:05:38 GMT and should not be manually modified.
+
+## 1.3.2
+Tue, 29 Nov 2022 19:05:38 GMT
+
+### Patches
+
+- Add optional headers to Azure and Local API responses
 
 ## 1.3.1
 Tue, 29 Nov 2022 09:58:54 GMT
