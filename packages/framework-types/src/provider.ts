@@ -96,7 +96,7 @@ export interface ProviderConnectionsLibrary {
 }
 
 export interface ProviderAPIHandling {
-  requestSucceeded(body?: unknown): Promise<unknown>
+  requestSucceeded(body?: unknown, headers?: Record<string, number | string | ReadonlyArray<string>>): Promise<unknown>
   requestFailed(error: Error): Promise<unknown>
 }
 
