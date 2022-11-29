@@ -86,7 +86,7 @@ jobs:
         run: git stash
 
       - name: Publish using Rush
-        run: node common/scripts/install-run-rush.js publish --apply --publish --target-branch origin/main --add-commit-details
+        run: node common/scripts/install-run-rush.js publish --apply --publish --target-branch main --add-commit-details
 
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
