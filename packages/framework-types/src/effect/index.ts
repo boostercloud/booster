@@ -1,6 +1,6 @@
 /**
  * effect-ts reexports
- * ================
+ * ===================
  *
  * Module to work with the layered architecture of some Booster parts.
  *
@@ -11,8 +11,15 @@
  * work with these concepts.
  *
  *
- *
- * What is effect-ts for?
+ */
+
+/*************************************************
+ *                                               *
+ *             INTRODUCTION                      *
+ *                                               *
+ *************************************************/
+
+/* What is effect-ts for?
  * ----------------------
  *
  * `effect-ts` is a TypeScript port of the ZIO library, used for reactive programming in Scala.
@@ -61,6 +68,12 @@
  * Takeaway: `effect-ts` is a library that allows you to write code in a declarative way, opening the door to
  * innovations and improvements in the future.
  */
+
+/*************************************************
+ *                                               *
+ *             THE EFFECT TYPE                   *
+ *                                               *
+ *************************************************/
 
 /**
  * Type: Either
@@ -127,9 +140,110 @@
  * the dependencies are always resolved in the same order. This is useful because it allows us to have a single source of
  * truth for the dependencies of the application.
  *
- * Takeaway: `Effect` allows representing an asynchronous computation that can fail, and that has some dependencies.
+ * Takeaway: `Effect` is like a `Promise` but with dependencies, error handling, and better concurrency management.
  */
 export { Effect } from '@effect-ts/core'
+
+/*************************************************
+ *                                               *
+ *             USING/CREATING EFFECTS            *
+ *                                               *
+ *************************************************/
+
+/**
+ * Function: gen
+ * =============
+ *
+ * In order to be able to write code in a familiar way, like the async/await syntax that
+ * the promises API provides, Effect-ts provides a function that emulates this syntax.
+ *
+ * Instead of writing an async function, you call the `gen` function, and then you
+ * write a generator function that receives a single parameter, called adapter
+ * (usually named `$`), and returns an effect.
+ *
+ * In order to "await" effects, instead of using the `await` keyword, you use the generator
+ * function syntax, together with the adapter parameter.
+ *
+ * As an example, consider this code written using promises:
+ *
+ * // Here bar and baz are promises
+ * const foo = async function() {
+ *   const a = await bar()
+ *   const b = await baz()
+ *   return a + b
+ * }
+ *
+ * The equivalent using the `gen` function would be:
+ *
+ * // Here bar and baz are effects
+ * const foo = gen(function* ($) {
+ *  const a = yield* $(bar())
+ *  const b = yield* $(baz())
+ *  return a + b
+ * })
+ *
+ * It can look like an inconvenience to have to use the generator function syntax, but it
+ * is a trade off that allows us to write code in a familiar way, and also allows us to
+ * propagate errors, benefit from dependency injection, and all the other features that
+ * effect-ts provides. E.g. if `bar` requires some dependency, `foo` will already have
+ * it added to it's type signature, so the compiler will tell you if you forgot to add
+ * it to the environment.
+ *
+ * Still, in the new versions of effect-ts, the API has greatly improved, and there are
+ * already features that simplify the code even more. Yet, we will wait until the new
+ * version is stable before we start using it.
+ *
+ * Takeaway: Use `gen` instead of `async` and use `yield* $(...)` instead of `await`.
+ */
+export { gen } from '@effect-ts/core/Effect'
+
+/**
+ * Function: succeedWith
+ * =====================
+ *
+ * In order to create an effect that returns a value ran from a side effect (e.g.
+ * by calling console.log, which runs a side effect, but doesn't return a promise).
+ *
+ * NOTE: The function being wrapped MUST NEVER THROW. If it does, the error will be
+ * swallowed and the effect will never fail. If the function can throw, use `tryCatch`
+ * instead (see next).
+ *
+ * You pass a function that runs what you need to run, and succeedWith will return
+ * an effect that will run the function, and then return the result.
+ *
+ * Example:
+ *
+ * const log = succeedWith(() => console.log('hello world'))
+ *
+ * In this example, the effect `log` will run the side effect of calling console.log,
+ * and then return the result of the call, which is undefined.
+ *
+ * Takeaway: Use `succeedWith` to wrap effectful code that doesn't return a promise.
+ */
+export { succeedWith } from '@effect-ts/core/Effect'
+
+/**
+ * Function: tryCatch
+ * ==================
+ *
+ * If a synchronous, effectful, function can throw, you can use `tryCatch` to wrap it
+ * in an effect. It is similar to `succeedWith`, but it will catch any errors thrown
+ * by the function, and return them as an error in the effect.
+ *
+ * Example:
+ *
+ * const readFile = tryCatch(() => fs.readFileSync('foo.txt', 'utf8'), (e) => new Error(e))
+ *
+ * In this example, the effect `readFile` will run the side effect of reading the file
+ * foo.txt, and then return the result of the call, which is a string. If the file
+ * doesn't exist, or there is a permission error, the effect will fail with an error
+ * of type `Error`, meaning that the return type is `Effect<unknown, Error, string>`,
+ * as we have returned `Error` as the error type, and the return type of the function
+ * is `string`.
+ *
+ * Takeaway: Use `tryCatch` to wrap effectful code that can throw.
+ */
+export { tryCatch } from '@effect-ts/core/Effect'
 
 import { pipe } from '@effect-ts/core'
 import { Layer } from '@effect-ts/core/Effect/Layer'
