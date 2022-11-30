@@ -233,7 +233,7 @@ and 'production environments –
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "build": "ttsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
-    "test": "AWS_SDK_LOAD_CONFIG=true BOOSTER_ENV=test nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+    "test": "set AWS_SDK_LOAD_CONFIG=true & set BOOSTER_ENV=test & nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
   },
 ...
 ```

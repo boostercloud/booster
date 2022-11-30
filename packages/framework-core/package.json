@@ -24,7 +24,7 @@
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",
     "test:core": "npm run test",
-    "test": "cross-env BOOSTER_ENV=test nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\" 2>&1"
+    "test": "set BOOSTER_ENV=test & nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\" 2>&1"
   },
   "bugs": {
     "url": "https://github.com/boostercloud/booster/issues"
