@@ -18,10 +18,10 @@ function Footer() {
   if (!footer) {
     return null
   }
-  const { copyright, links, style } = footer
+  const { copyright, links } = footer
   return (
     <>
-      <footer className="w-full max-w-3xl mx-auto flex flex-col gap-32 py-16">
+      <footer className="footer-container">
         <FooterLinkSection links={links as FooterLinkColumn[]} />
         <FooterCopyright copyright={copyright} />
       </footer>

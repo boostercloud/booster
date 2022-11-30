@@ -1,1 +1,0 @@
-[contributing](https://raw.githubusercontent.com/boostercloud/booster/main/CONTRIBUTING.md)

@@ -16,17 +16,15 @@ interface FooterLinkSectionProps {
 
 export const FooterLinkSection: FC<FooterLinkSectionProps> = ({ links = [] }) => {
   return (
-    <div className="flex justify-around">
+    <div className="footer-ls">
       {links.map(({ title, items }) => (
-        <div key={title} className="flex flex-col gap-6">
-          <h5 className="uppercase text-black underline">{title}</h5>
-          <ul className="flex flex-col gap-4">
+        <div key={title} className="footer-ls-section">
+          <h5 className="footer-ls-section-title">{title}</h5>
+          <div className="footer-ls-column">
             {items.map(({ to, label }) => (
-              <li key={to}>
-                <a href={to}>{label}</a>
-              </li>
+              <a href={to}>{label}</a>
             ))}
-          </ul>
+          </div>
         </div>
       ))}
     </div>

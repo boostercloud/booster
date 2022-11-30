@@ -1,26 +1,5 @@
 # Features
 
-## Local Provider
-
-All Booster projects come with a local development environment configured by default, so you can test your app before deploying it to the cloud.
-
-You can see the configured local environment in your `src/config/config.ts` file:
-
-```typescript
-Booster.configure('local', (config: BoosterConfig): void => {
-  config.appName = 'my-store'
-  config.providerPackage = '@boostercloud/framework-provider-local'
-})
-```
-
-In order to start your application using the local provider, use the following command:
-
-```bash
-boost start -e local
-```
-
-Where `local` is one of your defined environments with the `Booster.configure` call.
-
 ## Logging in Booster
 
 If no configuration is provided, Booster uses the default JavaScript logging capabilities. Depending on the log level, it will call to `console.debug`, `console.info`, `console.warn` or `console.error`. In this regard, there's no distinction from any other node process and you'll find the logs in your cloud provider's default log aggregator (i.e. Cloudwatch if you use AWS).
@@ -95,7 +74,9 @@ Using the configured Booster logger is not mandatory for your application, but i
 
 Booster accepts standard [JWT tokens](https://jwt.io/) to authenticate incoming requests. Likewise, you can use the claims included in these tokens to authorize access to commands or read models by using the provided simple role-based authorization or writing your own authorizer functions.
 
-> [!NOTE] To learn how to include the access token in your requests, check the section [Authorizing operations](#authorizing-operations).
+:::note
+To learn how to include the access token in your requests, check the section [Authorizing operations](#authorizing-operations).
+:::
 
 ### Validating incoming tokens (Authentication)
 
@@ -143,7 +124,9 @@ config.tokenVerifiers = [
 
 If the token issuer doesn't provide a JWKS URI, you can also validate tokens against a known public key. One scenario where this is useful is when you're implementing your own authentication mechanism or you're issuing self-signed tokens.
 
-[!NOTE] If you need to handle private keys in production, consider using a KMS [(Key Management System)](https://en.wikipedia.org/wiki/Key_management#Key_storage)). These systems often provide API endpoints that let you encrypt/sign your JWT tokens without exposing the private keys. The public keys can be set in a `PublicKeyTokenVerifier` to automate verification.
+:::note
+If you need to handle private keys in production, consider using a KMS [(Key Management System)](https://en.wikipedia.org/wiki/Key_management#Key_storage)). These systems often provide API endpoints that let you encrypt/sign your JWT tokens without exposing the private keys. The public keys can be set in a `PublicKeyTokenVerifier` to automate verification.
+:::
 
 ```typescript
 config.tokenVerifiers = [
@@ -246,7 +229,9 @@ export class CreateComment {
 }
 ```
 
-> [!NOTE] **Think twice if you really need fully open GraphQL endpoints in your application**, this might be useful during development, but we recommend to **avoid exposing your endpoints in this way in production**. Even for public APIs, it might be useful to issue API keys to avoid abuse. Booster is designed to scale to any given demand, but scaling also increases the cloud bill! (See [Denial of wallet attacks](https://www.sciencedirect.com/science/article/pii/S221421262100079X))
+:::note
+**Think twice if you really need fully open GraphQL endpoints in your application**, this might be useful during development, but we recommend to **avoid exposing your endpoints in this way in production**. Even for public APIs, it might be useful to issue API keys to avoid abuse. Booster is designed to scale to any given demand, but scaling also increases the cloud bill! (See [Denial of wallet attacks](https://www.sciencedirect.com/science/article/pii/S221421262100079X))
+:::
 
 #### Simple Role-based authorization
 
@@ -347,7 +332,9 @@ export class Cart {
 }
 ```
 
-[!NOTE] Be careful when exposing events data, as this data is likely to hold internal system state. Pay special attention when authorizing public access with the `'all'` option, it's always recommended to look for alternate solutions that limit access.
+:::note
+Be careful when exposing events data, as this data is likely to hold internal system state. Pay special attention when authorizing public access with the `'all'` option, it's always recommended to look for alternate solutions that limit access.
+:::
 
 #### Custom authorization with authorizer functions
 
@@ -455,7 +442,9 @@ Luckily, you can forget about that because Booster does all the work for you!
 
 The GraphQL API is fully **auto-generated** based on your _commands_ and _read models_.
 
-> [!NOTE] To get the full potential of the GraphQL API,  it is **not** recommended to use `interface` types in any command or read model attributes. Use `class` types instead. This will allow you to perform complex graphQL filters, including over nested attributes. There's an example below:
+:::note
+To get the full potential of the GraphQL API,  it is **not** recommended to use `interface` types in any command or read model attributes. Use `class` types instead. This will allow you to perform complex graphQL filters, including over nested attributes. There's an example below:
+:::
 
 ```typescript
 // My type
@@ -507,7 +496,9 @@ Therefore:
 - To send a GraphQL mutation/query, you send an HTTP request to _"&lt;graphqlURL&gt;"_, with _method POST_, and a _JSON-encoded body_ with the mutation/query details.
 - To send a GraphQL subscription, you first connect to the _"&lt;websocketURL&gt;"_, and then send a _JSON-encoded message_ with the subscription details, _following [the "GraphQL over WebSocket" protocol](#the-graphql-over-websocket-protocol)_.
 
-> [!NOTE] you can also **send queries and mutations through the WebSocket** if that's convenient to you. See ["The GraphQL over WebSocket protocol"](#the-graphql-over-websocket-protocol) to know more.
+:::note
+You can also **send queries and mutations through the WebSocket** if that's convenient to you. See ["The GraphQL over WebSocket protocol"](#the-graphql-over-websocket-protocol) to know more.
+:::
 
 While it is OK to know how to manually send GraphQL request, you normally don't need to deal with this low-level details, especially with the WebSocket stuff.
 
@@ -580,7 +571,9 @@ And this would be the response:
 }
 ```
 
-> [!NOTE] Remember to set the proper **access token** for secured commands, check ["Authorizing operations"](#authorizing-operations).
+:::note
+Remember to set the proper **access token** for secured commands, check ["Authorizing operations"](#authorizing-operations).
+:::
 
 ### Reading read models
 
@@ -647,7 +640,9 @@ And we would get the following as response:
 }
 ```
 
-> [!NOTE] Remember to set the proper **access token** for secured read models, check ["Authorizing operations"](#authorizing-operations).
+:::note
+Remember to set the proper **access token** for secured read models, check ["Authorizing operations"](#authorizing-operations).
+:::
 
 ### Subscribing to read models
 
@@ -686,7 +681,9 @@ In the following examples we use [`wscat`](https://github.com/websockets/wscat) 
  wscat -c <websocketURL> -s graphql-ws
 ```
 
-> [!NOTE] You should specify the `graphql-ws` subprotocol when connecting with your client via the `Sec-WebSocket-Protocol` header (in this case, `wscat` does that when you use the `-s` option).
+:::note
+You should specify the `graphql-ws` subprotocol when connecting with your client via the `Sec-WebSocket-Protocol` header (in this case, `wscat` does that when you use the `-s` option).
+:::
 
 Now we can start sending messages just by writing them and hitting the <kbd>Enter</kbd> key.
 
@@ -750,7 +747,9 @@ mutation {
 }
 ```
 
-> [!NOTE] Remember that, in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
+:::note
+Remember that, in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
+:::
 
 ### Adding before hooks to your read models
 
@@ -798,7 +797,9 @@ function validateUser(request: ReadModelRequestEnvelope<CartReadModel>): ReadMod
 
 You can also define more than one `before` hook for a read model, and they will be chained, sending the resulting request object from a hook to the next one.
 
-> [!NOTE] The order in which filters are specified matters.
+:::note
+The order in which filters are specified matters.
+:::
 
 ```typescript
 import { changeFilters } from '../../filters-helper' // You can also use external functions!
@@ -1097,7 +1098,9 @@ query {
 }
 ```
 
-> [!NOTE] `eq` and `ne` are valid filters for checking if a field value is null or not null.
+:::note
+`eq` and `ne` are valid filters for checking if a field value is null or not null.
+:::
 
 ##### Array filters
 
@@ -1117,7 +1120,9 @@ query {
 }
 ```
 
-> [!NOTE] Right now, with complex properties in Arrays, you just can filter them if you know the exact value of an element but is not possible to filter from a property of the element. As a workaround, you can use an array of ids of the complex property and filter for that property as in the example above.
+:::note
+Right now, with complex properties in Arrays, you just can filter them if you know the exact value of an element but is not possible to filter from a property of the element. As a workaround, you can use an array of ids of the complex property and filter for that property as in the example above.
+:::
 
 ##### Filter combinators
 
@@ -1520,7 +1525,9 @@ The Booster WebSocket communication uses the "GraphQL over WebSocket" protocol a
 
 You don't need to know anything about this to develop using Booster, neither in the backend side nor in the frontend side (as all the Apollo GraphQL clients uses this protocol), but it is good to know it is there to guarantee a proper communication. In case you are really curious, you can read about the protocol [here](https://github.com/apollographql/subscriptions-transport-ws/blob/master/PROTOCOL.md).
 
-> [!NOTE] The WebSocket communication in Booster only supports this subprotocol, whose identifier is `graphql-ws`. For this reason, when you connect to the WebSocket provisioned by Booster, you must specify the `graphql-ws` subprotocol. If not, the connection won't succeed.
+:::note
+The WebSocket communication in Booster only supports this subprotocol, whose identifier is `graphql-ws`. For this reason, when you connect to the WebSocket provisioned by Booster, you must specify the `graphql-ws` subprotocol. If not, the connection won't succeed.
+:::
 
 ## Cloud native
 
@@ -1578,11 +1585,15 @@ If you want to delete the Booster application that has been deployed, you can ru
 boost nuke -e <environment name>
 ```
 
-> [!WARNING] This will delete everything in your stack, including databases. This action is **not** reversible!
+:::caution
+This will delete everything in your stack, including databases. This action is **not** reversible!
+:::
 
 For a force delete without asking for confirmation, you can run `boost nuke -e <environment name> -f`.
 
-> [!ATTENTION] Be EXTRA CAUTIOUS with this option, all your application data will be irreversibly DELETED without confirmation.
+:::danger
+Be EXTRA CAUTIOUS with this option, all your application data will be irreversibly DELETED without confirmation.
+:::
 
 ## Error handling
 
