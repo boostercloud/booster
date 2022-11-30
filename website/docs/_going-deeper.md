@@ -129,7 +129,9 @@ Then create a service pricipal running the following command.
 az ad sp create-for-rbac --name <service-principal-name>
 ```
 
-> [!NOTE]  Remember to change `<service-principal-name>` for a custom one.
+:::note
+Remember to change `<service-principal-name>` for a custom one.
+:::
 
 After the service principal is created, create a bash script with the following content. It will set up the necessary environment variables required by the provider in order to work:
 
@@ -146,7 +148,9 @@ export AZURE_SUBSCRIPTION_ID=$(az account show | jq -r '.id')
 export REGION
 ```
 
-> [!NOTE]  remember to have [jq](https://stedolan.github.io/jq/download/) installed in your system.
+:::note
+Remember to have [jq](https://stedolan.github.io/jq/download/) installed in your system.
+:::
 
 Now go to your `config.ts` file, import the aws provider library and set up your app environment.
 
@@ -252,7 +256,9 @@ Finally, you need to upload the source code. The main options are ([more info](h
 >  curl -X POST -u <deployment_user> --data-binary @"<zip_file_path>" https://<app_name>.scm.azurewebsites.net/api/zipdeploy
 ```
 
-> [!NOTE]  Remember to follow the **Azure Provider** steps in this page to set up your credentials correctly
+:::note
+Remember to follow the **Azure Provider** steps in this page to set up your credentials correctly
+:::
 
 #### Kubernetes provider
 
@@ -348,8 +354,10 @@ This extension mechanism is very new, but we're planning to port most of the fun
 
 ### Create your own Rocket
 
-> [!NOTE] Currently Rockets work in AWS.
-> In Azure and Local, Rockets are under experimental support. We are working on porting them to other providers.
+:::note
+Currently Rockets work in AWS.
+In Azure and Local, Rockets are under experimental support. We are working on porting them to other providers.
+:::
 
 A rocket is nothing more than an npm package that extends your current Booster architecture. The structure is simple, and it mainly has 2 methods: `mountStack` and `unmountStack`. We'll explain what they are shortly.
 
