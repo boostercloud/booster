@@ -6,12 +6,13 @@ import * as fs from 'fs-extra'
 import { IConfig } from '@oclif/config'
 import { expect } from '../../expect'
 import { template } from '../../../src/services/generator'
+import * as path from 'path'
 
 describe('new', (): void => {
   describe('Event', () => {
     const eventHandlerName = 'ExampleEventHandler'
     const eventHandlersRoot = 'src/event-handlers/'
-    const eventHandlerPath = `${eventHandlersRoot}example-event-handler.ts`
+    const eventHandlerPath = path.join(`${eventHandlersRoot}example-event-handler.ts`)
     const defaultEventHandlerImports = [
       {
         packagePath: '../events/comment-posted',

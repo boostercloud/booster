@@ -6,11 +6,12 @@ import * as fs from 'fs-extra'
 import { IConfig } from '@oclif/config'
 import { expect } from '../../expect'
 import { template } from '../../../src/services/generator'
+import * as path from 'path'
 
 describe('new', (): void => {
   describe('ScheduledCommand', () => {
     const scheduledCommandName = 'ExampleScheduledCommand'
-    const scheduledCommandRoot = 'src/scheduled-commands/'
+    const scheduledCommandRoot = path.join('src/scheduled-commands/')
     const scheduledCommandPath = `${scheduledCommandRoot}example-scheduled-command.ts`
     const defaultScheduledCommandImports = [
       {

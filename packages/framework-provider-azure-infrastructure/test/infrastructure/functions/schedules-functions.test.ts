@@ -3,6 +3,7 @@ import { expect } from '../../expect'
 import { describe } from 'mocha'
 import { ScheduledFunctions } from '../../../src/infrastructure/functions/scheduled-functions'
 import { ScheduleFunctionDefinition } from '../../../src/infrastructure/types/functionDefinition'
+import * as path from 'path'
 
 describe('Creating scheduled-functions', () => {
   describe('without scheduledCommandHandlers', () => {
@@ -111,7 +112,7 @@ describe('Creating scheduled-functions', () => {
     expect(definition.config.bindings[0].name).to.be.equal(scheduleCommandName)
     expect(definition.config.bindings[0].direction).to.be.equal('in')
     expect(definition.config.bindings[0].schedule).to.be.equal(nCronTabExpression)
-    expect(definition.config.scriptFile).to.be.equal('../dist/index.js')
+    expect(definition.config.scriptFile).to.be.equal(path.join('../dist/index.js'))
     expect(definition.config.entryPoint).to.be.equal('boosterTriggerScheduledCommand')
   }
 

@@ -5,6 +5,7 @@ import { fake, mock, replace, restore, spy } from 'sinon'
 import { expect } from '../expect'
 import { ApplicationStackBuilder } from '../../src/infrastructure/stacks/application-stack'
 import { SdkProvider } from 'aws-cdk'
+import * as path from 'path'
 
 const rewire = require('rewire')
 const StackTools = rewire('../../src/infrastructure/stack-tools')
@@ -161,7 +162,7 @@ describe('the `stack-tools` module', () => {
         const fun: any = Object.values(stackResources).find((obj: any) => {
           return obj.Properties.FunctionName == 'testing-app-app-graphql-handler'
         })
-        expect(fun.Properties.Handler).to.equal('dist/index.boosterServeGraphQL')
+        expect(fun.Properties.Handler).to.equal(path.join('dist/index.boosterServeGraphQL'))
       })
     })
 

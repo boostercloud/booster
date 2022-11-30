@@ -8,6 +8,7 @@ import * as Project from '../../../src/commands/new/project'
 import * as ProjectInitializer from '../../../src/services/project-initializer'
 import * as packageJson from '../../../src/templates/project/package-json'
 import * as Mustache from 'mustache'
+import * as path from 'path'
 
 describe('new', (): void => {
   describe('project', () => {
@@ -17,24 +18,24 @@ describe('new', (): void => {
       const defaultRepository = 'github.com:boostercloud/booster.git'
 
       const expectFilesAndDirectoriesCreated = (projectName: string) => {
-        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/commands`)
-        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/events`)
-        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/entities`)
-        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/read-models`)
-        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/config`)
-        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/common`)
-        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/event-handlers`)
-        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/scheduled-commands`)
-        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.eslintignore`)
-        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.eslintrc.js`)
-        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.gitignore`)
-        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`)
-        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/tsconfig.json`)
-        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/tsconfig.eslint.json`)
-        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.prettierrc.yaml`)
-        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/src/config/config.ts`)
-        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/src/index.ts`)
-        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.mocharc.yml`)
+        expect(fs.mkdirs).to.have.been.calledWithMatch(path.join(`${projectName}/src/commands`))
+        expect(fs.mkdirs).to.have.been.calledWithMatch(path.join(`${projectName}/src/events`))
+        expect(fs.mkdirs).to.have.been.calledWithMatch(path.join(`${projectName}/src/entities`))
+        expect(fs.mkdirs).to.have.been.calledWithMatch(path.join(`${projectName}/src/read-models`))
+        expect(fs.mkdirs).to.have.been.calledWithMatch(path.join(`${projectName}/src/config`))
+        expect(fs.mkdirs).to.have.been.calledWithMatch(path.join(`${projectName}/src/common`))
+        expect(fs.mkdirs).to.have.been.calledWithMatch(path.join(`${projectName}/src/event-handlers`))
+        expect(fs.mkdirs).to.have.been.calledWithMatch(path.join(`${projectName}/src/scheduled-commands`))
+        expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/.eslintignore`))
+        expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/.eslintrc.js`))
+        expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/.gitignore`))
+        expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/package.json`))
+        expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/tsconfig.json`))
+        expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/tsconfig.eslint.json`))
+        expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/.prettierrc.yaml`))
+        expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/src/config/config.ts`))
+        expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/src/index.ts`))
+        expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/.mocharc.yml`))
       }
 
       const defaultProjectInitializerConfig = {
@@ -106,7 +107,7 @@ describe('new', (): void => {
           )
 
           const expectedPackageJson = renderPackageJson(defaultProjectInitializerConfig) 
-          expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,expectedPackageJson)
+          expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/package.json`),expectedPackageJson)
           expect(ProjectInitializer.installDependencies).to.have.been.called
         })
 
@@ -119,7 +120,7 @@ describe('new', (): void => {
           expect(ProjectInitializer.initializeGit).to.have.not.been.called
           expectFilesAndDirectoriesCreated(projectName)
           const expectedPackageJson = renderPackageJson(defaultProjectInitializerConfig)
-          expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,expectedPackageJson)
+          expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/package.json`),expectedPackageJson)
         })
 
         describe('define homepage', () => { 
@@ -133,7 +134,7 @@ describe('new', (): void => {
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/package.json`),renderPackageJson(config))
           })
 
           it('with -H', async () => {
@@ -146,7 +147,7 @@ describe('new', (): void => {
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/package.json`),renderPackageJson(config))
           })
         })
 
@@ -161,7 +162,7 @@ describe('new', (): void => {
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/package.json`),renderPackageJson(config))
           })
 
           it('with -a', async () => {
@@ -174,7 +175,7 @@ describe('new', (): void => {
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/package.json`),renderPackageJson(config))
           })
         })
 
@@ -189,7 +190,7 @@ describe('new', (): void => {
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/package.json`),renderPackageJson(config))
           })
 
           it('with -d', async () => {
@@ -202,7 +203,7 @@ describe('new', (): void => {
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/package.json`),renderPackageJson(config))
           })
         })
 
@@ -217,7 +218,7 @@ describe('new', (): void => {
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/package.json`),renderPackageJson(config))
           })
 
           it('with -l', async () => {
@@ -230,7 +231,7 @@ describe('new', (): void => {
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/package.json`),renderPackageJson(config))
           })
         })
 
@@ -269,7 +270,7 @@ describe('new', (): void => {
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/package.json`),renderPackageJson(config))
           })
 
           it('with -r', async () => {
@@ -282,7 +283,7 @@ describe('new', (): void => {
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/package.json`),renderPackageJson(config))
           })
         })
 
@@ -297,7 +298,7 @@ describe('new', (): void => {
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/package.json`),renderPackageJson(config))
           })
 
           it('with -v', async () => {
@@ -310,7 +311,7 @@ describe('new', (): void => {
             expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
-            expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
+            expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/package.json`),renderPackageJson(config))
           })
         })
 
@@ -359,7 +360,7 @@ describe('new', (): void => {
         it('with empty project name', async () => {
           replace(console,'error', fake.resolves({}))
           await new Project.default([], {} as IConfig).run()
-          expect(fs.mkdirs).to.have.not.been.calledWithMatch(`${projectName}/src`)
+          expect(fs.mkdirs).to.have.not.been.calledWithMatch(path.join(`${projectName}/src`))
           expect(console.error).to.have.been.calledWithMatch(/You haven't provided a project name/)
           expect(oraLogger.info).to.have.not.been.calledWithMatch('Project generated!')
         })
@@ -376,7 +377,7 @@ describe('new', (): void => {
             expect(exceptionThrown).to.be.equal(true)
             expect(exceptionMessage).to.contain('Unexpected argument: --nonexistingoption')
             expect(oraLogger.info).to.have.not.been.calledWithMatch('Project generated!')
-            expect(fs.mkdirs).to.have.not.been.calledWithMatch(`${projectName}/src`)
+            expect(fs.mkdirs).to.have.not.been.calledWithMatch(path.join(`${projectName}/src`))
         })
 
         describe('define homepage badly', () => {

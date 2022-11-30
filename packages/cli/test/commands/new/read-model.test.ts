@@ -6,12 +6,13 @@ import * as fs from 'fs-extra'
 import { IConfig } from '@oclif/config'
 import { expect } from '../../expect'
 import { template } from '../../../src/services/generator'
+import * as path from 'path'
 
 describe('new', (): void => {
   describe('ReadModel', () => {
     const readModelName = 'ExampleReadModel'
-    const readModelsRoot = 'src/read-models/'
-    const readModelPath = `${readModelsRoot}example-read-model.ts`
+    const readModelsRoot = path.join('src/read-models/')
+    const readModelPath = path.join(`${readModelsRoot}example-read-model.ts`)
     const defaultReadModelImports = [
       {
         packagePath: '@boostercloud/framework-core',

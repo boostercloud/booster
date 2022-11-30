@@ -2,6 +2,7 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import { describe } from 'mocha'
 import { EventHandlerFunction } from '../../../src/infrastructure/functions/event-handler-function'
 import { expect } from '../../expect'
+import * as path from 'path'
 
 describe('Creating event-handler-functions', () => {
   const config = new BoosterConfig('test')
@@ -20,7 +21,7 @@ describe('Creating event-handler-functions', () => {
     expect(definition.config.bindings[0].databaseName).to.be.equal('new-booster-app-app')
     expect(definition.config.bindings[0].collectionName).to.be.equal('new-booster-app-app-events-store')
     expect(definition.config.bindings[0].createLeaseCollectionIfNotExists).to.be.equal('true')
-    expect(definition.config.scriptFile).to.be.equal('../dist/index.js')
+    expect(definition.config.scriptFile).to.be.equal(path.join('../dist/index.js'))
     expect(definition.config.entryPoint).to.be.equal('boosterEventDispatcher')
   })
 })

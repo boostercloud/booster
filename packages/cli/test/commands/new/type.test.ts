@@ -6,11 +6,12 @@ import * as fs from 'fs-extra'
 import { IConfig } from '@oclif/config'
 import { expect } from '../../expect'
 import { template } from '../../../src/services/generator'
+import * as path from 'path'
 
 describe('new', (): void => {
   describe('Type', () => {
     const typeName = 'ExampleType'
-    const typesRoot = 'src/common/'
+    const typesRoot = path.join('src/common/')
     const typePath = `${typesRoot}example-type.ts`
     const defaultTypeImports = [
       {
