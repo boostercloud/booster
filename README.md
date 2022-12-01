@@ -12,41 +12,59 @@
 
 # What is Booster Framework?
 
-The [Booster Framework](https://boosterframework.com) is a true serverless framework focused on extreme development productivity that provides a highly opinionated implementation of the CQRS and Event Sourcing patterns in Typescript. Using [DDD (Domain-Driven Design)](https://en.wikipedia.org/wiki/Domain-driven_design) semantics, business logic falls naturally in the code, so business, product and technical teams can collaborate sharing a much closer language.
+The [Booster Framework](https://boosterframework.com) is a software development framework to create event-driven backend microservices that is focused on extreme development productivity. It provides a highly opinionated implementation of the CQRS and Event Sourcing patterns in Typescript, using [DDD (Domain-Driven Design)](https://en.wikipedia.org/wiki/Domain-driven_design) semantics that makes business logic falls naturally in the code. This way, business, product, and technical teams can collaborate sharing a much closer language.
 
-Booster uses advanced static analisys techniques and takes advantage of the Typescript type system to understand the structure and semantics of your code and reduce the boilerplate, so it's capable not just of building an entirely functioning GraphQL API for you, but also to build an optimal, production-ready and scalable cloud infrastructure for your application in your prefered cloud provider (Azure or AWS).
+Booster uses advanced static analysis techniques and takes advantage of the Typescript type system to understand the structure and semantics of your code and reduce the boilerplate, so it's capable not just of building an entirely functioning GraphQL API for you but also to build an optimal, production-ready and scalable cloud infrastructure for your application in your preferred cloud provider (Azure or AWS).
 
 Combining these features, Booster provides an unprecedented developer experience. On the one hand, it helps you write simpler code, defining your application in terms of commands, events, entities, and read models. On the other hand, you don't have to worry about the tremendous amount of low-level configuration details of conventional tools. You write highly semantic code, and if it compiles, you can run it on the cloud at scale.
 
-Booster is 100% open-source and designed with extensibility in mind. If your desired infrastructure doesn't match with the existing implementations, you can easily fork and adapt them, or create a new one from scratch using your infrastructure as code tool of preference. Booster also supports extensions that we call rockets and allow users to implememnt additional infrastructure and functionality.
+Booster is 100% open-source and designed with extensibility in mind. If your desired infrastructure doesn't match the existing implementations, you can easily fork and adapt them or create a new one from scratch using your infrastructure-as-code tool of preference. Booster also supports extensions (called “Rockets”) that allow users to implememnt additional functionalities.
 
-And this is only the beginning! If you want to help us or have any questions, don't hesitate to ping us on [Discord](https://discord.gg/bDY8MKx)!
+If you want to help us on evolving Booster or have any questions, don't hesitate to ping us on [Discord](https://discord.gg/bDY8MKx)!
 
-## Current state and roadmap
+# Why Booster instead of X
 
-The roadmap is community-driven, the Booster core team actively participates in the community, listening to real users, and prioritizing those issues and ideas that provide the highest value for the most of people, so don't hesitate to create issues or leave comments in [Discord](https://discord.gg/k7b4B8CDtT) and tell us about your questions and ideas.
+Booster is designed to maximize developer productivity, and every framework feature is thought to put your application in production as soon as possible. The CLI helps you to get up and running quickly, and the easy-to-comprehend abstractions and the opinionated architecture make it easy to understand how to organize your code and become productive sooner.
 
-AWS and Azure implementations are thorougly tested (with unit and integration tests running automatically before every release) and are currently used in production in projects of all-size organizations, from startups to massive enterprises.
+The no-boilerplate politics goes to the extreme that Booster understands the semantics of your code to create a fully-working GraphQL API for you, as well as an optimal serverless cloud infrastructure and database integrations. And, of course, the API and infrastructure are transparently updated when the application changes.
 
-It exists an experimental implementation of a Kubernetes runtime, but it is not actively supported at the moment. If you're interested on Kubernetes support, make sure to let us know!
+It would be easier to understand Booster capabilities by listing the things that you won’t need to implement or maintain with Booster:
 
-You can see and follow the roadmap in [this public Github Project](https://github.com/orgs/boostercloud/projects/2/views/2).
+* You won’t maintain GraphQL schemas
+* You won’t implement GraphQL resolvers
+* You won’t have to manage URL paths
+* You won’t have to design the API schemas
+* You won’t have to deserialize or serialize JSON objects
+* You won’t need to use DTOs
+* You won’t need to deal with ORM mappings and/or database queries
+* You won’t need to write infrastructure configuration or deployment scripts
+* You won’t need to build WebSockets for subscriptions
 
-## The "Booster Way"
+All those things, and more, will be given to you by default and entirely for free, as Booster is open-source and runs in your own cloud account!
+
+# Current state and roadmap
+
+[The roadmap](https://github.com/orgs/boostercloud/projects/2/views/2) is community-driven; the Booster core team actively participates in the community, listening to real users, and prioritizing those issues and ideas that provide the highest value for most people, so don't hesitate to create issues or leave comments in [Discord](https://discord.gg/k7b4B8CDtT) and tell us about your questions and ideas.
+
+AWS and Azure integrations are thoroughly tested (with unit and integration tests running automatically before every release) and are currently used in production in projects of all-size organizations, from startups to massive enterprises.
+
+It exists experimental support for Kubernetes, but it is not actively supported at the moment. If you're interested in Kubernetes support, let us know!
+
+# The "Booster Way"
 
 Booster Framework follows the next principles:
 
-* *Play nicely*: Booster is not here to replace your toolkit but to expand it. Booster's goal is to come along well together with your existing auth, queues, databases, and services, providing a modern and swift tool to build new functionality that really squeezes the cloud.
-* *DDD:* Software should be designed around business-level concepts to ease the team's communication. All code in Booster is defined in terms of Commands, Events, Handlers, and Entities, limiting the need for artificial developers-only constructs.
+* *Play nicely*: Booster is not here to replace your toolkit but to expand it. Booster's goal is to come along well together with your existing auth, queues, databases, and services, providing a modern and swift tool to build new functionality that takes full advantage of the cloud. Booster is still a Node.js application that you can extend with any tool from your Node.js environment
+* *Domain Driven Design first:* Software should be designed around business-level concepts to ease the team's communication. All code in Booster is defined in terms of Commands, Events, Handlers, and Entities, limiting the need for artificial developers-only constructs.
 * *CQRS and Event-Sourcing:* Booster is designed around the concepts of CQRS and Event-Sourcing. This design has many advantages regarding scalability and data management. It even allows you to travel back in time!
 * *The cloud is the machine:* We believe that the developer's tools should create infrastructure transparently in the same way that a compiler hides the details of the target processor. We often think about Booster as the "TypeScript-to-Cloud compiler."
-* *True Serverless*: Serverless is about to stop caring about your servers, but many implementations still require long YAML files to describe your infrastructure, and you really need to know what you're doing. True Serverless means that you don't even care about cloud configuration. Booster will figure it out for you based on the structure of the code you write.
-* *Convention over Configuration:* We prefer to provide standardized highly-opinionated modules than highly-configurable ones. This helps us to keep your code simple and follow the best practices when deploying your applications to the cloud. Decorating your classes with the provided semantic decorators also help to abstract out most of the boilerplate code.
+* *True Serverless*: Serverless is about to stop caring about your servers, but many implementations still require long YAML files to describe your infrastructure, and you need to know what you're doing. True Serverless means that you don't even care about cloud configuration. Booster will figure it out for you based on the code structure you write.
+* *Convention over Configuration:* We prefer to provide standardized highly-opinionated modules than highly-configurable ones. This helps us to keep your code simple and follow the best practices when deploying your applications to the cloud. Decorating your classes with the provided semantic decorators also helps to abstract out most of the boilerplate code.
 * *Don't Repeat Yourself (Extreme edition):* /The only code that matters is the one that makes your application different/. We push TypeScript structure and type system to the limit to avoid writing repetitive code, like object-to-JSON serializations, API or database schemas, or redundant architecture layers. Boster understands the semantics of your code and connects the dots.
 * *Self-documenting APIs* We adopted GraphQL because it's a self-documenting standard. You can grab a standard GraphQL client like [ApolloClient](https://github.com/apollographql/apollo-client) and start using a Booster backend right away with no complicated integrations.
 * *Developer's productivity:* Software development is fun, and a modern tool should make it even funnier, reducing the need for mundane tasks. Booster provides code generators to help you quickstart new projects and objects, and the framework types and APIs are hand-crafted to help your IDE help you.
 
-## Contributing
+# Contributing
 
 You can join the conversation and start contributing in any of the following ways:
 * [Say hello in Discord](https://discord.gg/bDY8MKx)
@@ -56,11 +74,11 @@ You can join the conversation and start contributing in any of the following way
 Please refer to [`CONTRIBUTING.md`](./CONTRIBUTING.md) for more details. Pull requests are welcome. For major changes, please
 open an issue first to discuss what you would like to change.
 
-## License
+# License
 
 The Booster Framework is licensed under the Apache License, Version 2.0. See the [LICENSE](LICENSE) file for more details.
 
-## Resources
+# Resources
 
 * [Website](https://boosterframework.com)
 * [Documentation](https://docs.booster.cloud)
@@ -70,3 +88,5 @@ The Booster Framework is licensed under the Apache License, Version 2.0. See the
 * [Demos and more in Youtube](https://www.youtube.com/channel/UCpUTONI8OG19pr9A4cn35DA)
 * [Rocket to the Cloud Podcast](https://www.youtube.com/channel/UCxUYk1SVyNRCGNV-9SYjEFQ)
 * [Booster in Dev.to](https://dev.to/boostercloud)
+
+
