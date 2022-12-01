@@ -12,23 +12,25 @@
 
 # What is Booster Framework?
 
-The Booster Framework is a true serverless framework that provides a highly opinionated implementation of the CQRS and Event Sourcing patterns in Typescript. Using these patterns, you naturally write highly semantic, simple, and strongly typed code that puts into practice the ideas of Domain-Driven Design.
+The [Booster Framework](https://boosterframework.com) is a true serverless framework focused on extreme development productivity that provides a highly opinionated implementation of the CQRS and Event Sourcing patterns in Typescript. Using [DDD (Domain-Driven Design)](https://en.wikipedia.org/wiki/Domain-driven_design) semantics, business logic falls naturally in the code, so business, product and technical teams can collaborate sharing a much closer language.
 
-Booster extracts metadata from your code structure at deployment time, combining it with years worth of knowledge and experience from our team to build an optimal cloud environment to run your application at scale.
+Booster uses advanced static analisys techniques and takes advantage of the Typescript type system to understand the structure and semantics of your code and reduce the boilerplate, so it's capable not just of building an entirely functioning GraphQL API for you, but also to build an optimal, production-ready and scalable cloud infrastructure for your application in your prefered cloud provider (Azure or AWS).
 
-Combining these features, Booster provides an unprecedented developer experience. On the one hand, it helps you write simpler code, defining your application in terms of commands, events, entities, and read models. On the other hand, you don't have to worry about the tremendous amount of low-level configuration details of conventional tools. You write highly semantic code, and if it compiles, it will run on the cloud.
+Combining these features, Booster provides an unprecedented developer experience. On the one hand, it helps you write simpler code, defining your application in terms of commands, events, entities, and read models. On the other hand, you don't have to worry about the tremendous amount of low-level configuration details of conventional tools. You write highly semantic code, and if it compiles, you can run it on the cloud at scale.
 
-Booster is designed with extensibility in mind. If there's still something you can't do with the default functionality, there are lower-level APIs that you can use to extend any layer of the framework with Rockets (The way we call Booster's plugins). With Rockets, it's easy to add support for new cloud building blocks or pack functionality in highly reusable npm packages.
+Booster is 100% open-source and designed with extensibility in mind. If your desired infrastructure doesn't match with the existing implementations, you can easily fork and adapt them, or create a new one from scratch using your infrastructure as code tool of preference. Booster also supports extensions that we call rockets and allow users to implememnt additional infrastructure and functionality.
 
-And this is only the beginning! We want to keep expanding the framework to become a tool usable from any programming language, add support for more runtime targets and implement other common high-level patterns like MVC. If you want to help us make this a reality, don't hesitate to ping us on [Discord](https://discord.gg/bDY8MKx)!
+And this is only the beginning! If you want to help us or have any questions, don't hesitate to ping us on [Discord](https://discord.gg/bDY8MKx)!
 
-## Current state
+## Current state and roadmap
 
-We've built the foundations, and there's a fully working TypeScript implementation that models CQRS and Event-Sourcing on top of AWS Serverless. The AWS implementation is thoroughly tested before every new release, including unit tests, integration tests, and automated load tests. It implements advanced techniques like optimistic concurrency or sharding databases out of the box and by default, so you don't have to worry about your data consistency. It feels like magic!
+The roadmap is community-driven, the Booster core team actively participates in the community, listening to real users, and prioritizing those issues and ideas that provide the highest value for the most of people, so don't hesitate to create issues or leave comments in [Discord](https://discord.gg/k7b4B8CDtT) and tell us about your questions and ideas.
 
-We also have experimental support for Azure and Kubernetes runtimes, which are already usable, but still, need some work to reach the same level of robustness and scalability of the AWS implementation.
+AWS and Azure implementations are thorougly tested (with unit and integration tests running automatically before every release) and are currently used in production in projects of all-size organizations, from startups to massive enterprises.
 
-We know that this project is extremely ambitious. Still, we're convinced that this project could become the next level of abstraction in software history. That's why we made it open-source. Because we believe that the only way to make something like this succeed is by the collaboration and support of diverse groups of developers with varying goals. Every now and then, there has to be a jump in software evolution, and we won't make it if we're not bold enough!
+It exists an experimental implementation of a Kubernetes runtime, but it is not actively supported at the moment. If you're interested on Kubernetes support, make sure to let us know!
+
+You can see and follow the roadmap in [this public Github Project](https://github.com/orgs/boostercloud/projects/2/views/2).
 
 ## The "Booster Way"
 
@@ -46,8 +48,6 @@ Booster Framework follows the next principles:
 
 ## Contributing
 
-We've built the foundations and demonstrated that this new model of programming works. Now it's time for you to join our community and help us to make it grow! Join a diverse and welcoming community of crazy developers trying to redefine the future. There's no small contribution, and all ideas are welcome. Of course, we can't guarantee any success, but we believe the journey will be worth it no matter what. Bold adventurers will be recognized as such!
-
 You can join the conversation and start contributing in any of the following ways:
 * [Say hello in Discord](https://discord.gg/bDY8MKx)
 * [Create a new issue in Github](https://github.com/boostercloud/booster/issues/new/choose)
@@ -62,6 +62,7 @@ The Booster Framework is licensed under the Apache License, Version 2.0. See the
 
 ## Resources
 
+* [Website](https://boosterframework.com)
 * [Documentation](https://docs.booster.cloud)
 * [Step-by-step guides and examples](docs/examples)
 * [Join the conversation in Discord](https://discord.gg/k7b4B8CDtT)
@@ -69,9 +70,3 @@ The Booster Framework is licensed under the Apache License, Version 2.0. See the
 * [Demos and more in Youtube](https://www.youtube.com/channel/UCpUTONI8OG19pr9A4cn35DA)
 * [Rocket to the Cloud Podcast](https://www.youtube.com/channel/UCxUYk1SVyNRCGNV-9SYjEFQ)
 * [Booster in Dev.to](https://dev.to/boostercloud)
-
-## Disclaimer
-
-Booster is under heavy development, and non-backward-compatible changes might be introduced before we reach v1.0.0.
-
-Refer to [Release Notes](https://github.com/boostercloud/booster/releases) for more specific information about changes of each iteration.
