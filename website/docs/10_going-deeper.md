@@ -2,7 +2,7 @@
 
 ## Contributing
 
-If you want to start making contributions to Booster, we strongly recommend that you read our [contributing guide](CONTRIBUTING.md).
+If you want to start making contributions to Booster, we strongly recommend that you read our [contributing guide](contributing).
 
 ## Framework Core
 

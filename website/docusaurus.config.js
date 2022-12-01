@@ -34,13 +34,13 @@ const config = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl: 'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          editUrl: 'https://github.com/boostercloud/booster/tree/main/website/',
         },
         blog: {
           showReadingTime: true,
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl: 'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          editUrl: 'https://github.com/facebook/docusaurus/tree/main/website/',
         },
         theme: {
           customCss: [require.resolve('./src/custom.css')],
@@ -52,6 +52,10 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
+      colorMode: {
+        defaultMode: 'light',
+        disableSwitch: true,
+      },
       navbar: {
         logo: {
           alt: 'Booster Logo',
@@ -67,6 +71,11 @@ const config = {
           {
             href: 'https://github.com/boostercloud/booster',
             label: 'GitHub',
+            position: 'right',
+          },
+          {
+            href: 'https://discord.gg/bDY8MKx',
+            label: 'Discord',
             position: 'right',
           },
         ],

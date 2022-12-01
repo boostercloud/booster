@@ -33,6 +33,7 @@ const sidebars = {
     'error-handling',
     'data-migrations',
     'testing',
+    'going-deeper',
     'frequently-asked-questions',
     'contributing',
   ],
