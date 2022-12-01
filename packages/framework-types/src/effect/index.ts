@@ -142,7 +142,7 @@
  *
  * Takeaway: `Effect` is like a `Promise` but with dependencies, error handling, and better concurrency management.
  */
-export { Effect } from '@effect-ts/core'
+export type { Effect } from '@effect-ts/core/Effect'
 
 /*************************************************
  *                                               *
