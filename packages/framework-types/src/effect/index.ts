@@ -758,7 +758,7 @@ export * as Layer from '@effect-ts/core/Effect/Layer'
  * USING SERVICES IN THE PROGRAM
  * =============================
  *
- * As you saw quickly in the remoteFileSystemService example, you can use tag of the service
+ * As you saw quickly in the remoteFileSystemService example, you can use a tag of the service
  * to access it in the environment. This will return the implementation of the service that
  * is available in the environment. If there's no implementation available, the code won't
  * compile, instead of failing at runtime.
