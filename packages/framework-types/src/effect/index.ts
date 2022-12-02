@@ -51,11 +51,11 @@
  *
  * Yes, and it rendered to be much more complex, where not only we started reinventing the wheel that has been
  * solved by existing abstractions used in reactive programming, but also it introduced complex "side-quests"
- * like having to track and maintaining a service graph, or creating our own workflow library for command line
+ * like having to track and maintain a service graph, or creating our own workflow library for command line
  * commands.
  *
- * Many approaches not only have been tried and introduced, but also there are some remains in the codebase,
- * which make the code much more complex than we initially wanted.
+ * Many approaches not only have been tried and introduced. There are some remains in the codebase,
+ * which makes the code much more complex than we initially wanted.
  *
  *
  *
