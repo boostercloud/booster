@@ -1,0 +1,109 @@
+# Entities
+
+The source of truth of your Booster app are the events, but events make sense in the context of a domain entity.
+For example, in a banking app, there might be two events: `MoneyDeposited` and `MoneyWithdrawn`. However, these events
+only make sense in the context of a `BankAccount`.
+
+You can assume that entities are created on the fly by _reducing_ the whole event stream. Under the hood, Booster is creating
+automatic snapshots for each entity so that the reduction process is efficient.
+
+An entity is defined as a class with the `@Entity` decorator. Inside of it, you can write one or more static methods (called "reducers") with
+the `@Reduces` decorator specifying the event they reduce. The reducer method will be called with two arguments: the event and the current state of the entity. Booster expects you to return a new entity with the changes implied by the event applied to the current one.
+
+An entity class looks like this:
+
+```typescript
+@Entity
+export class EntityName {
+  public constructor(readonly fieldA: SomeType, readonly fieldB: SomeOtherType /* as many fields as needed */) {}
+
+  @Reduces(SomeEvent)
+  public static reduceSomeEvent(event: SomeEvent, currentEntityState?: EntityName): EntityName {
+    /* Return a new entity based on the current one */
+  }
+}
+```
+
+There could be a lot of events being reduced concurrently among many entities, but, **for a specific entity instance, the events order is preserved**. This means that while one event is being reduced, all other events of any kind _that belong to the same entity instance_ will be waiting in a queue until the previous reducer has finished (with "entity instance" we refer to an entity of a specific type and with a specific ID). This is important to make sure that entities state is built correctly.
+
+## Entities naming convention
+
+Entities are a representation of your application state in a specific moment, so name them as closely to your domain objects as possible. Typical entity names are nouns that might appear when you think about your app. In an e-commerce application, some entities would be:
+
+- Cart
+- Product
+- UserProfile
+- Order
+- Address
+- PaymentMethod
+- Stock
+
+Entities live within the entities directory of the project source: `<project-root>/src/entities`.
+
+```text
+<project-root>
+├── src
+│   ├── commands
+│   ├── common
+│   ├── config
+│   ├── entities <------ put them here
+│   ├── events
+│   ├── index.ts
+│   └── read-models
+```
+
+## Creating entities
+
+The preferred way to create an entity is by using the generator, e.g.
+
+```text
+boost new:entity Product --fields displayName:string description:string price:Money
+```
+
+The generator will automatically create a file called `product.ts` with a TypeScript class of the same name under the `entities` directory. You can still create the entity manually, writing a class decorated with `@Entity`. Anyway, we recommend you always to use the generator because it handles the boilerplate code for you.
+
+:::note
+Generating an entity with the same name as an already existing one will prompt the user for confirmation.
+:::
+
+## The reducer function
+
+Booster generates the reducer function as a static method of the entity class. That function is called by the framework every time that an event of the specified type needs to be reduced. It's highly recommended to **keep your reducer functions pure**, which means that you should be able to produce the new entity version by just looking at the event and the current entity state. You should avoid calling third party services, reading or writing to a database, or changing any external state.
+
+Booster injects two parameters to the reducer functions:
+
+- `event` - The event object that triggered the reducer
+- `currentEntity?` - The current state of the entity instance that the event belongs to if it exists. **This parameter is optional** and will be `undefined` if the entity don't exist yet (For example, when you process a `ProductCreated` event that will generate the first version of a `Product` entity).
+
+This is how events change your application state.
+
+Given this entity:
+
+```ts
+@Entity
+export class Cart {
+  public constructor(public id: UUID, readonly items: Array<CartItem>) {}
+
+  @Reduces(ProductAdded)
+  public static reduceProductAdded(event: ProductAdded, currentCart?: Cart): Cart {
+    const newItems = addToCart(event.item, currentCart)
+    return new Cart(event.cartID, newItems)
+  }
+
+  @Reduces(ProductRemoved)
+  public static reduceProductRemoved(event: ProductRemoved, currentCart?: Cart): Cart {
+    const newItems = removeFromCart(event.item, currentCart)
+    return new Cart(event.cartID, newItems)
+  }
+}
+```
+
+You can visualize reduction like this:
+
+![reducer process gif](/img/reducer.gif)
+
+## Eventual consistency
+
+Due to the event driven and async nature of Booster, your data might not be instantly updated. Booster will consume the commands, generate events, and _eventually_ generate the entities. Most of the time this is not perceivable, but under huge loads, it could be noticed.
+
+This property is called [Eventual Consistency](https://en.wikipedia.org/wiki/Eventual_consistency), and it is a trade-off to have high availability for extreme situations, where other systems might simply fail.
