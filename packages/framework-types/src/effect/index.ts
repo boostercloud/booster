@@ -124,7 +124,7 @@
  * ============
  *
  * The `Effect` type is the foundation of the `effect-ts` library. It is a type that represents a computation that
- * has some kind of dependency, can fail, and that can be interrupted. It is defined like:
+ * has some kind of dependency, can fail, and can be interrupted. It is defined like:
  *
  * type Effect<TEnv, TErr, TRes> = (dependencies: TEnv) => Lazy<Promise<Either<TErr, TRes>>>
  *
