@@ -23,7 +23,7 @@
  * ----------------------
  *
  * `effect-ts` is a TypeScript port of the ZIO library, used for reactive programming in Scala.
- * It is used in production, and has proven to reduce complexity in many project. Currently we're using the
+ * It is used in production, and has proven to reduce complexity in many projects. Currently we're using the
  * stable version of it, which lacks features, but has been very well tested (packages under `@effect-ts`).
  *
  * It is an alternative runtime to Promise, fixing many issues found in any enterprise grade project in a
