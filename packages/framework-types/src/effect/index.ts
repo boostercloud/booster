@@ -132,8 +132,8 @@
  * that can either return an error or a result. It is generic so you can define the dependencies, the error, and the result.
  *
  * Effect-ts calls dependencies "environment", and it is a way to represent the dependencies of a computation. It is useful
- * because it allows us to define the dependencies of a program in a single place, and then pass them at the top level of the
- * application. It is also useful for unit testing, because we can pass a mocked environment to the computation, and then
+ * because it allows us to define the dependencies of a program in a single place, and then pass them to the top level of the
+ * application. It is also useful for unit testing since we can pass a mocked environment to the computation, and then
  * assert that the computation returns the expected result.
  *
  * Dependencies in Effect-ts are represented as a tree, ensuring that there are no duplicate service instances, and that
