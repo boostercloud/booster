@@ -186,7 +186,7 @@ export type { Effect } from '@effect-ts/core/Effect'
  * is a trade off that allows us to write code in a familiar way, and also allows us to
  * propagate errors, benefit from dependency injection, and all the other features that
  * effect-ts provides. E.g. if `bar` requires some dependency, `foo` will already have
- * it added to it's type signature, so the compiler will tell you if you forgot to add
+ * it added to its type signature, so the compiler will tell you if you forgot to add
  * it to the environment.
  *
  * Still, in the new versions of effect-ts, the API has greatly improved, and there are
@@ -207,7 +207,7 @@ export { gen } from '@effect-ts/core/Effect'
  * NOTE: You should never use `succeed` to perform side effects. If you want to perform
  * side effects, use the `succeedWith` or `tryCatch` functions (see next).
  *
- * This function is useful when you want to return a value from an effect, but you don't
+ * This function is useful when you want to return a value from an effect, but don't
  * want to do any computation.
  *
  * Example:
@@ -278,7 +278,7 @@ export { tryCatch } from '@effect-ts/core/Effect'
  * as you want to provide as much information as possible, and the best place to do so
  * is where the error gets generated.
  *
- * Still, there are times where you want to ignore the error and do something else, and
+ * Still, there are times when you want to ignore the error and do something else, and
  * in those cases, this function is useful.
  *
  * This function is analogous to `succeed`, but for promises. Ideally, don't use it to
@@ -304,7 +304,7 @@ export { tryPromise } from '@effect-ts/core/Effect'
  * =========================
  *
  * If you have a promise, and you want to convert it to an effect, you can use the
- * `tryCatchPromise` function. Any kind of error thrown by the promise will caught
+ * `tryCatchPromise` function. Any kind of error thrown by the promise will be caught
  * by the function in the second argument, and converted to an error in the effect.
  *
  * This function is analogous to `tryCatch`, but for promises. Ideally, use it to
@@ -372,7 +372,7 @@ export { tryCatchPromise } from '@effect-ts/core/Effect'
  *
  * The only limitation is that the functions must be unary, meaning that they must
  * take only one argument. If you need to pass more than one argument, you can make
- * the function return a function that takes the next argument, and so on. This is
+ * the function returns a function that takes the next argument, and so on. This is
  * called currying:
  *
  * Instead of:
@@ -398,7 +398,7 @@ export { pipe } from '@effect-ts/core/Function'
  * Function: flow
  * ==============
  *
- * There are times where you want to compose functions, but you don't want to pass
+ * There are times when you want to compose functions, but you don't want to pass
  * the result of one function to the next.
  *
  * For example, you might want to compose a function that takes a string and returns
@@ -466,7 +466,7 @@ export * as Dictionary from '@effect-ts/core/Collections/Immutable/Dictionary'
  * The Tuple module provides a set of functions to work with the `Tuple` type, which is
  * a wrapper over what Effect-TS calls "native tuples", which are just arrays with a
  * fixed length. The `Tuple` type has the benefit of having additional functions that
- * allow you to update specific elements, removing, or adding elements, and so on, without
+ * allow you to update specific elements, remove, or add elements, and so on, without
  * having to destructure the tuple and then reconstruct it.
  *
  * Again, it uses the same convention as the Array module, where the functions are
@@ -489,7 +489,7 @@ export * as Tuple from '@effect-ts/core/Collections/Immutable/Tuple'
  * in a safe way. It also makes it easier to reason about your program, as you can
  * see all the places where the state is updated.
  *
- * On top of this, the `Ref` type makes easier to store shared state in a concurrent
+ * On top of this, the `Ref` type makes it easier to store a shared state in a concurrent
  * environment, as it provides a way to atomically update the value, so you don't have
  * to worry about race conditions.
  *
@@ -557,7 +557,7 @@ export { orDieWith } from '@effect-ts/core/Effect'
  * ====================
  *
  * This function takes a string, and returns an effect that will terminate the program
- * with an error containing the string. It is useful for when you've done some checks
+ * with an error containing the string. It is useful when you've done some checks
  * and you're sure that the program should terminate, but you don't want to provide
  * a custom error type.
  */
@@ -733,7 +733,7 @@ export { Tag, tag } from '@effect-ts/core/Has'
  *
  * With this, we create the layer, but now using the `fromEffect` function. Given that it is
  * an effect, we can even handle the error in the constructor, and return a different error,
- * return a different service, or even shutdown the program completely:
+ * return a different service, or even shut down the program completely:
  *
  * const RemoteFileSystem = Layer.fromEffect(FileSystemService)(remoteFileSystemService)
  *
