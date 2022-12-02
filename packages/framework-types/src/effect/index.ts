@@ -7,7 +7,7 @@
  * This module reexports the minimum types and functions from the `effect-ts` library to
  * be able to work effectively throughout the codebase.
  *
- * Keep reading these comments to get a grasp on what does all the stuff mean and how to
+ * Keep reading these comments to get a grasp on what all the stuff means and how to
  * work with these concepts.
  *
  *
