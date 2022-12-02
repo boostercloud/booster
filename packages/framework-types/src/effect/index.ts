@@ -39,7 +39,7 @@
  * - Better debugging
  * - Opens the possibility of remote debugging
  * - OpenTelemetry integration
- * - Better modularization of the project, opening the door to split the framework into rockets and allow users
+ * - Better modularization of the project, opening the door to split the framework into rockets and allowing users
  *   to write rockets without infra knowledge
  * - More testability, not having to rely on replacing functions in libraries
  * - Better and easier concurrency management
