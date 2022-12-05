@@ -59,7 +59,7 @@
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",
     "test:provider-aws-infrastructure": "npm run test",
-    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\" --timeout 600000"
   },
   "bugs": {
     "url": "https://github.com/boostercloud/booster/issues"
