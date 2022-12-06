@@ -373,7 +373,9 @@ describe('new', (): void => {
           replace(console, 'error', fake.resolves({}))
           await new Project.default([projectName], {} as IConfig).run()
           expect(fs.mkdirs).to.have.not.been.calledWithMatch(`${projectName}/src`)
-          expect(console.error).to.have.been.calledWithMatch(/beep/)
+          expect(console.error).to.have.been.calledWithMatch(
+            /You must set a provider runtime package using the --provider flag or use the interactive mode with the --interactive flag./
+          )
           expect(oraLogger.info).to.have.not.been.calledWithMatch('Project generated!')
         })
 

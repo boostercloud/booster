@@ -75,7 +75,8 @@ export default class Project extends Command {
       assertNameIsCorrect(projectName)
       await checkProjectAlreadyExists(projectName)
       const parsedFlags = { projectName, ...flags }
-      if (!flags.interactive && !flags.providerPackageName) throw "beep"
+      if (!flags.interactive && !flags.providerPackageName)
+        throw 'You must set a provider runtime package using the --provider flag or use the interactive mode with the --interactive flag.'
       await run(parsedFlags as Partial<ProjectInitializerConfig>, this.config.version)
     } catch (error) {
       console.error(error)
