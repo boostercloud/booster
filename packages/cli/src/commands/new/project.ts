@@ -46,12 +46,16 @@ export default class Project extends Command {
       description:
         'package name implementing the cloud provider integration where the application will be deployed (i.e: "@boostercloud/framework-provider-aws"',
     }),
-    installDependencies: flags.boolean({
-      description: 'install dependencies',
+    default: flags.boolean({
+      description: 'generates the project with default parameters (i.e. --license=MIT)',
       default: false,
     }),
-    initializeGit: flags.boolean({
-      description: 'initialize git repo',
+    skipInstall: flags.boolean({
+      description: 'skip dependencies installation',
+      default: false,
+    }),
+    skipGit: flags.boolean({
+      description: 'skip git initialization',
       default: false,
     }),
     interactive: flags.boolean({
@@ -82,8 +86,8 @@ const run = async (flags: Partial<ProjectInitializerConfig>, boosterVersion: str
   Script.init(`boost ${Brand.energize('new')} 🚧`, parseConfig(new Prompter(), flags, boosterVersion))
     .step('Creating project root', generateRootDirectory)
     .step('Generating config files', generateConfigFiles)
-    .optionalStep(Boolean(!flags.installDependencies), 'Installing dependencies', installDependencies)
-    .optionalStep(Boolean(!flags.initializeGit), 'Initializing git repository', initializeGit)
+    .optionalStep(Boolean(flags.skipInstall), 'Installing dependencies', installDependencies)
+    .optionalStep(Boolean(flags.skipGit), 'Initializing git repository', initializeGit)
     .info('Project generated!')
     .done()
 
@@ -126,6 +130,10 @@ export const parseConfig = async (
   flags: Partial<ProjectInitializerConfig>,
   boosterVersion: string
 ): Promise<ProjectInitializerConfig> => {
+  if (!flags.interactive && !flags.providerPackageName) {
+    throw 'You must set a provider runtime package using the --provider flag or use the interactive mode with the --interactive flag.'
+  }
+
   if (flags.interactive) {
     const description = await prompter.defaultOrPrompt(
       flags.description,
@@ -156,16 +164,14 @@ export const parseConfig = async (
       license,
       repository,
       boosterVersion,
-      installDependencies: flags.installDependencies || false,
-      initializeGit: flags.initializeGit || false,
+      skipInstall: flags.skipInstall || false,
+      skipGit: flags.skipGit || false,
       interactive: true,
-    }) 
+    })
   } else {
-    const providerPackageName = await getProviderPackageName(prompter, flags.providerPackageName)
-
     return Promise.resolve({
       projectName: flags.projectName as string,
-      providerPackageName: providerPackageName,
+      providerPackageName: flags.providerPackageName as string,
       description: '',
       version: '0.1.0',
       author: '',
@@ -173,11 +179,9 @@ export const parseConfig = async (
       license: 'MIT',
       repository: '',
       boosterVersion,
-      installDependencies: flags.installDependencies || false,
-      initializeGit: flags.initializeGit || false,
+      skipInstall: flags.skipInstall || false,
+      skipGit: flags.skipGit || false,
       interactive: false,
     })
   }
-  // what to do if they pass in default and also interactive?
-  // should it say: "Skipping: Installing dependencies" and "Skipping: Initializing git repository"
 }
