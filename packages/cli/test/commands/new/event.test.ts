@@ -6,12 +6,13 @@ import * as fs from 'fs-extra'
 import { IConfig } from '@oclif/config'
 import { expect } from '../../expect'
 import { template } from '../../../src/services/generator'
+import * as path from 'path'
 
 describe('new', (): void => {
   describe('Event', () => {
     const eventName = 'ExampleEvent'
     const eventsRoot = 'src/events/'
-    const eventPath = `${eventsRoot}example-event.ts`
+    const eventPath = path.join(`${eventsRoot}example-event.ts`)
     const defaultEventImports = [
       {
         packagePath: '@boostercloud/framework-core',

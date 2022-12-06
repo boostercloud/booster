@@ -6,12 +6,13 @@ import * as fs from 'fs-extra'
 import { IConfig } from '@oclif/config'
 import { expect } from '../../expect'
 import { template } from '../../../src/services/generator'
+import * as path from 'path'
 
 describe('new', (): void => {
   describe('Entity', () => {
     const entityName = 'ExampleEntity'
     const entitysRoot = 'src/entities/'
-    const entityPath = `${entitysRoot}example-entity.ts`
+    const entityPath = path.join(`${entitysRoot}example-entity.ts`)
     const defaultEntityImports = [
       {
         packagePath: '@boostercloud/framework-core',

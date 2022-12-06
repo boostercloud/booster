@@ -11,6 +11,7 @@ import { restore, replace, fake } from 'sinon'
 import { expect } from '../expect'
 import { makeTestPackageManager } from './package-manager/test.impl'
 import * as PackageManager from '../../src/services/package-manager/live.impl'
+import * as path from 'path'
 
 describe('project initializer', (): void => {
   beforeEach(() => {
@@ -49,14 +50,14 @@ describe('project initializer', (): void => {
 
   it('Generate root directory', async () => {
     await generateRootDirectory(defaultProjectInitializerConfig)
-    expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/commands`)
-    expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/events`)
-    expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/entities`)
-    expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/read-models`)
-    expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/config`)
-    expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/common`)
-    expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/event-handlers`)
-    expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/scheduled-commands`)
+    expect(fs.mkdirs).to.have.been.calledWithMatch(path.join(`${projectName}/src/commands`))
+    expect(fs.mkdirs).to.have.been.calledWithMatch(path.join(`${projectName}/src/events`))
+    expect(fs.mkdirs).to.have.been.calledWithMatch(path.join(`${projectName}/src/entities`))
+    expect(fs.mkdirs).to.have.been.calledWithMatch(path.join(`${projectName}/src/read-models`))
+    expect(fs.mkdirs).to.have.been.calledWithMatch(path.join(`${projectName}/src/config`))
+    expect(fs.mkdirs).to.have.been.calledWithMatch(path.join(`${projectName}/src/common`))
+    expect(fs.mkdirs).to.have.been.calledWithMatch(path.join(`${projectName}/src/event-handlers`))
+    expect(fs.mkdirs).to.have.been.calledWithMatch(path.join(`${projectName}/src/scheduled-commands`))
   })
 
   it('install dependencies', async () => {
@@ -68,15 +69,15 @@ describe('project initializer', (): void => {
 
   it('Generate config files', async () => {
     await generateConfigFiles(defaultProjectInitializerConfig)
-    expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.eslintignore`)
-    expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.eslintrc.js`)
-    expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.gitignore`)
-    expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`)
-    expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/tsconfig.json`)
-    expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/tsconfig.eslint.json`)
-    expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.prettierrc.yaml`)
-    expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/src/config/config.ts`)
-    expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/src/index.ts`)
-    expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.mocharc.yml`)
+    expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/.eslintignore`))
+    expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/.eslintrc.js`))
+    expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/.gitignore`))
+    expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/package.json`))
+    expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/tsconfig.json`))
+    expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/tsconfig.eslint.json`))
+    expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/.prettierrc.yaml`))
+    expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/src/config/config.ts`))
+    expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/src/index.ts`))
+    expect(fs.outputFile).to.have.been.calledWithMatch(path.join(`${projectName}/.mocharc.yml`))
   })
 })

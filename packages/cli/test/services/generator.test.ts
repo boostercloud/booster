@@ -39,7 +39,7 @@ describe('generate service', (): void => {
 
       await generate(target)
 
-      expect(fs.outputFile).to.have.been.calledWithMatch('src/commands/new-command.ts', rendered)
+      expect(fs.outputFile).to.have.been.calledWithMatch(path.join('src/commands/new-command.ts'), rendered)
       expect(projectChecker.checkResourceExists).to.have.been.called
       expect(rendered).not.to.contain('-> Custom code in the command!')
     })
@@ -65,7 +65,7 @@ describe('generate service', (): void => {
 
       await generate(target)
 
-      expect(fs.outputFile).to.have.been.calledWithMatch('src/entities/new-entity.ts', rendered)
+      expect(fs.outputFile).to.have.been.calledWithMatch(path.join('src/entities/new-entity.ts'), rendered)
       expect(projectChecker.checkResourceExists).to.have.been.called
       expect(rendered).not.to.contain('-> Custom code in the entity!')
     })
@@ -88,7 +88,7 @@ describe('generate service', (): void => {
 
       await generate(target)
 
-      expect(fs.outputFile).to.have.been.calledWithMatch('src/event-handlers/new-event-handler.ts', rendered)
+      expect(fs.outputFile).to.have.been.calledWithMatch(path.join('src/event-handlers/new-event-handler.ts'), rendered)
       expect(projectChecker.checkResourceExists).to.have.been.called
       expect(rendered).not.to.contain('-> Custom code in the event handler!')
     })
@@ -114,7 +114,7 @@ describe('generate service', (): void => {
 
       await generate(target)
 
-      expect(fs.outputFile).to.have.been.calledWithMatch('src/events/new-event.ts', rendered)
+      expect(fs.outputFile).to.have.been.calledWithMatch(path.join('src/events/new-event.ts'), rendered)
       expect(projectChecker.checkResourceExists).to.have.been.called
       expect(rendered).not.to.contain('-> Custom code in the event!')
     })
@@ -141,7 +141,7 @@ describe('generate service', (): void => {
 
       await generate(target)
 
-      expect(fs.outputFile).to.have.been.calledWithMatch('src/read-models/new-read-model.ts', rendered)
+      expect(fs.outputFile).to.have.been.calledWithMatch(path.join('src/read-models/new-read-model.ts'), rendered)
       expect(projectChecker.checkResourceExists).to.have.been.called
       expect(rendered).not.to.contain('-> Custom code in the read model!')
     })
@@ -163,7 +163,7 @@ describe('generate service', (): void => {
 
       await generate(target)
 
-      expect(fs.outputFile).to.have.been.calledWithMatch('src/scheduled-commands/new-scheduled-command.ts', rendered)
+      expect(fs.outputFile).to.have.been.calledWithMatch(path.join('src/scheduled-commands/new-scheduled-command.ts'), rendered)
       expect(projectChecker.checkResourceExists).to.have.been.called
       expect(rendered).not.to.contain('-> Custom code in the scheduled command!')
     })
@@ -189,7 +189,7 @@ describe('generate service', (): void => {
 
       await generate(target)
 
-      expect(fs.outputFile).to.have.been.calledWithMatch('src/common/new-type.ts', rendered)
+      expect(fs.outputFile).to.have.been.calledWithMatch(path.join('src/common/new-type.ts'), rendered)
       expect(projectChecker.checkResourceExists).to.have.been.called
       expect(rendered).not.to.contain('-> Custom code in the type!')
     })

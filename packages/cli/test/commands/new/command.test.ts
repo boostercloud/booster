@@ -6,12 +6,13 @@ import * as fs from 'fs-extra'
 import { IConfig } from '@oclif/config'
 import { expect } from '../../expect'
 import { template } from '../../../src/services/generator'
+import * as path from 'path'
 
 describe('new', (): void => {
   describe('Command', () => {
     const command = 'ExampleCommand'
     const commandsRoot = 'src/commands/'
-    const commandPath = `${commandsRoot}example-command.ts`
+    const commandPath = path.join(`${commandsRoot}example-command.ts`)
     const defaultCommandImports = [
       {
         packagePath: '@boostercloud/framework-core',
