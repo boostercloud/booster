@@ -1,0 +1,13 @@
+@import './pages/index.css';
+@import './theme/footer.css';
+
+.app-cta {
+  padding: 9px 15px;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 0;
+  border: 2px solid #00f;
+  background-color: #fff;
+  color: #00f;
+  font-size: 18px;
+}
