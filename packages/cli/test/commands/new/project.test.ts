@@ -79,13 +79,24 @@ describe('new', (): void => {
         expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`, expectedPackageJson)
       })
 
-      it('install dependenncies with --installDependencies', async () => {
+      it('install dependencies with --installDependencies', async () => {
         replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
 
         await new Project.default([projectName, '--installDependencies'], {} as IConfig).run()
 
         expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
         expect(ProjectInitializer.installDependencies).to.have.been.called
+        expectFilesAndDirectoriesCreated(projectName)
+        const expectedPackageJson = renderPackageJson(defaultProjectInitializerConfig)
+        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`, expectedPackageJson)
+      })
+
+      it('provide user with prompt with --interactive', async () => {
+        replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
+
+        await new Project.default([projectName, '--interactive'], {} as IConfig).run()
+
+        expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
         expectFilesAndDirectoriesCreated(projectName)
         const expectedPackageJson = renderPackageJson(defaultProjectInitializerConfig)
         expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`, expectedPackageJson)
@@ -279,8 +290,6 @@ describe('new', (): void => {
               {} as IConfig
             ).run()
 
-            expect(ProjectInitializer.initializeGit).to.have.not.been.called
-            expect(ProjectInitializer.installDependencies).to.have.not.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
           })
@@ -307,8 +316,6 @@ describe('new', (): void => {
               {} as IConfig
             ).run()
 
-            expect(ProjectInitializer.initializeGit).to.have.not.been.called
-            expect(ProjectInitializer.installDependencies).to.have.not.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
           })
