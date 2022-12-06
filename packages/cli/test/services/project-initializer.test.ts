@@ -35,9 +35,6 @@ describe('project initializer', (): void => {
     repository: '',
     providerPackageName: defaultProvider,
     boosterVersion: '0.5.1',
-    default: true,
-    skipInstall: false,
-    skipGit: false,
   } as ProjectInitializerConfig
 
   it('initialize Git', async () => {

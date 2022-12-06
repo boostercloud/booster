@@ -68,7 +68,6 @@ export interface ProjectInitializerConfig {
   repository: string
   providerPackageName: string
   boosterVersion: string
-  default: boolean
   installDependencies: boolean
   initializeGit: boolean
   interactive: boolean

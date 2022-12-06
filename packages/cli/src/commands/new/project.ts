@@ -156,27 +156,10 @@ export const parseConfig = async (
       license,
       repository,
       boosterVersion,
-      default: false,
       installDependencies: flags.installDependencies || false,
       initializeGit: flags.initializeGit || false,
       interactive: true,
-    })
-  } else if (flags.default) {
-    return Promise.resolve({
-      projectName: flags.projectName as string,
-      providerPackageName: '@boostercloud/framework-provider-aws',
-      description: '',
-      version: '0.1.0',
-      author: '',
-      homepage: '',
-      license: 'MIT',
-      repository: '',
-      boosterVersion,
-      default: flags.default,
-      installDependencies: flags.installDependencies || false,
-      initializeGit: flags.initializeGit || false,
-      interactive: false,
-    })
+    }) 
   } else {
     const providerPackageName = await getProviderPackageName(prompter, flags.providerPackageName)
 
@@ -190,7 +173,6 @@ export const parseConfig = async (
       license: 'MIT',
       repository: '',
       boosterVersion,
-      default: false,
       installDependencies: flags.installDependencies || false,
       initializeGit: flags.initializeGit || false,
       interactive: false,

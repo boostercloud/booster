@@ -1,4 +1,4 @@
-import { restore, replace, fake, spy } from 'sinon'
+import { restore, replace, fake} from 'sinon'
 import { ProjectInitializerConfig } from '../../../src/services/project-initializer'
 import { oraLogger } from '../../../src/services/logger'
 import * as fs from 'fs-extra'
@@ -47,9 +47,6 @@ describe('new', (): void => {
         repository: '',
         providerPackageName: defaultProvider,
         boosterVersion: '0.5.1',
-        default: true,
-        skipInstall: false,
-        skipGit: false,
       } as ProjectInitializerConfig
 
       const renderPackageJson = (config: ProjectInitializerConfig): string => {
@@ -70,57 +67,7 @@ describe('new', (): void => {
         restore()
       })
 
-      describe('works properly', () => {
-        it('without flags', async () => {
-          replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
-
-          await new Project.default([projectName], {} as IConfig).run()
-
-          expect(ProjectInitializer.initializeGit).to.have.been.called
-          expect(ProjectInitializer.installDependencies).to.have.been.called
-          expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
-          expectFilesAndDirectoriesCreated(projectName)
-        })
-
-        it('skip dependencies installation with --skipInstall', async () => {
-          replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
-
-          await new Project.default([projectName, '--skipInstall'], {} as IConfig).run()
-
-          expect(ProjectInitializer.installDependencies).to.have.not.been.called
-          expect(ProjectInitializer.initializeGit).to.have.been.called
-          expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
-          expectFilesAndDirectoriesCreated(projectName)
-        })
-
-        it('generates project with default parameters when using --default flag', async () => {
-          const parseConfigSpy = spy(Project, 'parseConfig')
-
-          await new Project.default([projectName, '--default'], { version: '0.5.1' } as IConfig).run()
-
-          expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
-          expectFilesAndDirectoriesCreated(projectName)
-          expect(parseConfigSpy).to.have.been.calledOnce
-          expect(await parseConfigSpy.firstCall.returnValue).to.be.deep.equal(
-            defaultProjectInitializerConfig as ProjectInitializerConfig
-          )
-
-          const expectedPackageJson = renderPackageJson(defaultProjectInitializerConfig) 
-          expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,expectedPackageJson)
-          expect(ProjectInitializer.installDependencies).to.have.been.called
-        })
-
-        it('skips git repository initialization with --skipGit', async () => {
-          replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
-
-          await new Project.default([projectName, '--skipGit'], {} as IConfig).run()
-
-          expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
-          expect(ProjectInitializer.initializeGit).to.have.not.been.called
-          expectFilesAndDirectoriesCreated(projectName)
-          const expectedPackageJson = renderPackageJson(defaultProjectInitializerConfig)
-          expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,expectedPackageJson)
-        })
+      describe('works properly', () => {    
 
         describe('define homepage', () => { 
           it('with --homepage', async () => {
@@ -129,8 +76,6 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'--homepage',"'booster.cloud'"], {} as IConfig).run()
 
-            expect(ProjectInitializer.initializeGit).to.have.been.called
-            expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
             expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
@@ -142,8 +87,6 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'-H',"'booster.cloud'"], {} as IConfig).run()
 
-            expect(ProjectInitializer.initializeGit).to.have.been.called
-            expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
             expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
@@ -157,8 +100,6 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'--author',"'John Doe'"], {} as IConfig).run()
 
-            expect(ProjectInitializer.initializeGit).to.have.been.called
-            expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
             expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
@@ -170,8 +111,6 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'-a',"'John Doe'"], {} as IConfig).run()
 
-            expect(ProjectInitializer.initializeGit).to.have.been.called
-            expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
             expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
@@ -185,8 +124,6 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'--description',"'a short description'"], {} as IConfig).run()
 
-            expect(ProjectInitializer.initializeGit).to.have.been.called
-            expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
             expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
@@ -198,8 +135,6 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'-d',"'a short description'"], {} as IConfig).run()
 
-            expect(ProjectInitializer.initializeGit).to.have.been.called
-            expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
             expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
@@ -213,8 +148,6 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'--license','GPL'], {} as IConfig).run()
 
-            expect(ProjectInitializer.initializeGit).to.have.been.called
-            expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
             expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
@@ -226,8 +159,6 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'-l','GPL'], {} as IConfig).run()
 
-            expect(ProjectInitializer.initializeGit).to.have.been.called
-            expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
             expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
@@ -240,8 +171,6 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'--providerPackageName',defaultProvider], {} as IConfig).run()
 
-            expect(ProjectInitializer.initializeGit).to.have.been.called
-            expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
           })
@@ -251,8 +180,6 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'-p',defaultProvider], {} as IConfig).run()
 
-            expect(ProjectInitializer.initializeGit).to.have.been.called
-            expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
           })
@@ -265,8 +192,6 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'--repository',defaultRepository], {} as IConfig).run()
 
-            expect(ProjectInitializer.initializeGit).to.have.been.called
-            expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
             expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
@@ -278,8 +203,6 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'-r',defaultRepository], {} as IConfig).run()
 
-            expect(ProjectInitializer.initializeGit).to.have.been.called
-            expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
             expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
@@ -293,8 +216,6 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'--version','1.0.0'], {} as IConfig).run()
 
-            expect(ProjectInitializer.initializeGit).to.have.been.called
-            expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
             expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
@@ -306,8 +227,6 @@ describe('new', (): void => {
 
             await new Project.default([projectName,'-v','1.0.0'], {} as IConfig).run()
 
-            expect(ProjectInitializer.initializeGit).to.have.been.called
-            expect(ProjectInitializer.installDependencies).to.have.been.called
             expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
             expectFilesAndDirectoriesCreated(projectName)
             expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/package.json`,renderPackageJson(config))
@@ -324,8 +243,6 @@ describe('new', (): void => {
                 '--repository','github.com/boostercloud/booster.git',
                 '--license','GPL',
                 '--providerPackageName',defaultProvider,
-                '--skipInstall',
-                '--skipGit'
               ], {} as IConfig).run()
   
               expect(ProjectInitializer.initializeGit).to.have.not.been.called
@@ -343,8 +260,6 @@ describe('new', (): void => {
                   '-r','github.com/boostercloud/booster.git',
                   '-l','GPL',
                   '-p',defaultProvider,
-                  '--skipInstall',
-                  '--skipGit'
                 ], {} as IConfig).run()
     
                 expect(ProjectInitializer.initializeGit).to.have.not.been.called
