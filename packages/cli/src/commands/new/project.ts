@@ -50,12 +50,16 @@ export default class Project extends Command {
       description: 'generates the project with default parameters (i.e. --license=MIT)',
       default: false,
     }),
-    skipInstall: flags.boolean({
-      description: 'skip dependencies installation',
+    installDependencies: flags.boolean({
+      description: 'install dependencies',
       default: false,
     }),
-    skipGit: flags.boolean({
-      description: 'skip git initialization',
+    initializeGit: flags.boolean({
+      description: 'initialize git repo',
+      default: false,
+    }),
+    interactive: flags.boolean({
+      description: 'choose options rather than defaults',
       default: false,
     }),
   }
@@ -82,8 +86,8 @@ const run = async (flags: Partial<ProjectInitializerConfig>, boosterVersion: str
   Script.init(`boost ${Brand.energize('new')} 🚧`, parseConfig(new Prompter(), flags, boosterVersion))
     .step('Creating project root', generateRootDirectory)
     .step('Generating config files', generateConfigFiles)
-    .optionalStep(Boolean(flags.skipInstall), 'Installing dependencies', installDependencies)
-    .optionalStep(Boolean(flags.skipGit), 'Initializing git repository', initializeGit)
+    .optionalStep(Boolean(!flags.installDependencies), 'Installing dependencies', installDependencies)
+    .optionalStep(Boolean(!flags.initializeGit), 'Initializing git repository', initializeGit)
     .info('Project generated!')
     .done()
 
@@ -126,7 +130,42 @@ export const parseConfig = async (
   flags: Partial<ProjectInitializerConfig>,
   boosterVersion: string
 ): Promise<ProjectInitializerConfig> => {
-  if (flags.default) {
+  if (flags.interactive) {
+    const description = await prompter.defaultOrPrompt(
+      flags.description,
+      'What\'s your project description? (default: "")'
+    )
+    const versionPrompt = await prompter.defaultOrPrompt(flags.version, "What's the first version? (default: 0.1.0)")
+    const version = versionPrompt || '0.1.0'
+    const author = await prompter.defaultOrPrompt(flags.author, 'Who\'s the author? (default: "")')
+    const homepage = await prompter.defaultOrPrompt(flags.homepage, 'What\'s the website? (default: "")')
+    const licensePrompt = await prompter.defaultOrPrompt(
+      flags.license,
+      'What license will you be publishing this under? (default: MIT)'
+    )
+    const license = licensePrompt || 'MIT'
+    const repository = await prompter.defaultOrPrompt(
+      flags.repository,
+      'What\'s the URL of the repository? (default: "")'
+    )
+    const providerPackageName = await getProviderPackageName(prompter, flags.providerPackageName)
+
+    return Promise.resolve({
+      projectName: flags.projectName as string,
+      providerPackageName,
+      description,
+      version,
+      author,
+      homepage,
+      license,
+      repository,
+      boosterVersion,
+      default: false,
+      installDependencies: flags.installDependencies || false,
+      initializeGit: flags.initializeGit || false,
+      interactive: true,
+    })
+  } else if (flags.default) {
     return Promise.resolve({
       projectName: flags.projectName as string,
       providerPackageName: '@boostercloud/framework-provider-aws',
@@ -138,42 +177,29 @@ export const parseConfig = async (
       repository: '',
       boosterVersion,
       default: flags.default,
-      skipInstall: flags.skipInstall || false,
-      skipGit: flags.skipGit || false,
+      installDependencies: flags.installDependencies || false,
+      initializeGit: flags.initializeGit || false,
+      interactive: false,
+    })
+  } else {
+    const providerPackageName = await getProviderPackageName(prompter, flags.providerPackageName)
+
+    return Promise.resolve({
+      projectName: flags.projectName as string,
+      providerPackageName: providerPackageName,
+      description: '',
+      version: '0.1.0',
+      author: '',
+      homepage: '',
+      license: 'MIT',
+      repository: '',
+      boosterVersion,
+      default: false,
+      installDependencies: flags.installDependencies || false,
+      initializeGit: flags.initializeGit || false,
+      interactive: false,
     })
   }
-
-  const description = await prompter.defaultOrPrompt(
-    flags.description,
-    'What\'s your project description? (default: "")'
-  )
-  const versionPrompt = await prompter.defaultOrPrompt(flags.version, "What's the first version? (default: 0.1.0)")
-  const version = versionPrompt || '0.1.0'
-  const author = await prompter.defaultOrPrompt(flags.author, 'Who\'s the author? (default: "")')
-  const homepage = await prompter.defaultOrPrompt(flags.homepage, 'What\'s the website? (default: "")')
-  const licensePrompt = await prompter.defaultOrPrompt(
-    flags.license,
-    'What license will you be publishing this under? (default: MIT)'
-  )
-  const license = licensePrompt || 'MIT'
-  const repository = await prompter.defaultOrPrompt(
-    flags.repository,
-    'What\'s the URL of the repository? (default: "")'
-  )
-  const providerPackageName = await getProviderPackageName(prompter, flags.providerPackageName)
-
-  return Promise.resolve({
-    projectName: flags.projectName as string,
-    providerPackageName,
-    description,
-    version,
-    author,
-    homepage,
-    license,
-    repository,
-    boosterVersion,
-    default: false,
-    skipInstall: flags.skipInstall || false,
-    skipGit: flags.skipGit || false,
-  })
+  // what to do if they pass in default and also interactive?
+  // should it say: "Skipping: Installing dependencies" and "Skipping: Initializing git repository"
 }
