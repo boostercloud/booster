@@ -1,0 +1,68 @@
+# Event handler
+
+As expected with event-driven architectures, multiple parts of our application react to events. In the case of Booster, we have entities (in charge of reducing the events) and event handlers. These last ones are classes decorated with the @EventHandler decorator. Every time a new instance of a given event is registered, the handle method of this class is triggered. This method can contain any business logic defined by the user or it can also register new events.
+
+An event handler would look like this:
+
+```typescript
+@EventHandler(StockMoved)
+export class HandleAvailability {
+  public static async handle(event: StockMoved, register: Register): Promise<void> {
+    if (event.origin == 'provider') {
+      // New stock enters the system
+      register.events(new ProductAvailabilityChanged(event.productID, event.quantity))
+    } else if (event.destination == 'customer') {
+      // Stock goes to the customer
+      register.events(new ProductAvailabilityChanged(event.productID, -event.quantity))
+    }
+    // In terms of availability, it doesn't matter in which warehouse the stock is as soon as there's stock
+  }
+}
+```
+
+## Creating an event handler
+
+Event handlers can be easily created using the Booster CLI command `boost new:event-handler`. There are two mandatory arguments: the event handler name, and the name of the event it will react to. For instance:
+
+```typescript
+boost new:event-handler HandleAvailability --event StockMoved
+```
+
+Once the creation is completed, there will be a new file in the event handlers directory `<project-root>/src/event-handlers/handle-availability.ts`.
+
+```text
+<project-root>
+├── src
+│   ├── commands
+│   ├── common
+│   ├── config
+│   ├── entities
+│   ├── events
+│   ├── event-handlers <------ put them here
+│   └── read-models
+```
+
+## Registering events from an event handler
+
+Booster injects a `register` instance in the `handle` method that we can use to register extra events. In the above example, you can see there is some logic that ends up registering new events.
+
+The `events(...)` method of the `register` allows triggering several events, you can specify as many as you need separated by commas as arguments of the function.
+
+An example can be found below:
+
+```typescript
+register.events(new ProductAvailabilityChanged(event.productID, -event.quantity))
+```
+
+## Reading entities from event handlers
+
+Just as we do in command handlers, we can also retrieve entities information to make decisions based on their current state.
+
+Let's say that we want to check the status of a product before we trigger its availability update. In that case we would call the `Booster.entity` function, which will return information about the entity.
+
+```typescript
+public static async handle(event: StockMoved, register: Register): Promise<void> {
+  const productSnapshot = await Booster.entity(Product, event.productID)
+  ...
+}
+```

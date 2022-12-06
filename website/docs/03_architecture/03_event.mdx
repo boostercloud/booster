@@ -1,0 +1,118 @@
+# Event
+
+Events are **immutable records of facts** within your application's domain. They are the cornerstone of Booster because of its event-driven and event-sourced nature. Booster events are TypeScript classes decorated with `@Event`. An event class may look like this:
+
+```typescript
+@Event
+export class EventName {
+  public constructor(readonly field1: SomeType, readonly field2: SomeOtherType) {}
+
+  public entityID(): UUID {
+    return /* the associated entity ID */
+  }
+}
+```
+
+Events and [entities](03_booster-architecture#_4-entities-and-reducers) are closely related. Each event belongs to one entity uniquely identified through the entityID method, and entities represent the application's state after reducing the stream of events. Indeed, an entity is just an aggregated representation of the same data present in its events, so it is possible to rebuild entities from events at any time. Booster guarantees that all the events associated with an entity will be reduced in the same order they were stored. Take a look at this event:
+
+```typescript
+@Event
+export class CartPaid {
+  public constructor(readonly cartID: UUID, readonly paymentID: UUID) {}
+
+  public entityID(): UUID {
+    // returns cartID because we want to associate it with
+    // (and reduce it within) the Cart entity
+    return this.cartID
+  }
+}
+```
+
+An event has to know the ID of the entity it belongs to and you need to implement the `entityID` method to return it. You can inject the entity ID directly in the event's constructor or as a nested attribute. If your domain requires a _singleton_ entity, where there's only one instance, you can return a constant value. In the `CartPaid` example, the entity ID (`cartID`) is injected directly.
+
+:::note
+The `entityID` method must always return the same value for the same event's instance. Otherwise, the result of the entity reduction will be unpredictable.
+:::
+
+## Events naming convention
+
+As with commands, you can name events in any way you want, depending on your application's domain. However, we recommend you to choose short sentences written in past tense because events are facts that have happened and can't be changed. Some event names would be:
+
+- ProductCreated
+- ProductUpdated
+- ProductDeleted
+- CartItemChanged
+- StockMoved
+
+As with other Booster files, events have their own directory:
+
+```text
+<project-root>
+├── src
+│   ├── commands
+│   ├── common
+│   ├── config
+│   ├── entities
+│   ├── events <------ put them here
+│   ├── index.ts
+│   └── read-models
+```
+
+## Creating events
+
+The preferred way to create event files is the `new:event` generator, e.g.
+
+```shell
+boost new:event StockMoved --fields productID:string origin:string destination:string quantity:number
+```
+
+That will generate a file called `stock-moved.ts` under the proper `<project-root>/src/events` directory. You can also create the file manually, but we recommend using the generator and avoid dealing manually with boilerplate code.
+
+:::note
+Generating an event with the same name as an already existing one will prompt the user for confirmation.
+:::
+
+## Registering events in the event store
+
+Creating an event file is different than storing an event instance in the event store. In Booster terminology, the latter receives the name of `registering` an event. As said before, Booster applications are event-sourced, which means that all the events are stored forever. Imagine this store as an infinite log used by the [reducer functions](03_booster-architecture#_4-entities-and-reducers) to recreate the application's current state.
+
+Booster injects the register as a parameter in the `handle` method of both the command and the event handlers. Then you can register events by calling the `register.events(...)` method as many times as you want, e.g.
+
+### Registering events from command handlers
+
+```typescript
+@Command({
+  authorize: [Admin],
+})
+export class MoveStock {
+  public constructor(
+    readonly productID: string,
+    readonly origin: string,
+    readonly destination: string,
+    readonly quantity: number
+  ) {}
+
+  public static async handle(command: MoveStock, register: Register): Promise<void> {
+    if (!command.enoughStock(command.origin, command.quantity, command.productID)) {
+      register.events(new ErrorEvent(`There is not enough stock for ${command.productID} at ${command.origin}`))
+    }
+  }
+}
+```
+
+### Registering events from event handlers
+
+In the case of the event handlers, you also receive the event instance that triggered the handle function.
+
+```typescript
+@EventHandler(StockMoved)
+export class HandleAvailability {
+  public static async handle(event: StockMoved, register: Register): Promise<void> {
+    if (event.origin == 'provider') {
+      register.events(new ProductAvailabilityChanged(event.productID, event.quantity))
+    } else if (event.destination == 'customer') {
+      register.events(new ProductAvailabilityChanged(event.productID, -event.quantity))
+    }
+  }
+}
+```
