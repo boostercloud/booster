@@ -189,31 +189,31 @@ describe('Project', () => {
       ['project_name_placeholder', projectName],
     ])
     const cartDemoConfigContent = fileContents('src/config/config.ts')
-    expect(cartDemoConfigContent).to.equal(expectedCartDemoConfig)
+    expect(cartDemoConfigContent).to.equal(expectedCartDemoConfig.split('\r\n').join('\n'))
 
     const expectedCartDemoIndex = loadFixture('cart-demo/src/index.ts')
     const cartDemoIndexContent = fileContents('src/index.ts')
-    expect(cartDemoIndexContent).to.equal(expectedCartDemoIndex)
+    expect(cartDemoIndexContent).to.equal(expectedCartDemoIndex.split('\r\n').join('\n'))
 
     const expectedCartDemoEslintIgnore = loadFixture('cart-demo/.eslintignore')
     const cartDemoEslintIgnoreContent = fileContents('.eslintignore')
-    expect(cartDemoEslintIgnoreContent).to.equal(expectedCartDemoEslintIgnore)
+    expect(cartDemoEslintIgnoreContent).to.equal(expectedCartDemoEslintIgnore.split('\r\n').join('\n'))
 
     const expectedCartDemoEslintRc = loadFixture('cart-demo/.eslintrc.js')
     const cartDemoEslintRcContent = fileContents('.eslintrc.js')
-    expect(cartDemoEslintRcContent).to.equal(expectedCartDemoEslintRc)
+    expect(cartDemoEslintRcContent).to.equal(expectedCartDemoEslintRc.split('\r\n').join('\n'))
 
     const expectedCartDemoGitIgnore = loadFixture('cart-demo/.gitignore')
     const cartDemoGitIgnoreContent = fileContents('.gitignore')
-    expect(cartDemoGitIgnoreContent).to.equal(expectedCartDemoGitIgnore)
+    expect(cartDemoGitIgnoreContent).to.equal(expectedCartDemoGitIgnore.split('\r\n').join('\n'))
 
     const expectedCartDemoPretierRc = loadFixture('cart-demo/.prettierrc.yaml')
     const cartDemoPretierRcContent = fileContents('.prettierrc.yaml')
-    expect(cartDemoPretierRcContent).to.equal(expectedCartDemoPretierRc)
+    expect(cartDemoPretierRcContent).to.equal(expectedCartDemoPretierRc.split('\r\n').join('\n'))
 
     const expectedCartDemoMochaRc = loadFixture('cart-demo/.mocharc.yml')
     const cartDemoMochaRcContent = fileContents('.mocharc.yml')
-    expect(cartDemoMochaRcContent).to.equal(expectedCartDemoMochaRc)
+    expect(cartDemoMochaRcContent).to.equal(expectedCartDemoMochaRc.split('\r\n').join('\n'))
 
     const defaults = flags?.includes('--default')
     const expectedCartDemoPackageJson = loadFixture('cart-demo/package.json', [
@@ -233,11 +233,11 @@ describe('Project', () => {
 
     const expectedCartDemoTsConfigEslint = loadFixture('cart-demo/tsconfig.eslint.json')
     const cartDemoTsConfigEslintContent = fileContents('tsconfig.eslint.json')
-    expect(cartDemoTsConfigEslintContent).to.equal(expectedCartDemoTsConfigEslint)
+    expect(cartDemoTsConfigEslintContent).to.equal(expectedCartDemoTsConfigEslint.split('\r\n').join('\n'))
 
     const expectedCartDemoTsConfig = loadFixture('cart-demo/tsconfig.json')
     const cartDemoTsConfigContent = fileContents('tsconfig.json')
-    expect(cartDemoTsConfigContent).to.equal(expectedCartDemoTsConfig)
+    expect(cartDemoTsConfigContent).to.equal(expectedCartDemoTsConfig.split('\r\n').join('\n'))
   }
 
   context('Valid project', () => {
