@@ -2,23 +2,10 @@
 description: How to have the backend up and running for a blog application in a few minutes
 ---
 
-# Your first Booster app in 10 minutes
+# Build a Booster app in minutes
 
 In this section, we will go through all the necessary steps to have the backend up and
-running for a blog application in just a few minutes. The steps to follow will be:
-
-- [Create project](#_1-create-the-project)
-- [First command](#_2-first-command)
-- [First event](#_3-first-event)
-- [First entity](#_4-first-entity)
-- [First read model](#_5-first-read-model)
-- [Deployment](#_6-deployment)
-- [Testing](#_7-testing)
-  - [Creating posts](#_71-creating-posts)
-  - [Retrieving all posts](#_72-retrieving-all-posts)
-  - [Retrieving specific post](#_73-retrieving-specific-post)
-- [Removing the stack](#_8-removing-the-stack)
-- [More functionalities](#_9-more-functionalities)
+running for a blog application in just a few minutes.
 
 ### 1. Create the project
 
@@ -34,7 +21,7 @@ the instructions. After some prompted questions, the CLI will ask you to select 
 ```
 
 When asked for the provider, select AWS as that is what we have
-configured [here](02_getting-started.md#aws-provider-prerequisites) for the example. You can use another provider if you want, or add more providers once you have created the project.
+configured [here](configuration#aws-provider-setup) for the example. You can use another provider if you want, or add more providers once you have created the project.
 
 After choosing your provider, you will see your project generated!:
 
@@ -123,7 +110,7 @@ Now open the project in your favorite editor, e.g. [Visual Studio Code](https://
 ### 2. First command
 
 Commands define the input to our system, so we'll start by generating our first
-[command](03_booster-architecture.md#_1-command-and-command-handlers) to create posts. Use the command generator, while in the project's root
+[command](../architecture/command) to create posts. Use the command generator, while in the project's root
 directory, as follows:
 
 ```bash
@@ -281,7 +268,7 @@ boost new:read-model PostReadModel --fields title:string author:string --project
 ```
 
 We have used a new flag, `--projects`, that allow us to specify the entities (can be many) the read model will
-watch for changes. You might be wondering what is the `:id` after the entity name. That's the [joinKey](03_booster-architecture.md#the-projection-function),
+watch for changes. You might be wondering what is the `:id` after the entity name. That's the [joinKey](../architecture/read-model#the-projection-function),
 but you can forget about it now.
 
 As you might guess, the read-model generator will create a file called
