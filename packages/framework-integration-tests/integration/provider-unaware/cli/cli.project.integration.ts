@@ -252,6 +252,9 @@ describe('Project', () => {
           `-p "${PROVIDER}"`,
           `-r "${REPO_URL}"`,
           `-v "${VERSION}"`,
+          // We skip dependencies and git installation to make this test faster
+          '--skipInstall',
+          '--skipGit',
         ]
         const output = await execNewProject(projectName, flags)
 
@@ -268,6 +271,9 @@ describe('Project', () => {
           `--providerPackageName "${PROVIDER}"`,
           `--repository "${REPO_URL}"`,
           `--version "${VERSION}"`,
+          // We skip dependencies and git installation to make this test faster
+          '--skipInstall',
+          '--skipGit',
         ]
         const output = await execNewProject(projectName, flags)
 
@@ -332,8 +338,9 @@ describe('Project', () => {
           license: LICENSE,
           repository: REPO_URL,
           provider: 'default', // Just "hit enter" to choose the default one
-        }  
-        const output = await execNewProject(projectName, [], promptAnswers)
+        }
+        // We skip dependencies and git installation to make this test faster
+        const output = await execNewProject(projectName, ['--skipInstall', '--skipGit'], promptAnswers)
 
         await assertions(output, projectName)
       }).timeout(TEST_TIMEOUT)
@@ -349,7 +356,8 @@ describe('Project', () => {
           repository: REPO_URL,
           provider: PROVIDER,
         }
-        const output = await execNewProject(projectName, [], promptAnswers)
+        // We skip dependencies and git installation to make this test faster
+        const output = await execNewProject(projectName, ['--skipInstall', '--skipGit'], promptAnswers)
 
         await assertions(output, projectName)
       }).timeout(TEST_TIMEOUT)
@@ -368,6 +376,9 @@ describe('Project', () => {
         const flags = [
           `--providerPackageName "${PROVIDER}"`,
           `--repository "${REPO_URL}"`,
+          // We skip dependencies and git installation to make this test faster
+          '--skipInstall',
+          '--skipGit',
         ]
         const output = await execNewProject(projectName, flags, promptAnswers)
 
@@ -399,6 +410,9 @@ describe('Project', () => {
           '--providerPackageName "invalid-provider"',
           `--repository "${REPO_URL}"`,
           `--version "${VERSION}"`,
+          // We skip dependencies and git installation to make this test faster
+          '--skipInstall',
+          '--skipGit',
         ]
         const output = await execNewProject('cart-demo-invalid-provider', flags)
 

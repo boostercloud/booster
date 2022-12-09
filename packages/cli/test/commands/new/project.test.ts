@@ -85,7 +85,7 @@ describe('new', (): void => {
         it('skip dependencies installation with --skipInstall', async () => {
           replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
 
-          await new Project.default([projectName,  '--interactive', '--skipInstall'], {} as IConfig).run()
+          await new Project.default([projectName, '--interactive', '--skipInstall'], {} as IConfig).run()
 
           expect(ProjectInitializer.installDependencies).to.have.not.been.called
           expect(ProjectInitializer.initializeGit).to.have.been.called
@@ -110,7 +110,10 @@ describe('new', (): void => {
             const config = { ...defaultProjectInitializerConfig, homepage: 'booster.cloud' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName, '--interactive', '--homepage', "'booster.cloud'"], {} as IConfig).run()
+            await new Project.default(
+              [projectName, '--interactive', '--homepage', "'booster.cloud'"],
+              {} as IConfig
+            ).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
@@ -166,7 +169,10 @@ describe('new', (): void => {
             const config = { ...defaultProjectInitializerConfig, description: 'a short description' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName, '--interactive', '--description', "'a short description'"], {} as IConfig).run()
+            await new Project.default(
+              [projectName, '--interactive', '--description', "'a short description'"],
+              {} as IConfig
+            ).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
@@ -179,7 +185,10 @@ describe('new', (): void => {
             const config = { ...defaultProjectInitializerConfig, description: 'a short description' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName, '--interactive', '-d', "'a short description'"], {} as IConfig).run()
+            await new Project.default(
+              [projectName, '--interactive', '-d', "'a short description'"],
+              {} as IConfig
+            ).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
@@ -246,7 +255,10 @@ describe('new', (): void => {
             const config = { ...defaultProjectInitializerConfig, repository: defaultRepository }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName, '--interactive', '--repository', defaultRepository], {} as IConfig).run()
+            await new Project.default(
+              [projectName, '--interactive', '--repository', defaultRepository],
+              {} as IConfig
+            ).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
