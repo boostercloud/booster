@@ -345,7 +345,7 @@ running for a blog application in just a few minutes. The steps to follow will b
 
 ### 1. Create the project
 
-First of all, we will use the Booster generators to create a project. Run this command `boost new:project boosted-blog` and follow
+First of all, we will use the Booster generators to create a project. Run this command `boost new:project boosted-blog --interactive` and follow
 the instructions. After some prompted questions, the CLI will ask you to select one of the available providers to set up as the main provider that will be used.
 
 ```shell
@@ -373,11 +373,10 @@ After choosing your provider, you will see your project generated!:
 ℹ Project generated!
 ```
 
-> [!TIP] If you prefer to create the project with default parameters, you can run the command as `boost new:project booster-blog --default`. The default
+> [!TIP] If you prefer to create the project with default parameters, you can run the command as `boost new:project booster-blog --providerPackageName <package-name>`. The package name of the provider is the only required parameter in project creatio. The default
 > parameters are as follows:
 >
 > - Project name: The one provided when running the command, in this case "booster-blog"
-> - Provider: AWS
 > - Description, author, homepage and repository: ""
 > - License: MIT
 > - Version: 0.1.0
