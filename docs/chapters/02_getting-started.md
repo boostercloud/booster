@@ -373,13 +373,11 @@ After choosing your provider, you will see your project generated!:
 ℹ Project generated!
 ```
 
-> [!TIP] If you prefer to create the project with default parameters, you can run the command as `boost new:project booster-blog --providerPackageName <package-name>`. The package name of the provider is the only required parameter in project creatio. The default
-> parameters are as follows:
+> [!TIP] If you prefer to create the project with default parameters, you can run the command as `boost new:project booster-blog --providerPackageName <package-name>`. The package name of the provider is the only required parameter and can be any `npm` package that implements Booster's provider interfaces. The framework provides the following: 
 >
-> - Project name: The one provided when running the command, in this case "booster-blog"
-> - Description, author, homepage and repository: ""
-> - License: MIT
-> - Version: 0.1.0
+> - `@boostercloud/framework-provider-aws`: Runs your app in AWS Lambda and stores the events and entity snapshots.
+> - `@boostercloud/framework-provider-azure`: Runs your app in Azure Functions and stores the events and entity snapshots.
+> - `@boostercloud/framework-provider-kubernetes` (Experimental): This package is a proof of concept that runs a Booster application on a Kubernetes cluster.
 
 In case you want to specify each parameter without following the instructions, you can use the following flags with this structure `<flag>=<parameter>`.
 
