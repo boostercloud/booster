@@ -152,7 +152,7 @@ export const parseConfig = async (
     )
     const providerPackageName = await getProviderPackageName(prompter, flags.providerPackageName)
 
-    return Promise.resolve({
+    return {
       projectName: flags.projectName as string,
       providerPackageName,
       description,
@@ -165,9 +165,9 @@ export const parseConfig = async (
       skipInstall: flags.skipInstall || false,
       skipGit: flags.skipGit || false,
       interactive: true,
-    })
+    }
   } else {
-    return Promise.resolve({
+    return {
       projectName: flags.projectName as string,
       providerPackageName: flags.providerPackageName as string,
       description: '',
@@ -180,6 +180,6 @@ export const parseConfig = async (
       skipInstall: flags.skipInstall || false,
       skipGit: flags.skipGit || false,
       interactive: false,
-    })
+    }
   }
 }
