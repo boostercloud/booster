@@ -1,6 +1,10 @@
-## Migrations
+---
+description: Learn how to migrate data in Booster
+---
 
-### Schema migrations
+# Migrations
+
+## Schema migrations
 
 Booster handles classes annotated with `@Migrates` as **Schema migrations**. The migration process will update an existing object
 from one version to the next one.
@@ -43,7 +47,7 @@ class ProductV1 {
 class ProductV2 extends Product {}
 ```
 
-### Data migrations
+## Data migrations
 
 The decorator `@DataMigration` will indicate **Booster** that this class contains data migration code.
 
