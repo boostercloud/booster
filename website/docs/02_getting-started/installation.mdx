@@ -29,28 +29,41 @@ manager.
 
 Using [Chocolatey](https://chocolatey.org/) package manager, run the following command in your PowerShell
 
+<TerminalWindow>
+
 ```shell
 choco install nodejs
 ```
+
+</TerminalWindow>
+
 
 </TabItem>
 <TabItem value="macos" label="macOS">
 
 Using [Homebrew](https://brew.sh) package manager, run the following command on the terminal
 
+<TerminalWindow>
+
 ```shell
 brew install node
 ```
 
+</TerminalWindow>
+
 </TabItem>
 <TabItem value="ubuntu" label="Ubuntu">
   
-Just run the following commands on the terminal
+Just run the following commands on the terminal:
+
+<TerminalWindow>
 
 ```shell
 curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
 sudo apt install nodejs
 ```
+
+</TerminalWindow>
 
 </TabItem>
 </Tabs>
@@ -91,23 +104,35 @@ Booster will initialize a Git repository when you create a new project (unless y
 <Tabs groupId="os">
 <TabItem value="windows" label="Windows">
 
+<TerminalWindow>
+
 ```shell
 choco install git
 ```
 
+</TerminalWindow>
+
 </TabItem>
 <TabItem value="macos" label="macOS" default>
+
+<TerminalWindow>
 
 ```shell
 brew install git
 ```
 
+</TerminalWindow>
+
 </TabItem>
 <TabItem value="ubuntu" label="Ubuntu">
+
+<TerminalWindow>
 
 ```shell
 sudo apt install git-all
 ```
+
+</TerminalWindow>
 
 </TabItem>
 </Tabs>
@@ -119,10 +144,15 @@ Take a look at the [Git configuration page](https://git-scm.com/docs/git-config)
 
 To configure them, run in your terminal:
 
+<TerminalWindow>
+
 ```shell
 git config --global user.name "Your Name Here"
 git config --global user.email "your_email@youremail.com"
 ```
+
+</TerminalWindow>
+
 
 ## Installing the Booster CLI
 
@@ -134,9 +164,14 @@ stated in the release notes.
 
 To install the Booster CLI run this:
 
+<TerminalWindow>
+
 ```shell
 npm install --global @boostercloud/cli
 ```
+
+</TerminalWindow>
+
 
 Verify the Booster CLI installation with the `boost version` command. You should get back
 something like
