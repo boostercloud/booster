@@ -188,7 +188,7 @@ Booster read models are accessible to the outside world through GraphQL queries.
 
 Booster automatically creates the queries and subscriptions for each read model. You can use them to fetch the data from the read models. For example, given the following read model:
 
-```typescript
+```typescript title="src/read-model/cart-read-model.ts"
 @ReadModel({
   authorize: 'all',
 })
@@ -225,7 +225,7 @@ Booster GraphQL API also provides support for real-time updates using subscripti
 
 There are some cases when it's desirable to query your read models sorted a particular field. An example could be a chat app where you want to fetch the messages of a channel sorted by the time they were sent. Booster provides a special decorator to tag a specific property as a sequence key for a read model:
 
-```typescript
+```typescript title="src/read-model/message-read-model.ts"
 export class MessageReadModel {
   public constructor(
     readonly id: UUID, // A channel ID
@@ -256,8 +256,6 @@ Using this query, when only the id is provided, you get an array of all the mess
 It is important to guarantee that the sequence key is unique for each message. This could be difficult to achieve if you are using a timestamp as the sequence key. Booster provides a utility function to generate unique timestamps that you can use in your read models: `TimeKey.generate()`. It will generate a timestamp with a random UUID as a suffix to avoid any coincidences.
 
 For more information about queries and how to use them, please check the [GraphQL API](04_features#reading-read-models) section.
-
-
 
 ## Read models naming convention
 

@@ -21,8 +21,10 @@ export const FooterLinkSection: FC<FooterLinkSectionProps> = ({ links = [] }) =>
         <div key={title} className="footer-ls-section">
           <h5 className="footer-ls-section-title">{title}</h5>
           <div className="footer-ls-column">
-            {items.map(({ to, label }) => (
-              <a href={to}>{label}</a>
+            {items.map(({ to, label }, i) => (
+              <a key={i} href={to}>
+                {label}
+              </a>
             ))}
           </div>
         </div>

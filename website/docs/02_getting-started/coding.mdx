@@ -110,7 +110,7 @@ Now open the project in your favorite editor, e.g. [Visual Studio Code](https://
 ### 2. First command
 
 Commands define the input to our system, so we'll start by generating our first
-[command](../architecture/command) to create posts. Use the command generator, while in the project's root
+[command](/docs/architecture/command) to create posts. Use the command generator, while in the project's root
 directory, as follows:
 
 ```bash
@@ -268,7 +268,7 @@ boost new:read-model PostReadModel --fields title:string author:string --project
 ```
 
 We have used a new flag, `--projects`, that allow us to specify the entities (can be many) the read model will
-watch for changes. You might be wondering what is the `:id` after the entity name. That's the [joinKey](../architecture/read-model#the-projection-function),
+watch for changes. You might be wondering what is the `:id` after the entity name. That's the [joinKey](/docs/architecture/read-model#the-projection-function),
 but you can forget about it now.
 
 As you might guess, the read-model generator will create a file called
