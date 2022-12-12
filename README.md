@@ -1,4 +1,4 @@
-# ![Booster logo](docs/img/booster-logo.png)
+# ![Booster logo](https://user-images.githubusercontent.com/175096/207089481-1f09e8e5-cc79-4a0e-899f-693dbd7d1710.png)
 
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg)](CODE_OF_CONDUCT.md)
 [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fboostercloud%2Fbooster%2Fbadge%3Fref%3Dmain&style=flat)](https://actions-badge.atrox.dev/boostercloud/booster/goto?ref=main)
