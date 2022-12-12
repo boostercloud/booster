@@ -12,7 +12,7 @@
 
 # What is Booster Framework?
 
-[Booster Framework](https://boosterframework.com) is a software development framework designed to create event-driven backend microservices that focus on extreme development productivity. It provides a highly opinionated implementation of the CQRS and Event Sourcing patterns in Typescript, using [DDD (Domain-Driven Design)](https://en.wikipedia.org/wiki/Domain-driven_design) semantics that makes business logic fit naturally in the code. Thanks to Booster, business, product, and technical teams can collaborate, sharing a much closer language.
+[Booster Framework](https://boosterframework.com) is a software development framework designed to create event-driven backend microservices that focus on extreme development productivity. It provides a highly opinionated implementation of the CQRS and Event Sourcing patterns in Typescript, using [DDD (Domain-Driven Design)](https://en.wikipedia.org/wiki/Domain-driven_design) semantics that makes business logic fit naturally within the code. Thanks to Booster, business, product, and technical teams can collaborate, sharing a much closer language.
 
 Booster uses advanced static analysis techniques and takes advantage of the Typescript type system to understand the structure and semantics of your code and minimize the amount of glue code. It’s capable not just of building an entirely functioning GraphQL API for you, but also to build an optimal, production-ready and scalable cloud infrastructure for your application in your preferred cloud provider (Azure or AWS).
 
@@ -44,11 +44,11 @@ All those things, and more, will be given to you by default and entirely for fre
 
 # Current state and roadmap
 
-[The roadmap](https://github.com/orgs/boostercloud/projects/2/views/2) is community-driven; the Booster core team actively participates in the community, listening to real users, and prioritizing those issues and ideas that provide the most value for the majority. So don't hesitate to create issues or leave comments in [Discord](https://discord.gg/k7b4B8CDtT) and tell us about your questions and ideas.
+[The roadmap](https://github.com/orgs/boostercloud/projects/2/views/2) is community-driven; the core team actively participates in the Booster community, listening to real users and prioritizing those issues and ideas that provide the most value for the majority. So don't hesitate to create issues or leave comments in [Discord](https://discord.gg/k7b4B8CDtT) and tell us about your questions and ideas.
 
 AWS and Azure integrations are thoroughly tested (with unit and integration tests running automatically before every release), and are currently used in production in projects of all-sized organizations, from startups to massive enterprises.
 
-It exists experimental support for Kubernetes, but it is not actively supported at the moment. If you're interested in Kubernetes support, let us know!
+Experimental support for Kubernetes exists, but it is not actively supported at the moment. If you're interested in Kubernetes support, let us know!
 
 # The "Booster Way"
 
