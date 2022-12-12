@@ -563,6 +563,8 @@ export { orDieWith } from '@effect-ts/core/Effect'
  */
 export { dieMessage } from '@effect-ts/core/Effect'
 
+export { mapError } from '@effect-ts/core/Effect'
+
 /*************************************************
  *                                               *
  *             DEPENDENCY INJECTION              *

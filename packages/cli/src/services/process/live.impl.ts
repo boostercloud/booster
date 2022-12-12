@@ -1,6 +1,6 @@
 import * as childProcess from 'child-process-promise'
 import * as process from 'process'
-import { ProcessService, ProcessError } from '.'
+import { CwdError, ExecError, ProcessService } from '.'
 import { Layer, tryCatch, tryCatchPromise } from '@boostercloud/framework-types/dist/effect'
 
 const exec = (command: string, cwd?: string) =>
@@ -13,13 +13,23 @@ ${stdout}
 `
       return result
     },
-    (reason) => new ProcessError(reason)
+    (reason) =>
+      new ExecError(
+        new Error(`There were some issues running the command ${command}:
+
+    ${reason}`)
+      )
   )
 
 const cwd = () =>
   tryCatch(
     () => process.cwd(),
-    (reason) => new ProcessError(reason)
+    (reason) =>
+      new CwdError(
+        new Error(`There were some issues getting the current working directory:
+
+    ${reason}`)
+      )
   )
 
 export const LiveProcess = Layer.fromValue(ProcessService)({ exec, cwd })

@@ -1,7 +1,6 @@
-import { PackageManagerService } from '.'
-import { dieMessage, gen, Layer, orDie, Ref } from '@boostercloud/framework-types/dist/effect'
-import { makeScopedRun } from './common'
-import { guardError } from '../../common/errors'
+import { PackageManagerError, PackageManagerService } from '.'
+import { dieMessage, gen, Layer, mapError, orDie, pipe, Ref } from '@boostercloud/framework-types/dist/effect'
+import { makePackageManager, makeScopedRun } from './common'
 
 // TODO: Look recursively up for a rush.json file and run ./common/scripts/install-run-rushx.js
 export const makeRushPackageManager = gen(function* ($) {
@@ -12,14 +11,22 @@ export const makeRushPackageManager = gen(function* ($) {
   const runRush = yield* $(makeScopedRun('rush', projectDirRef))
   const runRushX = yield* $(makeScopedRun('rushx', projectDirRef))
 
+  const commonService = yield* $(makePackageManager('rush'))
+
   const service: PackageManagerService = {
-    setProjectRoot: (projectDir: string) => Ref.set(projectDir)(projectDirRef),
-    runScript: (scriptName: string, args: ReadonlyArray<string>) => runRushX(scriptName, args),
-    installProductionDependencies: () =>
-      guardError('Could not install production dependencies')(
-        dieMessage('Rush is a monorepo manager, so it does not support installing production dependencies')
+    ...commonService,
+    runScript: (scriptName: string, args: ReadonlyArray<string>) =>
+      pipe(
+        runRushX(scriptName, args),
+        mapError((error) => new PackageManagerError('ScriptExecutionError', error))
       ),
-    installAllDependencies: () => guardError('Could not install dependencies')(runRush('update', [])),
+    installProductionDependencies: () =>
+      dieMessage('Rush is a monorepo manager, so it does not support installing production dependencies'),
+    installAllDependencies: () =>
+      pipe(
+        runRush('update', []),
+        mapError((error) => new PackageManagerError('DependencyInstallationFailed', error))
+      ),
   }
   return service
 })

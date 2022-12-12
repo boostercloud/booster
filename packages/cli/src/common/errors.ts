@@ -13,4 +13,7 @@ export function wrapExecError(e: Error, prefix: string): Error {
 }
 
 export const guardError = (prefix: string) =>
-  orDieWith((reason: unknown) => new Error(Brand.dangerize(prefix) + '\n' + JSON.stringify(reason)))
+  orDieWith((err: unknown) => {
+    const reason = err instanceof Error ? err.message : JSON.stringify(err)
+    return new Error(Brand.dangerize(prefix) + '\n' + reason)
+  })

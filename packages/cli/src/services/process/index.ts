@@ -1,13 +1,18 @@
 import { Effect, tag } from '@boostercloud/framework-types/dist/effect'
 
-export class ProcessError {
-  readonly _tag = 'ProcessError'
-  public constructor(readonly reason: unknown) {}
+export class ExecError {
+  readonly _tag = 'ExecError'
+  constructor(readonly error: Error) {}
+}
+
+export class CwdError {
+  readonly _tag = 'CwdError'
+  constructor(readonly error: Error) {}
 }
 
 export interface ProcessService {
-  readonly exec: (command: string, cwd?: string) => Effect<unknown, ProcessError, string>
-  readonly cwd: () => Effect<unknown, ProcessError, string>
+  readonly exec: (command: string, cwd?: string) => Effect<unknown, ExecError, string>
+  readonly cwd: () => Effect<unknown, CwdError, string>
 }
 
 export const ProcessService = tag<ProcessService>()
