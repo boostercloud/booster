@@ -59,7 +59,7 @@ export default class Project extends Command {
       default: false,
     }),
     interactive: flags.boolean({
-      description: 'choose options rather than defaults',
+      description: 'run an interactive wizard to configure your project',
       default: false,
     }),
   }
