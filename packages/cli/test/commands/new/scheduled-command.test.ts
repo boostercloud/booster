@@ -11,7 +11,7 @@ import * as path from 'path'
 describe('new', (): void => {
   describe('ScheduledCommand', () => {
     const scheduledCommandName = 'ExampleScheduledCommand'
-    const scheduledCommandRoot = path.join('src/scheduled-commands/')
+    const scheduledCommandRoot = path.normalize('src/scheduled-commands/')
     const scheduledCommandPath = `${scheduledCommandRoot}example-scheduled-command.ts`
     const defaultScheduledCommandImports = [
       {

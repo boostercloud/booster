@@ -12,7 +12,7 @@ describe('new', (): void => {
   describe('Command', () => {
     const command = 'ExampleCommand'
     const commandsRoot = 'src/commands/'
-    const commandPath = path.join(`${commandsRoot}example-command.ts`)
+    const commandPath = path.normalize(`${commandsRoot}example-command.ts`)
     const defaultCommandImports = [
       {
         packagePath: '@boostercloud/framework-core',

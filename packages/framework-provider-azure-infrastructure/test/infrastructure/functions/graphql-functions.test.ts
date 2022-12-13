@@ -22,7 +22,7 @@ describe('Creating graphql-functions', () => {
     expect(definition.config.bindings[1].type).to.be.equal('http')
     expect(definition.config.bindings[1].name).to.be.equal('$return')
     expect(definition.config.bindings[1].direction).to.be.equal('out')
-    expect(definition.config.scriptFile).to.be.equal(path.join('../dist/index.js'))
+    expect(definition.config.scriptFile).to.be.equal(path.normalize('../dist/index.js'))
     expect(definition.config.entryPoint).to.be.equal('boosterServeGraphQL')
   })
 })

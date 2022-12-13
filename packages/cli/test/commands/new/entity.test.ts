@@ -12,7 +12,7 @@ describe('new', (): void => {
   describe('Entity', () => {
     const entityName = 'ExampleEntity'
     const entitysRoot = 'src/entities/'
-    const entityPath = path.join(`${entitysRoot}example-entity.ts`)
+    const entityPath = path.normalize(`${entitysRoot}example-entity.ts`)
     const defaultEntityImports = [
       {
         packagePath: '@boostercloud/framework-core',

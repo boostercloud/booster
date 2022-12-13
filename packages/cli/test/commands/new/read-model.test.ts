@@ -11,8 +11,8 @@ import * as path from 'path'
 describe('new', (): void => {
   describe('ReadModel', () => {
     const readModelName = 'ExampleReadModel'
-    const readModelsRoot = path.join('src/read-models/')
-    const readModelPath = path.join(`${readModelsRoot}example-read-model.ts`)
+    const readModelsRoot = path.normalize('src/read-models/')
+    const readModelPath = path.normalize(`${readModelsRoot}example-read-model.ts`)
     const defaultReadModelImports = [
       {
         packagePath: '@boostercloud/framework-core',

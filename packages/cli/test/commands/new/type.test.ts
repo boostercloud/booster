@@ -11,7 +11,7 @@ import * as path from 'path'
 describe('new', (): void => {
   describe('Type', () => {
     const typeName = 'ExampleType'
-    const typesRoot = path.join('src/common/')
+    const typesRoot = path.normalize('src/common/')
     const typePath = `${typesRoot}example-type.ts`
     const defaultTypeImports = [
       {

@@ -162,7 +162,7 @@ describe('the `stack-tools` module', () => {
         const fun: any = Object.values(stackResources).find((obj: any) => {
           return obj.Properties.FunctionName == 'testing-app-app-graphql-handler'
         })
-        expect(fun.Properties.Handler).to.equal(path.join('dist/index.boosterServeGraphQL'))
+        expect(fun.Properties.Handler).to.equal(path.normalize('dist/index.boosterServeGraphQL'))
       })
     })
 

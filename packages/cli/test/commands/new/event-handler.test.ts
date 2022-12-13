@@ -12,7 +12,7 @@ describe('new', (): void => {
   describe('Event', () => {
     const eventHandlerName = 'ExampleEventHandler'
     const eventHandlersRoot = 'src/event-handlers/'
-    const eventHandlerPath = path.join(`${eventHandlersRoot}example-event-handler.ts`)
+    const eventHandlerPath = path.normalize(`${eventHandlersRoot}example-event-handler.ts`)
     const defaultEventHandlerImports = [
       {
         packagePath: '../events/comment-posted',

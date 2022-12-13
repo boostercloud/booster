@@ -12,7 +12,7 @@ describe('new', (): void => {
   describe('Event', () => {
     const eventName = 'ExampleEvent'
     const eventsRoot = 'src/events/'
-    const eventPath = path.join(`${eventsRoot}example-event.ts`)
+    const eventPath = path.normalize(`${eventsRoot}example-event.ts`)
     const defaultEventImports = [
       {
         packagePath: '@boostercloud/framework-core',
