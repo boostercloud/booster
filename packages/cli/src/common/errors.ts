@@ -13,7 +13,12 @@ export function wrapExecError(e: Error, prefix: string): Error {
 }
 
 export const guardError = (prefix: string) =>
-  orDieWith((err: unknown) => {
-    const reason = err instanceof Error ? err.message : JSON.stringify(err)
-    return new Error(Brand.dangerize(prefix) + '\n' + reason)
+  orDieWith((err: Error) => {
+    return new Error(Brand.dangerize(`[${err.name}] ${prefix}:`) + '\n' + err.message)
   })
+
+/**
+ * Converts an unknown value to an Error. If it's not an error already, it will be stringified.
+ */
+export const unknownToError = (reason: unknown) =>
+  reason instanceof Error ? reason : new Error(JSON.stringify(reason))

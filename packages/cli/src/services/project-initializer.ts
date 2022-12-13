@@ -14,7 +14,7 @@ import * as prettierRc from '../templates/project/prettierrc-yaml'
 import * as mochaRc from '../templates/project/mocharc-yml'
 import { guardError, wrapExecError } from '../common/errors'
 import { PackageManagerService } from './package-manager'
-import { gen, unsafeRunEffect } from '@boostercloud/framework-types/dist/effect'
+import { gen, mapError, pipe, unsafeRunEffect } from '@boostercloud/framework-types/dist/effect'
 import { LivePackageManager } from './package-manager/live.impl'
 
 export async function generateConfigFiles(config: ProjectInitializerConfig): Promise<void> {
@@ -22,10 +22,17 @@ export async function generateConfigFiles(config: ProjectInitializerConfig): Pro
 }
 
 export async function installDependencies(config: ProjectInitializerConfig): Promise<void> {
-  return unsafeRunEffect(installDependenciesEff(config), {
-    layer: LivePackageManager,
-    onError: guardError('Could not install dependencies'),
-  })
+  const effect = installDependenciesEff(config)
+  return unsafeRunEffect(
+    pipe(
+      effect,
+      mapError((e) => e.error)
+    ),
+    {
+      layer: LivePackageManager,
+      onError: guardError('Could not install dependencies'),
+    }
+  )
 }
 
 const installDependenciesEff = (config: ProjectInitializerConfig) =>

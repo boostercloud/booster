@@ -1,5 +1,5 @@
 import { mapError, gen, pipe, Ref } from '@boostercloud/framework-types/dist/effect'
-import { PackageManagerError, PackageManagerService } from '.'
+import { InstallDependenciesError, PackageManagerService, RunScriptError } from '.'
 import { ProcessService } from '../process'
 
 /**
@@ -38,25 +38,21 @@ export const makePackageManager = (packageManagerCommand: string) =>
     const run = yield* $(makeScopedRun(packageManagerCommand, projectDirRef))
 
     const service: PackageManagerService = {
-      setProjectRoot: (projectDir: string) =>
-        pipe(
-          Ref.set_(projectDirRef, projectDir),
-          mapError((error) => new PackageManagerError('ProjectRootNotSet', error))
-        ),
+      setProjectRoot: (projectDir: string) => Ref.set_(projectDirRef, projectDir),
       runScript: (scriptName: string, args: ReadonlyArray<string>) =>
         pipe(
           run('run', [scriptName, ...args]),
-          mapError((error) => new PackageManagerError('ScriptExecutionError', error))
+          mapError((error) => new RunScriptError(error.error))
         ),
       installProductionDependencies: () =>
         pipe(
           run('install', ['--production', '--no-bin-links', '--no-optional']),
-          mapError((error) => new PackageManagerError('DependencyInstallationFailed', error))
+          mapError((error) => new InstallDependenciesError(error.error))
         ),
       installAllDependencies: () =>
         pipe(
           run('install', []),
-          mapError((error) => new PackageManagerError('DependencyInstallationFailed', error))
+          mapError((error) => new InstallDependenciesError(error.error))
         ),
     }
     return service

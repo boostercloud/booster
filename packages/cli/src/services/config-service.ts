@@ -5,7 +5,7 @@ import { checkItIsABoosterProject } from './project-checker'
 import { currentEnvironment } from './environment'
 import { createSandboxProject, removeSandboxProject } from '../common/sandbox'
 import { PackageManagerService } from './package-manager'
-import { gen, unsafeRunEffect } from '@boostercloud/framework-types/dist/effect'
+import { gen, mapError, pipe, unsafeRunEffect } from '@boostercloud/framework-types/dist/effect'
 import { LivePackageManager } from './package-manager/live.impl'
 
 export const DEPLOYMENT_SANDBOX = path.join(process.cwd(), '.deploy')
@@ -18,10 +18,16 @@ export async function createDeploymentSandbox(): Promise<string> {
     yield* $(setProjectRoot(sandboxRelativePath))
     yield* $(installProductionDependencies())
   })
-  await unsafeRunEffect(effect, {
-    layer: LivePackageManager,
-    onError: guardError('Could not install production dependencies'),
-  })
+  await unsafeRunEffect(
+    pipe(
+      effect,
+      mapError((e) => e.error)
+    ),
+    {
+      layer: LivePackageManager,
+      onError: guardError('Could not install production dependencies'),
+    }
+  )
   return sandboxRelativePath
 }
 
@@ -36,10 +42,17 @@ export async function compileProjectAndLoadConfig(userProjectPath: string): Prom
 }
 
 export async function compileProject(projectPath: string): Promise<void> {
-  return await unsafeRunEffect(compileProjectEff(projectPath), {
-    layer: LivePackageManager,
-    onError: guardError('Project contains compilation errors'),
-  })
+  const effect = compileProjectEff(projectPath)
+  return await unsafeRunEffect(
+    pipe(
+      effect,
+      mapError((e) => e.error)
+    ),
+    {
+      layer: LivePackageManager,
+      onError: guardError('Project contains compilation errors'),
+    }
+  )
 }
 
 const compileProjectEff = (projectPath: string) =>
@@ -51,10 +64,17 @@ const compileProjectEff = (projectPath: string) =>
   })
 
 export async function cleanProject(projectPath: string): Promise<void> {
-  return unsafeRunEffect(cleanProjectEff(projectPath), {
-    layer: LivePackageManager,
-    onError: guardError('Could not clean project'),
-  })
+  const effect = cleanProjectEff(projectPath)
+  return unsafeRunEffect(
+    pipe(
+      effect,
+      mapError((e) => e.error)
+    ),
+    {
+      layer: LivePackageManager,
+      onError: guardError('Could not clean project'),
+    }
+  )
 }
 
 const cleanProjectEff = (projectPath: string) =>

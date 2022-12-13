@@ -1,5 +1,5 @@
-import { PackageManagerError, PackageManagerService } from '.'
-import { dieMessage, gen, Layer, mapError, orDie, pipe, Ref } from '@boostercloud/framework-types/dist/effect'
+import { InstallDependenciesError, PackageManagerService, RunScriptError } from '.'
+import { fail, gen, Layer, mapError, orDie, pipe, Ref } from '@boostercloud/framework-types/dist/effect'
 import { makePackageManager, makeScopedRun } from './common'
 
 // TODO: Look recursively up for a rush.json file and run ./common/scripts/install-run-rushx.js
@@ -18,14 +18,18 @@ export const makeRushPackageManager = gen(function* ($) {
     runScript: (scriptName: string, args: ReadonlyArray<string>) =>
       pipe(
         runRushX(scriptName, args),
-        mapError((error) => new PackageManagerError('ScriptExecutionError', error))
+        mapError((error) => new RunScriptError(error.error))
       ),
     installProductionDependencies: () =>
-      dieMessage('Rush is a monorepo manager, so it does not support installing production dependencies'),
+      fail(
+        new InstallDependenciesError(
+          new Error('Rush is a monorepo manager, so it does not support installing production dependencies')
+        )
+      ),
     installAllDependencies: () =>
       pipe(
         runRush('update', []),
-        mapError((error) => new PackageManagerError('DependencyInstallationFailed', error))
+        mapError((error) => new InstallDependenciesError(error.error))
       ),
   }
   return service
