@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Tue, 29 Nov 2022 19:05:38 GMT and should not be manually modified.
+This log was last generated on Wed, 14 Dec 2022 15:59:09 GMT and should not be manually modified.
+
+## 1.3.3
+Wed, 14 Dec 2022 15:59:09 GMT
+
+### Patches
+
+- Add optional parameters for host and port on local provider rockets
 
 ## 1.3.2
 Tue, 29 Nov 2022 19:05:38 GMT
