@@ -12,7 +12,7 @@ The `authorizeReadEvents` policy can be configured with any of the supported aut
 
 - `'all'` to make them public.
 - an array of roles.
-- An [authorizer function](/docs/security/authorization#event-stream-authorizers) that matches the `EventStreamAuthorizer` type signature. For example
+- An [authorizer function](/security/authorization#event-stream-authorizers) that matches the `EventStreamAuthorizer` type signature. For example
 
 ```typescript
 @Entity({
@@ -33,4 +33,4 @@ export class Cart {
 Be careful when exposing events data, as this data is likely to hold internal system state. Pay special attention when authorizing public access with the `'all'` option, it's always recommended to look for alternate solutions that limit access.
 :::
 
-To read more about how to restrict the access to the event stream API, check out the [authorization guide](/docs/security/authorization).
+To read more about how to restrict the access to the event stream API, check out the [authorization guide](/security/authorization).
