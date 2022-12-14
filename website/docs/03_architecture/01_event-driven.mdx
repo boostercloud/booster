@@ -9,7 +9,7 @@ Two patterns influence the Booster's event-driven architecture: Command-Query Re
 
 ![architecture](/img/booster-arch.jpg)
 
-As you can see in the diagram, Booster applications consist of four main building blocks: `Commands`, `Events`, `Entities`, and `Read Models`. `Commands` and `Read Models` are the public interface of the application, while `Events` and `Entities` are private implementation details. With Booster, clients submit `Commands`, query the `Read Models`, or subscribe to them for receiving real-time updates thanks to the out of the box [GraphQL API](04_features#graphql-api)
+As you can see in the diagram, Booster applications consist of four main building blocks: `Commands`, `Events`, `Entities`, and `Read Models`. `Commands` and `Read Models` are the public interface of the application, while `Events` and `Entities` are private implementation details. With Booster, clients submit `Commands`, query the `Read Models`, or subscribe to them for receiving real-time updates thanks to the out of the box [GraphQL API](/graphql)
 
 Booster applications are event-driven and event-sourced so, **the source of truth is the whole history of events**. When a client submits a command, Booster _wakes up_ and handles it throght `Command Handlers`. As part of the process, some `Events` may be _registered_ as needed. 
 
