@@ -150,7 +150,7 @@ const config = {
       appId: 'JOKOWZFYZX',
       apiKey: '84b54a8d1bd786f29df8c9357a8c0852',
       indexName: 'booster',
-      contextualSearch: true,
+      contextualSearch: false,
     },
   },
   plugins: [
