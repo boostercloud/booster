@@ -15,6 +15,7 @@ const sidebars = {
     {
       type: 'category',
       label: 'Booster architecture',
+      collapsed: false,
       link: {
         type: 'doc',
         id: 'architecture/event-driven',
@@ -27,12 +28,33 @@ const sidebars = {
         'architecture/read-model',
       ],
     },
-    'authentication',
-    'logging',
+    {
+      type: 'category',
+      label: 'Features',
+      collapsed: false,
+      link: {
+        type: 'generated-index',
+      },
+      items: [
+        'features/event-stream',
+        'features/schedule-actions',
+        'features/logging',
+        'features/error-handling',
+        'features/data-migrations',
+        'features/testing',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Security',
+      link: {
+        type: 'doc',
+        id: 'security/security',
+      },
+      items: ['security/authentication', 'security/authorization'],
+    },
     'graphql',
-    'error-handling',
-    'data-migrations',
-    'testing',
+    'booster-cli',
     'going-deeper',
     'frequently-asked-questions',
     'contributing',

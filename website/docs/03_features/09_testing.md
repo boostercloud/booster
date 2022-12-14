@@ -1,4 +1,8 @@
-# Testing Booster applications
+# Testing
+
+Booster applications are fully tested by default. This means that you can be sure that your application will work as expected. However, you can also write your own tests to check that your application behaves as you expect. In this section, we will leave some recommendations on how to test your Booster application.
+
+## Testing Booster applications
 
 To properly test a Booster application, you should create a `test` folder at the same level as the `src` one. Apart from that, tests' names should have the `<my_test>.test.ts` format.
 
@@ -18,6 +22,7 @@ The only thing that you should add to this line are the `AWS_SDK_LOAD_CONFIG=tru
 ```
 
 ### Testing with `sinon-chai`
+
 The `BoosterConfig` can be accessed through the `Booster.config` on any part of a Booster application. To properly mock it for your objective, we really recommend to use sinon `replace` method, after configuring your `Booster.config` as desired.
 
 In the example below, we add 2 "empty" read-models, since we are iterating `Booster.config.readModels` from a command handler:
@@ -57,6 +62,7 @@ public static async handle(command: MyCommand, register: Register): Promise<void
 ```
 
 ### Recommended files
+
 These are some files that might help you speed up your testing with Booster.
 
 ```typescript
@@ -68,6 +74,7 @@ chai.use(require('chai-as-promised'))
 
 export const expect = chai.expect
 ```
+
 This `expect` method will help you with some more additional methods like `expect(<my_stub>).to.have.been.calledOnceWithExactly(<my_params..>)`
 
 ```yaml

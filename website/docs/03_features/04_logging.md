@@ -1,14 +1,20 @@
 # Logging in Booster
 
-If no configuration is provided, Booster uses the default JavaScript logging capabilities. Depending on the log level, it will call to `console.debug`, `console.info`, `console.warn` or `console.error`. In this regard, there's no distinction from any other node process and you'll find the logs in your cloud provider's default log aggregator (i.e. Cloudwatch if you use AWS).
+If no configuration is provided, Booster uses the default JavaScript logging capabilities. Depending on the log level, it will call different logging methods:
+
+- `console.debug` for `Level.debug`
+- `console.info` for `Level.info`
+- `console.warn` for `Level.warn`
+- `console.error` for `Level.error`
+
+
+In this regard, there's no distinction from any other node process and you'll find the logs in your cloud provider's default log aggregator (i.e. Cloudwatch if you use AWS).
 
 ## Advanced logging
 
-If you need advanced logging capabilities such as redirecting your logs to a log aggregator, Booster also supports overriding the default behavior by providing custom loggers. The only thing you need to do is to provide an object that implements the `Logger` interface at config time:
+You may need some advanced logging capabilities, such as redirecting your logs to a log aggregator. Booster also supports overriding the default behavior by providing custom loggers. The only thing you need to do is to provide an object that implements the `Logger` interface at config time:
 
-_The Logger interface (In package `@boostercloud/framework-types`):_
-
-```typescript
+```typescript title="@boostercloud/framework-types/lib/logger.ts"
 interface Logger {
   debug(message?: any, ...optionalParams: any[]): void
   info(message?: any, ...optionalParams: any[]): void
@@ -17,18 +23,15 @@ interface Logger {
 }
 ```
 
-You can set your logger, as well as the log level and your preferred log prefix (Defaults to the string `'Booster'`) in your `config.ts` file for each of your environments:
-
-_In your project's config.ts file:_
-
-```typescript
+```typescript title="src/config/config.ts"
 Booster.configure('development', (config: BoosterConfig): void => {
   config.appName = 'my-store'
   config.providerPackage = '@boostercloud/framework-provider-aws'
-  
+  // highlight-start
   config.logger = new MyCustomLogger() // Overrides the default logger object
   config.logLevel = Level.debug        // Sets the log level at 'debug'     
   config.logPrefix = 'my-store-dev'    // Sets the default prefix
+  // highlight-end
 })
 ```
 
@@ -66,4 +69,6 @@ When a `UpdateShippingAddress` command is handled, it wil log messages that look
 [MyApp]|UpdateShippingCommand#handler: User buyer42 changed shipping address for cart 314: { street: '13th rue del percebe', number: 6, ... }
 ```
 
+:::info
 Using the configured Booster logger is not mandatory for your application, but it might be convenient to centralize your logs and this is a standard way to do it.
+:::

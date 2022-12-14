@@ -2,6 +2,7 @@
 description: How to install Booster locally, and start a Booster project in no time.
 ---
 
+import TerminalWindow from '@site/src/components/TerminalWindow/TerminalWindow'
 import TabItem from '@theme/TabItem'
 import Tabs from '@theme/Tabs'
 
@@ -28,41 +29,62 @@ manager.
 
 Using [Chocolatey](https://chocolatey.org/) package manager, run the following command in your PowerShell
 
+<TerminalWindow>
+
 ```shell
 choco install nodejs
 ```
+
+</TerminalWindow>
+
 
 </TabItem>
 <TabItem value="macos" label="macOS">
 
 Using [Homebrew](https://brew.sh) package manager, run the following command on the terminal
 
+<TerminalWindow>
+
 ```shell
 brew install node
 ```
 
+</TerminalWindow>
+
 </TabItem>
 <TabItem value="ubuntu" label="Ubuntu">
   
-Just run the following commands on the terminal
+Just run the following commands on the terminal:
+
+<TerminalWindow>
 
 ```shell
 curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
 sudo apt install nodejs
 ```
 
+</TerminalWindow>
+
 </TabItem>
 </Tabs>
 
 Verify that it was installed properly by checking so from your terminal:
 
-```shell
-$ node -v
-v14.14.0
+<TerminalWindow>
 
-$ npm -v
-7.0.0
+```shell
+node -v
 ```
+
+> v14.14.0
+
+```shell
+npm -v
+```
+
+> 7.0.0
+
+</TerminalWindow>
 
 As soon as you have a Node.js version higher than `v14.14`, and an `npm` version higher than
 `7`, you are good to go. Just note that `npm` comes with node, you don't have to install
@@ -82,23 +104,35 @@ Booster will initialize a Git repository when you create a new project (unless y
 <Tabs groupId="os">
 <TabItem value="windows" label="Windows">
 
+<TerminalWindow>
+
 ```shell
 choco install git
 ```
 
+</TerminalWindow>
+
 </TabItem>
 <TabItem value="macos" label="macOS" default>
+
+<TerminalWindow>
 
 ```shell
 brew install git
 ```
 
+</TerminalWindow>
+
 </TabItem>
 <TabItem value="ubuntu" label="Ubuntu">
+
+<TerminalWindow>
 
 ```shell
 sudo apt install git-all
 ```
+
+</TerminalWindow>
 
 </TabItem>
 </Tabs>
@@ -110,10 +144,15 @@ Take a look at the [Git configuration page](https://git-scm.com/docs/git-config)
 
 To configure them, run in your terminal:
 
+<TerminalWindow>
+
 ```shell
 git config --global user.name "Your Name Here"
 git config --global user.email "your_email@youremail.com"
 ```
+
+</TerminalWindow>
+
 
 ## Installing the Booster CLI
 
@@ -125,14 +164,24 @@ stated in the release notes.
 
 To install the Booster CLI run this:
 
+<TerminalWindow>
+
 ```shell
 npm install --global @boostercloud/cli
 ```
 
+</TerminalWindow>
+
+
 Verify the Booster CLI installation with the `boost version` command. You should get back
 something like
 
+<TerminalWindow>
+
 ```shell
-$ boost version
-@boostercloud/cli/0.16.1 darwin-x64 node-v14.14.0
+boost version
 ```
+
+> @boostercloud/cli/0.16.1 darwin-x64 node-v14.14.0
+
+</TerminalWindow>
