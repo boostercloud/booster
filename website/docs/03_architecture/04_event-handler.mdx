@@ -1,22 +1,42 @@
+---
+description: Learn how to react to events and trigger side effects in Booster by defining event handlers. 
+---
+
+import TerminalWindow from '@site/src/components/TerminalWindow/TerminalWindow'
+
+
 # Event handler
 
-As expected with event-driven architectures, multiple parts of our application react to events. In the case of Booster, we have entities (in charge of reducing the events) and event handlers. These last ones are classes decorated with the @EventHandler decorator. Every time a new instance of a given event is registered, the handle method of this class is triggered. This method can contain any business logic defined by the user or it can also register new events.
+An event handler is a class that reacts to events. They are commonly used to trigger side effects in case of a new event. For instance, if a new event is registered in the system, an event handler could send an email to the user. 
 
-An event handler would look like this:
+## Creating an event handler
 
-```typescript
+The Bosoter CLI will help you to create new event handlers. You just need to run the following command and the CLI will generate all the boilerplate for you:
+
+<TerminalWindow>
+
+```shell
+boost new:event-handler HandleAvailability --event StockMoved
+```
+
+</TerminalWindow>
+
+This will generate a new file called `handle-availability.ts` in the `src/event-handlers` directory. You can also create the file manually, but you will need to create the class and decorate it, so we recommend using the CLI.
+
+## Declaring an event handler
+
+In Booster, event handlers are classes decorated with the `@EventHandler` decorator. The parameter of the decorator is the event that the handler will react to. The logic to be triggered after an event is registered is defined in the `handle` method of the class. This `handle` function will receive the event that triggered the handler.
+
+```typescript title="src/event-handlers/handle-availability.ts"
+// highlight-next-line
 @EventHandler(StockMoved)
 export class HandleAvailability {
-  public static async handle(event: StockMoved, register: Register): Promise<void> {
-    if (event.origin == 'provider') {
-      // New stock enters the system
-      register.events(new ProductAvailabilityChanged(event.productID, event.quantity))
-    } else if (event.destination == 'customer') {
-      // Stock goes to the customer
-      register.events(new ProductAvailabilityChanged(event.productID, -event.quantity))
-    }
-    // In terms of availability, it doesn't matter in which warehouse the stock is as soon as there's stock
+
+  // highlight-start
+  public static async handle(event: StockMoved): Promise<void> {
+    // Do something here
   }
+  // highlight-end
 }
 ```
 
@@ -24,9 +44,12 @@ export class HandleAvailability {
 
 Event handlers can be easily created using the Booster CLI command `boost new:event-handler`. There are two mandatory arguments: the event handler name, and the name of the event it will react to. For instance:
 
+<TerminalWindow>
+
 ```typescript
 boost new:event-handler HandleAvailability --event StockMoved
 ```
+</TerminalWindow>
 
 Once the creation is completed, there will be a new file in the event handlers directory `<project-root>/src/event-handlers/handle-availability.ts`.
 
@@ -44,25 +67,37 @@ Once the creation is completed, there will be a new file in the event handlers d
 
 ## Registering events from an event handler
 
-Booster injects a `register` instance in the `handle` method that we can use to register extra events. In the above example, you can see there is some logic that ends up registering new events.
+Event handlers can also register new events. This is useful when you want to trigger a new event after a certain condition is met. For example, if you want to send an email to the user when a product is out of stock. 
 
-The `events(...)` method of the `register` allows triggering several events, you can specify as many as you need separated by commas as arguments of the function.
+In order to register new events, Booster injects the `register` instance in the `handle` method as a second parameter. This `register` instance has a `events(...)` method that allows you to store any side effect events, you can specify as many as you need separated by commas as arguments of the function.
 
-An example can be found below:
-
-```typescript
-register.events(new ProductAvailabilityChanged(event.productID, -event.quantity))
+```typescript title="src/event-handlers/handle-availability.ts"
+@EventHandler(StockMoved)
+export class HandleAvailability {
+  public static async handle(event: StockMoved, register: Register): Promise<void> {
+    if (event.quantity < 0) {
+      // highlight-next-line
+      register.events([new ProductOutOfStock(event.productID)])
+    }
+  }
+}
 ```
 
 ## Reading entities from event handlers
 
-Just as we do in command handlers, we can also retrieve entities information to make decisions based on their current state.
+There are cases where you need to read an entity to make a decision based on its current state. Different side effects can be triggered depending on the current state of the entity. Given the previous example, if a user does not want to receive emails when a product is out of stock, we should be able check the user preferences before sending the email.
 
-Let's say that we want to check the status of a product before we trigger its availability update. In that case we would call the `Booster.entity` function, which will return information about the entity.
+For that reason, Booster provides the `Booster.entity` function. This function allows you to retrieve the current state of an entity. Let's say that we want to check the status of a product before we trigger its availability update. In that case we would call the `Booster.entity` function, which will return information about the entity.
 
-```typescript
-public static async handle(event: StockMoved, register: Register): Promise<void> {
-  const productSnapshot = await Booster.entity(Product, event.productID)
-  ...
+```typescript title="src/event-handlers/handle-availability.ts"
+@EventHandler(StockMoved)
+export class HandleAvailability {
+  public static async handle(event: StockMoved, register: Register): Promise<void> {
+    // highlight-next-line
+    const product = await Booster.entity(Product, event.productID)
+    if (product.stock < 0) {
+      register.events([new ProductOutOfStock(event.productID)])
+    }
+  }
 }
 ```

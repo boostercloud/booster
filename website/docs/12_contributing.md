@@ -9,33 +9,6 @@ This document is a set of guidelines to help you contribute to Booster, which is
 organization. These aren’t absolute laws, use your judgment and common sense 😀.
 Remember that if something here doesn't make sense, you can also propose a change to this document.
 
-<!-- toc -->
-
-- [Code of Conduct](#code-of-conduct)
-- [I don't want to read this whole thing, I just have a question!!!](#i-don39t-want-to-read-this-whole-thing-i-just-have-a-question)
-- [What should I know before I get started?](#what-should-i-know-before-i-get-started)
-  - [Packages](#packages)
-- [How Can I Contribute?](#how-can-i-contribute)
-  - [Reporting Bugs](#reporting-bugs)
-  - [Suggesting Enhancements](#suggesting-enhancements)
-  - [Improving documentation](#improving-documentation)
-  - [Create your very first GitHub issue](#create-your-very-first-github-issue)
-- [Your First Code Contribution](#your-first-code-contribution)
-  - [Getting the code](#getting-the-code)
-  - [Understanding the "rush monorepo" approach and how dependencies are structured in the project](#understanding-the-rush-monorepo-approach-and-how-dependencies-are-structured-in-the-project)
-  - [Running unit tests](#running-unit-tests)
-  - [Running integration tests](#running-integration-tests)
-  - [Github flow](#github-flow)
-  - [Publishing your Pull Request](#publishing-your-pull-request)
-  - [Branch naming conventions](#branch-naming-conventions)
-  - [Commit message guidelines](#commit-message-guidelines)
-- [Code Style Guidelines](#code-style-guidelines)
-  - [Importing other files and libraries](#importing-other-files-and-libraries)
-  - [Functional style](#functional-style)
-  - [Use `const` and `let`](#use-const-and-let)
-
-<!-- tocstop -->
-
 ## Code of Conduct
 
 This project and everyone participating in it are expected to uphold the [Booster's Code of Conduct](https://github.com/boostercloud/booster/blob/main/CODE_OF_CONDUCT.md), based on the Covenant Code of Conduct.

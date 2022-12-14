@@ -1,8 +1,7 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const lightCodeTheme = require('prism-react-renderer/themes/github')
-const darkCodeTheme = require('prism-react-renderer/themes/dracula')
+const lightCodeTheme = require('prism-react-renderer/themes/palenight')
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -31,17 +30,15 @@ const config = {
       '@docusaurus/preset-classic',
       {
         docs: {
+          routeBasePath: '/',
           sidebarPath: require.resolve('./sidebars.js'),
+          showLastUpdateTime: true,
+          showLastUpdateAuthor: true,
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl: 'https://github.com/boostercloud/booster/tree/main/website/',
         },
-        blog: {
-          showReadingTime: true,
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl: 'https://github.com/facebook/docusaurus/tree/main/website/',
-        },
+        blog: false,
         theme: {
           customCss: [require.resolve('./src/custom.css')],
         },
@@ -49,103 +46,113 @@ const config = {
     ],
   ],
 
-  themeConfig:
-    /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
-    ({
-      colorMode: {
-        defaultMode: 'light',
-        disableSwitch: true,
+  themeConfig: {
+    colorMode: {
+      defaultMode: 'light',
+      disableSwitch: true,
+    },
+    navbar: {
+      logo: {
+        alt: 'Booster Logo',
+        src: 'img/booster-logo.png',
       },
-      navbar: {
-        logo: {
-          alt: 'Booster Logo',
-          src: 'img/booster-logo.png',
+      items: [
+        {
+          type: 'doc',
+          docId: 'introduction',
+          position: 'left',
+          label: 'Docs',
         },
-        items: [
-          {
-            type: 'doc',
-            docId: 'introduction',
-            position: 'left',
-            label: 'Docs',
-          },
-          {
-            href: 'https://github.com/boostercloud/booster',
-            label: 'GitHub',
-            position: 'right',
-          },
-          {
-            href: 'https://discord.gg/bDY8MKx',
-            label: 'Discord',
-            position: 'right',
-          },
-        ],
-      },
-      footer: {
-        copyright: `Booster is an open-source initiative from <a href="https://www.theagilemonkeys.com/">The Agile Monkeys.</a>`,
-        links: [
-          {
-            title: 'Join Us',
-            items: [
-              {
-                label: 'Github',
-                to: 'https://github.com/boostercloud',
-              },
-              {
-                label: 'Discord',
-                to: 'https://discord.gg/bDY8MKx',
-              },
-              {
-                label: 'Twitter',
-                to: 'https://twitter.com/boostthecloud',
-              },
-              {
-                label: 'Linkedin',
-                to: 'https://www.linkedin.com/company/boosterin-labs/',
-              },
-            ],
-          },
-          {
-            title: 'Resources',
-            items: [
-              {
-                label: 'Docs',
-                to: 'https://docs.booster.cloud/',
-              },
-              {
-                label: 'YouTube',
-                to: 'https://www.youtube.com/channel/UCpUTONI8OG19pr9A4cn35DA',
-              },
-              {
-                label: 'Podcast',
-                to: 'https://www.youtube.com/channel/UCxUYk1SVyNRCGNV-9SYjEFQ',
-              },
-              {
-                label: 'Press kit',
-                to: 'https://www.dropbox.com/sh/wyt7rdq7l873iyl/AADzGIae_adkFyjB_VTW2UYka?dl=0',
-              },
-            ],
-          },
-          {
-            title: 'Read more',
-            items: [
-              {
-                label: 'Dev.to',
-                to: 'https://dev.to/boostercloud',
-              },
-              {
-                label: 'Medium',
-                to: 'https://medium.com/@theam',
-              },
-            ],
-          },
-        ],
-      },
-      prism: {
-        theme: lightCodeTheme,
-        darkTheme: darkCodeTheme,
-      },
-    }),
-
+        {
+          href: 'https://github.com/boostercloud/booster',
+          label: 'GitHub',
+          position: 'right',
+        },
+        {
+          href: 'https://discord.gg/bDY8MKx',
+          label: 'Discord',
+          position: 'right',
+        },
+      ],
+    },
+    footer: {
+      copyright: `Booster is an open-source initiative from <a href="https://www.theagilemonkeys.com/">The Agile Monkeys.</a>`,
+      links: [
+        {
+          title: 'Join Us',
+          items: [
+            {
+              label: 'Github',
+              to: 'https://github.com/boostercloud',
+            },
+            {
+              label: 'Discord',
+              to: 'https://discord.gg/bDY8MKx',
+            },
+            {
+              label: 'Twitter',
+              to: 'https://twitter.com/boostthecloud',
+            },
+            {
+              label: 'Linkedin',
+              to: 'https://www.linkedin.com/company/boosterin-labs/',
+            },
+          ],
+        },
+        {
+          title: 'Resources',
+          items: [
+            {
+              label: 'Docs',
+              to: 'https://docs.booster.cloud/',
+            },
+            {
+              label: 'YouTube',
+              to: 'https://www.youtube.com/channel/UCpUTONI8OG19pr9A4cn35DA',
+            },
+            {
+              label: 'Podcast',
+              to: 'https://www.youtube.com/channel/UCxUYk1SVyNRCGNV-9SYjEFQ',
+            },
+            {
+              label: 'Press kit',
+              to: 'https://www.dropbox.com/sh/wyt7rdq7l873iyl/AADzGIae_adkFyjB_VTW2UYka?dl=0',
+            },
+          ],
+        },
+        {
+          title: 'Read more',
+          items: [
+            {
+              label: 'Dev.to',
+              to: 'https://dev.to/boostercloud',
+            },
+            {
+              label: 'Medium',
+              to: 'https://medium.com/@theam',
+            },
+          ],
+        },
+      ],
+    },
+    prism: {
+      theme: lightCodeTheme,
+      additionalLanguages: ['ini'],
+      magicComments: [
+        {
+          className: 'theme-code-block-highlighted-line',
+          line: 'highlight-next-line',
+          block: { start: 'highlight-start', end: 'highlight-end' },
+        },
+      ],
+    },
+    algolia: {
+      appId: 'JOKOWZFYZX',
+      apiKey: '84b54a8d1bd786f29df8c9357a8c0852',
+      indexName: 'booster',
+      contextualSearch: true,
+    },
+  },
   plugins: [
     async function TailwindCSSPlugin(context, options) {
       return {

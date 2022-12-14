@@ -1,38 +1,103 @@
+import TerminalWindow from '@site/src/components/TerminalWindow/TerminalWindow'
+
+
 # Event
 
-Events are **immutable records of facts** within your application's domain. They are the cornerstone of Booster because of its event-driven and event-sourced nature. Booster events are TypeScript classes decorated with `@Event`. An event class may look like this:
+An event is a fact of something that has happened in your application. Every action that takes place on your application should be stored as an event. They are stored in a single collection, forming a set of **immutable records of facts** that contain the whole story of your application. This collection of events is commonly known as the **Event Store**.
 
-```typescript
+## Creating an event
+
+The Bosoter CLI will help you to create new events. You just need to run the following command and the CLI will generate all the boilerplate for you:
+
+<TerminalWindow>
+
+```shell
+boost new:event StockMoved --fields productID:string origin:string destination:string quantity:number
+```
+
+</TerminalWindow>
+
+This will generate a new file called `stock-moved.ts` in the `src/events` directory. You can also create the file manually, but you will need to create the class and decorate it, so we recommend using the CLI.
+
+## Declaring an event
+
+Events are the cornerstone of Booster because of its event-driven and event-sourced nature. Booster events are TypeScript classes decorated with `@Event`. An event class may look like this:
+
+```typescript title="src/events/event-name.ts"
 @Event
 export class EventName {
   public constructor(readonly field1: SomeType, readonly field2: SomeOtherType) {}
-
-  public entityID(): UUID {
-    return /* the associated entity ID */
-  }
 }
 ```
 
-Events and [entities](03_booster-architecture#_4-entities-and-reducers) are closely related. Each event belongs to one entity uniquely identified through the entityID method, and entities represent the application's state after reducing the stream of events. Indeed, an entity is just an aggregated representation of the same data present in its events, so it is possible to rebuild entities from events at any time. Booster guarantees that all the events associated with an entity will be reduced in the same order they were stored. Take a look at this event:
+The class name is the name of the event. The event name is used to identify the event in the application. It is also used to generate the GraphQL schema. The class parameter names are the names of the fields of the event and their types are the types of the fields of the event.
 
-```typescript
+## Events and entities
+
+Events and [Entities](entity) are closely related. Each event will be aggregated (or _reduced_) into an entity. Therefore, Booster needs a way to know which entity is associated with each event. For that reason, it is required to provide an entity ID with each event. You can declare it with a class function named `entityID`. For example:
+
+```typescript title="src/events/cart-paid.ts"
 @Event
 export class CartPaid {
   public constructor(readonly cartID: UUID, readonly paymentID: UUID) {}
 
+  // highlight-start
   public entityID(): UUID {
     // returns cartID because we want to associate it with
     // (and reduce it within) the Cart entity
     return this.cartID
   }
+  // highlight-end
 }
 ```
 
-An event has to know the ID of the entity it belongs to and you need to implement the `entityID` method to return it. You can inject the entity ID directly in the event's constructor or as a nested attribute. If your domain requires a _singleton_ entity, where there's only one instance, you can return a constant value. In the `CartPaid` example, the entity ID (`cartID`) is injected directly.
-
-:::note
-The `entityID` method must always return the same value for the same event's instance. Otherwise, the result of the entity reduction will be unpredictable.
+:::tip
+If your domain requires a ***Singleton*** entity, where there's only one instance of that entity in your whole application, you can return a constant value.
 :::
+
+:::caution
+Make sure that the `entityID` method always returns the same value for the same event's instance. Otherwise, the result of the entity reduction will be unpredictable.
+:::
+
+## Registering events in the event store
+
+We have shown you how to _declare_ an event in Booster, but we haven't explained how to store them in the event store. In Booster terminology, creating an instance of an event and storing in the event store is known as `registering` it. You can do that on Booster using the `register.events(...)` function. The `register` object is provided as a parameter in the `handle` method of both [commands](command#registering-events) and the [event handlers](event-handler#registering-events). For example:
+
+### Registering events from command handlers
+
+```typescript title="src/commands/move-stock.ts"
+@Command({
+  authorize: [Admin],
+})
+export class MoveStock {
+  public constructor(
+    readonly productID: string,
+    readonly origin: string,
+    readonly destination: string,
+    readonly quantity: number
+  ) {}
+
+  public static async handle(command: MoveStock, register: Register): Promise<void> {
+    if (!command.enoughStock(command.origin, command.quantity, command.productID)) {
+      // highlight-next-line
+      register.events(new ErrorEvent(`There is not enough stock for ${command.productID} at ${command.origin}`))
+    }
+  }
+}
+```
+
+### Registering events from event handlers
+
+```typescript title="src/event-handlers/stock-moved.ts"
+@EventHandler(StockMoved)
+export class HandleAvailability {
+  public static async handle(event: StockMoved, register: Register): Promise<void> {
+      // highlight-next-line
+      register.events(new ProductAvailabilityChanged(event.productID, event.quantity))
+    }
+  }
+}
+```
 
 ## Events naming convention
 
@@ -56,63 +121,4 @@ As with other Booster files, events have their own directory:
 │   ├── events <------ put them here
 │   ├── index.ts
 │   └── read-models
-```
-
-## Creating events
-
-The preferred way to create event files is the `new:event` generator, e.g.
-
-```shell
-boost new:event StockMoved --fields productID:string origin:string destination:string quantity:number
-```
-
-That will generate a file called `stock-moved.ts` under the proper `<project-root>/src/events` directory. You can also create the file manually, but we recommend using the generator and avoid dealing manually with boilerplate code.
-
-:::note
-Generating an event with the same name as an already existing one will prompt the user for confirmation.
-:::
-
-## Registering events in the event store
-
-Creating an event file is different than storing an event instance in the event store. In Booster terminology, the latter receives the name of `registering` an event. As said before, Booster applications are event-sourced, which means that all the events are stored forever. Imagine this store as an infinite log used by the [reducer functions](03_booster-architecture#_4-entities-and-reducers) to recreate the application's current state.
-
-Booster injects the register as a parameter in the `handle` method of both the command and the event handlers. Then you can register events by calling the `register.events(...)` method as many times as you want, e.g.
-
-### Registering events from command handlers
-
-```typescript
-@Command({
-  authorize: [Admin],
-})
-export class MoveStock {
-  public constructor(
-    readonly productID: string,
-    readonly origin: string,
-    readonly destination: string,
-    readonly quantity: number
-  ) {}
-
-  public static async handle(command: MoveStock, register: Register): Promise<void> {
-    if (!command.enoughStock(command.origin, command.quantity, command.productID)) {
-      register.events(new ErrorEvent(`There is not enough stock for ${command.productID} at ${command.origin}`))
-    }
-  }
-}
-```
-
-### Registering events from event handlers
-
-In the case of the event handlers, you also receive the event instance that triggered the handle function.
-
-```typescript
-@EventHandler(StockMoved)
-export class HandleAvailability {
-  public static async handle(event: StockMoved, register: Register): Promise<void> {
-    if (event.origin == 'provider') {
-      register.events(new ProductAvailabilityChanged(event.productID, event.quantity))
-    } else if (event.destination == 'customer') {
-      register.events(new ProductAvailabilityChanged(event.productID, -event.quantity))
-    }
-  }
-}
 ```
