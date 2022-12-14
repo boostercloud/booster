@@ -68,9 +68,9 @@ export interface ProjectInitializerConfig {
   repository: string
   providerPackageName: string
   boosterVersion: string
-  default: boolean
   skipInstall: boolean
   skipGit: boolean
+  interactive: boolean
 }
 
 function renderToFile(templateData: ProjectInitializerConfig): (_: [Array<string>, string]) => Promise<void> {

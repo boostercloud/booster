@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-core",
+      "comment": "updated default behaviour for new:project",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core"
+}

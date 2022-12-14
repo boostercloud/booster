@@ -25,7 +25,7 @@ describe('project initializer', (): void => {
 
   const projectName = 'test-project'
   const defaultProvider = '@boostercloud/framework-provider-aws'
-  const defaultProjectInitializerConfig = {
+  const defaultProjectInitializerConfig: ProjectInitializerConfig = {
     projectName: projectName,
     description: '',
     version: '0.1.0',
@@ -35,10 +35,10 @@ describe('project initializer', (): void => {
     repository: '',
     providerPackageName: defaultProvider,
     boosterVersion: '0.5.1',
-    default: true,
     skipInstall: false,
     skipGit: false,
-  } as ProjectInitializerConfig
+    interactive: true,
+  }
 
   it('initialize Git', async () => {
     await initializeGit(defaultProjectInitializerConfig)
