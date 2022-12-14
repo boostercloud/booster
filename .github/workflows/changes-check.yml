@@ -20,7 +20,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # Ensure all commits are fetched
 
       - name: Rush Install
         run: node common/scripts/install-run-rush.js install
