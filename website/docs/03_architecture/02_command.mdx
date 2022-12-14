@@ -46,7 +46,7 @@ export class CommandName {
 }
 ```
 
-Booster will then generate the GraphQL mutation for the corresponding command, and the infrastructure to handle them. You only have to define the class and the handler function. Commands are part of the public API, so you can define authorization policies for them, you can read more about this on [the authorization section](/docs/security/authorization).
+Booster will then generate the GraphQL mutation for the corresponding command, and the infrastructure to handle them. You only have to define the class and the handler function. Commands are part of the public API, so you can define authorization policies for them, you can read more about this on [the authorization section](/security/authorization).
 
 :::tip
 We recommend using command handlers to validate input data before registering events into the event store because they are immutable once there.
@@ -73,7 +73,7 @@ export class CreateProduct {
 }
 ```
 
-For more details about events and the register parameter, see the [`Events`](03_booster-architecture#_2-events) section.
+For more details about events and the register parameter, see the [`Events`](/architecture/event) section.
 
 ### Returning a value
 
@@ -224,7 +224,7 @@ export class CreateProduct {
 }
 ```
 
-You can read more about this on the [Authorization section](/docs/security/authorization).
+You can read more about this on the [Authorization section](/security/authorization).
 
 ## Submitting a command
 
