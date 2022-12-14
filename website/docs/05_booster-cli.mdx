@@ -1,0 +1,50 @@
+import TerminalWindow from '@site/src/components/TerminalWindow/TerminalWindow'
+
+
+# Booster CLI
+
+Booster CLI is a command line interface that helps you to create, develop, and deploy your Booster applications. It is built with Node.js and published to NPM through the package `@boostercloud/cli` . You can install it using any compatible package manager. If you want to contribute to the project, you will also need to clone the GitHub repository and compile the source code.
+
+## Installation
+
+The preferred way to install the Booster CLI is through NPM. You can install it following the instructions in the [Node.js website](https://nodejs.org/en/download/).
+
+Once you have NPM installed, you can install the Booster CLI by running this command:
+
+<TerminalWindow>
+
+```bash
+npm install -g @boostercloud/cli
+```
+
+</TerminalWindow>
+
+## Usage
+
+Once the installation is finished, you will have the `boost` command available in your terminal. You can run it to see the help message.
+
+:::tip
+You can also run `boost --help` to get the same output.
+:::
+
+
+## Command Overview
+
+| Command | Description |
+|---------|-------------|
+| [`new:project`](#new) | Creates a new Booster project in a new directory |
+| [`new:command`](/docs/architecture/command#creating-a-command) | Creates a new command in the project |
+| [`new:entity`](/docs/architecture/entity#creating-an-entity) | Creates a new entity in the project |
+| [`new:event`](/docs/architecture/event#creating-an-event) | Creates a new event in the project |
+| [`new:event-handler`](/docs/architecture/event-handler#creating-an-event-handler) | Creates a new event handler in the project |
+| [`new:read-model`](/docs/architecture/read-model#creating-a-read-model) | Creates a new read model in the project |
+| [`new:scheduled-command`](/docs/features/schedule-actions#creating-a-scheduled-command) | Creates a new scheduled command in the project |
+| | |
+| [`start -e <environment>`](/docs/getting-started/coding#6-deployment) | Starts the project in development mode |
+| [`build`](/docs/getting-started/coding#6-deployment) | Builds the project |
+| [`deploy -e <environment>`](/docs/getting-started/coding#6-deployment) | Deploys the project to the cloud |
+| `nuke` | Deletes all the resources created by the deploy command |
+| | |
+
+
+

@@ -1,3 +1,7 @@
+---
+description: Learn how to migrate data in Booster
+---
+
 # Migrations
 
 ## Schema migrations
