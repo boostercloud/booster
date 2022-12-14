@@ -30,6 +30,7 @@ const config = {
       '@docusaurus/preset-classic',
       {
         docs: {
+          routeBasePath: '/',
           sidebarPath: require.resolve('./sidebars.js'),
           showLastUpdateTime: true,
           showLastUpdateAuthor: true,
@@ -37,12 +38,7 @@ const config = {
           // Remove this to remove the "edit this page" links.
           editUrl: 'https://github.com/boostercloud/booster/tree/main/website/',
         },
-        blog: {
-          showReadingTime: true,
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl: 'https://github.com/facebook/docusaurus/tree/main/website/',
-        },
+        blog: false,
         theme: {
           customCss: [require.resolve('./src/custom.css')],
         },
