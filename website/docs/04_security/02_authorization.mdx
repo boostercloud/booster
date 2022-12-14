@@ -246,7 +246,7 @@ const CustomReadModelAuthorizer: ReadModelAuthorizer = async (currentUser, readM
 
 ### Event Stream Authorizers
 
-You can restrict the access to the [Event Stream](/docs/features/event-stream) of an `Entity` by providing an `authorizeReadEvents` function in the `@Entity` decorator. This function is called every time an event stream is requested. The function must match the `EventStreamAuthorizer` type receives the current user and the event search request as parameters. The function must return a `Promise<void>`. If the promise is rejected, the request will be denied. If the promise is resolved successfully, the request will be allowed.
+You can restrict the access to the [Event Stream](/features/event-stream) of an `Entity` by providing an `authorizeReadEvents` function in the `@Entity` decorator. This function is called every time an event stream is requested. The function must match the `EventStreamAuthorizer` type receives the current user and the event search request as parameters. The function must return a `Promise<void>`. If the promise is rejected, the request will be denied. If the promise is resolved successfully, the request will be allowed.
 
 ```typescript
 export type EventStreamAuthorizer = (

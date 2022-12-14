@@ -179,7 +179,7 @@ export class ProductReadModel {
 }
 ```
 
-You can read more about this on the [Authorization section](/docs/security/authorization).
+You can read more about this on the [Authorization section](/security/authorization).
 
 
 ## Querying a read model
@@ -210,15 +210,15 @@ subscription CartReadModel(id: ID!): CartReadModel
 subscription CartReadModels(id: UUIDPropertyFilter!): CartReadModel
 ```
 
-For more information about queries and how to use them, please check the [GraphQL API](/docs/graphql) section.
+For more information about queries and how to use them, please check the [GraphQL API](/graphql) section.
 
 ### Filtering a read model
 
-Booster GraphQL API provides support for filtering Read Models on `queries` and `subscriptions`. To get more information about it go to the [GraphQL API](/docs/graphql#filtering-a-read-model) section.
+Booster GraphQL API provides support for filtering Read Models on `queries` and `subscriptions`. To get more information about it go to the [GraphQL API](/graphql#filtering-a-read-model) section.
 
 ## Subscribing to a read model
 
-Booster GraphQL API also provides support for real-time updates using subscriptions and a web-socket. To get more information about it go to the [GraphQL API](04_features#subscribing-to-read-models) section.
+Booster GraphQL API also provides support for real-time updates using subscriptions and a web-socket. To get more information about it go to the [GraphQL API](/graphql#subscribing-to-read-models) section.
 
 
 ## Sorting Read Models
@@ -255,7 +255,7 @@ Using this query, when only the id is provided, you get an array of all the mess
 
 It is important to guarantee that the sequence key is unique for each message. This could be difficult to achieve if you are using a timestamp as the sequence key. Booster provides a utility function to generate unique timestamps that you can use in your read models: `TimeKey.generate()`. It will generate a timestamp with a random UUID as a suffix to avoid any coincidences.
 
-For more information about queries and how to use them, please check the [GraphQL API](04_features#reading-read-models) section.
+For more information about queries and how to use them, please check the [GraphQL API](/graphql#reading-read-models) section.
 
 ## Read models naming convention
 
