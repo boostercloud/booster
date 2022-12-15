@@ -65,7 +65,6 @@ Within the command handler execution, it is possible to register domain events. 
 export class CreateProduct {
   public constructor(readonly sku: string, readonly price: number) {}
 
-  @Returns(String)
   public static async handle(command: CreateProduct, register: Register): Promise<string> {
     // highlight-next-line
     register.event(new ProductCreated(/*...*/))
@@ -88,7 +87,6 @@ For example:
 export class CreateProduct {
   public constructor(readonly sku: string, readonly price: number) {}
 
-  @Returns(String)
   public static async handle(command: CreateProduct, register: Register): Promise<string> {
     register.event(new ProductCreated(/*...*/))
     // highlight-next-line
