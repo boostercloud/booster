@@ -1,0 +1,15 @@
+name: Call Rush command
+
+on:
+  workflow_call:
+    inputs:
+      command:
+        required: true
+        type: string
+
+jobs:
+  run-rush:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rush ${{ inputs.command }}
+        run: node common/scripts/install-run-rush.js ${{ inputs.command }}

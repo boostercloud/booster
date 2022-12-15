@@ -1,0 +1,26 @@
+name: Tests
+on:
+  push:
+    branches:
+      - main
+      - '1.0.0'
+    paths-ignore:
+      - '**.md'
+
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout and Build
+        uses: ./.github/workflows/re_checkout-build
+
+      - name: Unit tests
+        uses: ./.github/workflows/re_call-rush
+        with:
+          command: test -v

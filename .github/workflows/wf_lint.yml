@@ -1,0 +1,20 @@
+name: Lint and Format
+on:
+  pull_request:
+    branches:
+      - main
+      - '1.0.0'
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout and Build
+        uses: ./.github/workflows/re_checkout-build
+
+      - name: Check linting
+        uses: ./.github/workflows/re_call-rush
+        with:
+          command: 'lint:check -v'
