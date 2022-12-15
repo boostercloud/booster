@@ -1,0 +1,64 @@
+name: AWS Integration Tests
+
+on:
+  workflow_call:
+    inputs:
+      aws-region:
+        default: 'us-east-1'
+        required: false
+        type: string
+
+    secrets:
+      BOT_AWS_ACCESS_KEY_ID:
+        required: true
+      BOT_AWS_SECRET_ACCESS_KEY:
+        required: true
+
+jobs:
+  aws-deploy:
+    name: AWS Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout and Build
+        uses: ./.github/workflows/re_checkout-build
+
+      - name: Run integration test
+        uses: ./.github/workflows/re_run-integration-test
+        with:
+          integration-test: aws-deploy
+          aws-region: ${{ inputs.aws-region }}
+        secrets: inherit
+
+  aws-integration-tests:
+    strategy:
+      matrix:
+        max-parallel: 1
+        integration-test: [aws-func, aws-end-to-end, aws-load]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout and Build
+        uses: ./.github/workflows/re_checkout-build
+
+      - name: Run integration test
+        uses: ./.github/workflows/re_run-integration-test
+        with:
+          integration-test: ${{ matrix.integration-test }}
+          aws-region: ${{ inputs.aws-region }}
+        secrets: inherit
+
+  aws-nuke:
+    name: AWS Nuke
+    needs: [aws-deploy]
+    if: always() && needs.aws-deploy.result == 'success'
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout and Build
+        uses: ./.github/workflows/re_checkout-build
+
+      - name: Run integration test
+        uses: ./.github/workflows/re_run-integration-test
+        with:
+          integration-test: aws-deploy
+          aws-region: ${{ inputs.aws-region }}
+        secrets: inherit

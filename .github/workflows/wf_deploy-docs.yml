@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  deploy:
+  deploy-docs:
     name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
     defaults:

@@ -14,7 +14,7 @@ on:
       - '**.md'
 
 jobs:
-  unit-tests:
+  changes-check:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout and Build

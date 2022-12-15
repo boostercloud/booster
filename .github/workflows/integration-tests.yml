@@ -7,140 +7,15 @@ permissions:
   id-token: write
 
 jobs:
-  aws-deploy-integration-tests:
-    name: AWS Deployment Integration Tests
+  prepare-integration-tests:
+    uses: ./.github/workflows/re_prepare-integration
+
+  aws-integration-tests:
+    name: AWS Integration Tests
+    needs: prepare-integration-tests
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Rush Install
-        run: node common/scripts/install-run-rush.js install
-
-      - name: Rush Build
-        run: node common/scripts/install-run-rush.js build
-
-      - name: Pack local dependencies for integration tests
-        run: node common/scripts/install-run-rush.js pack-integration-deps
-
-      - name: Deploy to AWS
-        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/aws-deploy -v
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
-
-  aws-func-integration-tests:
-    name: AWS Functionality Integration Tests
-    needs:
-      - aws-deploy-integration-tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Rush Install
-        run: node common/scripts/install-run-rush.js install
-
-      - name: Rush Build
-        run: node common/scripts/install-run-rush.js build
-
-      - name: Pack local dependencies for integration tests
-        run: node common/scripts/install-run-rush.js pack-integration-deps
-
-      - name: AWS Functionality
-        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/aws-func -v
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
-
-  aws-end-to-end-tests:
-    name: AWS end-to-end Tests
-    needs:
-      - aws-func-integration-tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Rush Install
-        run: node common/scripts/install-run-rush.js install
-
-      - name: Rush Build
-        run: node common/scripts/install-run-rush.js build
-
-      - name: Pack local dependencies for integration tests
-        run: node common/scripts/install-run-rush.js pack-integration-deps
-
-      - name: AWS end to end
-        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/aws-end-to-end -v
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
-
-  aws-load-tests:
-    name: AWS load tests
-    needs:
-      - aws-end-to-end-tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Rush Install
-        run: node common/scripts/install-run-rush.js install
-
-      - name: Rush Build
-        run: node common/scripts/install-run-rush.js build
-
-      - name: Pack local dependencies for integration tests
-        run: node common/scripts/install-run-rush.js pack-integration-deps
-
-      - name: AWS load tests
-        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/aws-load -v
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
-
-  aws-nuke-integration-tests:
-    name: AWS Nuke Integration Tests
-    if: always() && needs.aws-deploy-integration-tests.result == 'success'
-    continue-on-error: true
-    needs:
-      - aws-load-tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Rush Install
-        run: node common/scripts/install-run-rush.js install
-
-      - name: Rush Build
-        run: node common/scripts/install-run-rush.js build
-
-      - name: Pack local dependencies for integration tests
-        run: node common/scripts/install-run-rush.js pack-integration-deps
-
-      - name: AWS nuke
-        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/aws-nuke -v
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
+    uses: ./.github/workflows/re_aws-integration
+    secrets: inherit
 
   cli-integration-tests:
     name: CLI Integration Tests
@@ -343,29 +218,3 @@ jobs:
           ARM_CLIENT_SECRET: ${{ secrets.AZURE_SECRET }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
-
-  # Kubernetes tests started failing on June 2021. We should fix them if adding more kubernetes features.
-  # issue: https://github.com/boostercloud/booster/issues/885
-  #kubernetes-integration-tests:
-  #  name: Kubernetes integration tests
-  #  runs-on: ubuntu-latest
-  #  env:
-  #    KUBECONFIG: '/home/runner/.kube/config'
-  #  steps:
-  #    - uses: actions/checkout@v3
-  #    - uses: manusa/actions-setup-minikube@v2.3.1
-  #      with:
-  #        minikube version: 'v1.18.1'
-  #        kubernetes version: 'v1.19.7'
-  #        driver: 'docker'
-  #    - uses: actions/setup-node@v3
-  #      with:
-  #        node-version: 16.x
-  #    - run: sudo snap install helm --classic
-  #    - run: kubectl create ns booster-my-store-kubernetes
-  #    - run: kubectl config set-context --current --namespace=booster-my-store-kubernetes
-  #    - run: minikube start --namespace=booster-my-store-kubernetes
-  #    - run: npx lerna bootstrap
-  #    - run: npx lerna run compile
-  #    - run: npx lerna run integration/k8s-deploy --stream
-  #    - run: npx lerna run integration/k8s-nuke --stream
