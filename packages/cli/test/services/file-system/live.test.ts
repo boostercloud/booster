@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import { fake, replace } from 'sinon'
-import { gen, unsafeRunEffect } from '@boostercloud/framework-types/dist/effect'
+import { gen, mapError, pipe, unsafeRunEffect } from '@boostercloud/framework-types/dist/effect'
 import { expect } from '../../expect'
 import { FileSystemService } from '../../../src/services/file-system'
 import { LiveFileSystem } from '../../../src/services/file-system/live.impl'
@@ -17,10 +17,16 @@ describe('FileSystem - Live Implementation', () => {
       const { readDirectoryContents } = yield* $(FileSystemService)
       return yield* $(readDirectoryContents(directoryPath))
     })
-    await unsafeRunEffect(effect, {
-      layer: LiveFileSystem,
-      onError: guardError('An error ocurred'),
-    })
+    await unsafeRunEffect(
+      pipe(
+        effect,
+        mapError((e) => e.error)
+      ),
+      {
+        layer: LiveFileSystem,
+        onError: guardError('An error ocurred'),
+      }
+    )
     expect(fs.promises.readdir).to.have.been.calledWith(directoryPath)
   })
 })
