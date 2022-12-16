@@ -1,6 +1,8 @@
 ---
 description: How to have the backend up and running for a blog application in a few minutes
 ---
+import TerminalWindow from '@site/src/components/TerminalWindow/TerminalWindow'
+
 
 # Build a Booster app in minutes
 
@@ -14,6 +16,8 @@ First of all, we will use the Booster CLI tool generators to create a project.
 In your favourite terminal, run this command `boost new:project boosted-blog` and follow
 the instructions. After some prompted questions, the CLI will ask you to select one of the available providers to set up as the main provider that will be used.
 
+<TerminalWindow>
+
 ```shell
 ? What's the package name of your provider infrastructure library? (Use arrow keys)
 ❯ @boostercloud/framework-provider-aws (AWS)
@@ -22,12 +26,16 @@ the instructions. After some prompted questions, the CLI will ask you to select 
   Other
 ```
 
+</TerminalWindow>
+
 When asked for the provider, select AWS as that is what we have
 configured [here](configuration#aws-provider-setup) for the example. You can use another provider if you want, or add more providers once you have created the project.
 
 If you don't know what provider you are going to use, and you just want to execute your Booster application locally, you can select one and change it later!
 
 After choosing your provider, you will see your project generated!:
+
+<TerminalWindow>
 
 ```shell
 > boost new:project boosted-blog
@@ -40,6 +48,8 @@ After choosing your provider, you will see your project generated!:
 ✔ Installing dependencies
 ℹ Project generated!
 ```
+
+</TerminalWindow>
 
 :::tip
 If you prefer to create the project with default parameters, you can run the command as `boost new:project booster-blog --default`. The default
@@ -81,9 +91,13 @@ You can always use the `--help` flag to get all the available options for each c
 When finished, you'll see some scaffolding that has been generated. The project name will be the
 project's root so `cd` into it:
 
+<TerminalWindow>
+
 ```shell
 cd boosted-blog
 ```
+
+</TerminalWindow>
 
 There you should have these files and directories already generated:
 
@@ -117,9 +131,13 @@ Commands define the input to our system, so we'll start by generating our first
 [command](/architecture/command) to create posts. Use the command generator, while in the project's root
 directory, as follows:
 
+<TerminalWindow>
+
 ```bash
 boost new:command CreatePost --fields postId:UUID title:string content:string author:string
 ```
+
+</TerminalWindow>
 
 The `new:command` generator creates a `create-post.ts` file in the `commands` folder:
 
@@ -166,9 +184,13 @@ Instead of creating, updating, or deleting objects, Booster stores data in the f
 They are records of facts and represent the source of truth. Let's generate an event called `PostCreated`
 that will contain the initial post info:
 
+<TerminalWindow>
+
 ```bash
 boost new:event PostCreated --fields postId:UUID title:string content:string author:string
 ```
+
+</TerminalWindow>
 
 The `new:event` generator creates a new file under the `src/events` directory.
 The name of the file is the name of the event:
@@ -229,9 +251,13 @@ So far, our `PostCreated` event suggests we need a `Post` entity. Entities are a
 representation of our system internal state. They are in charge of reducing (combining) all the events
 with the same `entityID`. Let's generate our `Post` entity:
 
+<TerminalWindow>
+
 ```bash
 boost new:entity Post --fields title:string content:string author:string --reduces PostCreated
 ```
+
+</TerminalWindow>
 
 You should see now a new file called `post.ts` in the `src/entities` directory.
 
@@ -268,9 +294,13 @@ subscribe to them.
 Read models are _projections_ of one or more entities into a new object that is reachable through the query and subscriptions APIs. Let's generate a `PostReadModel` that projects our
 `Post` entity:
 
+<TerminalWindow>
+
 ```bash
 boost new:read-model PostReadModel --fields title:string author:string --projects Post:id
 ```
+
+</TerminalWindow>
 
 We have used a new flag, `--projects`, that allow us to specify the entities (can be many) the read model will
 watch for changes. You might be wondering what is the `:id` after the entity name. That's the [joinKey](/architecture/read-model#the-projection-function),
@@ -327,38 +357,58 @@ with Booster.
 
 You can check that code compiles correctly by running the build command:
 
+<TerminalWindow>
+
 ```bash
 boost build
 ```
 
+</TerminalWindow>
+
 You can also clean the compiled code by running:
+
+<TerminalWindow>
 
 ```bash
 boost clean
 ```
 
+</TerminalWindow>
+
 #### 6.1 Running your application locally
 
 Now, let's run our application to see it working. It is as simple as running:
+
+<TerminalWindow>
 
 ```bash
 boost start -e local
 ```
 
+</TerminalWindow>
+
 This will execute a local `Express.js` server and will try to expose it in port `3000`. You can change the port by using the `-p` option:
+
+<TerminalWindow>
 
 ```bash
 boost start -e local -p 8080
 ```
+
+</TerminalWindow>
 
 #### 6.2 Deploying to the cloud
 
 Also, we can deploy our application to the cloud with no additional changes by running
 the deploy command:
 
+<TerminalWindow>
+
 ```bash
 boost deploy -e production
 ```
+
+</TerminalWindow>
 
 This is the Booster magic! ✨ When running the start or the deploy commands, Booster will handle the creation of all the resources, _like Lambdas, API Gateway,_ and the "glue" between them; _permissions, events, triggers, etc._ It even creates a fully functional GraphQL API!
 
@@ -519,11 +569,15 @@ the root of the project. For safety reasons, you have to confirm this action by
 writing the project's name, in our case `boosted-blog` that is the same used when
 we run `new:project` CLI command.
 
+<TerminalWindow>
+
 ```bash
 > boost nuke -e production
 
 ? Please, enter the app name to confirm deletion of all resources: boosted-blog
 ```
+
+</TerminalWindow>
 
 > Congratulations! You've built a serverless backend in less than 10 minutes. We hope you have enjoyed discovering the magic of the Booster Framework.
 
