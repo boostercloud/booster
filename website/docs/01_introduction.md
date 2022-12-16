@@ -46,7 +46,7 @@ Booster enhances developers' productivity by focusing only on business logic. Wr
 
 ## Why use Booster
 
-What does Booster boost? Your team’s productivity. Not just because it helps you work faster, but because it makes you worry about fewer buttons and switches. We aim to solve major productivity sinks for developers like designing the right cloud infrastructure, writing APIs or dealing with ORMs.
+What does _Booster_ boost? Your team’s productivity. Not just because it helps you work faster, but because it makes you worry about fewer buttons and switches. We aim to solve major productivity sinks for developers like designing the right cloud infrastructure, writing APIs or dealing with ORMs.
 
 Booster will fit like a glove in applications that are naturally event-driven like commerce applications (retail, e-commerce, omnichannel applications, warehouse management, etc.), business applications or communication systems, but it's a general-purpose framework that has several advantages over other solutions:
 
