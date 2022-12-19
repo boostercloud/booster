@@ -23,7 +23,7 @@ jobs:
         uses: ./.github/workflows/re_checkout-build
 
       - name: Run integration test
-        uses: ./.github/workflows/re_run-integration-test
+        uses: ./.github/workflows/re_test-integration-run-one
         with:
           integration-test: aws-deploy
           aws-region: ${{ inputs.aws-region }}
@@ -40,7 +40,7 @@ jobs:
         uses: ./.github/workflows/re_checkout-build
 
       - name: Run integration test
-        uses: ./.github/workflows/re_run-integration-test
+        uses: ./.github/workflows/re_test-integration-run-one
         with:
           integration-test: ${{ matrix.integration-test }}
           aws-region: ${{ inputs.aws-region }}
@@ -57,8 +57,8 @@ jobs:
         uses: ./.github/workflows/re_checkout-build
 
       - name: Run integration test
-        uses: ./.github/workflows/re_run-integration-test
+        uses: ./.github/workflows/re_test-integration-run-one
         with:
-          integration-test: aws-deploy
+          integration-test: aws-nuke
           aws-region: ${{ inputs.aws-region }}
         secrets: inherit

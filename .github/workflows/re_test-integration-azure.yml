@@ -1,0 +1,84 @@
+name: Azure Integration Tests
+
+on:
+  workflow_call:
+    inputs:
+      azure-region:
+        default: 'Central US'
+        required: false
+        type: string
+      azure-publisher-email:
+        default: noreply@booster.cloud
+        required: false
+        type: string
+      azure-publisher-name:
+        default: Booster App
+        required: false
+        type: string
+
+    secrets:
+      AZURE_CLIENTID:
+        required: true
+      AZURE_SECRET:
+        required: true
+      AZURE_TENANTID:
+        required: true
+      AZURE_SUBSCRIPTIONID:
+        required: true
+      AZURE_CREDENTIALS:
+        required: true
+
+jobs:
+  azure-deploy:
+    name: Azure Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout and Build
+        uses: ./.github/workflows/re_checkout-build
+
+      - name: Run integration test
+        uses: ./.github/workflows/re_test-integration-run-one
+        with:
+          integration-test: azure-deploy
+          azure-region: ${{ inputs.azure-region }}
+          azure-publisher-email: ${{ inputs.azure-publisher-email }}
+          azure-publisher-name: ${{ inputs.azure-publisher-name }}
+        secrets: inherit
+
+  azure-integration-tests:
+    strategy:
+      matrix:
+        max-parallel: 1
+        integration-test: [azure-func, azure-end-to-end]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout and Build
+        uses: ./.github/workflows/re_checkout-build
+
+      - name: Run integration test
+        uses: ./.github/workflows/re_test-integration-run-one
+        with:
+          integration-test: ${{ matrix.integration-test }}
+          azure-region: ${{ inputs.azure-region }}
+          azure-publisher-email: ${{ inputs.azure-publisher-email }}
+          azure-publisher-name: ${{ inputs.azure-publisher-name }}
+        secrets: inherit
+
+  azure-nuke:
+    name: Azure Nuke
+    needs: [azure-deploy]
+    if: always() && needs.azure-deploy.result == 'success'
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout and Build
+        uses: ./.github/workflows/re_checkout-build
+
+      - name: Run integration test
+        uses: ./.github/workflows/re_test-integration-run-one
+        with:
+          integration-test: azure-deploy
+          azure-region: ${{ inputs.azure-region }}
+          azure-publisher-email: ${{ inputs.azure-publisher-email }}
+          azure-publisher-name: ${{ inputs.azure-publisher-name }}
+        secrets: inherit

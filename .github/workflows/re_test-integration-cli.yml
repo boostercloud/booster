@@ -1,0 +1,17 @@
+name: CLI Integration Tests
+
+on:
+  workflow_call:
+
+jobs:
+  cli-integration:
+    name: CLI Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout and Build
+        uses: ./.github/workflows/re_checkout-build
+
+      - name: Run integration test
+        uses: ./.github/workflows/re_test-integration-run-one
+        with:
+          integration-test: cli

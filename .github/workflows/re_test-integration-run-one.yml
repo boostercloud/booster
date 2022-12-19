@@ -57,10 +57,10 @@ jobs:
 
       # Login if secrets.AZURE_CREDENTIALS is set
       - name: Login to Azure
+        if: ${{ secrets.AZURE_CREDENTIALS }}
         uses: azure/login@v1.4.0
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-        if: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Running ${{ inputs.integration-test }} integration test
         run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/${{ inputs.integration-test }} -v
