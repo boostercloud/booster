@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Wed, 14 Dec 2022 15:59:09 GMT and should not be manually modified.
+This log was last generated on Mon, 19 Dec 2022 19:41:13 GMT and should not be manually modified.
+
+## 1.3.4
+Mon, 19 Dec 2022 19:41:13 GMT
+
+### Patches
+
+- Changed the `ReadModelFilterHooks` and `ReadModelMetadata` types to be generic, allowing stricter typing.
 
 ## 1.3.3
 Wed, 14 Dec 2022 15:59:09 GMT
