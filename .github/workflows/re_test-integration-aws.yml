@@ -19,8 +19,13 @@ jobs:
     name: AWS Deploy
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout and Build
-        uses: ./.github/workflows/re_checkout-build
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Build
+        uses: ./.github/workflows/re_build
 
       - name: Run integration test
         uses: ./.github/workflows/re_test-integration-run-one
@@ -36,8 +41,13 @@ jobs:
         integration-test: [aws-func, aws-end-to-end, aws-load]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout and Build
-        uses: ./.github/workflows/re_checkout-build
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Build
+        uses: ./.github/workflows/re_build
 
       - name: Run integration test
         uses: ./.github/workflows/re_test-integration-run-one
@@ -53,8 +63,13 @@ jobs:
     continue-on-error: true
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout and Build
-        uses: ./.github/workflows/re_checkout-build
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Build
+        uses: ./.github/workflows/re_build
 
       - name: Run integration test
         uses: ./.github/workflows/re_test-integration-run-one

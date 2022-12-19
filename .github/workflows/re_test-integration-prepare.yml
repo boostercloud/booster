@@ -7,8 +7,13 @@ jobs:
   prepare-integration-tests:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout and Build
-        uses: ./.github/workflows/re_checkout-build
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Build
+        uses: ./.github/workflows/re_build
 
       - name: Pack local dependencies for integration tests
         uses: ./.github/workflows/re_call-rush
