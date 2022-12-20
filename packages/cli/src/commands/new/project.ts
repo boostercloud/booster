@@ -58,6 +58,10 @@ export default class Project extends Command {
       description: 'skip git initialization',
       default: false,
     }),
+    interactive: flags.boolean({
+      description: 'run an interactive wizard to configure your project',
+      default: false,
+    }),
   }
 
   public static args = [{ name: 'projectName' }]
@@ -71,6 +75,8 @@ export default class Project extends Command {
       assertNameIsCorrect(projectName)
       await checkProjectAlreadyExists(projectName)
       const parsedFlags = { projectName, ...flags }
+      if (!flags.interactive && !flags.providerPackageName)
+        throw 'You must set a provider runtime package using the --provider flag or use the interactive mode with the --interactive flag.'
       await run(parsedFlags as Partial<ProjectInitializerConfig>, this.config.version)
     } catch (error) {
       console.error(error)
@@ -126,10 +132,44 @@ export const parseConfig = async (
   flags: Partial<ProjectInitializerConfig>,
   boosterVersion: string
 ): Promise<ProjectInitializerConfig> => {
-  if (flags.default) {
-    return Promise.resolve({
+  if (flags.interactive) {
+    const description = await prompter.defaultOrPrompt(
+      flags.description,
+      'What\'s your project description? (default: "")'
+    )
+    const versionPrompt = await prompter.defaultOrPrompt(flags.version, "What's the first version? (default: 0.1.0)")
+    const version = versionPrompt || '0.1.0'
+    const author = await prompter.defaultOrPrompt(flags.author, 'Who\'s the author? (default: "")')
+    const homepage = await prompter.defaultOrPrompt(flags.homepage, 'What\'s the website? (default: "")')
+    const licensePrompt = await prompter.defaultOrPrompt(
+      flags.license,
+      'What license will you be publishing this under? (default: MIT)'
+    )
+    const license = licensePrompt || 'MIT'
+    const repository = await prompter.defaultOrPrompt(
+      flags.repository,
+      'What\'s the URL of the repository? (default: "")'
+    )
+    const providerPackageName = await getProviderPackageName(prompter, flags.providerPackageName)
+
+    return {
       projectName: flags.projectName as string,
-      providerPackageName: '@boostercloud/framework-provider-aws',
+      providerPackageName,
+      description,
+      version,
+      author,
+      homepage,
+      license,
+      repository,
+      boosterVersion,
+      skipInstall: flags.skipInstall || false,
+      skipGit: flags.skipGit || false,
+      interactive: true,
+    }
+  } else {
+    return {
+      projectName: flags.projectName as string,
+      providerPackageName: flags.providerPackageName as string,
       description: '',
       version: '0.1.0',
       author: '',
@@ -137,43 +177,9 @@ export const parseConfig = async (
       license: 'MIT',
       repository: '',
       boosterVersion,
-      default: flags.default,
       skipInstall: flags.skipInstall || false,
       skipGit: flags.skipGit || false,
-    })
+      interactive: false,
+    }
   }
-
-  const description = await prompter.defaultOrPrompt(
-    flags.description,
-    'What\'s your project description? (default: "")'
-  )
-  const versionPrompt = await prompter.defaultOrPrompt(flags.version, "What's the first version? (default: 0.1.0)")
-  const version = versionPrompt || '0.1.0'
-  const author = await prompter.defaultOrPrompt(flags.author, 'Who\'s the author? (default: "")')
-  const homepage = await prompter.defaultOrPrompt(flags.homepage, 'What\'s the website? (default: "")')
-  const licensePrompt = await prompter.defaultOrPrompt(
-    flags.license,
-    'What license will you be publishing this under? (default: MIT)'
-  )
-  const license = licensePrompt || 'MIT'
-  const repository = await prompter.defaultOrPrompt(
-    flags.repository,
-    'What\'s the URL of the repository? (default: "")'
-  )
-  const providerPackageName = await getProviderPackageName(prompter, flags.providerPackageName)
-
-  return Promise.resolve({
-    projectName: flags.projectName as string,
-    providerPackageName,
-    description,
-    version,
-    author,
-    homepage,
-    license,
-    repository,
-    boosterVersion,
-    default: false,
-    skipInstall: flags.skipInstall || false,
-    skipGit: flags.skipGit || false,
-  })
 }
