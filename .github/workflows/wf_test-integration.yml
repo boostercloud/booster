@@ -48,29 +48,21 @@ jobs:
     uses: ./.github/workflows/re_test-integration-prepare.yml
 
   aws-integration-tests:
-    name: AWS Integration Tests
     needs: prepare-integration-tests
-    runs-on: ubuntu-latest
     uses: ./.github/workflows/re_test-integration-aws.yml
     secrets: inherit
 
   cli-integration-tests:
-    name: CLI Integration Tests
     needs: prepare-integration-tests
-    runs-on: ubuntu-latest
     uses: ./.github/workflows/re_test-integration-cli.yml
     secrets: inherit
 
   local-integration-tests:
-    name: Local Provider Integration Tests
     needs: prepare-integration-tests
-    runs-on: ubuntu-latest
     uses: ./.github/workflows/re_test-integration-local.yml
     secrets: inherit
 
   azure-integration-tests:
-    name: Azure Integration Tests
     needs: prepare-integration-tests
-    runs-on: ubuntu-latest
     uses: ./.github/workflows/re_test-integration-azure.yml
     secrets: inherit
