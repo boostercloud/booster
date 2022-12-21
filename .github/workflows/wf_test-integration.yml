@@ -1,9 +1,9 @@
 name: Integration
 on:
   pull_request:
-    types: [locked] # All integration tests are run every time the PR is locked
+    types: [unlocked] # All integration tests are run every time the PR conversation is unlocked
 
-  workflow_dispatch:
+  workflow_call:
     # TODO: These inputs are not being used for now, we will change this when
     # we start reacting to comments in the PR
     inputs:
