@@ -9,4 +9,5 @@ runs:
   using: 'composite'
   steps:
     - name: Rush ${{ inputs.command }}
+      shell: bash
       run: node common/scripts/install-run-rush.js ${{ inputs.command }}

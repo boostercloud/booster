@@ -48,6 +48,7 @@ runs:
   using: 'composite'
   steps:
     - name: Announce head commit for integration test
+      shell: bash
       run: echo "Running ${{ inputs.integration-test }} integration test against commit ${{ toJson(github.event.head_commit) }}"
 
     - name: Checkout
@@ -74,6 +75,7 @@ runs:
         creds: ${{ inputs.AZURE_CREDENTIALS }}
 
     - name: Running ${{ inputs.integration-test }} integration test
+      shell: bash
       run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/${{ inputs.integration-test }} -v
       env:
         AWS_ACCESS_KEY_ID: ${{ inputs.bot-aws-access-key-id }}
