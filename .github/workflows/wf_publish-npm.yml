@@ -7,13 +7,19 @@ on:
       - '**.md'
 
 jobs:
+  integration-tests:
+    if: "!contains(github.event.head_commit.author.name, 'GITHUBACTION')"
+    name: Ensuring integration tests pass before publishing
+    runs-on: ubuntu-latest
+    uses: ./.github/workflows/wf_test-integration.yml
+    secrets: inherit
+
   publish-npm:
     if: "!contains(github.event.head_commit.author.name, 'GITHUBACTION')"
+    name: Publish to npm
+    needs: integration-tests
     runs-on: ubuntu-latest
     steps:
-      - run: echo "$DATA"
-        env:
-          DATA: ${{ toJson(github.event.head_commit) }}
       - uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN_ACTION }}
@@ -40,10 +46,14 @@ jobs:
           registry-url: https://registry.npmjs.org/
 
       - name: Rush Install
-        run: node common/scripts/install-run-rush.js install
+        uses: ./.github/actions/call-rush
+        with:
+          command: install
 
       - name: Rush Build
-        run: node common/scripts/install-run-rush.js build
+        uses: ./.github/actions/call-rush
+        with:
+          command: build
 
       # Discard all changes that might have occurred after change build
       - run: git stash
@@ -53,41 +63,10 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Pack local dependencies for integration tests
-        run: node common/scripts/install-run-rush.js pack-integration-deps
-
-      - name: 'Az CLI login'
-        uses: azure/login@v1.4.0
-        with:
-          creds: '${{ secrets.AZURE_CREDENTIALS }}'
-
-      - name: Running integration tests before release
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
-          AZURE_APP_ID: ${{ secrets.AZURE_CLIENTID }}
-          AZURE_SECRET: ${{ secrets.AZURE_SECRET }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
-          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
-          REGION: East US
-          publisherEmail: noreply@booster.cloud
-          publisherName: Booster App
-          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENTID }}
-          ARM_CLIENT_SECRET: ${{ secrets.AZURE_SECRET }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
-          ARM_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
-        # This is not running the integration tests of other providers. Think how this could be done, as they require some other configuration
-        # (as an example, check the k8s tests in "integration-test.yml", it requires a minicube environment)
-        # Maybe running them in different jobs.
-        run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration -v
-
-      - name: Discard all the changes after integration tests
-        run: git stash
-
       - name: Publish using Rush
-        run: node common/scripts/install-run-rush.js publish --apply --publish --target-branch main --add-commit-details
-
+        uses: ./.github/actions/call-rush
+        with:
+          command: publish --apply --publish --target-branch main --add-commit-details
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_ACTION }}

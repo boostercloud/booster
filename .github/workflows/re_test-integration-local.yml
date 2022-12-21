@@ -8,15 +8,10 @@ jobs:
     name: Local Provider Integration Tests
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Build
-        uses: ./.github/workflows/re_build
+      - name: Checkout and build
+        uses: ./.github/actions/checkout-and-build
 
       - name: Run integration test
-        uses: ./.github/workflows/re_test-integration-run-one
+        uses: ./.github/actions/test-integration-run-one
         with:
           integration-test: local

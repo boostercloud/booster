@@ -1,0 +1,12 @@
+name: Call Rush command
+
+inputs:
+  command:
+    required: true
+    type: string
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Rush ${{ inputs.command }}
+      run: node common/scripts/install-run-rush.js ${{ inputs.command }}

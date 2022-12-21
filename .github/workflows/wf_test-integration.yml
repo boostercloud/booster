@@ -3,6 +3,50 @@ on:
   pull_request:
     types: [locked] # All integration tests are run every time the PR is locked
 
+  workflow_dispatch:
+    # TODO: These inputs are not being used for now, we will change this when
+    # we start reacting to comments in the PR
+    inputs:
+      aws-region:
+        default: 'us-east-1'
+        required: false
+        type: string
+      azure-region:
+        default: 'Central US'
+        required: false
+        type: string
+      azure-publisher-email:
+        default: noreply@booster.cloud
+        required: false
+        type: string
+      azure-publisher-name:
+        default: Booster App
+        required: false
+        type: string
+
+    secrets:
+      BOT_AWS_ACCESS_KEY_ID:
+        required: true
+        type: string
+      BOT_AWS_SECRET_ACCESS_KEY:
+        required: true
+        type: string
+      AZURE_CLIENTID:
+        required: true
+        type: string
+      AZURE_SECRET:
+        required: true
+        type: string
+      AZURE_TENANTID:
+        required: true
+        type: string
+      AZURE_SUBSCRIPTIONID:
+        required: true
+        type: string
+      AZURE_CREDENTIALS:
+        required: true
+        type: string
+
 permissions:
   id-token: write
 

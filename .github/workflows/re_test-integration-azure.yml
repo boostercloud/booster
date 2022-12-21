@@ -33,22 +33,18 @@ jobs:
     name: Azure Deploy
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Build
-        uses: ./.github/workflows/re_build
-
       - name: Run integration test
-        uses: ./.github/workflows/re_test-integration-run-one
+        uses: ./.github/actions/test-integration-run-one
         with:
           integration-test: azure-deploy
           azure-region: ${{ inputs.azure-region }}
           azure-publisher-email: ${{ inputs.azure-publisher-email }}
           azure-publisher-name: ${{ inputs.azure-publisher-name }}
-        secrets: inherit
+          azure-clientid: ${{ secrets.AZURE_CLIENTID }}
+          azure-secret: ${{ secrets.AZURE_SECRET }}
+          azure-tenantid: ${{ secrets.AZURE_TENANTID }}
+          azure-subscriptionid: ${{ secrets.AZURE_SUBSCRIPTIONID }}
+          azure-credentials: ${{ secrets.AZURE_CREDENTIALS }}
 
   azure-integration-tests:
     strategy:
@@ -57,22 +53,18 @@ jobs:
         integration-test: [azure-func, azure-end-to-end]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Build
-        uses: ./.github/workflows/re_build
-
       - name: Run integration test
-        uses: ./.github/workflows/re_test-integration-run-one
+        uses: ./.github/actions/test-integration-run-one
         with:
           integration-test: ${{ matrix.integration-test }}
           azure-region: ${{ inputs.azure-region }}
           azure-publisher-email: ${{ inputs.azure-publisher-email }}
           azure-publisher-name: ${{ inputs.azure-publisher-name }}
-        secrets: inherit
+          azure-clientid: ${{ secrets.AZURE_CLIENTID }}
+          azure-secret: ${{ secrets.AZURE_SECRET }}
+          azure-tenantid: ${{ secrets.AZURE_TENANTID }}
+          azure-subscriptionid: ${{ secrets.AZURE_SUBSCRIPTIONID }}
+          azure-credentials: ${{ secrets.AZURE_CREDENTIALS }}
 
   azure-nuke:
     name: Azure Nuke
@@ -81,19 +73,15 @@ jobs:
     continue-on-error: true
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Build
-        uses: ./.github/workflows/re_build
-
       - name: Run integration test
-        uses: ./.github/workflows/re_test-integration-run-one
+        uses: ./.github/actions/test-integration-run-one
         with:
           integration-test: azure-deploy
           azure-region: ${{ inputs.azure-region }}
           azure-publisher-email: ${{ inputs.azure-publisher-email }}
           azure-publisher-name: ${{ inputs.azure-publisher-name }}
-        secrets: inherit
+          azure-clientid: ${{ secrets.AZURE_CLIENTID }}
+          azure-secret: ${{ secrets.AZURE_SECRET }}
+          azure-tenantid: ${{ secrets.AZURE_TENANTID }}
+          azure-subscriptionid: ${{ secrets.AZURE_SUBSCRIPTIONID }}
+          azure-credentials: ${{ secrets.AZURE_CREDENTIALS }}

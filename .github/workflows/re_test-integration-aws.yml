@@ -19,20 +19,12 @@ jobs:
     name: AWS Deploy
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Build
-        uses: ./.github/workflows/re_build
-
-      - name: Run integration test
-        uses: ./.github/workflows/re_test-integration-run-one
+      - uses: ./.github/actions/test-integration-run-one
         with:
           integration-test: aws-deploy
           aws-region: ${{ inputs.aws-region }}
-        secrets: inherit
+          bot-aws-access-key-id: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
+          bot-aws-secret-access-key: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
 
   aws-integration-tests:
     strategy:
@@ -41,20 +33,12 @@ jobs:
         integration-test: [aws-func, aws-end-to-end, aws-load]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Build
-        uses: ./.github/workflows/re_build
-
-      - name: Run integration test
-        uses: ./.github/workflows/re_test-integration-run-one
+      - uses: ./.github/actions/test-integration-run-one
         with:
           integration-test: ${{ matrix.integration-test }}
           aws-region: ${{ inputs.aws-region }}
-        secrets: inherit
+          bot-aws-access-key-id: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
+          bot-aws-secret-access-key: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
 
   aws-nuke:
     name: AWS Nuke
@@ -63,17 +47,9 @@ jobs:
     continue-on-error: true
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Build
-        uses: ./.github/workflows/re_build
-
-      - name: Run integration test
-        uses: ./.github/workflows/re_test-integration-run-one
+      - uses: ./.github/actions/test-integration-run-one
         with:
           integration-test: aws-nuke
           aws-region: ${{ inputs.aws-region }}
-        secrets: inherit
+          bot-aws-access-key-id: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
+          bot-aws-secret-access-key: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}

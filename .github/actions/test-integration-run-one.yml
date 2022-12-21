@@ -1,0 +1,87 @@
+name: Run one integration test
+
+inputs:
+  integration-test:
+    required: true
+    type: string
+  aws-region:
+    default: 'us-east-1'
+    required: false
+    type: string
+  azure-region:
+    default: 'Central US'
+    required: false
+    type: string
+  azure-publisher-email:
+    default: 'noreply@booster.cloud'
+    required: false
+    type: string
+  azure-publisher-name:
+    default: 'Booster App'
+    required: false
+    type: string
+
+  # Secrets
+  bot-aws-access-key-id:
+    required: false
+    type: string
+  bot-aws-secret-access-key:
+    required: false
+    type: string
+  azure-clientid:
+    required: false
+    type: string
+  azure-secret:
+    required: false
+    type: string
+  azure-tenantid:
+    required: false
+    type: string
+  azure-subscriptionid:
+    required: false
+    type: string
+  azure-credentials:
+    required: false
+    type: string
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Announce head commit for integration test
+      run: echo "Running ${{ inputs.integration-test }} integration test against commit ${{ toJson(github.event.head_commit) }}"
+
+    - uses: ./.github/actions/checkout-and-build
+
+    # This step will download the artifact named `integration-test-dependencies-${{ github.sha }}`
+    # from the `Prepare Integration Tests` workflow into the `packages/framework-integration-tests/.booster`
+    # folder.
+    - name: Download integration test dependencies
+      uses: actions/download-artifact@v2
+      with:
+        name: integration-test-dependencies-${{ github.sha }}
+        path: packages/framework-integration-tests/.booster
+
+    # Login if inputs.azure-credentials is set
+    - name: Login to Azure
+      if: ${{ inputs.azure-credentials }}
+      uses: azure/login@v1.4.0
+      with:
+        creds: ${{ inputs.AZURE_CREDENTIALS }}
+
+    - name: Running ${{ inputs.integration-test }} integration test
+      run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/${{ inputs.integration-test }} -v
+      env:
+        AWS_ACCESS_KEY_ID: ${{ inputs.bot-aws-access-key-id }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.bot-aws-secret-access-key }}
+        AWS_REGION: ${{ inputs.aws-region }}
+        AZURE_APP_ID: ${{ inputs.azure-clientid }}
+        AZURE_SECRET: ${{ inputs.azure-secret }}
+        AZURE_TENANT_ID: ${{ inputs.azure-tenantid }}
+        AZURE_SUBSCRIPTION_ID: ${{ inputs.azure-subscriptionid }}
+        REGION: ${{ inputs.azure-region }}
+        publisherEmail: ${{ inputs.azure-publisher-email }}
+        publisherName: ${{ inputs.azure-publisher-name }}}
+        ARM_CLIENT_ID: ${{ inputs.azure-clientid }}
+        ARM_CLIENT_SECRET: ${{ inputs.azure-secret }}
+        ARM_SUBSCRIPTION_ID: ${{ inputs.azure-subscriptionid }}
+        ARM_TENANT_ID: ${{ inputs.azure-tenantid }}
