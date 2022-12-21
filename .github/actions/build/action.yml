@@ -13,7 +13,7 @@ runs:
         command: build
 
     - name: Check if lockfile is outdated
-      if: ${{ failure() && contains(steps.rush-build.outputs.stdout, 'The shrinkwrap file is out of date. You need to run "rush update"') }}
+      if: failure() && contains(steps.rush-build.outputs.stderr, 'The shrinkwrap file is out of date')
       uses: mshick/add-pr-comment@v2
       with:
         message: |
