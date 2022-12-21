@@ -75,7 +75,7 @@ jobs:
 
   azure-nuke:
     name: Azure Nuke
-    needs: [azure-deploy]
+    needs: [azure-deploy, azure-integration-tests]
     if: always() && needs.azure-deploy.result == 'success'
     continue-on-error: true
     runs-on: ubuntu-latest

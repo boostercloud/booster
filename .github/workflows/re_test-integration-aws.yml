@@ -49,7 +49,7 @@ jobs:
 
   aws-nuke:
     name: AWS Nuke
-    needs: [aws-deploy]
+    needs: [aws-deploy, aws-integration-tests]
     if: always() && needs.aws-deploy.result == 'success'
     continue-on-error: true
     runs-on: ubuntu-latest
