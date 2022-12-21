@@ -1,8 +1,8 @@
-# Booster GitHub Workflows
+# Booster GitHub CICD
 
 This folder uses the following convention:
 
-- Files prefixed with `re_` are [reusable workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows) and are meant to be used instead of copy-pasting steps/jobs
+- Files prefixed with `re_` are [reusable workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows) and are meant to be used instead of copy-pasting jobs
 - Files prefixed with `wf_` are regular workflows that define workflows in the GitHub Actions CI/CD pipeline
 - Files get their name in descending order, in the sense of the things they do. E.g.
   - `test-unit` instead of `unit-tests`

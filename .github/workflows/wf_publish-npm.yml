@@ -22,6 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
+          fetch-depth: 0 # required for Rush change
           token: ${{ secrets.GITHUB_TOKEN_ACTION }}
 
       # Workaround for https://github.com/actions/checkout/issues/6#issuecomment-520636057

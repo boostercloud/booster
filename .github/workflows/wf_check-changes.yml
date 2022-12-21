@@ -17,8 +17,13 @@ jobs:
   changes-check:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout and build
-        uses: ./.github/actions/checkout-and-build
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Build
+        uses: ./.github/actions/build
 
       - name: Check for changes
         uses: ./.github/actions/call-rush

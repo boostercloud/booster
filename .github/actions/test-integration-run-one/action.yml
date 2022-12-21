@@ -50,7 +50,12 @@ runs:
     - name: Announce head commit for integration test
       run: echo "Running ${{ inputs.integration-test }} integration test against commit ${{ toJson(github.event.head_commit) }}"
 
-    - uses: ./.github/actions/checkout-and-build
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - uses: ./.github/actions/build
 
     # This step will download the artifact named `integration-test-dependencies-${{ github.sha }}`
     # from the `Prepare Integration Tests` workflow into the `packages/framework-integration-tests/.booster`

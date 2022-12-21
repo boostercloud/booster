@@ -11,8 +11,11 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout and build
-        uses: ./.github/actions/checkout-and-build
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build
+        uses: ./.github/actions/build
 
       - name: Check linting
         uses: ./.github/actions/call-rush

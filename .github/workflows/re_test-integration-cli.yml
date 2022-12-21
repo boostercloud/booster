@@ -8,9 +8,6 @@ jobs:
     name: CLI Integration Tests
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout and build
-        uses: ./.github/actions/checkout-and-build
-
       - name: Run integration test
         uses: ./.github/actions/test-integration-run-one
         with:
