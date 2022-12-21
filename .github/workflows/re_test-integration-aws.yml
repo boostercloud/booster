@@ -28,8 +28,8 @@ jobs:
 
   aws-integration-tests:
     strategy:
+      max-parallel: 1
       matrix:
-        max-parallel: 1
         integration-test: [aws-func, aws-end-to-end, aws-load]
     runs-on: ubuntu-latest
     steps:

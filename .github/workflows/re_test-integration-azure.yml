@@ -48,8 +48,8 @@ jobs:
 
   azure-integration-tests:
     strategy:
+      max-parallel: 1
       matrix:
-        max-parallel: 1
         integration-test: [azure-func, azure-end-to-end]
     runs-on: ubuntu-latest
     steps:
