@@ -11,16 +11,3 @@ runs:
       uses: ./.github/actions/call-rush
       with:
         command: build
-
-    - name: Check if lockfile is outdated
-      if: failure() && contains(toJson(steps.rush-build.stderr), 'The shrinkwrap file is out of date')
-      uses: mshick/add-pr-comment@v2
-      with:
-        message: |
-          **Oops**, looks like you forgot to update the lockfile.
-
-          ⚠️ Please run `rush update` and commit the updated lockfile.
-
-          This command will update the lockfile with the latest versions of the dependencies. This
-          will allow our CICD process to ensure that the build is using the correct versions of the
-          dependencies.
