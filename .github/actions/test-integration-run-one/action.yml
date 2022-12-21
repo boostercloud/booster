@@ -72,7 +72,7 @@ runs:
       if: ${{ inputs.azure-credentials }}
       uses: azure/login@v1.4.0
       with:
-        creds: ${{ inputs.AZURE_CREDENTIALS }}
+        creds: ${{ inputs.azure-credentials }}
 
     - name: Running ${{ inputs.integration-test }} integration test
       shell: bash
