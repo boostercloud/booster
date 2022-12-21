@@ -7,7 +7,7 @@ runs:
       with:
         command: install
 
-    - name: rush-build
+    - id: rush-build
       uses: ./.github/actions/call-rush
       with:
         command: build
