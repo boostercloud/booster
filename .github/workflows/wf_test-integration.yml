@@ -27,25 +27,18 @@ on:
     secrets:
       BOT_AWS_ACCESS_KEY_ID:
         required: true
-        type: string
       BOT_AWS_SECRET_ACCESS_KEY:
         required: true
-        type: string
       AZURE_CLIENTID:
         required: true
-        type: string
       AZURE_SECRET:
         required: true
-        type: string
       AZURE_TENANTID:
         required: true
-        type: string
       AZURE_SUBSCRIPTIONID:
         required: true
-        type: string
       AZURE_CREDENTIALS:
         required: true
-        type: string
 
 permissions:
   id-token: write
