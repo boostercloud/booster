@@ -30,6 +30,7 @@ jobs:
           bot-aws-secret-access-key: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
 
   aws-integration-tests:
+    needs: [aws-deploy]
     strategy:
       max-parallel: 1
       matrix:

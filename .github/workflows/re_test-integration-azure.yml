@@ -50,6 +50,7 @@ jobs:
           azure-credentials: ${{ secrets.AZURE_CREDENTIALS }}
 
   azure-integration-tests:
+    needs: [azure-deploy]
     strategy:
       max-parallel: 1
       matrix:
