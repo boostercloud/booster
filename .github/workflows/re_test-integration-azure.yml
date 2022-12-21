@@ -33,6 +33,9 @@ jobs:
     name: Azure Deploy
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Run integration test
         uses: ./.github/actions/test-integration-run-one
         with:
@@ -53,6 +56,9 @@ jobs:
         integration-test: [azure-func, azure-end-to-end]
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Run integration test
         uses: ./.github/actions/test-integration-run-one
         with:
@@ -73,6 +79,9 @@ jobs:
     continue-on-error: true
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Run integration test
         uses: ./.github/actions/test-integration-run-one
         with:

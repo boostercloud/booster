@@ -19,6 +19,9 @@ jobs:
     name: AWS Deploy
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - uses: ./.github/actions/test-integration-run-one
         with:
           integration-test: aws-deploy
@@ -33,6 +36,9 @@ jobs:
         integration-test: [aws-func, aws-end-to-end, aws-load]
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - uses: ./.github/actions/test-integration-run-one
         with:
           integration-test: ${{ matrix.integration-test }}
@@ -47,6 +53,9 @@ jobs:
     continue-on-error: true
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - uses: ./.github/actions/test-integration-run-one
         with:
           integration-test: aws-nuke
