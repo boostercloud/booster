@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Mon, 19 Dec 2022 19:41:13 GMT and should not be manually modified.
+This log was last generated on Thu, 22 Dec 2022 16:52:13 GMT and should not be manually modified.
+
+## 1.3.5
+Thu, 22 Dec 2022 16:52:13 GMT
+
+### Patches
+
+- Make CLI error messages more readable
 
 ## 1.3.4
 Mon, 19 Dec 2022 19:41:13 GMT
