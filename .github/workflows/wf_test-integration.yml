@@ -1,0 +1,68 @@
+name: Integration
+on:
+  pull_request:
+    types: [locked] # All integration tests are run every time the PR conversation is locked
+
+  workflow_call:
+    # TODO: These inputs are not being used for now, we will change this when
+    # we start reacting to comments in the PR
+    inputs:
+      aws-region:
+        default: 'us-east-1'
+        required: false
+        type: string
+      azure-region:
+        default: 'Central US'
+        required: false
+        type: string
+      azure-publisher-email:
+        default: noreply@booster.cloud
+        required: false
+        type: string
+      azure-publisher-name:
+        default: Booster App
+        required: false
+        type: string
+
+    secrets:
+      BOT_AWS_ACCESS_KEY_ID:
+        required: true
+      BOT_AWS_SECRET_ACCESS_KEY:
+        required: true
+      AZURE_CLIENTID:
+        required: true
+      AZURE_SECRET:
+        required: true
+      AZURE_TENANTID:
+        required: true
+      AZURE_SUBSCRIPTIONID:
+        required: true
+      AZURE_CREDENTIALS:
+        required: true
+
+permissions:
+  id-token: write
+
+jobs:
+  prepare-integration-tests:
+    uses: ./.github/workflows/re_test-integration-prepare.yml
+
+  aws-integration-tests:
+    needs: prepare-integration-tests
+    uses: ./.github/workflows/re_test-integration-aws.yml
+    secrets: inherit
+
+  cli-integration-tests:
+    needs: prepare-integration-tests
+    uses: ./.github/workflows/re_test-integration-cli.yml
+    secrets: inherit
+
+  local-integration-tests:
+    needs: prepare-integration-tests
+    uses: ./.github/workflows/re_test-integration-local.yml
+    secrets: inherit
+
+  azure-integration-tests:
+    needs: prepare-integration-tests
+    uses: ./.github/workflows/re_test-integration-azure.yml
+    secrets: inherit

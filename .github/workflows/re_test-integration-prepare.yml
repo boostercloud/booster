@@ -1,0 +1,33 @@
+name: Prepare Integration Tests
+
+on:
+  workflow_call:
+
+jobs:
+  prepare-integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build
+        uses: ./.github/actions/build
+
+      - name: Pack local dependencies for integration tests
+        uses: ./.github/actions/call-rush
+        with:
+          command: pack-integration-deps
+
+      # This step will upload all the files in the `packages/framework-integration-tests/.booster` folder
+      # to the GitHub Actions artifacts. This is needed because the integration tests are run in a different
+      # job, and we need to pass the dependencies to it. The artifact is suffixed with the name of the git
+      # commit, so that we can have multiple artifacts for the same branch. Those will be deleted after
+      # 1 day. It is also useful because these dependencies could be downloaded by the user to run the
+      # integration tests locally, or even test their own Booster applications with this version.
+      - name: Upload integration test dependencies
+        uses: actions/upload-artifact@v2
+        with:
+          # suffix the name with the git commit
+          name: integration-test-dependencies-${{ github.sha }}
+          path: packages/framework-integration-tests/.booster
+          retention-days: 1

@@ -12,5 +12,6 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": false
   },
-  "monorepoWorkspace.includeRoot": false
+  "monorepoWorkspace.includeRoot": false,
+  "cSpell.words": ["codeql", "codesee"]
 }

@@ -1,0 +1,13 @@
+name: Build
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: ./.github/actions/call-rush
+      with:
+        command: install
+
+    - id: rush-build
+      uses: ./.github/actions/call-rush
+      with:
+        command: build
