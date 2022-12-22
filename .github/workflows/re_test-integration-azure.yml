@@ -86,7 +86,7 @@ jobs:
       - name: Run integration test
         uses: ./.github/actions/test-integration-run-one
         with:
-          integration-test: azure-deploy
+          integration-test: azure-nuke
           azure-region: ${{ inputs.azure-region }}
           azure-publisher-email: ${{ inputs.azure-publisher-email }}
           azure-publisher-name: ${{ inputs.azure-publisher-name }}
