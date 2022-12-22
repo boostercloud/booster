@@ -1,18 +1,22 @@
 import { Effect, tag } from '@boostercloud/framework-types/dist/effect'
 
-export class PackageManagerError {
-  readonly _tag = 'PackageManagerError'
-  readonly error: Error
-  public constructor(readonly reason: unknown) {
-    this.error = reason instanceof Error ? reason : new Error(JSON.stringify(reason))
-  }
+export type PackageManagerError = InstallDependenciesError | RunScriptError
+
+export class InstallDependenciesError {
+  readonly _tag = 'InstallDependenciesError'
+  constructor(readonly error: Error) {}
+}
+
+export class RunScriptError {
+  readonly _tag = 'RunScriptError'
+  constructor(readonly error: Error) {}
 }
 
 export interface PackageManagerService {
-  readonly setProjectRoot: (projectRoot: string) => Effect<unknown, unknown, void>
-  readonly installProductionDependencies: () => Effect<unknown, unknown, void>
-  readonly installAllDependencies: () => Effect<unknown, unknown, void>
-  readonly runScript: (scriptName: string, args: ReadonlyArray<string>) => Effect<unknown, unknown, string>
+  readonly setProjectRoot: (projectRoot: string) => Effect<unknown, never, void>
+  readonly installProductionDependencies: () => Effect<unknown, InstallDependenciesError, void>
+  readonly installAllDependencies: () => Effect<unknown, InstallDependenciesError, void>
+  readonly runScript: (scriptName: string, args: ReadonlyArray<string>) => Effect<unknown, RunScriptError, string>
 }
 
 export const PackageManagerService = tag<PackageManagerService>()

@@ -246,6 +246,47 @@ export { succeed } from '@effect-ts/core/Effect'
 export { succeedWith } from '@effect-ts/core/Effect'
 
 /**
+ * Function: fail
+ * ==============
+ *
+ * If you want to return an error from an effect, you can use the `fail` function.
+ * It is equivalent to `Promise.reject`.
+ *
+ * This function is useful when you want to return an error from an effect, but don't
+ * want to do any computation.
+ *
+ * Example:
+ *
+ * const foo = fail(new Error('something went wrong'))
+ *
+ * Here, `foo` is an effect that fails with the error `new Error('something went wrong')`.
+ *
+ * Takeaway: Use `fail` to return an error from an effect.
+ */
+export { fail } from '@effect-ts/core/Effect'
+
+/**
+ * Function: failWith
+ * ==================
+ *
+ * If you want to return an error from an effect, but you want to run some code to
+ * create the error, you can use the `failWith` function.
+ *
+ * You pass a function that runs what you need to run, and failWith will return
+ * an effect that will run the function, and then return the result.
+ *
+ * Example:
+ *
+ * const log = failWith(() => new Error('something went wrong'))
+ *
+ * In this example, the effect `log` will run the side effect of creating the error,
+ * and then return the result of the call, which is an error.
+ *
+ * Takeaway: Use `failWith` to wrap effectful code that doesn't return a promise.
+ */
+export { failWith } from '@effect-ts/core/Effect'
+
+/**
  * Function: tryCatch
  * ==================
  *
@@ -563,6 +604,8 @@ export { orDieWith } from '@effect-ts/core/Effect'
  */
 export { dieMessage } from '@effect-ts/core/Effect'
 
+export { mapError } from '@effect-ts/core/Effect'
+
 /*************************************************
  *                                               *
  *             DEPENDENCY INJECTION              *
@@ -844,9 +887,9 @@ import { Layer } from '@effect-ts/core/Effect/Layer'
 import { Effect, provideSomeLayer, runPromise } from '@effect-ts/core/Effect'
 import { Has } from '@effect-ts/core/Has'
 
-type RunWithLayerOpts<R> = {
+type RunWithLayerOpts<R, E> = {
   readonly layer: Layer<unknown, never, Has<R>>
-  readonly onError: (eff: Effect<Has<R>, unknown, void>) => Effect<Has<R>, never, void>
+  readonly onError: (eff: Effect<Has<R>, E, void>) => Effect<Has<R>, never, void>
 }
 
 /**
@@ -856,9 +899,9 @@ type RunWithLayerOpts<R> = {
  * @param opts.onError The function to handle errors
  * @returns void
  */
-export const unsafeRunEffect = <R>(
-  effect: Effect<Has<R>, unknown, void>,
-  { layer, onError }: RunWithLayerOpts<R>
+export const unsafeRunEffect = <R, E>(
+  effect: Effect<Has<R>, E, void>,
+  { layer, onError }: RunWithLayerOpts<R, E>
 ): Promise<void> => {
   return pipe(effect, onError, provideSomeLayer(layer), runPromise)
 }

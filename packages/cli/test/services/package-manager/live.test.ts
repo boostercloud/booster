@@ -1,5 +1,5 @@
 import { fake } from 'sinon'
-import { gen, Layer, unsafeRunEffect } from '@boostercloud/framework-types/dist/effect'
+import { gen, Layer, mapError, pipe, unsafeRunEffect } from '@boostercloud/framework-types/dist/effect'
 import { expect } from '../../expect'
 import { makeTestFileSystem } from '../file-system/test.impl'
 import { makeTestProcess } from '../process/test.impl'
@@ -14,10 +14,15 @@ describe('PackageManager - Live Implementation (with inference)', () => {
     TestProcess.reset()
   })
 
-  const runScript = gen(function* ($) {
+  const effect = gen(function* ($) {
     const { runScript } = yield* $(PackageManagerService)
     return yield* $(runScript('script', []))
   })
+
+  const runScript = pipe(
+    effect,
+    mapError((e) => e.error)
+  )
 
   it('infers Rush when a `.rush` folder is present', async () => {
     const TestFileSystem = makeTestFileSystem({ readDirectoryContents: fake.returns(['.rush']) })

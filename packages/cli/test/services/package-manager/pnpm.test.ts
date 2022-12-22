@@ -1,5 +1,5 @@
 import { fake } from 'sinon'
-import { gen, Layer, unsafeRunEffect } from '@boostercloud/framework-types/dist/effect'
+import { Effect, gen, Layer, mapError, pipe, unsafeRunEffect } from '@boostercloud/framework-types/dist/effect'
 import { expect } from '../../expect'
 import { makeTestFileSystem } from '../file-system/test.impl'
 import { makeTestProcess } from '../process/test.impl'
@@ -9,6 +9,12 @@ import { PackageManagerService } from '../../../src/services/package-manager'
 
 const TestFileSystem = makeTestFileSystem()
 const TestProcess = makeTestProcess()
+
+const mapEffError = <R, A>(effect: Effect<R, { error: Error }, A>) =>
+  pipe(
+    effect,
+    mapError((e) => e.error)
+  )
 
 describe('PackageManager - Pnpm Implementation', () => {
   it('run arbitrary scripts from package.json', async () => {
@@ -21,7 +27,7 @@ describe('PackageManager - Pnpm Implementation', () => {
       return yield* $(runScript(script, args))
     })
 
-    await unsafeRunEffect(effect, {
+    await unsafeRunEffect(mapEffError(effect), {
       layer: Layer.using(testLayer)(PnpmPackageManager),
       onError: guardError('An error ocurred'),
     })
@@ -40,7 +46,7 @@ describe('PackageManager - Pnpm Implementation', () => {
       yield* $(runScript('script', []))
     })
 
-    await unsafeRunEffect(effect, {
+    await unsafeRunEffect(mapEffError(effect), {
       layer: Layer.using(testLayer)(PnpmPackageManager),
       onError: guardError('An error ocurred'),
     })
@@ -55,7 +61,7 @@ describe('PackageManager - Pnpm Implementation', () => {
       return yield* $(installProductionDependencies())
     })
 
-    await unsafeRunEffect(effect, {
+    await unsafeRunEffect(mapEffError(effect), {
       layer: Layer.using(testLayer)(PnpmPackageManager),
       onError: guardError('An error ocurred'),
     })
@@ -71,7 +77,7 @@ describe('PackageManager - Pnpm Implementation', () => {
       return yield* $(installAllDependencies())
     })
 
-    await unsafeRunEffect(effect, {
+    await unsafeRunEffect(mapEffError(effect), {
       layer: Layer.using(testLayer)(PnpmPackageManager),
       onError: guardError('An error ocurred'),
     })

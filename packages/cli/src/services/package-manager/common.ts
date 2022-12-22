@@ -1,6 +1,5 @@
-import { gen, Ref } from '@boostercloud/framework-types/dist/effect'
-import { PackageManagerService } from '.'
-import { guardError } from '../../common/errors'
+import { mapError, gen, pipe, Ref } from '@boostercloud/framework-types/dist/effect'
+import { InstallDependenciesError, PackageManagerService, RunScriptError } from '.'
 import { ProcessService } from '../process'
 
 /**
@@ -40,12 +39,21 @@ export const makePackageManager = (packageManagerCommand: string) =>
 
     const service: PackageManagerService = {
       setProjectRoot: (projectDir: string) => Ref.set_(projectDirRef, projectDir),
-      runScript: (scriptName: string, args: ReadonlyArray<string>) => run('run', [scriptName, ...args]),
-      installProductionDependencies: () =>
-        guardError('Could not install production dependencies')(
-          run('install', ['--production', '--no-bin-links', '--no-optional'])
+      runScript: (scriptName: string, args: ReadonlyArray<string>) =>
+        pipe(
+          run('run', [scriptName, ...args]),
+          mapError((error) => new RunScriptError(error.error))
         ),
-      installAllDependencies: () => guardError('Could not install dependencies')(run('install', [])),
+      installProductionDependencies: () =>
+        pipe(
+          run('install', ['--production', '--no-bin-links', '--no-optional']),
+          mapError((error) => new InstallDependenciesError(error.error))
+        ),
+      installAllDependencies: () =>
+        pipe(
+          run('install', []),
+          mapError((error) => new InstallDependenciesError(error.error))
+        ),
     }
     return service
   })

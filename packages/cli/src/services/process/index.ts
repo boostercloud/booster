@@ -2,7 +2,7 @@ import { Effect, tag } from '@boostercloud/framework-types/dist/effect'
 
 export class ProcessError {
   readonly _tag = 'ProcessError'
-  public constructor(readonly reason: unknown) {}
+  constructor(readonly error: Error) {}
 }
 
 export interface ProcessService {

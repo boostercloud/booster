@@ -1,7 +1,7 @@
 import * as process from 'process'
 import * as childProcessPromise from 'child-process-promise'
 import { fake, replace, restore } from 'sinon'
-import { gen, unsafeRunEffect } from '@boostercloud/framework-types/dist/effect'
+import { Effect, gen, mapError, pipe, unsafeRunEffect } from '@boostercloud/framework-types/dist/effect'
 import { LiveProcess } from '../../../src/services/process/live.impl'
 import { expect } from '../../expect'
 import { guardError } from '../../../src/common/errors'
@@ -17,12 +17,18 @@ describe('Process - Live Implementation', () => {
     restore()
   })
 
+  const mapEffError = <R, A>(effect: Effect<R, { error: Error }, A>) =>
+    pipe(
+      effect,
+      mapError((e) => e.error)
+    )
+
   it('uses process.cwd', async () => {
     const effect = gen(function* ($) {
       const { cwd } = yield* $(ProcessService)
       return yield* $(cwd())
     })
-    await unsafeRunEffect(effect, {
+    await unsafeRunEffect(mapEffError(effect), {
       layer: LiveProcess,
       onError: guardError('An error ocurred'),
     })
@@ -38,7 +44,7 @@ describe('Process - Live Implementation', () => {
       return yield* $(exec(command, cwd))
     })
 
-    await unsafeRunEffect(effect, {
+    await unsafeRunEffect(mapEffError(effect), {
       layer: LiveProcess,
       onError: guardError('An error ocurred'),
     })
