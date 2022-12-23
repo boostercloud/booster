@@ -1,0 +1,31 @@
+name: Dispatch CICD commands
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  dispatch-command:
+    runs-on: ubuntu-latest
+    # Only run for PRs, not issue comments
+    if: ${{ github.event.issue.pull_request }}
+    steps:
+      - name: Generate token
+        id: generate_token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{ secrets.CICD_GITHUB_APP_APPID }}
+          private_key: ${{ secrets.CICD_GITHUB_APP_SECRET_KEY }}
+
+      - name: Slash Command Dispatch
+        uses: peter-evans/slash-command-dispatch@v1
+        env:
+          GITHUB_APP_TOKEN: ${{ steps.generate_token.outputs.token }}
+        with:
+          token: ${{ env.GITHUB_APP_TOKEN }}
+          issue-type: pull-request
+          named-args: true
+
+          # Define commands here
+          commands: |
+            integration
