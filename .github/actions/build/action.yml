@@ -15,7 +15,6 @@ runs:
         key: ${{ runner.os }}-rush-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}-${{ hashFiles('.github/cache-version.yml') }}
 
     - uses: ./.github/actions/call-rush
-      if: steps.cache-rush.outputs.cache-hit != 'true'
       with:
         command: install
 
