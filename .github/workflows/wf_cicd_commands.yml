@@ -15,7 +15,6 @@ jobs:
         with:
           token: ${{ secrets.MONKEYBOT_PAT }}
           issue-type: pull-request
-          named-args: true
           permission: write
           # Define commands here
           commands: |

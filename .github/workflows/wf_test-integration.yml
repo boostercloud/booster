@@ -1,7 +1,7 @@
 name: Integration
 on:
-  pull_request:
-    types: [locked] # All integration tests are run every time the PR conversation is locked
+  repository_dispatch:
+    types: [integration-command]
 
   workflow_call:
     # TODO: These inputs are not being used for now, we will change this when
