@@ -3,7 +3,19 @@ name: Build
 runs:
   using: 'composite'
   steps:
+    # First we cache the rush project, to ensure we don't build multiple times, nor we download more dependencies than needed
+    - name: Cache Rush project
+      id: cache-rush
+      uses: actions/cache@v3
+      with:
+        path: |
+          common/temp
+          common/config/rush
+          common/config/rush/pnpm-lock.yaml
+        key: ${{ runner.os }}-rush-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}-${{ hashFiles('.github/cache-version.yml') }}
+
     - uses: ./.github/actions/call-rush
+      if: steps.cache-rush.outputs.cache-hit != 'true'
       with:
         command: install
 
