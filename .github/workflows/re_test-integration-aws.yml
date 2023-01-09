@@ -24,6 +24,7 @@ jobs:
 
       - uses: ./.github/actions/test-integration-run-one
         with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           integration-test: aws-deploy
           gh_token: ${{ secrets.GITHUB_TOKEN }}
           aws-region: ${{ inputs.aws-region }}
@@ -43,6 +44,7 @@ jobs:
 
       - uses: ./.github/actions/test-integration-run-one
         with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           integration-test: ${{ matrix.integration-test }}
           gh_token: ${{ secrets.GITHUB_TOKEN }}
           aws-region: ${{ inputs.aws-region }}
@@ -61,6 +63,7 @@ jobs:
 
       - uses: ./.github/actions/test-integration-run-one
         with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           integration-test: aws-nuke
           gh_token: ${{ secrets.GITHUB_TOKEN }}
           aws-region: ${{ inputs.aws-region }}

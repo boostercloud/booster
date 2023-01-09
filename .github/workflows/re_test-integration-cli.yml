@@ -14,5 +14,6 @@ jobs:
       - name: Run integration test
         uses: ./.github/actions/test-integration-run-one
         with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           integration-test: cli
           gh_token: ${{ secrets.GITHUB_TOKEN }}
