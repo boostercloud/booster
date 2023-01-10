@@ -4,15 +4,15 @@ on:
   workflow_call:
     inputs:
       command_sha:
-        required: true
+        required: false
         type: string
 
       pr_sha:
-        required: true
+        required: false
         type: string
 
       pr_number:
-        required: true
+        required: false
         type: string
 
 jobs:

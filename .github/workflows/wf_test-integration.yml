@@ -1,4 +1,5 @@
 name: Integration
+run-name: Integration tests for ${{ github.event.client_payload.pull_request.number }} (${{ github.sha }})
 on:
   repository_dispatch:
     types: [integration-command]
@@ -99,8 +100,6 @@ jobs:
           issue: ${{ github.event.client_payload.pull_request.number }}
           message: |
             :white_check_mark: Integration tests have [finished successfully](https://github.com/boostercloud/booster/actions/runs/${{ github.run_id }})!
-
-            ![Carlton dancing](https://tenor.com/bG5JG.gif)
 
   notify-end-failure:
     runs-on: ubuntu-latest
