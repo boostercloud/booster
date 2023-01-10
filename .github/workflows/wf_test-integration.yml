@@ -91,6 +91,7 @@ jobs:
   notify-end-success:
     runs-on: ubuntu-latest
     needs: [aws-integration-tests, cli-integration-tests, local-integration-tests, azure-integration-tests]
+    if: ${{ always() && !contains(needs.*.result, 'failure') }}
     steps:
       - name: Notify success of integration tests
         uses: mshick/add-pr-comment@v2
@@ -104,7 +105,7 @@ jobs:
   notify-end-failure:
     runs-on: ubuntu-latest
     needs: [aws-integration-tests, cli-integration-tests, local-integration-tests, azure-integration-tests]
-    if: failure()
+    if: ${{ always() && contains(needs.*.result, 'failure') }}
     steps:
       - name: Notify failure of integration tests
         uses: mshick/add-pr-comment@v2
