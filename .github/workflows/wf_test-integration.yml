@@ -47,7 +47,7 @@ jobs:
   prepare-integration-tests:
     uses: ./.github/workflows/re_test-integration-prepare.yml
     with:
-      command_sha: ${{ github.event.client_payload.slash_command.sha }}
+      command_sha: ${{ github.event.client_payload.slash_command.args.named.sha }}
       pr_sha: ${{ github.event.client_payload.pull_request.head.sha }}
       pr_number: ${{ github.event.client_payload.pull_request.number }}
 
