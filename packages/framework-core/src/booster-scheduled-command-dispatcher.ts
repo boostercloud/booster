@@ -32,7 +32,7 @@ export class BoosterScheduledCommandDispatcher {
     const register = new Register(
       commandEnvelope.requestID,
       {},
-      RegisterHandler.handle,
+      RegisterHandler.flush,
       undefined,
       commandEnvelope.context
     )

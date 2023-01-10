@@ -12,6 +12,7 @@ import {
 import { BoosterEntityMigrated } from './core-concepts/data-migration/events/booster-entity-migrated'
 import { BoosterDataMigrationStarted } from './core-concepts/data-migration/events/booster-data-migration-started'
 import { BoosterDataMigrationFinished } from './core-concepts/data-migration/events/booster-data-migration-finished'
+import { Booster } from './booster'
 
 const boosterEventsTypesNames: Array<string> = [
   BoosterEntityMigrated.name,
@@ -29,6 +30,10 @@ export class RegisterHandler {
       register.eventList.map((event) => RegisterHandler.wrapEvent(config, event, register)),
       config
     )
+  }
+
+  public static async flush(record: Register): Promise<void> {
+    return RegisterHandler.handle(Booster.config, record)
   }
 
   private static wrapEvent(config: BoosterConfig, event: Instance & EventInterface, register: Register): EventEnvelope {

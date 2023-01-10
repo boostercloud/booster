@@ -28,7 +28,7 @@ export class FlushEvents {
 
     register.events(...previousEvents)
 
-    await register.flush(Booster.config)
+    await register.flush()
     const previousCart = await FlushEvents.getEntity(command.cartId)
 
     register.events(...afterEvents)
