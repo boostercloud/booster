@@ -96,33 +96,3 @@ runs:
         ARM_CLIENT_SECRET: ${{ inputs.azure-secret }}
         ARM_SUBSCRIPTION_ID: ${{ inputs.azure-subscriptionid }}
         ARM_TENANT_ID: ${{ inputs.azure-tenantid }}
-
-    # Update the job status
-    # - uses: actions/github-script@v5
-    #   id: update-check-run
-    #   if: always() && steps.fork-based-checkout.outcome == 'success'
-    #   env:
-    #     number: ${{ github.event.client_payload.pull_request.number }}
-    #     job: ${{ github.job }}
-    #     # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
-    #     conclusion: ${{ job.status }}
-    #   with:
-    #     github-token: ${{ inputs.gh_token }}
-    #     script: |
-    #       const { data: pull } = await github.rest.pulls.get({
-    #         ...context.repo,
-    #         pull_number: process.env.number
-    #       });
-    #       const ref = pull.head.sha;
-    #       const { data: checks } = await github.rest.checks.listForRef({
-    #         ...context.repo,
-    #         ref
-    #       });
-    #       const check = checks.check_runs.filter(c => c.name === process.env.job);
-    #       const { data: result } = await github.rest.checks.update({
-    #         ...context.repo,
-    #         check_run_id: check[0].id,
-    #         status: 'completed',
-    #         conclusion: process.env.conclusion
-    #       });
-    #       return result;
