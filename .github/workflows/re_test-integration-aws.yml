@@ -25,6 +25,7 @@ jobs:
       - uses: ./.github/actions/test-integration-run-one
         with:
           integration-test: aws-deploy
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           aws-region: ${{ inputs.aws-region }}
           bot-aws-access-key-id: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           bot-aws-secret-access-key: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
@@ -43,6 +44,7 @@ jobs:
       - uses: ./.github/actions/test-integration-run-one
         with:
           integration-test: ${{ matrix.integration-test }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           aws-region: ${{ inputs.aws-region }}
           bot-aws-access-key-id: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           bot-aws-secret-access-key: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
@@ -60,6 +62,7 @@ jobs:
       - uses: ./.github/actions/test-integration-run-one
         with:
           integration-test: aws-nuke
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           aws-region: ${{ inputs.aws-region }}
           bot-aws-access-key-id: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           bot-aws-secret-access-key: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}

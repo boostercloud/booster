@@ -40,6 +40,7 @@ jobs:
         uses: ./.github/actions/test-integration-run-one
         with:
           integration-test: azure-deploy
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           azure-region: ${{ inputs.azure-region }}
           azure-publisher-email: ${{ inputs.azure-publisher-email }}
           azure-publisher-name: ${{ inputs.azure-publisher-name }}
@@ -64,6 +65,7 @@ jobs:
         uses: ./.github/actions/test-integration-run-one
         with:
           integration-test: ${{ matrix.integration-test }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           azure-region: ${{ inputs.azure-region }}
           azure-publisher-email: ${{ inputs.azure-publisher-email }}
           azure-publisher-name: ${{ inputs.azure-publisher-name }}
@@ -87,6 +89,7 @@ jobs:
         uses: ./.github/actions/test-integration-run-one
         with:
           integration-test: azure-nuke
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           azure-region: ${{ inputs.azure-region }}
           azure-publisher-email: ${{ inputs.azure-publisher-email }}
           azure-publisher-name: ${{ inputs.azure-publisher-name }}

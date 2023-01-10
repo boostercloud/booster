@@ -43,6 +43,9 @@ inputs:
   azure-credentials:
     required: false
     type: string
+  github_token:
+    required: true
+    type: string
 
 runs:
   using: 'composite'
@@ -98,14 +101,14 @@ runs:
     - uses: actions/github-script@v5
       needs: fork-based-checkout
       id: update-check-run
-      if: always() && needs.fork-based-checkout.result == 'success'
+      if: always() && steps.fork-based-checkout.result == 'success'
       env:
         number: ${{ github.event.client_payload.pull_request.number }}
         job: ${{ github.job }}
         # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
         conclusion: ${{ job.status }}
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ inputs.github_token }}
         script: |
           const { data: pull } = await github.rest.pulls.get({
             ...context.repo,
